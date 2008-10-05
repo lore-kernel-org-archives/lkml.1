@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYJETKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbYJETLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYJETKp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 15:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756278AbYJETKZ
+	id S1756474AbYJETLB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 15:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbYJETKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 15:10:25 -0400
-Received: from casper.infradead.org ([85.118.1.10]:32998 "EHLO
+	Sun, 5 Oct 2008 15:10:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33002 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756203AbYJETKY (ORCPT
+	with ESMTP id S1757123AbYJETKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 15:10:24 -0400
-Date: Sun, 5 Oct 2008 12:08:01 -0700
+	Sun, 5 Oct 2008 15:10:34 -0400
+Date: Sun, 5 Oct 2008 12:09:03 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: mingo@elte.hu
 Cc: Arjan van de Ven <arjan@infradead.org>,
        Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] x86: corruption check: move the corruption checks into
- their own file
-Message-ID: <20081005120801.67d580e5@infradead.org>
+Subject: [PATCH 3/4] x86: corruption check: run the corruption checks from a
+ work queue
+Message-ID: <20081005120903.2dc262f4@infradead.org>
 In-Reply-To: <20081005120705.02492d44@infradead.org>
 References: <20081005120705.02492d44@infradead.org>
 Organization: Intel
@@ -34,379 +34,137 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 5 Oct 2008 11:33:42 -0700
-Subject: [PATCH] x86: corruption check: move the corruption checks into their own file
+Date: Mon, 22 Sep 2008 13:42:15 -0700
+Subject: [PATCH] x86: corruption check: run the corruption checks from a work queue
 
-The corruption check code is rather sizable and it's likely to grow over
-time when we add checks for more types of corruptions (there's a few
-candidates in kerneloops.org that I want to add checks for)... so lets move
-it to its own file
+the periodic corruption checks are better off run from a work queue; there's
+nothing time critical about them and this way the amount of
+interrupt-context work is reduced.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/x86/kernel/Makefile |    1 +
- arch/x86/kernel/check.c  |  158 ++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/setup.c  |  152 --------------------------------------------
- include/asm-x86/setup.h  |    4 +
- 4 files changed, 163 insertions(+), 152 deletions(-)
- create mode 100644 arch/x86/kernel/check.c
+ arch/x86/kernel/check.c |   27 +++++++++++++++++----------
+ arch/x86/mm/init_32.c   |    2 --
+ arch/x86/mm/init_64.c   |    2 --
+ include/linux/kernel.h  |    5 -----
+ 4 files changed, 17 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 12a0469..d042063 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -36,6 +36,7 @@ obj-y			+= bootflag.o e820.o
- obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
- obj-y			+= alternative.o i8253.o pci-nommu.o
- obj-y			+= tsc.o io_delay.o rtc.o
-+obj-y			+= check.o
- 
- obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
- obj-y				+= process.o
 diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
-new file mode 100644
-index 0000000..5056703
---- /dev/null
+index 5056703..55eed17 100644
+--- a/arch/x86/kernel/check.c
 +++ b/arch/x86/kernel/check.c
-@@ -0,0 +1,158 @@
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+
-+#include <asm/e820.h>
-+#include <asm/proto.h>
-+
-+/*
-+ * Some BIOSes seem to corrupt the low 64k of memory during events
-+ * like suspend/resume and unplugging an HDMI cable.  Reserve all
-+ * remaining free memory in that area and fill it with a distinct
-+ * pattern.
-+ */
-+#ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
-+#define MAX_SCAN_AREAS	8
-+
-+static int __read_mostly memory_corruption_check = -1;
-+
-+static unsigned __read_mostly corruption_check_size = 64*1024;
-+static unsigned __read_mostly corruption_check_period = 60; /* seconds */
-+
-+static struct e820entry scan_areas[MAX_SCAN_AREAS];
-+static int num_scan_areas;
-+
-+
-+static int set_corruption_check(char *arg)
-+{
-+	char *end;
-+
-+	memory_corruption_check = simple_strtol(arg, &end, 10);
-+
-+	return (*end == 0) ? 0 : -EINVAL;
-+}
-+early_param("memory_corruption_check", set_corruption_check);
-+
-+static int set_corruption_check_period(char *arg)
-+{
-+	char *end;
-+
-+	corruption_check_period = simple_strtoul(arg, &end, 10);
-+
-+	return (*end == 0) ? 0 : -EINVAL;
-+}
-+early_param("memory_corruption_check_period", set_corruption_check_period);
-+
-+static int set_corruption_check_size(char *arg)
-+{
-+	char *end;
-+	unsigned size;
-+
-+	size = memparse(arg, &end);
-+
-+	if (*end == '\0')
-+		corruption_check_size = size;
-+
-+	return (size == corruption_check_size) ? 0 : -EINVAL;
-+}
-+early_param("memory_corruption_check_size", set_corruption_check_size);
-+
-+
-+void __init setup_bios_corruption_check(void)
-+{
-+	u64 addr = PAGE_SIZE;	/* assume first page is reserved anyway */
-+
-+	if (memory_corruption_check == -1) {
-+		memory_corruption_check =
-+#ifdef CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK
-+			1
-+#else
-+			0
-+#endif
-+			;
-+	}
-+
-+	if (corruption_check_size == 0)
-+		memory_corruption_check = 0;
-+
-+	if (!memory_corruption_check)
-+		return;
-+
-+	corruption_check_size = round_up(corruption_check_size, PAGE_SIZE);
-+
-+	while (addr < corruption_check_size && num_scan_areas < MAX_SCAN_AREAS) {
-+		u64 size;
-+		addr = find_e820_area_size(addr, &size, PAGE_SIZE);
-+
-+		if (addr == 0)
-+			break;
-+
-+		if ((addr + size) > corruption_check_size)
-+			size = corruption_check_size - addr;
-+
-+		if (size == 0)
-+			break;
-+
-+		e820_update_range(addr, size, E820_RAM, E820_RESERVED);
-+		scan_areas[num_scan_areas].addr = addr;
-+		scan_areas[num_scan_areas].size = size;
-+		num_scan_areas++;
-+
-+		/* Assume we've already mapped this early memory */
-+		memset(__va(addr), 0, size);
-+
-+		addr += size;
-+	}
-+
-+	printk(KERN_INFO "Scanning %d areas for low memory corruption\n",
-+	       num_scan_areas);
-+	update_e820();
-+}
-+
-+static struct timer_list periodic_check_timer;
-+
-+void check_for_bios_corruption(void)
-+{
-+	int i;
-+	int corruption = 0;
-+
-+	if (!memory_corruption_check)
-+		return;
-+
-+	for (i = 0; i < num_scan_areas; i++) {
-+		unsigned long *addr = __va(scan_areas[i].addr);
-+		unsigned long size = scan_areas[i].size;
-+
-+		for (; size; addr++, size -= sizeof(unsigned long)) {
-+			if (!*addr)
-+				continue;
-+			printk(KERN_ERR "Corrupted low memory at %p (%lx phys) = %08lx\n",
-+			       addr, __pa(addr), *addr);
-+			corruption = 1;
-+			*addr = 0;
-+		}
-+	}
-+
-+	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
-+}
-+
-+static void periodic_check_for_corruption(unsigned long data)
-+{
-+	check_for_bios_corruption();
-+	mod_timer(&periodic_check_timer,
-+		round_jiffies(jiffies + corruption_check_period*HZ));
-+}
-+
-+void start_periodic_check_for_corruption(void)
-+{
-+	if (!memory_corruption_check || corruption_check_period == 0)
-+		return;
-+
-+	printk(KERN_INFO "Scanning for low memory corruption every %d seconds\n",
-+	       corruption_check_period);
-+
-+	init_timer(&periodic_check_timer);
-+	periodic_check_timer.function = &periodic_check_for_corruption;
-+	periodic_check_for_corruption(0);
-+}
-+#endif
-+
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 5a21905..247a8dc 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -581,158 +581,6 @@ static struct x86_quirks default_x86_quirks __initdata;
+@@ -1,6 +1,7 @@
+ #include <linux/module.h>
+ #include <linux/sched.h>
+-
++#include <linux/kthread.h>
++#include <linux/workqueue.h>
+ #include <asm/e820.h>
+ #include <asm/proto.h>
  
- struct x86_quirks *x86_quirks __initdata = &default_x86_quirks;
+@@ -108,13 +109,14 @@ void __init setup_bios_corruption_check(void)
+ 	update_e820();
+ }
  
--/*
-- * Some BIOSes seem to corrupt the low 64k of memory during events
-- * like suspend/resume and unplugging an HDMI cable.  Reserve all
-- * remaining free memory in that area and fill it with a distinct
-- * pattern.
-- */
--#ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
--#define MAX_SCAN_AREAS	8
--
--static int __read_mostly memory_corruption_check = -1;
--
--static unsigned __read_mostly corruption_check_size = 64*1024;
--static unsigned __read_mostly corruption_check_period = 60; /* seconds */
--
--static struct e820entry scan_areas[MAX_SCAN_AREAS];
--static int num_scan_areas;
--
--
--static int set_corruption_check(char *arg)
--{
--	char *end;
--
--	memory_corruption_check = simple_strtol(arg, &end, 10);
--
--	return (*end == 0) ? 0 : -EINVAL;
--}
--early_param("memory_corruption_check", set_corruption_check);
--
--static int set_corruption_check_period(char *arg)
--{
--	char *end;
--
--	corruption_check_period = simple_strtoul(arg, &end, 10);
--
--	return (*end == 0) ? 0 : -EINVAL;
--}
--early_param("memory_corruption_check_period", set_corruption_check_period);
--
--static int set_corruption_check_size(char *arg)
--{
--	char *end;
--	unsigned size;
--
--	size = memparse(arg, &end);
--
--	if (*end == '\0')
--		corruption_check_size = size;
--
--	return (size == corruption_check_size) ? 0 : -EINVAL;
--}
--early_param("memory_corruption_check_size", set_corruption_check_size);
--
--
--static void __init setup_bios_corruption_check(void)
--{
--	u64 addr = PAGE_SIZE;	/* assume first page is reserved anyway */
--
--	if (memory_corruption_check == -1) {
--		memory_corruption_check =
--#ifdef CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK
--			1
--#else
--			0
--#endif
--			;
--	}
--
--	if (corruption_check_size == 0)
--		memory_corruption_check = 0;
--
--	if (!memory_corruption_check)
--		return;
--
--	corruption_check_size = round_up(corruption_check_size, PAGE_SIZE);
--
--	while (addr < corruption_check_size && num_scan_areas < MAX_SCAN_AREAS) {
--		u64 size;
--		addr = find_e820_area_size(addr, &size, PAGE_SIZE);
--
--		if (addr == 0)
--			break;
--
--		if ((addr + size) > corruption_check_size)
--			size = corruption_check_size - addr;
--
--		if (size == 0)
--			break;
--
--		e820_update_range(addr, size, E820_RAM, E820_RESERVED);
--		scan_areas[num_scan_areas].addr = addr;
--		scan_areas[num_scan_areas].size = size;
--		num_scan_areas++;
--
--		/* Assume we've already mapped this early memory */
--		memset(__va(addr), 0, size);
--
--		addr += size;
--	}
--
--	printk(KERN_INFO "Scanning %d areas for low memory corruption\n",
--	       num_scan_areas);
--	update_e820();
--}
--
 -static struct timer_list periodic_check_timer;
--
--void check_for_bios_corruption(void)
--{
--	int i;
--	int corruption = 0;
--
--	if (!memory_corruption_check)
--		return;
--
--	for (i = 0; i < num_scan_areas; i++) {
--		unsigned long *addr = __va(scan_areas[i].addr);
--		unsigned long size = scan_areas[i].size;
--
--		for (; size; addr++, size -= sizeof(unsigned long)) {
--			if (!*addr)
--				continue;
--			printk(KERN_ERR "Corrupted low memory at %p (%lx phys) = %08lx\n",
--			       addr, __pa(addr), *addr);
--			corruption = 1;
--			*addr = 0;
--		}
--	}
--
--	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
--}
--
+ 
+ void check_for_bios_corruption(void)
+ {
+ 	int i;
+ 	int corruption = 0;
+ 
++	printk("dot\n");
++
+ 	if (!memory_corruption_check)
+ 		return;
+ 
+@@ -135,24 +137,29 @@ void check_for_bios_corruption(void)
+ 	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
+ }
+ 
 -static void periodic_check_for_corruption(unsigned long data)
--{
--	check_for_bios_corruption();
++static void check_corruption(struct work_struct *dummy);
++static DECLARE_DELAYED_WORK(bios_check_work, check_corruption);
++
++static void check_corruption(struct work_struct *dummy)
+ {
+ 	check_for_bios_corruption();
 -	mod_timer(&periodic_check_timer,
 -		round_jiffies(jiffies + corruption_check_period*HZ));
--}
--
++	schedule_delayed_work(&bios_check_work,
++		round_jiffies_relative(corruption_check_period*HZ)); 
+ }
+ 
 -void start_periodic_check_for_corruption(void)
--{
--	if (!memory_corruption_check || corruption_check_period == 0)
++static int start_periodic_check_for_corruption(void)
+ {
+ 	if (!memory_corruption_check || corruption_check_period == 0)
 -		return;
--
--	printk(KERN_INFO "Scanning for low memory corruption every %d seconds\n",
--	       corruption_check_period);
--
++		return 0;
+ 
+ 	printk(KERN_INFO "Scanning for low memory corruption every %d seconds\n",
+ 	       corruption_check_period);
+ 
 -	init_timer(&periodic_check_timer);
 -	periodic_check_timer.function = &periodic_check_for_corruption;
 -	periodic_check_for_corruption(0);
--}
--#endif
--
- static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
- {
- 	printk(KERN_NOTICE
-diff --git a/include/asm-x86/setup.h b/include/asm-x86/setup.h
-index 11b6cc1..5c55fc1 100644
---- a/include/asm-x86/setup.h
-+++ b/include/asm-x86/setup.h
-@@ -8,6 +8,10 @@
- /* Interrupt control for vSMPowered x86_64 systems */
- void vsmp_init(void);
++	/* First time we run the checks right away */
++	schedule_delayed_work(&bios_check_work, 0);
++	return 0;
+ }
++
++module_init(start_periodic_check_for_corruption);
+ #endif
  
-+
-+void setup_bios_corruption_check(void);
-+
-+
- #ifdef CONFIG_X86_VISWS
- extern void visws_early_detect(void);
- extern int is_visws_box(void);
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index b646e5b..63b71d3 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -970,8 +970,6 @@ void __init mem_init(void)
+ 	int codesize, reservedpages, datasize, initsize;
+ 	int tmp;
+ 
+-	start_periodic_check_for_corruption();
+-
+ #ifdef CONFIG_FLATMEM
+ 	BUG_ON(!mem_map);
+ #endif
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index a624017..747f6c9 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -905,8 +905,6 @@ void __init mem_init(void)
+ {
+ 	long codesize, reservedpages, datasize, initsize;
+ 
+-	start_periodic_check_for_corruption();
+-
+ 	pci_iommu_alloc();
+ 
+ 	/* clear_bss() already clear the empty_zero_page */
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index a5afee2..b39c7ef 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -260,15 +260,10 @@ extern int root_mountflags;
+  * able to scatter it around anywhere in the kernel.
+  */
+ void check_for_bios_corruption(void);
+-void start_periodic_check_for_corruption(void);
+ #else
+ static inline void check_for_bios_corruption(void)
+ {
+ }
+-
+-static inline void start_periodic_check_for_corruption(void)
+-{
+-}
+ #endif
+ 
+ /* Values used for system_state */
 -- 
 1.5.5.1
+
 
 
 -- 
