@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYJEVdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbYJEVky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbYJEVdu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 17:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYJEVdl
+	id S1756325AbYJEVky (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 17:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYJEVkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 17:33:41 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:60308 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753209AbYJEVdl (ORCPT
+	Sun, 5 Oct 2008 17:40:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:14205 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754558AbYJEVko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 17:33:41 -0400
-Date: Sun, 5 Oct 2008 22:33:30 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: IvDoorn@gmail.com, hmh@hmh.eng.br, sitsofe@yahoo.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] rfkill-input doesn't work until 5 minutes after boot
-Message-ID: <20081005213330.GA11355@srcf.ucam.org>
-References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081005110226.GB4087@srcf.ucam.org> <20081005212432.GC11576@amd.corenet.prv>
+	Sun, 5 Oct 2008 17:40:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bnx6NWK4p58zquRbVBLgBy5Z043ppal5tQHhdA3FtAdjKKdgnaKkgTerHcQTwL6mFA
+         EwpvsMKzqxk2YpWTbiNcFxiOioilCRnT5IunZi5K3mBoHJqtR9t2PBWmj6dcHoeAivNf
+         9yqpEeReOQQEaX6D1im0tLueWBwRxvfBCa3Lk=
+Message-ID: <f7848160810051440k2f7a4717mc0a3b54e7576d6e6@mail.gmail.com>
+Date: Sun, 5 Oct 2008 17:40:43 -0400
+From: "Parag Warudkar" <parag.lkml@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: 2.6.27-rc8+ - first impressions
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081005211748.GA11576@amd.corenet.prv>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081005212432.GC11576@amd.corenet.prv>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+References: <20081005183603.GA3263@amd.corenet.prv>
+	 <200810052059.49942.rjw@sisk.pl>
+	 <20081005190658.GC3263@amd.corenet.prv>
+	 <200810052119.13881.rjw@sisk.pl>
+	 <20081005211748.GA11576@amd.corenet.prv>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 05:24:39PM -0400, Dmitry Torokhov wrote:
+On Sun, Oct 5, 2008 at 5:18 PM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
 
-> I'd rather have something like below. It should probably go through
-> David's (networking) tree. since it is in net/.
+>        Vendor: Hewlett-Packard
+>        Version: 68DTT Ver. F.0D
+>        Release Date: 11/22/2005
 
-Fine with me, as long as Sitsofe can confirm it works?
+Not sure if the HPET related things are better in the latest release
+of the 6915 BIOS - which is F12 [*].
+But may be worth trying?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+[*'] http://h20000.www2.hp.com/bizsupport/TechSupport/SoftwareDescription.jsp?lang=en&cc=in&prodTypeId=321957&prodSeriesId=471752&swItem=ob-59364-1&prodNameId=471755&swEnvOID=1093&swLang=8&taskId=135&mode=4&idx=2
+
+Parag
