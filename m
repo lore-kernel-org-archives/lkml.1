@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYJEOCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYJEOLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbYJEOCQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 10:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYJEOCE
+	id S1755500AbYJEOLU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 10:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYJEOLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 10:02:04 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56551 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbYJEOCD (ORCPT
+	Sun, 5 Oct 2008 10:11:12 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:52708 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753847AbYJEOLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 10:02:03 -0400
-Message-ID: <48E8C8AB.3010308@s5r6.in-berlin.de>
-Date: Sun, 05 Oct 2008 16:01:15 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Sun, 5 Oct 2008 10:11:11 -0400
+Date: Sun, 5 Oct 2008 09:11:13 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Btrfs mainline plans
+Message-ID: <20081005141113.GA6132@us.ibm.com>
+References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org> <20081005122405.GA12047@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Thiago Lacerda <thiagotbl@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Questions about mmap
-References: <3fedcc3b0810050621y3f44417ag605ee75dd0389100@mail.gmail.com> <3fedcc3b0810050624m19bfd701n82b70ca81887c3fc@mail.gmail.com>
-In-Reply-To: <3fedcc3b0810050624m19bfd701n82b70ca81887c3fc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081005122405.GA12047@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thiago Lacerda wrote:
-> typedef struct hashtable {
->    flow_t *hashBuckets[X]; // X is a natural number
->    unsigned int size;
-> } Hastable;
+Quoting Adrian Bunk (bunk@kernel.org):
+> On Fri, Oct 03, 2008 at 12:18:59AM -0700, Andrew Morton wrote:
+> > On Mon, 29 Sep 2008 15:44:20 -0400 Chris Mason <chris.mason@oracle.com> wrote:
+> > 
+> > > But, the code is very actively developed, and I believe the best way to
+> > > develop Btrfs from here is to get it into the mainline kernel (with a
+> > > large warning label about the disk format) and attract more extensive
+> > > review of both the disk format and underlying code.
+> > 
+> > For the record...  I have been encouraging Chris to get btrfs into
+> > mainline soon.  Get it into linux-next asap and merge it into 2.6.29.
+> > 
+> > And do this even though the on-disk format is still changing - we emit a
+> > loud printk at mount time and if someone comes to depend upon some
+> > intermediate format, well, that's their tough luck.
+> > 
+> > My thinking here is that btrfs probably has a future, and that an early
+> > merge will accelerate its development and will broaden its developer base. 
+> > If it ends up failing for some reason, well, we can just delete it
+> > again.
+> > 
+> > For various reasons this approach often isn't appropriate as a general
+> > policy thing, but I do think that Linux has needed a new local
+> > filesystem for some time, and btrfs might be The One, and hence is
+> > worth a bit of special-case treatment.
 > 
+> Let's try to learn from the past:
 > 
-> So, my question is: Can I mmap the hashtable struct and access
-> directly from userspace? I'm afraid that this could turn on mess
-> because of the array of pointers.
-> If it's possible, does anyone know a piece of code that can match my
-> problem? I've been googling and I just find codes dealing with structs
-> itself, not pointers.
+> 6 days from today ext4 (another new local filesystem for Linux) 
+> celebrates the second birthday of it's inclusion into Linus' tree
+> as a similar special-case.
+> 
+> You claim "an early merge will accelerate its development and will 
+> broaden its developer base" for Btrfs.
+> 
+> Read the timeline Ted outlined back in June 2006 for ext4 [1].
+> When comparing with what happened in reality it kinda disproves
+> your "acceleration" point.
 
-If you require portability, you can only use integer types of fixed size
-in kernel<->userspace ABIs.  Pointers can then be exchanged as __u64
-under the assumption that pointers not wider than 64 bits.  See for
-example the FW_CDEV_IOC_QUEUE_ISO ioctl in include/linux/firewire-cdev.h.
--- 
-Stefan Richter
--=====-==--- =-=- --=-=
-http://arcgraph.de/sr/
+OTOH, maybe it's just me, but I think there is more excitement around
+btrfs.  Myself I'm dying for snapshot support, and can't wait to try
+btrfs on a separate data/scratch partition (where i don't mind losing
+data).  btrfs and nilfs - yay.  Ext4?  <yawn>  That can make all the
+difference.
+
+-serge
