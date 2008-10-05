@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbYJERBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbYJERSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbYJERBz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 13:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYJERBn
+	id S1755882AbYJERSb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 13:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYJERSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 13:01:43 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42300 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753517AbYJERBm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 13:01:42 -0400
-Date: Sun, 5 Oct 2008 10:01:17 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, jesse.brandeburg@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kkeil@suse.de,
-       agospoda@redhat.com, david.graham@intel.com, bruce.w.allan@intel.com,
-       john.ronciak@intel.com, chris.jones@canonical.com,
-       tim.gardner@canonical.com, airlied@gmail.com, Olaf Kirch <okir@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
-Message-ID: <20081005100117.2277d70c@linux.intel.com>
-In-Reply-To: <alpine.LFD.2.00.0810051809130.3398@apollo>
-References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
-	<200810021523.45884.jbarnes@virtuousgeek.org>
-	<20081003.134634.240211201.davem@davemloft.net>
-	<200810031429.22598.jbarnes@virtuousgeek.org>
-	<alpine.LNX.1.10.0810032338140.26779@jikos.suse.cz>
-	<4807377b0810031628x43f79eferdbb9c9c264a5816e@mail.gmail.com>
-	<alpine.LNX.1.10.0810041219130.26779@jikos.suse.cz>
-	<alpine.LFD.2.00.0810041236250.4404@apollo>
-	<4807377b0810041824u5ea472d1q4cf5ff606bd23a11@mail.gmail.com>
-	<alpine.LFD.2.00.0810050959420.3398@apollo>
-	<48E8D7A5.7060508@linux.intel.com>
-	<alpine.LFD.2.00.0810051752210.3398@apollo>
-	<20081005090226.1e9eaae6@linux.intel.com>
-	<alpine.LFD.2.00.0810051809130.3398@apollo>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Sun, 5 Oct 2008 13:18:23 -0400
+Received: from 1wt.eu ([62.212.114.60]:4621 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753777AbYJERSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 13:18:22 -0400
+Date: Sun, 5 Oct 2008 19:18:18 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Klaus Ethgen <Klaus@Ethgen.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel freeze on 2.4.36.7
+Message-ID: <20081005171818.GJ24654@1wt.eu>
+References: <20081005154113.GA8387@ikki.ethgen.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081005154113.GA8387@ikki.ethgen.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Oct 2008 18:16:29 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Hello Klaus,
 
-> On Sun, 5 Oct 2008, Arjan van de Ven wrote:
-> > On Sun, 5 Oct 2008 17:55:14 +0200 (CEST)
-> > Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > On Sun, 5 Oct 2008, Arjan van de Ven wrote:
-> > > > Thomas Gleixner wrote:
-> > > > > On Sat, 4 Oct 2008, Jesse Brandeburg wrote:
-> > > > > > > Exactly. The access to a ro region results in a fault. I
-> > > > > > > have nowhere seen that trigger, but I can reproduce the
-> > > > > > > trylock() WARN_ON, which confirms that there is
-> > > > > > > concurrent access to the NVRAM registers. The backtrace
-> > > > > > > pattern is similar to the one you have seen.
-> > > > > > are you still getting WARN_ON *with* all the mutex based
-> > > > > > fixes already applied?
-> > > > > 
-> > > > > The WARN_ON triggers with current mainline. Is there any
-> > > > > fixlet in Linus tree missing ?
-> > > > > 
-> > > > > > with the mutex patches in place (without protection patch)
-> > > > > > we are still reproducing the issue, until we apply the
-> > > > > > set_memory_ro patch.
-> > > > > 
-> > > > > That does not make sense to me. If the memory_ro patch is
-> > > > > providing _real_ protection then you _must_ run into an access
-> > > > > violation. If not, then the patch just papers over the real
-> > > > > problem in some mysterious way.
-> > > > > 
-> > > > 
-> > > > not if the bad code is doing copy_to_user .... (or similar)
-> > > 
-> > > You mean: copy_from_user :) This would require that the e1000e
-> > > nvram region is writable via copy_from_user by an e1000e user
-> > > space interface. A quick grep does not reviel such a horrible
-> > > interface.
-> > 
-> > I meant a "copy_to_user" to a duff pointer, somewhere in the kernel.
+On Sun, Oct 05, 2008 at 04:41:16PM +0100, Klaus Ethgen wrote:
+> Hello,
 > 
-> Hmm, don't we check the *to address on copy_to_user ?
+> I use the stable kernel tree 2.4 and have reproduce the following bug
+> with 2.4.36.2 and 2.4.36.7.
 > 
+> I got a new barcode scanner and plugged it into USB. The scanner works
+> well until I remove it. In that second I get a trace and the kernel
+> freeze.
 
-fair point
+Does it happen everytime you unplug it or only once in a while ? Also,
+have you ever been running and older 2.4 kernel not causing this problem ?
 
-and we do exception catching for copy_from_user as well on the source,
-just by how it's implemented
+> The message when I plug in the scanner:
+>  hub.c: new USB device 00:1d.7-6.2, assigned address 5
+>  input: USB HID v1.10 Keyboard [Weltrend Bar Code Reader] on usb1:5.0
+> 
+> The message when I unplug it:
+>  Unable to handle kernel NULL pointer dereference at virtual address 00000048
+>  ...
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Does the same problem happen when you plug/unplug a USB keyboard on the
+same machine ?
+
+> Please pardon that I do not type the complete kernel dump as I know no
+> way to log it to a text file in this case where the system freeze. But
+> on request I can send the picture I made with my camera.
+
+Yes, it would help a lot. That along with your kernel config and an
+lsmod and dmesg outputs before the problem. Ideally, you should pass
+the messages output through ksymoops with all modules loaded as before
+the problem happens. If you want to more easily capture your messages,
+you can connect another machine to your serial port and boot with
+"console=ttyS0".
+
+Regards,
+Willy
+
