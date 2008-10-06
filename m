@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYJFX0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYJFX1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757867AbYJFX0t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbYJFXWS
+	id S1758015AbYJFX1d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbYJFXWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:22:18 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55076 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:22:25 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55130 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756545AbYJFXWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:22:17 -0400
-Date: Mon, 6 Oct 2008 16:17:29 -0700
+	id S1756637AbYJFXWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:22:24 -0400
+Date: Mon, 6 Oct 2008 16:17:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 14/28] clockevents: prevent multiple init/shutdown
-Message-ID: <20081006231729.GO20567@suse.de>
+Subject: [patch 16/28] HPET: make minimum reprogramming delta useful
+Message-ID: <20081006231733.GQ20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-04.patch"
+Content-Disposition: inline; filename="timer-fix-06.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,72 +42,38 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 9c17bcda991000351cb2373f78be7e4b1c44caa3 upstream
+commit 7cfb0435330364f90f274a26ecdc5f47f738498c upstream
 
-While chasing the C1E/HPET bugreports I went through the clock events
-code inch by inch and found that the broadcast device can be initialized
-and shutdown multiple times. Multiple shutdowns are not critical, but
-useless waste of time. Multiple initializations are simply broken. Another
-CPU might have the device in use already after the first initialization and
-the second init could just render it unusable again.
+The minimum reprogramming delta was hardcoded in HPET ticks,
+which is stupid as it does not work with faster running HPETs.
+The C1E idle patches made this prominent on AMD/RS690 chipsets,
+where the HPET runs with 25MHz. Set it to 5us which seems to be
+a reasonable value and fixes the problems on the bug reporters
+machines. We have a further sanity check now in the clock events,
+which increases the delta when it is not sufficient.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
+Tested-by: Dmitry Nezhevenko <dion@inhex.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-broadcast.c |   20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ arch/x86/kernel/hpet.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -209,7 +209,7 @@ static void tick_do_broadcast_on_off(voi
- 	struct clock_event_device *bc, *dev;
- 	struct tick_device *td;
- 	unsigned long flags, *reason = why;
--	int cpu;
-+	int cpu, bc_stopped;
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -222,8 +222,8 @@ static void hpet_legacy_clockevent_regis
+ 	/* Calculate the min / max delta */
+ 	hpet_clockevent.max_delta_ns = clockevent_delta2ns(0x7FFFFFFF,
+ 							   &hpet_clockevent);
+-	hpet_clockevent.min_delta_ns = clockevent_delta2ns(0x30,
+-							   &hpet_clockevent);
++	/* 5 usec minimum reprogramming delta. */
++	hpet_clockevent.min_delta_ns = 5000;
  
- 	spin_lock_irqsave(&tick_broadcast_lock, flags);
- 
-@@ -227,6 +227,8 @@ static void tick_do_broadcast_on_off(voi
- 	if (!tick_device_is_functional(dev))
- 		goto out;
- 
-+	bc_stopped = cpus_empty(tick_broadcast_mask);
-+
- 	switch (*reason) {
- 	case CLOCK_EVT_NOTIFY_BROADCAST_ON:
- 	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
-@@ -248,9 +250,10 @@ static void tick_do_broadcast_on_off(voi
- 		break;
- 	}
- 
--	if (cpus_empty(tick_broadcast_mask))
--		clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
--	else {
-+	if (cpus_empty(tick_broadcast_mask)) {
-+		if (!bc_stopped)
-+			clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
-+	} else if (bc_stopped) {
- 		if (tick_broadcast_device.mode == TICKDEV_MODE_PERIODIC)
- 			tick_broadcast_start_periodic(bc);
- 		else
-@@ -500,9 +503,12 @@ static void tick_broadcast_clear_oneshot
-  */
- void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
- {
--	bc->event_handler = tick_handle_oneshot_broadcast;
--	clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
--	bc->next_event.tv64 = KTIME_MAX;
-+	/* Set it up only once ! */
-+	if (bc->event_handler != tick_handle_oneshot_broadcast) {
-+		bc->event_handler = tick_handle_oneshot_broadcast;
-+		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
-+		bc->next_event.tv64 = KTIME_MAX;
-+	}
- }
- 
- /*
+ 	/*
+ 	 * Start hpet with the boot cpu mask and make it
 
 -- 
