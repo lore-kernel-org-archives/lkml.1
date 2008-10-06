@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYJFTyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYJFUAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbYJFTyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 15:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYJFTyR
+	id S1755230AbYJFUAs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 16:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYJFUAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 15:54:17 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:4145 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030AbYJFTyQ (ORCPT
+	Mon, 6 Oct 2008 16:00:39 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:41820 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbYJFUAi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 15:54:16 -0400
-X-BigFish: VPS-58(z21eW6f5iz1432R98dR936eQ1805M936fO3117K1b0bM19c2kzzzz5a6ciz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K8C1XV-01-V51-01
-Date: Mon, 6 Oct 2008 21:53:50 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc8+ - first impressions
-Message-ID: <20081006195350.GB22097@alberich.amd.com>
-References: <20081005183603.GA3263@amd.corenet.prv> <20081005121046.579089b9@infradead.org> <20081006062838.GC2808@amd.corenet.prv>
+	Mon, 6 Oct 2008 16:00:38 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Reigo =?utf-8?q?K=C3=BCngas?= <reigo@itx.ee>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: PROBLEM: linksys USB1000linksys, asix driver (2.6.26.5)
+Date: Mon, 6 Oct 2008 22:03:39 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0810062130180.23753@ares.softexpert.eu>
+In-Reply-To: <Pine.LNX.4.64.0810062130180.23753@ares.softexpert.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081006062838.GC2808@amd.corenet.prv>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 06 Oct 2008 19:54:01.0656 (UTC) FILETIME=[47782B80:01C927ED]
+Message-Id: <200810062203.39663.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 02:28:39AM -0400, Dmitry Torokhov wrote:
-> On Sun, Oct 05, 2008 at 12:10:46PM -0700, Arjan van de Ven wrote:
-> > On Sun, 5 Oct 2008 14:36:25 -0400
-> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Lats night I loaded 2.6.27-rc8-tip for the first time on my AMD Turion
-> > > 64 laptop that is normally runs with Fedora distribution kernel.
-> > > Compared to 2.6.25 the thing is broken - hdparm reports about 3MB/sec
-> > > speed, fans are constantly on, everything seems sluggish.
-> > > 
-> > > Booting with hpet=force (HPET is disabled in BIOS) hangs the box
-> > > somewhere in tty_init.
-> > 
-> > hpet=force is a "the kernel thinks it's not wise to use, but you think
-> > better"... don't do that ;(
-> > 
+Am Montag, 6. Oktober 2008 21:19:23 schrieb Reigo Küngas:
+> Same behaiviour in 2 servers - one running 2.6.26 kernel and second 
+> 2.6.26.5 kernel both has similar hardware and same usb gigabit network 
+> adapter and similar problems.
 > 
-> That is not how I parse dmesg:
-> 
-> [    0.077927] HPET not enabled in BIOS. You might try hpet=force boot
-> option
-> 
-> Here kernel recommends to try and enable it. If we generally don't recommed
-> using 'force' I'd suggest removing the 2nd sentence from the message.
+> dmesg output below - please let me know if you need more information.
 
-FYI.
-Commit e7250b8ae3870f37f660c2f65cafcaba85e3bfd3 of tip/master is
-needed to really enable hpet on SB400. I guess that patch should go
-upstream asap -- and probably it's a good idea to add a check for timer
-interrupt routing as well which could solve the issues on HP nx6xxx
-laptops.
+Please recompile your kernel with CONFIG_USB_DEBUG and repost
+dmesg only to the point it fails. Do not unload the driver. An additional
+usbmon trace would also be helpful.
 
-
-Regards,
-
-Andreas
-
+	Regards
+		Oliver
 
