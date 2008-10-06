@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYJFJWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbYJFJ2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbYJFJWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 05:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbYJFJWc
+	id S1753229AbYJFJ2P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 05:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYJFJ17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 05:22:32 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:35496 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752025AbYJFJWc (ORCPT
+	Mon, 6 Oct 2008 05:27:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38469 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751803AbYJFJ16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 05:22:32 -0400
-Subject: Re: [PATCH] btsdio: fix tx error path
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Tomas Winkler <tomas.winkler@intel.com>
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1223283914-18238-1-git-send-email-tomas.winkler@intel.com>
-References: <1223283914-18238-1-git-send-email-tomas.winkler@intel.com>
-Content-Type: text/plain
-Date: Mon, 06 Oct 2008 11:22:50 +0200
-Message-Id: <1223284970.11272.139.camel@violet.holtmann.net>
+	Mon, 6 Oct 2008 05:27:58 -0400
+Date: Mon, 6 Oct 2008 10:27:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RFC: banning device driver reserved resources from /dev/mem
+Message-ID: <20081006102739.16d1a434@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081005180154.7cc12486@infradead.org>
+References: <20081005180154.7cc12486@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tomas,
+> This patch adds, to the existing config option to restrict /dev/mem, the
+> reserved regions to the "banned from /dev/mem use" list, so now
+> both kernel memory and device-exclusive MMIO regions are banned.
 
-> This patch fixes accumulating of the header
-> in case packet was requeued in the error path.
-> 
-> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> Cc: Marcel Holtmann <marcel@holtmann.org>
-> ---
->  drivers/bluetooth/btsdio.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/bluetooth/btsdio.c b/drivers/bluetooth/btsdio.c
-> index 58630cc..e4724b8 100644
-> --- a/drivers/bluetooth/btsdio.c
-> +++ b/drivers/bluetooth/btsdio.c
-> @@ -91,6 +91,7 @@ static int btsdio_tx_packet(struct btsdio_data *data, struct sk_buff *skb)
->  
->  	err = sdio_writesb(data->func, REG_TDAT, skb->data, skb->len);
->  	if (err < 0) {
-> +		skb_pop(skb, 4);
->  		sdio_writeb(data->func, 0x01, REG_PC_WRT, NULL);
->  		return err;
->  	}
+This breaks a whole class of diagnostic and debug tools which quite
+intentionally dump the MMIO register space of devices that are live.
 
-good catch. Applied to my tree. Thanks.
+Plus it doesn't actually work - if I have /dev/mem open and mmapped you
+don't pull the pages from under me....
 
-Regards
+The problem with the way this is going is the more you take from /dev/mem
+the sooner someone is forced to add /dev/mem-proper which undoes it all
+again so they can get work done.
 
-Marcel
+It's certainly a useful debug aid to know about such things but I don't
+believe it's something you should ban.
 
-
+Alan
