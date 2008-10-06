@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYJFROB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYJFRPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbYJFROB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 13:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYJFRNx
+	id S1755248AbYJFRPN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 13:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYJFRO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 13:13:53 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:36668 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752641AbYJFRNx (ORCPT
+	Mon, 6 Oct 2008 13:14:59 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:38815 "EHLO
+	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753566AbYJFRO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 13:13:53 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtsEAJPi6UhMQWq+/2dsb2JhbACBcbppgWo
-Date: Mon, 6 Oct 2008 13:13:48 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 0/3] ring-buffer: less locking and only disable
-	preemption
-Message-ID: <20081006171348.GB9345@Krystal>
-References: <20081004060057.660306328@goodmis.org> <20081004084002.GE27624@elte.hu> <alpine.DEB.1.10.0810041015330.4551@gandalf.stny.rr.com> <20081004163348.GA23593@Krystal> <alpine.DEB.1.10.0810041315440.6571@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Oct 2008 13:14:59 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=oKHyVUWpidcIilbfkYMxWmZ9L2vdWzO6cFQxUFAnJgUazszcLRjHVU+nkWqY2tKwB
+	gY7+BoSPI5ARFPRjHOvkg==
+Message-ID: <6599ad830810061014q5535b5b6kfb53182b3fcc60c8@mail.gmail.com>
+Date: Mon, 6 Oct 2008 10:14:42 -0700
+From: "Paul Menage" <menage@google.com>
+To: righi.andrea@gmail.com
+Subject: Re: [PATCH -mm 2/6] introduce struct res_counter_ratelimit
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       "Carl Henrik Lunde" <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       "Divyesh Shah" <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, "Hirokazu Takahashi" <taka@valinux.co.jp>,
+       "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Marco Innocenti" <m.innocenti@cineca.it>, matt@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       "Ryo Tsuruta" <ryov@valinux.co.jp>,
+       "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48E9C637.8030507@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810041315440.6571@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:10:46 up 123 days, 21:51,  9 users,  load average: 0.09, 0.30,
-	0.38
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com>
+	 <6599ad830810051103v1bd6e8d4xd2fcf622558fc7d9@mail.gmail.com>
+	 <48E9C637.8030507@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Sat, 4 Oct 2008, Mathieu Desnoyers wrote:
-> > 
-> > Or use this code, based on a temporary breakpoint, to do the code
-> > patching (part of the -lttng tree). It does not require stop_machine at
-> > all and is nmi safe.
-> > 
-> 
-> When this is supported for all archs, and can be done at all functions 
-> then I could use it.
-> 
+On Mon, Oct 6, 2008 at 1:03 AM, Andrea Righi <righi.andrea@gmail.com> wrote:
+>> Could you not either:
+>>
+>> - include these two extra fields in res_counter?
+>> - include res_counter as the first field in a res_counter_ratelimit?
+>
+> The second solution would save some space if the "ratelimit" part is not used.
 
-How about incrementally using this piece of infrastructure when
-available on a given architecture ? This way we keep a sub-optimal
-fall-back for archs which does not support NMI-safe code patching and
-incrementally get the optimal behavior. Otherwise, we would require any
-new architecture to implement that up-front, which I doubt is a good
-idea.
+Having a "policy" field in res_counter seems like it might be reusable
+as something for other non-ratelimited res_counters. And even if it's
+not, the memory overhead of a couple of extra fields in a res_counter
+is trivial compared to the overhead of resource isolation anyway.
 
-> I may just have the arch specific code use it, but we'll see.
-> 
-> Also, how good is it at patching 20,000 call sites?
-> 
+So my first approach to this would be just extend res_counter, and
+then split them apart later if it turns out that they really do need
+mutually incompatible code/handlers.
 
-Can be done really fast using a hash table, see my previous mail.
-
-Mathieu
-
-> -- Steve
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Paul
