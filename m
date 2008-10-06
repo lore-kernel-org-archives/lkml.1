@@ -1,109 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYJFRX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYJFRZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYJFRX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 13:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYJFRXS
+	id S1754883AbYJFRZN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 13:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYJFRY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 13:23:18 -0400
-Received: from romulus.commandcorp.com ([130.205.32.3]:32836 "EHLO
-	romulus.wittsend.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYJFRXQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 13:23:16 -0400
-X-Greylist: delayed 678 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Oct 2008 13:23:16 EDT
-Subject: Fedora 9, IPSec, and 2.6.26 kernels...
-From: "Michael H. Warfield" <mhw@WittsEnd.com>
-Reply-To: mhw@WittsEnd.com
-To: fedora-list@redhat.com, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: mhw@WittsEnd.com
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qVouPv7JzbNh0I03eb3C"
-Organization: Thaumaturgy & Speculums Technology
-Date: Mon, 06 Oct 2008 13:10:54 -0400
-Message-Id: <1223313054.25404.37.camel@canyon.wittsend.com>
+	Mon, 6 Oct 2008 13:24:59 -0400
+Received: from sh.osrg.net ([192.16.179.4]:58328 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752979AbYJFRY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 13:24:58 -0400
+Date: Tue, 7 Oct 2008 02:24:29 +0900
+To: jens.axboe@oracle.com
+Cc: James.Bottomley@HansenPartnership.com, knikanth@suse.de,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH] BUG: nr_phys_segments cannot be less than
+ nr_hw_segments
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081002171356.GO19428@kernel.dk>
+References: <20081002165857.GL19428@kernel.dk>
+	<1222967563.3222.30.camel@localhost.localdomain>
+	<20081002171356.GO19428@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (romulus.wittsend.com [IPv6:2001:4830:3000:2:280:3fff:fe03:455b]); Mon, 06 Oct 2008 13:11:00 -0400 (EDT)
-X-WittsEnd-MailScanner-Information: Please contact the ISP for more information
-X-WittsEnd-MailScanner-ID: m96HAx6U023486
-X-WittsEnd-MailScanner: Found to be clean
-X-WittsEnd-MailScanner-From: mhw@wittsend.com
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081007022358N.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2 Oct 2008 19:13:57 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
---=-qVouPv7JzbNh0I03eb3C
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Thu, Oct 02 2008, James Bottomley wrote:
+> > On Thu, 2008-10-02 at 18:58 +0200, Jens Axboe wrote:
+> > > On Thu, Oct 02 2008, James Bottomley wrote:
+> > > > The bug would appear to be that we sometimes only look at q->max_sectors
+> > > > when deciding on mergability.  Either we have to insist on max_sectors
+> > > > <= hw_max_sectors, or we have to start using min(q->max_sectors,
+> > > > q->max_hw_sectors) for this.
+> > > 
+> > > q->max_sectors MUST always be <= q->max_hw_sectors, otherwise we could
+> > > be sending down requests that are too large for the device to handle. So
+> > > that condition would be a big bug. The sysfs interface checks for this,
+> > > and blk_queue_max_sectors() makes sure that is true as well.
+> > 
+> > Yes, that seems always to be enforced.  Perhaps there are other ways of
+> > tripping this problem ... I'm still sure if it occurs it's because we do
+> > a physical merge where a virtual merge is forbidden.
+> > 
+> > > The fixes proposed still look weird. There is no phys vs hw segment
+> > > constraints, the request must adhere to the limits set by both. It's
+> > > mostly a moot point anyway, as 2.6.28 will get rid of the hw accounting
+> > > anyway.
+> > 
+> > Agree all three proposed fixes look wrong.  However, if it's what I
+> > think, just getting rid of hw accounting won't fix the problem because
+> > we'll still have the case where a physical merge is forbidden by iommu
+> > constraints ... this still needs to be accounted for.
+> > 
+> > What we really need is a demonstration of what actually is going
+> > wrong ...
+> 
+> Yep, IIRC we both asked for that the last time as well... Nikanth?
 
-Hey all,
+Possibly, blk_phys_contig_segment might miscalculate
+q->max_segment_size?
 
-        I just ran into this massive problem this weekend.  Several of
-my Fedora 9 systems are linked by IPSec (OpenSWAN) tunnels across three
-remote sites.  I recently updated the kernels on them (about a half a
-dozen systems) to 2.6.26-45 and each and every system with IPsec
-destabilized.  They would run for anywhere from a few minutes to a few
-hours and then lock dead up.  No network.  Outside pings on IPv4 and
-IPv6 all return "no route to host".  If they had X-Windows running,
-no response to keyboard.  Mouse MIGHT work but would also shortly lock
-up.  USB locked pretty solid.  No ability to log in.  No user space
-activity.  Enabled Magic SysRq key and each machine could be rebooted
-via Alt-SysRq S-U-B, so interrupts are functioning and the kernel is
-responding to the keyboard on that level even if it's a USB keyboard.
-Could not switch from X-Windows to a virtual console and cntrl-alt-del
-had no effect.  Set sysctl kernel.panic =3D 5 with no effect so there
-doesn't seem to be a kernel panic involved that I can't see on the consoles.
+blk_phys_contig_segment does:
 
-        Backed up to the last 2.6.25 kernel and they are all stable again.
-All have now been running, once again, for over 24 hours.  I don't know
-the status of any intervening 2.6.26 kernels.  The machines that
-destabilized had not been rebooted on a 2.6.26 kernel before.  Other
-systems with F9 2.6.26-45 kernels w/o IPSec seem stable.  Restarting
-OpenSWAN a few times seems to be a pretty reliable way to lock the
-system up with or without X Windows present.
+req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size;
 
-        Anyone else seeing this?  Anyone with an idea what might be
-going wrong?
-
-        I have not, as yet, tried as non-Fedora kernel.  Some of my other
-systems are running OpenVZ kernels (some with IPsec), currently sitting
-at 2.6.24, and are stable.  I'll be trying the OpenVZ 2.6.26 kernel as
-soon as it's released later this week.
-
-        BTW...  OpenSWAN 2.6.14, in Fedora 9, is pretty well busted for
-X.509 certificates (problems in connection identification for X.509).
-Been debugging this with the OpenSWAN dudes for the last week or so and
-finally got that resolved when  I ran into this.  OpenSWAN 2.6.18 should
-resolve the X.509 certificate issues and some rekeying issues.
-
-        Mike
---=20
-Michael H. Warfield (AI4NB) | (770) 985-6132 |  mhw@WittsEnd.com
-   /\/\|=3Dmhw=3D|\/\/          | (678) 463-0932 |  http://www.wittsend.com=
-/mhw/
-   NIC whois: MHW9          | An optimist believes we live in the best of a=
-ll
- PGP Key: 0xDF1DD471        | possible worlds.  A pessimist is sure of it!
-
-
---=-qVouPv7JzbNh0I03eb3C
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQCVAwUASOpGneHJS0bfHdRxAQI9/gP+JMHo2tGRo9ttR0ZiiAqrI07hB1j1ShW1
-JH6EhrUolUrSKAmY4XUK6KG0DylQc0gEJg5dlxxI6bNMuU3/6FWTpp12HD98mOgH
-IqraFedSYX5ip1/d0yX7o+WF4+2Xbn/MyR0O9jQlNZa1XHcB6iQOKGZv2HgAaKAN
-8X+Eyn3G7GI=
-=grKN
------END PGP SIGNATURE-----
-
---=-qVouPv7JzbNh0I03eb3C--
-
--- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
+But it's possible that req->biotail and the previous bio are supposed
+be merged into one segment? Then we could create too large segment
+here.
