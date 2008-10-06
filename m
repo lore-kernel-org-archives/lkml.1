@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYJFRNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYJFROB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbYJFRNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 13:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYJFRNI
+	id S1755353AbYJFROB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 13:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYJFRNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 13:13:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54129 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753594AbYJFRNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 13:13:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 ACPI: Blacklist two HP machines with buggy BIOSes (Re: 2.6.27-rc8+ - first impressions)
-Date: Mon, 6 Oct 2008 19:17:35 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Jason Vas Dias <jason.vas.dias@gmail.com>
-References: <20081005183603.GA3263@amd.corenet.prv> <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org> <20081006150055.GA16930@elte.hu>
-In-Reply-To: <20081006150055.GA16930@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 6 Oct 2008 13:13:53 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:36668 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752641AbYJFRNx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 13:13:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtsEAJPi6UhMQWq+/2dsb2JhbACBcbppgWo
+Date: Mon, 6 Oct 2008 13:13:48 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 0/3] ring-buffer: less locking and only disable
+	preemption
+Message-ID: <20081006171348.GB9345@Krystal>
+References: <20081004060057.660306328@goodmis.org> <20081004084002.GE27624@elte.hu> <alpine.DEB.1.10.0810041015330.4551@gandalf.stny.rr.com> <20081004163348.GA23593@Krystal> <alpine.DEB.1.10.0810041315440.6571@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810061917.36279.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.1.10.0810041315440.6571@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:10:46 up 123 days, 21:51,  9 users,  load average: 0.09, 0.30,
+	0.38
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 6 of October 2008, Ingo Molnar wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Mon, 6 Oct 2008, Rafael J. Wysocki wrote:
-> > > 
-> > > Unfortunately some of the recent IO-APIC changes made the bug show 
-> > > up.  To prevent this from happening, blacklist machines that are 
-> > > known to be affected (nx6115 and 6715b in this particular case).
+> On Sat, 4 Oct 2008, Mathieu Desnoyers wrote:
 > > 
-> > Can you point to exactly _which_ recent change made it show up? I'd 
-> > really like to know. _What_ was it that made us suddenly need this 
-> > quirk when it wasn't necessary before? I'd like to understand the root 
-> > cause here.
+> > Or use this code, based on a temporary breakpoint, to do the code
+> > patching (part of the -lttng tree). It does not require stop_machine at
+> > all and is nmi safe.
 > > 
-> > And how did you even start looking at that strange ACPI override?
 > 
-> i think it was caused by this stream of IO-APIC changes:
+> When this is supported for all archs, and can be done at all functions 
+> then I could use it.
 > 
->  49a66a0: x86: I/O APIC: Always report how the timer has been set up
->  17c4469: x86: I/O APIC: Include <asm/i8259.h> required by some code
->  593f4a7: x86: APIC: remove apic_write_around(); use alternatives
->  ce8b06b: x86: I/O APIC: remove an IRQ2-mask hack
->  af17478: x86: I/O APIC: Never configure IRQ2
->  c88ac1d: x86: L-APIC: Always fully configure IRQ0
->  1baea6e: x86: L-APIC: Set IRQ0 as edge-triggered
+
+How about incrementally using this piece of infrastructure when
+available on a given architecture ? This way we keep a sub-optimal
+fall-back for archs which does not support NMI-safe code patching and
+incrementally get the optimal behavior. Otherwise, we would require any
+new architecture to implement that up-front, which I doubt is a good
+idea.
+
+> I may just have the arch specific code use it, but we'll see.
 > 
-> Rafael/Maciej, which of these is causing it? ce8b06b ("x86: I/O APIC: 
-> remove an IRQ2-mask hack")?
-
-As I wrote to Linus, on my machine it was
-
-commit 691874fa96d6349a8b60f8ea9c2bae52ece79941
-Author: Maciej W. Rozycki <macro@linux-mips.org>
-Date:   Tue May 27 21:19:51 2008 +0100
-
-    x86: I/O APIC: timer through 8259A second-chance
-
-> Current theory is that this specific flavor of BIOS on HP / AMD / Turion 
-> laptops (no other type is known to be affected at the moment) somehow 
-> detects the IO-APIC masking patterns and uses an SMI quirk to change the 
-> ACPI thermal trip point to very low settings, and thus confusing cpufreq 
-> to (correctly) go into a very slow frequency.
+> Also, how good is it at patching 20,000 call sites?
 > 
-> Activating the quirk works this around. Should we perhaps default to 
-> this 'quirk' enabled by default?
 
-Well, I don't know.
+Can be done really fast using a hash table, see my previous mail.
 
-Thanks,
-Rafael
+Mathieu
+
+> -- Steve
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
