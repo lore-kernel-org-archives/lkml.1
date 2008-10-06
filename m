@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYJFXKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYJFXMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbYJFXKW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYJFXKK
+	id S1756198AbYJFXMB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYJFXLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:10:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:55894 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752517AbYJFXKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:10:09 -0400
-Message-ID: <48EA9AC3.1050603@goop.org>
-Date: Mon, 06 Oct 2008 16:09:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
-MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, arjan@linux.intel.com,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/7] x86, cpa: make the kernel physical mapping initialization
- a two pass sequence
-References: <20080923210035.413932000@linux-os.sc.intel.com> <20080923211444.369122000@linux-os.sc.intel.com> <48EA798D.1090303@goop.org>
-In-Reply-To: <48EA798D.1090303@goop.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Oct 2008 19:11:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36995 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbYJFXLu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:11:50 -0400
+Message-Id: <20081006231149.438702200@goodmis.org>
+References: <20081006230610.024517480@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 06 Oct 2008 19:06:13 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 3/3] ftrace: rename the ftrace tracer to function
+Content-Disposition: inline; filename=ftrace-rename-function-trace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> As it is, I suspect it will take a non-trivial amount of work to 
-> restore Xen with this code in place (touching this code is always 
-> non-trivial).  I haven't looked into it in depth yet, but there's a 
-> few stand out "bad for Xen" pieces of code here.  (And I haven't 
-> tested 32-bit yet.)
+To avoid further confusion between the ftrace infrastructure and the
+function tracer. This patch renames the "ftrace" function tracer
+to "function".
 
-32-bit Xen is OK with this patch.  Reverting it restores 64-bit Xen.
+Now in available_tracers, instead of "ftrace" there will be "function".
 
-    J
+This makes more sense, since people will not know exactly what the
+"ftrace" tracer does.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace_functions.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-tip.git/kernel/trace/trace_functions.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace_functions.c	2008-10-06 18:50:38.000000000 -0400
++++ linux-tip.git/kernel/trace/trace_functions.c	2008-10-06 18:51:09.000000000 -0400
+@@ -64,7 +64,7 @@ static void function_trace_ctrl_update(s
+ 
+ static struct tracer function_trace __read_mostly =
+ {
+-	.name	     = "ftrace",
++	.name	     = "function",
+ 	.init	     = function_trace_init,
+ 	.reset	     = function_trace_reset,
+ 	.ctrl_update = function_trace_ctrl_update,
+
+-- 
