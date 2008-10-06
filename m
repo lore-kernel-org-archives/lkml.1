@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYJFURB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbYJFUWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbYJFURB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 16:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYJFUQx
+	id S1755220AbYJFUWn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 16:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYJFUWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 16:16:53 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:57945 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbYJFUQw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 16:16:52 -0400
-Date: Mon, 6 Oct 2008 22:16:50 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: jens.axboe@oracle.com, schwidefsky@de.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC 0/4] Add stop_machine_get/put_threads to
-	stop_machine infrastructrue.
-Message-ID: <20081006201650.GA4708@osiris.boeblingen.de.ibm.com>
-References: <20081003105632.357231142@de.ibm.com> <200810061542.41224.rusty@rustcorp.com.au>
+	Mon, 6 Oct 2008 16:22:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43560 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752453AbYJFUWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 16:22:33 -0400
+Message-ID: <48EA7367.10001@suse.com>
+Date: Mon, 06 Oct 2008 16:21:59 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810061542.41224.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Grant Coady <gcoady.lk@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       reiserfs-devel@vger.kernel.org
+Subject: Re: [Bug #11504] reiserfs ????BUG in 2.6.27-rc5
+References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.dN.u575IB@wind> <48EA423F.50401@oracle.com> <jsrke45fle552s5p007o1pm77v7s3vk15p@4ax.com>
+In-Reply-To: <jsrke45fle552s5p007o1pm77v7s3vk15p@4ax.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 02:42:40PM +1000, Rusty Russell wrote:
-> On Friday 03 October 2008 20:56:32 you wrote:
-> > However we need to be able to do that without allocating any memory.
-> 
-> Nice work Heiko!
-> 
-> See free_module(), which calls stop_machine and, well, just hopes it works.  
-> So we've needed this for a while.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ah, good. At least there is one other user then :)
+Grant Coady wrote:
+> Did you unload the live filesystem's module above?  May it's a case of 
+> don't do that?
 
-> > Patch 1 is a stop_machine bugfix and is independent of the rest
-> Hmm, do you actually need this?  It was a whim (and clearly a dumb one).  I'm 
-> tempted to change it to:
-> 
-> 	err = smdata->fn(smdata->data);
-> 	if (err)
-> 		smdata->fnret = err;
+When the file system is mounted, the module count is incremented. You
+can't remove the module underneath a live file system.
 
-That looks much better than the cmpxchg loop I came up with. All we need to
-know is that 'something' went wrong. Any return code != 0 should be enough.
+- -Jeff
 
-> > Patch 2 introduces the new proposed interface
-> 
-> Could we just encapsulate the threads etc. into a "struct stopmachine" which 
-> is returned from stop_machine_prepare(), then implement everything in terms 
-> of that?
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-You mean that we put the pointers to the threads, the cpu mask, etc. in this
-structure, instead of wasting bss size?
-That would be just a kmalloc call in __stop_machine_get_threads().
-Or do you think of something different?
-
-Anyway, I'm going to send a hopefully better patch tommorrow.
+iEYEARECAAYFAkjqc2cACgkQLPWxlyuTD7ICtwCfabHYk34DH5pFDQyChfxpokdx
+/EsAn1bpcobk7oLu1K0OwrzWIXj3r08e
+=2yov
+-----END PGP SIGNATURE-----
