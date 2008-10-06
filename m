@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbYJFKxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYJFKyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbYJFKxF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 06:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYJFKwd
+	id S1754023AbYJFKyz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 06:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYJFKyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 06:52:33 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:46852 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753553AbYJFKwc (ORCPT
+	Mon, 6 Oct 2008 06:54:47 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:47386 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752487AbYJFKyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 06:52:32 -0400
-Date: Mon, 6 Oct 2008 12:52:27 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: schwidefsky@de.ibm.com, linux390@de.ibm.com, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/2] drivers/s390/cio/chsc_sch.c: Correct use of ! and &
-Message-ID: <20081006105227.GA6303@osiris.boeblingen.de.ibm.com>
-References: <Pine.LNX.4.64.0810042205090.19286@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810042205090.19286@ask.diku.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 6 Oct 2008 06:54:47 -0400
+Subject: Re: [PATCH] btsdio: fix tx error path
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Tomas Winkler <tomas.winkler@intel.com>
+Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1223283914-18238-1-git-send-email-tomas.winkler@intel.com>
+References: <1223283914-18238-1-git-send-email-tomas.winkler@intel.com>
+Content-Type: text/plain
+Date: Mon, 06 Oct 2008 12:54:50 +0200
+Message-Id: <1223290490.11272.149.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 04, 2008 at 10:05:47PM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
-> involved converting !x & y to !(x & y).  The code below shows the same
-> pattern, and thus should perhaps be fixed in the same way.  In particular,
-> the result of !scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND is
-> always just !scsw_stctl(&request->irb.scsw).
-> [...]
-> -	if (!scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND)
-> +	if (!(scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND))
->  		return -EIO;
->  	backed_up = scsw_cstat(&request->irb.scsw) & SCHN_STAT_CHAIN_CHECK;
->  	request->irb.scsw.cmd.cstat &= ~SCHN_STAT_CHAIN_CHECK;
+Hi Tomas,
 
-Nice finding. Thank you!
+> This patch fixes accumulating of the header
+> in case packet was requeued in the error path.
+> 
+> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> Cc: Marcel Holtmann <marcel@holtmann.org>
+> ---
+>  drivers/bluetooth/btsdio.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/bluetooth/btsdio.c b/drivers/bluetooth/btsdio.c
+> index 58630cc..e4724b8 100644
+> --- a/drivers/bluetooth/btsdio.c
+> +++ b/drivers/bluetooth/btsdio.c
+> @@ -91,6 +91,7 @@ static int btsdio_tx_packet(struct btsdio_data *data, struct sk_buff *skb)
+>  
+>  	err = sdio_writesb(data->func, REG_TDAT, skb->data, skb->len);
+>  	if (err < 0) {
+> +		skb_pop(skb, 4);
+>  		sdio_writeb(data->func, 0x01, REG_PC_WRT, NULL);
+>  		return err;
+>  	}
+
+please do at least a compile test. It is skb_pull() and not skb_pop().
+
+Regards
+
+Marcel
+
+
