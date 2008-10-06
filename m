@@ -1,126 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYJFNa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbYJFNkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbYJFNa1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 09:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYJFNaQ
+	id S1753184AbYJFNkb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 09:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbYJFNkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 09:30:16 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:58059 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752591AbYJFNaP (ORCPT
+	Mon, 6 Oct 2008 09:40:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:28704 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYJFNkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 09:30:15 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtUEAFOq6UhMQWq+/2dsb2JhbACBcbkpgWo
-Date: Mon, 6 Oct 2008 09:30:12 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-       David Smith <dsmith@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Wenji Huang <wenji.huang@oracle.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Marker depmod fix core kernel list
-Message-ID: <20081006133012.GA1366@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Oct 2008 09:40:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=DxJLkTDK1lpwoSFbNYtlIfpVGXVanQD6rM58jS8lLuPYS/QP/ynS4BYBj5bJPOYyBd
+         Qhf0VASJ4SYtD8vp/98p0zez4+rFrId2i1Qt53Ouc44LDwfzzMbQXtUh+pQe3p484Z9r
+         X+jOi4d0LTnkFJYEa4YhKadP+q5ggSz9KvNvg=
+Message-ID: <48EA1540.8060409@gmail.com>
+Date: Mon, 06 Oct 2008 15:40:16 +0200
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: banning device driver reserved resources from /dev/mem
+References: <20081005180154.7cc12486@infradead.org> <20081006102739.16d1a434@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081006102739.16d1a434@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:27:28 up 123 days, 18:07,  8 users,  load average: 0.48, 0.45,
-	0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-
-Do you think this fix could be pulled in before 2.6.27 final ?
-
-Thanks,
-
-Mathieu
-
-* Theodore Ts'o (tytso@mit.edu) wrote:
+Alan Cox wrote:
+>> This patch adds, to the existing config option to restrict /dev/mem, the
+>> reserved regions to the "banned from /dev/mem use" list, so now
+>> both kernel memory and device-exclusive MMIO regions are banned.
 > 
-> I've been playing with adding some markers into ext4 to see if they
-> could be useful in solving some problems along with Systemtap.  It
-> appears, though, that as of 2.6.27-rc8, markers defined in code which is
-> compiled directly into the kernel (i.e., not as modules) don't show up
-> in Module.markers:
+> This breaks a whole class of diagnostic and debug tools which quite
+> intentionally dump the MMIO register space of devices that are live.
 > 
-> kvm_trace_entryexit arch/x86/kvm/kvm-intel  %u %p %u %u %u %u %u %u
-> kvm_trace_handler arch/x86/kvm/kvm-intel  %u %p %u %u %u %u %u %u
-> kvm_trace_entryexit arch/x86/kvm/kvm-amd  %u %p %u %u %u %u %u %u
-> kvm_trace_handler arch/x86/kvm/kvm-amd  %u %p %u %u %u %u %u %u
+> Plus it doesn't actually work - if I have /dev/mem open and mmapped you
+> don't pull the pages from under me....
 > 
-> (Note the lack of any of the kernel_sched_* markers, and the markers I
-> added for ext4_* and jbd2_* are missing as wel.)
+> The problem with the way this is going is the more you take from /dev/mem
+> the sooner someone is forced to add /dev/mem-proper which undoes it all
+> again so they can get work done.
 > 
-> Systemtap apparently depends on in-kernel trace_mark being recorded in
-> Module.markers, and apparently it's been claimed that it used to be
-> there.  Is this a bug in systemtap, or in how Module.markers is getting
-> built?   And is there a file that contains the equivalent information
-> for markers located in non-modules code?
-> 
-> Thanks, regards,
-> 
+> It's certainly a useful debug aid to know about such things but I don't
+> believe it's something you should ban.
+
+Exactly,
+
+I think the proper solution is to make /dev/mem pure diagnostic tool.
+Drivers should use /sys mappings of pci devices to access their iomem
+, or even better they should not touch pci mappings
+directly at all, but talk to kernel, and if xorg needs access 
+to video memory it should talk to drm and get its mapping from there.
 
 
-I think the problem comes from this patch :
-commit d35cb360c29956510b2fe1a953bd4968536f7216
-"markers: fix duplicate modpost entry"
-
-Especially :
-
-
--   add_marker(mod, marker, fmt);
-+   if (!mod->skip)
-+     add_marker(mod, marker, fmt);
-  }
-  return;
- fail:
-
-Here is a fix that should take care if this problem.
-
-Thanks for the bug report!
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Tested-by: "Theodore Ts'o" <tytso@mit.edu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Greg KH <greg@kroah.com>
-CC: David Smith <dsmith@redhat.com>
-CC: Roland McGrath <roland@redhat.com>
-CC: Sam Ravnborg <sam@ravnborg.org>
-CC: Wenji Huang <wenji.huang@oracle.com>
-CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
----
- scripts/mod/modpost.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6-lttng/scripts/mod/modpost.c
-===================================================================
---- linux-2.6-lttng.orig/scripts/mod/modpost.c	2008-10-03 17:19:59.000000000 -0400
-+++ linux-2.6-lttng/scripts/mod/modpost.c	2008-10-03 17:22:48.000000000 -0400
-@@ -1986,11 +1986,13 @@ static void read_markers(const char *fna
- 
- 		mod = find_module(modname);
- 		if (!mod) {
--			if (is_vmlinux(modname))
--				have_vmlinux = 1;
- 			mod = new_module(NOFAIL(strdup(modname)));
- 			mod->skip = 1;
- 		}
-+		if (is_vmlinux(modname)) {
-+			have_vmlinux = 1;
-+			mod->skip = 0;
-+		}
- 
- 		if (!mod->skip)
- 			add_marker(mod, marker, fmt);
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Best regards,
+	Maxim Levitsky
