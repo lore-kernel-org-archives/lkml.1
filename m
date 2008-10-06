@@ -1,45 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbYJFMjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYJFMkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbYJFMjd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 08:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYJFMiR
+	id S1754517AbYJFMkK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 08:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYJFMiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 08:38:17 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40053 "EHLO
+	Mon, 6 Oct 2008 08:38:18 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40065 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753004AbYJFMiM (ORCPT
+	by vger.kernel.org with ESMTP id S1753105AbYJFMiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 08:38:12 -0400
+	Mon, 6 Oct 2008 08:38:13 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 01/13] mfd: Add WM8350 audio register definitions
-Date: Mon,  6 Oct 2008 13:37:56 +0100
-Message-Id: <1223296688-9960-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 09/13] mfd: Add I2C control support for WM8350
+Date: Mon,  6 Oct 2008 13:38:04 +0100
+Message-Id: <1223296688-9960-9-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081006123254.GA9664@rakim.wolfsonmicro.main>
+In-Reply-To: <1223296688-9960-8-git-send-email-broonie@opensource.wolfsonmicro.com>
 References: <20081006123254.GA9664@rakim.wolfsonmicro.main>
+ <1223296688-9960-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-6-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-7-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-8-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Implement the I2C control interface for the WM8350. This code was
+originally written by Liam Girdwood and has been updated for submission
+by Mark Brown.
+
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/mfd/wm8350/audio.h |  592 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 592 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/mfd/wm8350/audio.h
+ drivers/mfd/Kconfig      |   11 ++++
+ drivers/mfd/Makefile     |    1 +
+ drivers/mfd/wm8350-i2c.c |  120 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 132 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mfd/wm8350-i2c.c
 
-diff --git a/include/linux/mfd/wm8350/audio.h b/include/linux/mfd/wm8350/audio.h
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index c32d676..b2930cc 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -133,6 +133,17 @@ config MFD_WM8350_CONFIG_MODE_3
+ 	  
+ 	  If unsure say Y
+ 
++config MFD_WM8350_I2C
++	tristate "Support Wolfson Microelectronics WM8350 with I2C"
++	select MFD_WM8350
++	depends on I2C
++	help
++	  The WM8350 is an integrated audio and power management
++	  subsystem with watchdog and RTC functionality for embedded
++	  systems.  This option enables core support for the WM8350 with
++	  I2C as the control interface.  Additional options must be
++	  selected to enable support for the functionality of the chip.
++
+ endmenu
+ 
+ menu "Multimedia Capabilities Port drivers"
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index b0adca0..746d37b 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -15,6 +15,7 @@ obj-$(CONFIG_MFD_TC6393XB)	+= tc6393xb.o
+ obj-$(CONFIG_MFD_WM8400)	+= wm8400-core.o
+ wm8350-objs			:= wm8350-core.o wm8350-regmap.o
+ obj-$(CONFIG_MFD_WM8350)	+= wm8350.o
++obj-$(CONFIG_MFD_WM8350_I2C)	+= wm8350-i2c.o
+ 
+ obj-$(CONFIG_MFD_CORE)		+= mfd-core.o
+ 
+diff --git a/drivers/mfd/wm8350-i2c.c b/drivers/mfd/wm8350-i2c.c
 new file mode 100644
-index 0000000..43342f7
+index 0000000..2b0569c
 --- /dev/null
-+++ b/include/linux/mfd/wm8350/audio.h
-@@ -0,0 +1,592 @@
++++ b/drivers/mfd/wm8350-i2c.c
+@@ -0,0 +1,120 @@
 +/*
-+ * audio.h  --  Audio Driver for Wolfson WM8350 PMIC
++ * wm8350-i2c.c  --  Generic I2C driver for Wolfson WM8350 PMIC
 + *
-+ * Copyright 2007 Wolfson Microelectronics PLC
++ * This driver defines and configures the WM8350 for the Freescale i.MX32ADS.
++ *
++ * Copyright 2007, 2008 Wolfson Microelectronics PLC.
++ *
++ * Author: Liam Girdwood
++ *         linux@wolfsonmicro.com
 + *
 + *  This program is free software; you can redistribute  it and/or modify it
 + *  under  the terms of  the GNU General  Public License as published by the
@@ -48,586 +101,109 @@ index 0000000..43342f7
 + *
 + */
 +
-+#ifndef __LINUX_MFD_WM8350_AUDIO_H_
-+#define __LINUX_MFD_WM8350_AUDIO_H_
-+
-+#define WM8350_CLOCK_CONTROL_1                  0x28
-+#define WM8350_CLOCK_CONTROL_2                  0x29
-+#define WM8350_FLL_CONTROL_1                    0x2A
-+#define WM8350_FLL_CONTROL_2                    0x2B
-+#define WM8350_FLL_CONTROL_3                    0x2C
-+#define WM8350_FLL_CONTROL_4                    0x2D
-+#define WM8350_DAC_CONTROL                      0x30
-+#define WM8350_DAC_DIGITAL_VOLUME_L             0x32
-+#define WM8350_DAC_DIGITAL_VOLUME_R             0x33
-+#define WM8350_DAC_LR_RATE                      0x35
-+#define WM8350_DAC_CLOCK_CONTROL                0x36
-+#define WM8350_DAC_MUTE                         0x3A
-+#define WM8350_DAC_MUTE_VOLUME                  0x3B
-+#define WM8350_DAC_SIDE                         0x3C
-+#define WM8350_ADC_CONTROL                      0x40
-+#define WM8350_ADC_DIGITAL_VOLUME_L             0x42
-+#define WM8350_ADC_DIGITAL_VOLUME_R             0x43
-+#define WM8350_ADC_DIVIDER                      0x44
-+#define WM8350_ADC_LR_RATE                      0x46
-+#define WM8350_INPUT_CONTROL                    0x48
-+#define WM8350_IN3_INPUT_CONTROL                0x49
-+#define WM8350_MIC_BIAS_CONTROL                 0x4A
-+#define WM8350_OUTPUT_CONTROL                   0x4C
-+#define WM8350_JACK_DETECT                      0x4D
-+#define WM8350_ANTI_POP_CONTROL                 0x4E
-+#define WM8350_LEFT_INPUT_VOLUME                0x50
-+#define WM8350_RIGHT_INPUT_VOLUME               0x51
-+#define WM8350_LEFT_MIXER_CONTROL               0x58
-+#define WM8350_RIGHT_MIXER_CONTROL              0x59
-+#define WM8350_OUT3_MIXER_CONTROL               0x5C
-+#define WM8350_OUT4_MIXER_CONTROL               0x5D
-+#define WM8350_OUTPUT_LEFT_MIXER_VOLUME         0x60
-+#define WM8350_OUTPUT_RIGHT_MIXER_VOLUME        0x61
-+#define WM8350_INPUT_MIXER_VOLUME_L             0x62
-+#define WM8350_INPUT_MIXER_VOLUME_R             0x63
-+#define WM8350_INPUT_MIXER_VOLUME               0x64
-+#define WM8350_LOUT1_VOLUME                     0x68
-+#define WM8350_ROUT1_VOLUME                     0x69
-+#define WM8350_LOUT2_VOLUME                     0x6A
-+#define WM8350_ROUT2_VOLUME                     0x6B
-+#define WM8350_BEEP_VOLUME                      0x6F
-+#define WM8350_AI_FORMATING                     0x70
-+#define WM8350_ADC_DAC_COMP                     0x71
-+#define WM8350_AI_ADC_CONTROL                   0x72
-+#define WM8350_AI_DAC_CONTROL                   0x73
-+#define WM8350_AIF_TEST                         0x74
-+#define WM8350_JACK_PIN_STATUS                  0xE7
-+
-+/* Bit values for R08 (0x08) */
-+#define WM8350_CODEC_ISEL_1_5                   0	/* x1.5 */
-+#define WM8350_CODEC_ISEL_1_0                   1	/* x1.0 */
-+#define WM8350_CODEC_ISEL_0_75                  2	/* x0.75 */
-+#define WM8350_CODEC_ISEL_0_5                   3	/* x0.5 */
-+
-+#define WM8350_VMID_OFF                         0
-+#define WM8350_VMID_500K                        1
-+#define WM8350_VMID_100K                        2
-+#define WM8350_VMID_10K                         3
-+
-+/*
-+ * R40 (0x28) - Clock Control 1
-+ */
-+#define WM8350_TOCLK_RATE                       0x4000
-+#define WM8350_MCLK_SEL                         0x0800
-+#define WM8350_MCLK_DIV_MASK                    0x0100
-+#define WM8350_BCLK_DIV_MASK                    0x00F0
-+#define WM8350_OPCLK_DIV_MASK                   0x0007
-+
-+/*
-+ * R41 (0x29) - Clock Control 2
-+ */
-+#define WM8350_LRC_ADC_SEL                      0x8000
-+#define WM8350_MCLK_DIR                         0x0001
-+
-+/*
-+ * R42 (0x2A) - FLL Control 1
-+ */
-+#define WM8350_FLL_DITHER_WIDTH_MASK            0x3000
-+#define WM8350_FLL_DITHER_HP                    0x0800
-+#define WM8350_FLL_OUTDIV_MASK                  0x0700
-+#define WM8350_FLL_RSP_RATE_MASK                0x00F0
-+#define WM8350_FLL_RATE_MASK                    0x0007
-+
-+/*
-+ * R43 (0x2B) - FLL Control 2
-+ */
-+#define WM8350_FLL_RATIO_MASK                   0xF800
-+#define WM8350_FLL_N_MASK                       0x03FF
-+
-+/*
-+ * R44 (0x2C) - FLL Control 3
-+ */
-+#define WM8350_FLL_K_MASK                       0xFFFF
-+
-+/*
-+ * R45 (0x2D) - FLL Control 4
-+ */
-+#define WM8350_FLL_FRAC                         0x0020
-+#define WM8350_FLL_SLOW_LOCK_REF                0x0010
-+#define WM8350_FLL_CLK_SRC_MASK                 0x0003
-+
-+/*
-+ * R48 (0x30) - DAC Control
-+ */
-+#define WM8350_DAC_MONO                         0x2000
-+#define WM8350_AIF_LRCLKRATE                    0x1000
-+#define WM8350_DEEMP_MASK                       0x0030
-+#define WM8350_DACL_DATINV                      0x0002
-+#define WM8350_DACR_DATINV                      0x0001
-+
-+/*
-+ * R50 (0x32) - DAC Digital Volume L
-+ */
-+#define WM8350_DAC_VU                           0x0100
-+#define WM8350_DACL_VOL_MASK                    0x00FF
-+
-+/*
-+ * R51 (0x33) - DAC Digital Volume R
-+ */
-+#define WM8350_DAC_VU                           0x0100
-+#define WM8350_DACR_VOL_MASK                    0x00FF
-+
-+/*
-+ * R53 (0x35) - DAC LR Rate
-+ */
-+#define WM8350_DACLRC_ENA                       0x0800
-+#define WM8350_DACLRC_RATE_MASK                 0x07FF
-+
-+/*
-+ * R54 (0x36) - DAC Clock Control
-+ */
-+#define WM8350_DACCLK_POL                       0x0010
-+#define WM8350_DAC_CLKDIV_MASK                  0x0007
-+
-+/*
-+ * R58 (0x3A) - DAC Mute
-+ */
-+#define WM8350_DAC_MUTE_ENA                     0x4000
-+
-+/*
-+ * R59 (0x3B) - DAC Mute Volume
-+ */
-+#define WM8350_DAC_MUTEMODE                     0x4000
-+#define WM8350_DAC_MUTERATE                     0x2000
-+#define WM8350_DAC_SB_FILT                      0x1000
-+
-+/*
-+ * R60 (0x3C) - DAC Side
-+ */
-+#define WM8350_ADC_TO_DACL_MASK                 0x3000
-+#define WM8350_ADC_TO_DACR_MASK                 0x0C00
-+
-+/*
-+ * R64 (0x40) - ADC Control
-+ */
-+#define WM8350_ADC_HPF_CUT_MASK                 0x0300
-+#define WM8350_ADCL_DATINV                      0x0002
-+#define WM8350_ADCR_DATINV                      0x0001
-+
-+/*
-+ * R66 (0x42) - ADC Digital Volume L
-+ */
-+#define WM8350_ADC_VU                           0x0100
-+#define WM8350_ADCL_VOL_MASK                    0x00FF
-+
-+/*
-+ * R67 (0x43) - ADC Digital Volume R
-+ */
-+#define WM8350_ADC_VU                           0x0100
-+#define WM8350_ADCR_VOL_MASK                    0x00FF
-+
-+/*
-+ * R68 (0x44) - ADC Divider
-+ */
-+#define WM8350_ADCL_DAC_SVOL_MASK               0x0F00
-+#define WM8350_ADCR_DAC_SVOL_MASK               0x00F0
-+#define WM8350_ADCCLK_POL                       0x0008
-+#define WM8350_ADC_CLKDIV_MASK                  0x0007
-+
-+/*
-+ * R70 (0x46) - ADC LR Rate
-+ */
-+#define WM8350_ADCLRC_ENA                       0x0800
-+#define WM8350_ADCLRC_RATE_MASK                 0x07FF
-+
-+/*
-+ * R72 (0x48) - Input Control
-+ */
-+#define WM8350_IN2R_ENA                         0x0400
-+#define WM8350_IN1RN_ENA                        0x0200
-+#define WM8350_IN1RP_ENA                        0x0100
-+#define WM8350_IN2L_ENA                         0x0004
-+#define WM8350_IN1LN_ENA                        0x0002
-+#define WM8350_IN1LP_ENA                        0x0001
-+
-+/*
-+ * R73 (0x49) - IN3 Input Control
-+ */
-+#define WM8350_IN3R_SHORT                       0x4000
-+#define WM8350_IN3L_SHORT                       0x0040
-+
-+/*
-+ * R74 (0x4A) - Mic Bias Control
-+ */
-+#define WM8350_MICBSEL                          0x4000
-+#define WM8350_MCDTHR_MASK                      0x001C
-+#define WM8350_MCDSCTHR_MASK                    0x0003
-+
-+/*
-+ * R76 (0x4C) - Output Control
-+ */
-+#define WM8350_OUT4_VROI                        0x0800
-+#define WM8350_OUT3_VROI                        0x0400
-+#define WM8350_OUT2_VROI                        0x0200
-+#define WM8350_OUT1_VROI                        0x0100
-+#define WM8350_OUT2_FB                          0x0004
-+#define WM8350_OUT1_FB                          0x0001
-+
-+/*
-+ * R77 (0x4D) - Jack Detect
-+ */
-+#define WM8350_JDL_ENA                          0x8000
-+#define WM8350_JDR_ENA                          0x4000
-+
-+/*
-+ * R78 (0x4E) - Anti Pop Control
-+ */
-+#define WM8350_ANTI_POP_MASK                    0x0300
-+#define WM8350_DIS_OP_LN4_MASK                  0x00C0
-+#define WM8350_DIS_OP_LN3_MASK                  0x0030
-+#define WM8350_DIS_OP_OUT2_MASK                 0x000C
-+#define WM8350_DIS_OP_OUT1_MASK                 0x0003
-+
-+/*
-+ * R80 (0x50) - Left Input Volume
-+ */
-+#define WM8350_INL_MUTE                         0x4000
-+#define WM8350_INL_ZC                           0x2000
-+#define WM8350_IN_VU                            0x0100
-+#define WM8350_INL_VOL_MASK                     0x00FC
-+
-+/*
-+ * R81 (0x51) - Right Input Volume
-+ */
-+#define WM8350_INR_MUTE                         0x4000
-+#define WM8350_INR_ZC                           0x2000
-+#define WM8350_IN_VU                            0x0100
-+#define WM8350_INR_VOL_MASK                     0x00FC
-+
-+/*
-+ * R88 (0x58) - Left Mixer Control
-+ */
-+#define WM8350_DACR_TO_MIXOUTL                  0x1000
-+#define WM8350_DACL_TO_MIXOUTL                  0x0800
-+#define WM8350_IN3L_TO_MIXOUTL                  0x0004
-+#define WM8350_INR_TO_MIXOUTL                   0x0002
-+#define WM8350_INL_TO_MIXOUTL                   0x0001
-+
-+/*
-+ * R89 (0x59) - Right Mixer Control
-+ */
-+#define WM8350_DACR_TO_MIXOUTR                  0x1000
-+#define WM8350_DACL_TO_MIXOUTR                  0x0800
-+#define WM8350_IN3R_TO_MIXOUTR                  0x0008
-+#define WM8350_INR_TO_MIXOUTR                   0x0002
-+#define WM8350_INL_TO_MIXOUTR                   0x0001
-+
-+/*
-+ * R92 (0x5C) - OUT3 Mixer Control
-+ */
-+#define WM8350_DACL_TO_OUT3                     0x0800
-+#define WM8350_MIXINL_TO_OUT3                   0x0100
-+#define WM8350_OUT4_TO_OUT3                     0x0008
-+#define WM8350_MIXOUTL_TO_OUT3                  0x0001
-+
-+/*
-+ * R93 (0x5D) - OUT4 Mixer Control
-+ */
-+#define WM8350_DACR_TO_OUT4                     0x1000
-+#define WM8350_DACL_TO_OUT4                     0x0800
-+#define WM8350_OUT4_ATTN                        0x0400
-+#define WM8350_MIXINR_TO_OUT4                   0x0200
-+#define WM8350_OUT3_TO_OUT4                     0x0004
-+#define WM8350_MIXOUTR_TO_OUT4                  0x0002
-+#define WM8350_MIXOUTL_TO_OUT4                  0x0001
-+
-+/*
-+ * R96 (0x60) - Output Left Mixer Volume
-+ */
-+#define WM8350_IN3L_MIXOUTL_VOL_MASK            0x0E00
-+#define WM8350_IN3L_MIXOUTL_VOL_SHIFT                9
-+#define WM8350_INR_MIXOUTL_VOL_MASK             0x00E0
-+#define WM8350_INR_MIXOUTL_VOL_SHIFT                 5
-+#define WM8350_INL_MIXOUTL_VOL_MASK             0x000E
-+#define WM8350_INL_MIXOUTL_VOL_SHIFT                 1
-+
-+/* Bit values for R96 (0x60) */
-+#define WM8350_IN3L_MIXOUTL_VOL_OFF                  0
-+#define WM8350_IN3L_MIXOUTL_VOL_M12DB                1
-+#define WM8350_IN3L_MIXOUTL_VOL_M9DB                 2
-+#define WM8350_IN3L_MIXOUTL_VOL_M6DB                 3
-+#define WM8350_IN3L_MIXOUTL_VOL_M3DB                 4
-+#define WM8350_IN3L_MIXOUTL_VOL_0DB                  5
-+#define WM8350_IN3L_MIXOUTL_VOL_3DB                  6
-+#define WM8350_IN3L_MIXOUTL_VOL_6DB                  7
-+
-+#define WM8350_INR_MIXOUTL_VOL_OFF                   0
-+#define WM8350_INR_MIXOUTL_VOL_M12DB                 1
-+#define WM8350_INR_MIXOUTL_VOL_M9DB                  2
-+#define WM8350_INR_MIXOUTL_VOL_M6DB                  3
-+#define WM8350_INR_MIXOUTL_VOL_M3DB                  4
-+#define WM8350_INR_MIXOUTL_VOL_0DB                   5
-+#define WM8350_INR_MIXOUTL_VOL_3DB                   6
-+#define WM8350_INR_MIXOUTL_VOL_6DB                   7
-+
-+#define WM8350_INL_MIXOUTL_VOL_OFF                   0
-+#define WM8350_INL_MIXOUTL_VOL_M12DB                 1
-+#define WM8350_INL_MIXOUTL_VOL_M9DB                  2
-+#define WM8350_INL_MIXOUTL_VOL_M6DB                  3
-+#define WM8350_INL_MIXOUTL_VOL_M3DB                  4
-+#define WM8350_INL_MIXOUTL_VOL_0DB                   5
-+#define WM8350_INL_MIXOUTL_VOL_3DB                   6
-+#define WM8350_INL_MIXOUTL_VOL_6DB                   7
-+
-+/*
-+ * R97 (0x61) - Output Right Mixer Volume
-+ */
-+#define WM8350_IN3R_MIXOUTR_VOL_MASK            0xE000
-+#define WM8350_IN3R_MIXOUTR_VOL_SHIFT               13
-+#define WM8350_INR_MIXOUTR_VOL_MASK             0x00E0
-+#define WM8350_INR_MIXOUTR_VOL_SHIFT                 5
-+#define WM8350_INL_MIXOUTR_VOL_MASK             0x000E
-+#define WM8350_INL_MIXOUTR_VOL_SHIFT                 1
-+
-+/* Bit values for R96 (0x60) */
-+#define WM8350_IN3R_MIXOUTR_VOL_OFF                  0
-+#define WM8350_IN3R_MIXOUTR_VOL_M12DB                1
-+#define WM8350_IN3R_MIXOUTR_VOL_M9DB                 2
-+#define WM8350_IN3R_MIXOUTR_VOL_M6DB                 3
-+#define WM8350_IN3R_MIXOUTR_VOL_M3DB                 4
-+#define WM8350_IN3R_MIXOUTR_VOL_0DB                  5
-+#define WM8350_IN3R_MIXOUTR_VOL_3DB                  6
-+#define WM8350_IN3R_MIXOUTR_VOL_6DB                  7
-+
-+#define WM8350_INR_MIXOUTR_VOL_OFF                   0
-+#define WM8350_INR_MIXOUTR_VOL_M12DB                 1
-+#define WM8350_INR_MIXOUTR_VOL_M9DB                  2
-+#define WM8350_INR_MIXOUTR_VOL_M6DB                  3
-+#define WM8350_INR_MIXOUTR_VOL_M3DB                  4
-+#define WM8350_INR_MIXOUTR_VOL_0DB                   5
-+#define WM8350_INR_MIXOUTR_VOL_3DB                   6
-+#define WM8350_INR_MIXOUTR_VOL_6DB                   7
-+
-+#define WM8350_INL_MIXOUTR_VOL_OFF                   0
-+#define WM8350_INL_MIXOUTR_VOL_M12DB                 1
-+#define WM8350_INL_MIXOUTR_VOL_M9DB                  2
-+#define WM8350_INL_MIXOUTR_VOL_M6DB                  3
-+#define WM8350_INL_MIXOUTR_VOL_M3DB                  4
-+#define WM8350_INL_MIXOUTR_VOL_0DB                   5
-+#define WM8350_INL_MIXOUTR_VOL_3DB                   6
-+#define WM8350_INL_MIXOUTR_VOL_6DB                   7
-+
-+/*
-+ * R98 (0x62) - Input Mixer Volume L
-+ */
-+#define WM8350_IN3L_MIXINL_VOL_MASK             0x0E00
-+#define WM8350_IN2L_MIXINL_VOL_MASK             0x000E
-+#define WM8350_INL_MIXINL_VOL                   0x0001
-+
-+/*
-+ * R99 (0x63) - Input Mixer Volume R
-+ */
-+#define WM8350_IN3R_MIXINR_VOL_MASK             0xE000
-+#define WM8350_IN2R_MIXINR_VOL_MASK             0x00E0
-+#define WM8350_INR_MIXINR_VOL                   0x0001
-+
-+/*
-+ * R100 (0x64) - Input Mixer Volume
-+ */
-+#define WM8350_OUT4_MIXIN_DST                   0x8000
-+#define WM8350_OUT4_MIXIN_VOL_MASK              0x000E
-+
-+/*
-+ * R104 (0x68) - LOUT1 Volume
-+ */
-+#define WM8350_OUT1L_MUTE                       0x4000
-+#define WM8350_OUT1L_ZC                         0x2000
-+#define WM8350_OUT1_VU                          0x0100
-+#define WM8350_OUT1L_VOL_MASK                   0x00FC
-+#define WM8350_OUT1L_VOL_SHIFT                       2
-+
-+/*
-+ * R105 (0x69) - ROUT1 Volume
-+ */
-+#define WM8350_OUT1R_MUTE                       0x4000
-+#define WM8350_OUT1R_ZC                         0x2000
-+#define WM8350_OUT1_VU                          0x0100
-+#define WM8350_OUT1R_VOL_MASK                   0x00FC
-+#define WM8350_OUT1R_VOL_SHIFT                       2
-+
-+/*
-+ * R106 (0x6A) - LOUT2 Volume
-+ */
-+#define WM8350_OUT2L_MUTE                       0x4000
-+#define WM8350_OUT2L_ZC                         0x2000
-+#define WM8350_OUT2_VU                          0x0100
-+#define WM8350_OUT2L_VOL_MASK                   0x00FC
-+
-+/*
-+ * R107 (0x6B) - ROUT2 Volume
-+ */
-+#define WM8350_OUT2R_MUTE                       0x4000
-+#define WM8350_OUT2R_ZC                         0x2000
-+#define WM8350_OUT2R_INV                        0x0400
-+#define WM8350_OUT2R_INV_MUTE                   0x0200
-+#define WM8350_OUT2_VU                          0x0100
-+#define WM8350_OUT2R_VOL_MASK                   0x00FC
-+
-+/*
-+ * R111 (0x6F) - BEEP Volume
-+ */
-+#define WM8350_IN3R_OUT2R_VOL_MASK              0x00E0
-+
-+/*
-+ * R112 (0x70) - AI Formating
-+ */
-+#define WM8350_AIF_BCLK_INV                     0x8000
-+#define WM8350_AIF_TRI                          0x2000
-+#define WM8350_AIF_LRCLK_INV                    0x1000
-+#define WM8350_AIF_WL_MASK                      0x0C00
-+#define WM8350_AIF_FMT_MASK                     0x0300
-+
-+/*
-+ * R113 (0x71) - ADC DAC COMP
-+ */
-+#define WM8350_DAC_COMP                         0x0080
-+#define WM8350_DAC_COMPMODE                     0x0040
-+#define WM8350_ADC_COMP                         0x0020
-+#define WM8350_ADC_COMPMODE                     0x0010
-+#define WM8350_LOOPBACK                         0x0001
-+
-+/*
-+ * R114 (0x72) - AI ADC Control
-+ */
-+#define WM8350_AIFADC_PD                        0x0080
-+#define WM8350_AIFADCL_SRC                      0x0040
-+#define WM8350_AIFADCR_SRC                      0x0020
-+#define WM8350_AIFADC_TDM_CHAN                  0x0010
-+#define WM8350_AIFADC_TDM                       0x0008
-+
-+/*
-+ * R115 (0x73) - AI DAC Control
-+ */
-+#define WM8350_BCLK_MSTR                        0x4000
-+#define WM8350_AIFDAC_PD                        0x0080
-+#define WM8350_DACL_SRC                         0x0040
-+#define WM8350_DACR_SRC                         0x0020
-+#define WM8350_AIFDAC_TDM_CHAN                  0x0010
-+#define WM8350_AIFDAC_TDM                       0x0008
-+#define WM8350_DAC_BOOST_MASK                   0x0003
-+
-+/*
-+ * R116 (0x74) - AIF Test
-+ */
-+#define WM8350_CODEC_BYP                        0x4000
-+#define WM8350_AIFADC_WR_TST                    0x2000
-+#define WM8350_AIFADC_RD_TST                    0x1000
-+#define WM8350_AIFDAC_WR_TST                    0x0800
-+#define WM8350_AIFDAC_RD_TST                    0x0400
-+#define WM8350_AIFADC_ASYN                      0x0020
-+#define WM8350_AIFDAC_ASYN                      0x0010
-+
-+/*
-+ * R231 (0xE7) - Jack Status
-+ */
-+#define WM8350_JACK_R_LVL                       0x0400
-+
-+/*
-+ * WM8350 Platform setup
-+ */
-+#define WM8350_S_CURVE_NONE			0x0
-+#define WM8350_S_CURVE_FAST			0x1
-+#define WM8350_S_CURVE_MEDIUM			0x2
-+#define WM8350_S_CURVE_SLOW			0x3
-+
-+#define WM8350_DISCHARGE_OFF			0x0
-+#define WM8350_DISCHARGE_FAST			0x1
-+#define WM8350_DISCHARGE_MEDIUM			0x2
-+#define WM8350_DISCHARGE_SLOW			0x3
-+
-+#define WM8350_TIE_OFF_500R			0x0
-+#define WM8350_TIE_OFF_30K			0x1
-+
-+/*
-+ * Clock sources & directions
-+ */
-+#define WM8350_SYSCLK				0
-+
-+#define WM8350_MCLK_SEL_PLL_MCLK		0
-+#define WM8350_MCLK_SEL_PLL_DAC			1
-+#define WM8350_MCLK_SEL_PLL_ADC			2
-+#define WM8350_MCLK_SEL_PLL_32K			3
-+#define WM8350_MCLK_SEL_MCLK			5
-+
-+#define WM8350_MCLK_DIR_OUT			0
-+#define WM8350_MCLK_DIR_IN			1
-+
-+/* clock divider id's */
-+#define WM8350_ADC_CLKDIV			0
-+#define WM8350_DAC_CLKDIV			1
-+#define WM8350_BCLK_CLKDIV			2
-+#define WM8350_OPCLK_CLKDIV			3
-+#define WM8350_TO_CLKDIV			4
-+#define WM8350_SYS_CLKDIV			5
-+#define WM8350_DACLR_CLKDIV			6
-+#define WM8350_ADCLR_CLKDIV			7
-+
-+/* ADC clock dividers */
-+#define WM8350_ADCDIV_1				0x0
-+#define WM8350_ADCDIV_1_5			0x1
-+#define WM8350_ADCDIV_2				0x2
-+#define WM8350_ADCDIV_3				0x3
-+#define WM8350_ADCDIV_4				0x4
-+#define WM8350_ADCDIV_5_5			0x5
-+#define WM8350_ADCDIV_6				0x6
-+
-+/* ADC clock dividers */
-+#define WM8350_DACDIV_1				0x0
-+#define WM8350_DACDIV_1_5			0x1
-+#define WM8350_DACDIV_2				0x2
-+#define WM8350_DACDIV_3				0x3
-+#define WM8350_DACDIV_4				0x4
-+#define WM8350_DACDIV_5_5			0x5
-+#define WM8350_DACDIV_6				0x6
-+
-+/* BCLK clock dividers */
-+#define WM8350_BCLK_DIV_1			(0x0 << 4)
-+#define WM8350_BCLK_DIV_1_5			(0x1 << 4)
-+#define WM8350_BCLK_DIV_2			(0x2 << 4)
-+#define WM8350_BCLK_DIV_3			(0x3 << 4)
-+#define WM8350_BCLK_DIV_4			(0x4 << 4)
-+#define WM8350_BCLK_DIV_5_5			(0x5 << 4)
-+#define WM8350_BCLK_DIV_6			(0x6 << 4)
-+#define WM8350_BCLK_DIV_8			(0x7 << 4)
-+#define WM8350_BCLK_DIV_11			(0x8 << 4)
-+#define WM8350_BCLK_DIV_12			(0x9 << 4)
-+#define WM8350_BCLK_DIV_16			(0xa << 4)
-+#define WM8350_BCLK_DIV_22			(0xb << 4)
-+#define WM8350_BCLK_DIV_24			(0xc << 4)
-+#define WM8350_BCLK_DIV_32			(0xd << 4)
-+#define WM8350_BCLK_DIV_44			(0xe << 4)
-+#define WM8350_BCLK_DIV_48			(0xf << 4)
-+
-+/* Sys (MCLK) clock dividers */
-+#define WM8350_MCLK_DIV_1			(0x0 << 8)
-+#define WM8350_MCLK_DIV_2			(0x1 << 8)
-+
-+/* OP clock dividers */
-+#define WM8350_OPCLK_DIV_1			0x0
-+#define WM8350_OPCLK_DIV_2			0x1
-+#define WM8350_OPCLK_DIV_3			0x2
-+#define WM8350_OPCLK_DIV_4			0x3
-+#define WM8350_OPCLK_DIV_5_5			0x4
-+#define WM8350_OPCLK_DIV_6			0x5
-+
-+/* DAI ID */
-+#define WM8350_HIFI_DAI				0
-+
-+/*
-+ * Audio interrupts.
-+ */
-+#define WM8350_IRQ_CODEC_JCK_DET_L		39
-+#define WM8350_IRQ_CODEC_JCK_DET_R		40
-+#define WM8350_IRQ_CODEC_MICSCD			41
-+#define WM8350_IRQ_CODEC_MICD			42
-+
-+#endif
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/init.h>
++#include <linux/i2c.h>
++#include <linux/platform_device.h>
++#include <linux/mfd/wm8350/core.h>
++
++static int wm8350_i2c_read_device(struct wm8350 *wm8350, char reg,
++				  int bytes, void *dest)
++{
++	int ret;
++
++	ret = i2c_master_send(wm8350->i2c_client, &reg, 1);
++	if (ret < 0)
++		return ret;
++	return i2c_master_recv(wm8350->i2c_client, dest, bytes);
++}
++
++static int wm8350_i2c_write_device(struct wm8350 *wm8350, char reg,
++				   int bytes, void *src)
++{
++	/* we add 1 byte for device register */
++	u8 msg[(WM8350_MAX_REGISTER << 1) + 1];
++
++	if (bytes > ((WM8350_MAX_REGISTER << 1) + 1))
++		return -EINVAL;
++
++	msg[0] = reg;
++	memcpy(&msg[1], src, bytes);
++	return i2c_master_send(wm8350->i2c_client, msg, bytes + 1);
++}
++
++static int wm8350_i2c_probe(struct i2c_client *i2c,
++			    const struct i2c_device_id *id)
++{
++	struct wm8350 *wm8350;
++	int ret = 0;
++
++	wm8350 = kzalloc(sizeof(struct wm8350), GFP_KERNEL);
++	if (wm8350 == NULL) {
++		kfree(i2c);
++		return -ENOMEM;
++	}
++
++	i2c_set_clientdata(i2c, wm8350);
++	wm8350->dev = &i2c->dev;
++	wm8350->i2c_client = i2c;
++	wm8350->read_dev = wm8350_i2c_read_device;
++	wm8350->write_dev = wm8350_i2c_write_device;
++
++	ret = wm8350_device_init(wm8350);
++	if (ret < 0)
++		goto err;
++
++	return ret;
++
++err:
++	kfree(wm8350);
++	return ret;
++}
++
++static int wm8350_i2c_remove(struct i2c_client *i2c)
++{
++	struct wm8350 *wm8350 = i2c_get_clientdata(i2c);
++
++	wm8350_device_exit(wm8350);
++	kfree(wm8350);
++
++	return 0;
++}
++
++static const struct i2c_device_id wm8350_i2c_id[] = {
++       { "wm8350", 0 },
++       { }
++};
++MODULE_DEVICE_TABLE(i2c, wm8350_i2c_id);
++
++
++static struct i2c_driver wm8350_i2c_driver = {
++	.driver = {
++		   .name = "wm8350",
++		   .owner = THIS_MODULE,
++	},
++	.probe = wm8350_i2c_probe,
++	.remove = wm8350_i2c_remove,
++	.id_table = wm8350_i2c_id,
++};
++
++static int __init wm8350_i2c_init(void)
++{
++	return i2c_add_driver(&wm8350_i2c_driver);
++}
++/* init early so consumer devices can complete system boot */
++subsys_initcall(wm8350_i2c_init);
++
++static void __exit wm8350_i2c_exit(void)
++{
++	i2c_del_driver(&wm8350_i2c_driver);
++}
++module_exit(wm8350_i2c_exit);
++
++MODULE_DESCRIPTION("I2C support for the WM8350 AudioPlus PMIC");
++MODULE_LICENSE("GPL");
 -- 
 1.5.6.5
 
