@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYJFTUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYJFTUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbYJFTUM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 15:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYJFTT4
+	id S1754895AbYJFTUx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 15:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYJFTUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 15:19:56 -0400
-Received: from mail.windriver.com ([147.11.1.11]:60464 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752431AbYJFTTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 15:19:55 -0400
-From: Jason Wessel <jason.wessel@windriver.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net
-Subject: [PATCH 2/2] kgdb: call touch_softlockup_watchdog on resume
-Date: Mon,  6 Oct 2008 14:14:15 -0500
-Message-Id: <1223320455-9266-3-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1223320455-9266-2-git-send-email-jason.wessel@windriver.com>
-References: <1223320455-9266-1-git-send-email-jason.wessel@windriver.com>
- <1223320455-9266-2-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 06 Oct 2008 19:14:15.0979 (UTC) FILETIME=[B97EBFB0:01C927E7]
+	Mon, 6 Oct 2008 15:20:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43051 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752690AbYJFTUk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 15:20:40 -0400
+Date: Mon, 6 Oct 2008 21:26:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Kees Cook <kees.cook@canonical.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org, Jakub Jelinek <jakub@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>, libc-alpha@sourceware.org
+Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
+Message-ID: <20081006192641.GI3180@one.firstfloor.org>
+References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain> <20081003001616.GN10632@outflux.net> <87ej2untze.fsf@basil.nowhere.org> <20081006175038.GF10357@outflux.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081006175038.GF10357@outflux.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The softlockup watchdog needs to be touched when resuming the from the
-kgdb stopped state to avoid the printk that a CPU is stuck if the
-debugger was active for longer than the softlockup threshold.
+> We're already using get_random* for stack, heap, and brk.  Also,
+> get_random* uses the nonblocking pool, so this is the same as if userspace
+> had tried to pull bytes out of /dev/urandom, which (as I understand it)
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- kernel/kgdb.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Yes exactly that's the problem. Think about it: do you really 
+need the same cryptographic strength for your mmap placement
+as you need for your SSL session keys?
 
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 25d955d..e4dcfb2 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -590,6 +590,7 @@ static void kgdb_wait(struct pt_regs *regs)
- 
- 	/* Signal the primary CPU that we are done: */
- 	atomic_set(&cpu_in_kgdb[cpu], 0);
-+	touch_softlockup_watchdog();
- 	clocksource_touch_watchdog();
- 	local_irq_restore(flags);
- }
-@@ -1432,6 +1433,7 @@ acquirelock:
- 	    atomic_read(&kgdb_cpu_doing_single_step) != cpu) {
- 
- 		atomic_set(&kgdb_active, -1);
-+		touch_softlockup_watchdog();
- 		clocksource_touch_watchdog();
- 		local_irq_restore(flags);
- 
-@@ -1524,6 +1526,7 @@ acquirelock:
- kgdb_restore:
- 	/* Free kgdb_active */
- 	atomic_set(&kgdb_active, -1);
-+	touch_softlockup_watchdog();
- 	clocksource_touch_watchdog();
- 	local_irq_restore(flags);
- 
+And if you need true entropy for your session keys do you
+still get it when it was all used for low security 
+purposes first?
+
+> > What you should instead do is to initialize some other cryptographic RNG
+> > regularly and use the output of that.
+> 
+> Can you give me some examples of this?  I thought the nonblocking
+> entropy pool was specifically for this purpose?
+
+It's definitely not a "general purpose random number generator"
+or even a "general purpose secure random number generator"
+
+Since so many systems have poor entropy input /dev/urandom has generally 
+replaced /dev/random for near all cryptographic software, so it's
+just the new black.
+
+-Andi
+
 -- 
-1.6.0.2
-
+ak@linux.intel.com
