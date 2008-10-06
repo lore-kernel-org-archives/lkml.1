@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYJFFvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYJFF4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753961AbYJFFvz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 01:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYJFFvr
+	id S1754018AbYJFF4s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 01:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYJFF4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 01:51:47 -0400
-Received: from ptb-relay03.plus.net ([212.159.14.147]:46293 "EHLO
-	ptb-relay03.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYJFFvq (ORCPT
+	Mon, 6 Oct 2008 01:56:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38049 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbYJFF4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 01:51:46 -0400
-Message-ID: <48E9A780.9090406@yahoo.com>
-Date: Mon, 06 Oct 2008 06:52:00 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, IvDoorn@gmail.com,
-       hmh@hmh.eng.br, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] rfkill-input doesn't work until 5 minutes after boot
-References: <20081004204342.GA29620@srcf.ucam.org> <20081005004334.GA31844@srcf.ucam.org> <20081005110226.GB4087@srcf.ucam.org> <20081005212432.GC11576@amd.corenet.prv> <20081005213330.GA11355@srcf.ucam.org>
-In-Reply-To: <20081005213330.GA11355@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 41750ef29ac598c930658b81fe1ec7c6
+	Mon, 6 Oct 2008 01:56:40 -0400
+Date: Mon, 6 Oct 2008 08:02:38 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [Bug #11569] Don't complain about disabled irqs when the system has paniced
+Message-ID: <20081006060238.GB3180@one.firstfloor.org>
+References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.qTH.6475IB@wind>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yWwteD.A.qTH.6475IB@wind>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> On Sun, Oct 05, 2008 at 05:24:39PM -0400, Dmitry Torokhov wrote:
+On Sat, Oct 04, 2008 at 07:32:54PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
->> I'd rather have something like below. It should probably go through
->> David's (networking) tree. since it is in net/.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Fine with me, as long as Sitsofe can confirm it works?
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11569
+> Subject		: Don't complain about disabled irqs when the system has paniced
+> Submitter	: Andi Kleen <andi@firstfloor.org>
+> Date		: 2008-09-02 13:49 (33 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122036356127282&w=4
 
-Dmitry's patch also works for me.
+The problem is actually worse than this description suggests. I updated
+the bugzilla entry now.
 
-Tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+The new smp_call_function() that is called from panic is quite unsuitable
+for this task:
+- It allocates memory (not a good idea in panic0
+- It complains about interrupt off
+- This whole thing breaks at least machine checks
 
+-Andi
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+ak@linux.intel.com
