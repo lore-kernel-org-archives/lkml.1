@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYJFWgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYJFXEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYJFWgE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 18:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYJFWfx
+	id S1755885AbYJFXEQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYJFXEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 18:35:53 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:12706 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752453AbYJFWfx (ORCPT
+	Mon, 6 Oct 2008 19:04:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39150 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYJFXEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 18:35:53 -0400
-X-IronPort-AV: E=Sophos;i="4.33,369,1220227200"; 
-   d="scan'208";a="47939983"
-From: Roland Dreier <rdreier@cisco.com>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: ericvh@gmail.com, linux-kernel@vger.kernel.org, v9fs-devel@vger.kernel.org,
-       rminnich@dancer.ca.sandia.gov, lionkov@lanl.gov
-Subject: Re: [PATCH 01/03] 9prdma: RDMA Transport Support for 9P
-References: <1222906119-14310-1-git-send-email-tom@opengridcomputing.com>
-	<1222906119-14310-2-git-send-email-tom@opengridcomputing.com>
-	<adaod23d1if.fsf@cisco.com> <48EA549E.1050001@opengridcomputing.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 06 Oct 2008 15:35:51 -0700
-In-Reply-To: <48EA549E.1050001@opengridcomputing.com> (Tom Tucker's message of
-	"Mon, 06 Oct 2008 13:10:38 -0500")
-Message-ID: <adavdw5nygo.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 6 Oct 2008 19:04:00 -0400
+Date: Tue, 7 Oct 2008 01:10:02 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jason Vas Dias <jason.vas.dias@gmail.com>
+Subject: Re: [PATCH] x86 ACPI: Blacklist two HP machines with buggy BIOSes (Re: 2.6.27-rc8+ - first impressions)
+Message-ID: <20081006231002.GN3180@one.firstfloor.org>
+References: <20081005183603.GA3263@amd.corenet.prv> <200810060029.42471.rjw@sisk.pl> <20081006062235.GA2808@amd.corenet.prv> <200810061159.30103.rjw@sisk.pl> <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org> <20081006150055.GA16930@elte.hu> <alpine.LFD.1.10.0810061815060.10470@ftp.linux-mips.org> <87tzbpmocm.fsf@basil.nowhere.org> <alpine.LFD.1.10.0810062227100.10470@ftp.linux-mips.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Oct 2008 22:35:51.0916 (UTC) FILETIME=[E33C42C0:01C92803]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0810062227100.10470@ftp.linux-mips.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > Is your protocol documented anywhere?  It seems npfs has support for the
- > > same transport.
+On Mon, Oct 06, 2008 at 10:39:25PM +0100, Maciej W. Rozycki wrote:
+> On Mon, 6 Oct 2008, Andi Kleen wrote:
+> 
+> > The real reason is actually a workaround in the BIOS for problems
+> > in the older Linux code that caused duplicated timer interrupts. The
+> > old Linux would fall into "enable both IO-APIC and 8259" fallback mode
+> > and the resulted in duplicated timer events, which made everything unhappy.
+> > They instead configured the northbridge in a way that one of the inputs
+> > is ignored.
+> 
+>  Hmm, working around Linux problems in the BIOS is a new and truly odd 
+> concept to me. 
 
- > When using SEND/RECV, there isn't a protocol other than 9P
- > itself. Once we add RDMA ops, one will be required to exchange RKEY,
- > etc... But maybe I don't understand the question?
+Except perhaps for the cheapest consumer parts and many laptops Linux is 
+definitely on the radar now for many BIOS developers.
 
-No, that makes sense.  I don't know that much about 9p but I guess it's
-fairly transport agnostic, so if you're just sending/receiving standard
-9p messages then there's probably nothing to exchange.
+> It's not that we are unresponsive or do not take 
+> responsibility for our bugs, is it?
 
- - R.
+These workarounds are not for mainline kernels but for specific
+distribution releases (as in "fixes SLES/RHEL x.y" instead of 
+"fixes 2.6.xy")
+
+Even when the distributors update their kernels the old releases
+do not go away are still used and the workarounds get in.
+
+> > You won't be able to DMI list it, that workaround is widely used
+> > in lots of different systems.
+> 
+>  Well, perhaps, but the thermal trip point phenomenon seems unique to this 
+> family of systems.  The other aspects of the problem do not really matter 
+> anymore as we seem to have addressed them robustly enough now.
+
+When you need DMI entries you clearly haven't.
+
+-Andi
+
