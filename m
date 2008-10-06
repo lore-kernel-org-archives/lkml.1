@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYJFGAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYJFGDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854AbYJFGAk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 02:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYJFGAZ
+	id S1754469AbYJFGDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 02:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYJFGDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 02:00:25 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58851 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754658AbYJFGAX (ORCPT
+	Mon, 6 Oct 2008 02:03:12 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:46005 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbYJFGDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 02:00:23 -0400
-To: Kees Cook <kees.cook@canonical.com>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       libc-alpha@sourceware.org
-Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com>
-	<20081001215657.GH12527@outflux.net>
-	<20081001220948.GC32107@sunsite.ms.mff.cuni.cz>
-	<20081001222706.68E7E1544B4@magilla.localdomain>
-	<20081003001616.GN10632@outflux.net>
-Date: Mon, 06 Oct 2008 08:00:21 +0200
-In-Reply-To: <20081003001616.GN10632@outflux.net> (Kees Cook's message of "Thu, 2 Oct 2008 17:16:16 -0700")
-Message-ID: <87ej2untze.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 6 Oct 2008 02:03:11 -0400
+Message-ID: <48E9AA6E.3080608@suse.de>
+Date: Mon, 06 Oct 2008 11:34:30 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 00/32] Swap over NFS - v19
+References: <20081002130504.927878499@chello.nl>
+In-Reply-To: <20081002130504.927878499@chello.nl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kees Cook <kees.cook@canonical.com> writes:
+Peter Zijlstra wrote:
+> Patches are against: v2.6.27-rc5-mm1
+> 
+> This release features more comments and (hopefully) better Changelogs.
+> Also the netns stuff got sorted and ipv6 will now build 
 
-> While discussing[1] the need for glibc to have access to random bytes
-> during program load, it seems that an earlier attempt to implement
-> AT_RANDOM got stalled.  This implements a configurable number of random
-> bytes available to every ELF program via a new auxv AT_RANDOM vector.
+Except for this one I think ;-)
 
-While the basic idea is good using get_random_bytes() is not. 
+net/netfilter/core.c: In function ‘nf_hook_slow’:
+net/netfilter/core.c:191: error: ‘pskb’ undeclared (first use in this
+function)
 
-That eats precious cryptography strength entropy from the entropy
-pool, which on many systems is not adequately fed. In those cases you
-really only want to use it for real keys, not for lower grade
-applications. The applications glibc wants to use this for do not
-really require crypto strength entropy, just relatively unpredictable
-randomness.
+> and not oops on boot ;-)
 
-What you should instead do is to initialize some other cryptographic RNG 
-regularly and use the output of that.
+The culprit is emergency-nf_queue.patch. The following change fixes the
+build error for me.
 
--Andi
+Index: linux-2.6.26/net/netfilter/core.c
+===================================================================
+--- linux-2.6.26.orig/net/netfilter/core.c
++++ linux-2.6.26/net/netfilter/core.c
+@@ -184,9 +184,12 @@ next_hook:
+                ret = 1;
+                goto unlock;
+        } else if (verdict == NF_DROP) {
++drop:
+                kfree_skb(skb);
+                ret = -EPERM;
+        } else if ((verdict & NF_VERDICT_MASK) == NF_QUEUE) {
++               if (skb_emergency(skb))
++                       goto drop;
+                if (!nf_queue(skb, elem, pf, hook, indev, outdev, okfn,
+                              verdict >> NF_VERDICT_BITS))
+                        goto next_hook;
+
+
+Thanks,
+
+-- 
+Suresh Jayaraman
