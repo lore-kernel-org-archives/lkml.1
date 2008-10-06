@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYJFUrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYJFUsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYJFUrh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 16:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYJFUr3
+	id S1755936AbYJFUsd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 16:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbYJFUsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 16:47:29 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45346 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754256AbYJFUr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 16:47:29 -0400
-Subject: Re: [PATCH 0/2] utrace
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hch <hch@infradead.org>, Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <20080826220102.89635154233@magilla.localdomain>
-References: <20080826220102.89635154233@magilla.localdomain>
-Content-Type: text/plain
-Date: Mon, 06 Oct 2008 22:47:02 +0200
-Message-Id: <1223326023.12409.60.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 6 Oct 2008 16:48:25 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:56471 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754302AbYJFUsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 16:48:24 -0400
+Message-ID: <48EA79AC.8090705@linux.vnet.ibm.com>
+Date: Mon, 06 Oct 2008 15:48:44 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Adam Litke <agl@us.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       Adam Litke <agl@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [PATCH] properly reserve in bootmem the lmb reserved regions
+ that cross numa nodes
+References: <48E23D6C.4030406@linux.vnet.ibm.com> <1222789675.13978.14.camel@localhost.localdomain> <7E5B6DFB-F9DE-4929-8A4F-8011BF817017@kernel.crashing.org> <48EA31D5.70609@linux.vnet.ibm.com> <1DA7FAFA-0708-4CFC-B721-B09A29F45B3F@kernel.crashing.org>
+In-Reply-To: <1DA7FAFA-0708-4CFC-B721-B09A29F45B3F@kernel.crashing.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roland,
+Kumar Gala wrote:
+>
+> On Oct 6, 2008, at 10:42 AM, Jon Tollefson wrote:
+>
+>> Kumar Gala wrote:
+>>> Out of interest how to do you guys represent NUMA regions of memory in
+>>> the device tree?
+>>>
+>>> - k
+>> Looking at the source code in numa.c I see at the start of
+>> do_init_bootmem() that parse_numa_properties() is called.  It appears to
+>> be looking at memory nodes and getting the node id from it.  It gets an
+>> associativity property for the memory node and indexes that array with a
+>> 'min_common_depth' value to get the node id.
+>>
+>> This node id is then used to setup the active ranges in the
+>> early_node_map[].
+>>
+>> Is this what you are asking about?  There are others I am sure who know
+>> more about it then I though.
+>
+> I was wondering if this was documented anywhere (like in sPAPR)?
+>
+> - k
+I see some information on it in section "C.6.6".
 
-I've been looking over the utrace code:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git
-
-git diff d3a47e82b6bc3724dd60f3ee4e84fe4479104382..utrace/master
-
-and while I'm nowhere near done, I'd like to provide some feedback and
-pose some questions.
-
- - what's up with these weak declarations?
-
- - struct utrace_attached_engine is a tad strange as we don't have a
-regular struct utrace_engine.
-
- - does it make sense to create this struct utrace_engine and replace
-the struct utrace_engine_ops and the void *data members of struct
-utrace_attached_engine with a pointer to it, and obtain the data by
-using container_of() on the engine itself? That is, let the user embed
-struct utrace_engine in a larger structure.
-
- - I encountered a lot of unannotated memory barriers. Please add a
-comment to each and every one describing the race and a pointer to its
-pair. There is no such thing as a trivial memory barrier.
-
- - it has these decidedly un-kernel-ish public/private comments
-
- - Why does it have two lists for attaching tasks? The
-description/comments explain how it works but not why we do it that way.
-
- - utrace_attach_task() was very hard to read, the code flow is
-unconventional at best.
-
- - utrace_stop() can seemingly return true even though it didn't get
-SIGKILL - contrary to its comments.
-
- - get_utrace_lock() made me look at ->engine_ops serialisation - I
-couldn't convince myself its race free.
-
- - I saw a lot of if (unlikely(a) || unlikely(b)) style thing, please
-write as if (unlikely(a || b)).
-
- - utrace_release_task() seems to be missing
-rcu_read_lock()/rcu_read_unlock() to ensure the utrace pointer stays
-valid.
-
- - utrace_control() seems to access ->exit_state in a racy manner.
-
- - some comments say 'race' but fail to provide specifics.
-
- - as was suggested by Christoph and Alexey, removing struct utrace
-*task_struct::utrace in favour of embedding it right into task_struct
-itself would remove quite a bit of complexity. I would consider doing
-this, esp as you could remove the ptrace specifics from task_struct.
-
-hth
+Jon
 
