@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbYJFOMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbYJFOOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbYJFOMa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 10:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbYJFOMX
+	id S1754488AbYJFOOX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 10:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYJFOOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 10:12:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60970 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbYJFOMW (ORCPT
+	Mon, 6 Oct 2008 10:14:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38447 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752274AbYJFOOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 10:12:22 -0400
-Date: Mon, 6 Oct 2008 16:12:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: mingo@elte.hu, linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: scheduler hang on cpu re-hotplug with 2.6.27rc8
-Message-ID: <20081006141220.GA14160@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 6 Oct 2008 10:14:15 -0400
+Date: Mon, 6 Oct 2008 15:14:11 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: banning device driver reserved resources from /dev/mem
+Message-ID: <20081006151411.05ed5f50@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081006070543.23b14828@infradead.org>
+References: <20081005180154.7cc12486@infradead.org>
+	<20081006102739.16d1a434@lxorguk.ukuu.org.uk>
+	<48EA1540.8060409@gmail.com>
+	<20081006144835.6e58f73a@lxorguk.ukuu.org.uk>
+	<20081006065213.76dc729a@infradead.org>
+	<20081006150122.3860cae1@lxorguk.ukuu.org.uk>
+	<20081006070543.23b14828@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Rafael, something for the regression list]
+> no argument, except that the kernel doesn't do request_region() on it
+> to expect exclusivity (so the patch doesn't do anything on this region)
 
-While testing cpu hotunplug/hotreplug (first 
-setting two CPUs to offline and then to online again) on a 16 thread machine
-with 2.6.27rc8 the first 
+Its on the TODO list for the vt fixes
 
-# echo 1 > ./devices/system/cpu/cpu14/online
+> Now having said that, if the DRM layer does request_region on the MMIO
+> bars, we might need a flag that explicitly says "this is intended for
+> sharing with userspace" for this known case; not too hard, I'll check
+> with Dave Airlie.
 
-after hotunplug deadlocked somewhere in the scheduler:
+DRM isn't the problem. In the DRM case the DRM can provide the mappings
+and manage them. In the non DRM case its messier but for the moment
+probably happens by luck to be ok
 
-bash          D 00000000ffffcb5b     0  4683   4671
- ffff8804bc583c68 0000000000000086 ffff8804bc9d8640 0000000000000296
- ffff8804bdd34730 ffff8804be6fc090 ffff8804bdd34978 0000000c805a1e2a
- ffff8804be4fd780 ffffffff802298b4 ffffffff808acd98 ffff88027d0b1168
-Call Trace:
- [<ffffffff802298b4>] __dequeue_entity+0x25/0x68
- [<ffffffff805a1b4b>] schedule_timeout+0x1e/0xad
- [<ffffffff8022a11f>] __disable_runtime+0x57/0x155
- [<ffffffff8025cc47>] cpupri_set+0xbe/0xcd
- [<ffffffff805a19b3>] wait_for_common+0xcd/0x131
- [<ffffffff8022c918>] default_wake_function+0x0/0xe
- [<ffffffff80241f3a>] synchronize_rcu+0x30/0x36
- [<ffffffff80241fac>] wakeme_after_rcu+0x0/0xc
- [<ffffffff8022dab6>] partition_sched_domains+0x9b/0x1dd
- [<ffffffff8022dc26>] update_sched_domains+0x2e/0x35
- [<ffffffff805a5297>] notifier_call_chain+0x29/0x4c
- [<ffffffff8059ef76>] _cpu_up+0xd0/0x10a
- [<ffffffff8059f004>] cpu_up+0x54/0x61
- [<ffffffff805837d5>] store_online+0x43/0x67
- [<ffffffff802c51e9>] sysfs_write_file+0xd2/0x110
- [<ffffffff8028656b>] vfs_write+0xad/0x136
- [<ffffffff802869f3>] sys_write+0x45/0x6e
- [<ffffffff8020b22b>] system_call_fastpath+0x16/0x1b
+I still think your restrictive /dev/mem model is wrong. I think it comes
+about because your /dev/mem restrictions are for multiple conflicting
+purposes.
 
-It just hung forever, but the machine was otherwise fully functional.
+The root of that is the 'vaguely annoy root kit writers for 5 minutes'
+reasoning which erroneously leads to trying to a compile time option,
+combined some would argue with a 'screw people hacking hardware in
+userspace who should provide drivers' view.
 
-This was without frame pointers so the backtrace presumably has
-some garbage. Haven't looked too closely.
+Now the root kit writer one has minimal credence now as it seems the root
+kit writers already adapted. The hardware hacking people have uio
+frameworks and should yes be encouraged to use proper drivers.
 
--Andi
+So there isn't a real reason to make it compile time. Far saner would be
+for the /dev/mem restrictions to be flags in sysfs. Even if you stick to
+the view about making life harder for rootkit authors then it should be
+sysfs restrictions with an irrevocability bit (eg 0 = off 1 = on , 2 = on
+(forever))
 
--- 
-ak@linux.intel.com
+A flag per feature of this kind then lets you set the different policies
+including the highly useful '/dev/mem, I don't think so' policy flag for
+server boxes.
