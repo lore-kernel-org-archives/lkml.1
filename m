@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbYJFX3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYJFXaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758480AbYJFX3s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbYJFXWx
+	id S1757946AbYJFXaL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbYJFXW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:22:53 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55326 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:22:57 -0400
+Received: from mx1.suse.de ([195.135.220.2]:41041 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757157AbYJFXWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:22:52 -0400
-Date: Mon, 6 Oct 2008 16:17:50 -0700
+	id S1757181AbYJFXW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:22:56 -0400
+Date: Mon, 6 Oct 2008 16:17:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Neil Horman <nhorman@tuxdriver.com>,
+       alan@lxorguk.ukuu.org.uk, Santwona Behera <santwona.behera@sun.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 23/28] ipv6: Fix OOPS in ip6_dst_lookup_tail().
-Message-ID: <20081006231750.GX20567@suse.de>
+Subject: [patch 24/28] niu: panic on reset
+Message-ID: <20081006231753.GY20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0001-ipv6-Fix-OOPS-in-ip6_dst_lookup_tail.patch"
+Content-Disposition: inline; filename="0002-niu-panic-on-reset.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,104 +40,93 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Neil Horman <nhorman@tuxdriver.com>
+From: Santwona Behera <santwona.behera@sun.com>
 
-[ Upstream commit e550dfb0c2c31b6363aa463a035fc9f8dcaa3c9b ]
+[ Upstream commit cff502a38394fd33693f6233e03fca363dfa956d ]
 
-This fixes kernel bugzilla 11469: "TUN with 1024 neighbours:
-ip6_dst_lookup_tail NULL crash"
+The reset_task function in the niu driver does not reset the tx and rx
+buffers properly. This leads to panic on reset. This patch is a
+modified implementation of the previously posted fix.
 
-dst->neighbour is not necessarily hooked up at this point
-in the processing path, so blindly dereferencing it is
-the wrong thing to do.  This NULL check exists in other
-similar paths and this case was just an oversight.
-
-Also fix the completely wrong and confusing indentation
-here while we're at it.
-
-Based upon a patch by Evgeniy Polyakov.
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Signed-off-by: Santwona Behera <santwona.behera@sun.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ip6_output.c |   64 +++++++++++++++++++++++++-------------------------
- 1 file changed, 32 insertions(+), 32 deletions(-)
+ drivers/net/niu.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
---- a/net/ipv6/ip6_output.c
-+++ b/net/ipv6/ip6_output.c
-@@ -930,39 +930,39 @@ static int ip6_dst_lookup_tail(struct so
- 	}
+--- a/drivers/net/niu.c
++++ b/drivers/net/niu.c
+@@ -5230,6 +5230,56 @@ static void niu_netif_start(struct niu *
+ 	niu_enable_interrupts(np, 1);
+ }
  
- #ifdef CONFIG_IPV6_OPTIMISTIC_DAD
--		/*
--		 * Here if the dst entry we've looked up
--		 * has a neighbour entry that is in the INCOMPLETE
--		 * state and the src address from the flow is
--		 * marked as OPTIMISTIC, we release the found
--		 * dst entry and replace it instead with the
--		 * dst entry of the nexthop router
--		 */
--		if (!((*dst)->neighbour->nud_state & NUD_VALID)) {
--			struct inet6_ifaddr *ifp;
--			struct flowi fl_gw;
--			int redirect;
--
--			ifp = ipv6_get_ifaddr(&init_net, &fl->fl6_src,
--					      (*dst)->dev, 1);
--
--			redirect = (ifp && ifp->flags & IFA_F_OPTIMISTIC);
--			if (ifp)
--				in6_ifa_put(ifp);
--
--			if (redirect) {
--				/*
--				 * We need to get the dst entry for the
--				 * default router instead
--				 */
--				dst_release(*dst);
--				memcpy(&fl_gw, fl, sizeof(struct flowi));
--				memset(&fl_gw.fl6_dst, 0, sizeof(struct in6_addr));
--				*dst = ip6_route_output(sk, &fl_gw);
--				if ((err = (*dst)->error))
--					goto out_err_release;
--			}
-+	/*
-+	 * Here if the dst entry we've looked up
-+	 * has a neighbour entry that is in the INCOMPLETE
-+	 * state and the src address from the flow is
-+	 * marked as OPTIMISTIC, we release the found
-+	 * dst entry and replace it instead with the
-+	 * dst entry of the nexthop router
-+	 */
-+	if ((*dst)->neighbour && !((*dst)->neighbour->nud_state & NUD_VALID)) {
-+		struct inet6_ifaddr *ifp;
-+		struct flowi fl_gw;
-+		int redirect;
++static void niu_reset_buffers(struct niu *np)
++{
++	int i, j, k, err;
 +
-+		ifp = ipv6_get_ifaddr(&init_net, &fl->fl6_src,
-+				      (*dst)->dev, 1);
++	if (np->rx_rings) {
++		for (i = 0; i < np->num_rx_rings; i++) {
++			struct rx_ring_info *rp = &np->rx_rings[i];
 +
-+		redirect = (ifp && ifp->flags & IFA_F_OPTIMISTIC);
-+		if (ifp)
-+			in6_ifa_put(ifp);
++			for (j = 0, k = 0; j < MAX_RBR_RING_SIZE; j++) {
++				struct page *page;
 +
-+		if (redirect) {
-+			/*
-+			 * We need to get the dst entry for the
-+			 * default router instead
-+			 */
-+			dst_release(*dst);
-+			memcpy(&fl_gw, fl, sizeof(struct flowi));
-+			memset(&fl_gw.fl6_dst, 0, sizeof(struct in6_addr));
-+			*dst = ip6_route_output(sk, &fl_gw);
-+			if ((err = (*dst)->error))
-+				goto out_err_release;
- 		}
++				page = rp->rxhash[j];
++				while (page) {
++					struct page *next =
++						(struct page *) page->mapping;
++					u64 base = page->index;
++					base = base >> RBR_DESCR_ADDR_SHIFT;
++					rp->rbr[k++] = cpu_to_le32(base);
++					page = next;
++				}
++			}
++			for (; k < MAX_RBR_RING_SIZE; k++) {
++				err = niu_rbr_add_page(np, rp, GFP_ATOMIC, k);
++				if (unlikely(err))
++					break;
++			}
++
++			rp->rbr_index = rp->rbr_table_size - 1;
++			rp->rcr_index = 0;
++			rp->rbr_pending = 0;
++			rp->rbr_refill_pending = 0;
++		}
 +	}
- #endif
++	if (np->tx_rings) {
++		for (i = 0; i < np->num_tx_rings; i++) {
++			struct tx_ring_info *rp = &np->tx_rings[i];
++
++			for (j = 0; j < MAX_TX_RING_SIZE; j++) {
++				if (rp->tx_buffs[j].skb)
++					(void) release_tx_packet(np, rp, j);
++			}
++
++			rp->pending = MAX_TX_RING_SIZE;
++			rp->prod = 0;
++			rp->cons = 0;
++			rp->wrap_bit = 0;
++		}
++	}
++}
++
+ static void niu_reset_task(struct work_struct *work)
+ {
+ 	struct niu *np = container_of(work, struct niu, reset_task);
+@@ -5252,6 +5302,12 @@ static void niu_reset_task(struct work_s
  
- 	return 0;
+ 	niu_stop_hw(np);
+ 
++	spin_unlock_irqrestore(&np->lock, flags);
++
++	niu_reset_buffers(np);
++
++	spin_lock_irqsave(&np->lock, flags);
++
+ 	err = niu_init_hw(np);
+ 	if (!err) {
+ 		np->timer.expires = jiffies + HZ;
 
 -- 
