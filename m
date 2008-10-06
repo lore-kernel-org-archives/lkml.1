@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYJFNBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYJFNOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbYJFNBT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 09:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYJFNBE
+	id S1754018AbYJFNOO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 09:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYJFNN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 09:01:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34838 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbYJFNBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 09:01:03 -0400
-Date: Mon, 6 Oct 2008 09:00:14 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
-Subject: Re: [PATCH 2/3] Fix fsync livelock
-In-Reply-To: <20081005212031.63ad246a@infradead.org>
-Message-ID: <Pine.LNX.4.64.0810060857341.26843@hs20-bc2-1.build.redhat.com>
-References: <20080911101616.GA24064@agk.fab.redhat.com>
- <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
- <20080923154905.50d4b0fa.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
- <20080923164623.ce82c1c2.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
- <20081001225404.4e973465.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0810051814060.23248@hs20-bc2-1.build.redhat.com>
- <20081005153306.7e644c9f@infradead.org> <Pine.LNX.4.64.0810051901190.31780@hs20-bc2-1.build.redhat.com>
- <20081005160724.54dd1a27@infradead.org> <Pine.LNX.4.64.0810051910580.663@hs20-bc2-1.build.redhat.com>
- <20081005162847.7bf0ead1@infradead.org> <Pine.LNX.4.64.0810051949290.5798@hs20-bc2-1.build.redhat.com>
- <20081005173019.0a358b09@infradead.org> <Pine.LNX.4.64.0810052320480.3074@hs20-bc2-1.build.redhat.com>
- <20081005212031.63ad246a@infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Oct 2008 09:13:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41303 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752434AbYJFNN7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 09:13:59 -0400
+Date: Mon, 6 Oct 2008 14:13:06 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH 0/0] SIGWINCH problem with terminal apps
+Message-ID: <20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
+References: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Oct 2008, Arjan van de Ven wrote:
+> So as a quick solution I made patches which move mentioned updates
+> before kill_pgrp() calls. As I tested modified kernel there is no
+> observed effect now. So I send patchs.
 
-> On Sun, 5 Oct 2008 23:30:51 -0400 (EDT
-> > The point is that many fsync()s may run in parallel and you have just
-> > one inode and just one chain. And if you add two-word list_head to a
-> > page, to link it on this list, many developers will hate it for
-> > increasing its size.
-> 
-> why to a page?
-> a list head in the inode and chain up the bios....
+NAK - this might happen to make the race miss on your box but it's not a
+fix of any kind.
 
-And if you want to wait for a bio submitted by a different process? 
-There's no way you can find the bio from the page.
+> There are some places where kill_pgrp() call is used and some variable
+> is changed after it. It should be considered if this code is always
+> working properly or some race scheduler condition exists.
 
-> or not make an actual list but just a "is the previous one done" thing
-> it's not all that hard to get something that works on a per inode basis,
-> that gives "wait for all io upto this one".
+The code was never race free, the scheduler change made the problem show
+up more. Later 2.6.27-rc has patches that use the termios lock across
+TIOCG/SWINSZ and deal with the problem properly.
 
-So code it :)
-
-Mikulas
+Alan
