@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbYJFXXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYJFXXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756433AbYJFXXY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYJFXVl
+	id S1756857AbYJFXXj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbYJFXVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:21:41 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54998 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:21:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55009 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756728AbYJFXVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:21:40 -0400
-Date: Mon, 6 Oct 2008 16:17:08 -0700
+	id S1756748AbYJFXVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:21:44 -0400
+Date: Mon, 6 Oct 2008 16:17:10 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,51 +22,55 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 05/28] ALSA: hda - Fix model for Dell Inspiron 1525
-Message-ID: <20081006231708.GF20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Sven Wegener <sven.wegener@stealer.net>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 06/28] i2c-dev: Return correct error code on class_create()
+	failure
+Message-ID: <20081006231710.GG20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-fix-model-for-dell-inspiron-1525.patch"
+Content-Disposition: inline; filename="i2c-dev-return-correct-error-code-on-class_create-failure.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Takashi Iwai <tiwai@suse.de>
+From: Sven Wegener <sven.wegener@stealer.net>
 
-commit 24918b61b55c21e09a3e07cd82e1b3a8154782dc upstream
+In Linus' tree:
+http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commit;h=e74783ec3cb981211689bd2cfd3248f8dc48ec01
 
-Dell Inspiron 1525 seems to have a buggy BIOS setup and screws up
-the recent codec parser, as reported by Oleksandr Natalenko:
-    http://lkml.org/lkml/2008/9/12/203
+We need to convert the error pointer from class_create(), else we'll return the
+successful return code from register_chrdev() on failure.
 
-This patch adds the working model, dell-3stack, statically.
-
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_sigmatel.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/i2c/i2c-dev.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/sound/pci/hda/patch_sigmatel.c
-+++ b/sound/pci/hda/patch_sigmatel.c
-@@ -1541,8 +1541,8 @@ static struct snd_pci_quirk stac927x_cfg
- 	/* Dell 3 stack systems with verb table in BIOS */
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x01f3, "Dell Inspiron 1420", STAC_DELL_BIOS),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x0227, "Dell Vostro 1400  ", STAC_DELL_BIOS),
--	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x022f, "Dell     ", STAC_DELL_BIOS),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x022e, "Dell     ", STAC_DELL_BIOS),
-+	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x022f, "Dell Inspiron 1525", STAC_DELL_3ST),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x0242, "Dell     ", STAC_DELL_BIOS),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x0243, "Dell     ", STAC_DELL_BIOS),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL,  0x02ff, "Dell     ", STAC_DELL_BIOS),
+--- a/drivers/i2c/i2c-dev.c
++++ b/drivers/i2c/i2c-dev.c
+@@ -574,8 +574,10 @@ static int __init i2c_dev_init(void)
+ 		goto out;
+ 
+ 	i2c_dev_class = class_create(THIS_MODULE, "i2c-dev");
+-	if (IS_ERR(i2c_dev_class))
++	if (IS_ERR(i2c_dev_class)) {
++		res = PTR_ERR(i2c_dev_class);
+ 		goto out_unreg_chrdev;
++	}
+ 
+ 	res = i2c_add_driver(&i2cdev_driver);
+ 	if (res)
 
 -- 
