@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbYJFHsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbYJFIDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679AbYJFHsm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 03:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYJFHse
+	id S1752529AbYJFIDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 04:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYJFIDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 03:48:34 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:60364 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbYJFHsd (ORCPT
+	Mon, 6 Oct 2008 04:03:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:40508 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbYJFIDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 03:48:33 -0400
+	Mon, 6 Oct 2008 04:03:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=X8/Tmr5orcdTySALgGhVYPG0hMpeilgA3GmGlkwOOEMwfNd27/YpAvxoyRDFuwS6gN
-         Hl6Sz9ciR/x3zf+m/o71eKq2vMnn/XfnB2+z2TAJvpGWnZeU/Q0exwXE+w/2rTpdAEav
-         JL/qjfm1UzCncPPdQMIGiZXSJ1rD8aTS2ZZ4g=
-Message-ID: <1a26b4920810060048h5b4a87c2wc298b01e84815ce6@mail.gmail.com>
-Date: Mon, 6 Oct 2008 09:48:32 +0200
-From: "Pazzo Da Legare" <pazzodalegare@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: booting uncompressed kernel on x86
-In-Reply-To: <1a26b4920810011457t4ad93308u2cc0d2781168f332@mail.gmail.com>
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=nJBc3XCRpB03nxdaq2ypXDiyl1tVGfl3FX4I1ynP9YEt9pWupZWTjepbirS9O/MUvO
+         Tspv5+Dr/aqRHh5IS6D1LMKkEbFnZMiW0JOltwWdohOQhg8wsliVPA2w7sl5CxQZzOqd
+         tnEMeTUfXWBSsT9aRpGmcfVxRs2pv4utn+2Wo=
+Message-ID: <48E9C637.8030507@gmail.com>
+Date: Mon, 06 Oct 2008 10:03:03 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Marco Innocenti <m.innocenti@cineca.it>,
+       matt@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
+       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/6] introduce struct res_counter_ratelimit
+References: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com> <6599ad830810051103v1bd6e8d4xd2fcf622558fc7d9@mail.gmail.com>
+In-Reply-To: <6599ad830810051103v1bd6e8d4xd2fcf622558fc7d9@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1a26b4920810011457t4ad93308u2cc0d2781168f332@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear ML,
+Paul Menage wrote:
+> Hi Andrea,
+> 
+> The principle seems useful, but you seem to be duplicating a lot of
+> the existing res_counter code.
 
-Is there a standard way to boot on i386 arch using uncompressed linux
-kernel (vmlinux)?
-I'm trying to fast my boot process on a slow i486-like machine, I
-found a patch for this subject (http://lkml.org/lkml/2005/7/1/206) but
-it doesn't work.
+Agree.
 
-TIA for you help
+> 
+> Could you not either:
+> 
+> - include these two extra fields in res_counter?
+> - include res_counter as the first field in a res_counter_ratelimit?
 
-Pazzo
+The second solution would save some space if the "ratelimit" part is not used.
+Anyway, I'll try to rewrite it to reuse as much code as possible and post a new
+patchset.
+
+Thanks for looking into it.
+
+-Andrea
