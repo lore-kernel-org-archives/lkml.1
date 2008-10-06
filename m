@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYJFXVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbYJFXWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754985AbYJFXVy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbYJFXV0
+	id S1757024AbYJFXWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756700AbYJFXVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:21:26 -0400
-Received: from ns1.suse.de ([195.135.220.2]:40728 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 19:21:34 -0400
+Received: from ns2.suse.de ([195.135.220.15]:54961 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756633AbYJFXVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:21:25 -0400
-Date: Mon, 6 Oct 2008 16:16:59 -0700
+	id S1756672AbYJFXVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:21:33 -0400
+Date: Mon, 6 Oct 2008 16:17:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,67 +22,182 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Geoff Levand <geoffrey.levand@am.sony.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Stefan Becker <Stefan.Becker@nokia.com>
-Subject: [patch 01/28] USB: fix hcd interrupt disabling
-Message-ID: <20081006231659.GB20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ned Forrester <nforrester@whoi.edu>,
+       Vernon Sauder <vernoninhand@gmail.com>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 03/28] pxa2xx_spi: chipselect bugfixes
+Message-ID: <20081006231703.GD20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-fix-hcd-interrupt-disabling.patch"
+Content-Disposition: inline; filename="pxa2xx_spi-chipselect-bugfixes.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-2.6.25-stable review patch.  If anyone has any objections, please let us know.
+2.6.25-stable review patch.  If anyone has any objections, please let us
+know.
 
 ------------------
+From: Ned Forrester <nforrester@whoi.edu>
 
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+commit 8423597d676615f3dd2d9ab36f59f147086b90b8 upstream
 
-commit 83a798207361cc26385187b2e71efa2b5d75de7f upstream
+Fixes several chipselect bugs in the pxa2xx_spi driver.  These bugs are in
+all versions of this driver and prevent using it with chips like m25p16
+flash.
 
-Commit de85422b94ddb23c021126815ea49414047c13dc, 'USB: fix interrupt
-disabling for HCDs with shared interrupt handlers' changed usb_add_hcd()
-to strip IRQF_DISABLED from irqflags prior to calling request_irq()
-with the justification that such a removal was necessary for shared
-interrupts to work properly.  Unfortunately, the change in that commit
-unconditionally removes the IRQF_DISABLED flag, causing problems on
-platforms that don't use a shared interrupt but require IRQF_DISABLED.
-This change adds a check for IRQF_SHARED prior to removing the
-IRQF_DISABLED flag.
+ 1. The spi_transfer.cs_change flag is handled too early:
+    before spi_transfer.delay_usecs applies, thus making the
+    delay ineffective at holding chip select.
 
-Fixes the PS3 system startup hang reported with recent Fedora and
-OpenSUSE kernels.
+ 2. spi_transfer.delay_usecs is ignored on the last transfer
+    of a message (likewise not holding chipselect long enough).
 
-Note that this problem is hidden when CONFIG_LOCKDEP=y (ps3_defconfig),
-as local_irq_enable_in_hardirq() is defined as a null statement for
-that config.
+ 3. If spi_transfer.cs_change is set on the last transfer, the
+    chip select is always disabled, instead of the intended
+    meaning: optionally holding chip select enabled for the
+    next message.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Stefan Becker <Stefan.Becker@nokia.com>
+Those first three bugs were fixed with a relocation of delays
+and chip select de-assertions.
+
+ 4. If a message has the cs_change flag set on the last transfer,
+    and had the chip select stayed enabled as requested (see 3,
+    above), it would not have been disabled if the next message is
+    for a different chip.  Fixed by dropping chip select regardless
+    of cs_change at end of a message, if there is no next message
+    or if the next message is for a different chip.
+
+This patch should apply to all kernels back to and including 2.6.20;
+it was test patched against 2.6.20.  An additional patch would be
+required for older kernels, but those versions are very buggy anyway.
+
+Signed-off-by: Ned Forrester <nforrester@whoi.edu>
+Cc: Vernon Sauder <vernoninhand@gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/hcd.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/spi/pxa2xx_spi.c |   59 ++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 48 insertions(+), 11 deletions(-)
 
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1877,7 +1877,8 @@ int usb_add_hcd(struct usb_hcd *hcd,
- 		 * with IRQF_SHARED. As usb_hcd_irq() will always disable
- 		 * interrupts we can remove it here.
- 		 */
--		irqflags &= ~IRQF_DISABLED;
-+		if (irqflags & IRQF_SHARED)
-+			irqflags &= ~IRQF_DISABLED;
+--- a/drivers/spi/pxa2xx_spi.c
++++ b/drivers/spi/pxa2xx_spi.c
+@@ -143,7 +143,6 @@ struct driver_data {
+ 	size_t tx_map_len;
+ 	u8 n_bytes;
+ 	u32 dma_width;
+-	int cs_change;
+ 	int (*write)(struct driver_data *drv_data);
+ 	int (*read)(struct driver_data *drv_data);
+ 	irqreturn_t (*transfer_handler)(struct driver_data *drv_data);
+@@ -405,8 +404,45 @@ static void giveback(struct driver_data 
+ 					struct spi_transfer,
+ 					transfer_list);
  
- 		snprintf(hcd->irq_descr, sizeof(hcd->irq_descr), "%s:usb%d",
- 				hcd->driver->description, hcd->self.busnum);
++	/* Delay if requested before any change in chip select */
++	if (last_transfer->delay_usecs)
++		udelay(last_transfer->delay_usecs);
++
++	/* Drop chip select UNLESS cs_change is true or we are returning
++	 * a message with an error, or next message is for another chip
++	 */
+ 	if (!last_transfer->cs_change)
+ 		drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	else {
++		struct spi_message *next_msg;
++
++		/* Holding of cs was hinted, but we need to make sure
++		 * the next message is for the same chip.  Don't waste
++		 * time with the following tests unless this was hinted.
++		 *
++		 * We cannot postpone this until pump_messages, because
++		 * after calling msg->complete (below) the driver that
++		 * sent the current message could be unloaded, which
++		 * could invalidate the cs_control() callback...
++		 */
++
++		/* get a pointer to the next message, if any */
++		spin_lock_irqsave(&drv_data->lock, flags);
++		if (list_empty(&drv_data->queue))
++			next_msg = NULL;
++		else
++			next_msg = list_entry(drv_data->queue.next,
++					struct spi_message, queue);
++		spin_unlock_irqrestore(&drv_data->lock, flags);
++
++		/* see if the next and current messages point
++		 * to the same chip
++		 */
++		if (next_msg && next_msg->spi != msg->spi)
++			next_msg = NULL;
++		if (!next_msg || msg->state == ERROR_STATE)
++			drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	}
+ 
+ 	msg->state = NULL;
+ 	if (msg->complete)
+@@ -489,10 +525,9 @@ static void dma_transfer_complete(struct
+ 	msg->actual_length += drv_data->len -
+ 				(drv_data->rx_end - drv_data->rx);
+ 
+-	/* Release chip select if requested, transfer delays are
+-	 * handled in pump_transfers */
+-	if (drv_data->cs_change)
+-		drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	/* Transfer delays and chip select release are
++	 * handled in pump_transfers or giveback
++	 */
+ 
+ 	/* Move to next transfer */
+ 	msg->state = next_transfer(drv_data);
+@@ -601,10 +636,9 @@ static void int_transfer_complete(struct
+ 	drv_data->cur_msg->actual_length += drv_data->len -
+ 				(drv_data->rx_end - drv_data->rx);
+ 
+-	/* Release chip select if requested, transfer delays are
+-	 * handled in pump_transfers */
+-	if (drv_data->cs_change)
+-		drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	/* Transfer delays and chip select release are
++	 * handled in pump_transfers or giveback
++	 */
+ 
+ 	/* Move to next transfer */
+ 	drv_data->cur_msg->state = next_transfer(drv_data);
+@@ -838,13 +872,17 @@ static void pump_transfers(unsigned long
+ 		return;
+ 	}
+ 
+-	/* Delay if requested at end of transfer*/
++	/* Delay if requested at end of transfer before CS change */
+ 	if (message->state == RUNNING_STATE) {
+ 		previous = list_entry(transfer->transfer_list.prev,
+ 					struct spi_transfer,
+ 					transfer_list);
+ 		if (previous->delay_usecs)
+ 			udelay(previous->delay_usecs);
++
++		/* Drop chip select only if cs_change is requested */
++		if (previous->cs_change)
++			drv_data->cs_control(PXA2XX_CS_DEASSERT);
+ 	}
+ 
+ 	/* Check for transfers that need multiple DMA segments */
+@@ -889,7 +927,6 @@ static void pump_transfers(unsigned long
+ 	drv_data->len = transfer->len & DCMD_LENGTH;
+ 	drv_data->write = drv_data->tx ? chip->write : null_writer;
+ 	drv_data->read = drv_data->rx ? chip->read : null_reader;
+-	drv_data->cs_change = transfer->cs_change;
+ 
+ 	/* Change speed and bit per word on a per transfer */
+ 	cr0 = chip->cr0;
 
 -- 
