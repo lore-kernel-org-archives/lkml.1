@@ -1,137 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYJFTqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYJFTqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbYJFTqu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 15:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbYJFTqT
+	id S1755170AbYJFTqe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 15:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbYJFTqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 15:46:19 -0400
-Received: from vms172073pub.verizon.net ([206.46.172.73]:41210 "EHLO
-	vms172073pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755690AbYJFTqR (ORCPT
+	Mon, 6 Oct 2008 15:46:14 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:7029 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755564AbYJFTqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 15:46:17 -0400
-X-Greylist: delayed 3605 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Oct 2008 15:46:17 EDT
-Date: Mon, 06 Oct 2008 13:45:57 -0500
-From: Corey Minyard <minyard@acm.org>
-Subject: [PATCH 2/3] Add RCU versions of socket hlist handling
-To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Cc: shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
-Reply-to: minyard@acm.org
-Message-id: <20081006184557.GA10287@minyard.local>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 6 Oct 2008 15:46:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ec3EXrceCCcTePwJ0OWkUP/25nZHLAXaSwRtitEFHqHVjxbd1c+eNpVrVZGwTTJMML
+         lh3PWh1U3qbkbMrD5Nmp77qvNgTAHylE5KkRhmKR6vHOk4pdY6FN27iaZghqc5m4c7c+
+         mPQ9Dsrg4KAbgpGtCoEzG7NqSTNIINVSGK928=
+Message-ID: <9e4733910810061246t3d0f4671se3cef6813a96e84e@mail.gmail.com>
+Date: Mon, 6 Oct 2008 15:46:11 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
+Subject: Re: [RFC PATCH 0/4] V3 - Implementation of IR support using the input subsystem
+In-Reply-To: <20081006194032.15992.8393.stgit@terra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081006194032.15992.8393.stgit@terra>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add RCU version of some of the socket hlist handlers, getting ready
-for changing the UDP hash lock to RCU.
+On Mon, Oct 6, 2008 at 3:43 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> Third pass at implementing evdev support for IR. The goal of in-kernel IR is to integrate IR events into the evdev input event queue and maintain ordering of events from all input devices.
 
-Signed-off-by: Corey Minyard <cminyard@mvista.com>
----
- include/net/sock.h |   50 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 50 insertions(+), 0 deletions(-)
 
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 06c5259..6cd39e5 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -42,6 +42,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/list.h>
-+#include <linux/rculist.h>
- #include <linux/timer.h>
- #include <linux/cache.h>
- #include <linux/module.h>
-@@ -294,12 +295,24 @@ static inline struct sock *sk_head(const struct hlist_head *head)
- 	return hlist_empty(head) ? NULL : __sk_head(head);
- }
- 
-+static inline struct sock *sk_head_rcu(const struct hlist_head *head)
-+{
-+	struct hlist_node *first = rcu_dereference(head->first);
-+	return first ? hlist_entry(first, struct sock, sk_node) : NULL;
-+}
-+
- static inline struct sock *sk_next(const struct sock *sk)
- {
- 	return sk->sk_node.next ?
- 		hlist_entry(sk->sk_node.next, struct sock, sk_node) : NULL;
- }
- 
-+static inline struct sock *sk_next_rcu(const struct sock *sk)
-+{
-+	struct hlist_node *next = rcu_dereference(sk->sk_node.next);
-+	return next ? hlist_entry(next, struct sock, sk_node) : NULL;
-+}
-+
- static inline int sk_unhashed(const struct sock *sk)
- {
- 	return hlist_unhashed(&sk->sk_node);
-@@ -361,6 +374,27 @@ static __inline__ int sk_del_node_init(struct sock *sk)
- 	return rc;
- }
- 
-+static inline int __sk_del_node_init_rcu(struct sock *sk)
-+{
-+	if (sk_hashed(sk)) {
-+		hlist_del_init_rcu(&sk->sk_node);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static inline int sk_del_node_init_rcu(struct sock *sk)
-+{
-+	int rc = __sk_del_node_init_rcu(sk);
-+
-+	if (rc) {
-+		/* paranoid for a while -acme */
-+		WARN_ON(atomic_read(&sk->sk_refcnt) == 1);
-+		__sock_put(sk);
-+	}
-+	return rc;
-+}
-+
- static __inline__ void __sk_add_node(struct sock *sk, struct hlist_head *list)
- {
- 	hlist_add_head(&sk->sk_node, list);
-@@ -372,6 +406,17 @@ static __inline__ void sk_add_node(struct sock *sk, struct hlist_head *list)
- 	__sk_add_node(sk, list);
- }
- 
-+static inline void __sk_add_node_rcu(struct sock *sk, struct hlist_head *list)
-+{
-+	hlist_add_head_rcu(&sk->sk_node, list);
-+}
-+
-+static inline void sk_add_node_rcu(struct sock *sk, struct hlist_head *list)
-+{
-+	sock_hold(sk);
-+	__sk_add_node_rcu(sk, list);
-+}
-+
- static __inline__ void __sk_del_bind_node(struct sock *sk)
- {
- 	__hlist_del(&sk->sk_bind_node);
-@@ -385,9 +430,14 @@ static __inline__ void sk_add_bind_node(struct sock *sk,
- 
- #define sk_for_each(__sk, node, list) \
- 	hlist_for_each_entry(__sk, node, list, sk_node)
-+#define sk_for_each_rcu(__sk, node, list) \
-+	hlist_for_each_entry_rcu(__sk, node, list, sk_node)
- #define sk_for_each_from(__sk, node) \
- 	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
- 		hlist_for_each_entry_from(__sk, node, sk_node)
-+#define sk_for_each_from_rcu(__sk, node) \
-+	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
-+		hlist_for_each_entry_from_rcu(__sk, node, sk_node)
- #define sk_for_each_continue(__sk, node) \
- 	if (__sk && ({ node = &(__sk)->sk_node; 1; })) \
- 		hlist_for_each_entry_continue(__sk, node, sk_node)
+Mail to LIRC list still bounces because it is slightly too big - over
+the 20K limit.
+
+Messages are here:
+http://lkml.org/lkml/2008/10/6/202
+
+
 -- 
-1.5.6.5
-
+Jon Smirl
+jonsmirl@gmail.com
