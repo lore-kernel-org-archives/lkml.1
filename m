@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYJFGon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbYJFG7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYJFGon (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 02:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYJFGoe
+	id S1752637AbYJFG7k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 02:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYJFG7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 02:44:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:63682 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752714AbYJFGod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 02:44:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=aJTI7YRaDgxLNhWdieWdnLK8uoFvTbbQOVbo9E1yPiBvU4dtryYtlPwHjSSKHb7XHf
-         9Ufi+Tjs0nluRSkExzwWAMy/CqVfw4s8XbQA6htstJpYnVVdLpyHyP2rGMzRMYA+65Fm
-         q1Rsaz+Rl7kQiEutKakaPx6c5TEPzM422pHxk=
-Message-ID: <84144f020810052344x5b90c22fjd7b984e1d2dddde2@mail.gmail.com>
-Date: Mon, 6 Oct 2008 09:44:33 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Alex Chiang" <achiang@hp.com>
-Subject: Re: [PATCH v4 11/15] PCI: rpaphp: kmalloc/kfree slot->name directly
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20081003231823.9989.50968.stgit@bob.kio>
+	Mon, 6 Oct 2008 02:59:32 -0400
+Received: from www.tglx.de ([62.245.132.106]:57972 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751262AbYJFG7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 02:59:32 -0400
+Date: Mon, 6 Oct 2008 08:59:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: aim7 47% regression with 2.6.27-rc8
+In-Reply-To: <1223269135.1685.11.camel@ymzhang>
+Message-ID: <alpine.LFD.2.00.0810060858350.3398@apollo>
+References: <1223269135.1685.11.camel@ymzhang>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081003230125.9989.31145.stgit@bob.kio>
-	 <20081003231823.9989.50968.stgit@bob.kio>
-X-Google-Sender-Auth: 983912ceba03feb2
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 4, 2008 at 2:18 AM, Alex Chiang <achiang@hp.com> wrote:
-> @@ -63,10 +63,9 @@ struct slot *alloc_slot_struct(struct device_node *dn,
->                                           GFP_KERNEL);
->        if (!slot->hotplug_slot->info)
->                goto error_hpslot;
-> -       slot->hotplug_slot->name = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
-> -       if (!slot->hotplug_slot->name)
-> +       slot->name = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
-> +       if (!slot->name)
->                goto error_info;
-> -       slot->name = slot->hotplug_slot->name;
->        strcpy(slot->name, drc_name);
+On Mon, 6 Oct 2008, Zhang, Yanmin wrote:
+> Comparing with 2.6.27-rc8, aim7 result has about 47% regression with 2.6.27-rc8 on
+> my 16-core tigerton and 8 core+HyperThreading x86_64 machine.
+> 
+> I bisected it down to patch:
+> 
+> 302745699c1b675b5d2a1af87271de10e4d96b6a is first bad commit
+> commit 302745699c1b675b5d2a1af87271de10e4d96b6a
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Mon Sep 22 19:02:25 2008 +0200
+> 
+>     clockevents: check broadcast device not tick device
+>     
+>     Impact: Possible hang on CPU online observed on AMD C1E machines.
+>     
+>     The broadcast setup code looks at the mode of the tick device to
+>     determine whether it needs to be shut down or setup. This is wrong
+>     when the broadcast mode is set to one shot already. This can happen
+>     when a CPU is brought online as it goes through the periodic setup
+>     first.
+>     
+>     The problem went unnoticed as sane systems do not call into that code
+>     before the switch to one shot for the clock event device happens.
+>     The AMD C1E idle routine switches over immediately and thereby shuts
+>     down the just setup device before the first interrupt happens.
+> 
+> 
+> After I reverted the patch against 2.6.27-rc8, the regression disappears.
+> It's interesting that the regression doesn't exist on 8-core stoakley.
 
-Minor nit: you could use kstrdup() here.
+There is a fixup patch for this one after rc8. 07454bfff151d2465ada809bbaddf3548cc1097c
+Can you check with this one applied please ?
+
+Thanks,
+
+	tglx
