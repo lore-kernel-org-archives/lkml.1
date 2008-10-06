@@ -1,163 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYJFKQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYJFKUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbYJFKQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 06:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYJFKQN
+	id S1753726AbYJFKUs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 06:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYJFKUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 06:16:13 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:35966 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752374AbYJFKQM (ORCPT
+	Mon, 6 Oct 2008 06:20:40 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:56171 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbYJFKUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 06:16:12 -0400
-Date: Mon, 6 Oct 2008 15:46:05 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Dave Chinner <david@fromorbit.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] Improve buffered streaming write ordering
-Message-ID: <20081006101605.GA15881@skywalker>
-References: <1222886451.9158.34.camel@think.oraclecorp.com> <20081001215239.ee2ae63f.akpm@linux-foundation.org> <1222950054.6745.18.camel@think.oraclecorp.com> <20081002181856.GB29613@skywalker> <20081002234309.GH30001@disturbed> <1223063155.13375.64.camel@think.oraclecorp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Oct 2008 06:20:39 -0400
+Date: Mon, 6 Oct 2008 12:20:37 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Alan Cox <alan@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 26/76] tty: Add a kref count
+Message-ID: <20081006102037.GB29198@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <20081005160231.1997.10462.stgit@localhost.localdomain> <20081005160811.1997.59217.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-5923-1223288297-0001-2"
 Content-Disposition: inline
-In-Reply-To: <1223063155.13375.64.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081005160811.1997.59217.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 03:45:55PM -0400, Chris Mason wrote:
-> On Fri, 2008-10-03 at 09:43 +1000, Dave Chinner wrote:
-> > On Thu, Oct 02, 2008 at 11:48:56PM +0530, Aneesh Kumar K.V wrote:
-> > > On Thu, Oct 02, 2008 at 08:20:54AM -0400, Chris Mason wrote:
-> > > > On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
-> > > > For a 4.5GB streaming buffered write, this printk inside
-> > > > ext4_da_writepage shows up 37,2429 times in /var/log/messages.
-> > > > 
-> > > 
-> > > Part of that can happen due to shrink_page_list -> pageout -> writepagee
-> > > call back with lots of unallocated buffer_heads(blocks).
-> > 
-> > Quite frankly, a simple streaming buffered write should *never*
-> > trigger writeback from the LRU in memory reclaim.
-> 
-> The blktrace runs on ext4 didn't show kswapd doing any IO.  It isn't
-> clear if this is because ext4 did the redirty trick or if kswapd didn't
-> call writepage.
-> 
-> -chris
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-This patch actually reduced the number of extents for the below test
-from 564 to 171.
+--=_bohort-5923-1223288297-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-$dd if=/dev/zero of=test bs=1M count=1024
+On Sun, Oct 05, 2008 at 05:08:15PM +0100, Alan Cox wrote:
+> Introduce a kref to the tty structure and use it to protect the tty->sign=
+al
+> tty references. For now we don't introduce it for anything else.
 
-ext4 mballoc block allocator still can be improved to make sure we get
-less extents. I am looking into this.
+[...]
 
-What the below change basically does is to make sure we advance
-writeback_index after looking at the pages skipped. With delayed
-allocation when we request for 100 blocks we just add each of these
-blocks to the in memory extent. Once we get the contiguous chunk
-of 100 block request we have the index updated to 100. Now we request
-block allocator for 100 blocks. But allocator gives us back 50 blocks
-So with the current code we have writeback_index pointing to 100
-With the changes below it is pointing to 50.
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 7ce2ebe..30de644 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -802,6 +802,7 @@ static int copy_signal(unsigned long clone_flags, str=
+uct task_struct *tsk)
+> =20
+>  	sig->leader =3D 0;	/* session leadership doesn't inherit */
+>  	sig->tty_old_pgrp =3D NULL;
+> +	sig->tty =3D NULL;
+> =20
+>  	sig->utime =3D sig->stime =3D sig->cutime =3D sig->cstime =3D cputime_z=
+ero;
+>  	sig->gtime =3D cputime_zero;
+> @@ -838,6 +839,7 @@ static int copy_signal(unsigned long clone_flags, str=
+uct task_struct *tsk)
+>  void __cleanup_signal(struct signal_struct *sig)
+>  {
+>  	exit_thread_group_keys(sig);
+> +	tty_kref_put(sig->tty);
+>  	kmem_cache_free(signal_cachep, sig);
+>  }
+> =20
+> @@ -1227,7 +1229,8 @@ static struct task_struct *copy_process(unsigned lo=
+ng clone_flags,
+>  				p->nsproxy->pid_ns->child_reaper =3D p;
+> =20
+>  			p->signal->leader_pid =3D pid;
+> -			p->signal->tty =3D current->signal->tty;
+> +			tty_kref_put(p->signal->tty);
+> +			p->signal->tty =3D tty_kref_get(current->signal->tty);
+>  			set_task_pgrp(p, task_pgrp_nr(current));
+>  			set_task_session(p, task_session_nr(current));
+>  			attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
 
+I'm a bit puzzled by this 'tty_kref_put(p->signal->tty)'. AFAICS, this is a=
+ noop
+since we are not in the CLONE_THREAD case and hence p->signal->tty =3D=3D N=
+ULL.
+So, is it to make the code look more consistent? If so, is it worth adding =
+extra
+code and cycles for this (I doubt that gcc is able to optimize this away)? =
+What
+kind of future changes should this code protect against?
 
-We also force loop inside the ext4_da_writepags with the below condition
-a) if nr_to_write is zero break the loop
-b) if we are able to allocate blocks but we have pages_skipped move
-the writeback_index/range_start to initial value and try with a new
-nr_to_write value. This make sure we will be allocating blocks for
-all requested dirty pages. The reason being __fsync_super. It does
+Thanks,
 
-sync_inodes_sb(sb, 0);
-sync_blockdev(sb->s_bdev);
-sync_inodes_sb(sb, 1);
+Louis
 
-I guess the first call is supposed to have done all the meta data
-allocation ? So i was forcing the block allocation without even looking
-at WB_SYNC_ALL
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
 
-c) If we don't have anything to write break the loop
+--=_bohort-5923-1223288297-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 21f1d3a..58d010d 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -2386,14 +2386,16 @@ static int ext4_da_writepages(struct address_space *mapping,
- 		wbc->nr_to_write = sbi->s_mb_stream_request;
- 	}
- 
--	if (!wbc->range_cyclic)
-+	if (wbc->range_cyclic) {
-+		range_start =  mapping->writeback_index;
-+	} else {
- 		/*
- 		 * If range_cyclic is not set force range_cont
--		 * and save the old writeback_index
-+		 * and save the old range_start;
- 		 */
- 		wbc->range_cont = 1;
--
--	range_start =  wbc->range_start;
-+		range_start =  wbc->range_start;
-+	}
- 	pages_skipped = wbc->pages_skipped;
- 
- 	mpd.wbc = wbc;
-@@ -2440,6 +2442,19 @@ static int ext4_da_writepages(struct address_space *mapping,
- 			 */
- 			to_write += wbc->nr_to_write;
- 			ret = 0;
-+			if (pages_skipped != wbc->pages_skipped) {
-+				/* writepages skipped some pages */
-+				if (wbc->range_cont) {
-+					wbc->range_start = range_start;
-+				} else {
-+					/* range_cyclic */
-+					mapping->writeback_index = range_start;
-+				}
-+				wbc->nr_to_write = to_write +
-+					(wbc->pages_skipped - pages_skipped);
-+				wbc->pages_skipped = pages_skipped;
-+			} else
-+				wbc->nr_to_write = to_write;
- 		} else if (wbc->nr_to_write) {
- 			/*
- 			 * There is no more writeout needed
-@@ -2449,18 +2464,27 @@ static int ext4_da_writepages(struct address_space *mapping,
- 			to_write += wbc->nr_to_write;
- 			break;
- 		}
--		wbc->nr_to_write = to_write;
- 	}
- 
- 	if (wbc->range_cont && (pages_skipped != wbc->pages_skipped)) {
- 		/* We skipped pages in this loop */
- 		wbc->range_start = range_start;
- 		wbc->nr_to_write = to_write +
--				wbc->pages_skipped - pages_skipped;
-+				(wbc->pages_skipped - pages_skipped);
- 		wbc->pages_skipped = pages_skipped;
- 		goto restart_loop;
- 	}
- 
-+	if (wbc->range_cyclic && (pages_skipped != wbc->pages_skipped)) {
-+		/*
-+		 * we need to make sure we don't move the
-+		 * writeback_index further without looking
-+		 * at the pages skipped.
-+		 */
-+		mapping->writeback_index = mapping->writeback_index -
-+					(wbc->pages_skipped - pages_skipped);
-+	}
-+
- out_writepages:
- 	wbc->nr_to_write = to_write - nr_to_writebump;
- 	wbc->range_start = range_start;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFI6eZ1VKcRuvQ9Q1QRAn4mAJ91vQ9WC22xhruDuG8MnixnS9Rl6ACffZHH
+Hf0Xrri9lgcsT08YGMtxJGw=
+=Z1Wt
+-----END PGP SIGNATURE-----
+
+--=_bohort-5923-1223288297-0001-2--
