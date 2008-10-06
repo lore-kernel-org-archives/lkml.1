@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbYJFP31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYJFPbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbYJFP31 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 11:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYJFP3T
+	id S1753996AbYJFPbV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 11:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYJFPbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 11:29:19 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56733 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751633AbYJFP3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 11:29:18 -0400
-Date: Mon, 6 Oct 2008 16:29:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: banning device driver reserved resources from /dev/mem
-Message-ID: <20081006162914.4f140938@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081006075738.318a983f@infradead.org>
-References: <20081005180154.7cc12486@infradead.org>
-	<20081006102739.16d1a434@lxorguk.ukuu.org.uk>
-	<48EA1540.8060409@gmail.com>
-	<20081006144835.6e58f73a@lxorguk.ukuu.org.uk>
-	<20081006065213.76dc729a@infradead.org>
-	<20081006150122.3860cae1@lxorguk.ukuu.org.uk>
-	<20081006070543.23b14828@infradead.org>
-	<20081006151411.05ed5f50@lxorguk.ukuu.org.uk>
-	<20081006072437.5d1360dd@infradead.org>
-	<20081006153825.66e50770@lxorguk.ukuu.org.uk>
-	<20081006075738.318a983f@infradead.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Oct 2008 11:31:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35747 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641AbYJFPbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 11:31:12 -0400
+Message-ID: <48EA2F20.7020309@redhat.com>
+Date: Mon, 06 Oct 2008 10:30:40 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Quentin Godfroy <godfroy@clipper.ens.fr>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: possible (ext4 related?) memory leak in kernel 2.6.26
+References: <20080930211854.GZ10831@mit.edu> <20080930222358.1FF30EAC415@quatramaran.ens.fr> <20081003003548.GA18138@mit.edu> <20081005091526.GA678@goelette.ens.fr> <20081005122752.GB27335@mit.edu> <20081005161214.GA2985@goelette.ens.fr> <20081006025006.GA9289@mit.edu>
+In-Reply-To: <20081006025006.GA9289@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Oct 2008 07:57:38 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
-
-> > 
-> > For debug tools that would be almost all drivers, and for distribution
-> > use that needs to be a runtime selection.
+Theodore Tso wrote:
+> On Sun, Oct 05, 2008 at 06:12:15PM +0200, Quentin Godfroy wrote:
+>> For the two fs the only inode which shows up is the inode 8 (this
+>> seems to be the journal. According to 'stat <8>' in debugfs it looks
+>> like the journal is 134Megs long. I don't remember exactly how I
+>> created the fs, but i'm sure I did not specified the journal
+>> size. Does it seem reasonable for a 6,6G fs?
 > 
-> is boottime (read: kernel parameter) ok ?
-> it would totally make sense to have a kernel boot parameter that
-> disables all /dev/mem sanity checks.
+> 134 Megs sounds wrong.  What does dumpe2fs -h say?  I'm guessing you
+> didn't calculate it quite correctly.
+> 
+> I did some poking around myself, and noticed that a lot of in-use
+> buffers hanging around from the journal inode.  The following patch
+> should fix that problem.  I'm still doing some more testingto make
+> sure there aren't any other buffer head leaks, but this is seems to
+> fix the worst of the problems.  Can you let me know how this works for
+> you?
+> 
+> 							- Ted
+> 
+> jbd2: Fix buffer head leak when writing the commit block
+> 
+> Also make sure the buffer heads are marked clean before submitting bh
+> for writing.  The previous code was marking the buffer head dirty,
+> which would have forced an unneeded write (and seek) to the journal
+> for no good reason.
+> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+> index e91f051..c2b04cd 100644
+> --- a/fs/jbd2/commit.c
+> +++ b/fs/jbd2/commit.c
+> @@ -127,8 +127,7 @@ static int journal_submit_commit_record(journal_t *journal,
+>  
+>  	JBUFFER_TRACE(descriptor, "submit commit block");
+>  	lock_buffer(bh);
+> -	get_bh(bh);
+> -	set_buffer_dirty(bh);
+> +	clear_buffer_dirty(bh);
+>  	set_buffer_uptodate(bh);
+>  	bh->b_end_io = journal_end_buffer_io_sync;
+>  
+> @@ -157,7 +156,7 @@ static int journal_submit_commit_record(journal_t *journal,
+>  
+>  		/* And try again, without the barrier */
+>  		lock_buffer(bh);
+> -		set_buffer_uptodate(bh);
+> +		clear_buffer_uptodate(bh);
+>  		set_buffer_dirty(bh);
+>  		ret = submit_bh(WRITE, bh);
+>  	}
 
-A boot parameter probably catches most cases yes.
+Just so it doesn't get lost (discussed w/ Ted today) I think this 2nd
+hunk flipped the wrong buffer funtion; this makes much more sense to me:
 
-> that's a hard case but probably not the most interesting case; drivers
-> get loaded early thankfully.
-> (yes revoke is hard ;( )
+@@ -157,7 +156,7 @@ static int journal_submit_commit_record(journal_t
+*journal,
 
-Yeah .. I was hoping you'd write it ;)
+ 		/* And try again, without the barrier */
+ 		lock_buffer(bh);
+		set_buffer_uptodate(bh);
+-		set_buffer_dirty(bh);
++		clear_buffer_dirty(bh);
+ 		ret = submit_bh(WRITE, bh);
+ 	}
+
+
+-Eric
+
