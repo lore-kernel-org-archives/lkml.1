@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYJFO6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYJFPBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbYJFO6A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 10:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbYJFO5v
+	id S1754721AbYJFPBZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 11:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYJFPBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 10:57:51 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33166 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953AbYJFO5v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 10:57:51 -0400
-Date: Mon, 6 Oct 2008 07:57:38 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: banning device driver reserved resources from /dev/mem
-Message-ID: <20081006075738.318a983f@infradead.org>
-In-Reply-To: <20081006153825.66e50770@lxorguk.ukuu.org.uk>
-References: <20081005180154.7cc12486@infradead.org>
-	<20081006102739.16d1a434@lxorguk.ukuu.org.uk>
-	<48EA1540.8060409@gmail.com>
-	<20081006144835.6e58f73a@lxorguk.ukuu.org.uk>
-	<20081006065213.76dc729a@infradead.org>
-	<20081006150122.3860cae1@lxorguk.ukuu.org.uk>
-	<20081006070543.23b14828@infradead.org>
-	<20081006151411.05ed5f50@lxorguk.ukuu.org.uk>
-	<20081006072437.5d1360dd@infradead.org>
-	<20081006153825.66e50770@lxorguk.ukuu.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 6 Oct 2008 11:01:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54849 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753086AbYJFPBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 11:01:17 -0400
+Date: Mon, 6 Oct 2008 17:00:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Jason Vas Dias <jason.vas.dias@gmail.com>
+Subject: Re: [PATCH] x86 ACPI: Blacklist two HP machines with buggy BIOSes
+	(Re: 2.6.27-rc8+ - first impressions)
+Message-ID: <20081006150055.GA16930@elte.hu>
+References: <20081005183603.GA3263@amd.corenet.prv> <200810060029.42471.rjw@sisk.pl> <20081006062235.GA2808@amd.corenet.prv> <200810061159.30103.rjw@sisk.pl> <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Mon, 6 Oct 2008, Rafael J. Wysocki wrote:
+> > 
+> > Unfortunately some of the recent IO-APIC changes made the bug show 
+> > up.  To prevent this from happening, blacklist machines that are 
+> > known to be affected (nx6115 and 6715b in this particular case).
 > 
-> For debug tools that would be almost all drivers, and for distribution
-> use that needs to be a runtime selection.
-
-is boottime (read: kernel parameter) ok ?
-it would totally make sense to have a kernel boot parameter that
-disables all /dev/mem sanity checks.
-
+> Can you point to exactly _which_ recent change made it show up? I'd 
+> really like to know. _What_ was it that made us suddenly need this 
+> quirk when it wasn't necessary before? I'd like to understand the root 
+> cause here.
 > 
-> For the non share-resource-with case what occurs if /dev/mem is active
-> when the driver is loaded ?
+> And how did you even start looking at that strange ACPI override?
 
-that's a hard case but probably not the most interesting case; drivers
-get loaded early thankfully.
-(yes revoke is hard ;( )
+i think it was caused by this stream of IO-APIC changes:
 
+ 49a66a0: x86: I/O APIC: Always report how the timer has been set up
+ 17c4469: x86: I/O APIC: Include <asm/i8259.h> required by some code
+ 593f4a7: x86: APIC: remove apic_write_around(); use alternatives
+ ce8b06b: x86: I/O APIC: remove an IRQ2-mask hack
+ af17478: x86: I/O APIC: Never configure IRQ2
+ c88ac1d: x86: L-APIC: Always fully configure IRQ0
+ 1baea6e: x86: L-APIC: Set IRQ0 as edge-triggered
 
+Rafael/Maciej, which of these is causing it? ce8b06b ("x86: I/O APIC: 
+remove an IRQ2-mask hack")?
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Current theory is that this specific flavor of BIOS on HP / AMD / Turion 
+laptops (no other type is known to be affected at the moment) somehow 
+detects the IO-APIC masking patterns and uses an SMI quirk to change the 
+ACPI thermal trip point to very low settings, and thus confusing cpufreq 
+to (correctly) go into a very slow frequency.
+
+Activating the quirk works this around. Should we perhaps default to 
+this 'quirk' enabled by default?
+
+	Ingo
