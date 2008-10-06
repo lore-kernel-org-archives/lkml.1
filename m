@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYJFK61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbYJFLG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbYJFK61 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 06:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYJFK6T
+	id S1753777AbYJFLG3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 07:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYJFLGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 06:58:19 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:46351 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752387AbYJFK6T (ORCPT
+	Mon, 6 Oct 2008 07:06:19 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35691 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbYJFLGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 06:58:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=wPD2F7MugHvrWBF7wZnEA6+925ahJGdLrZxPbOTs8ECrOvYsbK/teOdXDzHyGLKbSy
-         XvyjDNlOS9oEpPnPtiImFtV9pUb2/VYREHY8HrZwW+4AkdOUHadZ8jI7/Hy2D2hcHCbV
-         wjhethna0GVxM8gP1IKXG21+p2xBmsmk0ip4o=
-Message-ID: <bcb3ef430810060358i3439bb06t599a526facabeabb@mail.gmail.com>
-Date: Mon, 6 Oct 2008 12:58:17 +0200
-From: MartinG <gronslet@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: pci 0000:00:1e.0: BAR 7: can't allocate I/O resource [0x10000-0xffff]
-Cc: MartinG <gronslet@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Mon, 6 Oct 2008 07:06:17 -0400
+To: serue@us.ibm.com
+CC: ebiederm@xmission.com, miklos@szeredi.hu, akpm@linux-foundation.org,
+       hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080930193941.GA2013@us.ibm.com> (serue@us.ibm.com)
+Subject: Re: unprivileged mounts git tree
+References: <20080905153134.GA18367@us.ibm.com> <E1Kd3Mh-0001vk-F5@pomaz-ex.szeredi.hu> <m11vzrge86.fsf@frodo.ebiederm.org> <E1KdnOb-00068L-Eq@pomaz-ex.szeredi.hu> <20080911152033.GA29318@us.ibm.com> <m13ak6ecoi.fsf@frodo.ebiederm.org> <20080912220802.GA23230@us.ibm.com> <m1tzck68od.fsf@frodo.ebiederm.org> <20080914015646.GC18604@us.ibm.com> <m1od2r1l4p.fsf@frodo.ebiederm.org> <20080930193941.GA2013@us.ibm.com>
+Message-Id: <E1KmnuG-0002ha-Cp@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 06 Oct 2008 13:05:40 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I get the following error when booting my latest Fedora rawhide
-kernel (2.6.27-0.391.rc8.git7.fc10.i686):
-pci 0000:00:1e.0: BAR 7: can't allocate I/O resource [0x10000-0xffff]
+On Tue, 30 Sep 2008, Serge E. Hallyn wrote:
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
 
-I'm not sure what it means, or what it implies, as my system seemingly
-works just the way it did earlier.
-lspci reports:
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev d3)
-(prog-if 01 [Subtractive decode])
-        Flags: bus master, fast devsel, latency 0
-        Bus: primary=00, secondary=02, subordinate=06, sec-latency=32
-        Memory behind bridge: dfc00000-dfcfffff
-        Prefetchable memory behind bridge:
-0000000060000000-0000000063ffffff
-        Capabilities: [50] Subsystem: Dell Device 01a3
+> > Ok.  I couldn't find Mikolos's code when I looked quickly.  What
+> > are the current rules?  It sounds like my original example could
+> > apply.
+> 
+> Rules according to permit_mount:
+> 
+> 	if CAP_SYS_ADMIN, allowed
+> 	if fs type is not marked safe for user mounts (and not bind), -EPERM
+> 	if target is a link, -EPERM
+> 	if target is labeled with new nosubmnt flag, -EPERM
+> 	if target is not a user mount owned by current->uid, -EPERM
+> 	if recursive bind mount, -EPERM (?)
 
+The rationale for the last one is that the user might not have access
+to the submounts.  Recursive bind mounts can be implemented in
+userspace if needed.
 
-This is on a Dell Latitude X1, smolt profile:
-http://www.smolts.org/client/show/pub_01507560-2bed-4c14-94a5-c72964bb4b84
-Full dmesg output here:
-http://pastebin.com/m2174ef7e
+> > The implementation of mounts in plan9 is a bit different.  In
+> > plan9 mounts are looked up by mount namespace and qid (effectively
+> > the inode number).  So the semantics are slightly different.
+> > Requiring a new mount namespace if you want to see what a
+> > filesystem looks like without a mount on top of a given file.
+> > 
+> > It also looks like plan9 is likely to have a unmountable and
+> > unusable mount if you actually delete an file, from another mount
+> > namespace.
+> > 
+> > Linux actually has a very similar case where we can loose a mount
+> > if you rename the directory that contains it to be somewhere
+> > higher in the mount hierarchy than the location the mount was
+> > under.
+> 
+> Can you give an example?
 
-Just wanted to report this - I'd be happy to provide more info if needed.
+# mkdir -p /tmp/a/b/c
+# mkdir /tmp/x
+# mount --bind /tmp/a /tmp/x
+# mount --bind /bin /tmp/x/b/c
+# mv /tmp/a/b/c /tmp
+mv: cannot move `/tmp/a/b/c' to `/tmp/c': Device or resource busy
+# mv /tmp/a/b /tmp
+# ls -al /tmp/x
+total 64
+drwxr-xr-x  2 root root  4096 Oct  6 12:55 .
+drwxrwxrwt 95 root root 57344 Oct  6 12:55 ..
+# umount /tmp/x
+umount: /tmp/x: device is busy.
 
-Please cc me on reply
--MartinG
+The mount under /tmp/x/b/c is now inaccessible and lost forever.  The
+only way to get rid of it is to lazy umount /tmp/x itself.
+
+What this means is that the current EBUSY restriction only prevents
+the mountpoint disappearing in a subset of cases.
+
+Miklos
