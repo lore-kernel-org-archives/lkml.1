@@ -1,69 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbYJFIDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbYJFIQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529AbYJFIDX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 04:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYJFIDK
+	id S1752675AbYJFIQb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 04:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYJFIQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 04:03:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:40508 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbYJFIDI (ORCPT
+	Mon, 6 Oct 2008 04:16:22 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:13211 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbYJFIQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 04:03:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=nJBc3XCRpB03nxdaq2ypXDiyl1tVGfl3FX4I1ynP9YEt9pWupZWTjepbirS9O/MUvO
-         Tspv5+Dr/aqRHh5IS6D1LMKkEbFnZMiW0JOltwWdohOQhg8wsliVPA2w7sl5CxQZzOqd
-         tnEMeTUfXWBSsT9aRpGmcfVxRs2pv4utn+2Wo=
-Message-ID: <48E9C637.8030507@gmail.com>
-Date: Mon, 06 Oct 2008 10:03:03 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 6 Oct 2008 04:16:21 -0400
+Date: Mon, 6 Oct 2008 11:17:23 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86_64: Implement personality ADDR_LIMIT_32BIT
+Message-ID: <20081006081717.GA20072@localhost.localdomain>
+References: <1223017469-5158-1-git-send-email-kirill@shutemov.name> <20081003080244.GC25408@elte.hu> <20081003092550.GA8669@localhost.localdomain> <87abdintds.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Marco Innocenti <m.innocenti@cineca.it>,
-       matt@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 2/6] introduce struct res_counter_ratelimit
-References: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com> <6599ad830810051103v1bd6e8d4xd2fcf622558fc7d9@mail.gmail.com>
-In-Reply-To: <6599ad830810051103v1bd6e8d4xd2fcf622558fc7d9@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
+Content-Disposition: inline
+In-Reply-To: <87abdintds.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-29)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> Hi Andrea,
-> 
-> The principle seems useful, but you seem to be duplicating a lot of
-> the existing res_counter code.
 
-Agree.
+--LZvS9be/3tNcYl/X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Could you not either:
-> 
-> - include these two extra fields in res_counter?
-> - include res_counter as the first field in a res_counter_ratelimit?
+On Mon, Oct 06, 2008 at 08:13:19AM +0200, Andi Kleen wrote:
+> "Kirill A. Shutemov" <kirill@shutemov.name> writes:
+> >
+> >>=20
+> >> but more generally, we already have ADDR_LIMIT_3GB support on x86.
+> >
+> > Does ADDR_LIMIT_3GB really work?
+>=20
+> As Arjan pointed out it only takes effect on exec()
+>=20
+> andi@basil:~/tsrc> cat tstack2.c
+> #include <stdio.h>
+> int main(void)
+> {
+>         void *p =3D &p;
+>         printf("%p\n", &p);
+>         return 0;
+> }
+> andi@basil:~/tsrc> gcc -m32 tstack2.c  -o tstack2
+> andi@basil:~/tsrc> ./tstack2=20
+> 0xff807d70
+> andi@basil:~/tsrc> linux32 --3gb ./tstack2=20
+> 0xbfae2840
 
-The second solution would save some space if the "ratelimit" part is not used.
-Anyway, I'll try to rewrite it to reuse as much code as possible and post a new
-patchset.
+Which kernel do you use?
+Does it work only when compiled with -m32?
 
-Thanks for looking into it.
+$ cat 1.c
+#include <stdio.h>
+int main(void)
+{
+        void *p =3D &p;
+        printf("%p\n", &p);
+        return 0;
+}
+$ gcc 1.c
+$ linux32 --3gb ./a.out
+0x7fffa667e7b8
 
--Andrea
+> >> Why=20
+> >> should support for ADDR_LIMIT_32BIT be added?
+> >
+> > It's useful for user mode qemu when you try emulate 32-bit target on=20
+> > x86_64. For example, if shmat(2) return addres above 32-bit, target will
+> > get SIGSEGV on access to it.
+>=20
+> The traditional way in mmap() to handle this is to give it a search
+> hint < 4GB and then free the memory again/fail if the result was >4GB.
+
+mmap() has MAP_32BIT flag on x86_64.
+
+> Unfortunately that doesn't work for shmat() because the address argument
+> is not a search hint, but a fixed address.=20
+>=20
+> I presume you need this for the qemu syscall emulation. For a standard
+> application I would just recommend to use mmap with tmpfs instead
+> (sysv shm is kind of obsolete). For shmat() emulation the cleanest way
+> would be probably to add a new flag to shmat() that says that address
+> is a search hint, not a fixed address. Then implement it the way recommen=
+ded
+> above.
+
+I prefer one handle to switch application to 32-bit address mode. Why is it
+wrong?
+
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.com/
+
+--LZvS9be/3tNcYl/X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjpyY0ACgkQbWYnhzC5v6rhxwCffulzlOtbVhIeJBHv8XzP8T0l
+sUwAnjKE0r50clXUSCGBC6IcW7cSPZXu
+=L/t1
+-----END PGP SIGNATURE-----
+
+--LZvS9be/3tNcYl/X--
