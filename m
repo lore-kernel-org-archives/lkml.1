@@ -1,218 +1,356 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbYJFVoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYJFVqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbYJFVoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 17:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYJFVoF
+	id S1755828AbYJFVqk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 17:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYJFVqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 17:44:05 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58176 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753505AbYJFVoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 17:44:03 -0400
-Message-ID: <48EA86B8.7010405@linux.vnet.ibm.com>
-Date: Mon, 06 Oct 2008 16:44:24 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adam Litke <agl@us.ibm.com>, Kumar Gala <galak@kernel.crashing.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2] properly reserve in bootmem the lmb reserved regions that
- cross NUMA nodes
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 6 Oct 2008 17:46:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48128 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753364AbYJFVqc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 17:46:32 -0400
+Date: Mon, 6 Oct 2008 14:46:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, mingo@elte.hu
+Subject: [PATCH] resource: ensure MMIO exclusivity for device drivers
+Message-ID: <20081006144629.25091ac0@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If there are multiple reserved memory blocks via lmb_reserve() that are
-contiguous addresses and on different NUMA nodes we are losing track of which 
-address ranges to reserve in bootmem on which node.  I discovered this 
-when I only recently got to try 16GB huge pages on a system with more 
-then 2 nodes.
+updated version; many updates based on Alan's feedback
 
-When scanning the device tree in early boot we call lmb_reserve() with 
-the addresses of the 16G pages that we find so that the memory doesn't 
-get used for something else.  For example the addresses for the pages 
-could be 4000000000, 4400000000, 4800000000, 4C00000000, etc - 8 pages, 
-one on each of eight nodes.  In the lmb after all the pages have been 
-reserved it will look something like the following:
+I also have a second patch that transforms basically drivers/video to 
+the non-exclusive API, but I'll wait with that until this one gets more backed
 
-lmb_dump_all:
-    memory.cnt            = 0x2
-    memory.size           = 0x3e80000000
-    memory.region[0x0].base       = 0x0
-                      .size     = 0x1e80000000
-    memory.region[0x1].base       = 0x4000000000
-                      .size     = 0x2000000000
-    reserved.cnt          = 0x5
-    reserved.size         = 0x3e80000000
-    reserved.region[0x0].base       = 0x0
-                      .size     = 0x7b5000
-    reserved.region[0x1].base       = 0x2a00000
-                      .size     = 0x78c000
-    reserved.region[0x2].base       = 0x328c000
-                      .size     = 0x43000
-    reserved.region[0x3].base       = 0xf4e8000
-                      .size     = 0xb18000
-    reserved.region[0x4].base       = 0x4000000000
-                      .size     = 0x2000000000
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sun, 5 Oct 2008 18:00:15 -0700
+Subject: [PATCH] resource: ensure MMIO exclusivity for device drivers
 
+Device drivers that use pci_request_regions() (and similar APIs) have a
+reasonable expectation that they are the only ones accessing their device.
+As part of the e1000e hunt, we were afraid that some userland (X or some
+bootsplash stuff) was mapping the MMIO region that the driver thought it
+had exclusively via /dev/mem or via various sysfs resource mappings.
 
-The reserved.region[0x4] contains the 16G pages.  In 
-arch/powerpc/mm/num.c: do_init_bootmem() we loop through each of the 
-node numbers looking for the reserved regions that belong to the 
-particular node.  It is not able to identify region 0x4 as being a part 
-of each of the 8 nodes.  It is assuming that a reserved region is only
-on a single node.
+This patch adds the reserved regions to the "banned from /dev/mem use" list,
+so now both kernel memory and device-exclusive MMIO regions are banned.
+NOTE: This is only active when CONFIG_STRICT_DEVMEM is set.
 
-This patch takes out the reserved region loop from inside
-the loop that goes over each node.  It looks up the active region containing
-the start of the reserved region.  If it extends past that active region then
-it adjusts the size and gets the next active region containing it.
+The introduced iomem_is_reserved() function is also planned to be used
+for other patches in 2.6.28 (pci_ioremap) so is exported here as part
+of being introduced.
 
+In addition to the config option, a kernel parameter iomem=relaxed is
+provided for the cases where developers want to diagnose, in the field,
+drivers issues from userspace.
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Signed-of-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
+ Documentation/kernel-parameters.txt |    4 ++
+ arch/x86/mm/init_32.c               |    2 +
+ arch/x86/mm/init_64.c               |    2 +
+ drivers/pci/pci-sysfs.c             |    3 ++
+ drivers/pci/pci.c                   |   50 +++++++++++++++++++++++++++-
+ include/linux/ioport.h              |    9 +++--
+ include/linux/pci.h                 |    1 +
+ kernel/resource.c                   |   61 +++++++++++++++++++++++++++++++++--
+ 8 files changed, 124 insertions(+), 8 deletions(-)
 
-Changes:
-    -style changes as suggested by Adam Litke
-
-
-Please consider for 2.6.28.
-
-
- arch/powerpc/mm/numa.c |   63 ++++++++++++++++++++++++++++---------------------
- include/linux/mm.h     |    2 +
- mm/page_alloc.c        |   19 ++++++++++++++
- 3 files changed, 57 insertions(+), 27 deletions(-)
-
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index d9a1813..9a3b0c9 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -837,36 +837,45 @@ void __init do_init_bootmem(void)
- 				  start_pfn, end_pfn);
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 4b9ee9b..e0b0a6b 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -882,6 +882,10 @@ and is between 256 and 4096 characters. It is defined in the file
  
- 		free_bootmem_with_active_regions(nid, end_pfn);
-+	}
+ 	inttest=	[IA64]
  
--		/* Mark reserved regions on this node */
--		for (i = 0; i < lmb.reserved.cnt; i++) {
--			unsigned long physbase = lmb.reserved.region[i].base;
--			unsigned long size = lmb.reserved.region[i].size;
--			unsigned long start_paddr = start_pfn << PAGE_SHIFT;
--			unsigned long end_paddr = end_pfn << PAGE_SHIFT;
--
--			if (early_pfn_to_nid(physbase >> PAGE_SHIFT) != nid &&
--			    early_pfn_to_nid((physbase+size-1) >> PAGE_SHIFT) != nid)
--				continue;
--
--			if (physbase < end_paddr &&
--			    (physbase+size) > start_paddr) {
--				/* overlaps */
--				if (physbase < start_paddr) {
--					size -= start_paddr - physbase;
--					physbase = start_paddr;
--				}
--
--				if (size > end_paddr - physbase)
--					size = end_paddr - physbase;
--
--				dbg("reserve_bootmem %lx %lx\n", physbase,
--				    size);
--				reserve_bootmem_node(NODE_DATA(nid), physbase,
--						     size, BOOTMEM_DEFAULT);
--			}
-+	/* Mark reserved regions */
-+	for (i = 0; i < lmb.reserved.cnt; i++) {
-+		unsigned long physbase = lmb.reserved.region[i].base;
-+		unsigned long size = lmb.reserved.region[i].size;
-+		unsigned long start_pfn = physbase >> PAGE_SHIFT;
-+		unsigned long end_pfn = ((physbase + size - 1) >> PAGE_SHIFT);
-+		struct node_active_region *node_ar;
++	iomem=		Disable strict checking of access to MMIO memory
++		strict	regions from userspace.
++		relaxed
 +
-+		node_ar = get_node_active_region(start_pfn);
-+		while (start_pfn < end_pfn && node_ar != NULL) {
-+			/*
-+			 * if reserved region extends past active region
-+			 * then trim size to active region
-+			 */
-+			if (end_pfn >= node_ar->end_pfn)
-+				size = (node_ar->end_pfn << PAGE_SHIFT)
-+					- (start_pfn << PAGE_SHIFT);
-+			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
-+				node_ar->nid);
-+			reserve_bootmem_node(NODE_DATA(node_ar->nid), physbase,
-+						size, BOOTMEM_DEFAULT);
-+			/*
-+			 * if reserved region extends past the active region
-+			 * then get next active region that contains
-+			 *        this reserved region
-+			 */
-+			if (end_pfn >= node_ar->end_pfn) {
-+				start_pfn = node_ar->end_pfn;
-+				physbase = start_pfn << PAGE_SHIFT;
-+				node_ar = get_node_active_region(start_pfn);
-+			} else
-+				break;
- 		}
+ 	iommu=		[x86]
+ 		off
+ 		force
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index b646e5b..213f686 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -329,6 +329,8 @@ int devmem_is_allowed(unsigned long pagenr)
+ {
+ 	if (pagenr <= 256)
+ 		return 1;
++	if (iomem_is_reserved(pagenr << PAGE_SHIFT))
++		return 0;
+ 	if (!page_is_ram(pagenr))
+ 		return 1;
+ 	return 0;
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index a624017..1ab8893 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -892,6 +892,8 @@ int devmem_is_allowed(unsigned long pagenr)
+ {
+ 	if (pagenr <= 256)
+ 		return 1;
++	if (iomem_is_reserved(pagenr << PAGE_SHIFT))
++		return 0;
+ 	if (!page_is_ram(pagenr))
+ 		return 1;
+ 	return 0;
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 77baff0..b28a6d2 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -537,6 +537,9 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
+ 	vma->vm_pgoff += start >> PAGE_SHIFT;
+ 	mmap_type = res->flags & IORESOURCE_MEM ? pci_mmap_mem : pci_mmap_io;
  
-+	}
++	if (res->flags & IORESOURCE_MEM && iomem_is_reserved(start))
++		return -EINVAL;
 +
-+	for_each_online_node(nid) {
- 		sparse_memory_present_with_active_regions(nid);
- 	}
+ 	return pci_mmap_page_range(pdev, vma, mmap_type, write_combine);
  }
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 72a15dc..d186a7e 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1020,6 +1020,8 @@ extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
- extern void remove_all_active_ranges(void);
- extern unsigned long absent_pages_in_range(unsigned long start_pfn,
- 						unsigned long end_pfn);
-+struct node_active_region *get_node_active_region(
-+						unsigned long start_pfn);
- extern void get_pfn_range_for_nid(unsigned int nid,
- 			unsigned long *start_pfn, unsigned long *end_pfn);
- extern unsigned long find_min_pfn_with_active_regions(void);
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 27b8681..fbbb759 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -3074,6 +3074,25 @@ static void __meminit account_node_boundary(unsigned int nid,
- 		unsigned long *start_pfn, unsigned long *end_pfn) {}
- #endif
  
-+/**
-+ * get_node_active_region - Return active region containing start_pfn
-+ * @start_pfn The page to return the region for.
-+ *
-+ * It will return NULL if active region is not found.
-+ */
-+struct node_active_region *
-+__meminit get_node_active_region(unsigned long start_pfn)
-+{
-+	int i;
-+	for (i = 0; i < nr_nodemap_entries; i++) {
-+		unsigned long node_start_pfn = early_node_map[i].start_pfn;
-+		unsigned long node_end_pfn = early_node_map[i].end_pfn;
-+
-+		if (node_start_pfn <= start_pfn && node_end_pfn > start_pfn)
-+			return &early_node_map[i];
-+	}
-+	return NULL;
-+}
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index a9301a2..d61e756 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1333,7 +1333,8 @@ void pci_release_region(struct pci_dev *pdev, int bar)
+  *	Returns 0 on success, or %EBUSY on error.  A warning
+  *	message is also printed on failure.
+  */
+-int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
++static int __pci_request_region(struct pci_dev *pdev, int bar, const char *res_name, 
++									int relaxed)
+ {
+ 	struct pci_devres *dr;
+ 
+@@ -1346,9 +1347,13 @@ int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
+ 			goto err_out;
+ 	}
+ 	else if (pci_resource_flags(pdev, bar) & IORESOURCE_MEM) {
+-		if (!request_mem_region(pci_resource_start(pdev, bar),
++		if (!relaxed && !request_mem_region(pci_resource_start(pdev, bar),
+ 				        pci_resource_len(pdev, bar), res_name))
+ 			goto err_out;
++		if (relaxed && !request_mem_region_relaxed(
++				pci_resource_start(pdev, bar),
++				pci_resource_len(pdev, bar), res_name))
++			goto err_out;
+ 	}
+ 
+ 	dr = find_pci_dr(pdev);
+@@ -1367,6 +1372,47 @@ err_out:
+ }
  
  /**
-  * get_pfn_range_for_nid - Return the start and end page frames for a node
++ *	pci_request_region - Reserved PCI I/O and memory resource
++ *	@pdev: PCI device whose resources are to be reserved
++ *	@bar: BAR to be reserved
++ *	@res_name: Name to be associated with resource.
++ *
++ *	Mark the PCI region associated with PCI device @pdev BR @bar as
++ *	being reserved by owner @res_name.  Do not access any
++ *	address inside the PCI regions unless this call returns
++ *	successfully.
++ *
++ *	Returns 0 on success, or %EBUSY on error.  A warning
++ *	message is also printed on failure.
++ */
++int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
++{
++	return __pci_request_region(pdev, bar, res_name, 0);
++}
++
++/**
++ *	pci_request_region_relaxed - Reserved PCI I/O and memory resource
++ *	@pdev: PCI device whose resources are to be reserved
++ *	@bar: BAR to be reserved
++ *	@res_name: Name to be associated with resource.
++ *
++ *	Mark the PCI region associated with PCI device @pdev BR @bar as
++ *	being reserved by owner @res_name.  Do not access any
++ *	address inside the PCI regions unless this call returns
++ *	successfully.
++ *
++ *	Returns 0 on success, or %EBUSY on error.  A warning
++ *	message is also printed on failure.
++ *
++ *	The key difference that _relaxed makes is that userspace is
++ *	explicitly allowed to map the resource via /dev/mem or
++ * 	sysfs.
++ */
++int pci_request_region_relaxed(struct pci_dev *pdev, int bar, const char *res_name)
++{
++	return __pci_request_region(pdev, bar, res_name, 1);
++}
++/**
+  * pci_release_selected_regions - Release selected PCI I/O and memory resources
+  * @pdev: PCI device whose resources were previously reserved
+  * @bars: Bitmask of BARs to be released
+diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+index e38b6aa..13c8828 100644
+--- a/include/linux/ioport.h
++++ b/include/linux/ioport.h
+@@ -48,6 +48,7 @@ struct resource_list {
+ #define IORESOURCE_SIZEALIGN	0x00020000	/* size indicates alignment */
+ #define IORESOURCE_STARTALIGN	0x00040000	/* start field is alignment */
+ 
++#define IORESOURCE_RELAXED	0x08000000	/* Driver allows userland to map the resource */
+ #define IORESOURCE_DISABLED	0x10000000
+ #define IORESOURCE_UNSET	0x20000000
+ #define IORESOURCE_AUTO		0x40000000
+@@ -128,13 +129,14 @@ static inline resource_size_t resource_size(struct resource *res)
+ }
+ 
+ /* Convenience shorthand with allocation */
+-#define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name))
+-#define request_mem_region(start,n,name) __request_region(&iomem_resource, (start), (n), (name))
++#define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), 0)
++#define request_mem_region(start,n,name) __request_region(&iomem_resource, (start), (n), (name), 0)
++#define request_mem_region_relaxed(start,n,name) __request_region(&iomem_resource, (start), (n), (name), 1)
+ #define rename_region(region, newname) do { (region)->name = (newname); } while (0)
+ 
+ extern struct resource * __request_region(struct resource *,
+ 					resource_size_t start,
+-					resource_size_t n, const char *name);
++					resource_size_t n, const char *name, int relaxed);
+ 
+ /* Compatibility cruft */
+ #define release_region(start,n)	__release_region(&ioport_resource, (start), (n))
+@@ -170,6 +172,7 @@ extern struct resource * __devm_request_region(struct device *dev,
+ extern void __devm_release_region(struct device *dev, struct resource *parent,
+ 				  resource_size_t start, resource_size_t n);
+ extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
++extern int iomem_is_reserved(u64 addr);
+ 
+ #endif /* __ASSEMBLY__ */
+ #endif	/* _LINUX_IOPORT_H */
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 709b8d4..82c36f5 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -670,6 +670,7 @@ void pci_fixup_irqs(u8 (*)(struct pci_dev *, u8 *),
+ int __must_check pci_request_regions(struct pci_dev *, const char *);
+ void pci_release_regions(struct pci_dev *);
+ int __must_check pci_request_region(struct pci_dev *, int, const char *);
++int __must_check pci_request_region_relaxed(struct pci_dev *, int, const char *);
+ void pci_release_region(struct pci_dev *, int);
+ int pci_request_selected_regions(struct pci_dev *, int, const char *);
+ void pci_release_selected_regions(struct pci_dev *, int);
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 7797dae..d08fa31 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -622,7 +622,7 @@ resource_size_t resource_alignment(struct resource *res)
+  */
+ struct resource * __request_region(struct resource *parent,
+ 				   resource_size_t start, resource_size_t n,
+-				   const char *name)
++				   const char *name, int relaxed)
+ {
+ 	struct resource *res = kzalloc(sizeof(*res), GFP_KERNEL);
+ 
+@@ -631,6 +631,8 @@ struct resource * __request_region(struct resource *parent,
+ 		res->start = start;
+ 		res->end = start + n - 1;
+ 		res->flags = IORESOURCE_BUSY;
++		if (relaxed)
++			res->flags |= IORESOURCE_RELAXED;
+ 
+ 		write_lock(&resource_lock);
+ 
+@@ -677,7 +679,7 @@ int __check_region(struct resource *parent, resource_size_t start,
+ {
+ 	struct resource * res;
+ 
+-	res = __request_region(parent, start, n, "check-region");
++	res = __request_region(parent, start, n, "check-region", 0);
+ 	if (!res)
+ 		return -EBUSY;
+ 
+@@ -774,7 +776,7 @@ struct resource * __devm_request_region(struct device *dev,
+ 	dr->start = start;
+ 	dr->n = n;
+ 
+-	res = __request_region(parent, start, n, name);
++	res = __request_region(parent, start, n, name, 0);
+ 	if (res)
+ 		devres_add(dev, dr);
+ 	else
+@@ -864,3 +866,56 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
+ 
+ 	return err;
+ }
++
++#ifdef CONFIG_STRICT_DEVMEM
++static int strict_iomem_checks = 1;
++#else
++static int strict_iomem_checks = 0;
++#endif
++
++/*
++ * check if an address is reserved in the iomem resource tree
++ * returns 1 if reserved, 0 if not reserved.
++ */
++int iomem_is_reserved(u64 addr)
++{
++	struct resource *p = &iomem_resource;
++	int err = 0;
++	loff_t l;
++	int size= PAGE_SIZE;
++
++	if (!strict_iomem_checks)
++		return 0;
++
++	read_lock(&resource_lock);
++	for (p = p->child; p ; p = r_next(NULL, p, &l)) {
++		/*
++		 * We can probably skip the resources without
++		 * IORESOURCE_IO attribute?
++		 */
++		if (p->start >= addr + size)
++			continue;
++		if (p->end < addr)
++			continue;
++		if (p->flags & IORESOURCE_BUSY &&
++		    !(p->flags & IORESOURCE_RELAXED)) {
++			err = 1;
++			break;
++		}
++	}
++	read_unlock(&resource_lock);
++
++	return err;
++}
++EXPORT_SYMBOL(iomem_is_reserved);
++
++static int __init strict_iomem(char *str)
++{
++	if (strstr(str, "relaxed"))
++		strict_iomem_checks = 0;
++	if (strstr(str, "strict"))
++		strict_iomem_checks = 0;
++	return 1;
++}
++
++__setup("iomem=", strict_iomem);
+-- 
+1.5.5.1
 
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
