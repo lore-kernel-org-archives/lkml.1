@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYJFQd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYJFQuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbYJFQd3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 12:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYJFQdV
+	id S1754110AbYJFQuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 12:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYJFQuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 12:33:21 -0400
-Received: from xenotime.net ([66.160.160.81]:36355 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752842AbYJFQdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 12:33:20 -0400
-Date: Mon, 6 Oct 2008 09:33:08 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: George Nychis <gnychis@cmu.edu>
-cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: [patch] Re: how to link to hrtimers in the kernel
-In-Reply-To: <48EA31A4.6080903@cmu.edu>
-Message-ID: <Pine.LNX.4.64.0810060931140.4121@shark.he.net>
-References: <48EA31A4.6080903@cmu.edu>
+	Mon, 6 Oct 2008 12:50:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:13856 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439AbYJFQuM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 12:50:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hV+yj66Nux5IZT6B6wLwQSGuLqJR93jvye5tJABI2Auyw50o30aSb6Jjgf/KhKpjLA
+         F9HMbifICnegqJmr0p6OTE06/mkGwm1Ui/1KjjIZIpAy+a58l/pa5RDcE2csIQCRCkfS
+         u1d9pDeO5I+OFEop59D5XBnN1VSnGwy094HBg=
+Date: Mon, 6 Oct 2008 20:50:07 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrey Batyiev <batyiev@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: APIC misconfiguration
+Message-ID: <20081006165007.GA7317@localhost>
+References: <200810061923.09076.batyiev@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810061923.09076.batyiev@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Oct 2008, George Nychis wrote:
+[Andrey Batyiev - Mon, Oct 06, 2008 at 07:23:08PM +0300]
+| Hello everyone
+| 
+| I'm trying to create touchscreen driver for Wibrain UMPC. I found
+| out that device doesn't emit interrupts until I switch polarity
+| field in IO_APIC_route_entry. To do this, I need to export
+| ioapic_read_entry and ioapic_write_entry symbols from
+| arch/x86/kernel/io_apic_{32,64}.c
+| Is there any other (better) way to do this?
+| 
+| Thanks,
+|    Andrey
+| 
 
-> Hi all,
-> 
-> I have modified drivers/usb/core/devio.c to use hrtimer_nanosleep(), and have
-> included linux/hrtimer.h with it.
-> 
-> But now I am having trouble linking, I get:
-> ERROR: "hrtimer_nanosleep" [drivers/usb/core/usbcore.ko] undefined!
-> 
-> How do I properly link to the hrtimer library?
+Hi Andrey,
 
-Hi,
-That function needs to be exported in its source file.
-Patch below should fix it for you.
+actually it's not a bug of APIC itself but rather misconfigured
+device I think. Not sure thru which bus it does work (pci
+i suppose) but I think you better are to fix it on more higher
+level like in config space of this device. PCI guys could tell
+you more about this area I believe.
 
-
-
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-Export hrtimer_nanosleep() for module use.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- kernel/hrtimer.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-2.6.27-rc8-git5.orig/kernel/hrtimer.c
-+++ linux-2.6.27-rc8-git5/kernel/hrtimer.c
-@@ -1559,6 +1559,7 @@ out:
- 	destroy_hrtimer_on_stack(&t.timer);
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(hrtimer_nanosleep);
- 
- asmlinkage long
- sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
+		- Cyrill -
