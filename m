@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYJFOGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYJFOJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbYJFOGB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 10:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYJFOFx
+	id S1754018AbYJFOJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 10:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYJFOJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 10:05:53 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58725 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbYJFOFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 10:05:53 -0400
-Date: Mon, 6 Oct 2008 07:05:43 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: banning device driver reserved resources from /dev/mem
-Message-ID: <20081006070543.23b14828@infradead.org>
-In-Reply-To: <20081006150122.3860cae1@lxorguk.ukuu.org.uk>
-References: <20081005180154.7cc12486@infradead.org>
-	<20081006102739.16d1a434@lxorguk.ukuu.org.uk>
-	<48EA1540.8060409@gmail.com>
-	<20081006144835.6e58f73a@lxorguk.ukuu.org.uk>
-	<20081006065213.76dc729a@infradead.org>
-	<20081006150122.3860cae1@lxorguk.ukuu.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Oct 2008 10:09:04 -0400
+Received: from gecko.sbs.de ([194.138.37.40]:15793 "EHLO gecko.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751636AbYJFOJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 10:09:03 -0400
+Message-ID: <48EA1BE9.1030707@siemens.com>
+Date: Mon, 06 Oct 2008 16:08:41 +0200
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: SIGTRAP vs. sys_exit_group race
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Oct 2008 15:01:22 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hi,
 
-> > > Only a tiny fraction of devices in the world are PCI, and those
-> > > platforms where you most what /dev/mem type debugging tools are
-> > > often those without PCI
-> > 
-> > if you looked at the patch it's x86 only, and only active if you set
-> > CONFIG_STRICT_DEVMEM.
-> > (if you don't select CONFIG_STRICT_DEVMEM, which is off by default,
-> > you get unlimited access as usualy)
-> 
-> Lots of non PCI devices on x86 systems as well.
-> 
-> And the video problem is a big one for the x86 case as the VGA ISA
-> window is used by both the kernel and X without a helper driver.
+are there any news on these ideas?
 
-no argument, except that the kernel doesn't do request_region() on it
-to expect exclusivity (so the patch doesn't do anything on this region)
+http://marc.info/?l=linux-kernel&m=121540671602971
 
-Now having said that, if the DRM layer does request_region on the MMIO
-bars, we might need a flag that explicitly says "this is intended for
-sharing with userspace" for this known case; not too hard, I'll check
-with Dave Airlie.
+I've been caught by a race between a ptraced thread running on a
+breakpoint, thus generating a SIGTRAP and another thread in this process
+issuing sys_exit_group. The discussion above, specifically Oleg's
+concerns, made me think that this is a generic issue of current
+mainline.
 
+I observed this on a heavily patched 2.6.26.5 kernel which comes, among
+other things, with a higher probability for latencies/reschedules
+between the queuing of SIGTRAP and the actual delivery. Right into this
+window, the sys_exit_group comes. It informs gdb about the termination,
+sends out SIGKILL to the other threads and turns the caller into a
+zombie. Now the second thread has SIGKILL + SIGTRAP pending, and it
+picks SIGTRAP for delivery. At this point gdb gets confused (maybe a bug
+of its own?), sends SIGSTOP to the dead thread and waits for it to enter
+the traced state (which it will never do) - deadlock of gdb, only
+resolvable by killing the latter.
 
+The patch below (rebased against latest git) resolves the issue for me,
+but I'm definitely not sure about all its implications and if I'm not
+papering over a different issue. Could you comment on my scenario? Is it
+possible with mainline as well? Will Roland's approach resolve it?
+
+Thanks,
+Jan
+
+---
+Index: b/kernel/signal.c
+===================================================================
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1528,10 +1528,11 @@ static void ptrace_stop(int exit_code, i
+ 		spin_unlock_irq(&current->sighand->siglock);
+ 		arch_ptrace_stop(exit_code, info);
+ 		spin_lock_irq(&current->sighand->siglock);
+-		if (sigkill_pending(current))
+-			return;
+ 	}
+ 
++	if (sigkill_pending(current))
++		return;
++
+ 	/*
+ 	 * If there is a group stop in progress,
+ 	 * we must participate in the bookkeeping.
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Siemens AG, Corporate Technology, CT SE 2
+Corporate Competence Center Embedded Linux
