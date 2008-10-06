@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbYJFS3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbYJFTQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559AbYJFS3d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 14:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYJFS3Z
+	id S1753251AbYJFTQN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 15:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYJFTP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 14:29:25 -0400
-Received: from sunrise.pg.gda.pl ([153.19.40.230]:61572 "EHLO
-	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbYJFS3Z convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 14:29:25 -0400
-Date: Mon, 6 Oct 2008 20:28:34 +0200
-From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH 0/0] SIGWINCH problem with terminal apps
-Message-ID: <20081006202834.5b6c5092@merlin.oi.pg.gda.pl>
-In-Reply-To: <20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
-References: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
-	<20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
-Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 6 Oct 2008 15:15:58 -0400
+Received: from mail.windriver.com ([147.11.1.11]:58979 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752248AbYJFTP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 15:15:57 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net
+Subject: [PATCH 1/2] kgdb, x86: Avoid invoking kgdb_nmicallback twice per NMI
+Date: Mon,  6 Oct 2008 14:14:14 -0500
+Message-Id: <1223320455-9266-2-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1223320455-9266-1-git-send-email-jason.wessel@windriver.com>
+References: <1223320455-9266-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 06 Oct 2008 19:14:15.0542 (UTC) FILETIME=[B93C1160:01C927E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Jan Kiszka <jan.kiszka@siemens.com>
 
-Mon, 6 Oct 2008 14:13:06 +0100 - Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> > So as a quick solution I made patches which move mentioned updates
-> > before kill_pgrp() calls. As I tested modified kernel there is no
-> > observed effect now. So I send patchs.
-> 
-> NAK - this might happen to make the race miss on your box but it's
-> not a fix of any kind.
+Stress-testing KVM's latest NMI support with kgdbts inside an SMP guest,
+I came across spurious unhandled NMIs while running the singlestep test.
+Looking closer at the code path each NMI takes when KGDB is enabled, I
+noticed that kgdb_nmicallback is called twice per event: One time via
+DIE_NMI_IPI notification, the second time on DIE_NMI. Removing the first
+invocation cures the unhandled NMIs here.
 
-It depends. If mutexes are not working properly only in case of signal
-sending then moving variables modification before kill_pgrp() call
-could be a quite good enough solution too. Mutexes seems to be faster
-and more efficient then semaphores for example.
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ arch/x86/kernel/kgdb.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index 8282a21..10435a1 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -455,12 +455,7 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+ 		return NOTIFY_DONE;
  
-> The code was never race free, the scheduler change made the problem
-> show up more. Later 2.6.27-rc has patches that use the termios lock
-> across TIOCG/SWINSZ and deal with the problem properly.
-
-Maybe but what with older versions. Anyway the problem is if mutexes
-are usable here or not.
+ 	case DIE_NMI_IPI:
+-		if (atomic_read(&kgdb_active) != -1) {
+-			/* KGDB CPU roundup */
+-			kgdb_nmicallback(raw_smp_processor_id(), regs);
+-			was_in_debug_nmi[raw_smp_processor_id()] = 1;
+-			touch_nmi_watchdog();
+-		}
++		/* Just ignore, we will handle the roundup on DIE_NMI. */
+ 		return NOTIFY_DONE;
  
-Regards
-
+ 	case DIE_NMIUNKNOWN:
 -- 
-Adam Tlałka
+1.6.0.2
+
