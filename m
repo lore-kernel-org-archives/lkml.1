@@ -1,742 +1,957 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYJFMlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbYJFMlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbYJFMlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 08:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYJFMiV
+	id S1755577AbYJFMlg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 08:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYJFMiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 08:38:21 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40066 "EHLO
+	Mon, 6 Oct 2008 08:38:23 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40071 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753122AbYJFMiO (ORCPT
+	by vger.kernel.org with ESMTP id S1753135AbYJFMiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 6 Oct 2008 08:38:14 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 03/13] mfd: Add WM8350 PMIC register definitions
-Date: Mon,  6 Oct 2008 13:37:58 +0100
-Message-Id: <1223296688-9960-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 12/13] mfd: Add WM8350 interrupt support
+Date: Mon,  6 Oct 2008 13:38:07 +0100
+Message-Id: <1223296688-9960-12-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223296688-9960-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1223296688-9960-11-git-send-email-broonie@opensource.wolfsonmicro.com>
 References: <20081006123254.GA9664@rakim.wolfsonmicro.main>
  <1223296688-9960-1-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223296688-9960-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-6-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-7-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-8-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-9-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-10-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-11-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The WM8350 has an interrupt line to the CPU which is shared by the
+devices on the CPU. This patch adds support for the interrupt
+controller within the WM8350 which identifies which identifies the
+interrupt cause. In common with other similar chips this is done
+outside the standard interrupt framework due to the need to access
+the interrupt controller over an interrupt-driven bus.
+
+This code was all originally written by Liam Girdwood with updates for
+submission by me.
+
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/mfd/wm8350/pmic.h |  699 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 699 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/mfd/wm8350/pmic.h
+ drivers/mfd/wm8350-core.c       |  775 ++++++++++++++++++++++++++++++++++++++-
+ drivers/mfd/wm8350-i2c.c        |    2 +-
+ include/linux/mfd/wm8350/core.h |   21 +-
+ 3 files changed, 792 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/mfd/wm8350/pmic.h b/include/linux/mfd/wm8350/pmic.h
-new file mode 100644
-index 0000000..28d2fab
---- /dev/null
-+++ b/include/linux/mfd/wm8350/pmic.h
-@@ -0,0 +1,699 @@
-+/*
-+ * pmic.h  --  Power Managment Driver for Wolfson WM8350 PMIC
-+ *
-+ * Copyright 2007 Wolfson Microelectronics PLC
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ */
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index 071834b..f6ba9d0 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -15,15 +15,20 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/bug.h>
+ #include <linux/device.h>
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
++#include <linux/workqueue.h>
+ 
+ #include <linux/mfd/wm8350/core.h>
+ #include <linux/mfd/wm8350/audio.h>
++#include <linux/mfd/wm8350/comparator.h>
+ #include <linux/mfd/wm8350/gpio.h>
+ #include <linux/mfd/wm8350/pmic.h>
++#include <linux/mfd/wm8350/rtc.h>
+ #include <linux/mfd/wm8350/supply.h>
++#include <linux/mfd/wm8350/wdt.h>
+ 
+ #define WM8350_UNLOCK_KEY		0x0013
+ #define WM8350_LOCK_KEY			0x0000
+@@ -321,6 +326,743 @@ int wm8350_reg_unlock(struct wm8350 *wm8350)
+ }
+ EXPORT_SYMBOL_GPL(wm8350_reg_unlock);
+ 
++static void wm8350_irq_call_handler(struct wm8350 *wm8350, int irq)
++{
++	mutex_lock(&wm8350->irq_mutex);
 +
-+#ifndef __LINUX_MFD_WM8350_PMIC_H
-+#define __LINUX_MFD_WM8350_PMIC_H
++	if (wm8350->irq[irq].handler)
++		wm8350->irq[irq].handler(wm8350, irq, wm8350->irq[irq].data);
++	else {
++		dev_err(wm8350->dev, "irq %d nobody cared. now masked.\n",
++			irq);
++		wm8350_mask_irq(wm8350, irq);
++	}
 +
-+/*
-+ * Register values.
-+ */
-+
-+#define WM8350_CURRENT_SINK_DRIVER_A            0xAC
-+#define WM8350_CSA_FLASH_CONTROL                0xAD
-+#define WM8350_CURRENT_SINK_DRIVER_B            0xAE
-+#define WM8350_CSB_FLASH_CONTROL                0xAF
-+#define WM8350_DCDC_LDO_REQUESTED               0xB0
-+#define WM8350_DCDC_ACTIVE_OPTIONS              0xB1
-+#define WM8350_DCDC_SLEEP_OPTIONS               0xB2
-+#define WM8350_POWER_CHECK_COMPARATOR           0xB3
-+#define WM8350_DCDC1_CONTROL                    0xB4
-+#define WM8350_DCDC1_TIMEOUTS                   0xB5
-+#define WM8350_DCDC1_LOW_POWER                  0xB6
-+#define WM8350_DCDC2_CONTROL                    0xB7
-+#define WM8350_DCDC2_TIMEOUTS                   0xB8
-+#define WM8350_DCDC3_CONTROL                    0xBA
-+#define WM8350_DCDC3_TIMEOUTS                   0xBB
-+#define WM8350_DCDC3_LOW_POWER                  0xBC
-+#define WM8350_DCDC4_CONTROL                    0xBD
-+#define WM8350_DCDC4_TIMEOUTS                   0xBE
-+#define WM8350_DCDC4_LOW_POWER                  0xBF
-+#define WM8350_DCDC5_CONTROL                    0xC0
-+#define WM8350_DCDC5_TIMEOUTS                   0xC1
-+#define WM8350_DCDC6_CONTROL                    0xC3
-+#define WM8350_DCDC6_TIMEOUTS                   0xC4
-+#define WM8350_DCDC6_LOW_POWER                  0xC5
-+#define WM8350_LIMIT_SWITCH_CONTROL             0xC7
-+#define WM8350_LDO1_CONTROL                     0xC8
-+#define WM8350_LDO1_TIMEOUTS                    0xC9
-+#define WM8350_LDO1_LOW_POWER                   0xCA
-+#define WM8350_LDO2_CONTROL                     0xCB
-+#define WM8350_LDO2_TIMEOUTS                    0xCC
-+#define WM8350_LDO2_LOW_POWER                   0xCD
-+#define WM8350_LDO3_CONTROL                     0xCE
-+#define WM8350_LDO3_TIMEOUTS                    0xCF
-+#define WM8350_LDO3_LOW_POWER                   0xD0
-+#define WM8350_LDO4_CONTROL                     0xD1
-+#define WM8350_LDO4_TIMEOUTS                    0xD2
-+#define WM8350_LDO4_LOW_POWER                   0xD3
-+#define WM8350_VCC_FAULT_MASKS                  0xD7
-+#define WM8350_MAIN_BANDGAP_CONTROL             0xD8
-+#define WM8350_OSC_CONTROL                      0xD9
-+#define WM8350_RTC_TICK_CONTROL                 0xDA
-+#define WM8350_SECURITY                         0xDB
-+#define WM8350_RAM_BIST_1                       0xDC
-+#define WM8350_DCDC_LDO_STATUS                  0xE1
-+#define WM8350_GPIO_PIN_STATUS                  0xE6
-+
-+#define WM8350_DCDC1_FORCE_PWM                  0xF8
-+#define WM8350_DCDC3_FORCE_PWM                  0xFA
-+#define WM8350_DCDC4_FORCE_PWM                  0xFB
-+#define WM8350_DCDC6_FORCE_PWM                  0xFD
++	mutex_unlock(&wm8350->irq_mutex);
++}
 +
 +/*
-+ * R172 (0xAC) - Current Sink Driver A
++ * wm8350_irq_worker actually handles the interrupts.  Since all
++ * interrupts are clear on read the IRQ line will be reasserted and
++ * the physical IRQ will be handled again if another interrupt is
++ * asserted while we run - in the normal course of events this is a
++ * rare occurrence so we save I2C/SPI reads.
 + */
-+#define WM8350_CS1_HIB_MODE                     0x1000
-+#define WM8350_CS1_HIB_MODE_MASK                0x1000
-+#define WM8350_CS1_HIB_MODE_SHIFT                   12
-+#define WM8350_CS1_ISEL_MASK                    0x003F
-+#define WM8350_CS1_ISEL_SHIFT                        0
++static void wm8350_irq_worker(struct work_struct *work)
++{
++	struct wm8350 *wm8350 = container_of(work, struct wm8350, irq_work);
++	u16 level_one, status1, status2, comp;
 +
-+/* Bit values for R172 (0xAC) */
-+#define WM8350_CS1_HIB_MODE_DISABLE                  0
-+#define WM8350_CS1_HIB_MODE_LEAVE                    1
++	/* TODO: Use block reads to improve performance? */
++	level_one = wm8350_reg_read(wm8350, WM8350_SYSTEM_INTERRUPTS)
++		& ~wm8350_reg_read(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK);
++	status1 = wm8350_reg_read(wm8350, WM8350_INT_STATUS_1)
++		& ~wm8350_reg_read(wm8350, WM8350_INT_STATUS_1_MASK);
++	status2 = wm8350_reg_read(wm8350, WM8350_INT_STATUS_2)
++		& ~wm8350_reg_read(wm8350, WM8350_INT_STATUS_2_MASK);
++	comp = wm8350_reg_read(wm8350, WM8350_COMPARATOR_INT_STATUS)
++		& ~wm8350_reg_read(wm8350, WM8350_COMPARATOR_INT_STATUS_MASK);
 +
-+#define WM8350_CS1_ISEL_220M                      0x3F
++	/* over current */
++	if (level_one & WM8350_OC_INT) {
++		u16 oc;
 +
++		oc = wm8350_reg_read(wm8350, WM8350_OVER_CURRENT_INT_STATUS);
++		oc &= ~wm8350_reg_read(wm8350,
++				       WM8350_OVER_CURRENT_INT_STATUS_MASK);
++
++		if (oc & WM8350_OC_LS_EINT)	/* limit switch */
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_OC_LS);
++	}
++
++	/* under voltage */
++	if (level_one & WM8350_UV_INT) {
++		u16 uv;
++
++		uv = wm8350_reg_read(wm8350, WM8350_UNDER_VOLTAGE_INT_STATUS);
++		uv &= ~wm8350_reg_read(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK);
++
++		if (uv & WM8350_UV_DC1_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_DC1);
++		if (uv & WM8350_UV_DC2_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_DC2);
++		if (uv & WM8350_UV_DC3_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_DC3);
++		if (uv & WM8350_UV_DC4_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_DC4);
++		if (uv & WM8350_UV_DC5_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_DC5);
++		if (uv & WM8350_UV_DC6_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_DC6);
++		if (uv & WM8350_UV_LDO1_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_LDO1);
++		if (uv & WM8350_UV_LDO2_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_LDO2);
++		if (uv & WM8350_UV_LDO3_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_LDO3);
++		if (uv & WM8350_UV_LDO4_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_UV_LDO4);
++	}
++
++	/* charger, RTC */
++	if (status1) {
++		if (status1 & WM8350_CHG_BAT_HOT_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CHG_BAT_HOT);
++		if (status1 & WM8350_CHG_BAT_COLD_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CHG_BAT_COLD);
++		if (status1 & WM8350_CHG_BAT_FAIL_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CHG_BAT_FAIL);
++		if (status1 & WM8350_CHG_TO_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_CHG_TO);
++		if (status1 & WM8350_CHG_END_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_CHG_END);
++		if (status1 & WM8350_CHG_START_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_CHG_START);
++		if (status1 & WM8350_CHG_FAST_RDY_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CHG_FAST_RDY);
++		if (status1 & WM8350_CHG_VBATT_LT_3P9_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CHG_VBATT_LT_3P9);
++		if (status1 & WM8350_CHG_VBATT_LT_3P1_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CHG_VBATT_LT_3P1);
++		if (status1 & WM8350_CHG_VBATT_LT_2P85_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CHG_VBATT_LT_2P85);
++		if (status1 & WM8350_RTC_ALM_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_RTC_ALM);
++		if (status1 & WM8350_RTC_SEC_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_RTC_SEC);
++		if (status1 & WM8350_RTC_PER_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_RTC_PER);
++	}
++
++	/* current sink, system, aux adc */
++	if (status2) {
++		if (status2 & WM8350_CS1_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_CS1);
++		if (status2 & WM8350_CS2_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_CS2);
++
++		if (status2 & WM8350_SYS_HYST_COMP_FAIL_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_SYS_HYST_COMP_FAIL);
++		if (status2 & WM8350_SYS_CHIP_GT115_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_SYS_CHIP_GT115);
++		if (status2 & WM8350_SYS_CHIP_GT140_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_SYS_CHIP_GT140);
++		if (status2 & WM8350_SYS_WDOG_TO_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_SYS_WDOG_TO);
++
++		if (status2 & WM8350_AUXADC_DATARDY_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_AUXADC_DATARDY);
++		if (status2 & WM8350_AUXADC_DCOMP4_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_AUXADC_DCOMP4);
++		if (status2 & WM8350_AUXADC_DCOMP3_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_AUXADC_DCOMP3);
++		if (status2 & WM8350_AUXADC_DCOMP2_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_AUXADC_DCOMP2);
++		if (status2 & WM8350_AUXADC_DCOMP1_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_AUXADC_DCOMP1);
++
++		if (status2 & WM8350_USB_LIMIT_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_USB_LIMIT);
++	}
++
++	/* wake, codec, ext */
++	if (comp) {
++		if (comp & WM8350_WKUP_OFF_STATE_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_WKUP_OFF_STATE);
++		if (comp & WM8350_WKUP_HIB_STATE_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_WKUP_HIB_STATE);
++		if (comp & WM8350_WKUP_CONV_FAULT_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_WKUP_CONV_FAULT);
++		if (comp & WM8350_WKUP_WDOG_RST_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_WKUP_WDOG_RST);
++		if (comp & WM8350_WKUP_GP_PWR_ON_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_WKUP_GP_PWR_ON);
++		if (comp & WM8350_WKUP_ONKEY_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_WKUP_ONKEY);
++		if (comp & WM8350_WKUP_GP_WAKEUP_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_WKUP_GP_WAKEUP);
++
++		if (comp & WM8350_CODEC_JCK_DET_L_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CODEC_JCK_DET_L);
++		if (comp & WM8350_CODEC_JCK_DET_R_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CODEC_JCK_DET_R);
++		if (comp & WM8350_CODEC_MICSCD_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_CODEC_MICSCD);
++		if (comp & WM8350_CODEC_MICD_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_CODEC_MICD);
++
++		if (comp & WM8350_EXT_USB_FB_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_EXT_USB_FB);
++		if (comp & WM8350_EXT_WALL_FB_EINT)
++			wm8350_irq_call_handler(wm8350,
++						WM8350_IRQ_EXT_WALL_FB);
++		if (comp & WM8350_EXT_BAT_FB_EINT)
++			wm8350_irq_call_handler(wm8350, WM8350_IRQ_EXT_BAT_FB);
++	}
++
++	if (level_one & WM8350_GP_INT) {
++		int i;
++		u16 gpio;
++
++		gpio = wm8350_reg_read(wm8350, WM8350_GPIO_INT_STATUS);
++		gpio &= ~wm8350_reg_read(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK);
++
++		for (i = 0; i < 12; i++) {
++			if (gpio & (1 << i))
++				wm8350_irq_call_handler(wm8350,
++							WM8350_IRQ_GPIO(i));
++		}
++	}
++
++	enable_irq(wm8350->chip_irq);
++}
++
++static irqreturn_t wm8350_irq(int irq, void *data)
++{
++	struct wm8350 *wm8350 = data;
++
++	disable_irq_nosync(irq);
++	schedule_work(&wm8350->irq_work);
++
++	return IRQ_HANDLED;
++}
++
++int wm8350_register_irq(struct wm8350 *wm8350, int irq,
++			void (*handler) (struct wm8350 *, int, void *),
++			void *data)
++{
++	if (irq < 0 || irq > WM8350_NUM_IRQ || !handler)
++		return -EINVAL;
++
++	if (wm8350->irq[irq].handler)
++		return -EBUSY;
++
++	mutex_lock(&wm8350->irq_mutex);
++	wm8350->irq[irq].handler = handler;
++	wm8350->irq[irq].data = data;
++	mutex_unlock(&wm8350->irq_mutex);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(wm8350_register_irq);
++
++int wm8350_free_irq(struct wm8350 *wm8350, int irq)
++{
++	if (irq < 0 || irq > WM8350_NUM_IRQ)
++		return -EINVAL;
++
++	mutex_lock(&wm8350->irq_mutex);
++	wm8350->irq[irq].handler = NULL;
++	mutex_unlock(&wm8350->irq_mutex);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(wm8350_free_irq);
++
++int wm8350_mask_irq(struct wm8350 *wm8350, int irq)
++{
++	switch (irq) {
++	case WM8350_IRQ_CHG_BAT_HOT:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_BAT_HOT_EINT);
++	case WM8350_IRQ_CHG_BAT_COLD:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_BAT_COLD_EINT);
++	case WM8350_IRQ_CHG_BAT_FAIL:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_BAT_FAIL_EINT);
++	case WM8350_IRQ_CHG_TO:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_TO_EINT);
++	case WM8350_IRQ_CHG_END:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_END_EINT);
++	case WM8350_IRQ_CHG_START:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_START_EINT);
++	case WM8350_IRQ_CHG_FAST_RDY:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_FAST_RDY_EINT);
++	case WM8350_IRQ_RTC_PER:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_RTC_PER_EINT);
++	case WM8350_IRQ_RTC_SEC:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_RTC_SEC_EINT);
++	case WM8350_IRQ_RTC_ALM:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_RTC_ALM_EINT);
++	case WM8350_IRQ_CHG_VBATT_LT_3P9:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_VBATT_LT_3P9_EINT);
++	case WM8350_IRQ_CHG_VBATT_LT_3P1:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_VBATT_LT_3P1_EINT);
++	case WM8350_IRQ_CHG_VBATT_LT_2P85:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++				       WM8350_IM_CHG_VBATT_LT_2P85_EINT);
++	case WM8350_IRQ_CS1:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_CS1_EINT);
++	case WM8350_IRQ_CS2:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_CS2_EINT);
++	case WM8350_IRQ_USB_LIMIT:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_USB_LIMIT_EINT);
++	case WM8350_IRQ_AUXADC_DATARDY:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_AUXADC_DATARDY_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP4:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_AUXADC_DCOMP4_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP3:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_AUXADC_DCOMP3_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP2:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_AUXADC_DCOMP2_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP1:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_AUXADC_DCOMP1_EINT);
++	case WM8350_IRQ_SYS_HYST_COMP_FAIL:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_SYS_HYST_COMP_FAIL_EINT);
++	case WM8350_IRQ_SYS_CHIP_GT115:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_SYS_CHIP_GT115_EINT);
++	case WM8350_IRQ_SYS_CHIP_GT140:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_SYS_CHIP_GT140_EINT);
++	case WM8350_IRQ_SYS_WDOG_TO:
++		return wm8350_set_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++				       WM8350_IM_SYS_WDOG_TO_EINT);
++	case WM8350_IRQ_UV_LDO4:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_LDO4_EINT);
++	case WM8350_IRQ_UV_LDO3:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_LDO3_EINT);
++	case WM8350_IRQ_UV_LDO2:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_LDO2_EINT);
++	case WM8350_IRQ_UV_LDO1:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_LDO1_EINT);
++	case WM8350_IRQ_UV_DC6:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_DC6_EINT);
++	case WM8350_IRQ_UV_DC5:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_DC5_EINT);
++	case WM8350_IRQ_UV_DC4:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_DC4_EINT);
++	case WM8350_IRQ_UV_DC3:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_DC3_EINT);
++	case WM8350_IRQ_UV_DC2:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_DC2_EINT);
++	case WM8350_IRQ_UV_DC1:
++		return wm8350_set_bits(wm8350,
++				       WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++				       WM8350_IM_UV_DC1_EINT);
++	case WM8350_IRQ_OC_LS:
++		return wm8350_set_bits(wm8350,
++				       WM8350_OVER_CURRENT_INT_STATUS_MASK,
++				       WM8350_IM_OC_LS_EINT);
++	case WM8350_IRQ_EXT_USB_FB:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_EXT_USB_FB_EINT);
++	case WM8350_IRQ_EXT_WALL_FB:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_EXT_WALL_FB_EINT);
++	case WM8350_IRQ_EXT_BAT_FB:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_EXT_BAT_FB_EINT);
++	case WM8350_IRQ_CODEC_JCK_DET_L:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_CODEC_JCK_DET_L_EINT);
++	case WM8350_IRQ_CODEC_JCK_DET_R:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_CODEC_JCK_DET_R_EINT);
++	case WM8350_IRQ_CODEC_MICSCD:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_CODEC_MICSCD_EINT);
++	case WM8350_IRQ_CODEC_MICD:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_CODEC_MICD_EINT);
++	case WM8350_IRQ_WKUP_OFF_STATE:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_WKUP_OFF_STATE_EINT);
++	case WM8350_IRQ_WKUP_HIB_STATE:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_WKUP_HIB_STATE_EINT);
++	case WM8350_IRQ_WKUP_CONV_FAULT:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_WKUP_CONV_FAULT_EINT);
++	case WM8350_IRQ_WKUP_WDOG_RST:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_WKUP_OFF_STATE_EINT);
++	case WM8350_IRQ_WKUP_GP_PWR_ON:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_WKUP_GP_PWR_ON_EINT);
++	case WM8350_IRQ_WKUP_ONKEY:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_WKUP_ONKEY_EINT);
++	case WM8350_IRQ_WKUP_GP_WAKEUP:
++		return wm8350_set_bits(wm8350,
++				       WM8350_COMPARATOR_INT_STATUS_MASK,
++				       WM8350_IM_WKUP_GP_WAKEUP_EINT);
++	case WM8350_IRQ_GPIO(0):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP0_EINT);
++	case WM8350_IRQ_GPIO(1):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP1_EINT);
++	case WM8350_IRQ_GPIO(2):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP2_EINT);
++	case WM8350_IRQ_GPIO(3):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP3_EINT);
++	case WM8350_IRQ_GPIO(4):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP4_EINT);
++	case WM8350_IRQ_GPIO(5):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP5_EINT);
++	case WM8350_IRQ_GPIO(6):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP6_EINT);
++	case WM8350_IRQ_GPIO(7):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP7_EINT);
++	case WM8350_IRQ_GPIO(8):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP8_EINT);
++	case WM8350_IRQ_GPIO(9):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP9_EINT);
++	case WM8350_IRQ_GPIO(10):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP10_EINT);
++	case WM8350_IRQ_GPIO(11):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP11_EINT);
++	case WM8350_IRQ_GPIO(12):
++		return wm8350_set_bits(wm8350,
++				       WM8350_GPIO_INT_STATUS_MASK,
++				       WM8350_IM_GP12_EINT);
++	default:
++		dev_warn(wm8350->dev, "Attempting to mask unknown IRQ %d\n",
++			 irq);
++		return -EINVAL;
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(wm8350_mask_irq);
++
++int wm8350_unmask_irq(struct wm8350 *wm8350, int irq)
++{
++	switch (irq) {
++	case WM8350_IRQ_CHG_BAT_HOT:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_BAT_HOT_EINT);
++	case WM8350_IRQ_CHG_BAT_COLD:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_BAT_COLD_EINT);
++	case WM8350_IRQ_CHG_BAT_FAIL:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_BAT_FAIL_EINT);
++	case WM8350_IRQ_CHG_TO:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_TO_EINT);
++	case WM8350_IRQ_CHG_END:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_END_EINT);
++	case WM8350_IRQ_CHG_START:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_START_EINT);
++	case WM8350_IRQ_CHG_FAST_RDY:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_FAST_RDY_EINT);
++	case WM8350_IRQ_RTC_PER:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_RTC_PER_EINT);
++	case WM8350_IRQ_RTC_SEC:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_RTC_SEC_EINT);
++	case WM8350_IRQ_RTC_ALM:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_RTC_ALM_EINT);
++	case WM8350_IRQ_CHG_VBATT_LT_3P9:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_VBATT_LT_3P9_EINT);
++	case WM8350_IRQ_CHG_VBATT_LT_3P1:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_VBATT_LT_3P1_EINT);
++	case WM8350_IRQ_CHG_VBATT_LT_2P85:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK,
++					 WM8350_IM_CHG_VBATT_LT_2P85_EINT);
++	case WM8350_IRQ_CS1:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_CS1_EINT);
++	case WM8350_IRQ_CS2:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_CS2_EINT);
++	case WM8350_IRQ_USB_LIMIT:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_USB_LIMIT_EINT);
++	case WM8350_IRQ_AUXADC_DATARDY:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_AUXADC_DATARDY_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP4:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_AUXADC_DCOMP4_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP3:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_AUXADC_DCOMP3_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP2:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_AUXADC_DCOMP2_EINT);
++	case WM8350_IRQ_AUXADC_DCOMP1:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_AUXADC_DCOMP1_EINT);
++	case WM8350_IRQ_SYS_HYST_COMP_FAIL:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_SYS_HYST_COMP_FAIL_EINT);
++	case WM8350_IRQ_SYS_CHIP_GT115:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_SYS_CHIP_GT115_EINT);
++	case WM8350_IRQ_SYS_CHIP_GT140:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_SYS_CHIP_GT140_EINT);
++	case WM8350_IRQ_SYS_WDOG_TO:
++		return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_2_MASK,
++					 WM8350_IM_SYS_WDOG_TO_EINT);
++	case WM8350_IRQ_UV_LDO4:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_LDO4_EINT);
++	case WM8350_IRQ_UV_LDO3:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_LDO3_EINT);
++	case WM8350_IRQ_UV_LDO2:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_LDO2_EINT);
++	case WM8350_IRQ_UV_LDO1:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_LDO1_EINT);
++	case WM8350_IRQ_UV_DC6:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_DC6_EINT);
++	case WM8350_IRQ_UV_DC5:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_DC5_EINT);
++	case WM8350_IRQ_UV_DC4:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_DC4_EINT);
++	case WM8350_IRQ_UV_DC3:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_DC3_EINT);
++	case WM8350_IRQ_UV_DC2:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_DC2_EINT);
++	case WM8350_IRQ_UV_DC1:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_UNDER_VOLTAGE_INT_STATUS_MASK,
++					 WM8350_IM_UV_DC1_EINT);
++	case WM8350_IRQ_OC_LS:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_OVER_CURRENT_INT_STATUS_MASK,
++					 WM8350_IM_OC_LS_EINT);
++	case WM8350_IRQ_EXT_USB_FB:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_EXT_USB_FB_EINT);
++	case WM8350_IRQ_EXT_WALL_FB:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_EXT_WALL_FB_EINT);
++	case WM8350_IRQ_EXT_BAT_FB:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_EXT_BAT_FB_EINT);
++	case WM8350_IRQ_CODEC_JCK_DET_L:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_CODEC_JCK_DET_L_EINT);
++	case WM8350_IRQ_CODEC_JCK_DET_R:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_CODEC_JCK_DET_R_EINT);
++	case WM8350_IRQ_CODEC_MICSCD:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_CODEC_MICSCD_EINT);
++	case WM8350_IRQ_CODEC_MICD:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_CODEC_MICD_EINT);
++	case WM8350_IRQ_WKUP_OFF_STATE:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_WKUP_OFF_STATE_EINT);
++	case WM8350_IRQ_WKUP_HIB_STATE:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_WKUP_HIB_STATE_EINT);
++	case WM8350_IRQ_WKUP_CONV_FAULT:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_WKUP_CONV_FAULT_EINT);
++	case WM8350_IRQ_WKUP_WDOG_RST:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_WKUP_OFF_STATE_EINT);
++	case WM8350_IRQ_WKUP_GP_PWR_ON:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_WKUP_GP_PWR_ON_EINT);
++	case WM8350_IRQ_WKUP_ONKEY:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_WKUP_ONKEY_EINT);
++	case WM8350_IRQ_WKUP_GP_WAKEUP:
++		return wm8350_clear_bits(wm8350,
++					 WM8350_COMPARATOR_INT_STATUS_MASK,
++					 WM8350_IM_WKUP_GP_WAKEUP_EINT);
++	case WM8350_IRQ_GPIO(0):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP0_EINT);
++	case WM8350_IRQ_GPIO(1):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP1_EINT);
++	case WM8350_IRQ_GPIO(2):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP2_EINT);
++	case WM8350_IRQ_GPIO(3):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP3_EINT);
++	case WM8350_IRQ_GPIO(4):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP4_EINT);
++	case WM8350_IRQ_GPIO(5):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP5_EINT);
++	case WM8350_IRQ_GPIO(6):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP6_EINT);
++	case WM8350_IRQ_GPIO(7):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP7_EINT);
++	case WM8350_IRQ_GPIO(8):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP8_EINT);
++	case WM8350_IRQ_GPIO(9):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP9_EINT);
++	case WM8350_IRQ_GPIO(10):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP10_EINT);
++	case WM8350_IRQ_GPIO(11):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP11_EINT);
++	case WM8350_IRQ_GPIO(12):
++		return wm8350_clear_bits(wm8350,
++					 WM8350_GPIO_INT_STATUS_MASK,
++					 WM8350_IM_GP12_EINT);
++	default:
++		dev_warn(wm8350->dev, "Attempting to unmask unknown IRQ %d\n",
++			 irq);
++		return -EINVAL;
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(wm8350_unmask_irq);
++
+ /*
+  * Cache is always host endian.
+  */
+@@ -388,11 +1130,17 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(wm8350_create_cache);
+ 
+-int wm8350_device_init(struct wm8350 *wm8350,
++int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 		       struct wm8350_platform_data *pdata)
+ {
+ 	int ret = -EINVAL;
+ 	u16 id1, id2, mask, mode;
++	int i;
++
++	/* Must be set up by platform init call (0 might be a valid IRQ so
++	 * we can't rely on zeroing).
++	 */
++	wm8350->rtc.per_irq = NO_IRQ;
+ 
+ 	/* get WM8350 revision and config mode */
+ 	wm8350->read_dev(wm8350, WM8350_RESET_ID, sizeof(id1), &id1);
+@@ -401,9 +1149,7 @@ int wm8350_device_init(struct wm8350 *wm8350,
+ 	id1 = be16_to_cpu(id1);
+ 	id2 = be16_to_cpu(id2);
+ 
+-	if (id1 == 0x0)
+-		dev_info(wm8350->dev, "Found Rev C device\n");
+-	else if (id1 == 0x6143) {
++	if (id1 == 0x6143) {
+ 		switch ((id2 & WM8350_CHIP_REV_MASK) >> 12) {
+ 		case WM8350_REV_E:
+ 			dev_info(wm8350->dev, "Found Rev E device\n");
+@@ -449,6 +1195,24 @@ int wm8350_device_init(struct wm8350 *wm8350,
+ 		}
+ 	}
+ 
++	mutex_init(&wm8350->irq_mutex);
++	INIT_WORK(&wm8350->irq_work, wm8350_irq_worker);
++	if (irq != NO_IRQ) {
++		ret = request_irq(irq, wm8350_irq, 0,
++				  "wm8350", wm8350);
++		if (ret != 0) {
++			dev_err(wm8350->dev, "Failed to request IRQ: %d\n",
++				ret);
++			goto err;
++		}
++	} else {
++		dev_err(wm8350->dev, "No IRQ configured\n");
++		goto err;
++	}
++	wm8350->chip_irq = irq;
++
++	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0x0);
++
+ 	return 0;
+ 
+ err:
+@@ -459,8 +1223,11 @@ EXPORT_SYMBOL_GPL(wm8350_device_init);
+ 
+ void wm8350_device_exit(struct wm8350 *wm8350)
+ {
++	free_irq(wm8350->chip_irq, wm8350);
++	flush_work(&wm8350->irq_work);
+ 	kfree(wm8350->reg_cache);
+ }
+ EXPORT_SYMBOL_GPL(wm8350_device_exit);
+ 
++MODULE_DESCRIPTION("WM8350 AudioPlus PMIC core driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/wm8350-i2c.c b/drivers/mfd/wm8350-i2c.c
+index 245b790..8dfe21b 100644
+--- a/drivers/mfd/wm8350-i2c.c
++++ b/drivers/mfd/wm8350-i2c.c
+@@ -65,7 +65,7 @@ static int wm8350_i2c_probe(struct i2c_client *i2c,
+ 	wm8350->read_dev = wm8350_i2c_read_device;
+ 	wm8350->write_dev = wm8350_i2c_write_device;
+ 
+-	ret = wm8350_device_init(wm8350, i2c->dev.platform_data);
++	ret = wm8350_device_init(wm8350, i2c->irq, i2c->dev.platform_data);
+ 	if (ret < 0)
+ 		goto err;
+ 
+diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
+index 8f2beae..d86d382 100644
+--- a/include/linux/mfd/wm8350/core.h
++++ b/include/linux/mfd/wm8350/core.h
+@@ -530,6 +530,8 @@
+ #define WM8350_REV_F				0x5
+ #define WM8350_REV_G				0x6
+ 
++#define WM8350_NUM_IRQ				63
++
+ struct wm8350_reg_access {
+ 	u16 readable;		/* Mask of readable bits */
+ 	u16 writable;		/* Mask of writable bits */
+@@ -562,6 +564,12 @@ struct wm8350 {
+ 	int (*write_dev)(struct wm8350 *wm8350, char reg, int size,
+ 			 void *src);
+ 	u16 *reg_cache;
++
++	/* Interrupt handling */
++	struct work_struct irq_work;
++	struct mutex irq_mutex; /* IRQ table mutex */
++	struct wm8350_irq irq[WM8350_NUM_IRQ];
++	int chip_irq;
+ };
+ 
+ /**
+@@ -578,7 +586,7 @@ struct wm8350_platform_data {
+ /*
+  * WM8350 device initialisation and exit.
+  */
+-int wm8350_device_init(struct wm8350 *wm8350,
++int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 		       struct wm8350_platform_data *pdata);
+ void wm8350_device_exit(struct wm8350 *wm8350);
+ 
+@@ -594,4 +602,15 @@ int wm8350_reg_unlock(struct wm8350 *wm8350);
+ int wm8350_block_read(struct wm8350 *wm8350, int reg, int size, u16 *dest);
+ int wm8350_block_write(struct wm8350 *wm8350, int reg, int size, u16 *src);
+ 
 +/*
-+ * R173 (0xAD) - CSA Flash control
++ * WM8350 internal interrupts
 + */
-+#define WM8350_CS1_FLASH_MODE                   0x8000
-+#define WM8350_CS1_TRIGSRC                      0x4000
-+#define WM8350_CS1_DRIVE                        0x2000
-+#define WM8350_CS1_FLASH_DUR_MASK               0x0300
-+#define WM8350_CS1_OFF_RAMP_MASK                0x0030
-+#define WM8350_CS1_ON_RAMP_MASK                 0x0003
-+
-+/*
-+ * R174 (0xAE) - Current Sink Driver B
-+ */
-+#define WM8350_CS2_HIB_MODE                     0x1000
-+#define WM8350_CS2_ISEL_MASK                    0x003F
-+
-+/*
-+ * R175 (0xAF) - CSB Flash control
-+ */
-+#define WM8350_CS2_FLASH_MODE                   0x8000
-+#define WM8350_CS2_TRIGSRC                      0x4000
-+#define WM8350_CS2_DRIVE                        0x2000
-+#define WM8350_CS2_FLASH_DUR_MASK               0x0300
-+#define WM8350_CS2_OFF_RAMP_MASK                0x0030
-+#define WM8350_CS2_ON_RAMP_MASK                 0x0003
-+
-+/*
-+ * R176 (0xB0) - DCDC/LDO requested
-+ */
-+#define WM8350_LS_ENA                           0x8000
-+#define WM8350_LDO4_ENA                         0x0800
-+#define WM8350_LDO3_ENA                         0x0400
-+#define WM8350_LDO2_ENA                         0x0200
-+#define WM8350_LDO1_ENA                         0x0100
-+#define WM8350_DC6_ENA                          0x0020
-+#define WM8350_DC5_ENA                          0x0010
-+#define WM8350_DC4_ENA                          0x0008
-+#define WM8350_DC3_ENA                          0x0004
-+#define WM8350_DC2_ENA                          0x0002
-+#define WM8350_DC1_ENA                          0x0001
-+
-+/*
-+ * R177 (0xB1) - DCDC Active options
-+ */
-+#define WM8350_PUTO_MASK                        0x3000
-+#define WM8350_PWRUP_DELAY_MASK                 0x0300
-+#define WM8350_DC6_ACTIVE                       0x0020
-+#define WM8350_DC4_ACTIVE                       0x0008
-+#define WM8350_DC3_ACTIVE                       0x0004
-+#define WM8350_DC1_ACTIVE                       0x0001
-+
-+/*
-+ * R178 (0xB2) - DCDC Sleep options
-+ */
-+#define WM8350_DC6_SLEEP                        0x0020
-+#define WM8350_DC4_SLEEP                        0x0008
-+#define WM8350_DC3_SLEEP                        0x0004
-+#define WM8350_DC1_SLEEP                        0x0001
-+
-+/*
-+ * R179 (0xB3) - Power-check comparator
-+ */
-+#define WM8350_PCCMP_ERRACT                     0x4000
-+#define WM8350_PCCMP_RAIL                       0x0100
-+#define WM8350_PCCMP_OFF_THR_MASK               0x0070
-+#define WM8350_PCCMP_ON_THR_MASK                0x0007
-+
-+/*
-+ * R180 (0xB4) - DCDC1 Control
-+ */
-+#define WM8350_DC1_OPFLT                        0x0400
-+#define WM8350_DC1_VSEL_MASK                    0x007F
-+#define WM8350_DC1_VSEL_SHIFT                        0
-+
-+/*
-+ * R181 (0xB5) - DCDC1 Timeouts
-+ */
-+#define WM8350_DC1_ERRACT_MASK                  0xC000
-+#define WM8350_DC1_ERRACT_SHIFT                     14
-+#define WM8350_DC1_ENSLOT_MASK                  0x3C00
-+#define WM8350_DC1_ENSLOT_SHIFT                     10
-+#define WM8350_DC1_SDSLOT_MASK                  0x03C0
-+#define WM8350_DC1_UVTO_MASK                    0x0030
-+#define WM8350_DC1_SDSLOT_SHIFT                      6
-+
-+/* Bit values for R181 (0xB5) */
-+#define WM8350_DC1_ERRACT_NONE                       0
-+#define WM8350_DC1_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_DC1_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R182 (0xB6) - DCDC1 Low Power
-+ */
-+#define WM8350_DC1_HIB_MODE_MASK                0x7000
-+#define WM8350_DC1_HIB_TRIG_MASK                0x0300
-+#define WM8350_DC1_VIMG_MASK                    0x007F
-+
-+/*
-+ * R183 (0xB7) - DCDC2 Control
-+ */
-+#define WM8350_DC2_MODE                         0x4000
-+#define WM8350_DC2_MODE_MASK                    0x4000
-+#define WM8350_DC2_MODE_SHIFT                       14
-+#define WM8350_DC2_HIB_MODE                     0x1000
-+#define WM8350_DC2_HIB_MODE_MASK                0x1000
-+#define WM8350_DC2_HIB_MODE_SHIFT                   12
-+#define WM8350_DC2_HIB_TRIG_MASK                0x0300
-+#define WM8350_DC2_HIB_TRIG_SHIFT                    8
-+#define WM8350_DC2_ILIM                         0x0040
-+#define WM8350_DC2_ILIM_MASK                    0x0040
-+#define WM8350_DC2_ILIM_SHIFT                        6
-+#define WM8350_DC2_RMP_MASK                     0x0018
-+#define WM8350_DC2_RMP_SHIFT                         3
-+#define WM8350_DC2_FBSRC_MASK                   0x0003
-+#define WM8350_DC2_FBSRC_SHIFT                       0
-+
-+/* Bit values for R183 (0xB7) */
-+#define WM8350_DC2_MODE_BOOST                        0
-+#define WM8350_DC2_MODE_SWITCH                       1
-+
-+#define WM8350_DC2_HIB_MODE_ACTIVE                   1
-+#define WM8350_DC2_HIB_MODE_DISABLE                  0
-+
-+#define WM8350_DC2_HIB_TRIG_NONE                     0
-+#define WM8350_DC2_HIB_TRIG_LPWR1                    1
-+#define WM8350_DC2_HIB_TRIG_LPWR2                    2
-+#define WM8350_DC2_HIB_TRIG_LPWR3                    3
-+
-+#define WM8350_DC2_ILIM_HIGH                         0
-+#define WM8350_DC2_ILIM_LOW                          1
-+
-+#define WM8350_DC2_RMP_30V                           0
-+#define WM8350_DC2_RMP_20V                           1
-+#define WM8350_DC2_RMP_10V                           2
-+#define WM8350_DC2_RMP_5V                            3
-+
-+#define WM8350_DC2_FBSRC_FB2                         0
-+#define WM8350_DC2_FBSRC_ISINKA                      1
-+#define WM8350_DC2_FBSRC_ISINKB                      2
-+#define WM8350_DC2_FBSRC_USB                         3
-+
-+/*
-+ * R184 (0xB8) - DCDC2 Timeouts
-+ */
-+#define WM8350_DC2_ERRACT_MASK                  0xC000
-+#define WM8350_DC2_ERRACT_SHIFT                     14
-+#define WM8350_DC2_ENSLOT_MASK                  0x3C00
-+#define WM8350_DC2_ENSLOT_SHIFT                     10
-+#define WM8350_DC2_SDSLOT_MASK                  0x03C0
-+#define WM8350_DC2_UVTO_MASK                    0x0030
-+
-+/* Bit values for R184 (0xB8) */
-+#define WM8350_DC2_ERRACT_NONE                       0
-+#define WM8350_DC2_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_DC2_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R186 (0xBA) - DCDC3 Control
-+ */
-+#define WM8350_DC3_OPFLT                        0x0400
-+#define WM8350_DC3_VSEL_MASK                    0x007F
-+#define WM8350_DC3_VSEL_SHIFT                        0
-+
-+/*
-+ * R187 (0xBB) - DCDC3 Timeouts
-+ */
-+#define WM8350_DC3_ERRACT_MASK                  0xC000
-+#define WM8350_DC3_ERRACT_SHIFT                     14
-+#define WM8350_DC3_ENSLOT_MASK                  0x3C00
-+#define WM8350_DC3_ENSLOT_SHIFT                     10
-+#define WM8350_DC3_SDSLOT_MASK                  0x03C0
-+#define WM8350_DC3_UVTO_MASK                    0x0030
-+#define WM8350_DC3_SDSLOT_SHIFT                      6
-+
-+/* Bit values for R187 (0xBB) */
-+#define WM8350_DC3_ERRACT_NONE                       0
-+#define WM8350_DC3_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_DC3_ERRACT_SHUTDOWN_SYS               2
-+/*
-+ * R188 (0xBC) - DCDC3 Low Power
-+ */
-+#define WM8350_DC3_HIB_MODE_MASK                0x7000
-+#define WM8350_DC3_HIB_TRIG_MASK                0x0300
-+#define WM8350_DC3_VIMG_MASK                    0x007F
-+
-+/*
-+ * R189 (0xBD) - DCDC4 Control
-+ */
-+#define WM8350_DC4_OPFLT                        0x0400
-+#define WM8350_DC4_VSEL_MASK                    0x007F
-+#define WM8350_DC4_VSEL_SHIFT                        0
-+
-+/*
-+ * R190 (0xBE) - DCDC4 Timeouts
-+ */
-+#define WM8350_DC4_ERRACT_MASK                  0xC000
-+#define WM8350_DC4_ERRACT_SHIFT                     14
-+#define WM8350_DC4_ENSLOT_MASK                  0x3C00
-+#define WM8350_DC4_ENSLOT_SHIFT                     10
-+#define WM8350_DC4_SDSLOT_MASK                  0x03C0
-+#define WM8350_DC4_UVTO_MASK                    0x0030
-+#define WM8350_DC4_SDSLOT_SHIFT                      6
-+
-+/* Bit values for R190 (0xBE) */
-+#define WM8350_DC4_ERRACT_NONE                       0
-+#define WM8350_DC4_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_DC4_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R191 (0xBF) - DCDC4 Low Power
-+ */
-+#define WM8350_DC4_HIB_MODE_MASK                0x7000
-+#define WM8350_DC4_HIB_TRIG_MASK                0x0300
-+#define WM8350_DC4_VIMG_MASK                    0x007F
-+
-+/*
-+ * R192 (0xC0) - DCDC5 Control
-+ */
-+#define WM8350_DC5_MODE                         0x4000
-+#define WM8350_DC5_MODE_MASK                    0x4000
-+#define WM8350_DC5_MODE_SHIFT                       14
-+#define WM8350_DC5_HIB_MODE                     0x1000
-+#define WM8350_DC5_HIB_MODE_MASK                0x1000
-+#define WM8350_DC5_HIB_MODE_SHIFT                   12
-+#define WM8350_DC5_HIB_TRIG_MASK                0x0300
-+#define WM8350_DC5_HIB_TRIG_SHIFT                    8
-+#define WM8350_DC5_ILIM                         0x0040
-+#define WM8350_DC5_ILIM_MASK                    0x0040
-+#define WM8350_DC5_ILIM_SHIFT                        6
-+#define WM8350_DC5_RMP_MASK                     0x0018
-+#define WM8350_DC5_RMP_SHIFT                         3
-+#define WM8350_DC5_FBSRC_MASK                   0x0003
-+#define WM8350_DC5_FBSRC_SHIFT                       0
-+
-+/* Bit values for R192 (0xC0) */
-+#define WM8350_DC5_MODE_BOOST                        0
-+#define WM8350_DC5_MODE_SWITCH                       1
-+
-+#define WM8350_DC5_HIB_MODE_ACTIVE                   1
-+#define WM8350_DC5_HIB_MODE_DISABLE                  0
-+
-+#define WM8350_DC5_HIB_TRIG_NONE                     0
-+#define WM8350_DC5_HIB_TRIG_LPWR1                    1
-+#define WM8350_DC5_HIB_TRIG_LPWR2                    2
-+#define WM8350_DC5_HIB_TRIG_LPWR3                    3
-+
-+#define WM8350_DC5_ILIM_HIGH                         0
-+#define WM8350_DC5_ILIM_LOW                          1
-+
-+#define WM8350_DC5_RMP_30V                           0
-+#define WM8350_DC5_RMP_20V                           1
-+#define WM8350_DC5_RMP_10V                           2
-+#define WM8350_DC5_RMP_5V                            3
-+
-+#define WM8350_DC5_FBSRC_FB2                         0
-+#define WM8350_DC5_FBSRC_ISINKA                      1
-+#define WM8350_DC5_FBSRC_ISINKB                      2
-+#define WM8350_DC5_FBSRC_USB                         3
-+
-+/*
-+ * R193 (0xC1) - DCDC5 Timeouts
-+ */
-+#define WM8350_DC5_ERRACT_MASK                  0xC000
-+#define WM8350_DC5_ERRACT_SHIFT                     14
-+#define WM8350_DC5_ENSLOT_MASK                  0x3C00
-+#define WM8350_DC5_ENSLOT_SHIFT                     10
-+#define WM8350_DC5_SDSLOT_MASK                  0x03C0
-+#define WM8350_DC5_UVTO_MASK                    0x0030
-+#define WM8350_DC5_SDSLOT_SHIFT                      6
-+
-+/* Bit values for R193 (0xC1) */
-+#define WM8350_DC5_ERRACT_NONE                       0
-+#define WM8350_DC5_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_DC5_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R195 (0xC3) - DCDC6 Control
-+ */
-+#define WM8350_DC6_OPFLT                        0x0400
-+#define WM8350_DC6_VSEL_MASK                    0x007F
-+#define WM8350_DC6_VSEL_SHIFT                        0
-+
-+/*
-+ * R196 (0xC4) - DCDC6 Timeouts
-+ */
-+#define WM8350_DC6_ERRACT_MASK                  0xC000
-+#define WM8350_DC6_ERRACT_SHIFT                     14
-+#define WM8350_DC6_ENSLOT_MASK                  0x3C00
-+#define WM8350_DC6_ENSLOT_SHIFT                     10
-+#define WM8350_DC6_SDSLOT_MASK                  0x03C0
-+#define WM8350_DC6_UVTO_MASK                    0x0030
-+#define WM8350_DC6_SDSLOT_SHIFT                      6
-+
-+/* Bit values for R196 (0xC4) */
-+#define WM8350_DC6_ERRACT_NONE                       0
-+#define WM8350_DC6_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_DC6_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R197 (0xC5) - DCDC6 Low Power
-+ */
-+#define WM8350_DC6_HIB_MODE_MASK                0x7000
-+#define WM8350_DC6_HIB_TRIG_MASK                0x0300
-+#define WM8350_DC6_VIMG_MASK                    0x007F
-+
-+/*
-+ * R199 (0xC7) - Limit Switch Control
-+ */
-+#define WM8350_LS_ERRACT_MASK                   0xC000
-+#define WM8350_LS_ERRACT_SHIFT                      14
-+#define WM8350_LS_ENSLOT_MASK                   0x3C00
-+#define WM8350_LS_ENSLOT_SHIFT                      10
-+#define WM8350_LS_SDSLOT_MASK                   0x03C0
-+#define WM8350_LS_SDSLOT_SHIFT                       6
-+#define WM8350_LS_HIB_MODE                      0x0010
-+#define WM8350_LS_HIB_MODE_MASK                 0x0010
-+#define WM8350_LS_HIB_MODE_SHIFT                     4
-+#define WM8350_LS_HIB_PROT                      0x0002
-+#define WM8350_LS_HIB_PROT_MASK                 0x0002
-+#define WM8350_LS_HIB_PROT_SHIFT                     1
-+#define WM8350_LS_PROT                          0x0001
-+#define WM8350_LS_PROT_MASK                     0x0001
-+#define WM8350_LS_PROT_SHIFT                         0
-+
-+/* Bit values for R199 (0xC7) */
-+#define WM8350_LS_ERRACT_NONE                       0
-+#define WM8350_LS_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_LS_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R200 (0xC8) - LDO1 Control
-+ */
-+#define WM8350_LDO1_SWI                         0x4000
-+#define WM8350_LDO1_OPFLT                       0x0400
-+#define WM8350_LDO1_VSEL_MASK                   0x001F
-+#define WM8350_LDO1_VSEL_SHIFT                       0
-+
-+/*
-+ * R201 (0xC9) - LDO1 Timeouts
-+ */
-+#define WM8350_LDO1_ERRACT_MASK                 0xC000
-+#define WM8350_LDO1_ERRACT_SHIFT                    14
-+#define WM8350_LDO1_ENSLOT_MASK                 0x3C00
-+#define WM8350_LDO1_ENSLOT_SHIFT                    10
-+#define WM8350_LDO1_SDSLOT_MASK                 0x03C0
-+#define WM8350_LDO1_UVTO_MASK                   0x0030
-+#define WM8350_LDO1_SDSLOT_SHIFT                     6
-+
-+/* Bit values for R201 (0xC9) */
-+#define WM8350_LDO1_ERRACT_NONE                       0
-+#define WM8350_LDO1_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_LDO1_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R202 (0xCA) - LDO1 Low Power
-+ */
-+#define WM8350_LDO1_HIB_MODE_MASK               0x3000
-+#define WM8350_LDO1_HIB_TRIG_MASK               0x0300
-+#define WM8350_LDO1_VIMG_MASK                   0x001F
-+#define WM8350_LDO1_HIB_MODE_DIS		(0x1 << 12)
-+
-+
-+/*
-+ * R203 (0xCB) - LDO2 Control
-+ */
-+#define WM8350_LDO2_SWI                         0x4000
-+#define WM8350_LDO2_OPFLT                       0x0400
-+#define WM8350_LDO2_VSEL_MASK                   0x001F
-+#define WM8350_LDO2_VSEL_SHIFT                       0
-+
-+/*
-+ * R204 (0xCC) - LDO2 Timeouts
-+ */
-+#define WM8350_LDO2_ERRACT_MASK                 0xC000
-+#define WM8350_LDO2_ERRACT_SHIFT                    14
-+#define WM8350_LDO2_ENSLOT_MASK                 0x3C00
-+#define WM8350_LDO2_ENSLOT_SHIFT                    10
-+#define WM8350_LDO2_SDSLOT_MASK                 0x03C0
-+#define WM8350_LDO2_SDSLOT_SHIFT                     6
-+
-+/* Bit values for R204 (0xCC) */
-+#define WM8350_LDO2_ERRACT_NONE                       0
-+#define WM8350_LDO2_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_LDO2_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R205 (0xCD) - LDO2 Low Power
-+ */
-+#define WM8350_LDO2_HIB_MODE_MASK               0x3000
-+#define WM8350_LDO2_HIB_TRIG_MASK               0x0300
-+#define WM8350_LDO2_VIMG_MASK                   0x001F
-+
-+/*
-+ * R206 (0xCE) - LDO3 Control
-+ */
-+#define WM8350_LDO3_SWI                         0x4000
-+#define WM8350_LDO3_OPFLT                       0x0400
-+#define WM8350_LDO3_VSEL_MASK                   0x001F
-+#define WM8350_LDO3_VSEL_SHIFT                       0
-+
-+/*
-+ * R207 (0xCF) - LDO3 Timeouts
-+ */
-+#define WM8350_LDO3_ERRACT_MASK                 0xC000
-+#define WM8350_LDO3_ERRACT_SHIFT                    14
-+#define WM8350_LDO3_ENSLOT_MASK                 0x3C00
-+#define WM8350_LDO3_ENSLOT_SHIFT                    10
-+#define WM8350_LDO3_SDSLOT_MASK                 0x03C0
-+#define WM8350_LDO3_UVTO_MASK                   0x0030
-+#define WM8350_LDO3_SDSLOT_SHIFT                     6
-+
-+/* Bit values for R207 (0xCF) */
-+#define WM8350_LDO3_ERRACT_NONE                       0
-+#define WM8350_LDO3_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_LDO3_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R208 (0xD0) - LDO3 Low Power
-+ */
-+#define WM8350_LDO3_HIB_MODE_MASK               0x3000
-+#define WM8350_LDO3_HIB_TRIG_MASK               0x0300
-+#define WM8350_LDO3_VIMG_MASK                   0x001F
-+
-+/*
-+ * R209 (0xD1) - LDO4 Control
-+ */
-+#define WM8350_LDO4_SWI                         0x4000
-+#define WM8350_LDO4_OPFLT                       0x0400
-+#define WM8350_LDO4_VSEL_MASK                   0x001F
-+#define WM8350_LDO4_VSEL_SHIFT                       0
-+
-+/*
-+ * R210 (0xD2) - LDO4 Timeouts
-+ */
-+#define WM8350_LDO4_ERRACT_MASK                 0xC000
-+#define WM8350_LDO4_ERRACT_SHIFT                    14
-+#define WM8350_LDO4_ENSLOT_MASK                 0x3C00
-+#define WM8350_LDO4_ENSLOT_SHIFT                    10
-+#define WM8350_LDO4_SDSLOT_MASK                 0x03C0
-+#define WM8350_LDO4_UVTO_MASK                   0x0030
-+#define WM8350_LDO4_SDSLOT_SHIFT                     6
-+
-+/* Bit values for R210 (0xD2) */
-+#define WM8350_LDO4_ERRACT_NONE                       0
-+#define WM8350_LDO4_ERRACT_SHUTDOWN_CONV              1
-+#define WM8350_LDO4_ERRACT_SHUTDOWN_SYS               2
-+
-+/*
-+ * R211 (0xD3) - LDO4 Low Power
-+ */
-+#define WM8350_LDO4_HIB_MODE_MASK               0x3000
-+#define WM8350_LDO4_HIB_TRIG_MASK               0x0300
-+#define WM8350_LDO4_VIMG_MASK                   0x001F
-+
-+/*
-+ * R215 (0xD7) - VCC_FAULT Masks
-+ */
-+#define WM8350_LS_FAULT                         0x8000
-+#define WM8350_LDO4_FAULT                       0x0800
-+#define WM8350_LDO3_FAULT                       0x0400
-+#define WM8350_LDO2_FAULT                       0x0200
-+#define WM8350_LDO1_FAULT                       0x0100
-+#define WM8350_DC6_FAULT                        0x0020
-+#define WM8350_DC5_FAULT                        0x0010
-+#define WM8350_DC4_FAULT                        0x0008
-+#define WM8350_DC3_FAULT                        0x0004
-+#define WM8350_DC2_FAULT                        0x0002
-+#define WM8350_DC1_FAULT                        0x0001
-+
-+/*
-+ * R216 (0xD8) - Main Bandgap Control
-+ */
-+#define WM8350_MBG_LOAD_FUSES                   0x8000
-+#define WM8350_MBG_FUSE_WPREP                   0x4000
-+#define WM8350_MBG_FUSE_WRITE                   0x2000
-+#define WM8350_MBG_FUSE_TRIM_MASK               0x1F00
-+#define WM8350_MBG_TRIM_SRC                     0x0020
-+#define WM8350_MBG_USER_TRIM_MASK               0x001F
-+
-+/*
-+ * R217 (0xD9) - OSC Control
-+ */
-+#define WM8350_OSC_LOAD_FUSES                   0x8000
-+#define WM8350_OSC_FUSE_WPREP                   0x4000
-+#define WM8350_OSC_FUSE_WRITE                   0x2000
-+#define WM8350_OSC_FUSE_TRIM_MASK               0x0F00
-+#define WM8350_OSC_TRIM_SRC                     0x0020
-+#define WM8350_OSC_USER_TRIM_MASK               0x000F
-+
-+/*
-+ * R248 (0xF8) - DCDC1 Force PWM
-+ */
-+#define WM8350_DCDC1_FORCE_PWM_ENA              0x0010
-+
-+/*
-+ * R250 (0xFA) - DCDC3 Force PWM
-+ */
-+#define WM8350_DCDC3_FORCE_PWM_ENA              0x0010
-+
-+/*
-+ * R251 (0xFB) - DCDC4 Force PWM
-+ */
-+#define WM8350_DCDC4_FORCE_PWM_ENA              0x0010
-+
-+/*
-+ * R253 (0xFD) - DCDC1 Force PWM
-+ */
-+#define WM8350_DCDC6_FORCE_PWM_ENA              0x0010
-+
-+/*
-+ * DCDC's
-+ */
-+#define WM8350_DCDC_1				0
-+#define WM8350_DCDC_2				1
-+#define WM8350_DCDC_3				2
-+#define WM8350_DCDC_4				3
-+#define WM8350_DCDC_5				4
-+#define WM8350_DCDC_6				5
-+
-+/* DCDC modes */
-+#define WM8350_DCDC_ACTIVE_STANDBY		0
-+#define WM8350_DCDC_ACTIVE_PULSE		1
-+#define WM8350_DCDC_SLEEP_NORMAL		0
-+#define WM8350_DCDC_SLEEP_LOW			1
-+
-+/* DCDC Low power (Hibernate) mode */
-+#define WM8350_DCDC_HIB_MODE_CUR		(0 << 12)
-+#define WM8350_DCDC_HIB_MODE_IMAGE		(1 << 12)
-+#define WM8350_DCDC_HIB_MODE_STANDBY		(2 << 12)
-+#define WM8350_DCDC_HIB_MODE_LDO		(4 << 12)
-+#define WM8350_DCDC_HIB_MODE_LDO_IM		(5 << 12)
-+#define WM8350_DCDC_HIB_MODE_DIS		(7 << 12)
-+#define WM8350_DCDC_HIB_MODE_MASK		(7 << 12)
-+
-+/* DCDC Low Power (Hibernate) signal */
-+#define WM8350_DCDC_HIB_SIG_REG			(0 << 8)
-+#define WM8350_DCDC_HIB_SIG_LPWR1		(1 << 8)
-+#define WM8350_DCDC_HIB_SIG_LPWR2		(2 << 8)
-+#define WM8350_DCDC_HIB_SIG_LPWR3		(3 << 8)
-+
-+/* LDO Low power (Hibernate) mode */
-+#define WM8350_LDO_HIB_MODE_IMAGE		(0 << 0)
-+#define WM8350_LDO_HIB_MODE_DIS			(1 << 0)
-+
-+/* LDO Low Power (Hibernate) signal */
-+#define WM8350_LDO_HIB_SIG_REG			(0 << 8)
-+#define WM8350_LDO_HIB_SIG_LPWR1		(1 << 8)
-+#define WM8350_LDO_HIB_SIG_LPWR2		(2 << 8)
-+#define WM8350_LDO_HIB_SIG_LPWR3		(3 << 8)
-+
-+/*
-+ * LDOs
-+ */
-+#define WM8350_LDO_1				6
-+#define WM8350_LDO_2				7
-+#define WM8350_LDO_3				8
-+#define WM8350_LDO_4				9
-+
-+/*
-+ * ISINKs
-+ */
-+#define WM8350_ISINK_A				10
-+#define WM8350_ISINK_B				11
-+
-+#define WM8350_ISINK_MODE_BOOST			0
-+#define WM8350_ISINK_MODE_SWITCH		1
-+#define WM8350_ISINK_ILIM_NORMAL		0
-+#define WM8350_ISINK_ILIM_LOW			1
-+
-+#define WM8350_ISINK_FLASH_DISABLE		0
-+#define WM8350_ISINK_FLASH_ENABLE		1
-+#define WM8350_ISINK_FLASH_TRIG_BIT		0
-+#define WM8350_ISINK_FLASH_TRIG_GPIO		1
-+#define WM8350_ISINK_FLASH_MODE_EN		(1 << 13)
-+#define WM8350_ISINK_FLASH_MODE_DIS		(0 << 13)
-+#define WM8350_ISINK_FLASH_DUR_32MS		(0 << 8)
-+#define WM8350_ISINK_FLASH_DUR_64MS		(1 << 8)
-+#define WM8350_ISINK_FLASH_DUR_96MS		(2 << 8)
-+#define WM8350_ISINK_FLASH_DUR_1024MS		(3 << 8)
-+#define WM8350_ISINK_FLASH_ON_INSTANT		(0 << 4)
-+#define WM8350_ISINK_FLASH_ON_0_25S		(1 << 4)
-+#define WM8350_ISINK_FLASH_ON_0_50S		(2 << 4)
-+#define WM8350_ISINK_FLASH_ON_1_00S		(3 << 4)
-+#define WM8350_ISINK_FLASH_ON_1_95S		(1 << 4)
-+#define WM8350_ISINK_FLASH_ON_3_91S		(2 << 4)
-+#define WM8350_ISINK_FLASH_ON_7_80S		(3 << 4)
-+#define WM8350_ISINK_FLASH_OFF_INSTANT		(0 << 0)
-+#define WM8350_ISINK_FLASH_OFF_0_25S		(1 << 0)
-+#define WM8350_ISINK_FLASH_OFF_0_50S		(2 << 0)
-+#define WM8350_ISINK_FLASH_OFF_1_00S		(3 << 0)
-+#define WM8350_ISINK_FLASH_OFF_1_95S		(1 << 0)
-+#define WM8350_ISINK_FLASH_OFF_3_91S		(2 << 0)
-+#define WM8350_ISINK_FLASH_OFF_7_80S		(3 << 0)
-+
-+/*
-+ * Regulator Interrupts.
-+ */
-+#define WM8350_IRQ_CS1				13
-+#define WM8350_IRQ_CS2				14
-+#define WM8350_IRQ_UV_LDO4			25
-+#define WM8350_IRQ_UV_LDO3			26
-+#define WM8350_IRQ_UV_LDO2			27
-+#define WM8350_IRQ_UV_LDO1			28
-+#define WM8350_IRQ_UV_DC6			29
-+#define WM8350_IRQ_UV_DC5			30
-+#define WM8350_IRQ_UV_DC4			31
-+#define WM8350_IRQ_UV_DC3			32
-+#define WM8350_IRQ_UV_DC2			33
-+#define WM8350_IRQ_UV_DC1			34
-+#define WM8350_IRQ_OC_LS			35
-+
-+#define NUM_WM8350_REGULATORS			12
-+
-+#endif
++int wm8350_register_irq(struct wm8350 *wm8350, int irq,
++			void (*handler) (struct wm8350 *, int, void *),
++			void *data);
++int wm8350_free_irq(struct wm8350 *wm8350, int irq);
++int wm8350_mask_irq(struct wm8350 *wm8350, int irq);
++int wm8350_unmask_irq(struct wm8350 *wm8350, int irq);
++
++
+ #endif
 -- 
 1.5.6.5
 
