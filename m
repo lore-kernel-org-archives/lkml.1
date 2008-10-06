@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYJFTpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYJFTqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYJFTpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 15:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbYJFTpV
+	id S1755791AbYJFTqR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 15:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYJFTp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 15:45:21 -0400
-Received: from mga09.intel.com ([134.134.136.24]:48049 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbYJFTpT convert rfc822-to-8bit (ORCPT
+	Mon, 6 Oct 2008 15:45:59 -0400
+Received: from vms172071pub.verizon.net ([206.46.172.71]:53658 "EHLO
+	vms172071pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbYJFTp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 15:45:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,368,1220252400"; 
-   d="scan'208";a="344635895"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Date: Mon, 6 Oct 2008 12:44:29 -0700
-Subject: RE: [PATCH 0/2]Add Variable Page Size and IA64 Support in Intel
- IOMMU
-Thread-Topic: [PATCH 0/2]Add Variable Page Size and IA64 Support in Intel
- IOMMU
-Thread-Index: Acklb8Zvk1X2wFH/RvypCITWhNlMeQCe7mRw
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8844A6B45@orsmsx505.amr.corp.intel.com>
-References: <20081001165606.GA21279@linux-os.sc.intel.com>
- <200810030950.19359.bjorn.helgaas@hp.com>
-In-Reply-To: <200810030950.19359.bjorn.helgaas@hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 6 Oct 2008 15:45:57 -0400
+X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Oct 2008 15:45:57 EDT
+Date: Mon, 06 Oct 2008 13:45:33 -0500
+From: Corey Minyard <minyard@acm.org>
+Subject: [PATCH 1/3] Add hlist_for_each_entry_from_rcu
+To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Cc: shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
+Reply-to: minyard@acm.org
+Message-id: <20081006184532.GA10271@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> The following two patches (Intel IOMMU generic patch and ia64 specific
+Add an RCU version of hlist_for_each_entry_from, getting ready for
+converting the UDP hash lock to RCU.
 
->the fact that the DMAR table is static precludes any sort of hot-plug
->to add or remove IOMMUs.
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+---
+ include/linux/rculist.h |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-The latest VT-d spec v1.1 does not support hot plug. If the feature is available in newer spec, we will support it.
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index eb4443c..f20fe61 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -397,5 +397,23 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+ 		pos = rcu_dereference(pos->next))
+ 
++
++/**
++ * hlist_for_each_entry_from_rcu - iterate over rcu list starting from pos
++ * @tpos:      the type * to use as a loop cursor.
++ * @pos:       the &struct hlist_node to use as a loop cursor.
++ * @member:    the name of the hlist_node within the struct.
++ *
++ * This list-traversal primitive may safely run concurrently with
++ * the _rcu list-mutation primitives such as hlist_add_head_rcu()
++ * as long as the traversal is guarded by rcu_read_lock().
++ */
++#define hlist_for_each_entry_from_rcu(tpos, pos, member)                \
++	for (;                                                          \
++	     (pos) && ({ prefetch(pos->next); 1; }) &&    \
++	       ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
++	     pos = rcu_dereference(pos->next))
++
++
+ #endif	/* __KERNEL__ */
+ #endif
+-- 
+1.5.6.5
 
-Thanks.
-
--Fenghua
