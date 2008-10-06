@@ -1,117 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYJFSKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYJFSKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbYJFSKY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 14:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbYJFSKL
+	id S1754703AbYJFSKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 14:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYJFSKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 14:10:11 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:44888 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751244AbYJFSKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 14:10:10 -0400
-Date: Mon, 6 Oct 2008 20:09:53 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kernel@avr32linux.org, Hein_Tibosch <hein_tibosch@yahoo.es>,
-       linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH] atmel-mci: Initialize BLKR before sending data transfer
- command
-Message-ID: <20081006200953.7a0a5a51@mjolnir.drzeus.cx>
-In-Reply-To: <alpine.LFD.2.00.0810061049030.3208@nehalem.linux-foundation.org>
-References: <1223046458-10851-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<20081006194459.74ba0c84@mjolnir.drzeus.cx>
-	<alpine.LFD.2.00.0810061049030.3208@nehalem.linux-foundation.org>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-1416-1223316607-0001-2"
+	Mon, 6 Oct 2008 14:10:40 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:42322 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751724AbYJFSKj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 14:10:39 -0400
+Message-ID: <48EA549E.1050001@opengridcomputing.com>
+Date: Mon, 06 Oct 2008 13:10:38 -0500
+From: Tom Tucker <tom@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: ericvh@gmail.com, linux-kernel@vger.kernel.org, v9fs-devel@vger.kernel.org,
+       rminnich@dancer.ca.sandia.gov, lionkov@lanl.gov
+Subject: Re: [PATCH 01/03] 9prdma: RDMA Transport Support for 9P
+References: <1222906119-14310-1-git-send-email-tom@opengridcomputing.com>	<1222906119-14310-2-git-send-email-tom@opengridcomputing.com> <adaod23d1if.fsf@cisco.com>
+In-Reply-To: <adaod23d1if.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Roland Dreier wrote:
+> very cool... neat that it only takes 1000 lines of code to do this too.
+> 
+> a few quick comments from a cursory read:
+> 
+>  > This file implements the RDMA transport provider for 9P. It allows
+>  > mounts to be performed over iWARP and IB capable network interfaces
+>  > and uses the OpenFabrics API to perform I/O.
+> 
+> I don't like this "openfabrics API" terminology -- the RDMA API is just
+> one part of the kernel API that you're using, and I'm not sure it's
+> worth calling out specially.  ie just delete that third line from the
+> changelog.
+> 
 
---=_freyr.drzeus.cx-1416-1223316607-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Ok.
 
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+>  > +	atomic_t next_tag;
+> 
+> this seems to be a write-only field... delete it?
 
-The atmel-mci driver sometimes fails data transfers like this:
+This is left over garbage. Nice catch.
 
-   mmcblk0: error -5 transferring data
-   end_request: I/O error, dev mmcblk0, sector 2749769
-   end_request: I/O error, dev mmcblk0, sector 2749777
+> 
+>  > + * @wc_op: Mellanox's broken HW doesn't provide the original WR op
+>  > + * when the CQE completes in error. This forces apps to keep track of
+>  > + * the op themselves. Yes, it's a Pet Peeve of mine ;-)
+> 
+> there's nothing broken about this behavior -- the IB spec very
+> explicitly calls out that the opcode field is undefined for completions
+> with error status.
+>
 
-It turns out that this might be caused by the BLKR register (which
-contains the block size and the number of blocks being transfered) being
-initialized too late. This patch moves the initialization of BLKR so
-that it contains the correct value before the block transfer command is
-sent.
+Fair enough...
 
-This error is difficult to reproduce, but if you insert a long delay
-(mdelay(10) or thereabouts) between the calls to atmci_start_command()
-and atmci_submit_data(), all transfers seem to fail without this patch,
-while I haven't seen any failures with this patch.
+>  > +find_req(struct p9_trans_rdma *rdma, u16 tag)
+> 
+>  > +	return found ? req : 0;
+> 
+> using 0 instead of NULL here... probably worth running all this through
+> sparse to see what else if flags.
+>
 
-Reported-by: Hein_Tibosch <hein_tibosch@yahoo.es>
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
----
- drivers/mmc/host/atmel-mci.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 917035e..0000896 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -426,8 +426,6 @@ static u32 atmci_submit_data(struct mmc_host *mmc, stru=
-ct mmc_data *data)
- 	host->sg =3D NULL;
- 	host->data =3D data;
-=20
--	mci_writel(host, BLKR, MCI_BCNT(data->blocks)
--			| MCI_BLKLEN(data->blksz));
- 	dev_vdbg(&mmc->class_dev, "BLKR=3D0x%08x\n",
- 			MCI_BCNT(data->blocks) | MCI_BLKLEN(data->blksz));
-=20
-@@ -483,6 +481,10 @@ static void atmci_request(struct mmc_host *mmc, struct=
- mmc_request *mrq)
- 		if (data->blocks > 1 && data->blksz & 3)
- 			goto fail;
- 		atmci_set_timeout(host, data);
-+
-+		/* Must set block count/size before sending command */
-+		mci_writel(host, BLKR, MCI_BCNT(data->blocks)
-+				| MCI_BLKLEN(data->blksz));
- 	}
-=20
- 	iflags =3D MCI_CMDRDY;
+will do.
 
 
---=20
-     -- Pierre Ossman
+>  > +	if (atomic_inc_return(&rdma->sq_count) >= rdma->sq_depth)
+>  > +		wait_event_interruptible
+>  > +			(rdma->send_wait,
+>  > +			 (atomic_read(&rdma->sq_count) < rdma->sq_depth));
+> 
+> this worries me a bit... for one thing you use wait_event_interruptible()
+> without checking the return value, so it's entirely possible that this
+> gets woken up before the condition actually becomes true.  And to handle
+> that correctly, you'd need extra code to decrement the sq_count and wake
+> up other waiters if it was interrupted, etc.
+>
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+Yes, I think this needs to be wait_event.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+> I know counting semaphores are out of favor in the kernel but this seems
+> to be a good place to use real semaphores, rather than concocting your
+> own in a much more complicated way.
+> 
 
---=_freyr.drzeus.cx-1416-1223316607-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+>  > +	wait_for_completion_interruptible(&rdma->cm_done);
+> 
+> similarly there are lots of places you do this interruptible wait but
+> then don't check if you were interrupted.
+> 
 
-iEYEARECAAYFAkjqVHwACgkQ7b8eESbyJLgWrwCfadURlrv4r/RCfvNEE4L2jRHx
-QVkAoLTU3/fUoES6UDLrNYk2QrbO9WeK
-=SdJ9
------END PGP SIGNATURE-----
+Well. The only place I do that is when the connection is being 
+established. And actually, I don't(didn't?) really care why it stopped 
+waiting, I  only care about the state of the connection and if it's not 
+what I need it to be I error out. I suppose there is a theoretical race 
+here where the user cancels the wait with ctrl-C, but the connection 
+keeps going because the transport always gets back fast enough. This 
+would eventually fail in rdma_rpc.
 
---=_freyr.drzeus.cx-1416-1223316607-0001-2--
+I'll add the code to check so that it's obvious.
+
+>  > +	if (0 == (devattr.device_cap_flags & IB_DEVICE_LOCAL_DMA_LKEY)) {
+>  > +		rdma->dma_mr = ib_get_dma_mr(rdma->pd, IB_ACCESS_LOCAL_WRITE);
+>  > +		if (IS_ERR(rdma->dma_mr))
+>  > +			goto error;
+>  > +		rdma->lkey = rdma->dma_mr->lkey;
+>  > +	} else
+>  > +		rdma->lkey = rdma->cm_id->device->local_dma_lkey;
+> 
+> seems to me this could be written more naturally and avoid the "if
+> (0==(test))" construction (which I always have to reread to parse) if
+> you reverse the test:
+> 
+> 	if (devattr.device_cap_flags & IB_DEVICE_LOCAL_DMA_LKEY) {
+> 		rdma->lkey = rdma->cm_id->device->local_dma_lkey;
+> 	} else {
+> 		rdma->dma_mr = ib_get_dma_mr(rdma->pd, IB_ACCESS_LOCAL_WRITE);
+> 		if (IS_ERR(rdma->dma_mr))
+> 			goto error;
+> 		rdma->lkey = rdma->dma_mr->lkey;
+> 	}
+> 
+agree. thanks.
+
+> The only place I see a send request posted has:
+> 
+>  > +	wr.opcode = IB_WR_SEND;
+> 
+> so I guess your protocol is only send/receives (ie no RDMA in the
+> pedantic sense, just two-sided operations).  I'm wondering what the
+> motivation for all this is: is using send/receive on IB/iWARP a big
+> performance win over non-offloaded transport?  Even compared to TCP on a
+> NIC with LSO and (software) LRO?
+> 
+
+For IB it avoids IPoIB. Which I think is a big win. For iWARP, it's  not 
+so clear. There is the potential for RDMA ops in the future.
+
+> Is your protocol documented anywhere?  It seems npfs has support for the
+> same transport.
+> 
+
+When using SEND/RECV, there isn't a protocol other than 9P itself. Once 
+we add RDMA ops, one will be required to exchange RKEY, etc... But maybe 
+I don't understand the question?
+
+> Finally, you create your QP with:
+> 
+>  > +	qp_attr.sq_sig_type = IB_SIGNAL_REQ_WR;
+> 
+> but you unconditionally do:
+> 
+>  > +	wr.send_flags = IB_SEND_SIGNALED;
+> 
+> not a big deal but you could save one line of code and a correspondingly
+> tiny amount of .text by just making the send queue signal all requests.
+> 
+
+ok.
+
+Thanks for the review,
+Tom
+
+>  - R.
+
