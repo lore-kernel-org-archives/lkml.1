@@ -1,91 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbYJEXtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbYJFACQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbYJEXtB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 19:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbYJEXsx
+	id S1753231AbYJFACQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 20:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYJFACA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 19:48:53 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:2316 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbYJEXsw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 19:48:52 -0400
-Message-ID: <f488382f0810051648k14b499ecj9d625c55b38ed2f0@mail.gmail.com>
-Date: Sun, 5 Oct 2008 16:48:49 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [PATCH] sdhci: 'scratch' may be used uninitialized
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, drzeus@drzeus.cx
-In-Reply-To: <20081005231607.GB10747@cs181140183.pp.htv.fi>
+	Sun, 5 Oct 2008 20:02:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56608 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750881AbYJFACA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 20:02:00 -0400
+Date: Sun, 5 Oct 2008 20:01:46 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
+Subject: Re: [PATCH 2/3] Fix fsync livelock
+In-Reply-To: <20081005162847.7bf0ead1@infradead.org>
+Message-ID: <Pine.LNX.4.64.0810051949290.5798@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+ <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+ <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+ <20080923164623.ce82c1c2.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
+ <20081001225404.4e973465.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0810051814060.23248@hs20-bc2-1.build.redhat.com>
+ <20081005153306.7e644c9f@infradead.org> <Pine.LNX.4.64.0810051901190.31780@hs20-bc2-1.build.redhat.com>
+ <20081005160724.54dd1a27@infradead.org> <Pine.LNX.4.64.0810051910580.663@hs20-bc2-1.build.redhat.com>
+ <20081005162847.7bf0ead1@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081001083532.GE31009@elte.hu>
-	 <1222851025-30619-1-git-send-email-steven@uplinklabs.net>
-	 <20081005142819.GB12047@cs181140183.pp.htv.fi>
-	 <f488382f0810051553t32a24972ma7baa92605f43772@mail.gmail.com>
-	 <20081005231607.GB10747@cs181140183.pp.htv.fi>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 5, 2008 at 4:16 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Sun, Oct 05, 2008 at 03:53:28PM -0700, Steven Noonan wrote:
->> On Sun, Oct 5, 2008 at 7:28 AM, Adrian Bunk <bunk@kernel.org> wrote:
->> > On Wed, Oct 01, 2008 at 01:50:25AM -0700, Steven Noonan wrote:
->> >> The variable 'scratch' is always initialized before it's used. The
->> >> conditional which is responsible for initialization of 'scratch' will
->> >> always evaluate 'true' when the first loop iteration occurs, and thus,
->> >> it's properly initialized. GCC doesn't see this, of course, so using
->> >> the uninitialized_var() macro seems to work for silencing this case.
->> >>
->> >> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
->> >> ---
->> >>  drivers/mmc/host/sdhci.c |    2 +-
->> >>  1 files changed, 1 insertions(+), 1 deletions(-)
->> >>
->> >> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
->> >> index e3a8133..6257677 100644
->> >> --- a/drivers/mmc/host/sdhci.c
->> >> +++ b/drivers/mmc/host/sdhci.c
->> >> @@ -177,7 +177,7 @@ static void sdhci_read_block_pio(struct sdhci_host *host)
->> >>  {
->> >>       unsigned long flags;
->> >>       size_t blksize, len, chunk;
->> >> -     u32 scratch;
->> >> +     u32 uninitialized_var(scratch);
->> >>...
->> >
->> > With which gcc version?
->> >
->> > I'm not getting this warning with gcc 4.3, and IMHO it doesn't make
->> > sense to clutter the source code with such workarounds for older gcc
->> > versions (we officially support 6 years old compilers, and warning-free
->> > compilations with all of them are not reasonably possible).
->> >
->> > cu
->> > Adrian
->>
->> I've seen it on GCC 4.1 and 4.2. Since lots of distributions still
->> haven't marked GCC >4.1 stable, it makes sense to me to kill warnings
->> for GCC 4.1 and above. I don't know of any current distribution
->> releases using less than GCC 4.1 at the moment.
->
-> It will clutter our code with these workarounds forever.
->
-> And due to silencing these false warnings we will no longer get a
-> warning when one of them becomes a real bug.
->
-> Working on the remaining warnings that are visible with gcc 4.3 is a
-> worthwhile goal, but I see no point for silencing some warnings that
-> only occur with older gcc versions (especially as long as warnings
-> that are present with all gcc versions stay unfixed).
->
-I feel like there's a logical fallacy here. Sure, we can fix GCC 4.3
-warnings, but what about when GCC 4.3 becomes an "old version"?
-uninitialized_var and other such workarounds will still exist in the
-code. It seems like the logical progression of your argument should be
-to never fix false warnings.
 
-- Steven
+
+On Sun, 5 Oct 2008, Arjan van de Ven wrote:
+
+> On Sun, 5 Oct 2008 19:18:22 -0400 (EDT)
+> Mikulas Patocka <mpatocka@redhat.com> wrote:
+> 
+> > On Sun, 5 Oct 2008, Arjan van de Ven wrote:
+> > 
+> > 
+> > The problem here is that you have two processes --- one is writing,
+> > the other is simultaneously syncing. The syncing process can't
+> > distinguish the pages that were created before fsync() was invoked
+> > (it has to wait on them) and the pages that were created while
+> > fsync() was running (it doesn't have to wait on them) --- so it waits
+> > on them all.
+> 
+> for pages it already passed that's not true.
+> but yes while you walk, you may find new ones. tough luck.
+> > 
+> > Or, how otherwise would you implement "Submit them all in one go,
+> > then wait"? The current code is:
+> > you grab page 0, see it is under writeback, wait on it
+> > you grab page 1, see it is under writeback, wait on it
+> > you grab page 2, see it is under writeback, wait on it
+> > you grab page 3, see it is under writeback, wait on it
+> 
+> it shouldn't be doing this. It should be "submit the lot"
+> "wait on the lot that got submitted".
+
+And how do you want to implement that "wait on the lot that got 
+submitted". Note that you can't allocate an array or linked list that 
+holds pointers to all submitted pages. And if you add anything to the page 
+structure or radix tree, you have to serialize concurrent sync,fsync 
+calls, otherwise they'd fight over these bits.
+
+> keeping away new writers is just shifting the latency to an innocent
+> party (since the fsync() is just bloody expensive, the person doing it
+> should be paying the price, not the rest of the system), and a grave
+> mistake.
+
+I assume that if very few people complained about the livelock till now, 
+very few people will see degraded write performance. My patch blocks the 
+writes only if the livelock happens, so if the livelock doesn't happen in 
+unpatched kernel for most people, the patch won't make it worse.
+
+> If the fsync() implementation isn't smart enough, sure, lets improve
+> it. But not by shifting latency around... lets make it more efficient
+> at submitting IO.
+> If we need to invent something like "chained IO" where if you wait on
+> the last of the chain, you wait on the entirely chain, so be it.
+
+This looks madly complicated. And ineffective, because if some page was 
+submitted before fsync() was invoked, and is under writeback while fsync() 
+is called, fsync() still has to wait on it.
+
+Mikulas
