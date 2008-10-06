@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbYJFBZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbYJFB1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753443AbYJFBZU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 21:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYJFBZJ
+	id S1753661AbYJFB1g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 21:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYJFB12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 21:25:09 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:8383 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601AbYJFBZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 21:25:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=JRySUgSXrmaDPqtuhDJenw6gB+sMFgi0hntVSapCMgAmE8qZx21kVfVZX318giYjJ8
-         twChZ1NJsGgBVipPgwLNmh3qvv5r8Bx76D84q6Xkpr5DP18qfAAwhRChL0bMCodCeEuR
-         cttjJAbkUM6ZErdv3c1DOddenXPMk17CGlBSU=
-Message-ID: <919fe2b30810051825l4f0907d1ucc9ffe9f201ddc4f@mail.gmail.com>
-Date: Sun, 5 Oct 2008 21:25:06 -0400
-From: "M. Asselstine" <asselsm@mcmaster.ca>
-To: "Julia Lawall" <julia@diku.dk>
-Subject: Re: [PATCH 2/2] drivers/s390/cio/chsc_sch.c: Correct use of ! and &
-Cc: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0810042205090.19286@ask.diku.dk>
+	Sun, 5 Oct 2008 21:27:28 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61065 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752172AbYJFB12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 21:27:28 -0400
+Message-ID: <48E96964.9060606@cn.fujitsu.com>
+Date: Mon, 06 Oct 2008 09:27:00 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: remove redundant code in cpu_cgroup_create()
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0810042205090.19286@ask.diku.dk>
-X-Google-Sender-Auth: bb233e02e72c6bd0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 4, 2008 at 4:05 PM, Julia Lawall <julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
-> involved converting !x & y to !(x & y).  The code below shows the same
-> pattern, and thus should perhaps be fixed in the same way.  In particular,
-> the result of !scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND is
-> always just !scsw_stctl(&request->irb.scsw).
->
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
->
-> // <smpl>
-> @@ expression E; constant C; @@
-> (
->  !E & !C
-> |
-> - !E & C
-> + !(E & C)
-> )
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-Reviewed-by: Mark Asselstine <mark.asselstine@windriver.com>
+css will be initialized by cgroup core.
 
->
-> ---
->  drivers/s390/cio/chsc_sch.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff -u -p a/drivers/s390/cio/chsc_sch.c b/drivers/s390/cio/chsc_sch.c
-> --- a/drivers/s390/cio/chsc_sch.c
-> +++ b/drivers/s390/cio/chsc_sch.c
-> @@ -261,7 +261,7 @@ static int chsc_examine_irb(struct chsc_
->  {
->        int backed_up;
->
-> -       if (!scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND)
-> +       if (!(scsw_stctl(&request->irb.scsw) & SCSW_STCTL_STATUS_PEND))
->                return -EIO;
->        backed_up = scsw_cstat(&request->irb.scsw) & SCHN_STAT_CHAIN_CHECK;
->        request->irb.scsw.cmd.cstat &= ~SCHN_STAT_CHAIN_CHECK;
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/sched.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 9889080..5fa8560 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8991,7 +8991,6 @@ cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+ 
+ 	if (!cgrp->parent) {
+ 		/* This is early initialization for the top cgroup */
+-		init_task_group.css.cgroup = cgrp;
+ 		return &init_task_group.css;
+ 	}
+ 
+@@ -9000,9 +8999,6 @@ cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+ 	if (IS_ERR(tg))
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	/* Bind the cgroup to task_group object we just created */
+-	tg->css.cgroup = cgrp;
+-
+ 	return &tg->css;
+ }
+ 
+-- 
+1.5.4.rc3
+
