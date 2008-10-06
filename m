@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYJFMkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbYJFMjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbYJFMkK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 08:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYJFMiS
+	id S1755144AbYJFMjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 08:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYJFMiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 6 Oct 2008 08:38:18 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40065 "EHLO
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40064 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753105AbYJFMiN (ORCPT
+	by vger.kernel.org with ESMTP id S1753092AbYJFMiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 6 Oct 2008 08:38:13 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 09/13] mfd: Add I2C control support for WM8350
-Date: Mon,  6 Oct 2008 13:38:04 +0100
-Message-Id: <1223296688-9960-9-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 11/13] mfd: Add initialisation callback for WM8350
+Date: Mon,  6 Oct 2008 13:38:06 +0100
+Message-Id: <1223296688-9960-11-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223296688-9960-8-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1223296688-9960-10-git-send-email-broonie@opensource.wolfsonmicro.com>
 References: <20081006123254.GA9664@rakim.wolfsonmicro.main>
  <1223296688-9960-1-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223296688-9960-2-git-send-email-broonie@opensource.wolfsonmicro.com>
@@ -28,182 +28,96 @@ References: <20081006123254.GA9664@rakim.wolfsonmicro.main>
  <1223296688-9960-6-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223296688-9960-7-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223296688-9960-8-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-9-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223296688-9960-10-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement the I2C control interface for the WM8350. This code was
-originally written by Liam Girdwood and has been updated for submission
-by Mark Brown.
+Some functions of the WM8350 require board-specific initialisation on
+startup. Provide a callback to the WM8350 driver in platform data
+for platforms to use to configure the chip.  Use of a callback allows
+platforms to control the ordering of initialisation which can be
+important.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/mfd/Kconfig      |   11 ++++
- drivers/mfd/Makefile     |    1 +
- drivers/mfd/wm8350-i2c.c |  120 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 132 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mfd/wm8350-i2c.c
+ drivers/mfd/wm8350-core.c       |   12 +++++++++++-
+ drivers/mfd/wm8350-i2c.c        |    2 +-
+ include/linux/mfd/wm8350/core.h |   14 +++++++++++++-
+ 3 files changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index c32d676..b2930cc 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -133,6 +133,17 @@ config MFD_WM8350_CONFIG_MODE_3
- 	  
- 	  If unsure say Y
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index c7552c0..071834b 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -388,7 +388,8 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(wm8350_create_cache);
  
-+config MFD_WM8350_I2C
-+	tristate "Support Wolfson Microelectronics WM8350 with I2C"
-+	select MFD_WM8350
-+	depends on I2C
-+	help
-+	  The WM8350 is an integrated audio and power management
-+	  subsystem with watchdog and RTC functionality for embedded
-+	  systems.  This option enables core support for the WM8350 with
-+	  I2C as the control interface.  Additional options must be
-+	  selected to enable support for the functionality of the chip.
-+
- endmenu
+-int wm8350_device_init(struct wm8350 *wm8350)
++int wm8350_device_init(struct wm8350 *wm8350,
++		       struct wm8350_platform_data *pdata)
+ {
+ 	int ret = -EINVAL;
+ 	u16 id1, id2, mask, mode;
+@@ -439,6 +440,15 @@ int wm8350_device_init(struct wm8350 *wm8350)
+ 		return ret;
+ 	}
  
- menu "Multimedia Capabilities Port drivers"
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index b0adca0..746d37b 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_MFD_TC6393XB)	+= tc6393xb.o
- obj-$(CONFIG_MFD_WM8400)	+= wm8400-core.o
- wm8350-objs			:= wm8350-core.o wm8350-regmap.o
- obj-$(CONFIG_MFD_WM8350)	+= wm8350.o
-+obj-$(CONFIG_MFD_WM8350_I2C)	+= wm8350-i2c.o
- 
- obj-$(CONFIG_MFD_CORE)		+= mfd-core.o
- 
-diff --git a/drivers/mfd/wm8350-i2c.c b/drivers/mfd/wm8350-i2c.c
-new file mode 100644
-index 0000000..2b0569c
---- /dev/null
-+++ b/drivers/mfd/wm8350-i2c.c
-@@ -0,0 +1,120 @@
-+/*
-+ * wm8350-i2c.c  --  Generic I2C driver for Wolfson WM8350 PMIC
-+ *
-+ * This driver defines and configures the WM8350 for the Freescale i.MX32ADS.
-+ *
-+ * Copyright 2007, 2008 Wolfson Microelectronics PLC.
-+ *
-+ * Author: Liam Girdwood
-+ *         linux@wolfsonmicro.com
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/init.h>
-+#include <linux/i2c.h>
-+#include <linux/platform_device.h>
-+#include <linux/mfd/wm8350/core.h>
-+
-+static int wm8350_i2c_read_device(struct wm8350 *wm8350, char reg,
-+				  int bytes, void *dest)
-+{
-+	int ret;
-+
-+	ret = i2c_master_send(wm8350->i2c_client, &reg, 1);
-+	if (ret < 0)
-+		return ret;
-+	return i2c_master_recv(wm8350->i2c_client, dest, bytes);
-+}
-+
-+static int wm8350_i2c_write_device(struct wm8350 *wm8350, char reg,
-+				   int bytes, void *src)
-+{
-+	/* we add 1 byte for device register */
-+	u8 msg[(WM8350_MAX_REGISTER << 1) + 1];
-+
-+	if (bytes > ((WM8350_MAX_REGISTER << 1) + 1))
-+		return -EINVAL;
-+
-+	msg[0] = reg;
-+	memcpy(&msg[1], src, bytes);
-+	return i2c_master_send(wm8350->i2c_client, msg, bytes + 1);
-+}
-+
-+static int wm8350_i2c_probe(struct i2c_client *i2c,
-+			    const struct i2c_device_id *id)
-+{
-+	struct wm8350 *wm8350;
-+	int ret = 0;
-+
-+	wm8350 = kzalloc(sizeof(struct wm8350), GFP_KERNEL);
-+	if (wm8350 == NULL) {
-+		kfree(i2c);
-+		return -ENOMEM;
++	if (pdata->init) {
++		ret = pdata->init(wm8350);
++		if (ret != 0) {
++			dev_err(wm8350->dev, "Platform init() failed: %d\n",
++				ret);
++			goto err;
++		}
 +	}
 +
-+	i2c_set_clientdata(i2c, wm8350);
-+	wm8350->dev = &i2c->dev;
-+	wm8350->i2c_client = i2c;
-+	wm8350->read_dev = wm8350_i2c_read_device;
-+	wm8350->write_dev = wm8350_i2c_write_device;
-+
-+	ret = wm8350_device_init(wm8350);
-+	if (ret < 0)
-+		goto err;
-+
-+	return ret;
-+
-+err:
-+	kfree(wm8350);
-+	return ret;
-+}
-+
-+static int wm8350_i2c_remove(struct i2c_client *i2c)
-+{
-+	struct wm8350 *wm8350 = i2c_get_clientdata(i2c);
-+
-+	wm8350_device_exit(wm8350);
-+	kfree(wm8350);
-+
-+	return 0;
-+}
-+
-+static const struct i2c_device_id wm8350_i2c_id[] = {
-+       { "wm8350", 0 },
-+       { }
-+};
-+MODULE_DEVICE_TABLE(i2c, wm8350_i2c_id);
-+
-+
-+static struct i2c_driver wm8350_i2c_driver = {
-+	.driver = {
-+		   .name = "wm8350",
-+		   .owner = THIS_MODULE,
-+	},
-+	.probe = wm8350_i2c_probe,
-+	.remove = wm8350_i2c_remove,
-+	.id_table = wm8350_i2c_id,
+ 	return 0;
+ 
+ err:
+diff --git a/drivers/mfd/wm8350-i2c.c b/drivers/mfd/wm8350-i2c.c
+index 2b0569c..245b790 100644
+--- a/drivers/mfd/wm8350-i2c.c
++++ b/drivers/mfd/wm8350-i2c.c
+@@ -65,7 +65,7 @@ static int wm8350_i2c_probe(struct i2c_client *i2c,
+ 	wm8350->read_dev = wm8350_i2c_read_device;
+ 	wm8350->write_dev = wm8350_i2c_write_device;
+ 
+-	ret = wm8350_device_init(wm8350);
++	ret = wm8350_device_init(wm8350, i2c->dev.platform_data);
+ 	if (ret < 0)
+ 		goto err;
+ 
+diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
+index 94778c1..8f2beae 100644
+--- a/include/linux/mfd/wm8350/core.h
++++ b/include/linux/mfd/wm8350/core.h
+@@ -564,10 +564,22 @@ struct wm8350 {
+ 	u16 *reg_cache;
+ };
+ 
++/**
++ * Data to be supplied by the platform to initialise the WM8350.
++ *
++ * @init: Function called during driver initialisation.  Should be
++ *        used by the platform to configure GPIO functions and similar.
++ */
++struct wm8350_platform_data {
++	int (*init)(struct wm8350 *wm8350);
 +};
 +
-+static int __init wm8350_i2c_init(void)
-+{
-+	return i2c_add_driver(&wm8350_i2c_driver);
-+}
-+/* init early so consumer devices can complete system boot */
-+subsys_initcall(wm8350_i2c_init);
 +
-+static void __exit wm8350_i2c_exit(void)
-+{
-+	i2c_del_driver(&wm8350_i2c_driver);
-+}
-+module_exit(wm8350_i2c_exit);
-+
-+MODULE_DESCRIPTION("I2C support for the WM8350 AudioPlus PMIC");
-+MODULE_LICENSE("GPL");
+ /*
+  * WM8350 device initialisation and exit.
+  */
+-int wm8350_device_init(struct wm8350 *wm8350);
++int wm8350_device_init(struct wm8350 *wm8350,
++		       struct wm8350_platform_data *pdata);
+ void wm8350_device_exit(struct wm8350 *wm8350);
+ 
+ /*
 -- 
 1.5.6.5
 
