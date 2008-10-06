@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYJFXaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYJFXaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbYJFXaL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbYJFXW5
+	id S1758577AbYJFXaj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757041AbYJFXXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:22:57 -0400
-Received: from mx1.suse.de ([195.135.220.2]:41041 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 19:23:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55359 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757181AbYJFXW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:22:56 -0400
-Date: Mon, 6 Oct 2008 16:17:53 -0700
+	id S1757048AbYJFXXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:23:00 -0400
+Date: Mon, 6 Oct 2008 16:17:55 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Santwona Behera <santwona.behera@sun.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 24/28] niu: panic on reset
-Message-ID: <20081006231753.GY20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Vegard Nossum <vegard.nossum@gmail.com>,
+       Thomas Graf <tgraf@suug.ch>, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 25/28] netlink: fix overrun in attribute iteration
+Message-ID: <20081006231755.GZ20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0002-niu-panic-on-reset.patch"
+Content-Disposition: inline; filename="0003-netlink-fix-overrun-in-attribute-iteration.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,93 +40,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Santwona Behera <santwona.behera@sun.com>
+From: Vegard Nossum <vegard.nossum@gmail.com>
 
-[ Upstream commit cff502a38394fd33693f6233e03fca363dfa956d ]
+[ Upstream commit 1045b03e07d85f3545118510a587035536030c1c ]
 
-The reset_task function in the niu driver does not reset the tx and rx
-buffers properly. This leads to panic on reset. This patch is a
-modified implementation of the previously posted fix.
+kmemcheck reported this:
 
-Signed-off-by: Santwona Behera <santwona.behera@sun.com>
+  kmemcheck: Caught 16-bit read from uninitialized memory (f6c1ba30)
+  0500110001508abf050010000500000002017300140000006f72672e66726565
+   i i i i i i i i i i i i i u u u u u u u u u u u u u u u u u u u
+                                   ^
+
+  Pid: 3462, comm: wpa_supplicant Not tainted (2.6.27-rc3-00054-g6397ab9-dirty #13)
+  EIP: 0060:[<c05de64a>] EFLAGS: 00010296 CPU: 0
+  EIP is at nla_parse+0x5a/0xf0
+  EAX: 00000008 EBX: fffffffd ECX: c06f16c0 EDX: 00000005
+  ESI: 00000010 EDI: f6c1ba30 EBP: f6367c6c ESP: c0a11e88
+   DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+  CR0: 8005003b CR2: f781cc84 CR3: 3632f000 CR4: 000006d0
+  DR0: c0ead9bc DR1: 00000000 DR2: 00000000 DR3: 00000000
+  DR6: ffff4ff0 DR7: 00000400
+   [<c05d4b23>] rtnl_setlink+0x63/0x130
+   [<c05d5f75>] rtnetlink_rcv_msg+0x165/0x200
+   [<c05ddf66>] netlink_rcv_skb+0x76/0xa0
+   [<c05d5dfe>] rtnetlink_rcv+0x1e/0x30
+   [<c05dda21>] netlink_unicast+0x281/0x290
+   [<c05ddbe9>] netlink_sendmsg+0x1b9/0x2b0
+   [<c05beef2>] sock_sendmsg+0xd2/0x100
+   [<c05bf945>] sys_sendto+0xa5/0xd0
+   [<c05bf9a6>] sys_send+0x36/0x40
+   [<c05c03d6>] sys_socketcall+0x1e6/0x2c0
+   [<c020353b>] sysenter_do_call+0x12/0x3f
+   [<ffffffff>] 0xffffffff
+
+This is the line in nla_ok():
+
+  /**
+   * nla_ok - check if the netlink attribute fits into the remaining bytes
+   * @nla: netlink attribute
+   * @remaining: number of bytes remaining in attribute stream
+   */
+  static inline int nla_ok(const struct nlattr *nla, int remaining)
+  {
+          return remaining >= sizeof(*nla) &&
+                 nla->nla_len >= sizeof(*nla) &&
+                 nla->nla_len <= remaining;
+  }
+
+It turns out that remaining can become negative due to alignment in
+nla_next(). But GCC promotes "remaining" to unsigned in the test
+against sizeof(*nla) above. Therefore the test succeeds, and the
+nla_for_each_attr() may access memory outside the received buffer.
+
+A short example illustrating this point is here:
+
+  #include <stdio.h>
+
+  main(void)
+  {
+          printf("%d\n", -1 >= sizeof(int));
+  }
+
+...which prints "1".
+
+This patch adds a cast in front of the sizeof so that GCC will make
+a signed comparison and fix the illegal memory dereference. With the
+patch applied, there is no kmemcheck report.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+Acked-by: Thomas Graf <tgraf@suug.ch>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/niu.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ include/net/netlink.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -5230,6 +5230,56 @@ static void niu_netif_start(struct niu *
- 	niu_enable_interrupts(np, 1);
- }
- 
-+static void niu_reset_buffers(struct niu *np)
-+{
-+	int i, j, k, err;
-+
-+	if (np->rx_rings) {
-+		for (i = 0; i < np->num_rx_rings; i++) {
-+			struct rx_ring_info *rp = &np->rx_rings[i];
-+
-+			for (j = 0, k = 0; j < MAX_RBR_RING_SIZE; j++) {
-+				struct page *page;
-+
-+				page = rp->rxhash[j];
-+				while (page) {
-+					struct page *next =
-+						(struct page *) page->mapping;
-+					u64 base = page->index;
-+					base = base >> RBR_DESCR_ADDR_SHIFT;
-+					rp->rbr[k++] = cpu_to_le32(base);
-+					page = next;
-+				}
-+			}
-+			for (; k < MAX_RBR_RING_SIZE; k++) {
-+				err = niu_rbr_add_page(np, rp, GFP_ATOMIC, k);
-+				if (unlikely(err))
-+					break;
-+			}
-+
-+			rp->rbr_index = rp->rbr_table_size - 1;
-+			rp->rcr_index = 0;
-+			rp->rbr_pending = 0;
-+			rp->rbr_refill_pending = 0;
-+		}
-+	}
-+	if (np->tx_rings) {
-+		for (i = 0; i < np->num_tx_rings; i++) {
-+			struct tx_ring_info *rp = &np->tx_rings[i];
-+
-+			for (j = 0; j < MAX_TX_RING_SIZE; j++) {
-+				if (rp->tx_buffs[j].skb)
-+					(void) release_tx_packet(np, rp, j);
-+			}
-+
-+			rp->pending = MAX_TX_RING_SIZE;
-+			rp->prod = 0;
-+			rp->cons = 0;
-+			rp->wrap_bit = 0;
-+		}
-+	}
-+}
-+
- static void niu_reset_task(struct work_struct *work)
+--- a/include/net/netlink.h
++++ b/include/net/netlink.h
+@@ -704,7 +704,7 @@ static inline int nla_len(const struct n
+  */
+ static inline int nla_ok(const struct nlattr *nla, int remaining)
  {
- 	struct niu *np = container_of(work, struct niu, reset_task);
-@@ -5252,6 +5302,12 @@ static void niu_reset_task(struct work_s
- 
- 	niu_stop_hw(np);
- 
-+	spin_unlock_irqrestore(&np->lock, flags);
-+
-+	niu_reset_buffers(np);
-+
-+	spin_lock_irqsave(&np->lock, flags);
-+
- 	err = niu_init_hw(np);
- 	if (!err) {
- 		np->timer.expires = jiffies + HZ;
+-	return remaining >= sizeof(*nla) &&
++	return remaining >= (int) sizeof(*nla) &&
+ 	       nla->nla_len >= sizeof(*nla) &&
+ 	       nla->nla_len <= remaining;
+ }
 
 -- 
