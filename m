@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYJFTo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYJFTpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYJFTo2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 15:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYJFTnU
+	id S1755442AbYJFTpb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 15:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbYJFTpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 15:43:20 -0400
-Received: from el-out-1112.google.com ([209.85.162.179]:8732 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbYJFTnS (ORCPT
+	Mon, 6 Oct 2008 15:45:21 -0400
+Received: from mga09.intel.com ([134.134.136.24]:48049 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752589AbYJFTpT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 15:43:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:date:message-id:in-reply-to:references:user-agent
-         :mime-version:content-type:content-transfer-encoding;
-        b=A2+uUEdWTS9dmk25nlHBtfrd/YistXFMxm5M3M7hEwlXnNCbxhS1vPY+Ys4jHxvzL9
-         O+NkNgMTQ/eX2PXEOKdeFy26D9nuGibcBq973lr6869baPCTVbNAq9lIKFY6Tl55+sdh
-         nPtJ53M4g7bZelxx4Ol4dZ9nsE5M54jcmHFbs=
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [RFC PATCH 3/4] Example of PowerPC device tree support for GPT based
-	IR
-To: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
-Date: Mon, 06 Oct 2008 15:43:12 -0400
-Message-ID: <20081006194312.15992.50877.stgit@terra>
-In-Reply-To: <20081006194032.15992.8393.stgit@terra>
-References: <20081006194032.15992.8393.stgit@terra>
-User-Agent: StGIT/0.14.3.224.g199b
+	Mon, 6 Oct 2008 15:45:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,368,1220252400"; 
+   d="scan'208";a="344635895"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: "Luck, Tony" <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Date: Mon, 6 Oct 2008 12:44:29 -0700
+Subject: RE: [PATCH 0/2]Add Variable Page Size and IA64 Support in Intel
+ IOMMU
+Thread-Topic: [PATCH 0/2]Add Variable Page Size and IA64 Support in Intel
+ IOMMU
+Thread-Index: Acklb8Zvk1X2wFH/RvypCITWhNlMeQCe7mRw
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8844A6B45@orsmsx505.amr.corp.intel.com>
+References: <20081001165606.GA21279@linux-os.sc.intel.com>
+ <200810030950.19359.bjorn.helgaas@hp.com>
+In-Reply-To: <200810030950.19359.bjorn.helgaas@hp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> The following two patches (Intel IOMMU generic patch and ia64 specific
 
----
- arch/powerpc/boot/dts/dspeak01.dts |   19 ++++++++-----------
- 1 files changed, 8 insertions(+), 11 deletions(-)
+>the fact that the DMAR table is static precludes any sort of hot-plug
+>to add or remove IOMMUs.
 
-diff --git a/arch/powerpc/boot/dts/dspeak01.dts b/arch/powerpc/boot/dts/dspeak01.dts
-index 1d10f0a..cbb22a1 100644
---- a/arch/powerpc/boot/dts/dspeak01.dts
-+++ b/arch/powerpc/boot/dts/dspeak01.dts
-@@ -131,16 +131,6 @@
- 			#gpio-cells = <2>;
- 		};
- 
--		gpt7: timer@670 { /* General Purpose Timer in GPIO mode */
--			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
--			cell-index = <7>;
--			reg = <0x670 0x10>;
--			interrupts = <0x1 0x10 0x0>;
--			interrupt-parent = <&mpc5200_pic>;
--			gpio-controller;
--			#gpio-cells = <2>;
--		};
--
- 		rtc@800 {	// Real time clock
- 			compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
- 			device_type = "rtc";
-@@ -328,6 +318,14 @@
- 			reg = <0x8000 0x4000>;
- 		};
- 
-+		ir0: timer@670 { /* General Purpose Timer 6 in Input mode */
-+			compatible = "gpt-ir";
-+			cell-index = <7>;
-+			reg = <0x670 0x10>;
-+			interrupts = <0x1 0x10 0x0>;
-+			interrupt-parent = <&mpc5200_pic>;
-+		};
-+
- 		/* This is only an example device to show the usage of gpios. It maps all available
- 		 * gpios to the "gpio-provider" device.
- 		 */
-@@ -345,7 +343,6 @@
- 				 &gpt4		0 0 /* timer4		61c		x2-16	   */
- 				 &gpt5		0 0 /* timer5		44c		x7-11	   */
- 				 &gpt6		0 0 /* timer6		60c		x8-15	   */
--				 &gpt7		0 0 /* timer7		36a		x17-9	   */
- 				 >;
- 		};
- 	};
+The latest VT-d spec v1.1 does not support hot plug. If the feature is available in newer spec, we will support it.
 
+Thanks.
+
+-Fenghua
