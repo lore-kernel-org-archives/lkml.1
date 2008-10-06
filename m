@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbYJFHmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbYJFHsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752942AbYJFHmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 03:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYJFHmb
+	id S1752679AbYJFHsm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 03:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYJFHse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 03:42:31 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:43654 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751512AbYJFHmb (ORCPT
+	Mon, 6 Oct 2008 03:48:34 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:60364 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbYJFHsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 03:42:31 -0400
-Date: Mon, 6 Oct 2008 13:12:23 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 1/6] atomic page_cgroup flags
-Message-ID: <20081006074223.GA1202@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com> <20081001165513.7633c132.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 6 Oct 2008 03:48:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=X8/Tmr5orcdTySALgGhVYPG0hMpeilgA3GmGlkwOOEMwfNd27/YpAvxoyRDFuwS6gN
+         Hl6Sz9ciR/x3zf+m/o71eKq2vMnn/XfnB2+z2TAJvpGWnZeU/Q0exwXE+w/2rTpdAEav
+         JL/qjfm1UzCncPPdQMIGiZXSJ1rD8aTS2ZZ4g=
+Message-ID: <1a26b4920810060048h5b4a87c2wc298b01e84815ce6@mail.gmail.com>
+Date: Mon, 6 Oct 2008 09:48:32 +0200
+From: "Pazzo Da Legare" <pazzodalegare@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: booting uncompressed kernel on x86
+In-Reply-To: <1a26b4920810011457t4ad93308u2cc0d2781168f332@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081001165513.7633c132.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1a26b4920810011457t4ad93308u2cc0d2781168f332@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-10-01 16:55:13]:
+Dear ML,
 
-> This patch makes page_cgroup->flags to be atomic_ops and define
-> functions (and macros) to access it.
-> 
-> Before trying to modify memory resource controller, this atomic operation
-> on flags is necessary. Most of flags in this patch is for LRU and modfied
-> under mz->lru_lock but we'll add another flags which is not for LRU soon.
-> (lock_page_cgroup() will use LOCK bit on page_cgroup->flags)
-> So we use atomic version here.
->
+Is there a standard way to boot on i386 arch using uncompressed linux
+kernel (vmlinux)?
+I'm trying to fast my boot process on a slow i486-like machine, I
+found a patch for this subject (http://lkml.org/lkml/2005/7/1/206) but
+it doesn't work.
 
-Seems quite straightforward
+TIA for you help
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
-
--- 
-	Balbir
+Pazzo
