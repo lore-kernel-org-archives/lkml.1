@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYJFRRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYJFRSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbYJFRRz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 13:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYJFRRr
+	id S1755607AbYJFRSr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 13:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYJFRSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 13:17:47 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:56258 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753881AbYJFRRq (ORCPT
+	Mon, 6 Oct 2008 13:18:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35890
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754022AbYJFRSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 13:17:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lfqIvKN6aJn19GypdOnbZwMp36ugEBDe9UcQ3hZnhmXibu1sgEkydetJ9UFehGGewh
-         lBhkrmljjL212YDy9a+BQrAuJXH5komGkmepbpLj9yV7O4UMnvtie3r3ruwcw51UagOW
-         8L/DfVlS2cgagHzUbJNPd8Vm5qhmHgs7vY29M=
-Date: Mon, 6 Oct 2008 21:17:42 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrey Batyiev <batyiev@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: APIC misconfiguration
-Message-ID: <20081006171742.GB7317@localhost>
-References: <200810061923.09076.batyiev@gmail.com> <20081006165007.GA7317@localhost> <200810061955.28915.batyiev@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810061955.28915.batyiev@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 6 Oct 2008 13:18:38 -0400
+Date: Mon, 06 Oct 2008 10:18:14 -0700 (PDT)
+Message-Id: <20081006.101814.193697461.davem@davemloft.net>
+To: lkml@pengaru.com
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081006051718.GA2811@fc6222126.aspadmin.net>
+References: <20081005214556.GL18569@fc6222126.aspadmin.net>
+	<20081005.153059.111120997.davem@davemloft.net>
+	<20081006051718.GA2811@fc6222126.aspadmin.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andrey Batyiev - Mon, Oct 06, 2008 at 07:55:28PM +0300]
-| Hi Cyrill,
-| 
-| > actually it's not a bug of APIC itself but rather misconfigured
-| > device I think. Not sure thru which bus it does work (pci
-| > i suppose) but I think you better are to fix it on more higher
-| > level like in config space of this device. PCI guys could tell
-| > you more about this area I believe.
-| 
-| Device is connected to ISA bus and haven't any autoconfiguration methods.
-| 
-| Thanks,
-|    Andrey
-| 
+From: lkml@pengaru.com
+Date: Mon, 6 Oct 2008 00:17:18 -0500
 
-hmm... don't we have any ISA quirks already? If this device support
-PnP there should be descriptor for irq line where you could change it
-since I don't believe it would be a first device in kernel which behave
-not as supposed and developers has to override some configs bits.
-Hope it help (i didn't check ISA code though -- too busy now).
+> Looks like the RCVLOWAT patch breaks the tcp poll logic in the normal
+> case.
 
-		- Cyrill -
+Sorry, the condition was reversed, try this one instead:
+
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index 1ab341e..7d81a1e 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -384,13 +384,17 @@ unsigned int tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
+ 
+ 	/* Connected? */
+ 	if ((1 << sk->sk_state) & ~(TCPF_SYN_SENT | TCPF_SYN_RECV)) {
++		int target = sock_rcvlowat(sk, 0, INT_MAX);
++
++		if (tp->urg_seq == tp->copied_seq &&
++		    !sock_flag(sk, SOCK_URGINLINE) &&
++		    tp->urg_data)
++			target--;
++
+ 		/* Potential race condition. If read of tp below will
+ 		 * escape above sk->sk_state, we can be illegally awaken
+ 		 * in SYN_* states. */
+-		if ((tp->rcv_nxt != tp->copied_seq) &&
+-		    (tp->urg_seq != tp->copied_seq ||
+-		     tp->rcv_nxt != tp->copied_seq + 1 ||
+-		     sock_flag(sk, SOCK_URGINLINE) || !tp->urg_data))
++		if (tp->rcv_nxt - tp->copied_seq >= target)
+ 			mask |= POLLIN | POLLRDNORM;
+ 
+ 		if (!(sk->sk_shutdown & SEND_SHUTDOWN)) {
