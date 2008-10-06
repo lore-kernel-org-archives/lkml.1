@@ -1,58 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYJFF4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbYJFF7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbYJFF4s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 01:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYJFF4k
+	id S1754314AbYJFF7y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 01:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYJFF7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 01:56:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38049 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYJFF4k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 01:56:40 -0400
-Date: Mon, 6 Oct 2008 08:02:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [Bug #11569] Don't complain about disabled irqs when the system has paniced
-Message-ID: <20081006060238.GB3180@one.firstfloor.org>
-References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.qTH.6475IB@wind>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Oct 2008 01:59:46 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:51561 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752509AbYJFF7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 01:59:46 -0400
+Date: Mon, 6 Oct 2008 08:59:21 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, drzeus@drzeus.cx
+Subject: Re: [PATCH] sdhci: 'scratch' may be used uninitialized
+Message-ID: <20081006055921.GD10747@cs181140183.pp.htv.fi>
+References: <20081001083532.GE31009@elte.hu> <1222851025-30619-1-git-send-email-steven@uplinklabs.net> <20081005142819.GB12047@cs181140183.pp.htv.fi> <f488382f0810051553t32a24972ma7baa92605f43772@mail.gmail.com> <20081005231607.GB10747@cs181140183.pp.htv.fi> <f488382f0810051648k14b499ecj9d625c55b38ed2f0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <yWwteD.A.qTH.6475IB@wind>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <f488382f0810051648k14b499ecj9d625c55b38ed2f0@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 04, 2008 at 07:32:54PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11569
-> Subject		: Don't complain about disabled irqs when the system has paniced
-> Submitter	: Andi Kleen <andi@firstfloor.org>
-> Date		: 2008-09-02 13:49 (33 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122036356127282&w=4
+On Sun, Oct 05, 2008 at 04:48:49PM -0700, Steven Noonan wrote:
+> On Sun, Oct 5, 2008 at 4:16 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> > On Sun, Oct 05, 2008 at 03:53:28PM -0700, Steven Noonan wrote:
+> >> On Sun, Oct 5, 2008 at 7:28 AM, Adrian Bunk <bunk@kernel.org> wrote:
+> >> > On Wed, Oct 01, 2008 at 01:50:25AM -0700, Steven Noonan wrote:
+> >> >> The variable 'scratch' is always initialized before it's used. The
+> >> >> conditional which is responsible for initialization of 'scratch' will
+> >> >> always evaluate 'true' when the first loop iteration occurs, and thus,
+> >> >> it's properly initialized. GCC doesn't see this, of course, so using
+> >> >> the uninitialized_var() macro seems to work for silencing this case.
+> >> >>
+> >> >> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
+> >> >> ---
+> >> >>  drivers/mmc/host/sdhci.c |    2 +-
+> >> >>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >> >>
+> >> >> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> >> >> index e3a8133..6257677 100644
+> >> >> --- a/drivers/mmc/host/sdhci.c
+> >> >> +++ b/drivers/mmc/host/sdhci.c
+> >> >> @@ -177,7 +177,7 @@ static void sdhci_read_block_pio(struct sdhci_host *host)
+> >> >>  {
+> >> >>       unsigned long flags;
+> >> >>       size_t blksize, len, chunk;
+> >> >> -     u32 scratch;
+> >> >> +     u32 uninitialized_var(scratch);
+> >> >>...
+> >> >
+> >> > With which gcc version?
+> >> >
+> >> > I'm not getting this warning with gcc 4.3, and IMHO it doesn't make
+> >> > sense to clutter the source code with such workarounds for older gcc
+> >> > versions (we officially support 6 years old compilers, and warning-free
+> >> > compilations with all of them are not reasonably possible).
+> >> >
+> >> > cu
+> >> > Adrian
+> >>
+> >> I've seen it on GCC 4.1 and 4.2. Since lots of distributions still
+> >> haven't marked GCC >4.1 stable, it makes sense to me to kill warnings
+> >> for GCC 4.1 and above. I don't know of any current distribution
+> >> releases using less than GCC 4.1 at the moment.
+> >
+> > It will clutter our code with these workarounds forever.
+> >
+> > And due to silencing these false warnings we will no longer get a
+> > warning when one of them becomes a real bug.
+> >
+> > Working on the remaining warnings that are visible with gcc 4.3 is a
+> > worthwhile goal, but I see no point for silencing some warnings that
+> > only occur with older gcc versions (especially as long as warnings
+> > that are present with all gcc versions stay unfixed).
+> >
+> I feel like there's a logical fallacy here. Sure, we can fix GCC 4.3
+> warnings, but what about when GCC 4.3 becomes an "old version"?
+> uninitialized_var and other such workarounds will still exist in the
+> code. It seems like the logical progression of your argument should be
+> to never fix false warnings.
 
-The problem is actually worse than this description suggests. I updated
-the bugzilla entry now.
+There is no logical fallacy here - getting a warning-free compilation 
+with the latest gcc (so that new warnings get more obvious) makes sense,
+but workarounds for warnings only present with older gcc versions are 
+not worth the price.
 
-The new smp_call_function() that is called from panic is quite unsuitable
-for this task:
-- It allocates memory (not a good idea in panic0
-- It complains about interrupt off
-- This whole thing breaks at least machine checks
+If compilation with gcc 4.3 was always warning-free you might have a 
+point, but considering that it's unlikely that we get all warnings with 
+gcc 4.3 fixed in the forseeable future [1] it would make more sense to 
+fix one of the non-trivial warnings present with all gcc version than 
+clutter the code with workarounds for warnings only present with older 
+gcc versions.
 
--Andi
+> - Steven
+
+cu
+Adrian
+
+[1] e.g. the MCA legacy stuff gives #warning's since
+    more than 5 years (sic)
 
 -- 
-ak@linux.intel.com
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
