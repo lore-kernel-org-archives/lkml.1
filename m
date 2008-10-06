@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYJFOJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbYJFOMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbYJFOJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 10:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYJFOJE
+	id S1754075AbYJFOMa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 10:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbYJFOMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 10:09:04 -0400
-Received: from gecko.sbs.de ([194.138.37.40]:15793 "EHLO gecko.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751636AbYJFOJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 10:09:03 -0400
-Message-ID: <48EA1BE9.1030707@siemens.com>
-Date: Mon, 06 Oct 2008 16:08:41 +0200
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+	Mon, 6 Oct 2008 10:12:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60970 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752338AbYJFOMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 10:12:22 -0400
+Date: Mon, 6 Oct 2008 16:12:20 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: mingo@elte.hu, linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: scheduler hang on cpu re-hotplug with 2.6.27rc8
+Message-ID: <20081006141220.GA14160@basil.nowhere.org>
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: SIGTRAP vs. sys_exit_group race
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[Rafael, something for the regression list]
 
-are there any news on these ideas?
+While testing cpu hotunplug/hotreplug (first 
+setting two CPUs to offline and then to online again) on a 16 thread machine
+with 2.6.27rc8 the first 
 
-http://marc.info/?l=linux-kernel&m=121540671602971
+# echo 1 > ./devices/system/cpu/cpu14/online
 
-I've been caught by a race between a ptraced thread running on a
-breakpoint, thus generating a SIGTRAP and another thread in this process
-issuing sys_exit_group. The discussion above, specifically Oleg's
-concerns, made me think that this is a generic issue of current
-mainline.
+after hotunplug deadlocked somewhere in the scheduler:
 
-I observed this on a heavily patched 2.6.26.5 kernel which comes, among
-other things, with a higher probability for latencies/reschedules
-between the queuing of SIGTRAP and the actual delivery. Right into this
-window, the sys_exit_group comes. It informs gdb about the termination,
-sends out SIGKILL to the other threads and turns the caller into a
-zombie. Now the second thread has SIGKILL + SIGTRAP pending, and it
-picks SIGTRAP for delivery. At this point gdb gets confused (maybe a bug
-of its own?), sends SIGSTOP to the dead thread and waits for it to enter
-the traced state (which it will never do) - deadlock of gdb, only
-resolvable by killing the latter.
+bash          D 00000000ffffcb5b     0  4683   4671
+ ffff8804bc583c68 0000000000000086 ffff8804bc9d8640 0000000000000296
+ ffff8804bdd34730 ffff8804be6fc090 ffff8804bdd34978 0000000c805a1e2a
+ ffff8804be4fd780 ffffffff802298b4 ffffffff808acd98 ffff88027d0b1168
+Call Trace:
+ [<ffffffff802298b4>] __dequeue_entity+0x25/0x68
+ [<ffffffff805a1b4b>] schedule_timeout+0x1e/0xad
+ [<ffffffff8022a11f>] __disable_runtime+0x57/0x155
+ [<ffffffff8025cc47>] cpupri_set+0xbe/0xcd
+ [<ffffffff805a19b3>] wait_for_common+0xcd/0x131
+ [<ffffffff8022c918>] default_wake_function+0x0/0xe
+ [<ffffffff80241f3a>] synchronize_rcu+0x30/0x36
+ [<ffffffff80241fac>] wakeme_after_rcu+0x0/0xc
+ [<ffffffff8022dab6>] partition_sched_domains+0x9b/0x1dd
+ [<ffffffff8022dc26>] update_sched_domains+0x2e/0x35
+ [<ffffffff805a5297>] notifier_call_chain+0x29/0x4c
+ [<ffffffff8059ef76>] _cpu_up+0xd0/0x10a
+ [<ffffffff8059f004>] cpu_up+0x54/0x61
+ [<ffffffff805837d5>] store_online+0x43/0x67
+ [<ffffffff802c51e9>] sysfs_write_file+0xd2/0x110
+ [<ffffffff8028656b>] vfs_write+0xad/0x136
+ [<ffffffff802869f3>] sys_write+0x45/0x6e
+ [<ffffffff8020b22b>] system_call_fastpath+0x16/0x1b
 
-The patch below (rebased against latest git) resolves the issue for me,
-but I'm definitely not sure about all its implications and if I'm not
-papering over a different issue. Could you comment on my scenario? Is it
-possible with mainline as well? Will Roland's approach resolve it?
+It just hung forever, but the machine was otherwise fully functional.
 
-Thanks,
-Jan
+This was without frame pointers so the backtrace presumably has
+some garbage. Haven't looked too closely.
 
----
-Index: b/kernel/signal.c
-===================================================================
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1528,10 +1528,11 @@ static void ptrace_stop(int exit_code, i
- 		spin_unlock_irq(&current->sighand->siglock);
- 		arch_ptrace_stop(exit_code, info);
- 		spin_lock_irq(&current->sighand->siglock);
--		if (sigkill_pending(current))
--			return;
- 	}
- 
-+	if (sigkill_pending(current))
-+		return;
-+
- 	/*
- 	 * If there is a group stop in progress,
- 	 * we must participate in the bookkeeping.
+-Andi
+
 -- 
-Siemens AG, Corporate Technology, CT SE 2
-Corporate Competence Center Embedded Linux
+ak@linux.intel.com
