@@ -1,85 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYJFKL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYJFKQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbYJFKL4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 06:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYJFKLs
+	id S1753640AbYJFKQY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 06:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYJFKQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 06:11:48 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:42724 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752439AbYJFKLq (ORCPT
+	Mon, 6 Oct 2008 06:16:13 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:35966 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752374AbYJFKQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 06:11:46 -0400
-Date: Mon, 6 Oct 2008 15:41:41 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 2/6] memcg: allocate page_cgroup at boot
-Message-ID: <20081006101141.GB1202@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com> <20081001165603.a6e73c0d.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 6 Oct 2008 06:16:12 -0400
+Date: Mon, 6 Oct 2008 15:46:05 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Dave Chinner <david@fromorbit.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH] Improve buffered streaming write ordering
+Message-ID: <20081006101605.GA15881@skywalker>
+References: <1222886451.9158.34.camel@think.oraclecorp.com> <20081001215239.ee2ae63f.akpm@linux-foundation.org> <1222950054.6745.18.camel@think.oraclecorp.com> <20081002181856.GB29613@skywalker> <20081002234309.GH30001@disturbed> <1223063155.13375.64.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081001165603.a6e73c0d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1223063155.13375.64.camel@think.oraclecorp.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-10-01 16:56:03]:
+On Fri, Oct 03, 2008 at 03:45:55PM -0400, Chris Mason wrote:
+> On Fri, 2008-10-03 at 09:43 +1000, Dave Chinner wrote:
+> > On Thu, Oct 02, 2008 at 11:48:56PM +0530, Aneesh Kumar K.V wrote:
+> > > On Thu, Oct 02, 2008 at 08:20:54AM -0400, Chris Mason wrote:
+> > > > On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
+> > > > For a 4.5GB streaming buffered write, this printk inside
+> > > > ext4_da_writepage shows up 37,2429 times in /var/log/messages.
+> > > > 
+> > > 
+> > > Part of that can happen due to shrink_page_list -> pageout -> writepagee
+> > > call back with lots of unallocated buffer_heads(blocks).
+> > 
+> > Quite frankly, a simple streaming buffered write should *never*
+> > trigger writeback from the LRU in memory reclaim.
+> 
+> The blktrace runs on ext4 didn't show kswapd doing any IO.  It isn't
+> clear if this is because ext4 did the redirty trick or if kswapd didn't
+> call writepage.
+> 
+> -chris
 
-> Allocate all page_cgroup at boot and remove page_cgroup poitner
-> from struct page. This patch adds an interface as
-> 
->  struct page_cgroup *lookup_page_cgroup(struct page*)
-> 
-> All FLATMEM/DISCONTIGMEM/SPARSEMEM  and MEMORY_HOTPLUG is supported.
-> 
-> Remove page_cgroup pointer reduces the amount of memory by
->  - 4 bytes per PAGE_SIZE.
->  - 8 bytes per PAGE_SIZE
-> if memory controller is disabled. (even if configured.)
-> 
-> On usual 8GB x86-32 server, this saves 8MB of NORMAL_ZONE memory.
-> On my x86-64 server with 48GB of memory, this saves 96MB of memory.
-> I think this reduction makes sense.
-> 
-> By pre-allocation, kmalloc/kfree in charge/uncharge are removed. 
-> This means
->   - we're not necessary to be afraid of kmalloc faiulre.
->     (this can happen because of gfp_mask type.)
->   - we can avoid calling kmalloc/kfree.
->   - we can avoid allocating tons of small objects which can be fragmented.
->   - we can know what amount of memory will be used for this extra-lru handling.
-> 
-> I added printk message as
-> 
-> 	"allocated %ld bytes of page_cgroup"
->         "please try cgroup_disable=memory option if you don't want"
-> 
-> maybe enough informative for users.
-> 
-> Changelog: v5 -> v6.
->  * reflected comments.
->  * coding style fixes.
->  * removed "ctype" from uncharge.
->  * improved comment to show FLAT_NODE_MEM_MAP == !SPARSEMEM
->  * fixed errors in !SPARSEMEM codes
->  * removed unused function in !SPARSEMEM codes.
-> (start from v5 because of series..)
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+This patch actually reduced the number of extents for the below test
+from 564 to 171.
 
-I like this patch very much
+$dd if=/dev/zero of=test bs=1M count=1024
 
-Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+ext4 mballoc block allocator still can be improved to make sure we get
+less extents. I am looking into this.
 
--- 
-	Balbir
+What the below change basically does is to make sure we advance
+writeback_index after looking at the pages skipped. With delayed
+allocation when we request for 100 blocks we just add each of these
+blocks to the in memory extent. Once we get the contiguous chunk
+of 100 block request we have the index updated to 100. Now we request
+block allocator for 100 blocks. But allocator gives us back 50 blocks
+So with the current code we have writeback_index pointing to 100
+With the changes below it is pointing to 50.
+
+
+We also force loop inside the ext4_da_writepags with the below condition
+a) if nr_to_write is zero break the loop
+b) if we are able to allocate blocks but we have pages_skipped move
+the writeback_index/range_start to initial value and try with a new
+nr_to_write value. This make sure we will be allocating blocks for
+all requested dirty pages. The reason being __fsync_super. It does
+
+sync_inodes_sb(sb, 0);
+sync_blockdev(sb->s_bdev);
+sync_inodes_sb(sb, 1);
+
+I guess the first call is supposed to have done all the meta data
+allocation ? So i was forcing the block allocation without even looking
+at WB_SYNC_ALL
+
+c) If we don't have anything to write break the loop
+
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 21f1d3a..58d010d 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2386,14 +2386,16 @@ static int ext4_da_writepages(struct address_space *mapping,
+ 		wbc->nr_to_write = sbi->s_mb_stream_request;
+ 	}
+ 
+-	if (!wbc->range_cyclic)
++	if (wbc->range_cyclic) {
++		range_start =  mapping->writeback_index;
++	} else {
+ 		/*
+ 		 * If range_cyclic is not set force range_cont
+-		 * and save the old writeback_index
++		 * and save the old range_start;
+ 		 */
+ 		wbc->range_cont = 1;
+-
+-	range_start =  wbc->range_start;
++		range_start =  wbc->range_start;
++	}
+ 	pages_skipped = wbc->pages_skipped;
+ 
+ 	mpd.wbc = wbc;
+@@ -2440,6 +2442,19 @@ static int ext4_da_writepages(struct address_space *mapping,
+ 			 */
+ 			to_write += wbc->nr_to_write;
+ 			ret = 0;
++			if (pages_skipped != wbc->pages_skipped) {
++				/* writepages skipped some pages */
++				if (wbc->range_cont) {
++					wbc->range_start = range_start;
++				} else {
++					/* range_cyclic */
++					mapping->writeback_index = range_start;
++				}
++				wbc->nr_to_write = to_write +
++					(wbc->pages_skipped - pages_skipped);
++				wbc->pages_skipped = pages_skipped;
++			} else
++				wbc->nr_to_write = to_write;
+ 		} else if (wbc->nr_to_write) {
+ 			/*
+ 			 * There is no more writeout needed
+@@ -2449,18 +2464,27 @@ static int ext4_da_writepages(struct address_space *mapping,
+ 			to_write += wbc->nr_to_write;
+ 			break;
+ 		}
+-		wbc->nr_to_write = to_write;
+ 	}
+ 
+ 	if (wbc->range_cont && (pages_skipped != wbc->pages_skipped)) {
+ 		/* We skipped pages in this loop */
+ 		wbc->range_start = range_start;
+ 		wbc->nr_to_write = to_write +
+-				wbc->pages_skipped - pages_skipped;
++				(wbc->pages_skipped - pages_skipped);
+ 		wbc->pages_skipped = pages_skipped;
+ 		goto restart_loop;
+ 	}
+ 
++	if (wbc->range_cyclic && (pages_skipped != wbc->pages_skipped)) {
++		/*
++		 * we need to make sure we don't move the
++		 * writeback_index further without looking
++		 * at the pages skipped.
++		 */
++		mapping->writeback_index = mapping->writeback_index -
++					(wbc->pages_skipped - pages_skipped);
++	}
++
+ out_writepages:
+ 	wbc->nr_to_write = to_write - nr_to_writebump;
+ 	wbc->range_start = range_start;
