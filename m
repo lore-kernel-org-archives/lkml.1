@@ -1,131 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbYJFPLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYJFPKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbYJFPLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 11:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYJFPKR
+	id S1755322AbYJFPKx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 11:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYJFPKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 11:10:17 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:45730
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753506AbYJFPKP (ORCPT
+	Mon, 6 Oct 2008 11:10:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:56710 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754488AbYJFPKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 11:10:15 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RT PATCH v3 2/2] RT: fix push_rt_task() to handle dequeue_pushable
-	properly
-To: Chirag Jog <chirag@linux.vnet.ibm.com>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, dvhltc@us.ibm.com, dino@in.ibm.com,
-       Gilles.Carry@bull.net
-Date: Mon, 06 Oct 2008 11:14:43 -0400
-Message-ID: <20081006151442.8452.7838.stgit@dev.haskins.net>
-In-Reply-To: <20081006151228.8452.69938.stgit@dev.haskins.net>
-References: <20081006151228.8452.69938.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Oct 2008 11:10:20 -0400
+From: Andre Haupt <andre@bitwigglers.org>
+To: jim.cromie@gmail.com
+Cc: linux-kernel@vger.kernel.org, Andre Haupt <andre@bitwigglers.org>
+Subject: [PATCH] pc8736x_gpio: add support for PC87365 chips.
+Date: Mon,  6 Oct 2008 17:10:00 +0200
+Message-Id: <1223305800-18464-1-git-send-email-andre@bitwigglers.org>
+X-Mailer: git-send-email 1.5.5.GIT
+X-Provags-ID: V01U2FsdGVkX18rPGTgrdhRpBu9/NTMv1q+MIXjP4P57euIAI2
+ xddp3cp5Mhlj8zrcpGMw+cRQYZWBsHTKVo9tmMrbVfQ3AfxswZ
+ CyynpEcO4bEGTH/hPAyZx5Fy5y0JFKCgxNfZtU+VJA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A panic was discovered by Chirag Jog where a BUG_ON sanity check
-in the new "pushable_task" logic would trigger a panic under
-certain circumstances:
+This is only compile tested, because i do not own appropriate hardware.
 
-http://lkml.org/lkml/2008/9/25/189
-
-Gilles Carry discovered that the root cause was attributed to the
-pushable_tasks list getting corrupted in the push_rt_task logic.
-This was the result of a dropped rq lock in double_lock_balance
-allowing a task in the process of being pushed to potentially migrate
-away, and thus corrupt the pushable_tasks() list.
-
-I traced back the problem as introduced by the pushable_tasks patch
-that went in recently.   There is a "retry" path in push_rt_task()
-that actually had a compound conditional to decide whether to
-retry or exit.  I missed the meaning behind the rationale for the
-virtual "if(!task) goto out;" portion of the compound statement and
-thus did not handle it properly.  The new pushable_tasks logic
-actually creates three distinct conditions:
-
-1) an untouched and unpushable task should be dequeued
-2) a migrated task where more pushable tasks remain should be retried
-3) a migrated task where no more pushable tasks exist should exit
-
-The original logic mushed (1) and (3) together, resulting in the
-system dequeuing a migrated task (against an unlocked foreign run-queue
-nonetheless).
-
-To fix this, we get rid of the notion of "paranoid" and we support the
-three unique conditions properly.  The paranoid feature is no longer
-relevant with the new pushable logic (since pushable naturally limits
-the loop) anyway, so lets just remove it.
-
-Reported-By: Chirag Jog <chirag@linux.vnet.ibm.com>
-Found-by: Gilles Carry <gilles.carry@bull.net>
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Andre Haupt <andre@bitwigglers.org>
 ---
+ drivers/char/pc8736x_gpio.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
- kernel/sched_rt.c |   34 ++++++++++++++++++++++------------
- 1 files changed, 22 insertions(+), 12 deletions(-)
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 59ead84..05a1d4a 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1056,7 +1056,6 @@ static int push_rt_task(struct rq *rq)
+diff --git a/drivers/char/pc8736x_gpio.c b/drivers/char/pc8736x_gpio.c
+index b930de5..3f7da8c 100644
+--- a/drivers/char/pc8736x_gpio.c
++++ b/drivers/char/pc8736x_gpio.c
+@@ -41,7 +41,8 @@ static u8 pc8736x_gpio_shadow[4];
+ #define SIO_BASE2       0x4E	/* alt command-reg to check */
+ 
+ #define SIO_SID		0x20	/* SuperI/O ID Register */
+-#define SIO_SID_VALUE	0xe9	/* Expected value in SuperI/O ID Register */
++#define SIO_SID_PC87365	0xe5	/* Expected value in ID Register for PC87365 */
++#define SIO_SID_PC87366	0xe9	/* Expected value in ID Register for PC87366 */
+ 
+ #define SIO_CF1		0x21	/* chip config, bit0 is chip enable */
+ 
+@@ -91,13 +92,17 @@ static inline int superio_inb(int addr)
+ 
+ static int pc8736x_superio_present(void)
  {
- 	struct task_struct *next_task;
- 	struct rq *lowest_rq;
--	int paranoid = RT_MAX_TRIES;
++	int id;
++
+ 	/* try the 2 possible values, read a hardware reg to verify */
+ 	superio_cmd = SIO_BASE1;
+-	if (superio_inb(SIO_SID) == SIO_SID_VALUE)
++	id = superio_inb(SIO_SID);
++	if (id == SIO_SID_PC87365 || id == SIO_SID_PC87366)
+ 		return superio_cmd;
  
- 	if (!rq->rt.overloaded)
- 		return 0;
-@@ -1090,23 +1089,34 @@ static int push_rt_task(struct rq *rq)
- 		struct task_struct *task;
- 		/*
- 		 * find lock_lowest_rq releases rq->lock
--		 * so it is possible that next_task has changed.
--		 * If it has, then try again.
-+		 * so it is possible that next_task has migrated.
-+		 *
-+		 * We need to make sure that the task is still on the same
-+		 * run-queue and is also still the next task eligible for
-+		 * pushing.
- 		 */
- 		task = pick_next_pushable_task(rq);
--		if (unlikely(task != next_task) && task && paranoid--) {
--			put_task_struct(next_task);
--			next_task = task;
--			goto retry;
-+		if (task_cpu(next_task) == rq->cpu && task == next_task) {
-+			/*
-+			 * If we get here, the task hasnt moved at all, but
-+			 * it has failed to push.  We will not try again,
-+			 * since the other cpus will pull from us when they
-+			 * are ready.
-+			 */
-+			dequeue_pushable_task(rq, next_task);
-+			goto out;
- 		}
-+		
-+		if (!task)
-+			/* No more tasks, just exit */
-+			goto out;
+ 	superio_cmd = SIO_BASE2;
+-	if (superio_inb(SIO_SID) == SIO_SID_VALUE)
++	id = superio_inb(SIO_SID);
++	if (id == SIO_SID_PC87365 || id == SIO_SID_PC87366)
+ 		return superio_cmd;
  
- 		/*
--		 * Once we have failed to push this task, we will not
--		 * try again, since the other cpus will pull from us
--		 * when they are ready
-+		 * Something has shifted, try again.
- 		 */
--		dequeue_pushable_task(rq, next_task);
--		goto out;
-+		put_task_struct(next_task);
-+		next_task = task;
-+		goto retry;
- 	}
- 
- 	deactivate_task(rq, next_task, 0);
+ 	return 0;
+-- 
+1.5.5.GIT
 
