@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYJFRPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYJFRPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbYJFRPN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 13:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYJFRO7
+	id S1755442AbYJFRPv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 13:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYJFRPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 13:14:59 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38815 "EHLO
-	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753566AbYJFRO7 (ORCPT
+	Mon, 6 Oct 2008 13:15:44 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:58204 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449AbYJFRPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 13:14:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=oKHyVUWpidcIilbfkYMxWmZ9L2vdWzO6cFQxUFAnJgUazszcLRjHVU+nkWqY2tKwB
-	gY7+BoSPI5ARFPRjHOvkg==
-Message-ID: <6599ad830810061014q5535b5b6kfb53182b3fcc60c8@mail.gmail.com>
-Date: Mon, 6 Oct 2008 10:14:42 -0700
-From: "Paul Menage" <menage@google.com>
-To: righi.andrea@gmail.com
-Subject: Re: [PATCH -mm 2/6] introduce struct res_counter_ratelimit
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       "Carl Henrik Lunde" <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       "Divyesh Shah" <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, "Hirokazu Takahashi" <taka@valinux.co.jp>,
-       "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Marco Innocenti" <m.innocenti@cineca.it>, matt@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       "Ryo Tsuruta" <ryov@valinux.co.jp>,
-       "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48E9C637.8030507@gmail.com>
+	Mon, 6 Oct 2008 13:15:43 -0400
+Message-ID: <48EA47B7.8010304@linux.vnet.ibm.com>
+Date: Mon, 06 Oct 2008 22:45:35 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 0/4] memcg: ready-to-go series (was memcg update v6)
+References: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080929191927.caabec89.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com>
-	 <6599ad830810051103v1bd6e8d4xd2fcf622558fc7d9@mail.gmail.com>
-	 <48E9C637.8030507@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 6, 2008 at 1:03 AM, Andrea Righi <righi.andrea@gmail.com> wrote:
->> Could you not either:
->>
->> - include these two extra fields in res_counter?
->> - include res_counter as the first field in a res_counter_ratelimit?
->
-> The second solution would save some space if the "ratelimit" part is not used.
+KAMEZAWA Hiroyuki wrote:
+> Cut out 4 patches from memcg update v5 series.
+> (Then, this is a part of v6)
+> 
+> I think we got some agreement on these 4.
+> 
+> please ack if ok.
+> 
+> [1/4] ...  account swap under lock
+> [2/4] ...  make page->mapping to be NULL before uncharge cache.
+> [3/4] ...  avoid accounting not-on-LRU pages.
+> [4/4] ...  optimize cpu stat
+> 
+> I still have 6 patches but it's under test and needs review and discussion.
 
-Having a "policy" field in res_counter seems like it might be reusable
-as something for other non-ratelimited res_counters. And even if it's
-not, the memory overhead of a couple of extra fields in a res_counter
-is trivial compared to the overhead of resource isolation anyway.
+Hi, Andrew,
 
-So my first approach to this would be just extend res_counter, and
-then split them apart later if it turns out that they really do need
-mutually incompatible code/handlers.
+Could you please pick this patchset, following it is a very important set of
+patches that remove struct page's page_cgroup member.
 
-Paul
+
+-- 
+	Balbir
