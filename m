@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYJFQcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYJFQd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbYJFQcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 12:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYJFQcs
+	id S1754803AbYJFQd3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 12:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYJFQdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 12:32:48 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:38508 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752842AbYJFQcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 12:32:47 -0400
-Date: Mon, 6 Oct 2008 22:02:38 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 2/6] memcg: allocate page_cgroup at boot (hunk fix)
-Message-ID: <20081006163238.GC1202@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com> <20081001165603.a6e73c0d.kamezawa.hiroyu@jp.fujitsu.com> <20081002174945.4034cc9f.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 6 Oct 2008 12:33:21 -0400
+Received: from xenotime.net ([66.160.160.81]:36355 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752842AbYJFQdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 12:33:20 -0400
+Date: Mon, 6 Oct 2008 09:33:08 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: George Nychis <gnychis@cmu.edu>
+cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: [patch] Re: how to link to hrtimers in the kernel
+In-Reply-To: <48EA31A4.6080903@cmu.edu>
+Message-ID: <Pine.LNX.4.64.0810060931140.4121@shark.he.net>
+References: <48EA31A4.6080903@cmu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081002174945.4034cc9f.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-10-02 17:49:45]:
+On Mon, 6 Oct 2008, George Nychis wrote:
 
-> Index: mmotm-2.6.27-rc7+/include/linux/mm_types.h
-> ===================================================================
-> --- mmotm-2.6.27-rc7+.orig/include/linux/mm_types.h
-> +++ mmotm-2.6.27-rc7+/include/linux/mm_types.h
-> @@ -94,10 +94,6 @@ struct page {
->  	void *virtual;			/* Kernel virtual address (NULL if
->  					   not kmapped, ie. highmem) */
->  #endif /* WANT_PAGE_VIRTUAL */
-> -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-> -	unsigned long page_cgroup;
-> -#endif
-> -
+> Hi all,
+> 
+> I have modified drivers/usb/core/devio.c to use hrtimer_nanosleep(), and have
+> included linux/hrtimer.h with it.
+> 
+> But now I am having trouble linking, I get:
+> ERROR: "hrtimer_nanosleep" [drivers/usb/core/usbcore.ko] undefined!
+> 
+> How do I properly link to the hrtimer library?
 
-Just FYI, this hunk fails for mmotm Oct 2nd, applied on top of
-2.6.27-rc8, the space after the #endif is gone
+Hi,
+That function needs to be exported in its source file.
+Patch below should fix it for you.
 
--- 
-	Balbir
+
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Export hrtimer_nanosleep() for module use.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ kernel/hrtimer.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-2.6.27-rc8-git5.orig/kernel/hrtimer.c
++++ linux-2.6.27-rc8-git5/kernel/hrtimer.c
+@@ -1559,6 +1559,7 @@ out:
+ 	destroy_hrtimer_on_stack(&t.timer);
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(hrtimer_nanosleep);
+ 
+ asmlinkage long
+ sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
