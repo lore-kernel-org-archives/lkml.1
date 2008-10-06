@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYJFX3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbYJFX3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbYJFX3F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbYJFXWo
+	id S1758339AbYJFX3b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbYJFXWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:22:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55270 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:22:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55296 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757066AbYJFXWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:22:43 -0400
-Date: Mon, 6 Oct 2008 16:17:46 -0700
+	id S1755138AbYJFXWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:22:47 -0400
+Date: Mon, 6 Oct 2008 16:17:48 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 21/28] clockevents: remove WARN_ON which was used to gather
-	information
-Message-ID: <20081006231746.GV20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Zachary Amsden <zach@vmware.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [patch 22/28] x86: Fix broken LDT access in VMI
+Message-ID: <20081006231748.GW20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-11.patch"
+Content-Disposition: inline; filename="x86-fix-broken-ldt-access-in-vmi.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,57 +41,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Zachary Amsden <zach@vmware.com>
 
-commit 61c22c34c6f80a8e89cff5ff717627c54cc14fd4 upstream
+commit de59985e3a623d4d5d6207f1777398ca0606ab1c upstream
 
-The issue of the endless reprogramming loop due to a too small
-min_delta_ns was fixed with the previous updates of the clock events
-code, but we had no information about the spread of this problem. I
-added a WARN_ON to get automated information via kerneloops.org and to
-get some direct reports, which allowed me to analyse the affected
-machines.
+After investigating a JRE failure, I found this bug was introduced a
+long time ago, and had already managed to survive another bugfix which
+occurred on the same line.  The result is a total failure of the JRE due
+to LDT selectors not working properly.
 
-The WARN_ON has served its purpose and would be annoying for a release
-kernel. Remove it and just keep the information about the increase of
-the min_delta_ns value.
+This one took a long time to rear up because LDT usage is not very
+common, but the bug is quite serious.  It got introduced along with
+another bug, already fixed, by 75b8bb3e56ca09a467fbbe5229bc68627f7445be
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Zachary Amsden <zach@vmware.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Glauber de Oliveira Costa <gcosta@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-oneshot.c |   18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ arch/x86/kernel/vmi_32.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/kernel/time/tick-oneshot.c
-+++ b/kernel/time/tick-oneshot.c
-@@ -43,19 +43,17 @@ int tick_dev_program_event(struct clock_
- 		 * and emit a warning.
- 		 */
- 		if (++i > 2) {
--			printk(KERN_WARNING "CE: __tick_program_event of %s is "
--			       "stuck %llx %llx\n", dev->name ? dev->name : "?",
--			       now.tv64, expires.tv64);
--			printk(KERN_WARNING
--			       "CE: increasing min_delta_ns %ld to %ld nsec\n",
--			       dev->min_delta_ns, dev->min_delta_ns << 1);
--			WARN_ON(1);
--
--			/* Double the min. delta and try again */
-+			/* Increase the min. delta and try again */
- 			if (!dev->min_delta_ns)
- 				dev->min_delta_ns = 5000;
- 			else
--				dev->min_delta_ns <<= 1;
-+				dev->min_delta_ns += dev->min_delta_ns >> 1;
-+
-+			printk(KERN_WARNING
-+			       "CE: %s increasing min_delta_ns to %lu nsec\n",
-+			       dev->name ? dev->name : "?",
-+			       dev->min_delta_ns << 1);
-+
- 			i = 0;
- 		}
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -234,7 +234,7 @@ static void vmi_write_ldt_entry(struct d
+ 				const void *desc)
+ {
+ 	u32 *ldt_entry = (u32 *)desc;
+-	vmi_ops.write_idt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
++	vmi_ops.write_ldt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
+ }
  
+ static void vmi_load_sp0(struct tss_struct *tss,
 
 -- 
