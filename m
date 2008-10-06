@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYJFGXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbYJFG2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbYJFGXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 02:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYJFGXJ
+	id S1754293AbYJFG2y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 02:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYJFG2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 02:23:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:35687 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbYJFGXI (ORCPT
+	Mon, 6 Oct 2008 02:28:45 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:34595 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbYJFG2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 02:23:08 -0400
+	Mon, 6 Oct 2008 02:28:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=JozGSh4UyIhpYUqHxnrSsTNxjgcjlVFxQPoqpienuqtPTnOJCd/w1onw3aW3Doy/MF
-         mTSOo9LAUGzPKVhr5mhl//WidnVbOrzi2Uv7o+8KKXZvnmTSBqexxXi1bZGC6V9YDDu2
-         X1bjs9bNYZvMYX7J73Z9zZGcPWG8TPQvk22YU=
-Date: Mon, 6 Oct 2008 02:23:00 -0400
+        b=h2RN9t9kPgCG8YpNgCfww5odKVxYKee+/IiC3VckAMgQKYeyBghiODKWVg1CQA3GgL
+         kYzZ6zc7wxkG1NKD639iB8TI953opzdg3aYDZFmn777YJjaiUDNwMoU5gV3HwYUWj7SR
+         hvAtQgKsSBFQtFpHt1qDacRTZXmaYzaqB4VOM=
+Date: Mon, 6 Oct 2008 02:28:39 -0400
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org
 Subject: Re: 2.6.27-rc8+ - first impressions
-Message-ID: <20081006062235.GA2808@amd.corenet.prv>
-References: <20081005183603.GA3263@amd.corenet.prv> <200810052119.13881.rjw@sisk.pl> <20081005211748.GA11576@amd.corenet.prv> <200810060029.42471.rjw@sisk.pl>
+Message-ID: <20081006062838.GC2808@amd.corenet.prv>
+References: <20081005183603.GA3263@amd.corenet.prv> <20081005121046.579089b9@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810060029.42471.rjw@sisk.pl>
+In-Reply-To: <20081005121046.579089b9@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 12:29:42AM +0200, Rafael J. Wysocki wrote:
-> On Sunday, 5 of October 2008, Dmitry Torokhov wrote:
-> > On Sun, Oct 05, 2008 at 09:19:13PM +0200, Rafael J. Wysocki wrote:
-> > > On Sunday, 5 of October 2008, Dmitry Torokhov wrote:
-> > > > On Sun, Oct 05, 2008 at 08:59:49PM +0200, Rafael J. Wysocki wrote:
-> > > > > On Sunday, 5 of October 2008, Dmitry Torokhov wrote:
-> > > > > > Hi,
-> > > > > > 
-> > > > > > Lats night I loaded 2.6.27-rc8-tip for the first time on my AMD Turion
-> > > > > > 64 laptop that is normally runs with Fedora distribution kernel.
-> > > > > > Compared to 2.6.25 the thing is broken - hdparm reports about 3MB/sec
-> > > > > > speed, fans are constantly on, everything seems sluggish.
-> > > > > > 
-> > > > > > Booting with hpet=force (HPET is disabled in BIOS) hangs the box
-> > > > > > somewhere in tty_init.
-> > > > > 
-> > > > > Is that an HP box, by chance?
-> > > > > 
-> > > > 
-> > > > Yeah, HP nx6115.
-> > > 
-> > > Oh well.
-> > > 
-> > > Please send me the output of dmidecode from it.
-> > > 
+On Sun, Oct 05, 2008 at 12:10:46PM -0700, Arjan van de Ven wrote:
+> On Sun, 5 Oct 2008 14:36:25 -0400
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> 
+> > Hi,
 > > 
-> > Here you go:
+> > Lats night I loaded 2.6.27-rc8-tip for the first time on my AMD Turion
+> > 64 laptop that is normally runs with Fedora distribution kernel.
+> > Compared to 2.6.25 the thing is broken - hdparm reports about 3MB/sec
+> > speed, fans are constantly on, everything seems sluggish.
+> > 
+> > Booting with hpet=force (HPET is disabled in BIOS) hangs the box
+> > somewhere in tty_init.
 > 
-> Thanks.
-> 
-> Please see if the appended patch helps.
+> hpet=force is a "the kernel thinks it's not wise to use, but you think
+> better"... don't do that ;(
 > 
 
-Yep, works great, everything is zappy, hdparm reports 30Mb/s and fan is
-off. Thanks a lot!
+That is not how I parse dmesg:
 
-Although I wonder why this blacklist is needed now, earlier kernels were
-able to cope with this condition.
+[    0.077927] HPET not enabled in BIOS. You might try hpet=force boot
+option
+
+Here kernel recommends to try and enable it. If we generally don't recommed
+using 'force' I'd suggest removing the 2nd sentence from the message.
 
 -- 
 Dmitry
