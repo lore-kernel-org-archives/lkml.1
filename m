@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbYJFXXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbYJFXYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757406AbYJFXXx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756764AbYJFXVu
+	id S1757500AbYJFXYl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbYJFXV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:21:50 -0400
-Received: from ns.suse.de ([195.135.220.2]:40787 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 19:21:57 -0400
+Received: from mail.suse.de ([195.135.220.2]:40836 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756765AbYJFXVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:21:49 -0400
-Date: Mon, 6 Oct 2008 16:17:12 -0700
+	id S1756828AbYJFXV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:21:56 -0400
+Date: Mon, 6 Oct 2008 16:17:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andi Kleen <ak@linux.intel.com>,
-       Milan Broz <mbroz@redhat.com>
-Subject: [patch 07/28] ACPI: Fix thermal shutdowns
-Message-ID: <20081006231712.GH20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 09/28] rtc: fix deadlock
+Message-ID: <20081006231717.GJ20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-fix-thermal-shutdowns.patch"
+Content-Disposition: inline; filename="rtc-fix-deadlock.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,40 +39,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Milan Broz <mbroz@redhat.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-commit 9f497bcc695fb828da023d74ad3c966b1e58ad21 upstream
+commit 38c052f8cff1bd323ccfa968136a9556652ee420 upstream
 
-ACPI: Fix thermal shutdowns
+if get_rtc_time() is _ever_ called with IRQs off, we deadlock badly
+in it, waiting for jiffies to increment.
 
-Do not use unsigned int if there is test for negative number...
+So make the code more robust by doing an explicit mdelay(20).
 
-See drivers/acpi/processor_perflib.c
-  static unsigned int ignore_ppc = -1;
-...
-  if (event == CPUFREQ_START && ignore_ppc <= 0) {
-       ignore_ppc = 0;
-...
+This solves a very hard to reproduce/debug hard lockup reported
+by Mikael Pettersson.
 
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Reported-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/processor_perflib.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/asm-generic/rtc.h |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -70,7 +70,7 @@ static DEFINE_MUTEX(performance_mutex);
-  *  0 -> cpufreq low level drivers initialized -> consider _PPC values
-  *  1 -> ignore _PPC totally -> forced by user through boot param
-  */
--static unsigned int ignore_ppc = -1;
-+static int ignore_ppc = -1;
- module_param(ignore_ppc, uint, 0644);
- MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
- 		 "limited by BIOS, this should help");
+--- a/include/asm-generic/rtc.h
++++ b/include/asm-generic/rtc.h
+@@ -17,6 +17,7 @@
+ #include <linux/mc146818rtc.h>
+ #include <linux/rtc.h>
+ #include <linux/bcd.h>
++#include <linux/delay.h>
+ 
+ #define RTC_PIE 0x40		/* periodic interrupt enable */
+ #define RTC_AIE 0x20		/* alarm interrupt enable */
+@@ -45,7 +46,6 @@ static inline unsigned char rtc_is_updat
+ 
+ static inline unsigned int get_rtc_time(struct rtc_time *time)
+ {
+-	unsigned long uip_watchdog = jiffies;
+ 	unsigned char ctrl;
+ 	unsigned long flags;
+ 
+@@ -55,19 +55,15 @@ static inline unsigned int get_rtc_time(
+ 
+ 	/*
+ 	 * read RTC once any update in progress is done. The update
+-	 * can take just over 2ms. We wait 10 to 20ms. There is no need to
++	 * can take just over 2ms. We wait 20ms. There is no need to
+ 	 * to poll-wait (up to 1s - eeccch) for the falling edge of RTC_UIP.
+ 	 * If you need to know *exactly* when a second has started, enable
+ 	 * periodic update complete interrupts, (via ioctl) and then 
+ 	 * immediately read /dev/rtc which will block until you get the IRQ.
+ 	 * Once the read clears, read the RTC time (again via ioctl). Easy.
+ 	 */
+-
+-	if (rtc_is_updating() != 0)
+-		while (jiffies - uip_watchdog < 2*HZ/100) {
+-			barrier();
+-			cpu_relax();
+-		}
++	if (rtc_is_updating())
++		mdelay(20);
+ 
+ 	/*
+ 	 * Only the values that we read from the RTC are set. We leave
 
 -- 
