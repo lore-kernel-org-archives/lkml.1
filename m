@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYJFWQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755698AbYJFW13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYJFWQD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 18:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYJFWPy
+	id S1755698AbYJFW13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 18:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYJFW1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 18:15:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37967 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752338AbYJFWPy (ORCPT
+	Mon, 6 Oct 2008 18:27:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:39210 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753251AbYJFW1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 18:15:54 -0400
-Date: Mon, 6 Oct 2008 23:14:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH 0/0] SIGWINCH problem with terminal apps
-Message-ID: <20081006231434.7aaa41ee@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081006202834.5b6c5092@merlin.oi.pg.gda.pl>
-References: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
-	<20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
-	<20081006202834.5b6c5092@merlin.oi.pg.gda.pl>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Oct 2008 18:27:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=SE7po5wFczsDIgRgcaslRiVAT0EaZyAkapVKj6oTtbG7rWWw66c337y9KwWeX0tzXq
+         JtOi7r0kXTb48p2aLLBR8TzAPSewKbCIMaf7p+WG1y7C6szA6jHq24Espz4H7JSH/Ayp
+         kzxgXjtKvcR4q4sWT/GQgKHNaTR0y3jyn8phU=
+Date: Tue, 7 Oct 2008 02:29:59 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] proc: remove unused ADDBUF macro
+Message-ID: <20081006222959.GA3466@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > show up more. Later 2.6.27-rc has patches that use the termios lock
-> > across TIOCG/SWINSZ and deal with the problem properly.
-> 
-> Maybe but what with older versions. Anyway the problem is if mutexes
-> are usable here or not.
+[added to proc.git]
 
-Well if mutexes don't work your kernel will eat your computer fairly
-rapidly so I think we may safely conclude that mutex locks work
+commit abac1335ec9c43834ff764eee3c4d026b6b9bba6
+Author: Alexey Dobriyan <adobriyan@gmail.com>
+Date:   Tue Oct 7 01:58:45 2008 +0400
+
+    proc: remove now unneeded ADDBUF macro
+    
+    After local seq_file conversion it was forgotten.
+    
+    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 1c8d7b5..f4bc0e7 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -86,11 +86,6 @@
+ #include <asm/processor.h>
+ #include "internal.h"
+ 
+-/* Gcc optimizes away "strlen(x)" for constant x */
+-#define ADDBUF(buffer, string) \
+-do { memcpy(buffer, string, strlen(string)); \
+-     buffer += strlen(string); } while (0)
+-
+ static inline void task_name(struct seq_file *m, struct task_struct *p)
+ {
+ 	int i;
