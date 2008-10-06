@@ -1,98 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbYJFMmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbYJFMsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbYJFMmd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 08:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbYJFMlZ
+	id S1754418AbYJFMsy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 08:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYJFMsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 08:41:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53177 "EHLO ogre.sisk.pl"
+	Mon, 6 Oct 2008 08:48:45 -0400
+Received: from lizzard.sbs.de ([194.138.37.39]:17996 "EHLO lizzard.sbs.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755056AbYJFMlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 08:41:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
-Date: Mon, 6 Oct 2008 14:45:32 +0200
-User-Agent: KMail/1.9.9
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Renninger <trenn@suse.de>,
-       Romano Giannetti <romano.giannetti@gmail.com>
-References: <200810040005.06220.rjw@sisk.pl> <alpine.LFD.1.10.0810060034050.2973@localhost.localdomain>
-In-Reply-To: <alpine.LFD.1.10.0810060034050.2973@localhost.localdomain>
+	id S1752842AbYJFMsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 08:48:45 -0400
+X-Greylist: delayed 3920 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Oct 2008 08:48:44 EDT
+Message-ID: <48E9F9C9.6060609@siemens.com>
+Date: Mon, 06 Oct 2008 13:43:05 +0200
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: KGDB: x86: Avoid invoking kgdb_nmicallback twice per NMI
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810061445.33151.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 6 of October 2008, Len Brown wrote:
-> applied to acpi-test.
+Stress-testing KVM's latest NMI support with kgdbts inside an SMP guest,
+I came across spurious unhandled NMIs while running the singlestep test.
+Looking closer at the code path each NMI takes when KGDB is enabled, I
+noticed that kgdb_nmicallback is called twice per event: One time via
+DIE_NMI_IPI notification, the second time on DIE_NMI. Removing the first
+invocation cures the unhandled NMIs here.
 
-Thanks!
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+---
+ arch/x86/kernel/kgdb.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-Actually, it appears to fix a recent regression for Romano
-(http://bugzilla.kernel.org/show_bug.cgi?id=11634).  If that's verified, it
-would be -stable material.
+Index: b/arch/x86/kernel/kgdb.c
+===================================================================
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -455,12 +455,7 @@ static int __kgdb_notify(struct die_args
+ 		return NOTIFY_DONE;
+ 
+ 	case DIE_NMI_IPI:
+-		if (atomic_read(&kgdb_active) != -1) {
+-			/* KGDB CPU roundup */
+-			kgdb_nmicallback(raw_smp_processor_id(), regs);
+-			was_in_debug_nmi[raw_smp_processor_id()] = 1;
+-			touch_nmi_watchdog();
+-		}
++		/* Just ignore, we will handle the roundup on DIE_NMI. */
+ 		return NOTIFY_DONE;
+ 
+ 	case DIE_NMIUNKNOWN:
 
-[I guess the regression was caused by the Linus' patch we were discussing on
-IRC.]
-
-It also evidently fixes my resume problem on the MSI Wind.  Both machines
-(the Wind and the Romano's box) have the problem with ACPI not being enabled
-by the BIOS on resume from S3.
-
-Thanks,
-Rafael
-
-
-> On Sat, 4 Oct 2008, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
-> > 
-> > On some machines, like for example MSI Wind U100, the BIOS doesn't
-> > enable ACPI before returning control to the OS, which sometimes
-> > causes resume to fail.  This is against the ACPI specification,
-> > which clearly states that "When the platform is waking from an S1, S2
-> > or S3 state, OSPM assumes the hardware is already in the ACPI mode
-> > and will not issue an ACPI_ENABLE", but it won't hurt to check the
-> > SCI_EN bit and enable ACPI during resume from S3 if this bit is not
-> > set.
-> > 
-> > Fortunately, we already have acpi_enable() for that, so use it in the
-> > resume code path, before executing _BFS, in analogy with the
-> > resume-from-hibernation code path.
-> > 
-> > NOTE: We aren't supposed to set SCI_EN directly, because it's owned
-> > by the hardware.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/acpi/sleep/main.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/acpi/sleep/main.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/acpi/sleep/main.c
-> > +++ linux-2.6/drivers/acpi/sleep/main.c
-> > @@ -200,6 +200,8 @@ static int acpi_suspend_enter(suspend_st
-> >  		break;
-> >  	}
-> >  
-> > +	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
-> > +	acpi_enable();
-> >  	/* Reprogram control registers and execute _BFS */
-> >  	acpi_leave_sleep_state_prep(acpi_state);
-> >  
-> > 
-> 
-> 
-
-
+-- 
+Siemens AG, Corporate Technology, CT SE 2
+Corporate Competence Center Embedded Linux
