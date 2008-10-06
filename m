@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYJFXXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYJFXWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbYJFXXj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbYJFXVq
+	id S1756230AbYJFXWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbYJFXVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:21:46 -0400
-Received: from ns2.suse.de ([195.135.220.15]:55009 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:21:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54938 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756748AbYJFXVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:21:44 -0400
-Date: Mon, 6 Oct 2008 16:17:10 -0700
+	id S1756650AbYJFXV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:21:28 -0400
+Date: Mon, 6 Oct 2008 16:17:01 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,55 +22,148 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sven Wegener <sven.wegener@stealer.net>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [patch 06/28] i2c-dev: Return correct error code on class_create()
-	failure
-Message-ID: <20081006231710.GG20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ned Forrester <nforrester@whoi.edu>,
+       Vernon Sauder <vernoninhand@gmail.com>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 02/28] pxa2xx_spi: dma bugfixes
+Message-ID: <20081006231701.GC20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i2c-dev-return-correct-error-code-on-class_create-failure.patch"
+Content-Disposition: inline; filename="pxa2xx_spi-dma-bugfixes.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Sven Wegener <sven.wegener@stealer.net>
+From: Ned Forrester <nforrester@whoi.edu>
 
-In Linus' tree:
-http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commit;h=e74783ec3cb981211689bd2cfd3248f8dc48ec01
+commit 7e96445533ac3f4f7964646a202ff3620602fab4 upstream
 
-We need to convert the error pointer from class_create(), else we'll return the
-successful return code from register_chrdev() on failure.
+Fixes two DMA bugs in the pxa2xx_spi driver.  The first bug is in all
+versions of this driver; the second was introduced in the 2.6.20 kernel,
+and prevents using the driver with chips like m25p16 flash (which can
+issue large DMA reads).
 
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+ 1. Zero length transfers are permitted for use to insert timing,
+    but pxa2xx_spi.c will fail if this is requested in DMA mode.
+    Fixed by using programmed I/O (PIO) mode for such transfers.
+
+ 2. Transfers larger than 8191 are not permitted in DMA mode.  A
+    test for length rejects all large transfers regardless of DMA
+    or PIO mode.  Worked around by rejecting only large transfers
+    with DMA mapped buffers, and forcing all other transfers
+    larger than 8191 to use PIO mode.  A rate limited warning is
+    issued for DMA transfers forced to PIO mode.
+
+This patch should apply to all kernels back to and including 2.6.20;
+it was test patched against 2.6.20.  An additional patch would be
+required for older kernels, but those versions are very buggy anyway.
+
+Signed-off-by: Ned Forrester <nforrester@whoi.edu>
+Cc: Vernon Sauder <vernoninhand@gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/i2c-dev.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/spi/pxa2xx_spi.c |   57 +++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 43 insertions(+), 14 deletions(-)
 
---- a/drivers/i2c/i2c-dev.c
-+++ b/drivers/i2c/i2c-dev.c
-@@ -574,8 +574,10 @@ static int __init i2c_dev_init(void)
- 		goto out;
+--- a/drivers/spi/pxa2xx_spi.c
++++ b/drivers/spi/pxa2xx_spi.c
+@@ -48,9 +48,10 @@ MODULE_ALIAS("platform:pxa2xx-spi");
  
- 	i2c_dev_class = class_create(THIS_MODULE, "i2c-dev");
--	if (IS_ERR(i2c_dev_class))
-+	if (IS_ERR(i2c_dev_class)) {
-+		res = PTR_ERR(i2c_dev_class);
- 		goto out_unreg_chrdev;
-+	}
+ #define MAX_BUSES 3
  
- 	res = i2c_add_driver(&i2cdev_driver);
- 	if (res)
+-#define DMA_INT_MASK (DCSR_ENDINTR | DCSR_STARTINTR | DCSR_BUSERR)
+-#define RESET_DMA_CHANNEL (DCSR_NODESC | DMA_INT_MASK)
+-#define IS_DMA_ALIGNED(x) (((u32)(x)&0x07)==0)
++#define DMA_INT_MASK		(DCSR_ENDINTR | DCSR_STARTINTR | DCSR_BUSERR)
++#define RESET_DMA_CHANNEL	(DCSR_NODESC | DMA_INT_MASK)
++#define IS_DMA_ALIGNED(x)	(((x) & 0x07) == 0)
++#define MAX_DMA_LEN		8191
+ 
+ /*
+  * for testing SSCR1 changes that require SSP restart, basically
+@@ -846,14 +847,27 @@ static void pump_transfers(unsigned long
+ 			udelay(previous->delay_usecs);
+ 	}
+ 
+-	/* Check transfer length */
+-	if (transfer->len > 8191)
+-	{
+-		dev_warn(&drv_data->pdev->dev, "pump_transfers: transfer "
+-				"length greater than 8191\n");
+-		message->status = -EINVAL;
+-		giveback(drv_data);
+-		return;
++	/* Check for transfers that need multiple DMA segments */
++	if (transfer->len > MAX_DMA_LEN && chip->enable_dma) {
++
++		/* reject already-mapped transfers; PIO won't always work */
++		if (message->is_dma_mapped
++				|| transfer->rx_dma || transfer->tx_dma) {
++			dev_err(&drv_data->pdev->dev,
++				"pump_transfers: mapped transfer length "
++				"of %lu is greater than %d\n",
++				transfer->len, MAX_DMA_LEN);
++			message->status = -EINVAL;
++			giveback(drv_data);
++			return;
++		}
++
++		/* warn ... we force this to PIO mode */
++		if (printk_ratelimit())
++			dev_warn(&message->spi->dev, "pump_transfers: "
++				"DMA disabled for transfer length %ld "
++				"greater than %d\n",
++				(long)drv_data->len, MAX_DMA_LEN);
+ 	}
+ 
+ 	/* Setup the transfer state based on the type of transfer */
+@@ -922,7 +936,7 @@ static void pump_transfers(unsigned long
+ 							&dma_thresh))
+ 				if (printk_ratelimit())
+ 					dev_warn(&message->spi->dev,
+-						"pump_transfer: "
++						"pump_transfers: "
+ 						"DMA burst size reduced to "
+ 						"match bits_per_word\n");
+ 		}
+@@ -936,8 +950,23 @@ static void pump_transfers(unsigned long
+ 
+ 	message->state = RUNNING_STATE;
+ 
+-	/* Try to map dma buffer and do a dma transfer if successful */
+-	if ((drv_data->dma_mapped = map_dma_buffers(drv_data))) {
++	/* Try to map dma buffer and do a dma transfer if successful, but
++	 * only if the length is non-zero and less than MAX_DMA_LEN.
++	 *
++	 * Zero-length non-descriptor DMA is illegal on PXA2xx; force use
++	 * of PIO instead.  Care is needed above because the transfer may
++	 * have have been passed with buffers that are already dma mapped.
++	 * A zero-length transfer in PIO mode will not try to write/read
++	 * to/from the buffers
++	 *
++	 * REVISIT large transfers are exactly where we most want to be
++	 * using DMA.  If this happens much, split those transfers into
++	 * multiple DMA segments rather than forcing PIO.
++	 */
++	drv_data->dma_mapped = 0;
++	if (drv_data->len > 0 && drv_data->len <= MAX_DMA_LEN)
++		drv_data->dma_mapped = map_dma_buffers(drv_data);
++	if (drv_data->dma_mapped) {
+ 
+ 		/* Ensure we have the correct interrupt handler */
+ 		drv_data->transfer_handler = dma_transfer;
 
 -- 
