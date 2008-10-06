@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYJFR0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbYJFR1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbYJFR0j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 13:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYJFR0b
+	id S1755546AbYJFR1O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 13:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYJFR05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 13:26:31 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:39006 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752993AbYJFR0a (ORCPT
+	Mon, 6 Oct 2008 13:26:57 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:25458 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753858AbYJFR04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 13:26:30 -0400
-Message-ID: <48EA4A3C.3030106@linux.vnet.ibm.com>
-Date: Mon, 06 Oct 2008 22:56:20 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 6 Oct 2008 13:26:56 -0400
+Date: Mon, 6 Oct 2008 21:26:54 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Li Yang <leoli@freescale.com>, Wang Jian <lark@linux.net.cn>,
+       "Steven A. Falco" <sfalco@harris.com>, linuxppc-dev@ozlabs.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] pata_of_platform: fix no irq handling
+Message-ID: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 0/6] memcg update v6 (for review and discuss)
-References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com> <20081002180229.5bb94727.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081002180229.5bb94727.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 1 Oct 2008 16:52:33 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
->> This series is update from v5.
->>
->> easy 4 patches are already posted as ready-to-go-series.
->>
->> This is need-more-discuss set.
->>
->> Includes following 6 patches. (reduced from v5).
->> The whole series are reordered.
->>
->> [1/6] make page_cgroup->flags to be atomic.
->> [2/6] allocate all page_cgroup at boot.
->> [3/6] rewrite charge path by charge/commit/cancel
->> [4/6] new force_empty and move_account
->> [5/6] lazy lru free
->> [6/6] lazy lru add.
->>
->> Patch [3/6] and [4/6] are totally rewritten.
->> Races in Patch [6/6] is fixed....I think.
->>
->> Patch [1-4] seems to be big but there is no complicated ops.
->> Patch [5-6] is more racy. Check-by-regression-test is necessary.
->> (Of course, I does some.)
->>
->> If ready-to-go-series goes, next is patch 1 and 2.
->>
-> 
-> No terrible bugs until now on my test.
-> 
-> My current idea for next week is following.
-> (I may have to wait until the end of next merge window. If so, 
->  I'll wait and maintain this set.)
-> 
->  - post ready-to-go set again.
->  - post 1/6 and 2/6 as may-ready-to-go set. I don't chagnge order of these.
->  - reflects comments for 3/6. 
->    patch 3/6 adds new functions. So, please tell me if you have better idea
->    about new functions.
->  - check logic for 4/6.
->  - 5/6 and 6/6 may need some more comments in codes.
->  - no new additional ones.
+When no irq specified the pata_of_platform fills the irq_res with -1,
+which is wrong to do for two reasons:
 
-Kamezawa-San, Andrew,
+1. By definition, 'no irq' should be IRQ 0, not some negative integer;
+2. pata_platform checks for irq_res.start > 0, but since irq_res.start
+   is unsigned type, the check will be true for `-1'.
 
-I think patches 1 and 2 are ready to go. Andrew they remove the cgroup member
-from struct page and will help reduce the overhead for distros that care about
-32 bit systems and also help with performance (in my runs so far).
+Reported-by: Steven A. Falco <sfalco@harris.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-I would recommend pushing 1 and 2 right away to -mm followed by the other
-performance improvements. Comments?
+Resending again...
 
+ drivers/ata/pata_of_platform.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/ata/pata_of_platform.c b/drivers/ata/pata_of_platform.c
+index 408da30..1f18ad9 100644
+--- a/drivers/ata/pata_of_platform.c
++++ b/drivers/ata/pata_of_platform.c
+@@ -52,7 +52,7 @@ static int __devinit pata_of_platform_probe(struct of_device *ofdev,
+ 
+ 	ret = of_irq_to_resource(dn, 0, &irq_res);
+ 	if (ret == NO_IRQ)
+-		irq_res.start = irq_res.end = -1;
++		irq_res.start = irq_res.end = 0;
+ 	else
+ 		irq_res.flags = 0;
+ 
 -- 
-	Balbir
+1.5.6.3
+
