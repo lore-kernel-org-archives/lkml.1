@@ -1,92 +1,694 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbYJFXNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbYJFXQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbYJFXNs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYJFXNk
+	id S1756222AbYJFXQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYJFXQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:13:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58250 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbYJFXNj (ORCPT
+	Mon, 6 Oct 2008 19:16:50 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:46433 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752442AbYJFXQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:13:39 -0400
-Date: Tue, 7 Oct 2008 01:19:42 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Kees Cook <kees.cook@canonical.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org, Jakub Jelinek <jakub@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>, libc-alpha@sourceware.org
-Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
-Message-ID: <20081006231942.GO3180@one.firstfloor.org>
-References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain> <20081003001616.GN10632@outflux.net> <87ej2untze.fsf@basil.nowhere.org> <20081006175038.GF10357@outflux.net> <20081006192641.GI3180@one.firstfloor.org> <20081006220101.GK10357@outflux.net>
-Mime-Version: 1.0
+	Mon, 6 Oct 2008 19:16:48 -0400
+Date: Tue, 7 Oct 2008 02:16:17 +0300
+From: Felipe Balbi <me@felipebalbi.com>
+To: Carlos Chinea <carlos.chinea@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/5] OMAP SSI hardware interface definitions
+Message-ID: <20081006231552.GD8273@frodo>
+Reply-To: me@felipebalbi.com
+References: <1223034606.32631.156.camel@groo.research.nokia.com> <1223034750-18690-1-git-send-email-carlos.chinea@nokia.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081006220101.GK10357@outflux.net>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1223034750-18690-1-git-send-email-carlos.chinea@nokia.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 03:01:01PM -0700, Kees Cook wrote:
-> > Since so many systems have poor entropy input /dev/urandom has generally 
-> > replaced /dev/random for near all cryptographic software, so it's
-> > just the new black.
+On Fri, Oct 03, 2008 at 02:52:26PM +0300, Carlos Chinea wrote:
 > 
-> If I understand, you're suggesting that ASLR doesn't need to be strong,
-> and that there should be something besides get_random* used to produce
-> these values?  If that's true, that has nothing to do with the patch
-> I've suggested (i.e. we have an immediate need and I'm solving it using
-> the current available solutions.)  (Additionally, I think ASLR should be
-> as strong as possible.)
-
-Sure in a perfect world we had endless money and endless entropy 
-and no world hunger and could make all such RNGs truly random.
-
-But in practice the world is not like that. And entropy on a standard
-Linux system is a very precious commodity.
-
-And you won't deny that session keys are more important than mmap
-placement, will you?
-
+> Signed-off-by: Carlos Chinea <carlos.chinea@nokia.com>
+> ---
+>  arch/arm/plat-omap/include/mach/ssi/ssi_gdd_reg.h  |  145 ++++++++++++++++++++
+>  .../plat-omap/include/mach/ssi/ssi_reg_common.h    |   73 ++++++++++
+>  arch/arm/plat-omap/include/mach/ssi/ssi_ssr_reg.h  |   56 ++++++++
+>  arch/arm/plat-omap/include/mach/ssi/ssi_sst_reg.h  |   65 +++++++++
+>  arch/arm/plat-omap/include/mach/ssi/ssi_sys_reg.h  |  107 ++++++++++++++
+>  5 files changed, 446 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/arm/plat-omap/include/mach/ssi/ssi_gdd_reg.h
+>  create mode 100644 arch/arm/plat-omap/include/mach/ssi/ssi_reg_common.h
+>  create mode 100644 arch/arm/plat-omap/include/mach/ssi/ssi_ssr_reg.h
+>  create mode 100644 arch/arm/plat-omap/include/mach/ssi/ssi_sst_reg.h
+>  create mode 100644 arch/arm/plat-omap/include/mach/ssi/ssi_sys_reg.h
 > 
-> If instead, you're saying that the use of urandom has generally caused
-> a drain on entropy, and ASLR is suffering, then does it matter that a
-> few more bytes are used for the stack guard?  I'm just not clear what
+> diff --git a/arch/arm/plat-omap/include/mach/ssi/ssi_gdd_reg.h b/arch/arm/plat-omap/include/mach/ssi/ssi_gdd_reg.h
+> new file mode 100644
+> index 0000000..5ed91cc
+> --- /dev/null
+> +++ b/arch/arm/plat-omap/include/mach/ssi/ssi_gdd_reg.h
+> @@ -0,0 +1,145 @@
+> +/*
+> + * ssi_gdd_reg.h
+> + *
+> + * Hardware defintions for SSI Controller GDD registers.
+> + *
+> + * HARDWARE: OMAP 2420, OMAP 3430
 
-It's eating entropy on every process start, so it's a incredible
-drain on the entropy pool. Just calculate how much entropy
-a standard "configure" run or kernel build will need.
+This is unnecessary, if we happen to use the same in omap4 we're gonna
+have to update. Please remove.
 
-> direction you're trying to aim my patch.  :)
-> 
-> I'd really love to see this solved.  My goal is to get a mainline glibc
-> patch for a low-cost randomized stack guard value.
+> + * Copyright (C) 2007-2008 Nokia Corporation. All rights reserved.
+> + *
+> + * Contact: Carlos Chinea <carlos.chinea@nokia.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+> + * 02110-1301 USA
+> + */
+> +#ifndef __SSI_GDD_REG_H__
+> +#define __SSI_GDD_REG_H__
+> +
+> +#include "ssi_reg_common.h"
+> +
+> +#define SSI_GDD_HW_ID_REG		SSI_GDD_REG32(0x0000)
 
-Your current implementation is high cost.
+this is not a good practice, use the correct offsets for all registers
 
-> Ulrich has a set of
-> requirements, and it sounds like there's a growing new set of requirements
-> from the kernel folks.  What's needed to sort this out?
+> +#define SSI_GDD_PPORT_ID_REG		SSI_GDD_REG32(0x0010)
+> +#define SSI_GDD_MPORT_ID_REG		SSI_GDD_REG32(0x0014)
+> +
+> +#define SSI_GDD_PPORT_SR_REG		SSI_GDD_REG32(0x0020)
+> +#	define SSI_PPORT_ACTIVE_LCH_NUMBER_MASK	0xFF
+> +
+> +#define SSI_GDD_MPORT_SR_REG		SSI_GDD_REG32(0x0024)
+> +#	define SSI_MPORT_ACTIVE_LCH_NUMBER_MASK	0xFF
+> +
+> +#define SSI_GDD_TEST_REG 		SSI_GDD_REG32(0x0040)
+			   ^ trailing whitespace
 
-IMHO it needs a new class of random numbers in the kernel that use
-some cryptographically strong RNG (there are a couple of candidates
-like yarrow) which is very rarely seeded
-from the entropy pool[1] and use that for these applications.
-A couple of other users in the kernel would benefit that too,
-most users of get_random_bytes() probably should be reviewed
-for their true requirements.
-Ideally expose it to userland too so that dumb users like
-tmpfile can use it too. 
+> +#	define SSI_TEST			0x1
+> +
+> +#define SSI_GDD_GCR_REG			SSI_GDD_REG32(0x0100)
+> +#	define	SSI_CLK_AUTOGATING_ON	(1<<3)
+					  ^^ add spaces around <<
 
-An alternative would be also to use existing entropy sources
-like the TPMs which are in many boxes now better and automatically,
-but that doesn't help on systems without TPM.
+> +#	define	SSI_FREE		(1<<2)
+> +#	define	SSI_SWITCH_OFF		0x1
+> +
+> +#define SSI_GDD_GRST_REG 		SSI_GDD_REG32(0x0200)
+			   ^ trailing whitespace
 
--Andi
+> +#	define SSI_SWRESET		0x1
+> +
+> +#define SSI_GDD_CSDP_BASE		0x0800
+> +#define SSI_GDD_CSDP_OFFSET		0x40
+> +#define SSI_GDD_CSDP_REG(channel) 	SSI_GDD_REG16(SSI_GDD_CSDP_BASE +\
+				    ^ trailing whitespace
+> +					 (channel*SSI_GDD_CSDP_OFFSET))
+						 ^ add spaces around *
 
-[1] getting that right is tricky, note that the entropy pool
-is useless early at boot because  there's no random input.
+> +#	define SSI_DST_BURST_EN_MASK	0xC000
+> +#	define SSI_DST_SINGLE_ACCESS0	0x0
+> +#	define SSI_DST_SINGLE_ACCESS	(0x1<<14)
+> +#	define SSI_DST_BURST_4X32_BIT	(0x2<<14)
+> +#	define SSI_DST_BURST_8x32_BIT	(0x3<<14)	/*NOTE: NOT SUPPORTED */
+
+(1 << 14), (2 << 14) and (3 << 14) (up to 9) is enough.	 ^ add a space
+before NOTE
+
+> +
+> +#	define SSI_DST_MASK		0x1E00
+
+make all the hex numbers lower case
+
+> +#	define SSI_DST_MEMORY_PORT	(0x8<<9)
+> +#	define SSI_DST_PERIPHERAL_PORT	(0x9<<9)
+> +
+> +#	define SSI_SRC_BURST_EN_MASK	0x0180
+> +#	define SSI_SRC_SINGLE_ACCESS0	0x0
+> +#	define SSI_SRC_SINGLE_ACCESS	(0x1<<7)
+> +#	define SSI_SRC_BURST_4x32_BIT	(0x2<<7)
+> +#	define SSI_SRC_BURST_8x32_BIT	(0x3<<7)	/*NOTE: NOT SUPPORTED */
+> +
+> +#	define SSI_SRC_MASK		0x003C
+> +#	define SSI_SRC_MEMORY_PORT	(0x8<<2)
+> +#	define SSI_SRC_PERIPHERAL_PORT	(0x9<<2)
+> +
+> +#	define SSI_DATA_TYPE_MASK	0x0003
+> +#	define SSI_DATA_TYPE_S32	0x2
+> +
+> +#define SSI_GDD_CCR_BASE 		0x0802
+			   ^ trailing whitespace
+
+> +#define SSI_GDD_CCR_OFFSET 		0x40
+			     ^ trailing whitespace
+
+> +#define SSI_GDD_CCR_REG(channel)	SSI_GDD_REG16(SSI_GDD_CCR_BASE +\
+> +					 (channel*SSI_GDD_CCR_OFFSET))
+						 ^ missing space
+
+> +#	define SSI_DST_AMODE_MASK	(0x3<<14)
+> +#	define SSI_DST_AMODE_CONST	0x0
+> +#	define SSI_DST_AMODE_POSTINC	(0x1<<12)
+> +
+> +#	define SSI_SRC_AMODE_MASK	(0x3<<12)
+> +#	define SSI_SRC_AMODE_CONST	0x0
+> +#	define SSI_SRC_AMODE_POSTINC	(0x1<<12)
+> +
+> +#	define SSI_CCR_ENABLE		(0x1<<7)
+> +
+> +#	define SSI_CCR_SYNC_MASK	0x001F
+> +
+> +#define SSI_GDD_CICR_BASE 		0x0804
+			    ^ trailing whitespace
+
+> +#define SSI_GDD_CICR_OFFSET		0x40
+> +#define SSI_GDD_CICR_REG(channel)	SSI_GDD_REG16(SSI_GDD_CICR_BASE +\
+> +					 (channel*SSI_GDD_CICR_OFFSET))
+> +#	define SSI_BLOCK_IE		(0x1<<5)
+					(1 << 5)
+
+> +#	define SSI_HALF_IE		(0x1<<2)
+					(1 << 2)
+
+> +#	define SSI_TOUT_IE		0x1
+					(1 << 0)
+
+> +
+> +#define SSI_GDD_CSR_BASE 		0x0806
+			   ^ trailing whitespace
+
+> +#define SSI_GDD_CSR_OFFSET 		0x40
+			     ^ trailing whitespace
+
+> +#define SSI_GDD_CSR_REG(channel)	SSI_GDD_REG16(SSI_GDD_CSR_BASE +\
+> +					 (channel*SSI_GDD_CSR_OFFSET))
+> +#	define SSI_CSR_SYNC		(0x1<<6)
+					(1 << 6)
+
+> +#	define SSI_CSR_BLOCK		(0x1<<5)
+					(1 << 5)
+
+> +#	define SSI_CSR_HALF		(0x1<<2)
+					(1 << 2)
+
+> +#	define SSI_CSR_TOUR		0x1
+> +
+> +#define SSI_GDD_CSSA_BASE 		0x0808
+			    ^ trailing whitespace
+
+> +#define SSI_GDD_CSSA_OFFSET		0x40
+> +#define SSI_GDD_CSSA_REG(channel)	SSI_GDD_REG32(SSI_GDD_CSSA_BASE +\
+> +					 (channel*SSI_GDD_CSSA_OFFSET))
+						 ^ missing space
+> +
+> +#define SSI_GDD_CDSA_BASE 		0x080C
+			    ^ trailing whitespace
+
+> +#define SSI_GDD_CDSA_OFFSET		0x40
+> +#define SSI_GDD_CDSA_REG(channel)	SSI_GDD_REG32(SSI_GDD_CDSA_BASE +\
+> +					 (channel*SSI_GDD_CDSA_OFFSET))
+						 ^ missing space
+
+> +
+> +#define SSI_GDD_CEN_BASE		0x0810
+> +#define SSI_GDD_CEN_OFFSET		0x40
+> +#define SSI_GDD_CEN_REG(channel)	SSI_GDD_REG16(SSI_GDD_CEN_BASE +\
+> +					 (channel*SSI_GDD_CEN_OFFSET))
+						 ^ missing space
+
+> +
+> +#define SSI_GDD_CSAC_BASE 		0x0818
+			    ^ trailing whitespace
+
+> +#define SSI_GDD_CSAC_OFFSET		0x40
+> +#define SSI_GDD_CSAC_REG(channel) 	SSI_GDD_REG16(SSI_GDD_CSAC_BASE +\
+				    ^ trailing whitespace
+
+> +					 (channel*SSI_GDD_CSAC_OFFSET))
+						 ^ missing space
+
+> +
+> +#define SSI_GDD_CDAC_BASE 		0x081A
+			    ^ trailing whitespace
+
+> +#define SSI_GDD_CDAC_OFFSET		0x40
+> +#define SSI_GDD_CDAC_REG(channel) 	SSI_GDD_REG16(SSI_GDD_CDAC_BASE +\
+				    ^ trailing whitespace
+
+> +					 (channel*SSI_GDD_CDAC_OFFSET))
+						 ^ missing space
+> +
+> +#define SSI_GDD_CLNK_CTRL_BASE		0x0828
+> +#define SSI_GDD_CLNK_CTRL_OFFSET	0x40
+> +#define SSI_GDD_CLNK_CTRL_REG(channel)	SSI_GDD_REG16(SSI_GDD_CLNK_CTRL_BASE +\
+> +					 (channel*SSI_GDD_CLNK_CTRL_OFFSET))
+						 ^ missing space
+> +#	define SSI_ENABLE_LNK		(0x1<<15)
+					(1 << 15)
+
+> +#	define SSI_STOP_LNK		(0x1<<14)
+					(1 << 14)
+> +#	define NEXT_CH_ID_MASK		0xF
+> +
+> +#endif
+> diff --git a/arch/arm/plat-omap/include/mach/ssi/ssi_reg_common.h b/arch/arm/plat-omap/include/mach/ssi/ssi_reg_common.h
+> new file mode 100644
+> index 0000000..e66fb43
+> --- /dev/null
+> +++ b/arch/arm/plat-omap/include/mach/ssi/ssi_reg_common.h
+> @@ -0,0 +1,73 @@
+> +/*
+> + * ssi_reg_common.h
+> + *
+> + * Common hardware definitions for SSI.
+> + *
+> + * HARDWARE: OMAP 2420, 3430
+
+unnecessary
+
+> + *
+> + * Copyright (C) 2007-2008 Nokia Corporation. All rights reserved.
+> + *
+> + * Contact: Carlos Chinea <carlos.chinea@nokia.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+> + * 02110-1301 USA
+> + */
+> +
+> +#ifndef __SSI_REG_COMMON_H__
+> +#define __SSI_REG_COMMON_H__
+> +
+> +#define SSI_COMMON_BASE_ADDR		0x48050000
+> +
+> +/* SSI system registers */
+> +#define SSI_SYS_OFFSET			0x8000
+> +#define SSI_SYS_REG32(offset)		(SSI_SYS_OFFSET + (offset))
+> +/* SSI GDD registers */
+> +#define SSI_GDD_OFFSET			0x9000
+> +#define SSI_GDD_REG32(offset)		(SSI_GDD_OFFSET + (offset))
+> +#define SSI_GDD_REG16(offset)		(SSI_GDD_OFFSET + (offset))
+> +
+> +/* SSI SST registers */
+> +/* General offset of SST port 1. First SST port register.*/
+> +#define SSI_SST1_OFFSET			0xA000
+> +/* General offset of SST port 2.*/
+> +#define SSI_SST2_OFFSET			0xB000
+> +/* Offset among the SST ports.*/
+> +#define SSI_SST_PORT_OFFSET		0x1000
+> +#define SSI_SST_OFFSET(port)		(SSI_SST1_OFFSET +\
+> +					 ((port-1)*(SSI_SST_PORT_OFFSET)))
+					       ^  ^ missing spaces
+
+> +#define SSI_SST_REG(port, offset)	(SSI_SST_OFFSET(port) + (offset))
+> +
+> +/* SSI SSR registers */
+> +/* General offset of SSR port 1. First SSR port register.*/
+> +#define SSI_SSR1_OFFSET			0xA800
+> +/* General offset of SSR port 2.*/
+> +#define SSI_SSR2_OFFSET			0xB800
+> +/* Offset among the SSR ports.*/
+> +#define SSI_SSR_PORT_OFFSET		0x1000
+> +#define SSI_SSR_OFFSET(port)		(SSI_SSR1_OFFSET +\
+> +					 ((port-1)*(SSI_SSR_PORT_OFFSET)))
+						  ^ missing space
+
+> +#define SSI_SSR_REG(port, offset)	(SSI_SSR_OFFSET(port) + (offset))
+> +
+> +#define SSI_IOMEM_BASE_ADDR		SSI_COMMON_BASE_ADDR
+> +#define SSI_IOMEM_SIZE			0x3C00
+> +
+> +/*
+> + * FIXME: Following definitions to be removed.
+> + * They are used for checking that the SSI clocks are stable before accessing
+> + * the SSI registers.
+> + */
+> +#define OMAP_COMMON_BASE                0x48000000
+> +#define CM_IDLEST1_CORE_REG		0x4A20
+> +#define ST_SSI				1
+> +#endif
+> diff --git a/arch/arm/plat-omap/include/mach/ssi/ssi_ssr_reg.h b/arch/arm/plat-omap/include/mach/ssi/ssi_ssr_reg.h
+> new file mode 100644
+> index 0000000..b272047
+> --- /dev/null
+> +++ b/arch/arm/plat-omap/include/mach/ssi/ssi_ssr_reg.h
+> @@ -0,0 +1,56 @@
+> +/*
+> + * ssi_sst_reg.h
+> + *
+> + * Hardware definitions for SSI controller SSR registers.
+> + *
+> + * HARDWARE: OMAP 2420, 3430
+
+unnecessary
+
+> + *
+> + * Copyright (C) 2007-2008 Nokia Corporation. All rights reserved.
+> + *
+> + * Contact: Carlos Chinea <carlos.chinea@nokia.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+> + * 02110-1301 USA
+> + */
+> +
+> +#ifndef __SSI_SSR_REG_H__
+> +#define __SSI_SSR_REG_H__
+> +
+> +#include "ssi_reg_common.h"
+> +
+> +#define SSI_SSR_ID_REG(port)			SSI_SSR_REG(port, 0x0000)
+> +#define SSI_SSR_MODE_REG(port)			SSI_SSR_REG(port, 0x0004)
+> +#define SSI_SSR_FRAMESIZE_REG(port)		SSI_SSR_REG(port, 0x0008)
+> +#define SSI_SSR_RXSTATE_REG(port)  		SSI_SSR_REG(port, 0x000C)
+				    ^^ trailing whitespaces
+
+> +#define SSI_SSR_BUFSTATE_REG(port) 		SSI_SSR_REG(port, 0x0010)
+				     ^ trailing whitespace
+
+> +#	define NOTEMPTY(channel)		(1<<channel)
+						  ^^ missing spaces
+
+> +#define SSI_SSR_BREAK_REG(port)			SSI_SSR_REG(port, 0x001C)
+> +#define SSI_SSR_ERROR_REG(port)			SSI_SSR_REG(port, 0x0020)
+> +#define SSI_SSR_ERRORACK_REG(port)		SSI_SSR_REG(port, 0x0024)
+> +#define SSI_SSR_OVERRUN_REG(port)		SSI_SSR_REG(port, 0x002C)
+> +#define SSI_SSR_OVERRUNACK_REG(port)		SSI_SSR_REG(port, 0x0030)
+> +#define SSI_SSR_TIMEOUT_REG(port)		SSI_SSR_REG(port, 0x0030)
+> +#	define SSI_TIMEOUT_DEFAULT		0
+> +#define SSI_SSR_CHANNELS_REG(port)		SSI_SSR_REG(port, 0x0028)
+> +
+> +#define SSI_SSR_BUFFER_OFFSET_BASE		0x0080
+> +#define SSI_SSR_BUFFER_CH_REG(port, channel)	SSI_SSR_REG(port, \
+> +						(SSI_SSR_BUFFER_OFFSET_BASE +\
+> +						 (channel * 0x04)))
+> +
+> +#define SSI_SSR_SWAPBUFFER_OFFSET_BASE		0x00C0
+> +#define SSI_SSR_SWAPBUFFER_CH_REG(port, channel) SSI_SSR_REG(port, \
+> +						(SSI_SSR_SWAPBUFFER_OFFSET_BASE\
+> +						 + (channel * 0x04)))
+> +#endif
+> diff --git a/arch/arm/plat-omap/include/mach/ssi/ssi_sst_reg.h b/arch/arm/plat-omap/include/mach/ssi/ssi_sst_reg.h
+> new file mode 100644
+> index 0000000..ed15908
+> --- /dev/null
+> +++ b/arch/arm/plat-omap/include/mach/ssi/ssi_sst_reg.h
+> @@ -0,0 +1,65 @@
+> +/*
+> + * ssi_sst_reg.h
+> + *
+> + * Hardware definitions for SSI controller SST registers.
+> + *
+> + * HARDWARE: OMAP 2420, 3430
+
+unnecessary
+
+> + *
+> + * Copyright (C) 2007-2008 Nokia Corporation. All rights reserved.
+> + *
+> + * Contact: Carlos Chinea <carlos.chinea@nokia.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+> + * 02110-1301 USA
+> + */
+> +
+> +#ifndef __SSI_SST_REG_H__
+> +#define __SSI_SST_REG_H__
+> +
+> +#include "ssi_reg_common.h"
+> +
+> +#define SSI_SST_ID_REG(port)			SSI_SST_REG(port, 0x0000)
+> +#define SSI_SST_MODE_REG(port)			SSI_SST_REG(port, 0x0004)
+> +#	define SSI_MODE_VAL_MASK		0x3
+> +#	define SSI_MODE_SLEEP			0x0
+> +#	define SSI_MODE_STREAM			0x1
+> +#	define SSI_MODE_FRAME			0x2
+> +#	define SSI_MODE_MULTIPOINTS		0x3
+> +#define SSI_SST_FRAMESIZE_REG(port)		SSI_SST_REG(port, 0x0008)
+> +#	define SSI_FRAMESIZE_DEFAULT		31
+> +#define SSI_SST_TXSTATE_REG(port)  		SSI_SST_REG(port, 0x000C)
+				    ^^ trailing whitespaces
+
+> +#	define	TXSTATE_IDLE			0x0
+> +#define SSI_SST_BUFSTATE_REG(port) 		SSI_SST_REG(port, 0x0010)
+				     ^ trailing whitespace
+
+> +#	define 	NOTFULL(channel)		(1<<channel)
+	      ^ trailing whitespace		  ^^ missing spaces
+
+> +#define SSI_SST_DIVISOR_REG(port)		SSI_SST_REG(port, 0x0018)
+> +#	define SSI_DIVISOR_DEFAULT		1
+> +
+> +#define SSI_SST_BREAK_REG(port)			SSI_SST_REG(port, 0x0020)
+> +#define SSI_SST_CHANNELS_REG(port)		SSI_SST_REG(port, 0x0024)
+> +#	define SSI_CHANNELS_DEFAULT		4
+> +
+> +#define SSI_SST_ARBMODE_REG(port)		SSI_SST_REG(port, 0x0028)
+> +#	define SSI_ARBMODE_ROUNDROBIN		0x0
+> +#	define SSI_ARBMODE_PRIORITY		0x1
+> +
+> +#define SSI_SST_BUFFER_OFFSET_BASE		0x0080
+> +#define SSI_SST_BUFFER_CH_REG(port, channel)	SSI_SST_REG(port, \
+> +						(SSI_SST_BUFFER_OFFSET_BASE +\
+> +						 (channel * 0x4)))
+> +
+> +#define SSI_SST_SWAPBUF_OFFSET_BASE		0x00C0
+> +#define SSI_SST_SWAPBUF_CH_REG(port, channel)	SSI_SST_REG(port, \
+> +						(SSI_SST_SWAPBUF_OFFSET_BASE +\
+> +						(channel * 0x4)))
+> +#endif
+> diff --git a/arch/arm/plat-omap/include/mach/ssi/ssi_sys_reg.h b/arch/arm/plat-omap/include/mach/ssi/ssi_sys_reg.h
+> new file mode 100644
+> index 0000000..2f1e1f5
+> --- /dev/null
+> +++ b/arch/arm/plat-omap/include/mach/ssi/ssi_sys_reg.h
+> @@ -0,0 +1,107 @@
+> +/*
+> + * ssi_sys_reg.h
+> + *
+> + * Hardware defintions for SSI Controller system registers.
+> + *
+> + * HARDWARE: OMAP 2420, 3430
+
+unnecessary
+
+> + *
+> + * Copyright (C) 2007-2008 Nokia Corporation. All rights reserved.
+> + *
+> + * Contact: Carlos Chinea <carlos.chinea@nokia.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+> + * 02110-1301 USA
+> + */
+> +
+> +#ifndef __SSI_SYS_REG_H__
+> +#define __SSI_SYS_REG_H__
+> +
+> +#include "ssi_reg_common.h"
+> +
+> +#define SSI_SYS_REVISION_REG		SSI_SYS_REG32(0x0000)
+> +#	define SSI_REV_MASK		0x000000FF
+> +#	define SSI_REV_MAJOR		0xF0
+> +#	define SSI_REV_MINOR		0x0F
+> +
+> +#define SSI_SYS_SYSCONFIG_REG		SSI_SYS_REG32(0x0010)
+> +#	define SSI_AUTOIDLE		1
+> +#	define SSI_SOFTRESET		(1<<1)
+
+add spaces
+
+> +#	define SSI_SIDLEMODE_FORCE	0
+> +#	define SSI_SIDLEMODE_NO		(1<<3)
+
+add spaces
+
+> +#	define SSI_SIDLEMODE_SMART	(1<<4)
+
+add spaces
+
+> +#	define SSI_SIDLEMODE_MASK	0x00000018
+> +#	define SSI_MIDLEMODE_FORCE	0
+> +#	define SSI_MIDLEMODE_NO		(1<<12)
+
+add spaces
+
+> +#	define SSI_MIDLEMODE_SMART	(1<<13)
+
+add spaces
+
+> +#	define SSI_MIDLEMODE_MASK	0x00003000
+> +
+> +#define SSI_SYS_SYSSTATUS_REG		SSI_SYS_REG32(0x0014)
+> +#	define SSI_RESETDONE		1
+> +
+> +#define SSI_SYS_MPU_STATUS_BASE		0x0808
+> +#define SSI_SYS_MPU_STATUS_PORT_OFFSET	0x10
+> +#define SSI_SYS_MPU_STATUS_IRQ_OFFSET	0x2
+> +#define SSI_SYS_MPU_STATUS_REG(port, irq) \
+> +		SSI_SYS_REG32(SSI_SYS_MPU_STATUS_BASE +\
+> +		 (((port-1)*SSI_SYS_MPU_STATUS_PORT_OFFSET) +\
+> +		 (irq*SSI_SYS_MPU_STATUS_IRQ_OFFSET)))
+> +
+> +#define SSI_SYS_MPU_ENABLE_BASE		0x080C
+> +#define SSI_SYS_MPU_ENABLE_PORT_OFFSET	0x10
+> +#define SSI_SYS_MPU_ENABLE_IRQ_OFFSET	0x8
+> +#define SSI_SYS_MPU_ENABLE_REG(port, irq) \
+> +		SSI_SYS_REG32(SSI_SYS_MPU_ENABLE_BASE +\
+> +		 (((port-1)*SSI_SYS_MPU_ENABLE_PORT_OFFSET) +\
+
+add spaces
+
+> +		 (irq*SSI_SYS_MPU_ENABLE_IRQ_OFFSET)))
+
+add spaces
+
+> +
+> +#define SSI_SYS_DSP_STATUS_BASE		0x0830
+> +#define SSI_SYS_DSP_STATUS_PORT_OFFSET	0x10
+> +#define SSI_SYS_DSP_STATUS_IRQ_OFFSET	0x8
+> +#define SSI_SYS_DSP_STATUS_REG(port, irq) \
+> +		SSI_SYS_REG32(SSI_SYS_DSP_STATUS_BASE +\
+> +		 (((port-1)*SSI_SYS_DSP_STATUS_PORT_OFFSET) +\
+
+add spaces
+
+> +		 (irq*SSI_SYS_DSP_STATUS_IRQ_OFFSET)))
+
+add spaces
+
+> +
+> +#define SSI_SYS_DSP_ENABLE_BASE		0x0834
+> +#define SSI_SYS_DSP_ENABLE_PORT_OFFSET	0x10
+> +#define SSI_SYS_DSP_ENABLE_IRQ_OFFSET	0x8
+> +#define SSI_SYS_DSP_ENABLE_REG(port, irq) \
+> +		SSI_SYS_REG32(SSI_SYS_DSP_ENABLE_BASE +\
+> +		 (((port-1)*SSI_SYS_DSP_ENABLE_PORT_OFFSET) +\
+
+add spaces
+
+> +		 (irq*SSI_SYS_DSP_ENABLE_IRQ_OFFSET)))
+
+add spaces
+
+> +#	define SSI_SST_DATAACCEPT(channel)	(1<<channel)
+
+add spaces
+
+> +#	define SSI_SSR_DATAAVAILABLE(channel)	(1<<(channel + 8))
+
+add spaces
+
+> +#	define SSI_SSR_DATAOVERRUN(channel)	(1<<(channel + 16))
+
+add spaces
+
+> +#	define SSI_ERROROCCURED			(1<<24)
+
+add spaces
+
+> +#	define SSI_BREAKDETECTED		(1<<25)
+
+add spaces
+
+> +
+> +#define SSI_SYS_GDD_MPU_IRQ_STATUS_REG	SSI_SYS_REG32(0x0800)
+> +#define SSI_SYS_GDD_MPU_IRQ_ENABLE_REG	SSI_SYS_REG32(0x0804)
+> +#define SSI_SYS_GDD_DSP_IRQ_STATUS_REG 	SSI_SYS_REG32(0x0828)
+					 ^ trailing whitespace
+
+> +#define SSI_SYS_GDD_DSP_IRQ_ENABLE_REG 	SSI_SYS_REG32(0x082C)
+					 ^ trailing whitespace
+
+> +#	define SSI_GDD_LCH(channel)	(1<<channel)
+> +
+> +#define SSI_SYS_WAKE_OFFSET		0x10
+> +#define SSI_SYS_WAKE_BASE		0x0C00
+> +#define SSI_SYS_WAKE_REG(port) 		SSI_SYS_REG32(SSI_SYS_WAKE_BASE +\
+				 ^ trailing whitespace
+
+> +					 ((port-1)*SSI_SYS_WAKE_OFFSET))
+
+add spaces
+
+> +#define SSI_SYS_CLEAR_WAKE_BASE		0x0C04
+> +#define SSI_SYS_CLEAR_WAKE_REG(port)	SSI_SYS_REG32(SSI_SYS_CLEAR_WAKE_BASE +\
+> +					 ((port-1)*SSI_SYS_WAKE_OFFSET))
+
+add spaces
+
+> +#define SSI_SYS_SET_WAKE_BASE		0x0C08
+> +#define SSI_SYS_SET_WAKE_REG(port)	SSI_SYS_REG32(SSI_SYS_SET_WAKE_BASE +\
+> +					 ((port-1)*SSI_SYS_WAKE_OFFSET))
+
+add spaces
+
+> +#	define SSI_WAKE(channel)	(1<<channel)
+
+add spaces
+
+> +#	define SSI_WAKE_MASK		0xFF
+
+lower case
 
 -- 
-ak@linux.intel.com
+balbi
