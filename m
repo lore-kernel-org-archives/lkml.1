@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbYJFX3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbYJFX3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758339AbYJFX3b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbYJFXWs
+	id S1758480AbYJFX3s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbYJFXWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:22:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55296 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:22:53 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55326 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755138AbYJFXWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:22:47 -0400
-Date: Mon, 6 Oct 2008 16:17:48 -0700
+	id S1757157AbYJFXWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:22:52 -0400
+Date: Mon, 6 Oct 2008 16:17:50 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zachary Amsden <zach@vmware.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [patch 22/28] x86: Fix broken LDT access in VMI
-Message-ID: <20081006231748.GW20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Neil Horman <nhorman@tuxdriver.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 23/28] ipv6: Fix OOPS in ip6_dst_lookup_tail().
+Message-ID: <20081006231750.GX20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-broken-ldt-access-in-vmi.patch"
+Content-Disposition: inline; filename="0001-ipv6-Fix-OOPS-in-ip6_dst_lookup_tail.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,39 +40,104 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Zachary Amsden <zach@vmware.com>
+From: Neil Horman <nhorman@tuxdriver.com>
 
-commit de59985e3a623d4d5d6207f1777398ca0606ab1c upstream
+[ Upstream commit e550dfb0c2c31b6363aa463a035fc9f8dcaa3c9b ]
 
-After investigating a JRE failure, I found this bug was introduced a
-long time ago, and had already managed to survive another bugfix which
-occurred on the same line.  The result is a total failure of the JRE due
-to LDT selectors not working properly.
+This fixes kernel bugzilla 11469: "TUN with 1024 neighbours:
+ip6_dst_lookup_tail NULL crash"
 
-This one took a long time to rear up because LDT usage is not very
-common, but the bug is quite serious.  It got introduced along with
-another bug, already fixed, by 75b8bb3e56ca09a467fbbe5229bc68627f7445be
+dst->neighbour is not necessarily hooked up at this point
+in the processing path, so blindly dereferencing it is
+the wrong thing to do.  This NULL check exists in other
+similar paths and this case was just an oversight.
 
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Also fix the completely wrong and confusing indentation
+here while we're at it.
+
+Based upon a patch by Evgeniy Polyakov.
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/vmi_32.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/ipv6/ip6_output.c |   64 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 32 insertions(+), 32 deletions(-)
 
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -234,7 +234,7 @@ static void vmi_write_ldt_entry(struct d
- 				const void *desc)
- {
- 	u32 *ldt_entry = (u32 *)desc;
--	vmi_ops.write_idt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
-+	vmi_ops.write_ldt_entry(dt, entry, ldt_entry[0], ldt_entry[1]);
- }
+--- a/net/ipv6/ip6_output.c
++++ b/net/ipv6/ip6_output.c
+@@ -930,39 +930,39 @@ static int ip6_dst_lookup_tail(struct so
+ 	}
  
- static void vmi_load_sp0(struct tss_struct *tss,
+ #ifdef CONFIG_IPV6_OPTIMISTIC_DAD
+-		/*
+-		 * Here if the dst entry we've looked up
+-		 * has a neighbour entry that is in the INCOMPLETE
+-		 * state and the src address from the flow is
+-		 * marked as OPTIMISTIC, we release the found
+-		 * dst entry and replace it instead with the
+-		 * dst entry of the nexthop router
+-		 */
+-		if (!((*dst)->neighbour->nud_state & NUD_VALID)) {
+-			struct inet6_ifaddr *ifp;
+-			struct flowi fl_gw;
+-			int redirect;
+-
+-			ifp = ipv6_get_ifaddr(&init_net, &fl->fl6_src,
+-					      (*dst)->dev, 1);
+-
+-			redirect = (ifp && ifp->flags & IFA_F_OPTIMISTIC);
+-			if (ifp)
+-				in6_ifa_put(ifp);
+-
+-			if (redirect) {
+-				/*
+-				 * We need to get the dst entry for the
+-				 * default router instead
+-				 */
+-				dst_release(*dst);
+-				memcpy(&fl_gw, fl, sizeof(struct flowi));
+-				memset(&fl_gw.fl6_dst, 0, sizeof(struct in6_addr));
+-				*dst = ip6_route_output(sk, &fl_gw);
+-				if ((err = (*dst)->error))
+-					goto out_err_release;
+-			}
++	/*
++	 * Here if the dst entry we've looked up
++	 * has a neighbour entry that is in the INCOMPLETE
++	 * state and the src address from the flow is
++	 * marked as OPTIMISTIC, we release the found
++	 * dst entry and replace it instead with the
++	 * dst entry of the nexthop router
++	 */
++	if ((*dst)->neighbour && !((*dst)->neighbour->nud_state & NUD_VALID)) {
++		struct inet6_ifaddr *ifp;
++		struct flowi fl_gw;
++		int redirect;
++
++		ifp = ipv6_get_ifaddr(&init_net, &fl->fl6_src,
++				      (*dst)->dev, 1);
++
++		redirect = (ifp && ifp->flags & IFA_F_OPTIMISTIC);
++		if (ifp)
++			in6_ifa_put(ifp);
++
++		if (redirect) {
++			/*
++			 * We need to get the dst entry for the
++			 * default router instead
++			 */
++			dst_release(*dst);
++			memcpy(&fl_gw, fl, sizeof(struct flowi));
++			memset(&fl_gw.fl6_dst, 0, sizeof(struct in6_addr));
++			*dst = ip6_route_output(sk, &fl_gw);
++			if ((err = (*dst)->error))
++				goto out_err_release;
+ 		}
++	}
+ #endif
+ 
+ 	return 0;
 
 -- 
