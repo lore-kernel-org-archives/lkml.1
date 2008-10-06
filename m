@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbYJFTih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYJFTnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbYJFTih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 15:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYJFTi2
+	id S1754662AbYJFTnX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 15:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYJFTnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 15:38:28 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:21387 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752333AbYJFTi2 (ORCPT
+	Mon, 6 Oct 2008 15:43:12 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:55311 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752387AbYJFTnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 15:38:28 -0400
+	Mon, 6 Oct 2008 15:43:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=n+gqbb+FxY+Z9YieR9LuVNZYzsSF8AMfS3T3Kt4ZFzwUzXqPISod4ACLrQ/I1VsRvY
-         tIsF7ssG8OUcinxdpBrVqCaghfVayzOuBCCfXZet2D6+cpCMhkv+nCpTcOB5d8t5mZSW
-         9iAs2saQvOuCvCcEVUmOxMK5y8maomQzXC45M=
-Message-ID: <48EA6929.6030903@gmail.com>
-Date: Mon, 06 Oct 2008 21:38:17 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+        h=from:subject:to:date:message-id:user-agent:mime-version
+         :content-type:content-transfer-encoding;
+        b=JvhGW1qQTL38pDaEMhc5GtPv5zda3Wrki0VhKRgwmP0vW4TDRzSG6Rwo13gYKSkR0t
+         go1EmFc2+zGAoSOP40InUAurVzX/PXuBLlBhTXHOqvNMy5vf4/02covLKLVYB6P0RQgM
+         5abWAGFUexBun4FqpmRqMugKnC5+mk0pUGJsw=
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [RFC PATCH 0/4] V3 - Implementation of IR support using the input
+	subsystem
+To: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
+Date: Mon, 06 Oct 2008 15:43:06 -0400
+Message-ID: <20081006194032.15992.8393.stgit@terra>
+User-Agent: StGIT/0.14.3.224.g199b
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Paul Menage <menage@google.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, Hirokazu Takahashi <taka@valinux.co.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Marco Innocenti <m.innocenti@cineca.it>,
-       matt@bluehost.com, ngupta@google.com, randy.dunlap@oracle.com,
-       roberto@unbit.it, Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 2/6] introduce struct res_counter_ratelimit
-References: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com> <6599ad830810051103v1bd6e8d4xd2fcf622558fc7d9@mail.gmail.com> <48E9C637.8030507@gmail.com> <6599ad830810061014q5535b5b6kfb53182b3fcc60c8@mail.gmail.com> <48EA48C2.40803@linux.vnet.ibm.com>
-In-Reply-To: <48EA48C2.40803@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Paul Menage wrote:
->> On Mon, Oct 6, 2008 at 1:03 AM, Andrea Righi <righi.andrea@gmail.com> wrote:
->>>> Could you not either:
->>>>
->>>> - include these two extra fields in res_counter?
->>>> - include res_counter as the first field in a res_counter_ratelimit?
->>> The second solution would save some space if the "ratelimit" part is not used.
->> Having a "policy" field in res_counter seems like it might be reusable
->> as something for other non-ratelimited res_counters. And even if it's
->> not, the memory overhead of a couple of extra fields in a res_counter
->> is trivial compared to the overhead of resource isolation anyway.
->>
->> So my first approach to this would be just extend res_counter, and
->> then split them apart later if it turns out that they really do need
->> mutually incompatible code/handlers.
-> 
-> Yes! I agree
+Third pass at implementing evdev support for IR. The goal of in-kernel IR is to integrate IR events into the evdev input event queue and maintain ordering of events from all input devices.
 
-Good! I'll go for this.
+New feature, raw mode. There are three sysfs attributes - ir_raw, ir_carrier, ir_xmitter. Read from ir_raw to get the raw timing data from the IR device. Set carrier and active xmitters and then copy raw data to ir_raw to send. These attributes may be better on a debug switch. You would use raw mode when decoding a new protocol. After you figure out the new protocol, write an in-kernel encoder/decoder for it.
 
-Thanks,
--Andrea
+What should the IR API look like? 
+
+How are IR events mapped into keyboard events? Should they be mapped? Map them in the kernel or in user space? The maps are tiny, less than 1K per remote.  Sysfs can be used to load maps into the kernel driver. Make maps only for the common buttons and don't map unusual ones?
+
+How should multiple remotes be handled? Split them out into individual input devices, or group them onto a single IR device? I can implement either.
+
+The in-kernel code is tiny, about 20K including a driver.
+
+>From last post...
+Note that user space IR device drivers can use the existing support in evdev to inject events into the input queue.
+
+Send and receive are implemented. Received IR messages are decoded and sent to user space as input messages. Send is done via an IOCTL on the input device.
+
+Two drivers are supplied. mceusb2 implements send and receive support for the Microsoft USB IR dongle.
+
+The GPT driver implements receive only support for a GPT pin - GPT is a GPIO with a timer attached.
+
+Code is only lightly tested. Encoders and decoders have not been written for all protocols. 
+Repeat is not handled for any protocol.
+I'm looking for help. There are 15 more existing LIRC drivers.
+
+---
+
+Jon Smirl (4):
+      Microsoft mceusb2 driver for in-kernel IR subsystem
+      Example of PowerPC device tree support for GPT based IR
+      GPT driver for in-kernel IR support.
+      Changes to core input subsystem to allow send and receive of IR messages. Encode and decode state machines are provided for common IR porotocols such as Sony, JVC, NEC, Philips, etc.
+
+
+ arch/powerpc/boot/dts/dspeak01.dts |   19 -
+ drivers/input/Kconfig              |    2 
+ drivers/input/Makefile             |    3 
+ drivers/input/evdev.c              |   55 +++
+ drivers/input/input.c              |   21 +
+ drivers/input/ir-core.c            |  659 ++++++++++++++++++++++++++++++++
+ drivers/input/ir/Kconfig           |   26 +
+ drivers/input/ir/Makefile          |    7 
+ drivers/input/ir/ir-gpt.c          |  221 +++++++++++
+ drivers/input/ir/ir-mceusb2.c      |  741 ++++++++++++++++++++++++++++++++++++
+ include/linux/input.h              |  101 +++++
+ include/linux/mod_devicetable.h    |    3 
+ 12 files changed, 1846 insertions(+), 12 deletions(-)
+ create mode 100644 drivers/input/ir-core.c
+ create mode 100644 drivers/input/ir/Kconfig
+ create mode 100644 drivers/input/ir/Makefile
+ create mode 100644 drivers/input/ir/ir-gpt.c
+ create mode 100644 drivers/input/ir/ir-mceusb2.c
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
