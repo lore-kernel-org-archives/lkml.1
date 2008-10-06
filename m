@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYJFTnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYJFTng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbYJFTnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 15:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYJFTnM
+	id S1755321AbYJFTng (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 15:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYJFTnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 15:43:12 -0400
+	Mon, 6 Oct 2008 15:43:14 -0400
 Received: from mail-gx0-f16.google.com ([209.85.217.16]:55311 "EHLO
 	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752387AbYJFTnK (ORCPT
+	with ESMTP id S1752589AbYJFTnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 15:43:10 -0400
+	Mon, 6 Oct 2008 15:43:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:subject:to:date:message-id:user-agent:mime-version
-         :content-type:content-transfer-encoding;
-        b=JvhGW1qQTL38pDaEMhc5GtPv5zda3Wrki0VhKRgwmP0vW4TDRzSG6Rwo13gYKSkR0t
-         go1EmFc2+zGAoSOP40InUAurVzX/PXuBLlBhTXHOqvNMy5vf4/02covLKLVYB6P0RQgM
-         5abWAGFUexBun4FqpmRqMugKnC5+mk0pUGJsw=
+        h=from:subject:to:date:message-id:in-reply-to:references:user-agent
+         :mime-version:content-type:content-transfer-encoding;
+        b=gTYg6GAtgt7kDjM1bMfZYfiX0lBEH2c4T2VogMBuNFZpaErc55ugxOuQruFH/MIDOh
+         hyUGGE34aDNcTi0/c37+JlkTIpbIBoKAlQ/bY8gMdmnG4FTjm3MQMTv1EHEQpfLI3GEe
+         YYiDDKkSzWx5P1Cx112flWNU792itcZheXmdE=
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [RFC PATCH 0/4] V3 - Implementation of IR support using the input
-	subsystem
+Subject: [RFC PATCH 2/4] GPT driver for in-kernel IR support.
 To: linux-kernel@vger.kernel.org, lirc-list@lists.sourceforge.net
-Date: Mon, 06 Oct 2008 15:43:06 -0400
-Message-ID: <20081006194032.15992.8393.stgit@terra>
+Date: Mon, 06 Oct 2008 15:43:10 -0400
+Message-ID: <20081006194310.15992.71553.stgit@terra>
+In-Reply-To: <20081006194032.15992.8393.stgit@terra>
+References: <20081006194032.15992.8393.stgit@terra>
 User-Agent: StGIT/0.14.3.224.g199b
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -31,59 +32,264 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Third pass at implementing evdev support for IR. The goal of in-kernel IR is to integrate IR events into the evdev input event queue and maintain ordering of events from all input devices.
-
-New feature, raw mode. There are three sysfs attributes - ir_raw, ir_carrier, ir_xmitter. Read from ir_raw to get the raw timing data from the IR device. Set carrier and active xmitters and then copy raw data to ir_raw to send. These attributes may be better on a debug switch. You would use raw mode when decoding a new protocol. After you figure out the new protocol, write an in-kernel encoder/decoder for it.
-
-What should the IR API look like? 
-
-How are IR events mapped into keyboard events? Should they be mapped? Map them in the kernel or in user space? The maps are tiny, less than 1K per remote.  Sysfs can be used to load maps into the kernel driver. Make maps only for the common buttons and don't map unusual ones?
-
-How should multiple remotes be handled? Split them out into individual input devices, or group them onto a single IR device? I can implement either.
-
-The in-kernel code is tiny, about 20K including a driver.
-
->From last post...
-Note that user space IR device drivers can use the existing support in evdev to inject events into the input queue.
-
-Send and receive are implemented. Received IR messages are decoded and sent to user space as input messages. Send is done via an IOCTL on the input device.
-
-Two drivers are supplied. mceusb2 implements send and receive support for the Microsoft USB IR dongle.
-
-The GPT driver implements receive only support for a GPT pin - GPT is a GPIO with a timer attached.
-
-Code is only lightly tested. Encoders and decoders have not been written for all protocols. 
-Repeat is not handled for any protocol.
-I'm looking for help. There are 15 more existing LIRC drivers.
-
+GPT is a GPIO pin that is cable able of measuring the lenght of pulses.
+GPTs are common on embedded systems
 ---
-
-Jon Smirl (4):
-      Microsoft mceusb2 driver for in-kernel IR subsystem
-      Example of PowerPC device tree support for GPT based IR
-      GPT driver for in-kernel IR support.
-      Changes to core input subsystem to allow send and receive of IR messages. Encode and decode state machines are provided for common IR porotocols such as Sony, JVC, NEC, Philips, etc.
-
-
- arch/powerpc/boot/dts/dspeak01.dts |   19 -
- drivers/input/Kconfig              |    2 
- drivers/input/Makefile             |    3 
- drivers/input/evdev.c              |   55 +++
- drivers/input/input.c              |   21 +
- drivers/input/ir-core.c            |  659 ++++++++++++++++++++++++++++++++
- drivers/input/ir/Kconfig           |   26 +
- drivers/input/ir/Makefile          |    7 
- drivers/input/ir/ir-gpt.c          |  221 +++++++++++
- drivers/input/ir/ir-mceusb2.c      |  741 ++++++++++++++++++++++++++++++++++++
- include/linux/input.h              |  101 +++++
- include/linux/mod_devicetable.h    |    3 
- 12 files changed, 1846 insertions(+), 12 deletions(-)
- create mode 100644 drivers/input/ir-core.c
- create mode 100644 drivers/input/ir/Kconfig
- create mode 100644 drivers/input/ir/Makefile
+ drivers/input/ir/Kconfig  |    6 +
+ drivers/input/ir/Makefile |    1 
+ drivers/input/ir/ir-gpt.c |  221 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 228 insertions(+), 0 deletions(-)
  create mode 100644 drivers/input/ir/ir-gpt.c
- create mode 100644 drivers/input/ir/ir-mceusb2.c
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+diff --git a/drivers/input/ir/Kconfig b/drivers/input/ir/Kconfig
+index 8afd2d6..b80ab31 100644
+--- a/drivers/input/ir/Kconfig
++++ b/drivers/input/ir/Kconfig
+@@ -11,4 +11,10 @@ menuconfig INPUT_IR
+ 
+ if INPUT_IR
+ 
++config IR_GPT
++	tristate "GPT Based IR Receiver"
++	default m
++	help
++	  Driver for GPT-based IR receiver found on Digispeaker
++
+ endif
+diff --git a/drivers/input/ir/Makefile b/drivers/input/ir/Makefile
+index 08e6954..7082f1d 100644
+--- a/drivers/input/ir/Makefile
++++ b/drivers/input/ir/Makefile
+@@ -3,3 +3,4 @@
+ 
+ # Each configuration option enables a list of files.
+ 
++obj-$(CONFIG_IR_GPT)		+= ir-gpt.o
+diff --git a/drivers/input/ir/ir-gpt.c b/drivers/input/ir/ir-gpt.c
+new file mode 100644
+index 0000000..a26abe9
+--- /dev/null
++++ b/drivers/input/ir/ir-gpt.c
+@@ -0,0 +1,221 @@
++/*
++ * GPT timer based IR device
++ *
++ * Copyright (C) 2008 Jon Smirl <jonsmirl@gmail.com>
++ */
++
++#define DEBUG
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/device.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
++#include <linux/input.h>
++#include <asm/io.h>
++#include <asm/mpc52xx.h>
++
++#define MAX_SAMPLES 200
++
++struct ir_gpt {
++	int irq;
++	struct mpc52xx_gpt __iomem *regs;
++	spinlock_t lock;
++	struct work_struct queue;
++	int head, tail, previous;
++	unsigned int samples[MAX_SAMPLES];
++	struct input_dev *input;
++};
++
++static void ir_event(struct work_struct *work)
++{
++	unsigned long flags;
++	int delta, count;
++	unsigned int sample, wrap, bit;
++	struct ir_gpt *ir_gpt = container_of(work, struct ir_gpt, queue);
++
++	while (1) {
++		spin_lock_irqsave(ir_gpt->lock, flags);
++		if (ir_gpt->tail == ir_gpt->head) {
++			spin_unlock_irqrestore(ir_gpt->lock, flags);
++			break;
++		}
++		sample = ir_gpt->samples[ir_gpt->tail];
++
++		ir_gpt->tail++;
++		if (ir_gpt->tail >= MAX_SAMPLES)
++			ir_gpt->tail = 0;
++
++		spin_unlock_irqrestore(ir_gpt->lock, flags);
++
++		count = sample >> 16;
++		wrap = (sample >> 12) & 7;
++		bit = (sample >> 8) & 1;
++
++		delta = count - ir_gpt->previous;
++		delta += wrap * 0x10000;
++
++		ir_gpt->previous = count;
++
++		input_ir_decode(ir_gpt->input, delta, bit);
++	}
++}
++
++/*
++ * Interrupt handlers
++ */
++static irqreturn_t dpeak_ir_irq(int irq, void *_ir)
++{
++	unsigned long flags;
++	unsigned int sample, next;
++	struct ir_gpt *ir_gpt = _ir;
++
++	sample = in_be32(&ir_gpt->regs->status);
++	out_be32(&ir_gpt->regs->status, 0xF);
++
++	spin_lock_irqsave(ir_gpt->lock, flags);
++	ir_gpt->samples[ir_gpt->head] = sample;
++	next = ir_gpt->head + 1;
++	ir_gpt->head = (next >= MAX_SAMPLES ? 0 : next);
++	spin_unlock_irqrestore(ir_gpt->lock, flags);
++
++	schedule_work(&ir_gpt->queue);
++
++	return IRQ_HANDLED;
++}
++
++
++/* ---------------------------------------------------------------------
++ * OF platform bus binding code:
++ * - Probe/remove operations
++ * - OF device match table
++ */
++static int __devinit ir_gpt_of_probe(struct of_device *op,
++				      const struct of_device_id *match)
++{
++	struct ir_gpt *ir_gpt;
++	struct resource res;
++	int ret, rc;
++
++	dev_dbg(&op->dev, "ir_gpt_of_probe\n");
++
++	/* Allocate and initialize the driver private data */
++	ir_gpt = kzalloc(sizeof *ir_gpt, GFP_KERNEL);
++	if (!ir_gpt)
++		return -ENOMEM;
++
++	ir_gpt->input = input_allocate_device();
++	if (!ir_gpt->input) {
++		ret = -ENOMEM;
++		goto free_mem;
++	}
++	ret = input_ir_create(ir_gpt->input, ir_gpt, NULL);
++	if (ret)
++		goto free_input;
++
++	ir_gpt->input->id.bustype = BUS_HOST;
++	ir_gpt->input->name = "GPT IR Receiver";
++
++	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_36K);
++	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_38K);
++	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_40K);
++	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_RAW);
++
++	ret = input_register_device(ir_gpt->input);
++	if (ret)
++		goto free_input;
++
++	spin_lock_init(&ir_gpt->lock);
++	INIT_WORK (&ir_gpt->queue, ir_event);
++
++	/* Fetch the registers and IRQ of the GPT */
++	if (of_address_to_resource(op->node, 0, &res)) {
++		dev_err(&op->dev, "Missing reg property\n");
++		ret = -ENODEV;
++		goto free_input;
++	}
++	ir_gpt->regs = ioremap(res.start, 1 + res.end - res.start);
++	if (!ir_gpt->regs) {
++		dev_err(&op->dev, "Could not map registers\n");
++		ret = -ENODEV;
++		goto free_input;
++	}
++	ir_gpt->irq = irq_of_parse_and_map(op->node, 0);
++	if (ir_gpt->irq == NO_IRQ) {
++		ret = -ENODEV;
++		goto free_input;
++	}
++	dev_dbg(&op->dev, "ir_gpt_of_probe irq=%d\n", ir_gpt->irq);
++
++	rc = request_irq(ir_gpt->irq, &dpeak_ir_irq, IRQF_SHARED,
++			 "gpt-ir", ir_gpt);
++	dev_dbg(&op->dev, "ir_gpt_of_probe request irq rc=%d\n", rc);
++
++	/* set prescale to ? */
++	out_be32(&ir_gpt->regs->count, 0x00870000);
++
++	/* Select input capture, enable the counter, and interrupt */
++	out_be32(&ir_gpt->regs->mode, 0x0);
++	out_be32(&ir_gpt->regs->mode, 0x00000501);
++
++	/* Save what we've done so it can be found again later */
++	dev_set_drvdata(&op->dev, ir_gpt);
++
++	printk("GPT IR Receiver driver\n");
++
++	return 0;
++
++free_input:
++	input_ir_destroy(ir_gpt->input);
++	input_free_device(ir_gpt->input);
++free_mem:
++	kfree(ir_gpt);
++	return ret;
++}
++
++static int __devexit ir_gpt_of_remove(struct of_device *op)
++{
++	struct ir_gpt *ir_gpt = dev_get_drvdata(&op->dev);
++
++	dev_dbg(&op->dev, "ir_gpt_remove()\n");
++
++	input_ir_destroy(ir_gpt->input);
++	input_free_device(ir_gpt->input);
++	kfree(ir_gpt);
++	dev_set_drvdata(&op->dev, NULL);
++
++	return 0;
++}
++
++/* Match table for of_platform binding */
++static struct of_device_id ir_gpt_match[] __devinitdata = {
++	{ .compatible = "gpt-ir", },
++	{}
++};
++MODULE_DEVICE_TABLE(of, ir_gpt_match);
++
++static struct of_platform_driver ir_gpt_driver = {
++	.match_table = ir_gpt_match,
++	.probe = ir_gpt_of_probe,
++	.remove = __devexit_p(ir_gpt_of_remove),
++	.driver = {
++		.name = "ir-gpt",
++		.owner = THIS_MODULE,
++	},
++};
++
++/* ---------------------------------------------------------------------
++ * Module setup and teardown; simply register the of_platform driver
++ */
++static int __init ir_gpt_init(void)
++{
++	return of_register_platform_driver(&ir_gpt_driver);
++}
++module_init(ir_gpt_init);
++
++static void __exit ir_gpt_exit(void)
++{
++	of_unregister_platform_driver(&ir_gpt_driver);
++}
++module_exit(ir_gpt_exit);
+
