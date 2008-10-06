@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbYJFXVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbYJFXY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbYJFXVg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbYJFXVV
+	id S1756715AbYJFXY5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbYJFXWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:21:21 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54907 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:22:03 -0400
+Received: from ns.suse.de ([195.135.220.2]:40860 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754686AbYJFXVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:21:20 -0400
-Date: Mon, 6 Oct 2008 16:16:39 -0700
+	id S1756641AbYJFXWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:22:01 -0400
+Date: Mon, 6 Oct 2008 16:17:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,66 +22,80 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/28] 2.6.25-stable review
-Message-ID: <20081006231639.GA20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, epprecht@solnet.ch,
+       Zhao Yakui <yakui.zhao@intel.com>, Zhang Rui <rui.zhang@intel.com>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: [patch 10/28] ACPI: Avoid bogus EC timeout when EC is in Polling
+	mode
+Message-ID: <20081006231719.GK20567@suse.de>
+References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="acpi-avoid-bogus-ec-timeout-when-ec-is-in-polling-mode.patch"
+In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.25.18 release.
-There are @num@ patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
+2.6.25-stable review patch.  If anyone has any objections, please let us
+know.
 
-These patches are sent out with a number of different people on the
-Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-to add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-Responses should be made by Wed Oct 8, 22:00:00 UTC.  Anything received
-after that time might be too late.
+commit 9d699ed92a459cb408e2577e8bbeabc8ec3989e1 upstream
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.18-rc1.gz
-and the diffstat can be found below.
+When EC is in Polling mode, OS will check the EC status continually by using
+the following source code:
+       clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+       while (time_before(jiffies, delay)) {
+               if (acpi_ec_check_status(ec, event))
+       	            return 0;
+               msleep(1);
+       }
+But msleep is realized by the function of schedule_timeout. At the same time
+although one process is already waken up by some events, it won't be scheduled
+immediately. So maybe there exists the following phenomena:
+     a. The current jiffies is already after the predefined jiffies.
+	But before timeout happens, OS has no chance to check the EC
+	status again.
+     b. If preemptible schedule is enabled, maybe preempt schedule will happen
+	before checking loop. When the process is resumed again, maybe
+	timeout already happens, which means that OS has no chance to check
+	the EC status.
+
+In such case maybe EC status is already what OS expects when timeout happens.
+But OS has no chance to check the EC status and regards it as AE_TIME.
+
+So it will be more appropriate that OS will try to check the EC status again
+when timeout happens. If the EC status is what we expect, it won't be regarded
+as timeout. Only when the EC status is not what we expect, it will be regarded
+as timeout, which means that EC controller can't give a response in time.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=9823
+http://bugzilla.kernel.org/show_bug.cgi?id=11141
+
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Signed-off-by: Zhang Rui  <rui.zhang@intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
-thanks,
+---
+ drivers/acpi/ec.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-the -stable release team
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -228,6 +228,8 @@ static int acpi_ec_wait(struct acpi_ec *
+ 			if (acpi_ec_check_status(ec, event))
+ 				goto end;
+ 		}
++		if (acpi_ec_check_status(ec,event))
++			return 0;
+ 	}
+ 	pr_err(PREFIX "acpi_ec_wait timeout,"
+ 			       " status = %d, expect_event = %d\n",
 
--------------------
-
- Makefile                         |    2 
- arch/x86/kernel/hpet.c           |   19 ++++--
- arch/x86/kernel/io_delay.c       |    8 ++
- arch/x86/kernel/vmi_32.c         |    2 
- drivers/acpi/ec.c                |    2 
- drivers/acpi/processor_perflib.c |    2 
- drivers/i2c/i2c-dev.c            |    4 +
- drivers/mmc/card/block.c         |    4 +
- drivers/net/niu.c                |   56 ++++++++++++++++++
- drivers/spi/pxa2xx_spi.c         |  116 ++++++++++++++++++++++++++++++---------
- drivers/usb/core/hcd.c           |    3 -
- include/asm-generic/rtc.h        |   12 +---
- include/linux/clockchips.h       |    2 
- include/net/netlink.h            |    2 
- kernel/time/clockevents.c        |    3 -
- kernel/time/ntp.c                |    2 
- kernel/time/tick-broadcast.c     |   78 +++++++++++++++++++-------
- kernel/time/tick-common.c        |    1 
- kernel/time/tick-internal.h      |    2 
- kernel/time/tick-oneshot.c       |   44 ++++++++++++--
- net/ipv4/udp.c                   |   57 +++++++++++--------
- net/ipv6/ip6_output.c            |   64 ++++++++++-----------
- net/ipv6/udp.c                   |    6 +-
- net/sctp/associola.c             |    9 +--
- net/sctp/sm_make_chunk.c         |   15 +++--
- sound/pci/hda/patch_sigmatel.c   |    2 
- 26 files changed, 372 insertions(+), 145 deletions(-)
+-- 
