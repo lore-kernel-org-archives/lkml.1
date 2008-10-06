@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYJFXaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbYJFXaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbYJFXaj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757041AbYJFXXH
+	id S1758648AbYJFXaz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757197AbYJFXXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:23:07 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55359 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 19:23:08 -0400
+Received: from mx1.suse.de ([195.135.220.2]:41077 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757048AbYJFXXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:23:00 -0400
-Date: Mon, 6 Oct 2008 16:17:55 -0700
+	id S1756413AbYJFXXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:23:05 -0400
+Date: Mon, 6 Oct 2008 16:17:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vegard Nossum <vegard.nossum@gmail.com>,
-       Thomas Graf <tgraf@suug.ch>, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 25/28] netlink: fix overrun in attribute iteration
-Message-ID: <20081006231755.GZ20567@suse.de>
+       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 26/28] sctp: do not enable peer features if we cant do them.
+Message-ID: <20081006231757.GA20567@suse.de>
 References: <20081006225949.357365087@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0003-netlink-fix-overrun-in-attribute-iteration.patch"
+Content-Disposition: inline; filename="0004-sctp-do-not-enable-peer-features-if-we-can-t-do-the.patch"
 In-Reply-To: <20081006231639.GA20567@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,92 +40,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Vegard Nossum <vegard.nossum@gmail.com>
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-[ Upstream commit 1045b03e07d85f3545118510a587035536030c1c ]
+[ Upstream commit 0ef46e285c062cbe35d60c0adbff96f530d31c86 ]
 
-kmemcheck reported this:
+Do not enable peer features like addip and auth, if they
+are administratively disabled localy.  If the peer resports
+that he supports something that we don't, neither end can
+use it so enabling it is pointless.  This solves a problem
+when talking to a peer that has auth and addip enabled while
+we do not.  Found by Andrei Pelinescu-Onciul <andrei@iptel.org>.
 
-  kmemcheck: Caught 16-bit read from uninitialized memory (f6c1ba30)
-  0500110001508abf050010000500000002017300140000006f72672e66726565
-   i i i i i i i i i i i i i u u u u u u u u u u u u u u u u u u u
-                                   ^
-
-  Pid: 3462, comm: wpa_supplicant Not tainted (2.6.27-rc3-00054-g6397ab9-dirty #13)
-  EIP: 0060:[<c05de64a>] EFLAGS: 00010296 CPU: 0
-  EIP is at nla_parse+0x5a/0xf0
-  EAX: 00000008 EBX: fffffffd ECX: c06f16c0 EDX: 00000005
-  ESI: 00000010 EDI: f6c1ba30 EBP: f6367c6c ESP: c0a11e88
-   DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-  CR0: 8005003b CR2: f781cc84 CR3: 3632f000 CR4: 000006d0
-  DR0: c0ead9bc DR1: 00000000 DR2: 00000000 DR3: 00000000
-  DR6: ffff4ff0 DR7: 00000400
-   [<c05d4b23>] rtnl_setlink+0x63/0x130
-   [<c05d5f75>] rtnetlink_rcv_msg+0x165/0x200
-   [<c05ddf66>] netlink_rcv_skb+0x76/0xa0
-   [<c05d5dfe>] rtnetlink_rcv+0x1e/0x30
-   [<c05dda21>] netlink_unicast+0x281/0x290
-   [<c05ddbe9>] netlink_sendmsg+0x1b9/0x2b0
-   [<c05beef2>] sock_sendmsg+0xd2/0x100
-   [<c05bf945>] sys_sendto+0xa5/0xd0
-   [<c05bf9a6>] sys_send+0x36/0x40
-   [<c05c03d6>] sys_socketcall+0x1e6/0x2c0
-   [<c020353b>] sysenter_do_call+0x12/0x3f
-   [<ffffffff>] 0xffffffff
-
-This is the line in nla_ok():
-
-  /**
-   * nla_ok - check if the netlink attribute fits into the remaining bytes
-   * @nla: netlink attribute
-   * @remaining: number of bytes remaining in attribute stream
-   */
-  static inline int nla_ok(const struct nlattr *nla, int remaining)
-  {
-          return remaining >= sizeof(*nla) &&
-                 nla->nla_len >= sizeof(*nla) &&
-                 nla->nla_len <= remaining;
-  }
-
-It turns out that remaining can become negative due to alignment in
-nla_next(). But GCC promotes "remaining" to unsigned in the test
-against sizeof(*nla) above. Therefore the test succeeds, and the
-nla_for_each_attr() may access memory outside the received buffer.
-
-A short example illustrating this point is here:
-
-  #include <stdio.h>
-
-  main(void)
-  {
-          printf("%d\n", -1 >= sizeof(int));
-  }
-
-...which prints "1".
-
-This patch adds a cast in front of the sizeof so that GCC will make
-a signed comparison and fix the illegal memory dereference. With the
-patch applied, there is no kmemcheck report.
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-Acked-by: Thomas Graf <tgraf@suug.ch>
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/netlink.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/sctp/sm_make_chunk.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
---- a/include/net/netlink.h
-+++ b/include/net/netlink.h
-@@ -704,7 +704,7 @@ static inline int nla_len(const struct n
-  */
- static inline int nla_ok(const struct nlattr *nla, int remaining)
- {
--	return remaining >= sizeof(*nla) &&
-+	return remaining >= (int) sizeof(*nla) &&
- 	       nla->nla_len >= sizeof(*nla) &&
- 	       nla->nla_len <= remaining;
- }
+--- a/net/sctp/sm_make_chunk.c
++++ b/net/sctp/sm_make_chunk.c
+@@ -1886,11 +1886,13 @@ static void sctp_process_ext_param(struc
+ 			    /* if the peer reports AUTH, assume that he
+ 			     * supports AUTH.
+ 			     */
+-			    asoc->peer.auth_capable = 1;
++			    if (sctp_auth_enable)
++				    asoc->peer.auth_capable = 1;
+ 			    break;
+ 		    case SCTP_CID_ASCONF:
+ 		    case SCTP_CID_ASCONF_ACK:
+-			    asoc->peer.asconf_capable = 1;
++			    if (sctp_addip_enable)
++				    asoc->peer.asconf_capable = 1;
+ 			    break;
+ 		    default:
+ 			    break;
+@@ -2454,6 +2456,9 @@ static int sctp_process_param(struct sct
+ 		break;
+ 
+ 	case SCTP_PARAM_SET_PRIMARY:
++		if (!sctp_addip_enable)
++			goto fall_through;
++
+ 		addr_param = param.v + sizeof(sctp_addip_param_t);
+ 
+ 		af = sctp_get_af_specific(param_type2af(param.p->type));
 
 -- 
