@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYJFRZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYJFR0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbYJFRZN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 13:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYJFRY7
+	id S1755291AbYJFR0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 13:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYJFR0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 13:24:59 -0400
-Received: from sh.osrg.net ([192.16.179.4]:58328 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752979AbYJFRY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 13:24:58 -0400
-Date: Tue, 7 Oct 2008 02:24:29 +0900
-To: jens.axboe@oracle.com
-Cc: James.Bottomley@HansenPartnership.com, knikanth@suse.de,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH] BUG: nr_phys_segments cannot be less than
- nr_hw_segments
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081002171356.GO19428@kernel.dk>
-References: <20081002165857.GL19428@kernel.dk>
-	<1222967563.3222.30.camel@localhost.localdomain>
-	<20081002171356.GO19428@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 6 Oct 2008 13:26:31 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:39006 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbYJFR0a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 13:26:30 -0400
+Message-ID: <48EA4A3C.3030106@linux.vnet.ibm.com>
+Date: Mon, 06 Oct 2008 22:56:20 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 0/6] memcg update v6 (for review and discuss)
+References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com> <20081002180229.5bb94727.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081002180229.5bb94727.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081007022358N.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Oct 2008 19:13:57 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Thu, Oct 02 2008, James Bottomley wrote:
-> > On Thu, 2008-10-02 at 18:58 +0200, Jens Axboe wrote:
-> > > On Thu, Oct 02 2008, James Bottomley wrote:
-> > > > The bug would appear to be that we sometimes only look at q->max_sectors
-> > > > when deciding on mergability.  Either we have to insist on max_sectors
-> > > > <= hw_max_sectors, or we have to start using min(q->max_sectors,
-> > > > q->max_hw_sectors) for this.
-> > > 
-> > > q->max_sectors MUST always be <= q->max_hw_sectors, otherwise we could
-> > > be sending down requests that are too large for the device to handle. So
-> > > that condition would be a big bug. The sysfs interface checks for this,
-> > > and blk_queue_max_sectors() makes sure that is true as well.
-> > 
-> > Yes, that seems always to be enforced.  Perhaps there are other ways of
-> > tripping this problem ... I'm still sure if it occurs it's because we do
-> > a physical merge where a virtual merge is forbidden.
-> > 
-> > > The fixes proposed still look weird. There is no phys vs hw segment
-> > > constraints, the request must adhere to the limits set by both. It's
-> > > mostly a moot point anyway, as 2.6.28 will get rid of the hw accounting
-> > > anyway.
-> > 
-> > Agree all three proposed fixes look wrong.  However, if it's what I
-> > think, just getting rid of hw accounting won't fix the problem because
-> > we'll still have the case where a physical merge is forbidden by iommu
-> > constraints ... this still needs to be accounted for.
-> > 
-> > What we really need is a demonstration of what actually is going
-> > wrong ...
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 1 Oct 2008 16:52:33 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> Yep, IIRC we both asked for that the last time as well... Nikanth?
+>> This series is update from v5.
+>>
+>> easy 4 patches are already posted as ready-to-go-series.
+>>
+>> This is need-more-discuss set.
+>>
+>> Includes following 6 patches. (reduced from v5).
+>> The whole series are reordered.
+>>
+>> [1/6] make page_cgroup->flags to be atomic.
+>> [2/6] allocate all page_cgroup at boot.
+>> [3/6] rewrite charge path by charge/commit/cancel
+>> [4/6] new force_empty and move_account
+>> [5/6] lazy lru free
+>> [6/6] lazy lru add.
+>>
+>> Patch [3/6] and [4/6] are totally rewritten.
+>> Races in Patch [6/6] is fixed....I think.
+>>
+>> Patch [1-4] seems to be big but there is no complicated ops.
+>> Patch [5-6] is more racy. Check-by-regression-test is necessary.
+>> (Of course, I does some.)
+>>
+>> If ready-to-go-series goes, next is patch 1 and 2.
+>>
+> 
+> No terrible bugs until now on my test.
+> 
+> My current idea for next week is following.
+> (I may have to wait until the end of next merge window. If so, 
+>  I'll wait and maintain this set.)
+> 
+>  - post ready-to-go set again.
+>  - post 1/6 and 2/6 as may-ready-to-go set. I don't chagnge order of these.
+>  - reflects comments for 3/6. 
+>    patch 3/6 adds new functions. So, please tell me if you have better idea
+>    about new functions.
+>  - check logic for 4/6.
+>  - 5/6 and 6/6 may need some more comments in codes.
+>  - no new additional ones.
 
-Possibly, blk_phys_contig_segment might miscalculate
-q->max_segment_size?
+Kamezawa-San, Andrew,
 
-blk_phys_contig_segment does:
+I think patches 1 and 2 are ready to go. Andrew they remove the cgroup member
+from struct page and will help reduce the overhead for distros that care about
+32 bit systems and also help with performance (in my runs so far).
 
-req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size;
+I would recommend pushing 1 and 2 right away to -mm followed by the other
+performance improvements. Comments?
 
-But it's possible that req->biotail and the previous bio are supposed
-be merged into one segment? Then we could create too large segment
-here.
+
+-- 
+	Balbir
