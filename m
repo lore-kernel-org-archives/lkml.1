@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbYJFXZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbYJFX0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757731AbYJFXZq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756855AbYJFXWI
+	id S1757844AbYJFX0B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756564AbYJFXWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:22:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48504 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756655AbYJFXWH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:22:07 -0400
-Date: Tue, 7 Oct 2008 01:28:10 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Kees Cook <kees.cook@canonical.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org, Jakub Jelinek <jakub@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>, libc-alpha@sourceware.org
-Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
-Message-ID: <20081006232810.GP3180@one.firstfloor.org>
-References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain> <20081003001616.GN10632@outflux.net> <87ej2untze.fsf@basil.nowhere.org> <20081006175038.GF10357@outflux.net> <20081006192641.GI3180@one.firstfloor.org> <20081006220759.GM10357@outflux.net>
-Mime-Version: 1.0
+	Mon, 6 Oct 2008 19:22:10 -0400
+Received: from mx1.suse.de ([195.135.220.2]:40903 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756847AbYJFXWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 19:22:09 -0400
+Date: Mon, 6 Oct 2008 16:17:24 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 12/28] clockevents: prevent endless loop in periodic
+	broadcast handler
+Message-ID: <20081006231724.GM20567@suse.de>
+References: <20081006225949.357365087@mini.kroah.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081006220759.GM10357@outflux.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Disposition: inline; filename="timer-fix-02.patch"
+In-Reply-To: <20081006231639.GA20567@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 03:07:59PM -0700, Kees Cook wrote:
-> On Mon, Oct 06, 2008 at 09:26:41PM +0200, Andi Kleen wrote:
-> > > We're already using get_random* for stack, heap, and brk.  Also,
-> > > get_random* uses the nonblocking pool, so this is the same as if userspace
-> > > had tried to pull bytes out of /dev/urandom, which (as I understand it)
-> > 
-> > Yes exactly that's the problem. Think about it: do you really 
-> > need the same cryptographic strength for your mmap placement
-> > as you need for your SSL session keys?
-> > 
-> > And if you need true entropy for your session keys do you
-> > still get it when it was all used for low security 
-> > purposes first?
-> 
-> Off-list I was just shown random32().  If AT_RANDOM used that instead,
-> would that be acceptable?
+2.6.25-stable review patch.  If anyone has any objections, please let us
+know.
 
-random32() is not a cryptographically strong RNG. I suspect it would
-be pretty easy to reverse engineer its seed given some state. It hasn't
-been designed to be protected against that.
+------------------
+From: Thomas Gleixner <tglx@linutronix.de>
 
-While I suspect this wouldn't be a serious threat to the security
-model for mmap (to break the mmap placement you would still need quite a lot of
-addresses before you can predict some and I presume most apps do not leak
-addresses) it would seem unnecessarily 
-weak to me because using a better algorithm is not very costly.
-Also it might be a problem for some of the other potential users.
+commit d4496b39559c6d43f83e4c08b899984f8b8089b5 upstream
 
-cryptographically strong RNGs are especially designed to make this
-reverse engineering of the state hard. 
+The reprogramming of the periodic broadcast handler was broken,
+when the first programming returned -ETIME. The clockevents code
+stores the new expiry value in the clock events device next_event field
+only when the programming time has not been elapsed yet. The loop in
+question calculates the new expiry value from the next_event value
+and therefor never increases.
 
-Simple ones can be just a cryptographic hash + counter + secret or
-the same with a encryption algorithm like AES, but there are 
-also algorithms who are especially designed for this like yarrow/fortuna
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-See
-http://en.wikipedia.org/wiki/Cryptographically_secure_pseudo-random_number_generator
+---
+ kernel/time/tick-broadcast.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
--Andi
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -174,6 +174,8 @@ static void tick_do_periodic_broadcast(v
+  */
+ static void tick_handle_periodic_broadcast(struct clock_event_device *dev)
+ {
++	ktime_t next;
++
+ 	tick_do_periodic_broadcast();
+ 
+ 	/*
+@@ -184,10 +186,13 @@ static void tick_handle_periodic_broadca
+ 
+ 	/*
+ 	 * Setup the next period for devices, which do not have
+-	 * periodic mode:
++	 * periodic mode. We read dev->next_event first and add to it
++	 * when the event alrady expired. clockevents_program_event()
++	 * sets dev->next_event only when the event is really
++	 * programmed to the device.
+ 	 */
+-	for (;;) {
+-		ktime_t next = ktime_add(dev->next_event, tick_period);
++	for (next = dev->next_event; ;) {
++		next = ktime_add(next, tick_period);
+ 
+ 		if (!clockevents_program_event(dev, next, ktime_get()))
+ 			return;
 
 -- 
-ak@linux.intel.com
