@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbYJFMsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbYJFMzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbYJFMsy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 08:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYJFMsp
+	id S1754096AbYJFMzK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 08:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYJFMy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 08:48:45 -0400
-Received: from lizzard.sbs.de ([194.138.37.39]:17996 "EHLO lizzard.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752842AbYJFMsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 08:48:45 -0400
-X-Greylist: delayed 3920 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Oct 2008 08:48:44 EDT
-Message-ID: <48E9F9C9.6060609@siemens.com>
-Date: Mon, 06 Oct 2008 13:43:05 +0200
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
+	Mon, 6 Oct 2008 08:54:57 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:57671 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752618AbYJFMy4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 08:54:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=DzkODcvydKQzcMFKOUcWQodEhrmpfJ9SSQTOHsSc7r4ln4U7/7Tw0hqy0q0SsFlhFV
+         GqnTztZJPuJ/KfIphD1hHcYey84w2Xb4cXaVI37cDgpMK72HzL2znNN7WvyLPIu+Id2H
+         6nKgiKBiF/zeCPq7wX6ybNM3iWNQ2OBesztWM=
+Date: Mon, 6 Oct 2008 08:53:34 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Alan Cox <alan@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 22/76] serial: Make uart_port's ioport "unsigned long".
+Message-ID: <20081006125334.GA19412@yoda.jdub.homelinux.org>
+References: <20081005160231.1997.10462.stgit@localhost.localdomain> <20081005160737.1997.74180.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: KGDB: x86: Avoid invoking kgdb_nmicallback twice per NMI
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081005160737.1997.74180.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stress-testing KVM's latest NMI support with kgdbts inside an SMP guest,
-I came across spurious unhandled NMIs while running the singlestep test.
-Looking closer at the code path each NMI takes when KGDB is enabled, I
-noticed that kgdb_nmicallback is called twice per event: One time via
-DIE_NMI_IPI notification, the second time on DIE_NMI. Removing the first
-invocation cures the unhandled NMIs here.
+On Sun, Oct 05, 2008 at 05:07:41PM +0100, Alan Cox wrote:
+>From: David Miller <davem@davemloft.net>
+>
+>Otherwise the top 32-bits of the resource value get chopped
+>off on 64-bit systems, and the resulting I/O accesses go to
+>random places.
+>
+>Thanks to testing and debugging by Josip Rodin, which helped
+>track this down.
+>
+>Signed-off-by: David S. Miller <davem@davemloft.net>
+>Signed-off-by: Alan Cox <alan@redhat.com>
+>---
+>
+> include/linux/serial_core.h |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+>diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+>index 3b2f6c0..e27f216 100644
+>--- a/include/linux/serial_core.h
+>+++ b/include/linux/serial_core.h
+>@@ -241,7 +241,7 @@ typedef unsigned int __bitwise__ upf_t;
+> 
+> struct uart_port {
+> 	spinlock_t		lock;			/* port lock */
+>-	unsigned int		iobase;			/* in/out[bwl] */
+>+	unsigned long		iobase;			/* in/out[bwl] */
 
-Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
----
- arch/x86/kernel/kgdb.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+Does using resource_size_t make more sense here?  There are
+32-bit CPUs that have 64-bit address spaces.  (Perhaps not
+that use iobase, but it might be cleaner in general.)
 
-Index: b/arch/x86/kernel/kgdb.c
-===================================================================
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -455,12 +455,7 @@ static int __kgdb_notify(struct die_args
- 		return NOTIFY_DONE;
- 
- 	case DIE_NMI_IPI:
--		if (atomic_read(&kgdb_active) != -1) {
--			/* KGDB CPU roundup */
--			kgdb_nmicallback(raw_smp_processor_id(), regs);
--			was_in_debug_nmi[raw_smp_processor_id()] = 1;
--			touch_nmi_watchdog();
--		}
-+		/* Just ignore, we will handle the roundup on DIE_NMI. */
- 		return NOTIFY_DONE;
- 
- 	case DIE_NMIUNKNOWN:
-
--- 
-Siemens AG, Corporate Technology, CT SE 2
-Corporate Competence Center Embedded Linux
+josh
