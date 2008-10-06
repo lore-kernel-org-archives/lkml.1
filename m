@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbYJFH1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752618AbYJFHlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752518AbYJFH1n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 03:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYJFH1e
+	id S1752618AbYJFHlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 03:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYJFHlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 03:27:34 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:59296 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751262AbYJFH1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 03:27:33 -0400
-Date: Mon, 6 Oct 2008 09:27:22 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sdhci: 'scratch' may be used uninitialized
-Message-ID: <20081006092722.414a7200@mjolnir.drzeus.cx>
-In-Reply-To: <20081006063035.GA19244@elte.hu>
-References: <20081001083532.GE31009@elte.hu>
-	<1222851025-30619-1-git-send-email-steven@uplinklabs.net>
-	<20081005142819.GB12047@cs181140183.pp.htv.fi>
-	<f488382f0810051553t32a24972ma7baa92605f43772@mail.gmail.com>
-	<20081005231607.GB10747@cs181140183.pp.htv.fi>
-	<f488382f0810051648k14b499ecj9d625c55b38ed2f0@mail.gmail.com>
-	<20081006063035.GA19244@elte.hu>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-29149-1223278050-0001-2"
+	Mon, 6 Oct 2008 03:41:09 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54544 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751244AbYJFHlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 03:41:08 -0400
+Date: Mon, 6 Oct 2008 09:40:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tom Zanussi <zanussi@comcast.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Martin Bligh <mbligh@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>
+Subject: Re: [RFC PATCH 1/1] relay revamp v5
+Message-ID: <20081006074039.GE19428@kernel.dk>
+References: <1222666828.7637.180.camel@charm-linux> <20080929162743.GA15472@Krystal> <1222751080.8703.133.camel@charm-linux> <1223270572.7054.76.camel@charm-linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223270572.7054.76.camel@charm-linux>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Mon, Oct 06 2008, Tom Zanussi wrote:
+> The full relay patch.
+> 
+> Basically it includes the changes from the previous 11 that I posted and
+> in addition completely separates the reading part of relay from the
+> writing part.  With the new changes, relay really does become just what
+> its name says and and nothing more - it accepts pages from tracers, and
+> relays the data to userspace via read(2) or splice(2) (and therefore
+> sendfile(2)).  It doesn't allocate any buffer space and provides no
+> write functions - those are expected to be supplied by some other
+> component such as the unified ring-buffer or any other tracer that might
+> want relay pages of trace data to userspace.
+> 
+> Includes original relay write functions and buffers (the no-vmap
+> page-based versions of the previous patchset), which have been split out
+> into a new file called relay_pagewriter.c and provide one means of
+> writing into pages and feeding them into relay.  blktrace and kvmtrace
+> have been 'ported' over to using pagewriter instead of relay directly.
+> 
+> Signed-off-by: Tom Zanussi <zanussi@comcast.net>
+> 
+> diff --git a/block/blktrace.c b/block/blktrace.c
+> index eb9651c..8ba7094 100644
+> --- a/block/blktrace.c
+> +++ b/block/blktrace.c
+> @@ -35,7 +35,7 @@ static void trace_note(struct blk_trace *bt, pid_t pid, int action,
+>  {
+>  	struct blk_io_trace *t;
+>  
+> -	t = relay_reserve(bt->rchan, sizeof(*t) + len);
+> +	t = kmalloc(sizeof(*t) + len, GFP_KERNEL);
+>  	if (t) {
+>  		const int cpu = smp_processor_id();
+>  
 
---=_freyr.drzeus.cx-29149-1223278050-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Ugh, that's no good - it's both way too expensive, and also requires an
+atomic allocation.
 
-On Mon, 6 Oct 2008 08:30:35 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+> @@ -166,7 +168,7 @@ void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+>  	if (unlikely(tsk->btrace_seq != blktrace_seq))
+>  		trace_note_tsk(bt, tsk);
+>  
+> -	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
+> +	t = kmalloc(sizeof(*t) + pdu_len, GFP_KERNEL);
+>  	if (t) {
+>  		cpu = smp_processor_id();
+>  		sequence = per_cpu_ptr(bt->sequence, cpu);
 
->=20
-> Correct. Would you be interested in sending a patch for a (default-off)=20
-> debug feature that allows the disabling of all the gcc annotations? That=
-=20
-> way we can do regular sweeps to determine whether old annotations are=20
-> still relevant on latest and greatest GCC.
->=20
+Ditto - I don't think this approach is viable at all, sorry!
 
-How would you find the ones that are no longer needed though?
+-- 
+Jens Axboe
 
-Perhaps we could make it so that uninitialized_var() itself emits a
-warning. That way you could turn that option on and check that you
-always have pairs of warnings.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-29149-1223278050-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkjpvd4ACgkQ7b8eESbyJLinOACfbF/Ose58XflH2n8iW/NA2lYB
-XAcAnRkjkCSkrWlSoXcufe4m1PLIwjhw
-=Dswt
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-29149-1223278050-0001-2--
