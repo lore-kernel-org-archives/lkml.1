@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYJFM1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYJFMdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbYJFM1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 08:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYJFM1f
+	id S1754002AbYJFMdJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 08:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYJFMc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 08:27:35 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:54803 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752442AbYJFM1e (ORCPT
+	Mon, 6 Oct 2008 08:32:57 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:58193 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752842AbYJFMc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 08:27:34 -0400
-Subject: Re: bad DMAR interaction with iwlagn and SATA
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: Andres Freund <andres@anarazel.de>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <1ba2fa240809290140i5a47d534qa30f9088df834162@mail.gmail.com> (sfid-20080929_104025_440809_8C8FD26C)
-References: <200809251511.20132.andres@anarazel.de>
-	 <1222441955.3798.13.camel@johannes.berg>
-	 <1ba2fa240809261630y7a8e5f20g75ab47ff98a1e614@mail.gmail.com>
-	 <200809291027.50453.andres@anarazel.de>
-	 <1ba2fa240809290140i5a47d534qa30f9088df834162@mail.gmail.com>
-	 (sfid-20080929_104025_440809_8C8FD26C)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-wtKHr93MKiRybIorpimQ"
-Date: Mon, 06 Oct 2008 14:26:55 +0200
-Message-Id: <1223296015.15196.2.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 6 Oct 2008 08:32:56 -0400
+Date: Mon, 6 Oct 2008 13:32:54 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/13] WM8350 support
+Message-ID: <20081006123254.GA9664@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+These patches against the regulator tree add initial support for the
+WM8350, a multi-function device with several subsystems targetted at
+embedded systems.  This series adds a core driver providing device acess
+under drivers/mfd and support for the PMIC functionality of the device
+via the regulator API.  Due to their use in the core some definitions
+for other parts of the device are also included - drivers for these will
+follow.
 
---=-wtKHr93MKiRybIorpimQ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+All the WM8350 drivers submitted here were originally written by Liam
+Girdwood with some updates from me for submission to mainline.
 
-On Mon, 2008-09-29 at 11:40 +0300, Tomas Winkler wrote:
-> On Mon, Sep 29, 2008 at 11:27 AM, Andres Freund <andres@anarazel.de> wrot=
-e:
-> > Hi,
-> >
-> > On Saturday 27 September 2008, Tomas Winkler wrote in "Re: bad DMAR
-> > interaction with iwlagn and SATA":
-> >> Meanwhile it all reported bugs in this case points to 64 bit
-> >> installations, I'll give it more testing
-> > Would it help to test on 32bit? I have some dissk with 32bit system ins=
-talled
-> > lying around somewhere...
->=20
-> It would help to try to isolate this as 64 bit issue
+Samuel, as with the WM8400 are you OK with merging this via the
+regulator tree?
 
-Andres, can you post your config?
+The following changes since commit fcbd54dd718e6741b05f8e5b08cbc75548acf0e4:
+  Mark Brown (1):
+        regulator: Add WM8400 regulator support
 
-johannes
+are available in the git repository at:
 
---=-wtKHr93MKiRybIorpimQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+  git://opensource.wolfsonmicro.com/linux-2.6-audioplus for-lrg
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Mark Brown (13):
+      mfd: Add WM8350 audio register definitions
+      mfd: Add WM8350 GPIO register definitions
+      mfd: Add WM8350 PMIC register definitions
+      mfd: Add WM8350 PMU register definitions
+      mfd: Add WM8350 comparator register definitions
+      mfd: Add WM8350 RTC register definitions
+      mfd: Add WM8350 watchdog register definitions
+      mfd: Core support for the WM8350 AudioPlus PMIC
+      mfd: Add I2C control support for WM8350
+      mfd: Add GPIO pin configuration support for WM8350
+      mfd: Add initialisation callback for WM8350
+      mfd: Add WM8350 interrupt support
+      regulator: Add WM8350 regulator support
 
-iQIcBAABAgAGBQJI6gQLAAoJEKVg1VMiehFYP+IQAI7XD5VWcGPIE1Q/6HzhZtU4
-Vgq6x8fTDI8afDZ1M5w+RKGuFR4TlqoPnvYjtRk+33ij+dWv653TM0H2VwnFQUFD
-ugvKzojyzWLXIrHoOeN3App/98qlg7jknP7olPLOsLf6myllw9nXkDirQziJENfD
-dqcdXF6GHA6mMv/ZLnVvYJioXS6uyUQDBwwq+FzMg6msB2Y+nn6cqZWtUJTXZIEK
-ZPaBB6OJxIk4MvUg79KpIDtVNQjxbQBBuF4dXyybVK09BU0v+aT4C/FSTgDyC3yT
-IIDSbYr5rk3CL7E4uMp/kepCqkCVXJRKyTWcuyC3T21JGTFhMUrsAp5dwo3mo9v2
-elMOUfklTH0WMlvkPHdxnZ4+JXBHyiNXZrEloVQyupy3aV67V9/X1CzzveW4whA+
-n5tBJsmMiBQh5c38tTO7Yz1zfPaTFD4dTBKkWoPAqsuadA1V4lRYSXONfJhxFUA2
-uNHf15XrkH67sanWeSXbsvIzxYhsYOQOlPOAXdn82N6yRNnJ2iRtt/r82Qstx0HF
-r9TNgGTafoKjSNwRcOM4vwQiuy/Tr25QGtXryuV5nGKnWJHmpzuZrWG/J5l4ZR+L
-w7ZQYhAWc0HHuRZSVm2XIvGieX7nqqOqwBvLC88iHgVj9mkM+2/urF68tWIxGMPG
-GKiPJVTkree9SDrxQMNK
-=MZCq
------END PGP SIGNATURE-----
-
---=-wtKHr93MKiRybIorpimQ--
-
+ drivers/mfd/Kconfig                   |   58 ++
+ drivers/mfd/Makefile                  |    3 +
+ drivers/mfd/wm8350-core.c             | 1239 ++++++++++++++++++++++++++++
+ drivers/mfd/wm8350-gpio.c             |  222 +++++
+ drivers/mfd/wm8350-i2c.c              |  120 +++
+ drivers/mfd/wm8350-regmap.c           | 1323 ++++++++++++++++++++++++++++++
+ drivers/regulator/Kconfig             |   10 +
+ drivers/regulator/Makefile            |    1 +
+ drivers/regulator/wm8350-regulator.c  | 1430 +++++++++++++++++++++++++++++++++
+ include/linux/mfd/wm8350/audio.h      |  592 ++++++++++++++
+ include/linux/mfd/wm8350/comparator.h |  167 ++++
+ include/linux/mfd/wm8350/core.h       |  621 ++++++++++++++
+ include/linux/mfd/wm8350/gpio.h       |  336 ++++++++
+ include/linux/mfd/wm8350/pmic.h       |  741 +++++++++++++++++
+ include/linux/mfd/wm8350/rtc.h        |  260 ++++++
+ include/linux/mfd/wm8350/supply.h     |  105 +++
+ include/linux/mfd/wm8350/wdt.h        |   22 +
+ 17 files changed, 7250 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mfd/wm8350-core.c
+ create mode 100644 drivers/mfd/wm8350-gpio.c
+ create mode 100644 drivers/mfd/wm8350-i2c.c
+ create mode 100644 drivers/mfd/wm8350-regmap.c
+ create mode 100644 drivers/regulator/wm8350-regulator.c
+ create mode 100644 include/linux/mfd/wm8350/audio.h
+ create mode 100644 include/linux/mfd/wm8350/comparator.h
+ create mode 100644 include/linux/mfd/wm8350/core.h
+ create mode 100644 include/linux/mfd/wm8350/gpio.h
+ create mode 100644 include/linux/mfd/wm8350/pmic.h
+ create mode 100644 include/linux/mfd/wm8350/rtc.h
+ create mode 100644 include/linux/mfd/wm8350/supply.h
+ create mode 100644 include/linux/mfd/wm8350/wdt.h
