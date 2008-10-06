@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYJFV20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYJFVcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYJFV20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 17:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbYJFV2S
+	id S1755543AbYJFVcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 17:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYJFVcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 17:28:18 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60802 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752573AbYJFV2S (ORCPT
+	Mon, 6 Oct 2008 17:32:11 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:26204 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753358AbYJFVcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 17:28:18 -0400
-Date: Mon, 6 Oct 2008 23:34:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, mingo@elte.hu,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, lenb@kernel.org
-Subject: Re: PATCH] ftrace: Add a C/P state tracer to help power optimization
-Message-ID: <20081006213418.GM3180@one.firstfloor.org>
-References: <20081006102640.481acd23@infradead.org> <87y711moz2.fsf@basil.nowhere.org> <20081006135715.6a52e954@infradead.org> <20081006211939.GL3180@one.firstfloor.org> <20081006142131.37104893@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Oct 2008 17:32:11 -0400
+Date: Tue, 7 Oct 2008 01:32:09 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Li Yang <leoli@freescale.com>, Wang Jian <lark@linux.net.cn>
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+Message-ID: <20081006213209.GA13072@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru> <48EA77EF.6080502@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <20081006142131.37104893@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <48EA77EF.6080502@genesi-usa.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 02:21:31PM -0700, Arjan van de Ven wrote:
-> > > the link between P states and frequency is... rather lose.
-> > > Especially with Turbo Mode it no longer is really relevant to list
-> > > frequencies.
-> > 
-> > It would probably be less confusing for everyone if the higher level
-> > cpufreq layers reported the correct frequency for turbo mode too.
-> > I haven't checked how complicated this would be.
+On Mon, Oct 06, 2008 at 03:41:19PM -0500, Matt Sealey wrote:
+> There is a simple problem with the patch which is that an "IRQ 0" can and does
+> actually exist on a bunch of platforms, at least to the best of my knowledge.
 > 
-> it's impossible until after the fact; you don't know which frequencies
-> you got until you check back later.
+> Checking for -1 (which means for definite, no irq at all, because it is
+> totally unambiguous, as a -1 IRQ numbering is "impossible") is more correct.
 
-Well it could do that couldn't it? Ok not sure how big the cost
-would be.
+This was discussed years ago.
 
-I can just imagine Turbo mode becoming a FAQ on this list and having
-better reporting upfront might mitigate this a bit.
-
-> 
-> 
-> > Ok.
-> > 
-> > That means that when a CPU is idle forever there won't be any output?
-> 
-> correct; it'll wait until it stops being idle before telling  you how
-> long it was idle.
-> 
-> if it really bothers you we could do a dummy broadcast ipi on shutting
-> down the tracer.. in practice it's not a problem.
-
-Or just mark entry/exit, but you just need a wakeup threshold to avoid
-the loop. A wakeup threshold seems like a good idea anyways though, just
-to get better efficiency on larger systems.
-
-> (we wake up all cpus all the time)
-
-I assume that will change in the future and might even not true
-anymore on some special stripped down configurations.
-
--Andi
+http://lkml.org/lkml/2005/11/22/159
+http://lkml.org/lkml/2005/11/22/227
 
 -- 
-ak@linux.intel.com
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
