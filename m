@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYJFMjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYJFMiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYJFMjR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 08:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbYJFMiQ
+	id S1754699AbYJFMiz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 08:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYJFMiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 08:38:16 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40052 "EHLO
+	Mon, 6 Oct 2008 08:38:15 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40051 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752987AbYJFMiL (ORCPT
+	by vger.kernel.org with ESMTP id S1752970AbYJFMiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 6 Oct 2008 08:38:11 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 05/13] mfd: Add WM8350 comparator register definitions
-Date: Mon,  6 Oct 2008 13:38:00 +0100
-Message-Id: <1223296688-9960-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 04/13] mfd: Add WM8350 PMU register definitions
+Date: Mon,  6 Oct 2008 13:37:59 +0100
+Message-Id: <1223296688-9960-4-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223296688-9960-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1223296688-9960-3-git-send-email-broonie@opensource.wolfsonmicro.com>
 References: <20081006123254.GA9664@rakim.wolfsonmicro.main>
  <1223296688-9960-1-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223296688-9960-2-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223296688-9960-3-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1223296688-9960-4-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/mfd/wm8350/comparator.h |  167 +++++++++++++++++++++++++++++++++
- 1 files changed, 167 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/mfd/wm8350/comparator.h
+ include/linux/mfd/wm8350/supply.h |  105 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 105 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/mfd/wm8350/supply.h
 
-diff --git a/include/linux/mfd/wm8350/comparator.h b/include/linux/mfd/wm8350/comparator.h
+diff --git a/include/linux/mfd/wm8350/supply.h b/include/linux/mfd/wm8350/supply.h
 new file mode 100644
-index 0000000..0537886
+index 0000000..f1d4317
 --- /dev/null
-+++ b/include/linux/mfd/wm8350/comparator.h
-@@ -0,0 +1,167 @@
++++ b/include/linux/mfd/wm8350/supply.h
+@@ -0,0 +1,105 @@
 +/*
-+ * comparator.h  --  Comparator Aux ADC for Wolfson WM8350 PMIC
++ * supply.h  --  Power Supply Driver for Wolfson WM8350 PMIC
 + *
 + * Copyright 2007 Wolfson Microelectronics PLC
 + *
@@ -49,162 +48,100 @@ index 0000000..0537886
 + *  under  the terms of  the GNU General  Public License as published by the
 + *  Free Software Foundation;  either version 2 of the  License, or (at your
 + *  option) any later version.
++ *
 + */
 +
-+#ifndef __LINUX_MFD_WM8350_COMPARATOR_H_
-+#define __LINUX_MFD_WM8350_COMPARATOR_H_
++#ifndef __LINUX_MFD_WM8350_SUPPLY_H_
++#define __LINUX_MFD_WM8350_SUPPLY_H_
 +
 +/*
-+ * Registers
++ * Charger registers
 + */
-+
-+#define WM8350_DIGITISER_CONTROL_1              0x90
-+#define WM8350_DIGITISER_CONTROL_2              0x91
-+#define WM8350_AUX1_READBACK                    0x98
-+#define WM8350_AUX2_READBACK                    0x99
-+#define WM8350_AUX3_READBACK                    0x9A
-+#define WM8350_AUX4_READBACK                    0x9B
-+#define WM8350_CHIP_TEMP_READBACK               0x9F
-+#define WM8350_GENERIC_COMPARATOR_CONTROL       0xA3
-+#define WM8350_GENERIC_COMPARATOR_1             0xA4
-+#define WM8350_GENERIC_COMPARATOR_2             0xA5
-+#define WM8350_GENERIC_COMPARATOR_3             0xA6
-+#define WM8350_GENERIC_COMPARATOR_4             0xA7
++#define WM8350_BATTERY_CHARGER_CONTROL_1        0xA8
++#define WM8350_BATTERY_CHARGER_CONTROL_2        0xA9
++#define WM8350_BATTERY_CHARGER_CONTROL_3        0xAA
 +
 +/*
-+ * R144 (0x90) - Digitiser Control (1)
++ * R168 (0xA8) - Battery Charger Control 1
 + */
-+#define WM8350_AUXADC_CTC                       0x4000
-+#define WM8350_AUXADC_POLL                      0x2000
-+#define WM8350_AUXADC_HIB_MODE                  0x1000
-+#define WM8350_AUXADC_SEL8                      0x0080
-+#define WM8350_AUXADC_SEL7                      0x0040
-+#define WM8350_AUXADC_SEL6                      0x0020
-+#define WM8350_AUXADC_SEL5                      0x0010
-+#define WM8350_AUXADC_SEL4                      0x0008
-+#define WM8350_AUXADC_SEL3                      0x0004
-+#define WM8350_AUXADC_SEL2                      0x0002
-+#define WM8350_AUXADC_SEL1                      0x0001
++#define WM8350_CHG_ENA_R168                     0x8000
++#define WM8350_CHG_THR                          0x2000
++#define WM8350_CHG_EOC_SEL_MASK                 0x1C00
++#define WM8350_CHG_TRICKLE_TEMP_CHOKE           0x0200
++#define WM8350_CHG_TRICKLE_USB_CHOKE            0x0100
++#define WM8350_CHG_RECOVER_T                    0x0080
++#define WM8350_CHG_END_ACT                      0x0040
++#define WM8350_CHG_FAST                         0x0020
++#define WM8350_CHG_FAST_USB_THROTTLE            0x0010
++#define WM8350_CHG_NTC_MON                      0x0008
++#define WM8350_CHG_BATT_HOT_MON                 0x0004
++#define WM8350_CHG_BATT_COLD_MON                0x0002
++#define WM8350_CHG_CHIP_TEMP_MON                0x0001
 +
 +/*
-+ * R145 (0x91) - Digitiser Control (2)
++ * R169 (0xA9) - Battery Charger Control 2
 + */
-+#define WM8350_AUXADC_MASKMODE_MASK             0x3000
-+#define WM8350_AUXADC_CRATE_MASK                0x0700
-+#define WM8350_AUXADC_CAL                       0x0004
-+#define WM8350_AUX_RBMODE                       0x0002
-+#define WM8350_AUXADC_WAIT                      0x0001
++#define WM8350_CHG_ACTIVE                       0x8000
++#define WM8350_CHG_PAUSE                        0x4000
++#define WM8350_CHG_STS_MASK                     0x3000
++#define WM8350_CHG_TIME_MASK                    0x0F00
++#define WM8350_CHG_MASK_WALL_FB                 0x0080
++#define WM8350_CHG_TRICKLE_SEL                  0x0040
++#define WM8350_CHG_VSEL_MASK                    0x0030
++#define WM8350_CHG_ISEL_MASK                    0x000F
++#define WM8350_CHG_STS_OFF                      0x0000
++#define WM8350_CHG_STS_TRICKLE                  0x1000
++#define WM8350_CHG_STS_FAST                     0x2000
 +
 +/*
-+ * R152 (0x98) - AUX1 Readback
++ * R170 (0xAA) - Battery Charger Control 3
 + */
-+#define WM8350_AUXADC_SCALE1_MASK               0x6000
-+#define WM8350_AUXADC_REF1                      0x1000
-+#define WM8350_AUXADC_DATA1_MASK                0x0FFF
++#define WM8350_CHG_THROTTLE_T_MASK              0x0060
++#define WM8350_CHG_SMART                        0x0010
++#define WM8350_CHG_TIMER_ADJT_MASK              0x000F
 +
 +/*
-+ * R153 (0x99) - AUX2 Readback
++ * Charger Interrupts
 + */
-+#define WM8350_AUXADC_SCALE2_MASK               0x6000
-+#define WM8350_AUXADC_REF2                      0x1000
-+#define WM8350_AUXADC_DATA2_MASK                0x0FFF
++#define WM8350_IRQ_CHG_BAT_HOT			0
++#define WM8350_IRQ_CHG_BAT_COLD			1
++#define WM8350_IRQ_CHG_BAT_FAIL			2
++#define WM8350_IRQ_CHG_TO			3
++#define WM8350_IRQ_CHG_END			4
++#define WM8350_IRQ_CHG_START			5
++#define WM8350_IRQ_CHG_FAST_RDY			6
++#define WM8350_IRQ_CHG_VBATT_LT_3P9		10
++#define WM8350_IRQ_CHG_VBATT_LT_3P1		11
++#define WM8350_IRQ_CHG_VBATT_LT_2P85		12
 +
 +/*
-+ * R154 (0x9A) - AUX3 Readback
++ * Charger Policy
 + */
-+#define WM8350_AUXADC_SCALE3_MASK               0x6000
-+#define WM8350_AUXADC_REF3                      0x1000
-+#define WM8350_AUXADC_DATA3_MASK                0x0FFF
++#define WM8350_CHG_TRICKLE_50mA			(0 << 6)
++#define WM8350_CHG_TRICKLE_100mA		(1 << 6)
++#define WM8350_CHG_4_05V			(0 << 4)
++#define WM8350_CHG_4_10V			(1 << 4)
++#define WM8350_CHG_4_15V			(2 << 4)
++#define WM8350_CHG_4_20V			(3 << 4)
++#define WM8350_CHG_FAST_LIMIT_mA(x)		((x / 50) & 0xf)
++#define WM8350_CHG_EOC_mA(x)			(((x - 10) & 0x7) << 10)
++#define WM8350_CHG_TRICKLE_3_1V			(0 << 13)
++#define WM8350_CHG_TRICKLE_3_9V			(1 << 13)
 +
 +/*
-+ * R155 (0x9B) - AUX4 Readback
++ * Supply Registers.
 + */
-+#define WM8350_AUXADC_SCALE4_MASK               0x6000
-+#define WM8350_AUXADC_REF4                      0x1000
-+#define WM8350_AUXADC_DATA4_MASK                0x0FFF
++#define WM8350_USB_VOLTAGE_READBACK             0x9C
++#define WM8350_LINE_VOLTAGE_READBACK            0x9D
++#define WM8350_BATT_VOLTAGE_READBACK            0x9E
 +
 +/*
-+ * R156 (0x9C) - USB Voltage Readback
++ * Supply Interrupts.
 + */
-+#define WM8350_AUXADC_DATA_USB_MASK             0x0FFF
-+
-+/*
-+ * R157 (0x9D) - LINE Voltage Readback
-+ */
-+#define WM8350_AUXADC_DATA_LINE_MASK            0x0FFF
-+
-+/*
-+ * R158 (0x9E) - BATT Voltage Readback
-+ */
-+#define WM8350_AUXADC_DATA_BATT_MASK            0x0FFF
-+
-+/*
-+ * R159 (0x9F) - Chip Temp Readback
-+ */
-+#define WM8350_AUXADC_DATA_CHIPTEMP_MASK        0x0FFF
-+
-+/*
-+ * R163 (0xA3) - Generic Comparator Control
-+ */
-+#define WM8350_DCMP4_ENA                        0x0008
-+#define WM8350_DCMP3_ENA                        0x0004
-+#define WM8350_DCMP2_ENA                        0x0002
-+#define WM8350_DCMP1_ENA                        0x0001
-+
-+/*
-+ * R164 (0xA4) - Generic comparator 1
-+ */
-+#define WM8350_DCMP1_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP1_GT                         0x1000
-+#define WM8350_DCMP1_THR_MASK                   0x0FFF
-+
-+/*
-+ * R165 (0xA5) - Generic comparator 2
-+ */
-+#define WM8350_DCMP2_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP2_GT                         0x1000
-+#define WM8350_DCMP2_THR_MASK                   0x0FFF
-+
-+/*
-+ * R166 (0xA6) - Generic comparator 3
-+ */
-+#define WM8350_DCMP3_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP3_GT                         0x1000
-+#define WM8350_DCMP3_THR_MASK                   0x0FFF
-+
-+/*
-+ * R167 (0xA7) - Generic comparator 4
-+ */
-+#define WM8350_DCMP4_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP4_GT                         0x1000
-+#define WM8350_DCMP4_THR_MASK                   0x0FFF
-+
-+/*
-+ * Interrupts.
-+ */
-+#define WM8350_IRQ_AUXADC_DATARDY		16
-+#define WM8350_IRQ_AUXADC_DCOMP4		17
-+#define WM8350_IRQ_AUXADC_DCOMP3		18
-+#define WM8350_IRQ_AUXADC_DCOMP2		19
-+#define WM8350_IRQ_AUXADC_DCOMP1		20
-+#define WM8350_IRQ_SYS_HYST_COMP_FAIL		21
-+#define WM8350_IRQ_SYS_CHIP_GT115		22
-+#define WM8350_IRQ_SYS_CHIP_GT140		23
-+
-+/*
-+ * USB/2, LINE & BATT = ((VRTC * 2) / 4095)) * 10e6 uV
-+ * Where VRTC = 2.7 V
-+ */
-+#define WM8350_AUX_COEFF			1319
-+
-+#define WM8350_AUXADC_AUX1			0
-+#define WM8350_AUXADC_AUX2			1
-+#define WM8350_AUXADC_AUX3			2
-+#define WM8350_AUXADC_AUX4			3
-+#define WM8350_AUXADC_USB			4
-+#define WM8350_AUXADC_LINE			5
-+#define WM8350_AUXADC_BATT			6
-+#define WM8350_AUXADC_TEMP			7
++#define WM8350_IRQ_USB_LIMIT			15
++#define WM8350_IRQ_EXT_USB_FB			36
++#define WM8350_IRQ_EXT_WALL_FB			37
++#define WM8350_IRQ_EXT_BAT_FB			38
 +
 +#endif
 -- 
