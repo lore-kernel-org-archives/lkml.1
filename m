@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755698AbYJFW13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYJFWgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755698AbYJFW13 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 18:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYJFW1V
+	id S1755975AbYJFWgE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 18:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYJFWfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 18:27:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:39210 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753251AbYJFW1U (ORCPT
+	Mon, 6 Oct 2008 18:35:53 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:12706 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752453AbYJFWfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 18:27:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=SE7po5wFczsDIgRgcaslRiVAT0EaZyAkapVKj6oTtbG7rWWw66c337y9KwWeX0tzXq
-         JtOi7r0kXTb48p2aLLBR8TzAPSewKbCIMaf7p+WG1y7C6szA6jHq24Espz4H7JSH/Ayp
-         kzxgXjtKvcR4q4sWT/GQgKHNaTR0y3jyn8phU=
-Date: Tue, 7 Oct 2008 02:29:59 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: remove unused ADDBUF macro
-Message-ID: <20081006222959.GA3466@x200.localdomain>
+	Mon, 6 Oct 2008 18:35:53 -0400
+X-IronPort-AV: E=Sophos;i="4.33,369,1220227200"; 
+   d="scan'208";a="47939983"
+From: Roland Dreier <rdreier@cisco.com>
+To: Tom Tucker <tom@opengridcomputing.com>
+Cc: ericvh@gmail.com, linux-kernel@vger.kernel.org, v9fs-devel@vger.kernel.org,
+       rminnich@dancer.ca.sandia.gov, lionkov@lanl.gov
+Subject: Re: [PATCH 01/03] 9prdma: RDMA Transport Support for 9P
+References: <1222906119-14310-1-git-send-email-tom@opengridcomputing.com>
+	<1222906119-14310-2-git-send-email-tom@opengridcomputing.com>
+	<adaod23d1if.fsf@cisco.com> <48EA549E.1050001@opengridcomputing.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 06 Oct 2008 15:35:51 -0700
+In-Reply-To: <48EA549E.1050001@opengridcomputing.com> (Tom Tucker's message of
+	"Mon, 06 Oct 2008 13:10:38 -0500")
+Message-ID: <adavdw5nygo.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 06 Oct 2008 22:35:51.0916 (UTC) FILETIME=[E33C42C0:01C92803]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added to proc.git]
+ > > Is your protocol documented anywhere?  It seems npfs has support for the
+ > > same transport.
 
-commit abac1335ec9c43834ff764eee3c4d026b6b9bba6
-Author: Alexey Dobriyan <adobriyan@gmail.com>
-Date:   Tue Oct 7 01:58:45 2008 +0400
+ > When using SEND/RECV, there isn't a protocol other than 9P
+ > itself. Once we add RDMA ops, one will be required to exchange RKEY,
+ > etc... But maybe I don't understand the question?
 
-    proc: remove now unneeded ADDBUF macro
-    
-    After local seq_file conversion it was forgotten.
-    
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+No, that makes sense.  I don't know that much about 9p but I guess it's
+fairly transport agnostic, so if you're just sending/receiving standard
+9p messages then there's probably nothing to exchange.
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 1c8d7b5..f4bc0e7 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -86,11 +86,6 @@
- #include <asm/processor.h>
- #include "internal.h"
- 
--/* Gcc optimizes away "strlen(x)" for constant x */
--#define ADDBUF(buffer, string) \
--do { memcpy(buffer, string, strlen(string)); \
--     buffer += strlen(string); } while (0)
--
- static inline void task_name(struct seq_file *m, struct task_struct *p)
- {
- 	int i;
+ - R.
