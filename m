@@ -1,86 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYJFUpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbYJFUqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298AbYJFUpw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 16:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYJFUpo
+	id S1755779AbYJFUqX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 16:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbYJFUqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 16:45:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44678 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753563AbYJFUpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 16:45:44 -0400
-Date: Mon, 6 Oct 2008 16:44:57 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+	Mon, 6 Oct 2008 16:46:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55029 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753635AbYJFUqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 16:46:12 -0400
 To: Arjan van de Ven <arjan@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
-Subject: Re: [PATCH 2/3] Fix fsync livelock
-In-Reply-To: <20081006065024.380d1d00@infradead.org>
-Message-ID: <Pine.LNX.4.64.0810061632040.19239@hs20-bc2-1.build.redhat.com>
-References: <20080911101616.GA24064@agk.fab.redhat.com>
- <20080923154905.50d4b0fa.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
- <20080923164623.ce82c1c2.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
- <20081001225404.4e973465.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0810051814060.23248@hs20-bc2-1.build.redhat.com>
- <20081005153306.7e644c9f@infradead.org> <Pine.LNX.4.64.0810051901190.31780@hs20-bc2-1.build.redhat.com>
- <20081005160724.54dd1a27@infradead.org> <Pine.LNX.4.64.0810051910580.663@hs20-bc2-1.build.redhat.com>
- <20081005162847.7bf0ead1@infradead.org> <Pine.LNX.4.64.0810051949290.5798@hs20-bc2-1.build.redhat.com>
- <20081005173019.0a358b09@infradead.org> <Pine.LNX.4.64.0810052320480.3074@hs20-bc2-1.build.redhat.com>
- <20081005212031.63ad246a@infradead.org> <Pine.LNX.4.64.0810060857341.26843@hs20-bc2-1.build.redhat.com>
- <20081006065024.380d1d00@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       mingo@elte.hu, Peter Zijlstra <a.p.zijlstra@chello.nl>, lenb@kernel.org
+Subject: Re: PATCH] ftrace: Add a C/P state tracer to help power optimization
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081006102640.481acd23@infradead.org>
+Date: Mon, 06 Oct 2008 22:46:09 +0200
+In-Reply-To: <20081006102640.481acd23@infradead.org> (Arjan van de Ven's message of "Mon, 6 Oct 2008 10:26:40 -0700")
+Message-ID: <87y711moz2.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Oct 2008, Arjan van de Ven wrote:
+Arjan van de Ven <arjan@infradead.org> writes:
 
-> On Mon, 6 Oct 2008 09:00:14 -0400 (EDT)
-> Mikulas Patocka <mpatocka@redhat.com> wrote:
-> 
-> > On Sun, 5 Oct 2008, Arjan van de Ven wrote:
-> > 
-> > > On Sun, 5 Oct 2008 23:30:51 -0400 (EDT
-> > > > The point is that many fsync()s may run in parallel and you have
-> > > > just one inode and just one chain. And if you add two-word
-> > > > list_head to a page, to link it on this list, many developers
-> > > > will hate it for increasing its size.
-> > > 
-> > > why to a page?
-> > > a list head in the inode and chain up the bios....
-> > 
-> > And if you want to wait for a bio submitted by a different process? 
-> > There's no way you can find the bio from the page.
-> 
-> the point is that the kernel would always chain it to the inode,
-> independent of who or when it is submitted
+This might be a subtle issue, but when someone starts synchronizing
+their clocksource read with idle (which makes sense in some circumstances) 
+then your timing will break because ktime_get() might be inaccurate directly 
+coming out of idle before other code ran.
 
-If you add a list to an inode, you need to protect it with a spinlock. So 
-you take one more spinlock for any write bio submitted --- a lot of 
-developers would hate it.
+That's theoretical right now, but could be a real danger in the future.
+  
+> @@ -426,6 +428,8 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+>  		}
+>  	}
+>  
+> +	trace_power_mark(&it, POWER_PSTATE, next_perf_state);
 
-Another problem: how do you want to walk all dirty pages and submit bio 
-for them?
+Wouldn't that be better higher up in the cpufreq system?  It would
+seem bad to duplicate that in all low level cpufreq modules.
 
-The act of allocating and submission of bio can block (if you run out of 
-some mempool) and in this case it wait until some other bio is finished. 
-During this time, more dirty pages can be created.
+Also I suspect some higher level format would be good here too.
+Just put the frequency in? 
 
-Also, if you find a page that is both dirty and under writeback, you need 
-to wait until a writeback finishes and then initiate another writeback 
-(because the old writeback may be writing stale data). You again, block, 
-and more dirty pages can appear.
+> +	bool "Trace power consumption behavior"
+> +	depends on DEBUG_KERNEL
+> +	depends on X86
+> +	select TRACING
+> +	help
+> +	  This tracer helps developers to analyize and optimize the kernels
+> +	  power management decisions, specifically the C-state and P-state
+> +	  behavior.
 
-And if you block and more dirty pages appear, you are prone to the 
-livelock.
+Reference to the required userland?
 
-[ In Nick Piggin's patch, it is needed to lock the whole address space, 
-mark dirty pages in one non-blocking pass and write marked pages again in 
-a blocking pass --- so that if more dirty pages appear while bios are 
-submitted, the new pages will be skipped ]
+> +	stamp = ktime_to_timespec(it->stamp);
+> +	duration = ktime_to_timespec(ktime_sub(it->end, it->stamp));
+> +
+> +	if (entry->type == TRACE_POWER) {
+> +		if (it->type == POWER_CSTATE)
+> +			ret = trace_seq_printf(s, "[%5ld.%09ld] CSTATE: Going to C%i on cpu %i for %ld.%09ld\n",
+> +					  stamp.tv_sec,
+> +					  stamp.tv_nsec,
+> +					  it->state, iter->cpu,
+> +					  duration.tv_sec,
+> +					  duration.tv_nsec);
+> +		if (it->type == POWER_PSTATE)
+> +			ret = trace_seq_printf(s, "[%5ld.%09ld] PSTATE: Going to P%i on cpu %i\n",
+> +					  stamp.tv_sec,
+> +					  stamp.tv_nsec,
+> +					  it->state, iter->cpu);
 
-Mikulas
+I suspect a less verbose output format would be better.
+
+> +{
+> +	if (!trace_power_enabled)
+> +		return;
+> +
+> +	memset(it, 0, sizeof(struct power_trace));
+
+The memset seems redundant.
+
+
+> +void trace_power_end(struct power_trace *it)
+> +{
+> +	struct ring_buffer_event *event;
+> +	struct trace_power *entry;
+> +	struct trace_array_cpu *data;
+> +	unsigned long irq_flags;
+> +	struct trace_array *tr = power_trace;
+> +
+> +	if (!trace_power_enabled)
+> +		return;
+> +
+> +	preempt_disable();
+> +	it->end = ktime_get();
+> +	data = tr->data[smp_processor_id()];
+> +
+> +	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
+> +					 &irq_flags);
+> +	if (!event)
+> +		goto out;
+> +	entry	= ring_buffer_event_data(event);
+> +	tracing_generic_entry_update(&entry->ent, 0, 0);
+> +	entry->ent.type = TRACE_POWER;
+> +	entry->state_data = *it;
+> +	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+
+When ring_buffer_lock_reserve really disables interrupts (I haven't
+checked since it's not in 2.6.27rc8) you could avoid the
+preempt_disable by moving the data = tr->data ... one below.
+
+Similar comments to trace_power_mark. Also it would be probably good 
+to use a common function instead of duplicating so much code.
+
+
+> +	it->state = level;
+> +	it->type = type;
+> +	it->stamp = ktime_get();
+> +	preempt_disable();
+> +	it->end = it->stamp;
+> +	data = tr->data[smp_processor_id()];
+> +
+> +	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
+> +					 &irq_flags);
+> +	if (!event)
+> +		goto out;
+> +	entry	= ring_buffer_event_data(event);
+> +	tracing_generic_entry_update(&entry->ent, 0, 0);
+> +	entry->ent.type = TRACE_POWER;
+> +	entry->state_data = *it;
+> +	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+> +
+> +	trace_wake_up();
+
+Hmm, that does a unconditional wake_up() in idle. Doesn't this cause a loop
+on UP?
+
+idle -> wakeup -> idle -> wakeup -> ... etc.
+
+Am I missing something?
+
+> +#
+> +# 	cat /sys/kernel/debug/tracer/trace | perl power.pl > out.svg
+
+The cat is not needed
+
+-Andi
+-- 
+ak@linux.intel.com
