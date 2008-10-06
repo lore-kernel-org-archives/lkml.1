@@ -1,94 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYJFGAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYJFGAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbYJFGAW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 02:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYJFGAE
+	id S1754854AbYJFGAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 02:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYJFGAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 02:00:04 -0400
-Received: from mga10.intel.com ([192.55.52.92]:3727 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752640AbYJFGAB (ORCPT
+	Mon, 6 Oct 2008 02:00:25 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58851 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754658AbYJFGAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 02:00:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,366,1220252400"; 
-   d="scan'208";a="623754589"
-Subject: Re: aim7 47% regression with 2.6.27-rc8
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1223271482.7794.1.camel@marge.simson.net>
-References: <1223269135.1685.11.camel@ymzhang>
-	 <1223271482.7794.1.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Mon, 06 Oct 2008 13:52:58 +0800
-Message-Id: <1223272378.1685.12.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Oct 2008 02:00:23 -0400
+To: Kees Cook <kees.cook@canonical.com>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       libc-alpha@sourceware.org
+Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081001201116.GD12527@outflux.net> <48E3EFD6.2010704@redhat.com>
+	<20081001215657.GH12527@outflux.net>
+	<20081001220948.GC32107@sunsite.ms.mff.cuni.cz>
+	<20081001222706.68E7E1544B4@magilla.localdomain>
+	<20081003001616.GN10632@outflux.net>
+Date: Mon, 06 Oct 2008 08:00:21 +0200
+In-Reply-To: <20081003001616.GN10632@outflux.net> (Kees Cook's message of "Thu, 2 Oct 2008 17:16:16 -0700")
+Message-ID: <87ej2untze.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kees Cook <kees.cook@canonical.com> writes:
 
-On Mon, 2008-10-06 at 07:38 +0200, Mike Galbraith wrote:
-> On Mon, 2008-10-06 at 12:58 +0800, Zhang, Yanmin wrote:
-> > Comparing with 2.6.27-rc8, aim7 result has about 47% regression with 2.6.27-rc8 on
-> > my 16-core tigerton and 8 core+HyperThreading x86_64 machine.
-> > 
-> > I bisected it down to patch:
-> > 
-> > 302745699c1b675b5d2a1af87271de10e4d96b6a is first bad commit
-> 
-> > After I reverted the patch against 2.6.27-rc8, the regression disappears.
-> > It's interesting that the regression doesn't exist on 8-core stoakley.
-> 
-> Looks like it's been fixed meanwhile.
-I did a new quick test and the patch does fix it.
+> While discussing[1] the need for glibc to have access to random bytes
+> during program load, it seems that an earlier attempt to implement
+> AT_RANDOM got stalled.  This implements a configurable number of random
+> bytes available to every ELF program via a new auxv AT_RANDOM vector.
 
-Thanks,
-Yanmin
+While the basic idea is good using get_random_bytes() is not. 
 
-> 
-> commit 07454bfff151d2465ada809bbaddf3548cc1097c
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Sat Oct 4 10:51:07 2008 +0200
-> 
->     clockevents: check broadcast tick device not the clock events device
->     
->     Impact: jiffies increment too fast.
->     
->     Hugh Dickins noted that with NOHZ=n and HIGHRES=n jiffies get
->     incremented too fast. The reason is a wrong check in the broadcast
->     enter/exit code, which keeps the local apic timer in periodic mode
->     when the switch happens.
->     
->     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-> index bd70345..cb01cd8 100644
-> --- a/kernel/time/tick-broadcast.c
-> +++ b/kernel/time/tick-broadcast.c
-> @@ -235,7 +235,8 @@ static void tick_do_broadcast_on_off(void *why)
->  	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
->  		if (!cpu_isset(cpu, tick_broadcast_mask)) {
->  			cpu_set(cpu, tick_broadcast_mask);
-> -			if (bc->mode == TICKDEV_MODE_PERIODIC)
-> +			if (tick_broadcast_device.mode ==
-> +			    TICKDEV_MODE_PERIODIC)
->  				clockevents_shutdown(dev);
->  		}
->  		if (*reason == CLOCK_EVT_NOTIFY_BROADCAST_FORCE)
-> @@ -245,7 +246,8 @@ static void tick_do_broadcast_on_off(void *why)
->  		if (!tick_broadcast_force &&
->  		    cpu_isset(cpu, tick_broadcast_mask)) {
->  			cpu_clear(cpu, tick_broadcast_mask);
-> -			if (bc->mode == TICKDEV_MODE_PERIODIC)
-> +			if (tick_broadcast_device.mode ==
-> +			    TICKDEV_MODE_PERIODIC)
->  				tick_setup_periodic(dev, 0);
->  		}
->  		break;
-> 
-> 
+That eats precious cryptography strength entropy from the entropy
+pool, which on many systems is not adequately fed. In those cases you
+really only want to use it for real keys, not for lower grade
+applications. The applications glibc wants to use this for do not
+really require crypto strength entropy, just relatively unpredictable
+randomness.
 
+What you should instead do is to initialize some other cryptographic RNG 
+regularly and use the output of that.
+
+-Andi
