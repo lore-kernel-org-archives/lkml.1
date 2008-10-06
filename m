@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYJFDr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbYJFEBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbYJFDr3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 23:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYJFDrV
+	id S1752880AbYJFEBZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 00:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYJFEBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 23:47:21 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:13730 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751835AbYJFDrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 23:47:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqACABMn6Uh5LF82iGdsb2JhbACTWgEBARUipDeBaoMj
-X-IronPort-AV: E=Sophos;i="4.33,366,1220193000"; 
-   d="scan'208";a="220989299"
-Date: Mon, 6 Oct 2008 14:18:29 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Aaron Carroll <aaronc@gelato.unsw.edu.au>
-Cc: Bodo Eggert <7eggert@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-ID: <20081006031829.GQ30001@disturbed>
-Mail-Followup-To: Aaron Carroll <aaronc@gelato.unsw.edu.au>,
-	Bodo Eggert <7eggert@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <bimJN-4cO-5@gated-at.bofh.it> <biosl-6bq-9@gated-at.bofh.it> <biqkw-aK-3@gated-at.bofh.it> <birgx-1pQ-9@gated-at.bofh.it> <bisPe-3xx-9@gated-at.bofh.it> <bisYW-3HQ-13@gated-at.bofh.it> <E1KlQ9s-0003Oh-Cz@be1.7eggert.dyndns.org> <20081002233426.GG30001@disturbed> <48E71EFC.7040403@gelato.unsw.edu.au>
+	Mon, 6 Oct 2008 00:01:17 -0400
+Received: from kroah.org ([198.145.64.141]:34106 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750832AbYJFEBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 00:01:17 -0400
+Date: Sun, 5 Oct 2008 20:59:45 -0700
+From: Greg KH <greg@kroah.com>
+To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Update request for r8169
+Message-ID: <20081006035945.GA26148@kroah.com>
+References: <20081006021614.1c7fcaff@werewolf.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <48E71EFC.7040403@gelato.unsw.edu.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081006021614.1c7fcaff@werewolf.home>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 04, 2008 at 05:45:00PM +1000, Aaron Carroll wrote:
-> Dave Chinner wrote:
->> On Thu, Oct 02, 2008 at 05:32:04PM +0200, Bodo Eggert wrote:
->>> Sounds like you need a priority class besides sync and async.
->>
->> There's BIO_META now as well, which I was testing at the same time
->> as RT priority. Marking all the metadata I/O as BIO_META did help,
->> but once again I never got to determining if that was a result of
->> the different tagging or the priority increase.
->
-> What exactly do you want META to mean?  Strict prioritisation over
-> all other non-META requests, or just more frequent and/or larger
-> dispatches?  Should META requests be sorted?
+On Mon, Oct 06, 2008 at 02:16:14AM +0200, J.A. Magallón wrote:
+> Hi...
+> 
+> Could someone pick the patchset from
+> 
+> http://userweb.kernel.org/~romieu/r8169/2.6.27-rc6/
+> 
+> plz ?
 
-The real question is "what was it supposed to mean"? AFAICT, it was
-added to a couple of filesystems to be used to tag superblock read
-I/O. Why - I don't know - there's a distinct lack of documentation
-surrounding these bio flags. :/
+Can you submit them properly as described in
+Documentation/SubmittingPatches?
 
-Realistically, I'm not sure that having a separate queue for
-BIO_META will buy us anything, given that noop is quite often the
-fastest scheduler for XFS because it enables interleaved metadata
-I/O to be merged with data I/O. Like I said, I was not able to spend
-the time to determine exactly how BIO_META affected I/O patterns, so
-I can't really comment on whether it is really necessary or not.
+thanks,
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+greg k-h
