@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYJFKyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYJFK5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbYJFKyz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 06:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYJFKyr
+	id S1753951AbYJFK5R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 06:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYJFK5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 06:54:47 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:47386 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752487AbYJFKyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 06:54:47 -0400
-Subject: Re: [PATCH] btsdio: fix tx error path
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Tomas Winkler <tomas.winkler@intel.com>
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1223283914-18238-1-git-send-email-tomas.winkler@intel.com>
-References: <1223283914-18238-1-git-send-email-tomas.winkler@intel.com>
-Content-Type: text/plain
-Date: Mon, 06 Oct 2008 12:54:50 +0200
-Message-Id: <1223290490.11272.149.camel@violet.holtmann.net>
+	Mon, 6 Oct 2008 06:57:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58706 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752295AbYJFK5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 06:57:01 -0400
+Date: Mon, 6 Oct 2008 06:56:59 -0400
+From: Alan Cox <alan@redhat.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 36/76] tty: Make get_current_tty use a kref
+Message-ID: <20081006105659.GB9606@shell.devel.redhat.com>
+References: <20081005160231.1997.10462.stgit@localhost.localdomain> <20081005161021.1997.38953.stgit@localhost.localdomain> <20081006103540.GC29198@hawkmoon.kerlabs.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081006103540.GC29198@hawkmoon.kerlabs.com>
+User-Agent: Mutt/1.4.2.2i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tomas,
-
-> This patch fixes accumulating of the header
-> in case packet was requeued in the error path.
+On Mon, Oct 06, 2008 at 12:35:40PM +0200, Louis Rilling wrote:
+> >  		tty = get_current_tty();
+> >  		if (!tty || tty->driver->major != IBM_TTY3270_MAJOR) {
+> > -			mutex_unlock(&tty_mutex);
+> > +			tty_kref_put(tty);
 > 
-> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-> Cc: Marcel Holtmann <marcel@holtmann.org>
-> ---
->  drivers/bluetooth/btsdio.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/bluetooth/btsdio.c b/drivers/bluetooth/btsdio.c
-> index 58630cc..e4724b8 100644
-> --- a/drivers/bluetooth/btsdio.c
-> +++ b/drivers/bluetooth/btsdio.c
-> @@ -91,6 +91,7 @@ static int btsdio_tx_packet(struct btsdio_data *data, struct sk_buff *skb)
->  
->  	err = sdio_writesb(data->func, REG_TDAT, skb->data, skb->len);
->  	if (err < 0) {
-> +		skb_pop(skb, 4);
->  		sdio_writeb(data->func, 0x01, REG_PC_WRT, NULL);
->  		return err;
->  	}
+> Should'nt mutex_unlock() be kept?
 
-please do at least a compile test. It is skb_pull() and not skb_pop().
-
-Regards
-
-Marcel
-
-
+Yes.. although it gets fixed later but I will fix that as it will keep the
+code bisectable.
