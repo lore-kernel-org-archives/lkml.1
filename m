@@ -1,108 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYJFDBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbYJFDbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbYJFDBf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Oct 2008 23:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbYJFDB0
+	id S1753480AbYJFDbp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Oct 2008 23:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbYJFDbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Oct 2008 23:01:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56010 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751835AbYJFDBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Oct 2008 23:01:25 -0400
-Message-ID: <48E97F6B.9060409@cn.fujitsu.com>
-Date: Mon, 06 Oct 2008 11:00:59 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 5 Oct 2008 23:31:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56361 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751835AbYJFDbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Oct 2008 23:31:37 -0400
+Date: Sun, 5 Oct 2008 23:30:51 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
+Subject: Re: [PATCH 2/3] Fix fsync livelock
+In-Reply-To: <20081005173019.0a358b09@infradead.org>
+Message-ID: <Pine.LNX.4.64.0810052320480.3074@hs20-bc2-1.build.redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+ <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+ <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+ <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+ <20080923164623.ce82c1c2.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
+ <20081001225404.4e973465.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0810051814060.23248@hs20-bc2-1.build.redhat.com>
+ <20081005153306.7e644c9f@infradead.org> <Pine.LNX.4.64.0810051901190.31780@hs20-bc2-1.build.redhat.com>
+ <20081005160724.54dd1a27@infradead.org> <Pine.LNX.4.64.0810051910580.663@hs20-bc2-1.build.redhat.com>
+ <20081005162847.7bf0ead1@infradead.org> <Pine.LNX.4.64.0810051949290.5798@hs20-bc2-1.build.redhat.com>
+ <20081005173019.0a358b09@infradead.org>
 MIME-Version: 1.0
-To: "Theodore Ts'o" <tytso@mit.edu>
-CC: linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [ext4 BUG?] task pdflush:3880 blocked for more than 120 seconds
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This bug exists both in mainline and ext4-patch-queue.
 
-Procedures to reproduce it:
-1. mkfs.ext4dev -I 256 -b 4096 -O extents /dev/sdb1
-2. mount -t ext4dev -o delalloc /dev/sdb1 mnt_point/
-3. run ffsb until filesystem is full and ffsb exits with failure
-4. umount mnt_point
 
-And then umount stuck at D state.
+On Sun, 5 Oct 2008, Arjan van de Ven wrote:
 
-The output of ps:
- 3873 ?        D<     0:07 [kjournald2]
- 3880 ?        D      0:00 [pdflush]
- 3885 ?        S      0:00 [pdflush]
- 3944 ?        S      0:00 [pdflush]
- 3957 ?        S      0:00 [pdflush]
- 3962 ?        S      0:00 [pdflush]
- 3974 ?        S      0:00 [pdflush]
- 3975 ?        S      0:00 [pdflush]
- 3979 pts/1    D+     0:01 umount mnt_point
+> On Sun, 5 Oct 2008 20:01:46 -0400 (EDT)
+> Mikulas Patocka <mpatocka@redhat.com> wrote:
+> 
+> > I assume that if very few people complained about the livelock till
+> > now, very few people will see degraded write performance. My patch
+> > blocks the writes only if the livelock happens, so if the livelock
+> > doesn't happen in unpatched kernel for most people, the patch won't
+> > make it worse.
+> 
+> I object to calling this a livelock. It's not. 
 
-dmesg:
+It unlocks itself when the whole disk is written, and it can be several 
+hours (or days, if you have many-terabyte array). So formally it is not 
+livelock, from the user experience it is --- he sees unkillable process in 
+'D' state for many hours.
 
-EXT4-fs: barriers enabled
-kjournald2 starting.  Commit interval 5 seconds
-EXT4 FS on sdb1, internal journal on sdb1:8
-EXT4-fs: mounted filesystem with ordered data mode.
-EXT4-fs: delayed allocation enabled
-EXT4-fs: file extents enabled
-EXT4-fs: mballoc enabled
-ffsb[3888]: segfault at 8 ip 0000003878832dc7 sp 00000000425f5fa0 error 4 in libc-2.5.so[3878800000+146000]
-INFO: task pdflush:3880 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-pdflush       D ffff88013c6eb700     0  3880      2
- ffff88009a623df0 0000000000000046 0000000000000000 ffffffff80254c20
- ffff8800bfa63040 ffff8800bfa63040 ffff88013faf3040 ffff8800bfa63398
- 00000002bfa63040 000000010009baab ffffffffffffffff ffffffffffffffff
-Call Trace:
- [<ffffffff80254c20>] __lock_acquire+0x6ad/0x716
- [<ffffffff8049e9de>] __down_read+0x7e/0x96
- [<ffffffff802a32a6>] sync_supers+0x3f/0xb3
- [<ffffffff802a32a6>] sync_supers+0x3f/0xb3
- [<ffffffff8027d50e>] pdflush+0x0/0x207
- [<ffffffff8027d0bf>] wb_kupdate+0x2d/0x10d
- [<ffffffff8027d50e>] pdflush+0x0/0x207
- [<ffffffff8027d50e>] pdflush+0x0/0x207
- [<ffffffff8027d664>] pdflush+0x156/0x207
- [<ffffffff8027d092>] wb_kupdate+0x0/0x10d
- [<ffffffff8024961b>] kthread+0x47/0x74
- [<ffffffff8049ea30>] trace_hardirqs_on_thunk+0x3a/0x3f
- [<ffffffff8020cea9>] child_rip+0xa/0x11
- [<ffffffff8020c4df>] restore_args+0x0/0x30
- [<ffffffff802495d4>] kthread+0x0/0x74
- [<ffffffff8020ce9f>] child_rip+0x0/0x11
+> And yes, fsync is slow and lots of people are seeing that.
+> It's not helped by how ext3 is implemented (where fsync is effectively
+> equivalent of a sync for many cases).
+> But again, moving the latency to "innocent" parties is not acceptable.
+> 
+> > 
+> > > If the fsync() implementation isn't smart enough, sure, lets improve
+> > > it. But not by shifting latency around... lets make it more
+> > > efficient at submitting IO.
+> > > If we need to invent something like "chained IO" where if you wait
+> > > on the last of the chain, you wait on the entirely chain, so be it.
+> > 
+> > This looks madly complicated. And ineffective, because if some page
+> > was submitted before fsync() was invoked, and is under writeback
+> > while fsync() is called, fsync() still has to wait on it.
+> 
+> so?
+> just make a chain per inode always...
 
-1 lock held by pdflush/3880:
- #0:  (&type->s_umount_key#21){----}, at: [<ffffffff802a32a6>] sync_supers+0x3f/0xb3
-INFO: task pdflush:3880 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-pdflush       D ffff88013c6eb700     0  3880      2
- ffff88009a623df0 0000000000000046 0000000000000000 ffffffff80254c20
- ffff8800bfa63040 ffff8800bfa63040 ffff88013faf3040 ffff8800bfa63398
- 00000002bfa63040 000000010009baab ffffffffffffffff ffffffffffffffff
-Call Trace:
- [<ffffffff80254c20>] __lock_acquire+0x6ad/0x716
- [<ffffffff8049e9de>] __down_read+0x7e/0x96
- [<ffffffff802a32a6>] sync_supers+0x3f/0xb3
- [<ffffffff802a32a6>] sync_supers+0x3f/0xb3
- [<ffffffff8027d50e>] pdflush+0x0/0x207
- [<ffffffff8027d0bf>] wb_kupdate+0x2d/0x10d
- [<ffffffff8027d50e>] pdflush+0x0/0x207
- [<ffffffff8027d50e>] pdflush+0x0/0x207
- [<ffffffff8027d664>] pdflush+0x156/0x207
- [<ffffffff8027d092>] wb_kupdate+0x0/0x10d
- [<ffffffff8024961b>] kthread+0x47/0x74
- [<ffffffff8049ea30>] trace_hardirqs_on_thunk+0x3a/0x3f
- [<ffffffff8020cea9>] child_rip+0xa/0x11
- [<ffffffff8020c4df>] restore_args+0x0/0x30
- [<ffffffff802495d4>] kthread+0x0/0x74
- [<ffffffff8020ce9f>] child_rip+0x0/0x11
+The point is that many fsync()s may run in parallel and you have just one 
+inode and just one chain. And if you add two-word list_head to a page, to 
+link it on this list, many developers will hate it for increasing its 
+size.
 
-1 lock held by pdflush/3880:
- #0:  (&type->s_umount_key#21){----}, at: [<ffffffff802a32a6>] sync_supers+0x3f/0xb3
+See the work dobe by Nick Piggin somewhere in this thread. He uses just 
+one bit in radix tree to mark pages to process. But he needs to serialize 
+all syncs on a given file, they no longer run in parallel.
+
+Mikulas
