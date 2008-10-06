@@ -1,113 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbYJFF7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYJFGAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbYJFF7y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 01:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYJFF7q
+	id S1754643AbYJFGAW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 02:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYJFGAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 01:59:46 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51561 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752509AbYJFF7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 01:59:46 -0400
-Date: Mon, 6 Oct 2008 08:59:21 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, drzeus@drzeus.cx
-Subject: Re: [PATCH] sdhci: 'scratch' may be used uninitialized
-Message-ID: <20081006055921.GD10747@cs181140183.pp.htv.fi>
-References: <20081001083532.GE31009@elte.hu> <1222851025-30619-1-git-send-email-steven@uplinklabs.net> <20081005142819.GB12047@cs181140183.pp.htv.fi> <f488382f0810051553t32a24972ma7baa92605f43772@mail.gmail.com> <20081005231607.GB10747@cs181140183.pp.htv.fi> <f488382f0810051648k14b499ecj9d625c55b38ed2f0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <f488382f0810051648k14b499ecj9d625c55b38ed2f0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 6 Oct 2008 02:00:04 -0400
+Received: from mga10.intel.com ([192.55.52.92]:3727 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752640AbYJFGAB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 02:00:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,366,1220252400"; 
+   d="scan'208";a="623754589"
+Subject: Re: aim7 47% regression with 2.6.27-rc8
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1223271482.7794.1.camel@marge.simson.net>
+References: <1223269135.1685.11.camel@ymzhang>
+	 <1223271482.7794.1.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Mon, 06 Oct 2008 13:52:58 +0800
+Message-Id: <1223272378.1685.12.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 04:48:49PM -0700, Steven Noonan wrote:
-> On Sun, Oct 5, 2008 at 4:16 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Sun, Oct 05, 2008 at 03:53:28PM -0700, Steven Noonan wrote:
-> >> On Sun, Oct 5, 2008 at 7:28 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> >> > On Wed, Oct 01, 2008 at 01:50:25AM -0700, Steven Noonan wrote:
-> >> >> The variable 'scratch' is always initialized before it's used. The
-> >> >> conditional which is responsible for initialization of 'scratch' will
-> >> >> always evaluate 'true' when the first loop iteration occurs, and thus,
-> >> >> it's properly initialized. GCC doesn't see this, of course, so using
-> >> >> the uninitialized_var() macro seems to work for silencing this case.
-> >> >>
-> >> >> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
-> >> >> ---
-> >> >>  drivers/mmc/host/sdhci.c |    2 +-
-> >> >>  1 files changed, 1 insertions(+), 1 deletions(-)
-> >> >>
-> >> >> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> >> >> index e3a8133..6257677 100644
-> >> >> --- a/drivers/mmc/host/sdhci.c
-> >> >> +++ b/drivers/mmc/host/sdhci.c
-> >> >> @@ -177,7 +177,7 @@ static void sdhci_read_block_pio(struct sdhci_host *host)
-> >> >>  {
-> >> >>       unsigned long flags;
-> >> >>       size_t blksize, len, chunk;
-> >> >> -     u32 scratch;
-> >> >> +     u32 uninitialized_var(scratch);
-> >> >>...
-> >> >
-> >> > With which gcc version?
-> >> >
-> >> > I'm not getting this warning with gcc 4.3, and IMHO it doesn't make
-> >> > sense to clutter the source code with such workarounds for older gcc
-> >> > versions (we officially support 6 years old compilers, and warning-free
-> >> > compilations with all of them are not reasonably possible).
-> >> >
-> >> > cu
-> >> > Adrian
-> >>
-> >> I've seen it on GCC 4.1 and 4.2. Since lots of distributions still
-> >> haven't marked GCC >4.1 stable, it makes sense to me to kill warnings
-> >> for GCC 4.1 and above. I don't know of any current distribution
-> >> releases using less than GCC 4.1 at the moment.
-> >
-> > It will clutter our code with these workarounds forever.
-> >
-> > And due to silencing these false warnings we will no longer get a
-> > warning when one of them becomes a real bug.
-> >
-> > Working on the remaining warnings that are visible with gcc 4.3 is a
-> > worthwhile goal, but I see no point for silencing some warnings that
-> > only occur with older gcc versions (especially as long as warnings
-> > that are present with all gcc versions stay unfixed).
-> >
-> I feel like there's a logical fallacy here. Sure, we can fix GCC 4.3
-> warnings, but what about when GCC 4.3 becomes an "old version"?
-> uninitialized_var and other such workarounds will still exist in the
-> code. It seems like the logical progression of your argument should be
-> to never fix false warnings.
 
-There is no logical fallacy here - getting a warning-free compilation 
-with the latest gcc (so that new warnings get more obvious) makes sense,
-but workarounds for warnings only present with older gcc versions are 
-not worth the price.
+On Mon, 2008-10-06 at 07:38 +0200, Mike Galbraith wrote:
+> On Mon, 2008-10-06 at 12:58 +0800, Zhang, Yanmin wrote:
+> > Comparing with 2.6.27-rc8, aim7 result has about 47% regression with 2.6.27-rc8 on
+> > my 16-core tigerton and 8 core+HyperThreading x86_64 machine.
+> > 
+> > I bisected it down to patch:
+> > 
+> > 302745699c1b675b5d2a1af87271de10e4d96b6a is first bad commit
+> 
+> > After I reverted the patch against 2.6.27-rc8, the regression disappears.
+> > It's interesting that the regression doesn't exist on 8-core stoakley.
+> 
+> Looks like it's been fixed meanwhile.
+I did a new quick test and the patch does fix it.
 
-If compilation with gcc 4.3 was always warning-free you might have a 
-point, but considering that it's unlikely that we get all warnings with 
-gcc 4.3 fixed in the forseeable future [1] it would make more sense to 
-fix one of the non-trivial warnings present with all gcc version than 
-clutter the code with workarounds for warnings only present with older 
-gcc versions.
+Thanks,
+Yanmin
 
-> - Steven
-
-cu
-Adrian
-
-[1] e.g. the MCA legacy stuff gives #warning's since
-    more than 5 years (sic)
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> 
+> commit 07454bfff151d2465ada809bbaddf3548cc1097c
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Sat Oct 4 10:51:07 2008 +0200
+> 
+>     clockevents: check broadcast tick device not the clock events device
+>     
+>     Impact: jiffies increment too fast.
+>     
+>     Hugh Dickins noted that with NOHZ=n and HIGHRES=n jiffies get
+>     incremented too fast. The reason is a wrong check in the broadcast
+>     enter/exit code, which keeps the local apic timer in periodic mode
+>     when the switch happens.
+>     
+>     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+> index bd70345..cb01cd8 100644
+> --- a/kernel/time/tick-broadcast.c
+> +++ b/kernel/time/tick-broadcast.c
+> @@ -235,7 +235,8 @@ static void tick_do_broadcast_on_off(void *why)
+>  	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
+>  		if (!cpu_isset(cpu, tick_broadcast_mask)) {
+>  			cpu_set(cpu, tick_broadcast_mask);
+> -			if (bc->mode == TICKDEV_MODE_PERIODIC)
+> +			if (tick_broadcast_device.mode ==
+> +			    TICKDEV_MODE_PERIODIC)
+>  				clockevents_shutdown(dev);
+>  		}
+>  		if (*reason == CLOCK_EVT_NOTIFY_BROADCAST_FORCE)
+> @@ -245,7 +246,8 @@ static void tick_do_broadcast_on_off(void *why)
+>  		if (!tick_broadcast_force &&
+>  		    cpu_isset(cpu, tick_broadcast_mask)) {
+>  			cpu_clear(cpu, tick_broadcast_mask);
+> -			if (bc->mode == TICKDEV_MODE_PERIODIC)
+> +			if (tick_broadcast_device.mode ==
+> +			    TICKDEV_MODE_PERIODIC)
+>  				tick_setup_periodic(dev, 0);
+>  		}
+>  		break;
+> 
+> 
 
