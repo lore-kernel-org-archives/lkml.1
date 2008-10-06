@@ -1,224 +1,376 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYJFXhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYJFXhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYJFXhB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 19:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYJFXgu
+	id S1757271AbYJFXhb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 19:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYJFXgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 19:36:50 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:55374 "EHLO
+	Mon, 6 Oct 2008 19:36:53 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:55388 "EHLO
 	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYJFXgt (ORCPT
+	with ESMTP id S1752942AbYJFXgu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 19:36:49 -0400
-X-Greylist: delayed 844 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Oct 2008 19:36:48 EDT
-Message-ID: <48EAA109.10509@caviumnetworks.com>
-Date: Mon, 06 Oct 2008 16:36:41 -0700
+	Mon, 6 Oct 2008 19:36:50 -0400
+Message-ID: <48EA9DB8.1000309@caviumnetworks.com>
+Date: Mon, 06 Oct 2008 16:22:32 -0700
 From: David Daney <ddaney@caviumnetworks.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
 To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mips@linux-mips.org
 CC: "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
-Subject: Re: [PATCH 2/2] serial: Move UPIO_TSI register access to processor
- specific file.
-References: <48EA9DB8.1000309@caviumnetworks.com>
-In-Reply-To: <48EA9DB8.1000309@caviumnetworks.com>
+Subject: [PATCH 1/2] serial: Allow for replacable I/O functions in 8250 driver.
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Oct 2008 23:36:42.0123 (UTC) FILETIME=[62EDA5B0:01C9280C]
+X-OriginalArrivalTime: 06 Oct 2008 23:22:33.0097 (UTC) FILETIME=[68DE8F90:01C9280A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a completely untested example of how the processor specific
-code could be removed from the 8250 UART driver if the first part of
-the patch were accepted.
+cavium: generic 8250 serial driver changes
 
-The register access code is moved from drivers/serial/8250.c to
-arch/powerpc/kernel/legacy_serial.c
+We are in the process of preparing kernel support for the Cavium
+Networks OCTEON processor for inclusion in the main-line kernel
+sources.  The main (perhaps only) place this affects the non-processor
+specific parts of the kernel is in the 8250 serial driver.  The OCTEON
+contains several on-chip UARTS that require processor specific register
+access code.
+
+It is our thought that rather than pollute the 8250 driver with yet
+another one-off register access method, we would change the driver to
+access the UART registers via function pointers setup at driver
+initialization time.  A side benefit of this is that it makes it easy
+to move some of the existing register access code back to platform
+specific files.
+
+Patch 1 makes the register access functions replaceable.
+
+Patch 2 is a completely untested prototype that moves the UPIO_TSI
+back to platform specific code.
+
+This part tested on 2.6.27-rc8 on i686.
+
+In order to use Cavium OCTEON specific serial i/o drivers, we first patch
+the 8250 driver to use replaceable i/o functions.
 
 Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+Signed-off-by: Tomaso Paoletti <tpaoletti@caviumnetworks.com>
 ---
- arch/powerpc/kernel/legacy_serial.c |   35 +++++++++++++++++++++++++++--------
- drivers/serial/8250.c               |   25 -------------------------
- drivers/serial/serial_core.c        |    2 --
- include/linux/serial_core.h         |    5 ++---
- 4 files changed, 29 insertions(+), 38 deletions(-)
+ drivers/serial/8250.c       |  185 +++++++++++++++++++++++++++++--------------
+ include/linux/serial_8250.h |    2 +
+ include/linux/serial_core.h |    2 +
+ 3 files changed, 131 insertions(+), 58 deletions(-)
 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 9ddfaef..3a56fc1 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -46,10 +46,27 @@ static struct __initdata of_device_id legacy_serial_parents[] = {
- static unsigned int legacy_serial_count;
- static int legacy_serial_console = -1;
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 9ccc563..02771d6 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -288,16 +288,16 @@ static const u8 au_io_out_map[] = {
+ };
  
-+static unsigned int tsi_serial_in(struct uart_port *up, int offset)
+ /* sane hardware needs no mapping */
+-static inline int map_8250_in_reg(struct uart_8250_port *up, int offset)
++static inline int map_8250_in_reg(struct uart_port *p, int offset)
+ {
+-	if (up->port.iotype != UPIO_AU)
++	if (p->iotype != UPIO_AU)
+ 		return offset;
+ 	return au_io_in_map[offset];
+ }
+ 
+-static inline int map_8250_out_reg(struct uart_8250_port *up, int offset)
++static inline int map_8250_out_reg(struct uart_port *p, int offset)
+ {
+-	if (up->port.iotype != UPIO_AU)
++	if (p->iotype != UPIO_AU)
+ 		return offset;
+ 	return au_io_out_map[offset];
+ }
+@@ -326,16 +326,16 @@ static const u8
+ 		[UART_SCR]	= 0x2c
+ 	};
+ 
+-static inline int map_8250_in_reg(struct uart_8250_port *up, int offset)
++static inline int map_8250_in_reg(struct uart_port *p, int offset)
+ {
+-	if (up->port.iotype != UPIO_RM9000)
++	if (p->iotype != UPIO_RM9000)
+ 		return offset;
+ 	return regmap_in[offset];
+ }
+ 
+-static inline int map_8250_out_reg(struct uart_8250_port *up, int offset)
++static inline int map_8250_out_reg(struct uart_port *p, int offset)
+ {
+-	if (up->port.iotype != UPIO_RM9000)
++	if (p->iotype != UPIO_RM9000)
+ 		return offset;
+ 	return regmap_out[offset];
+ }
+@@ -348,108 +348,170 @@ static inline int map_8250_out_reg(struct uart_8250_port *up, int offset)
+ 
+ #endif
+ 
+-static unsigned int serial_in(struct uart_8250_port *up, int offset)
++static unsigned int hub6_serial_in_fn(struct uart_port *p, int offset)
+ {
+-	unsigned int tmp;
+-	offset = map_8250_in_reg(up, offset) << up->port.regshift;
++	offset = map_8250_in_reg(p, offset) << p->regshift;
++	outb(p->hub6 - 1 + offset, p->iobase);
++	return inb(p->iobase + 1);
++}
+ 
+-	switch (up->port.iotype) {
+-	case UPIO_HUB6:
+-		outb(up->port.hub6 - 1 + offset, up->port.iobase);
+-		return inb(up->port.iobase + 1);
++static void hub6_serial_out_fn(struct uart_port *p, int offset, int value)
++{
++	offset = map_8250_out_reg(p, offset) << p->regshift;
++	outb(p->hub6 - 1 + offset, p->iobase);
++	outb(value, p->iobase + 1);
++}
+ 
+-	case UPIO_MEM:
+-	case UPIO_DWAPB:
+-		return readb(up->port.membase + offset);
++static unsigned int mem_serial_in_fn(struct uart_port *p, int offset)
++{
++	offset = map_8250_in_reg(p, offset) << p->regshift;
++	return readb(p->membase + offset);
++}
+ 
+-	case UPIO_RM9000:
+-	case UPIO_MEM32:
+-		return readl(up->port.membase + offset);
++static void mem_serial_out_fn(struct uart_port *p, int offset, int value)
++{
++	offset = map_8250_out_reg(p, offset) << p->regshift;
++	writeb(value, p->membase + offset);
++}
++
++static void mem32_serial_out_fn(struct uart_port *p, int offset, int value)
++{
++	offset = map_8250_out_reg(p, offset) << p->regshift;
++	writel(value, p->membase + offset);
++}
++
++static unsigned int mem32_serial_in_fn(struct uart_port *p, int offset)
++{
++	offset = map_8250_in_reg(p, offset) << p->regshift;
++	return readl(p->membase + offset);
++}
+ 
+ #ifdef CONFIG_SERIAL_8250_AU1X00
+-	case UPIO_AU:
+-		return __raw_readl(up->port.membase + offset);
++static unsigned int au_serial_in_fn(struct uart_port *p, int offset)
++{
++	offset = map_8250_in_reg(p, offset) << p->regshift;
++	return __raw_readl(p->membase + offset);
++}
++
++static void au_serial_out_fn(struct uart_port *p, int offset, int value)
++{
++	offset = map_8250_out_reg(p, offset) << p->regshift;
++	__raw_writel(value, p->membase + offset);
++}
+ #endif
+ 
+-	case UPIO_TSI:
+-		if (offset == UART_IIR) {
+-			tmp = readl(up->port.membase + (UART_IIR & ~3));
+-			return (tmp >> 16) & 0xff; /* UART_IIR % 4 == 2 */
+-		} else
+-			return readb(up->port.membase + offset);
++static unsigned int tsi_serial_in_fn(struct uart_port *p, int offset)
 +{
 +	unsigned int tmp;
++	offset = map_8250_in_reg(p, offset) << p->regshift;
 +	if (offset == UART_IIR) {
 +		tmp = readl(p->membase + (UART_IIR & ~3));
 +		return (tmp >> 16) & 0xff; /* UART_IIR % 4 == 2 */
 +	} else
 +		return readb(p->membase + offset);
 +}
-+
-+static void tsi_serial_out(struct uart_port *up, int offset, int value)
+ 
+-	default:
+-		return inb(up->port.iobase + offset);
+-	}
++static void tsi_serial_out_fn(struct uart_port *p, int offset, int value)
 +{
++	offset = map_8250_out_reg(p, offset) << p->regshift;
 +	if (!((offset == UART_IER) && (value & UART_IER_UUE)))
 +		writeb(value, p->membase + offset);
+ }
+ 
+-static void
+-serial_out(struct uart_8250_port *up, int offset, int value)
++static void dwapb_serial_out_fn(struct uart_port *p, int offset, int value)
+ {
+-	/* Save the offset before it's remapped */
+ 	int save_offset = offset;
+-	offset = map_8250_out_reg(up, offset) << up->port.regshift;
++	offset = map_8250_out_reg(p, offset) << p->regshift;
++	/* Save the LCR value so it can be re-written when a
++	 * Busy Detect interrupt occurs. */
++	if (save_offset == UART_LCR) {
++		struct uart_8250_port *up = (struct uart_8250_port *)p;
++		up->lcr = value;
++	}
++	writeb(value, p->membase + offset);
++	/* Read the IER to ensure any interrupt is cleared before
++	 * returning from ISR. */
++	if (save_offset == UART_TX || save_offset == UART_IER)
++		value = p->serial_in_fn(p, UART_IER);
++}
+ 
+-	switch (up->port.iotype) {
++static unsigned int io_serial_in_fn(struct uart_port *p, int offset)
++{
++	offset = map_8250_in_reg(p, offset) << p->regshift;
++	return inb(p->iobase + offset);
 +}
 +
- static int __init add_legacy_port(struct device_node *np, int want_index,
- 				  int iotype, phys_addr_t base,
- 				  phys_addr_t taddr, unsigned long irq,
--				  upf_t flags, int irq_check_parent)
-+				  upf_t flags, int irq_check_parent,
-+				  int tsi_war)
- {
- 	const u32 *clk, *spd;
- 	u32 clock = BASE_BAUD * 16;
-@@ -105,6 +122,10 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
- 	legacy_serial_ports[index].uartclk = clock;
- 	legacy_serial_ports[index].irq = irq;
- 	legacy_serial_ports[index].flags = flags;
-+	if (tsi_war) {
-+		legacy_serial_ports[index].serial_in_fn = tsi_serial_in;
-+		legacy_serial_ports[index].serial_out_fn = tsi_serial_out;
-+	}
- 	legacy_serial_infos[index].taddr = taddr;
- 	legacy_serial_infos[index].np = of_node_get(np);
- 	legacy_serial_infos[index].clock = clock;
-@@ -158,10 +179,8 @@ static int __init add_legacy_soc_port(struct device_node *np,
- 	/* Add port, irq will be dealt with later. We passed a translated
- 	 * IO port value. It will be fixed up later along with the irq
- 	 */
--	if (tsi && !strcmp(tsi->type, "tsi-bridge"))
--		return add_legacy_port(np, -1, UPIO_TSI, addr, addr, NO_IRQ, flags, 0);
--	else
--		return add_legacy_port(np, -1, UPIO_MEM, addr, addr, NO_IRQ, flags, 0);
-+	return add_legacy_port(np, -1, UPIO_MEM, addr, addr, NO_IRQ, flags, 0,
-+			       tsi && !strcmp(tsi->type, "tsi-bridge"));
- }
++static void io_serial_out_fn(struct uart_port *p, int offset, int value)
++{
++	offset = map_8250_out_reg(p, offset) << p->regshift;
++	outb(value, p->iobase + offset);
++}
++
++static void set_io_fns_from_upio(struct uart_port *p)
++{
++	switch (p->iotype) {
+ 	case UPIO_HUB6:
+-		outb(up->port.hub6 - 1 + offset, up->port.iobase);
+-		outb(value, up->port.iobase + 1);
++		p->serial_in_fn = hub6_serial_in_fn;
++		p->serial_out_fn = hub6_serial_out_fn;
+ 		break;
  
- static int __init add_legacy_isa_port(struct device_node *np,
-@@ -202,7 +221,7 @@ static int __init add_legacy_isa_port(struct device_node *np,
+ 	case UPIO_MEM:
+-		writeb(value, up->port.membase + offset);
++		p->serial_in_fn = mem_serial_in_fn;
++		p->serial_out_fn = mem_serial_out_fn;
+ 		break;
  
- 	/* Add port, irq will be dealt with later */
- 	return add_legacy_port(np, index, UPIO_PORT, reg[1], taddr,
--			       NO_IRQ, UPF_BOOT_AUTOCONF, 0);
-+			NO_IRQ, UPF_BOOT_AUTOCONF, 0, 0);
+ 	case UPIO_RM9000:
+ 	case UPIO_MEM32:
+-		writel(value, up->port.membase + offset);
++		p->serial_in_fn = mem32_serial_in_fn;
++		p->serial_out_fn = mem32_serial_out_fn;
+ 		break;
  
- }
- 
-@@ -275,7 +294,7 @@ static int __init add_legacy_pci_port(struct device_node *np,
- 	 * IO port value. It will be fixed up later along with the irq
- 	 */
- 	return add_legacy_port(np, index, iotype, base, addr, NO_IRQ,
--			       UPF_BOOT_AUTOCONF, np != pci_dev);
-+			UPF_BOOT_AUTOCONF, np != pci_dev, 0);
- }
- #endif
- 
-@@ -482,7 +501,7 @@ static int __init serial_dev_init(void)
- 			fixup_port_irq(i, np, port);
- 		if (port->iotype == UPIO_PORT)
- 			fixup_port_pio(i, np, port);
--		if ((port->iotype == UPIO_MEM) || (port->iotype == UPIO_TSI))
-+		if (port->iotype == UPIO_MEM)
- 			fixup_port_mmio(i, np, port);
- 	}
- 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 2ef79e9..24cff9a 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -407,24 +407,6 @@ static void au_serial_out_fn(struct uart_port *p, int offset, int value)
- }
- #endif
- 
--static unsigned int tsi_serial_in_fn(struct uart_port *p, int offset)
--{
--	unsigned int tmp;
--	offset = map_8250_in_reg(p, offset) << p->regshift;
--	if (offset == UART_IIR) {
--		tmp = readl(p->membase + (UART_IIR & ~3));
--		return (tmp >> 16) & 0xff; /* UART_IIR % 4 == 2 */
--	} else
--		return readb(p->membase + offset);
--}
--
--static void tsi_serial_out_fn(struct uart_port *p, int offset, int value)
--{
--	offset = map_8250_out_reg(p, offset) << p->regshift;
--	if (!((offset == UART_IER) && (value & UART_IER_UUE)))
--		writeb(value, p->membase + offset);
--}
--
- static void dwapb_serial_out_fn(struct uart_port *p, int offset, int value)
- {
- 	int save_offset = offset;
-@@ -479,11 +461,6 @@ static void set_io_fns_from_upio(struct uart_port *p)
- 		p->serial_out_fn = au_serial_out_fn;
+ #ifdef CONFIG_SERIAL_8250_AU1X00
+ 	case UPIO_AU:
+-		__raw_writel(value, up->port.membase + offset);
++		p->serial_in_fn = au_serial_in_fn;
++		p->serial_out_fn = au_serial_out_fn;
  		break;
  #endif
--	case UPIO_TSI:
--		p->serial_in_fn = tsi_serial_in_fn;
--		p->serial_out_fn = tsi_serial_out_fn;
--		break;
--
+ 	case UPIO_TSI:
+-		if (!((offset == UART_IER) && (value & UART_IER_UUE)))
+-			writeb(value, up->port.membase + offset);
++		p->serial_in_fn = tsi_serial_in_fn;
++		p->serial_out_fn = tsi_serial_out_fn;
+ 		break;
+ 
  	case UPIO_DWAPB:
- 		p->serial_in_fn = mem_serial_in_fn;
- 		p->serial_out_fn = dwapb_serial_out_fn;
-@@ -2364,7 +2341,6 @@ static int serial8250_request_std_resource(struct uart_8250_port *up)
- 	case UPIO_AU:
- 		size = 0x100000;
- 		/* fall thru */
--	case UPIO_TSI:
- 	case UPIO_MEM32:
- 	case UPIO_MEM:
- 	case UPIO_DWAPB:
-@@ -2403,7 +2379,6 @@ static void serial8250_release_std_resource(struct uart_8250_port *up)
- 	case UPIO_AU:
- 		size = 0x100000;
- 		/* fall thru */
--	case UPIO_TSI:
- 	case UPIO_MEM32:
- 	case UPIO_MEM:
- 	case UPIO_DWAPB:
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index f977c98..14e051d 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2164,7 +2164,6 @@ uart_report_port(struct uart_driver *drv, struct uart_port *port)
- 	case UPIO_MEM:
- 	case UPIO_MEM32:
- 	case UPIO_AU:
--	case UPIO_TSI:
- 	case UPIO_DWAPB:
- 		snprintf(address, sizeof(address),
- 			 "MMIO 0x%llx", (unsigned long long)port->mapbase);
-@@ -2578,7 +2577,6 @@ int uart_match_port(struct uart_port *port1, struct uart_port *port2)
- 	case UPIO_MEM:
- 	case UPIO_MEM32:
- 	case UPIO_AU:
--	case UPIO_TSI:
- 	case UPIO_DWAPB:
- 		return (port1->mapbase == port2->mapbase);
+-		/* Save the LCR value so it can be re-written when a
+-		 * Busy Detect interrupt occurs. */
+-		if (save_offset == UART_LCR)
+-			up->lcr = value;
+-		writeb(value, up->port.membase + offset);
+-		/* Read the IER to ensure any interrupt is cleared before
+-		 * returning from ISR. */
+-		if (save_offset == UART_TX || save_offset == UART_IER)
+-			value = serial_in(up, UART_IER);
++		p->serial_in_fn = mem_serial_in_fn;
++		p->serial_out_fn = dwapb_serial_out_fn;
+ 		break;
+ 
+ 	default:
+-		outb(value, up->port.iobase + offset);
++		p->serial_in_fn = io_serial_in_fn;
++		p->serial_out_fn = io_serial_out_fn;
++		break;
  	}
+ }
+ 
+ static void
+ serial_out_sync(struct uart_8250_port *up, int offset, int value)
+ {
+-	switch (up->port.iotype) {
++	struct uart_port *p = &up->port;
++	switch (p->iotype) {
+ 	case UPIO_MEM:
+ 	case UPIO_MEM32:
+ #ifdef CONFIG_SERIAL_8250_AU1X00
+ 	case UPIO_AU:
+ #endif
+ 	case UPIO_DWAPB:
+-		serial_out(up, offset, value);
+-		serial_in(up, UART_LCR);	/* safe, no side-effects */
++		p->serial_out_fn(p, offset, value);
++		p->serial_in_fn(p, UART_LCR);	/* safe, no side-effects */
+ 		break;
+ 	default:
+-		serial_out(up, offset, value);
++		p->serial_out_fn(p, offset, value);
+ 	}
+ }
+ 
++#define serial_in(up, offset)		\
++	(up->port.serial_in_fn(&(up)->port, (offset)))
++#define serial_out(up, offset, value)	\
++	(up->port.serial_out_fn(&(up)->port, (offset), (value)))
+ /*
+  * We used to support using pause I/O for certain machines.  We
+  * haven't supported this for a while, but just in case it's badly
+@@ -2511,6 +2573,7 @@ static void __init serial8250_isa_init_ports(void)
+ 		up->port.membase  = old_serial_port[i].iomem_base;
+ 		up->port.iotype   = old_serial_port[i].io_type;
+ 		up->port.regshift = old_serial_port[i].iomem_reg_shift;
++		set_io_fns_from_upio(&up->port);
+ 		if (share_irqs)
+ 			up->port.flags |= UPF_SHARE_IRQ;
+ 	}
+@@ -2912,6 +2975,12 @@ int serial8250_register_port(struct uart_port *port)
+ 		uart->port.private_data = port->private_data;
+ 		if (port->dev)
+ 			uart->port.dev = port->dev;
++		set_io_fns_from_upio(&uart->port);
++		/* Possibly override default I/O functions.  */
++		if (port->serial_in_fn)
++			uart->port.serial_in_fn = port->serial_in_fn;
++		if (port->serial_out_fn)
++			uart->port.serial_out_fn = port->serial_out_fn;
+ 
+ 		ret = uart_add_one_port(&serial8250_reg, &uart->port);
+ 		if (ret == 0)
+diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+index 3d37c94..eb08b04 100644
+--- a/include/linux/serial_8250.h
++++ b/include/linux/serial_8250.h
+@@ -28,6 +28,8 @@ struct plat_serial8250_port {
+ 	unsigned char	iotype;		/* UPIO_* */
+ 	unsigned char	hub6;
+ 	upf_t		flags;		/* UPF_* flags */
++	unsigned int	(*serial_in_fn)(struct uart_port *, int);
++	void		(*serial_out_fn)(struct uart_port *, int, int);
+ };
+ 
+ /*
 diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 6f49385..60c8bf8 100644
+index 3b2f6c0..3a4afcf 100644
 --- a/include/linux/serial_core.h
 +++ b/include/linux/serial_core.h
-@@ -259,9 +259,8 @@ struct uart_port {
- #define UPIO_MEM		(2)
- #define UPIO_MEM32		(3)
- #define UPIO_AU			(4)			/* Au1x00 type IO */
--#define UPIO_TSI		(5)			/* Tsi108/109 type IO */
--#define UPIO_DWAPB		(6)			/* DesignWare APB UART */
--#define UPIO_RM9000		(7)			/* RM9000 type IO */
-+#define UPIO_DWAPB		(5)			/* DesignWare APB UART */
-+#define UPIO_RM9000		(6)			/* RM9000 type IO */
- 
- 	unsigned int		read_status_mask;	/* driver specific */
- 	unsigned int		ignore_status_mask;	/* driver specific */
+@@ -243,6 +243,8 @@ struct uart_port {
+ 	spinlock_t		lock;			/* port lock */
+ 	unsigned int		iobase;			/* in/out[bwl] */
+ 	unsigned char __iomem	*membase;		/* read/write[bwl] */
++	unsigned int		(*serial_in_fn)(struct uart_port *, int);
++	void			(*serial_out_fn)(struct uart_port *, int, int);
+ 	unsigned int		irq;			/* irq number */
+ 	unsigned int		uartclk;		/* base uart clock */
+ 	unsigned int		fifosize;		/* tx fifo size */
