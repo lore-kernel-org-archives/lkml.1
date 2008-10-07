@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbYJGP6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbYJGQBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbYJGP6l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYJGP6c
+	id S1754828AbYJGQBP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYJGQBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:58:32 -0400
-Received: from xenotime.net ([66.160.160.81]:42026 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751235AbYJGP6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:58:32 -0400
-Date: Tue, 7 Oct 2008 08:58:29 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Andi Kleen <andi@firstfloor.org>
-cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] Add kerneldoc documentation for new printk format
- extensions
-In-Reply-To: <20081007111410.GF20740@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0810070857070.8747@shark.he.net>
-References: <20081007101532.GA25565@basil.nowhere.org> <20081007103305.GH2886@hack.voiplan.pt>
- <20081007111410.GF20740@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1606286688-775977357-1223395109=:8747"
+	Tue, 7 Oct 2008 12:01:00 -0400
+Received: from waste.org ([66.93.16.53]:36681 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752606AbYJGQA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 12:00:59 -0400
+Subject: Re: [BUG] SLOB's krealloc() seems bust
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm <linux-mm@kvack.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <48EB7E59.7070308@linux-foundation.org>
+References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
+	 <48EB6D2C.30806@linux-foundation.org> <1223391655.13453.344.camel@calx>
+	 <48EB7E59.7070308@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 10:58:19 -0500
+Message-Id: <1223395099.13453.363.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1606286688-775977357-1223395109=:8747
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+On Tue, 2008-10-07 at 10:20 -0500, Christoph Lameter wrote:
+> Matt Mackall wrote:
+> 
+> > We can't dynamically determine whether a pointer points to a kmalloced
+> > object or not. kmem_cache_alloc objects have no header and live on the
+> > same pages as kmalloced ones.
+> 
+> Could you do a heuristic check? Assume that this is a kmalloc object and then
+> verify the values in the small control block? If the values are out of line
+> then this cannot be a kmalloc'ed object.
 
-On Tue, 7 Oct 2008, Andi Kleen wrote:
+The control block is two bytes, so it doesn't have a lot of redundancy.
+Best we can do is check that it doesn't claim the object runs off the
+page. Or, for simplicity, isn't bigger than a page. On 32-bit x86,
+that's equivalent to checking the top 5 bits of ->units are clear.
 
-> On Tue, Oct 07, 2008 at 11:33:05AM +0100, Am=E9rico Wang wrote:
-> > On Tue, Oct 07, 2008 at 12:15:32PM +0200, Andi Kleen wrote:
-> > >Add documentation in kerneldoc for new printk format extensions
-> > >
-> > >This patch documents the new %pS/%pF options in printk in kernel doc.
-> > >
-> > >Hope I didn't miss any other extension.
-> > >
-> > >Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > >
-> > >Index: linux-2.6.27-rc6-misc/kernel/printk.c
-> > >=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > >--- linux-2.6.27-rc6-misc.orig/kernel/printk.c
-> > >+++ linux-2.6.27-rc6-misc/kernel/printk.c
-> > >@@ -593,6 +593,8 @@ static int have_callable_console(void)
-> > >  *
-> > >  * See also:
-> > >  * printf(3)
-> > >+ *
-> > >+ * See the vsnprintf() documentation for format string extensions ove=
-r C99.
-> > >  */
-> > >=20
-> > > asmlinkage int printk(const char *fmt, ...)
-> > >Index: linux-2.6.27-rc6-misc/lib/vsprintf.c
-> > >=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > >--- linux-2.6.27-rc6-misc.orig/lib/vsprintf.c
-> > >+++ linux-2.6.27-rc6-misc/lib/vsprintf.c
-> > >@@ -565,6 +565,10 @@ static char *pointer(const char *fmt, ch
-> > >  * @fmt: The format string to use
-> > >  * @args: Arguments for the format string
-> > >  *
-> > >+ * This function follows C99 vsnprintf, but has some extensions:
-> > >+ * %pS output the name of a text symbol
-> > >+ * %pF output the name of a function pointer
-> >=20
-> > s/output/outputs/ ? :)
->=20
-> It's not complete sentences but a list of options, so no.
->=20
-> bla do this
-> blub do that
+But it makes more sense to just do the check in SLUB. First, SLUB can
+actually do the check reliably. Second, someone adding a bogus ksize
+call to a random piece of kernel code is more likely to be using SLUB
+when they do it. And third, it doesn't negatively impact SLOB's size.
+In other words, SLUB is effectively SLOB's debugging switch when it
+comes to external problems.
 
-I would use "outputs" _or_ separate the format string extension from the
-description, like:
+-- 
+Mathematics is the supreme nostalgia of our time.
 
- * %pS: output the name of a text symbol
-
-Anyway, thanks for adding them.
---=20
-~Randy
----1606286688-775977357-1223395109=:8747--
