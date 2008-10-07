@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbYJGXlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYJGXm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbYJGXlf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbYJGXlQ
+	id S1758048AbYJGXm4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbYJGXms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:41:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:49755 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757374AbYJGXlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:41:14 -0400
-Message-ID: <48EBF396.8000502@goop.org>
-Date: Tue, 07 Oct 2008 16:41:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+	Tue, 7 Oct 2008 19:42:48 -0400
+Received: from kroah.org ([198.145.64.141]:37602 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753477AbYJGXmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 19:42:47 -0400
+Date: Tue, 7 Oct 2008 16:39:36 -0700
+From: Greg KH <greg@kroah.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: sysfs: tagged directories not merged completely yet
+Message-ID: <20081007233936.GA23282@kroah.com>
+References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com> <48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org> <20081003101331.GH28946@ZenIV.linux.org.uk> <20081005053236.GA9472@kroah.com> <m1bpxwajyy.fsf@frodo.ebiederm.org> <20081007222726.GA9465@kroah.com> <20081007225424.GA9430@us.ibm.com>
 MIME-Version: 1.0
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       "akataria@vmware.com" <akataria@vmware.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
-       Zach Amsden <zach@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
-References: <1222881242.9381.17.camel@alok-dev1>	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1> <48E3FDD5.7040106@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com> <48E422CA.2010606@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com> <48E6AB15.8060405@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA325@orsmsx505.amr.corp.intel.com> <48E6BA5B.2090804@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DE4F934@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A15DE4F934@orsmsx505.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007225424.GA9430@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nakajima, Jun wrote:
-> On 10/3/2008 5:35:39 PM, H. Peter Anvin wrote:
->   
->> Nakajima, Jun wrote:
->>     
->>> What's the significance of supporting multiple interfaces to the
->>> same guest simultaneously, i.e. _runtime_? We don't want the guests
->>> to run on such a literarily Frankenstein machine. And practically,
->>> such testing/debugging would be good only for Halloween :-).
->>>
->>>       
->> By that notion, EVERY CPU currently shipped is a "Frankenstein" CPU,
->> since at very least they export Intel-derived and AMD-derived interfaces.
->>  This is in other words, a ridiculous claim.
->>     
->
-> The big difference here is that you could create a VM at runtime (by combining the existing interfaces) that did not exist before (or was not tested before). For example, a hypervisor could show hyper-v, osx-v (if any), linux-v, etc., and a guest could create a VM with hyper-v MMU, osx-v interrupt handling, Linux-v timer, etc. And such combinations/variations can grow exponentially.
->   
+On Tue, Oct 07, 2008 at 05:54:24PM -0500, Serge E. Hallyn wrote:
+> Quoting Greg KH (greg@kroah.com):
+> > On Tue, Oct 07, 2008 at 01:27:17AM -0700, Eric W. Biederman wrote:
+> > > Unless someone will give an example of how having multiple superblocks
+> > > sharing inodes is a problem in practice for sysfs and call it good
+> > > for 2.6.28.  Certainly it shouldn't be an issue if the network namespace
+> > > code is compiled out.  And it should greatly improve testing of the
+> > > network namespace to at least have access to sysfs.
+> > 
+> > But if the network namespace code is in?  THen we have problems, right?
+> > And that's the whole point here.
+> > 
+> > The fact that you are trying to limit userspace view of in-kernel data
+> > structures, based on that specific user, is, in my opinion, crazy.
+> > 
+> > Why not just keep all users from seeing sysfs, and then have a user
+> > daemon doing something on top of FUSE if you really want to see this
+> > kind of stuff.
+> 
+> Well the blocker is really that when you create a new network namespace,
+> it wants to create a new loopback interface, but
+> /sys/devices/virtual/net/lo already exists.  That's the same issue with
+> user namespace when the fair scheduler is enabled, which tries to
+> re-create /sys/kernel/uids/0.
+> 
+> Otherwise yeah at least for my own uses, containers wouldn't need to
+> look at /sys at all.
+> 
+> Heck you wouldn't even need FUSE, just mount -t tmpfs /sys/class/net
+> and manually link the right devices from /sys/devices/virtual/net.
 
-That would be crazy.
+Great, that sounds like a solution.
 
-> Or are you suggesting that multiple interfaces be _available_ to guests at runtime but the guest chooses one of them?
->   
+So tell me again why we need these huge sysfs reworks? :)
 
-Right, that's what I've been suggesting.    I think hypervisors should 
-be able to offer multiple ABIs to guests, but a guest has to commit to 
-using one exclusively (ie, once they start to use one then the others 
-turn themselves off, kill the domain, etc).
+thanks,
 
-    J
+greg k-h
