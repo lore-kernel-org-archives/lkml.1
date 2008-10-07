@@ -1,75 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYJGGza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbYJGG4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbYJGGza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 02:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYJGGzW
+	id S1756991AbYJGG4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 02:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYJGG4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 02:55:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:30727 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbYJGGzV (ORCPT
+	Tue, 7 Oct 2008 02:56:01 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:42690 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbYJGG4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 02:55:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=G88N2AZMMTsCCYamAY9GLYWyC45CP+fPrVszuPxx3+o4w5e3tD9kw+429davRY7Jr0
-         l3PV16NDMkysgz4le0+Q5tJk4gk56hs6y8/OzYUfqt4KeX2JYu/wfG8aO3O6fqQDK/JP
-         pTObreEN9FiS22OUJL1BlOBsf44d3IZ2sIydU=
-Message-ID: <2f1d248c0810062355r2871da61td3cca6b66a9d77a6@mail.gmail.com>
-Date: Tue, 7 Oct 2008 14:55:18 +0800
-From: "chen chong" <byrbzdl@gmail.com>
-To: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: How to disable authentication when using bluetooth on Linux?
+	Tue, 7 Oct 2008 02:56:00 -0400
+Date: Tue, 7 Oct 2008 09:57:03 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, RFC] shmat: introduce flag SHM_MAP_HINT
+Message-ID: <20081007065701.GA5012@localhost.localdomain>
+References: <20081006132651.GG3180@one.firstfloor.org> <1223303879-5555-1-git-send-email-kirill@shutemov.name> <20081006192923.GJ3180@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
 Content-Disposition: inline
+In-Reply-To: <20081006192923.GJ3180@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-29)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all
 
-When pushing a file to bluetooth mobile phone from a Linux PC, how to
-disable bluetooth authentication mechanism (in kernel or user level ?
-), so that the phone won't prompt a window ask for PIN code?
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, Oct 06, 2008 at 09:29:23PM +0200, Andi Kleen wrote:
+> On Mon, Oct 06, 2008 at 05:37:59PM +0300, Kirill A. Shutemov wrote:
+> > It allows interpret attach address as a hint, not as exact address.
+>=20
+> First you should also do a patch for the manpage and send to=20
+> the manpage maintainer.
 
-I'm a freshman on bluez, now I'm trying to write an application on
-Linux PC,  to send files to mobile phones with OBEX. The PC has a USB
-bluetooth stick to communication with the phone.
+I'll do it if the patch is ok.
 
-Now I have successfully sent a file to phone using the following commands:
-1. "hcitool scan" and "sdptool browse"
-2. "passkey-agent --default 1234" and "ussp-push --dev 0
-BTADDR@CHANNEL desk.jpg desk.jpg"
+> >  #define SHM_LOCK 	11
+> > diff --git a/ipc/shm.c b/ipc/shm.c
+> > index e77ec69..19462bb 100644
+> > --- a/ipc/shm.c
+> > +++ b/ipc/shm.c
+> > @@ -819,7 +819,7 @@ long do_shmat(int shmid, char __user *shmaddr, int =
+shmflg, ulong *raddr)
+> >  	if (shmid < 0)
+> >  		goto out;
+> >  	else if ((addr =3D (ulong)shmaddr)) {
+> > -		if (addr & (SHMLBA-1)) {
+> > +		if (!(shmflg & SHM_MAP_HINT) && (addr & (SHMLBA-1))) {
+> >  			if (shmflg & SHM_RND)
+> >  				addr &=3D ~(SHMLBA-1);	   /* round down */
+> >  			else
+> > @@ -828,7 +828,7 @@ long do_shmat(int shmid, char __user *shmaddr, int =
+shmflg, ulong *raddr)
+> >  #endif
+> >  					goto out;
+> >  		}
+> > -		flags =3D MAP_SHARED | MAP_FIXED;
+> > +		flags =3D (shmflg & SHM_MAP_HINT ? 0 : MAP_FIXED) | MAP_SHARED;
+>=20
+>=20
+> IMHO you need at least make the
+>=20
+>    if (find_vma_intersection(current->mm, addr, addr + size))
+>                         goto invalid;
+>=20
+> test above conditional too.
 
-but the phone ask for a PIN code at the start.
+Since it's a hint, we shouldn't call find_vma_intersection() at all.
 
-To get rid of this, I had tried to comment out
-"start_security_manager()" in bluez-utils-3.7/hcid/main.c,  and
-recompile it, then restart the bluetooth service. But PIN code was
-still prompted, and after if I input some characters,  the command
-"ussp-push --dev 0 --debug  BTADDR@CHANNEL desk.jpg desk.jpg", failed
-with the following error:
+I'll send fixed patch soon.
 
-root@debian:~/bluetooth# pushing file desk.jpg
-name=desk.jpg, size=24762
-__obex_connect: client_context_t = 0x80540f0
-Registered transport
-Set user data
-Created new objext
-cobex_write
-Local device 00:01:02:03:04:01
-Remote device 00:01:02:03:04:05 (11)
-Write error: Transport endpoint is not connected
-obex_event: client_context_t = 0x80540f0
-cobex_disconnect
-Link broken!
-Started a new request
-cobex_close
-__obex_connect: error=-2
-Unable to connect to the server
-Error
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.com/
+
+--0F1p//8PRICkK4MW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjrCD0ACgkQbWYnhzC5v6pSfwCdHXb4WrjRsItJl+QbsbhIGNiR
+DZ0An1pDpowyCY1PXewWbVfTLVfKQod1
+=QrNi
+-----END PGP SIGNATURE-----
+
+--0F1p//8PRICkK4MW--
