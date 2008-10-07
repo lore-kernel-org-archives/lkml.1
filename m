@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753775AbYJGOjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbYJGOkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753775AbYJGOjs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 10:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYJGOji
+	id S1752589AbYJGOkD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 10:40:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYJGOjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 10:39:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34811 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752304AbYJGOjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 10:39:37 -0400
-Message-ID: <48EB7406.1010509@redhat.com>
-Date: Tue, 07 Oct 2008 16:36:54 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 7 Oct 2008 10:39:52 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57129 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753873AbYJGOjv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 10:39:51 -0400
+Date: Tue, 7 Oct 2008 15:38:44 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andi Kleen <andi@firstfloor.org>
+cc: "Kirill A. Shutemov" <kirill@shutemov.name>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, RFC, v2] shmat: introduce flag SHM_MAP_HINT
+In-Reply-To: <20081007112631.GH20740@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0810071532280.29910@blonde.site>
+References: <20081006192923.GJ3180@one.firstfloor.org>
+ <1223362670-5187-1-git-send-email-kirill@shutemov.name>
+ <20081007082030.GD20740@one.firstfloor.org> <20081007100854.GA5039@localhost.localdomain>
+ <20081007112631.GH20740@one.firstfloor.org>
 MIME-Version: 1.0
-To: prasad@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
-       mingo@elte.hu, jason.wessel@windriver.com, richardj_moore@uk.ibm.com
-Subject: Re: [RFC Patch 0/9] Hardware Breakpoint interfaces
-References: <20081007113815.GA23523@in.ibm.com> <48EB5611.9090005@redhat.com> <20081007143217.GA3774@in.ibm.com>
-In-Reply-To: <20081007143217.GA3774@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-K.Prasad wrote:
-> On Tue, Oct 07, 2008 at 02:29:05PM +0200, Avi Kivity wrote:
->   
->> K.Prasad wrote:
->>     
->>> - Enable KGDB and KVM to use the register_kernel_hw_breakpoint()
->>>   interface for their HW Breakpoint usage, in the absence of which
->>>   they will be broken during simultaneous use.
->>>   
->>>       
->> KVM conceptually isn't a kernel use of the debug registers.  KVM  
->> modifies the debug registers while the guest is running, and restores  
->> them after the guest returns.
->>
->> Right now, as an optimization, KVM defers restoring the debug registers  
->> until after the next context switch out of the kvm task, or until the  
->> next exit to userspace (whichever comes earlier); we should change this  
->> to avoid the deferral if kernel breakpoints are in effect.  This will  
->> allow simultaneous use of KVM breakpoints and kernel breakpoints.
->>
->>     
-> The patch posted provides interface for using HW breakpoints on both
-> user- and kernel-space breakpoints. KVM's user-space address breakpoint
-> requirements, after code-modification, should be made to use
-> register_user_hw_breakpoint() interface (presently un-exported but will
-> be changed subsequently) to help maintain a system-wide consistent view on the
-> availability of HW Breakpoint registers.
->
->   
+On Tue, 7 Oct 2008, Andi Kleen wrote:
+> > I want say that we shouldn't do this check if shmaddr is a search hint.
+> > I'm not sure that check is unneeded if shmadd is the exact address.
+> 
+> mmap should fail in this case because it does the same check for 
+> MAP_FIXED. Obviously it cannot succeed when there is already something
+> else there.
 
-Correcting myself, actually kvm breakpoints are in a third namespace.  
-You could have kernel breakpoints, user breakpoints, and guest 
-breakpoints coexisting.
+I'm not really following this, so forgive me if I'm reading you
+out of context, but I think you're wrong on that...
 
-> Presently I find plenty of set_debugreg() calls from kvm/ which will
-> modify the registers directly and break the breakpoint register
-> management brought-in through the patch.
->   
+The dangerous feature of mmap MAP_FIXED (why we don't usually use
+it except within an address range we've already staked out earlier)
+is that it does unmap whatever stands in its way.  See the early
+	if (flags & MAP_FIXED)
+		return addr;
+in arch_get_unmapped_area(), and the do_munmap() in mmap_region().
 
-If kvm restores the registers, should there be any problem?
-
--- 
-error compiling committee.c: too many arguments to function
-
+Hugh
