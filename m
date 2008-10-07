@@ -1,145 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbYJGUgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbYJGUio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757590AbYJGUgp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbYJGUgd
+	id S1757056AbYJGUio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbYJGUie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:36:33 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:5211 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757160AbYJGUgc (ORCPT
+	Tue, 7 Oct 2008 16:38:34 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35351 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754188AbYJGUie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:36:32 -0400
-Date: Tue, 7 Oct 2008 22:36:23 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jean-Marc Spaggiari" <jean-marc@spaggiari.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "LM Sensors" <lm-sensors@lm-sensors.org>
-Subject: Re: [lm-sensors] [PATCH] Allow it87.c to handle IT8720
-Message-ID: <20081007223623.684281f2@hyperion.delvare>
-In-Reply-To: <79c9d4530810061033g3630dc2dwabb4d3c2a3f17337@mail.gmail.com>
-References: <79c9d4530810061033g3630dc2dwabb4d3c2a3f17337@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 16:38:34 -0400
+Date: Tue, 7 Oct 2008 22:40:11 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Greg KH <greg@kroah.com>
+Cc: Thomas Renninger <trenn@suse.de>, Tejun Heo <tj@kernel.org>,
+       Shem Multinymous <multinymous@gmail.com>,
+       Elias Oltmanns <eo@nebensachen.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: Laptop shock detection and harddisk protection
+Message-ID: <20081007204011.GG6604@elf.ucw.cz>
+References: <48C7FCEE.8060404@kernel.org> <20080917180405.GB3162@kroah.com> <20080918111845.GH27832@elf.ucw.cz> <200809191104.00171.trenn@suse.de> <20080924051417.GA29993@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080924051417.GA29993@kroah.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean-Marc,
 
-On Mon, 6 Oct 2008 13:33:56 -0400, Jean-Marc Spaggiari wrote:
-> The goal of this patch is to allow it87.c to handle IT8720 chipset
-> like IT8718 in order to retreive voltage, temperatures and fans speed
-> from sensors tools.
+> > > > Code created by access to specs that were not allowed to be published in
+> > > > GPL form by someone who wants to remain anonymous.
+> > >
+> > > That anonymous person may have problems if they signed NDA.
+> > >
+> > > I don't think they did, they even list the sources:
+> > >
+> > >  *  The embedded controller on ThinkPad laptops has a non-standard
+> > > interface, *  where LPC channel 3 of the H8S EC chip is hooked up to IO
+> > > ports *  0x1600-0x161F and implements (a special case of) the H8S LPC
+> > > protocol. *  The EC LPC interface provides various system management
+> > > services (currently *  known: battery information and accelerometer
+> > > readouts). This driver *  provides access and mutual exclusion for the EC
+> > > interface.
+> > > *
+> > >  *  The LPC protocol and terminology is documented here:
+> > >  *  "H8S/2104B Group Hardware Manual",
+> > >  * 
+> > > http://documentation.renesas.com/eng/products/mpumcu/rej09b0300_2140bhm.pdf
+> > >
+> > > H8S chip seems to be documented.
+> > Hmm, the EC is not directly used, but ACPI functions of the HP device are 
+> > used.
+> > For the HP ACPI device: the ACPI functions can *very easily* be re-engineered
+> > (which is common for all laptop_acpi.ko drivers):
+> > ALRD -> is used by the driver to read out registers of the accelerometer
+> > ALWR -> is used by the driver to write a registers of the accelerometer
+> > BTW: HP likes to have support for their device.
+> > 
+> > The acceleromter chip itself is docuemented in detail here:
+> > http://www.st.com/stonline/products/literature/ds/12094/lis3lv02dl.pdf
+> > 
+> > I also do not see any concerns.
+> > Greg: Can you please add this one or explain in more detail what else you like 
+> > to see to get this integerated.
 > 
-> JMS
-> 
-> Patch also attached.
-> 
-> --- linux-2.6.27-rc8/drivers/hwmon/it87.c.orig  2008-10-02
-> 09:04:44.000000000 -0400
-> +++ linux-2.6.27-rc8/drivers/hwmon/it87.c       2008-10-06
-> 13:27:08.000000000 -0400
-> @@ -14,6 +14,7 @@
->               IT8712F  Super I/O chip w/LPC interface
->               IT8716F  Super I/O chip w/LPC interface
->               IT8718F  Super I/O chip w/LPC interface
-> +             IT8720F  Super I/O chip w/LPC interface
->               IT8726F  Super I/O chip w/LPC interface
->               Sis950   A clone of the IT8705F
-> 
-> @@ -50,7 +51,7 @@
-> 
->  #define DRVNAME "it87"
-> 
-> -enum chips { it87, it8712, it8716, it8718 };
-> +enum chips { it87, it8712, it8716, it8718, it8720 };
-> 
->  static unsigned short force_id;
->  module_param(force_id, ushort, 0);
-> @@ -112,6 +113,7 @@ superio_exit(void)
->  #define IT8716F_DEVID 0x8716
->  #define IT8718F_DEVID 0x8718
->  #define IT8726F_DEVID 0x8726
-> +#define IT8720F_DEVID 0x8720
+> If you, or anyone else, writes a new driver from the published
+> documents, that driver can be accepted.  It can not be based on the
+> existing code written by Shem in any form.
 
-You have an interesting notion of numeric sorting ;)
+Can you detail what "published" means?
 
->  #define IT87_ACT_REG  0x30
->  #define IT87_BASE_REG 0x60
-> 
-> @@ -278,7 +280,8 @@ static inline int has_16bit_fans(const s
->        return (data->type == it87 && data->revision >= 0x03)
->            || (data->type == it8712 && data->revision >= 0x08)
->            || data->type == it8716
-> -           || data->type == it8718;
-> +           || data->type == it8718
-> +           || data->type == it8720;
->  }
-> 
->  static int it87_probe(struct platform_device *pdev);
-> @@ -982,6 +985,9 @@ static int __init it87_find(unsigned sho
->        case IT8718F_DEVID:
->                sio_data->type = it8718;
->                break;
-> +       case IT8720F_DEVID:
-> +               sio_data->type = it8720;
-> +               break;
->        case 0xffff:    /* No device at all */
->                goto exit;
->        default:
-> @@ -1040,6 +1046,7 @@ static int __devinit it87_probe(struct p
->                "it8712",
->                "it8716",
->                "it8718",
-> +               "it8720",
->        };
-> 
->        res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> @@ -1190,7 +1197,7 @@ static int __devinit it87_probe(struct p
->        }
-> 
->        if (data->type == it8712 || data->type == it8716
-> -        || data->type == it8718) {
-> +        || data->type == it8718 || data->type == it8720) {
->                data->vrm = vid_which_vrm();
->                /* VID reading from Super-I/O config space if available */
->                data->vid = sio_data->vid_value;
-> @@ -1571,7 +1578,7 @@ static void __exit sm_it87_exit(void)
-> 
->  MODULE_AUTHOR("Chris Gauthron, "
->              "Jean Delvare <khali@linux-fr.org>");
-> -MODULE_DESCRIPTION("IT8705F/8712F/8716F/8718F/8726F, SiS950 driver");
-> +MODULE_DESCRIPTION("IT8705F/8712F/8716F/8718F/8720F/8726F, SiS950 driver");
->  module_param(update_vbat, bool, 0);
->  MODULE_PARM_DESC(update_vbat, "Update vbat if set else return powerup value");
->  module_param(fix_pwm_polarity, bool, 0);
+Either I can take his sources on sourceforge.net (quite well known
+place, right) as published information, or I could not use other well
+known sources such as wikipedia.
 
-It seems that you missed one occurrence of it8718-specific code (in
-function it87_find).
+Sources on sourceforge.net seem published-enough to me, and if you
+insist they can't be used, you should provide some reasons...
 
-	/* Read GPIO config and VID value from LDN 7 (GPIO) */
-	if (chip_type != IT8705F_DEVID) {
-		int reg;
-
-		superio_select(GPIO);
-		if (chip_type == it8718)
-			sio_data->vid_value = superio_inb(IT87_SIO_VID_REG);
-
-		reg = superio_inb(IT87_SIO_PINX2_REG);
-		if (reg & (1 << 0))
-			pr_info("it87: in3 is VCC (+5V)\n");
-		if (reg & (1 << 1))
-			pr_info("it87: in7 is VCCH (+5V Stand-By)\n");
-	}
-
-You also need to update Documentation/hwmon/it87 to mention the IT8720F
-as supported, as well ad drivers/hwmon/Kconfig.
-
-Other than that - and the lack of Signed-off-by line - your patch looks
-OK to me.
-
+[And no, just calling it "tainted" is not enough.]
+									Pavel
 -- 
-Jean Delvare
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
