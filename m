@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYJGTNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbYJGTOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbYJGTNA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 15:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYJGTMw
+	id S1755132AbYJGTOt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 15:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYJGTOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 15:12:52 -0400
-Received: from mga02.intel.com ([134.134.136.20]:64060 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbYJGTMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 15:12:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,374,1220252400"; 
-   d="scan'208";a="345082905"
-Message-ID: <48EBB4A9.2010108@intel.com>
-Date: Tue, 07 Oct 2008 12:12:41 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080626)
+	Tue, 7 Oct 2008 15:14:41 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:35315 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYJGTOk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 15:14:40 -0400
+Date: Tue, 7 Oct 2008 21:14:34 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20081007191434.GK13035@tekkaman>
+References: <1223044589-31741-1-git-send-email-giometti@linux.it> <1223044589-31741-2-git-send-email-giometti@linux.it> <20081003215923.GA14890@kroah.com> <20081007093845.GD13035@tekkaman> <20081007173020.GA16654@kroah.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: "Renato S. Yamane" <yamane@diamondcut.com.br>,
-       linux-kernel@vger.kernel.org, rjwysocki@sisk.pl,
-       power-management_other@kernel-bugs.osdl.org
-Subject: Re: [Bug 10797] Battery is drained after poweroff
-References: <48E9F388.8040203@diamondcut.com.br> <20081007134223.GA1592@ucw.cz> <48EB88F2.3090100@diamondcut.com.br> <20081007190007.GB6604@elf.ucw.cz>
-In-Reply-To: <20081007190007.GB6604@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Oct 2008 19:12:45.0722 (UTC) FILETIME=[AE1C5FA0:01C928B0]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007173020.GA16654@kroah.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/1] Add c2 port support.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2008-10-07 13:06:10, Renato S. Yamane wrote:
->> Pavel Machek wrote:
->> Renato S. Yamane wrote:
->>>> Can someone help us with this bug?
->>>> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
->>>>
->>>> Same problem is reported in Ubuntu:
->>>> <https://bugs.launchpad.net/ubuntu/+source/linux/+bug/110784>
->>>>
->>>> This is not a hardware problem, because if the same laptop is poweroff
->>>> by Windows, battery charge don't change.
->>> ...and it is not linux problem because it works okay on my thinkpad. See? 
->> Yes, this is a Linux problem (at least in release >= 2.6.22)
->> This happening *only* in Linux (Kernel >=2.6.22).
-> 
-> Wow, now that's useful info.
-> 
-> I guess you _could_ do git bisect? ;-).
-> 
->>>> And, if I suspend to ram/disk BEFORE poweroff, battery charge don't
->>>> change (suspend to ram/disk --> WakeUp --> Poweroff).
->>> Which machine is that? Can you find out which device eats power? (It
->>> should be warm).
->> This problem is happening in Toshiba Satellite M45-S355, Toshiba Equium
->> A100-306, HP DV8000, HP DV9500, Dell Latitude D630, Toshiba M110, Sony
->> Vaio VGN-S2XP, Toshiba Satellite A105-S4384, Toshiba Satellite M55-S3314
->> and Toshiba Satellite A105-S2201 as you can see in bug report listed above.
->>
->> And is impossible find wich device eats power (eaten current is too low,
->> and is not enought to make hot).
-> 
-> So how fast is it eating power... can you estimate Watts eaten?
-> 									Pavel
+On Tue, Oct 07, 2008 at 10:30:20AM -0700, Greg KH wrote:
 
-perhaps wake-on-lan and friends are enabled? check the bios etc...
+> But you aren't submitting any clients here, right?  Are you planning to?
 
-Auke
+Currently not, but I have 2 clients for my custom boards... maybe I
+can add one of them which uses an x86 IO port to do the job.
+
+> Then the default config option should be N, and you should make the
+> Kconfig help text a bit clearer as to exactly which machines this device
+> would be expected for, otherwise you might accidentally have distros add
+> this device to their builds, which would not be a good thing.
+
+Ok.
+
+> What's wrong with drivers/c2port/ ?  Come on, think big :)
+
+Ok. Thanks! I'll repost the code ASAP.
+
+Ciao,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
