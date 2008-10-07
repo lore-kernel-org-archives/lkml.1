@@ -1,91 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYJGQ5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbYJGQ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbYJGQ5n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYJGQ5d
+	id S1756778AbYJGQ6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbYJGQ6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:57:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:11215 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753272AbYJGQ5c (ORCPT
+	Tue, 7 Oct 2008 12:58:00 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:34682 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754129AbYJGQ57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:57:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=f1rtTRm6FdgsN+aq8VCptTizubj1Ym+PzF4DXEo7Pxzip1jJBqRgIDH3vYKb46BijU
-         v6hjj2FcoYpg9gDRF5Ek+cLQB8F0dSzlmfGJk2IKcp1hhejsbFXAI0UslSsJRA13JhFY
-         HNVBXWQ4PKZLr18Y8FlgnOjBFVgSKXf1mgJTY=
-Message-ID: <84144f020810070957y241a16d6y2d03f451aa3dd4a7@mail.gmail.com>
-Date: Tue, 7 Oct 2008 19:57:31 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: [BUG] SLOB's krealloc() seems bust
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linuxfoundation.org>
-In-Reply-To: <1223397455.13453.385.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
-	 <48EB6D2C.30806@linux-foundation.org>
-	 <1223391655.13453.344.camel@calx>
-	 <1223395846.26330.55.camel@lappy.programming.kicks-ass.net>
-	 <1223397455.13453.385.camel@calx>
-X-Google-Sender-Auth: 52a0e901a97c0a87
+	Tue, 7 Oct 2008 12:57:59 -0400
+Subject: Re: bad DMAR interaction with iwlagn and SATA
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andres Freund <andres@anarazel.de>
+Cc: Tomas Winkler <tomasw@gmail.com>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <200810061632.08375.andres@anarazel.de>
+References: <200809251511.20132.andres@anarazel.de>
+	 <1ba2fa240809290140i5a47d534qa30f9088df834162@mail.gmail.com>
+	 <1223296015.15196.2.camel@johannes.berg>
+	 <200810061632.08375.andres@anarazel.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-K3ZPc9bUTYTfBoiC7mQC"
+Date: Tue, 07 Oct 2008 10:37:16 +0200
+Message-Id: <1223368636.3778.64.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
 
-On Tue, Oct 7, 2008 at 7:37 PM, Matt Mackall <mpm@selenic.com> wrote:
-> SLOB: fix bogus ksize calculation
->
-> SLOB's ksize calculation was braindamaged and generally harmlessly
-> underreported the allocation size. But for very small buffers, it could
-> in fact overreport them, leading code depending on krealloc to overrun
-> the allocation and trample other data.
->
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
-> Tested-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->
-> diff -r 5e32b09a1b2b mm/slob.c
-> --- a/mm/slob.c Fri Oct 03 14:04:43 2008 -0500
-> +++ b/mm/slob.c Tue Oct 07 11:27:47 2008 -0500
-> @@ -515,7 +515,7 @@
->
->        sp = (struct slob_page *)virt_to_page(block);
->        if (slob_page(sp))
-> -               return ((slob_t *)block - 1)->units + SLOB_UNIT;
-> +               return (((slob_t *)block - 1)->units - 1) * SLOB_UNIT;
+--=-K3ZPc9bUTYTfBoiC7mQC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Hmm. I don't understand why we do the "minus one" thing here. Aren't
-we underestimating the size now? Side note, why aren't we using
-slob_units() here?
+On Mon, 2008-10-06 at 16:32 +0200, Andres Freund wrote:
 
->        else
->                return sp->page.private;
->  }
->
->
->
->
->
-> --
-> Mathematics is the supreme nostalgia of our time.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> > Andres, can you post your config?
+> Sure, my current running one is attached.
+> The config I had the error with was exactly the same just with CONFIG_DMA=
+R and=20
+> e1000e enabled (but is overwritten now)...
+>=20
+> Its no problem trying another branch more debugging options or so if need=
+ed.
+
+No, I was just wondering whether x86-64 had something like powerpc's
+CONFIG_64K_PAGES, but it doesn't seem to. 2M-page support seems to be
+used always dependent on the CPU, but I have no idea you can tell
+whether or not your CPU supports that.
+
+johannes
+
+--=-K3ZPc9bUTYTfBoiC7mQC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJI6x+3AAoJEKVg1VMiehFYrQMP/iTQbpDUX4VjvSpbJEaP2pRR
+gH4BGI/D03f/S3SotZGRwgIShbqNkEV140c9GXUtcsm13UA8B09IaIe93zlwbH2i
+UWYVizZTkQWboQHjVPVr8+5g0Qj5y3s9UL0+JnLvIYdD79JEmhRP8DCqOuF5u4Bx
+AOf3jQFPB7jL3cTz7nQ3fjyiM3DhUROOu+V1KAbKxdPZ+7sqC99lknKw268qXSTN
+XCoAhtpU9z6IaKERGCva4w1nW+i1qZv5uzjBaXD1e68YXLk+s//vXq4VL6TyzLzw
+CTjieWtRhqk5eLOUGgGVWo9zWCeOLF4aVfEdcVpCPZmg5NOvBgoybH1EdYsJWFNK
+88kYsdkdUSyQ+s7djlnBPX22Za5OJj7a9UppJlS8RdI8zDL55uhhu+JbZsaML6td
+XG4ig4SeBT4FzO4joKG5sf5kx7Nxwf1EIWELq4YPi0pMoDnS0S7KntzfhNSmjb6a
+kXunb3U2Im4YbCh4qW2Ix1kyThRCu+nx4jACR1iZt+B3cDMIIdSZcZSe3kMV26z7
+d/fV4Yi/50pfrol7CZHhiYxK8K+rWexnxD4V0oJ0jnu6h2aYo0ySb6MKzejb7ReJ
+9nAnKMq9cZ0OaoufkHxXMRoGWeqswtjLfcsaIbKnPJOeDU4d6bEiaqDcPanKl3kS
+kBGBwDi6AgG1FFDXJE40
+=E0vl
+-----END PGP SIGNATURE-----
+
+--=-K3ZPc9bUTYTfBoiC7mQC--
+
