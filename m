@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbYJGRd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbYJGReY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbYJGRd6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYJGRdu
+	id S1755225AbYJGReY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 13:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYJGReJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:33:50 -0400
-Received: from kroah.org ([198.145.64.141]:52234 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753370AbYJGRdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:33:49 -0400
-Date: Tue, 7 Oct 2008 10:30:20 -0700
-From: Greg KH <greg@kroah.com>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] Add c2 port support.
-Message-ID: <20081007173020.GA16654@kroah.com>
-References: <1223044589-31741-1-git-send-email-giometti@linux.it> <1223044589-31741-2-git-send-email-giometti@linux.it> <20081003215923.GA14890@kroah.com> <20081007093845.GD13035@tekkaman>
+	Tue, 7 Oct 2008 13:34:09 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:11603 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409AbYJGReH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 13:34:07 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "JensAxboejens.axboe@oracle.com" <JensAxboejens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Date: Tue, 7 Oct 2008 17:33:35 +0000
+Subject: RE: [PATCH 1 of 1] cciss: add procfs interface to rescan logical
+ volumes
+Thread-Topic: [PATCH 1 of 1] cciss: add procfs interface to rescan logical
+ volumes
+Thread-Index: AckomreEpAj0hTNbQDeDLuQywVVa1gAB40pA
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884C00C15F14@GVW0547EXC.americas.hpqcorp.net>
+References: <20081007162454.GA12104@roadking.ldev.net>
+ <20081007093530.1793a81b@infradead.org>
+In-Reply-To: <20081007093530.1793a81b@infradead.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007093845.GD13035@tekkaman>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 11:38:45AM +0200, Rodolfo Giometti wrote:
-> On Fri, Oct 03, 2008 at 02:59:23PM -0700, Greg KH wrote:
-> > On Fri, Oct 03, 2008 at 04:36:29PM +0200, Rodolfo Giometti wrote:
-> > > C2port implements a two wire serial communication protocol (bit
-> > > banging) designed to enable in-system programming, debugging, and
-> > > boundary-scan testing on low pin-count Silicon Labs devices.
-> > > 
-> > > Currently this code supports only flash programming through sysfs
-> > > interface but extensions shoud be easy to add.
-> > > 
-> > > Signed-off-by: Rodolfo Giometti <giometti@linux.it>
-> > > ---
-> > >  drivers/misc/Kconfig       |   13 +
-> > >  drivers/misc/Makefile      |    1 +
-> > >  drivers/misc/c2port_core.c |  996 ++++++++++++++++++++++++++++++++++++++++++++
-> > >  include/linux/c2port.h     |   65 +++
-> > 
-> > Why does this file have to be in include/linux?  I don't think this
-> > exports any structures to userspace, and no other code calls this
-> > driver, so it should all fit into the .c file just fine.
-> 
-> The inlcude file is needed because you have to define a clients for
-> each c2 port implementations, see here for further info:
-> 
->    http://wiki.enneenne.com/index.php/Silicon_C2_Interface
 
-You might want to flush out your Kconfig entry with more information
-from this site :)
 
-> The file c2port_core.c implements the core, a client implements the
-> low level functions.
+> -----Original Message-----
+> From: Arjan van de Ven [mailto:arjan@infradead.org]
+> Sent: Tuesday, October 07, 2008 11:36 AM
+> To: Miller, Mike (OS Dev)
+> Cc: Andrew Morton; JensAxboejens.axboe@oracle.com; LKML; LKML-scsi
+> Subject: Re: [PATCH 1 of 1] cciss: add procfs interface to
+> rescan logical volumes
+>
+> On Tue, 7 Oct 2008 11:24:54 -0500
+> Mike Miller <mike.miller@hp.com> wrote:
+>
+> > Patch 1 of 1
+> >
+> > This patch adds a procfs interface so users can force a
+> rescan of the
+> > logical volumes attached to the controller. A new product
+> uses Target
+> > Based Management (TBM) out-of-band for configuration purposes. With
+> > this method the driver has no way of knowing that something has
+> > changed, i.e., new logical volume(s) added or existing volumes
+> > deleted. This interface allows the user to echo "rescan volumes" >
+> > /proc/driver/cciss/ccissN to force the driver to rebuild
+> our table of
+> > logical volumes.
+> > Please consider this patch for inclusion.
+>
+>
+> I'll ask the obvious question (since you didn't address this)...
+> why is this a proc thing and not just a sysfs attribute of the device?
+>
 
-But you aren't submitting any clients here, right?  Are you planning to?
+Because I'm pretty sysfs stupid. :(
 
-> > Is there any way to detect automatically if this hardware is present in
-> > the system or not?
-> 
-> I don't think so. The C2 port is usually implemented with two generic
-> GPIOs.
+An attribute in sysfs is the ultimate goal but I did this for expediency. Any pointers to sysfs documentation that's either not very outdated or doesn't contradict itself?
 
-Then the default config option should be N, and you should make the
-Kconfig help text a bit clearer as to exactly which machines this device
-would be expected for, otherwise you might accidentally have distros add
-this device to their builds, which would not be a good thing.
+Thanks,
+mikem
 
-> I posted the code in order to get some feedbacks and then repropose
-> something suitable for inclusion. So I'd like to know if I should make
-> a separate subdir into linux/drivers/misc/ to hold possible clients
-> (i.e. linux/drivers/misc/c2port/).
-
-What's wrong with drivers/c2port/ ?  Come on, think big :)
-
-thanks,
-
-greg k-h
+>
+> --
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings, visit
+> http://www.lesswatts.org
+>
