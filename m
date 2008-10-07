@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbYJGAmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYJGAmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757182AbYJGAmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbYJGAlV
+	id S1756229AbYJGAmZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYJGAlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:41:21 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60135 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:41:14 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60108 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754023AbYJGAlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:41:19 -0400
-Date: Mon, 6 Oct 2008 17:37:38 -0700
+	id S1756087AbYJGAlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:41:13 -0400
+Date: Mon, 6 Oct 2008 17:37:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yuri Tikhonov <yur@emcraft.com>,
-       Ilya Yanok <yanok@emcraft.com>, Dan Williams <dan.j.williams@intel.com>
-Subject: [patch 06/71] async_tx: fix the bug in async_tx_run_dependencies
-Message-ID: <20081007003738.GG3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: [patch 05/71] drivers/mmc/card/block.c: fix refcount leak in
+	mmc_block_open()
+Message-ID: <20081007003736.GF3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="async_tx-fix-the-bug-in-async_tx_run_dependencies.patch"
+Content-Disposition: inline; filename="drivers-mmc-card-block.c-fix-refcount-leak-in-mmc_block_open.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,37 +40,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Yuri Tikhonov <yur@emcraft.com>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-commit de24125dd0a452bfd4502fc448e3534c5d2e87aa upstream
+commit 70bb08962ea9bd50797ae9f16b2493f5f7c65053 upstream
 
-Should clear the next pointer of the TX if we are sure that the
-next TX (say NXT) will be submitted to the channel too. Overwise,
-we break the chain of descriptors, because we lose the information
-about the next descriptor to run. So next time, when invoke
-async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
-NXT will be never submitted.
+mmc_block_open() increments md->usage although it returns with -EROFS when
+default mounting a MMC/SD card with write protect switch on.  This
+reference counting bug prevents /dev/mmcblkX from being released on card
+removal, and situation worsen with reinsertion until the minor number
+range runs out.
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Reported-by: <sasin@solomon-systech.com>
+Acked-by: Pierre Ossman <drzeus-list@drzeus.cx>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- crypto/async_tx/async_tx.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/mmc/card/block.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -136,7 +136,8 @@ async_tx_run_dependencies(struct dma_asy
- 		spin_lock_bh(&next->lock);
- 		next->parent = NULL;
- 		_next = next->next;
--		next->next = NULL;
-+		if (_next && _next->chan == chan)
-+			next->next = NULL;
- 		spin_unlock_bh(&next->lock);
+--- a/drivers/mmc/card/block.c
++++ b/drivers/mmc/card/block.c
+@@ -103,8 +103,10 @@ static int mmc_blk_open(struct inode *in
+ 			check_disk_change(inode->i_bdev);
+ 		ret = 0;
  
- 		next->tx_submit(next);
+-		if ((filp->f_mode & FMODE_WRITE) && md->read_only)
++		if ((filp->f_mode & FMODE_WRITE) && md->read_only) {
++			mmc_blk_put(md);
+ 			ret = -EROFS;
++		}
+ 	}
+ 
+ 	return ret;
 
 -- 
