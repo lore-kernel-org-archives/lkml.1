@@ -1,117 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbYJGE3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbYJGEnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbYJGE3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 00:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbYJGE3N
+	id S1754905AbYJGEnM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 00:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbYJGEm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 00:29:13 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:44424 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbYJGE3M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 00:29:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gNxi0rslMu5AafLjrF4heOjYyNN7vCtcfwsa/u/4crQDDBnj9WVPP8e9OQcsCswywh
-         HQ2fXegmDOlBHt+qcOYqBAM1hntOkd3Ehgi33qHbIe8G/41qy4yaAHvplC+oedAHMjIS
-         z5tK9p5G/5T/sQ9WOTymaTltMvfFXw4S1iAVc=
-Message-ID: <28c262360810062129h184f15cv5a31e1d598d28a@mail.gmail.com>
-Date: Tue, 7 Oct 2008 13:29:10 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 0/4] Reclaim page capture v4
-Cc: "Andy Whitcroft" <apw@shadowen.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, "Peter Zijlstra" <peterz@infradead.org>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>, "Mel Gorman" <mel@csn.ul.ie>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20081003154616.EF74.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 7 Oct 2008 00:42:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59028 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750803AbYJGEm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 00:42:57 -0400
+Date: Tue, 7 Oct 2008 06:42:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jason Vas Dias <jason.vas.dias@gmail.com>
+Subject: Re: [PATCH] x86 ACPI: Blacklist two HP machines with buggy BIOSes
+	(Re: 2.6.27-rc8+ - first impressions)
+Message-ID: <20081007044237.GA6355@elte.hu>
+References: <200810060029.42471.rjw@sisk.pl> <20081006062235.GA2808@amd.corenet.prv> <200810061159.30103.rjw@sisk.pl> <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org> <20081006150055.GA16930@elte.hu> <alpine.LFD.1.10.0810061815060.10470@ftp.linux-mips.org> <87tzbpmocm.fsf@basil.nowhere.org> <alpine.LFD.1.10.0810062227100.10470@ftp.linux-mips.org> <20081006231002.GN3180@one.firstfloor.org> <alpine.LFD.1.10.0810070142060.10470@ftp.linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1222864261-22570-1-git-send-email-apw@shadowen.org>
-	 <28c262360810011946p443350d3hcb271720892e7b85@mail.gmail.com>
-	 <20081003154616.EF74.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <alpine.LFD.1.10.0810070142060.10470@ftp.linux-mips.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 3, 2008 at 3:48 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> Hi, Andy.
->>
->> I tested your patch in my desktop.
->> The test is just kernel compile with single thread.
->> My system environment is as follows.
->>
->> model name    : Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
->> MemTotal:        2065856 kB
->>
->> When I tested vanilla, compile time is as follows.
->>
->> 2433.53user 187.96system 42:05.99elapsed 103%CPU (0avgtext+0avgdata
->> 0maxresident)k
->> 588752inputs+4503408outputs (127major+55456246minor)pagefaults 0swaps
->>
->> When I tested your patch, as follows.
->>
->> 2489.63user 202.41system 44:47.71elapsed 100%CPU (0avgtext+0avgdata
->> 0maxresident)k
->> 538608inputs+4503928outputs (130major+55531561minor)pagefaults 0swaps
->>
->> Regresstion almost is above 2 minutes.
->> Do you think It is a trivial?
->
-> Ooops.
-> this is definitly significant regression.
->
->
->> I know your patch is good to allocate hugepage.
->> But, I think many users don't need it, including embedded system and
->> desktop users yet.
->>
->> So I suggest you made it enable optionally.
->
-> No.
-> if the patch has this significant regression,
-> nobody turn on its option.
->
-> We should fix that.
 
-I have been tested it.
-But I can't reproduce such as regression.
-I don't know why such regression happed at that time.
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
-Sorry for confusing.
-Please ignore my test result at that time.
+> > >  Well, perhaps, but the thermal trip point phenomenon seems unique 
+> > > to this family of systems.  The other aspects of the problem do 
+> > > not really matter anymore as we seem to have addressed them 
+> > > robustly enough now.
+> > 
+> > When you need DMI entries you clearly haven't.
+> 
+>  You can't just break a piece of hardware randomly (setting the 
+> thermal trip points based on an interrupt mask of an I/O APIC input is 
+> certainly beyond the ACPI spec), hide its documentation and still 
+> demand it to be supported correctly, possibly hurting all the other 
+> good equipment.  Sorry -- you have to draw a line somewhere. [...]
 
-This is new test result.
+agreed. This is a clear example of a complex and hard to track down BIOS 
+bug - and even in this case we go out on a limb working it around.
 
-before
+The first approach to such problems is usually a DMI pattern based fix - 
+they happen when we dont know the full scope of a particular problem yet 
+but have a rough idea and want to react to bugs quickly.
 
-2346.24user 191.44system 42:07.28elapsed 100%CPU (0avgtext+0avgdata
-0maxresident)k
-458624inputs+4262728outputs (183major+52299730minor)pagefaults 0swaps
+PCI ID based quirks are preferred much more in the long run: DMI pattern 
+matching does not scale as the DMI space is human-visible and hence 
+changes frequently not for technical/hw-environment but for 
+perception/PR reasons, hence it is far less reliable programmatically 
+than the PCI ID space.
 
+But PCI ID methods, while more intelligent, they lag behind a bit and 
+depend on good cooperation with hw makers. As long as DMI pattern 
+matches end up turning into PCI ID based approaches, like here, i'm not 
+complaining as a maintainer ;)
 
-after
+Thanks Maciej for your excellent in-depth analysis of this issue, and 
+for your many fixes in this area of code - you squashed many difficult, 
+long-standing bugs in this space.
 
-2349.75user 195.72system 42:16.36elapsed 100%CPU (0avgtext+0avgdata
-0maxresident)k
-475632inputs+4265208outputs (183major+52308969minor)pagefaults 0swaps
-
-I think we can ignore some time gap.
-Sometime, after is faster than before.
-
-I could conclude it doesn't have any regressions in my desktop machine.
-
-Tested-by: MinChan Kim <minchan.kim@gmail.com>
-
--- 
-Kinds regards,
-MinChan Kim
+	Ingo
