@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbYJGAzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbYJGAzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757832AbYJGAzb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYJGAow
+	id S1757825AbYJGAzt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbYJGAo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:44:52 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60775 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:44:56 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60789 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757754AbYJGAov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:44:51 -0400
-Date: Mon, 6 Oct 2008 17:39:15 -0700
+	id S1757586AbYJGAoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:44:55 -0400
+Date: Mon, 6 Oct 2008 17:39:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 41/71] clockevents: enforce reprogram in oneshot setup
-Message-ID: <20081007003915.GP3055@suse.de>
+Subject: [patch 42/71] clockevents: prevent multiple init/shutdown
+Message-ID: <20081007003917.GQ3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-03.patch"
+Content-Disposition: inline; filename="timer-fix-04.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,65 +42,72 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 7205656ab48da29a95d7f55e43a81db755d3cb3a upstream
+commit 9c17bcda991000351cb2373f78be7e4b1c44caa3 upstream
 
-In tick_oneshot_setup we program the device to the given next_event,
-but we do not check the return value. We need to make sure that the
-device is programmed enforced so the interrupt handler engine starts
-working. Split out the reprogramming function from tick_program_event()
-and call it with the device, which was handed in to tick_setup_oneshot().
-Set the force argument, so the devices is firing an interrupt.
+While chasing the C1E/HPET bugreports I went through the clock events
+code inch by inch and found that the broadcast device can be initialized
+and shutdown multiple times. Multiple shutdowns are not critical, but
+useless waste of time. Multiple initializations are simply broken. Another
+CPU might have the device in use already after the first initialization and
+the second init could just render it unusable again.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-oneshot.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ kernel/time/tick-broadcast.c |   20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
---- a/kernel/time/tick-oneshot.c
-+++ b/kernel/time/tick-oneshot.c
-@@ -23,11 +23,11 @@
- #include "tick-internal.h"
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -209,7 +209,7 @@ static void tick_do_broadcast_on_off(voi
+ 	struct clock_event_device *bc, *dev;
+ 	struct tick_device *td;
+ 	unsigned long flags, *reason = why;
+-	int cpu;
++	int cpu, bc_stopped;
  
- /**
-- * tick_program_event
-+ * tick_program_event internal worker function
+ 	spin_lock_irqsave(&tick_broadcast_lock, flags);
+ 
+@@ -227,6 +227,8 @@ static void tick_do_broadcast_on_off(voi
+ 	if (!tick_device_is_functional(dev))
+ 		goto out;
+ 
++	bc_stopped = cpus_empty(tick_broadcast_mask);
++
+ 	switch (*reason) {
+ 	case CLOCK_EVT_NOTIFY_BROADCAST_ON:
+ 	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
+@@ -248,9 +250,10 @@ static void tick_do_broadcast_on_off(voi
+ 		break;
+ 	}
+ 
+-	if (cpus_empty(tick_broadcast_mask))
+-		clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
+-	else {
++	if (cpus_empty(tick_broadcast_mask)) {
++		if (!bc_stopped)
++			clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
++	} else if (bc_stopped) {
+ 		if (tick_broadcast_device.mode == TICKDEV_MODE_PERIODIC)
+ 			tick_broadcast_start_periodic(bc);
+ 		else
+@@ -500,9 +503,12 @@ static void tick_broadcast_clear_oneshot
   */
--int tick_program_event(ktime_t expires, int force)
-+static int __tick_program_event(struct clock_event_device *dev,
-+				ktime_t expires, int force)
+ void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
  {
--	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
- 	ktime_t now = ktime_get();
- 
- 	while (1) {
-@@ -41,6 +41,16 @@ int tick_program_event(ktime_t expires, 
+-	bc->event_handler = tick_handle_oneshot_broadcast;
+-	clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
+-	bc->next_event.tv64 = KTIME_MAX;
++	/* Set it up only once ! */
++	if (bc->event_handler != tick_handle_oneshot_broadcast) {
++		bc->event_handler = tick_handle_oneshot_broadcast;
++		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
++		bc->next_event.tv64 = KTIME_MAX;
++	}
  }
  
- /**
-+ * tick_program_event
-+ */
-+int tick_program_event(ktime_t expires, int force)
-+{
-+	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
-+
-+	return __tick_program_event(dev, expires, force);
-+}
-+
-+/**
-  * tick_resume_onshot - resume oneshot mode
-  */
- void tick_resume_oneshot(void)
-@@ -61,7 +71,7 @@ void tick_setup_oneshot(struct clock_eve
- {
- 	newdev->event_handler = handler;
- 	clockevents_set_mode(newdev, CLOCK_EVT_MODE_ONESHOT);
--	clockevents_program_event(newdev, next_event, ktime_get());
-+	__tick_program_event(newdev, next_event, 1);
- }
- 
- /**
+ /*
 
 -- 
