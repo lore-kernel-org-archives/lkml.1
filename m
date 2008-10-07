@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbYJGLrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbYJGLs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254AbYJGLrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYJGLrZ
+	id S1755814AbYJGLs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbYJGLsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:47:25 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:52569 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755153AbYJGLrZ (ORCPT
+	Tue, 7 Oct 2008 07:48:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37761 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170AbYJGLsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:47:25 -0400
-Date: Tue, 7 Oct 2008 12:47:22 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrey Batyiev <batyiev@gmail.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: APIC misconfiguration
-Message-ID: <20081007114722.GB6773@srcf.ucam.org>
-References: <200810061923.09076.batyiev@gmail.com> <200810061955.28915.batyiev@gmail.com> <20081006171742.GB7317@localhost> <200810062030.42952.batyiev@gmail.com>
+	Tue, 7 Oct 2008 07:48:19 -0400
+Date: Tue, 7 Oct 2008 07:48:17 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [RFC PATCH] i_version: remount support
+Message-ID: <20081007114817.GA7024@infradead.org>
+References: <10dbd13724581b0dca8d77ae944aaf3c70b93137.1223341927.git.zohar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810062030.42952.batyiev@gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <10dbd13724581b0dca8d77ae944aaf3c70b93137.1223341927.git.zohar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 08:30:42PM +0300, Andrey Batyiev wrote:
-> > hmm... don't we have any ISA quirks already? If this device support
-> > PnP there should be descriptor for irq line where you could change it
-> > since I don't believe it would be a first device in kernel which behave
-> > not as supposed and developers has to override some configs bits.
-> > Hope it help (i didn't check ISA code though -- too busy now).
+On Tue, Oct 07, 2008 at 07:30:48AM -0400, Mimi Zohar wrote:
+> Add support for remounting a filesystem with the i_version option.
 > 
-> Well, it seems device haven't either PnP or isapnp doesn't detect it.
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> ---
+> diff --git a/fs/super.c b/fs/super.c
+> index e931ae9..3758cbe 100644
+> --- a/fs/super.c
+> +++ b/fs/super.c
+> @@ -641,6 +641,8 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
+>  			return retval;
+>  	}
+>  	sb->s_flags = (sb->s_flags & ~MS_RMT_MASK) | (flags & MS_RMT_MASK);
+> +	if (flags & MS_I_VERSION)
+> +		sb->s_flags |= MS_I_VERSION;
 
-It'd be more likely to be acpipnp nowadays. Does it appear anywhere in 
-/sys/class/pnp?
+The proper way would be to add it to MS_RMT_MASK.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
