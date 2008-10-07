@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYJGAvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbYJGAwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbYJGAvz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYJGAoM
+	id S1759078AbYJGAwY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbYJGAoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:44:12 -0400
-Received: from ns.suse.de ([195.135.220.2]:46837 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:44:16 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60628 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757517AbYJGAoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:44:11 -0400
-Date: Mon, 6 Oct 2008 17:38:45 -0700
+	id S1757097AbYJGAoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:44:15 -0400
+Date: Mon, 6 Oct 2008 17:38:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,70 +22,61 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 31/71] x86: PAT proper tracking of set_memory_uc and friends
-Message-ID: <20081007003845.GF3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: [patch 32/71] x86-64: fix overlap of modules and fixmap areas
+Message-ID: <20081007003847.GG3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-pat-proper-tracking-of-set_memory_uc-and-friends.patch"
+Content-Disposition: inline; filename="x86-64-fix-overlap-of-modules-and-fixmap-areas.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+From: Jan Beulich <jbeulich@novell.com>
 
-commit c15238df3b65e34fadb1021b0fb0d5aebc7c42c6 upstream
+commit 66d4bdf22b8652cda215e2653c8bbec7a767ed57 upstream
 
-Big thinko in pat memtype tracking code. reserve_memtype should be called
-with physical address and not virtual address.
+Plus add a build time check so this doesn't go unnoticed again.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/pageattr.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/head64.c     |    1 +
+ include/asm-x86/pgtable_64.h |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -789,7 +789,7 @@ int set_memory_uc(unsigned long addr, in
- 	/*
- 	 * for now UC MINUS. see comments in ioremap_nocache()
- 	 */
--	if (reserve_memtype(addr, addr + numpages * PAGE_SIZE,
-+	if (reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
- 			    _PAGE_CACHE_UC_MINUS, NULL))
- 		return -EINVAL;
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -135,6 +135,7 @@ void __init x86_64_start_kernel(char * r
+ 	BUILD_BUG_ON(!(MODULES_VADDR > __START_KERNEL));
+ 	BUILD_BUG_ON(!(((MODULES_END - 1) & PGDIR_MASK) ==
+ 				(__START_KERNEL & PGDIR_MASK)));
++	BUILD_BUG_ON(__fix_to_virt(__end_of_fixed_addresses) <= MODULES_END);
  
-@@ -808,7 +808,7 @@ int set_memory_wc(unsigned long addr, in
- 	if (!pat_wc_enabled)
- 		return set_memory_uc(addr, numpages);
+ 	/* clear bss before set_intr_gate with early_idt_handler */
+ 	clear_bss();
+--- a/include/asm-x86/pgtable_64.h
++++ b/include/asm-x86/pgtable_64.h
+@@ -146,7 +146,7 @@ static inline void native_pgd_clear(pgd_
+ #define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
+ #define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
+ #define MODULES_VADDR    _AC(0xffffffffa0000000, UL)
+-#define MODULES_END      _AC(0xfffffffffff00000, UL)
++#define MODULES_END      _AC(0xffffffffff000000, UL)
+ #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
  
--	if (reserve_memtype(addr, addr + numpages * PAGE_SIZE,
-+	if (reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
- 		_PAGE_CACHE_WC, NULL))
- 		return -EINVAL;
- 
-@@ -824,7 +824,7 @@ int _set_memory_wb(unsigned long addr, i
- 
- int set_memory_wb(unsigned long addr, int numpages)
- {
--	free_memtype(addr, addr + numpages * PAGE_SIZE);
-+	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
- 
- 	return _set_memory_wb(addr, numpages);
- }
+ #ifndef __ASSEMBLY__
 
 -- 
