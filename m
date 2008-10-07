@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYJGA4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbYJGA5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbYJGA4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757847AbYJGApI
+	id S1759926AbYJGA5R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYJGApO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:45:08 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60854 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:45:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46971 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757839AbYJGApG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:45:06 -0400
-Date: Mon, 6 Oct 2008 17:39:25 -0700
+	id S1757234AbYJGApL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:45:11 -0400
+Date: Mon, 6 Oct 2008 17:39:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 45/71] clockevents: broadcast fixup possible waiters
-Message-ID: <20081007003925.GT3055@suse.de>
+Subject: [patch 46/71] x86: HPET fix moronic 32/64bit thinko
+Message-ID: <20081007003927.GU3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-07.patch"
+Content-Disposition: inline; filename="timer-fix-08.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,74 +41,52 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 7300711e8c6824fcfbd42a126980ff50439d8dd0 upstream
+commit f7676254f179eac6b5244a80195ec8ae0e9d4606 upstream
 
-Until the C1E patches arrived there where no users of periodic broadcast
-before switching to oneshot mode. Now we need to trigger a possible
-waiter for a periodic broadcast when switching to oneshot mode.
-Otherwise we can starve them for ever.
+We use the HPET only in 32bit mode because:
+1) some HPETs are 32bit only
+2) on i386 there is no way to read/write the HPET atomic 64bit wide
+
+The HPET code unification done by the "moron of the year" did
+not take into account that unsigned long is different on 32 and
+64 bit.
+
+This thinko results in a possible endless loop in the clockevents
+code, when the return comparison fails due to the 64bit/332bit
+unawareness.
+
+unsigned long cnt = (u32) hpet_read() + delta can wrap over 32bit.
+but the final compare will fail and return -ETIME causing endless
+loops.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-broadcast.c |   37 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+ arch/x86/kernel/hpet.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -490,6 +490,18 @@ static void tick_broadcast_clear_oneshot
- 	cpu_clear(cpu, tick_broadcast_oneshot_mask);
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -283,15 +283,15 @@ static void hpet_legacy_set_mode(enum cl
  }
  
-+static void tick_broadcast_init_next_event(cpumask_t *mask, ktime_t expires)
-+{
-+	struct tick_device *td;
-+	int cpu;
-+
-+	for_each_cpu_mask_nr(cpu, *mask) {
-+		td = &per_cpu(tick_cpu_device, cpu);
-+		if (td->evtdev)
-+			td->evtdev->next_event = expires;
-+	}
-+}
-+
- /**
-  * tick_broadcast_setup_oneshot - setup the broadcast device
-  */
-@@ -497,9 +509,32 @@ void tick_broadcast_setup_oneshot(struct
+ static int hpet_legacy_next_event(unsigned long delta,
+-			   struct clock_event_device *evt)
++				  struct clock_event_device *evt)
  {
- 	/* Set it up only once ! */
- 	if (bc->event_handler != tick_handle_oneshot_broadcast) {
-+		int was_periodic = bc->mode == CLOCK_EVT_MODE_PERIODIC;
-+		int cpu = smp_processor_id();
-+		cpumask_t mask;
-+
- 		bc->event_handler = tick_handle_oneshot_broadcast;
- 		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
--		bc->next_event.tv64 = KTIME_MAX;
-+
-+		/* Take the do_timer update */
-+		tick_do_timer_cpu = cpu;
-+
-+		/*
-+		 * We must be careful here. There might be other CPUs
-+		 * waiting for periodic broadcast. We need to set the
-+		 * oneshot_mask bits for those and program the
-+		 * broadcast device to fire.
-+		 */
-+		mask = tick_broadcast_mask;
-+		cpu_clear(cpu, mask);
-+		cpus_or(tick_broadcast_oneshot_mask,
-+			tick_broadcast_oneshot_mask, mask);
-+
-+		if (was_periodic && !cpus_empty(mask)) {
-+			tick_broadcast_init_next_event(&mask, tick_next_period);
-+			tick_broadcast_set_event(tick_next_period, 1);
-+		} else
-+			bc->next_event.tv64 = KTIME_MAX;
- 	}
+-	unsigned long cnt;
++	u32 cnt;
+ 
+ 	cnt = hpet_readl(HPET_COUNTER);
+-	cnt += delta;
++	cnt += (u32) delta;
+ 	hpet_writel(cnt, HPET_T0_CMP);
+ 
+-	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0) ? -ETIME : 0;
++	return (s32)((u32)hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
  }
  
+ /*
 
 -- 
