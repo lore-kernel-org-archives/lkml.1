@@ -1,92 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYJGLGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbYJGLIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbYJGLGi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYJGLG3
+	id S1753716AbYJGLIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYJGLIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:06:29 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:58771 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbYJGLG2 (ORCPT
+	Tue, 7 Oct 2008 07:08:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58121 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752653AbYJGLIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:06:28 -0400
-Subject: [PATCH][SERIAL] Drop probe_baud() and default to "9600n8"
-From: Paul Bolle <pebolle@tiscali.nl>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 13:06:26 +0200
-Message-Id: <1223377586.5129.43.camel@test.thuisdomein>
+	Tue, 7 Oct 2008 07:08:04 -0400
+Date: Tue, 7 Oct 2008 13:14:10 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org
+Subject: Re: [PATCH] Add kerneldoc documentation for new printk format extensions
+Message-ID: <20081007111410.GF20740@one.firstfloor.org>
+References: <20081007101532.GA25565@basil.nowhere.org> <20081007103305.GH2886@hack.voiplan.pt>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 (2.24.0-2.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081007103305.GH2886@hack.voiplan.pt>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The early console kernel parameters (i.e. "console=uart[...]" and
-"earlycon=uart[...]" allow to omit the baud/parity/bits option. If that
-option is not provided probe_baud() is used to determine the baud rate
-to be used by that early console.
+On Tue, Oct 07, 2008 at 11:33:05AM +0100, Américo Wang wrote:
+> On Tue, Oct 07, 2008 at 12:15:32PM +0200, Andi Kleen wrote:
+> >Add documentation in kerneldoc for new printk format extensions
+> >
+> >This patch documents the new %pS/%pF options in printk in kernel doc.
+> >
+> >Hope I didn't miss any other extension.
+> >
+> >Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> >
+> >Index: linux-2.6.27-rc6-misc/kernel/printk.c
+> >===================================================================
+> >--- linux-2.6.27-rc6-misc.orig/kernel/printk.c
+> >+++ linux-2.6.27-rc6-misc/kernel/printk.c
+> >@@ -593,6 +593,8 @@ static int have_callable_console(void)
+> >  *
+> >  * See also:
+> >  * printf(3)
+> >+ *
+> >+ * See the vsnprintf() documentation for format string extensions over C99.
+> >  */
+> > 
+> > asmlinkage int printk(const char *fmt, ...)
+> >Index: linux-2.6.27-rc6-misc/lib/vsprintf.c
+> >===================================================================
+> >--- linux-2.6.27-rc6-misc.orig/lib/vsprintf.c
+> >+++ linux-2.6.27-rc6-misc/lib/vsprintf.c
+> >@@ -565,6 +565,10 @@ static char *pointer(const char *fmt, ch
+> >  * @fmt: The format string to use
+> >  * @args: Arguments for the format string
+> >  *
+> >+ * This function follows C99 vsnprintf, but has some extensions:
+> >+ * %pS output the name of a text symbol
+> >+ * %pF output the name of a function pointer
+> 
+> s/output/outputs/ ? :)
 
-I noticed that probe_baud() produced useless and/or unpredictable
-results on the few machines I tested the early console parameters (e.g.
-1355 or 1200 and 115200 alternating). My guess is that this is because
-probe_baud() tries to calculate the baud rate from information retrieved
-while that UART is not yet properly initialized. Anyhow, a safe
-alternative would be to not probe for a baud rate but simply use
-"9600n8" as defaults for baud/parity/bits. See patch below.
+It's not complete sentences but a list of options, so no.
 
+bla do this
+blub do that
 
-Paul Bolle
----
-From: Paul Bolle <pebolle@tiscali.nl>
-    
-If no baud/parity/bits triplet is provided on the commandline for an
-early serial console, parse_options() will call probe_baud() to
-determine the baud rate used by that early console. probe_baud() seems
-to generate useless and/or unpredictable results. Solution is to drop
-probe_baud() and simply use "9600n8" as (safe) defaults for
-baud/parity/bits.
-    
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
-index f279745..b810430 100644
---- a/drivers/serial/8250_early.c
-+++ b/drivers/serial/8250_early.c
-@@ -99,21 +99,6 @@ static void __init early_serial8250_write(struct console *console,
- 	serial_out(port, UART_IER, ier);
- }
- 
--static unsigned int __init probe_baud(struct uart_port *port)
--{
--	unsigned char lcr, dll, dlm;
--	unsigned int quot;
--
--	lcr = serial_in(port, UART_LCR);
--	serial_out(port, UART_LCR, lcr | UART_LCR_DLAB);
--	dll = serial_in(port, UART_DLL);
--	dlm = serial_in(port, UART_DLM);
--	serial_out(port, UART_LCR, lcr);
--
--	quot = (dlm << 8) | dll;
--	return (port->uartclk / 16) / quot;
--}
--
- static void __init init_port(struct early_serial8250_device *device)
- {
- 	struct uart_port *port = &device->port;
-@@ -176,9 +161,8 @@ static int __init parse_options(struct early_serial8250_device *device,
- 		length = min(strcspn(options, " "), sizeof(device->options));
- 		strncpy(device->options, options, length);
- 	} else {
--		device->baud = probe_baud(port);
--		snprintf(device->options, sizeof(device->options), "%u",
--			device->baud);
-+		device->baud = 9600;
-+		strcpy(device->options, "9600n8");
- 	}
- 
- 	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
+-Andi
 
-
+-- 
+ak@linux.intel.com
