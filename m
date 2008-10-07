@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbYJGKQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYJGKQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbYJGKQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 06:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYJGKPz
+	id S1755032AbYJGKQc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 06:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYJGKQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 06:15:55 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58421 "EHLO gate.crashing.org"
+	Tue, 7 Oct 2008 06:16:20 -0400
+Received: from ishtar.tlinx.org ([64.81.245.74]:58864 "EHLO ishtar.tlinx.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752217AbYJGKPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 06:15:54 -0400
-Subject: Re: [PATCH] pata_of_platform: fix no irq handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: avorontsov@ru.mvista.com
-Cc: Tejun Heo <tj@kernel.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Wang Jian <lark@linux.net.cn>
-In-Reply-To: <20081007092605.GA28907@oksana.dev.rtsoft.ru>
-References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
-	 <48EA77EF.6080502@genesi-usa.com>
-	 <20081006213209.GA13072@oksana.dev.rtsoft.ru> <48EABBD3.1010401@kernel.org>
-	 <20081007092605.GA28907@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 21:04:45 +1100
-Message-Id: <1223373885.8157.49.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1752832AbYJGKQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 06:16:19 -0400
+Message-ID: <48EB3647.4020201@tlinx.org>
+Date: Tue, 07 Oct 2008 03:13:27 -0700
+From: Linda Walsh <smartmontools@tlinx.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
+ or sleep, PATA models did. (fwd)
+References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org> <48EAB672.3010209@gmail.com> <48EABD07.6030506@tlinx.org> <48EABE8E.9070809@gmail.com>
+In-Reply-To: <48EABE8E.9070809@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 13:26 +0400, Anton Vorontsov wrote:
-> On Tue, Oct 07, 2008 at 10:30:59AM +0900, Tejun Heo wrote:
-> > Anton Vorontsov wrote:
-> > > On Mon, Oct 06, 2008 at 03:41:19PM -0500, Matt Sealey wrote:
-> > >> There is a simple problem with the patch which is that an "IRQ 0" can and does
-> > >> actually exist on a bunch of platforms, at least to the best of my knowledge.
-> > >>
-> > >> Checking for -1 (which means for definite, no irq at all, because it is
-> > >> totally unambiguous, as a -1 IRQ numbering is "impossible") is more correct.
-> > > 
-> > > This was discussed years ago.
-> > > 
-> > > http://lkml.org/lkml/2005/11/22/159
-> > > http://lkml.org/lkml/2005/11/22/227
-> > > 
-> > 
-> > Would this break any existing platforms?
-> 
-> Nope.
-> 
-> The driver is only available for PPC platforms.
-> 
-> As time goes by one can change `depend on PPC_OF' to just `depends on
-> OF', so that the driver will be also available for SPARC. And still
-> it will work, because SPARC also understands VIRQ0 as invalid VIRQ.
-> 
+Tejun Heo wrote:
+> Linda Walsh wrote:
+>   
+>> Controller is a Promise TX4/300
+>>     
+>
+> Yeap.  After the drive goes offline, does unplugging and replugging
+> the power cable to the harddrive makes it come back?
+>
+>   
+That's not easy to do.  It's an internal drive ...  will have to find 
+some time
+to take the system down and apart for that type of testing..
 
-Yup, I agree. I'll pick it up in my next batch.
-
-Cheers,
-Ben.
-
+If I powercycle the whole machine it comes back up ...but that's 
+probably not what you mean...:-/
 
