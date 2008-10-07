@@ -1,64 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYJGWyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYJGWzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbYJGWyf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYJGWy1
+	id S1755359AbYJGWzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYJGWzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:54:27 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:38852 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752765AbYJGWy0 (ORCPT
+	Tue, 7 Oct 2008 18:55:07 -0400
+Received: from mga10.intel.com ([192.55.52.92]:9388 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753941AbYJGWzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:54:26 -0400
-Date: Tue, 7 Oct 2008 17:54:24 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: sysfs: tagged directories not merged completely yet
-Message-ID: <20081007225424.GA9430@us.ibm.com>
-References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com> <48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org> <20081003101331.GH28946@ZenIV.linux.org.uk> <20081005053236.GA9472@kroah.com> <m1bpxwajyy.fsf@frodo.ebiederm.org> <20081007222726.GA9465@kroah.com>
+	Tue, 7 Oct 2008 18:55:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
+   d="scan'208";a="624521936"
+Message-ID: <48EBE86E.80101@linux.intel.com>
+Date: Tue, 07 Oct 2008 15:53:34 -0700
+From: Joseph Cihula <joseph.cihula@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007222726.GA9465@kroah.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: linux-kernel@vger.kernel.org
+CC: shane.wang@intel.com, gang.wei@intel.com, arjan@linux.intel.com,
+       asit.k.mallick@intel.com, jun.nakajima@intel.com, chrisw@sous-sol.org,
+       jbeulich@novell.com, mingo@elte.hu, tytso@mit.edu,
+       linux-kernel@vger.kernel.org, joseph.cihula@intel.com
+Subject: [RFC][PATCH 0b/3] TXT: Intel(R) Trusted Execution Technology support
+ for Linux - Details
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg KH (greg@kroah.com):
-> On Tue, Oct 07, 2008 at 01:27:17AM -0700, Eric W. Biederman wrote:
-> > Unless someone will give an example of how having multiple superblocks
-> > sharing inodes is a problem in practice for sysfs and call it good
-> > for 2.6.28.  Certainly it shouldn't be an issue if the network namespace
-> > code is compiled out.  And it should greatly improve testing of the
-> > network namespace to at least have access to sysfs.
-> 
-> But if the network namespace code is in?  THen we have problems, right?
-> And that's the whole point here.
-> 
-> The fact that you are trying to limit userspace view of in-kernel data
-> structures, based on that specific user, is, in my opinion, crazy.
-> 
-> Why not just keep all users from seeing sysfs, and then have a user
-> daemon doing something on top of FUSE if you really want to see this
-> kind of stuff.
+(re-posted with apologies for formatting and email addresses)
 
-Well the blocker is really that when you create a new network namespace,
-it wants to create a new loopback interface, but
-/sys/devices/virtual/net/lo already exists.  That's the same issue with
-user namespace when the fair scheduler is enabled, which tries to
-re-create /sys/kernel/uids/0.
+How Does it Work?
+================
 
-Otherwise yeah at least for my own uses, containers wouldn't need to
-look at /sys at all.
+o  Tboot is an executable that is launched by the bootloader as the "kernel"
+   (the binary the bootloader executes).
+o  It performs all of the work necessary to determine if the platform 
+supports
+   Intel TXT and, if so, executes the GETSEC[SENTER] processor instruction
+   that initiates the dynamic root of trust.
+   -  If tboot determines that the system does not support Intel TXT or 
+is not
+      configured correctly (e.g. the SINIT AC Module was incorrect), it will
+      directly launch the kernel with no changes to any state.
+   -  Tboot will output various information about its progress to the first
+      (ttyS0/COM1) serial port; this can be disabled by a command line 
+switch.
+      It can also be compiled to put the information into a hardcoded memory
+      location in low memory so that systems without a serial port can still
+      get the log.
+o  The GETSEC[SENTER] instruction will return control to tboot and it then
+   verifies certain aspects of the environment (e.g. TPM NV lock, e820 table
+   does not have invalid entries, etc.).
+o  It will wake the APs from the special sleep state the GETSEC[SENTER]
+   instruction had put them in and place them into a wait-for-SIPI state.
+   -  Because the processors will not respond to an INIT or SIPI when in the
+      TXT environment, it is necessary to create a small VT-x guest for the
+      APs.  When they run in this guest, they will simply wait for the
+      INIT-SIPI-SIPI sequence, which will cause VMEXITs, and then disable VT
+      and jump to the SIPI vector.  This approach seemed like a better 
+choice
+      than having to insert special code into the kernel's MP wakeup 
+sequence.
+o  Tboot then applies an (optional) user-defined launch policy to verify the
+   kernel and initrd.
+   -  This policy is rooted in TPM NV and is described in the tboot project.
+      The tboot project also contains code for tools to create and provision
+      the policy.
+   -  Policies are completely under user control and if not present then any
+      kernel will be launched.
+   -  Policy action is flexible and can include halting on failures or 
+simply
+      logging them an continuing.
+o  Tboot adjusts the e820 table provided by the bootloader to reserve 
+its own
+   location in memory as well as to reserve certain other TXT-related 
+regions.
+o  Tboot will populate a shared page with some data about itself and 
+pass this
+   to the Linux kernel as it transfers control.
+   -  The location of the shared page is passed via the boot_params 
+struct as
+      a physical address.
+o  The kernel will look for the tboot shared page address and, if it exists,
+   map it.
+o  At this point, tboot and TXT are out of the picture until a shutdown 
+(S<n>)
+o  In order to put a system into any of the sleep states after a TXT launch,
+   TXT must first be exited.  This is to prevent attacks that attempt to 
+crash
+   the system to gain control on reboot and steal data left in memory.
+   -  The kernel will perform all of its sleep preparation and populate the
+      shared page with the ACPI data needed to put the platform in the 
+desired
+      sleep state.
+   -  Then the kernel jumps into tboot via the vector specified in the 
+shared
+      page.
+   -  Tboot will clean up the environment and disable TXT, then use the
+      kernel-provided ACPI information to actually place the platform 
+into the
+      desired sleep state.
+   -  In the case of S3, tboot will also register itself as the resume 
+vector.
+      This is necessary because it must re-establish the measured 
+environment
+      upon resume.  Once the TXT environment has been restored, it will
+      restore the TPM PCRs and then transfer control back to the kernel's S3
+      resume vector.
+   -  S4 is not supported by this patch, but we expect to fix that shortly
+      (the current suspend code brings the APs out of suspend with an INIT,
+      which doesn't work under TXT).
 
-Heck you wouldn't even need FUSE, just mount -t tmpfs /sys/class/net
-and manually link the right devices from /sys/devices/virtual/net.
+That's pretty much it for TXT support.
 
--serge
+
+Configuring the System:
+======================
+
+This code works with 32bit, 32bit PAE, and 64bit (x86_64) kernels.
+
+In BIOS, the user must enable:  TPM, TXT, VT-x, VT-d.  Not all BIOSes 
+allow these to be individually enabled/disabled and the screens in which 
+to find them are BIOS-specific.
+
+grub.conf needs to be modified as follows:
+        title Linux 2.6.27-rc9 w/ tboot
+          root (hd0,0)
+                kernel /tboot.gz
+                module /vmlinuz-2.6.27-rc9 ro root=LABEL=/ rhgb 
+console=ttyS0,115200 3
+                module /initrd-2.6.27-rc9.img
+                module /Q35_SINIT_16.BIN
+
+As mentioned previously, the tboot source can be downloaded from the 
+Trusted Boot SourceForge project.
+
+The kernel option for enabling Intel TXT support is found under the 
+Security top-level menu and is called "Enable Intel(R) Trusted Execution 
+Technology (TXT)".  It is marked as EXPERIMENTAL and depends only on the 
+generic x86 support (to allow maximum flexibility in kernel build 
+options), since the tboot code will detect whether the platform actually 
+supports Intel TXT and thus whether any of the kernel code is executed.
+
+The Q35_SINIT_16.BIN file is what Intel TXT refers to as an 
+Authenticated Code Module.  It is specific to the chipset in the system 
+and can also be found on the Trusted Boot site.  It is an (unencrypted) 
+binary module signed by Intel that is used as part of the DRTM process 
+to verify and configure the system.  It is signed because it operates at 
+a higher privilege level in the system than any other macrocode and its 
+correct operation is critical to the establishment of the DRTM.
+
+
+We welcome your comments and suggestions and genuinely value your feedback.
+
+Joseph Cihula
+Shane Wang
+Gang Wei
+Intel Corp.
+
