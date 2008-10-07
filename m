@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYJGQOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbYJGQTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbYJGQOn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYJGQOd
+	id S1755135AbYJGQTw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbYJGQTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:14:33 -0400
-Received: from smtp.outflux.net ([198.145.64.163]:60218 "EHLO smtp.outflux.net"
+	Tue, 7 Oct 2008 12:19:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59958 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753649AbYJGQOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:14:32 -0400
-Date: Tue, 7 Oct 2008 09:14:22 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH v2] proc: show personality via /proc/pid/personality
-Message-ID: <20081007161422.GD10357@outflux.net>
-References: <20081002211424.GJ10632@outflux.net> <20081004145149.52c34ee7@infradead.org> <20081004220220.GK10632@outflux.net> <20081004164239.0c1483a4@infradead.org> <20081005004233.GL10632@outflux.net> <20081004174843.6fe48a8e@infradead.org> <20081005091120.GA21003@x200.localdomain> <20081005101438.GR10632@outflux.net> <517f3f820810070639q549ed2a1pe297e45108dfa007@mail.gmail.com>
+	id S1752678AbYJGQTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 12:19:44 -0400
+Message-ID: <48EB8BBB.8000907@kernel.org>
+Date: Tue, 07 Oct 2008 09:18:03 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <517f3f820810070639q549ed2a1pe297e45108dfa007@mail.gmail.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "mingo@elte.hu" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: mmotm 2008-10-02-16-17 uploaded
+References: <200810022318.m92NI14X031834@imap1.linux-foundation.org>	<Pine.LNX.4.64.0810021705460.26309@shark.he.net> <20081007163331.711a938c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081007163331.711a938c.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
-
-On Tue, Oct 07, 2008 at 03:39:26PM +0200, Michael Kerrisk wrote:
-> On Sun, Oct 5, 2008 at 12:14 PM, Kees Cook <kees.cook@canonical.com> wrote:
-> > Make process personality flags visible in /proc.  Since a process's
-> > personality is potentially sensitive (e.g. READ_IMPLIES_EXEC), make this
-> > file only readable by the process owner.
+KAMEZAWA Hiroyuki wrote:
+> I'm sorry if alread fixed.
 > 
-> Please CC userland interface changes to linux-api@vger.kernel.org
+> Folloing function in git-x86.patch touches invalid address.
+> ==
+> +void __init early_cpu_init(void)
+> +{
+> +       struct cpu_dev **cdev;
+> +       int count = 0;
+> +
+> +       printk("KERNEL supported cpus:\n");
+> +       for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
+> +               struct cpu_dev *cpudev = *cdev;
+> +               unsigned int j;
+> +
+> +               if (count >= X86_VENDOR_NUM)
+> +                       break;
+> +               cpu_devs[count] = cpudev;
+> +               count++;
+> +
+> +               for (j = 0; j < 2; j++) {
+> +                       if (!cpudev->c_ident[j])
+> +                               continue;
+> +                       printk("  %s %s\n", cpudev->c_vendor,
+> +                               cpudev->c_ident[j]);
+> +               }
+> +       }
+> +
+> +       early_identify_cpu(&boot_cpu_data);
+>  }
+> ==
+> printk("  %s %s\n", cpudev->c_vendor, cpudev->c_ident[j]);
+> touches invalid address. (following is printk() result by
+> replacing %s with %p.
+> ==
+>   ffffffff8066e38a ffffffff8066e383
+>   ffffffff8066e3ab ffffffff8066e3a2
+>   ffffffff8066e3af ffffffff8066e3b7
+>   807064c0c7c74855 08ec834853e58948
+>   807064c0c7c74855 74c085fffffe9fe8
+> ==
+> and the kernel never boots on my box.
 
-Sure, I'd be happy to do that for future stuff.  I don't see this email
-address mentioned anywhere in the kernel tree.  It seems like this is
-useful information that should go in either MAINTAINERS or better yet
-Documentation/SubmittingPatches for it to be discoverable by future
-patch-senders -- and somewhere that I can look it up easily later.  :)
+could be merging problem again.
 
--Kees
+please check in arch/x86/kernel/vmliux_64.lds.S
 
--- 
-Kees Cook
-Ubuntu Security Team
+it should be like 
+
+  __con_initcall_end = .;
+  __x86_cpu_dev_start = .;
+  .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
+        *(.x86_cpu_dev.init)
+  }
+  __x86_cpu_dev_end = .;
+
+  DYN_ARRAY_INIT(8)
+
+  SECURITY_INIT
+
+
+YH
+
+
