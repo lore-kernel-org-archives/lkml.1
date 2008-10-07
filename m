@@ -1,108 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYJGP2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYJGP2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755838AbYJGP2W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYJGP2L
+	id S1753727AbYJGP2h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbYJGP2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:28:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:59006 "EHLO mail.goop.org"
+	Tue, 7 Oct 2008 11:28:15 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:51756 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbYJGP2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:28:10 -0400
-Message-ID: <48EB8008.1020700@goop.org>
-Date: Tue, 07 Oct 2008 08:28:08 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+	id S1753762AbYJGP2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 11:28:13 -0400
+Date: Tue, 7 Oct 2008 18:27:40 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: [RFC] Btrfs mainline plans
+Message-ID: <20081007152740.GA31089@cs181140183.pp.htv.fi>
+References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org> <20081005122405.GA12047@cs181140183.pp.htv.fi> <20081005141113.GA6132@us.ibm.com> <20081005150957.GC12047@cs181140183.pp.htv.fi> <1223300403.16546.45.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 3/7] x86, cpa: make the kernel physical mapping initialization
- a two pass sequence
-References: <20080923210035.413932000@linux-os.sc.intel.com> <20080923211444.369122000@linux-os.sc.intel.com> <48EA798D.1090303@goop.org> <20081007015833.GO15609@linux-os.sc.intel.com>
-In-Reply-To: <20081007015833.GO15609@linux-os.sc.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1223300403.16546.45.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> Jeremy, hi. This dependency is not documented or explicitly called anywhere
-> in the mm/init_64.c code. I would have expected to see a big comment near this
-> kind of code :(
->   
+On Mon, Oct 06, 2008 at 09:40:03AM -0400, Chris Mason wrote:
+> On Sun, 2008-10-05 at 18:09 +0300, Adrian Bunk wrote:
+> > On Sun, Oct 05, 2008 at 09:11:13AM -0500, Serge E. Hallyn wrote:
+> > > Quoting Adrian Bunk (bunk@kernel.org):
+> > >
+> 
+> [ when to merge btrfs ]
+> 
+> > > > Let's try to learn from the past:
+> > > > 
+> > > > 6 days from today ext4 (another new local filesystem for Linux) 
+> > > > celebrates the second birthday of it's inclusion into Linus' tree
+> > > > as a similar special-case.
+> > > > 
+> > > > You claim "an early merge will accelerate its development and will 
+> > > > broaden its developer base" for Btrfs.
+> > > > 
+> > > > Read the timeline Ted outlined back in June 2006 for ext4 [1].
+> > > > When comparing with what happened in reality it kinda disproves
+> > > > your "acceleration" point.
+> > > 
+> 
+> The btrfs timelines have always been aggressive, and as btrfs gets
+> closer to feature complete, the testing matrix grows dramatically.  I
+> can't promise my crazy timelines won't slip, but I've been hacking away
+> in the basement for almost 18 months now and it's time for me to get off
+> the pot and make it stable.
+> 
+> Ext4 has always had to deal with the ghost of ext3.  Both from a
+> compatibility point of view and everyone's expectations of stability.  I
+> believe that most of us underestimated how difficult it would be to move
+> ext4 forward.
+> 
+> Btrfs is different for lots of reasons, and being in mainline will
+> definitely increase the pressure on the btrfs developers to finish, and
+> the resources available for us to finish with.
 
-Indeed yes.  I've explained it in various places, including commit 
-comments, but there should be a comment right there in the code.
+Your last sentence does not make sense:
 
-> It is not just the NX bit that we change. For DEBUG_PAGEALLOC, we want
-> use 4k pages instead of large page mappings during the identity mapping
-> (as this will clean some of the cpa pool code avoiding the cpa and hence
->  the page allocations for splitting the big pages from interrupt context's).
-> In this case will will split the static large page mappings.
->   
+According to your timeline btrfs 1.0 will be released in Q408 [1] - and
+the merge window for 2.6.29 will be in Q109.
 
-Well, that's OK.  We just need to preserve the original page permissions 
-when fragmenting the large mappings.  (This isn't a case that affects 
-Xen, because it will already be 4k mappings.)
+>...
+> > For people wanting to try WIP code you don't need it in mainline.
+> > 
+> > Stable kernels will anyway usually contain months old code of the
+> > WIP filesystem that is not usable for testing, so for any meaningful
+> > testing you will still have to follow the btrfs tree and not mainline.
+> 
+> For ext4 at least, the mainline code is very usable.  I hope to have
+> btrfs in shape for that by the 2.6.29 merge cycle.
 
->>    3. The actual implementation is pretty ugly; adding a global variable
->>       and hopping about with goto does not improve this code.
->>     
->
-> This is very early init code and I can't be fancy like calling cpa()
-> which need mm to be up and running.
+One risk you should be aware of is that when btrfs is in 2.6.29 part of 
+the Linux press might pick it up and stress test and benchmark this new 
+filesystem.
 
-Well, is there any urgency to set NX that early?  It might catch some 
-early bugs, but there's no urgent need.
+JFS still suffers from from not being that good when it was
+initially merged.
 
->  And also, cpa's on individual chunks
-> for entire identity mapping will make the boot slow.
->   
+> -chris
 
-Really?  Why?  How slow?
+cu
+Adrian
 
+[1] http://btrfs.wiki.kernel.org/index.php/Development_timeline
 
->> it cause real failures?  Could we revert this patch and address the
->> problem some other way?  Which app note is this, BTW?  The one I have on
->> hand, "TLBs, Paging-Structure Caches, and Their Invalidation", Apr 2007,
->> does not seem to mention this restriction.
->>     
->
-> http://developer.intel.com/design/processor/applnots/317080.pdf
-> Section 6 page 26
->   
+-- 
 
-Ah, OK.  I have the first version of this document which does not 
-mention this.  It would be good to explicitly cite this document by name 
-in the comments.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
->> Xen with this code in place (touching this code is always non-trivial).
->> I haven't looked into it in depth yet, but there's a few stand out "bad
->> for Xen" pieces of code here.  (And I haven't tested 32-bit yet.)
->>
->> Quick rules for keeping Xen happy here:
->>
->>    1. Xen provides its own initial pagetable; the head_64.S one is
->>       unused when booting under Xen.
->>    2. Xen requires that any pagetable page must always be mapped RO, so
->>       we're careful to not replace an existing mapping with a new one,
->>       in case the existing mapping is a pagetable one.
->>    3. Xen never uses large pages, and the hypervisor will fail any
->>       attempt to do so.
->>     
->
-> Thanks for this info. Will get back to you tomorrow.
->   
-
-Great.  Also, do you think you'll have a chance to look at unifying the 
-32 and 64 bit code (where 32 uses the 64-bit version)?
-
-
-Thanks,
-    J
