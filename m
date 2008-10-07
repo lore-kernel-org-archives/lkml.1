@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbYJGNao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYJGNh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755061AbYJGNao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 09:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYJGNad
+	id S1754387AbYJGNh3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 09:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYJGNhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 09:30:33 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:46111 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753384AbYJGNab (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 09:30:31 -0400
-Date: Tue, 7 Oct 2008 09:29:11 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Dave Chinner <david@fromorbit.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] Improve buffered streaming write ordering
-Message-ID: <20081007132911.GA6905@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Chris Mason <chris.mason@oracle.com>,
-	Dave Chinner <david@fromorbit.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-	ext4 <linux-ext4@vger.kernel.org>
-References: <20081001215239.ee2ae63f.akpm@linux-foundation.org> <1222950054.6745.18.camel@think.oraclecorp.com> <20081002181856.GB29613@skywalker> <20081002234309.GH30001@disturbed> <1223063155.13375.64.camel@think.oraclecorp.com> <20081006101605.GA15881@skywalker> <1223302903.16546.58.camel@think.oraclecorp.com> <20081007084531.GB15881@skywalker> <20081007090554.GA23811@infradead.org> <20081007100257.GA30745@skywalker>
+	Tue, 7 Oct 2008 09:37:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36389 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753352AbYJGNhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 09:37:09 -0400
+Message-ID: <48EB6600.9020204@redhat.com>
+Date: Tue, 07 Oct 2008 15:37:04 +0200
+From: Tomas Henzl <thenzl@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007100257.GA30745@skywalker>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: "Hillier, Gernot" <gernot.hillier@siemens.com>
+CC: aacraid@adaptec.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com
+Subject: Re: aacraid: Adaptec 2200S support broken on x86_64 by commit 94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+References: <48D10E1A.8030804@siemens.com>
+In-Reply-To: <48D10E1A.8030804@siemens.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 03:32:57PM +0530, Aneesh Kumar K.V wrote:
-> On Tue, Oct 07, 2008 at 05:05:54AM -0400, Christoph Hellwig wrote:
-> > On Tue, Oct 07, 2008 at 02:15:31PM +0530, Aneesh Kumar K.V wrote:
-> > > +static int ext4_write_cache_pages(struct address_space *mapping,
-> > > +		      struct writeback_control *wbc, writepage_t writepage,
-> > > +		      void *data)
-> > > +{
-> > 
-> > Looking at this functions the only difference is killing the
-> > writeback_index and range_start updates.  If they are bad why would we
-> > only remove them from ext4?
-> 
-> I am also not updating wbc->nr_to_write.
-    ...
-> I don't think other filesystem have this requirement.
+Hillier, Gernot wrote:
+> Hi there!
+>
+> On our AMD64 machines equipped with old Adaptec 2200S controllers, we
+> experienced a regression when updating to 2.6.25. The machines won't
+> boot anymore (in a reasonable time), but instead spit out tons of those
+> messages:
+> aac_srb: aac_fib_send failed with status: 8195
+>
+> This is already reported in quite some places including LKML:
+> http://lkml.org/lkml/2008/5/12/365
+> https://bugzilla.redhat.com/show_bug.cgi?id=450444
+> https://bugzilla.redhat.com/show_bug.cgi?id=453472
+> http://www.linuxquestions.org/questions/red-hat-31/aacsrb-aacfibsend-failed-with-status-8195-651078/
+> http://forums.gentoo.org/viewtopic-p-5077382.html?sid=a51c3a0fba6aa854c0b49b8fae5cc15a
+>
+> We found that this regression seems to be introduced by the bugfix
+> "aacraid: fix driver failure with Dell PowerEdge
+> Expandable RAID Controller 3/Di":
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+>
+> By simply removing the quirk flag for our controller, we could boot again.
+>
+> We did some quick stress tests on an AMD64bit machine with 16GB of RAM 
+> and saw no problems after this change:
+>
+> diff -ur linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c
+> --- linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c	2008-09-15 16:07:14.000000000 +0100
+> +++ linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c	2008-09-15 16:09:26.000000000 +0100
+> @@ -176,7 +176,7 @@
+>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
+> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG }, /* Adaptec 2200S (Vulcan) */
+>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
+>
+> Can this be safely changed/merged? Or is this the wrong way to fix it?
+>
+> Please note that we also have machines equipped with newer Adaptec 2230S
+> controllers (PCI ID 9005:0286) which run perfectly with the current driver.
+>
+>   
+Hi,
+from what I read about this it seems to me that people are complaining also about issues with the 2120S Controller.
+So if the patch is taken in this form the original patch should be extended to cover both controllers.
 
-That's true, but there is a lot of code duplication, which means that
-bugs or changes in write_cache_pages() would need to be fixed in
-ext4_write_cache_pages().  So another approach that might be better
-from a long-term code maintenance point of view is to add a flag in
-struct writeback_control that tells write_cache_pages() not to update
-those fields, and avoid duplicating approximately 95 lines of code.
-It means a change in a core mm function, though, so if folks thinks
-its too ugly, we can make our own copy in fs/ext4.
+Signed-off-by: Tomas Henzl <thenzl@redhat.com>
 
-Opinions?  Andrew, as someone who often weighs in on fs and mm issues,
-what do you think?  My preference would be to make the change to
-mm/page-writeback.c, controlled by a flag which ext4 would set be set
-by fs/ext4 before it calls write_cache_pages().
+---
+diff -Naurp linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c
+--- linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c	2008-09-25 18:06:23.000000000 +0200
++++ linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c	2008-10-03 12:12:06.000000000 +0200
+@@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drive
+ 	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+-	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+-	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
++	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
++	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+ 	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+ 	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
 
-						- Ted
+
+
