@@ -1,101 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbYJGWgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYJGWjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbYJGWgg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbYJGWgL
+	id S1757564AbYJGWjn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbYJGWjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:36:11 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:37388 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755134AbYJGWgE (ORCPT
+	Tue, 7 Oct 2008 18:39:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:16725 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753488AbYJGWja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:36:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <gregkh@suse.de>
-Cc: Mark Ryden <markryde@gmail.com>, Benjamin Thery <benjamin.thery@bull.net>,
-       David Shwatrz <dshwatrz@gmail.com>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
-References: <m1hc9e27ya.fsf_-_@frodo.ebiederm.org> <48B57058.9000101@bull.net>
-	<dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com>
-	<48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de>
-	<31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com>
-	<48BF83E1.5040000@bull.net>
-	<dac45060810070939v80918a0m3963d7fc6fcbb975@mail.gmail.com>
-	<20081007164833.GA16056@suse.de> <m1abdgywnb.fsf@frodo.ebiederm.org>
-	<20081007210902.GB7996@suse.de>
-Date: Tue, 07 Oct 2008 15:27:12 -0700
-In-Reply-To: <20081007210902.GB7996@suse.de> (Greg KH's message of "Tue, 7 Oct
-	2008 14:09:02 -0700")
-Message-ID: <m18wt0qbwf.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Greg KH <gregkh@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4852]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Tue, 7 Oct 2008 18:39:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Z1GmYpw1ZcFuQt8yH4ru1OXXXO2VjhlEy364PskYYSQ8Xfaw7SmbHj9pfJJV+fqQR7
+         z0k4jlkt73Ywe0g4hIppthUd2m0f6T6RHI5UHEeu6tokkZA6b40KtYwXINeYkEGBlOUX
+         Kr1r8mGqgYMGaHh85klzh9yabP2hgj9zsaWpg=
+Subject: Re: [RFC] Normalizing byteorder/unaligned access API
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>
+In-Reply-To: <1223417543.7484.7.camel@localhost.localdomain>
+References: <1223416391.8195.22.camel@brick>
+	 <1223417543.7484.7.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 15:39:25 -0700
+Message-Id: <1223419166.8195.37.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+On Tue, 2008-10-07 at 18:12 -0400, James Bottomley wrote:
+> On Tue, 2008-10-07 at 14:53 -0700, Harvey Harrison wrote:
+> > [related question regarding the SCSI-private endian helper needs at the end]
+> > 
+> > Currently on the read side, we have (le16 as an example endianness)
+> > 
+> > le16_to_cpup(__le16 *)
+> > get_unaligned_le16(void *)
+> > 
+> > And on the write side:
+> > 
+> > *(__le16)ptr = cpu_to_le16(u16)
+> > put_unaligned_le16(u16, void *);
+> > 
+> > On the read side, Al said he would have preferred the unaligned version
+> > take the same types as the aligned, rather than void *.  AKPM didn't think
+> > the use of get_ was that great as get/put generally implies some kind of reference
+> > taking in the kernel.
+> > 
+> > As the le16_to_cpup has been around for so long and is more recognizable, let's
+> > make it the same for the unaligned case and typesafe:
+> > 
+> > le16_to_cpup(__le16 *)
+> > unaligned_le16_to_cpup(__le16 *)
+> > 
+> > On the write side, the above get/put and type issues are still there, in addition AKPM felt
+> > that the ordering of the put_unaligned parameters was opposite what was intuitive and that
+> > the pointer should come first.
+> > 
+> > In this case, as there is currently no aligned helper (other than in some drivers defining macros)
+> > define the api thusly:
+> > 
+> > Aligned:
+> > write_le16(__le16 *ptr, u16 val)
+> > 
+> > Unaligned:
+> > unaligned_write_le16(__le16 *ptr, u16 val)
+> 
+> Well, for us it would be even worse since now we'll have to do casting
+> to __beX just to shut sparse up, which makes the code even more
+> unreadable.
 
-> On Tue, Oct 07, 2008 at 01:31:52PM -0700, Eric W. Biederman wrote:
->> Greg KH <gregkh@suse.de> writes:
->> 
->> > On Tue, Oct 07, 2008 at 06:39:04PM +0200, Mark Ryden wrote:
->> >> Hello,
->> >>   So I wonder: the sysfs tagged directory support patch is in GerKH
->> >> tree for more than a month.
->> >
->> > I dropped it from my tree 2 days ago, see the thread on lkml for why.
->> 
->> Greg why did you drop it? 
->
-> Because Al said it was full of problems and for us not to accept it.
+Well, there are so many sparse warnings in scsi already, would a few
+more really hurt?
 
-Yes. Al found problems.
+To avoid the casts, you could also define some annotated, packed structs
+to avoid the casting.
 
-Al reviewed sysfs with my patchset on top of it.
+As an example, in the write command handling in achba.c, a patch similar to the following
+(assumes the existence of a __be24 type somewhere):
 
-Al's review found problems in  sysfs with my patchset on top of it.
+Somewhere in a scsi header:
 
-If you look at what Al found the majority of those problems exist in sysfs
-without my patches.
+struct scsi_cmd_write6 {
+	u8	cmd;
+	__be24	lba;
+	u8	count;
+} __packed
 
-Does the following sound like a workable path going forward?
+struct scsi_cmd_write16 {
+	u16	cmd;
+	__be64	lba;
+	__be32	count;
+} __packed
 
-- Not merge for 2.6.28 (we are to close to the merge window for everyone's comfort).
+struct scsi_cmd_write12 {
+	u16 cmd;
+	__be32 lba;
+	__be32 count;
+	u16 (harvey doesn't know scsi);
+} __packed
 
-- Fix the small issues specific to tagged directory support that showed
-  up in Al's review (patches sent).
+struct scsi_cmd_write10 {
+	u16 cmd;
+	__be32 lba;
+	u8 (harvey doesn't know scsi);
+	__be16 count;
+} __packed
 
-- Keep the patches the entire time in a public tree that merges into
-  linux-next so that people treat this code base seriously.
+ANd then notice that you don't need any casts even if the unaligned helpers
+have strict types...that and the code gets a whole lot easier to read.
 
-- Resolve the sysfs/vfs lock ordering problem mess that makes
-  locking in sysfs excruciatingly difficult.
+diff --git a/drivers/scsi/aacraid/aachba.c b/drivers/scsi/aacraid/aachba.c
+index aa4e77c..5363a45 100644
+--- a/drivers/scsi/aacraid/aachba.c
++++ b/drivers/scsi/aacraid/aachba.c
+@@ -1786,41 +1786,24 @@ static int aac_synchronize(struct scsi_cmnd *scsicmd)
+ 			u32 cmnd_count;
+ 
+ 			if (cmd->cmnd[0] == WRITE_6) {
+-				cmnd_lba = ((cmd->cmnd[1] & 0x1F) << 16) |
+-					(cmd->cmnd[2] << 8) |
+-					cmd->cmnd[3];
+-				cmnd_count = cmd->cmnd[4];
++				const struct scsi_cmd_write_6 *tmp = cmd->cmnd;
++				cmnd_lba = unaligned_be24_to_cpup(&tmp->lba) & 0x001FFFFF;
++				cmnd_count = tmp->count;
++
+ 				if (cmnd_count == 0)
+ 					cmnd_count = 256;
+ 			} else if (cmd->cmnd[0] == WRITE_16) {
+-				cmnd_lba = ((u64)cmd->cmnd[2] << 56) |
+-					((u64)cmd->cmnd[3] << 48) |
+-					((u64)cmd->cmnd[4] << 40) |
+-					((u64)cmd->cmnd[5] << 32) |
+-					((u64)cmd->cmnd[6] << 24) |
+-					(cmd->cmnd[7] << 16) |
+-					(cmd->cmnd[8] << 8) |
+-					cmd->cmnd[9];
+-				cmnd_count = (cmd->cmnd[10] << 24) |
+-					(cmd->cmnd[11] << 16) |
+-					(cmd->cmnd[12] << 8) |
+-					cmd->cmnd[13];
++				const struct scsi_cmd_write_16 *tmp = cmd->cmnd;
++				cmnd_lba = unaligned_be64_to_cpup(&tmp->lba);
++				cmnd_count = unaligned_be32_to_cpup(&tmp->count);
+ 			} else if (cmd->cmnd[0] == WRITE_12) {
+-				cmnd_lba = ((u64)cmd->cmnd[2] << 24) |
+-					(cmd->cmnd[3] << 16) |
+-					(cmd->cmnd[4] << 8) |
+-					cmd->cmnd[5];
+-				cmnd_count = (cmd->cmnd[6] << 24) |
+-					(cmd->cmnd[7] << 16) |
+-					(cmd->cmnd[8] << 8) |
+-					cmd->cmnd[9];
++				const struct scsi_cmd_write_12 *tmp = cmd->cmnd;
++				cmnd_lba = unaligned_be32_to_cpup(&tmp->lba);
++				cmnd_count = unaligned_be32_to_cpup(&tmp->count);
+ 			} else if (cmd->cmnd[0] == WRITE_10) {
+-				cmnd_lba = ((u64)cmd->cmnd[2] << 24) |
+-					(cmd->cmnd[3] << 16) |
+-					(cmd->cmnd[4] << 8) |
+-					cmd->cmnd[5];
+-				cmnd_count = (cmd->cmnd[7] << 8) |
+-					cmd->cmnd[8];
++				const struct scsi_cmd_write_10 *tmp = cmd->cmnd;
++				cmnd_lba = unaligned_be32_to_cpup(&tmp->lba);
++				cmnd_count = unaligned_be16_to_cpup(&tmp->count);
+ 			} else
+ 				continue;
+ 			if (((cmnd_lba + cmnd_count) < lba) ||
 
-- Merge other patches to fix Als other issues with sysfs.
 
-- Merge to 2.6.29 or wherever we are.
-
-
-Eric
 
