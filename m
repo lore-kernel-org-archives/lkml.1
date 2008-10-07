@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbYJGW2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYJGWbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbYJGW2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbYJGW20
+	id S1756853AbYJGWbT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbYJGWbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:28:26 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:37327 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755210AbYJGW20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:28:26 -0400
-Message-ID: <48EBE263.8000500@tlinx.org>
-Date: Tue, 07 Oct 2008 15:27:47 -0700
-From: Linda Walsh <smartmontools@tlinx.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 7 Oct 2008 18:31:04 -0400
+Received: from kroah.org ([198.145.64.141]:43739 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753133AbYJGWbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 18:31:03 -0400
+Date: Tue, 7 Oct 2008 15:27:26 -0700
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: sysfs: tagged directories not merged completely yet
+Message-ID: <20081007222726.GA9465@kroah.com>
+References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com> <48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org> <20081003101331.GH28946@ZenIV.linux.org.uk> <20081005053236.GA9472@kroah.com> <m1bpxwajyy.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
- or sleep, PATA models did. (fwd)
-References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org> <48EAB672.3010209@gmail.com> <48EABD07.6030506@tlinx.org> <48EABE8E.9070809@gmail.com>
-In-Reply-To: <48EABE8E.9070809@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1bpxwajyy.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Linda Walsh wrote:
->   
->> Controller is a Promise TX4/300
->> Yeap.  After the drive goes offline, does unplugging and replugging
->> the power cable to the harddrive makes it come back?
->>     
-----
-    No.  It hangs the computer. about 2-3 seconds after plugging the
-drives back in.  Did it twice to verify it wasn't a fluke.  Verified
-drives removed from /dev, then
-plugged them back in -- was able to do about 1-2 ls commands on /dev, then
-keyboard goes dead.
+On Tue, Oct 07, 2008 at 01:27:17AM -0700, Eric W. Biederman wrote:
+> Unless someone will give an example of how having multiple superblocks
+> sharing inodes is a problem in practice for sysfs and call it good
+> for 2.6.28.  Certainly it shouldn't be an issue if the network namespace
+> code is compiled out.  And it should greatly improve testing of the
+> network namespace to at least have access to sysfs.
 
-    First time I tried unplugging the power cables and replugging --
-that hung...
-2nd time tried unplugging a sata cable and replugging -- that hung too.
+But if the network namespace code is in?  THen we have problems, right?
+And that's the whole point here.
 
-    Hopefully you won't need any more tests of this exact nature...? :-)
+The fact that you are trying to limit userspace view of in-kernel data
+structures, based on that specific user, is, in my opinion, crazy.
 
+Why not just keep all users from seeing sysfs, and then have a user
+daemon doing something on top of FUSE if you really want to see this
+kind of stuff.
 
+The "leakage" just seems too hard to stop.
 
+> Later Tejun or I or possibly someone else who cares can go back
+> and simplify the sysfs locking to remove the need for multiple
+> superblocks sharing inodes, and to address the other big nasties in
+> the current sysfs implementation.  
+
+I know how the whole "we'll go back later and fix it up" stuff works,
+I've used that excuse too many times in the past myself.  Never happens
+:)
+
+> Greg I agree with Al that sysfs isn't perfect but we sure aren't going
+> to fix it if you keep dropping or taking years to merge every patch
+> from the people working on it, and then dropping those patches because
+> someone frowns at them.
+
+"years"?  Come on, these did take a while due to travel and other stuff.
+These are core kernel changes, and need time to ensure that they work
+properly, and get the proper review from people who understand this kind
+of stuff.
+
+And to call Al a generic "someone", is just rude and disrespectful.  I
+trust his opinion in this area far more than I do yours, to be honest.
+
+This whole series is dropped, if you want to resubmit them, feel free
+to, _after_ adressing his issues.
+
+bah,
+
+greg k-h
