@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYJGPMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbYJGPQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbYJGPMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYJGPLv
+	id S1754571AbYJGPQv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYJGPQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:11:51 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:29600 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751552AbYJGPLu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:11:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eEWrGLbwvdTPQaBjsCIrrli54WytQxcbfGsxyTTjyF19mkAtj3yyb9FATANBfGdK0kdxqJWeZnLdjhQLc38CD28e5PqlNyrO9B0hcmJaOEMcdOZlVE3E+Jw0GXznQ8SoeYdaEtRPNKfDqHYnh5Fo6IAk7eKWpCraGXagJLjMgW8=  ;
-X-YMail-OSG: LvWDzNoVM1mS0MghfaElXbapo_Tve.O5avCg1b2XBrllLCs3SV8SmHNsH_YLdz7_uft0umcAyrE0ylDDbXz.LpdznuO_v9QXqRntaLDEhsSmJPQRxIfaanYU4dHXGkVW.RpFK5pvJ1wgodQvFsWpRi9fdLllr0x8TBnHaGTqWzcDHNLs76s-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #11207] VolanoMark regression with 2.6.27-rc1
-Date: Wed, 8 Oct 2008 02:11:41 +1100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Miao Xie" <miaox@cn.fujitsu.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.S8B.b975IB@wind>
-In-Reply-To: <yWwteD.A.S8B.b975IB@wind>
+	Tue, 7 Oct 2008 11:16:40 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36065 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753025AbYJGPQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 11:16:39 -0400
+Date: Tue, 7 Oct 2008 08:07:47 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Corey Minyard <minyard@acm.org>,
+       David Miller <davem@davemloft.net>, dada1@cosmosbay.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       shemminger@vyatta.com
+Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
+Message-ID: <20081007150747.GG6384@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081006185026.GA10383@minyard.local> <48EA8197.6080502@cosmosbay.com> <20081006.144002.56418911.davem@davemloft.net> <48EA9A59.1090306@acm.org> <20081007083750.GB17079@2ka.mipt.ru> <48EB6F2D.100@linux-foundation.org> <20081007143346.GA6384@linux.vnet.ibm.com> <48EB7617.3060304@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810080211.42210.nickpiggin@yahoo.com.au>
+In-Reply-To: <48EB7617.3060304@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 October 2008 04:28, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
-> Subject		: VolanoMark regression with 2.6.27-rc1
-> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> Date		: 2008-07-31 3:20 (66 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
-> Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> 		  Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> 		  Miao Xie <miaox@cn.fujitsu.com>
+On Tue, Oct 07, 2008 at 09:45:43AM -0500, Christoph Lameter wrote:
+> Paul E. McKenney wrote:
+> 
+> > But care is required -- SLAB_DESTROY_BY_RCU permits objects to be freed
+> > and reallocated while a reader holds a reference.  The only guarantee is
+> > that the -type- of the data structure will not change while a reader holds
+> > a reference.  With something like UDP, this might well be sufficient.
+> 
+> Right so after the hash lookup operation you are not assured that the object
+> has not been freed or even reallocated for a different purpose. So after
+> finding the pointer to the object two things need to happen (under rcu_lock):
+> 
+> 1. Verify that the object is still in use
+> 2. Verify that the object is matching the hash
+> 
+> If not then the operation needs to be redone because we have a stale hash
+> pointer.
 
-Curious: what's happening with this one, handlers? Any progress being made?
+There is also the possibility that the element will be reused, but placed
+in the same list that it resided in last time.  A reader referencing
+that item during this process might then be relocated in the list, which
+could either cause the reader to skip elements in the list (if the new
+element is relocated farther down the list) or endlessly loop through
+the list (if new elements were relocated closer to the list head and this
+free-reallocate process repeated and the reader was insanely unlucky).
+
+							Thanx, Paul
