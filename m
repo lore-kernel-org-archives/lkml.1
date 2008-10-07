@@ -1,94 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbYJGPgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbYJGPi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbYJGPgj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYJGPgb
+	id S1755042AbYJGPi0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbYJGPiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:36:31 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:47907 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753035AbYJGPgb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:36:31 -0400
-Date: Tue, 7 Oct 2008 11:36:30 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       <akpm@linux-foundation.org>, <mingo@elte.hu>,
-       <jason.wessel@windriver.com>, <avi@qumranet.com>,
-       <richardj_moore@uk.ibm.com>
-Subject: Re: [RFC Patch 2/9] x86 architecture implementation of Hardware
- Breakpoint interfaces
-In-Reply-To: <20081007114147.GB25627@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0810071122460.2591-100000@iolanthe.rowland.org>
+	Tue, 7 Oct 2008 11:38:16 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:49081 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751552AbYJGPiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 11:38:15 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18667.33351.854693.368568@harpo.it.uu.se>
+Date: Tue, 7 Oct 2008 17:37:43 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       netdev@vger.kernel.org, Paul McKenney <paulmck@us.ibm.com>
+Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm,
+	for adaptive dcache hash table sizing (resend)
+In-Reply-To: <20081007071827.GB5010@infradead.org>
+References: <20081007064834.GA5959@wotan.suse.de>
+	<20081007070225.GB5959@wotan.suse.de>
+	<20081007071827.GB5010@infradead.org>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Oct 2008, K.Prasad wrote:
+Christoph Hellwig writes:
+ > On Tue, Oct 07, 2008 at 09:02:25AM +0200, Nick Piggin wrote:
+ > > (resending with correct netdev address)
+ > > 
+ > > Hi,
+ > > 
+ > > I thought I should quickly bring this patch up to date and write it up
+ > > properly, because IMO it is still useful. I earlier had tried to turn the
+ > > algorithm into a library that could be plugged into with specific lookup
+ > > functions and such, but that got really nasty and also difficult to retain
+ > > a really light fastpath. I don't think it is too nasty to open-code it...
+ > > 
+ > > Describe the "Dynamic dynamic data structure" (DDDS) algorithm, and implement
+ > > adaptive dcache hash table sizing using DDDS.
+ > > 
+ > > The dcache hash size is increased to the next power of 2 if the number
+ > > of dentries exceeds the current size of the dcache hash table. It is decreased
+ > > in size if it is currently more than 3 times the number of dentries.
+ > > 
+ > > This might be a dumb thing to do. It also currently performs the hash resizing
+ > > check for each dentry insertion/deletion, and calls the resizing in-line from
+ > > there: that's bad, because resizing takes several RCU grace periods. Rather it
+ > > should kick off a thread to do the resizing, or even have a background worker
+ > > thread checking the sizes periodically and resizing if required.
+ > > 
+ > > With this algorithm, I can fit a whole kernel source and git tree in my dcache
+ > > hash table that is still 1/8th the size it would be before the patch.
+ > > 
+ > > I'm cc'ing netdev because Dave did express some interest in using this for
+ > > some networking hashes, and network guys in general are pretty cluey when it
+ > > comes to hashes and such ;)
 
-> This patch introduces two new files named hw_breakpoint.[ch] inside x86 specific
-> directories. They contain functions which help validate and serve requests for 
-> using Hardware Breakpoint registers on x86 processors.
+I missed the first post, but loooking at the patch it seems
+somewhat complex.
 
-> --- /dev/null
-> +++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/hw_breakpoint.c
-> @@ -0,0 +1,684 @@
+How does this relate to traditional incremental hash tables
+like extensible hashing or linear hashing (not to be confused
+with linear probing)? In linear hashing a resize only affects
+a single collision chain at a time, and reads from other chains
+than the one being resized are unaffected.
 
-...
-> +int pre_handler_allowed(unsigned type)
-> +{
-> +	if (type == HW_BREAKPOINT_EXECUTE)
-> +		return 1;
-> +	else
-> +		return -EINVAL;
-> +}
+(I can dig up some references if need be.)
 
-The routine's name should match the name in the header file.  "allowed" 
-isn't right: You're _allowed_ to have pre_handlers -- they just won't 
-get invoked.  "supported" would be better.
-
-Also, the comment in the header file should explain the meaning of the
-return value -- you should return 0 if a pre_handler is not supported, 
-not -EINVAL.  Better yet, define the function (both here and in the 
-header file) as returning bool rather than int.
-
-> +
-> +int post_handler_allowed(unsigned type)
-> +{
-> +	/* We can have a post handler for all types of breakpoints */
-> +	return 1;
-> +}
-
-Same comments as above.
-
-Also, in this initial version I would prefer to avoid the complications
-of single-stepping.  It can always be added later.  So for now, the x86
-implementation should not support post_handlers for execution
-breakpoints.
-
-...
-> +/*
-> + * Validate the arch-specific HW Breakpoint register settings
-> + */
-> +static int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
-> +			unsigned long address, unsigned len, unsigned int type,
-> +			unsigned int *align)
-
-Why did you move this routine into the arch-specific code?
-
-...
-> +/*
-> + * Handle debug exception notifications.
-> + */
-> +
-> +static void switch_to_none_hw_breakpoint(void);
-> +struct hw_breakpoint *last_hit_bp;
-> +struct thread_hw_breakpoint *last_hit_thbi;
-
-Shouldn't these variables be static?  Although if they're needed only for
-single-stepping, they can be removed entirely for now...
-
+/Mikael
