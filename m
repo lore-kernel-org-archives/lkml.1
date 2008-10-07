@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbYJGUgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbYJGUg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbYJGUgD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbYJGUf1
+	id S1757509AbYJGUg3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYJGUgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:35:27 -0400
-Received: from mga02.intel.com ([134.134.136.20]:20913 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757275AbYJGUfY convert rfc822-to-8bit (ORCPT
+	Tue, 7 Oct 2008 16:36:10 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:47670 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757444AbYJGUgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:35:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
-   d="scan'208";a="345106224"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 7 Oct 2008 16:36:07 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <gregkh@suse.de>
+Cc: Mark Ryden <markryde@gmail.com>, Benjamin Thery <benjamin.thery@bull.net>,
+       David Shwatrz <dshwatrz@gmail.com>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
+References: <20080820021754.GA25182@kroah.com>
+	<m1od3m282j.fsf_-_@frodo.ebiederm.org>
+	<m1hc9e27ya.fsf_-_@frodo.ebiederm.org> <48B57058.9000101@bull.net>
+	<dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com>
+	<48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de>
+	<31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com>
+	<48BF83E1.5040000@bull.net>
+	<dac45060810070939v80918a0m3963d7fc6fcbb975@mail.gmail.com>
+	<20081007164833.GA16056@suse.de>
+Date: Tue, 07 Oct 2008 13:31:52 -0700
+In-Reply-To: <20081007164833.GA16056@suse.de> (Greg KH's message of "Tue, 7
+	Oct 2008 09:48:33 -0700")
+Message-ID: <m1abdgywnb.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [RFC][PATCH 2/3] TXT: Intel IOMMU PMR Disable
-Date: Tue, 7 Oct 2008 13:34:52 -0700
-Message-ID: <D936D925018D154694D8A362EEB0892005AC105E@orsmsx416.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC][PATCH 2/3] TXT: Intel IOMMU PMR Disable
-Thread-Index: AckovCaqOpdV0yk+RfiIxVbPkDYs2g==
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
-       <mingo@elte.hu>, <tytso@mit.edu>
-X-OriginalArrivalTime: 07 Oct 2008 20:34:53.0383 (UTC) FILETIME=[2739C570:01C928BC]
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Greg KH <gregkh@suse.de>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1532]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Disable Intel VT-d (IOMMU) Protected Memory Regions (PMRs) when DMA
-remapping is enabled.
+Greg KH <gregkh@suse.de> writes:
 
-Leaving the PMRs enabled may add more delay to the VT-d DMA request
-processing (as another lookup may be performed) but whether they are
-even used is not deterministic:
-	DMA requests that are subject to address remapping, and
-accessing the
-	protected memory regions may or may not be blocked by hardware.
-For
-	such requests, software must not depend on hardware protection
-of the
-	protected memory regions, and instead program the DMA-remapping
-	page-tables to block DMA to protected memory regions.
-	-- from the description field of the PMEN_REG register in the
-v1.2 (May '08) VT-d spec.
+> On Tue, Oct 07, 2008 at 06:39:04PM +0200, Mark Ryden wrote:
+>> Hello,
+>>   So I wonder: the sysfs tagged directory support patch is in GerKH
+>> tree for more than a month.
+>
+> I dropped it from my tree 2 days ago, see the thread on lkml for why.
 
-Signed-off-by:  Shane Wang <shane.wang@intel.com>
-Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
+Greg why did you drop it? 
 
-diff -r 29cfdc52a076 drivers/pci/intel-iommu.c
---- a/drivers/pci/intel-iommu.c Mon Oct 06 12:50:47 2008 -0700
-+++ b/drivers/pci/intel-iommu.c Mon Oct 06 15:54:59 2008 -0700
-@@ -742,6 +742,22 @@ static void iommu_disable_protect_mem_re
-        spin_unlock_irqrestore(&iommu->register_lock, flags);
- }
+Eric
 
-+static void disable_pmr(struct intel_iommu *iommu)
-+{
-+       u32 data;
-+
-+       data = readl(iommu->reg + DMAR_PMEN_REG);
-+       if (!(data & DMA_PMEN_PRS))
-+               return;
-+
-+       data = data & ~DMA_PMEN_EPM;
-+       writel(data, iommu->reg + DMAR_PMEN_REG);
-+
-+       IOMMU_WAIT_OP(iommu, DMAR_PMEN_REG,
-+               readl, !(data & DMA_PMEN_PRS), data);
-+       return;
-+}
-+
- static int iommu_enable_translation(struct intel_iommu *iommu)
- {
-        u32 sts;
-@@ -755,6 +771,7 @@ static int iommu_enable_translation(stru
-                readl, (sts & DMA_GSTS_TES), sts);
-
-        iommu->gcmd |= DMA_GCMD_TE;
-+       disable_pmr(iommu);
-        spin_unlock_irqrestore(&iommu->register_lock, flags);
-        return 0;
- }
-diff -r 29cfdc52a076 drivers/pci/intel-iommu.h
---- a/drivers/pci/intel-iommu.h Mon Oct 06 12:50:47 2008 -0700
-+++ b/drivers/pci/intel-iommu.h Mon Oct 06 15:54:59 2008 -0700
-@@ -158,6 +158,10 @@ static inline void dmar_writeq(void __io
- #define DMA_GSTS_FLS (((u32)1) << 29)
- #define DMA_GSTS_AFLS (((u32)1) << 28)
- #define DMA_GSTS_WBFS (((u32)1) << 27)
-+
-+/* PMEN_REG */
-+#define DMA_PMEN_EPM (((u32)1) << 31)
-+#define DMA_PMEN_PRS (((u32)1) << 0)
-
- /* CCMD_REG */
- #define DMA_CCMD_ICC (((u64)1) << 63)
