@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbYJGXRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbYJGXTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbYJGXRW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYJGXRO
+	id S1757502AbYJGXTe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYJGXTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:17:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45493 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753477AbYJGXRN (ORCPT
+	Tue, 7 Oct 2008 19:19:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53905
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754720AbYJGXTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:17:13 -0400
-Date: Wed, 8 Oct 2008 01:23:22 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
-Message-ID: <20081007232322.GV20740@one.firstfloor.org>
-References: <1223396117-8118-1-git-send-email-kirill@shutemov.name> <2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com> <20081007211038.GQ20740@one.firstfloor.org> <2f11576a0810071438x59e51b74rc8c1919c14739395@mail.gmail.com>
+	Tue, 7 Oct 2008 19:19:24 -0400
+Date: Tue, 07 Oct 2008 16:19:00 -0700 (PDT)
+Message-Id: <20081007.161900.252724926.davem@davemloft.net>
+To: jbarnes@virtuousgeek.org
+Cc: jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
+       linux-netdev@vger.kernel.org, kkeil@suse.de, agospoda@redhat.com,
+       arjan@linux.intel.com, david.graham@intel.com, bruce.w.allan@intel.com,
+       jkosina@suse.cz, john.ronciak@intel.com, tglx@linutronix.de,
+       chris.jones@canonical.com, tim.gardner@intel.com, airlied@gmail.com
+Subject: Re: [RFC PATCH 02/12] On Tue, 23 Sep 2008, David Miller wrote:
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200810021523.45884.jbarnes@virtuousgeek.org>
+References: <20080930030825.22950.18891.stgit@jbrandeb-bw.jf.intel.com>
+	<20080930031927.22950.4692.stgit@jbrandeb-bw.jf.intel.com>
+	<200810021523.45884.jbarnes@virtuousgeek.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f11576a0810071438x59e51b74rc8c1919c14739395@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08, 2008 at 06:38:07AM +0900, KOSAKI Motohiro wrote:
-> >> Sorry, no.
-> >> This description still doesn't explain why this interface is needed.
-> >>
-> >> The one of the points is this interface is used by another person or not.
-> >> You should explain how large this interface benefit has.
-> >>
-> >> Andi kleen explained this interface _can_  be used another one.
-> >> but nobody explain who use it actually.
-> >
-> > Anyone who doesn't want to use fixed addresses.
-> 
-> yup.
-> however, almost application doesn't use new flag because almost
-> application want to works on cross platform. (or merely lazy)
-> then, this explain isn't enough, imo.
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Thu, 2 Oct 2008 15:23:43 -0700
 
-You're arguing that there shouldn't be any Linux extensions
-to system calls ever because it would break compatibility? 
+> Ping DaveM.  Does this look ok?  What else would we need for you to remove 
+> your range checking from sparc?
 
-You're at least 15 years too late with that. Linux extensions
-are there all over.
-
--Andi
-
--- 
-ak@linux.intel.com
+I can't do that until you add similar checking to the other
+pci_mmap_page_range() call site in drivers/pci/proc.c
