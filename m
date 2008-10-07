@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbYJGA4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYJGA4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759749AbYJGA4h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbYJGApG
+	id S1758976AbYJGA4w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757847AbYJGApI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:45:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60835 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:45:08 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60854 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756766AbYJGApE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:45:04 -0400
-Date: Mon, 6 Oct 2008 17:39:23 -0700
+	id S1757839AbYJGApG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:45:06 -0400
+Date: Mon, 6 Oct 2008 17:39:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 44/71] HPET: make minimum reprogramming delta useful
-Message-ID: <20081007003923.GS3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 45/71] clockevents: broadcast fixup possible waiters
+Message-ID: <20081007003925.GT3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-06.patch"
+Content-Disposition: inline; filename="timer-fix-07.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,38 +41,74 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 7cfb0435330364f90f274a26ecdc5f47f738498c upstream
+commit 7300711e8c6824fcfbd42a126980ff50439d8dd0 upstream
 
-The minimum reprogramming delta was hardcoded in HPET ticks,
-which is stupid as it does not work with faster running HPETs.
-The C1E idle patches made this prominent on AMD/RS690 chipsets,
-where the HPET runs with 25MHz. Set it to 5us which seems to be
-a reasonable value and fixes the problems on the bug reporters
-machines. We have a further sanity check now in the clock events,
-which increases the delta when it is not sufficient.
+Until the C1E patches arrived there where no users of periodic broadcast
+before switching to oneshot mode. Now we need to trigger a possible
+waiter for a periodic broadcast when switching to oneshot mode.
+Otherwise we can starve them for ever.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
-Tested-by: Dmitry Nezhevenko <dion@inhex.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/hpet.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/time/tick-broadcast.c |   37 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -223,8 +223,8 @@ static void hpet_legacy_clockevent_regis
- 	/* Calculate the min / max delta */
- 	hpet_clockevent.max_delta_ns = clockevent_delta2ns(0x7FFFFFFF,
- 							   &hpet_clockevent);
--	hpet_clockevent.min_delta_ns = clockevent_delta2ns(0x30,
--							   &hpet_clockevent);
-+	/* 5 usec minimum reprogramming delta. */
-+	hpet_clockevent.min_delta_ns = 5000;
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -490,6 +490,18 @@ static void tick_broadcast_clear_oneshot
+ 	cpu_clear(cpu, tick_broadcast_oneshot_mask);
+ }
  
- 	/*
- 	 * Start hpet with the boot cpu mask and make it
++static void tick_broadcast_init_next_event(cpumask_t *mask, ktime_t expires)
++{
++	struct tick_device *td;
++	int cpu;
++
++	for_each_cpu_mask_nr(cpu, *mask) {
++		td = &per_cpu(tick_cpu_device, cpu);
++		if (td->evtdev)
++			td->evtdev->next_event = expires;
++	}
++}
++
+ /**
+  * tick_broadcast_setup_oneshot - setup the broadcast device
+  */
+@@ -497,9 +509,32 @@ void tick_broadcast_setup_oneshot(struct
+ {
+ 	/* Set it up only once ! */
+ 	if (bc->event_handler != tick_handle_oneshot_broadcast) {
++		int was_periodic = bc->mode == CLOCK_EVT_MODE_PERIODIC;
++		int cpu = smp_processor_id();
++		cpumask_t mask;
++
+ 		bc->event_handler = tick_handle_oneshot_broadcast;
+ 		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
+-		bc->next_event.tv64 = KTIME_MAX;
++
++		/* Take the do_timer update */
++		tick_do_timer_cpu = cpu;
++
++		/*
++		 * We must be careful here. There might be other CPUs
++		 * waiting for periodic broadcast. We need to set the
++		 * oneshot_mask bits for those and program the
++		 * broadcast device to fire.
++		 */
++		mask = tick_broadcast_mask;
++		cpu_clear(cpu, mask);
++		cpus_or(tick_broadcast_oneshot_mask,
++			tick_broadcast_oneshot_mask, mask);
++
++		if (was_periodic && !cpus_empty(mask)) {
++			tick_broadcast_init_next_event(&mask, tick_next_period);
++			tick_broadcast_set_event(tick_next_period, 1);
++		} else
++			bc->next_event.tv64 = KTIME_MAX;
+ 	}
+ }
+ 
 
 -- 
