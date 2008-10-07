@@ -1,39 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbYJGQik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbYJGQjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbYJGQik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYJGQid
+	id S1756129AbYJGQjW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYJGQjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:38:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37527 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753477AbYJGQic (ORCPT
+	Tue, 7 Oct 2008 12:39:09 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:56687 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbYJGQjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:38:32 -0400
-Date: Tue, 7 Oct 2008 09:37:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] SLOB's krealloc() seems bust
-In-Reply-To: <1223395846.26330.55.camel@lappy.programming.kicks-ass.net>
-Message-ID: <alpine.LFD.2.00.0810070924130.3208@nehalem.linux-foundation.org>
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>  <48EB6D2C.30806@linux-foundation.org>  <1223391655.13453.344.camel@calx> <1223395846.26330.55.camel@lappy.programming.kicks-ass.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 7 Oct 2008 12:39:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=njfuLyp0XSlGM9RUcpABemNckwKlvtA9d/KX1Z9rA/52UUKQH2qIcKfbG3iDgQV8rG
+         hh37Jp8IFi2kpwikudSFGHA1henNMwFw7/oHmInu8hLf1msEYVo4sw+xj4LqrkXTzUWK
+         TnQKaZXHJlt1b1xl8uRwBlFY6BMY7wxlm8sWQ=
+Message-ID: <dac45060810070939v80918a0m3963d7fc6fcbb975@mail.gmail.com>
+Date: Tue, 7 Oct 2008 18:39:04 +0200
+From: "Mark Ryden" <markryde@gmail.com>
+To: "Benjamin Thery" <benjamin.thery@bull.net>
+Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
+Cc: "David Shwatrz" <dshwatrz@gmail.com>, "Greg KH" <gregkh@suse.de>,
+       "Greg KH" <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Tejun Heo" <htejun@gmail.com>, "Daniel Lezcano" <dlezcano@fr.ibm.com>,
+       linux-kernel@vger.kernel.org, "Al Viro" <viro@ftp.linux.org.uk>,
+       "Linux Containers" <containers@lists.osdl.org>, netdev@vger.kernel.org
+In-Reply-To: <48BF83E1.5040000@bull.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>
+	 <20080820021754.GA25182@kroah.com>
+	 <m1od3m282j.fsf_-_@frodo.ebiederm.org>
+	 <m1hc9e27ya.fsf_-_@frodo.ebiederm.org> <48B57058.9000101@bull.net>
+	 <dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com>
+	 <48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de>
+	 <31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com>
+	 <48BF83E1.5040000@bull.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+  So I wonder: the sysfs tagged directory support patch is in GerKH
+tree for more than a month.
+I cloned today latest Linus tree (2.6.27-rc9) and
+it is not there as far as I can see.
+It is also not in linux-next tree (from september).
+Now, I wonder what is the process of merging this
+GregKH tree ? should I watch the LKML list for a pull request
+from GregKH? or will it be first merged into the linux-next tree?
 
-On Tue, 7 Oct 2008, Peter Zijlstra wrote:
-> 
-> Tested-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Regards,
+Mark
 
-Heh. Can we get a sign-off and a nice commit message?
 
-		Linus
+On Thu, Sep 4, 2008 at 8:44 AM, Benjamin Thery <benjamin.thery@bull.net> wrote:
+> David Shwatrz wrote:
+>>
+>> Hi,
+>>>
+>>> go into my tree this week,
+>>
+>> I am also interested in this patch; may I ask  - what do you mean by
+>> "my  tree" ?I am a little newbie in the kernel, as you might understand.
+>> I looked into
+>> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+>> for candidates for this git tree you are talking about.
+>>
+>>  May I ask: what is the **exact** URL for this git tree you are talking
+>> about ?
+>
+> Greg's tree is there:
+> http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=summary
+>
+> You can clone it from here:
+> git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/patches.git
+>
+> It contains the patches serie to be applied on top of
+> linux-2.6 (with 'quilt' for example).
+>
+> Benjamin
+>
+>>
+>> Thanks,
+>>
+>> Regards,
+>> DS
+>>
+>>
+>> On Tue, Sep 2, 2008 at 8:01 PM, Greg KH <gregkh@suse.de> wrote:
+>>>
+>>> On Tue, Sep 02, 2008 at 04:03:20PM +0200, Benjamin Thery wrote:
+>>>>
+>>>> Mark Ryden wrote:
+>>>>>
+>>>>> Hello,
+>>>>>  I hope that this patch (from 4.7.08) was not forgetten... I don't see
+>>>>> it for example in linux-net (I have an up-to-date linux-next git
+>>>>> tree).
+>>>>
+>>>> I was about to ask the same thing.
+>>>>
+>>>> Greg, what is the plan with these remaining patches for sysfs tagged
+>>>> dirs? Will you have some time to merge them in your tree soon?
+>>>
+>>> Yes, they should go into my tree this week, sorry been busy with 2.6.27
+>>> work and Novell's Hackweek.
+>>>
+>>> thanks,
+>>>
+>>> greg k-h
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe netdev" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>
+>>
+>>
+>
+>
+> --
+> B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
+>
+>   http://www.bull.com
+>
