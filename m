@@ -1,51 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYJGRil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbYJGRtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbYJGRil (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYJGRid
+	id S1754371AbYJGRtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 13:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYJGRtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:38:33 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55054 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752948AbYJGRic (ORCPT
+	Tue, 7 Oct 2008 13:49:00 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:54043 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751303AbYJGRtA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:38:32 -0400
-Date: Tue, 7 Oct 2008 13:38:31 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       <akpm@linux-foundation.org>, <mingo@elte.hu>,
-       <jason.wessel@windriver.com>, <avi@qumranet.com>,
-       <richardj_moore@uk.ibm.com>
-Subject: Re: [RFC Patch 2/9] x86 architecture implementation of Hardware
- Breakpoint interfaces
-In-Reply-To: <20081007172301.GC4130@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0810071337330.2759-100000@iolanthe.rowland.org>
+	Tue, 7 Oct 2008 13:49:00 -0400
+Date: Tue, 7 Oct 2008 23:18:52 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       akpm@linux-foundation.org, mingo@elte.hu, jason.wessel@windriver.com,
+       avi@qumranet.com, richardj_moore@uk.ibm.com
+Subject: Re: [RFC Patch 6/9] Use virtual debug registers in process/thread
+	handling code
+Message-ID: <20081007174852.GE4130@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20081007114451.GA25875@in.ibm.com> <Pine.LNX.4.44L0.0810071137550.2591-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0810071137550.2591-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Oct 2008, K.Prasad wrote:
-
-> There's been a perceivable inclination to let the user learn the
-> limitations/features of the underlying processor's breakpointing ability
-> (since the previous email mail thread on this topic) and the routines
-> pre_ and post_handler_allowed() are just a step towards that.
+On Tue, Oct 07, 2008 at 11:40:46AM -0400, Alan Stern wrote:
+> On Tue, 7 Oct 2008, K.Prasad wrote:
 > 
-> I can nullify the post_handler for x86-instruction breakpoint for now,
-> but it wouldn't simplify things very extensively (but for a few lines of
-> code in hw_breakpoint_handler() and the flag 'sstep_reason'). It also
-> benefits the code by bringing an understanding that there can be
-> multiple users of processor single-stepping (and therefore the need to
-> de-multiplex the exception and invoke the appropriate handler).
+> > This patch enables the use of abstract/virtual debug registers in
+> > process-handling routines.
 > 
-> Left to me, I would like to retain the post_handler routine, unless you
-> strongly feel otherwise.
+> ...
+> > --- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/process_32.c
+> > +++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/process_32.c
+> > @@ -56,6 +56,8 @@
+> >  #include <asm/cpu.h>
+> >  #include <asm/kdebug.h>
+> >  #include <asm/idle.h>
+> > +#include <asm/debugreg.h>
+> > +#include <asm/hw_breakpoint.h>
+> >  
+> >  asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+> >  
+> > @@ -158,9 +160,11 @@ void cpu_idle(void)
+> >  void __show_registers(struct pt_regs *regs, int all)
+> >  {
+> >  	unsigned long cr0 = 0L, cr2 = 0L, cr3 = 0L, cr4 = 0L;
+> > -	unsigned long d0, d1, d2, d3, d6, d7;
+> > +	unsigned long u_debugreg[8];
+> >  	unsigned long sp;
+> >  	unsigned short ss, gs;
+> > +	struct thread_hw_breakpoint *thbi = current->thread.hw_breakpoint_info;
+> > +	int i;
+> >  
+> >  	if (user_mode_vm(regs)) {
+> >  		sp = regs->sp;
+> > @@ -201,17 +205,18 @@ void __show_registers(struct pt_regs *re
+> >  	printk("CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n",
+> >  			cr0, cr2, cr3, cr4);
+> >  
+> > -	get_debugreg(d0, 0);
+> > -	get_debugreg(d1, 1);
+> > -	get_debugreg(d2, 2);
+> > -	get_debugreg(d3, 3);
+> > +	if (thbi) {
+> > +		for (i = 0; i < HB_NUM; ++i)
+> > +			u_debugreg[i] = thbi->vdr_bps[i].info.address;
+> > +		u_debugreg[7] = thbi->vdr7;
+> > +	}
+> > +	u_debugreg[6] = current->thread.vdr6;
+> > +
+> >  	printk("DR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
+> > -			d0, d1, d2, d3);
+> > +					u_debugreg[0], u_debugreg[1],
+> > +						u_debugreg[2], u_debugreg[3]);
+> >  
+> > -	get_debugreg(d6, 6);
+> > -	get_debugreg(d7, 7);
+> > -	printk("DR6: %08lx DR7: %08lx\n",
+> > -			d6, d7);
+> > +	printk("DR6: %08lx DR7: %08lx\n", u_debugreg[6], u_debugreg[7]);
+> 
+> I don't like this at all.  show_registers() should display the physical
+> register contents, not the virtualized values.  Ditto for the 64-byte
+> version of this routine.
+> 
+> Alan Stern
+> 
+Agreed, will modify this!
 
-Let's hear what Roland has to say.
-
-Alan Stern
+Thanks,
+K.Prasad
 
