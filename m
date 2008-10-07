@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbYJGGIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYJGGYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbYJGGIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 02:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbYJGGIJ
+	id S1756155AbYJGGYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 02:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYJGGYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 02:08:09 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:40398 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbYJGGII (ORCPT
+	Tue, 7 Oct 2008 02:24:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58788 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751245AbYJGGYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 02:08:08 -0400
-Message-ID: <48EAFBF3.6040607@bull.net>
-Date: Tue, 07 Oct 2008 08:04:35 +0200
-From: Gilles Carry <Gilles.Carry@bull.net>
-User-Agent: Mozilla Thunderbird 1.0 (X11/20041206)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Chirag Jog <chirag@linux.vnet.ibm.com>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org, dvhltc@us.ibm.com,
-       dino@in.ibm.com
-Subject: Re: [RT PATCH v3 0/2] Fix for "[BUG][PPC64] BUG in 2.6.26.5-rt9 causing
- Hang"
-References: <20080925123235.GA27916@linux.vnet.ibm.com> <20081006151228.8452.69938.stgit@dev.haskins.net>
-In-Reply-To: <20081006151228.8452.69938.stgit@dev.haskins.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 7 Oct 2008 02:24:24 -0400
+Date: Mon, 6 Oct 2008 23:23:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH, RFC] percpu_counters: make fbc->count read atomic on 32
+ bit architecture
+Message-Id: <20081006232322.c383fac5.akpm@linux-foundation.org>
+In-Reply-To: <E1KmetO-00053M-5u@closure.thunk.org>
+References: <E1KmetO-00053M-5u@closure.thunk.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 05 Oct 2008 21:28:10 -0400 "Theodore Ts'o" <tytso@mit.edu> wrote:
 
-Gregory Haskins wrote:
-> Hi Steve,
->   Chirag reported (via IRC) that v2 fixed his issue.  V3 is identical to v2
->   except I cleaned up the patch description and fixed a comment typo.  This
->   applies to 26.5-rt9.  Please consider it an urgent fix for -rt10.
-> 
+> The following patch has been sitting in the ext4 patch queue for about
+> six weeks.  It was there it was a suspected cause for block allocation
+> bug.  As I recall, it we found the true root cause since then, but this
+> has stuck around since it's a potential problem.  Andrew has expressed
+> concerns that this patch might have performance impacts.
 
-Hi,
+Performace impacts I guess we'll just have to put up with.  iirc I was
+thinking that this implementation should be pushed down to a kernel-wide
+atomic64_t and then the percpu_counters would just use that type.
 
-After 24 hours of testing on PPC64, I confirm that this patch fixes the issue.
-
-Gilles.
