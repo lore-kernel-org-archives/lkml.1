@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbYJGXd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYJGXf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757383AbYJGXd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYJGXdS
+	id S1757042AbYJGXf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYJGXfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:33:18 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37638 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129AbYJGXdR (ORCPT
+	Tue, 7 Oct 2008 19:35:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33292 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754741AbYJGXfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:33:17 -0400
-Date: Tue, 7 Oct 2008 17:33:16 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: [RFC] Normalizing byteorder/unaligned access API
-Message-ID: <20081007233315.GM25780@parisc-linux.org>
-References: <1223416391.8195.22.camel@brick> <1223417543.7484.7.camel@localhost.localdomain> <1223419166.8195.37.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223419166.8195.37.camel@brick>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 7 Oct 2008 19:35:39 -0400
+Date: Tue, 7 Oct 2008 16:34:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rusty@rustcorp.com.au,
+       jeremy@goop.org, ebiederm@xmission.com, travis@sgi.com,
+       herbert@gondor.apana.org.au, xemul@openvz.org, penberg@cs.helsinki.fi
+Subject: Re: [patch 0/4] Cpu alloc V6: Replace percpu allocator in modules.c
+Message-Id: <20081007163449.0716be54.akpm@linux-foundation.org>
+In-Reply-To: <20080929193500.470295078@quilx.com>
+References: <20080929193500.470295078@quilx.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 03:39:25PM -0700, Harvey Harrison wrote:
-> As an example, in the write command handling in achba.c, a patch similar to the following
-> (assumes the existence of a __be24 type somewhere):
+On Mon, 29 Sep 2008 12:35:00 -0700
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-What type could be defined to be '__be24'?  Would
+> Just do the bare mininum to establish a per cpu allocator. Later patchsets
+> will gradually build out the functionality.
 
-typedef struct {
-	unsigned char data[3];
-} __be24;
+I need to drop these - the dynalloc thing (I don't think I even know
+what it does) in Ingo's trees make changes all over the place and
+nothing much applies any more.
 
-do the trick?  It's not an integral type, but I'm not sure if that matters.
-
-> +				cmnd_lba = unaligned_be24_to_cpup(&tmp->lba) & 0x001FFFFF;
-
-That might be easier to read if you're using a 500-column terminal.  For
-the rest of us,
-				cmnd_lba = scsi_get_u24(cmnd + 2) & 0x1FFFFF;
-is much easier to read.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
