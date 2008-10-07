@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYJGOvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbYJGOy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbYJGOvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 10:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYJGOu7
+	id S1754150AbYJGOy0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 10:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYJGOyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 10:50:59 -0400
-Received: from smtp23.orange.fr ([80.12.242.50]:49835 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752765AbYJGOu7 convert rfc822-to-8bit (ORCPT
+	Tue, 7 Oct 2008 10:54:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48276 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750880AbYJGOyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 10:50:59 -0400
-X-ME-UUID: 20081007145056287.460D91C00090@mwinf2304.orange.fr
-Message-ID: <48EB7747.9060505@cosmosbay.com>
-Date: Tue, 07 Oct 2008 16:50:47 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
+	Tue, 7 Oct 2008 10:54:15 -0400
+Message-ID: <48EB7617.3060304@linux-foundation.org>
+Date: Tue, 07 Oct 2008 09:45:43 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, minyard@acm.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
+To: paulmck@linux.vnet.ibm.com
+CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Corey Minyard <minyard@acm.org>,
+       David Miller <davem@davemloft.net>, dada1@cosmosbay.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       shemminger@vyatta.com
 Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-References: <20081006185026.GA10383@minyard.local>	 <48EA8197.6080502@cosmosbay.com> <1223367480.26330.7.camel@lappy.programming.kicks-ass.net> <48EB2AE3.3080200@cosmosbay.com> <48EB6EE4.8030703@linux-foundation.org>
-In-Reply-To: <48EB6EE4.8030703@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+References: <20081006185026.GA10383@minyard.local> <48EA8197.6080502@cosmosbay.com> <20081006.144002.56418911.davem@davemloft.net> <48EA9A59.1090306@acm.org> <20081007083750.GB17079@2ka.mipt.ru> <48EB6F2D.100@linux-foundation.org> <20081007143346.GA6384@linux.vnet.ibm.com>
+In-Reply-To: <20081007143346.GA6384@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> Eric Dumazet wrote:
->>>> Or just add SLAB_DESTROY_BY_RCU to slab creation in proto_register()
->>>> for "struct proto udp_prot/udpv6_prot" so that kmem_cache_free() done
->>>> in sk_prot_free() can defer freeing to RCU...
->>> Be careful!, SLAB_DESTROY_BY_RCU just means the slab page gets
->>> RCU-freed, this means that slab object pointers stay pointing to valid
->>> memory, but it does _NOT_ mean those slab objects themselves remain
->>> valid.
->>>
->>> The slab allocator is free to re-use those objects at any time -
->>> irrespective of the rcu-grace period. Therefore you will have to be able
->>> to validate that the object you point to is indeed the object you
->>> expect, otherwise strange and wonderful things will happen.
->>>
->> Thanks for this clarification. I guess we really need a rcu head then :)
-> 
-> No you just need to make sure that the object you located is still active
-> (f.e. refcount > 0) and that it is really a match (hash pointers may be
-> updated asynchronously and therefore point to the object that has been reused
-> for something else).
-> 
-> Generally it is advisable to use SLAB_DESTROY_BY_RCU because it preserves the
-> cache hot advantages of the objects. Regular RCU freeing will let the object
-> expire for a tick or so which will result in the cacheline cooling down.
+Paul E. McKenney wrote:
 
-Seems really good to master this SLAB_DESTROY_BY_RCU thing (I see almost no use
-of it in current kernel)
+> But care is required -- SLAB_DESTROY_BY_RCU permits objects to be freed
+> and reallocated while a reader holds a reference.  The only guarantee is
+> that the -type- of the data structure will not change while a reader holds
+> a reference.  With something like UDP, this might well be sufficient.
 
-1) Hum, do you know why "struct file" objects dont use SLAB_DESTROY_BY_RCU then,
-since we noticed a performance regression for several workloads at RCUification
-of file structures ?
+Right so after the hash lookup operation you are not assured that the object
+has not been freed or even reallocated for a different purpose. So after
+finding the pointer to the object two things need to happen (under rcu_lock):
 
-2) What prevents an object to be *freed* (and deleted from a hash chain), then
-re-allocated and inserted to another chain (different keys) ? (final refcount=1)
+1. Verify that the object is still in use
+2. Verify that the object is matching the hash
 
-If the lookup detects a key mismatch, how will it continue to the next item,
-since 'next' pointer will have been reused for the new chain insertion...
-
-Me confused...
-
-
-
+If not then the operation needs to be redone because we have a stale hash pointer.
