@@ -1,120 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYJGQZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbYJGQ2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbYJGQZP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYJGQZA
+	id S1755366AbYJGQ2P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbYJGQ15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:25:00 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:18331 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbYJGQY7 (ORCPT
+	Tue, 7 Oct 2008 12:27:57 -0400
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:23614 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753361AbYJGQ14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:24:59 -0400
-Date: Tue, 7 Oct 2008 11:24:54 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>, JensAxboejens.axboe@oracle.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH 1 of 1] cciss: add procfs interface to rescan logical volumes
-Message-ID: <20081007162454.GA12104@roadking.ldev.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 7 Oct 2008 12:27:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WB4fJHETrWxvN24zHvSGSKmGdVnTuLIH9ddCErfdkgIAOD1dn8Mgjbm2d3RMMqPaAZg5Ln+1DEOzLl/TcN4Y8DLMsqr0sGaeeU2p0YU9SpqU/HQ42Lq1JlqSSgVH30ALTN+HVxnrg4HCZc/yvfiWCXeHr/N+vqPK5qBrVWLBsfI=  ;
+X-YMail-OSG: 5rQ2mggVM1mS4yta5isBYJjbPH7FeGgzJ5PS9jVUwhwoywnRWoRv4C399EwXwgfRHWSPsk.vwACnnmuoadzXSLxAi4UOD4QqnY5y.9RJcYBo2zjvCz5TKevZVSQ5.2q1GBGwpIK9I.4IxwNj88k576KapLdg6g--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+Date: Wed, 8 Oct 2008 03:27:44 +1100
+User-Agent: KMail/1.9.5
+Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <6.0.0.20.2.20081007183452.0f052210@172.19.0.2> <20081007102942.GE20740@one.firstfloor.org>
+In-Reply-To: <20081007102942.GE20740@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Message-Id: <200810080327.44530.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 1 of 1
+On Tuesday 07 October 2008 21:29, Andi Kleen wrote:
+> > Maybe cmpxchg8b is good for i486 or later x86, but i386 or other
+> > architectures that do not have similar instruction needs some locking
+> > primitive. I think lazy
+>
+> We have a cmpxchg emulation on 386. That works because only UP 386s are
+> supported, so it can be done in software.
+>
+> > seqlock is one option for making file->f_pos access atomic.
+>
+> The question is if it's the right option. At least all the common
+> operations on fds (read/write) are all writers, not readers.
 
-This patch adds a procfs interface so users can force a rescan of the
-logical volumes attached to the controller. A new product uses Target Based
-Management (TBM) out-of-band for configuration purposes. With this method
-the driver has no way of knowing that something has changed, i.e., new
-logical volume(s) added or existing volumes deleted.
-This interface allows the user to echo "rescan volumes" >
-/proc/driver/cciss/ccissN to force the driver to rebuild our table of
-logical volumes. 
-Please consider this patch for inclusion.
+Common operations are read, do something, write. So seqlocks then cost
+one atomic operation, a couple of memory barriers (all noops on x86),
+and some predictable branches etc.
 
-Thanks,
-mikem
+cmpxchg based would require 2 lock ; cmpxchg8b on 32-bit. Fairly heavy.
+Also I don't think we have generic accessors to do this, so I think
+that is for another project.
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
+Anyway, I think importantly this creates some usable accessors for the
+f_pos problem. I think we actually need to touch a _lot_ of code to
+cover all f_pos accesses in the kernel, but I guess this gets the ball
+rolling.
 
-diff --git a/Documentation/cciss.txt b/Documentation/cciss.txt
-index 8244c64..afda23d 100644
---- a/Documentation/cciss.txt
-+++ b/Documentation/cciss.txt
-@@ -166,3 +166,17 @@ is issued which positions the tape to a known position.  Typically you
- must rewind the tape (by issuing "mt -f /dev/st0 rewind" for example)
- before i/o can proceed again to a tape drive which was reset.
- 
-+Rescanning for changes in configuration
-+---------------------------------------
-+
-+Some new products use Target Based Management (TBM) for configuration
-+purposes. These products cannot inform the driver that a new logical volume
-+has been added, an existing volume deleted, or of change in the size of a
-+logical volume. 
-+A procfs interface has been added to facilitate a rescan of the devices
-+attached to the controller. If a change is made the user may then issue:
-+
-+	# echo "rescan volumes" > /proc/driver/cciss/ccissN
-+
-+where N is the controller number. This will force the driver to update the
-+configuration.
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index b73116e..76b5b33 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -249,6 +249,7 @@ static inline CommandList_struct *removeQ(CommandList_struct **Qptr,
- #define ENG_GIG 1000000000
- #define ENG_GIG_FACTOR (ENG_GIG/512)
- #define ENGAGE_SCSI	"engage scsi"
-+#define RESCAN_VOLUMES	"rescan volumes"
- static const char *raid_label[] = { "0", "4", "1(1+0)", "5", "5+1", "ADG",
- 	"UNKNOWN"
- };
-@@ -379,7 +380,9 @@ static ssize_t
- cciss_proc_write(struct file *file, const char __user *buf,
- 		 size_t length, loff_t *ppos)
- {
--	int err;
-+	struct seq_file *seq = file->private_data;
-+	ctlr_info_t *h = seq->private;
-+	int err, rc;
- 	char *buffer;
- 
- #ifndef CONFIG_CISS_SCSI_TAPE
-@@ -398,12 +401,26 @@ cciss_proc_write(struct file *file, const char __user *buf,
- 		goto out;
- 	buffer[length] = '\0';
- 
-+	/* For the MSA2000 the firmware cannot tell the driver to
-+	 * rescan when new logical volumes are created. We provide
-+	 * this interface so users can `echo "rescan volumes" >
-+	 * /proc/driver/cciss/ccissN` to accomplish that task. It's not
-+	 * the best solution because it must be done on every server
-+	 * that connected to the storage.
-+	 */
-+
-+	if (strncmp(RESCAN_VOLUMES, buffer, sizeof RESCAN_VOLUMES - 1) == 0) {
-+		/* rebuild_lun_table returns -1 on success to tell ACU
-+		* to quit calling it. In this case we just ignore any
-+		* return code.
-+		*/
-+		(void) rebuild_lun_table(h, NULL);
-+		err = length;
-+		goto out;
-+	}
-+
- #ifdef CONFIG_CISS_SCSI_TAPE
- 	if (strncmp(ENGAGE_SCSI, buffer, sizeof ENGAGE_SCSI - 1) == 0) {
--		struct seq_file *seq = file->private_data;
--		ctlr_info_t *h = seq->private;
--		int rc;
--
- 		rc = cciss_engage_scsi(h->ctlr);
- 		if (rc != 0)
- 			err = -rc;
+So.. is everyone agreed that corrupting f_pos is a bad thing? (serious
+question) If so, then we should get something like this merged sooner
+rather than later.
