@@ -1,141 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbYJGXU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYJGXUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbYJGXU3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbYJGXUV
+	id S1755378AbYJGXUx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbYJGXUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:20:21 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:31905 "EHLO
-	phenom.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754926AbYJGXUU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:20:20 -0400
-Date: Tue, 07 Oct 2008 17:20:19 -0600
-From: dougthompson@xmission.com
-To: dougthompson@xmission.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 1/1] edac mpc85xx add support for mpc8572
-Message-ID: <48ebeeb3.G6XTY/C+L/iDN42o%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Tue, 7 Oct 2008 19:20:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51298 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754489AbYJGXUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 19:20:41 -0400
+Message-ID: <48EBEE0B.6080009@kernel.org>
+Date: Wed, 08 Oct 2008 08:17:31 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Al Viro <viro@ZenIV.linux.org.uk>,
+       Benjamin Thery <benjamin.thery@bull.net>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: sysfs: tagged directories not merged completely yet
+References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com>	<48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org>	<20081003101331.GH28946@ZenIV.linux.org.uk>	<48EB27FE.2090009@kernel.org> <m1zllgzki0.fsf@frodo.ebiederm.org> <48EB53B8.5020309@kernel.org>
+In-Reply-To: <48EB53B8.5020309@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Oct 2008 23:19:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Kilkenny <akilkenny@xes-inc.com>
+Hello, a bit of additions after some sleep.
 
-This adds support for the dual-core MPC8572 processor.  We have
-to support making SPR changes on each core.  Also, since we can
-have multiple memory controllers sharing an interrupt, flag the
-interrupts with IRQF_SHARED.
+Tejun Heo wrote:
+> Eric W. Biederman wrote:
+> IIRC, the original readdir implementation put a cursor entry to walk
+> through the children list.  The implementation was horribly broken in
+> a number of different ways (ISTR problems with locking and multiple
+> and different type of walkers) and I just gutted out all the
+> complexity out and made it simple as getting it correct was far more
+> important and there seemed to be little need for optimization.
+> 
+> Yeah, using RCU sounds like a plan.
 
+Heh... it did sound like a plan but I don't think the plan would solve
+the problem.  filldir can't be put in rcu read critical section.  :-p
 
-Saw this on ppc-dev. I'm guessing we probably should be the one submitting it 
-since it's the driver change?
-Dave Jiang
+>> The revalidate on access model doesn't appear to have a way to track
+>> remote renames.  Something sysfs supports.
+> 
+> Yeap, IIRC, one of the reasons why sysfs wasn't converted over to
+> sysfs was because sysfs guarantees inode doesn't change over rename or
+> move so that notifications keep working over renames.
 
+s/over to sysfs/over to revalidation/ and s/inode/dentry/.  Maybe we can
+just ignore dnotify?  :-(
 
-Signed-off-by: Andrew Kilkenny <akilkenny@xes-inc.com>
-Signed-off-by: Nate Case <ncase@xes-inc.com>
-Acked-by: Dave Jiang <djiang@mvista.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
----
-  drivers/edac/mpc85xx_edac.c |   28 +++++++++++++++++++++++-----
-  1 files changed, 23 insertions(+), 5 deletions(-)
+Thanks.
 
-Index: linux-2.6.27-rc5-mm1/drivers/edac/mpc85xx_edac.c
-===================================================================
---- linux-2.6.27-rc5-mm1.orig/drivers/edac/mpc85xx_edac.c
-+++ linux-2.6.27-rc5-mm1/drivers/edac/mpc85xx_edac.c
-@@ -17,6 +17,7 @@
- #include <linux/io.h>
- #include <linux/mod_devicetable.h>
- #include <linux/edac.h>
-+#include <linux/smp.h>
- 
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
-@@ -40,7 +41,7 @@ static u32 orig_pci_err_en;
- #endif
- 
- static u32 orig_l2_err_disable;
--static u32 orig_hid1;
-+static u32 orig_hid1[2];
- 
- /************************ MC SYSFS parts ***********************************/
- 
-@@ -647,6 +648,9 @@ static struct of_device_id mpc85xx_l2_er
- 	{
- 	 .compatible = "fsl,8568-l2-cache-controller",
- 	 },
-+	{
-+	 .compatible = "fsl,mpc8572-l2-cache-controller",
-+	 },
- 	{},
- };
- 
-@@ -912,7 +916,8 @@ static int __devinit mpc85xx_mc_err_prob
- 		/* register interrupts */
- 		pdata->irq = irq_of_parse_and_map(op->node, 0);
- 		res = devm_request_irq(&op->dev, pdata->irq,
--				       mpc85xx_mc_isr, IRQF_DISABLED,
-+				       mpc85xx_mc_isr,
-+					IRQF_DISABLED | IRQF_SHARED,
- 				       "[EDAC] MC err", mci);
- 		if (res < 0) {
- 			printk(KERN_ERR "%s: Unable to request irq %d for "
-@@ -980,6 +985,9 @@ static struct of_device_id mpc85xx_mc_er
- 	{
- 	 .compatible = "fsl,8568-memory-controller",
- 	 },
-+	{
-+	 .compatible = "fsl,mpc8572-memory-controller",
-+	 },
- 	{},
- };
- 
-@@ -995,6 +1003,14 @@ static struct of_platform_driver mpc85xx
- 		   },
- };
- 
-+
-+static void __init mpc85xx_mc_clear_rfxe(void *data)
-+{
-+	orig_hid1[smp_processor_id()] = mfspr(SPRN_HID1);
-+	mtspr(SPRN_HID1, (orig_hid1[smp_processor_id()] & ~0x20000));
-+}
-+
-+
- static int __init mpc85xx_mc_init(void)
- {
- 	int res = 0;
-@@ -1030,19 +1046,22 @@ static int __init mpc85xx_mc_init(void)
- 	 * need to clear HID1[RFXE] to disable machine check int
- 	 * so we can catch it
- 	 */
--	if (edac_op_state == EDAC_OPSTATE_INT) {
--		orig_hid1 = mfspr(SPRN_HID1);
--		mtspr(SPRN_HID1, (orig_hid1 & ~0x20000));
--	}
-+	if (edac_op_state == EDAC_OPSTATE_INT)
-+		on_each_cpu(mpc85xx_mc_clear_rfxe, NULL, 0);
- 
- 	return 0;
- }
- 
- module_init(mpc85xx_mc_init);
- 
-+static void __exit mpc85xx_mc_restore_hid1(void *data)
-+{
-+	mtspr(SPRN_HID1, orig_hid1[smp_processor_id()]);
-+}
-+
- static void __exit mpc85xx_mc_exit(void)
- {
--	mtspr(SPRN_HID1, orig_hid1);
-+	on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
- #ifdef CONFIG_PCI
- 	of_unregister_platform_driver(&mpc85xx_pci_err_driver);
- #endif
+-- 
+tejun
