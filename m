@@ -1,82 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYJGU0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbYJGU0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYJGU0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYJGU0N
+	id S1756759AbYJGU0i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYJGU0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:26:13 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:54245 "EHLO smtp5.pp.htv.fi"
+	Tue, 7 Oct 2008 16:26:17 -0400
+Received: from 1wt.eu ([62.212.114.60]:4639 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753148AbYJGU0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:26:12 -0400
-Date: Tue, 7 Oct 2008 23:25:39 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: [RFC] Btrfs mainline plans
-Message-ID: <20081007202538.GC1610@cs181140183.pp.htv.fi>
-References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org> <20081005122405.GA12047@cs181140183.pp.htv.fi> <20081005141113.GA6132@us.ibm.com> <20081005150957.GC12047@cs181140183.pp.htv.fi> <1223300403.16546.45.camel@think.oraclecorp.com> <20081007152740.GA31089@cs181140183.pp.htv.fi> <1223395284.16546.121.camel@think.oraclecorp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1753914AbYJGU0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 16:26:15 -0400
+Date: Tue, 7 Oct 2008 22:26:11 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Klaus Ethgen <Klaus@Ethgen.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [KERNEL] Re: [KERNEL] Re: Kernel freeze on 2.4.36.7
+Message-ID: <20081007202611.GA16927@1wt.eu>
+References: <20081005154113.GA8387@ikki.ethgen.de> <20081005171818.GJ24654@1wt.eu> <20081005204247.GA3781@ikki.ethgen.de> <20081005210144.GA7980@1wt.eu> <20081006081907.GA12913@ikki.ethgen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1223395284.16546.121.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081006081907.GA12913@ikki.ethgen.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 12:01:24PM -0400, Chris Mason wrote:
-> On Tue, 2008-10-07 at 18:27 +0300, Adrian Bunk wrote:
-> > On Mon, Oct 06, 2008 at 09:40:03AM -0400, Chris Mason wrote:
-> >  
+Hi Klaus,
+
+On Mon, Oct 06, 2008 at 09:19:07AM +0100, Klaus Ethgen wrote:
+> > > > Also, have you ever been running and older 2.4 kernel not causing this
+> > > > problem ?
 > > > 
-> > > The btrfs timelines have always been aggressive, and as btrfs gets
-> > > closer to feature complete, the testing matrix grows dramatically.  I
-> > > can't promise my crazy timelines won't slip, but I've been hacking away
-> > > in the basement for almost 18 months now and it's time for me to get off
-> > > the pot and make it stable.
-> > > 
-> > > Ext4 has always had to deal with the ghost of ext3.  Both from a
-> > > compatibility point of view and everyone's expectations of stability.  I
-> > > believe that most of us underestimated how difficult it would be to move
-> > > ext4 forward.
-> > > 
-> > > Btrfs is different for lots of reasons, and being in mainline will
-> > > definitely increase the pressure on the btrfs developers to finish, and
-> > > the resources available for us to finish with.
+> > > I did buy the scanner only days ago. I did not use older kernels since
+> > > then. (I have to compile some if it is needed.)
 > > 
-> > Your last sentence does not make sense:
-> > 
-> > According to your timeline btrfs 1.0 will be released in Q408 [1] - and
-> > the merge window for 2.6.29 will be in Q109.
+> > OK, so we'll assume it's not a regression and has always been like that,
+> > which is the most likely.
 > 
-> Planning for mainline inclusion is always a guessing game.
+> I'm not absolutely sure but when I remember correct I did use USB
+> keyboard before in older ages. But I do not be absolutely sure if I test
+> to unplug it that time.
 
-The 2.6.29 merge window will start in January - everything else is much
-more unlikely than an incompetent chick from Alaska getting only one 
-heart attack away from the big red button.
+OK. I found a USB keyboard so if I find a theorical corner case, I might
+be able to experiment.
 
-> Cutting 1.0
-> is different from being in mainline, and the dates don't have to be the
-> same.
+> > OK. I see an nvidia module. Would this machine happen to run under X ?
+> 
+> Yes. I need to use the nvidia module to use the machine. But I do not
+> use that crazy window manages than kde or gnome which do some special
+> think with your devices hidden from the user.
+> 
+> > If so, did you configure X so that it directly references the HID devices ?
+> 
+> What do you mean with "directly"? I use evdev for mouse but the keyboard
+> is just normal keyboard with some Xkb settings for the layout.
 
-Sure, but Andrew's "special-case treatment" suggestion does not apply if 
-1.0 gets released before the 2.6.29 merge window.
+OK. I was asking if there was anything such as Device "/dev/hid/..." or
+Device "/dev/input/..." in the Keyboard section, but judging by your
+response, we might have almost the same basic X config file :-)
 
->...
-> -chris
+> > Also, could you tell us a bit more about the application, and how you have
+> > to proceed to avoid the problem ? Eg: quit the application then X, etc...
+> 
+> Just sync several times in front of unplugging the device helps. I can
+> reproduce the bug right after a boot without logging in under X (Just
+> kdm running). But if I use sync the problem is gone.
+> 
+> I imagine that it might be something to do with a incompatibility
+> between HID and one filesystem driver. I saw this issue in the past with
+> ext3 which was very dirty in the past.
 
-cu
-Adrian
+That's the part I really don't get. It's quite amazing that finishing
+writes onto a file system avoids kernel panics on USB keyboard. Oh,
+could you check /proc/interrupts to ensure that your USB interrupts
+are not shared with any block device, just in case ? It would constitute
+a very thin beginning of a track for investigation.
 
--- 
+> Actually I use reiserfs, ext3, and ext2. Might it be that there is some
+> shared memory used between that both subsystems? Ah, and before I forget
+> to mention, I use the cryptoloop-jari patch to use encrypted swap and
+> so.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Hmm interesting. Could you at least try to reproduce with swap turned off ?
+No idea why, but I'm just trying to bissect the problem.
+
+> > OK. Before I ask you to do so, could you send me privately your System.map,
+> > a copy of /proc/ksyms and your vmlinux (not vmlinuz) ?
+> 
+> Yup, I will send it later. But why vmlinuX and not vmlinuZ? I thought
+> that this both is the same.
+
+No, vmlinuz is stripped and has some boot code prepended (reason why I
+asked specifically). vmlinux has all symbols and may easily be disassembled.
+
+BTW, I confirm that I've received them in another mail, thanks.
+
+I don't have much time right now, but I have the files and will check
+what can be found. I might get back to you for complementary information,
+though I need to get a few ideas of the problem first.
+
+Regards,
+Willy
 
