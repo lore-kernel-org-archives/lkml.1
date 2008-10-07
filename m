@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbYJGUW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYJGU0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800AbYJGUW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYJGUWm
+	id S1756219AbYJGU0Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYJGU0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:22:42 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33970 "EHLO mx2.suse.de"
+	Tue, 7 Oct 2008 16:26:13 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:54245 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753479AbYJGUWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:22:41 -0400
-Date: Tue, 7 Oct 2008 13:22:39 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, joel.becker@oracle.com,
-       ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org,
-       tiger.yang@oracle.com
-Subject: Re: [PATCH 13/39] ocfs2: Add extended attribute support
-Message-ID: <20081007202239.GE26373@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com> <20081001231209.44417bc1.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753148AbYJGU0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 16:26:12 -0400
+Date: Tue, 7 Oct 2008 23:25:39 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: [RFC] Btrfs mainline plans
+Message-ID: <20081007202538.GC1610@cs181140183.pp.htv.fi>
+References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081003001859.e30af6a5.akpm@linux-foundation.org> <20081005122405.GA12047@cs181140183.pp.htv.fi> <20081005141113.GA6132@us.ibm.com> <20081005150957.GC12047@cs181140183.pp.htv.fi> <1223300403.16546.45.camel@think.oraclecorp.com> <20081007152740.GA31089@cs181140183.pp.htv.fi> <1223395284.16546.121.camel@think.oraclecorp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081001231209.44417bc1.akpm@linux-foundation.org>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1223395284.16546.121.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01, 2008 at 11:12:09PM -0700, Andrew Morton wrote:
-> > On Wed, 24 Sep 2008 15:00:54 -0700 Mark Fasheh <mfasheh@suse.com> wrote:
-> > +		case Opt_user_xattr:
-> > +			mopt->mount_opt &= ~OCFS2_MOUNT_NOUSERXATTR;
-> > +			break;
-> > +		case Opt_nouser_xattr:
-> > +			mopt->mount_opt |= OCFS2_MOUNT_NOUSERXATTR;
-> > +			break;
+On Tue, Oct 07, 2008 at 12:01:24PM -0400, Chris Mason wrote:
+> On Tue, 2008-10-07 at 18:27 +0300, Adrian Bunk wrote:
+> > On Mon, Oct 06, 2008 at 09:40:03AM -0400, Chris Mason wrote:
+> >  
+> > > 
+> > > The btrfs timelines have always been aggressive, and as btrfs gets
+> > > closer to feature complete, the testing matrix grows dramatically.  I
+> > > can't promise my crazy timelines won't slip, but I've been hacking away
+> > > in the basement for almost 18 months now and it's time for me to get off
+> > > the pot and make it stable.
+> > > 
+> > > Ext4 has always had to deal with the ghost of ext3.  Both from a
+> > > compatibility point of view and everyone's expectations of stability.  I
+> > > believe that most of us underestimated how difficult it would be to move
+> > > ext4 forward.
+> > > 
+> > > Btrfs is different for lots of reasons, and being in mainline will
+> > > definitely increase the pressure on the btrfs developers to finish, and
+> > > the resources available for us to finish with.
+> > 
+> > Your last sentence does not make sense:
+> > 
+> > According to your timeline btrfs 1.0 will be released in Q408 [1] - and
+> > the merge window for 2.6.29 will be in Q109.
 > 
-> Is there a documentation update for these?
+> Planning for mainline inclusion is always a guessing game.
 
-There is now  :) I'm actually usually a bit of a stickler for those too, but
-obviously I missed this one.
-	--Mark
+The 2.6.29 merge window will start in January - everything else is much
+more unlikely than an incompetent chick from Alaska getting only one 
+heart attack away from the big red button.
 
---
-Mark Fasheh
+> Cutting 1.0
+> is different from being in mainline, and the dates don't have to be the
+> same.
 
-From: Mark Fasheh <mfasheh@suse.com>
+Sure, but Andrew's "special-case treatment" suggestion does not apply if 
+1.0 gets released before the 2.6.29 merge window.
 
-ocfs2: Documentation update for user_xattr / nouser_xattr mount options
+>...
+> -chris
 
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- Documentation/filesystems/ocfs2.txt |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+cu
+Adrian
 
-diff --git a/Documentation/filesystems/ocfs2.txt b/Documentation/filesystems/ocfs2.txt
-index 6acf1b4..4340cc8 100644
---- a/Documentation/filesystems/ocfs2.txt
-+++ b/Documentation/filesystems/ocfs2.txt
-@@ -80,3 +80,5 @@ inode64			Indicates that Ocfs2 is allowed to create inodes at
- 			any location in the filesystem, including those which
- 			will result in inode numbers occupying more than 32
- 			bits of significance.
-+user_xattr	(*)	Enables Extended User Attributes.
-+nouser_xattr		Disables Extended User Attributes.
 -- 
-1.5.4.1
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
