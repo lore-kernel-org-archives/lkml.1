@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbYJGKOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYJGKPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249AbYJGKOb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 06:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYJGKOV
+	id S1754340AbYJGKPn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 06:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYJGKPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 06:14:21 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:57871 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbYJGKOU (ORCPT
+	Tue, 7 Oct 2008 06:15:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44130 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbYJGKPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 06:14:20 -0400
-Message-Id: <6.0.0.20.2.20081007183452.0f052210@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Tue, 07 Oct 2008 19:11:26 +0900
-To: Andi Kleen <andi@firstfloor.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on
-  32bit arch
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <87hc7onbvo.fsf@basil.nowhere.org>
-References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2>
- <87hc7onbvo.fsf@basil.nowhere.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 06:15:35 -0400
+Date: Tue, 7 Oct 2008 12:15:32 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: [PATCH] Add kerneldoc documentation for new printk format extensions
+Message-ID: <20081007101532.GA25565@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add documentation in kerneldoc for new printk format extensions
 
-At 15:43 08/10/07, Andi Kleen wrote:
->Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> writes:
->
->> Hi Andrew.
->>
->> Currently reading or writing file->f_pos is not atomic on 32bit environment,
->> so two or more simultaneous access can corrupt file->f_pos value.
->> There are some past discussions about this issue, but this is not fixed yet.
->> http://marc.info/?l=linux-kernel&m=120764199819899&w=2
->> http://marc.info/?l=linux-kernel&m=114490379102476&w=2
->
->Have you benchmarked if cmpxchg is cheaper than the seqlock?  It's not
->clear to me a seqlock is really the right locking primitive for
->this. Normally seqlocks should be used when reading is much more
->frequent than writing, but it's doubtful that this is actually the
->case for f_pos.
+This patch documents the new %pS/%pF options in printk in kernel doc.
 
-Maybe cmpxchg8b is good for i486 or later x86, but i386 or other architectures
-that do not have similar instruction needs some locking primitive. I think lazy
-seqlock is one option for making file->f_pos access atomic.
+Hope I didn't miss any other extension.
 
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+Index: linux-2.6.27-rc6-misc/kernel/printk.c
+===================================================================
+--- linux-2.6.27-rc6-misc.orig/kernel/printk.c
++++ linux-2.6.27-rc6-misc/kernel/printk.c
+@@ -593,6 +593,8 @@ static int have_callable_console(void)
+  *
+  * See also:
+  * printf(3)
++ *
++ * See the vsnprintf() documentation for format string extensions over C99.
+  */
+ 
+ asmlinkage int printk(const char *fmt, ...)
+Index: linux-2.6.27-rc6-misc/lib/vsprintf.c
+===================================================================
+--- linux-2.6.27-rc6-misc.orig/lib/vsprintf.c
++++ linux-2.6.27-rc6-misc/lib/vsprintf.c
+@@ -565,6 +565,10 @@ static char *pointer(const char *fmt, ch
+  * @fmt: The format string to use
+  * @args: Arguments for the format string
+  *
++ * This function follows C99 vsnprintf, but has some extensions:
++ * %pS output the name of a text symbol
++ * %pF output the name of a function pointer
++ *
+  * The return value is the number of characters which would
+  * be generated for the given input, excluding the trailing
+  * '\0', as per ISO C99. If you want to have the exact
+@@ -806,6 +810,8 @@ EXPORT_SYMBOL(vsnprintf);
+  *
+  * Call this function if you are already dealing with a va_list.
+  * You probably want scnprintf() instead.
++ *
++ * See the vsnprintf() documentation for format string extensions over C99.
+  */
+ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ {
+@@ -828,6 +834,8 @@ EXPORT_SYMBOL(vscnprintf);
+  * generated for the given input, excluding the trailing null,
+  * as per ISO C99.  If the return is greater than or equal to
+  * @size, the resulting string is truncated.
++ *
++ * See the vsnprintf() documentation for format string extensions over C99.
+  */
+ int snprintf(char * buf, size_t size, const char *fmt, ...)
+ {
+@@ -877,6 +885,8 @@ EXPORT_SYMBOL(scnprintf);
+  *
+  * Call this function if you are already dealing with a va_list.
+  * You probably want sprintf() instead.
++ *
++ * See the vsnprintf() documentation for format string extensions over C99.
+  */
+ int vsprintf(char *buf, const char *fmt, va_list args)
+ {
+@@ -894,6 +904,8 @@ EXPORT_SYMBOL(vsprintf);
+  * The function returns the number of characters written
+  * into @buf. Use snprintf() or scnprintf() in order to avoid
+  * buffer overflows.
++ *
++ * See the vsnprintf() documentation for format string extensions over C99.
+  */
+ int sprintf(char * buf, const char *fmt, ...)
+ {
