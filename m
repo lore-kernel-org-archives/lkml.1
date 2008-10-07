@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYJGSgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYJGS50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbYJGSgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 14:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYJGSgP
+	id S1754319AbYJGS50 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 14:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYJGS5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 14:36:15 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:58178 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbYJGSgO (ORCPT
+	Tue, 7 Oct 2008 14:57:18 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52334 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbYJGS5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 14:36:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:subject:content-type
-         :content-transfer-encoding:from;
-        b=Quv2Mn60eqCanJypU2wJjI14XTN9EhSvLvVmd7/6FTOAu4bzkcS2m9XnHniJsIFIBC
-         lSkwOvTV0txdu7ZuV9G4SRm8C4sl/vGhPqJQ7VPqKrprnQ8MwhEZ8foVvBaIkzpBrIuS
-         XwDQEawt8DJ1iHnrDj5U1ZwmuSc4lcxbtI+lc=
-Message-ID: <48EBAC11.7060803@gmail.com>
-Date: Tue, 07 Oct 2008 19:36:01 +0100
-User-Agent: Thunderbird 2.0.0.16 (X11/20080810)
+	Tue, 7 Oct 2008 14:57:17 -0400
+Date: Tue, 7 Oct 2008 20:58:46 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH V3] led: Backlight trigger for led subsystem
+Message-ID: <20081007185846.GA6604@elf.ucw.cz>
+References: <1223374230-18413-1-git-send-email-giometti@enneenne.com> <20081007135420.GB1592@ucw.cz> <20081007152032.GH13035@tekkaman>
 MIME-Version: 1.0
-To: dwmw2@infradead.org, linux-kernel@vger.kernel.org
-Subject: linux-firmware patches
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Dave <kilroyd@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007152032.GH13035@tekkaman>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Should patches to add firmware to the linux-firmware tree (and not the main kernel) be sent to linux-kernel, or somewhere else? It wasn't mentioned in the [ANNOUNCE]*, and I haven't been able to find an example on list.
+On Tue 2008-10-07 17:20:32, Rodolfo Giometti wrote:
+> On Tue, Oct 07, 2008 at 03:54:20PM +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > This patch set adds a new led trigger which emulates the backlight
+> > > behaviour: the leds are turned off and on each time the display blanks
+> > > and unblacks.
+> > > 
+> > > Since backlights are usually implemented with leds this patch set is
+> > > useful for those drivers whose manage leds controller used as
+> > > backlight controller.
+> > > 
+> > > The driver simply registers itself into the led subsystem and then the
+> > > user may get backlight emulation by setting the "backlight"
+> > > trigger. Moreover a driver, which usually manages more than one led,
+> > > can use some leds as "led" and the others as "backlights" at user
+> > > request.
+> > 
+> > We already have backlight subsystem, it can also handle display
+> > brightness. Why not use that?
+> 
+> Just to use a led as "led" or as "backlight" at user request. You can
+> do it by using:
+> 
+>    echo none > /sys/class/leds/lcd/trigger
+>    echo backlight > /sys/class/leds/lcd/trigger
+> 
+> and the led will work accordingly.
+> 
+> Also a led used as "backlight" is just a normal led (you can set the
+> brightness as a normal led) but it switchs off automatically when the
+> LCD blanks.
 
-Just wanted to check before posting an 80k patch consisting of non-GPL binary files.
-
-
-Thanks,
-
-Dave.
-
-* <http://lkml.org/lkml/2008/8/15/241>
+Ok, what is it good for? So I have backlight, charging led and hdd led
+on my zaurus. Now I can set charging led to indicate backlight... but
+why is it useful?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
