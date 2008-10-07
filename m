@@ -1,111 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbYJGQXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYJGQZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755041AbYJGQXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYJGQXQ
+	id S1755535AbYJGQZP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYJGQZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:23:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33049 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014AbYJGQXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:23:15 -0400
-Date: Tue, 7 Oct 2008 11:44:34 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: david@lang.hm
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
-Subject: Re: application syncing options (was Re: [PATCH] Memory management
- livelock)
-In-Reply-To: <alpine.DEB.1.10.0810062025301.19471@asgard.lang.hm>
-Message-ID: <Pine.LNX.4.64.0810071126001.504@hs20-bc2-1.build.redhat.com>
-References: <20080911101616.GA24064@agk.fab.redhat.com>
- <20080923154905.50d4b0fa.akpm@linux-foundation.org> <200810031232.23836.nickpiggin@yahoo.com.au>
- <200810031254.29121.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0810030845070.14680@asgard.lang.hm>
- <Pine.LNX.4.64.0810052002520.5798@hs20-bc2-1.build.redhat.com>
- <alpine.DEB.1.10.0810051714330.17288@asgard.lang.hm>
- <Pine.LNX.4.64.0810052332040.3074@hs20-bc2-1.build.redhat.com>
- <alpine.DEB.1.10.0810062025301.19471@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Oct 2008 12:25:00 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:18331 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbYJGQY7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 12:24:59 -0400
+Date: Tue, 7 Oct 2008 11:24:54 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>, JensAxboejens.axboe@oracle.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 1 of 1] cciss: add procfs interface to rescan logical volumes
+Message-ID: <20081007162454.GA12104@roadking.ldev.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > If you invent new interface that allows submitting several ordered IOs
-> > from userspace, it will require excessive maintenance overhead over long
-> > period of time. So it should be only justified, if the performance
-> > improvement is excessive as well.
-> > 
-> > It should not be like "here you improve 10% performance on some synthetic
-> > benchmark in one application that was rewritten to support the new
-> > interface" and then create a few more security vulnerabilities (because of
-> > the complexity of the interface) and damage overall Linux progress,
-> > because everyone is catching bugs in the new interface and checking it for
-> > correctness.
-> 
-> the same benchmarks that show that it's far better for the in-kernel
-> filesystem code to use write barriers should apply for FUSE filesystems.
+Patch 1 of 1
 
-FUSE is slow by design, and it is used in cases where performance isn't 
-crucial.
+This patch adds a procfs interface so users can force a rescan of the
+logical volumes attached to the controller. A new product uses Target Based
+Management (TBM) out-of-band for configuration purposes. With this method
+the driver has no way of knowing that something has changed, i.e., new
+logical volume(s) added or existing volumes deleted.
+This interface allows the user to echo "rescan volumes" >
+/proc/driver/cciss/ccissN to force the driver to rebuild our table of
+logical volumes. 
+Please consider this patch for inclusion.
 
-> this isn't a matter of a few % in performance, if an application is
-> sync-limited in a way that can be converted to write-ordered the potential is
-> for the application to speed up my many times.
-> 
-> programs that maintain indexes or caches of data that lives in other files
-> will be able to write data && barrier && write index && fsync and double their
-> performance vs write data && fsync && write index && fsync
+Thanks,
+mikem
 
-They can do: write data with O_SYNC; write another piece of data with 
-O_SYNC.
+Signed-off-by: Mike Miller <mike.miller@hp.com>
 
-And the only difference from barriers is the waiting time after the first 
-O_SYNC before the second I/O is submitted (such delay wouldn't happen with 
-barriers).
-
-And now I/O delay is in milliseconds and process wakeup time is tens of 
-microseconds, it doesn't look like eliminating process wakeup time would 
-do more than few percents.
-
-> databases can potentially do even better, today they need to fsync data to
-> disk before they can update their journal to indicate that the data has been
-> written, with a barrier they could order the writes so that the write to the
-> journal doesn't happen until the writes of the data. they would neve need to
-> call an fsync at all (when emptying the journal)
-
-Good databases can pack several user transactions into one fsync() write. 
-If the database server is properly engineered, it accumulates all user 
-transactions committed so far into one chunk, writes that chunk with one 
-fsync() call and then reports successful commit to the clients.
-
-So if you increase fsync() latency, it should have no effect on the 
-transactional throughput --- only on latency of transactions. Similarly, 
-if you decrease fsync() latency, it won't increase number of processed 
-transactions.
-
-Certainly, there are primitive embedded database libraries that fsync() 
-after each transaction, but they don't have good performance anyway.
-
-> for systems without solid-state drives or battery-backed caches, the ability
-> to eliminate fsyncs by being able to rely on the order of the writes is a huge
-> benifit.
-
-I may ask --- where are the applications that require extra slow fsync() 
-latency? Databases are not that, they batch transactions.
-
-If you want to improve things, you can try:
-* implement O_DSYNC (like O_SYNC, but doesn't update inode mtime)
-* implement range_fsync and range_fdatasync (sync on file range --- the 
-kernel has already support for that, you can just add a syscall)
-* turn on FUA bit for O_DSYNC writes, that eliminates the need to flush 
-drive cache in O_DSYNC call
-
---- these are definitely less invasive than new I/O submitting interface.
-
-Mikulas
-
-> David Lang
-> 
+diff --git a/Documentation/cciss.txt b/Documentation/cciss.txt
+index 8244c64..afda23d 100644
+--- a/Documentation/cciss.txt
++++ b/Documentation/cciss.txt
+@@ -166,3 +166,17 @@ is issued which positions the tape to a known position.  Typically you
+ must rewind the tape (by issuing "mt -f /dev/st0 rewind" for example)
+ before i/o can proceed again to a tape drive which was reset.
+ 
++Rescanning for changes in configuration
++---------------------------------------
++
++Some new products use Target Based Management (TBM) for configuration
++purposes. These products cannot inform the driver that a new logical volume
++has been added, an existing volume deleted, or of change in the size of a
++logical volume. 
++A procfs interface has been added to facilitate a rescan of the devices
++attached to the controller. If a change is made the user may then issue:
++
++	# echo "rescan volumes" > /proc/driver/cciss/ccissN
++
++where N is the controller number. This will force the driver to update the
++configuration.
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index b73116e..76b5b33 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -249,6 +249,7 @@ static inline CommandList_struct *removeQ(CommandList_struct **Qptr,
+ #define ENG_GIG 1000000000
+ #define ENG_GIG_FACTOR (ENG_GIG/512)
+ #define ENGAGE_SCSI	"engage scsi"
++#define RESCAN_VOLUMES	"rescan volumes"
+ static const char *raid_label[] = { "0", "4", "1(1+0)", "5", "5+1", "ADG",
+ 	"UNKNOWN"
+ };
+@@ -379,7 +380,9 @@ static ssize_t
+ cciss_proc_write(struct file *file, const char __user *buf,
+ 		 size_t length, loff_t *ppos)
+ {
+-	int err;
++	struct seq_file *seq = file->private_data;
++	ctlr_info_t *h = seq->private;
++	int err, rc;
+ 	char *buffer;
+ 
+ #ifndef CONFIG_CISS_SCSI_TAPE
+@@ -398,12 +401,26 @@ cciss_proc_write(struct file *file, const char __user *buf,
+ 		goto out;
+ 	buffer[length] = '\0';
+ 
++	/* For the MSA2000 the firmware cannot tell the driver to
++	 * rescan when new logical volumes are created. We provide
++	 * this interface so users can `echo "rescan volumes" >
++	 * /proc/driver/cciss/ccissN` to accomplish that task. It's not
++	 * the best solution because it must be done on every server
++	 * that connected to the storage.
++	 */
++
++	if (strncmp(RESCAN_VOLUMES, buffer, sizeof RESCAN_VOLUMES - 1) == 0) {
++		/* rebuild_lun_table returns -1 on success to tell ACU
++		* to quit calling it. In this case we just ignore any
++		* return code.
++		*/
++		(void) rebuild_lun_table(h, NULL);
++		err = length;
++		goto out;
++	}
++
+ #ifdef CONFIG_CISS_SCSI_TAPE
+ 	if (strncmp(ENGAGE_SCSI, buffer, sizeof ENGAGE_SCSI - 1) == 0) {
+-		struct seq_file *seq = file->private_data;
+-		ctlr_info_t *h = seq->private;
+-		int rc;
+-
+ 		rc = cciss_engage_scsi(h->ctlr);
+ 		if (rc != 0)
+ 			err = -rc;
