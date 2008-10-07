@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYJGAlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYJGAlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260AbYJGAlc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYJGAlE
+	id S1756695AbYJGAlr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYJGAlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:41:04 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60078 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:41:06 -0400
+Received: from mx1.suse.de ([195.135.220.2]:46483 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755491AbYJGAlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:41:02 -0400
-Date: Mon, 6 Oct 2008 17:37:22 -0700
+	id S1755911AbYJGAlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:41:05 -0400
+Date: Mon, 6 Oct 2008 17:37:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,58 +22,55 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andi Kleen <ak@linux.intel.com>,
-       Milan Broz <mbroz@redhat.com>
-Subject: [patch 02/71] ACPI: Fix thermal shutdowns
-Message-ID: <20081007003722.GC3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Sven Wegener <sven.wegener@stealer.net>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 03/71] i2c-dev: Return correct error code on class_create()
+	failure
+Message-ID: <20081007003731.GD3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-fix-thermal-shutdowns.patch"
+Content-Disposition: inline; filename="i2c-dev-return-correct-error-code-on-class_create-failure.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Milan Broz <mbroz@redhat.com>
+From: Sven Wegener <sven.wegener@stealer.net>
 
-commit 9f497bcc695fb828da023d74ad3c966b1e58ad21 upstream
+In Linus' tree:
+http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commit;h=e74783ec3cb981211689bd2cfd3248f8dc48ec01
 
-ACPI: Fix thermal shutdowns
+We need to convert the error pointer from class_create(), else we'll return the
+successful return code from register_chrdev() on failure.
 
-Do not use unsigned int if there is test for negative number...
-
-See drivers/acpi/processor_perflib.c
-  static unsigned int ignore_ppc = -1;
-...
-  if (event == CPUFREQ_START && ignore_ppc <= 0) {
-       ignore_ppc = 0;
-...
-
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/processor_perflib.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/i2c/i2c-dev.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -70,7 +70,7 @@ static DEFINE_MUTEX(performance_mutex);
-  *  0 -> cpufreq low level drivers initialized -> consider _PPC values
-  *  1 -> ignore _PPC totally -> forced by user through boot param
-  */
--static unsigned int ignore_ppc = -1;
-+static int ignore_ppc = -1;
- module_param(ignore_ppc, uint, 0644);
- MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
- 		 "limited by BIOS, this should help");
+--- a/drivers/i2c/i2c-dev.c
++++ b/drivers/i2c/i2c-dev.c
+@@ -581,8 +581,10 @@ static int __init i2c_dev_init(void)
+ 		goto out;
+ 
+ 	i2c_dev_class = class_create(THIS_MODULE, "i2c-dev");
+-	if (IS_ERR(i2c_dev_class))
++	if (IS_ERR(i2c_dev_class)) {
++		res = PTR_ERR(i2c_dev_class);
+ 		goto out_unreg_chrdev;
++	}
+ 
+ 	res = i2c_add_driver(&i2cdev_driver);
+ 	if (res)
 
 -- 
