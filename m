@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbYJGAlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYJGAlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbYJGAlO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbYJGAk6
+	id S1754260AbYJGAlc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYJGAlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:40:58 -0400
-Received: from mx1.suse.de ([195.135.220.2]:46462 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:41:04 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60078 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753443AbYJGAk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:40:57 -0400
-Date: Mon, 6 Oct 2008 17:37:18 -0700
+	id S1755491AbYJGAlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:41:02 -0400
+Date: Mon, 6 Oct 2008 17:37:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,76 +22,58 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 01/71] x86-32: AMD c1e force timer broadcast late
-Message-ID: <20081007003718.GB3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Andi Kleen <ak@linux.intel.com>,
+       Milan Broz <mbroz@redhat.com>
+Subject: [patch 02/71] ACPI: Fix thermal shutdowns
+Message-ID: <20081007003722.GC3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-32-amd-c1e-force-timer-broadcast-late.patch"
+Content-Disposition: inline; filename="acpi-fix-thermal-shutdowns.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us know.
+2.6.26-stable review patch.  If anyone has any objections, please let us
+know.
 
 ------------------
-From: Chuck Ebbert <cebbert@redhat.com>
+From: Milan Broz <mbroz@redhat.com>
 
-This patch is not needed in 2.6.27 because it has new c1e-aware idle code.
+commit 9f497bcc695fb828da023d74ad3c966b1e58ad21 upstream
 
-In kernel 2.6.26 the 32-bit x86 timers are started earlier than before.
-This breaks AMD c1e detection trying to force timer broadcast for the
-local apic timer. Copy the code from the 64-bit kernel to force timer
-broadcast late.
+ACPI: Fix thermal shutdowns
 
-Reference:
-http://bugzilla.kernel.org/show_bug.cgi?id=11427
+Do not use unsigned int if there is test for negative number...
 
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+See drivers/acpi/processor_perflib.c
+  static unsigned int ignore_ppc = -1;
+...
+  if (event == CPUFREQ_START && ignore_ppc <= 0) {
+       ignore_ppc = 0;
+...
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/apic_32.c |   25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+ drivers/acpi/processor_perflib.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -552,8 +552,31 @@ void __init setup_boot_APIC_clock(void)
- 	setup_APIC_timer();
- }
- 
--void __devinit setup_secondary_APIC_clock(void)
-+/*
-+ * AMD C1E enabled CPUs have a real nasty problem: Some BIOSes set the
-+ * C1E flag only in the secondary CPU, so when we detect the wreckage
-+ * we already have enabled the boot CPU local apic timer. Check, if
-+ * disable_apic_timer is set and the DUMMY flag is cleared. If yes,
-+ * set the DUMMY flag again and force the broadcast mode in the
-+ * clockevents layer.
-+ */
-+static void __cpuinit check_boot_apic_timer_broadcast(void)
-+{
-+	if (!local_apic_timer_disabled ||
-+	    (lapic_clockevent.features & CLOCK_EVT_FEAT_DUMMY))
-+		return;
-+
-+	lapic_clockevent.features |= CLOCK_EVT_FEAT_DUMMY;
-+
-+	local_irq_enable();
-+	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
-+			   &boot_cpu_physical_apicid);
-+	local_irq_disable();
-+}
-+
-+void __cpuinit setup_secondary_APIC_clock(void)
- {
-+	check_boot_apic_timer_broadcast();
- 	setup_APIC_timer();
- }
- 
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -70,7 +70,7 @@ static DEFINE_MUTEX(performance_mutex);
+  *  0 -> cpufreq low level drivers initialized -> consider _PPC values
+  *  1 -> ignore _PPC totally -> forced by user through boot param
+  */
+-static unsigned int ignore_ppc = -1;
++static int ignore_ppc = -1;
+ module_param(ignore_ppc, uint, 0644);
+ MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
+ 		 "limited by BIOS, this should help");
 
 -- 
