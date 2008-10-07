@@ -1,153 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYJGWZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYJGW1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbYJGWZH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbYJGWY4
+	id S1757364AbYJGW1A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbYJGW0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:24:56 -0400
-Received: from sjc-gw1.datadomain.com ([208.84.140.10]:19145 "EHLO
-	sjciron01.datadomain.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753133AbYJGWY4 convert rfc822-to-8bit (ORCPT
+	Tue, 7 Oct 2008 18:26:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55939 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754761AbYJGW0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:24:56 -0400
-X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
-   d="scan'208";a="4076909"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 7 Oct 2008 18:26:51 -0400
+Date: Wed, 8 Oct 2008 00:28:29 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Renato S. Yamane" <yamane@diamondcut.com.br>
+Cc: Auke@suse.cz, " <auke-jan.h.kok@intel.com>"@suse.cz,
+       linux-kernel@vger.kernel.org, rjwysocki@sisk.pl,
+       power-management_other@kernel-bugs.osdl.org
+Subject: Re: [Bug 10797] Battery is drained after poweroff
+Message-ID: <20081007222829.GT6604@elf.ucw.cz>
+References: <20494.201.3.158.14.1223417777.mandic:mail - neo@webmail.mandic.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: Re: mlock() return value issue in kernel 2.6.23.17
-Date: Tue, 7 Oct 2008 15:24:54 -0700
-Message-ID: <7FF8E1C68090A144B921AFD6A6736A7303FC3879@sjcex01.DataDomain.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: mlock() return value issue in kernel 2.6.23.17
-Thread-Index: Ackoy4X7WIYnXiOMTcO6kx/PSkbd5g==
-From: "Yanping Du" <Yanping.Du@datadomain.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <yanping.du@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20494.201.3.158.14.1223417777.mandic:mail - neo@webmail.mandic.com.br>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kosaki,
 
-  Seems SUSv3 has more requirements beyond errno return code. Upon
-failure (EAGAIN, etc), it requires .no change is made to any locks in
-the address space of the process., but Linux mlock(2) will set vma flag
-as VM_LOCKED even if make_pages_present() fails for some pages in the
-vma. Any comment on this ?
+> >>>> ...and it is not linux problem because it works okay on my thinkpad. See?
+> >>>
+> >>> Yes, this is a Linux problem (at least in release >= 2.6.22)
+> >>> This happening *only* in Linux (Kernel >=2.6.22).
+> >>
+> >> Wow, now that's useful info.
+> 
+> I don´t comment this before because we already said this in bug reports
+> (links above).
 
-SUSv3: http://www.unix.org/single_unix_specification/
+Sorry about that. lkml has rather big traffic.
 
-"Upon successful completion, the mlock() and munlock() functions shall
-return a value of zero. Otherwise, no change is made to any locks in the
-address space of the process, and the function shall return a value of
--1 and set errno to indicate the error."
+> >> I guess you _could_ do git bisect? ;-).
+> 
+> So sorry, but I really don´t now how can I do this.
+> I´m an user, not developer. Can you send me a "how-to" about git
+> bisect?
 
+http://kerneltrap.org/node/11753
 
-Thanks!
+There may be better HOWTOs around.
 
--Yanping
+> >>> And is impossible find wich device eats power (eaten current is too low,
+> >>> and is not enought to make hot).
+> >>
+> >> So how fast is it eating power... can you estimate Watts eaten?
+> 
+> Eaten ~5% of battery each 10h.
 
+Lets assume 40Wh battery... 0.5% per hour... that means 200 hours to
+empty. 0.5% per hour is 40 * 0.005 Wh/h = 0.2 W AFAICT... hmm, that's
+quite low. Debugging this will not be easy :-(.
+									Pavel 
 
-Re: mlock() return value issue in kernel 2.6.23.17
-
-From: KOSAKI Motohiro
-Date: Thu Jul 31 2008 - 08:50:41 EST
-
-Next message: w.landgraf: "ref: my kernel bug report of July 29 ref
-2.6.27-rc1 -- addition: kernel config"
-Previous message: Alistair John Strachan: "Re: Oops in microcode sysfs
-registration,"
-In reply to: Halesh: "mlock() return value issue in kernel 2.6.23.17"
-Next in thread: Andrew Morton: "Re: mlock() return value issue in kernel
-2.6.23.17"
-Messages sorted by: [ date ] [ thread ] [ subject ] [ author ]
-size=2 width="100%" noshade color="#aca899" align=center>
->
-> This testcase results with mlock failure with errno 14 that is EFAULT,
-
-> but this has been no where reported that mlock will give EFAULT, When 
-> i tested the same on older kernel like 2.6.18, I got the correct
-result i.e errno 12 (ENOMEM).
->
->
-> I think in source code mlock(2), setting errno ENOMEM has been missed 
-> in
-> do_mlock() , on mlock_fixup() failure.
->
-> Let me know if my understanding is wrong!
-
-Hi Halesh,
-
-Could you try to following patch?
-
------------------------------------------------------
-SUSv3 require following behavior to mlock(2).
-
-[ENOMEM]
-Some or all of the address range specified by the addr and len arguments
-does not correspond to valid mapped pages in the address space of the
-process.
-
-[EAGAIN]
-Some or all of the memory identified by the operation could not be
-locked when the call was made.
-
-
-This rule isn't so nice and slighly strange.
-but many people think POSIX/SUS compliance is important.
-
-
----
-mm/memory.c | 16 +++++++++++++---
-mm/mlock.c | 2 --
-2 files changed, 13 insertions(+), 5 deletions(-)
-
-Index: b/mm/memory.c
-===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2736,16 +2736,26 @@ int make_pages_present(unsigned long add
-
-vma = find_vma(current->mm, addr);
-if (!vma)
-- return -1;
-+ return -ENOMEM;
-write = (vma->vm_flags & VM_WRITE) != 0; BUG_ON(addr >= end); BUG_ON(end
-> vma->vm_end); len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE; ret
-= get_user_pages(current, current->mm, addr, len, write, 0, NULL, NULL);
-- if (ret < 0)
-+ if (ret < 0) {
-+ /*
-+ SUS require strange return value to mlock
-+ - invalid addr generate to ENOMEM.
-+ - out of memory should generate EAGAIN.
-+ */
-+ if (ret == -EFAULT)
-+ ret = -ENOMEM;
-+ else if (ret == -ENOMEM)
-+ ret = -EAGAIN;
-return ret;
-- return ret == len ? 0 : -1;
-+ }
-+ return ret == len ? 0 : -ENOMEM;
-}
-
-#if !defined(__HAVE_ARCH_GATE_AREA)
-Index: b/mm/mlock.c
-===================================================================
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -78,8 +78,6 @@ success:
-
-mm->locked_vm -= pages;
-out:
-- if (ret == -ENOMEM)
-- ret = -EAGAIN;
-return ret;
-}
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
