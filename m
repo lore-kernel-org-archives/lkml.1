@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbYJGArw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbYJGArf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbYJGArw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbYJGAn1
+	id S1758240AbYJGArf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYJGAnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:43:27 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60429 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:43:23 -0400
+Received: from ns.suse.de ([195.135.220.2]:46712 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757279AbYJGAnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:43:25 -0400
-Date: Mon, 6 Oct 2008 17:38:18 -0700
+	id S1756816AbYJGAnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:43:21 -0400
+Date: Mon, 6 Oct 2008 17:38:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, mingo@elte.hu,
        Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 20/71] x64, fpu: fix possible FPU leakage in error
-	conditions
-Message-ID: <20081007003818.GU3055@suse.de>
+Subject: [patch 19/71] x86-64: Clean up save/restore_i387() usage
+Message-ID: <20081007003815.GT3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x64-fpu-fix-possible-fpu-leakage-in-error-conditions.patch"
+Content-Disposition: inline; filename="x86-64-clean-up-save-restore-i387-usage.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,96 +41,159 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-[Upstream commit: 6ffac1e90a17ea0aded5c581204397421eec91b6]
+[ Upstream commit b30f3ae50cd03ef2ff433a5030fbf88dd8323528]
 
-On Thu, Jul 24, 2008 at 03:43:44PM -0700, Linus Torvalds wrote:
-> So how about this patch as a starting point? This is the RightThing(tm) to
-> do regardless, and if it then makes it easier to do some other cleanups,
-> we should do it first. What do you think?
+Suresh Siddha wants to fix a possible FPU leakage in error conditions,
+but the fact that save/restore_i387() are inlines in a header file makes
+that harder to do than necessary.  So start off with an obvious cleanup.
 
-restore_fpu_checking() calls init_fpu() in error conditions.
+This just moves the x86-64 version of save/restore_i387() out of the
+header file, and moves it to the only file that it is actually used in:
+arch/x86/kernel/signal_64.c.  So exposing it in a header file was wrong
+to begin with.
 
-While this is wrong(as our main intention is to clear the fpu state of
-the thread), this was benign before commit 92d140e21f1 ("x86: fix taking
-DNA during 64bit sigreturn").
+[ Side note: I'd like to fix up some of the games we play with the
+  32-bit version of these functions too, but that's a separate
+  matter.  The 32-bit versions are shared - under different names
+  at that! - by both the native x86-32 code and the x86-64 32-bit
+  compatibility code ]
 
-Post commit 92d140e21f1, live FPU registers may not belong to this
-process at this error scenario.
-
-In the error condition for restore_fpu_checking() (especially during the
-64bit signal return), we are doing init_fpu(), which saves the live FPU
-register state (possibly belonging to some other process context) into
-the thread struct (through unlazy_fpu() in init_fpu()). This is wrong
-and can leak the FPU data.
-
-For the signal handler restore error condition in restore_i387(), clear
-the fpu state present in the thread struct(before ultimately sending a
-SIGSEGV for badframe).
-
-For the paranoid error condition check in math_state_restore(), send a
-SIGSEGV, if we fail to restore the state.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
 
 ---
- arch/x86/kernel/signal_64.c |   11 ++++++++++-
- arch/x86/kernel/traps_64.c  |    9 ++++++++-
- include/asm-x86/i387.h      |    2 --
- 3 files changed, 18 insertions(+), 4 deletions(-)
+ arch/x86/kernel/signal_64.c |   53 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/i387.h      |   54 --------------------------------------------
+ 2 files changed, 53 insertions(+), 54 deletions(-)
 
 --- a/arch/x86/kernel/signal_64.c
 +++ b/arch/x86/kernel/signal_64.c
-@@ -104,7 +104,16 @@ static inline int restore_i387(struct _f
- 		clts();
- 		task_thread_info(current)->status |= TS_USEDFPU;
- 	}
--	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
-+	err = restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
-+	if (unlikely(err)) {
-+		/*
-+		 * Encountered an error while doing the restore from the
-+		 * user buffer, clear the fpu state.
-+		 */
-+		clear_fpu(tsk);
-+		clear_used_math();
-+	}
-+	return err;
+@@ -53,6 +53,59 @@ sys_sigaltstack(const stack_t __user *us
+ 	return do_sigaltstack(uss, uoss, regs->sp);
  }
+ 
++/*
++ * Signal frame handlers.
++ */
++
++static inline int save_i387(struct _fpstate __user *buf)
++{
++	struct task_struct *tsk = current;
++	int err = 0;
++
++	BUILD_BUG_ON(sizeof(struct user_i387_struct) !=
++			sizeof(tsk->thread.xstate->fxsave));
++
++	if ((unsigned long)buf % 16)
++		printk("save_i387: bad fpstate %p\n", buf);
++
++	if (!used_math())
++		return 0;
++	clear_used_math(); /* trigger finit */
++	if (task_thread_info(tsk)->status & TS_USEDFPU) {
++		err = save_i387_checking((struct i387_fxsave_struct __user *)
++					 buf);
++		if (err)
++			return err;
++		task_thread_info(tsk)->status &= ~TS_USEDFPU;
++		stts();
++	} else {
++		if (__copy_to_user(buf, &tsk->thread.xstate->fxsave,
++				   sizeof(struct i387_fxsave_struct)))
++			return -1;
++	}
++	return 1;
++}
++
++/*
++ * This restores directly out of user space. Exceptions are handled.
++ */
++static inline int restore_i387(struct _fpstate __user *buf)
++{
++	struct task_struct *tsk = current;
++	int err;
++
++	if (!used_math()) {
++		err = init_fpu(tsk);
++		if (err)
++			return err;
++	}
++
++	if (!(task_thread_info(current)->status & TS_USEDFPU)) {
++		clts();
++		task_thread_info(current)->status |= TS_USEDFPU;
++	}
++	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
++}
  
  /*
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -1141,7 +1141,14 @@ asmlinkage void math_state_restore(void)
- 	}
- 
- 	clts();			/* Allow maths ops (or we recurse) */
--	restore_fpu_checking(&me->thread.xstate->fxsave);
-+ 	/*
-+ 	 * Paranoid restore. send a SIGSEGV if we fail to restore the state.
-+ 	 */
-+ 	if (unlikely(restore_fpu_checking(&me->thread.xstate->fxsave))) {
-+ 		stts();
-+ 		force_sig(SIGSEGV, me);
-+ 		return;
-+ 	}
- 	task_thread_info(me)->status |= TS_USEDFPU;
- 	me->fpu_counter++;
- }
+  * Do a signal return; undo the signal stack.
 --- a/include/asm-x86/i387.h
 +++ b/include/asm-x86/i387.h
-@@ -63,8 +63,6 @@ static inline int restore_fpu_checking(s
- #else
- 		     : [fx] "cdaSDb" (fx), "m" (*fx), "0" (0));
- #endif
--	if (unlikely(err))
--		init_fpu(current);
- 	return err;
+@@ -138,60 +138,6 @@ static inline void __save_init_fpu(struc
+ 	task_thread_info(tsk)->status &= ~TS_USEDFPU;
  }
  
+-/*
+- * Signal frame handlers.
+- */
+-
+-static inline int save_i387(struct _fpstate __user *buf)
+-{
+-	struct task_struct *tsk = current;
+-	int err = 0;
+-
+-	BUILD_BUG_ON(sizeof(struct user_i387_struct) !=
+-			sizeof(tsk->thread.xstate->fxsave));
+-
+-	if ((unsigned long)buf % 16)
+-		printk("save_i387: bad fpstate %p\n", buf);
+-
+-	if (!used_math())
+-		return 0;
+-	clear_used_math(); /* trigger finit */
+-	if (task_thread_info(tsk)->status & TS_USEDFPU) {
+-		err = save_i387_checking((struct i387_fxsave_struct __user *)
+-					 buf);
+-		if (err)
+-			return err;
+-		task_thread_info(tsk)->status &= ~TS_USEDFPU;
+-		stts();
+-	} else {
+-		if (__copy_to_user(buf, &tsk->thread.xstate->fxsave,
+-				   sizeof(struct i387_fxsave_struct)))
+-			return -1;
+-	}
+-	return 1;
+-}
+-
+-/*
+- * This restores directly out of user space. Exceptions are handled.
+- */
+-static inline int restore_i387(struct _fpstate __user *buf)
+-{
+-	struct task_struct *tsk = current;
+-	int err;
+-
+-	if (!used_math()) {
+-		err = init_fpu(tsk);
+-		if (err)
+-			return err;
+-	}
+-
+-	if (!(task_thread_info(current)->status & TS_USEDFPU)) {
+-		clts();
+-		task_thread_info(current)->status |= TS_USEDFPU;
+-	}
+-	return restore_fpu_checking((__force struct i387_fxsave_struct *)buf);
+-}
+-
+ #else  /* CONFIG_X86_32 */
+ 
+ extern void finit(void);
 
 -- 
