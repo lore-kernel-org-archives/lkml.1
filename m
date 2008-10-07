@@ -1,52 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYJGUdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYJGUem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbYJGUdh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbYJGUdQ
+	id S1756876AbYJGUem (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYJGUee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:33:16 -0400
-Received: from mga11.intel.com ([192.55.52.93]:58115 "EHLO mga11.intel.com"
+	Tue, 7 Oct 2008 16:34:34 -0400
+Received: from mga09.intel.com ([134.134.136.24]:8249 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754734AbYJGUdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:33:13 -0400
+	id S1753781AbYJGUed convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 16:34:33 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
-   d="scan'208";a="388731877"
-Date: Tue, 7 Oct 2008 13:33:12 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/tip: AMDC1E and XTOPOLOGY conflict in cpufeature
-Message-ID: <20081007203311.GA31189@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+   d="scan'208";a="448278095"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology support for Linux - Overview
+Date: Tue, 7 Oct 2008 13:34:30 -0700
+Message-ID: <D936D925018D154694D8A362EEB0892005AC105B@orsmsx416.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology support for Linux - Overview
+Thread-Index: AckovBnQaIeJDmhWSnyqvU6212Xk8w==
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
+       <mingo@elte.hu>, <tytso@mit.edu>
+X-OriginalArrivalTime: 07 Oct 2008 20:34:31.0920 (UTC) FILETIME=[1A6EC700:01C928BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linux community,
 
-Fix two features from conflicting in feature bits. Looks like the conflict
-came from automatic conflict resolution?
+The following patches are to add support for Intel(R) Trusted Execution
+Technology (Intel(R) TXT) and the Trusted Boot open source project
+(tboot).
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+We request your feedback and suggestions.
 
----
- include/asm-x86/cpufeature.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: tip/include/asm-x86/cpufeature.h
-===================================================================
---- tip.orig/include/asm-x86/cpufeature.h	2008-10-07 13:04:01.000000000 -0700
-+++ tip/include/asm-x86/cpufeature.h	2008-10-07 13:05:51.000000000 -0700
-@@ -90,7 +90,7 @@
- #define X86_FEATURE_11AP	(3*32+19) /* "" Bad local APIC aka 11AP */
- #define X86_FEATURE_NOPL	(3*32+20) /* The NOPL (0F 1F) instructions */
- #define X86_FEATURE_AMDC1E	(3*32+21) /* AMD C1E detected */
--#define X86_FEATURE_XTOPOLOGY	(3*32+21) /* cpu topology enum extensions */
-+#define X86_FEATURE_XTOPOLOGY	(3*32+22) /* cpu topology enum extensions */
- 
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
+
+Intel(R) TXT Overview:
+=====================
+
+Intel's technology for safer computing, Intel(R) Trusted Execution
+Technology
+(Intel(R) TXT), defines platform-level enhancements that provide the
+building
+blocks for creating trusted platforms.
+
+Intel TXT was formerly known by the code name LaGrande Technology (LT).
+
+Intel TXT in Brief:
+o  Provides dynamic root of trust for measurement (DRTM)
+o  Data protection in case of improper shutdown
+o  Measurement and verification of launched environment
+
+Intel TXT is part of the vPro(TM) brand and is also available some
+non-vPro
+systems.  It is available on systems based on the Q35 or X38 Express
+chipsets
+(e.g. Dell Optiplex 755, HP dc7800, etc.).  However, TXT will be on all
+vPro(TM) client platforms starting this year (Montevina and McCreary
+-based),
+with plans for server support in the near future.
+
+For more information, see http://www.intel.com/technology/security/.
+This
+site also has a link to the Intel TXT MLE Developers Manual, which has
+been updated for the new released platforms.
+
+Intel TXT has been presented at various events over the past few years,
+some
+of which are:
+      LinuxTAG 2008:
+http://www.linuxtag.org/2008/en/conf/events/vp-donnerstag/details.html?t
+alkid=110
+      TRUST2008:
+http://www.trust2008.eu/downloads/Keynote-Speakers/3_David-Grawrock_The-
+Front-Door-of-Trusted-Computing.pdf
+      IDF 2008, Shanghai:
+http://inteldeveloperforum.com.edgesuite.net/shanghai_2008/aep/PROS003/i
+ndex.html
+      IDFs 2006, 2007 (I'm not sure if/where they are online)
+
+Trusted Boot Project Overview:
+=============================
+
+Trusted Boot (tboot) is an open source, pre- kernel/VMM module that uses
+Intel TXT to perform a measured and verified launch of an OS kernel/VMM.
+
+It is hosted on SourceForge at http://sourceforge.net/projects/tboot.
+
+Tboot currently supports launching Xen (open source VMM/hypervisor w/
+TXT
+support since v3.2), and now Linux kernels.  Linux support is provided
+in the
+latest (tboot-20081007) release.
+
+
+Value Proposition for Linux or "Why should you care?"
+=====================================================
+
+While there are many products and technologies that attempt to measure
+or
+protect the integrity of a running kernel, they all assume the kernel is
+"good" to begin with.  The Integrity Measurement Architecture (IMA) and
+Linux
+Integrity Module interface are examples of such solutions.
+
+To get trust in the initial kernel without using Intel TXT, a static
+root of
+trust must be used.  This bases trust in BIOS starting at system reset
+and
+requires measurement of all code executed between system reset through
+the
+completion of the kernel boot as well as data objects used by that code.
+In
+the case of a Linux kernel, this means all of BIOS, any option ROMs, the
+bootloader and the boot config.  In practice, this is a lot of
+code/data, much
+of which is subject to change from boot to boot (e.g. changing NICs may
+change
+option ROMs).  Without reference hashes, these measurement changes are
+difficult to assess or confirm as benign.  This process also does not
+provide DMA protection, memory configuration/alias checks and locks,
+crash
+protection, or policy support.
+
+By using the hardware-based root of trust that Intel TXT provides, many
+of
+these issues can be mitigated.  Specifically: many pre-launch components
+can
+be removed from the trust chain, DMA protection is provided to all
+launched
+components, a large number of platform configuration checks are
+performed and
+values locked, protection is provided for any data in the event of an
+improper
+shutdown, and there is support for policy-based execution/verification.
+This
+provides a more stable measurement and a higher assurance of system
+configuration and initial state than would be otherwise possible.  Since
+the
+tboot project is open source, source code for almost all parts of the
+trust
+chain is available (excepting SMM and Intel-provided firmware).
+
+Patchset:
+========
+
+These patches were tested on the 2.6.27-rc6 kernel and apply cleanly to
+2.6.27-rc9.
+
+Patch 0a/3:  Overview and motivation (this email)
+Patch 0b/3:  Details and how it works
+Patch 1/3:   Support for AddressRangeUnusuable ACPI memory type (already
+             accepted but not in 2.6.27-rc9)
+Patch 2/3:   Disable VT-d (Intel IOMMU) Protected Memory Regions (PMRs)
+             (submitted to maintainer)
+Patch 3/3:   Intel TXT and tboot support
+
+
+Joseph Cihula
+Shane Wang
+Gang Wei
+Intel Corp.
