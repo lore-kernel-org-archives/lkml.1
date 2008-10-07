@@ -1,57 +1,727 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbYJGG2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYJGG3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756650AbYJGG2V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 02:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYJGG2N
+	id S1756845AbYJGG3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 02:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYJGG3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 02:28:13 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59199 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbYJGG2N (ORCPT
+	Tue, 7 Oct 2008 02:29:00 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:35133 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbYJGG26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 02:28:13 -0400
-To: Richard Holden <aciddeath@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: BKL still required for what functions?
-From: Andi Kleen <andi@firstfloor.org>
-References: <F99FEC4F-DEDD-4E55-93B4-A0761F30E1A2@gmail.com>
-Date: Tue, 07 Oct 2008 08:28:11 +0200
-In-Reply-To: <F99FEC4F-DEDD-4E55-93B4-A0761F30E1A2@gmail.com> (Richard Holden's message of "Mon, 6 Oct 2008 22:24:12 -0600")
-Message-ID: <87ljx0nclg.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 7 Oct 2008 02:28:58 -0400
+Message-ID: <48EB01A2.1000304@nttdata.co.jp>
+Date: Tue, 07 Oct 2008 15:28:50 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
 MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ZenIV.linux.org.uk>
+CC: Valdis.Kletnieks@vt.edu, Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haradats@nttdata.co.jp,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: Re: [TOMOYO #9 (2.6.27-rc7-mm1) 1/6] LSM adapter functions.
+References: <20080930154553.GA29249@us.ibm.com> <48E2E17C.3040108@schaufler-ca.com> <62704.1222837526@turing-police.cc.vt.edu> <48E33397.1030709@nttdata.co.jp> <20081001211507.GA28377@us.ibm.com> <48E45672.5030606@nttdata.co.jp> <20081002133949.GC11150@us.ibm.com> <48E5BDAB.3010107@nttdata.co.jp> <20081003130937.GF9651@us.ibm.com> <48E975A7.2050000@nttdata.co.jp> <20081006165446.GA733@us.ibm.com>
+In-Reply-To: <20081006165446.GA733@us.ibm.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Oct 2008 06:28:53.0981 (UTC) FILETIME=[F843B0D0:01C92845]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Holden <aciddeath@gmail.com> writes:
+Serge E. Hallyn wrote:
+> So I'd recommend floating your security_path_clear() patch with a clear
+> description about the DAC-before-MAC property which you are maintaining.
+> Someone may come up with a better overall solution, but we're unlikely
+> to hear it until you try to push your patch.
+Serge, thank you for your patient advisement. :)
+Here is the patch with all changes against LSM interface.
 
-> I'm doing some driver cleanup on the ixj telephony driver, mostly
-> copy/ paste and common code refactoring. I'm also looking at trying to
-> get  rid of the BKL from the 2 places its used, so I was wondering if
-> we  have a list of kernel calls that still require the BKL to be held,
-> and  if we don't have a list would it be worthwhile to put one into
-> Documentation, I'd be willing to maintain the list as we removed the
-> BKL from the last core kernel places.
+Al, is this patch acceptable?
 
-The standard answer is to check the callers. 
+---
+----- What is this patch for? -----
 
-But in general there are very little (in fact I cannot think of any)
-general kernel utility functions left that need the BKL and if they
-then usually take it on their own. So you should be ok
-assuming that general kernel code (e.g. code living in kernel/*
-or lib/*) doesn't need it.
+There are security_inode_*() LSM hooks for attribute-based MAC, but they are not
+suitable for pathname-based MAC because they don't receive "struct vfsmount"
+information.
 
-If you rely on other driver frameworks that might be different,
-but a good rule of thumb is to just check that directly if it 
-uses lock_kernel at all.
+----- How this patch was developed? -----
 
-The reason that a lot of driver code still uses BKL implicitely
-(e.g. in ioctl code) is more because it always needs someone 
-to audit.
+Two pathname-based MACs, AppArmor and TOMOYO Linux, are trying to merge
+upstream. But because of "struct vfsmount" problem, they have been unable to
+merge upstream.
 
--Andi
+Here are the list of approaches and the reasons of denial.
 
--- 
-ak@linux.intel.com
+(1) Not using LSM
+ http://lwn.net/Articles/277833/
+
+ This approach was rejected because security modules should use LSM because the
+ whole idea behind LSM was to have a single set of hooks for all security
+ modules; if every module now adds its own set of hooks, that purpose will have
+ been defeated and the kernel will turn into a big mess of security hooks.
+
+(2) Retrieving "struct vfsmount" from "struct task_struct".
+ http://lkml.org/lkml/2007/11/5/388
+
+ Since "struct task_struct" contains list of "struct vfsmount",
+ "struct vfsmount" which corresponds to "struct dentry" can be retrieved from
+ the list unless "mount --bind" is used.
+
+ This approach turned out to cause a critical problem that getting namespace_sem
+ lock from security_inode_*() triggers AB-BA deadlock.
+
+(3) Adding "struct vfsmount" parameter to VFS helper functions.
+ http://lkml.org/lkml/2008/5/29/207
+
+ This approach adds "struct vfsmount" to VFS helper functions (e.g. vfs_mkdir()
+ and vfs_symlink()) and LSM hooks inside VFS helper functions. This approach is
+ helpful for not only AppArmor and TOMOYO Linux 2.x but also SELinux and
+ auditing purpose, for this approach allows existent LSM users to use pathnames
+ in their access control and audit logs.
+
+ This approach was rejected by Al Viro, the VFS maintainer, because he thinks
+ individual filesystem should remain "struct vfsmount"-unaware and VFS helper
+ functions should not receive "struct vfsmount".
+
+ Al Viro also suggested to move existing security_inode_*() to out of VFS
+ helper functions so that security_inode_*() can receive "struct vfsmount"
+ without modifying VFS helper functions, but this suggestion was opposed by
+ Stephen Smalley because changing the order of permission checks (i.e.
+ MAC checks before DAC checks) is not acceptable.
+
+(4) Passing "struct vfsmount" via "struct task_struct".
+ http://lkml.org/lkml/2007/11/16/157
+
+ Since we didn't understand the reason why accessing "struct vfsmount" from
+ LSM hooks inside VFS helper functions is not acceptable, we thought the reason
+ why VFS helper functions don't receive "struct vfsmount" is the amount of
+ modifications needed to do so. Thus, we proposed to pass "struct vfsmount" via
+ "struct task_struct" so that modifications remain minimal.
+
+ This approach was rejected because this is an abuse of "struct task_struct".
+
+(5) Remembering pathname of "struct vfsmount" via "struct task_struct".
+ http://lkml.org/lkml/2008/8/19/16
+
+ Since pathname of a "struct dentry" up to the mount point can be calculated
+ without "struct vfsmount", absolute pathname of a "struct dentry" can be
+ calculated if "struct task_struct" can remember absolute pathname of a
+ "struct vfsmount" which corresponds to "struct dentry".
+ As we now understand that Al Viro is opposing to access "struct vfsmount" from
+ LSM hooks inside VFS helper functions, we gave up delivering "struct vfsmount"
+ to LSM hooks inside VFS helper functions.
+ Kernel 2.6.26 introduced read-only bind mount feature, and hooks for that
+ feature (i.e. mnt_want_write() and mnt_drop_write()) were inserted around
+ VFS helper functions call. Since mnt_want_write() receives "struct vfsmount"
+ which corresponds to "struct dentry" that will be passed to subsequent VFS
+ helper functions call, we associated pathname of "struct vfsmount" with
+ "struct task_struct" instead of associating "struct vfsmount" itself.
+
+ This approach was not explicitly rejected, but there seems to be performance
+ problem.
+
+(6) Introducing new LSM hooks.
+ (this patch)
+
+ We understand that adding new LSM hooks which receive "struct vfsmount" outside
+ VFS helper functions is the most straightforward approach. This approach has
+ less impact to existing LSM module and no impact to VFS helper functions.
+
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Crispin Cowan <crispin@crispincowan.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Casey Schaufler <casey@schaufler-ca.com>
+Cc: James Morris <jmorris@namei.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/namei.c               |   46 ++++++++++++++
+ fs/open.c                |    5 +
+ include/linux/security.h |  151 +++++++++++++++++++++++++++++++++++++++++++++++
+ net/unix/af_unix.c       |    5 +
+ security/Kconfig         |    9 ++
+ security/capability.c    |   63 +++++++++++++++++++
+ security/security.c      |   73 ++++++++++++++++++++++
+ 7 files changed, 352 insertions(+)
+
+--- linux-next.orig/fs/namei.c
++++ linux-next/fs/namei.c
+@@ -1571,12 +1571,17 @@ int may_open(struct nameidata *nd, int a
+ 		 * Refuse to truncate files with mandatory locks held on them.
+ 		 */
+ 		error = locks_verify_locked(inode);
++		if (!error)
++			error = security_path_truncate(&nd->path, 0,
++					       ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
++						       NULL);
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
+ 
+ 			error = do_truncate(dentry, 0,
+ 					    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+ 					    NULL);
++			security_path_clear();
+ 		}
+ 		put_write_access(inode);
+ 		if (error)
+@@ -1601,7 +1606,12 @@ static int __open_namei_create(struct na
+ 
+ 	if (!IS_POSIXACL(dir->d_inode))
+ 		mode &= ~current->fs->umask;
++	error = security_path_mknod(&nd->path, path->dentry, mode, 0);
++	if (error)
++		goto out_unlock;
+ 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
++	security_path_clear();
++out_unlock:
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 	dput(nd->path.dentry);
+ 	nd->path.dentry = path->dentry;
+@@ -2014,6 +2024,9 @@ asmlinkage long sys_mknodat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_mknod(&nd.path, dentry, mode, dev);
++	if (error)
++		goto out_drop_write;
+ 	switch (mode & S_IFMT) {
+ 		case 0: case S_IFREG:
+ 			error = vfs_create(nd.path.dentry->d_inode,dentry,mode,&nd);
+@@ -2026,6 +2039,8 @@ asmlinkage long sys_mknodat(int dfd, con
+ 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,0);
+ 			break;
+ 	}
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2085,7 +2100,12 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_mkdir(&nd.path, dentry, mode);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2192,7 +2212,12 @@ static long do_rmdir(int dfd, const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto exit3;
++	error = security_path_rmdir(&nd.path, dentry);
++	if (error)
++		goto exit4;
+ 	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
++	security_path_clear();
++exit4:
+ 	mnt_drop_write(nd.path.mnt);
+ exit3:
+ 	dput(dentry);
+@@ -2274,7 +2299,12 @@ static long do_unlinkat(int dfd, const c
+ 		error = mnt_want_write(nd.path.mnt);
+ 		if (error)
+ 			goto exit2;
++		error = security_path_unlink(&nd.path, dentry);
++		if (error)
++			goto exit3;
+ 		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
++		security_path_clear();
++exit3:
+ 		mnt_drop_write(nd.path.mnt);
+ 	exit2:
+ 		dput(dentry);
+@@ -2355,7 +2385,12 @@ asmlinkage long sys_symlinkat(const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_symlink(&nd.path, dentry, from);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from);
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2452,7 +2487,12 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_link(old_path.dentry, &nd.path, new_dentry);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_link(old_path.dentry, nd.path.dentry->d_inode, new_dentry);
++	security_path_clear();
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(new_dentry);
+@@ -2684,8 +2724,14 @@ asmlinkage long sys_renameat(int olddfd,
+ 	error = mnt_want_write(oldnd.path.mnt);
+ 	if (error)
+ 		goto exit5;
++	error = security_path_rename(&oldnd.path, old_dentry,
++				     &newnd.path, new_dentry);
++	if (error)
++		goto exit6;
+ 	error = vfs_rename(old_dir->d_inode, old_dentry,
+ 				   new_dir->d_inode, new_dentry);
++	security_path_clear();
++exit6:
+ 	mnt_drop_write(oldnd.path.mnt);
+ exit5:
+ 	dput(new_dentry);
+--- linux-next.orig/fs/open.c
++++ linux-next/fs/open.c
+@@ -272,6 +272,8 @@ static long do_sys_truncate(const char _
+ 		goto put_write_and_out;
+ 
+ 	error = locks_verify_truncate(inode, NULL, length);
++	if (!error)
++		error = security_path_truncate(&path, length, 0, NULL);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+ 		error = do_truncate(path.dentry, length, 0, NULL);
+@@ -329,6 +331,9 @@ static long do_sys_ftruncate(unsigned in
+ 
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
++		error = security_path_truncate(&file->f_path, length,
++					       ATTR_MTIME|ATTR_CTIME, file);
++	if (!error)
+ 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
+ out_putf:
+ 	fput(file);
+--- linux-next.orig/include/linux/security.h
++++ linux-next/include/linux/security.h
+@@ -331,17 +331,37 @@ static inline void security_free_mnt_opt
+  *	@dir contains the inode structure of the parent directory of the new link.
+  *	@new_dentry contains the dentry structure for the new link.
+  *	Return 0 if permission is granted.
++ * @path_link:
++ *	Check permission before creating a new hard link to a file.
++ *	@old_dentry contains the dentry structure for an existing link
++ *	to the file.
++ *	@new_dir contains the path structure of the parent directory of
++ *	the new link.
++ *	@new_dentry contains the dentry structure for the new link.
++ *	Return 0 if permission is granted.
+  * @inode_unlink:
+  *	Check the permission to remove a hard link to a file.
+  *	@dir contains the inode structure of parent directory of the file.
+  *	@dentry contains the dentry structure for file to be unlinked.
+  *	Return 0 if permission is granted.
++ * @path_unlink:
++ *	Check the permission to remove a hard link to a file.
++ *	@dir contains the path structure of parent directory of the file.
++ *	@dentry contains the dentry structure for file to be unlinked.
++ *	Return 0 if permission is granted.
+  * @inode_symlink:
+  *	Check the permission to create a symbolic link to a file.
+  *	@dir contains the inode structure of parent directory of the symbolic link.
+  *	@dentry contains the dentry structure of the symbolic link.
+  *	@old_name contains the pathname of file.
+  *	Return 0 if permission is granted.
++ * @path_symlink:
++ *	Check the permission to create a symbolic link to a file.
++ *	@dir contains the path structure of parent directory of
++ *	the symbolic link.
++ *	@dentry contains the dentry structure of the symbolic link.
++ *	@old_name contains the pathname of file.
++ *	Return 0 if permission is granted.
+  * @inode_mkdir:
+  *	Check permissions to create a new directory in the existing directory
+  *	associated with inode strcture @dir.
+@@ -349,11 +369,25 @@ static inline void security_free_mnt_opt
+  *	@dentry contains the dentry structure of new directory.
+  *	@mode contains the mode of new directory.
+  *	Return 0 if permission is granted.
++ * @path_mkdir:
++ *	Check permissions to create a new directory in the existing directory
++ *	associated with path strcture @path.
++ *	@dir containst the path structure of parent of the directory
++ *	to be created.
++ *	@dentry contains the dentry structure of new directory.
++ *	@mode contains the mode of new directory.
++ *	Return 0 if permission is granted.
+  * @inode_rmdir:
+  *	Check the permission to remove a directory.
+  *	@dir contains the inode structure of parent of the directory to be removed.
+  *	@dentry contains the dentry structure of directory to be removed.
+  *	Return 0 if permission is granted.
++ * @path_rmdir:
++ *	Check the permission to remove a directory.
++ *	@dir contains the path structure of parent of the directory to be
++ *	removed.
++ *	@dentry contains the dentry structure of directory to be removed.
++ *	Return 0 if permission is granted.
+  * @inode_mknod:
+  *	Check permissions when creating a special file (or a socket or a fifo
+  *	file created via the mknod system call).  Note that if mknod operation
+@@ -364,6 +398,15 @@ static inline void security_free_mnt_opt
+  *	@mode contains the mode of the new file.
+  *	@dev contains the device number.
+  *	Return 0 if permission is granted.
++ * @path_mknod:
++ *	Check permissions when creating a file. Note that this hook is called
++ *	even if mknod operation is being done for a regular file.
++ *	@dir contains the path structure of parent of the new file.
++ *	@dentry contains the dentry structure of the new file.
++ *	@mode contains the mode of the new file.
++ *	@dev contains the undecoded device number. Use new_decode_dev() to get
++ *	the decoded device number.
++ *	Return 0 if permission is granted.
+  * @inode_rename:
+  *	Check for permission to rename a file or directory.
+  *	@old_dir contains the inode structure for parent of the old link.
+@@ -371,6 +414,13 @@ static inline void security_free_mnt_opt
+  *	@new_dir contains the inode structure for parent of the new link.
+  *	@new_dentry contains the dentry structure of the new link.
+  *	Return 0 if permission is granted.
++ * @path_rename:
++ *	Check for permission to rename a file or directory.
++ *	@old_dir contains the path structure for parent of the old link.
++ *	@old_dentry contains the dentry structure of the old link.
++ *	@new_dir contains the path structure for parent of the new link.
++ *	@new_dentry contains the dentry structure of the new link.
++ *	Return 0 if permission is granted.
+  * @inode_readlink:
+  *	Check the permission to read the symbolic link.
+  *	@dentry contains the dentry structure for the file link.
+@@ -399,6 +449,13 @@ static inline void security_free_mnt_opt
+  *	@dentry contains the dentry structure for the file.
+  *	@attr is the iattr structure containing the new file attributes.
+  *	Return 0 if permission is granted.
++ * @path_truncate:
++ *	Check permission before truncating a file.
++ *	@path contains the path structure for the file.
++ *	@length is the new length of the file.
++ *	@time_attrs is the flags passed to do_truncate().
++ *	@filp is the file structure (may be NULL).
++ *	Return 0 if permission is granted.
+  * @inode_getattr:
+  *	Check permission before obtaining file attributes.
+  *	@mnt is the vfsmount where the dentry was looked up
+@@ -466,6 +523,12 @@ static inline void security_free_mnt_opt
+  *	@inode contains a pointer to the inode.
+  *	@secid contains a pointer to the location where result will be saved.
+  *	In case of failure, @secid will be set to zero.
++ * @path_clear:
++ *	Clear error code stored by security_path_*() in case
++ *      security_inode_*() was not called when DAC returned an error.
++ *      This hook allows LSM modules which use security_path_*() defer
++ *      returning LSM's error code till security_inode_*() is called so that
++ *      DAC's error (if any) is returned to the caller instead of LSM's error.
+  *
+  * Security hooks for file operations
+  *
+@@ -1327,6 +1390,23 @@ struct security_operations {
+ 				   struct super_block *newsb);
+ 	int (*sb_parse_opts_str) (char *options, struct security_mnt_opts *opts);
+ 
++#ifdef CONFIG_SECURITY_PATH
++	int (*path_unlink) (struct path *dir, struct dentry *dentry);
++	int (*path_mkdir) (struct path *dir, struct dentry *dentry, int mode);
++	int (*path_rmdir) (struct path *dir, struct dentry *dentry);
++	int (*path_mknod) (struct path *dir, struct dentry *dentry, int mode,
++			   unsigned int dev);
++	int (*path_truncate) (struct path *path, loff_t length,
++			      unsigned int time_attrs, struct file *filp);
++	int (*path_symlink) (struct path *dir, struct dentry *dentry,
++			     const char *old_name);
++	int (*path_link) (struct dentry *old_dentry, struct path *new_dir,
++			  struct dentry *new_dentry);
++	int (*path_rename) (struct path *old_dir, struct dentry *old_dentry,
++			    struct path *new_dir, struct dentry *new_dentry);
++	void (*path_clear) (void);
++#endif
++
+ 	int (*inode_alloc_security) (struct inode *inode);
+ 	void (*inode_free_security) (struct inode *inode);
+ 	int (*inode_init_security) (struct inode *inode, struct inode *dir,
+@@ -2685,6 +2765,77 @@ static inline void security_skb_classify
+ 
+ #endif	/* CONFIG_SECURITY_NETWORK_XFRM */
+ 
++#ifdef CONFIG_SECURITY_PATH
++int security_path_unlink(struct path *dir, struct dentry *dentry);
++int security_path_mkdir(struct path *dir, struct dentry *dentry, int mode);
++int security_path_rmdir(struct path *dir, struct dentry *dentry);
++int security_path_mknod(struct path *dir, struct dentry *dentry, int mode,
++			unsigned int dev);
++int security_path_truncate(struct path *path, loff_t length,
++			   unsigned int time_attrs, struct file *filp);
++int security_path_symlink(struct path *dir, struct dentry *dentry,
++			  const char *old_name);
++int security_path_link(struct dentry *old_dentry, struct path *new_dir,
++		       struct dentry *new_dentry);
++int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
++			 struct path *new_dir, struct dentry *new_dentry);
++void security_path_clear(void);
++#else	/* CONFIG_SECURITY_PATH */
++static inline int security_path_unlink(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static inline int security_path_mkdir(struct path *dir, struct dentry *dentry,
++				      int mode)
++{
++	return 0;
++}
++
++static inline int security_path_rmdir(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static inline int security_path_mknod(struct path *dir, struct dentry *dentry,
++				      int mode, unsigned int dev)
++{
++	return 0;
++}
++
++static inline int security_path_truncate(struct path *path, loff_t length,
++					 unsigned int time_attrs,
++					 struct file *filp)
++{
++	return 0;
++}
++
++static inline int security_path_symlink(struct path *dir, struct dentry *dentry,
++					const char *old_name)
++{
++	return 0;
++}
++
++static inline int security_path_link(struct dentry *old_dentry,
++				     struct path *new_dir,
++				     struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static inline int security_path_rename(struct path *old_dir,
++				       struct dentry *old_dentry,
++				       struct path *new_dir,
++				       struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static inline void security_path_clear(void)
++{
++}
++#endif	/* CONFIG_SECURITY_PATH */
++
+ #ifdef CONFIG_KEYS
+ #ifdef CONFIG_SECURITY
+ 
+--- linux-next.orig/net/unix/af_unix.c
++++ linux-next/net/unix/af_unix.c
+@@ -828,7 +828,12 @@ static int unix_bind(struct socket *sock
+ 		err = mnt_want_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
++		err = security_path_mknod(&nd.path, dentry, mode, 0);
++		if (err)
++			goto out_mknod_drop_write;
+ 		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
++		security_path_clear();
++out_mknod_drop_write:
+ 		mnt_drop_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
+--- linux-next.orig/security/Kconfig
++++ linux-next/security/Kconfig
+@@ -81,6 +81,15 @@ config SECURITY_NETWORK_XFRM
+ 	  IPSec.
+ 	  If you are unsure how to answer this question, answer N.
+ 
++config SECURITY_PATH
++	bool "Security hooks for pathname based access control"
++	depends on SECURITY
++	help
++	  This enables the security hooks for pathname based access control.
++	  If enabled, a security module can use these hooks to
++	  implement pathname based access controls.
++	  If you are unsure how to answer this question, answer N.
++
+ config SECURITY_FILE_CAPABILITIES
+ 	bool "File POSIX Capabilities"
+ 	default n
+--- linux-next.orig/security/capability.c
++++ linux-next/security/capability.c
+@@ -263,6 +263,58 @@ static void cap_inode_getsecid(const str
+ 	*secid = 0;
+ }
+ 
++#ifdef CONFIG_SECURITY_PATH
++static int cap_path_mknod(struct path *dir, struct dentry *dentry, int mode,
++			  unsigned int dev)
++{
++	return 0;
++}
++
++static int cap_path_mkdir(struct path *dir, struct dentry *dentry, int mode)
++{
++	return 0;
++}
++
++static int cap_path_rmdir(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static int cap_path_unlink(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static int cap_path_symlink(struct path *dir, struct dentry *dentry,
++			    const char *old_name)
++{
++	return 0;
++}
++
++static int cap_path_link(struct dentry *old_dentry, struct path *new_dir,
++			 struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static int cap_path_rename(struct path *old_path, struct dentry *old_dentry,
++			   struct path *new_path, struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static int cap_path_truncate(struct path *path, loff_t length,
++			     unsigned int time_attrs, struct file *filp)
++{
++	return 0;
++}
++
++static void cap_path_clear(void)
++{
++}
++
++#endif
++
+ static int cap_file_permission(struct file *file, int mask)
+ {
+ 	return 0;
+@@ -883,6 +935,17 @@ void security_fixup_ops(struct security_
+ 	set_to_cap_if_null(ops, inode_setsecurity);
+ 	set_to_cap_if_null(ops, inode_listsecurity);
+ 	set_to_cap_if_null(ops, inode_getsecid);
++#ifdef CONFIG_SECURITY_PATH
++	set_to_cap_if_null(ops, path_mknod);
++	set_to_cap_if_null(ops, path_mkdir);
++	set_to_cap_if_null(ops, path_rmdir);
++	set_to_cap_if_null(ops, path_unlink);
++	set_to_cap_if_null(ops, path_symlink);
++	set_to_cap_if_null(ops, path_link);
++	set_to_cap_if_null(ops, path_rename);
++	set_to_cap_if_null(ops, path_truncate);
++	set_to_cap_if_null(ops, path_clear);
++#endif
+ 	set_to_cap_if_null(ops, file_permission);
+ 	set_to_cap_if_null(ops, file_alloc_security);
+ 	set_to_cap_if_null(ops, file_free_security);
+--- linux-next.orig/security/security.c
++++ linux-next/security/security.c
+@@ -341,6 +341,79 @@ int security_inode_init_security(struct 
+ }
+ EXPORT_SYMBOL(security_inode_init_security);
+ 
++#ifdef CONFIG_SECURITY_PATH
++int security_path_mknod(struct path *path, struct dentry *dentry, int mode,
++			unsigned int dev)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_mknod(path, dentry, mode, dev);
++}
++EXPORT_SYMBOL(security_path_mknod);
++
++int security_path_mkdir(struct path *path, struct dentry *dentry, int mode)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_mkdir(path, dentry, mode);
++}
++
++int security_path_rmdir(struct path *path, struct dentry *dentry)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_rmdir(path, dentry);
++}
++
++int security_path_unlink(struct path *path, struct dentry *dentry)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_unlink(path, dentry);
++}
++
++int security_path_symlink(struct path *path, struct dentry *dentry,
++			  const char *old_name)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_symlink(path, dentry, old_name);
++}
++
++int security_path_link(struct dentry *old_dentry, struct path *new_dir,
++		       struct dentry *new_dentry)
++{
++	if (unlikely(IS_PRIVATE(old_dentry->d_inode)))
++		return 0;
++	return security_ops->path_link(old_dentry, new_dir, new_dentry);
++}
++
++int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
++			 struct path *new_dir, struct dentry *new_dentry)
++{
++	if (unlikely(IS_PRIVATE(old_dentry->d_inode) ||
++		     (new_dentry->d_inode && IS_PRIVATE(new_dentry->d_inode))))
++		return 0;
++	return security_ops->path_rename(old_dir, old_dentry, new_dir,
++					 new_dentry);
++}
++
++int security_path_truncate(struct path *path, loff_t length,
++			   unsigned int time_attrs, struct file *filp)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_truncate(path, length, time_attrs, filp);
++}
++
++void security_path_clear(void)
++{
++	return security_ops->path_clear();
++}
++EXPORT_SYMBOL(security_path_clear);
++
++#endif
++
+ int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
+ {
+ 	if (unlikely(IS_PRIVATE(dir)))
+
