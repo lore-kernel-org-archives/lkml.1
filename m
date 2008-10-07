@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbYJGPY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYJGP0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbYJGPY0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYJGPYO
+	id S1755391AbYJGP0J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:26:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYJGPZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:24:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57394 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751250AbYJGPYO (ORCPT
+	Tue, 7 Oct 2008 11:25:56 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:44518 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842AbYJGPZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:24:14 -0400
-Message-ID: <48EB7EEA.4040809@linux-foundation.org>
-Date: Tue, 07 Oct 2008 10:23:22 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 7 Oct 2008 11:25:56 -0400
+Date: Tue, 7 Oct 2008 16:25:53 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jason Vas Dias <jason.vas.dias@gmail.com>
+Subject: Re: [PATCH] x86: SB450: skip IRQ0 override if it is not routed to
+ INT2 of IOAPIC
+In-Reply-To: <20081006221122.GC22097@alberich.amd.com>
+Message-ID: <alpine.LFD.1.10.0810071625030.32549@ftp.linux-mips.org>
+References: <20081005183603.GA3263@amd.corenet.prv> <200810060029.42471.rjw@sisk.pl> <20081006062235.GA2808@amd.corenet.prv> <200810061159.30103.rjw@sisk.pl> <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org> <20081006150055.GA16930@elte.hu>
+ <alpine.LFD.1.10.0810061815060.10470@ftp.linux-mips.org> <87tzbpmocm.fsf@basil.nowhere.org> <alpine.LFD.1.10.0810062227100.10470@ftp.linux-mips.org> <20081006221122.GC22097@alberich.amd.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, minyard@acm.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-References: <20081006185026.GA10383@minyard.local>	 <48EA8197.6080502@cosmosbay.com> <1223367480.26330.7.camel@lappy.programming.kicks-ass.net> <48EB2AE3.3080200@cosmosbay.com> <48EB6EE4.8030703@linux-foundation.org> <48EB7747.9060505@cosmosbay.com>
-In-Reply-To: <48EB7747.9060505@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
+On Tue, 7 Oct 2008, Andreas Herrmann wrote:
 
-> 
-> 1) Hum, do you know why "struct file" objects dont use
-> SLAB_DESTROY_BY_RCU then,
-> since we noticed a performance regression for several workloads at
-> RCUification
-> of file structures ?
+> Following patch is almost untested -- especially I didn't get my
+> hands on one of the HP Laptops with broken DSDT.
 
-Because my patches were not accepted that fix the issue.
-http://lkml.org/lkml/2006/6/16/144
+ Thanks a lot for the fix even though I cannot test it!
 
-
-> 2) What prevents an object to be *freed* (and deleted from a hash
-> chain), then
-> re-allocated and inserted to another chain (different keys) ? (final
-> refcount=1)
-
-Nothing.
-
-> If the lookup detects a key mismatch, how will it continue to the next
-> item,
-> since 'next' pointer will have been reused for the new chain insertion...
-> 
-> Me confused...
-
-If there is a mismatch then you have to do another hash lookup. Do an rcu
-unlock and start over.
-
-
-
+  Maciej
