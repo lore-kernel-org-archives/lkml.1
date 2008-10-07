@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbYJGKCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYJGKD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbYJGKCL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 06:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYJGKB5
+	id S1754052AbYJGKD7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 06:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbYJGKDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 06:01:57 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39660 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbYJGKB4 (ORCPT
+	Tue, 7 Oct 2008 06:03:50 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:37289 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbYJGKDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 06:01:56 -0400
-Date: Tue, 7 Oct 2008 19:01:21 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH] memcg: update patch set v7
-Message-Id: <20081007190121.d96e58a6.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 06:03:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=ecEqSRYkqdFpZsWhBV9W5juO324zWUfMgWOGM/UmTNNXX03q1D4ErmIb0J82QKHaUX
+         cw3j1rX0LayH0qDITnLczM1XaM1AiA/pcP+RNzeNFIfFsCK3nRkMBMQ1U+9TbxKp2Fy7
+         oyvcBYKQsqrNn8S7ONntX9QQH6uCooEy1WVIg=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
+Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 0/6] cgroup: block device i/o controller (v11)
+Date: Tue,  7 Oct 2008 12:03:32 +0200
+Message-Id: <1223373818-13687-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andrew. please allow me to test under -mm if ok.
 
-This series is against the newest -mmotm(stamp-2008-10-02-16-17)
-and I think ready-to-go.
+The objective of the i/o controller is to improve i/o performance
+predictability of different cgroups sharing the same block devices.
 
-All comments are reflected.
-(and CONFIG_CGROUP_MEM_RES_CTLR=n case is fixed.)
+Respect to other priority/weight-based solutions the approach used by this
+controller is to explicitly choke applications' requests that directly (or
+indirectly) generate i/o activity in the system.
 
-Including following patches.
+The direct bandwidth and/or iops limiting method has the advantage of improving
+the performance predictability at the cost of reducing, in general, the overall
+performance of the system (in terms of throughput).
 
-[1/6] ... account swap cache under lock
-[2/6] ... set page->mapping to be NULL before uncharge
-[3/6] ... avoid to account not-on-LRU pages.
-[4/6] ... optimize per cpu statistics on memcg.
-[5/6] ... make page_cgroup->flags atomic.
-[6/6] ... allocate page_cgroup at boot.
+Detailed informations about design, its goal and usage are described in the
+documentation.
 
-I did tests I can. But I think patch 6/6 needs wider testers.
-It has some dependency to configs/archs.
+Patchset against 2.6.27-rc5-mm1:
 
-(*) the newest mmotm needs some patches to be driven.
+  [PATCH 0/6] cgroup: block device i/o controller (v11)
+  [PATCH 1/6] i/o controller documentation
+  [PATCH 2/6] introduce ratelimiting attributes and functionality to res_counter
+  [PATCH 3/6] i/o controller infrastructure
+  [PATCH 4/6] memcg: interface to charge the right cgroup of asynchronous i/o activity
+  [PATCH 5/6] i/o controller instrumentation: accounting and throttling
+  [PATCH 6/6] export per-task i/o throttling statistics to userspace
 
-Thanks,
--Kame
+The all-in-one patch (and previous versions) can be found at:
+http://download.systemimager.org/~arighi/linux/patches/io-throttle/
 
+There are no significant changes respect to v10, I've only implemented/fixed
+some suggestions I received.
+
+Changelog: (v10 -> v11)
+
+* report per block device i/o statistics (total bytes read/written and iops)
+  in blockio.stat for i/o limited cgroups
+* distinct bandwidth and iops statistics: both in blockio.throttlecnt and
+  /proc/PID/io-throttle-stat (suggested by David Radford)
+* merge res_counter_ratelimit functionality into res_counter, to avoid code
+  duplication (suggested by Paul Manage)
+* use kernel-doc style for documenting struct res_counter attributes
+  (suggested by Randy Dunalp)
+* udpated documentation
+
+Thanks to all for the feedback!
+-Andrea
