@@ -1,81 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYJGLEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYJGLGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbYJGLEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYJGLEb
+	id S1753917AbYJGLGi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYJGLG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:04:31 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:41241 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752781AbYJGLEb (ORCPT
+	Tue, 7 Oct 2008 07:06:29 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:58771 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbYJGLG2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:04:31 -0400
-Message-ID: <48EB4236.1060100@linux.vnet.ibm.com>
-Date: Tue, 07 Oct 2008 16:34:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Michael Rubin <mrubin@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Righi <righi.andrea@gmail.com>, menage@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, dave@linux.vnet.ibm.com,
-       chlunde@ping.uio.no, dpshah@google.com, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, agk@sourceware.org, m.innocenti@cineca.it,
-       s-uchida@ap.jp.nec.com, ryov@valinux.co.jp, matt@bluehost.com,
-       dradford@bluehost.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH -mm 0/2] memcg: per cgroup dirty_ratio
-References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com> <20080912131816.e0cfac7a.akpm@linux-foundation.org> <532480950809221641y3471267esff82a14be8056586@mail.gmail.com>
-In-Reply-To: <532480950809221641y3471267esff82a14be8056586@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 7 Oct 2008 07:06:28 -0400
+Subject: [PATCH][SERIAL] Drop probe_baud() and default to "9600n8"
+From: Paul Bolle <pebolle@tiscali.nl>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 13:06:26 +0200
+Message-Id: <1223377586.5129.43.camel@test.thuisdomein>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 (2.24.0-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Rubin wrote:
-> On Fri, Sep 12, 2008 at 1:18 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
->> One thing to think about please: Michael Rubin is hitting problems with
->> the existing /proc/sys/vm/dirty-ratio.  Its present granularity of 1%
->> is just too coarse for really large machines, and as
->> memory-size/disk-speed ratios continue to increase, this will just get
->> worse.
-> 
-> Re-sending since I top-posted before. Never again. Also adding more
-> thoughts on a byte based interface.
-> 
-> Currently the problem we are hitting is that we cannot specify pdflush
-> to have background limits less than 1% of memory. I am currently
-> finishing up a patch right now that adds a dirty_ratio_millis
-> interface.  I hope to submit the patch to LKML by the end of the week.
-> 
-> The idea is that we don't want to break backwards compatibility and we
-> also don't want to have two conflicting knobs in the sysctl or
-> /proc/sys/vm/ space. I thought adding a new knob for those who want to
-> specify finer grained functionality was a compromise. So the patch has
-> a vm_dirty_ratio and a vm_dirty_ratio_millis interface. The first to
-> specify 0-100% and the second to specify .0 to .999%.
-> 
-> So to represent 0.125% of RAM we set
-> vm_dirty_ratio = 0
-> vm_dirty_ratio_millis = 125
-> 
-> The same for the background_ratio.
-> 
-> I would also prefer using a bytes interface but I am not sure how to
-> offer that without  either removing the legacy interface of the ratios
-> or by offering a concurrent interface that might be confusing such as
-> when users are looking at the old one and not aware of a new one.
-> 
+The early console kernel parameters (i.e. "console=uart[...]" and
+"earlycon=uart[...]" allow to omit the baud/parity/bits option. If that
+option is not provided probe_baud() is used to determine the baud rate
+to be used by that early console.
 
-Just provide a vm_dirty_ration_in_bytes interface and keep it in sync with
-vm_dirty_ratio (they are just two representations of the same internal value)
-and for higher resolution propose that users use the bytes interface.
+I noticed that probe_baud() produced useless and/or unpredictable
+results on the few machines I tested the early console parameters (e.g.
+1355 or 1200 and 115200 alternating). My guess is that this is because
+probe_baud() tries to calculate the baud rate from information retrieved
+while that UART is not yet properly initialized. Anyhow, a safe
+alternative would be to not probe for a baud rate but simply use
+"9600n8" as defaults for baud/parity/bits. See patch below.
 
 
+Paul Bolle
+---
+From: Paul Bolle <pebolle@tiscali.nl>
+    
+If no baud/parity/bits triplet is provided on the commandline for an
+early serial console, parse_options() will call probe_baud() to
+determine the baud rate used by that early console. probe_baud() seems
+to generate useless and/or unpredictable results. Solution is to drop
+probe_baud() and simply use "9600n8" as (safe) defaults for
+baud/parity/bits.
+    
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
+index f279745..b810430 100644
+--- a/drivers/serial/8250_early.c
++++ b/drivers/serial/8250_early.c
+@@ -99,21 +99,6 @@ static void __init early_serial8250_write(struct console *console,
+ 	serial_out(port, UART_IER, ier);
+ }
+ 
+-static unsigned int __init probe_baud(struct uart_port *port)
+-{
+-	unsigned char lcr, dll, dlm;
+-	unsigned int quot;
+-
+-	lcr = serial_in(port, UART_LCR);
+-	serial_out(port, UART_LCR, lcr | UART_LCR_DLAB);
+-	dll = serial_in(port, UART_DLL);
+-	dlm = serial_in(port, UART_DLM);
+-	serial_out(port, UART_LCR, lcr);
+-
+-	quot = (dlm << 8) | dll;
+-	return (port->uartclk / 16) / quot;
+-}
+-
+ static void __init init_port(struct early_serial8250_device *device)
+ {
+ 	struct uart_port *port = &device->port;
+@@ -176,9 +161,8 @@ static int __init parse_options(struct early_serial8250_device *device,
+ 		length = min(strcspn(options, " "), sizeof(device->options));
+ 		strncpy(device->options, options, length);
+ 	} else {
+-		device->baud = probe_baud(port);
+-		snprintf(device->options, sizeof(device->options), "%u",
+-			device->baud);
++		device->baud = 9600;
++		strcpy(device->options, "9600n8");
+ 	}
+ 
+ 	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
 
--- 
-	Balbir
+
