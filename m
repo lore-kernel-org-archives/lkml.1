@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYJGRVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYJGRW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbYJGRVy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYJGRVr
+	id S1756509AbYJGRW4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 13:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYJGRWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:21:47 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:41299 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752606AbYJGRVq (ORCPT
+	Tue, 7 Oct 2008 13:22:46 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54000 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753375AbYJGRWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:21:46 -0400
-Date: Tue, 7 Oct 2008 12:05:39 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] user namespaces: introduce
-	user_struct->user_namespace relationship
-Message-ID: <20081007170539.GA525@us.ibm.com>
-References: <20081004013644.GA24104@us.ibm.com> <alpine.LRH.1.10.0810060846020.30516@tundra.namei.org> <20081006141101.GB15419@us.ibm.com> <alpine.LRH.1.10.0810070847480.4113@tundra.namei.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.1.10.0810070847480.4113@tundra.namei.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 7 Oct 2008 13:22:46 -0400
+Subject: Re: [PATCH, RFC] percpu_counters: make fbc->count read atomic on
+	32 bit architecture
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: richard kennedy <richard@rsk.demon.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <48EB97B2.3010406@rsk.demon.co.uk>
+References: <E1KmetO-00053M-5u@closure.thunk.org>
+	 <20081006232322.c383fac5.akpm@linux-foundation.org>
+	 <1223373347.26330.19.camel@lappy.programming.kicks-ass.net>
+	 <48EB97B2.3010406@rsk.demon.co.uk>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 19:22:20 +0200
+Message-Id: <1223400140.26330.76.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting James Morris (jmorris@namei.org):
-> On Mon, 6 Oct 2008, Serge E. Hallyn wrote:
-> 
-> > Quoting James Morris (jmorris@namei.org):
-> > > On Fri, 3 Oct 2008, Serge E. Hallyn wrote:
-> > > 
-> > > > Hi James,
-> > > > 
-> > > > here are 3 patches to fix up the user namespaces a bit in preparation
-> > > > for real userns work to begin.  Andrew had suggested that these be
-> > > > rebased on top of your -next tree because they will conflict with
-> > > > the credentials work.  But it looks like much of the credentials stuff
-> > > > isn't in your next branch.  If you'd prefer that I port these to
-> > > > creds-next, please let me know.  I'll have to do it eventually :)
-> > > 
-> > > creds-next is dead.
-> > > 
-> > > Code ready for the next merge window is in the 'next' branch, while the 
-> > > current creds code is in the 'creds-next-subsys' branch, which hasn't been 
-> > > picked up in linux-next yet because of LPC and sfr's vacation.
-> > > 
-> > > When do you expect these patches to be sent upstream?  Are they ready now 
-> > > as an incremental change for 2.6.27?
-> > 
-> > Oh I'm not trying to get them into 2.6.28, I'm just trying to get them
-> > more widely tested, hopefully aiming for 2.6.29.  They have been stable
-> > in all of my tests, and the last patch fixes a real (behavioral - not
-> > oops-inducing) bug in the current code, but I'm trying to figure out
-> > which path they should take.
-> 
-> I suggest feeding them into linux-next directly until you want them merged 
-> with another tree.  Are there known clashes with the creds work?  If so, 
+On Tue, 2008-10-07 at 18:09 +0100, richard kennedy wrote:
+> Peter Zijlstra wrote:
+> .....
+> > +static inline int atomic64_dec_and_test(atomic64_t *v)
+> > +{
+> > +	int ret;
+> > +
+> > +	write_seqlock(&v->slock);
+> > +	v->counter--;
+> > +	ret = !v->counter;
+> > +	write_sequnlock(&v->slock);
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static inline int atomic64_add_and_test(atomic64_t *v)
+> > +{
+> > +	int ret;
+> > +
+> > +	write_seqlock(&v->slock);
+> > +	v->counter++;
+> > +	ret = !v->counter;
+> > +	write_sequnlock(&v->slock);
+> > +
+> > +	return ret;
+> > +}
+> would it be more logical to call this atomic64_inc_and_test to match the
+> above dec_and_test ?
 
-Certainly with the overall creds work.  I haven't looked in
-creds-next-subsys yet to see if it conflicts.  I'll go ahead and port
-later this week or early next.
+Yeah, I know of at least 2 other bugs in here, but I wanted some real
+early feedback :-)
 
-> the fixups could be carried in linux-next, or generate them against 
-> creds-next-subsys for inclusion after that.
-
-creds-next-subsys is not yet feeding into linux-next, right?  So I
-should wait until they hit linux-next?
-
-(It makes more sense for me to port userns on top of creds than for
-David to port creds on top of my patches anyway.  I'm actually a bit
-afraid that my refcounting will be complicated by struct creds, but
-we'll see)
-
-thanks,
--serge
