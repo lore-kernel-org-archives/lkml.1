@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYJGKXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYJGK3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbYJGKXq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 06:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbYJGKXh
+	id S1753398AbYJGK3q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 06:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYJGK3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 06:23:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35827 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbYJGKXg (ORCPT
+	Tue, 7 Oct 2008 06:29:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59483 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751081AbYJGK3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 06:23:36 -0400
-Date: Tue, 7 Oct 2008 12:29:42 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
-Message-ID: <20081007102942.GE20740@one.firstfloor.org>
-References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <87hc7onbvo.fsf@basil.nowhere.org> <6.0.0.20.2.20081007183452.0f052210@172.19.0.2>
+	Tue, 7 Oct 2008 06:29:36 -0400
+Date: Tue, 7 Oct 2008 11:29:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org,
+       "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
+Subject: Re: [PATCH] serial: Add Cavium OCTEON UART definitions.
+Message-ID: <20081007112932.165fce27@lxorguk.ukuu.org.uk>
+In-Reply-To: <48EAAF97.8050307@caviumnetworks.com>
+References: <48EAAF97.8050307@caviumnetworks.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6.0.0.20.2.20081007183452.0f052210@172.19.0.2>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Maybe cmpxchg8b is good for i486 or later x86, but i386 or other architectures
-> that do not have similar instruction needs some locking primitive. I think lazy
+> +#ifdef CONFIG_CPU_CAVIUM_OCTEON
+> +	/* UPF_FIXED_PORT indicates an internal UART.  */
+> +	if (up->port.flags & UPF_FIXED_PORT)
+> +		up->port.type = PORT_OCTEON;
+> +	else
+> +#endif
 
-We have a cmpxchg emulation on 386. That works because only UP 386s are 
-supported, so it can be done in software.
-
-> seqlock is one option for making file->f_pos access atomic.
-
-The question is if it's the right option. At least all the common
-operations on fds (read/write) are all writers, not readers.
-
--Andi
-
--- 
-ak@linux.intel.com
+Not nice. Please keep CPU specific ifdefs out of the 8250 core code. Can
+you not set a port flag for UPF_BROKEN_OCTEON or similar to clean that up
+and also make the other tests that need things doing (eg the always
+calling IRQ code use port flags of a more generic nature ?)
