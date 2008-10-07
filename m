@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbYJGA5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbYJGA5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759926AbYJGA5R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYJGApO
+	id S1759890AbYJGA5m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYJGApQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:45:14 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46971 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:45:16 -0400
+Received: from mx1.suse.de ([195.135.220.2]:46992 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757234AbYJGApL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:45:11 -0400
-Date: Mon, 6 Oct 2008 17:39:27 -0700
+	id S1757279AbYJGApP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:45:15 -0400
+Date: Mon, 6 Oct 2008 17:39:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 46/71] x86: HPET fix moronic 32/64bit thinko
-Message-ID: <20081007003927.GU3055@suse.de>
+Subject: [patch 47/71] x86: HPET: read back compare register before reading
+	counter
+Message-ID: <20081007003930.GV3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-08.patch"
+Content-Disposition: inline; filename="timer-fix-09.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,52 +42,36 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit f7676254f179eac6b5244a80195ec8ae0e9d4606 upstream
+commit 72d43d9bc9210d24d09202eaf219eac09e17b339 upstream
 
-We use the HPET only in 32bit mode because:
-1) some HPETs are 32bit only
-2) on i386 there is no way to read/write the HPET atomic 64bit wide
-
-The HPET code unification done by the "moron of the year" did
-not take into account that unsigned long is different on 32 and
-64 bit.
-
-This thinko results in a possible endless loop in the clockevents
-code, when the return comparison fails due to the 64bit/332bit
-unawareness.
-
-unsigned long cnt = (u32) hpet_read() + delta can wrap over 32bit.
-but the final compare will fail and return -ETIME causing endless
-loops.
+After fixing the u32 thinko I sill had occasional hickups on ATI chipsets
+with small deltas. There seems to be a delay between writing the compare
+register and the transffer to the internal register which triggers the
+interrupt. Reading back the value makes sure, that it hit the internal
+match register befor we compare against the counter value.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/hpet.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kernel/hpet.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
 --- a/arch/x86/kernel/hpet.c
 +++ b/arch/x86/kernel/hpet.c
-@@ -283,15 +283,15 @@ static void hpet_legacy_set_mode(enum cl
- }
- 
- static int hpet_legacy_next_event(unsigned long delta,
--			   struct clock_event_device *evt)
-+				  struct clock_event_device *evt)
- {
--	unsigned long cnt;
-+	u32 cnt;
- 
- 	cnt = hpet_readl(HPET_COUNTER);
--	cnt += delta;
-+	cnt += (u32) delta;
+@@ -291,6 +291,13 @@ static int hpet_legacy_next_event(unsign
+ 	cnt += (u32) delta;
  	hpet_writel(cnt, HPET_T0_CMP);
  
--	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0) ? -ETIME : 0;
-+	return (s32)((u32)hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
++	/*
++	 * We need to read back the CMP register to make sure that
++	 * what we wrote hit the chip before we compare it to the
++	 * counter.
++	 */
++	WARN_ON((u32)hpet_readl(HPET_T0_CMP) != cnt);
++
+ 	return (s32)((u32)hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
  }
  
- /*
 
 -- 
