@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYJGPWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbYJGPW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbYJGPWE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYJGPVy
+	id S1753717AbYJGPW2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYJGPWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:21:54 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40312 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751194AbYJGPVy (ORCPT
+	Tue, 7 Oct 2008 11:22:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45141 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752348AbYJGPWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:21:54 -0400
-Date: Tue, 7 Oct 2008 11:21:53 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       <akpm@linux-foundation.org>, <mingo@elte.hu>,
-       <jason.wessel@windriver.com>, <avi@qumranet.com>,
-       <richardj_moore@uk.ibm.com>
-Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
- interfaces
-In-Reply-To: <20081007114006.GA25627@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0810071111281.2591-100000@iolanthe.rowland.org>
+	Tue, 7 Oct 2008 11:22:18 -0400
+Message-ID: <48EB7E59.7070308@linux-foundation.org>
+Date: Tue, 07 Oct 2008 10:20:57 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Mackall <mpm@selenic.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm <linux-mm@kvack.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] SLOB's krealloc() seems bust
+References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>	 <48EB6D2C.30806@linux-foundation.org> <1223391655.13453.344.camel@calx>
+In-Reply-To: <1223391655.13453.344.camel@calx>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Oct 2008, K.Prasad wrote:
+Matt Mackall wrote:
 
-> This patch introduces two new files hw_breakpoint.[ch] which defines the 
-> generic interfaces to use hardware breakpoint infrastructure of the system. 
+> We can't dynamically determine whether a pointer points to a kmalloced
+> object or not. kmem_cache_alloc objects have no header and live on the
+> same pages as kmalloced ones.
 
-...
-> --- /dev/null
-> +++ linux-bkpt-lkml-27-rc9/include/asm-generic/hw_breakpoint.h
-> @@ -0,0 +1,236 @@
-> +#ifndef	_ASM_GENERIC_HW_BREAKPOINT_H
-> +#define	_ASM_GENERIC_HW_BREAKPOINT_H
-> +
-> +#ifndef __ARCH_HW_BREAKPOINT_H
-> +#error "Please don't include this file directly"
-> +#endif
-> +
-> +#ifdef	__KERNEL__
-> +#include <linux/list.h>
-> +#include <linux/types.h>
-> +
-> +/**
-> + * struct hw_breakpoint - unified kernel/user-space hardware breakpoint
-> + * @node: internal linked-list management
-> + * @triggered: callback invoked when the breakpoint is hit
+Could you do a heuristic check? Assume that this is a kmalloc object and then
+verify the values in the small control block? If the values are out of line
+then this cannot be a kmalloc'ed object.
 
-The kerneldoc needs to be updated to match the structure.  @triggered
-doesn't exist any more; instead there are @pre_handler and
-@post_handler.
 
-...
-> + * When a breakpoint gets hit, the @triggered callback is invoked
-> + * in_interrupt with a pointer to the %hw_breakpoint structure and the
-> + * processor registers.  Execute-breakpoint traps occur before the
-> + * breakpointed instruction runs; when the callback returns the
-> + * instruction is restarted (this time without a debug exception).  All
-> + * other types of trap occur after the memory access has taken place.
-> + * Breakpoints are disabled while @triggered runs, to avoid recursive
-> + * traps and allow unhindered access to breakpointed memory.
-
-This paragraph needs to be fixed as well.
-
-...
-> +/*
-> + * The following routines help the user determine if the architecture supports
-> + * a trigger-before access/execution mechanism or a trigger-after
-> + * access/execution. This is dependent on the type of breakpoint and the
-> + * architecture
-> + */
-> +int trigger_before_arch(unsigned type);
-> +int trigger_after_arch(unsigned type);
-
-These routines should have hwbp_ in their name (or something similar).  
-And they don't need to have _arch.
-
-Alan Stern
 
