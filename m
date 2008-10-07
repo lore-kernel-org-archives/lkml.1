@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbYJGXlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbYJGXlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758175AbYJGXlV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYJGXlH
+	id S1758416AbYJGXlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbYJGXlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:41:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40103 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754741AbYJGXlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:41:06 -0400
-Date: Wed, 8 Oct 2008 00:40:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
-Message-ID: <20081008004030.7a0e9915@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081007232059.GU20740@one.firstfloor.org>
-References: <1223396117-8118-1-git-send-email-kirill@shutemov.name>
-	<2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com>
-	<20081007211038.GQ20740@one.firstfloor.org>
-	<20081008000518.13f48462@lxorguk.ukuu.org.uk>
-	<20081007232059.GU20740@one.firstfloor.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Oct 2008 19:41:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:49755 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757374AbYJGXlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 19:41:14 -0400
+Message-ID: <48EBF396.8000502@goop.org>
+Date: Tue, 07 Oct 2008 16:41:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+MIME-Version: 1.0
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       "akataria@vmware.com" <akataria@vmware.com>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Zach Amsden <zach@vmware.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
+References: <1222881242.9381.17.camel@alok-dev1>	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1> <48E3FDD5.7040106@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com> <48E422CA.2010606@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com> <48E6AB15.8060405@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA325@orsmsx505.amr.corp.intel.com> <48E6BA5B.2090804@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DE4F934@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <0B53E02A2965CE4F9ADB38B34501A3A15DE4F934@orsmsx505.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Can use shm_open and mmap to get POSIX standard shm behaviour via a sane
-> 
-> I don't think shm_open can attach to SYSV shared segments. Or are you
-> proposing to add "sysvshmfs" to make that possible? 
+Nakajima, Jun wrote:
+> On 10/3/2008 5:35:39 PM, H. Peter Anvin wrote:
+>   
+>> Nakajima, Jun wrote:
+>>     
+>>> What's the significance of supporting multiple interfaces to the
+>>> same guest simultaneously, i.e. _runtime_? We don't want the guests
+>>> to run on such a literarily Frankenstein machine. And practically,
+>>> such testing/debugging would be good only for Halloween :-).
+>>>
+>>>       
+>> By that notion, EVERY CPU currently shipped is a "Frankenstein" CPU,
+>> since at very least they export Intel-derived and AMD-derived interfaces.
+>>  This is in other words, a ridiculous claim.
+>>     
+>
+> The big difference here is that you could create a VM at runtime (by combining the existing interfaces) that did not exist before (or was not tested before). For example, a hypervisor could show hyper-v, osx-v (if any), linux-v, etc., and a guest could create a VM with hyper-v MMU, osx-v interrupt handling, Linux-v timer, etc. And such combinations/variations can grow exponentially.
+>   
 
-Actually you can do so. As it stands today the SYS3 SHM interface code
-does the following
+That would be crazy.
 
-	create a char array in the form SYS%08ld, key
-	open it on shmfs
+> Or are you suggesting that multiple interfaces be _available_ to guests at runtime but the guest chooses one of them?
+>   
 
-> - There are legacy interfaces that cannot be really changed who use sysv shm
-> (e.g. X shm and others -- just do a ipcs on your system) 
+Right, that's what I've been suggesting.    I think hypervisors should 
+be able to offer multiple ABIs to guests, but a guest has to commit to 
+using one exclusively (ie, once they start to use one then the others 
+turn themselves off, kill the domain, etc).
 
-They can be changed and nobody is wanting to map those at fixed addresses.
-
-> - An system call emulation as in qemu obviously has to implement the
-> existing system call semantics.
-
-Which it can do perfectly well using shm_open to create its SYS3
-SHM objects. In fact theoertically we could bin the whole of SYS3 shm and
-push it into glibc emulation if we wanted.
-
-Alan
+    J
