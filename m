@@ -1,91 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYJGQMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYJGQOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbYJGQMI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYJGQLy
+	id S1755581AbYJGQOV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYJGQON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:11:54 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36735 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753327AbYJGQLx (ORCPT
+	Tue, 7 Oct 2008 12:14:13 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:10871 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbYJGQOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:11:53 -0400
-Subject: Re: [RFC] Btrfs mainline plans
-From: Chris Mason <chris.mason@oracle.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>
-In-Reply-To: <20081007152740.GA31089@cs181140183.pp.htv.fi>
-References: <1222717460.30627.56.camel@think.oraclecorp.com>
-	 <20081003001859.e30af6a5.akpm@linux-foundation.org>
-	 <20081005122405.GA12047@cs181140183.pp.htv.fi>
-	 <20081005141113.GA6132@us.ibm.com>
-	 <20081005150957.GC12047@cs181140183.pp.htv.fi>
-	 <1223300403.16546.45.camel@think.oraclecorp.com>
-	 <20081007152740.GA31089@cs181140183.pp.htv.fi>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 12:01:24 -0400
-Message-Id: <1223395284.16546.121.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 7 Oct 2008 12:14:12 -0400
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
+Date: Tue,  7 Oct 2008 19:15:17 +0300
+Message-Id: <1223396117-8118-1-git-send-email-kirill@shutemov.name>
+X-Mailer: git-send-email 1.5.6.5.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 18:27 +0300, Adrian Bunk wrote:
-> On Mon, Oct 06, 2008 at 09:40:03AM -0400, Chris Mason wrote:
->  
-> > 
-> > The btrfs timelines have always been aggressive, and as btrfs gets
-> > closer to feature complete, the testing matrix grows dramatically.  I
-> > can't promise my crazy timelines won't slip, but I've been hacking away
-> > in the basement for almost 18 months now and it's time for me to get off
-> > the pot and make it stable.
-> > 
-> > Ext4 has always had to deal with the ghost of ext3.  Both from a
-> > compatibility point of view and everyone's expectations of stability.  I
-> > believe that most of us underestimated how difficult it would be to move
-> > ext4 forward.
-> > 
-> > Btrfs is different for lots of reasons, and being in mainline will
-> > definitely increase the pressure on the btrfs developers to finish, and
-> > the resources available for us to finish with.
-> 
-> Your last sentence does not make sense:
-> 
-> According to your timeline btrfs 1.0 will be released in Q408 [1] - and
-> the merge window for 2.6.29 will be in Q109.
-> 
+If SHM_MAP_NOT_FIXED specified and shmaddr is not NULL, then the kernel takes
+shmaddr as a hint about where to place the mapping. The address of the mapping
+is returned as the result of the call.
 
-Planning for mainline inclusion is always a guessing game.  Cutting 1.0
-is different from being in mainline, and the dates don't have to be the
-same.
+It's similar to mmap() without MAP_FIXED.
 
-> >...
-> > > For people wanting to try WIP code you don't need it in mainline.
-> > > 
-> > > Stable kernels will anyway usually contain months old code of the
-> > > WIP filesystem that is not usable for testing, so for any meaningful
-> > > testing you will still have to follow the btrfs tree and not mainline.
-> > 
-> > For ext4 at least, the mainline code is very usable.  I hope to have
-> > btrfs in shape for that by the 2.6.29 merge cycle.
-> 
-> One risk you should be aware of is that when btrfs is in 2.6.29 part of 
-> the Linux press might pick it up and stress test and benchmark this new 
-> filesystem.
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Hugh Dickins <hugh@veritas.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ include/linux/shm.h |    2 ++
+ ipc/shm.c           |    7 ++++---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-I think the gains from early testing far outweigh the risks of bad early
-press.
-
--chris
-
+diff --git a/include/linux/shm.h b/include/linux/shm.h
+index eca6235..fd288eb 100644
+--- a/include/linux/shm.h
++++ b/include/linux/shm.h
+@@ -55,6 +55,8 @@ struct shmid_ds {
+ #define	SHM_RND		020000	/* round attach address to SHMLBA boundary */
+ #define	SHM_REMAP	040000	/* take-over region on attach */
+ #define	SHM_EXEC	0100000	/* execution access */
++#define	SHM_MAP_NOT_FIXED 0200000 /* interpret attach address as a search
++				   * hint */
+ 
+ /* super user shmctl commands */
+ #define SHM_LOCK 	11
+diff --git a/ipc/shm.c b/ipc/shm.c
+index e77ec69..54f3c61 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -819,7 +819,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ 	if (shmid < 0)
+ 		goto out;
+ 	else if ((addr = (ulong)shmaddr)) {
+-		if (addr & (SHMLBA-1)) {
++		if (!(shmflg & SHM_MAP_NOT_FIXED) && (addr & (SHMLBA-1))) {
+ 			if (shmflg & SHM_RND)
+ 				addr &= ~(SHMLBA-1);	   /* round down */
+ 			else
+@@ -828,7 +828,8 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ #endif
+ 					goto out;
+ 		}
+-		flags = MAP_SHARED | MAP_FIXED;
++		flags = MAP_SHARED |
++				(shmflg & SHM_MAP_NOT_FIXED ? 0 : MAP_FIXED);
+ 	} else {
+ 		if ((shmflg & SHM_REMAP))
+ 			goto out;
+@@ -892,7 +893,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ 	sfd->vm_ops = NULL;
+ 
+ 	down_write(&current->mm->mmap_sem);
+-	if (addr && !(shmflg & SHM_REMAP)) {
++	if (addr && !(shmflg & (SHM_REMAP|SHM_MAP_NOT_FIXED))) {
+ 		err = -EINVAL;
+ 		if (find_vma_intersection(current->mm, addr, addr + size))
+ 			goto invalid;
+-- 
+1.5.6.5.GIT
 
