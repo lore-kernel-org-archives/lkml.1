@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYJGAmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYJGAnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbYJGAmZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYJGAlO
+	id S1753828AbYJGAnE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbYJGAl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:41:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60108 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:41:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60157 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756087AbYJGAlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:41:13 -0400
-Date: Mon, 6 Oct 2008 17:37:36 -0700
+	id S1756236AbYJGAlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:41:24 -0400
+Date: Mon, 6 Oct 2008 17:37:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: [patch 05/71] drivers/mmc/card/block.c: fix refcount leak in
-	mmc_block_open()
-Message-ID: <20081007003736.GF3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Mel Gorman <mel@csn.ul.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [patch 07/71] mm: mark the correct zone as full when scanning
+	zonelists
+Message-ID: <20081007003741.GH3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="drivers-mmc-card-block.c-fix-refcount-leak-in-mmc_block_open.patch"
+Content-Disposition: inline; filename="mm-mark-the-correct-zone-as-full-when-scanning-zonelists.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,39 +42,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Mel Gorman <mel@csn.ul.ie>
 
-commit 70bb08962ea9bd50797ae9f16b2493f5f7c65053 upstream
+commit 5bead2a0680687b9576d57c177988e8aa082b922 upstream
 
-mmc_block_open() increments md->usage although it returns with -EROFS when
-default mounting a MMC/SD card with write protect switch on.  This
-reference counting bug prevents /dev/mmcblkX from being released on card
-removal, and situation worsen with reinsertion until the minor number
-range runs out.
+The iterator for_each_zone_zonelist() uses a struct zoneref *z cursor when
+scanning zonelists to keep track of where in the zonelist it is.  The
+zoneref that is returned corresponds to the the next zone that is to be
+scanned, not the current one.  It was intended to be treated as an opaque
+list.
 
-Reported-by: <sasin@solomon-systech.com>
-Acked-by: Pierre Ossman <drzeus-list@drzeus.cx>
+When the page allocator is scanning a zonelist, it marks elements in the
+zonelist corresponding to zones that are temporarily full.  As the
+zonelist is being updated, it uses the cursor here;
+
+  if (NUMA_BUILD)
+        zlc_mark_zone_full(zonelist, z);
+
+This is intended to prevent rescanning in the near future but the zoneref
+cursor does not correspond to the zone that has been found to be full.
+This is an easy misunderstanding to make so this patch corrects the
+problem by changing zoneref cursor to be the current zone being scanned
+instead of the next one.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Cc: Andy Whitcroft <apw@shadowen.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/card/block.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ include/linux/mmzone.h |   12 ++++++------
+ mm/mmzone.c            |    2 +-
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -103,8 +103,10 @@ static int mmc_blk_open(struct inode *in
- 			check_disk_change(inode->i_bdev);
- 		ret = 0;
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -751,8 +751,9 @@ static inline int zonelist_node_idx(stru
+  *
+  * This function returns the next zone at or below a given zone index that is
+  * within the allowed nodemask using a cursor as the starting point for the
+- * search. The zoneref returned is a cursor that is used as the next starting
+- * point for future calls to next_zones_zonelist().
++ * search. The zoneref returned is a cursor that represents the current zone
++ * being examined. It should be advanced by one before calling
++ * next_zones_zonelist again.
+  */
+ struct zoneref *next_zones_zonelist(struct zoneref *z,
+ 					enum zone_type highest_zoneidx,
+@@ -768,9 +769,8 @@ struct zoneref *next_zones_zonelist(stru
+  *
+  * This function returns the first zone at or below a given zone index that is
+  * within the allowed nodemask. The zoneref returned is a cursor that can be
+- * used to iterate the zonelist with next_zones_zonelist. The cursor should
+- * not be used by the caller as it does not match the value of the zone
+- * returned.
++ * used to iterate the zonelist with next_zones_zonelist by advancing it by
++ * one before calling.
+  */
+ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
+ 					enum zone_type highest_zoneidx,
+@@ -795,7 +795,7 @@ static inline struct zoneref *first_zone
+ #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
+ 	for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone);	\
+ 		zone;							\
+-		z = next_zones_zonelist(z, highidx, nodemask, &zone))	\
++		z = next_zones_zonelist(++z, highidx, nodemask, &zone))	\
  
--		if ((filp->f_mode & FMODE_WRITE) && md->read_only)
-+		if ((filp->f_mode & FMODE_WRITE) && md->read_only) {
-+			mmc_blk_put(md);
- 			ret = -EROFS;
-+		}
- 	}
+ /**
+  * for_each_zone_zonelist - helper macro to iterate over valid zones in a zonelist at or below a given zone index
+--- a/mm/mmzone.c
++++ b/mm/mmzone.c
+@@ -69,6 +69,6 @@ struct zoneref *next_zones_zonelist(stru
+ 				(z->zone && !zref_in_nodemask(z, nodes)))
+ 			z++;
  
- 	return ret;
+-	*zone = zonelist_zone(z++);
++	*zone = zonelist_zone(z);
+ 	return z;
+ }
 
 -- 
