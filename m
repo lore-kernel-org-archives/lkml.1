@@ -1,178 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYJGH6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYJGIHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbYJGH6M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 03:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYJGH55
+	id S1754717AbYJGIHX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 04:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYJGIHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 03:57:57 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:37704 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbYJGH54 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 03:57:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OCKB+UhMVZqSlK0WfhscF9UkNBwhfO8NABklB6ugVJPL7LBLzxMs1vu7rYW/5QC3Q/
-         fpU3IhtFXUUDHdr9FY/Lih/qdixgqDU+g4Jcw61sC+JrIhfAiYQCTX4ZpUMN1p9jj7BU
-         GCEElazpJiHAXiGHbSgId5ftuly7twOTzPf5M=
-Message-ID: <2f1d248c0810070057g3155e1b2x559a72579b55404b@mail.gmail.com>
-Date: Tue, 7 Oct 2008 15:57:54 +0800
-From: "chen chong" <byrbzdl@gmail.com>
-To: pavan_savoy@indiatimes.com
-Subject: Re: How to disable authentication when using bluetooth on Linux?
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1254090219.258871223363746800.JavaMail.root@mbv7.indiatimes.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 04:07:00 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56719 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751133AbYJGIG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 04:06:59 -0400
+Date: Tue, 7 Oct 2008 10:06:56 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       netdev@vger.kernel.org, Paul McKenney <paulmck@us.ibm.com>
+Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm, for adaptive dcache hash table sizing (resend)
+Message-ID: <20081007080656.GB16143@wotan.suse.de>
+References: <20081007064834.GA5959@wotan.suse.de> <20081007070225.GB5959@wotan.suse.de> <48EB11BB.2060704@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <2f1d248c0810062355r2871da61td3cca6b66a9d77a6@mail.gmail.com>
-	 <1254090219.258871223363746800.JavaMail.root@mbv7.indiatimes.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48EB11BB.2060704@cosmosbay.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Pavan
+On Tue, Oct 07, 2008 at 09:37:31AM +0200, Eric Dumazet wrote:
+> Nick Piggin a écrit :
+> >(resending with correct netdev address)
+> >
+> >With this algorithm, I can fit a whole kernel source and git tree in my 
+> >dcache
+> >hash table that is still 1/8th the size it would be before the patch.
+> >
+> >I'm cc'ing netdev because Dave did express some interest in using this for
+> >some networking hashes, and network guys in general are pretty cluey when 
+> >it
+> >comes to hashes and such ;)
+> >
+> 
+> Thanks for reminding us this interesting stuff. And yes, IP route cache 
+> could use
+> same algo. That is particularly interesting because it has a 
+> /proc/net/rt_cache
+> accessor that needs to sequentially scan this hash table (potentialy with
+> many empty slots), while dcache doesnt have such killer.
 
-Thanks for your reply. I had tried this before, and tried it again
-just now, but it still doesn't work.
-
-The following are my steps, pls help to check if I missed any steps, THX!
-
-1. change "security user;" to "security none;" in /etc/bluetooth/hcid.conf
-2. Restart the bluetooth service:  # /etc/init.d/bluetooth restart
-3. (Optional: I tried twice, once with this step, and the other without)
-    Start passkey-agent: # passkey-agent --default 1234
-4. ussp-push --dev 0 --debug 00:01:02:03:04:05@11 desk.jpg desk.jpg  &
-
-root@debian:~/bluetooth#
-pushing file desk.jpg
-name=desk.jpg, size=24762
-__obex_connect: client_context_t = 0x80540f0
-Registered transport
-Set user data
-Created new objext
-cobex_write
-Local device 00:01:02:03:04:01
-Remote device 00:01:02:03:04:05 (11)
-Write error: Transport endpoint is not connected
-obex_event: client_context_t = 0x80540f0
-cobex_disconnect
-Link broken!
-Started a new request
-cobex_close
-__obex_connect: error=-2
-Unable to connect to the server
-Error
+Hmm, that is interesting. What are the exact semantics of this rt_cache
+file? It might be difficult to retain them over a hash table resize
+operation, but it would be worth trying. Big hammer to block access to
+the file if a resize is in progress might work (but do we need to hold off
+access over multiple calls from userspace? then may need to also avoid
+resizing the hash table if the rt_cache file is open).
 
 
-my /etc/bluetooth/hcid.conf configuration are as following:
--------------------------------------------------------------------------
-# HCId options
-options {
-        autoinit yes;
-        security none;
-        pairing multi;
-        passkey "1234";
-}
+> >+static struct dcache_hash *alloc_dhash(int size)
+> >+{
+> >+	struct dcache_hash *dh;
+> >+	unsigned long bytes;
+> >+	unsigned int shift;
+> >+	int i;
+> >+
+> >+	shift = ilog2(size);
+> >+	BUG_ON(size != 1UL << shift);
+> >+	bytes = size * sizeof(struct hlist_head *);
+> >+
+> >+	dh = kmalloc(sizeof(struct dcache_hash), GFP_KERNEL);
+> >+	if (!dh)
+> >+		return NULL;
+> >+
+> >+	if (bytes <= PAGE_SIZE) {
+> >+		dh->table = kmalloc(bytes, GFP_KERNEL);
+> >+	} else {
+> >+		dh->table = vmalloc(bytes);
+> >+	}
+> 
+> Here we probably want to use a hashdist/NUMA enabled vmalloc().
+> 
+> That is, regardless of current numa policy of *this* thread,
+> we want to spread hash table on all nodes.
 
-# Default settings for HCI devices
-device {
-        name "pass1234";
-        # Local device class
-        class 0x3e0100;
-        # Default packet type
-        #pkt_type DH1,DM1,HV1;
-        # Inquiry and Page scan
-        iscan enable; pscan enable;
-        # Default link mode
-        lm accept;
-        # Default link policy
-        lp rswitch,hold,sniff,park;
-}
--------------------------------------------------------------------------
+Yeah, it definitely should do. Thanks.
 
-Is this configuration correct?
+ 
+> Also, struct dcache_hash being very small, you want to force it to
+> use an exclusive cache line, to be sure it wont share it with some 
+> higly modified data...
+> 
+> struct dcache_hash {
+> 	struct hlist_head *table;
+> 	unsigned int shift;
+> 	unsigned int mask;
+> } __cacheline_aligned_in_smp;
 
-My Linux version is:
-root@debian:~/bluetooth# uname -a
-Linux debian 2.6.18-6-686 #1 SMP Sun Feb 10 22:11:31 UTC 2008 i686 GNU/Linux
-
-Any more information needed?
-
-THX
-
-
-Kris
-2008/10/7  <pavan_savoy@indiatimes.com>:
->
-> Seems you are using BlueZ -3.37, look in the hcid.conf file in /etc/bluetooth, it should have a keyword "security", make the option to none.
-> [I assume its says "user" currently.]
->
->
-> Regards,
-> Pavan
->
-> ----- Original Message -----
-> From: chen chong <byrbzdl@gmail.com>
-> To: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-> Sent: Tue, 7 Oct 2008 12:25:18 +0530 (IST)
-> Subject: How to disable authentication when using bluetooth on Linux?
->
-> Hi, all
->
-> When pushing a file to bluetooth mobile phone from a Linux PC, how to
-> disable bluetooth authentication mechanism (in kernel or user level ?
-> ), so that the phone won't prompt a window ask for PIN code?
->
->
-> I'm a freshman on bluez, now I'm trying to write an application on
-> Linux PC,  to send files to mobile phones with OBEX. The PC has a USB
-> bluetooth stick to communication with the phone.
->
-> Now I have successfully sent a file to phone using the following commands:
-> 1. "hcitool scan" and "sdptool browse"
-> 2. "passkey-agent --default 1234" and "ussp-push --dev 0
-> BTADDR@CHANNEL desk.jpg desk.jpg"
->
-> but the phone ask for a PIN code at the start.
->
-> To get rid of this, I had tried to comment out
-> "start_security_manager()" in bluez-utils-3.7/hcid/main.c,  and
-> recompile it, then restart the bluetooth service. But PIN code was
-> still prompted, and after if I input some characters,  the command
-> "ussp-push --dev 0 --debug  BTADDR@CHANNEL desk.jpg desk.jpg", failed
-> with the following error:
->
-> root@debian:~/bluetooth# pushing file desk.jpg
-> name=desk.jpg, size=24762
-> __obex_connect: client_context_t = 0x80540f0
-> Registered transport
-> Set user data
-> Created new objext
-> cobex_write
-> Local device 00:01:02:03:04:01
-> Remote device 00:01:02:03:04:05 (11)
-> Write error: Transport endpoint is not connected
-> obex_event: client_context_t = 0x80540f0
-> cobex_disconnect
-> Link broken!
-> Started a new request
-> cobex_close
-> __obex_connect: error=-2
-> Unable to connect to the server
-> Error
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-bluetooth" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->
-> --
-> Will the all new Indica Vista zip ahead of the Suzuki Swift? Read the expert review on Zigwheels.com
-> http://zigwheels.com/b2cam/reviewsDetails.action?name=Ro11_20080829&path=/INDT/Reviews/Ro11_20080829&page=1&pagecount=9
->
+Yes, good point.
