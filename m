@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYJGXf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYJGXgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbYJGXf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYJGXfl
+	id S1757924AbYJGXgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbYJGXf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:35:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33292 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754741AbYJGXfj (ORCPT
+	Tue, 7 Oct 2008 19:35:57 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:26436 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756896AbYJGXf4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:35:39 -0400
-Date: Tue, 7 Oct 2008 16:34:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rusty@rustcorp.com.au,
-       jeremy@goop.org, ebiederm@xmission.com, travis@sgi.com,
-       herbert@gondor.apana.org.au, xemul@openvz.org, penberg@cs.helsinki.fi
-Subject: Re: [patch 0/4] Cpu alloc V6: Replace percpu allocator in modules.c
-Message-Id: <20081007163449.0716be54.akpm@linux-foundation.org>
-In-Reply-To: <20080929193500.470295078@quilx.com>
-References: <20080929193500.470295078@quilx.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 7 Oct 2008 19:35:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=YqASZOCPagUP+gn3PXYuq+xQOAG0YZn7eH0C4sPzlF2hhwA43crAvmzUXRhh93w3Zh
+         WQjv1m0SH+gmtEKZERsm7AxpJnHsbkbxSZ1NHaEYow6oln3jDONKlXOric0WplpkEjO8
+         Ffg1BtfIwKkn9LAy/kammTObflWp57M+HBDQM=
+Subject: Re: [RFC] Normalizing byteorder/unaligned access API
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>
+In-Reply-To: <20081007232807.GL25780@parisc-linux.org>
+References: <1223416391.8195.22.camel@brick>
+	 <20081007232807.GL25780@parisc-linux.org>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 16:35:42 -0700
+Message-Id: <1223422542.8195.42.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Sep 2008 12:35:00 -0700
-Christoph Lameter <cl@linux-foundation.org> wrote:
+On Tue, 2008-10-07 at 17:28 -0600, Matthew Wilcox wrote:
+> On Tue, Oct 07, 2008 at 02:53:11PM -0700, Harvey Harrison wrote:
+> > In addition, there are some subsystems (scsi) that are looking into some
+> > differently sized endian helpers (be24) and it may be worthwhile to have
+> > some agreement whether it is worth making them common infrastructure and
+> > whether they should present a similar API to the common byteorder/unaligned
+> > API.
+> 
+> I still think SCSI should have its own accessors, even if they're
+> just wrappers around the common BE code.
+> 
 
-> Just do the bare mininum to establish a per cpu allocator. Later patchsets
-> will gradually build out the functionality.
+I thought it was generally discouraged that subsystems have trivial
+wrappers like that, otherwise you wind up with:
 
-I need to drop these - the dynalloc thing (I don't think I even know
-what it does) in Ingo's trees make changes all over the place and
-nothing much applies any more.
+scsi_get_u32
+usb_get_u32
+v4l_get_u32
+
+... and so on, where as if they all used the common names, people more
+used to other areas of the kernel can still recognize what the code
+is doing without having the lookup another define.
+
+Just my 2 cents
+
+Harvey
 
