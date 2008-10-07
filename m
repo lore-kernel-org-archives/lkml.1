@@ -1,64 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbYJGPtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYJGPua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928AbYJGPtZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYJGPtQ
+	id S1755950AbYJGPua (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYJGPuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:49:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33629 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753092AbYJGPtP (ORCPT
+	Tue, 7 Oct 2008 11:50:21 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:58949 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753383AbYJGPuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:49:15 -0400
-Subject: Re: [Bug #11207] VolanoMark regression with 2.6.27-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Miao Xie <miaox@cn.fujitsu.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <200810080211.42210.nickpiggin@yahoo.com.au>
-References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.S8B.b975IB@wind>
-	 <200810080211.42210.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 17:48:46 +0200
-Message-Id: <1223394526.26330.52.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 7 Oct 2008 11:50:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=xKInk/2X6lV/hLiRfu526q/3bQoX76DWL1qHfCQBjDwpeOnHOQWwJNNAUCnW4KT7wY
+         TxFu74vVIDQF9744uUr6KE76mA33gJ3dvWuKpBB64jMPlF4h1/yIZ+N8IPZqEgofBRmB
+         yvw41+3266zzg+iH5rOkkREAT2pqmJEPh14jY=
+Message-ID: <48EB851D.2030300@gmail.com>
+Date: Tue, 07 Oct 2008 17:49:49 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: Michael Rubin <mrubin@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       kamezawa.hiroyu@jp.fujitsu.com, dave@linux.vnet.ibm.com,
+       chlunde@ping.uio.no, dpshah@google.com, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, agk@sourceware.org, m.innocenti@cineca.it,
+       s-uchida@ap.jp.nec.com, ryov@valinux.co.jp, matt@bluehost.com,
+       dradford@bluehost.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH -mm 0/2] memcg: per cgroup dirty_ratio
+References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com> <20080912131816.e0cfac7a.akpm@linux-foundation.org> <532480950809221641y3471267esff82a14be8056586@mail.gmail.com> <48EB4236.1060100@linux.vnet.ibm.com>
+In-Reply-To: <48EB4236.1060100@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-08 at 02:11 +1100, Nick Piggin wrote:
-> On Sunday 05 October 2008 04:28, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.26.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
-> > Subject		: VolanoMark regression with 2.6.27-rc1
-> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> > Date		: 2008-07-31 3:20 (66 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
-> > Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> > 		  Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > 		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > 		  Miao Xie <miaox@cn.fujitsu.com>
+Balbir Singh wrote:
+> Michael Rubin wrote:
+>> On Fri, Sep 12, 2008 at 1:18 PM, Andrew Morton
+>> <akpm@linux-foundation.org> wrote:
+>>> One thing to think about please: Michael Rubin is hitting problems with
+>>> the existing /proc/sys/vm/dirty-ratio.  Its present granularity of 1%
+>>> is just too coarse for really large machines, and as
+>>> memory-size/disk-speed ratios continue to increase, this will just get
+>>> worse.
+>> Re-sending since I top-posted before. Never again. Also adding more
+>> thoughts on a byte based interface.
+>>
+>> Currently the problem we are hitting is that we cannot specify pdflush
+>> to have background limits less than 1% of memory. I am currently
+>> finishing up a patch right now that adds a dirty_ratio_millis
+>> interface.  I hope to submit the patch to LKML by the end of the week.
+>>
+>> The idea is that we don't want to break backwards compatibility and we
+>> also don't want to have two conflicting knobs in the sysctl or
+>> /proc/sys/vm/ space. I thought adding a new knob for those who want to
+>> specify finer grained functionality was a compromise. So the patch has
+>> a vm_dirty_ratio and a vm_dirty_ratio_millis interface. The first to
+>> specify 0-100% and the second to specify .0 to .999%.
+>>
+>> So to represent 0.125% of RAM we set
+>> vm_dirty_ratio = 0
+>> vm_dirty_ratio_millis = 125
+>>
+>> The same for the background_ratio.
+>>
+>> I would also prefer using a bytes interface but I am not sure how to
+>> offer that without  either removing the legacy interface of the ratios
+>> or by offering a concurrent interface that might be confusing such as
+>> when users are looking at the old one and not aware of a new one.
+>>
 > 
-> Curious: what's happening with this one, handlers? Any progress being made?
+> Just provide a vm_dirty_ration_in_bytes interface and keep it in sync with
+> vm_dirty_ratio (they are just two representations of the same internal value)
+> and for higher resolution propose that users use the bytes interface.
 
-Sadly not much, I can't seem to reproduce :-(
+Hi Balbir,
 
-Yanmin, does the wakeup patch I did for oltp help this workload any?
+now that I read carefully the documentation, the description in
+Documentation/filesystems/proc.txt seems to be a bit misleading. In
+proc.txt we say that dirty_ratio and dirty_background_ratio are "a
+percentage of total system memory", but in mm/page-writeback.c we apply
+the percentages to the dirtyable memory: free pages + reclaimable pages.
+So, first of all I think we should clarify this in the documentation...
 
-http://marc.info/?l=linux-kernel&m=122194673932703&w=4
+Saying that, keeping in sync the vm_dirty_amount_in_bytes according to
+dirty_ratio_in_percentage is not a trivial task. One is a static value,
+the other depends on the dirtyable memory in the system. If we want to
+preserve the same behaviour we should do the following:
 
+dirty_ratio = x => dirty_amount_in_bytes = x * dirtyable_memory / 100
 
+dirty_amount_in_bytes = y => dirty_ratio = y / dirtyable_memory * 100
 
+But anytime the dirtyable memory (or the total memory in the system)
+changes we should update both values accordingly to preserve the
+coherency between them (ouch!).
+
+Possible solutions:
+
+1) introduce fine-grained dirty_ratio handling decimals by an opportune
+   parser (disadvantage: this would break the compatibility with all the
+   userspace apps that expect to read an int from vm_dirty_ratio)
+
+2) introduce dirty_ratio + dirty_ratio_millis (disadvantage: can
+   generate unexpected behaviours when something is written to
+   dirty_ratio ignoring the existence of dirty_ratio_millis)
+
+3) introduce dirty_ratio + dirty_amount_in_bytes mutually exclusive,
+   writing to one automatically "disable" the other (disadvantage:
+   writing to dirty_ratio ignoring dirty_amount_in_bytes can cause
+   unexpected behaviours)
+
+4) introduce dirty_ratio + dirty_amount_in_bytes and change the
+   old behaviour: when something is written to dirty_ratio,
+   dirty_amount_in_bytes is evaluated in function of totalram_pages (or
+   the memcg limit) and then we always use this static value, instead of
+   something that depends on the dirtyable memory - we can easily update
+   dirty_amount_in_bytes also when totalram_pages or the memcg limit
+   changes (disadvantage: change an old - working - behaviour).
+
+5) handle fine-grained dirty_ratio decimals by an opportune parser when
+   writing something to dirty_ratio; export the percentage units via
+   dirty_ratio, and the decimals via dirty_ratio_decimals; writing to
+   dirty_ratio_decimals is not allowed.
+
+I tend to choose 5. The same for dirty_background_ratio.
+
+-Andrea
