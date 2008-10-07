@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYJGAcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYJGAfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555AbYJGAcf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYJGAc1
+	id S1753807AbYJGAfu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYJGAfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:32:27 -0400
-Received: from smtp.outflux.net ([198.145.64.163]:56032 "EHLO smtp.outflux.net"
+	Mon, 6 Oct 2008 20:35:41 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3799 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbYJGAc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:32:26 -0400
-Date: Mon, 6 Oct 2008 17:31:19 -0700
-From: Kees Cook <kees.cook@canonical.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       libc-alpha@sourceware.org
-Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
-Message-ID: <20081007003119.GS10357@outflux.net>
-References: <48E3EFD6.2010704@redhat.com> <20081001215657.GH12527@outflux.net> <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain> <20081003001616.GN10632@outflux.net> <87ej2untze.fsf@basil.nowhere.org> <20081006175038.GF10357@outflux.net> <20081006192641.GI3180@one.firstfloor.org> <20081006220759.GM10357@outflux.net> <20081006235827.59306154271@magilla.localdomain>
-MIME-Version: 1.0
+	id S1752573AbYJGAfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:35:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,370,1220252400"; 
+   d="scan'208";a="344734427"
+Date: Mon, 6 Oct 2008 17:35:39 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: Re: [PATCH 2/2]Add Variable Page Size and IA64 Support in Intel IOMMU: IA64 Specific Part
+Message-ID: <20081007003539.GA5920@linux-os.sc.intel.com>
+References: <20081001165750.GA21272@linux-os.sc.intel.com> <200810030941.42800.bjorn.helgaas@hp.com> <A6AD88C3F2289247BE726C37303E1EB8844A6398@orsmsx505.amr.corp.intel.com> <200810060855.36880.bjorn.helgaas@hp.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081006235827.59306154271@magilla.localdomain>
-Organization: Canonical
-X-HELO: www.outflux.net
+In-Reply-To: <200810060855.36880.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 06, 2008 at 04:58:27PM -0700, Roland McGrath wrote:
-> What mmap randomization and stack randomization actually use is
-> get_random_int(), not get_random_bytes().  This is one of those weaker
-> flavors seeded occasionally from the real entropy pool.  (As is, it's not a
-> good choice for getting 16 bytes of random at once, since it usually
-> returns the same 4 bytes each time when called 4 times in quick succession.)
+> > Could you please point me to the doc that explicitly says that architecturally ia64 doesn't need cache flush?
 > 
-> What glibc wants is some bits with a strength of randomness chosen by the
-> kernel, and not to worry about the details.  I think the strength applied
-> to mmap and stack randomization is good enough for AT_RANDOM.
+> The following sections in volume 2 of the SDM mention DMA:
+> Part 1, Sec 4.4.3, Cacheability and Coherency Attribute:
+> Part 2, Sec 2.5.4, DMA:
+> 
+> It sounds like the expectation is that DMA will be fully coherent
+> and no flushes would be required, but there is wiggle room in that
+> last paragraph for platforms that don't maintain coherency.
 
-Is this email a vote for or against doing:
+The cache coherency bit in VT-d is for root, context, and page tables which are for DMA management, not DMA data itself. VT-d DMA data should be cache coherent.The Intel IOMMU code doesn't need to deal with non cache coherency in DMA data traffic. But root, context, and page tables could be non cache coherent and this is handled by Intel IOMMU code.
 
-+       k_rand_bytes[0] = get_random_int();
-+       k_rand_bytes[1] = get_random_int();
-+       k_rand_bytes[2] = get_random_int();
-+       k_rand_bytes[3] = get_random_int();
+Thanks.
 
-It sounds like it's not very safe, but on the other hand, glibc doesn't
-really care?
-
--- 
-Kees Cook
-Ubuntu Security Team
+-Fenghua
