@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbYJGS07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYJGS20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbYJGS07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 14:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbYJGS0s
+	id S1755857AbYJGS20 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 14:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbYJGS2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 14:26:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33422
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750753AbYJGS0r (ORCPT
+	Tue, 7 Oct 2008 14:28:18 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:16199 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753163AbYJGS2R convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 14:26:47 -0400
-Date: Tue, 07 Oct 2008 11:26:22 -0700 (PDT)
-Message-Id: <20081007.112622.73930718.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: minyard@acm.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48EAF29D.8050203@cosmosbay.com>
-References: <48EA8197.6080502@cosmosbay.com>
-	<20081006.144002.56418911.davem@davemloft.net>
-	<48EAF29D.8050203@cosmosbay.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 14:28:17 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] Prevent modpost from looking for a .cmd file for a static library linked into a module
+Date: Tue, 7 Oct 2008 11:26:15 -0700
+Message-ID: <8A71B368A89016469F72CD08050AD334038D52CF@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Prevent modpost from looking for a .cmd file for a static library linked into a module
+Thread-Index: Ackoqi6xfwiJBK4/QFW98B75MrAXOw==
+From: "Ashutosh Naik" <ashutosh@chelsio.com>
+To: <linux-kernel@vger.kernel.org>, <stable@kernel.org>, <akpm@osdl.org>,
+       <rusty@rustcorp.com.au>, "Karen Xie" <kxie@chelsio.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Tue, 07 Oct 2008 07:24:45 +0200
 
-> Most UDP sockets are setup for long periods (RTP trafic), or if an application really
-> wants to {open/send or receive one UDP frame/close} many sockets, it already hits
-> RCU handling of its file structures and should not be slowed down that much.
+This patch prevents modpost to look for a .cmd file when a module is
+linked with a static library
 
-As stated, I added RCU destruction generically for socket objects, and it
-showed up clearly.
+Signed-off-by: Ashutosh Naik <ashutosh.naik@gmail.com>
 
-So "not be slowed down that much" has been disproven, at least to me,
-already :-)
+diff -ruN linux-2.6.26.5/scripts/mod/sumversion.c
+linux-2.6.26.5-mod/scripts/mod/sumversion.c
+--- linux-2.6.26.5/scripts/mod/sumversion.c	2008-09-08
+10:40:20.000000000 -0700
++++ linux-2.6.26.5-mod/scripts/mod/sumversion.c	2008-10-07
+09:32:24.000000000 -0700
+@@ -290,6 +290,15 @@
+ 	release_file(file, len);
+ 	return 1;
+ }
++/* Check whether the file is a static library or not */
++static int is_static_library(const char *objfile)
++{
++	int len = strlen(objfile);
++	if((objfile[len -2]=='.') && (objfile[len - 1]=='a'))
++		return 1;
++	else
++		return 0;	
++}
+ 
+ /* We have dir/file.o.  Open dir/.file.o.cmd, look for deps_ line to
+  * figure out source file. */
+@@ -420,7 +429,7 @@
+ 	while ((fname = strsep(&sources, " ")) != NULL) {
+ 		if (!*fname)
+ 			continue;
+-		if (!parse_source_files(fname, &md))
++		if (!(is_static_library(fname)) &&
+!parse_source_files(fname, &md))
+ 			goto release;
+ 	}
