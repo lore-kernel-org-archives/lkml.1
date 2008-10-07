@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbYJGV2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYJGV37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758063AbYJGV2R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYJGV2B
+	id S1757440AbYJGV37 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbYJGV3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:28:01 -0400
-Received: from xenotime.net ([66.160.160.81]:55485 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753443AbYJGV2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:28:01 -0400
-Date: Tue, 7 Oct 2008 14:27:56 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: David Sanders <linux@sandersweb.net>
-cc: Adrian Bunk <bunk@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Btrfs mainline plans
-In-Reply-To: <200810071720.02962.linux@sandersweb.net>
-Message-ID: <Pine.LNX.4.64.0810071427220.8747@shark.he.net>
-References: <1222717460.30627.56.camel@think.oraclecorp.com>
- <1223395284.16546.121.camel@think.oraclecorp.com> <20081007202538.GC1610@cs181140183.pp.htv.fi>
- <200810071720.02962.linux@sandersweb.net>
+	Tue, 7 Oct 2008 17:29:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34574 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752731AbYJGV3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:29:48 -0400
+Message-ID: <48EBD469.6090409@redhat.com>
+Date: Tue, 07 Oct 2008 17:28:09 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Lee.Schermerhorn@hp.com,
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no, dlezcano@fr.ibm.com,
+       penberg@cs.helsinki.fi, neilb@suse.de, davem@davemloft.net
+Subject: Re: split-lru performance mesurement part2
+References: <20081003153810.5dd0a33e@bree.surriel.com>	<20081004232549.CE53.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<20081007231851.3B88.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081007131719.8bb24698.akpm@linux-foundation.org>
+In-Reply-To: <20081007131719.8bb24698.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Oct 2008, David Sanders wrote:
+Andrew Morton wrote:
 
-> On Tuesday 07 October 2008 04:25:39 pm Adrian Bunk wrote:
-> > The 2.6.29 merge window will start in January - everything else is much
-> > more unlikely than an incompetent chick from Alaska getting only one
-> > heart attack away from the big red button.
+> dbench is pretty chaotic and it could be that a good change causes
+> dbench to get worse.  That's happened plenty of times in the past.
 > 
-> These comments are inappropriate for this list.
+> 
+>> Do you have any suggestion?
+> 
+> 
+> One of these:
+> 
+> vmscan-give-referenced-active-and-unmapped-pages-a-second-trip-around-the-lru.patch
+> vm-dont-run-touch_buffer-during-buffercache-lookups.patch
+> 
+> perhaps?
 
-and you dropped several mailing list cc's.  Please don't do that.
+Worth a try, but it could just as well be a CPU scheduler change
+that happens to indirectly impact locking :)
 
 -- 
-~Randy
+All rights reversed.
