@@ -1,360 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYJGNoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYJGNtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYJGNoc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 09:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJGNoY
+	id S1754545AbYJGNtQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 09:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYJGNtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 09:44:24 -0400
-Received: from mercuryimc.plus.com ([80.229.200.144]:44473 "EHLO
-	mimc.mimc.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753271AbYJGNoX (ORCPT
+	Tue, 7 Oct 2008 09:49:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:37168 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753040AbYJGNtC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 09:44:23 -0400
-Message-ID: <48EB67B5.7040302@mimc.co.uk>
-Date: Tue, 07 Oct 2008 14:44:21 +0100
-From: Mark Jackson <mpfj@mimc.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 7 Oct 2008 09:49:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=nIUtJYgMbcgx7uiLExGR7YVQgLFLgZvsVLuTZGqrAU8fl8p3pgYTy74fu1gvG3bz9S
+         lMrhynzJ8b0mZ2rdBb6te5dZiS7E1gRmWJ5oDIbgMsseSS8vtnIHbR/OmWoKe0oxCkby
+         ko6M6FsAWUJZFTiOnhq+I7vl8Dgb3fzz8VMqA=
+Message-ID: <cfd18e0f0810070649l391978f9v345a5591728bbf41@mail.gmail.com>
+Date: Tue, 7 Oct 2008 15:49:00 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [RFC patch 0/3] signals: add rt_tgsigqueueinfo syscall
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Roland McGrath" <roland@redhat.com>, "Oleg Nesterov" <oleg@tv-sign.ru>
+In-Reply-To: <20080930194445.978351700@linutronix.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add Dallas DS1390 RTC chip
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080930194445.978351700@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for the Dallas DS1390 SPI RTC chip.
+Thomas,
 
-Signed-off-by: M.Jackson <mpfj@mimc.co.uk>
----
- drivers/rtc/Kconfig      |   14 +++
- drivers/rtc/Makefile     |    1 +
- drivers/rtc/rtc-ds1390.c |  283 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 298 insertions(+), 0 deletions(-)
+On Tue, Sep 30, 2008 at 9:48 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> sys_kill has a counterpart sys_tgkill which allows to send signals to
+> a particular thread. sys_rt_sigqueueinfo is lacking such a counterpart.
+>
+> Aside of the asymetry it is a show stopper for migrating applications
+> from other unix-alike RTOSes.
+>
+> The following patch series implements rt_tgsigqueueinfo and hooks it
+> up for x86.
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 9a9755c..7ec6abb 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -292,6 +292,20 @@ config RTC_DRV_DS1305
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-ds1305.
- 
-+config RTC_DRV_DS1390
-+	tristate "Dallas/Maxim DS1390"
-+	help
-+	  If you say yes here you get support for the DS1390 and probably
-+	  other chips connected with SPI.
-+
-+	  The first seven registers on these chips hold an RTC, and other
-+	  registers may add features such as NVRAM, a trickle charger for
-+	  the RTC/NVRAM backup power, and alarms.  This driver may not
-+	  expose all those available chip features.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called rtc-ds1390.
-+
- config RTC_DRV_MAX6902
- 	tristate "Maxim MAX6902"
- 	help
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 18622ef..6306900 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -27,6 +27,7 @@ obj-$(CONFIG_RTC_DRV_DS1302)	+= rtc-ds1302.o
- obj-$(CONFIG_RTC_DRV_DS1305)	+= rtc-ds1305.o
- obj-$(CONFIG_RTC_DRV_DS1307)	+= rtc-ds1307.o
- obj-$(CONFIG_RTC_DRV_DS1374)	+= rtc-ds1374.o
-+obj-$(CONFIG_RTC_DRV_DS1390)	+= rtc-ds1390.o
- obj-$(CONFIG_RTC_DRV_DS1511)	+= rtc-ds1511.o
- obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
- obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
-diff --git a/drivers/rtc/rtc-ds1390.c b/drivers/rtc/rtc-ds1390.c
-new file mode 100644
-index 0000000..57fb215
---- /dev/null
-+++ b/drivers/rtc/rtc-ds1390.c
-@@ -0,0 +1,283 @@
-+/* drivers/rtc/rtc-ds1390.c
-+ *
-+ * Copyright (C) 2008 Mercury IMC Ltd
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Driver for DS1390 spi RTC
-+ *
-+ * Changelog:
-+ *
-+ * 04-Apr-2008: Mark Jackson <mpfj@mimc.co.uk>
-+ *		- Initial version based on rtc-max6902
-+ *		- No alarm support though !!
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/version.h>
-+
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/init.h>
-+#include <linux/rtc.h>
-+#include <linux/spi/spi.h>
-+#include <linux/bcd.h>
-+#include <linux/delay.h>
-+
-+#define DS1390_REG_100THS		0x00
-+#define DS1390_REG_SECONDS		0x01
-+#define DS1390_REG_MINUTES		0x02
-+#define DS1390_REG_HOURS		0x03
-+#define DS1390_REG_DAY			0x04
-+#define DS1390_REG_DATE			0x05
-+#define DS1390_REG_MONTH_CENT		0x06
-+#define DS1390_REG_YEAR			0x07
-+
-+#define DS1390_REG_ALARM_100THS		0x08
-+#define DS1390_REG_ALARM_SECONDS	0x09
-+#define DS1390_REG_ALARM_MINUTES	0x0A
-+#define DS1390_REG_ALARM_HOURS		0x0B
-+#define DS1390_REG_ALARM_DAY_DATE	0x0C
-+
-+#define DS1390_REG_CONTROL		0x0D
-+#define DS1390_REG_STATUS		0x0E
-+#define DS1390_REG_TRICKLE		0x0F
-+
-+struct ds1390
-+{
-+	struct rtc_device *rtc;
-+	u8 buf[9];	/* cmd + 8 registers */
-+	u8 tx_buf[2];
-+	u8 rx_buf[2];
-+};
-+
-+static void ds1390_set_reg(struct device *dev, unsigned char address,
-+				unsigned char data)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	unsigned char buf[2];
-+
-+	/* MSB must be '1' to write */
-+	buf[0] = address | 0x80;
-+	buf[1] = data;
-+
-+	spi_write(spi, buf, 2);
-+}
-+
-+static int ds1390_get_reg(struct device *dev, unsigned char address,
-+				unsigned char *data)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ds1390 *chip = dev_get_drvdata(dev);
-+	struct spi_message message;
-+	struct spi_transfer xfer;
-+	int status;
-+
-+	if (!data)
-+		return -EINVAL;
-+
-+	/* Build our spi message */
-+	spi_message_init(&message);
-+	memset(&xfer, 0, sizeof(xfer));
-+	xfer.len = 2;
-+	/* Can tx_buf and rx_buf be equal? The doc in spi.h is not sure... */
-+	xfer.tx_buf = chip->tx_buf;
-+	xfer.rx_buf = chip->rx_buf;
-+
-+	/* Clear MSB to indicate read */
-+	chip->tx_buf[0] = address & 0x7f;
-+
-+	spi_message_add_tail(&xfer, &message);
-+
-+	/* do the i/o */
-+	status = spi_sync(spi, &message);
-+	if (status == 0)
-+	{
-+		status = message.status;
-+	}
-+	else
-+	{
-+		return status;
-+	}
-+
-+	*data = chip->rx_buf[1];
-+
-+	return status;
-+}
-+
-+static int ds1390_get_datetime(struct device *dev, struct rtc_time *dt)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ds1390 *chip = dev_get_drvdata(dev);
-+	struct spi_message message;
-+	struct spi_transfer xfer;
-+	int status;
-+
-+	/* build the message */
-+	spi_message_init(&message);
-+	memset(&xfer, 0, sizeof(xfer));
-+	xfer.len = 1 + 7;	/* read command + 7 registers */
-+	xfer.tx_buf = chip->buf;
-+	xfer.rx_buf = chip->buf;
-+	chip->buf[0] = DS1390_REG_SECONDS;
-+	spi_message_add_tail(&xfer, &message);
-+
-+	/* do the i/o */
-+	status = spi_sync(spi, &message);
-+	if (status == 0)
-+	{
-+		status = message.status;
-+	}
-+	else
-+	{
-+		return status;
-+	}
-+
-+	/* The chip sends data in this order:
-+	 * Seconds, Minutes, Hours, Day, Date, Month / Century, Year */
-+	dt->tm_sec	= BCD2BIN(chip->buf[1]);
-+	dt->tm_min	= BCD2BIN(chip->buf[2]);
-+	dt->tm_hour	= BCD2BIN(chip->buf[3]);
-+	dt->tm_wday	= BCD2BIN(chip->buf[4]);
-+	dt->tm_mday	= BCD2BIN(chip->buf[5]);
-+	/* mask off century bit */
-+	dt->tm_mon	= BCD2BIN(chip->buf[6] & 0x7f) - 1;
-+	/* adjust for century bit */
-+	dt->tm_year = BCD2BIN(chip->buf[7]) + ((chip->buf[6] & 0x80) ? 100 : 0);
-+
-+	return 0;
-+}
-+
-+static int ds1390_set_datetime(struct device *dev, struct rtc_time *dt)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ds1390 *chip = dev_get_drvdata(dev);
-+	struct spi_message message;
-+	struct spi_transfer xfer;
-+	int status;
-+
-+	/* build the message */
-+	spi_message_init(&message);
-+	memset(&xfer, 0, sizeof(xfer));
-+	xfer.len = 1 + 8;	/* write command + 8 registers */
-+	xfer.tx_buf = chip->buf;
-+	xfer.rx_buf = chip->buf;
-+	chip->buf[0] = DS1390_REG_SECONDS | 0x80;
-+	chip->buf[1] = BIN2BCD(dt->tm_sec);
-+	chip->buf[2] = BIN2BCD(dt->tm_min);
-+	chip->buf[3] = BIN2BCD(dt->tm_hour);
-+	chip->buf[4] = BIN2BCD(dt->tm_wday);
-+	chip->buf[5] = BIN2BCD(dt->tm_mday);
-+	chip->buf[6] = BIN2BCD(dt->tm_mon + 1) | ((dt->tm_year > 99) ? 0x80 : 0x00);
-+	chip->buf[7] = BIN2BCD(dt->tm_year % 100);
-+	spi_message_add_tail(&xfer, &message);
-+
-+	/* do the i/o */
-+	status = spi_sync(spi, &message);
-+	if (status == 0)
-+	{
-+		status = message.status;
-+	}
-+	else
-+	{
-+		return status;
-+	}
-+
-+	return 0;
-+}
-+
-+static int ds1390_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	return ds1390_get_datetime(dev, tm);
-+}
-+
-+static int ds1390_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	return ds1390_set_datetime(dev, tm);
-+}
-+
-+static const struct rtc_class_ops ds1390_rtc_ops = {
-+	.read_time	= ds1390_read_time,
-+	.set_time	= ds1390_set_time,
-+};
-+
-+static int __devinit ds1390_probe(struct spi_device *spi)
-+{
-+	struct rtc_device *rtc;
-+	unsigned char tmp;
-+	struct ds1390 *chip;
-+	int res;
-+
-+	printk("DS1390 SPI RTC driver\n");
-+
-+	rtc = rtc_device_register("ds1390",
-+				&spi->dev, &ds1390_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(rtc))
-+	{
-+		printk("RTC : unable to register device\n");
-+		return PTR_ERR(rtc);
-+	}
-+
-+	spi->mode = SPI_MODE_3;
-+	spi->bits_per_word = 8;
-+	spi_setup(spi);
-+
-+	chip = kzalloc(sizeof *chip, GFP_KERNEL);
-+	if (!chip) {
-+		printk("RTC : unable to allocate device memory\n");
-+		rtc_device_unregister(rtc);
-+		return -ENOMEM;
-+	}
-+	chip->rtc = rtc;
-+	dev_set_drvdata(&spi->dev, chip);
-+
-+	res = ds1390_get_reg(&spi->dev, DS1390_REG_SECONDS, &tmp);
-+	if (res) {
-+		printk("RTC : unable to read device\n");
-+		rtc_device_unregister(rtc);
-+		return res;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __devexit ds1390_remove(struct spi_device *spi)
-+{
-+	struct ds1390 *chip = platform_get_drvdata(spi);
-+	struct rtc_device *rtc = chip->rtc;
-+
-+	if (rtc)
-+		rtc_device_unregister(rtc);
-+
-+	kfree(chip);
-+
-+	return 0;
-+}
-+
-+static struct spi_driver ds1390_driver = {
-+	.driver = {
-+		.name	= "rtc-ds1390",
-+		.bus	= &spi_bus_type,
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe	= ds1390_probe,
-+	.remove = __devexit_p(ds1390_remove),
-+};
-+
-+static __init int ds1390_init(void)
-+{
-+	return spi_register_driver(&ds1390_driver);
-+}
-+module_init(ds1390_init);
-+
-+static __exit void ds1390_exit(void)
-+{
-+	spi_unregister_driver(&ds1390_driver);
-+}
-+module_exit(ds1390_exit);
-+
-+MODULE_DESCRIPTION ("DS1390 SPI RTC driver");
-+MODULE_AUTHOR ("Mark Jackson");
-+MODULE_LICENSE ("GPL");
+I'm not sure if I've run across a bug or (maybe more likely) have a
+bug in my test code.  Could you take a look at the test programs
+below.
+
+When I use t_rt_tgsigqueueinfo.c to send a signal to my receiving
+program it crashes because the siginfo_t argument to the signal
+handler has a bad value (0x33); it's not obvious to me how it should
+get to have that value (have I misconstructed something in the
+t_rt_tgsigqueuinfo.c program?).
+
+Cheers,
+
+Michael
+
+==========
+
+$ ./multithread_sig_receiver 44 x
+Established handler for signal 44
+Main: TGID = 6105; TID = 6105
+Thread 1: PID = 6105; TID = 6106; arg = x
+Thread 1: about to pause
+                                                              $
+./t_rt_tgsigqueuinfo 6105 6106 44 1
+PID = 6105; TID = 6106; caught signal 44:
+0x33
+Segmentation fault (core dumped)
+
+=========
+
+/*#* t_rt_tgsigqueueinfo.c
+
+   Copyright 2008, Linux Foundation;
+   written by Michael Kerrisk <mtk.manpages@gmail.com>
+*/
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <signal.h>
+#include <sys/types.h>
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
+                        } while (0)
+
+#if defined(__i386__)
+#define SYS_rt_tgsigqueueinfo 333
+#endif
+
+static int
+rt_tgsigqueueinfo(pid_t tgid, pid_t tid, int sig, siginfo_t *si)
+{
+    return syscall(SYS_rt_tgsigqueueinfo, tgid, tid, sig, si);
+}
+
+
+int
+main(int argc, char *argv[])
+{
+    pid_t tgid, tid;
+    siginfo_t si;
+    int sig, val;
+
+    if (argc < 5) {
+        fprintf(stderr, "Usage: %s <tgid> <tid> <sig> <val>\n", argv[0]);
+        exit(EXIT_SUCCESS);
+    }
+
+    printf("My PID is %ld\n", (long) getpid());
+
+    tgid = atoi(argv[1]);
+    tid = atoi(argv[2]);
+    sig = atoi(argv[3]);
+    val = atoi(argv[4]);
+
+    si.si_signo = sig;
+    si.si_code = SI_QUEUE;
+    si.si_pid = getpid();
+    si.si_uid = getuid();
+    si.si_value.sival_int = val;
+
+    if (rt_tgsigqueueinfo(tgid, tid, sig, &si) == -1)
+        errExit("rt_tgsigqueueinfo");
+
+    exit(EXIT_SUCCESS);
+} /* main */
+
+=====================
+
+/*#* multithread_sig_receiver.c
+
+   Copyright 2008, Linux Foundation;
+   written by Michael Kerrisk <mtk.manpages@gmail.com>
+*/
+#define _GNU_SOURCE
+#include <sys/syscall.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <signal.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
+                        } while (0)
+
+#define errExitEN(en, msg) \
+                        do { errno = en; perror(msg); \
+                             exit(EXIT_FAILURE); } while (0)
+
+static int test_sig;
+
+struct thread_arg {
+    int   thread_num;
+    char *argv_string;
+};
+
+static pid_t
+gettid(void)
+{
+    return syscall(SYS_gettid);
+}
+
+static void
+handler(int sig, siginfo_t *si, void *uc)
+{
+    printf("PID = %ld; TID = %ld; caught signal %d: \n",
+            (long) getpid(), (long) gettid(), sig);
+    printf("%p\n", si);
+    printf("si_signo=%d ", si->si_signo);
+    printf("si_code=%d ", si->si_code);
+    printf("si_pid=%ld ", (long) si->si_pid);
+    printf("si_uid=%ld ", (long) si->si_uid);
+    printf("si_value.sival_int=%d\n", si->si_value.sival_int);
+}
+
+static void *
+threadFunc(void *arg)
+{
+    struct thread_arg *ta = (struct thread_arg *) arg;
+    sigset_t new;
+    int s;
+
+    printf("Thread %d: PID = %ld; TID = %ld; arg = %s\n", ta->thread_num,
+            (long) getpid(), (long) gettid(), ta->argv_string);
+
+    if (ta->argv_string[0] == 'b') {
+        printf("Thread %d: blocking signal\n", ta->thread_num);
+        sigemptyset(&new);
+        sigaddset(&new, test_sig);
+        s = pthread_sigmask(SIG_SETMASK, &new, NULL);
+        if (s != 0)
+            errExit("pthread_sigmask");
+    }
+
+    if (isdigit(ta->argv_string[1])) {
+        sleep(atoi(&ta->argv_string[1]));
+        printf("Thread %d: unblocking signal\n", ta->thread_num);
+        sigemptyset(&new);
+        s = pthread_sigmask(SIG_SETMASK, &new, NULL);
+        if (s != 0)
+            errExit("pthread_sigmask");
+    }
+
+    printf("Thread %d: about to pause\n", ta->thread_num);
+
+    for (;;)
+        pause();
+} /* threadFunc */
+
+
+#define MAX_ARGS 1000
+
+int
+main(int argc, char *argv[])
+{
+    pthread_t t;
+    int s, j;
+    struct sigaction sa;
+    struct thread_arg ta[MAX_ARGS];
+    sigset_t new;
+
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <sig> <thread-config>...\n", argv[0]);
+        exit(EXIT_SUCCESS);
+    }
+
+    if (argc > MAX_ARGS) {
+        fprintf(stderr, "Too many arguments\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    test_sig = atoi(argv[1]);
+
+    sigemptyset(&new);
+    if (sigprocmask(SIG_SETMASK, &new, NULL) == -1)
+        errExit("sigprocmask");
+
+    sa.sa_flags = 0;
+    sa.sa_sigaction = handler;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(test_sig, &sa, NULL) == -1)
+        errExit("sigaction");
+    printf("Established handler for signal %d\n", test_sig);
+
+    printf("Main: TGID = %ld; TID = %ld\n",
+            (long) getpid(), (long) gettid());
+
+    for (j = 0; j + 2 < argc; j++) {
+        ta[j].thread_num = j + 1;
+        ta[j].argv_string = argv[j + 2];
+
+        s = pthread_create(&t, NULL, threadFunc, &ta[j]);
+        if (s != 0)
+            errExitEN(s, "pthread_create");
+    }
+
+    pause();
+} /* main */
