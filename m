@@ -1,69 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYJGXgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYJGXgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbYJGXgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbYJGXf5
+	id S1756552AbYJGXgf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbYJGXgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:35:57 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:26436 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756896AbYJGXf4 (ORCPT
+	Tue, 7 Oct 2008 19:36:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41708 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757323AbYJGXgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:35:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=YqASZOCPagUP+gn3PXYuq+xQOAG0YZn7eH0C4sPzlF2hhwA43crAvmzUXRhh93w3Zh
-         WQjv1m0SH+gmtEKZERsm7AxpJnHsbkbxSZ1NHaEYow6oln3jDONKlXOric0WplpkEjO8
-         Ffg1BtfIwKkn9LAy/kammTObflWp57M+HBDQM=
-Subject: Re: [RFC] Normalizing byteorder/unaligned access API
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-In-Reply-To: <20081007232807.GL25780@parisc-linux.org>
-References: <1223416391.8195.22.camel@brick>
-	 <20081007232807.GL25780@parisc-linux.org>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 16:35:42 -0700
-Message-Id: <1223422542.8195.42.camel@brick>
+	Tue, 7 Oct 2008 19:36:22 -0400
+Date: Wed, 8 Oct 2008 01:42:30 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/3] Provide rdtscll() asm/msr.h for user space II
+Message-ID: <20081007234230.GA7971@one.firstfloor.org>
+References: <20081007143.793379346@firstfloor.org> <48EBD555.9060104@kernel.org> <20081007231149.GT20740@one.firstfloor.org> <48EBEFCC.4090302@kernel.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EBEFCC.4090302@kernel.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 17:28 -0600, Matthew Wilcox wrote:
-> On Tue, Oct 07, 2008 at 02:53:11PM -0700, Harvey Harrison wrote:
-> > In addition, there are some subsystems (scsi) that are looking into some
-> > differently sized endian helpers (be24) and it may be worthwhile to have
-> > some agreement whether it is worth making them common infrastructure and
-> > whether they should present a similar API to the common byteorder/unaligned
-> > API.
-> 
-> I still think SCSI should have its own accessors, even if they're
-> just wrappers around the common BE code.
-> 
 
-I thought it was generally discouraged that subsystems have trivial
-wrappers like that, otherwise you wind up with:
+BTW even if you cannot get yourself to DTRT on the user interface please at
+least apply the followup cleanup patches in the series.
 
-scsi_get_u32
-usb_get_u32
-v4l_get_u32
+-Andi
 
-... and so on, where as if they all used the common names, people more
-used to other areas of the kernel can still recognize what the code
-is doing without having the lookup another define.
-
-Just my 2 cents
-
-Harvey
-
+-- 
+ak@linux.intel.com
