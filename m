@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbYJGGh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYJGGnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbYJGGh5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 02:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbYJGGhs
+	id S1756707AbYJGGnw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 02:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYJGGnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 02:37:48 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51610 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbYJGGhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 02:37:48 -0400
-Message-ID: <48EB032B.3070200@cn.fujitsu.com>
-Date: Tue, 07 Oct 2008 14:35:23 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 7 Oct 2008 02:43:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59517 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbYJGGnm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 02:43:42 -0400
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+From: Andi Kleen <andi@firstfloor.org>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2>
+Date: Tue, 07 Oct 2008 08:43:39 +0200
+In-Reply-To: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> (Hisashi Hifumi's message of "Tue, 07 Oct 2008 14:07:23 +0900")
+Message-ID: <87hc7onbvo.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>
-CC: stable@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>,
-       Wenji Huang <wenji.huang@oracle.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       systemtap@sourceware.org
-Subject: [PATCH] markers: fix missing modpost entry in Module.markers
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> writes:
 
-commit d35cb360c29956510b2fe1a953bd4968536f7216 brought a bug.
-marker points compiled in vmlinux are missing in Module.markers.
+> Hi Andrew.
+>
+> Currently reading or writing file->f_pos is not atomic on 32bit environment,
+> so two or more simultaneous access can corrupt file->f_pos value.
+> There are some past discussions about this issue, but this is not fixed yet.
+> http://marc.info/?l=linux-kernel&m=120764199819899&w=2
+> http://marc.info/?l=linux-kernel&m=114490379102476&w=2
 
-# cat Module.markers
-subsystem_event samples/markers/marker-example  integer %d string %s
-subsystem_eventb        samples/markers/marker-example
+Have you benchmarked if cmpxchg is cheaper than the seqlock?  It's not
+clear to me a seqlock is really the right locking primitive for
+this. Normally seqlocks should be used when reading is much more
+frequent than writing, but it's doubtful that this is actually the
+case for f_pos.
 
-# stap -e 'probe kernel.mark("core_marker_format"){} '
-semantic error: no match while resolving probe point kernel.mark("core_marker_format")
-semantic error: no probes found
-Pass 2: analysis failed.  Try again with more '-v' (verbose) options.
+-Andi
 
-This patch revert a part of d35cb360c29956510b2fe1a953bd4968536f7216.
-Other parts have fixed duplicate modpost entry bug.
-
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 418cd7d..3509142 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1992,8 +1992,7 @@ static void read_markers(const char *fname)
- 			mod->skip = 1;
- 		}
- 
--		if (!mod->skip)
--			add_marker(mod, marker, fmt);
-+		add_marker(mod, marker, fmt);
- 	}
- 	return;
- fail:
-
-
+-- 
+ak@linux.intel.com
