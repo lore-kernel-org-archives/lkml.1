@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbYJGXwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYJGXzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758468AbYJGXwl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756325AbYJGXwc
+	id S1757919AbYJGXzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYJGXzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:52:32 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:34548 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230AbYJGXwb (ORCPT
+	Tue, 7 Oct 2008 19:55:36 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:39120 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754597AbYJGXzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:52:31 -0400
-Message-ID: <48EBF63E.4070202@caviumnetworks.com>
-Date: Tue, 07 Oct 2008 16:52:30 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 7 Oct 2008 19:55:35 -0400
+Date: Tue, 7 Oct 2008 17:55:34 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [RFC] Normalizing byteorder/unaligned access API
+Message-ID: <20081007235533.GN25780@parisc-linux.org>
+References: <1223416391.8195.22.camel@brick> <20081007232807.GL25780@parisc-linux.org> <1223422542.8195.42.camel@brick>
 MIME-Version: 1.0
-To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-CC: "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
-Subject: [PATCH 2/4] serial: Allow port type to be specified when calling
- serial8250_register_port.
-References: <48EBF426.9080500@caviumnetworks.com>
-In-Reply-To: <48EBF426.9080500@caviumnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Oct 2008 23:52:30.0536 (UTC) FILETIME=[C2A3BC80:01C928D7]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223422542.8195.42.camel@brick>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow port type to be specified when calling serial8250_register_port.
+On Tue, Oct 07, 2008 at 04:35:42PM -0700, Harvey Harrison wrote:
+> On Tue, 2008-10-07 at 17:28 -0600, Matthew Wilcox wrote:
+> > On Tue, Oct 07, 2008 at 02:53:11PM -0700, Harvey Harrison wrote:
+> > > In addition, there are some subsystems (scsi) that are looking into some
+> > > differently sized endian helpers (be24) and it may be worthwhile to have
+> > > some agreement whether it is worth making them common infrastructure and
+> > > whether they should present a similar API to the common byteorder/unaligned
+> > > API.
+> > 
+> > I still think SCSI should have its own accessors, even if they're
+> > just wrappers around the common BE code.
+> > 
+> 
+> I thought it was generally discouraged that subsystems have trivial
+> wrappers like that, otherwise you wind up with:
+> 
+> scsi_get_u32
+> usb_get_u32
+> v4l_get_u32
+> 
+> ... and so on, where as if they all used the common names, people more
+> used to other areas of the kernel can still recognize what the code
+> is doing without having the lookup another define.
 
-Add flag value UPF_FIXED_TYPE which specifies that the UART type is
-known and should not be probed.  For this case the UARTs properties
-are just copied out of the uart_config entry.
+My point is that they don't have to recognise what the code is doing.
+They don't have to know if the protocol is BE or LE, only that USB code
+is accessing the data in the appropriate way for USB.
 
-Signed-off-by: David Daney <ddaney@caviumnetworks.com>
----
- drivers/serial/8250.c        |    8 ++++++++
- drivers/serial/serial_core.c |    7 +++++--
- include/linux/serial_core.h  |    2 ++
- 3 files changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 02771d6..c575b61 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2975,6 +2975,14 @@ int serial8250_register_port(struct uart_port *port)
- 		uart->port.private_data = port->private_data;
- 		if (port->dev)
- 			uart->port.dev = port->dev;
-+
-+		if (port->flags & UPF_FIXED_TYPE) {
-+			uart->port.type = port->type;
-+			uart->port.fifosize = uart_config[port->type].fifo_size;
-+			uart->capabilities = uart_config[port->type].flags;
-+			uart->tx_loadsz = uart_config[port->type].tx_loadsz;
-+		}
-+
- 		set_io_fns_from_upio(&uart->port);
- 		/* Possibly override default I/O functions.  */
- 		if (port->serial_in_fn)
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index f977c98..65b8a74 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2196,11 +2196,14 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
- 	 * Now do the auto configuration stuff.  Note that config_port
- 	 * is expected to claim the resources and map the port for us.
- 	 */
--	flags = UART_CONFIG_TYPE;
-+	flags = 0;
- 	if (port->flags & UPF_AUTO_IRQ)
- 		flags |= UART_CONFIG_IRQ;
- 	if (port->flags & UPF_BOOT_AUTOCONF) {
--		port->type = PORT_UNKNOWN;
-+		if (!(port->flags & UPF_FIXED_TYPE)) {
-+			port->type = PORT_UNKNOWN;
-+			flags |= UART_CONFIG_TYPE;
-+		}
- 		port->ops->config_port(port, flags);
- 	}
- 
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 3a4afcf..c68dc94 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -290,6 +290,8 @@ struct uart_port {
- #define UPF_MAGIC_MULTIPLIER	((__force upf_t) (1 << 16))
- #define UPF_CONS_FLOW		((__force upf_t) (1 << 23))
- #define UPF_SHARE_IRQ		((__force upf_t) (1 << 24))
-+/* The exact UART type is known and should not be probed.  */
-+#define UPF_FIXED_TYPE		((__force upf_t) (1 << 27))
- #define UPF_BOOT_AUTOCONF	((__force upf_t) (1 << 28))
- #define UPF_FIXED_PORT		((__force upf_t) (1 << 29))
- #define UPF_DEAD		((__force upf_t) (1 << 30))
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
