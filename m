@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbYJGQkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbYJGQk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbYJGQkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYJGQju
+	id S1756304AbYJGQk7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJGQkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:39:50 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:24559 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753237AbYJGQjt (ORCPT
+	Tue, 7 Oct 2008 12:40:49 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:48174 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753443AbYJGQks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:39:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=o2qxlVAkvckzq16CJUT/kfAr6eLTFM4FHAwS0RRMWn8GSVuXaIiiw0LnXl2L0W+QBkeHUG48qNIvy2HVOuIqcbUFrnIpdr0C+AhziLW44TWbkp/Saj6LhpU+dt1q1lV7TkLx3vAbZAugAwp8cXjg5GPIl6hwXRzBwrJ04Fiz/h0=  ;
-X-YMail-OSG: c18cuVUVM1l.KPIJe4vUtL1nOPMUt9Y20O1Kca20Eeradh2WtJIhYp9yVqmoBLvzNvEByCdBv6S5XyKl9ErelpYrBWr_RkkSBww2k5dP.n9mXIqFB8kCkWaSU24N8V0AeUeVasF8t.tPOrgl_95oXDAb2UaWQA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm, for adaptive dcache hash table sizing (resend)
-Date: Wed, 8 Oct 2008 03:39:39 +1100
-User-Agent: KMail/1.9.5
-Cc: Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
+	Tue, 7 Oct 2008 12:40:48 -0400
+Date: Tue, 7 Oct 2008 22:10:16 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       netdev@vger.kernel.org, Paul McKenney <paulmck@us.ibm.com>
-References: <20081007064834.GA5959@wotan.suse.de> <20081007071827.GB5010@infradead.org> <18667.33351.854693.368568@harpo.it.uu.se>
-In-Reply-To: <18667.33351.854693.368568@harpo.it.uu.se>
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Miao Xie <miaox@cn.fujitsu.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [Bug #11207] VolanoMark regression with 2.6.27-rc1
+Message-ID: <20081007164016.GB7607@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.S8B.b975IB@wind> <200810080211.42210.nickpiggin@yahoo.com.au> <1223394526.26330.52.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810080339.40300.nickpiggin@yahoo.com.au>
+In-Reply-To: <1223394526.26330.52.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 October 2008 02:37, Mikael Pettersson wrote:
+On Tue, Oct 07, 2008 at 05:48:46PM +0200, Peter Zijlstra wrote:
+> On Wed, 2008-10-08 at 02:11 +1100, Nick Piggin wrote:
+> > On Sunday 05 October 2008 04:28, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.26.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > >
+> > >
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11207
+> > > Subject		: VolanoMark regression with 2.6.27-rc1
+> > > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > > Date		: 2008-07-31 3:20 (66 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=121747464114335&w=4
+> > > Handled-By	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > > 		  Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > 		  Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > > 		  Miao Xie <miaox@cn.fujitsu.com>
+> > 
+> > Curious: what's happening with this one, handlers? Any progress being made?
+> 
+> Sadly not much, I can't seem to reproduce :-(
+> 
 
-> I missed the first post, but loooking at the patch it seems
-> somewhat complex.
+This hits only when sched_compat_yield is set. Sadly, the machine which
+did reproduce this for me has gone down. Currently I am away from that
+machine for another two weeks. I can try giving it a shot again then.
 
-It is complex, but relatively self-contained, ie. it doesn't affect
-the actual code that performs hash lookups very much (although there
-can be some impact on atomicity if we have to consider something like
-a full table traversal like the rt hash).
-
-
-> How does this relate to traditional incremental hash tables
-> like extensible hashing or linear hashing (not to be confused
-> with linear probing)? In linear hashing a resize only affects
-> a single collision chain at a time, and reads from other chains
-> than the one being resized are unaffected.
-
-I haven't actually seen any real implementations of those things.
-AFAICS they don't exactly deal with concurrency. They are also likely
-to be more costly to operate on, versus a well sized simple hash
-table.
+-- 
+regards,
+Dhaval
