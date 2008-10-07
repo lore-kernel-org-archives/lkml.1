@@ -1,125 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYJGUjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYJGUlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757294AbYJGUjx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYJGUjp
+	id S1756846AbYJGUlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYJGUl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:39:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39408 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753479AbYJGUjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:39:44 -0400
+	Tue, 7 Oct 2008 16:41:27 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3227 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbYJGUl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 16:41:26 -0400
+Date: Tue, 7 Oct 2008 21:39:46 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>
+Message-ID: <20081007203946.GA3514@sirena.org.uk>
+References: <1223374230-18413-1-git-send-email-giometti@enneenne.com> <20081007135420.GB1592@ucw.cz> <20081007152032.GH13035@tekkaman> <20081007185846.GA6604@elf.ucw.cz> <20081007192112.GL13035@tekkaman> <20081007195648.GD6604@elf.ucw.cz> <20081007201954.GM13035@tekkaman>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] kbuild: AFTER_LINK
-X-Fcc: ~/Mail/linus
-X-Windows: complex nonsolutions to simple nonproblems.
-Message-Id: <20081007203940.391B0154271@magilla.localdomain>
-Date: Tue,  7 Oct 2008 13:39:40 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20081007201954.GM13035@tekkaman>
+X-Cookie: It's clever, but is it art?
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.32.140.119
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH V3] led: Backlight trigger for led subsystem
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In kernel builds for packaging systems, we want to do some magic diddling
-of linked binaries before they get embedded in load images.  This means the
-vDSO images before they get embedded inside vmlinux, and the vmlinux image
-itself before it gets embedded inside bzImage or suchlike.
+On Tue, Oct 07, 2008 at 10:19:54PM +0200, Rodolfo Giometti wrote:
+> On Tue, Oct 07, 2008 at 09:56:48PM +0200, Pavel Machek wrote:
 
-In Fedora's RPM builds, we have been doing this with a kludge using an
-override for cmd_objcopy on the make command line.  This is fragile at
-best, and broke down due to the excessive levels of make magic involved.
+> > Hmm, what's "your board"?
 
-I'm trying to find a relatively clean way of doing this.  What I've come up
-with so far is maybe not so hot, but it's a start.  This patch lets me set
-AFTER_LINK for the make run, to a command line to run right after these
-final links.  For context, this is how I set it:
+> Sorry, I meant "my custom board". :) It's PXA270 based but it's not
+> into Linux main tree.
 
-    # This override tweaks the kernel makefiles so that we run debugedit on an
-    # object before embedding it.  When we later run find-debuginfo.sh, it will
-    # run debugedit again.  The edits it does change the build ID bits embedded
-    # in the stripped object, but repeating debugedit is a no-op.  We do it
-    # beforehand to get the proper final build ID bits into the embedded image.
-    # This affects the vDSO images in vmlinux, and the vmlinux image in bzImage.
-    export AFTER_LINK=\
-    'sh -xc "/usr/lib/rpm/debugedit -b $$RPM_BUILD_DIR -d /usr/src/debug -i $@"'
+Another example, support for which should be coming shortly, is the LED
+driver provided by the WM8350: this is a PMIC capable of producing outputs
+to drive LEDs, potentially strings of very bright LEDs.  This is frequently
+used to illuminate displays but the actual function depends entirely on how
+the system has been wired up.
 
-Sam, what do you think would be the clean way to enable packaging builds to
-do a hack like this?
-
-
-Thanks,
-Roland
-
----
-If the make variable AFTER_LINK is set, it is a command line to run
-after each final link.  This includes vmlinux itself and vDSO images.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- Makefile                            |    4 ++++
- arch/powerpc/kernel/vdso32/Makefile |    3 ++-
- arch/powerpc/kernel/vdso64/Makefile |    3 ++-
- arch/x86/vdso/Makefile              |    3 ++-
- 4 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index ce9eceb..b27b1b7 100644
---- a/Makefile
-+++ b/Makefile
-@@ -679,6 +679,10 @@ quiet_cmd_vmlinux__ ?= LD      $@
-       --start-group $(vmlinux-main) --end-group                  \
-       $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o FORCE ,$^)
- 
-+ifdef AFTER_LINK
-+cmd_vmlinux__ += ; $(AFTER_LINK)
-+endif
-+
- # Generate new vmlinux version
- quiet_cmd_vmlinux_version = GEN     .version
-       cmd_vmlinux_version = set -e;                     \
-diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
-index c3d57bd..c9519c5 100644
---- a/arch/powerpc/kernel/vdso32/Makefile
-+++ b/arch/powerpc/kernel/vdso32/Makefile
-@@ -40,7 +40,8 @@ $(obj-vdso32): %.o: %.S
- 
- # actual build commands
- quiet_cmd_vdso32ld = VDSO32L $@
--      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -Wl,-T $^ -o $@
-+      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -Wl,-T $^ -o $@ \
-+		     $(if $(AFTER_LINK),; $(AFTER_LINK))
- quiet_cmd_vdso32as = VDSO32A $@
-       cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
- 
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index fa7f1b8..712fe1d 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -34,7 +34,8 @@ $(obj-vdso64): %.o: %.S
- 
- # actual build commands
- quiet_cmd_vdso64ld = VDSO64L $@
--      cmd_vdso64ld = $(CC) $(c_flags) -Wl,-T $^ -o $@
-+      cmd_vdso64ld = $(CC) $(c_flags) -Wl,-T $^ -o $@ \
-+		     $(if $(AFTER_LINK),; $(AFTER_LINK))
- quiet_cmd_vdso64as = VDSO64A $@
-       cmd_vdso64as = $(CC) $(a_flags) -c -o $@ $<
- 
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index 4d6ef0a..5203ae9 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -120,7 +120,8 @@ $(obj)/vdso32-syms.lds: $(vdso32.so-y:%=$(obj)/vdso32-%-syms.lds) FORCE
- quiet_cmd_vdso = VDSO    $@
-       cmd_vdso = $(CC) -nostdlib -o $@ \
- 		       $(VDSO_LDFLAGS) $(VDSO_LDFLAGS_$(filter %.lds,$(^F))) \
--		       -Wl,-T,$(filter %.lds,$^) $(filter %.o,$^)
-+		       -Wl,-T,$(filter %.lds,$^) $(filter %.o,$^) \
-+		 $(if $(AFTER_LINK),; $(AFTER_LINK))
- 
- VDSO_LDFLAGS = -fPIC -shared $(call ld-option, -Wl$(comma)--hash-style=sysv)
- 
+The implementation is identical no matter what the LEDs are doing but the
+current out of tree drivers have two drivers for this bit of the hardware,
+one for use in the normal LED case and one for when used as a backlight,
+which is redundnant.  With the driver Rodolfo has written this should no
+longer be required and the backlight trigger can be used to share the
+hardware interface code.
