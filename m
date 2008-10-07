@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbYJGBkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYJGBoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756420AbYJGBkQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 21:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYJGBkD
+	id S1756236AbYJGBoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 21:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYJGBoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 21:40:03 -0400
-Received: from ozlabs.org ([203.10.76.45]:46245 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753450AbYJGBkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 21:40:01 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH/RFC 0/4] Add stop_machine_get/put_threads to stop_machine infrastructrue.
-Date: Tue, 7 Oct 2008 11:39:58 +1000
-User-Agent: KMail/1.9.9
-Cc: jens.axboe@oracle.com, schwidefsky@de.ibm.com,
-       linux-kernel@vger.kernel.org
-References: <20081003105632.357231142@de.ibm.com> <200810061542.41224.rusty@rustcorp.com.au> <20081006201650.GA4708@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20081006201650.GA4708@osiris.boeblingen.de.ibm.com>
+	Mon, 6 Oct 2008 21:44:12 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:39664 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbYJGBoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 21:44:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Ox00B6qJ4Gk23o/DDiadIqppiHV1pfcT7dpzctAYLFtWq80F1u50TzqWu57deAnM0G
+         4dzQNgr/K8Pf6V45o471wbJMonLI/Fh3wVwVeCJ5g6fnyR4qAwMGrHV1VQc56/eBmImE
+         qHJGo2HLGjkccMADvXbcNTFUIk84+2Yeij7/g=
+Message-ID: <48EABE8E.9070809@gmail.com>
+Date: Tue, 07 Oct 2008 10:42:38 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linda Walsh <smartmontools@tlinx.org>
+CC: Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
+ or sleep, PATA models did. (fwd)
+References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org> <48EAB672.3010209@gmail.com> <48EABD07.6030506@tlinx.org>
+In-Reply-To: <48EABD07.6030506@tlinx.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810071239.58732.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 October 2008 07:16:50 Heiko Carstens wrote:
-> > > Patch 2 introduces the new proposed interface
-> >
-> > Could we just encapsulate the threads etc. into a "struct stopmachine"
-> > which is returned from stop_machine_prepare(), then implement everything
-> > in terms of that?
->
-> You mean that we put the pointers to the threads, the cpu mask, etc. in
-> this structure, instead of wasting bss size?
-> That would be just a kmalloc call in __stop_machine_get_threads().
-> Or do you think of something different?
+Linda Walsh wrote:
+> Controller is a Promise TX4/300
 
-That's exactly my idea.  We kmalloc already because NR_CPUS might be too big 
-for the stack.  This version would just kmalloc a struct containing 
-everything we need.
+Yeap.  After the drive goes offline, does unplugging and replugging
+the power cable to the harddrive makes it come back?
 
-I prefer _prepare() / _run() / _destroy() as nomenclature BTW.  prepare comes 
-from wait.h's prepare_to_wait; I don't like alloc() since it does more than 
-allocate memory, yet _get_threads unnecessarily reveals too much about the 
-implementation.
-
-Then we have the simple case:
-
-static inline int stop_machine(int (*fn)(void *), void *data,
-			       const struct cpumask *cpus)
-{
-	struct stop_machine *sm = stop_machine_prepare();
-	int err;
-
-	if (!sm)
-		return -ENOMEM;
-
-	err = stop_machine_run(sm, fn, data, cpus);
-	stop_machine_destroy(sm);
-	return err;
-}
-
-I think you want to be able to call stop_machine_run() with the same "sm" 
-multiple times, but that should be pretty easy to ensure.
-
-Cheers!
-Rusty.
+-- 
+tejun
