@@ -1,42 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbYJGVz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbYJGV7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbYJGVz7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYJGVzu
+	id S1757379AbYJGV7o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYJGV7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:55:50 -0400
-Received: from gw.goop.org ([64.81.55.164]:60222 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752961AbYJGVzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:55:50 -0400
-Message-ID: <48EBDAA9.4080208@goop.org>
-Date: Tue, 07 Oct 2008 14:54:49 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+	Tue, 7 Oct 2008 17:59:36 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43881 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754589AbYJGV7f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:59:35 -0400
+Message-ID: <48EBDBB4.1010108@zytor.com>
+Date: Tue, 07 Oct 2008 14:59:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: Eric Sandeen <sandeen@sandeen.net>, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ext4 deadlocks
-References: <48EBB9E9.4030105@goop.org> <48EBC6B9.7000608@sandeen.net> <48EBD448.1010309@redhat.com>
-In-Reply-To: <48EBD448.1010309@redhat.com>
-X-Enigmail-Version: 0.95.6
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] xsave: fix error condition in save_i387_xstate()
+References: <20081007210549.314011000@linux-os.sc.intel.com>
+In-Reply-To: <20081007210549.314011000@linux-os.sc.intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> ok I can reproduce this too.  I'm guessing this is a migrated ext3
-> filesystem?
->   
+Series applied to tip:x86/xsave, thanks!
 
-Yes.  I just used tune2fs on it to enable extents.
+	-hpa
 
-> I'll sort out a fix soon.
->
->   
-
-Thanks,
-    J
