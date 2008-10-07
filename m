@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYJGVrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYJGVuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757158AbYJGVrS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYJGVrB
+	id S1756821AbYJGVuq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYJGVui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:47:01 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58004 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbYJGVrA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:47:00 -0400
-Date: Tue, 07 Oct 2008 15:46:37 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: ext4 deadlocks
-In-reply-to: <48EBC6B9.7000608@sandeen.net>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kalpak Shah <Kalpak.Shah@sun.com>
-Message-id: <20081007214637.GA2009@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <48EBB9E9.4030105@goop.org> <48EBC6B9.7000608@sandeen.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 7 Oct 2008 17:50:38 -0400
+Received: from mga09.intel.com ([134.134.136.24]:14079 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752731AbYJGVuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:50:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
+   d="scan'208";a="345128368"
+Date: Tue, 7 Oct 2008 14:49:20 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Add clflush before monitor for Intel 7400 series
+Message-ID: <20081007214920.GA17439@linux-os.sc.intel.com>
+References: <20081007210056.GA5802@linux-os.sc.intel.com> <48EBCFF8.6050500@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EBCFF8.6050500@zytor.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 07, 2008  15:29 -0500, Eric Sandeen wrote:
-> Jeremy Fitzhardinge wrote:
-> > I tried giving ext4 a spin on my rawhide system, and it appears to 
-> > deadlock pretty quickly: lots of processed blocked in either ext4 or jbd2.
-> > 
-> >  From the look of the sysrq-t dumps I captured, I think beagled is 
-> > what's triggering it by doing something with EAs. I haven't had any 
-> > lockups since I killed it off.
-> > 
-> > beagled       D 0000000000000000     0  3477      1
-> >  ffff880125809778 0000000000000082 0000000000000000 ffff88013b078150
-> >  ffffffff8187a780 ffffffff8187a780 ffff88010f8445c0 ffff88013badc5c0
-> >  ffff88010f844970 0000000100000001 0000000000000000 ffff88010f844970
-> > Call Trace:
-> >  [<ffffffff812170d8>] ? scsi_sg_alloc+0x48/0x4a
-> >  [<ffffffff8136d4ae>] __down_write_nested+0xa3/0xbd
-> >  [<ffffffff8136d4d3>] __down_write+0xb/0xd
-> >  [<ffffffff8136c813>] down_write+0x2f/0x33
-> >  [<ffffffffa04b30a8>] ext4_expand_extra_isize_ea+0x67/0x6f2 [ext4dev]
+On Tue, Oct 07, 2008 at 02:09:12PM -0700, H. Peter Anvin wrote:
+> Venki Pallipadi wrote:
+> > For Intel 7400 series CPUs, the recommendation is to use a clflush on the
+> > monitored address just before monitor and mwait pair [1]. This clflush makes
+> > sure that there are no false wakeups from mwait when the monitored address
+> > was recently written to.
+> >
+> > [1] "MONITOR/MWAIT Recommendations for Intel Xeon Processor 7400 series"
+> > section in specification update document of 7400 series
+> > http://download.intel.com/design/xeon/specupdt/32033601.pdf
+> >
+> > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 > 
-> At first glance it seems that we're trying a down_write on the xattr_sem
-> here...
+> This seems very expensive.  It really makes me wonder if it wouldn't
+> just be better to either declare monitor/mwait non-functional on this
+> chip, or make sure that mwaits can handle false wakeups.
 > 
-> >  [<ffffffffa04762ed>] ? jbd2_journal_add_journal_head+0x113/0x1b0 [jbd2]
-> >  [<ffffffffa0476173>] ? jbd2_journal_put_journal_head+0x1a/0x56 [jbd2]
-> >  [<ffffffffa0471669>] ? jbd2_journal_get_write_access+0x31/0x38 [jbd2]
-> >  [<ffffffffa0471a6c>] ? jbd2_journal_extend+0x1af/0x1ca [jbd2]
-> >  [<ffffffffa0497f5c>] ext4_mark_inode_dirty+0x119/0x18b [ext4dev]
-> >  [<ffffffffa0498156>] ext4_dirty_inode+0xab/0xc3 [ext4dev]
-> >  [<ffffffff810e7310>] __mark_inode_dirty+0x38/0x194
-> >  [<ffffffffa04b0574>] ext4_mb_new_blocks+0x700/0x70f [ext4dev]
-> >  [<ffffffff8109f395>] ? mark_page_accessed+0x5f/0x6b
-> >  [<ffffffff810eb5ba>] ? __find_get_block+0x1af/0x1c1
-> >  [<ffffffff8136c3af>] ? __wait_on_bit+0x6f/0x7e
-> >  [<ffffffff810ec154>] ? sync_buffer+0x0/0x44
-> >  [<ffffffffa0493e50>] do_blk_alloc+0x9d/0xb3 [ext4dev]
-> >  [<ffffffffa0493eb5>] ext4_new_meta_blocks+0x34/0x76 [ext4dev]
-> >  [<ffffffffa0493f1b>] ext4_new_meta_block+0x24/0x26 [ext4dev]
-> >  [<ffffffffa04b2e79>] ext4_xattr_block_set+0x50e/0x6d6 [ext4dev]
-> >  [<ffffffffa04b39b4>] ext4_xattr_set_handle+0x281/0x3f0 [ext4dev]
-> 
-> Having already downed it here?
-> 
-> I'll look into it, not 100% sure what path gets us here (between
-> in-inode EAs and external block EAs) but I'll see.
 
-This looks suspiciously like a similar bug fixed in the past by Kalpak,
-related to trying to grow large-inode space in ext4_expand_extra_isize_ea().
+mwait can handle false wakeups. Today we wake backup all the way and find
+out there is nothing to do and go back to idle. And second time around this
+false wakeup does not happen as we do not write to monitored address in the
+interim. The problem we saw was the places where we try to look at how
+long each idle period was and take power management decision for the next idle.
+Such algorithms get confused with false wakeups.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Yes. Other alternative is to disable mwaits altogether on these CPUs. I can
+send a patch to do that. But, the patch will be somewhat more complicated
+as kernel advertises the MWAIT capability to firmware with a ACPI _PDC method
+and BIOS has to then give IO port based C2 for us to use in such case.
+Avoiding mwait just for C1 is easy though.
 
+Thanks,
+Venki 
