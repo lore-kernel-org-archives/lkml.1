@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYJGR6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbYJGSAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbYJGR6n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYJGR6f
+	id S1755300AbYJGSAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 14:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYJGSAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:58:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42536 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751303AbYJGR6e (ORCPT
+	Tue, 7 Oct 2008 14:00:38 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55387 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752765AbYJGSAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:58:34 -0400
-Date: Tue, 7 Oct 2008 10:57:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linuxfoundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [BUG] SLOB's krealloc() seems bust
-In-Reply-To: <1223397455.13453.385.camel@calx>
-Message-ID: <alpine.LFD.2.00.0810071053540.3208@nehalem.linux-foundation.org>
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>  <48EB6D2C.30806@linux-foundation.org>  <1223391655.13453.344.camel@calx>  <1223395846.26330.55.camel@lappy.programming.kicks-ass.net> <1223397455.13453.385.camel@calx>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 7 Oct 2008 14:00:38 -0400
+Date: Tue, 7 Oct 2008 12:00:21 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+Message-ID: <20081007180020.GI25780@parisc-linux.org>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <6.0.0.20.2.20081007183452.0f052210@172.19.0.2> <20081007102942.GE20740@one.firstfloor.org> <200810080327.44530.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810080327.44530.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 08, 2008 at 03:27:44AM +1100, Nick Piggin wrote:
+> So.. is everyone agreed that corrupting f_pos is a bad thing? (serious
+> question) If so, then we should get something like this merged sooner
+> rather than later.
+
+I'm not convinced it's a bad thing.  f_pos is going to get 'corrupted'
+(ie not pointing where you think it's going to point) sooner or later
+anyway if you have two threads accessing the same file without locking.
+The fact that it can point to an offset that was accessed by neither
+thread A nor thread B seems irrelevant to me.
 
 
-On Tue, 7 Oct 2008, Matt Mackall wrote:
->
-> Thanks, Peter. I know we're way late in the 2.6.27 cycle, so I'll leave
-> it to Linus and Andrew to decide how to queue this up.
+Separately, if we do decide something along these lines is a good idea,
+then file_pos_update() needs to be better.  The current patch has:
 
-Well, since it seems to be clearly broken without it, I'd take it, but now 
-I'm kind of waiting for the resolution on whether that second "-1" is 
-correct or not.
+ 	if (offset>=0 && offset<=inode->i_sb->s_maxbytes) {
+ 		/* Special lock needed here? */
+-		if (offset != file->f_pos) {
+-			file->f_pos = offset;
++		if (file_pos_update(file, offset))
+ 			file->f_version = 0;
+-		}
+ 		retval = offset;
+ 	}
 
->From a quick look at mm/slob.c I see Pekka's point that ->units does look 
-like the real size in units, not the "size plus header", and that the 
-second -1 may be bogus.
+It seems to me that the set of f_version to 0 should be atomic with 
+the changing of f_pos.  So something like this might work better:
 
-But I don't know the code.
++static inline void file_pos_update(struct file *file, loff_t offset, int v)
++{
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++	write_seqlock(&file->f_pos_seqlock);
++	if (offset != file->f_pos) {
++		file->f_pos = offset;
++		if (v)
++			file->f_version = 0;
++	}
++	write_sequnlock(&file->f_pos_seqlock);
++#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
++	preempt_disable();
++	if (offset != file->f_pos) {
++		file->f_pos = offset;
++		if (v)
++			file->f_version = 0;
++	}
++	preempt_enable();
++#else
++	if (offset != file->f_pos) {
++		file->f_pos = offset;
++		if (v)
++			file->f_version = 0;
++	}
++#endif
++}
 
-Peter - can you check with that
+Since 'v' will be known at compile time, the tests optimise away to nothing.
 
->  	if (slob_page(sp))
-> -		return ((slob_t *)block - 1)->units + SLOB_UNIT;
-> +		return (((slob_t *)block - 1)->units - 1) * SLOB_UNIT;
+I also think the patch would be more favourably received if it were
+structured as:
 
-thing using
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++static inline loff_t file_pos_read(struct file *file)
++{
+...
++}
++
++static inline void file_pos_write(struct file *file, loff_t pos)
++{
+...
++}
++
+...
++#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
+...
++#else
+...
++#endif
 
--		return ((slob_t *)block - 1)->units + SLOB_UNIT;
-+		return ((slob_t *)block - 1)->units * SLOB_UNIT;
 
-instead? 
-
-		Linus
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
