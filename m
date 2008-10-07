@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYJGRJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbYJGRNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbYJGRJo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYJGRJW
+	id S1755774AbYJGRNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 13:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYJGRNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:09:22 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:53945 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbYJGRJU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:09:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=t1/3yaiT9yXKoclVbisgy+27s9MdxiEPadTnrqS+McikH5q8csmJNmwrbcrEhIEqli
-         08mhH3tw9Iq4dzCVMLL/yo452KoT9Y41AHD72PnSTTmSTgLi80kgShOliA5dJI4zF/Lz
-         87rul8d48fU8vE5rz9sYkXj4k7O1kWSULbvbU=
-Message-ID: <3fedcc3b0810071009v68e5811ev11e9d512c58d371f@mail.gmail.com>
-Date: Tue, 7 Oct 2008 14:09:18 -0300
-From: "Thiago Lacerda" <thiagotbl@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: Questions about mmap
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48EB8912.7070407@s5r6.in-berlin.de>
+	Tue, 7 Oct 2008 13:13:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48153 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752961AbYJGRNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 13:13:15 -0400
+Message-ID: <48EB93CC.3070504@redhat.com>
+Date: Tue, 07 Oct 2008 18:52:28 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: prasad@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
+       mingo@elte.hu, jason.wessel@windriver.com, richardj_moore@uk.ibm.com
+Subject: Re: [RFC Patch 0/9] Hardware Breakpoint interfaces
+References: <20081007113815.GA23523@in.ibm.com> <48EB5611.9090005@redhat.com> <20081007143217.GA3774@in.ibm.com> <48EB7406.1010509@redhat.com> <20081007164535.GA4130@in.ibm.com>
+In-Reply-To: <20081007164535.GA4130@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3fedcc3b0810050621y3f44417ag605ee75dd0389100@mail.gmail.com>
-	 <3fedcc3b0810050624m19bfd701n82b70ca81887c3fc@mail.gmail.com>
-	 <48E8C8AB.3010308@s5r6.in-berlin.de>
-	 <3fedcc3b0810070638u60681b6do8a7e94c4919f4a40@mail.gmail.com>
-	 <3fedcc3b0810070640p52852433v8ecf631a9b3dcd8f@mail.gmail.com>
-	 <48EB8912.7070407@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you people.
-
-When I try to dereference those pointers in user space I get a segfault :(
-
-On Tue, Oct 7, 2008 at 1:06 PM, Stefan Richter
-<stefanr@s5r6.in-berlin.de> wrote:
-> Thiago Lacerda wrote:
->> I'm trying to do like this:
+K.Prasad wrote:
 >>
->> //Code of the char device
->> unsigned int **test;
->> static int device_mmap(struct file *filp, struct vm_area_struct *vma) {
-> [...]
->> could you tell me what am I doing wrong?
+>>> Presently I find plenty of set_debugreg() calls from kvm/ which will
+>>> modify the registers directly and break the breakpoint register
+>>> management brought-in through the patch.
+>>>   
+>>>       
+>> If kvm restores the registers, should there be any problem?
+>>
+>>     
+> No, it should be fine although I don't understand how the exception
+> handler is invoked in KVM without the use of notifier or a hook in
+> die_debug (or have they replaced code at a layer much below that?).
 >
-> I can't; I never implemented a mmap file operation myself.
-> --
-> Stefan Richter
-> -=====-==--- =-=- --===
-> http://arcgraph.de/sr/
->
+>   
 
+kvm debug traps don't work by raising a debug exception; instead, the 
+guest #VMEXITs into the host.  The kernel debug handler will not be invoked.
 
+> Apart from the doubt I've stated above, if they operate by replacing
+> the breakpoint register contents before a context switch from KVM to
+> other processes, they might in fact help maximise its utilisation.
+>   
+
+Yes.  As I mentioned, right now we avoid swapping the debug registers if 
+we aren't going to context switch or exit to userspace, but if you give 
+us a predicate that tells us whether you are interested in the debug 
+registers, we can swap them eagerly rather than lazily.
 
 -- 
-Thiago de Barros Lacerda
-Computer Science Undergraduate Student - CIn/UFPE - 2004.2
-Researcher/Software Developer - GPRT - Networking and
-Telecommunications Research Group
+error compiling committee.c: too many arguments to function
+
