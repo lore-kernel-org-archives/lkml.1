@@ -1,240 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbYJGLml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbYJGLnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbYJGLml (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYJGLmc
+	id S1755058AbYJGLnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYJGLnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:42:32 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:34421 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753179AbYJGLmb (ORCPT
+	Tue, 7 Oct 2008 07:43:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38018 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbYJGLnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:42:31 -0400
-Date: Tue, 7 Oct 2008 17:12:20 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       akpm@linux-foundation.org, mingo@elte.hu, jason.wessel@windriver.com,
-       avi@qumranet.com, richardj_moore@uk.ibm.com
-Subject: [RFC Patch 3/9] Modifying generic debug exception to use virtual
-	debug registers
-Message-ID: <20081007114220.GC25627@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20081007113815.GA23523@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007113815.GA23523@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 7 Oct 2008 07:43:14 -0400
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <20081007143.793379346@firstfloor.org>
+To: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/3] Provide rdtscll() asm/msr.h for user space
+Date: Tue,  7 Oct 2008 13:43:12 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies the breakpoint exception handler code to use the abstract
-register names.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
- arch/x86/kernel/traps_32.c |   67 ++++++++++++++++-----------------------------
- arch/x86/kernel/traps_64.c |   64 ++++++++++++++++++++----------------------
- 2 files changed, 54 insertions(+), 77 deletions(-)
+For simple user space timing it's very useful to be able to do
+#include <asm/msr.h> instead of having to cut'n'paste the necessarily
+macros into all programs. This used to work with older kernels,
+but broke with the paravirt support (I ended up with a bunch of
+test programs that broke because of that). But it's very useful
+to have rdtscll() available somewhere in user space and asm/msr.h
+is a good place to have them.
 
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_32.c
+Provide simple rdtsc/rdtscl() macros for user space too in asm/msr.h. 
+Since they are very simple I don't think they are a burden to maintain.
+
+The diff looks bigger than it is because I moved a code block
+and diff doesn't handle it very well.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+Index: linux-2.6.27-rc4-misc/include/asm-x86/msr.h
 ===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/traps_32.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_32.c
-@@ -890,11 +890,12 @@ void __kprobes do_int3(struct pt_regs *r
- void __kprobes do_debug(struct pt_regs *regs, long error_code)
- {
- 	struct task_struct *tsk = current;
--	unsigned int condition;
-+	unsigned long dr6;
+--- linux-2.6.27-rc4-misc.orig/include/asm-x86/msr.h
++++ linux-2.6.27-rc4-misc/include/asm-x86/msr.h
+@@ -4,23 +4,6 @@
+ #include <asm/msr-index.h>
  
- 	trace_hardirqs_fixup();
- 
--	get_debugreg(condition, 6);
-+	get_debugreg(dr6, 6);
-+	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
- 
- 	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
-@@ -902,60 +903,40 @@ void __kprobes do_debug(struct pt_regs *
- 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
- 	tsk->thread.debugctlmsr = 0;
- 
--	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	/* Store the virtualized DR6 value */
-+	tsk->thread.vdr6 = dr6;
-+
-+	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
-+			SIGTRAP) == NOTIFY_STOP)
- 		return;
- 	/* It's safe to allow irq's after DR6 has been saved */
- 	if (regs->flags & X86_EFLAGS_IF)
- 		local_irq_enable();
- 
--	/* Mask out spurious debug traps due to lazy DR7 setting */
--	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
--		if (!tsk->thread.debugreg7)
--			goto clear_dr7;
-+	if (regs->flags & X86_VM_MASK) {
-+		handle_vm86_trap((struct kernel_vm86_regs *) regs,
-+				error_code, 1);
-+		return;
- 	}
- 
--	if (regs->flags & X86_VM_MASK)
--		goto debug_vm86;
+ #ifndef __ASSEMBLY__
+-# include <linux/types.h>
+-#endif
 -
--	/* Save debug status register where ptrace can see it */
--	tsk->thread.debugreg6 = condition;
+-#ifdef __KERNEL__
+-#ifndef __ASSEMBLY__
 -
- 	/*
--	 * Single-stepping through TF: make sure we ignore any events in
--	 * kernel space (but re-enable TF when returning to user mode).
-+	 * Single-stepping through system calls: ignore any exceptions in
-+	 * kernel space, but re-enable TF when returning to user mode.
-+	 *
-+	 * We already checked v86 mode above, so we can check for kernel mode
-+	 * by just checking the CPL of CS.
- 	 */
--	if (condition & DR_STEP) {
--		/*
--		 * We already checked v86 mode above, so we can
--		 * check for kernel mode by just checking the CPL
--		 * of CS.
--		 */
--		if (!user_mode(regs))
--			goto clear_TF_reenable;
-+	if ((dr6 & DR_STEP) && !user_mode(regs)) {
-+		tsk->thread.vdr6 &= ~DR_STEP;
-+		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
-+		regs->flags &= ~X86_EFLAGS_TF;
- 	}
- 
--	/* Ok, finally something we can handle */
--	send_sigtrap(tsk, regs, error_code);
+-#include <asm/asm.h>
+-#include <asm/errno.h>
 -
--	/*
--	 * Disable additional traps. They'll be re-enabled when
--	 * the signal is delivered.
--	 */
--clear_dr7:
--	set_debugreg(0, 7);
--	return;
+-static inline unsigned long long native_read_tscp(unsigned int *aux)
+-{
+-	unsigned long low, high;
+-	asm volatile(".byte 0x0f,0x01,0xf9"
+-		     : "=a" (low), "=d" (high), "=c" (*aux));
+-	return low | ((u64)high << 32);
+-}
 -
--debug_vm86:
--	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
--	return;
--
--clear_TF_reenable:
--	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
--	regs->flags &= ~X86_EFLAGS_TF;
--	return;
-+	if (tsk->thread.vdr6 & (DR_STEP|DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
-+		send_sigtrap(tsk, regs, error_code);
- }
- 
-+
  /*
-  * Note that we play around with the 'TS' bit in an attempt to get
-  * the correct behaviour even in the presence of the asynchronous
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_64.c
-===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/traps_64.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_64.c
-@@ -894,13 +894,14 @@ asmlinkage __kprobes struct pt_regs *syn
- asmlinkage void __kprobes do_debug(struct pt_regs * regs,
- 				   unsigned long error_code)
- {
-+	unsigned long dr6;;
- 	struct task_struct *tsk = current;
--	unsigned long condition;
- 	siginfo_t info;
+  * i386 calling convention returns 64-bit value in edx:eax, while
+  * x86_64 returns at rax. Also, the "A" constraint does not really
+@@ -29,7 +12,7 @@ static inline unsigned long long native_
+  */
+ #ifdef CONFIG_X86_64
+ #define DECLARE_ARGS(val, low, high)	unsigned low, high
+-#define EAX_EDX_VAL(val, low, high)	((low) | ((u64)(high) << 32))
++#define EAX_EDX_VAL(val, low, high)	((low) | ((__u64)(high) << 32))
+ #define EAX_EDX_ARGS(val, low, high)	"a" (low), "d" (high)
+ #define EAX_EDX_RET(val, low, high)	"=a" (low), "=d" (high)
+ #else
+@@ -39,6 +22,23 @@ static inline unsigned long long native_
+ #define EAX_EDX_RET(val, low, high)	"=A" (val)
+ #endif
  
- 	trace_hardirqs_fixup();
- 
--	get_debugreg(condition, 6);
-+	get_debugreg(dr6, 6);
-+	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
- 
- 	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
-@@ -908,48 +909,43 @@ asmlinkage void __kprobes do_debug(struc
- 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
- 	tsk->thread.debugctlmsr = 0;
- 
--	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	/* Store the virtualized DR6 value */
-+	tsk->thread.vdr6 = dr6;
++#endif
 +
-+	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
-+			SIGTRAP) == NOTIFY_STOP)
- 		return;
- 
- 	preempt_conditional_sti(regs);
- 
--	/* Mask out spurious debug traps due to lazy DR7 setting */
--	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
--		if (!tsk->thread.debugreg7)
--			goto clear_dr7;
-+	if (regs->flags & X86_VM_MASK) {
-+		handle_vm86_trap((struct kernel_vm86_regs *) regs,
-+				error_code, 1);
-+		return;
- 	}
- 
--	tsk->thread.debugreg6 = condition;
--
- 	/*
--	 * Single-stepping through TF: make sure we ignore any events in
--	 * kernel space (but re-enable TF when returning to user mode).
-+	 * Single-stepping through system calls: ignore any exceptions in
-+	 * kernel space, but re-enable TF when returning to user mode.
-+	 *
-+	 * We already checked v86 mode above, so we can check for kernel mode
-+	 * by just checking the CPL of CS.
- 	 */
--	if (condition & DR_STEP) {
--		if (!user_mode(regs))
--			goto clear_TF_reenable;
-+	if ((dr6 & DR_STEP) && !user_mode(regs)) {
-+		tsk->thread.vdr6 &= ~DR_STEP;
-+		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
-+		regs->flags &= ~X86_EFLAGS_TF;
- 	}
- 
--	/* Ok, finally something we can handle */
--	tsk->thread.trap_no = 1;
--	tsk->thread.error_code = error_code;
--	info.si_signo = SIGTRAP;
--	info.si_errno = 0;
--	info.si_code = TRAP_BRKPT;
--	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
--	force_sig_info(SIGTRAP, &info, tsk);
--
--clear_dr7:
--	set_debugreg(0, 7);
--	preempt_conditional_cli(regs);
--	return;
--
--clear_TF_reenable:
--	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
--	regs->flags &= ~X86_EFLAGS_TF;
--	preempt_conditional_cli(regs);
--	return;
-+	if (tsk->thread.vdr6 & (DR_STEP|DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
-+		tsk->thread.trap_no = 1;
-+		tsk->thread.error_code = error_code;
-+		info.si_signo = SIGTRAP;
-+		info.si_errno = 0;
-+		info.si_code = TRAP_BRKPT;
-+		info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
-+		force_sig_info(SIGTRAP, &info, tsk);
-+	}
++#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
++
++#include <linux/types.h>
++#include <asm/asm.h>
++#include <asm/errno.h>
++
++static inline unsigned long long native_read_tscp(unsigned int *aux)
++{
++	unsigned long low, high;
++	asm volatile(".byte 0x0f,0x01,0xf9"
++		     : "=a" (low), "=d" (high), "=c" (*aux));
++	return low | ((u64)high << 32);
++}
++
+ static inline unsigned long long native_read_msr(unsigned int msr)
+ {
+ 	DECLARE_ARGS(val, low, high);
+@@ -217,6 +217,24 @@ static inline int wrmsr_safe_on_cpu(unsi
  }
+ #endif  /* CONFIG_SMP */
+ #endif /* __ASSEMBLY__ */
++
++#else
++
++/*
++ * Provide simple rdtsc macros for non kernel users. These differ
++ * from the kernel versions by not having barriers and not supporting
++ * paravirtualization.
++ */
++static __always_inline unsigned long long __read_tsc(void)
++{
++	DECLARE_ARGS(val, low, high);
++	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
++	return EAX_EDX_VAL(val, low, high);
++}
++
++#define rdtscl(low) ({ asm volatile("rdtsc" : "=a" (low) :: "d"); })
++#define rdtscll(val) ((val) = __read_tsc())
++
+ #endif /* __KERNEL__ */
  
- static int kernel_math_error(struct pt_regs *regs, const char *str, int trapnr)
+ 
