@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbYJGA6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYJGA7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760073AbYJGA6n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbYJGAp3
+	id S1754094AbYJGA7F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbYJGApc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:45:29 -0400
-Received: from ns.suse.de ([195.135.220.2]:47056 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:45:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60903 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754304AbYJGAp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:45:26 -0400
-Date: Mon, 6 Oct 2008 17:39:36 -0700
+	id S1756816AbYJGApa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:45:30 -0400
+Date: Mon, 6 Oct 2008 17:39:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,91 +22,88 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Cox <alan@redhat.com>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [patch 50/71] pcmcia: Fix broken abuse of dev->driver_data
-Message-ID: <20081007003936.GY3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Timo Teras <timo.teras@iki.fi>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 51/71] af_key: Free dumping state on socket close
+Message-ID: <20081007003947.GZ3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pcmcia-fix-broken-abuse-of-dev-driver_data.patch"
+Content-Disposition: inline; filename="0001-af_key-Free-dumping-state-on-socket-close.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Alan Cox <alan@redhat.com>
+From: Timo Teras <timo.teras@iki.fi>
 
-[ Upstream commit: cec5eb7be3a104fffd27ca967ee8e15a123050e2 ]
+[ Upstream commit 0523820482dcb42784572ffd2296c2f08c275a2b ]
 
-PCMCIA abuses dev->private_data in the probe methods. Unfortunately it
-continues to abuse it after calling drv->probe() which leads to crashes and
-other nasties (such as bogus probes of multifunction devices) giving errors like
+Fix a xfrm_{state,policy}_walk leak if pfkey socket is closed while
+dumping is on-going.
 
-pcmcia: registering new device pcmcia0.1
-kernel: 0.1: GetNextTuple: No more items
-
-Extract the passed data before calling the driver probe function that way
-we don't blow up when the driver reuses dev->private_data as its right.
-
-Signed-off-by: Alan Cox <alan@redhat.com>
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Timo Teras <timo.teras@iki.fi>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- drivers/pcmcia/ds.c |   23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+ net/key/af_key.c |   30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
 
---- a/drivers/pcmcia/ds.c
-+++ b/drivers/pcmcia/ds.c
-@@ -428,6 +428,18 @@ static int pcmcia_device_probe(struct de
- 	p_drv = to_pcmcia_drv(dev->driver);
- 	s = p_dev->socket;
+--- a/net/key/af_key.c
++++ b/net/key/af_key.c
+@@ -73,22 +73,18 @@ static int pfkey_can_dump(struct sock *s
+ 	return 0;
+ }
  
-+	/* The PCMCIA code passes the match data in via dev->driver_data
-+	 * which is an ugly hack. Once the driver probe is called it may
-+	 * and often will overwrite the match data so we must save it first
-+	 *
-+	 * handle pseudo multifunction devices:
-+	 * there are at most two pseudo multifunction devices.
-+	 * if we're matching against the first, schedule a
-+	 * call which will then check whether there are two
-+	 * pseudo devices, and if not, add the second one.
-+	 */
-+	did = p_dev->dev.driver_data;
+-static int pfkey_do_dump(struct pfkey_sock *pfk)
++static void pfkey_terminate_dump(struct pfkey_sock *pfk)
+ {
+-	int rc;
+-
+-	rc = pfk->dump.dump(pfk);
+-	if (rc == -ENOBUFS)
+-		return 0;
+-
+-	pfk->dump.done(pfk);
+-	pfk->dump.dump = NULL;
+-	pfk->dump.done = NULL;
+-	return rc;
++	if (pfk->dump.dump) {
++		pfk->dump.done(pfk);
++		pfk->dump.dump = NULL;
++		pfk->dump.done = NULL;
++	}
+ }
+ 
+ static void pfkey_sock_destruct(struct sock *sk)
+ {
++	pfkey_terminate_dump(pfkey_sk(sk));
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 
+ 	if (!sock_flag(sk, SOCK_DEAD)) {
+@@ -310,6 +306,18 @@ static int pfkey_broadcast(struct sk_buf
+ 	return err;
+ }
+ 
++static int pfkey_do_dump(struct pfkey_sock *pfk)
++{
++	int rc;
 +
- 	ds_dbg(1, "trying to bind %s to %s\n", p_dev->dev.bus_id,
- 	       p_drv->drv.name);
- 
-@@ -456,21 +468,14 @@ static int pcmcia_device_probe(struct de
- 		goto put_module;
- 	}
- 
--	/* handle pseudo multifunction devices:
--	 * there are at most two pseudo multifunction devices.
--	 * if we're matching against the first, schedule a
--	 * call which will then check whether there are two
--	 * pseudo devices, and if not, add the second one.
--	 */
--	did = p_dev->dev.driver_data;
- 	if (did && (did->match_flags & PCMCIA_DEV_ID_MATCH_DEVICE_NO) &&
- 	    (p_dev->socket->device_count == 1) && (p_dev->device_no == 0))
- 		pcmcia_add_device_later(p_dev->socket, 0);
- 
-- put_module:
-+put_module:
- 	if (ret)
- 		module_put(p_drv->owner);
-- put_dev:
-+put_dev:
- 	if (ret)
- 		put_device(dev);
- 	return (ret);
++	rc = pfk->dump.dump(pfk);
++	if (rc == -ENOBUFS)
++		return 0;
++
++	pfkey_terminate_dump(pfk);
++	return rc;
++}
++
+ static inline void pfkey_hdr_dup(struct sadb_msg *new, struct sadb_msg *orig)
+ {
+ 	*new = *orig;
 
 -- 
