@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYJGO1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbYJGO1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344AbYJGO1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 10:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYJGO07
+	id S1755311AbYJGO1w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 10:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbYJGO1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 10:26:59 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41931 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753329AbYJGO06 (ORCPT
+	Tue, 7 Oct 2008 10:27:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44901 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753490AbYJGO1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 10:26:58 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: split-lru performance mesurement part2
-Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <20081004232549.CE53.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081003153810.5dd0a33e@bree.surriel.com> <20081004232549.CE53.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081007231851.3B88.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 7 Oct 2008 10:27:42 -0400
+Message-ID: <48EB7192.6090307@linux-foundation.org>
+Date: Tue, 07 Oct 2008 09:26:26 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Matt Mackall <mpm@selenic.com>, linux-mm <linux-mm@kvack.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] SLOB's krealloc() seems bust
+References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>	 <48EB6D2C.30806@linux-foundation.org> <1223388788.26330.38.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1223388788.26330.38.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue,  7 Oct 2008 23:26:54 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Peter Zijlstra wrote:
 
-> yup,
-> I know many people want to other benchmark result too.
-> I'll try to mesure other bench at next week.
+> kernel/module.c: perpcu_modinit() reads:
+> 
+> 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
+> 			    GFP_KERNEL);
+> 
+> kernel/module.c: split_block() reads:
+> 
+> 		new = krealloc(pcpu_size, sizeof(new[0])*pcpu_num_allocated*2,
+> 			       GFP_KERNEL);
+> 
 
-I ran another benchmark today.
-I choice dbench because dbench is one of most famous and real workload like i/o benchmark.
-
-
-% dbench client.txt 4000
-
-mainline:  Throughput 13.4231 MB/sec  4000 clients  4000 procs  max_latency=1421988.159 ms
-mmotm(*):  Throughput  7.0354 MB/sec  4000 clients  4000 procs  max_latency=2369213.380 ms
-
-(*) mmotm 2/Oct + Hugh's recently slub fix
-
-
-Wow!
-mmotm is slower than mainline largely (about half performance).
-
-Therefore, I mesured it on "mainline + split-lru(only)" build.
-
-
-mainline + split-lru(only): Throughput 14.4062 MB/sec  4000 clients  4000 procs  max_latency=1152231.896 ms
-
-
-OK!
-split-lru outperform mainline from viewpoint of both throughput and latency :)
-
-
-
-However, I don't understand why this regression happend.
-Do you have any suggestion?
-
-
-
-
+That code is on the way out btw. cpu_alloc support removes this code.
