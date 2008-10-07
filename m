@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbYJGRJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYJGRJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151AbYJGRJa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYJGRJU
+	id S1756633AbYJGRJo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 13:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYJGRJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:09:20 -0400
-Received: from anchor-post-33.mail.demon.net ([194.217.242.91]:3997 "EHLO
-	anchor-post-33.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753423AbYJGRJT (ORCPT
+	Tue, 7 Oct 2008 13:09:22 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:53945 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753271AbYJGRJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:09:19 -0400
-Message-ID: <48EB97B2.3010406@rsk.demon.co.uk>
-Date: Tue, 07 Oct 2008 18:09:06 +0100
-From: richard kennedy <richard@rsk.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 7 Oct 2008 13:09:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=t1/3yaiT9yXKoclVbisgy+27s9MdxiEPadTnrqS+McikH5q8csmJNmwrbcrEhIEqli
+         08mhH3tw9Iq4dzCVMLL/yo452KoT9Y41AHD72PnSTTmSTgLi80kgShOliA5dJI4zF/Lz
+         87rul8d48fU8vE5rz9sYkXj4k7O1kWSULbvbU=
+Message-ID: <3fedcc3b0810071009v68e5811ev11e9d512c58d371f@mail.gmail.com>
+Date: Tue, 7 Oct 2008 14:09:18 -0300
+From: "Thiago Lacerda" <thiagotbl@gmail.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: Questions about mmap
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48EB8912.7070407@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Andrew Morton <akpm@linux-foundation.org>, "Theodore Ts'o" <tytso@mit.edu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH, RFC] percpu_counters: make fbc->count read atomic on
-   32 bit architecture
-References: <E1KmetO-00053M-5u@closure.thunk.org>	 <20081006232322.c383fac5.akpm@linux-foundation.org> <1223373347.26330.19.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1223373347.26330.19.camel@lappy.programming.kicks-ass.net>
-X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3fedcc3b0810050621y3f44417ag605ee75dd0389100@mail.gmail.com>
+	 <3fedcc3b0810050624m19bfd701n82b70ca81887c3fc@mail.gmail.com>
+	 <48E8C8AB.3010308@s5r6.in-berlin.de>
+	 <3fedcc3b0810070638u60681b6do8a7e94c4919f4a40@mail.gmail.com>
+	 <3fedcc3b0810070640p52852433v8ecf631a9b3dcd8f@mail.gmail.com>
+	 <48EB8912.7070407@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-....
-> +static inline int atomic64_dec_and_test(atomic64_t *v)
-> +{
-> +	int ret;
-> +
-> +	write_seqlock(&v->slock);
-> +	v->counter--;
-> +	ret = !v->counter;
-> +	write_sequnlock(&v->slock);
-> +
-> +	return ret;
-> +}
-> +
-> +static inline int atomic64_add_and_test(atomic64_t *v)
-> +{
-> +	int ret;
-> +
-> +	write_seqlock(&v->slock);
-> +	v->counter++;
-> +	ret = !v->counter;
-> +	write_sequnlock(&v->slock);
-> +
-> +	return ret;
-> +}
-would it be more logical to call this atomic64_inc_and_test to match the
-above dec_and_test ?
+Thank you people.
 
-regards
-Richard
+When I try to dereference those pointers in user space I get a segfault :(
+
+On Tue, Oct 7, 2008 at 1:06 PM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Thiago Lacerda wrote:
+>> I'm trying to do like this:
+>>
+>> //Code of the char device
+>> unsigned int **test;
+>> static int device_mmap(struct file *filp, struct vm_area_struct *vma) {
+> [...]
+>> could you tell me what am I doing wrong?
+>
+> I can't; I never implemented a mmap file operation myself.
+> --
+> Stefan Richter
+> -=====-==--- =-=- --===
+> http://arcgraph.de/sr/
+>
+
+
+
+-- 
+Thiago de Barros Lacerda
+Computer Science Undergraduate Student - CIn/UFPE - 2004.2
+Researcher/Software Developer - GPRT - Networking and
+Telecommunications Research Group
