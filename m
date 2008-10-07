@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYJGVH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYJGVI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbYJGVH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYJGVHK
+	id S1757078AbYJGVI6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYJGVIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:07:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56948
+	Tue, 7 Oct 2008 17:08:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54839
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753740AbYJGVHJ (ORCPT
+	by vger.kernel.org with ESMTP id S1753138AbYJGVIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:07:09 -0400
-Date: Tue, 07 Oct 2008 14:06:45 -0700 (PDT)
-Message-Id: <20081007.140645.119998645.davem@davemloft.net>
+	Tue, 7 Oct 2008 17:08:49 -0400
+Date: Tue, 07 Oct 2008 14:08:25 -0700 (PDT)
+Message-Id: <20081007.140825.40261432.davem@davemloft.net>
 To: npiggin@suse.de
-Cc: hch@infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, paulmck@us.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-netdev@vger.kernel.org, paulmck@us.ibm.com
 Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm,
- for adaptive dcache hash table sizing (resend)
+ for adaptive dcache hash table sizing
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081007075309.GA16143@wotan.suse.de>
-References: <20081007070225.GB5959@wotan.suse.de>
-	<20081007071827.GB5010@infradead.org>
-	<20081007075309.GA16143@wotan.suse.de>
+In-Reply-To: <20081007064834.GA5959@wotan.suse.de>
+References: <20081007064834.GA5959@wotan.suse.de>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -31,16 +29,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
-Date: Tue, 7 Oct 2008 09:53:09 +0200
+Date: Tue, 7 Oct 2008 08:48:34 +0200
 
-> Dcache lookup is partially a tree lookup, but also how do you look up
-> entries in a given directory? That is not naturally a tree lookup. Could
-> be a per directory tree, though, or a hash, or trie.
-> 
-> Anyway, I don't volunteer to change that just yet ;)
+> I'm cc'ing netdev because Dave did express some interest in using this for
+> some networking hashes, and network guys in general are pretty cluey when it
+> comes to hashes and such ;)
 
-Historically speaking, the original dcache by Thomas Schoebel-Theuer
-(circa 1997) was in fact implemented as a per-directory hash table.
+Interesting stuff.
 
-This has all kinds of recursion and other issues, which is why Linus
-eventually changed it to use a global hash table scheme.
+Paul, many months ago, forwarded to me a some work done by Josh
+Triplett called "rcuhashbash" which had similar objectives.  He did
+post it to linux-kernel, and perhaps even your ideas are inspired by
+his work, I don't know. :-)
+
