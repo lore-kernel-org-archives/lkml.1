@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYJGNIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYJGNIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbYJGNIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 09:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYJGNG4
+	id S1755234AbYJGNIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 09:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYJGNIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 09:06:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52937 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753748AbYJGNGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 09:06:55 -0400
-Date: Mon, 6 Oct 2008 17:09:50 +0200
-From: Pavel Machek <pavel@suse.cz>
+	Tue, 7 Oct 2008 09:08:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40266 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755015AbYJGNIP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 09:08:15 -0400
+Date: Tue, 7 Oct 2008 15:14:20 +0200
+From: Andi Kleen <andi@firstfloor.org>
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: david@lang.hm, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       arjan@infradead.org, bunk@kernel.org, tytso@mit.edu,
-       tvrtko.ursulin@sophos.com, hch@infradead.org, andi@firstfloor.org,
-       viro@ZenIV.linux.org.uk, peterz@infradead.org, Jonathan.Press@ca.com,
-       riel@redhat.com
-Subject: Re: [RFC] 0/11 fanotify: fscking all notifiction and file access
-	system (intended for antivirus scanning and file indexers)
-Message-ID: <20081006150858.GA1380@ucw.cz>
-References: <1222463220.2872.193.camel@localhost.localdomain> <alpine.DEB.1.10.0809262259290.4229@asgard.lang.hm> <20080927122031.2d4dd1b0@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, RFC] shmat: introduce flag SHM_MAP_HINT
+Message-ID: <20081007131420.GK20740@one.firstfloor.org>
+References: <20081006132651.GG3180@one.firstfloor.org> <1223303879-5555-1-git-send-email-kirill@shutemov.name> <20081007195837.5A6B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081007112418.GC5126@localhost.localdomain> <20081007133132.69f69cc0@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080927122031.2d4dd1b0@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081007133132.69f69cc0@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > sending a message out for every READ/WRITE seems like it will generate a 
-> > LOT of messages, and very few will be ones that anyone cares about.
+> I also don't see the point of this interface. We have POSIX shared memory
+> objects in Linux which are much cleaner and neater. They support mmap()
+> and mmap supports address hints.
 > 
-> On read there isn't much point anyway, on write if you simply send one,
-> save an event counter number and don't send another until the last one is
-> cleared it all works well. When the last event is cleared if another
-> event has occurred then the event counter will have changed so you know
-> to send one immediately, if the app doesn't want to receive them for a
-> while it can just hang onto the event for a minute or two before clearing
-> it.
+> There seems to be no reason at all to add further hacks to the historical
+> ugly SYS5 interface.
 
-Actually both read and write seems useless, as both can be bypassed by
-mmap...?
+Typically it's because some other parts of the interfaces that
+cannot be easily changed (X shm would come to mind) need it.
 
-								Pavel 
+He also needs it for the qemu syscall emulation. Even when he uses the compat
+entry point shmat() will still only follow the personality.
 
+-Andi
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ak@linux.intel.com
