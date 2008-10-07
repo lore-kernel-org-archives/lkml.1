@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYJGS6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYJGS7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYJGS6l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 14:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYJGS6d
+	id S1755230AbYJGS7w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 14:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbYJGS7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 14:58:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52336 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbYJGS6c (ORCPT
+	Tue, 7 Oct 2008 14:59:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43487 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751835AbYJGS7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 14:58:32 -0400
-Date: Tue, 7 Oct 2008 21:00:07 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Renato S. Yamane" <yamane@diamondcut.com.br>
-Cc: linux-kernel@vger.kernel.org, rjwysocki@sisk.pl,
-       power-management_other@kernel-bugs.osdl.org
-Subject: Re: [Bug 10797] Battery is drained after poweroff
-Message-ID: <20081007190007.GB6604@elf.ucw.cz>
-References: <48E9F388.8040203@diamondcut.com.br> <20081007134223.GA1592@ucw.cz> <48EB88F2.3090100@diamondcut.com.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48EB88F2.3090100@diamondcut.com.br>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 7 Oct 2008 14:59:42 -0400
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit
+	arch
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+In-Reply-To: <20081007105056.16d9e785.akpm@linux-foundation.org>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2>
+	 <6.0.0.20.2.20081007183452.0f052210@172.19.0.2>
+	 <20081007102942.GE20740@one.firstfloor.org>
+	 <200810080327.44530.nickpiggin@yahoo.com.au>
+	 <20081007105056.16d9e785.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 20:59:23 +0200
+Message-Id: <1223405963.26330.83.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-10-07 13:06:10, Renato S. Yamane wrote:
-> Pavel Machek wrote:
-> Renato S. Yamane wrote:
-> >> Can someone help us with this bug?
-> >> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
-> >>
-> >> Same problem is reported in Ubuntu:
-> >> <https://bugs.launchpad.net/ubuntu/+source/linux/+bug/110784>
-> >>
-> >> This is not a hardware problem, because if the same laptop is poweroff
-> >> by Windows, battery charge don't change.
-> > 
-> > ...and it is not linux problem because it works okay on my thinkpad. See? 
+On Tue, 2008-10-07 at 10:50 -0700, Andrew Morton wrote:
+> On Wed, 8 Oct 2008 03:27:44 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> > So.. is everyone agreed that corrupting f_pos is a bad thing? (serious
+> > question) If so, then we should get something like this merged sooner
+> > rather than later.
 > 
-> Yes, this is a Linux problem (at least in release >= 2.6.22)
-> This happening *only* in Linux (Kernel >=2.6.22).
-
-Wow, now that's useful info.
-
-I guess you _could_ do git bisect? ;-).
-
-> >> And, if I suspend to ram/disk BEFORE poweroff, battery charge don't
-> >> change (suspend to ram/disk --> WakeUp --> Poweroff).
-> > 
-> > Which machine is that? Can you find out which device eats power? (It
-> > should be warm).
+> - two threads/processes sharing the same fd
 > 
-> This problem is happening in Toshiba Satellite M45-S355, Toshiba Equium
-> A100-306, HP DV8000, HP DV9500, Dell Latitude D630, Toshiba M110, Sony
-> Vaio VGN-S2XP, Toshiba Satellite A105-S4384, Toshiba Satellite M55-S3314
-> and Toshiba Satellite A105-S2201 as you can see in bug report listed above.
+> - both appending the same fd
 > 
-> And is impossible find wich device eats power (eaten current is too low,
-> and is not enought to make hot).
+> - both hit the small race window right around the time when the file
+>   flips over a multiple of 4G.
+> 
+> It's pretty damn improbable, and I think we can afford to spend the
+> time to get this right in 2.6.29.
 
-So how fast is it eating power... can you estimate Watts eaten?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The whole point is that such usage is outside the specification and thus
+we don't strictly need to fix this.
+
+So the question Nick is asking is, do we want to slow down the kernel
+for a few broken user-space applications. Esp. since the race doesn't
+affect anybody else except the broken users of the file descriptor.
+
+IMHO not worth fixing..
+
