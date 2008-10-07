@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbYJGVZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbYJGV1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbYJGVZA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbYJGVYf
+	id S1757992AbYJGV1A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYJGV0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:24:35 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:60715 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758010AbYJGVYe (ORCPT
+	Tue, 7 Oct 2008 17:26:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36559
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753370AbYJGV0t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:24:34 -0400
-X-Greylist: delayed 1115 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Oct 2008 17:24:33 EDT
-Date: Tue, 7 Oct 2008 14:05:57 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] Ceph distributed file system v0.4 (snapshot support)
-Message-ID: <Pine.LNX.4.64.0810011131520.19745@cobra.newdream.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Oct 2008 17:26:49 -0400
+Date: Tue, 07 Oct 2008 14:26:24 -0700 (PDT)
+Message-Id: <20081007.142624.145010147.davem@davemloft.net>
+To: a.p.zijlstra@chello.nl
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no, dlezcano@fr.ibm.com,
+       penberg@cs.helsinki.fi, neilb@suse.de
+Subject: Re: [PATCH 18/32] net: sk_allocation() - concentrate socket
+ related allocations
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081002131608.821584767@chello.nl>
+References: <20081002130504.927878499@chello.nl>
+	<20081002131608.821584767@chello.nl>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Thu, 02 Oct 2008 15:05:22 +0200
 
-Ceph is a distributed file system designed for performance, reliability, 
-and scalability.  Basic features include:
+> @@ -952,6 +955,7 @@ static void tcp_v6_send_reset(struct soc
+>  #ifdef CONFIG_TCP_MD5SIG
+>  	struct tcp_md5sig_key *key;
+>  #endif
+> +	gfp_t gfp_mask = GFP_ATOMIC;
+>  
+>  	if (th->rst)
+>  		return;
+> @@ -969,13 +973,16 @@ static void tcp_v6_send_reset(struct soc
+>  		tot_len += TCPOLEN_MD5SIG_ALIGNED;
+>  #endif
+>  
+> +	if (sk)
+> +		gfp_mask = sk_allocation(skb->sk, gfp_mask);
+> +
+>  	/*
+>  	 * We need to grab some memory, and put together an RST,
+>  	 * and then put it into the queue to be sent.
+>  	 */
+>  
+>  	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
+> -			 GFP_ATOMIC);
+> +			 sk_allocation(sk, GFP_ATOMIC));
+>  	if (buff == NULL)
+>  		return;
+>  
 
- * POSIX semantics
- * Seamless scaling from 1 to many thousands of nodes, petabytes of storage
- * No single point of failure
- * N-way replication of data across storage nodes
- * Fast recovery from node failures
- * Automatic rebalancing of data on node addition/removal
- * Easy deployment: most FS components are userspace daemons
+I don't think this is doing what you intend it to do.
 
-New in this release:
+First, you're conditionally calling sk_allocation() if
+'sk' is non-NULL.  But then later you unconditionally
+use sk_allocation() in the alloc_skb() call.
 
- * Flexible snapshots (create snapshots of _any_ subdirectory)
- * Recursive accounting for size, ctime, file counts
- * Lots of client bug fixes and improvements, including asynchronous 
-writepages, additional crc protection of network messages, sendpage 
-(zero-copy writes where supported).
+Furthermore, in the conditionalized case you're using
+"skb->sk" instead of plain "sk" which is what you actually
+checked against NULL.
 
-The main new item in this release is the snapshot support.  Unlike 
-snapshots in most other file systems, Ceph snapshots are not 
-volume-wide; they can be created on a per-subdirectory (tree) basis.  That 
-is, you can do something like
+I have no fundamental problem with this change, so please
+audit this patch for similar problems, fix them all up,
+and resubmit.
 
- $ cd /ceph
- $ mkdir foo/.snap/foo_snap
- $ ls foo/.snap
- foo_snap
- $ mkdir foo/bar/.snap/bar_snap
- $ ls foo/bar/.snap
- _1223284321_foo_snap    # parents' snaps are preceeded by parent's ino #
- bar_snap
+I'm also tossing the rest of your networking changes since
+they'll have some dependency on this one, please resend those
+at the same time as the fixed up version of this one.
 
-A read-only view of the subdirectory's content at the time of snapshot 
-creation is available from the virtual .snap/$snapname directory.  
-Snapshots include accurate recursive accounting statistics (like rsize, 
-which reflects the total size of all files nested beneath a directory, and 
-is reported by default as a directory's st_size).  For example,
-
- $ cd test
- $ tar jxf something.tar.bz2 &
- $ mkdir .snap/1
- $ mkdir .snap/2
- $ killall %1
- $ ls -al .snap
- total 0
- drwxr-xr-x 1 root root       0 Jan  1  1970 .   # virtual ".snap" dir
- drwxr-xr-x 1 root root 3590037 Oct  7 20:36 ..  # the "live" dir is biggest
- drwxr-xr-x 1 root root 1220238 Oct  7 20:36 1 
- drwxr-xr-x 1 root root 2366114 Oct  7 20:36 2
-
-Snapshot removal is as simple as
-
- $ rmdir foo/.snap/foo_snap
-
-The kernel client has stabilized significantly in the last few months.  
-The next release will focus on improving the failure recovery behavior of 
-the storage cloud (mainly, throttling recovery and snap removal versus 
-client workloads), responding intelligently to partial failures (EIO on 
-individual file objects), coping with ENOSPC conditions, and general 
-stability improvements.
-
-More information at
-
-	http://ceph.newdream.net/
-
-Source at
-
-	git clone git://ceph.newdream.net/ceph.git
-
-Thanks-
-sage
-
+Thanks.
