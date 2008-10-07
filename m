@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbYJGRb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbYJGRd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754371AbYJGRb1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYJGRbS
+	id S1754608AbYJGRd6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 13:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYJGRdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:31:18 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:17833 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752961AbYJGRbR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:31:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=IXzsvXNmyidWuLW5n7Zr8/edUslJ3bw8CsvBjuJml2P/9c+54RxBm2Zpfkh4fMVpWv
-         LOKUNTFI851ZUARQ36b70Awofbhrm9V3YrdmRU56FzS4Hawb4mSDj6of0pvJF3fdZtVh
-         +CGQGNMMBLkMzOTDHlws4xBn7YlYLc7BOOpEk=
-Message-ID: <84144f020810071031n39c27966ubfafd86e5542ea75@mail.gmail.com>
-Date: Tue, 7 Oct 2008 20:31:16 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: [BUG] SLOB's krealloc() seems bust
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linuxfoundation.org>
-In-Reply-To: <1223399619.13453.389.camel@calx>
+	Tue, 7 Oct 2008 13:33:50 -0400
+Received: from kroah.org ([198.145.64.141]:52234 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753370AbYJGRdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 13:33:49 -0400
+Date: Tue, 7 Oct 2008 10:30:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1] Add c2 port support.
+Message-ID: <20081007173020.GA16654@kroah.com>
+References: <1223044589-31741-1-git-send-email-giometti@linux.it> <1223044589-31741-2-git-send-email-giometti@linux.it> <20081003215923.GA14890@kroah.com> <20081007093845.GD13035@tekkaman>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
-	 <48EB6D2C.30806@linux-foundation.org>
-	 <1223391655.13453.344.camel@calx>
-	 <1223395846.26330.55.camel@lappy.programming.kicks-ass.net>
-	 <1223397455.13453.385.camel@calx>
-	 <84144f020810070957y241a16d6y2d03f451aa3dd4a7@mail.gmail.com>
-	 <1223399619.13453.389.camel@calx>
-X-Google-Sender-Auth: c3e47010c61e4daf
+In-Reply-To: <20081007093845.GD13035@tekkaman>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
+On Tue, Oct 07, 2008 at 11:38:45AM +0200, Rodolfo Giometti wrote:
+> On Fri, Oct 03, 2008 at 02:59:23PM -0700, Greg KH wrote:
+> > On Fri, Oct 03, 2008 at 04:36:29PM +0200, Rodolfo Giometti wrote:
+> > > C2port implements a two wire serial communication protocol (bit
+> > > banging) designed to enable in-system programming, debugging, and
+> > > boundary-scan testing on low pin-count Silicon Labs devices.
+> > > 
+> > > Currently this code supports only flash programming through sysfs
+> > > interface but extensions shoud be easy to add.
+> > > 
+> > > Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+> > > ---
+> > >  drivers/misc/Kconfig       |   13 +
+> > >  drivers/misc/Makefile      |    1 +
+> > >  drivers/misc/c2port_core.c |  996 ++++++++++++++++++++++++++++++++++++++++++++
+> > >  include/linux/c2port.h     |   65 +++
+> > 
+> > Why does this file have to be in include/linux?  I don't think this
+> > exports any structures to userspace, and no other code calls this
+> > driver, so it should all fit into the .c file just fine.
+> 
+> The inlcude file is needed because you have to define a clients for
+> each c2 port implementations, see here for further info:
+> 
+>    http://wiki.enneenne.com/index.php/Silicon_C2_Interface
 
-On Tue, Oct 7, 2008 at 8:13 PM, Matt Mackall <mpm@selenic.com> wrote:
->> > @@ -515,7 +515,7 @@
->> >
->> >        sp = (struct slob_page *)virt_to_page(block);
->> >        if (slob_page(sp))
->> > -               return ((slob_t *)block - 1)->units + SLOB_UNIT;
->> > +               return (((slob_t *)block - 1)->units - 1) * SLOB_UNIT;
->>
->> Hmm. I don't understand why we do the "minus one" thing here. Aren't
->> we underestimating the size now?
->
-> The first -1 takes us to the object header in front of the object
-> pointer. The second -1 subtracts out the size of the header.
->
-> But it's entirely possible I'm off by one, so I'll double-check. Nick?
+You might want to flush out your Kconfig entry with more information
+from this site :)
 
-Yeah, I was referring to the second subtraction. Looking at
-slob_page_alloc(), for example, we compare the return value of
-slob_units() to SLOB_UNITS(size), so I don't think we count the header
-in ->units. I mean, we ought to be seeing the subtraction elsewhere in
-the code as well, no?
+> The file c2port_core.c implements the core, a client implements the
+> low level functions.
 
-                  Pekka
+But you aren't submitting any clients here, right?  Are you planning to?
+
+> > Is there any way to detect automatically if this hardware is present in
+> > the system or not?
+> 
+> I don't think so. The C2 port is usually implemented with two generic
+> GPIOs.
+
+Then the default config option should be N, and you should make the
+Kconfig help text a bit clearer as to exactly which machines this device
+would be expected for, otherwise you might accidentally have distros add
+this device to their builds, which would not be a good thing.
+
+> I posted the code in order to get some feedbacks and then repropose
+> something suitable for inclusion. So I'd like to know if I should make
+> a separate subdir into linux/drivers/misc/ to hold possible clients
+> (i.e. linux/drivers/misc/c2port/).
+
+What's wrong with drivers/c2port/ ?  Come on, think big :)
+
+thanks,
+
+greg k-h
