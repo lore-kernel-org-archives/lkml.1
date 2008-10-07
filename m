@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYJGAnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYJGAnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYJGAnE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:43:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbYJGAl0
+	id S1757447AbYJGAnu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbYJGAle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:41:26 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60157 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:41:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60194 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756236AbYJGAlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:41:24 -0400
-Date: Mon, 6 Oct 2008 17:37:41 -0700
+	id S1756492AbYJGAld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:41:33 -0400
+Date: Mon, 6 Oct 2008 17:37:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mel Gorman <mel@csn.ul.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [patch 07/71] mm: mark the correct zone as full when scanning
-	zonelists
-Message-ID: <20081007003741.GH3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ned Forrester <nforrester@whoi.edu>,
+       Vernon Sauder <vernoninhand@gmail.com>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 09/71] pxa2xx_spi: chipselect bugfixes
+Message-ID: <20081007003746.GJ3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-mark-the-correct-zone-as-full-when-scanning-zonelists.patch"
+Content-Disposition: inline; filename="pxa2xx_spi-chipselect-bugfixes.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,85 +42,162 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Mel Gorman <mel@csn.ul.ie>
+From: Ned Forrester <nforrester@whoi.edu>
 
-commit 5bead2a0680687b9576d57c177988e8aa082b922 upstream
+commit 8423597d676615f3dd2d9ab36f59f147086b90b8 upstream
 
-The iterator for_each_zone_zonelist() uses a struct zoneref *z cursor when
-scanning zonelists to keep track of where in the zonelist it is.  The
-zoneref that is returned corresponds to the the next zone that is to be
-scanned, not the current one.  It was intended to be treated as an opaque
-list.
+Fixes several chipselect bugs in the pxa2xx_spi driver.  These bugs are in
+all versions of this driver and prevent using it with chips like m25p16
+flash.
 
-When the page allocator is scanning a zonelist, it marks elements in the
-zonelist corresponding to zones that are temporarily full.  As the
-zonelist is being updated, it uses the cursor here;
+ 1. The spi_transfer.cs_change flag is handled too early:
+    before spi_transfer.delay_usecs applies, thus making the
+    delay ineffective at holding chip select.
 
-  if (NUMA_BUILD)
-        zlc_mark_zone_full(zonelist, z);
+ 2. spi_transfer.delay_usecs is ignored on the last transfer
+    of a message (likewise not holding chipselect long enough).
 
-This is intended to prevent rescanning in the near future but the zoneref
-cursor does not correspond to the zone that has been found to be full.
-This is an easy misunderstanding to make so this patch corrects the
-problem by changing zoneref cursor to be the current zone being scanned
-instead of the next one.
+ 3. If spi_transfer.cs_change is set on the last transfer, the
+    chip select is always disabled, instead of the intended
+    meaning: optionally holding chip select enabled for the
+    next message.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Cc: Andy Whitcroft <apw@shadowen.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Those first three bugs were fixed with a relocation of delays
+and chip select de-assertions.
+
+ 4. If a message has the cs_change flag set on the last transfer,
+    and had the chip select stayed enabled as requested (see 3,
+    above), it would not have been disabled if the next message is
+    for a different chip.  Fixed by dropping chip select regardless
+    of cs_change at end of a message, if there is no next message
+    or if the next message is for a different chip.
+
+This patch should apply to all kernels back to and including 2.6.20;
+it was test patched against 2.6.20.  An additional patch would be
+required for older kernels, but those versions are very buggy anyway.
+
+Signed-off-by: Ned Forrester <nforrester@whoi.edu>
+Cc: Vernon Sauder <vernoninhand@gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/mmzone.h |   12 ++++++------
- mm/mmzone.c            |    2 +-
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/spi/pxa2xx_spi.c |   59 ++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 48 insertions(+), 11 deletions(-)
 
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -751,8 +751,9 @@ static inline int zonelist_node_idx(stru
-  *
-  * This function returns the next zone at or below a given zone index that is
-  * within the allowed nodemask using a cursor as the starting point for the
-- * search. The zoneref returned is a cursor that is used as the next starting
-- * point for future calls to next_zones_zonelist().
-+ * search. The zoneref returned is a cursor that represents the current zone
-+ * being examined. It should be advanced by one before calling
-+ * next_zones_zonelist again.
-  */
- struct zoneref *next_zones_zonelist(struct zoneref *z,
- 					enum zone_type highest_zoneidx,
-@@ -768,9 +769,8 @@ struct zoneref *next_zones_zonelist(stru
-  *
-  * This function returns the first zone at or below a given zone index that is
-  * within the allowed nodemask. The zoneref returned is a cursor that can be
-- * used to iterate the zonelist with next_zones_zonelist. The cursor should
-- * not be used by the caller as it does not match the value of the zone
-- * returned.
-+ * used to iterate the zonelist with next_zones_zonelist by advancing it by
-+ * one before calling.
-  */
- static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
- 					enum zone_type highest_zoneidx,
-@@ -795,7 +795,7 @@ static inline struct zoneref *first_zone
- #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
- 	for (z = first_zones_zonelist(zlist, highidx, nodemask, &zone);	\
- 		zone;							\
--		z = next_zones_zonelist(z, highidx, nodemask, &zone))	\
-+		z = next_zones_zonelist(++z, highidx, nodemask, &zone))	\
+--- a/drivers/spi/pxa2xx_spi.c
++++ b/drivers/spi/pxa2xx_spi.c
+@@ -146,7 +146,6 @@ struct driver_data {
+ 	size_t tx_map_len;
+ 	u8 n_bytes;
+ 	u32 dma_width;
+-	int cs_change;
+ 	int (*write)(struct driver_data *drv_data);
+ 	int (*read)(struct driver_data *drv_data);
+ 	irqreturn_t (*transfer_handler)(struct driver_data *drv_data);
+@@ -408,8 +407,45 @@ static void giveback(struct driver_data 
+ 					struct spi_transfer,
+ 					transfer_list);
  
- /**
-  * for_each_zone_zonelist - helper macro to iterate over valid zones in a zonelist at or below a given zone index
---- a/mm/mmzone.c
-+++ b/mm/mmzone.c
-@@ -69,6 +69,6 @@ struct zoneref *next_zones_zonelist(stru
- 				(z->zone && !zref_in_nodemask(z, nodes)))
- 			z++;
++	/* Delay if requested before any change in chip select */
++	if (last_transfer->delay_usecs)
++		udelay(last_transfer->delay_usecs);
++
++	/* Drop chip select UNLESS cs_change is true or we are returning
++	 * a message with an error, or next message is for another chip
++	 */
+ 	if (!last_transfer->cs_change)
+ 		drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	else {
++		struct spi_message *next_msg;
++
++		/* Holding of cs was hinted, but we need to make sure
++		 * the next message is for the same chip.  Don't waste
++		 * time with the following tests unless this was hinted.
++		 *
++		 * We cannot postpone this until pump_messages, because
++		 * after calling msg->complete (below) the driver that
++		 * sent the current message could be unloaded, which
++		 * could invalidate the cs_control() callback...
++		 */
++
++		/* get a pointer to the next message, if any */
++		spin_lock_irqsave(&drv_data->lock, flags);
++		if (list_empty(&drv_data->queue))
++			next_msg = NULL;
++		else
++			next_msg = list_entry(drv_data->queue.next,
++					struct spi_message, queue);
++		spin_unlock_irqrestore(&drv_data->lock, flags);
++
++		/* see if the next and current messages point
++		 * to the same chip
++		 */
++		if (next_msg && next_msg->spi != msg->spi)
++			next_msg = NULL;
++		if (!next_msg || msg->state == ERROR_STATE)
++			drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	}
  
--	*zone = zonelist_zone(z++);
-+	*zone = zonelist_zone(z);
- 	return z;
- }
+ 	msg->state = NULL;
+ 	if (msg->complete)
+@@ -492,10 +528,9 @@ static void dma_transfer_complete(struct
+ 	msg->actual_length += drv_data->len -
+ 				(drv_data->rx_end - drv_data->rx);
+ 
+-	/* Release chip select if requested, transfer delays are
+-	 * handled in pump_transfers */
+-	if (drv_data->cs_change)
+-		drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	/* Transfer delays and chip select release are
++	 * handled in pump_transfers or giveback
++	 */
+ 
+ 	/* Move to next transfer */
+ 	msg->state = next_transfer(drv_data);
+@@ -604,10 +639,9 @@ static void int_transfer_complete(struct
+ 	drv_data->cur_msg->actual_length += drv_data->len -
+ 				(drv_data->rx_end - drv_data->rx);
+ 
+-	/* Release chip select if requested, transfer delays are
+-	 * handled in pump_transfers */
+-	if (drv_data->cs_change)
+-		drv_data->cs_control(PXA2XX_CS_DEASSERT);
++	/* Transfer delays and chip select release are
++	 * handled in pump_transfers or giveback
++	 */
+ 
+ 	/* Move to next transfer */
+ 	drv_data->cur_msg->state = next_transfer(drv_data);
+@@ -842,13 +876,17 @@ static void pump_transfers(unsigned long
+ 		return;
+ 	}
+ 
+-	/* Delay if requested at end of transfer*/
++	/* Delay if requested at end of transfer before CS change */
+ 	if (message->state == RUNNING_STATE) {
+ 		previous = list_entry(transfer->transfer_list.prev,
+ 					struct spi_transfer,
+ 					transfer_list);
+ 		if (previous->delay_usecs)
+ 			udelay(previous->delay_usecs);
++
++		/* Drop chip select only if cs_change is requested */
++		if (previous->cs_change)
++			drv_data->cs_control(PXA2XX_CS_DEASSERT);
+ 	}
+ 
+ 	/* Check for transfers that need multiple DMA segments */
+@@ -893,7 +931,6 @@ static void pump_transfers(unsigned long
+ 	drv_data->len = transfer->len & DCMD_LENGTH;
+ 	drv_data->write = drv_data->tx ? chip->write : null_writer;
+ 	drv_data->read = drv_data->rx ? chip->read : null_reader;
+-	drv_data->cs_change = transfer->cs_change;
+ 
+ 	/* Change speed and bit per word on a per transfer */
+ 	cr0 = chip->cr0;
 
 -- 
