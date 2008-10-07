@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYJGPXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbYJGPY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755626AbYJGPXY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYJGPXO
+	id S1755769AbYJGPY0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYJGPYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:23:14 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:47614 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752764AbYJGPXM (ORCPT
+	Tue, 7 Oct 2008 11:24:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57394 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751250AbYJGPYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:23:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gSyDOulDnRZNI/rMr3eI9nQfy4BRj81jHJgY9B5h/YlcyfOHIS5OAIYN9RSQIEHHudDqeYnCYfQeavWqfa2accPwqTE169UWd47Lb07mSlxL9S7wFbuRHJ5cWP1b//QZ0zaEYFWEEjJuh/Jq7n72D59wSoUAeCw+G3B+Y/OtwFE=  ;
-X-YMail-OSG: 47StDAMVM1mNxcPCO9BwleCbpXuZD7Jxm4HnnD15_OskR_EgpsgVaJZpvAeETTE2OLeufc5nI8y5NDGZUts_XNQPJfqtsffmsdCJr9CzgEpPVAyWVYuaHoR5BGjkkAUH394crphRl9BTyVl3EPwtvkVQ64yCtgi28DqRxmKemuclGhru7Xg-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, davej@codemonkey.org.uk,
-       oleg@tv-sign.ru
-Subject: Re: [Bug #11264] Invalid op opcode in kernel/workqueue
-Date: Wed, 8 Oct 2008 02:23:03 +1100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Jean-Luc Coulon" <jean.luc.coulon@gmail.com>
-References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.oLB.b875IB@wind>
-In-Reply-To: <yWwteD.A.oLB.b875IB@wind>
+	Tue, 7 Oct 2008 11:24:14 -0400
+Message-ID: <48EB7EEA.4040809@linux-foundation.org>
+Date: Tue, 07 Oct 2008 10:23:22 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, minyard@acm.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
+References: <20081006185026.GA10383@minyard.local>	 <48EA8197.6080502@cosmosbay.com> <1223367480.26330.7.camel@lappy.programming.kicks-ass.net> <48EB2AE3.3080200@cosmosbay.com> <48EB6EE4.8030703@linux-foundation.org> <48EB7747.9060505@cosmosbay.com>
+In-Reply-To: <48EB7747.9060505@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810080223.03395.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 October 2008 04:32, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11264
-> Subject		: Invalid op opcode in kernel/workqueue
-> Submitter	: Jean-Luc Coulon <jean.luc.coulon@gmail.com>
-> Date		: 2008-08-07 04:18 (59 days old)
+Eric Dumazet wrote:
 
-Any progress being made with this one? Dave, Oleg did some pretty
-nice looking debugging work that indicates it might be a cpufreq
-problem. Have you had a chance to look at the comments in the
-bugzilla? Or have you been cc'ed on patches for this?
+> 
+> 1) Hum, do you know why "struct file" objects dont use
+> SLAB_DESTROY_BY_RCU then,
+> since we noticed a performance regression for several workloads at
+> RCUification
+> of file structures ?
 
-Thanks,
-Nick
+Because my patches were not accepted that fix the issue.
+http://lkml.org/lkml/2006/6/16/144
+
+
+> 2) What prevents an object to be *freed* (and deleted from a hash
+> chain), then
+> re-allocated and inserted to another chain (different keys) ? (final
+> refcount=1)
+
+Nothing.
+
+> If the lookup detects a key mismatch, how will it continue to the next
+> item,
+> since 'next' pointer will have been reused for the new chain insertion...
+> 
+> Me confused...
+
+If there is a mismatch then you have to do another hash lookup. Do an rcu
+unlock and start over.
+
+
+
