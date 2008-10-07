@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYJGUJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbYJGULJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYJGUJl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbYJGUJX
+	id S1755926AbYJGULJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYJGUKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:09:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37862 "EHLO mx1.suse.de"
+	Tue, 7 Oct 2008 16:10:55 -0400
+Received: from mx1.suse.de ([195.135.220.2]:37985 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754786AbYJGUJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:09:21 -0400
-Date: Tue, 7 Oct 2008 13:09:19 -0700
+	id S1753828AbYJGUKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 16:10:54 -0400
+Date: Tue, 7 Oct 2008 13:10:53 -0700
 From: Mark Fasheh <mfasheh@suse.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, joel.becker@oracle.com,
        ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 01/39] ocfs2: POSIX file locks support
-Message-ID: <20081007200919.GA26373@wotan.suse.de>
+Subject: Re: [PATCH 04/39] ocfs2: track local alloc state via debugfs
+Message-ID: <20081007201053.GB26373@wotan.suse.de>
 Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-2-git-send-email-mfasheh@suse.com> <20081001231144.87fa2a0b.akpm@linux-foundation.org>
+References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-5-git-send-email-mfasheh@suse.com> <20081001231153.2d19bb68.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081001231144.87fa2a0b.akpm@linux-foundation.org>
+In-Reply-To: <20081001231153.2d19bb68.akpm@linux-foundation.org>
 Organization: SUSE Labs, Novell, Inc
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01, 2008 at 11:11:44PM -0700, Andrew Morton wrote:
-> > On Wed, 24 Sep 2008 15:00:42 -0700 Mark Fasheh <mfasheh@suse.com> wrote:
-> > +int ocfs2_stack_supports_plocks(void)
+On Wed, Oct 01, 2008 at 11:11:53PM -0700, Andrew Morton wrote:
+> > +static ssize_t ocfs2_la_debug_read(struct file *file, char __user *userbuf,
+> > +				   size_t count, loff_t *ppos)
 > > +{
-> > +	return !!(active_stack && active_stack->sp_ops->plock);
+> > +	struct ocfs2_super *osb = file->private_data;
+> > +	int written, ret;
+> > +	char *buf = osb->local_alloc_debug_buf;
+> > +
+> > +	mutex_lock(&la_debug_mutex);
+> > +	memset(buf, 0, LA_DEBUG_BUF_SZ);
+> > +
+> > +	written = snprintf(buf, LA_DEBUG_BUF_SZ,
+> > +			   "0x%x\t0x%llx\t%u\t%u\t0x%x\n",
+> > +			   LA_DEBUG_VER,
+> > +			   (unsigned long long)osb->la_last_gd,
+> > +			   osb->local_alloc_default_bits,
+> > +			   osb->local_alloc_bits, osb->local_alloc_state);
+> > +
+> > +	ret = simple_read_from_buffer(userbuf, count, ppos, buf, written);
+> > +
+> > +	mutex_unlock(&la_debug_mutex);
+> > +	return ret;
 > > +}
 > 
-> It's pointless doing !! on something which is already 0 or 1.
+> In fact it can be made static and local to this function.
 
-Sure - the following patch is now on the 'merge_window' branch of ocfs2.git.
-
-Also, thanks for all the review you did on these.
+Thanks, fixed in 'merge_window' branch of ocfs2.git.
 	--Mark
 
 --
@@ -47,29 +62,36 @@ Mark Fasheh
 
 From: Mark Fasheh <mfasheh@suse.com>
 
-ocfs2: Remove pointless !!
+ocfs2: make la_debug_mutex static
 
-ocfs2_stack_supports_plocks() doesn't need this to properly return a zero or
-one value.
+It can also be moved into ocfs2_la_debug_read().
 
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/stackglue.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/ocfs2/localalloc.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index 7150f5d..68b668b 100644
---- a/fs/ocfs2/stackglue.c
-+++ b/fs/ocfs2/stackglue.c
-@@ -290,7 +290,7 @@ EXPORT_SYMBOL_GPL(ocfs2_dlm_dump_lksb);
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index 02227c3..b1c634d 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -76,8 +76,6 @@ static int ocfs2_local_alloc_slide_window(struct ocfs2_super *osb,
  
- int ocfs2_stack_supports_plocks(void)
+ #ifdef CONFIG_OCFS2_FS_STATS
+ 
+-DEFINE_MUTEX(la_debug_mutex);
+-
+ static int ocfs2_la_debug_open(struct inode *inode, struct file *file)
  {
--	return !!(active_stack && active_stack->sp_ops->plock);
-+	return active_stack && active_stack->sp_ops->plock;
- }
- EXPORT_SYMBOL_GPL(ocfs2_stack_supports_plocks);
- 
+ 	file->private_data = inode->i_private;
+@@ -89,6 +87,7 @@ static int ocfs2_la_debug_open(struct inode *inode, struct file *file)
+ static ssize_t ocfs2_la_debug_read(struct file *file, char __user *userbuf,
+ 				   size_t count, loff_t *ppos)
+ {
++	static DEFINE_MUTEX(la_debug_mutex);
+ 	struct ocfs2_super *osb = file->private_data;
+ 	int written, ret;
+ 	char *buf = osb->local_alloc_debug_buf;
 -- 
 1.5.4.1
 
