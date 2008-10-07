@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbYJGLqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYJGLrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbYJGLqm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYJGLqb
+	id S1755898AbYJGLrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYJGLrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:46:31 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:33040 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbYJGLqa (ORCPT
+	Tue, 7 Oct 2008 07:47:07 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:58981 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752860AbYJGLrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:46:30 -0400
-Date: Tue, 7 Oct 2008 17:16:19 +0530
+	Tue, 7 Oct 2008 07:47:05 -0400
+Date: Tue, 7 Oct 2008 17:16:51 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
        akpm@linux-foundation.org, mingo@elte.hu, jason.wessel@windriver.com,
        avi@qumranet.com, richardj_moore@uk.ibm.com
-Subject: [RFC Patch 8/9] Modify Ptrace to use wrapper routines to access
-	breakpoint registers
-Message-ID: <20081007114619.GC25875@in.ibm.com>
+Subject: [RFC Patch 9/9] Cleanup HW Breakpoint registers before kexec
+Message-ID: <20081007114651.GD25875@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
 References: <20081007113815.GA23523@in.ibm.com>
 MIME-Version: 1.0
@@ -30,152 +29,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies the ptrace code to use the new wrapper routines around the 
-debug/breakpoint registers.
+This patch disables Hardware breakpoints before doing a 'kexec' on the machine.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/ptrace.c |  101 +----------------------------------------------
- 1 file changed, 4 insertions(+), 97 deletions(-)
+ arch/x86/kernel/machine_kexec_32.c |    2 ++
+ arch/x86/kernel/machine_kexec_64.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/ptrace.c
+Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_32.c
 ===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/ptrace.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/ptrace.c
-@@ -462,98 +462,6 @@ static int genregs_set(struct task_struc
- 	return ret;
- }
+--- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/machine_kexec_32.c
++++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_32.c
+@@ -24,6 +24,7 @@
+ #include <asm/desc.h>
+ #include <asm/system.h>
+ #include <asm/cacheflush.h>
++#include <asm/debugreg.h>
  
--/*
-- * This function is trivial and will be inlined by the compiler.
-- * Having it separates the implementation details of debug
-- * registers from the interface details of ptrace.
-- */
--static unsigned long ptrace_get_debugreg(struct task_struct *child, int n)
--{
--	switch (n) {
--	case 0:		return child->thread.debugreg0;
--	case 1:		return child->thread.debugreg1;
--	case 2:		return child->thread.debugreg2;
--	case 3:		return child->thread.debugreg3;
--	case 6:		return child->thread.debugreg6;
--	case 7:		return child->thread.debugreg7;
--	}
--	return 0;
--}
--
--static int ptrace_set_debugreg(struct task_struct *child,
--			       int n, unsigned long data)
--{
--	int i;
--
--	if (unlikely(n == 4 || n == 5))
--		return -EIO;
--
--	if (n < 4 && unlikely(data >= debugreg_addr_limit(child)))
--		return -EIO;
--
--	switch (n) {
--	case 0:		child->thread.debugreg0 = data; break;
--	case 1:		child->thread.debugreg1 = data; break;
--	case 2:		child->thread.debugreg2 = data; break;
--	case 3:		child->thread.debugreg3 = data; break;
--
--	case 6:
--		if ((data & ~0xffffffffUL) != 0)
--			return -EIO;
--		child->thread.debugreg6 = data;
--		break;
--
--	case 7:
--		/*
--		 * Sanity-check data. Take one half-byte at once with
--		 * check = (val >> (16 + 4*i)) & 0xf. It contains the
--		 * R/Wi and LENi bits; bits 0 and 1 are R/Wi, and bits
--		 * 2 and 3 are LENi. Given a list of invalid values,
--		 * we do mask |= 1 << invalid_value, so that
--		 * (mask >> check) & 1 is a correct test for invalid
--		 * values.
--		 *
--		 * R/Wi contains the type of the breakpoint /
--		 * watchpoint, LENi contains the length of the watched
--		 * data in the watchpoint case.
--		 *
--		 * The invalid values are:
--		 * - LENi == 0x10 (undefined), so mask |= 0x0f00.	[32-bit]
--		 * - R/Wi == 0x10 (break on I/O reads or writes), so
--		 *   mask |= 0x4444.
--		 * - R/Wi == 0x00 && LENi != 0x00, so we have mask |=
--		 *   0x1110.
--		 *
--		 * Finally, mask = 0x0f00 | 0x4444 | 0x1110 == 0x5f54.
--		 *
--		 * See the Intel Manual "System Programming Guide",
--		 * 15.2.4
--		 *
--		 * Note that LENi == 0x10 is defined on x86_64 in long
--		 * mode (i.e. even for 32-bit userspace software, but
--		 * 64-bit kernel), so the x86_64 mask value is 0x5454.
--		 * See the AMD manual no. 24593 (AMD64 System Programming)
--		 */
--#ifdef CONFIG_X86_32
--#define	DR7_MASK	0x5f54
--#else
--#define	DR7_MASK	0x5554
--#endif
--		data &= ~DR_CONTROL_RESERVED;
--		for (i = 0; i < 4; i++)
--			if ((DR7_MASK >> ((data >> (16 + 4*i)) & 0xf)) & 1)
--				return -EIO;
--		child->thread.debugreg7 = data;
--		if (data)
--			set_tsk_thread_flag(child, TIF_DEBUG);
--		else
--			clear_tsk_thread_flag(child, TIF_DEBUG);
--		break;
--	}
--
--	return 0;
--}
--
- #ifdef X86_BTS
+ #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
+ static u32 kexec_pgd[1024] PAGE_ALIGNED;
+@@ -131,6 +132,7 @@ void machine_kexec(struct kimage *image)
  
- static int ptrace_bts_get_size(struct task_struct *child)
-@@ -888,7 +796,7 @@ long arch_ptrace(struct task_struct *chi
- 		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
- 			 addr <= offsetof(struct user, u_debugreg[7])) {
- 			addr -= offsetof(struct user, u_debugreg[0]);
--			tmp = ptrace_get_debugreg(child, addr / sizeof(data));
-+			tmp = thread_get_debugreg(child, addr/sizeof(data));
- 		}
- 		ret = put_user(tmp, datap);
- 		break;
-@@ -905,8 +813,7 @@ long arch_ptrace(struct task_struct *chi
- 		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
- 			 addr <= offsetof(struct user, u_debugreg[7])) {
- 			addr -= offsetof(struct user, u_debugreg[0]);
--			ret = ptrace_set_debugreg(child,
--						  addr / sizeof(data), data);
-+			ret = thread_set_debugreg(child, addr/sizeof(data), data);
- 		}
- 		break;
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
++	disable_debug_registers();
  
-@@ -1073,7 +980,7 @@ static int putreg32(struct task_struct *
- 	case offsetof(struct user32, u_debugreg[0]) ...
- 		offsetof(struct user32, u_debugreg[7]):
- 		regno -= offsetof(struct user32, u_debugreg[0]);
--		return ptrace_set_debugreg(child, regno / 4, value);
-+		return thread_set_debugreg(child, regno / 4, value);
+ 	if (image->preserve_context) {
+ #ifdef CONFIG_X86_IO_APIC
+Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_64.c
+===================================================================
+--- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/machine_kexec_64.c
++++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_64.c
+@@ -17,6 +17,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
+ #include <asm/io.h>
++#include <asm/debugreg.h>
  
- 	default:
- 		if (regno > sizeof(struct user32) || (regno & 3))
-@@ -1132,7 +1039,7 @@ static int getreg32(struct task_struct *
- 	case offsetof(struct user32, u_debugreg[0]) ...
- 		offsetof(struct user32, u_debugreg[7]):
- 		regno -= offsetof(struct user32, u_debugreg[0]);
--		*val = ptrace_get_debugreg(child, regno / 4);
-+		*val = thread_get_debugreg(child, regno / 4);
- 		break;
+ #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
+ static u64 kexec_pgd[512] PAGE_ALIGNED;
+@@ -190,6 +191,7 @@ void machine_kexec(struct kimage *image)
  
- 	default:
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
++	disable_debug_registers();
+ 
+ 	control_page = page_address(image->control_code_page) + PAGE_SIZE;
+ 	memcpy(control_page, relocate_kernel, PAGE_SIZE);
