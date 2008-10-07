@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759202AbYJGAwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbYJGAxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759202AbYJGAwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbYJGAoU
+	id S1756944AbYJGAxA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbYJGAoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:44:20 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60647 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:44:24 -0400
+Received: from ns1.suse.de ([195.135.220.2]:46859 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757003AbYJGAoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:44:19 -0400
-Date: Mon, 6 Oct 2008 17:38:50 -0700
+	id S1757554AbYJGAoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:44:22 -0400
+Date: Mon, 6 Oct 2008 17:38:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,150 +22,83 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
-       Jared Hulbert <jaredeh@gmail.com>, Carsten Otte <cotte@freenet.de>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [patch 33/71] mm: dirty page tracking race fix
-Message-ID: <20081007003850.GH3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 34/71] rtc: fix deadlock
+Message-ID: <20081007003852.GI3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-dirty-page-tracking-race-fix.patch"
+Content-Disposition: inline; filename="rtc-fix-deadlock.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Nick Piggin <npiggin@suse.de>
+From: Ingo Molnar <mingo@elte.hu>
 
-commit 479db0bf408e65baa14d2a9821abfcbc0804b847 upstream
+commit 38c052f8cff1bd323ccfa968136a9556652ee420 upstream
 
-There is a race with dirty page accounting where a page may not properly
-be accounted for.
+if get_rtc_time() is _ever_ called with IRQs off, we deadlock badly
+in it, waiting for jiffies to increment.
 
-clear_page_dirty_for_io() calls page_mkclean; then TestClearPageDirty.
+So make the code more robust by doing an explicit mdelay(20).
 
-page_mkclean walks the rmaps for that page, and for each one it cleans and
-write protects the pte if it was dirty.  It uses page_check_address to
-find the pte.  That function has a shortcut to avoid the ptl if the pte is
-not present.  Unfortunately, the pte can be switched to not-present then
-back to present by other code while holding the page table lock -- this
-should not be a signal for page_mkclean to ignore that pte, because it may
-be dirty.
+This solves a very hard to reproduce/debug hard lockup reported
+by Mikael Pettersson.
 
-For example, powerpc64's set_pte_at will clear a previously present pte
-before setting it to the desired value.  There may also be other code in
-core mm or in arch which do similar things.
-
-The consequence of the bug is loss of data integrity due to msync, and
-loss of dirty page accounting accuracy.  XIP's __xip_unmap could easily
-also be unreliable (depending on the exact XIP locking scheme), which can
-lead to data corruption.
-
-Fix this by having an option to always take ptl to check the pte in
-page_check_address.
-
-It's possible to retain this optimization for page_referenced and
-try_to_unmap.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: Jared Hulbert <jaredeh@gmail.com>
-Cc: Carsten Otte <cotte@freenet.de>
-Cc: Hugh Dickins <hugh@veritas.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Reported-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/rmap.h |    2 +-
- mm/filemap_xip.c     |    2 +-
- mm/rmap.c            |   14 +++++++++-----
- 3 files changed, 11 insertions(+), 7 deletions(-)
+ include/asm-generic/rtc.h |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -94,7 +94,7 @@ int try_to_unmap(struct page *, int igno
-  * Called from mm/filemap_xip.c to unmap empty zero page
-  */
- pte_t *page_check_address(struct page *, struct mm_struct *,
--				unsigned long, spinlock_t **);
-+				unsigned long, spinlock_t **, int);
+--- a/include/asm-generic/rtc.h
++++ b/include/asm-generic/rtc.h
+@@ -15,6 +15,7 @@
+ #include <linux/mc146818rtc.h>
+ #include <linux/rtc.h>
+ #include <linux/bcd.h>
++#include <linux/delay.h>
  
- /*
-  * Used by swapoff to help locate where page is expected in vma.
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -184,7 +184,7 @@ __xip_unmap (struct address_space * mapp
- 		address = vma->vm_start +
- 			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
- 		BUG_ON(address < vma->vm_start || address >= vma->vm_end);
--		pte = page_check_address(page, mm, address, &ptl);
-+		pte = page_check_address(page, mm, address, &ptl, 1);
- 		if (pte) {
- 			/* Nuke the page table entry. */
- 			flush_cache_page(vma, address, pte_pfn(*pte));
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -223,10 +223,14 @@ unsigned long page_address_in_vma(struct
- /*
-  * Check that @page is mapped at @address into @mm.
-  *
-+ * If @sync is false, page_check_address may perform a racy check to avoid
-+ * the page table lock when the pte is not present (helpful when reclaiming
-+ * highly shared pages).
-+ *
-  * On success returns with pte mapped and locked.
-  */
- pte_t *page_check_address(struct page *page, struct mm_struct *mm,
--			  unsigned long address, spinlock_t **ptlp)
-+			  unsigned long address, spinlock_t **ptlp, int sync)
+ #define RTC_PIE 0x40		/* periodic interrupt enable */
+ #define RTC_AIE 0x20		/* alarm interrupt enable */
+@@ -43,7 +44,6 @@ static inline unsigned char rtc_is_updat
+ 
+ static inline unsigned int get_rtc_time(struct rtc_time *time)
  {
- 	pgd_t *pgd;
- 	pud_t *pud;
-@@ -248,7 +252,7 @@ pte_t *page_check_address(struct page *p
+-	unsigned long uip_watchdog = jiffies;
+ 	unsigned char ctrl;
+ 	unsigned long flags;
  
- 	pte = pte_offset_map(pmd, address);
- 	/* Make a quick check before getting the lock */
--	if (!pte_present(*pte)) {
-+	if (!sync && !pte_present(*pte)) {
- 		pte_unmap(pte);
- 		return NULL;
- 	}
-@@ -280,7 +284,7 @@ static int page_referenced_one(struct pa
- 	if (address == -EFAULT)
- 		goto out;
+@@ -53,19 +53,15 @@ static inline unsigned int get_rtc_time(
  
--	pte = page_check_address(page, mm, address, &ptl);
-+	pte = page_check_address(page, mm, address, &ptl, 0);
- 	if (!pte)
- 		goto out;
+ 	/*
+ 	 * read RTC once any update in progress is done. The update
+-	 * can take just over 2ms. We wait 10 to 20ms. There is no need to
++	 * can take just over 2ms. We wait 20ms. There is no need to
+ 	 * to poll-wait (up to 1s - eeccch) for the falling edge of RTC_UIP.
+ 	 * If you need to know *exactly* when a second has started, enable
+ 	 * periodic update complete interrupts, (via ioctl) and then 
+ 	 * immediately read /dev/rtc which will block until you get the IRQ.
+ 	 * Once the read clears, read the RTC time (again via ioctl). Easy.
+ 	 */
+-
+-	if (rtc_is_updating() != 0)
+-		while (jiffies - uip_watchdog < 2*HZ/100) {
+-			barrier();
+-			cpu_relax();
+-		}
++	if (rtc_is_updating())
++		mdelay(20);
  
-@@ -449,7 +453,7 @@ static int page_mkclean_one(struct page 
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl);
-+	pte = page_check_address(page, mm, address, &ptl, 1);
- 	if (!pte)
- 		goto out;
- 
-@@ -707,7 +711,7 @@ static int try_to_unmap_one(struct page 
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl);
-+	pte = page_check_address(page, mm, address, &ptl, 0);
- 	if (!pte)
- 		goto out;
- 
+ 	/*
+ 	 * Only the values that we read from the RTC are set. We leave
 
 -- 
