@@ -1,111 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbYJGKGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYJGKHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbYJGKGu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 06:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYJGKEk
+	id S1754850AbYJGKHm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 06:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYJGKFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 06:04:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:58334 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754258AbYJGKEj (ORCPT
+	Tue, 7 Oct 2008 06:05:39 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60490 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754573AbYJGKFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 06:04:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=WxOP1iFCrLlnjAMVDVbueImE8YS8KGODb2DbQCZxlphe40GWgRhGEawaFa4nBFRL5B
-         wgIast4NS3iqKPRhwEWCa1q6ULYrvnxMevHhE0tr7BYTznCFm8PtVvGDx2cacoLisEQK
-         LAYbGOUJ3HhxlvvzUvKqaarOncDUMZST8asPQ=
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
-Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm 6/6] export per-task i/o throttling statistics to userspace
-Date: Tue,  7 Oct 2008 12:03:38 +0200
-Message-Id: <1223373818-13687-7-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Tue, 7 Oct 2008 06:05:37 -0400
+Date: Tue, 7 Oct 2008 19:05:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH 3/6] memcg: avoid accounting special pages
+Message-Id: <20081007190516.fbe5ab77.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081007190121.d96e58a6.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081007190121.d96e58a6.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export the throttling statistics collected for each task through
-/proc/PID/io-throttle-stat.
+There are not-on-LRU pages which can be mapped and they are not worth to
+be accounted. (becasue we can't shrink them and need dirty codes to handle
+specical case) We'd like to make use of usual objrmap/radix-tree's protcol
+and don't want to account out-of-vm's control pages.
 
-Example:
- $ cat /proc/$$/io-throttle-stat
- 0 0 0 0
- ^ ^ ^ ^
-  \ \ \ \_____global iops sleep (in clock ticks)
-   \ \ \______global iops counter
-    \ \_______global bandwidth sleep (in clock ticks)
-     \________global bandwidth counter
+When special_mapping_fault() is called, page->mapping is tend to be NULL 
+and it's charged as Anonymous page.
+insert_page() also handles some special pages from drivers.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- fs/proc/base.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+This patch is for avoiding to account special pages.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 63617ca..e8c4d5c 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -54,6 +54,7 @@
- #include <linux/proc_fs.h>
- #include <linux/stat.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/init.h>
- #include <linux/capability.h>
- #include <linux/file.h>
-@@ -2459,6 +2460,17 @@ static int proc_tgid_io_accounting(struct task_struct *task, char *buffer)
+Changelog: v6 -> v7
+  - style fix.
+Changelog: v5 -> v6
+  - modified Documentation.
+  - fixed to charge only when a page is newly allocated.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ Documentation/controllers/memory.txt |   24 ++++++++++++++++--------
+ mm/memory.c                          |   25 +++++++++++--------------
+ mm/rmap.c                            |    4 ++--
+ 3 files changed, 29 insertions(+), 24 deletions(-)
+
+Index: mmotm-2.6.27-rc7+/mm/memory.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memory.c
++++ mmotm-2.6.27-rc7+/mm/memory.c
+@@ -1323,18 +1323,14 @@ static int insert_page(struct vm_area_st
+ 	pte_t *pte;
+ 	spinlock_t *ptl;
+ 
+-	retval = mem_cgroup_charge(page, mm, GFP_KERNEL);
+-	if (retval)
+-		goto out;
+-
+ 	retval = -EINVAL;
+ 	if (PageAnon(page))
+-		goto out_uncharge;
++		goto out;
+ 	retval = -ENOMEM;
+ 	flush_dcache_page(page);
+ 	pte = get_locked_pte(mm, addr, &ptl);
+ 	if (!pte)
+-		goto out_uncharge;
++		goto out;
+ 	retval = -EBUSY;
+ 	if (!pte_none(*pte))
+ 		goto out_unlock;
+@@ -1350,8 +1346,6 @@ static int insert_page(struct vm_area_st
+ 	return retval;
+ out_unlock:
+ 	pte_unmap_unlock(pte, ptl);
+-out_uncharge:
+-	mem_cgroup_uncharge_page(page);
+ out:
+ 	return retval;
  }
- #endif /* CONFIG_TASK_IO_ACCOUNTING */
+@@ -2463,6 +2457,7 @@ static int __do_fault(struct mm_struct *
+ 	struct page *page;
+ 	pte_t entry;
+ 	int anon = 0;
++	int charged = 0;
+ 	struct page *dirty_page = NULL;
+ 	struct vm_fault vmf;
+ 	int ret;
+@@ -2503,6 +2498,12 @@ static int __do_fault(struct mm_struct *
+ 				ret = VM_FAULT_OOM;
+ 				goto out;
+ 			}
++			if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
++				ret = VM_FAULT_OOM;
++				page_cache_release(page);
++				goto out;
++			}
++			charged = 1;
+ 			/*
+ 			 * Don't let another task, with possibly unlocked vma,
+ 			 * keep the mlocked page.
+@@ -2543,11 +2544,6 @@ static int __do_fault(struct mm_struct *
  
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+static int proc_iothrottle_stat(struct task_struct *task, char *buffer)
-+{
-+	return sprintf(buffer, "%llu %llu %llu %llu\n",
-+			get_io_throttle_cnt(task, IOTHROTTLE_BANDWIDTH),
-+			get_io_throttle_sleep(task, IOTHROTTLE_BANDWIDTH),
-+			get_io_throttle_cnt(task, IOTHROTTLE_IOPS),
-+			get_io_throttle_sleep(task, IOTHROTTLE_IOPS));
-+}
-+#endif /* CONFIG_CGROUP_IO_THROTTLE */
+ 	}
+ 
+-	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+-		ret = VM_FAULT_OOM;
+-		goto out;
+-	}
+-
+ 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+ 
+ 	/*
+@@ -2585,7 +2581,8 @@ static int __do_fault(struct mm_struct *
+ 		/* no need to invalidate: a not-present page won't be cached */
+ 		update_mmu_cache(vma, address, entry);
+ 	} else {
+-		mem_cgroup_uncharge_page(page);
++		if (charged)
++			mem_cgroup_uncharge_page(page);
+ 		if (anon)
+ 			page_cache_release(page);
+ 		else
+Index: mmotm-2.6.27-rc7+/mm/rmap.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/rmap.c
++++ mmotm-2.6.27-rc7+/mm/rmap.c
+@@ -725,8 +725,8 @@ void page_remove_rmap(struct page *page,
+ 			page_clear_dirty(page);
+ 			set_page_dirty(page);
+ 		}
+-
+-		mem_cgroup_uncharge_page(page);
++		if (PageAnon(page))
++			mem_cgroup_uncharge_page(page);
+ 		__dec_zone_page_state(page,
+ 			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
+ 		/*
+Index: mmotm-2.6.27-rc7+/Documentation/controllers/memory.txt
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/Documentation/controllers/memory.txt
++++ mmotm-2.6.27-rc7+/Documentation/controllers/memory.txt
+@@ -112,14 +112,22 @@ the per cgroup LRU.
+ 
+ 2.2.1 Accounting details
+ 
+-All mapped pages (RSS) and unmapped user pages (Page Cache) are accounted.
+-RSS pages are accounted at the time of page_add_*_rmap() unless they've already
+-been accounted for earlier. A file page will be accounted for as Page Cache;
+-it's mapped into the page tables of a process, duplicate accounting is carefully
+-avoided. Page Cache pages are accounted at the time of add_to_page_cache().
+-The corresponding routines that remove a page from the page tables or removes
+-a page from Page Cache is used to decrement the accounting counters of the
+-cgroup.
++All mapped anon pages (RSS) and cache pages (Page Cache) are accounted.
++(some pages which never be reclaimable and will not be on global LRU
++ are not accounted. we just accounts pages under usual vm management.)
 +
- /*
-  * Thread groups
-  */
-@@ -2534,6 +2546,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- #ifdef CONFIG_TASK_IO_ACCOUNTING
- 	INF("io",	S_IRUGO, tgid_io_accounting),
- #endif
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	INF("io-throttle-stat",	S_IRUGO, iothrottle_stat),
-+#endif
- };
++RSS pages are accounted at page_fault unless they've already been accounted
++for earlier. A file page will be accounted for as Page Cache when it's
++inserted into inode (radix-tree). While it's mapped into the page tables of
++processes, duplicate accounting is carefully avoided.
++
++A RSS page is unaccounted when it's fully unmapped. A PageCache page is
++unaccounted when it's removed from radix-tree.
++
++At page migration, accounting information is kept.
++
++Note: we just account pages-on-lru because our purpose is to control amount
++of used pages. not-on-lru pages are tend to be out-of-control from vm view.
  
- static int proc_tgid_base_readdir(struct file * filp,
-@@ -2865,6 +2880,9 @@ static const struct pid_entry tid_base_stuff[] = {
- #ifdef CONFIG_TASK_IO_ACCOUNTING
- 	INF("io",	S_IRUGO, tid_io_accounting),
- #endif
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	INF("io-throttle-stat",	S_IRUGO, iothrottle_stat),
-+#endif
- };
+ 2.3 Shared Page Accounting
  
- static int proc_tid_base_readdir(struct file * filp,
--- 
-1.5.4.3
 
