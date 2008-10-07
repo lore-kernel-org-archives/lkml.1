@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYJGON0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbYJGOPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbYJGON0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 10:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYJGONS
+	id S1755126AbYJGOPs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 10:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYJGOPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 10:13:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55193 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbYJGONS (ORCPT
+	Tue, 7 Oct 2008 10:15:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40757 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752404AbYJGOPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 10:13:18 -0400
-Subject: Re: [BUG] SLOB's krealloc() seems bust
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, linux-mm <linux-mm@kvack.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <48EB6D2C.30806@linux-foundation.org>
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
-	 <48EB6D2C.30806@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 16:13:08 +0200
-Message-Id: <1223388788.26330.38.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 7 Oct 2008 10:15:37 -0400
+Message-ID: <48EB6EE4.8030703@linux-foundation.org>
+Date: Tue, 07 Oct 2008 09:15:00 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, minyard@acm.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
+References: <20081006185026.GA10383@minyard.local>	 <48EA8197.6080502@cosmosbay.com> <1223367480.26330.7.camel@lappy.programming.kicks-ass.net> <48EB2AE3.3080200@cosmosbay.com>
+In-Reply-To: <48EB2AE3.3080200@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 09:07 -0500, Christoph Lameter wrote:
-> > Which basically shows us that the content of the pcpu_size[] array got
-> > corrupted after the krealloc() call in split_block().
-> > 
-> > Which made me look at which slab allocator I had selected, which turned
-> > out to be SLOB (from testing the network swap stuff).
-> 
-> krealloc() is in generic core code (mm/util.c) and is the same for all allocators.
+Eric Dumazet wrote:
+>>> Or just add SLAB_DESTROY_BY_RCU to slab creation in proto_register()
+>>> for "struct proto udp_prot/udpv6_prot" so that kmem_cache_free() done
+>>> in sk_prot_free() can defer freeing to RCU...
+>>
+>> Be careful!, SLAB_DESTROY_BY_RCU just means the slab page gets
+>> RCU-freed, this means that slab object pointers stay pointing to valid
+>> memory, but it does _NOT_ mean those slab objects themselves remain
+>> valid.
+>>
+>> The slab allocator is free to re-use those objects at any time -
+>> irrespective of the rcu-grace period. Therefore you will have to be able
+>> to validate that the object you point to is indeed the object you
+>> expect, otherwise strange and wonderful things will happen.
+>>
+> Thanks for this clarification. I guess we really need a rcu head then :)
 
-Joy :/
+No you just need to make sure that the object you located is still active
+(f.e. refcount > 0) and that it is really a match (hash pointers may be
+updated asynchronously and therefore point to the object that has been reused
+for something else).
 
-> krealloc uses ksize() which is somewhat dicey for SLOB because it only works
-> on kmalloc'ed memory. Is the krealloc used on memory allocated with kmalloc()?
-> Slob's ksize could use a BUG_ON for the case in which ksize() is used on
-> kmem_cache_alloc'd memory.
-
-kernel/module.c: perpcu_modinit() reads:
-
-	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
-			    GFP_KERNEL);
-
-kernel/module.c: split_block() reads:
-
-		new = krealloc(pcpu_size, sizeof(new[0])*pcpu_num_allocated*2,
-			       GFP_KERNEL);
-
+Generally it is advisable to use SLAB_DESTROY_BY_RCU because it preserves the
+cache hot advantages of the objects. Regular RCU freeing will let the object
+expire for a tick or so which will result in the cacheline cooling down.
 
 
