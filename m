@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYJGJZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbYJGJ0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbYJGJZU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 05:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYJGJZD
+	id S1756822AbYJGJ0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 05:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYJGJ0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 05:25:03 -0400
-Received: from smtp27.orange.fr ([80.12.242.94]:54771 "EHLO smtp27.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752617AbYJGJZA convert rfc822-to-8bit (ORCPT
+	Tue, 7 Oct 2008 05:26:10 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:27851 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752953AbYJGJ0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 05:25:00 -0400
-X-ME-UUID: 20081007092457836.CC2091C0009A@mwinf2701.orange.fr
-Message-ID: <48EB2AE3.3080200@cosmosbay.com>
-Date: Tue, 07 Oct 2008 11:24:51 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 7 Oct 2008 05:26:08 -0400
+Date: Tue, 7 Oct 2008 13:26:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Matt Sealey <matt@genesi-usa.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Li Yang <leoli@freescale.com>,
+       Wang Jian <lark@linux.net.cn>
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+Message-ID: <20081007092605.GA28907@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru> <48EA77EF.6080502@genesi-usa.com> <20081006213209.GA13072@oksana.dev.rtsoft.ru> <48EABBD3.1010401@kernel.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: minyard@acm.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, shemminger@vyatta.com,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-References: <20081006185026.GA10383@minyard.local>	 <48EA8197.6080502@cosmosbay.com> <1223367480.26330.7.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1223367480.26330.7.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <48EABBD3.1010401@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra a écrit :
-> On Mon, 2008-10-06 at 23:22 +0200, Eric Dumazet wrote:
+On Tue, Oct 07, 2008 at 10:30:59AM +0900, Tejun Heo wrote:
+> Anton Vorontsov wrote:
+> > On Mon, Oct 06, 2008 at 03:41:19PM -0500, Matt Sealey wrote:
+> >> There is a simple problem with the patch which is that an "IRQ 0" can and does
+> >> actually exist on a bunch of platforms, at least to the best of my knowledge.
+> >>
+> >> Checking for -1 (which means for definite, no irq at all, because it is
+> >> totally unambiguous, as a -1 IRQ numbering is "impossible") is more correct.
+> > 
+> > This was discussed years ago.
+> > 
+> > http://lkml.org/lkml/2005/11/22/159
+> > http://lkml.org/lkml/2005/11/22/227
+> > 
 > 
->> Or just add SLAB_DESTROY_BY_RCU to slab creation in proto_register()
->> for "struct proto udp_prot/udpv6_prot" so that kmem_cache_free() 
->> done in sk_prot_free() can defer freeing to RCU...
-> 
-> Be careful!, SLAB_DESTROY_BY_RCU just means the slab page gets
-> RCU-freed, this means that slab object pointers stay pointing to valid
-> memory, but it does _NOT_ mean those slab objects themselves remain
-> valid.
-> 
-> The slab allocator is free to re-use those objects at any time -
-> irrespective of the rcu-grace period. Therefore you will have to be able
-> to validate that the object you point to is indeed the object you
-> expect, otherwise strange and wonderful things will happen.
-> 
-Thanks for this clarification. I guess we really need a rcu head then :)
+> Would this break any existing platforms?
+
+Nope.
+
+The driver is only available for PPC platforms.
+
+As time goes by one can change `depend on PPC_OF' to just `depends on
+OF', so that the driver will be also available for SPARC. And still
+it will work, because SPARC also understands VIRQ0 as invalid VIRQ.
 
 
+Thanks,
 
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
