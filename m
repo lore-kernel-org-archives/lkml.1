@@ -1,150 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYJGN5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbYJGN5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbYJGN5h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 09:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYJGN53
+	id S1755333AbYJGN5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 09:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbYJGN5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 09:57:29 -0400
-Received: from sidv0150.hsr.ch ([152.96.52.150]:36223 "EHLO strongswan.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbYJGN52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 09:57:28 -0400
-X-Greylist: delayed 1115 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Oct 2008 09:57:28 EDT
-To: davem@davemloft.net
-Subject: [PATCH] xfrm: NAT mapping notifications via netlink
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <20081007133844.27788EFB39@strongswan.org>
-Date: Tue,  7 Oct 2008 15:38:44 +0200 (CEST)
-From: martin@strongswan.org (Martin Willi)
+	Tue, 7 Oct 2008 09:57:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37328 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754834AbYJGN5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 09:57:39 -0400
+Subject: [BUG] SLOB's krealloc() seems bust
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-mm <linux-mm@kvack.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 15:57:20 +0200
+Message-Id: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes in NAT mappings are detected during UDP decapsulation and
-notified via the PF_KEY interface to userspace.
-This patch adds similar notifications to the native xfrm netlink
-interface.
+My test box would crash 50% of the bootups like so:
 
-Signed-off-by: Martin Willi <martin@strongswan.org>
+[   12.002323] BUG: unable to handle kernel paging request at ffff88047bdd513c              
+[   12.003310] IP: [<ffffffff80261f17>] load_module+0x6c8/0x1b2a                            
+[   12.003310] PGD 202063 PUD 0                                                             
+[   12.003310] Oops: 0000 [1] PREEMPT SMP
+[   12.003310] CPU 0
+[   12.003310] Modules linked in: kvm_amd kvm sg sr_mod serio_raw k8temp floppy pcspkr button cdrom shpchp
+[   12.003310] Pid: 1219, comm: modprobe Not tainted 2.6.27-rc9 #452
 
---- a/include/linux/xfrm.h	2008-10-07 10:38:17.000000000 +0200
-+++ b/include/linux/xfrm.h	2008-10-07 10:46:41.000000000 +0200
-@@ -199,6 +199,9 @@
- #define XFRM_MSG_NEWSPDINFO XFRM_MSG_NEWSPDINFO
- 	XFRM_MSG_GETSPDINFO,
- #define XFRM_MSG_GETSPDINFO XFRM_MSG_GETSPDINFO
-+
-+	XFRM_MSG_MAPPING,
-+#define XFRM_MSG_MAPPING XFRM_MSG_MAPPING
- 	__XFRM_MSG_MAX
- };
- #define XFRM_MSG_MAX (__XFRM_MSG_MAX - 1)
-@@ -428,6 +431,15 @@
- 	__u16				new_family;
- };
- 
-+struct xfrm_user_mapping {
-+	struct xfrm_usersa_id		id;
-+	__u32				reqid;
-+	xfrm_address_t			old_saddr;
-+	xfrm_address_t			new_saddr;
-+	__be16				old_sport;
-+	__be16				new_sport;
-+};
-+
- #ifndef __KERNEL__
- /* backwards compatibility for userspace */
- #define XFRMGRP_ACQUIRE		1
-@@ -454,6 +466,8 @@
- #define XFRMNLGRP_REPORT	XFRMNLGRP_REPORT
- 	XFRMNLGRP_MIGRATE,
- #define XFRMNLGRP_MIGRATE	XFRMNLGRP_MIGRATE
-+	XFRMNLGRP_MAPPING,
-+#define XFRMNLGRP_MAPPING	XFRMNLGRP_MAPPING
- 	__XFRMNLGRP_MAX
- };
- #define XFRMNLGRP_MAX	(__XFRMNLGRP_MAX - 1)
---- a/net/xfrm/xfrm_user.c	2008-10-07 10:38:17.000000000 +0200
-+++ b/net/xfrm/xfrm_user.c	2008-10-07 10:46:41.000000000 +0200
-@@ -1881,6 +1881,7 @@
- 	[XFRM_MSG_MIGRATE     - XFRM_MSG_BASE] = XMSGSIZE(xfrm_userpolicy_id),
- 	[XFRM_MSG_GETSADINFO  - XFRM_MSG_BASE] = sizeof(u32),
- 	[XFRM_MSG_GETSPDINFO  - XFRM_MSG_BASE] = sizeof(u32),
-+	[XFRM_MSG_MAPPING     - XFRM_MSG_BASE] = XMSGSIZE(xfrm_user_mapping),
- };
- 
- #undef XMSGSIZE
-@@ -1931,6 +1932,7 @@
- 	[XFRM_MSG_MIGRATE     - XFRM_MSG_BASE] = { .doit = xfrm_do_migrate    },
- 	[XFRM_MSG_GETSADINFO  - XFRM_MSG_BASE] = { .doit = xfrm_get_sadinfo   },
- 	[XFRM_MSG_GETSPDINFO  - XFRM_MSG_BASE] = { .doit = xfrm_get_spdinfo   },
-+	[XFRM_MSG_MAPPING     - XFRM_MSG_BASE] = { .doit = NULL               },
- };
- 
- static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
-@@ -2470,6 +2472,57 @@
- 	return nlmsg_multicast(xfrm_nl, skb, 0, XFRMNLGRP_REPORT, GFP_ATOMIC);
- }
- 
-+static inline size_t xfrm_mapping_msgsize(void)
-+{
-+	return NLMSG_ALIGN(sizeof(struct xfrm_user_mapping));
-+}
-+
-+static int build_mapping(struct sk_buff *skb, struct xfrm_state *x,
-+			 xfrm_address_t *new_saddr, __be16 new_sport)
-+{
-+	struct xfrm_user_mapping *um;
-+	struct nlmsghdr *nlh;
-+
-+	nlh = nlmsg_put(skb, 0, 0, XFRM_MSG_MAPPING, sizeof(*um), 0);
-+	if (nlh == NULL)
-+		return -EMSGSIZE;
-+
-+	um = nlmsg_data(nlh);
-+	
-+	memcpy(&um->id.daddr, &x->id.daddr, sizeof(um->id.daddr));
-+	um->id.spi = x->id.spi;
-+	um->id.family = x->props.family;
-+	um->id.proto = x->id.proto;
-+	memcpy(&um->new_saddr, new_saddr, sizeof(um->new_saddr));
-+	memcpy(&um->old_saddr, &x->props.saddr, sizeof(um->old_saddr));
-+	um->new_sport = new_sport;
-+	um->old_sport = x->encap->encap_sport;
-+	um->reqid = x->props.reqid;
-+
-+	return nlmsg_end(skb, nlh);
-+}
-+
-+static int xfrm_send_mapping(struct xfrm_state *x, xfrm_address_t *ipaddr,
-+			     __be16 sport)
-+{
-+	struct sk_buff *skb;
-+
-+	if (x->id.proto != IPPROTO_ESP)
-+		return -EINVAL;
-+
-+	if (!x->encap)
-+		return -EINVAL;
-+
-+	skb = nlmsg_new(xfrm_mapping_msgsize(), GFP_ATOMIC);
-+	if (skb == NULL)
-+		return -ENOMEM;
-+
-+	if (build_mapping(skb, x, ipaddr, sport) < 0)
-+		BUG();
-+
-+	return nlmsg_multicast(xfrm_nl, skb, 0, XFRMNLGRP_MAPPING, GFP_ATOMIC);
-+}
-+
- static struct xfrm_mgr netlink_mgr = {
- 	.id		= "netlink",
- 	.notify		= xfrm_send_state_notify,
-@@ -2478,6 +2531,7 @@
- 	.notify_policy	= xfrm_send_policy_notify,
- 	.report		= xfrm_send_report,
- 	.migrate	= xfrm_send_migrate,
-+	.new_mapping	= xfrm_send_mapping,
- };
- 
- static int __init xfrm_user_init(void)
+Which points us to the percpu_modalloc() code.
+
+After adding some printk's to get some insight into the matter I got the
+following:
+
+[   10.058055] percpu_modalloc: pcpu_size: ffff88007d82c0e8 size: 8 align: 8 name: kvm_amd  
+[   10.066042] percpu_modalloc: pcpu_size[0] = -37536 ptr: ffffffff80757000 extra: 0        
+[   10.073505] percpu_modalloc: pcpu_size[1] = 8192 ptr: ffffffff807602a0 extra: 0          
+[   10.080795] split_block: pcpu_size: ffff88007d82c0e8 i: 1 size: 8                        
+[   10.086875] split_block: pcpu_size: ffff88007bdd5140                                     
+[   10.091828] split_block: pcpu_size[0] = 2078109024                                       
+[   10.096607] split_block: pcpu_size[1] = -30720                                           
+[   10.101039] split_block: pcpu_size[0] = 2078109024                                       
+[   10.105817] split_block: pcpu_size[1] = -30720                                           
+[   10.110249] split_block: pcpu_size[2] = -30720                                           
+[   10.114682] split_block: pcpu_size[1] = 8 pcpu_size[2] = -30728   
+
+Which basically shows us that the content of the pcpu_size[] array got
+corrupted after the krealloc() call in split_block().
+
+Which made me look at which slab allocator I had selected, which turned
+out to be SLOB (from testing the network swap stuff).
+
+Flipping it back to SLUB seems to cure the issue...
+
+Will put poking at SLOB on the todo list somewhere, feel free to beat me
+to it ;-)
+
