@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbYJGG4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYJGG4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991AbYJGG4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 02:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYJGG4B
+	id S1756690AbYJGG4y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 02:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYJGG4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 02:56:01 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:42690 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYJGG4A (ORCPT
+	Tue, 7 Oct 2008 02:56:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:36524 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbYJGG4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 02:56:00 -0400
-Date: Tue, 7 Oct 2008 09:57:03 +0300
+	Tue, 7 Oct 2008 02:56:45 -0400
 From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, RFC] shmat: introduce flag SHM_MAP_HINT
-Message-ID: <20081007065701.GA5012@localhost.localdomain>
-References: <20081006132651.GG3180@one.firstfloor.org> <1223303879-5555-1-git-send-email-kirill@shutemov.name> <20081006192923.GJ3180@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
-Content-Disposition: inline
+Subject: [PATCH, RFC, v2] shmat: introduce flag SHM_MAP_HINT
+Date: Tue,  7 Oct 2008 09:57:50 +0300
+Message-Id: <1223362670-5187-1-git-send-email-kirill@shutemov.name>
+X-Mailer: git-send-email 1.5.6.5.GIT
 In-Reply-To: <20081006192923.GJ3180@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+References: <20081006192923.GJ3180@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It allows interpret attach address as a hint, not as exact address.
 
---0F1p//8PRICkK4MW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ include/linux/shm.h |    1 +
+ ipc/shm.c           |    6 +++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-On Mon, Oct 06, 2008 at 09:29:23PM +0200, Andi Kleen wrote:
-> On Mon, Oct 06, 2008 at 05:37:59PM +0300, Kirill A. Shutemov wrote:
-> > It allows interpret attach address as a hint, not as exact address.
->=20
-> First you should also do a patch for the manpage and send to=20
-> the manpage maintainer.
+diff --git a/include/linux/shm.h b/include/linux/shm.h
+index eca6235..2a637b8 100644
+--- a/include/linux/shm.h
++++ b/include/linux/shm.h
+@@ -55,6 +55,7 @@ struct shmid_ds {
+ #define	SHM_RND		020000	/* round attach address to SHMLBA boundary */
+ #define	SHM_REMAP	040000	/* take-over region on attach */
+ #define	SHM_EXEC	0100000	/* execution access */
++#define	SHM_MAP_HINT	0200000	/* interpret attach address as a hint */
+ 
+ /* super user shmctl commands */
+ #define SHM_LOCK 	11
+diff --git a/ipc/shm.c b/ipc/shm.c
+index e77ec69..765de74 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -819,7 +819,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ 	if (shmid < 0)
+ 		goto out;
+ 	else if ((addr = (ulong)shmaddr)) {
+-		if (addr & (SHMLBA-1)) {
++		if (!(shmflg & SHM_MAP_HINT) && (addr & (SHMLBA-1))) {
+ 			if (shmflg & SHM_RND)
+ 				addr &= ~(SHMLBA-1);	   /* round down */
+ 			else
+@@ -828,7 +828,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ #endif
+ 					goto out;
+ 		}
+-		flags = MAP_SHARED | MAP_FIXED;
++		flags = (shmflg & SHM_MAP_HINT ? 0 : MAP_FIXED) | MAP_SHARED;
+ 	} else {
+ 		if ((shmflg & SHM_REMAP))
+ 			goto out;
+@@ -892,7 +892,7 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+ 	sfd->vm_ops = NULL;
+ 
+ 	down_write(&current->mm->mmap_sem);
+-	if (addr && !(shmflg & SHM_REMAP)) {
++	if (addr && !(shmflg & (SHM_REMAP|SHM_MAP_HINT))) {
+ 		err = -EINVAL;
+ 		if (find_vma_intersection(current->mm, addr, addr + size))
+ 			goto invalid;
+-- 
+1.5.6.5.GIT
 
-I'll do it if the patch is ok.
-
-> >  #define SHM_LOCK 	11
-> > diff --git a/ipc/shm.c b/ipc/shm.c
-> > index e77ec69..19462bb 100644
-> > --- a/ipc/shm.c
-> > +++ b/ipc/shm.c
-> > @@ -819,7 +819,7 @@ long do_shmat(int shmid, char __user *shmaddr, int =
-shmflg, ulong *raddr)
-> >  	if (shmid < 0)
-> >  		goto out;
-> >  	else if ((addr =3D (ulong)shmaddr)) {
-> > -		if (addr & (SHMLBA-1)) {
-> > +		if (!(shmflg & SHM_MAP_HINT) && (addr & (SHMLBA-1))) {
-> >  			if (shmflg & SHM_RND)
-> >  				addr &=3D ~(SHMLBA-1);	   /* round down */
-> >  			else
-> > @@ -828,7 +828,7 @@ long do_shmat(int shmid, char __user *shmaddr, int =
-shmflg, ulong *raddr)
-> >  #endif
-> >  					goto out;
-> >  		}
-> > -		flags =3D MAP_SHARED | MAP_FIXED;
-> > +		flags =3D (shmflg & SHM_MAP_HINT ? 0 : MAP_FIXED) | MAP_SHARED;
->=20
->=20
-> IMHO you need at least make the
->=20
->    if (find_vma_intersection(current->mm, addr, addr + size))
->                         goto invalid;
->=20
-> test above conditional too.
-
-Since it's a hint, we shouldn't call find_vma_intersection() at all.
-
-I'll send fixed patch soon.
-
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
-
---0F1p//8PRICkK4MW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjrCD0ACgkQbWYnhzC5v6pSfwCdHXb4WrjRsItJl+QbsbhIGNiR
-DZ0An1pDpowyCY1PXewWbVfTLVfKQod1
-=QrNi
------END PGP SIGNATURE-----
-
---0F1p//8PRICkK4MW--
