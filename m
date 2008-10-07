@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbYJGLs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbYJGL5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbYJGLs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbYJGLsT
+	id S1754070AbYJGL5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYJGL5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:48:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37761 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbYJGLsT (ORCPT
+	Tue, 7 Oct 2008 07:57:10 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:59616 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752474AbYJGL5J convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:48:19 -0400
-Date: Tue, 7 Oct 2008 07:48:17 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [RFC PATCH] i_version: remount support
-Message-ID: <20081007114817.GA7024@infradead.org>
-References: <10dbd13724581b0dca8d77ae944aaf3c70b93137.1223341927.git.zohar@linux.vnet.ibm.com>
+	Tue, 7 Oct 2008 07:57:09 -0400
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: David Brownell <david-b@pacbell.net>,
+       "me@felipebalbi.com" <me@felipebalbi.com>
+CC: Carlos Chinea <carlos.chinea@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Date: Tue, 7 Oct 2008 06:56:53 -0500
+Subject: RE: [RFC][PATCH 2/5] OMAP SSI driver interface
+Thread-Topic: [RFC][PATCH 2/5] OMAP SSI driver interface
+Thread-Index: AckoGOPXxpBdrhLvTLeCTdI5l4MtIgAWl4kQ
+Message-ID: <13B9B4C6EF24D648824FF11BE89671620365AE0FB8@dlee02.ent.ti.com>
+References: <1223034606.32631.156.camel@groo.research.nokia.com>
+ <1223034750-18690-2-git-send-email-carlos.chinea@nokia.com>
+ <20081006232931.GE8273@frodo> <200810061803.06731.david-b@pacbell.net>
+In-Reply-To: <200810061803.06731.david-b@pacbell.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <10dbd13724581b0dca8d77ae944aaf3c70b93137.1223341927.git.zohar@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 07:30:48AM -0400, Mimi Zohar wrote:
-> Add support for remounting a filesystem with the i_version option.
-> 
-> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> ---
-> diff --git a/fs/super.c b/fs/super.c
-> index e931ae9..3758cbe 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -641,6 +641,8 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
->  			return retval;
->  	}
->  	sb->s_flags = (sb->s_flags & ~MS_RMT_MASK) | (flags & MS_RMT_MASK);
-> +	if (flags & MS_I_VERSION)
-> +		sb->s_flags |= MS_I_VERSION;
 
-The proper way would be to add it to MS_RMT_MASK.
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of David Brownell
+> On Monday 06 October 2008, Felipe Balbi wrote:
+> > looks much better and much easier to type: #include <linux/ssi.h>
+>
+> Does this work on non-OMAP kernels?  If not, <mach/ssi.h> or
+> similar would seem more sensible ...
+
+Seems like some cousin might be multi vendor via MIPI HSI. http://www.mipi.org/wgoverview.shtml
+
+
+Regards,
+Richard W.
 
