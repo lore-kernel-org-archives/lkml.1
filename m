@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbYJGAzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758440AbYJGA4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757825AbYJGAzt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbYJGAo4
+	id S1758440AbYJGA4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbYJGApA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:44:56 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60789 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:45:00 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60814 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757586AbYJGAoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:44:55 -0400
-Date: Mon, 6 Oct 2008 17:39:17 -0700
+	id S1757820AbYJGAo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:44:59 -0400
+Date: Mon, 6 Oct 2008 17:39:20 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 42/71] clockevents: prevent multiple init/shutdown
-Message-ID: <20081007003917.GQ3055@suse.de>
+Subject: [patch 43/71] clockevents: prevent endless loop lockup
+Message-ID: <20081007003920.GR3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-04.patch"
+Content-Disposition: inline; filename="timer-fix-05.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,72 +42,127 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 9c17bcda991000351cb2373f78be7e4b1c44caa3 upstream
+commit 1fb9b7d29d8e85ba3196eaa7ab871bf76fc98d36 upstream
 
-While chasing the C1E/HPET bugreports I went through the clock events
-code inch by inch and found that the broadcast device can be initialized
-and shutdown multiple times. Multiple shutdowns are not critical, but
-useless waste of time. Multiple initializations are simply broken. Another
-CPU might have the device in use already after the first initialization and
-the second init could just render it unusable again.
+The C1E/HPET bug reports on AMDX2/RS690 systems where tracked down to a
+too small value of the HPET minumum delta for programming an event.
+
+The clockevents code needs to enforce an interrupt event on the clock event
+device in some cases. The enforcement code was stupid and naive, as it just
+added the minimum delta to the current time and tried to reprogram the device.
+When the minimum delta is too small, then this loops forever.
+
+Add a sanity check. Allow reprogramming to fail 3 times, then print a warning
+and double the minimum delta value to make sure, that this does not happen again.
+Use the same function for both tick-oneshot and tick-broadcast code.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-broadcast.c |   20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ kernel/time/tick-broadcast.c |   10 +---------
+ kernel/time/tick-internal.h  |    2 ++
+ kernel/time/tick-oneshot.c   |   36 ++++++++++++++++++++++++++++++------
+ 3 files changed, 33 insertions(+), 15 deletions(-)
 
 --- a/kernel/time/tick-broadcast.c
 +++ b/kernel/time/tick-broadcast.c
-@@ -209,7 +209,7 @@ static void tick_do_broadcast_on_off(voi
- 	struct clock_event_device *bc, *dev;
- 	struct tick_device *td;
- 	unsigned long flags, *reason = why;
--	int cpu;
-+	int cpu, bc_stopped;
- 
- 	spin_lock_irqsave(&tick_broadcast_lock, flags);
- 
-@@ -227,6 +227,8 @@ static void tick_do_broadcast_on_off(voi
- 	if (!tick_device_is_functional(dev))
- 		goto out;
- 
-+	bc_stopped = cpus_empty(tick_broadcast_mask);
-+
- 	switch (*reason) {
- 	case CLOCK_EVT_NOTIFY_BROADCAST_ON:
- 	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
-@@ -248,9 +250,10 @@ static void tick_do_broadcast_on_off(voi
- 		break;
- 	}
- 
--	if (cpus_empty(tick_broadcast_mask))
--		clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
--	else {
-+	if (cpus_empty(tick_broadcast_mask)) {
-+		if (!bc_stopped)
-+			clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
-+	} else if (bc_stopped) {
- 		if (tick_broadcast_device.mode == TICKDEV_MODE_PERIODIC)
- 			tick_broadcast_start_periodic(bc);
- 		else
-@@ -500,9 +503,12 @@ static void tick_broadcast_clear_oneshot
-  */
- void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
+@@ -370,16 +370,8 @@ cpumask_t *tick_get_broadcast_oneshot_ma
+ static int tick_broadcast_set_event(ktime_t expires, int force)
  {
--	bc->event_handler = tick_handle_oneshot_broadcast;
--	clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
--	bc->next_event.tv64 = KTIME_MAX;
-+	/* Set it up only once ! */
-+	if (bc->event_handler != tick_handle_oneshot_broadcast) {
-+		bc->event_handler = tick_handle_oneshot_broadcast;
-+		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
-+		bc->next_event.tv64 = KTIME_MAX;
-+	}
+ 	struct clock_event_device *bc = tick_broadcast_device.evtdev;
+-	ktime_t now = ktime_get();
+-	int res;
+ 
+-	for(;;) {
+-		res = clockevents_program_event(bc, expires, now);
+-		if (!res || !force)
+-			return res;
+-		now = ktime_get();
+-		expires = ktime_add(now, ktime_set(0, bc->min_delta_ns));
+-	}
++	return tick_dev_program_event(bc, expires, force);
  }
  
- /*
+ int tick_resume_broadcast_oneshot(struct clock_event_device *bc)
+--- a/kernel/time/tick-internal.h
++++ b/kernel/time/tick-internal.h
+@@ -17,6 +17,8 @@ extern void tick_handle_periodic(struct 
+ extern void tick_setup_oneshot(struct clock_event_device *newdev,
+ 			       void (*handler)(struct clock_event_device *),
+ 			       ktime_t nextevt);
++extern int tick_dev_program_event(struct clock_event_device *dev,
++				  ktime_t expires, int force);
+ extern int tick_program_event(ktime_t expires, int force);
+ extern void tick_oneshot_notify(void);
+ extern int tick_switch_to_oneshot(void (*handler)(struct clock_event_device *));
+--- a/kernel/time/tick-oneshot.c
++++ b/kernel/time/tick-oneshot.c
+@@ -25,18 +25,42 @@
+ /**
+  * tick_program_event internal worker function
+  */
+-static int __tick_program_event(struct clock_event_device *dev,
+-				ktime_t expires, int force)
++int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
++			   int force)
+ {
+ 	ktime_t now = ktime_get();
++	int i;
+ 
+-	while (1) {
++	for (i = 0;;) {
+ 		int ret = clockevents_program_event(dev, expires, now);
+ 
+ 		if (!ret || !force)
+ 			return ret;
++
++		/*
++		 * We tried 2 times to program the device with the given
++		 * min_delta_ns. If that's not working then we double it
++		 * and emit a warning.
++		 */
++		if (++i > 2) {
++			printk(KERN_WARNING "CE: __tick_program_event of %s is "
++			       "stuck %llx %llx\n", dev->name ? dev->name : "?",
++			       now.tv64, expires.tv64);
++			printk(KERN_WARNING
++			       "CE: increasing min_delta_ns %ld to %ld nsec\n",
++			       dev->min_delta_ns, dev->min_delta_ns << 1);
++			WARN_ON(1);
++
++			/* Double the min. delta and try again */
++			if (!dev->min_delta_ns)
++				dev->min_delta_ns = 5000;
++			else
++				dev->min_delta_ns <<= 1;
++			i = 0;
++		}
++
+ 		now = ktime_get();
+-		expires = ktime_add(now, ktime_set(0, dev->min_delta_ns));
++		expires = ktime_add_ns(now, dev->min_delta_ns);
+ 	}
+ }
+ 
+@@ -47,7 +71,7 @@ int tick_program_event(ktime_t expires, 
+ {
+ 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+ 
+-	return __tick_program_event(dev, expires, force);
++	return tick_dev_program_event(dev, expires, force);
+ }
+ 
+ /**
+@@ -71,7 +95,7 @@ void tick_setup_oneshot(struct clock_eve
+ {
+ 	newdev->event_handler = handler;
+ 	clockevents_set_mode(newdev, CLOCK_EVT_MODE_ONESHOT);
+-	__tick_program_event(newdev, next_event, 1);
++	tick_dev_program_event(newdev, next_event, 1);
+ }
+ 
+ /**
 
 -- 
