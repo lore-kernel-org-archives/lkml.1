@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYJGDI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYJGDhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbYJGDI3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 23:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYJGDIU
+	id S1755550AbYJGDhi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 23:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYJGDha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 23:08:20 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:50032 "EHLO e5.ny.us.ibm.com"
+	Mon, 6 Oct 2008 23:37:30 -0400
+Received: from mail.lang.hm ([64.81.33.126]:55131 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754739AbYJGDIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 23:08:19 -0400
-Date: Mon, 6 Oct 2008 20:08:22 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       dipankar@in.ibm.com, tglx@linuxtronix.de
-Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
-Message-ID: <20081007030822.GC6820@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org>
+	id S1753012AbYJGDha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 23:37:30 -0400
+Date: Mon, 6 Oct 2008 20:37:59 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Mikulas Patocka <mpatocka@redhat.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
+Subject: Re: application syncing options (was Re: [PATCH] Memory management
+ livelock)
+In-Reply-To: <Pine.LNX.4.64.0810052332040.3074@hs20-bc2-1.build.redhat.com>
+Message-ID: <alpine.DEB.1.10.0810062025301.19471@asgard.lang.hm>
+References: <20080911101616.GA24064@agk.fab.redhat.com> <20080923154905.50d4b0fa.akpm@linux-foundation.org> <200810031232.23836.nickpiggin@yahoo.com.au> <200810031254.29121.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0810030845070.14680@asgard.lang.hm>
+ <Pine.LNX.4.64.0810052002520.5798@hs20-bc2-1.build.redhat.com> <alpine.DEB.1.10.0810051714330.17288@asgard.lang.hm> <Pine.LNX.4.64.0810052332040.3074@hs20-bc2-1.build.redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081006232837.GA1157@basil.nowhere.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 01:28:37AM +0200, Andi Kleen wrote:
-> [modifying subject]
-> 
-> On Mon, Oct 06, 2008 at 04:12:20PM +0200, Andi Kleen wrote:
-> > [Rafael, something for the regression list]
-> > 
-> > While testing cpu hotunplug/hotreplug (first 
-> > setting two CPUs to offline and then to online again) on a 16 thread machine
-> > with 2.6.27rc8 the first 
-> > 
-> > # echo 1 > ./devices/system/cpu/cpu14/online
-> > 
-> > after hotunplug deadlocked somewhere in the scheduler:
-> 
-> I let it run for longer and I ended up with more and more processes
-> stuck in synchronize_rcu(). No more backtraces because the system
-> has no console and is now not able to write to disk anymore.
-> 
-> So it seems like there's something broken with RCU & cpu hotplug
-> in 2.6.28rc8. cc Paul.
-> 
-> It's probably not the scheduler, sorry for blaming it earlier.
+On Sun, 5 Oct 2008, Mikulas Patocka wrote:
 
-Could you please try the patch at the following URL (from Thomas
-Gleixner)?
+> On Sun, 5 Oct 2008, david@lang.hm wrote:
+>
+>> On Sun, 5 Oct 2008, Mikulas Patocka wrote:
+>>
+>>> On Fri, 3 Oct 2008, david@lang.hm wrote:
+>>>
+>>>> I've also seen discussions of how the
+>>>> kernel filesystem code can do ordered writes without having to wait for
+>>>> them
+>>>> with the use of barriers, is this capability exported to userspace? if so,
+>>>> could you point me at documentation for it?
+>>>
+>>> It isn't. And it is good that it isn't --- the more complicated API, the
+>>> more maintenance work.
+>>
+>> I can understand that most software would not want to deal with complications
+>> like this, but for things thta have requirements similar to journaling
+>> filesystems (databases for example) it would seem that there would be
+>> advantages to exposing this capabilities.
+>>
+>> David Lang
+>
+> If you invent new interface that allows submitting several ordered IOs
+> from userspace, it will require excessive maintenance overhead over long
+> period of time. So it should be only justified, if the performance
+> improvement is excessive as well.
+>
+> It should not be like "here you improve 10% performance on some synthetic
+> benchmark in one application that was rewritten to support the new
+> interface" and then create a few more security vulnerabilities (because of
+> the complexity of the interface) and damage overall Linux progress,
+> because everyone is catching bugs in the new interface and checking it for
+> correctness.
 
-http://www.rdrop.com/users/paulmck/patches/2.6.27-rc7-tglx-timer-1.patch
+the same benchmarks that show that it's far better for the in-kernel 
+filesystem code to use write barriers should apply for FUSE filesystems.
 
-This fixed some CPU hotplug hangs that I was seeing in 2.6.27-rc7 and
--rc8.  Alternatively, try 2.6.27-rc9, which seems to include Thomas's
-patch.
+this isn't a matter of a few % in performance, if an application is 
+sync-limited in a way that can be converted to write-ordered the potential 
+is for the application to speed up my many times.
 
-							Thanx, Paul
+programs that maintain indexes or caches of data that lives in other files 
+will be able to write data && barrier && write index && fsync and double 
+their performance vs write data && fsync && write index && fsync
 
-> -Andi
-> 
-> > bash          D 00000000ffffcb5b     0  4683   4671
-> >  ffff8804bc583c68 0000000000000086 ffff8804bc9d8640 0000000000000296
-> >  ffff8804bdd34730 ffff8804be6fc090 ffff8804bdd34978 0000000c805a1e2a
-> >  ffff8804be4fd780 ffffffff802298b4 ffffffff808acd98 ffff88027d0b1168
-> > Call Trace:
-> >  [<ffffffff802298b4>] __dequeue_entity+0x25/0x68
-> >  [<ffffffff805a1b4b>] schedule_timeout+0x1e/0xad
-> >  [<ffffffff8022a11f>] __disable_runtime+0x57/0x155
-> >  [<ffffffff8025cc47>] cpupri_set+0xbe/0xcd
-> >  [<ffffffff805a19b3>] wait_for_common+0xcd/0x131
-> >  [<ffffffff8022c918>] default_wake_function+0x0/0xe
-> >  [<ffffffff80241f3a>] synchronize_rcu+0x30/0x36
-> >  [<ffffffff80241fac>] wakeme_after_rcu+0x0/0xc
-> >  [<ffffffff8022dab6>] partition_sched_domains+0x9b/0x1dd
-> >  [<ffffffff8022dc26>] update_sched_domains+0x2e/0x35
-> >  [<ffffffff805a5297>] notifier_call_chain+0x29/0x4c
-> >  [<ffffffff8059ef76>] _cpu_up+0xd0/0x10a
-> >  [<ffffffff8059f004>] cpu_up+0x54/0x61
-> >  [<ffffffff805837d5>] store_online+0x43/0x67
-> >  [<ffffffff802c51e9>] sysfs_write_file+0xd2/0x110
-> >  [<ffffffff8028656b>] vfs_write+0xad/0x136
-> >  [<ffffffff802869f3>] sys_write+0x45/0x6e
-> >  [<ffffffff8020b22b>] system_call_fastpath+0x16/0x1b
-> > 
-> > It just hung forever, but the machine was otherwise fully functional.
-> > 
-> > This was without frame pointers so the backtrace presumably has
-> > some garbage. Haven't looked too closely.
-> > 
-> > -Andi
-> > 
-> > -- 
-> > ak@linux.intel.com
-> 
-> -- 
-> ak@linux.intel.com
+databases can potentially do even better, today they need to fsync data to 
+disk before they can update their journal to indicate that the data has 
+been written, with a barrier they could order the writes so that the write 
+to the journal doesn't happen until the writes of the data. they would 
+neve need to call an fsync at all (when emptying the journal)
+
+for systems without solid-state drives or battery-backed caches, the 
+ability to eliminate fsyncs by being able to rely on the order of the 
+writes is a huge benifit.
+
+David Lang
