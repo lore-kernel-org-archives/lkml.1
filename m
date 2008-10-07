@@ -1,164 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYJGWzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYJGWzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbYJGWzU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYJGWzH
+	id S1757272AbYJGWzx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYJGWzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:55:07 -0400
-Received: from mga10.intel.com ([192.55.52.92]:9388 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753941AbYJGWzF (ORCPT
+	Tue, 7 Oct 2008 18:55:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:17547 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754471AbYJGWzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:55:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
-   d="scan'208";a="624521936"
-Message-ID: <48EBE86E.80101@linux.intel.com>
-Date: Tue, 07 Oct 2008 15:53:34 -0700
-From: Joseph Cihula <joseph.cihula@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 7 Oct 2008 18:55:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gASF4YQ98xKkroTKSRqQYCS/WJUBRpZ18WzyXu/RkLcdbHlKByainOkvGkudN/8urO
+         eiHmcpteh88/BycAlrHJT6NBc3unNu5x5dsY36mL0goX6BzVTfl7md1rgYLhJSNOgnpe
+         T5yVwdlHHkF65MOtcs56u2oe+gj2h6OlpUYo0=
+Message-ID: <41840b750810071555k7cef48b4m7e7b89583928a5be@mail.gmail.com>
+Date: Tue, 7 Oct 2008 18:55:37 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: Laptop shock detection and harddisk protection
+Cc: "Pavel Machek" <pavel@suse.cz>, "Thomas Renninger" <trenn@suse.de>,
+       "Tejun Heo" <tj@kernel.org>, "Elias Oltmanns" <eo@nebensachen.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <20081007211905.GB8151@kroah.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: shane.wang@intel.com, gang.wei@intel.com, arjan@linux.intel.com,
-       asit.k.mallick@intel.com, jun.nakajima@intel.com, chrisw@sous-sol.org,
-       jbeulich@novell.com, mingo@elte.hu, tytso@mit.edu,
-       linux-kernel@vger.kernel.org, joseph.cihula@intel.com
-Subject: [RFC][PATCH 0b/3] TXT: Intel(R) Trusted Execution Technology support
- for Linux - Details
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48C7FCEE.8060404@kernel.org> <20080917180405.GB3162@kroah.com>
+	 <20080918111845.GH27832@elf.ucw.cz> <200809191104.00171.trenn@suse.de>
+	 <20080924051417.GA29993@kroah.com> <20081007204011.GG6604@elf.ucw.cz>
+	 <20081007211905.GB8151@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(re-posted with apologies for formatting and email addresses)
+I've been staying off the public discussion to avoid fuelling the flame;
+my position has been stated earlier and in private communication.
+But at this point I must go on record:
 
-How Does it Work?
-================
+On Tue, Oct 7, 2008 at 5:19 PM, Greg KH <greg@kroah.com> wrote:
+>  - this code was written by an anonymous person, using documents or
+>    information that was obtained and used in a manner that was not
+>    legal according to their employment agreement.
 
-o  Tboot is an executable that is launched by the bootloader as the "kernel"
-   (the binary the bootloader executes).
-o  It performs all of the work necessary to determine if the platform 
-supports
-   Intel TXT and, if so, executes the GETSEC[SENTER] processor instruction
-   that initiates the dynamic root of trust.
-   -  If tboot determines that the system does not support Intel TXT or 
-is not
-      configured correctly (e.g. the SINIT AC Module was incorrect), it will
-      directly launch the kernel with no changes to any state.
-   -  Tboot will output various information about its progress to the first
-      (ttyS0/COM1) serial port; this can be disabled by a command line 
-switch.
-      It can also be compiled to put the information into a hardcoded memory
-      location in low memory so that systems without a serial port can still
-      get the log.
-o  The GETSEC[SENTER] instruction will return control to tboot and it then
-   verifies certain aspects of the environment (e.g. TPM NV lock, e820 table
-   does not have invalid entries, etc.).
-o  It will wake the APs from the special sleep state the GETSEC[SENTER]
-   instruction had put them in and place them into a wait-for-SIPI state.
-   -  Because the processors will not respond to an INIT or SIPI when in the
-      TXT environment, it is necessary to create a small VT-x guest for the
-      APs.  When they run in this guest, they will simply wait for the
-      INIT-SIPI-SIPI sequence, which will cause VMEXITs, and then disable VT
-      and jump to the SIPI vector.  This approach seemed like a better 
-choice
-      than having to insert special code into the kernel's MP wakeup 
-sequence.
-o  Tboot then applies an (optional) user-defined launch policy to verify the
-   kernel and initrd.
-   -  This policy is rooted in TPM NV and is described in the tboot project.
-      The tboot project also contains code for tools to create and provision
-      the policy.
-   -  Policies are completely under user control and if not present then any
-      kernel will be launched.
-   -  Policy action is flexible and can include halting on failures or 
-simply
-      logging them an continuing.
-o  Tboot adjusts the e820 table provided by the bootloader to reserve 
-its own
-   location in memory as well as to reserve certain other TXT-related 
-regions.
-o  Tboot will populate a shared page with some data about itself and 
-pass this
-   to the Linux kernel as it transfers control.
-   -  The location of the shared page is passed via the boot_params 
-struct as
-      a physical address.
-o  The kernel will look for the tboot shared page address and, if it exists,
-   map it.
-o  At this point, tboot and TXT are out of the picture until a shutdown 
-(S<n>)
-o  In order to put a system into any of the sleep states after a TXT launch,
-   TXT must first be exited.  This is to prevent attacks that attempt to 
-crash
-   the system to gain control on reboot and steal data left in memory.
-   -  The kernel will perform all of its sleep preparation and populate the
-      shared page with the ACPI data needed to put the platform in the 
-desired
-      sleep state.
-   -  Then the kernel jumps into tboot via the vector specified in the 
-shared
-      page.
-   -  Tboot will clean up the environment and disable TXT, then use the
-      kernel-provided ACPI information to actually place the platform 
-into the
-      desired sleep state.
-   -  In the case of S3, tboot will also register itself as the resume 
-vector.
-      This is necessary because it must re-establish the measured 
-environment
-      upon resume.  Once the TXT environment has been restored, it will
-      restore the TPM PCRs and then transfer control back to the kernel's S3
-      resume vector.
-   -  S4 is not supported by this patch, but we expect to fix that shortly
-      (the current suspend code brings the APs out of suspend with an INIT,
-      which doesn't work under TXT).
+The above statement is false. I have never had access to non-public ThinkPad
+specifications as part of my employment, nor have I been employed
+by anyone who (to my knowledge) even possesses non-public ThinkPad
+specifications.
 
-That's pretty much it for TXT support.
+I have contacted Greg KH privately in an effort to clarify the source
+of his false impression.
 
-
-Configuring the System:
-======================
-
-This code works with 32bit, 32bit PAE, and 64bit (x86_64) kernels.
-
-In BIOS, the user must enable:  TPM, TXT, VT-x, VT-d.  Not all BIOSes 
-allow these to be individually enabled/disabled and the screens in which 
-to find them are BIOS-specific.
-
-grub.conf needs to be modified as follows:
-        title Linux 2.6.27-rc9 w/ tboot
-          root (hd0,0)
-                kernel /tboot.gz
-                module /vmlinuz-2.6.27-rc9 ro root=LABEL=/ rhgb 
-console=ttyS0,115200 3
-                module /initrd-2.6.27-rc9.img
-                module /Q35_SINIT_16.BIN
-
-As mentioned previously, the tboot source can be downloaded from the 
-Trusted Boot SourceForge project.
-
-The kernel option for enabling Intel TXT support is found under the 
-Security top-level menu and is called "Enable Intel(R) Trusted Execution 
-Technology (TXT)".  It is marked as EXPERIMENTAL and depends only on the 
-generic x86 support (to allow maximum flexibility in kernel build 
-options), since the tboot code will detect whether the platform actually 
-supports Intel TXT and thus whether any of the kernel code is executed.
-
-The Q35_SINIT_16.BIN file is what Intel TXT refers to as an 
-Authenticated Code Module.  It is specific to the chipset in the system 
-and can also be found on the Trusted Boot site.  It is an (unencrypted) 
-binary module signed by Intel that is used as part of the DRTM process 
-to verify and configure the system.  It is signed because it operates at 
-a higher privilege level in the system than any other macrocode and its 
-correct operation is critical to the establishment of the DRTM.
-
-
-We welcome your comments and suggestions and genuinely value your feedback.
-
-Joseph Cihula
-Shane Wang
-Gang Wei
-Intel Corp.
-
+  Shem
