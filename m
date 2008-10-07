@@ -1,118 +1,434 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbYJGWGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbYJGWIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbYJGWGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYJGWGo
+	id S1757460AbYJGWIZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYJGWIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:06:44 -0400
-Received: from kroah.org ([198.145.64.141]:35120 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754059AbYJGWGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:06:44 -0400
-Date: Tue, 7 Oct 2008 15:03:03 -0700
-From: Greg KH <greg@kroah.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Thomas Renninger <trenn@suse.de>, Tejun Heo <tj@kernel.org>,
-       Shem Multinymous <multinymous@gmail.com>,
-       Elias Oltmanns <eo@nebensachen.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Laptop shock detection and harddisk protection
-Message-ID: <20081007220303.GA9066@kroah.com>
-References: <48C7FCEE.8060404@kernel.org> <20080917180405.GB3162@kroah.com> <20080918111845.GH27832@elf.ucw.cz> <200809191104.00171.trenn@suse.de> <20080924051417.GA29993@kroah.com> <20081007204011.GG6604@elf.ucw.cz> <20081007211905.GB8151@kroah.com> <20081007214006.GL6604@elf.ucw.cz>
-MIME-Version: 1.0
+	Tue, 7 Oct 2008 18:08:15 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40616 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754218AbYJGWIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 18:08:14 -0400
+Date: Tue, 7 Oct 2008 15:08:11 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com, Tao Ma <tao.ma@oracle.com>
+Subject: Re: [Ocfs2-devel] [PATCH 13/39] ocfs2: Add extended attribute support
+Message-ID: <20081007220811.GG26373@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com> <20081002081644.GB24717@lst.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081007214006.GL6604@elf.ucw.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081002081644.GB24717@lst.de>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 11:40:06PM +0200, Pavel Machek wrote:
+On Thu, Oct 02, 2008 at 10:16:44AM +0200, Christoph Hellwig wrote:
+> On Wed, Sep 24, 2008 at 03:00:54PM -0700, Mark Fasheh wrote:
+> >  	xattr.o			\
+> > +	xattr_user.o		\
+> > +	xattr_trusted.o
 > 
-> > > > If you, or anyone else, writes a new driver from the published
-> > > > documents, that driver can be accepted.  It can not be based on the
-> > > > existing code written by Shem in any form.
-> > > 
-> > > Can you detail what "published" means?
-> > 
-> > Published in a way that has NOTHING to do with these source files.
-> > 
-> > > Either I can take his sources on sourceforge.net (quite well known
-> > > place, right) as published information, or I could not use other well
-> > > known sources such as wikipedia.
-> > 
-> > If the wikipedia information was written based on these source files,
-> > no, we can't use that, sorry.
+> Please don't split this up, it's always been a really stupid idea in
+> extN.  The only difference between secure, trusted and user attrs is
+> that they go into a different namespace bit (and have different
+> permission checking, but that's handled in the VFS).  I have some
+> upcoming patches to store a fs private flag in struct xattr_handler
+> so that even those flags wrappers can go away, and each of the
+> namespaces will just be five lines of code for the xattr_handler
+> declaration.
+
+Ok. The following patch (in ocfs2.git now) removes those two files, and puts
+the code for user and trusted xattrs at the bottom of xattr.c. Is that
+mainly what you were getting at here?
+
+
+> > +static inline struct xattr_handler *ocfs2_xattr_handler(int name_index)
+> > +{
+> > +	struct xattr_handler *handler = NULL;
+> > +
+> > +	if (name_index > 0 && name_index < OCFS2_XATTR_MAX)
+> > +		handler = ocfs2_xattr_handler_map[name_index];
+> > +
+> > +	return handler;
+> > +}
 > 
-> How do I know?
+> You seem to need the handler mostly for getting back to the prefix
+> from the handler.  This is a pretty clear indicator that you don't
+> want to use the xattr_handler splitting but deal with the whole
+> attr name.  Take a look at the btrfs code after my recent xattr changes
+> on how to handle this more nicely.
 
-Unfortunatly, you can't, so don't use it.
+Tao, Can you look into this?
 
-> > > Sources on sourceforge.net seem published-enough to me, and if you
-> > > insist they can't be used, you should provide some reasons...
-> > > 
-> > > [And no, just calling it "tainted" is not enough.]
-> > 
-> > {sigh}
-> > 
-> > Again, for the last time:
-> >   - this code was written by an anonymous person, using documents or
-> >     information that was obtained and used in a manner that was not
-> >     legal according to their employment agreement.
+
+> > +
+> > +static inline u32 ocfs2_xattr_name_hash(struct inode *inode,
+> > +					char *prefix,
+> > +					int prefix_len,
+> > +					char *name,
+> > +					int name_len)
 > 
-> This code is written by anonymous person. He may have used documents
-> improperly, but I see no signs of that, and don't see why I should
-> believe you saying so.
-> 
-> If have proof of that, you should talk to sourceforge to take that
-> code down... or probably their employer should ask sourceforge to do
-> that.
-> 
-> The documents are on the web from more than year now, on
-> well-known. That seems to indicate that your theory is not true.
+> And I think there's far too much inlining going on in here..
 
-Yes, I know this is true, for a variety of reasons of what people
-(including the individual in question) told me in private.
+Yep, I went ahead and un-inlined that function.
 
-And I'm not going to go around asking for code to be taken down, as I'm
-not the one whose contract was invalidated.
+Thanks for the review,
+	--Mark
 
-All I can say is that I can not accept such code into the Linux kernel
-as it is known to be created in an illegal manner.
+--
+Mark Fasheh
 
-This has been discussed with both the Linux Foundations lawyers
-(actually it was OSDL at the time), and with Novell's lawyers.
+From: Mark Fasheh <mfasheh@suse.com>
 
-And as a Novell employee, you aren't allowed to put this code into the
-kernel either, sorry, that's the rule we were told.
+ocfs2: Move trusted and user attribute support into xattr.c
 
-> >   - so, to get something like this into the kernel, we need to rewrite
-> >     the code, using information obtained LEGALLY from either the
-> >     manufacturer of the chips or computers, or from another TOTALLY
-> >     SEPARATE location.
-> 
-> I'm LEGALLY obtaining the information from sourceforge.net. That is
-> rather well-known, and non-anonymous source. They continue to publish
-> this information.
+Per Christoph Hellwig's suggestion - don't split these up. It's not like we
+gained much by having the two tiny files around.
 
-If the information there is known to be posted in a manner that was
-obtained illegally, it does not make the fact that you take it any more
-"legal".
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/Makefile        |    4 +-
+ fs/ocfs2/xattr.c         |  110 ++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ocfs2/xattr_trusted.c |   82 ----------------------------------
+ fs/ocfs2/xattr_user.c    |   94 ---------------------------------------
+ 4 files changed, 111 insertions(+), 179 deletions(-)
+ delete mode 100644 fs/ocfs2/xattr_trusted.c
+ delete mode 100644 fs/ocfs2/xattr_user.c
 
-Ok, once again:
-  - we know this code was created illegally.
-  - that is why we (Linux Foundation / Novell) can not accept such code.
+diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
+index 21323da..589dcdf 100644
+--- a/fs/ocfs2/Makefile
++++ b/fs/ocfs2/Makefile
+@@ -35,9 +35,7 @@ ocfs2-objs := \
+ 	sysfile.o 		\
+ 	uptodate.o		\
+ 	ver.o			\
+-	xattr.o			\
+-	xattr_user.o		\
+-	xattr_trusted.o
++	xattr.o
+ 
+ ocfs2_stackglue-objs := stackglue.o
+ ocfs2_stack_o2cb-objs := stack_o2cb.o
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index e21a1a8..0f556b0 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -37,6 +37,9 @@
+ #include <linux/writeback.h>
+ #include <linux/falloc.h>
+ #include <linux/sort.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/string.h>
+ 
+ #define MLOG_MASK_PREFIX ML_XATTR
+ #include <cluster/masklog.h>
+@@ -4740,3 +4743,110 @@ static int ocfs2_delete_xattr_index_block(struct inode *inode,
+ out:
+ 	return ret;
+ }
++
++/*
++ * 'trusted' attributes support
++ */
++
++#define XATTR_TRUSTED_PREFIX "trusted."
++
++static size_t ocfs2_xattr_trusted_list(struct inode *inode, char *list,
++				       size_t list_size, const char *name,
++				       size_t name_len)
++{
++	const size_t prefix_len = sizeof(XATTR_TRUSTED_PREFIX) - 1;
++	const size_t total_len = prefix_len + name_len + 1;
++
++	if (list && total_len <= list_size) {
++		memcpy(list, XATTR_TRUSTED_PREFIX, prefix_len);
++		memcpy(list + prefix_len, name, name_len);
++		list[prefix_len + name_len] = '\0';
++	}
++	return total_len;
++}
++
++static int ocfs2_xattr_trusted_get(struct inode *inode, const char *name,
++				   void *buffer, size_t size)
++{
++	if (strcmp(name, "") == 0)
++		return -EINVAL;
++	return ocfs2_xattr_get(inode, OCFS2_XATTR_INDEX_TRUSTED, name,
++			       buffer, size);
++}
++
++static int ocfs2_xattr_trusted_set(struct inode *inode, const char *name,
++				   const void *value, size_t size, int flags)
++{
++	if (strcmp(name, "") == 0)
++		return -EINVAL;
++
++	return ocfs2_xattr_set(inode, OCFS2_XATTR_INDEX_TRUSTED, name, value,
++			       size, flags);
++}
++
++struct xattr_handler ocfs2_xattr_trusted_handler = {
++	.prefix	= XATTR_TRUSTED_PREFIX,
++	.list	= ocfs2_xattr_trusted_list,
++	.get	= ocfs2_xattr_trusted_get,
++	.set	= ocfs2_xattr_trusted_set,
++};
++
++
++/*
++ * 'user' attributes support
++ */
++
++#define XATTR_USER_PREFIX "user."
++
++static size_t ocfs2_xattr_user_list(struct inode *inode, char *list,
++				    size_t list_size, const char *name,
++				    size_t name_len)
++{
++	const size_t prefix_len = sizeof(XATTR_USER_PREFIX) - 1;
++	const size_t total_len = prefix_len + name_len + 1;
++	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
++
++	if (osb->s_mount_opt & OCFS2_MOUNT_NOUSERXATTR)
++		return 0;
++
++	if (list && total_len <= list_size) {
++		memcpy(list, XATTR_USER_PREFIX, prefix_len);
++		memcpy(list + prefix_len, name, name_len);
++		list[prefix_len + name_len] = '\0';
++	}
++	return total_len;
++}
++
++static int ocfs2_xattr_user_get(struct inode *inode, const char *name,
++				void *buffer, size_t size)
++{
++	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
++
++	if (strcmp(name, "") == 0)
++		return -EINVAL;
++	if (osb->s_mount_opt & OCFS2_MOUNT_NOUSERXATTR)
++		return -EOPNOTSUPP;
++	return ocfs2_xattr_get(inode, OCFS2_XATTR_INDEX_USER, name,
++			       buffer, size);
++}
++
++static int ocfs2_xattr_user_set(struct inode *inode, const char *name,
++				const void *value, size_t size, int flags)
++{
++	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
++
++	if (strcmp(name, "") == 0)
++		return -EINVAL;
++	if (osb->s_mount_opt & OCFS2_MOUNT_NOUSERXATTR)
++		return -EOPNOTSUPP;
++
++	return ocfs2_xattr_set(inode, OCFS2_XATTR_INDEX_USER, name, value,
++			       size, flags);
++}
++
++struct xattr_handler ocfs2_xattr_user_handler = {
++	.prefix	= XATTR_USER_PREFIX,
++	.list	= ocfs2_xattr_user_list,
++	.get	= ocfs2_xattr_user_get,
++	.set	= ocfs2_xattr_user_set,
++};
+diff --git a/fs/ocfs2/xattr_trusted.c b/fs/ocfs2/xattr_trusted.c
+deleted file mode 100644
+index 4c589c4..0000000
+--- a/fs/ocfs2/xattr_trusted.c
++++ /dev/null
+@@ -1,82 +0,0 @@
+-/* -*- mode: c; c-basic-offset: 8; -*-
+- * vim: noexpandtab sw=8 ts=8 sts=0:
+- *
+- * xattr_trusted.c
+- *
+- * Copyright (C) 2008 Oracle.  All rights reserved.
+- *
+- * CREDITS:
+- * Lots of code in this file is taken from ext3.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public
+- * License as published by the Free Software Foundation; either
+- * version 2 of the License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public
+- * License along with this program; if not, write to the
+- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+- * Boston, MA 021110-1307, USA.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/string.h>
+-
+-#define MLOG_MASK_PREFIX ML_INODE
+-#include <cluster/masklog.h>
+-
+-#include "ocfs2.h"
+-#include "alloc.h"
+-#include "dlmglue.h"
+-#include "file.h"
+-#include "ocfs2_fs.h"
+-#include "xattr.h"
+-
+-#define XATTR_TRUSTED_PREFIX "trusted."
+-
+-static size_t ocfs2_xattr_trusted_list(struct inode *inode, char *list,
+-				       size_t list_size, const char *name,
+-				       size_t name_len)
+-{
+-	const size_t prefix_len = sizeof(XATTR_TRUSTED_PREFIX) - 1;
+-	const size_t total_len = prefix_len + name_len + 1;
+-
+-	if (list && total_len <= list_size) {
+-		memcpy(list, XATTR_TRUSTED_PREFIX, prefix_len);
+-		memcpy(list + prefix_len, name, name_len);
+-		list[prefix_len + name_len] = '\0';
+-	}
+-	return total_len;
+-}
+-
+-static int ocfs2_xattr_trusted_get(struct inode *inode, const char *name,
+-				   void *buffer, size_t size)
+-{
+-	if (strcmp(name, "") == 0)
+-		return -EINVAL;
+-	return ocfs2_xattr_get(inode, OCFS2_XATTR_INDEX_TRUSTED, name,
+-			       buffer, size);
+-}
+-
+-static int ocfs2_xattr_trusted_set(struct inode *inode, const char *name,
+-				   const void *value, size_t size, int flags)
+-{
+-	if (strcmp(name, "") == 0)
+-		return -EINVAL;
+-
+-	return ocfs2_xattr_set(inode, OCFS2_XATTR_INDEX_TRUSTED, name, value,
+-			       size, flags);
+-}
+-
+-struct xattr_handler ocfs2_xattr_trusted_handler = {
+-	.prefix	= XATTR_TRUSTED_PREFIX,
+-	.list	= ocfs2_xattr_trusted_list,
+-	.get	= ocfs2_xattr_trusted_get,
+-	.set	= ocfs2_xattr_trusted_set,
+-};
+diff --git a/fs/ocfs2/xattr_user.c b/fs/ocfs2/xattr_user.c
+deleted file mode 100644
+index 93ba716..0000000
+--- a/fs/ocfs2/xattr_user.c
++++ /dev/null
+@@ -1,94 +0,0 @@
+-/* -*- mode: c; c-basic-offset: 8; -*-
+- * vim: noexpandtab sw=8 ts=8 sts=0:
+- *
+- * xattr_user.c
+- *
+- * Copyright (C) 2008 Oracle.  All rights reserved.
+- *
+- * CREDITS:
+- * Lots of code in this file is taken from ext3.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public
+- * License as published by the Free Software Foundation; either
+- * version 2 of the License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public
+- * License along with this program; if not, write to the
+- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+- * Boston, MA 021110-1307, USA.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/string.h>
+-
+-#define MLOG_MASK_PREFIX ML_INODE
+-#include <cluster/masklog.h>
+-
+-#include "ocfs2.h"
+-#include "alloc.h"
+-#include "dlmglue.h"
+-#include "file.h"
+-#include "ocfs2_fs.h"
+-#include "xattr.h"
+-
+-#define XATTR_USER_PREFIX "user."
+-
+-static size_t ocfs2_xattr_user_list(struct inode *inode, char *list,
+-				    size_t list_size, const char *name,
+-				    size_t name_len)
+-{
+-	const size_t prefix_len = sizeof(XATTR_USER_PREFIX) - 1;
+-	const size_t total_len = prefix_len + name_len + 1;
+-	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+-
+-	if (osb->s_mount_opt & OCFS2_MOUNT_NOUSERXATTR)
+-		return 0;
+-
+-	if (list && total_len <= list_size) {
+-		memcpy(list, XATTR_USER_PREFIX, prefix_len);
+-		memcpy(list + prefix_len, name, name_len);
+-		list[prefix_len + name_len] = '\0';
+-	}
+-	return total_len;
+-}
+-
+-static int ocfs2_xattr_user_get(struct inode *inode, const char *name,
+-				void *buffer, size_t size)
+-{
+-	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+-
+-	if (strcmp(name, "") == 0)
+-		return -EINVAL;
+-	if (osb->s_mount_opt & OCFS2_MOUNT_NOUSERXATTR)
+-		return -EOPNOTSUPP;
+-	return ocfs2_xattr_get(inode, OCFS2_XATTR_INDEX_USER, name,
+-			       buffer, size);
+-}
+-
+-static int ocfs2_xattr_user_set(struct inode *inode, const char *name,
+-				const void *value, size_t size, int flags)
+-{
+-	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+-
+-	if (strcmp(name, "") == 0)
+-		return -EINVAL;
+-	if (osb->s_mount_opt & OCFS2_MOUNT_NOUSERXATTR)
+-		return -EOPNOTSUPP;
+-
+-	return ocfs2_xattr_set(inode, OCFS2_XATTR_INDEX_USER, name, value,
+-			       size, flags);
+-}
+-
+-struct xattr_handler ocfs2_xattr_user_handler = {
+-	.prefix	= XATTR_USER_PREFIX,
+-	.list	= ocfs2_xattr_user_list,
+-	.get	= ocfs2_xattr_user_get,
+-	.set	= ocfs2_xattr_user_set,
+-};
+-- 
+1.5.4.1
 
-If some other company wants to step up, and put their "Signed-off-by:"
-on it, I will be glad to have the Linux Foundation lawyers contact them
-to find out if this is now acceptable, and from what background they
-have gotten the information.
-
-So can we please just drop this?  Or do you want me to point you at the
-lawyers?
-
-thanks,
-
-greg k-h
