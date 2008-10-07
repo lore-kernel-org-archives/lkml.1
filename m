@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYJGBoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYJGBpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbYJGBoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 21:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYJGBoM
+	id S1756669AbYJGBpm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 21:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYJGBpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 21:44:12 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:39664 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbYJGBoL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 21:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Ox00B6qJ4Gk23o/DDiadIqppiHV1pfcT7dpzctAYLFtWq80F1u50TzqWu57deAnM0G
-         4dzQNgr/K8Pf6V45o471wbJMonLI/Fh3wVwVeCJ5g6fnyR4qAwMGrHV1VQc56/eBmImE
-         qHJGo2HLGjkccMADvXbcNTFUIk84+2Yeij7/g=
-Message-ID: <48EABE8E.9070809@gmail.com>
-Date: Tue, 07 Oct 2008 10:42:38 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Mon, 6 Oct 2008 21:45:34 -0400
+Received: from smtp.outflux.net ([198.145.64.163]:36270 "EHLO smtp.outflux.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752722AbYJGBpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 21:45:33 -0400
+Date: Mon, 6 Oct 2008 18:44:29 -0700
+From: Kees Cook <kees.cook@canonical.com>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, Jakub Jelinek <jakub@redhat.com>,
+       libc-alpha@sourceware.org
+Subject: Re: [PATCH] ELF: implement AT_RANDOM for future glibc use
+Message-ID: <20081007014429.GU10357@outflux.net>
+References: <20081001220948.GC32107@sunsite.ms.mff.cuni.cz> <20081001222706.68E7E1544B4@magilla.localdomain> <20081003001616.GN10632@outflux.net> <87ej2untze.fsf@basil.nowhere.org> <20081006175038.GF10357@outflux.net> <20081006192641.GI3180@one.firstfloor.org> <20081006220759.GM10357@outflux.net> <20081006235827.59306154271@magilla.localdomain> <20081007003119.GS10357@outflux.net> <48EAB40C.5010607@redhat.com>
 MIME-Version: 1.0
-To: Linda Walsh <smartmontools@tlinx.org>
-CC: Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
- or sleep, PATA models did. (fwd)
-References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org> <48EAB672.3010209@gmail.com> <48EABD07.6030506@tlinx.org>
-In-Reply-To: <48EABD07.6030506@tlinx.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EAB40C.5010607@redhat.com>
+Organization: Canonical
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linda Walsh wrote:
-> Controller is a Promise TX4/300
+On Mon, Oct 06, 2008 at 05:57:48PM -0700, Ulrich Drepper wrote:
+> Kees Cook wrote:
+> > It sounds like it's not very safe,
+> 
+> Then investigate it.
 
-Yeap.  After the drive goes offline, does unplugging and replugging
-the power cable to the harddrive makes it come back?
+As was suspected, each int is the same.
+
+> > but on the other hand, glibc doesn't really care?
+> 
+> Of course we care.  Especially for SUID and uid==0 binaries.
+
+I meant based on what was said about "if it's as strong as the ASLR
+randomness, it's good enough for this".  While the ultimate solution
+would be to bolt a better PRNG into the kernel, is the following good
+enough for now for glibc:
+
+$ ./rands
+0x2b 0x06 0xb7 0x53 0x2b 0x06 0xb7 0x53 0x2b 0x06 0xb7 0x53 0x2b 0x06 0xb7 0x53
+$ ./rands
+0xc2 0xb5 0x42 0xdc 0xc2 0xb5 0x42 0xdc 0xc2 0xb5 0x42 0xdc 0xc2 0xb5 0x42 0xdc
+$ ./rands
+0x5f 0x39 0xc6 0xc0 0x5f 0x39 0xc6 0xc0 0x5f 0x39 0xc6 0xc0 0x5f 0x39 0xc6 0xc0
+$ ./rands
+0xfb 0x4a 0x82 0xbd 0xfb 0x4a 0x82 0xbd 0xfb 0x4a 0x82 0xbd 0xfb 0x4a 0x82 0xbd
+
+-Kees
 
 -- 
-tejun
+Kees Cook
+Ubuntu Security Team
