@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbYJGBFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbYJGBF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755103AbYJGBFj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 21:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbYJGAqp
+	id S1760100AbYJGBF5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 21:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbYJGAqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:46:45 -0400
-Received: from mx1.suse.de ([195.135.220.2]:47328 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:46:50 -0400
+Received: from mx2.suse.de ([195.135.220.15]:32905 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758071AbYJGAqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:46:43 -0400
-Date: Mon, 6 Oct 2008 17:40:26 -0700
+	id S1758087AbYJGAqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:46:48 -0400
+Date: Mon, 6 Oct 2008 17:40:29 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Alessandro Zummo <alessandro.zummo@towertech.it>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 69/71] rtc: fix kernel panic on second use of SIGIO
-	nofitication
-Message-ID: <20081007004026.GR3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: [patch 70/71] mm owner: fix race between swapoff and exit
+Message-ID: <20081007004029.GS3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtc-fix-kernel-panic-on-second-use-of-sigio-nofitication.patch"
+Content-Disposition: inline; filename="mm-owner-fix-race-between-swapoff-and-exit.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,116 +44,160 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-commit 2e4a75cdcb89ff53bb182dda3a6dcdc14befe007 upstream
+[Here's a backport of 2.6.27-rc8's 31a78f23bac0069004e69f98808b6988baccb6b6
+ to 2.6.26 or 2.6.26.5: I wouldn't trouble -stable for the (root only)
+ swapoff case which uncovered the bug, but the /proc/<pid>/<mmstats> case
+ is open to all, so I think worth plugging in the next 2.6.26-stable.
+ - Hugh]
 
-When userspace uses SIGIO notification and forgets to disable it before
-closing file descriptor, rtc->async_queue contains stale pointer to struct
-file.  When user space enables again SIGIO notification in different
-process, kernel dereferences this (poisoned) pointer and crashes.
 
-So disable SIGIO notification on close.
+There's a race between mm->owner assignment and swapoff, more easily
+seen when task slab poisoning is turned on.  The condition occurs when
+try_to_unuse() runs in parallel with an exiting task.  A similar race
+can occur with callers of get_task_mm(), such as /proc/<pid>/<mmstats>
+or ptrace or page migration.
 
-Kernel panic:
-(second run of qemu (requires echo 1024 > /sys/class/rtc/rtc0/max_user_freq))
+CPU0                                    CPU1
+                                        try_to_unuse
+                                        looks at mm = task0->mm
+                                        increments mm->mm_users
+task 0 exits
+mm->owner needs to be updated, but no
+new owner is found (mm_users > 1, but
+no other task has task->mm = task0->mm)
+mm_update_next_owner() leaves
+                                        mmput(mm) decrements mm->mm_users
+task0 freed
+                                        dereferencing mm->owner fails
 
-general protection fault: 0000 [1] PREEMPT
-CPU 0
-Modules linked in: af_packet snd_pcm_oss snd_mixer_oss snd_seq_oss snd_seq_midi_event snd_seq usbhid tuner tea5767 tda8290 tuner_xc2028 xc5000 tda9887 tuner_simple tuner_types mt20xx tea5761 tda9875 uhci_hcd ehci_hcd usbcore bttv snd_via82xx snd_ac97_codec ac97_bus snd_pcm snd_timer ir_common compat_ioctl32 snd_page_alloc videodev v4l1_compat snd_mpu401_uart snd_rawmidi v4l2_common videobuf_dma_sg videobuf_core snd_seq_device snd btcx_risc soundcore tveeprom i2c_viapro
-Pid: 5781, comm: qemu-system-x86 Not tainted 2.6.27-rc6 #363
-RIP: 0010:[<ffffffff8024f891>]  [<ffffffff8024f891>] __lock_acquire+0x3db/0x73f
-RSP: 0000:ffffffff80674cb8  EFLAGS: 00010002
-RAX: ffff8800224c62f0 RBX: 0000000000000046 RCX: 0000000000000002
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff8800224c62f0
-RBP: ffffffff80674d08 R08: 0000000000000002 R09: 0000000000000001
-R10: ffffffff80238941 R11: 0000000000000001 R12: 0000000000000000
-R13: 6b6b6b6b6b6b6b6b R14: ffff88003a450080 R15: 0000000000000000
-FS:  00007f98b69516f0(0000) GS:ffffffff80623200(0000) knlGS:00000000f7cc86d0
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000a87000 CR3: 0000000022598000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process qemu-system-x86 (pid: 5781, threadinfo ffff880028812000, task ffff88003a450080)
-Stack:  ffffffff80674cf8 0000000180238440 0000000200000002 0000000000000000
- ffff8800224c62f0 0000000000000046 0000000000000000 0000000000000002
- 0000000000000002 0000000000000000 ffffffff80674d68 ffffffff8024fc7a
-Call Trace:
- <IRQ>  [<ffffffff8024fc7a>] lock_acquire+0x85/0xa9
- [<ffffffff8029cb62>] ? send_sigio+0x2a/0x184
- [<ffffffff80491d1f>] _read_lock+0x3e/0x4a
- [<ffffffff8029cb62>] ? send_sigio+0x2a/0x184
- [<ffffffff8029cb62>] send_sigio+0x2a/0x184
- [<ffffffff8024fb97>] ? __lock_acquire+0x6e1/0x73f
- [<ffffffff8029cd4d>] ? kill_fasync+0x2c/0x4e
- [<ffffffff8029cd10>] __kill_fasync+0x54/0x65
- [<ffffffff8029cd5b>] kill_fasync+0x3a/0x4e
- [<ffffffff80402896>] rtc_update_irq+0x9c/0xa5
- [<ffffffff80404640>] cmos_interrupt+0xae/0xc0
- [<ffffffff8025d1c1>] handle_IRQ_event+0x25/0x5a
- [<ffffffff8025e5e4>] handle_edge_irq+0xdd/0x123
- [<ffffffff8020da34>] do_IRQ+0xe4/0x144
- [<ffffffff8020bad6>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8026fdc2>] ? __alloc_pages_internal+0xe7/0x3ad
- [<ffffffff8033fe67>] ? clear_page_c+0x7/0x10
- [<ffffffff8026fc10>] ? get_page_from_freelist+0x385/0x450
- [<ffffffff8026fdc2>] ? __alloc_pages_internal+0xe7/0x3ad
- [<ffffffff80280aac>] ? anon_vma_prepare+0x2e/0xf6
- [<ffffffff80279400>] ? handle_mm_fault+0x227/0x6a5
- [<ffffffff80494716>] ? do_page_fault+0x494/0x83f
- [<ffffffff8049251d>] ? error_exit+0x0/0xa9
+The fix is to notify the subsystem via mm_owner_changed callback(),
+if no new owner is found, by specifying the new task as NULL.
 
-Code: cc 41 39 45 28 74 24 e8 5e 1d 0f 00 85 c0 0f 84 6a 03 00 00 83 3d 8f a9 aa 00 00 be 47 03 00 00 0f 84 6a 02 00 00 e9 53 03 00 00 <41> ff 85 38 01 00 00 45 8b be 90 06 00 00 41 83 ff 2f 76 24 e8
-RIP  [<ffffffff8024f891>] __lock_acquire+0x3db/0x73f
- RSP <ffffffff80674cb8>
----[ end trace 431877d860448760 ]---
-Kernel panic - not syncing: Aiee, killing interrupt handler!
+Jiri Slaby:
+mm->owner was set to NULL prior to calling cgroup_mm_owner_callbacks(), but
+must be set after that, so as not to pass NULL as old owner causing oops.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Acked-by: Alessandro Zummo <alessandro.zummo@towertech.it>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Daisuke Nishimura:
+mm_update_next_owner() may set mm->owner to NULL, but mem_cgroup_from_task()
+and its callers need to take account of this situation to avoid oops.
+
+Hugh Dickins:
+Lockdep warning and hang below exec_mmap() when testing these patches.
+exit_mm() up_reads mmap_sem before calling mm_update_next_owner(),
+so exec_mmap() now needs to do the same.  And with that repositioning,
+there's now no point in mm_need_new_owner() allowing for NULL mm.
+
+Reported-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Paul Menage <menage@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/rtc/rtc-dev.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ fs/exec.c       |    2 +-
+ kernel/cgroup.c |    5 +++--
+ kernel/exit.c   |   12 ++++++++++--
+ mm/memcontrol.c |   13 +++++++++++++
+ 4 files changed, 27 insertions(+), 5 deletions(-)
 
---- a/drivers/rtc/rtc-dev.c
-+++ b/drivers/rtc/rtc-dev.c
-@@ -401,6 +401,12 @@ static int rtc_dev_ioctl(struct inode *i
- 	return err;
- }
- 
-+static int rtc_dev_fasync(int fd, struct file *file, int on)
-+{
-+	struct rtc_device *rtc = file->private_data;
-+	return fasync_helper(fd, file, on, &rtc->async_queue);
-+}
-+
- static int rtc_dev_release(struct inode *inode, struct file *file)
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -740,11 +740,11 @@ static int exec_mmap(struct mm_struct *m
+ 	tsk->active_mm = mm;
+ 	activate_mm(active_mm, mm);
+ 	task_unlock(tsk);
+-	mm_update_next_owner(old_mm);
+ 	arch_pick_mmap_layout(mm);
+ 	if (old_mm) {
+ 		up_read(&old_mm->mmap_sem);
+ 		BUG_ON(active_mm != old_mm);
++		mm_update_next_owner(old_mm);
+ 		mmput(old_mm);
+ 		return 0;
+ 	}
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2761,14 +2761,15 @@ void cgroup_fork_callbacks(struct task_s
+  */
+ void cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
  {
- 	struct rtc_device *rtc = file->private_data;
-@@ -411,16 +417,13 @@ static int rtc_dev_release(struct inode 
- 	if (rtc->ops->release)
- 		rtc->ops->release(rtc->dev.parent);
+-	struct cgroup *oldcgrp, *newcgrp;
++	struct cgroup *oldcgrp, *newcgrp = NULL;
  
-+	if (file->f_flags & FASYNC)
-+		rtc_dev_fasync(-1, file, 0);
+ 	if (need_mm_owner_callback) {
+ 		int i;
+ 		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+ 			struct cgroup_subsys *ss = subsys[i];
+ 			oldcgrp = task_cgroup(old, ss->subsys_id);
+-			newcgrp = task_cgroup(new, ss->subsys_id);
++			if (new)
++				newcgrp = task_cgroup(new, ss->subsys_id);
+ 			if (oldcgrp == newcgrp)
+ 				continue;
+ 			if (ss->mm_owner_changed)
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -577,8 +577,6 @@ mm_need_new_owner(struct mm_struct *mm, 
+ 	 * If there are other users of the mm and the owner (us) is exiting
+ 	 * we need to find a new owner to take on the responsibility.
+ 	 */
+-	if (!mm)
+-		return 0;
+ 	if (atomic_read(&mm->mm_users) <= 1)
+ 		return 0;
+ 	if (mm->owner != p)
+@@ -621,6 +619,16 @@ retry:
+ 	} while_each_thread(g, c);
+ 
+ 	read_unlock(&tasklist_lock);
++	/*
++	 * We found no owner yet mm_users > 1: this implies that we are
++	 * most likely racing with swapoff (try_to_unuse()) or /proc or
++	 * ptrace or page migration (get_task_mm()).  Mark owner as NULL,
++	 * so that subsystems can understand the callback and take action.
++	 */
++	down_write(&mm->mmap_sem);
++	cgroup_mm_owner_callbacks(mm->owner, NULL);
++	mm->owner = NULL;
++	up_write(&mm->mmap_sem);
+ 	return;
+ 
+ assign_new_owner:
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -250,6 +250,14 @@ static struct mem_cgroup *mem_cgroup_fro
+ 
+ struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
+ {
++	/*
++	 * mm_update_next_owner() may clear mm->owner to NULL
++	 * if it races with swapoff, page migration, etc.
++	 * So this can be called with p == NULL.
++	 */
++	if (unlikely(!p))
++		return NULL;
 +
- 	clear_bit_unlock(RTC_DEV_BUSY, &rtc->flags);
- 	return 0;
+ 	return container_of(task_subsys_state(p, mem_cgroup_subsys_id),
+ 				struct mem_cgroup, css);
  }
+@@ -574,6 +582,11 @@ retry:
  
--static int rtc_dev_fasync(int fd, struct file *file, int on)
--{
--	struct rtc_device *rtc = file->private_data;
--	return fasync_helper(fd, file, on, &rtc->async_queue);
--}
--
- static const struct file_operations rtc_dev_fops = {
- 	.owner		= THIS_MODULE,
- 	.llseek		= no_llseek,
+ 	rcu_read_lock();
+ 	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
++	if (unlikely(!mem)) {
++		rcu_read_unlock();
++		kmem_cache_free(page_cgroup_cache, pc);
++		return 0;
++	}
+ 	/*
+ 	 * For every charge from the cgroup, increment reference count
+ 	 */
 
 -- 
