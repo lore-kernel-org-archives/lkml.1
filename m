@@ -1,118 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYJGXtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbYJGXt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbYJGXtd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbYJGXtJ
+	id S1758627AbYJGXt7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbYJGXts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:49:09 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54041 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbYJGXtF (ORCPT
+	Tue, 7 Oct 2008 19:49:48 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58967 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbYJGXtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:49:05 -0400
-Date: Wed, 8 Oct 2008 08:47:53 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "mingo@elte.hu" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: mmotm 2008-10-02-16-17 uploaded
-Message-Id: <20081008084753.f1a4fc2e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48EB8BBB.8000907@kernel.org>
-References: <200810022318.m92NI14X031834@imap1.linux-foundation.org>
-	<Pine.LNX.4.64.0810021705460.26309@shark.he.net>
-	<20081007163331.711a938c.kamezawa.hiroyu@jp.fujitsu.com>
-	<48EB8BBB.8000907@kernel.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Oct 2008 19:49:46 -0400
+Message-ID: <48EBF49E.9030803@zytor.com>
+Date: Tue, 07 Oct 2008 16:45:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Nakajima, Jun" <jun.nakajima@intel.com>,
+       "akataria@vmware.com" <akataria@vmware.com>,
+       "avi@redhat.com" <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Zach Amsden <zach@vmware.com>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
+References: <1222881242.9381.17.camel@alok-dev1>	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1> <48E3FDD5.7040106@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com> <48E422CA.2010606@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com> <48E6AB15.8060405@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA325@orsmsx505.amr.corp.intel.com> <48E6BA5B.2090804@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DE4F934@orsmsx505.amr.corp.intel.com> <48EBF396.8000502@goop.org>
+In-Reply-To: <48EBF396.8000502@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Oct 2008 09:18:03 -0700
-Yinghai Lu <yinghai@kernel.org> wrote:
-
-> KAMEZAWA Hiroyuki wrote:
-> > I'm sorry if alread fixed.
-> > 
-> > Folloing function in git-x86.patch touches invalid address.
-> > ==
-> > +void __init early_cpu_init(void)
-> > +{
-> > +       struct cpu_dev **cdev;
-> > +       int count = 0;
-> > +
-> > +       printk("KERNEL supported cpus:\n");
-> > +       for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
-> > +               struct cpu_dev *cpudev = *cdev;
-> > +               unsigned int j;
-> > +
-> > +               if (count >= X86_VENDOR_NUM)
-> > +                       break;
-> > +               cpu_devs[count] = cpudev;
-> > +               count++;
-> > +
-> > +               for (j = 0; j < 2; j++) {
-> > +                       if (!cpudev->c_ident[j])
-> > +                               continue;
-> > +                       printk("  %s %s\n", cpudev->c_vendor,
-> > +                               cpudev->c_ident[j]);
-> > +               }
-> > +       }
-> > +
-> > +       early_identify_cpu(&boot_cpu_data);
-> >  }
-> > ==
-> > printk("  %s %s\n", cpudev->c_vendor, cpudev->c_ident[j]);
-> > touches invalid address. (following is printk() result by
-> > replacing %s with %p.
-> > ==
-> >   ffffffff8066e38a ffffffff8066e383
-> >   ffffffff8066e3ab ffffffff8066e3a2
-> >   ffffffff8066e3af ffffffff8066e3b7
-> >   807064c0c7c74855 08ec834853e58948
-> >   807064c0c7c74855 74c085fffffe9fe8
-> > ==
-> > and the kernel never boots on my box.
+Jeremy Fitzhardinge wrote:
+>>
+>> The big difference here is that you could create a VM at runtime (by 
+>> combining the existing interfaces) that did not exist before (or was 
+>> not tested before). For example, a hypervisor could show hyper-v, 
+>> osx-v (if any), linux-v, etc., and a guest could create a VM with 
+>> hyper-v MMU, osx-v interrupt handling, Linux-v timer, etc. And such 
+>> combinations/variations can grow exponentially.
 > 
-> could be merging problem again.
+> That would be crazy.
 > 
-> please check in arch/x86/kernel/vmliux_64.lds.S
+
+Not necessarily, although the example above is extreme.  Redundant 
+interfaces is the norm in an evolving platform.
+
+>> Or are you suggesting that multiple interfaces be _available_ to 
+>> guests at runtime but the guest chooses one of them?
 > 
-> it should be like 
-> 
->   __con_initcall_end = .;
->   __x86_cpu_dev_start = .;
->   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
->         *(.x86_cpu_dev.init)
->   }
->   __x86_cpu_dev_end = .;
-> 
->   DYN_ARRAY_INIT(8)
-> 
->   SECURITY_INIT
-> 
-Oh, yes. like this.
-==
- __con_initcall_end = .;
-  __x86_cpu_dev_start = .;
-  .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
-        *(.x86_cpu_dev.init)
-  }
-  SECURITY_INIT
-  __x86_cpu_dev_end = .;
-==
+> Right, that's what I've been suggesting.    I think hypervisors should 
+> be able to offer multiple ABIs to guests, but a guest has to commit to 
+> using one exclusively (ie, once they start to use one then the others 
+> turn themselves off, kill the domain, etc).
 
-I'll try next version when it comes.
+Not inherently.  Of course, there may be interfaces which are interently 
+or by policy mutually exclusive, but a hypervisor should only export the 
+interfaces it wants a guest to be able to use.
 
-Thanks,
--Kame
+This is particularly so with CPUID, which is a *data export* interface, 
+it doesn't perform any action.
 
-
-
-
-
-
-
+	-hpa
