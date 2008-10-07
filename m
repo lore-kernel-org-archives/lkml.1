@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbYJGRgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYJGRil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbYJGRgy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 13:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYJGRgr
+	id S1754982AbYJGRil (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 13:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYJGRid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 13:36:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38934 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752731AbYJGRgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 13:36:46 -0400
-Subject: RE: [malware-list] [RFC] 0/11 fanotify: fscking all notifiction
-	andfile access	system (intended for antivirus scanning and fileindexers)
-From: Eric Paris <eparis@redhat.com>
-To: "Michael Morley, HCL America" <mmorley@hcl.in>
-Cc: malware-list@lists.printk.net, linux-kernel@vger.kernel.org
-In-Reply-To: <5CB739747AC639489F3E8210950C3E555C39EE@geousmail3.GEO.CORP.HCL.IN>
-References: <1222463220.2872.193.camel@localhost.localdomain>
-	 <alpine.DEB.1.10.0809262259290.4229@asgard.lang.hm>
-	 <1222524294.2872.252.camel@localhost.localdomain>
-	 <5CB739747AC639489F3E8210950C3E555C39EE@geousmail3.GEO.CORP.HCL.IN>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 13:36:30 -0400
-Message-Id: <1223400990.2994.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 13:38:33 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55054 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752948AbYJGRic (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 13:38:32 -0400
+Date: Tue, 7 Oct 2008 13:38:31 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 2/9] x86 architecture implementation of Hardware
+ Breakpoint interfaces
+In-Reply-To: <20081007172301.GC4130@in.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0810071337330.2759-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 10:32 -0700, Michael Morley, HCL America wrote:
-> > 
-> > On Fri, 2008-09-26 at 23:05 -0700, david@lang.hm wrote:
-> > > On Fri, 26 Sep 2008, Eric Paris wrote:
-> > >
-> > > > fanotify has 7 event types and only sends events for S_ISREG()
-> files.
-> > > > The event types are OPEN, READ, WRITE, CLOSE_WRITE, CLOSE_NOWRITE,
-> > > > OPEN_ACCESS, and READ_ACCESS.  Events OPEN_ACCESS and READ_ACCESS
-> > > > require that the listener return some sort of allow/deny/more_time
-> > > > response as the original process blocks until it gets an event (or
-> > times
-> > > > out.)  listeners may register a group which will get notifications
-> > about
-> > > > any combination of these events.  Antivirus scanners will likely
-> want
-> > > > OPEN_ACCESS and READ_ACCESS while file indexers would likely use
-> the
-> > > > non-ACCESS form of these events.
-> > >
-> > > sending a message out for every READ/WRITE seems like it will
-> generate a
-> > > LOT of messages, and very few will be ones that anyone cares about.
-> > >
-> > > one of the nice things about the TALPA approach was that there was
-> an
-> > > ability to notify only on a change of state (i.e. when a file that
-> had
-> > > been scanned was changed)
-> > >
-> > > this could do a similar thing, but I think it would be a much more
-> > > expensive process to do it all in userspace.
-> > 
-> > See the fastpath patch and explaination.  Doesn't help for writes...
-> > 
+On Tue, 7 Oct 2008, K.Prasad wrote:
+
+> There's been a perceivable inclination to let the user learn the
+> limitations/features of the underlying processor's breakpointing ability
+> (since the previous email mail thread on this topic) and the routines
+> pre_ and post_handler_allowed() are just a step towards that.
 > 
-> Eric, have you considered the scenario where the listening process
-> appears to have stopped responding to access events? Under your design,
-> the original process would be released after 5 seconds. Too many of
-> these timeouts could wreak havoc on the OS. There should be some logic
-> in fanotify to remove the fanotify_group after a certain number of
-> timeouts which may or may not have to be sequential.
+> I can nullify the post_handler for x86-instruction breakpoint for now,
+> but it wouldn't simplify things very extensively (but for a few lines of
+> code in hw_breakpoint_handler() and the flag 'sstep_reason'). It also
+> benefits the code by bringing an understanding that there can be
+> multiple users of processor single-stepping (and therefore the need to
+> de-multiplex the exception and invoke the appropriate handler).
+> 
+> Left to me, I would like to retain the post_handler routine, unless you
+> strongly feel otherwise.
 
-anyone have thoughts on the topic?  Maybe I'll revisit it after I get a
-new user interface.  25 missed permission events and I can just evict a
-group altogether.  Should the counter be cleared if a listener makes a
-decision?
+Let's hear what Roland has to say.
 
-> Less importantly, it would be nice if the listening process could set
-> the timeout value when it registers with fanotify (with some limits of
-> course).
-
-noted.
+Alan Stern
 
