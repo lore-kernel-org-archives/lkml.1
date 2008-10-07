@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYJGLVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYJGLWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbYJGLVI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYJGLUz
+	id S1754633AbYJGLWL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYJGLV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:20:55 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:55806 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752992AbYJGLUy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:20:54 -0400
-Date: Tue, 7 Oct 2008 14:21:58 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, RFC] shmat: introduce flag SHM_MAP_HINT
-Message-ID: <20081007112157.GA5126@localhost.localdomain>
-References: <20081006132651.GG3180@one.firstfloor.org> <1223303879-5555-1-git-send-email-kirill@shutemov.name> <20081007195837.5A6B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081007112119.GG20740@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
-Content-Disposition: inline
-In-Reply-To: <20081007112119.GG20740@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+	Tue, 7 Oct 2008 07:21:59 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44098 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752832AbYJGLV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 07:21:58 -0400
+From: Bernhard Walle <bwalle@suse.de>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Bernhard Walle <bwalle@suse.de>
+Subject: [PATCH] Document panic_on_unrecovered_nmi sysctl
+Date: Tue,  7 Oct 2008 13:21:56 +0200
+Message-Id: <1223378516-24304-1-git-send-email-bwalle@suse.de>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This adds "panic_on_unrecovered_nmi" sysctl to
+Documentation/filesystems/proc.txt. The text is mainly taken from
+http://readlist.com/lists/vger.kernel.org/linux-kernel/43/217998.html.
 
---zYM0uCDKw75PZbzx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 07, 2008 at 01:21:19PM +0200, Andi Kleen wrote:
-> > Honestly, I don't like that qemu specific feature insert into shmem cor=
-e.
->=20
-> I wouldn't say it's a qemu specific interface.  While qemu would=20
-> be the first user I would expect more in the future. It's a pretty
-> obvious extension. In fact it nearly should be default, if the
-> risk of breaking old applications wasn't too high.
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+---
+ Documentation/filesystems/proc.txt |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-It's bad idea. It will break POSIX compatible.
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index f566ad9..d2f77d9 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -1322,6 +1322,18 @@ debugging information is displayed on console.
+ NMI switch that most IA32 servers have fires unknown NMI up, for example.
+ If a system hangs up, try pressing the NMI switch.
+ 
++panic_on_unrecovered_nmi
++------------------------
++
++The default Linux behaviour on an NMI of either memory or unknown is to continue
++operation. For many environments such as scientific computing it is preferable
++that the box is taken out and the error dealt with than an uncorrected
++parity/ECC error get propogated.
++
++A small number of systems do generate NMI's for bizarre random reasons such as
++power management so the default is off. That sysctl works like the existing
++panic controls already in that directory.
++
+ nmi_watchdog
+ ------------
+ 
+-- 
+1.6.0.2
 
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
-
---zYM0uCDKw75PZbzx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjrRlUACgkQbWYnhzC5v6o9ZQCfdXw0/6+rOfTVNOdznzH0YGg6
-2j0An1LTSY9Db6LJchJe2avOxbzuFcSH
-=BigC
------END PGP SIGNATURE-----
-
---zYM0uCDKw75PZbzx--
