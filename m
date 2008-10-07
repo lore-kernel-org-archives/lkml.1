@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbYJGGvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYJGGza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbYJGGvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 02:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYJGGvj
+	id S1756122AbYJGGza (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 02:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYJGGzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 02:51:39 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59134 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbYJGGvi (ORCPT
+	Tue, 7 Oct 2008 02:55:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:30727 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbYJGGzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 02:51:38 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH] markers: fix missing modpost entry in Module.markers
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, stable@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Roland McGrath <roland@redhat.com>,
-       Wenji Huang <wenji.huang@oracle.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       systemtap@sourceware.org
-In-Reply-To: <48EB032B.3070200@cn.fujitsu.com>
-References: <48EB032B.3070200@cn.fujitsu.com>
-Message-Id: <20081007154401.5A59.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 7 Oct 2008 02:55:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=G88N2AZMMTsCCYamAY9GLYWyC45CP+fPrVszuPxx3+o4w5e3tD9kw+429davRY7Jr0
+         l3PV16NDMkysgz4le0+Q5tJk4gk56hs6y8/OzYUfqt4KeX2JYu/wfG8aO3O6fqQDK/JP
+         pTObreEN9FiS22OUJL1BlOBsf44d3IZ2sIydU=
+Message-ID: <2f1d248c0810062355r2871da61td3cca6b66a9d77a6@mail.gmail.com>
+Date: Tue, 7 Oct 2008 14:55:18 +0800
+From: "chen chong" <byrbzdl@gmail.com>
+To: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: How to disable authentication when using bluetooth on Linux?
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue,  7 Oct 2008 15:51:34 +0900 (JST)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lai
+Hi, all
 
-Have you seen "Markers in (non-module) kernel code?" thread?
-I think this patch and that patch treat the same issue.
-
-In addition, I think mathieu's patch is better.
-So, Could I hear your opinition for that?
+When pushing a file to bluetooth mobile phone from a Linux PC, how to
+disable bluetooth authentication mechanism (in kernel or user level ?
+), so that the phone won't prompt a window ask for PIN code?
 
 
-> 
-> commit d35cb360c29956510b2fe1a953bd4968536f7216 brought a bug.
-> marker points compiled in vmlinux are missing in Module.markers.
-> 
-> # cat Module.markers
-> subsystem_event samples/markers/marker-example  integer %d string %s
-> subsystem_eventb        samples/markers/marker-example
-> 
-> # stap -e 'probe kernel.mark("core_marker_format"){} '
-> semantic error: no match while resolving probe point kernel.mark("core_marker_format")
-> semantic error: no probes found
-> Pass 2: analysis failed.  Try again with more '-v' (verbose) options.
-> 
-> This patch revert a part of d35cb360c29956510b2fe1a953bd4968536f7216.
-> Other parts have fixed duplicate modpost entry bug.
-> 
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-> index 418cd7d..3509142 100644
-> --- a/scripts/mod/modpost.c
-> +++ b/scripts/mod/modpost.c
-> @@ -1992,8 +1992,7 @@ static void read_markers(const char *fname)
->  			mod->skip = 1;
->  		}
->  
-> -		if (!mod->skip)
-> -			add_marker(mod, marker, fmt);
-> +		add_marker(mod, marker, fmt);
->  	}
->  	return;
->  fail:
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I'm a freshman on bluez, now I'm trying to write an application on
+Linux PC,  to send files to mobile phones with OBEX. The PC has a USB
+bluetooth stick to communication with the phone.
 
+Now I have successfully sent a file to phone using the following commands:
+1. "hcitool scan" and "sdptool browse"
+2. "passkey-agent --default 1234" and "ussp-push --dev 0
+BTADDR@CHANNEL desk.jpg desk.jpg"
 
+but the phone ask for a PIN code at the start.
 
+To get rid of this, I had tried to comment out
+"start_security_manager()" in bluez-utils-3.7/hcid/main.c,  and
+recompile it, then restart the bluetooth service. But PIN code was
+still prompted, and after if I input some characters,  the command
+"ussp-push --dev 0 --debug  BTADDR@CHANNEL desk.jpg desk.jpg", failed
+with the following error:
+
+root@debian:~/bluetooth# pushing file desk.jpg
+name=desk.jpg, size=24762
+__obex_connect: client_context_t = 0x80540f0
+Registered transport
+Set user data
+Created new objext
+cobex_write
+Local device 00:01:02:03:04:01
+Remote device 00:01:02:03:04:05 (11)
+Write error: Transport endpoint is not connected
+obex_event: client_context_t = 0x80540f0
+cobex_disconnect
+Link broken!
+Started a new request
+cobex_close
+__obex_connect: error=-2
+Unable to connect to the server
+Error
