@@ -1,115 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbYJGWMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbYJGWNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbYJGWMt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbYJGWMf
+	id S1757554AbYJGWNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbYJGWNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:12:35 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:50612 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757126AbYJGWMd (ORCPT
+	Tue, 7 Oct 2008 18:13:09 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:37087 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754618AbYJGWNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:12:33 -0400
-Subject: Re: [RFC] Normalizing byteorder/unaligned access API
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-In-Reply-To: <1223416391.8195.22.camel@brick>
-References: <1223416391.8195.22.camel@brick>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 18:12:22 -0400
-Message-Id: <1223417543.7484.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 18:13:08 -0400
+Date: Tue, 7 Oct 2008 18:12:56 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Quentin Godfroy <godfroy@clipper.ens.fr>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       Quentin Godfroy <godfroy@clipper.ens.fr>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: possible (ext4 related?) memory leak in kernel 2.6.26
+Message-ID: <20081007221256.GF15929@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Quentin Godfroy <godfroy@clipper.ens.fr>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080930211854.GZ10831@mit.edu> <20080930222358.1FF30EAC415@quatramaran.ens.fr> <20081003003548.GA18138@mit.edu> <20081005091526.GA678@goelette.ens.fr> <20081005122752.GB27335@mit.edu> <20081005161214.GA2985@goelette.ens.fr> <20081006025006.GA9289@mit.edu> <48EA2F20.7020309@redhat.com> <20081006175502.GA12937@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081006175502.GA12937@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 14:53 -0700, Harvey Harrison wrote:
-> [related question regarding the SCSI-private endian helper needs at the end]
-> 
-> Currently on the read side, we have (le16 as an example endianness)
-> 
-> le16_to_cpup(__le16 *)
-> get_unaligned_le16(void *)
-> 
-> And on the write side:
-> 
-> *(__le16)ptr = cpu_to_le16(u16)
-> put_unaligned_le16(u16, void *);
-> 
-> On the read side, Al said he would have preferred the unaligned version
-> take the same types as the aligned, rather than void *.  AKPM didn't think
-> the use of get_ was that great as get/put generally implies some kind of reference
-> taking in the kernel.
-> 
-> As the le16_to_cpup has been around for so long and is more recognizable, let's
-> make it the same for the unaligned case and typesafe:
-> 
-> le16_to_cpup(__le16 *)
-> unaligned_le16_to_cpup(__le16 *)
-> 
-> On the write side, the above get/put and type issues are still there, in addition AKPM felt
-> that the ordering of the put_unaligned parameters was opposite what was intuitive and that
-> the pointer should come first.
-> 
-> In this case, as there is currently no aligned helper (other than in some drivers defining macros)
-> define the api thusly:
-> 
-> Aligned:
-> write_le16(__le16 *ptr, u16 val)
-> 
-> Unaligned:
-> unaligned_write_le16(__le16 *ptr, u16 val)
+On Mon, Oct 06, 2008 at 01:55:02PM -0400, Theodore Tso wrote:
+> Here are updates to the two patches I sent you.  The first fixes some
+> printk labels and requires that the debugging dump ioctl be triggered
+> by root; the second fixes the think-o that Eric pointed out earlier
+> this morning.
 
-Well, for us it would be even worse since now we'll have to do casting
-to __beX just to shut sparse up, which makes the code even more
-unreadable.
+Hey Quentin, just wanted to check in and find out if the patches seem
+to be working for you.  They seem to solve the problem on my side; I
+can no longer reproduce the problem.  Is it working for you?
 
-> The existing get/put_unaligned macros do not necessarily need to be modified.  It would
-> present one oddity that the parameter order was different, but that's not a huge issue.
-> 
-> These could be phased in as they do not collide with the current API and the old api converted
-> over fairly quickly as not many places use the get/put_unaligned_{endian} helpers yet.
-> 
-> In addition, there are some subsystems (scsi) that are looking into some differently sized
-> endian helpers (be24) and it may be worthwhile to have some agreement whether it is worth
-> making them common infrastructure and whether they should present a similar API to the
-> common byteorder/unaligned API.
-> 
-> Is this a worthwhile direction to take?
+Thanks, regards,
 
-I really don't think so.  The current:
-
-cmd[2] = X >> 24;
-cmd[3] = X >> 16;
-...
-
-make sense to a storage person because they replicate exactly how the
-standards are laid out.  They're also clearer than the plethora of
-unaligned_write_be32 etc.
-
-The only real one we need an accessor for is 64 bits ... purely because
-most people are too lazy to write all eight statements.
-
-The optimisation argument is a bit of a myth ... the number of cycles
-taken by these stores is dwarfed by the rest of the code path, even if
-the compiler totally screws up the optimisation, which, realistically,
-it shouldn't since it should know the platform native endianness in most
-cases.
-
-There was a fairly luke warm response to the idea of SCSI accessors
-basically showing the level of apathy; certainly generic ones would be a
-shade worse than this because now readers have to work out what they're
-doing.  In general, I'd prefer the SCSI stack just be left alone rather
-than converted to accessors like this.
-
-James
-
-
+       	      		    	      	    - Ted
