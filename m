@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYJGBJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbYJGBKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758144AbYJGBJs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 21:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYJGBJj
+	id S1757886AbYJGBKy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 21:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYJGBKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 21:09:39 -0400
-Received: from rn-out-0910.google.com ([64.233.170.189]:23119 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbYJGBJh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 21:09:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=cuR7oZLyuaaFwwTA/GAdYK6Vdf574agac5EnVg8fsw8Sp4mkrrWQYMOJP1DzdSzKXq
-         QcfCUJpX3OFeIYb/ByFOpHarG1YnusXjFc/SAUlyoztV4h2asNiaUpupB5x176dsDyVt
-         d1IepsyPfBB7hQQ5Xi+att/rYSIuGR+jrNxuQ=
-Message-ID: <48EAB672.3010209@gmail.com>
-Date: Tue, 07 Oct 2008 10:08:02 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Linda Walsh <lkml@tlinx.org>
-CC: Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
- or sleep, PATA models did. (fwd)
-References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org>
-In-Reply-To: <48EAAF2E.4060407@tlinx.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Oct 2008 21:10:45 -0400
+Received: from mga11.intel.com ([192.55.52.93]:2781 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbYJGBKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 21:10:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,370,1220252400"; 
+   d="asc'?scan'208";a="388330082"
+Subject: Re: [PATCH -mm -v3] Separate atomic_t declaration from
+	asm/atomic.h into asm/atomic_def.h
+From: Huang Ying <ying.huang@intel.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0810061047440.5594@anakin>
+References: <1223263964.5872.20.camel@yhuang-dev.sh.intel.com>
+	 <Pine.LNX.4.64.0810061047440.5594@anakin>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-J2y4bja2dkTYnRYG6VKh"
+Date: Tue, 07 Oct 2008 09:09:59 +0800
+Message-Id: <1223341799.5872.24.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linda Walsh wrote:
-> So the real problem is why issuing a smart command isn't re-starting
-> the drive -- or bringing it back from standby.  Whereas a "normal" disk
-> read seems to bring it back to normal functioning just fine (and can
-> then do the smart-test).
-> 
-> Does this give anyone ideas about where the problem might be?  Also
-> sorta explains why my hangs have been infrequent, because I've been
-> periodically polling the temps of all the drives -- and only when I stop
-> the polling would the drive timeout, then die the next morning when
-> smartd tried to run a short test between 1 and 2 am.
 
-Sounds like a firmware problem to me.  Issuing ATA_CMD_VERIFY on block
-0 before issuing test commands should work around the problem.  Also,
-which controller are you using?  Can you post the failing kernel log?
+--=-J2y4bja2dkTYnRYG6VKh
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-tejun
+Hi, Geert,
+
+On Mon, 2008-10-06 at 10:48 +0200, Geert Uytterhoeven wrote:
+> On Mon, 6 Oct 2008, Huang Ying wrote:
+> > From: Huang Ying <ying.huang@intel.com>
+> >=20
+> > asm/atomic.h contains both declaration and implementation of atomic_t. =
+ So
+> > there are some implementation related files included in asm/atomic.h.  =
+And
+> > atomic_t is a typedef.  Combination of above makes it impossible to use
+> > atomic_t in files included by atomic.h.  Such as atomic_t can not be us=
+ed
+> > in linux/kernel.h on i386, because it is included by asm/atomic.h.
+> >=20
+> > It is reasonable to separate declaration from implementation.  So a new
+> > file atomic_def.h is added for every architecture to accommodate the
+> > declaration of atomic_t.
+>=20
+> And how many of these atomic_def.h are identical?
+> asm-generic?
+
+Most of them are identical. But <asm/atomic_def.h> will be a public API,
+included by not only <asm/atomic.h> but also <linux/xxx.h>. I don't know
+how to put it in asm-generic.
+
+Best Regards,
+Huang Ying
+
+--=-J2y4bja2dkTYnRYG6VKh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjqtuEACgkQKhFGF+eHlpjlpgCfYJ4MJ9bPR1Sx00wO3TBix1u9
+V8oAoJWqixv8DoxETzCmT3xEopyr33zM
+=Er7F
+-----END PGP SIGNATURE-----
+
+--=-J2y4bja2dkTYnRYG6VKh--
+
