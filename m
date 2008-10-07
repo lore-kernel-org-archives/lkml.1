@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYJGS7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbYJGTKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230AbYJGS7w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 14:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbYJGS7n
+	id S1754521AbYJGTKH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 15:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYJGTJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 14:59:43 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43487 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbYJGS7m (ORCPT
+	Tue, 7 Oct 2008 15:09:56 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4981 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbYJGTJ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 14:59:42 -0400
-Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit
-	arch
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <andi@firstfloor.org>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-In-Reply-To: <20081007105056.16d9e785.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2>
-	 <6.0.0.20.2.20081007183452.0f052210@172.19.0.2>
-	 <20081007102942.GE20740@one.firstfloor.org>
-	 <200810080327.44530.nickpiggin@yahoo.com.au>
-	 <20081007105056.16d9e785.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 20:59:23 +0200
-Message-Id: <1223405963.26330.83.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 15:09:56 -0400
+X-Greylist: delayed 939 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Oct 2008 15:09:55 EDT
+Date: Tue, 7 Oct 2008 18:54:10 +0000
+From: root <thunder7@xs4all.nl>
+To: linux-fb-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: uvesafb in 2.6.27-rc9 uses mode_option, in 2.6.27 mode, but the
+	docs aren't updated
+Message-ID: <20081007185410.GA7872@onderneming10>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 10:50 -0700, Andrew Morton wrote:
-> On Wed, 8 Oct 2008 03:27:44 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+I just tested 2.6.27-rc9 on my laptop, which uses uvesafb. I notice that
+I need to update
 
-> > So.. is everyone agreed that corrupting f_pos is a bad thing? (serious
-> > question) If so, then we should get something like this merged sooner
-> > rather than later.
-> 
-> - two threads/processes sharing the same fd
-> 
-> - both appending the same fd
-> 
-> - both hit the small race window right around the time when the file
->   flips over a multiple of 4G.
-> 
-> It's pretty damn improbable, and I think we can afford to spend the
-> time to get this right in 2.6.29.
+/sbin/modprobe uvesafb mode=1400x1050
 
-The whole point is that such usage is outside the specification and thus
-we don't strictly need to fix this.
+to
 
-So the question Nick is asking is, do we want to slow down the kernel
-for a few broken user-space applications. Esp. since the race doesn't
-affect anybody else except the broken users of the file descriptor.
+/sbin/modprobe uvesafb mode_option=1400x1050
 
-IMHO not worth fixing..
+but the documentation in Documentation/fb/uvesafb.txt happily talks
+about the mode option. It would be nice to have the documentation
+updated at least, but might I also question this move at all? Why call
+something 'mode_option' when 'mode' is shorter and the fact that it's an
+option really is clear from the fact you mention it on the commandline,
+like, how-do-I-call-it, yes-I-remember, an option?
 
+Or are we moving toward 'mtrr_option', 'scroll_option',
+'vram_remap_option' etc? I don't think that really a good idea, so the
+easiest thing to do would be to revert the patch that did this rename,
+since that resyncs the Documentation to the actual module and removes
+the needless description of the 'mode' option.
+
+Kind regards,
+Jurriaan
