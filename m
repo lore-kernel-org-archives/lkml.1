@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYJGQxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756455AbYJGQ4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbYJGQxu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYJGQxj
+	id S1756455AbYJGQ4V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbYJGQ4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:53:39 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:51553 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753941AbYJGQxi (ORCPT
+	Tue, 7 Oct 2008 12:56:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36159 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753390AbYJGQ4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:53:38 -0400
-Message-ID: <48EB93C7.6040408@fr.ibm.com>
-Date: Tue, 07 Oct 2008 18:52:23 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mark Ryden <markryde@gmail.com>
-CC: Benjamin Thery <benjamin.thery@bull.net>,
-       David Shwatrz <dshwatrz@gmail.com>, Greg KH <gregkh@suse.de>,
-       Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
-References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org> <20080820021754.GA25182@kroah.com>  <m1od3m282j.fsf_-_@frodo.ebiederm.org> <m1hc9e27ya.fsf_-_@frodo.ebiederm.org> <48B57058.9000101@bull.net> <dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com> <48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de> <31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com> <48BF83E1.5040000@bull.net> <dac45060810070939v80918a0m3963d7fc6fcbb975@mail.gmail.com>
-In-Reply-To: <dac45060810070939v80918a0m3963d7fc6fcbb975@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 7 Oct 2008 12:56:12 -0400
+Date: Tue, 7 Oct 2008 17:54:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
+Message-ID: <20081007175412.0d88da30@lxorguk.ukuu.org.uk>
+In-Reply-To: <1223396117-8118-1-git-send-email-kirill@shutemov.name>
+References: <1223396117-8118-1-git-send-email-kirill@shutemov.name>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Ryden wrote:
-> Hello,
->   So I wonder: the sysfs tagged directory support patch is in GerKH
-> tree for more than a month.
-> I cloned today latest Linus tree (2.6.27-rc9) and
-> it is not there as far as I can see.
-> It is also not in linux-next tree (from september).
-> Now, I wonder what is the process of merging this
-> GregKH tree ? should I watch the LKML list for a pull request
-> from GregKH? or will it be first merged into the linux-next tree?
+On Tue,  7 Oct 2008 19:15:17 +0300
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 
-They have been dropped.
+> If SHM_MAP_NOT_FIXED specified and shmaddr is not NULL, then the kernel takes
+> shmaddr as a hint about where to place the mapping. The address of the mapping
+> is returned as the result of the call.
+> 
+> It's similar to mmap() without MAP_FIXED.
 
-http://marc.info/?l=linux-kernel&m=122318517411596&w=2
+NAK
+
+This is a pointless API extension tacked onto a historic interface that
+isn't well designed.
+
+Use shm_open, and mmap and you get the functionality required using
+modern posix interfaces with *NO* Linux extensions involved.
+
+Alan
