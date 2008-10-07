@@ -1,99 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYJGIHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYJGILU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbYJGIHX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 04:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYJGIHA
+	id S1755417AbYJGILU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 04:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbYJGILJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 04:07:00 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56719 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133AbYJGIG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 04:06:59 -0400
-Date: Tue, 7 Oct 2008 10:06:56 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       netdev@vger.kernel.org, Paul McKenney <paulmck@us.ibm.com>
-Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm, for adaptive dcache hash table sizing (resend)
-Message-ID: <20081007080656.GB16143@wotan.suse.de>
-References: <20081007064834.GA5959@wotan.suse.de> <20081007070225.GB5959@wotan.suse.de> <48EB11BB.2060704@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48EB11BB.2060704@cosmosbay.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 7 Oct 2008 04:11:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:42056 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751488AbYJGILG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 04:11:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=Vv8q1WzsM89cmeGS1xCauIrCEtKjyryAoTBP3yYzMyzKtGgTsYNTfMHqeCyp5UKtTn
+         X3vBiEmsd+iKKPzE2rso77qrCN7V8ehWU8j8I5C+S1uL1hLeJKKvxkqNWEh7wgrKgt/h
+         /NJaHNg4iJvUcRVAQnOaPqoC2AhCOpFlbD6uo=
+Message-ID: <48EB1993.1030606@panasas.com>
+Date: Tue, 07 Oct 2008 10:10:59 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+MIME-Version: 1.0
+To: lists@ku-gbr.de
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <48D89C85.2080104@panasas.com> <20080924084846.GA2094@anita> <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com> <48E8947A.5020608@kernel.org> <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org> <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom>
+In-Reply-To: <20081007060357.GA16761@anita.doom>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 09:37:31AM +0200, Eric Dumazet wrote:
-> Nick Piggin a écrit :
-> >(resending with correct netdev address)
-> >
-> >With this algorithm, I can fit a whole kernel source and git tree in my 
-> >dcache
-> >hash table that is still 1/8th the size it would be before the patch.
-> >
-> >I'm cc'ing netdev because Dave did express some interest in using this for
-> >some networking hashes, and network guys in general are pretty cluey when 
-> >it
-> >comes to hashes and such ;)
-> >
+On Oct. 07, 2008, 8:04 +0200, Konstantin Kletschke <lists@ku-gbr.de> wrote:
+> Am 2008-10-07 10:02 +0900 schrieb Tejun Heo:
 > 
-> Thanks for reminding us this interesting stuff. And yes, IP route cache 
-> could use
-> same algo. That is particularly interesting because it has a 
-> /proc/net/rt_cache
-> accessor that needs to sequentially scan this hash table (potentialy with
-> many empty slots), while dcache doesnt have such killer.
-
-Hmm, that is interesting. What are the exact semantics of this rt_cache
-file? It might be difficult to retain them over a hash table resize
-operation, but it would be worth trying. Big hammer to block access to
-the file if a resize is in progress might work (but do we need to hold off
-access over multiple calls from userspace? then may need to also avoid
-resizing the hash table if the rt_cache file is open).
-
-
-> >+static struct dcache_hash *alloc_dhash(int size)
-> >+{
-> >+	struct dcache_hash *dh;
-> >+	unsigned long bytes;
-> >+	unsigned int shift;
-> >+	int i;
-> >+
-> >+	shift = ilog2(size);
-> >+	BUG_ON(size != 1UL << shift);
-> >+	bytes = size * sizeof(struct hlist_head *);
-> >+
-> >+	dh = kmalloc(sizeof(struct dcache_hash), GFP_KERNEL);
-> >+	if (!dh)
-> >+		return NULL;
-> >+
-> >+	if (bytes <= PAGE_SIZE) {
-> >+		dh->table = kmalloc(bytes, GFP_KERNEL);
-> >+	} else {
-> >+		dh->table = vmalloc(bytes);
-> >+	}
+>> Hmm... strange.  Can you please try the attached patch?  It's basically
+>> the same with a bit more debug information.
 > 
-> Here we probably want to use a hashdist/NUMA enabled vmalloc().
+> No Problem.
 > 
-> That is, regardless of current numa policy of *this* thread,
-> we want to spread hash table on all nodes.
-
-Yeah, it definitely should do. Thanks.
-
- 
-> Also, struct dcache_hash being very small, you want to force it to
-> use an exclusive cache line, to be sure it wont share it with some 
-> higly modified data...
+> I had difficulties to cold boot the machine today, I had to powercycle a
+> lot. Then I applied the patch and it bootet immediately:
 > 
-> struct dcache_hash {
-> 	struct hlist_head *table;
-> 	unsigned int shift;
-> 	unsigned int mask;
-> } __cacheline_aligned_in_smp;
+> sata_nv 0000:00:0a.0: version 3.5
+> ACPI: PCI Interrupt Link [LTID] enabled at IRQ 21
+> sata_nv 0000:00:0a.0: PCI INT A -> Link[LTID] -> GSI 21 (level, low) -> IRQ 21
+> sata_nv 0000:00:0a.0: setting latency timer to 64
+> scsi0 : sata_nv
+> scsi1 : sata_nv
+> ata1: SATA max UDMA/133 cmd 0xf80 ctl 0xf00 bmdma 0xd800 irq 21
+> ata2: SATA max UDMA/133 cmd 0xe80 ctl 0xe00 bmdma 0xd808 irq 21
+> ata1: hard resetting link
+> XXX CLASSIFY 01:00:00
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1.00: ATA-7: SAMSUNG HD753LJ, 1AA01106, max UDMA7
+> ata1.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+> ata1.00: configured for UDMA/133
+> ata1: EH complete
+> ata2: hard resetting link
+> ata2: SATA link down (SStatus 0 SControl 300)
+> ata2: EH complete
+> isa bounce pool size: 16 pages
+> scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD753LJ  1AA0 PQ: 0 ANSI: 5
+> sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
+> sd 0:0:0:0: [sda] Attached SCSI disk
+> PNP: No PS/2 controller found. Probing ports directly.
+> serio: i8042 KBD port at 0x60,0x64 irq 1
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> TCP cubic registered
+> NET: Registered protocol family 17
+> XFS mounting filesystem sda1
+> Ending clean XFS mount for filesystem: sda1
+> VFS: Mounted root (xfs filesystem) readonly.
+> Freeing unused kernel memory: 220k freed
+> 
+> 
+> Then I switched off and smoked a cigarette, booting then lasted a bit longer:
 
-Yes, good point.
+See, cigarettes are bad for you(r computer) ;-)
+
+Benny
+
+> 
+> ata1: link is slow to respond, please be patient (ready=0)
+> ata1: SRST failed (errno=-16)
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1: link online but device misclassified, retrying
+> ata1: hard resetting link
+> ata1: link is slow to respond, please be patient (ready=0)
+> ata1: SRST failed (errno=-16)
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1: link online but device misclassified, retrying
+> ata1: hard resetting link
+> XXX CLASSIFY 01:00:00
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1.00: ATA-7: SAMSUNG HD753LJ, 1AA01106, max UDMA7
+> ata1.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+> ata1.00: configured for UDMA/133
+> ata1: EH complete
+> ata2: hard resetting link
+> ata2: SATA link down (SStatus 0 SControl 300)
+> ata2: EH complete
+> isa bounce pool size: 16 pages
+> scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD753LJ  1AA0 PQ: 0 ANSI: 5
+> sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
+> sd 0:0:0:0: [sda] Attached SCSI disk
+> PNP: No PS/2 controller found. Probing ports directly.
+> serio: i8042 KBD port at 0x60,0x64 irq 1
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> TCP cubic registered
+> NET: Registered protocol family 17
+> XFS mounting filesystem sda1
+> Ending clean XFS mount for filesystem: sda1
+> VFS: Mounted root (xfs filesystem) readonly.
+> Freeing unused kernel memory: 220k freed
+> 
+> 
+> Konsti
+> 
+
