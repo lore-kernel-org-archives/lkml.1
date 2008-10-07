@@ -1,113 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbYJGPJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYJGPLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbYJGPJu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbYJGPJi
+	id S1754841AbYJGPLH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYJGPKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:09:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38884 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbYJGPJh (ORCPT
+	Tue, 7 Oct 2008 11:10:55 -0400
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:51919 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751250AbYJGPKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:09:37 -0400
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, minyard@acm.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com,
-       Hugh Dickins <hugh@veritas.com>, Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <48EB7747.9060505@cosmosbay.com>
-References: <20081006185026.GA10383@minyard.local>
-	 <48EA8197.6080502@cosmosbay.com>
-	 <1223367480.26330.7.camel@lappy.programming.kicks-ass.net>
-	 <48EB2AE3.3080200@cosmosbay.com> <48EB6EE4.8030703@linux-foundation.org>
-	 <48EB7747.9060505@cosmosbay.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 07 Oct 2008 17:09:08 +0200
-Message-Id: <1223392149.26330.47.camel@lappy.programming.kicks-ass.net>
+	Tue, 7 Oct 2008 11:10:55 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjQFAB8Z60hMQWq+/2dsb2JhbACBcrxxgWo
+Date: Tue, 7 Oct 2008 11:10:52 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       stable@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       Wenji Huang <wenji.huang@oracle.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       systemtap@sourceware.org
+Subject: Re: [PATCH] markers: fix missing modpost entry in Module.markers
+Message-ID: <20081007151052.GC31970@Krystal>
+References: <48EB032B.3070200@cn.fujitsu.com> <20081007154401.5A59.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48EB3542.2060306@cn.fujitsu.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <48EB3542.2060306@cn.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:06:45 up 124 days, 19:47,  8 users,  load average: 1.79, 0.72,
+	0.56
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 16:50 +0200, Eric Dumazet wrote:
-> Christoph Lameter a écrit :
-> > Eric Dumazet wrote:
-> >>>> Or just add SLAB_DESTROY_BY_RCU to slab creation in proto_register()
-> >>>> for "struct proto udp_prot/udpv6_prot" so that kmem_cache_free() done
-> >>>> in sk_prot_free() can defer freeing to RCU...
-> >>> Be careful!, SLAB_DESTROY_BY_RCU just means the slab page gets
-> >>> RCU-freed, this means that slab object pointers stay pointing to valid
-> >>> memory, but it does _NOT_ mean those slab objects themselves remain
-> >>> valid.
-> >>>
-> >>> The slab allocator is free to re-use those objects at any time -
-> >>> irrespective of the rcu-grace period. Therefore you will have to be able
-> >>> to validate that the object you point to is indeed the object you
-> >>> expect, otherwise strange and wonderful things will happen.
-> >>>
-> >> Thanks for this clarification. I guess we really need a rcu head then :)
+Hi Lai,
+
+I tried to fix it in a way that would still not duplicate marker
+entries, which is what the patch we are trying to repair was supposed to
+do. The patch you propose here seems to go back to the old behavior
+where we can have duplicate marker entries. I did not verify extensively
+that my new patch does not duplicate marker entries though, but I tried
+to follow the logic of your original patch.
+
+Mathieu
+
+* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> KOSAKI Motohiro wrote:
+> > Hi Lai
 > > 
-> > No you just need to make sure that the object you located is still active
-> > (f.e. refcount > 0) and that it is really a match (hash pointers may be
-> > updated asynchronously and therefore point to the object that has been reused
-> > for something else).
+> > Have you seen "Markers in (non-module) kernel code?" thread?
+> > I think this patch and that patch treat the same issue.
 > > 
-> > Generally it is advisable to use SLAB_DESTROY_BY_RCU because it preserves the
-> > cache hot advantages of the objects. Regular RCU freeing will let the object
-> > expire for a tick or so which will result in the cacheline cooling down.
 > 
-> Seems really good to master this SLAB_DESTROY_BY_RCU thing (I see almost no use
-> of it in current kernel)
-
-There is (AFAIK) only 1 user, the anon_vma stuff.
-
-> 1) Hum, do you know why "struct file" objects dont use SLAB_DESTROY_BY_RCU then,
-> since we noticed a performance regression for several workloads at RCUification
-> of file structures ?
+> I didn't notice that thread.
 > 
-> 2) What prevents an object to be *freed* (and deleted from a hash chain), then
-> re-allocated and inserted to another chain (different keys) ? (final refcount=1)
+> > In addition, I think mathieu's patch is better.
 > 
-> If the lookup detects a key mismatch, how will it continue to the next item,
-> since 'next' pointer will have been reused for the new chain insertion...
+> I greed with you, Mathieu's patch is better.
+> 
+> Thanks.
+> 
+> > So, Could I hear your opinition for that?
+> > 
+> > 
+> >> commit d35cb360c29956510b2fe1a953bd4968536f7216 brought a bug.
+> >> marker points compiled in vmlinux are missing in Module.markers.
+> >>
+> >> # cat Module.markers
+> >> subsystem_event samples/markers/marker-example  integer %d string %s
+> >> subsystem_eventb        samples/markers/marker-example
+> >>
+> >> # stap -e 'probe kernel.mark("core_marker_format"){} '
+> >> semantic error: no match while resolving probe point kernel.mark("core_marker_format")
+> >> semantic error: no probes found
+> >> Pass 2: analysis failed.  Try again with more '-v' (verbose) options.
+> >>
+> >> This patch revert a part of d35cb360c29956510b2fe1a953bd4968536f7216.
+> >> Other parts have fixed duplicate modpost entry bug.
+> >>
+> >>
+> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> >> ---
+> >> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+> >> index 418cd7d..3509142 100644
+> >> --- a/scripts/mod/modpost.c
+> >> +++ b/scripts/mod/modpost.c
+> >> @@ -1992,8 +1992,7 @@ static void read_markers(const char *fname)
+> >>  			mod->skip = 1;
+> >>  		}
+> >>  
+> >> -		if (!mod->skip)
+> >> -			add_marker(mod, marker, fmt);
+> >> +		add_marker(mod, marker, fmt);
+> >>  	}
+> >>  	return;
+> >>  fail:
+> >>
+> >>
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >> Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> > 
+> > 
+> > 
+> > 
+> > 
+> 
+> 
 
-Right, you can't have lists with items like that. You can only do
-matching lookups. What you do is:
-
-find_get_obj(key)
-{
- rcu_read_lock()
-again:
- obj = lookup(key);
- if (!obj)
-  goto out;
-
- /* 
-  * if we can't get a ref, the item got freed concurrently
-  * try again
-  */
- if (!get_ref_unless_zero(obj))
-  goto again;
-
- /*
-  * if we did get a ref, but its not the object we expected
-  * try again
-  */
- if (obj->key != key) {
-   put_ref(obj);
-   goto again;
- }
-out:
- rcu_read_unlock();
- return obj;
-}
-
-Which is basically what we do with the lockless pagecache, where we
-don't need the RCU because the page-frames are never freed.
-
-
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
