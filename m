@@ -1,76 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYJGDvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbYJGECv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbYJGDvq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 23:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYJGDvh
+	id S1752914AbYJGECv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 00:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbYJGECm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 23:51:37 -0400
-Received: from rn-out-0910.google.com ([64.233.170.187]:37839 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbYJGDvg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 23:51:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=M5O8yr5199qE/Y6qMg7Dhm8iotnYnlJRbIMwaagof9/8DVLK5lMxfOoSy/LGYLmLyw
-         RG1+0HQyKBgKV5+hy2AuCMddqnftpBW7CQAwGkZYtgDdpIWgPf9zIh1rDEeT2hqkV/7u
-         c1/m2zC39kPlvx2ht56A+6tRqDoCONxKM+zwA=
-Date: Mon, 6 Oct 2008 23:51:27 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Jason Vas Dias <jason.vas.dias@gmail.com>
-Subject: Re: [PATCH] x86: SB450: skip IRQ0 override if it is not routed to
-	INT2 of IOAPIC
-Message-ID: <20081007035126.GA2929@amd.corenet.prv>
-References: <200810060029.42471.rjw@sisk.pl> <20081006062235.GA2808@amd.corenet.prv> <200810061159.30103.rjw@sisk.pl> <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org> <20081006150055.GA16930@elte.hu> <alpine.LFD.1.10.0810061815060.10470@ftp.linux-mips.org> <87tzbpmocm.fsf@basil.nowhere.org> <alpine.LFD.1.10.0810062227100.10470@ftp.linux-mips.org> <20081006221122.GC22097@alberich.amd.com> <20081007034132.GA3025@elte.hu>
+	Tue, 7 Oct 2008 00:02:42 -0400
+Received: from ozlabs.org ([203.10.76.45]:51926 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750709AbYJGECl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 00:02:41 -0400
+Date: Tue, 7 Oct 2008 14:56:16 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: eranian@gmail.com
+Cc: linux-kernel@vger.kernel.org,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: perfmon3 interface overview
+Message-ID: <20081007035616.GB19037@yookeroo.seuss>
+Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
+	eranian@gmail.com, linux-kernel@vger.kernel.org,
+	perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com> <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com> <20081003061713.GL3002@yookeroo.seuss> <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com> <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com> <20081005055339.GC469@yookeroo.seuss> <7c86c4470810051423v2116193vc2e1b67ce480488d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081007034132.GA3025@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <7c86c4470810051423v2116193vc2e1b67ce480488d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 05:41:32AM +0200, Ingo Molnar wrote:
+On Sun, Oct 05, 2008 at 11:23:15PM +0200, stephane eranian wrote:
+> David,
 > 
-> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> 
-> > So, let's work around BIOS bugs in Linux then ...
-> > 
-> > Following patch is almost untested -- especially I didn't get my hands 
-> > on one of the HP Laptops with broken DSDT.
-> [...]
-> > On some HP nx6... laptops (e.g. nx6325) BIOS reports an IRQ0 override 
-> > but the SB450 chipset is configured such that timer interrupts goe to 
-> > INT0 of IOAPIC.
-> > 
-> > Check IRQ0 routing and if it is routed to INT0 of IOAPIC skip the 
-> > timer override.
-> > 
-> > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> On Sun, Oct 5, 2008 at 7:53 AM, David Gibson
+> <david@gibson.dropbear.id.au> wrote:
+> > [snip]
+> >>  So you are suggesting something along the lines:
+> >>
+> >>    int pfm_read_pmrs(int fd, int flags, int type, void *tab, size_t sz);
+> >>    int pfm_write_pmrs(int fd, int flags, int type, void *tab, size_t sz);
 > >
-> > ---
-> >  arch/x86/kernel/early-quirks.c |   48 ++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 48 insertions(+), 0 deletions(-)
-> 
-> very nice, thanks Andreas! Applied to tip/x86/quirks. This PCI ID based 
-> quirk should be more complete than DMI matches.
-> 
+> > Uh.. maybe.. there are actually several possible variants all of which
+> > would meet the general idea I had in mind.
+> >
+> >>  I have already introduced a type flag (PFM_RWFL_PMD, PFM_RWFL_PMC).
+> >>  Why separate the type into its own parameter?
+> >
+> > Combining the type into the flags is certainly a possibility.  I was
+> > just a bit worried that if you eventually have enough actual flag
+> > flags, in addition to the type values, you might start running out of
+> > bits.
+> >
+> I see, so you were just decoupling to double the number of available bits.
+> I guess we have a minimum of 32 bits. It seems overkill to support up to
+> 32 'types'. We could force flags to uint64_t. But then we would have to do
+> the same for all other syscalls to be consistent. Defining flags as long
+> won't work because of 32-bit vs. 64-bit ABI compatibility issues.
 
-You may add 'Tested by: Dmitry Torokhov <dtor@mail.ru> on nx6115'
-It works fine here with Andreas patch applied and with Rafael's patch
-dropped.
+I guess so.  I guess there's also the possibility that you might later
+have some flags that can apply to many of the syscalls, and it would
+be nice to have them in a standard bit position for all calls.  That
+might make bit allocation a bit interesting if you're squeezing type
+into the same field.
 
-Thanks Andreas!
+My opinion is not really strong either way though.
+
+> >>  As for the freeform array, isn't that what people do not like because
+> >> of  void *
+> >>  and thus weak type checking?
+> >
+> > Yeah; this is an interesting tradeoff of flexibility versus
+> > predictability.  Actually, what I originally had in mind was
+> > seperately passing both 'n' and a per-element size.  That provides a
+> > bit more defined structure to the void * - it must be an array of n
+> > identical, fixed-size elements.  The internal structure of each
+> > element is defined only by type, but it is assumed to contain no
+> > pointers to further chained structures (i.e. its safe for wrapper code
+> > to do shallow copies of the array).
+> 
+> Ok, that reminds me of the API of calloc(). It certainly forces you to
+> think it terms of 'array of elements'. Yet it can be perverted very easily
+> with the number of elements at 1.
+
+That's true.  Like I say, it's a tradeoff.
+
+> >>  I will look at switching to size instead of count. I think it does
+> >>  make sense.
+> >
+> > Yeah.  As I said I was originally thinking of keeping the 'n'
+> > parameter, and adding an element size parameter.  But just having an
+> > overall size is also a possibility - it gives less definition to the
+> > internal structure but at least things can marshal or copy the whole
+> > array parameter without having to know its internals.
+> >
+> Yes, that it true. It also simplifies the checking on size. With count
+> we had to check for multiply overflow because internall we had to
+> check the size anyway.
+
+That's a nice extra bonus, yes.
+
+> > [snip]
+> >> > > III) attaching and detaching
+> >> > >
+> >> > >   With v2.81:
+> >> > >      int pfm_load_context(int fd, pfarg_load_t *load);
+> >> > >      int pfm_unload_context(int fd);
+> >> > >
+> >> > >   With v3.0:
+> >> > >      int pfm_attach_session(int fd, int flags, int target);
+> >> > >      int pfm_detach_session(int fd, int flags);
+> >> >
+> >> > Couldn't you get rid of one more syscall here by making detach a
+> >> > special case of attach with a special "null" value for target, or a
+> >> > special flag?
+> >>
+> >>  We could combine the two and use the flag field to indicate attach/detach.
+> >>  The target is not a pointer but an int. Some people suggested I use an
+> >>  unsigned long instead. In anycase, we could not use 0 to indicate "detach"
+> >>  because CPU0 is a valid choice for system-wide. Thus we would have to
+> >>  pick another value to mean "nothing", e.g, -1.
+> >
+> > Sorry, I didn't express myself well.  I realise it's an integer, and
+> > didn't mean an actual NULL, but as you say a special integer value
+> > with a function similar to NULL.  -1 is the most obvious choice.
+> >
+> Yes, -1 would work.
+> 
+> If I summarize our discussion. It seems we can define the API as follows:
+> 
+>     int pfm_create_session(int fd, uint64_t flags, pfarg_sinfo_t *sif,
+> [ char *smpl_name, void *smpl_arg, size_t arg_size]);
+>     int pfm_read_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
+>     int pfm_write_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
+>     int pfm_attach_session(int fd, uint64_t flags, int target);   /*
+> attach, detach with target=-1 */
+>     int pfm_control_session(int fd, uint64_t flags);   /* for start/stop */
+
+Unless you have other functions in mind for this, I'd suggest a name
+that's a little less generic here.  pfm_set_running() maybe.
+
+>     int pfm_control_sets(int fd, uint64_t flags, void *sets, size_t
+>     sz);
+
+Hrm.  This now has identical signature to the {read,write}_pmrs.  I
+wonder if these could be sensibly combined.  Maybe have
+pfm_get_info(), pfm_set_info() which can get/set control structures
+for several different namespaces: PMCs PMDs and now event sets.
 
 -- 
-Dmitry
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
