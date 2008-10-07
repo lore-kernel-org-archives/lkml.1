@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYJGQHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYJGQLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbYJGQHz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 12:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbYJGQHm
+	id S1754628AbYJGQLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 12:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYJGQLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 12:07:42 -0400
-Received: from [200.11.74.150] ([200.11.74.150]:34536 "EHLO
-	servidor.nacimiento.cl" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755217AbYJGQHl (ORCPT
+	Tue, 7 Oct 2008 12:11:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58263 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbYJGQK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 12:07:41 -0400
-X-Greylist: delayed 5743 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Oct 2008 12:07:41 EDT
-Message-ID: <1fc4e3adf076d89bcb3e51dbd4a9049c.squirrel@webmail.nacimiento.cl>
-Date: Tue, 7 Oct 2008 00:20:50 -0800 (AKDT)
-Subject: Webmail oreille E-mail compte utilisateur
-From: "Compte de =?iso-8859-1?Q?l'am=E9lioration_=E9quipe?=" 
-	<accountupgrading@web.org>
-Reply-To: couryhno@mail2webmaster.com
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+	Tue, 7 Oct 2008 12:10:59 -0400
+Subject: Re: [BUG] SLOB's krealloc() seems bust
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1223391655.13453.344.camel@calx>
+References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
+	 <48EB6D2C.30806@linux-foundation.org>  <1223391655.13453.344.camel@calx>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 18:10:45 +0200
+Message-Id: <1223395846.26330.55.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-10-07 at 10:00 -0500, Matt Mackall wrote:
+> Give this a try, please:
+> 
+> diff -r 5e32b09a1b2b mm/slob.c
+> --- a/mm/slob.c Fri Oct 03 14:04:43 2008 -0500
+> +++ b/mm/slob.c Tue Oct 07 10:00:16 2008 -0500
+> @@ -515,7 +515,7 @@
+>  
+>         sp = (struct slob_page *)virt_to_page(block);
+>         if (slob_page(sp))
+> -               return ((slob_t *)block - 1)->units + SLOB_UNIT;
+> +               return (((slob_t *)block - 1)->units - 1) * SLOB_UNIT;
+>         else
+>                 return sp->page.private;
+>  }
 
+That seems to make it work again! (4 reboots, 0 crashes)
 
-Webmail oreille E-mail compte utilisateur,
+Tested-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Ce message est de WEBMAIL E-mail de messagerie center à tous nos e-mail
-compte des utilisateurs. Nous sommes actuellement à un exercice
-d'entretien qui est de mise à niveau
-notre base de données et e-mail center.
-
-Cet exercice implique la désactivation du sommeil / non / e-mail non
-valide comptes pour faire place à une nouvelle mise à niveau. Pour
-confirmer la validité de votre adresse e-mail et de prévenir de votre
-compte de désactivation, il vous est conseillé de le mettre à jour en
-fournissant des nous les informations suivantes.
-
-Confirmer votre adresse de courriel ci-dessous
-Courrier électronique Nom d'utilisateur: .....................
-Mot de passe: ....................
-Date de
-Naissance: ...........................
-
-Attention!
-Compte propriétaires sont attendus pour mettre à jour leurs comptes dans
-les 10 jours ouvrables après réception de cet avis. Défaut de se conformer
-à présent avis dans les délais prescrits seront
-courent le risque de perdre son compte.
-
-Merci pour votre coopération!
-Code d'alerte: VX2G99AAJ
-L'équipe du site!
-
-
-
+Thanks!
 
