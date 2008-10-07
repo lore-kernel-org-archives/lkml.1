@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbYJGA57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbYJGA6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759999AbYJGA57 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757855AbYJGApU
+	id S1757977AbYJGA6Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbYJGApY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:45:20 -0400
-Received: from ns.suse.de ([195.135.220.2]:47011 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:45:24 -0400
+Received: from mail.suse.de ([195.135.220.2]:47039 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756672AbYJGApT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:45:19 -0400
-Date: Mon, 6 Oct 2008 17:39:32 -0700
+	id S1757859AbYJGApW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:45:22 -0400
+Date: Mon, 6 Oct 2008 17:39:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 48/71] ntp: fix calculation of the next jiffie to trigger
-	RTC sync
-Message-ID: <20081007003932.GW3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 49/71] clockevents: remove WARN_ON which was used to gather
+	information
+Message-ID: <20081007003934.GX3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="timer-fix-10.patch"
+Content-Disposition: inline; filename="timer-fix-11.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,57 +40,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Maciej W. Rozycki <macro@linux-mips.org>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 4ff4b9e19a80b73959ebeb28d1df40176686f0a8 upstream
+commit 61c22c34c6f80a8e89cff5ff717627c54cc14fd4 upstream
 
-We have a bug in the calculation of the next jiffie to trigger the RTC
-synchronisation.  The aim here is to run sync_cmos_clock() as close as
-possible to the middle of a second.  Which means we want this function to
-be called less than or equal to half a jiffie away from when now.tv_nsec
-equals 5e8 (500000000).
+The issue of the endless reprogramming loop due to a too small
+min_delta_ns was fixed with the previous updates of the clock events
+code, but we had no information about the spread of this problem. I
+added a WARN_ON to get automated information via kerneloops.org and to
+get some direct reports, which allowed me to analyse the affected
+machines.
 
-If this is not the case for a given call to the function, for this purpose
-instead of updating the RTC we calculate the offset in nanoseconds to the
-next point in time where now.tv_nsec will be equal 5e8.  The calculated
-offset is then converted to jiffies as these are the unit used by the
-timer.
+The WARN_ON has served its purpose and would be annoying for a release
+kernel. Remove it and just keep the information about the increase of
+the min_delta_ns value.
 
-Hovewer timespec_to_jiffies() used here uses a ceil()-type rounding mode,
-where the resulting value is rounded up.  As a result the range of
-now.tv_nsec when the timer will trigger is from 5e8 to 5e8 + TICK_NSEC
-rather than the desired 5e8 - TICK_NSEC / 2 to 5e8 + TICK_NSEC / 2.
-
-As a result if for example sync_cmos_clock() happens to be called at the
-time when now.tv_nsec is between 5e8 + TICK_NSEC / 2 and 5e8 to 5e8 +
-TICK_NSEC, it will simply be rescheduled HZ jiffies later, falling in the
-same range of now.tv_nsec again.  Similarly for cases offsetted by an
-integer multiple of TICK_NSEC.
-
-This change addresses the problem by subtracting TICK_NSEC / 2 from the
-nanosecond offset to the next point in time where now.tv_nsec will be
-equal 5e8, effectively shifting the following rounding in
-timespec_to_jiffies() so that it produces a rounded-to-nearest result.
-
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/ntp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/time/tick-oneshot.c |   18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
 
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -245,7 +245,7 @@ static void sync_cmos_clock(unsigned lon
- 	if (abs(now.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2)
- 		fail = update_persistent_clock(now);
- 
--	next.tv_nsec = (NSEC_PER_SEC / 2) - now.tv_nsec;
-+	next.tv_nsec = (NSEC_PER_SEC / 2) - now.tv_nsec - (TICK_NSEC / 2);
- 	if (next.tv_nsec <= 0)
- 		next.tv_nsec += NSEC_PER_SEC;
+--- a/kernel/time/tick-oneshot.c
++++ b/kernel/time/tick-oneshot.c
+@@ -43,19 +43,17 @@ int tick_dev_program_event(struct clock_
+ 		 * and emit a warning.
+ 		 */
+ 		if (++i > 2) {
+-			printk(KERN_WARNING "CE: __tick_program_event of %s is "
+-			       "stuck %llx %llx\n", dev->name ? dev->name : "?",
+-			       now.tv64, expires.tv64);
+-			printk(KERN_WARNING
+-			       "CE: increasing min_delta_ns %ld to %ld nsec\n",
+-			       dev->min_delta_ns, dev->min_delta_ns << 1);
+-			WARN_ON(1);
+-
+-			/* Double the min. delta and try again */
++			/* Increase the min. delta and try again */
+ 			if (!dev->min_delta_ns)
+ 				dev->min_delta_ns = 5000;
+ 			else
+-				dev->min_delta_ns <<= 1;
++				dev->min_delta_ns += dev->min_delta_ns >> 1;
++
++			printk(KERN_WARNING
++			       "CE: %s increasing min_delta_ns to %lu nsec\n",
++			       dev->name ? dev->name : "?",
++			       dev->min_delta_ns << 1);
++
+ 			i = 0;
+ 		}
  
 
 -- 
