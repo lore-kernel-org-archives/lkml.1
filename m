@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYJGAmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbYJGAmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYJGAmG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYJGAlL
+	id S1757182AbYJGAmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbYJGAlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:41:11 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46507 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:41:21 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60135 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756009AbYJGAlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:41:09 -0400
-Date: Mon, 6 Oct 2008 17:37:33 -0700
+	id S1754023AbYJGAlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:41:19 -0400
+Date: Mon, 6 Oct 2008 17:37:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andy Gospodarek <andy@greyhouse.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 04/71] ixgbe: initialize interrupt throttle rate
-Message-ID: <20081007003733.GE3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Yuri Tikhonov <yur@emcraft.com>,
+       Ilya Yanok <yanok@emcraft.com>, Dan Williams <dan.j.williams@intel.com>
+Subject: [patch 06/71] async_tx: fix the bug in async_tx_run_dependencies
+Message-ID: <20081007003738.GG3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ixgbe-initialize-interrupt-throttle-rate.patch"
+Content-Disposition: inline; filename="async_tx-fix-the-bug-in-async_tx_run_dependencies.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,48 +40,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Andy Gospodarek <andy@greyhouse.net>
+From: Yuri Tikhonov <yur@emcraft.com>
 
-commit 15e79f24b60c4b0bf8019423bda4e03a576b02f2 upstream
+commit de24125dd0a452bfd4502fc448e3534c5d2e87aa upstream
 
-This commit dropped the setting of the default interrupt throttle rate.
+Should clear the next pointer of the TX if we are sure that the
+next TX (say NXT) will be submitted to the channel too. Overwise,
+we break the chain of descriptors, because we lose the information
+about the next descriptor to run. So next time, when invoke
+async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
+NXT will be never submitted.
 
-commit 021230d40ae0e6508d6c717b6e0d6d81cd77ac25
-Author: Ayyappan Veeraiyan <ayyappan.veeraiyan@intel.com>
-Date:   Mon Mar 3 15:03:45 2008 -0800
-
-    ixgbe: Introduce MSI-X queue vector code
-
-The following patch adds it back.  Without this the default value of 0
-causes the performance of this card to be awful.  Restoring these to the
-default values yields much better performance.
-
-This regression has been around since 2.6.25.
-
-Signed-off-by: Andy Gospodarek <andy@greyhouse.net>
-Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/ixgbe/ixgbe_main.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ crypto/async_tx/async_tx.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/net/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ixgbe/ixgbe_main.c
-@@ -2258,6 +2258,12 @@ static int __devinit ixgbe_set_interrupt
- 	int vector, v_budget;
+--- a/crypto/async_tx/async_tx.c
++++ b/crypto/async_tx/async_tx.c
+@@ -136,7 +136,8 @@ async_tx_run_dependencies(struct dma_asy
+ 		spin_lock_bh(&next->lock);
+ 		next->parent = NULL;
+ 		_next = next->next;
+-		next->next = NULL;
++		if (_next && _next->chan == chan)
++			next->next = NULL;
+ 		spin_unlock_bh(&next->lock);
  
- 	/*
-+	 * Set the default interrupt throttle rate.
-+	 */
-+	adapter->rx_eitr = (1000000 / IXGBE_DEFAULT_ITR_RX_USECS);
-+	adapter->tx_eitr = (1000000 / IXGBE_DEFAULT_ITR_TX_USECS);
-+
-+	/*
- 	 * It's easy to be greedy for MSI-X vectors, but it really
- 	 * doesn't do us much good if we have a lot more vectors
- 	 * than CPU's.  So let's be conservative and only ask for
+ 		next->tx_submit(next);
 
 -- 
