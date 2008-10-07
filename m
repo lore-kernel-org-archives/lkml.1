@@ -1,246 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbYJGKGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbYJGKHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbYJGKGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 06:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbYJGKEi
+	id S1756345AbYJGKHM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 06:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbYJGKFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 06:04:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:59148 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753237AbYJGKEe (ORCPT
+	Tue, 7 Oct 2008 06:05:31 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60479 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754729AbYJGKF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 06:04:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Q6Zrv3EQCPN4ewLDbEd8WOTpJA0NoVbrQ5y5olV/Xiko//pdI3o5p9DK+adj0JJwit
-         o4+OLAxjNqYENJd82G8RJ2lBLwwmkpg8f7di1mb87jwTTZ2Rs/EHaldXblcJ+jiLsScV
-         Yrok7t0n+EJSUi4vVcM8uiJHV17Tny+EePyfU=
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
-Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm 5/6] i/o controller instrumentation: accounting and throttling
-Date: Tue,  7 Oct 2008 12:03:37 +0200
-Message-Id: <1223373818-13687-6-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Tue, 7 Oct 2008 06:05:29 -0400
+Date: Tue, 7 Oct 2008 19:04:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH 2/6] memcg: make page->mapping NULL before uncharge
+Message-Id: <20081007190436.febf9c97.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081007190121.d96e58a6.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081007190121.d96e58a6.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apply the cgroup-io-throttle controller to the opportune kernel functions.
-Both accounting and throttling functionalities are performed by
-cgroup_io_throttle().
+This patch tries to make page->mapping to be NULL before
+mem_cgroup_uncharge_cache_page() is called.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- block/blk-core.c      |    4 ++++
- fs/aio.c              |   12 ++++++++++++
- fs/direct-io.c        |    3 +++
- include/linux/sched.h |    7 +++++++
- kernel/fork.c         |    8 +++++++-
- mm/page-writeback.c   |    4 ++++
- mm/readahead.c        |    3 +++
- 7 files changed, 40 insertions(+), 1 deletions(-)
+"page->mapping == NULL" is a good check for "whether the page is still
+radix-tree or not".
+This patch also adds BUG_ON() to mem_cgroup_uncharge_cache_page();
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 6cb3c6d..cc8a493 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -26,6 +26,7 @@
- #include <linux/swap.h>
- #include <linux/writeback.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/blktrace_api.h>
- #include <linux/fault-inject.h>
- 
-@@ -1504,9 +1505,12 @@ void submit_bio(int rw, struct bio *bio)
- 	if (bio_has_data(bio)) {
- 		if (rw & WRITE) {
- 			count_vm_events(PGPGOUT, count);
-+			cgroup_io_throttle(bio_iovec_idx(bio, 0)->bv_page,
-+					bio->bi_bdev, bio->bi_size, 0);
- 		} else {
- 			task_io_account_read(bio->bi_size);
- 			count_vm_events(PGPGIN, count);
-+			cgroup_io_throttle(NULL, bio->bi_bdev, bio->bi_size, 1);
- 		}
- 
- 		if (unlikely(block_dump)) {
-diff --git a/fs/aio.c b/fs/aio.c
-index f658441..ee8d452 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -22,6 +22,7 @@
- #include <linux/sched.h>
- #include <linux/fs.h>
- #include <linux/file.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
- #include <linux/slab.h>
-@@ -1558,6 +1559,7 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+
+
+ mm/filemap.c    |    2 +-
+ mm/memcontrol.c |    1 +
+ mm/migrate.c    |    9 +++++++--
+ 3 files changed, 9 insertions(+), 3 deletions(-)
+
+Index: mmotm-2.6.27-rc7+/mm/filemap.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/filemap.c
++++ mmotm-2.6.27-rc7+/mm/filemap.c
+@@ -116,12 +116,12 @@ void __remove_from_page_cache(struct pag
  {
- 	struct kiocb *req;
- 	struct file *file;
-+	struct block_device *bdev;
- 	ssize_t ret;
+ 	struct address_space *mapping = page->mapping;
  
- 	/* enforce forwards compatibility on users */
-@@ -1580,6 +1582,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- 	if (unlikely(!file))
- 		return -EBADF;
- 
-+	/* check if we're exceeding the IO throttling limits */
-+	bdev = as_to_bdev(file->f_mapping);
-+	ret = cgroup_io_throttle(NULL, bdev, 0, 0);
-+	if (unlikely(ret)) {
-+		fput(file);
-+		return -EAGAIN;
-+	}
-+
- 	req = aio_get_req(ctx);		/* returns with 2 references to req */
- 	if (unlikely(!req)) {
- 		fput(file);
-@@ -1622,12 +1632,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- 		goto out_put_req;
- 
- 	spin_lock_irq(&ctx->ctx_lock);
-+	set_in_aio();
- 	aio_run_iocb(req);
- 	if (!list_empty(&ctx->run_list)) {
- 		/* drain the run list */
- 		while (__aio_run_iocbs(ctx))
- 			;
- 	}
-+	unset_in_aio();
- 	spin_unlock_irq(&ctx->ctx_lock);
- 	aio_put_req(req);	/* drop extra ref to req */
- 	return 0;
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 9606ee8..66f011a 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -28,6 +28,7 @@
- #include <linux/highmem.h>
- #include <linux/pagemap.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/bio.h>
- #include <linux/wait.h>
- #include <linux/err.h>
-@@ -657,10 +658,12 @@ submit_page_section(struct dio *dio, struct page *page,
- 	int ret = 0;
- 
- 	if (dio->rw & WRITE) {
-+		struct block_device *bdev = dio->inode->i_sb->s_bdev;
- 		/*
- 		 * Read accounting is performed in submit_bio()
- 		 */
- 		task_io_account_write(len);
-+		cgroup_io_throttle(NULL, bdev, 0, 1);
- 	}
+-	mem_cgroup_uncharge_cache_page(page);
+ 	radix_tree_delete(&mapping->page_tree, page->index);
+ 	page->mapping = NULL;
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	BUG_ON(page_mapped(page));
++	mem_cgroup_uncharge_cache_page(page);
  
  	/*
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index cd67fac..685c449 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1210,6 +1210,13 @@ struct task_struct {
- 	unsigned long ptrace_message;
- 	siginfo_t *last_siginfo; /* For ptrace use.  */
- 	struct task_io_accounting ioac;
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	atomic_t in_aio;
-+	unsigned long long io_throttle_bw_cnt;
-+	unsigned long long io_throttle_bw_sleep;
-+	unsigned long long io_throttle_iops_cnt;
-+	unsigned long long io_throttle_iops_sleep;
-+#endif
- #if defined(CONFIG_TASK_XACCT)
- 	u64 acct_rss_mem1;	/* accumulated rss usage */
- 	u64 acct_vm_mem1;	/* accumulated virtual memory usage */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 7b34bc5..99cef1a 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1004,7 +1004,13 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 
- 	task_io_accounting_init(&p->ioac);
- 	acct_clear_integrals(p);
--
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	atomic_set(&p->in_aio, 0);
-+	p->io_throttle_bw_cnt = 0;
-+	p->io_throttle_bw_sleep = 0;
-+	p->io_throttle_iops_cnt = 0;
-+	p->io_throttle_iops_sleep = 0;
-+#endif
- 	p->it_virt_expires = cputime_zero;
- 	p->it_prof_expires = cputime_zero;
- 	p->it_sched_expires = 0;
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index c6d6088..7096b26 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -23,6 +23,7 @@
- #include <linux/init.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/blkdev.h>
- #include <linux/mpage.h>
- #include <linux/rmap.h>
-@@ -556,6 +557,9 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
- 	static DEFINE_PER_CPU(unsigned long, ratelimits) = 0;
- 	unsigned long ratelimit;
- 	unsigned long *p;
-+	struct block_device *bdev = as_to_bdev(mapping);
-+
-+	cgroup_io_throttle(NULL, bdev, 0, 1);
- 
- 	ratelimit = ratelimit_pages;
- 	if (mapping->backing_dev_info->dirty_exceeded)
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 137bc56..176ad00 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -14,6 +14,7 @@
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-@@ -58,6 +59,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 			int (*filler)(void *, struct page *), void *data)
+ 	 * Some filesystems seem to re-dirty the page even after
+Index: mmotm-2.6.27-rc7+/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc7+/mm/memcontrol.c
+@@ -734,6 +734,7 @@ void mem_cgroup_uncharge_page(struct pag
+ void mem_cgroup_uncharge_cache_page(struct page *page)
  {
- 	struct page *page;
-+	struct block_device *bdev = as_to_bdev(mapping);
- 	int ret = 0;
- 
- 	while (!list_empty(pages)) {
-@@ -76,6 +78,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 			break;
- 		}
- 		task_io_account_read(PAGE_CACHE_SIZE);
-+		cgroup_io_throttle(NULL, bdev, PAGE_CACHE_SIZE, 1);
- 	}
- 	return ret;
+ 	VM_BUG_ON(page_mapped(page));
++	VM_BUG_ON(page->mapping);
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
  }
--- 
-1.5.4.3
+ 
+Index: mmotm-2.6.27-rc7+/mm/migrate.c
+===================================================================
+--- mmotm-2.6.27-rc7+.orig/mm/migrate.c
++++ mmotm-2.6.27-rc7+/mm/migrate.c
+@@ -330,8 +330,6 @@ static int migrate_page_move_mapping(str
+ 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
+ 
+ 	spin_unlock_irq(&mapping->tree_lock);
+-	if (!PageSwapCache(newpage))
+-		mem_cgroup_uncharge_cache_page(page);
+ 
+ 	return 0;
+ }
+@@ -341,6 +339,8 @@ static int migrate_page_move_mapping(str
+  */
+ static void migrate_page_copy(struct page *newpage, struct page *page)
+ {
++	int anon;
++
+ 	copy_highpage(newpage, page);
+ 
+ 	if (PageError(page))
+@@ -378,8 +378,13 @@ static void migrate_page_copy(struct pag
+ #endif
+ 	ClearPagePrivate(page);
+ 	set_page_private(page, 0);
++	/* page->mapping contains a flag for PageAnon() */
++	anon = PageAnon(page);
+ 	page->mapping = NULL;
+ 
++	if (!anon) /* This page was removed from radix-tree. */
++		mem_cgroup_uncharge_cache_page(page);
++
+ 	/*
+ 	 * If any waiters have accumulated on the new page then
+ 	 * wake them up.
 
