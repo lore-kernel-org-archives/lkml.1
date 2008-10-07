@@ -1,49 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYJGNIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbYJGNSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbYJGNIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 09:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYJGNIQ
+	id S1754668AbYJGNSr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 09:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYJGNSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 09:08:16 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40266 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755015AbYJGNIP (ORCPT
+	Tue, 7 Oct 2008 09:18:37 -0400
+Received: from mercuryimc.plus.com ([80.229.200.144]:58993 "EHLO
+	mimc.mimc.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753384AbYJGNSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 09:08:15 -0400
-Date: Tue, 7 Oct 2008 15:14:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, RFC] shmat: introduce flag SHM_MAP_HINT
-Message-ID: <20081007131420.GK20740@one.firstfloor.org>
-References: <20081006132651.GG3180@one.firstfloor.org> <1223303879-5555-1-git-send-email-kirill@shutemov.name> <20081007195837.5A6B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081007112418.GC5126@localhost.localdomain> <20081007133132.69f69cc0@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007133132.69f69cc0@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 7 Oct 2008 09:18:36 -0400
+X-Greylist: delayed 515 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Oct 2008 09:18:36 EDT
+Message-ID: <48EB5FA7.4080701@mimc.co.uk>
+Date: Tue, 07 Oct 2008 14:09:59 +0100
+From: Mark Jackson <mpfj@mimc.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Add support for Dallas DS28CM00 Unique ID chip
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I also don't see the point of this interface. We have POSIX shared memory
-> objects in Linux which are much cleaner and neater. They support mmap()
-> and mmap supports address hints.
-> 
-> There seems to be no reason at all to add further hacks to the historical
-> ugly SYS5 interface.
+This patch adds support for the (I2C based) DS28CM00 ID chip.
 
-Typically it's because some other parts of the interfaces that
-cannot be easily changed (X shm would come to mind) need it.
+Signed-off-by: M.Jackson <mpfj@mimc.co.uk>
+---
+ drivers/i2c/chips/Kconfig    |    7 ++
+ drivers/i2c/chips/Makefile   |    1 +
+ drivers/i2c/chips/ds28cm00.c |  189 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 197 insertions(+), 0 deletions(-)
 
-He also needs it for the qemu syscall emulation. Even when he uses the compat
-entry point shmat() will still only follow the personality.
-
--Andi
--- 
-ak@linux.intel.com
+diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
+index a95cb94..98c06e7 100644
+--- a/drivers/i2c/chips/Kconfig
++++ b/drivers/i2c/chips/Kconfig
+@@ -172,4 +172,11 @@ config MENELAUS
+ 	  and other features that are often used in portable devices like
+ 	  cell phones and PDAs.
+ 
++config DS28CM00
++	tristate "DS28CM00 Serial Number chip"
++	depends on EXPERIMENTAL
++	help
++	  If you say yes here you get support for the Dallas DS28CM00
++	  Serial Number chip.
++
+ endmenu
+diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
+index 39e3e69..f674d94 100644
+--- a/drivers/i2c/chips/Makefile
++++ b/drivers/i2c/chips/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
+ obj-$(CONFIG_TPS65010)		+= tps65010.o
+ obj-$(CONFIG_MENELAUS)		+= menelaus.o
+ obj-$(CONFIG_SENSORS_TSL2550)	+= tsl2550.o
++obj-$(CONFIG_DS28CM00)		+= ds28cm00.o
+ 
+ ifeq ($(CONFIG_I2C_DEBUG_CHIP),y)
+ EXTRA_CFLAGS += -DDEBUG
+diff --git a/drivers/i2c/chips/ds28cm00.c b/drivers/i2c/chips/ds28cm00.c
+new file mode 100644
+index 0000000..151f1c1
+--- /dev/null
++++ b/drivers/i2c/chips/ds28cm00.c
+@@ -0,0 +1,189 @@
++/*
++    ds28cm00.c - driver for DS28CM00 Serial ID chip
++
++    Copyright (C) 2008 Mark Jackson <mpfj@mimc.co.uk>
++
++    Based on i2c/chips/max6875.c
++
++    The DS28CM00 contains a 64bit unique number.
++    The memory map is defined as follows:
++     * 0x00			= Device Family Code (0x70)
++     * 0x01 - 0x06	= Serial Number (bits 0 to 47)
++     * 0x07			= CRC of addresses 0x00 to 0x06
++     * 0x08			= Control Register (R/W)
++
++    This driver makes the Serial Number available for read.
++
++    This program is free software; you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation; version 2 of the License.
++*/
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/i2c.h>
++#include <linux/mutex.h>
++
++#undef DS28CM00_DEBUG
++
++static unsigned short normal_i2c[] = {I2C_CLIENT_END};
++
++/* Insmod parameters */
++I2C_CLIENT_INSMOD_1(ds28cm00);
++
++#define DS28CM00_CMD_WRITE		0x50
++#define DS28CM00_CMD_READ		0x51
++
++#define ID_SIZE		9
++
++/* Each client has this additional data */
++struct ds28cm00_data {
++	struct i2c_client	client;
++	struct mutex		update_lock;
++};
++
++static int ds28cm00_attach_adapter(struct i2c_adapter *adapter);
++static int ds28cm00_detect(struct i2c_adapter *adapter, int address, int kind);
++static int ds28cm00_detach_client(struct i2c_client *client);
++
++/* This is the driver that will be inserted */
++static struct i2c_driver ds28cm00_driver = {
++	.driver = {
++		.name	= "ds28cm00",
++	},
++	.attach_adapter	= ds28cm00_attach_adapter,
++	.detach_client	= ds28cm00_detach_client,
++};
++
++static ssize_t ds28cm00_read(struct kobject *kobj,
++			    struct bin_attribute *bin_attr,
++			    char *buf, loff_t off, size_t count)
++{
++	struct i2c_client *client = kobj_to_i2c_client(kobj);
++	//struct ds28cm00_data *data = i2c_get_clientdata(client);
++
++	printk("DS28CM00 : read(offset = %d, count = %d)\n", off, count);
++
++	if (off > ID_SIZE)
++		return 0;
++
++	if (off + count > ID_SIZE)
++		count = ID_SIZE - off;
++
++	if (i2c_smbus_read_i2c_block_data(client, DS28CM00_CMD_READ, count, buf) != count)
++		return 0;
++
++	{
++		int i;
++		for (i = 0; i < count; i++)
++		{
++			printk("DS28CM00[i] = 0x%02x\n", buf[i]);
++		}
++	}
++
++	//memcpy(buf, &data->data[off], count);
++
++	return count;
++}
++
++static struct bin_attribute id_attr = {
++	.attr = {
++		.name = "id",
++		.mode = S_IRUGO,
++	},
++	.size = ID_SIZE,
++	.read = ds28cm00_read,
++};
++
++static int ds28cm00_attach_adapter(struct i2c_adapter *adapter)
++{
++	return i2c_probe(adapter, &addr_data, ds28cm00_detect);
++}
++
++/* This function is called by i2c_probe */
++static int ds28cm00_detect(struct i2c_adapter *adapter, int address, int kind)
++{
++	struct i2c_client *new_client;
++	struct ds28cm00_data *data;
++	int err = 0;
++
++	printk("DS28CM00 I2C Serial Number driver\n");
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C))
++	{
++		printk("DS28CM00 : failed i2c_check_func()\n");
++		return 0;
++	}
++
++	if (!(data = kzalloc(sizeof(struct ds28cm00_data), GFP_KERNEL)))
++	{
++		printk("DS28CM00 : failed kzalloc()\n");
++		return -ENOMEM;
++	}
++
++	new_client = &data->client;
++	i2c_set_clientdata(new_client, data);
++	new_client->addr = address;
++	new_client->adapter = adapter;
++	new_client->driver = &ds28cm00_driver;
++	new_client->flags = 0;
++	strlcpy(new_client->name, "ds28cm00", I2C_NAME_SIZE);
++
++	/* Tell the I2C layer a new client has arrived */
++	if ((err = i2c_attach_client(new_client)))
++	{
++		printk("DS28CM00 : failed i2c_attach_client()\n");
++		goto exit_kfree;
++	}
++
++	/* Register sysfs hooks */
++	err = sysfs_create_bin_file(&new_client->dev.kobj, &id_attr);
++	if (err)
++	{
++		printk("DS28CM00 : failed sysfs_create_bin_file()\n");
++		goto exit_detach;
++	}
++
++	return 0;
++
++exit_detach:
++	i2c_detach_client(new_client);
++exit_kfree:
++	kfree(data);
++	return err;
++}
++
++static int ds28cm00_detach_client(struct i2c_client *client)
++{
++	int err;
++
++	sysfs_remove_bin_file(&client->dev.kobj, &id_attr);
++
++	err = i2c_detach_client(client);
++	if (err)
++		return err;
++
++	kfree(client);
++
++	return 0;
++}
++
++static int __init ds28cm00_init(void)
++{
++	printk("adding ds28cm00 driver !!\n");
++	return i2c_add_driver(&ds28cm00_driver);
++}
++
++static void __exit ds28cm00_exit(void)
++{
++	i2c_del_driver(&ds28cm00_driver);
++}
++
++MODULE_AUTHOR("Mark Jackson <mpfj@mimc.co.uk>");
++MODULE_DESCRIPTION("DS28CM00 driver");
++MODULE_LICENSE("GPL");
++
++module_init(ds28cm00_init);
++module_exit(ds28cm00_exit);
