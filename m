@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYJGW1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbYJGW2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbYJGW1A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbYJGW0w
+	id S1757568AbYJGW2e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbYJGW20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:26:52 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55939 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754761AbYJGW0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:26:51 -0400
-Date: Wed, 8 Oct 2008 00:28:29 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Renato S. Yamane" <yamane@diamondcut.com.br>
-Cc: Auke@suse.cz, " <auke-jan.h.kok@intel.com>"@suse.cz,
-       linux-kernel@vger.kernel.org, rjwysocki@sisk.pl,
-       power-management_other@kernel-bugs.osdl.org
-Subject: Re: [Bug 10797] Battery is drained after poweroff
-Message-ID: <20081007222829.GT6604@elf.ucw.cz>
-References: <20494.201.3.158.14.1223417777.mandic:mail - neo@webmail.mandic.com.br>
+	Tue, 7 Oct 2008 18:28:26 -0400
+Received: from ishtar.tlinx.org ([64.81.245.74]:37327 "EHLO ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755210AbYJGW20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 18:28:26 -0400
+Message-ID: <48EBE263.8000500@tlinx.org>
+Date: Tue, 07 Oct 2008 15:27:47 -0700
+From: Linda Walsh <smartmontools@tlinx.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20494.201.3.158.14.1223417777.mandic:mail - neo@webmail.mandic.com.br>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tejun Heo <htejun@gmail.com>
+CC: Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
+ or sleep, PATA models did. (fwd)
+References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org> <48EAB672.3010209@gmail.com> <48EABD07.6030506@tlinx.org> <48EABE8E.9070809@gmail.com>
+In-Reply-To: <48EABE8E.9070809@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tejun Heo wrote:
+> Linda Walsh wrote:
+>   
+>> Controller is a Promise TX4/300
+>> Yeap.  After the drive goes offline, does unplugging and replugging
+>> the power cable to the harddrive makes it come back?
+>>     
+----
+    No.  It hangs the computer. about 2-3 seconds after plugging the
+drives back in.  Did it twice to verify it wasn't a fluke.  Verified
+drives removed from /dev, then
+plugged them back in -- was able to do about 1-2 ls commands on /dev, then
+keyboard goes dead.
 
-> >>>> ...and it is not linux problem because it works okay on my thinkpad. See?
-> >>>
-> >>> Yes, this is a Linux problem (at least in release >= 2.6.22)
-> >>> This happening *only* in Linux (Kernel >=2.6.22).
-> >>
-> >> Wow, now that's useful info.
-> 
-> I don´t comment this before because we already said this in bug reports
-> (links above).
+    First time I tried unplugging the power cables and replugging --
+that hung...
+2nd time tried unplugging a sata cable and replugging -- that hung too.
 
-Sorry about that. lkml has rather big traffic.
+    Hopefully you won't need any more tests of this exact nature...? :-)
 
-> >> I guess you _could_ do git bisect? ;-).
-> 
-> So sorry, but I really don´t now how can I do this.
-> I´m an user, not developer. Can you send me a "how-to" about git
-> bisect?
 
-http://kerneltrap.org/node/11753
 
-There may be better HOWTOs around.
-
-> >>> And is impossible find wich device eats power (eaten current is too low,
-> >>> and is not enought to make hot).
-> >>
-> >> So how fast is it eating power... can you estimate Watts eaten?
-> 
-> Eaten ~5% of battery each 10h.
-
-Lets assume 40Wh battery... 0.5% per hour... that means 200 hours to
-empty. 0.5% per hour is 40 * 0.005 Wh/h = 0.2 W AFAICT... hmm, that's
-quite low. Debugging this will not be easy :-(.
-									Pavel 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
