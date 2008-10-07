@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYJGLXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYJGL0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbYJGLXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 07:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYJGLXR
+	id S1754464AbYJGL0T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 07:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYJGL0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 07:23:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:64922 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbYJGLXQ (ORCPT
+	Tue, 7 Oct 2008 07:26:08 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42570 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbYJGL0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 07:23:16 -0400
-Date: Tue, 7 Oct 2008 14:24:19 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	Tue, 7 Oct 2008 07:26:06 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
 Subject: Re: [PATCH, RFC] shmat: introduce flag SHM_MAP_HINT
-Message-ID: <20081007112418.GC5126@localhost.localdomain>
-References: <20081006132651.GG3180@one.firstfloor.org> <1223303879-5555-1-git-send-email-kirill@shutemov.name> <20081007195837.5A6B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20081007112119.GG20740@one.firstfloor.org>
+References: <20081007195837.5A6B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081007112119.GG20740@one.firstfloor.org>
+Message-Id: <20081007202127.5A74.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="B4IIlcmfBL/1gGOG"
-Content-Disposition: inline
-In-Reply-To: <20081007195837.5A6B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue,  7 Oct 2008 20:26:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > Honestly, I don't like that qemu specific feature insert into shmem core.
+> 
+> I wouldn't say it's a qemu specific interface.  While qemu would 
+> be the first user I would expect more in the future. It's a pretty
+> obvious extension. In fact it nearly should be default, if the
+> risk of breaking old applications wasn't too high.
 
---B4IIlcmfBL/1gGOG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+hm, ok, i understand your intension.
+however, I think following code isn't self describing.
 
-On Tue, Oct 07, 2008 at 08:08:19PM +0900, KOSAKI Motohiro wrote:
-> > It allows interpret attach address as a hint, not as exact address.
-> >=20
-> > Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-> > Cc: Andi Kleen <andi@firstfloor.org>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: Arjan van de Ven <arjan@infradead.org>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> >  include/linux/shm.h |    1 +
-> >  ipc/shm.c           |    4 ++--
-> >  2 files changed, 3 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/include/linux/shm.h b/include/linux/shm.h
-> > index eca6235..2a637b8 100644
-> > --- a/include/linux/shm.h
-> > +++ b/include/linux/shm.h
-> > @@ -55,6 +55,7 @@ struct shmid_ds {
-> >  #define	SHM_RND		020000	/* round attach address to SHMLBA boundary */
-> >  #define	SHM_REMAP	040000	/* take-over region on attach */
-> >  #define	SHM_EXEC	0100000	/* execution access */
-> > +#define	SHM_MAP_HINT	0200000	/* interpret attach address as a hint */
->=20
-> hmm..
-> Honestly, I don't like that qemu specific feature insert into shmem core.
-> At least, this patch is too few comments.
-> Therefore, an develpper can't understand why SHM_MAP_HINT exist.
->=20
-> I think this patch description is too short and too poor.
-> I don't like increasing mysterious interface.
+	addr = shmat(shmid, addr, SHM_MAP_HINT);
 
-Sorry for it. I'll fix it in next patch version.
+because HINT is too generic word.
+I think we should find better word.
 
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
+SHM_MAP_NO_FIXED ?
 
---B4IIlcmfBL/1gGOG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+In addision, I still think current patch has too poor description and too 
+few comments.
 
-iEYEARECAAYFAkjrRuIACgkQbWYnhzC5v6qZ1QCgkS8pVZ30bgW169woJ1ah74bV
-DCgAoIw/oVmYpqCFChklzZIs7q79GPAy
-=YCjq
------END PGP SIGNATURE-----
 
---B4IIlcmfBL/1gGOG--
+
