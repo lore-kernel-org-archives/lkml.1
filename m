@@ -1,46 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbYJGOy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYJGO5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbYJGOy0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 10:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYJGOyQ
+	id S1753960AbYJGO5r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 10:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYJGO5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 10:54:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48276 "EHLO
+	Tue, 7 Oct 2008 10:57:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54868 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750880AbYJGOyP (ORCPT
+	by vger.kernel.org with ESMTP id S1752129AbYJGO5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 10:54:15 -0400
-Message-ID: <48EB7617.3060304@linux-foundation.org>
-Date: Tue, 07 Oct 2008 09:45:43 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 7 Oct 2008 10:57:39 -0400
+Date: Tue, 7 Oct 2008 07:56:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+cc: video4linux-list@redhat.com, Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.27] V4L/DVB fixes
+In-Reply-To: <200810070659.01415.hverkuil@xs4all.nl>
+Message-ID: <alpine.LFD.2.00.0810070756030.3208@nehalem.linux-foundation.org>
+References: <20081005002701.31a2ee5f@pedra.chehab.org> <200810070659.01415.hverkuil@xs4all.nl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Corey Minyard <minyard@acm.org>,
-       David Miller <davem@davemloft.net>, dada1@cosmosbay.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       shemminger@vyatta.com
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-References: <20081006185026.GA10383@minyard.local> <48EA8197.6080502@cosmosbay.com> <20081006.144002.56418911.davem@davemloft.net> <48EA9A59.1090306@acm.org> <20081007083750.GB17079@2ka.mipt.ru> <48EB6F2D.100@linux-foundation.org> <20081007143346.GA6384@linux.vnet.ibm.com>
-In-Reply-To: <20081007143346.GA6384@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
 
-> But care is required -- SLAB_DESTROY_BY_RCU permits objects to be freed
-> and reallocated while a reader holds a reference.  The only guarantee is
-> that the -type- of the data structure will not change while a reader holds
-> a reference.  With something like UDP, this might well be sufficient.
+On Tue, 7 Oct 2008, Hans Verkuil wrote:
+>
+> It was a patch for 2.6.28 where the BKL was pushed down from v4l core to 
+> the drivers, not for 2.6.27!
 
-Right so after the hash lookup operation you are not assured that the object
-has not been freed or even reallocated for a different purpose. So after
-finding the pointer to the object two things need to happen (under rcu_lock):
+Heh. Reverted,
 
-1. Verify that the object is still in use
-2. Verify that the object is matching the hash
-
-If not then the operation needs to be redone because we have a stale hash pointer.
+		Linus
