@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbYJGAt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbYJGAub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbYJGAt7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbYJGAnx
+	id S1757832AbYJGAub (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbYJGAn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:43:53 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60515 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:43:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46804 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755868AbYJGAnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:43:52 -0400
-Date: Mon, 6 Oct 2008 17:38:33 -0700
+	id S1757465AbYJGAnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:43:55 -0400
+Date: Mon, 6 Oct 2008 17:38:36 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Ingo Molnar <mingo@elte.hu>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, James.Bottomley@HansenPartnership.com,
-       jens.axboe@oracle.com, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [patch 26/71] sg: disable interrupts inside sg_copy_buffer
-Message-ID: <20081007003833.GA3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Glauber de Oliveira Costa <glommer@gmail.com>,
+       Ravikiran Thirumalai <kiran@scalex86.org>
+Subject: [patch 27/71] x86: Fix 27-rc crash on vsmp due to paravirt during
+	module load
+Message-ID: <20081007003836.GB3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sg-disable-interrupts-inside-sg_copy_buffer.patch"
+Content-Disposition: inline; filename="x86-fix-27-rc-crash-on-vsmp-due-to-paravirt-during-module-load.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,51 +42,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+From: Ravikiran Thirumalai <kiran@scalex86.org>
 
-This is the backport of the upstream commit 50bed2e2862a8f3a4f7d683d0d27292e71ef18b9
+commit 05e12e1c4c09cd35ac9f4e6af1e42b0036375d72 upstream.
 
-The callers of sg_copy_buffer must disable interrupts before calling
-it (since it uses kmap_atomic). Some callers use it on
-interrupt-disabled code but some need to take the trouble to disable
-interrupts just for this. No wonder they forget about it and we hit a
-bug like:
+vsmp_patch has been marked with __init ever since pvops, however,
+apply_paravirt can be called during module load causing calls to
+freed memory location.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11529
+Since apply_paravirt can only be called during bootup and module load,
+mark vsmp patch with "__init_or_module"
 
-James said that it might be better to disable interrupts inside the
-function rather than risk the callers getting it wrong.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- lib/scatterlist.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/x86/kernel/vsmp_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/lib/scatterlist.c
-+++ b/lib/scatterlist.c
-@@ -312,8 +312,9 @@ static size_t sg_copy_buffer(struct scat
- 	struct scatterlist *sg;
- 	size_t buf_off = 0;
- 	int i;
-+	unsigned long flags;
- 
--	WARN_ON(!irqs_disabled());
-+	local_irq_save(flags);
- 
- 	for_each_sg(sgl, sg, nents, i) {
- 		struct page *page;
-@@ -358,6 +359,8 @@ static size_t sg_copy_buffer(struct scat
- 			break;
- 	}
- 
-+	local_irq_restore(flags);
-+
- 	return buf_off;
+--- a/arch/x86/kernel/vsmp_64.c
++++ b/arch/x86/kernel/vsmp_64.c
+@@ -58,7 +58,7 @@ static void vsmp_irq_enable(void)
+ 	native_restore_fl((flags | X86_EFLAGS_IF) & (~X86_EFLAGS_AC));
  }
  
+-static unsigned __init vsmp_patch(u8 type, u16 clobbers, void *ibuf,
++static unsigned __init_or_module vsmp_patch(u8 type, u16 clobbers, void *ibuf,
+ 				  unsigned long addr, unsigned len)
+ {
+ 	switch (type) {
 
 -- 
