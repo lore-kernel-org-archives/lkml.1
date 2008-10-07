@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYJGKPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbYJGKQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbYJGKPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 06:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYJGKPf
+	id S1754704AbYJGKQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 06:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbYJGKPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 06:15:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44130 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbYJGKPf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 06:15:35 -0400
-Date: Tue, 7 Oct 2008 12:15:32 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH] Add kerneldoc documentation for new printk format extensions
-Message-ID: <20081007101532.GA25565@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 7 Oct 2008 06:15:55 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58421 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752217AbYJGKPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 06:15:54 -0400
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: avorontsov@ru.mvista.com
+Cc: Tejun Heo <tj@kernel.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Wang Jian <lark@linux.net.cn>
+In-Reply-To: <20081007092605.GA28907@oksana.dev.rtsoft.ru>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	 <48EA77EF.6080502@genesi-usa.com>
+	 <20081006213209.GA13072@oksana.dev.rtsoft.ru> <48EABBD3.1010401@kernel.org>
+	 <20081007092605.GA28907@oksana.dev.rtsoft.ru>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 21:04:45 +1100
+Message-Id: <1223373885.8157.49.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add documentation in kerneldoc for new printk format extensions
+On Tue, 2008-10-07 at 13:26 +0400, Anton Vorontsov wrote:
+> On Tue, Oct 07, 2008 at 10:30:59AM +0900, Tejun Heo wrote:
+> > Anton Vorontsov wrote:
+> > > On Mon, Oct 06, 2008 at 03:41:19PM -0500, Matt Sealey wrote:
+> > >> There is a simple problem with the patch which is that an "IRQ 0" can and does
+> > >> actually exist on a bunch of platforms, at least to the best of my knowledge.
+> > >>
+> > >> Checking for -1 (which means for definite, no irq at all, because it is
+> > >> totally unambiguous, as a -1 IRQ numbering is "impossible") is more correct.
+> > > 
+> > > This was discussed years ago.
+> > > 
+> > > http://lkml.org/lkml/2005/11/22/159
+> > > http://lkml.org/lkml/2005/11/22/227
+> > > 
+> > 
+> > Would this break any existing platforms?
+> 
+> Nope.
+> 
+> The driver is only available for PPC platforms.
+> 
+> As time goes by one can change `depend on PPC_OF' to just `depends on
+> OF', so that the driver will be also available for SPARC. And still
+> it will work, because SPARC also understands VIRQ0 as invalid VIRQ.
+> 
 
-This patch documents the new %pS/%pF options in printk in kernel doc.
+Yup, I agree. I'll pick it up in my next batch.
 
-Hope I didn't miss any other extension.
+Cheers,
+Ben.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Index: linux-2.6.27-rc6-misc/kernel/printk.c
-===================================================================
---- linux-2.6.27-rc6-misc.orig/kernel/printk.c
-+++ linux-2.6.27-rc6-misc/kernel/printk.c
-@@ -593,6 +593,8 @@ static int have_callable_console(void)
-  *
-  * See also:
-  * printf(3)
-+ *
-+ * See the vsnprintf() documentation for format string extensions over C99.
-  */
- 
- asmlinkage int printk(const char *fmt, ...)
-Index: linux-2.6.27-rc6-misc/lib/vsprintf.c
-===================================================================
---- linux-2.6.27-rc6-misc.orig/lib/vsprintf.c
-+++ linux-2.6.27-rc6-misc/lib/vsprintf.c
-@@ -565,6 +565,10 @@ static char *pointer(const char *fmt, ch
-  * @fmt: The format string to use
-  * @args: Arguments for the format string
-  *
-+ * This function follows C99 vsnprintf, but has some extensions:
-+ * %pS output the name of a text symbol
-+ * %pF output the name of a function pointer
-+ *
-  * The return value is the number of characters which would
-  * be generated for the given input, excluding the trailing
-  * '\0', as per ISO C99. If you want to have the exact
-@@ -806,6 +810,8 @@ EXPORT_SYMBOL(vsnprintf);
-  *
-  * Call this function if you are already dealing with a va_list.
-  * You probably want scnprintf() instead.
-+ *
-+ * See the vsnprintf() documentation for format string extensions over C99.
-  */
- int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
- {
-@@ -828,6 +834,8 @@ EXPORT_SYMBOL(vscnprintf);
-  * generated for the given input, excluding the trailing null,
-  * as per ISO C99.  If the return is greater than or equal to
-  * @size, the resulting string is truncated.
-+ *
-+ * See the vsnprintf() documentation for format string extensions over C99.
-  */
- int snprintf(char * buf, size_t size, const char *fmt, ...)
- {
-@@ -877,6 +885,8 @@ EXPORT_SYMBOL(scnprintf);
-  *
-  * Call this function if you are already dealing with a va_list.
-  * You probably want sprintf() instead.
-+ *
-+ * See the vsnprintf() documentation for format string extensions over C99.
-  */
- int vsprintf(char *buf, const char *fmt, va_list args)
- {
-@@ -894,6 +904,8 @@ EXPORT_SYMBOL(vsprintf);
-  * The function returns the number of characters written
-  * into @buf. Use snprintf() or scnprintf() in order to avoid
-  * buffer overflows.
-+ *
-+ * See the vsnprintf() documentation for format string extensions over C99.
-  */
- int sprintf(char * buf, const char *fmt, ...)
- {
