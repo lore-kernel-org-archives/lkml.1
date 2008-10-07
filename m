@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbYJGAqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbYJGAqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758047AbYJGAqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbYJGAnK
+	id S1756376AbYJGAqz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbYJGAnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:43:10 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60400 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:43:15 -0400
+Received: from mail.suse.de ([195.135.220.2]:46665 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756816AbYJGAnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:43:09 -0400
-Date: Mon, 6 Oct 2008 17:38:08 -0700
+	id S1755166AbYJGAnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:43:13 -0400
+Date: Mon, 6 Oct 2008 17:38:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,68 +22,68 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 16/71] ALSA: remove unneeded power_mutex lock in
-	snd_pcm_drop
-Message-ID: <20081007003808.GQ3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>,
+       Alexander Graf <agraf@suse.de>, Avi Kivity <avi@qumranet.com>
+Subject: [patch 17/71] KVM: SVM: fix random segfaults with NPT enabled
+Message-ID: <20081007003811.GR3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-remove-unneeded-power_mutex-lock-in-snd_pcm_drop.patch"
+Content-Disposition: inline; filename="kvm-svm-fix-random-segfaults-with-npt-enabled.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Takashi Iwai <tiwai@suse.de>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Upstream-commit-id: 24e8fc498e9618338854bfbcf8d1d737e0bf1775
+(cherry picked from commit 44874f84918e37b64bec6df1587e5fe2fdf6ab62)
 
-The power_mutex lock in snd_pcm_drop may cause a possible deadlock
-chain, and above all, it's unneeded.  Let's get rid of it.
+This patch introduces a guest TLB flush on every NPF exit in KVM. This fixes
+random segfaults and #UD exceptions in the guest seen under some workloads
+(e.g. long running compile workloads or tbench). A kernbench run with and
+without that fix showed that it has a slowdown lower than 0.5%
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/core/pcm_native.c |   13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+ arch/x86/kvm/svm.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -1545,16 +1545,10 @@ static int snd_pcm_drop(struct snd_pcm_s
- 	card = substream->pcm->card;
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -60,6 +60,7 @@ static int npt = 1;
+ module_param(npt, int, S_IRUGO);
  
- 	if (runtime->status->state == SNDRV_PCM_STATE_OPEN ||
--	    runtime->status->state == SNDRV_PCM_STATE_DISCONNECTED)
-+	    runtime->status->state == SNDRV_PCM_STATE_DISCONNECTED ||
-+	    runtime->status->state == SNDRV_PCM_STATE_SUSPENDED)
- 		return -EBADFD;
+ static void kvm_reput_irq(struct vcpu_svm *svm);
++static void svm_flush_tlb(struct kvm_vcpu *vcpu);
  
--	snd_power_lock(card);
--	if (runtime->status->state == SNDRV_PCM_STATE_SUSPENDED) {
--		result = snd_power_wait(card, SNDRV_CTL_POWER_D0);
--		if (result < 0)
--			goto _unlock;
--	}
--
- 	snd_pcm_stream_lock_irq(substream);
- 	/* resume pause */
- 	if (runtime->status->state == SNDRV_PCM_STATE_PAUSED)
-@@ -1563,8 +1557,7 @@ static int snd_pcm_drop(struct snd_pcm_s
- 	snd_pcm_stop(substream, SNDRV_PCM_STATE_SETUP);
- 	/* runtime->control->appl_ptr = runtime->status->hw_ptr; */
- 	snd_pcm_stream_unlock_irq(substream);
-- _unlock:
--	snd_power_unlock(card);
+ static inline struct vcpu_svm *to_svm(struct kvm_vcpu *vcpu)
+ {
+@@ -1017,6 +1018,15 @@ static int pf_interception(struct vcpu_s
+ 
+ 	fault_address  = svm->vmcb->control.exit_info_2;
+ 	error_code = svm->vmcb->control.exit_info_1;
 +
- 	return result;
- }
- 
++	/*
++	 * FIXME: Tis shouldn't be necessary here, but there is a flush
++	 * missing in the MMU code. Until we find this bug, flush the
++	 * complete TLB here on an NPF
++	 */
++	if (npt_enabled)
++		svm_flush_tlb(&svm->vcpu);
++
+ 	if (event_injection)
+ 		kvm_mmu_unprotect_page_virt(&svm->vcpu, fault_address);
+ 	return kvm_mmu_page_fault(&svm->vcpu, fault_address, error_code);
 
 -- 
