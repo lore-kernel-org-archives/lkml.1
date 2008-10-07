@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYJGTU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYJGTVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbYJGTU2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 15:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYJGTUR
+	id S1754003AbYJGTVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 15:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbYJGTV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 15:20:17 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:64518 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752961AbYJGTUP (ORCPT
+	Tue, 7 Oct 2008 15:21:26 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:52389 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYJGTV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 15:20:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:content-type:content-transfer-encoding
-         :mime-version:subject:date:cc:x-mailer;
-        b=tW2n2mxxsSAnmEtsDKgj969IiIAwAyVI3DfmEls8bVtvkCGCMY8QOKSiJqWUXvQoKK
-         8unapPQebk91jhxdXZzus9UzmdIPdvo25UIa8lOyAkLj4eCAEqwOrFKT3LXLAjZsjVQg
-         yGqGQC+KRKApJzIpVbFPWyCom3xFcnnHe72Qs=
-Message-Id: <67AA922F-881E-47F1-866B-9613E30C7A78@gmail.com>
-From: Richard Holden <aciddeath@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: [PATCH] phonedev: remove BKL
-Date: Tue, 7 Oct 2008 13:20:11 -0600
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-X-Mailer: Apple Mail (2.929.2)
+	Tue, 7 Oct 2008 15:21:26 -0400
+Date: Tue, 7 Oct 2008 21:21:12 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+Message-ID: <20081007192112.GL13035@tekkaman>
+References: <1223374230-18413-1-git-send-email-giometti@enneenne.com> <20081007135420.GB1592@ucw.cz> <20081007152032.GH13035@tekkaman> <20081007185846.GA6604@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007185846.GA6604@elf.ucw.cz>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH V3] led: Backlight trigger for led subsystem
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the BKL from the phonedev module. The phone_device  
-array is covered by the phone_lock mutex in all cases and  
-request_module no longer needs the BKL so we can remove the only  
-remaining instance of the BKL from phonedev.
+On Tue, Oct 07, 2008 at 08:58:46PM +0200, Pavel Machek wrote:
+> 
+> Ok, what is it good for? So I have backlight, charging led and hdd led
+> on my zaurus. Now I can set charging led to indicate backlight... but
+> why is it useful?
 
-Signed-off-by: Richard Holden <aciddeath@gmail.com>
+On my board, for example, I have a led for each "special" buttons and
+others to indicate to the user some "special" conditions of machine
+internals. All these leds should be switched off each time the LCD
+blanks and they should get their old brightness status when the LCD
+unblanks.
 
-diff --git a/drivers/telephony/phonedev.c b/drivers/telephony/phonedev.c
-index 4d74ba3..37caf4d 100644
---- a/drivers/telephony/phonedev.c
-+++ b/drivers/telephony/phonedev.c
-@@ -54,7 +54,6 @@ static int phone_open(struct inode *inode, struct  
-file *file)
-  	if (minor >= PHONE_NUM_DEVICES)
-  		return -ENODEV;
+Ciao,
 
--	lock_kernel();
-  	mutex_lock(&phone_lock);
-  	p = phone_device[minor];
-  	if (p)
-@@ -81,7 +80,6 @@ static int phone_open(struct inode *inode, struct  
-file *file)
-  	fops_put(old_fops);
-  end:
-  	mutex_unlock(&phone_lock);
--	unlock_kernel();
-  	return err;
-  }
+Rodolfo
 
+-- 
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
