@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbYJGVEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbYJGVFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbYJGVEj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYJGVEa
+	id S1756974AbYJGVFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJGVFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:04:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42558 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754026AbYJGVEa (ORCPT
+	Tue, 7 Oct 2008 17:05:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56939
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751951AbYJGVFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:04:30 -0400
-Date: Tue, 7 Oct 2008 23:10:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
-Message-ID: <20081007211038.GQ20740@one.firstfloor.org>
-References: <1223396117-8118-1-git-send-email-kirill@shutemov.name> <2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com>
+	Tue, 7 Oct 2008 17:05:33 -0400
+Date: Tue, 07 Oct 2008 14:05:09 -0700 (PDT)
+Message-Id: <20081007.140509.48442086.davem@davemloft.net>
+To: npiggin@suse.de
+Cc: dada1@cosmosbay.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, paulmck@us.ibm.com
+Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm,
+ for adaptive dcache hash table sizing (resend)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081007080656.GB16143@wotan.suse.de>
+References: <20081007070225.GB5959@wotan.suse.de>
+	<48EB11BB.2060704@cosmosbay.com>
+	<20081007080656.GB16143@wotan.suse.de>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sorry, no.
-> This description still doesn't explain why this interface is needed.
-> 
-> The one of the points is this interface is used by another person or not.
-> You should explain how large this interface benefit has.
-> 
-> Andi kleen explained this interface _can_  be used another one.
-> but nobody explain who use it actually.
+From: Nick Piggin <npiggin@suse.de>
+Date: Tue, 7 Oct 2008 10:06:56 +0200
 
-Anyone who doesn't want to use fixed addresses. 
+> Hmm, that is interesting. What are the exact semantics of this rt_cache
+> file?
 
--Andi
-
--- 
-ak@linux.intel.com
+It dumps the whole set of elements in the routing cache hash table.
