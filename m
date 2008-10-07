@@ -1,130 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYJGHHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbYJGHJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbYJGHHN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 03:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYJGHHA
+	id S1757123AbYJGHJt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 03:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYJGHJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 03:07:00 -0400
-Received: from brain.cel.usyd.edu.au ([129.78.24.68]:64739 "EHLO
-	brain.cel.usyd.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbYJGHG7 (ORCPT
+	Tue, 7 Oct 2008 03:09:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42051 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbYJGHJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 03:06:59 -0400
-Message-Id: <5.1.1.5.2.20081007064952.0236cb00@brain.cel.usyd.edu.au>
-X-Mailer: QUALCOMM Windows Eudora Version 5.1.1
-Date: Tue, 07 Oct 2008 06:55:11 +1000
-To: balbir@linux.vnet.ibm.com
-From: sena seneviratne <auntvini@cel.usyd.edu.au>
-Subject: Fwd: Re: New Metrics to measure Load average
-Cc: peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org
+	Tue, 7 Oct 2008 03:09:40 -0400
+Date: Tue, 7 Oct 2008 09:15:44 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, dipankar@in.ibm.com,
+       tglx@linuxtronix.de
+Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
+Message-ID: <20081007071544.GC20740@one.firstfloor.org>
+References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007030822.GC6820@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir Singh,
+> Could you please try the patch at the following URL (from Thomas
+> Gleixner)?
+> 
+> http://www.rdrop.com/users/paulmck/patches/2.6.27-rc7-tglx-timer-1.patch
+> 
+> This fixed some CPU hotplug hangs that I was seeing in 2.6.27-rc7 and
+> -rc8.  Alternatively, try 2.6.27-rc9, which seems to include Thomas's
+> patch.
 
-I have done changes to the load average inside current functions.
-This means without introducing any new function.
+Still happens with rc9.  This time with frame pointers:
 
-Please go through our previous correspondence in this regard.
+bash          D 00000000ffff975e     0  4770   4757
+ ffff8804bcda3bf8 0000000000000082 ffff8804bcda3c18 0000000000000296
+ ffff8804bde4e6b0 ffff8804be6fc630 ffff8804bde4e8f8 0000000e00000296
+ ffff8804bcda3c18 ffffffff808cfd98 ffff880288064780 ffff88027d18ec98
+Call Trace:
+ [<ffffffff805c4915>] schedule_timeout+0x22/0xb4
+ [<ffffffff8020a009>] ? __switch_to+0x320/0x330
+ [<ffffffff802602ed>] ? cpupri_set+0xc5/0xd8
+ [<ffffffff805c476f>] wait_for_common+0xcd/0x131
+ [<ffffffff8022db87>] ? default_wake_function+0x0/0xf
+ [<ffffffff805c485d>] wait_for_completion+0x18/0x1a
+ [<ffffffff80243fbf>] synchronize_rcu+0x35/0x3c
+ [<ffffffff8024403e>] ? wakeme_after_rcu+0x0/0x12
+ [<ffffffff8022ed25>] partition_sched_domains+0x9b/0x1dd
+ [<ffffffff8022dbb3>] ? wake_up_process+0x10/0x12
+ [<ffffffff8022ee95>] update_sched_domains+0x2e/0x35
+ [<ffffffff805c8342>] notifier_call_chain+0x33/0x5b
+ [<ffffffff80249291>] __raw_notifier_call_chain+0x9/0xb
+ [<ffffffff802492a2>] raw_notifier_call_chain+0xf/0x11
+ [<ffffffff805c1c3a>] _cpu_up+0xd3/0x10c
+ [<ffffffff805c1cca>] cpu_up+0x57/0x67
+ [<ffffffff805a5787>] store_online+0x4d/0x75
+ [<ffffffff803e67bb>] sysdev_store+0x1b/0x1d
+ [<ffffffff802cce10>] sysfs_write_file+0xe0/0x11c
+ [<ffffffff8028b661>] vfs_write+0xae/0x137
+ [<ffffffff8028bb0a>] sys_write+0x47/0x6f
+ [<ffffffff8020b34b>] system_call_fastpath+0x16/0x1b
 
-Also I had discused this fact with Peter Williams who had introduced some 
-new functions in the same area.
+BTW it also happens reliably every time. Reproduced it three times
+now. I just do
 
-Would do you be able to test my code?
+laut:~ # echo 0 > /sys/devices/system/cpu/cpu15/online 
+laut:~ # echo 0 > /sys/devices/system/cpu/cpu14/online 
+laut:~ # echo 1 > /sys/devices/system/cpu/cpu14/online 
+laut:~ # echo 1 > /sys/devices/system/cpu/cpu15/online 
+<hang>
 
-Kind regards
-Sena Seneviratne
-Computer Engineering Lab
-School of Electrical and Information Engineering
-Sydney University
-Australia
-
-Thanks
->Date: Sat, 04 Oct 2008 00:22:58 +1000
->To: balbir@linux.vnet.ibm.com
->From: sena seneviratne <auntvini@cel.usyd.edu.au>
->Subject: Fwd: Re: New Metrics to measure Load average
->Cc: linux-kernel@vger.kernel.org,arjan@infradead.org
->
->Dear Balbir Singh,
->
->This is one of the e-mails probably the last.
->By this time I have finshed 2.4.19 kernel.
->
->Thanks
->Sena Seneviratne
->Computer Engineering Lab
->School of Electrical and Information Engineering
->Sydney University
->Australia
->
->>Date: Tue, 20 Jun 2006 19:43:36 +1000
->>To: balbir@in.ibm.com
->>From: sena seneviratne <auntvini@sedal.usyd.edu.au>
->>Subject: Re: New Metrics to measure Load average
->>
->>Dear Balbir Singh,
->>
->>Thanks for your reply and for your time.
->>
->>Then I will have to transfer from 2.4.18 to 2.6.18
->>
->>Ok Balbir  I will do that.
->>
->>
->>Kind regards
->>Sena Seneviratne
->>Computer Engineering Lab
->>School of Electrical and Information Engineering
->>Sydney University
->>Australia
->>
->>
->>
->>At 02:29 PM 6/20/2006 +0530, you wrote:
->>>sena seneviratne wrote:
->>>>Dear Balbir Singh,
->>>>Thanks for your valuable reply.
->>>>Balbir  It looks like that there is a general project where we all can 
->>>>incorporate our work.
->>>
->>>
->>>Yes it is. It is currently in -mm and we hope that it makes it into
->>>2.6.18. The folder Documentation/accounting contains all the necessary
->>>details for you to build on top of delay stats.
->>>
->>>
->>>>--How do you calculate disk load? Is it the
->>>>---number of uninterruptible tasks in the system?  Yes I started at 
->>>>that point
->>>>
->>>>Few years ago the few additions I have explained, have been implemented 
->>>>in linux 2.4.18 kernel at  the Sydney Uni as part of a large research project.
->>>>Also few years ago I have posted many posts about this topic to this 
->>>>forum.  Few very experience hands  were advising me in coding at that 
->>>>time. To prove this I have all the e-mails with me. Yet then I had not 
->>>>explained to this forum about the research project which involved 
->>>>prediction algorithm as then it had not been published.
->>>>Thereafter few research papers have been published with regard to this. 
->>>>1 in US.
->>>>Currently I am preparing the changes to a more recent linux patch. In 
->>>>fact this is not hard as I have already changed the previous linux 2.4.18.
->>>
->>>Please cc us when you post the patches.
->>>
->>>>Before coming to do research I had worked as a Senior software engineer 
->>>>in few companies and my last was LogicaCMG. Yet as far as the kernel 
->>>>programming is concerned I will ask for your comments and advice.
->>>
->>>Let us know if you need any help for coding on top of taskstats.
->>>
->>>>Thanks
->>>>Sena Seneviratne
->>>>Computer Engineering Lab
->>>>School of Electrical and Information Engineering
->>>>Sydney University
->>>>Australia
+-Andi
 
