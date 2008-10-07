@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbYJGAqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbYJGApu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbYJGAqK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbYJGAnH
+	id S1757910AbYJGApu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYJGAnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:43:07 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60377 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:43:04 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60355 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756648AbYJGAnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:43:05 -0400
-Date: Mon, 6 Oct 2008 17:38:06 -0700
+	id S1757277AbYJGAnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:43:01 -0400
+Date: Mon, 6 Oct 2008 17:38:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,89 +22,88 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 15/71] ALSA: fix locking in snd_pcm_open*() and
-	snd_rawmidi_open*()
-Message-ID: <20081007003806.GP3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 14/71] ALSA: oxygen: fix distorted output on AK4396-based
+	cards
+Message-ID: <20081007003804.GO3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-fix-locking-in-snd_pcm_open-and-snd_rawmidi_open.patch"
+Content-Disposition: inline; filename="alsa-oxygen-fix-distorted-output-on-ak4396-based-cards.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Takashi Iwai <tiwai@suse.de>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-Upstream-commit-id: 399ccdc1cd4e92e541d4dacbbf18c52bd693418b
+Upstream-commit-id: df91bc23dcb052ff2da71b3482bf3c5fbf4b8a53
 
-The PCM and rawmidi open callbacks have a lock against card->controls_list
-but it takes a wrong one, card->controls_rwsem, instead of a right one
-card->ctl_files_rwlock.  This patch fixes them.
+When changing the sample rate, the CMI8788's master clock output becomes
+unstable for a short time.  The AK4396 needs the master clock to do SPI
+writes, so writing to an AK4396 control register directly after a sample
+rate change will garble the value.  In our case, this leads to the DACs
+being misconfigured to I2S sample format, which results in a wrong
+output level and horrible distortions on samples louder than -6 dB.
 
-This change also fixes automatically the potential deadlocks due to
-mm->mmap_sem in munmap and copy_from/to_user, reported by Sitsofe
-Wheeler:
+To fix this, we need to wait until the new master clock signal has
+become stable before doing SPI writes.
 
-  A: snd_ctl_elem_user_tlv(): card->controls_rwsem => mm->mmap_sem
-  B: snd_pcm_open(): card->open_mutex => card->controls_rwsem
-  C: munmap: mm->mmap_sem => snd_pcm_release(): card->open_mutex
-
-The patch breaks the chain.
-
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/core/pcm.c     |    4 ++--
- sound/core/rawmidi.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ sound/pci/oxygen/hifier.c |    4 ++++
+ sound/pci/oxygen/oxygen.c |    4 ++++
+ 2 files changed, 8 insertions(+)
 
---- a/sound/core/pcm.c
-+++ b/sound/core/pcm.c
-@@ -781,7 +781,7 @@ int snd_pcm_attach_substream(struct snd_
- 		return -ENODEV;
+--- a/sound/pci/oxygen/hifier.c
++++ b/sound/pci/oxygen/hifier.c
+@@ -17,6 +17,7 @@
+  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  */
  
- 	card = pcm->card;
--	down_read(&card->controls_rwsem);
-+	read_lock(&card->ctl_files_rwlock);
- 	list_for_each_entry(kctl, &card->ctl_files, list) {
- 		if (kctl->pid == current->pid) {
- 			prefer_subdevice = kctl->prefer_pcm_subdevice;
-@@ -789,7 +789,7 @@ int snd_pcm_attach_substream(struct snd_
- 				break;
- 		}
- 	}
--	up_read(&card->controls_rwsem);
-+	read_unlock(&card->ctl_files_rwlock);
++#include <linux/delay.h>
+ #include <linux/pci.h>
+ #include <sound/control.h>
+ #include <sound/core.h>
+@@ -95,6 +96,9 @@ static void set_ak4396_params(struct oxy
+ 	else
+ 		value |= AK4396_DFS_QUAD;
+ 	data->ak4396_ctl2 = value;
++
++	msleep(1); /* wait for the new MCLK to become stable */
++
+ 	ak4396_write(chip, AK4396_CONTROL_1, AK4396_DIF_24_MSB);
+ 	ak4396_write(chip, AK4396_CONTROL_2, value);
+ 	ak4396_write(chip, AK4396_CONTROL_1, AK4396_DIF_24_MSB | AK4396_RSTN);
+--- a/sound/pci/oxygen/oxygen.c
++++ b/sound/pci/oxygen/oxygen.c
+@@ -28,6 +28,7 @@
+  * GPIO 1 -> DFS1 of AK5385
+  */
  
- 	switch (stream) {
- 	case SNDRV_PCM_STREAM_PLAYBACK:
---- a/sound/core/rawmidi.c
-+++ b/sound/core/rawmidi.c
-@@ -418,7 +418,7 @@ static int snd_rawmidi_open(struct inode
- 	mutex_lock(&rmidi->open_mutex);
- 	while (1) {
- 		subdevice = -1;
--		down_read(&card->controls_rwsem);
-+		read_lock(&card->ctl_files_rwlock);
- 		list_for_each_entry(kctl, &card->ctl_files, list) {
- 			if (kctl->pid == current->pid) {
- 				subdevice = kctl->prefer_rawmidi_subdevice;
-@@ -426,7 +426,7 @@ static int snd_rawmidi_open(struct inode
- 					break;
- 			}
- 		}
--		up_read(&card->controls_rwsem);
-+		read_unlock(&card->ctl_files_rwlock);
- 		err = snd_rawmidi_kernel_open(rmidi->card, rmidi->device,
- 					      subdevice, fflags, rawmidi_file);
- 		if (err >= 0)
++#include <linux/delay.h>
+ #include <linux/mutex.h>
+ #include <linux/pci.h>
+ #include <sound/ac97_codec.h>
+@@ -173,6 +174,9 @@ static void set_ak4396_params(struct oxy
+ 	else
+ 		value |= AK4396_DFS_QUAD;
+ 	data->ak4396_ctl2 = value;
++
++	msleep(1); /* wait for the new MCLK to become stable */
++
+ 	for (i = 0; i < 4; ++i) {
+ 		ak4396_write(chip, i,
+ 			     AK4396_CONTROL_1, AK4396_DIF_24_MSB);
 
 -- 
