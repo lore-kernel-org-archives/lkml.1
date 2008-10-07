@@ -1,92 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYJGCmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYJGDI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbYJGCmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 22:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYJGCmq
+	id S1756130AbYJGDI3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 23:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYJGDIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 22:42:46 -0400
-Received: from smtp102.prem.mail.sp1.yahoo.com ([98.136.44.57]:48280 "HELO
-	smtp102.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753629AbYJGCmq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 22:42:46 -0400
-X-YMail-OSG: x3Z3EHgVM1mfxk8rmGwiEh21yQqK3SfmYWJp5xWFSiN11cN_u86RA1VZQvn2c2a3Pz0pZAFeZr5DpL7acUyihov0xbq8sg1CKDBmrsRpsbn3bBuf.W0RXaxQZok7A_wQgV9U2LbRJUosnYbAFSMeWaR5TTAL
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <48EACC91.8040008@schaufler-ca.com>
-Date: Mon, 06 Oct 2008 19:42:25 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 6 Oct 2008 23:08:20 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:50032 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754739AbYJGDIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 23:08:19 -0400
+Date: Mon, 6 Oct 2008 20:08:22 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       dipankar@in.ibm.com, tglx@linuxtronix.de
+Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
+Message-ID: <20081007030822.GC6820@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org>
 MIME-Version: 1.0
-To: Tilman Baumann <tilman.baumann@collax.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: SMACK netfilter smacklabel socket match
-References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com> <48DDBE2E.3010006@schaufler-ca.com> <48E1007F.4000400@collax.com> <48E19D01.9050809@schaufler-ca.com> <48E35F36.4030203@collax.com> <48E3957A.7040201@schaufler-ca.com> <48E3AB97.8020305@collax.com> <48E3BFDE.7010300@schaufler-ca.com> <48EA0B30.6080907@collax.com>
-In-Reply-To: <48EA0B30.6080907@collax.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081006232837.GA1157@basil.nowhere.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Baumann wrote:
-> Casey Schaufler wrote:
->> Tilman Baumann wrote:
->>> Casey Schaufler wrote:
->>> If I set /smack/nltype to 'unlabeled' I have effectively shut off 
->>> the network.
->>> I guess I'm missing some essential point here.
->>> Sorry to bother you with such trivialities.
->>
->> Not to worry. The essential point is that with MAC you can't just lock
->> the doors, you have to lock the windows as well. What I mean by that is
->> that traditional access controls apply to files, but not network
->> communications. Network communications became popular in part because
->> they were allowed to leave any restrictions up to the applications
->> and their protocols. MAC requirements are pickier than that. The good
->> news is that with a scheme like CIPSO you can easily enforce the
->> policy. The bad news is that network services in general assume that
->> there is no policy being enforced on them.
->
-> This might work well in trusted networks.
-> But Internet is untrusted and needs to work too. At least in the most 
-> real world scenarios. :)
+On Tue, Oct 07, 2008 at 01:28:37AM +0200, Andi Kleen wrote:
+> [modifying subject]
+> 
+> On Mon, Oct 06, 2008 at 04:12:20PM +0200, Andi Kleen wrote:
+> > [Rafael, something for the regression list]
+> > 
+> > While testing cpu hotunplug/hotreplug (first 
+> > setting two CPUs to offline and then to online again) on a 16 thread machine
+> > with 2.6.27rc8 the first 
+> > 
+> > # echo 1 > ./devices/system/cpu/cpu14/online
+> > 
+> > after hotunplug deadlocked somewhere in the scheduler:
+> 
+> I let it run for longer and I ended up with more and more processes
+> stuck in synchronize_rcu(). No more backtraces because the system
+> has no console and is now not able to write to disk anymore.
+> 
+> So it seems like there's something broken with RCU & cpu hotplug
+> in 2.6.28rc8. cc Paul.
+> 
+> It's probably not the scheduler, sorry for blaming it earlier.
 
-Yes. I'm pretty close to convinced that it needs to be included as
-part of the single-label host solution. Not that it can possibly be
-excused in any real secure environment mind you.
+Could you please try the patch at the following URL (from Thomas
+Gleixner)?
 
->>> If i set /smack/nltype to 'unlabled' i don't even get SYN packets 
->>> out. (operation not permitted)
->>
->> That's probably a bug, but I think the "fix" is to disable the 
->> ability to
->> set the nltype to anything other than CIPSO at least for the time being.
->
-> Well, there is a case statement in smack_lsm.c that checks for the 
-> nltype (smack_net_nltype) and omits net labeling if cipso is not set.
-> This seems to be a very sensible thing to do. I strongly advice for a 
-> way to omit netlabel based access control.
+http://www.rdrop.com/users/paulmck/patches/2.6.27-rc7-tglx-timer-1.patch
 
-Yes, I hear you.
+This fixed some CPU hotplug hangs that I was seeing in 2.6.27-rc7 and
+-rc8.  Alternatively, try 2.6.27-rc9, which seems to include Thomas's
+patch.
 
-> As soon as you leave controlled and trusted networks, netlabels seem 
-> in my eyes like a maybe even critical information leak.
->
-> btw. I tried return 0; in smk_access(), but it did not make networking 
-> work again with nltype set to unlabled. So I guess the problem is not 
-> some access check.
->
-> If you have any idea how i can avoid any cipso labels on the network 
-> but use smack for local access control?
-> I don't try to secure information channels. Our system is a general 
-> purpose server, it would defeat the purpose of our system to lock it 
-> up since our clients are never going to use cipso.
->
-> I'm pretty sure the cipso labels are the problem. Since I can easily 
-> access resources in the local network. But things break when I access 
-> over Internet.
-> And I can not even expect this to work in any network where the system 
-> will be deployed.
->
+							Thanx, Paul
 
+> -Andi
+> 
+> > bash          D 00000000ffffcb5b     0  4683   4671
+> >  ffff8804bc583c68 0000000000000086 ffff8804bc9d8640 0000000000000296
+> >  ffff8804bdd34730 ffff8804be6fc090 ffff8804bdd34978 0000000c805a1e2a
+> >  ffff8804be4fd780 ffffffff802298b4 ffffffff808acd98 ffff88027d0b1168
+> > Call Trace:
+> >  [<ffffffff802298b4>] __dequeue_entity+0x25/0x68
+> >  [<ffffffff805a1b4b>] schedule_timeout+0x1e/0xad
+> >  [<ffffffff8022a11f>] __disable_runtime+0x57/0x155
+> >  [<ffffffff8025cc47>] cpupri_set+0xbe/0xcd
+> >  [<ffffffff805a19b3>] wait_for_common+0xcd/0x131
+> >  [<ffffffff8022c918>] default_wake_function+0x0/0xe
+> >  [<ffffffff80241f3a>] synchronize_rcu+0x30/0x36
+> >  [<ffffffff80241fac>] wakeme_after_rcu+0x0/0xc
+> >  [<ffffffff8022dab6>] partition_sched_domains+0x9b/0x1dd
+> >  [<ffffffff8022dc26>] update_sched_domains+0x2e/0x35
+> >  [<ffffffff805a5297>] notifier_call_chain+0x29/0x4c
+> >  [<ffffffff8059ef76>] _cpu_up+0xd0/0x10a
+> >  [<ffffffff8059f004>] cpu_up+0x54/0x61
+> >  [<ffffffff805837d5>] store_online+0x43/0x67
+> >  [<ffffffff802c51e9>] sysfs_write_file+0xd2/0x110
+> >  [<ffffffff8028656b>] vfs_write+0xad/0x136
+> >  [<ffffffff802869f3>] sys_write+0x45/0x6e
+> >  [<ffffffff8020b22b>] system_call_fastpath+0x16/0x1b
+> > 
+> > It just hung forever, but the machine was otherwise fully functional.
+> > 
+> > This was without frame pointers so the backtrace presumably has
+> > some garbage. Haven't looked too closely.
+> > 
+> > -Andi
+> > 
+> > -- 
+> > ak@linux.intel.com
+> 
+> -- 
+> ak@linux.intel.com
