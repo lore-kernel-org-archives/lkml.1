@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYJGDhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYJGDmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYJGDhi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 23:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYJGDha
+	id S1756169AbYJGDmR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 23:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYJGDmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 23:37:30 -0400
-Received: from mail.lang.hm ([64.81.33.126]:55131 "EHLO bifrost.lang.hm"
+	Mon, 6 Oct 2008 23:42:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46409 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753012AbYJGDha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 23:37:30 -0400
-Date: Mon, 6 Oct 2008 20:37:59 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Mikulas Patocka <mpatocka@redhat.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
-Subject: Re: application syncing options (was Re: [PATCH] Memory management
- livelock)
-In-Reply-To: <Pine.LNX.4.64.0810052332040.3074@hs20-bc2-1.build.redhat.com>
-Message-ID: <alpine.DEB.1.10.0810062025301.19471@asgard.lang.hm>
-References: <20080911101616.GA24064@agk.fab.redhat.com> <20080923154905.50d4b0fa.akpm@linux-foundation.org> <200810031232.23836.nickpiggin@yahoo.com.au> <200810031254.29121.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0810030845070.14680@asgard.lang.hm>
- <Pine.LNX.4.64.0810052002520.5798@hs20-bc2-1.build.redhat.com> <alpine.DEB.1.10.0810051714330.17288@asgard.lang.hm> <Pine.LNX.4.64.0810052332040.3074@hs20-bc2-1.build.redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1752333AbYJGDmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 23:42:00 -0400
+Date: Tue, 7 Oct 2008 05:41:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jason Vas Dias <jason.vas.dias@gmail.com>
+Subject: Re: [PATCH] x86: SB450: skip IRQ0 override if it is not routed to
+	INT2 of IOAPIC
+Message-ID: <20081007034132.GA3025@elte.hu>
+References: <20081005183603.GA3263@amd.corenet.prv> <200810060029.42471.rjw@sisk.pl> <20081006062235.GA2808@amd.corenet.prv> <200810061159.30103.rjw@sisk.pl> <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org> <20081006150055.GA16930@elte.hu> <alpine.LFD.1.10.0810061815060.10470@ftp.linux-mips.org> <87tzbpmocm.fsf@basil.nowhere.org> <alpine.LFD.1.10.0810062227100.10470@ftp.linux-mips.org> <20081006221122.GC22097@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081006221122.GC22097@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Oct 2008, Mikulas Patocka wrote:
 
-> On Sun, 5 Oct 2008, david@lang.hm wrote:
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+
+> So, let's work around BIOS bugs in Linux then ...
+> 
+> Following patch is almost untested -- especially I didn't get my hands 
+> on one of the HP Laptops with broken DSDT.
+[...]
+> On some HP nx6... laptops (e.g. nx6325) BIOS reports an IRQ0 override 
+> but the SB450 chipset is configured such that timer interrupts goe to 
+> INT0 of IOAPIC.
+> 
+> Check IRQ0 routing and if it is routed to INT0 of IOAPIC skip the 
+> timer override.
+> 
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 >
->> On Sun, 5 Oct 2008, Mikulas Patocka wrote:
->>
->>> On Fri, 3 Oct 2008, david@lang.hm wrote:
->>>
->>>> I've also seen discussions of how the
->>>> kernel filesystem code can do ordered writes without having to wait for
->>>> them
->>>> with the use of barriers, is this capability exported to userspace? if so,
->>>> could you point me at documentation for it?
->>>
->>> It isn't. And it is good that it isn't --- the more complicated API, the
->>> more maintenance work.
->>
->> I can understand that most software would not want to deal with complications
->> like this, but for things thta have requirements similar to journaling
->> filesystems (databases for example) it would seem that there would be
->> advantages to exposing this capabilities.
->>
->> David Lang
->
-> If you invent new interface that allows submitting several ordered IOs
-> from userspace, it will require excessive maintenance overhead over long
-> period of time. So it should be only justified, if the performance
-> improvement is excessive as well.
->
-> It should not be like "here you improve 10% performance on some synthetic
-> benchmark in one application that was rewritten to support the new
-> interface" and then create a few more security vulnerabilities (because of
-> the complexity of the interface) and damage overall Linux progress,
-> because everyone is catching bugs in the new interface and checking it for
-> correctness.
+> ---
+>  arch/x86/kernel/early-quirks.c |   48 ++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 48 insertions(+), 0 deletions(-)
 
-the same benchmarks that show that it's far better for the in-kernel 
-filesystem code to use write barriers should apply for FUSE filesystems.
+very nice, thanks Andreas! Applied to tip/x86/quirks. This PCI ID based 
+quirk should be more complete than DMI matches.
 
-this isn't a matter of a few % in performance, if an application is 
-sync-limited in a way that can be converted to write-ordered the potential 
-is for the application to speed up my many times.
-
-programs that maintain indexes or caches of data that lives in other files 
-will be able to write data && barrier && write index && fsync and double 
-their performance vs write data && fsync && write index && fsync
-
-databases can potentially do even better, today they need to fsync data to 
-disk before they can update their journal to indicate that the data has 
-been written, with a barrier they could order the writes so that the write 
-to the journal doesn't happen until the writes of the data. they would 
-neve need to call an fsync at all (when emptying the journal)
-
-for systems without solid-state drives or battery-backed caches, the 
-ability to eliminate fsyncs by being able to rely on the order of the 
-writes is a huge benifit.
-
-David Lang
+	Ingo
