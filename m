@@ -1,134 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbYJGJQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbYJGJYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511AbYJGJQm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 05:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYJGJQe
+	id S1754992AbYJGJYp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 05:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbYJGJYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 05:16:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46773 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbYJGJQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 05:16:33 -0400
-Message-ID: <48EB27FE.2090009@kernel.org>
-Date: Tue, 07 Oct 2008 18:12:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 7 Oct 2008 05:24:36 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:64634 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbYJGJYf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 05:24:35 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: perfmon2-devel@lists.sourceforge.net, eranian@gmail.com
+Subject: Re: [perfmon2] perfmon3 interface overview
+Date: Tue, 7 Oct 2008 11:24:17 +0200
+User-Agent: KMail/1.9.9
+Cc: "David Gibson" <david@gibson.dropbear.id.au>, linux-kernel@vger.kernel.org
+References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com> <20081005055339.GC469@yookeroo.seuss> <7c86c4470810051423v2116193vc2e1b67ce480488d@mail.gmail.com>
+In-Reply-To: <7c86c4470810051423v2116193vc2e1b67ce480488d@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Thery <benjamin.thery@bull.net>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: sysfs: tagged directories not merged completely yet
-References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com> <48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org> <20081003101331.GH28946@ZenIV.linux.org.uk>
-In-Reply-To: <20081003101331.GH28946@ZenIV.linux.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Oct 2008 09:14:19 +0000 (UTC)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200810071124.17946.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/E7VUA49IYIVwZkt71PJjsswADvoWBqFFBn1Z
+ +QQXyTf/S4qF1A3ZUUiKVzCxjzA18hgCFmfYeqWFiaPeGH6ZfR
+ G2lNZvFYk3mWLU0fcmHPQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Al.
+On Sunday 05 October 2008, stephane eranian wrote:
+> If I summarize our discussion. It seems we can define the API as follows:
+> 
+>     int pfm_create_session(int fd, uint64_t flags, pfarg_sinfo_t *sif,
+> [ char *smpl_name, void *smpl_arg, size_t arg_size]);
+>     int pfm_read_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
+>     int pfm_write_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
+>     int pfm_attach_session(int fd, uint64_t flags, int target);   /*
+> attach, detach with target=-1 */
+>     int pfm_control_session(int fd, uint64_t flags);   /* for start/stop */
+>     int pfm_control_sets(int fd, uint64_t flags, void *sets, size_t sz);
 
-Thanks for reviewing.  I'll reply to what I can from the top of my
-head for now.
 
-Al Viro wrote:
-> c) You do *not* change dentry tree topology without s_vfs_rename_mutex on
-> affected superblock.  That, BTW, is broken in mainline sysfs as well.
+There are two problems with uint64_t arguments to system calls:
 
-Hmmm...
+1. You have to mandate the use of stdint.h before including the
+perfmon header file. This is a minor problem as long as all callers
+go through libpfm, but you can avoid it entirely by using the kernel
+__u32 instead of uint32_t style types everywhere in your interface.
 
-	/*
-	 * The next field is for VFS *only*. No filesystems have any business
-	 * even looking at it. You had been warned.
-	 */
-	struct mutex s_vfs_rename_mutex;	/* Kludge */
+2. The calling conventions for passing 64 bit values on 32 bit
+architecture are complex, every architecture enforces different
+rules here. On the syscall interface, bettwe always use native
+types like 'unsigned long' instead of '__u64'. This is different
+from the case where you pass a pointer to data, in which case
+a '__u64 *' is much preferred over a 'unsigned long *'.
 
-How is a distributed filesystem supposed to do this?
+I did not understand the reason for going to a 64 bit flags parameter,
+but I think that you would do everyone a favour if you can instead
+use two 32-bit flags or a unsigned long flags parameter.
 
-> In addition to that, there are interesting internal problems:
-> * inumbers are released by final sysfs_put(); that can happen before the
-> final iput() on corresponding inode.  Guess what happens if new entry is
-> created in the meanwhile, reuses the same inumber and lookup gets to
-> sysfs_get_inode() on it?
-
-Heh... right.  Will fix.
-
-> * may I politely suggest that
-> again:
-> 	mutex_lock(&A);
-> 	if (!mutex_trylock(&B)) {
-> 		mutex_unlock(&A);
-> 		goto again;
-> 	}
-> is somewhat, er, deficient way to deal with buggered locking hierarchy?
-> Not to mention anything else, that's obviously FUBAR on UP box - if we
-> have B contended, we've just killed the box dead since we'll never give
-> the CPU back to whoever happens to hold B.  See sysfs_mv_dir() for a lovely
-> example.
-
-Yeah, that was dumb.  I should have just used inode_double_lock()
-there.
-
-> * sysfs_count_nlink() is called from sysfs_fill_super() without sysfs_mutex;
-> now this sucker can get called at any moment.
-
-In mainline, being single sb fs, it was okay.  Yeah, it now needs to
-be fixed.
-
-> * __sysfs_remove_dir() appears to assume that subdirectories are possible;
-> AFAICS, if we *do* get them, we get very screwed after remove_dir().
-
-sysfs currently requires its users to remove all the children before
-removing a directory, which is a bit dumb.  I once posted patches to
-make remove recursive and am still planning on refreshing and posting
-them.
-
-> * everything else aside, the internal locking is extremely heavy.  For
-> fsck sake, guys, a single system-wide mutex that can be grabbed for the
-> duration of readdir on any directory and block just about anything
-> in the filesystem?  Just mmap() something over NFS on a slow link and
-> do getdents() to such buffer.  Watch a *lot* of stuff getting buggered.
-> Hell, you can't even do ifconfig up while that sucker is held...
-
-Ah.. right, filler can be an issue but all other operations are from
-memory to memory, there just isn't much point in elaborating its
-locking.  Memory usage has been a much bigger problem and making
-locking per sysfs_dirent increases memory consumption and on
-crazy-large irons things like that become quite noticeable.
-
-If the filler is a real concern, I think it's better to just decouple
-it rather than making sysfs locking fine-grained.  sysfs metadata
-might as well be protected by a single spinlock if it can be decoupled
-from vfs locking and stuff.  It's just an in-memory tree which isn't
-used too often.
-
-> Seriously, people, it's getting worse than devfs had ever been ;-/
-
-I don't know about devfs either but sysfs today is in much better
-shape than say about one and half year ago.  Triggering deadlocks and
-oopses from userland was quite easy back then.
-
-Generally, the VFS layer isn't too easy for sysfs which is a bit like
-distributed filesystem but has more strict here-and-now rule (all
-changes should be visible instantaneously).  At the beginning, sysfs
-didn't have much metadata itself, it just used the VFS data structures
-but that was too large so sysfs_dirent got introduced and it tried to
-update VFS data structures as necessary and (this is when I started
-working on it) the current code and Eric's patcheset evolved from
-there.
-
-Maybe it can be done better by taking more traditional distributed
-filesystem approach - re/invalidation on access.  I don't know whether
-it will fit sysfs's needs but if it can be done, sysfs would be able
-to ride along with other distributed filesystems and become much more
-conventional in its interfacing with VFS.
-
-Thanks.
-
--- 
-tejun
+	Arnd <><
