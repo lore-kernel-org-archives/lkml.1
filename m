@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbYJGSOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYJGSTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbYJGSOc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 14:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbYJGSOW
+	id S1755542AbYJGSTR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 14:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbYJGSTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 14:14:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46335 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755519AbYJGSOV (ORCPT
+	Tue, 7 Oct 2008 14:19:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53832 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750836AbYJGSTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 14:14:21 -0400
-Date: Tue, 7 Oct 2008 19:14:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Richard Holden <aciddeath@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: BKL still required for what functions?
-Message-ID: <20081007191409.4a7291ff@lxorguk.ukuu.org.uk>
-In-Reply-To: <786804A2-4288-46F5-82B8-3FF9B6FD196C@gmail.com>
-References: <F99FEC4F-DEDD-4E55-93B4-A0761F30E1A2@gmail.com>
-	<20081007173515.1c161dce@lxorguk.ukuu.org.uk>
-	<786804A2-4288-46F5-82B8-3FF9B6FD196C@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 14:19:01 -0400
+Date: Tue, 7 Oct 2008 11:18:24 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linuxfoundation.org>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [BUG] SLOB's krealloc() seems bust
+In-Reply-To: <1223403082.26330.78.camel@lappy.programming.kicks-ass.net>
+Message-ID: <alpine.LFD.2.00.0810071116050.3208@nehalem.linux-foundation.org>
+References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>  <48EB6D2C.30806@linux-foundation.org>  <1223391655.13453.344.camel@calx>  <1223395846.26330.55.camel@lappy.programming.kicks-ass.net>  <1223397455.13453.385.camel@calx> 
+ <alpine.LFD.2.00.0810071053540.3208@nehalem.linux-foundation.org> <1223403082.26330.78.camel@lappy.programming.kicks-ass.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -	lock_kernel();
-> +	
->   	mutex_lock(&phone_lock);
->   	p = phone_device[minor];
->   	if (p)
->   		new_fops = fops_get(p->f_op);
->   	if (!new_fops) {
->   		mutex_unlock(&phone_lock);
-> +		lock_kernel();
->   		request_module("char-major-%d-%d", PHONE_MAJOR, minor);
-> +		unlock_kernel();
->   		mutex_lock(&phone_lock);
->   		p = phone_device[minor];
->   		if (p == NULL || (new_fops = fops_get(p->f_op)) == NULL)
-> @@ -81,7 +83,6 @@ static int phone_open(struct inode *inode, struct  
-> file *file)
->   	fops_put(old_fops);
->   end:
->   	mutex_unlock(&phone_lock);
-> -	unlock_kernel();
->   	return err;
->   }
 
-Looks like the BKL can go entirely there providing phone_device[] is
-always rechecked back in the phone mutex, request_module is happy nowdays
-without the BKL
+
+On Tue, 7 Oct 2008, Peter Zijlstra wrote:
+
+> On Tue, 2008-10-07 at 10:57 -0700, Linus Torvalds wrote:
+> 
+> > Peter - can you check with that
+> > 
+> > >  	if (slob_page(sp))
+> > > -		return ((slob_t *)block - 1)->units + SLOB_UNIT;
+> > > +		return (((slob_t *)block - 1)->units - 1) * SLOB_UNIT;
+> > 
+> > thing using
+> > 
+> > -		return ((slob_t *)block - 1)->units + SLOB_UNIT;
+> > +		return ((slob_t *)block - 1)->units * SLOB_UNIT;
+> > 
+> > instead? 
+> 
+> went splat on the second run...
+
+Well, that makes it simple. I'll take Matt's patch as being "tested", and 
+somebody can hopefully explain where the extra unit comes from later.
+
+			Linus
+
+
