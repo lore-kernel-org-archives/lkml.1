@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYJGPSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYJGPU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbYJGPSf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYJGPS1
+	id S1754602AbYJGPU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYJGPUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:18:27 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:33024 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752662AbYJGPS0 (ORCPT
+	Tue, 7 Oct 2008 11:20:48 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:33157 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbYJGPUr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:18:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=e2cQjDfkpxxUKEaKmZroC+Xy1W4wbwpiaVm4cZGt2FL1x9UNpXy1MVH5pUV+4Bs5Z3cVgVZvW0v5vxz6Iq33E6dJzIWjcC5PKMPeGBXLcWcj+QgaQwxGm/hvb5NBKmhZBrzCBuFUARxMAAl5KapCG/C9+8oYc0S/hSAGV6E+ACw=  ;
-X-YMail-OSG: dEW8A20VM1m81Tv7P4b_1NUDSalJzpG7IQ41c9zCbXNK33wXXNBC_S9bEwdos6Ml.Hd5uP2io5OXPGTvk.YJhYJAiWb0rx6DCGjO3eaeCy7Mf5OURIjz.kUhcIlYRv0jsiOigdv.g7PtMmLKrzQMcjMbZXfKbPc2Q2icxx0X7f63I3FMCSI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #11224] Only three cores found on quad-core machine.
-Date: Wed, 8 Oct 2008 02:18:18 +1100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dave Jones" <davej@redhat.com>
-References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.xUB.2875IB@wind>
-In-Reply-To: <yWwteD.A.xUB.2875IB@wind>
+	Tue, 7 Oct 2008 11:20:47 -0400
+Date: Tue, 7 Oct 2008 17:20:32 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+Message-ID: <20081007152032.GH13035@tekkaman>
+References: <1223374230-18413-1-git-send-email-giometti@enneenne.com> <20081007135420.GB1592@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810080218.18898.nickpiggin@yahoo.com.au>
+In-Reply-To: <20081007135420.GB1592@ucw.cz>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH V3] led: Backlight trigger for led subsystem
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 October 2008 04:32, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11224
-> Subject		: Only three cores found on quad-core machine.
-> Submitter	: Dave Jones <davej@redhat.com>
-> Date		: 2008-08-01 18:15 (65 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121761475224719&w=4
+On Tue, Oct 07, 2008 at 03:54:20PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > This patch set adds a new led trigger which emulates the backlight
+> > behaviour: the leds are turned off and on each time the display blanks
+> > and unblacks.
+> > 
+> > Since backlights are usually implemented with leds this patch set is
+> > useful for those drivers whose manage leds controller used as
+> > backlight controller.
+> > 
+> > The driver simply registers itself into the led subsystem and then the
+> > user may get backlight emulation by setting the "backlight"
+> > trigger. Moreover a driver, which usually manages more than one led,
+> > can use some leds as "led" and the others as "backlights" at user
+> > request.
+> 
+> We already have backlight subsystem, it can also handle display
+> brightness. Why not use that?
 
-Dave, is your CPU2 getting stuck in calibrate_delay? Can you still
-reproduce the bug? What if you boot the kernel with lpj=<something sane
-like 2666785> in order to skip the calibrate_delay code?
+Just to use a led as "led" or as "backlight" at user request. You can
+do it by using:
 
-If that helps, can you try adding some printks to narrow down where it
-is getting stuck?
+   echo none > /sys/class/leds/lcd/trigger
+   echo backlight > /sys/class/leds/lcd/trigger
+
+and the led will work accordingly.
+
+Also a led used as "backlight" is just a normal led (you can set the
+brightness as a normal led) but it switchs off automatically when the
+LCD blanks.
+
+Ciao,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
