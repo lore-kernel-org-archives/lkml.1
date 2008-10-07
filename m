@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760571AbYJGBBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbYJGBBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760571AbYJGBBg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 21:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYJGAqA
+	id S1760640AbYJGBBw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 21:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbYJGAqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:46:00 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60997 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:46:05 -0400
+Received: from ns.suse.de ([195.135.220.2]:47176 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757970AbYJGAp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:45:59 -0400
-Date: Mon, 6 Oct 2008 17:40:02 -0700
+	id S1756707AbYJGAqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:46:03 -0400
+Date: Mon, 6 Oct 2008 17:40:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
+       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 58/71] sctp: Fix oops when INIT-ACK indicates that peer
-	doesnt support AUTH
-Message-ID: <20081007004002.GG3055@suse.de>
+Subject: [patch 59/71] udp: Fix rcv socket locking
+Message-ID: <20081007004005.GH3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0008-sctp-Fix-oops-when-INIT-ACK-indicates-that-peer-doe.patch"
+Content-Disposition: inline; filename="0009-udp-Fix-rcv-socket-locking.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,69 +40,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[ Upstream commit add52379dde2e5300e2d574b172e62c6cf43b3d3 ]
+[ Upstream commit 93821778def10ec1e69aa3ac10adee975dad4ff3 ]
 
-If INIT-ACK is received with SupportedExtensions parameter which
-indicates that the peer does not support AUTH, the packet will be
-silently ignore, and sctp_process_init() do cleanup all of the
-transports in the association.
-When T1-Init timer is expires, OOPS happen while we try to choose
-a different init transport.
+The previous patch in response to the recursive locking on IPsec
+reception is broken as it tries to drop the BH socket lock while in
+user context.
 
-The solution is to only clean up the non-active transports, i.e
-the ones that the peer added.  However, that introduces a problem
-with sctp_connectx(), because we don't mark the proper state for
-the transports provided by the user.  So, we'll simply mark
-user-provided transports as ACTIVE.  That will allow INIT
-retransmissions to work properly in the sctp_connectx() context
-and prevent the crash.
+This patch fixes it by shrinking the section protected by the
+socket lock to sock_queue_rcv_skb only.  The only reason we added
+the lock is for the accounting which happens in that function.
 
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sctp/associola.c     |    9 +++++----
- net/sctp/sm_make_chunk.c |    6 ++----
- 2 files changed, 7 insertions(+), 8 deletions(-)
+ net/ipv4/udp.c |   59 +++++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 33 insertions(+), 26 deletions(-)
 
---- a/net/sctp/associola.c
-+++ b/net/sctp/associola.c
-@@ -597,11 +597,12 @@ struct sctp_transport *sctp_assoc_add_pe
- 	/* Check to see if this is a duplicate. */
- 	peer = sctp_assoc_lookup_paddr(asoc, addr);
- 	if (peer) {
-+		/* An UNKNOWN state is only set on transports added by
-+		 * user in sctp_connectx() call.  Such transports should be
-+		 * considered CONFIRMED per RFC 4960, Section 5.4.
-+		 */
- 		if (peer->state == SCTP_UNKNOWN) {
--			if (peer_state == SCTP_ACTIVE)
--				peer->state = SCTP_ACTIVE;
--			if (peer_state == SCTP_UNCONFIRMED)
--				peer->state = SCTP_UNCONFIRMED;
-+			peer->state = SCTP_ACTIVE;
- 		}
- 		return peer;
- 	}
---- a/net/sctp/sm_make_chunk.c
-+++ b/net/sctp/sm_make_chunk.c
-@@ -2321,12 +2321,10 @@ clean_up:
- 	/* Release the transport structures. */
- 	list_for_each_safe(pos, temp, &asoc->peer.transport_addr_list) {
- 		transport = list_entry(pos, struct sctp_transport, transports);
--		list_del_init(pos);
--		sctp_transport_free(transport);
-+		if (transport->state != SCTP_ACTIVE)
-+			sctp_assoc_rm_peer(asoc, transport);
- 	}
- 
--	asoc->peer.transport_count = 0;
--
- nomem:
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -950,6 +950,27 @@ int udp_disconnect(struct sock *sk, int 
  	return 0;
  }
+ 
++static int __udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb)
++{
++	int is_udplite = IS_UDPLITE(sk);
++	int rc;
++
++	if ((rc = sock_queue_rcv_skb(sk, skb)) < 0) {
++		/* Note that an ENOMEM error is charged twice */
++		if (rc == -ENOMEM)
++			UDP_INC_STATS_BH(UDP_MIB_RCVBUFERRORS,
++					 is_udplite);
++		goto drop;
++	}
++
++	return 0;
++
++drop:
++	UDP_INC_STATS_BH(UDP_MIB_INERRORS, is_udplite);
++	kfree_skb(skb);
++	return -1;
++}
++
+ /* returns:
+  *  -1: error
+  *   0: success
+@@ -988,9 +1009,7 @@ int udp_queue_rcv_skb(struct sock * sk, 
+ 		    up->encap_rcv != NULL) {
+ 			int ret;
+ 
+-			bh_unlock_sock(sk);
+ 			ret = (*up->encap_rcv)(sk, skb);
+-			bh_lock_sock(sk);
+ 			if (ret <= 0) {
+ 				UDP_INC_STATS_BH(UDP_MIB_INDATAGRAMS,
+ 						 is_udplite);
+@@ -1042,14 +1061,16 @@ int udp_queue_rcv_skb(struct sock * sk, 
+ 			goto drop;
+ 	}
+ 
+-	if ((rc = sock_queue_rcv_skb(sk,skb)) < 0) {
+-		/* Note that an ENOMEM error is charged twice */
+-		if (rc == -ENOMEM)
+-			UDP_INC_STATS_BH(UDP_MIB_RCVBUFERRORS, is_udplite);
+-		goto drop;
+-	}
++	rc = 0;
+ 
+-	return 0;
++	bh_lock_sock(sk);
++	if (!sock_owned_by_user(sk))
++		rc = __udp_queue_rcv_skb(sk, skb);
++	else
++		sk_add_backlog(sk, skb);
++	bh_unlock_sock(sk);
++
++	return rc;
+ 
+ drop:
+ 	UDP_INC_STATS_BH(UDP_MIB_INERRORS, is_udplite);
+@@ -1087,15 +1108,7 @@ static int __udp4_lib_mcast_deliver(stru
+ 				skb1 = skb_clone(skb, GFP_ATOMIC);
+ 
+ 			if (skb1) {
+-				int ret = 0;
+-
+-				bh_lock_sock(sk);
+-				if (!sock_owned_by_user(sk))
+-					ret = udp_queue_rcv_skb(sk, skb1);
+-				else
+-					sk_add_backlog(sk, skb1);
+-				bh_unlock_sock(sk);
+-
++				int ret = udp_queue_rcv_skb(sk, skb1);
+ 				if (ret > 0)
+ 					/* we should probably re-process instead
+ 					 * of dropping packets here. */
+@@ -1188,13 +1201,7 @@ int __udp4_lib_rcv(struct sk_buff *skb, 
+ 			uh->dest, inet_iif(skb), udptable);
+ 
+ 	if (sk != NULL) {
+-		int ret = 0;
+-		bh_lock_sock(sk);
+-		if (!sock_owned_by_user(sk))
+-			ret = udp_queue_rcv_skb(sk, skb);
+-		else
+-			sk_add_backlog(sk, skb);
+-		bh_unlock_sock(sk);
++		int ret = udp_queue_rcv_skb(sk, skb);
+ 		sock_put(sk);
+ 
+ 		/* a return value > 0 means to resubmit the input, but
+@@ -1487,7 +1494,7 @@ struct proto udp_prot = {
+ 	.sendmsg	   = udp_sendmsg,
+ 	.recvmsg	   = udp_recvmsg,
+ 	.sendpage	   = udp_sendpage,
+-	.backlog_rcv	   = udp_queue_rcv_skb,
++	.backlog_rcv	   = __udp_queue_rcv_skb,
+ 	.hash		   = udp_lib_hash,
+ 	.unhash		   = udp_lib_unhash,
+ 	.get_port	   = udp_v4_get_port,
 
 -- 
