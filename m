@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbYJGWdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbYJGWec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbYJGWdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756476AbYJGWdE
+	id S1757936AbYJGWec (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYJGWeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:33:04 -0400
-Received: from kara.rubysoft.com ([64.34.171.174]:34486 "EHLO
-	kara.rubysoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756471AbYJGWdB (ORCPT
+	Tue, 7 Oct 2008 18:34:23 -0400
+Received: from cpsmtpo-eml06.kpnxchange.com ([213.75.38.155]:27236 "EHLO
+	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752788AbYJGWeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:33:01 -0400
-Date: Tue, 7 Oct 2008 16:32:53 -0600 (MDT)
-From: Jeff Hansen <x@jeffhansen.com>
-X-X-Sender: ninkid@ren
-Reply-To: Jeff Hansen <x@jeffhansen.com>
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Message-ID: <Pine.LNX.4.64.0810071545210.21235@ren>
+	Tue, 7 Oct 2008 18:34:22 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11550] pnp: Huge number of "io resource overlap" messages
+Date: Wed, 8 Oct 2008 00:34:18 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Rene Herman" <rene.herman@gmail.com>,
+       "Rene Herman" <rene.herman@keyaccess.nl>
+References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.PjH.L575IB@wind>
+In-Reply-To: <yWwteD.A.PjH.L575IB@wind>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810080034.19210.elendil@planet.nl>
+X-OriginalArrivalTime: 07 Oct 2008 22:34:19.0807 (UTC) FILETIME=[D6BF4AF0:01C928CC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, Ingo, All,
+On Saturday 04 October 2008, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me
+> know (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11550
+> Subject	: pnp: Huge number of "io resource overlap" messages
+> Submitter	: Frans Pop <elendil@planet.nl>
+> Date		: 2008-09-09 10:50 (26 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122095745403793&w=4
+> Handled-By	: Rene Herman <rene.herman@keyaccess.nl>
+> 		  Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Patch		: http://marc.info/?l=linux-kernel&m=122246533505643&w=4
 
-I've been struggling with hrtimer support in 2.6.26.5 on an older 
-x86_32/i386 system, and I'm wondering if there are any easy fixes that you 
-(or anyone else) would suggest.
+The structural patch for this from Bjorn got NACKed. AFAIK we're still 
+waiting for someone (Bjorn?) to decide whether to go with a simpler patch 
+from Rene for .27 and to push that.
 
-Basically, this system does not print out the message:
-
-"Switched to high resolution mode on CPU 0"
-
-indicating that one-shot, hrtimers, etc. won't work, since high resolution 
-mode has not been enabled.  I've verified that hrtimers started with 
-hrtimer_start do not have the expected resolution further than 1/HZ.
-
-This system does not have LAPIC, ACPI, or HPET, so really the only 
-clocksources I can use are TSC and PIT.  This should be fine (in theory, 
-unless it wasn't designed like that), but apparently the clocksource flags 
-are not initialized in such a way that one of them ever gets marked as 
-CLOCK_SOURCE_VALID_FOR_HRES.
-
-The flow of the flags on each of these clocksources is as follows:
-
-1) The flags on the TSC clocksource are CLOCK_SOURCE_IS_CONTINUOUS |
-    CLOCK_SOURCE_MUST_VERIFY, which causes PIT to be used as the watchdog
-    clocksource. (see kernel/time/clocksource.c:~171)
-2) Around line 122 in kernel/time/clocksource.c, where most clocksources'
-    flags usually get ORed with CLOCK_SOURCE_VALID_FOR_HRES, the PIT's do
-    not because it is not CLOCK_SOURCE_IS_CONTINUOUS, and the TSC's do not
-    also because the PIT (as the watchdog) is not
-    CLOCK_SOURCE_IS_CONTINUOUS.
-
-I get the same results on a new laptop booting into 32-bit Linux with hpet 
-and acpi disabled.
-
-Can you please tell me if this is supposed to work, and I just have a 
-poorly configured kernel; or if TSC/PIT drivers were not designed to work 
-this way in the first place.  If it wasn't designed to do this, do you 
-have any tips on implementing this, since I'll be needing to do that?
-
--Jeff Hansen
-
----------------------------------------------------
-"If someone's gotta do it, it might as well be me."
+For me it was possible to work around the issue by changing a BIOS 
+setting, but I expect it will still affect others with similar BIOS 
+behavior.
