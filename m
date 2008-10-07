@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYJGVim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYJGVqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbYJGVim (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYJGVi3
+	id S1756632AbYJGVqm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYJGVqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:38:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40951 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757262AbYJGVi2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:38:28 -0400
-Date: Tue, 7 Oct 2008 23:40:06 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Thomas Renninger <trenn@suse.de>, Tejun Heo <tj@kernel.org>,
-       Shem Multinymous <multinymous@gmail.com>,
-       Elias Oltmanns <eo@nebensachen.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Laptop shock detection and harddisk protection
-Message-ID: <20081007214006.GL6604@elf.ucw.cz>
-References: <48C7FCEE.8060404@kernel.org> <20080917180405.GB3162@kroah.com> <20080918111845.GH27832@elf.ucw.cz> <200809191104.00171.trenn@suse.de> <20080924051417.GA29993@kroah.com> <20081007204011.GG6604@elf.ucw.cz> <20081007211905.GB8151@kroah.com>
+	Tue, 7 Oct 2008 17:46:34 -0400
+Received: from tundra.namei.org ([65.99.196.166]:50060 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752678AbYJGVqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:46:33 -0400
+Date: Wed, 8 Oct 2008 08:44:50 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Cihula, Joseph" <joseph.cihula@intel.com>
+cc: linux-kernel@vger.kernel.org, "Wang, Shane" <shane.wang@intel.com>,
+       "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
+       mingo@elte.hu, tytso@mit.edu
+Subject: RE: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
+In-Reply-To: <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
+Message-ID: <alpine.LRH.1.10.0810080841400.11312@tundra.namei.org>
+References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007211905.GB8151@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 7 Oct 2008, Cihula, Joseph wrote:
 
-> > > If you, or anyone else, writes a new driver from the published
-> > > documents, that driver can be accepted.  It can not be based on the
-> > > existing code written by Shem in any form.
-> > 
-> > Can you detail what "published" means?
-> 
-> Published in a way that has NOTHING to do with these source files.
-> 
-> > Either I can take his sources on sourceforge.net (quite well known
-> > place, right) as published information, or I could not use other well
-> > known sources such as wikipedia.
-> 
-> If the wikipedia information was written based on these source files,
-> no, we can't use that, sorry.
+> (large) Patch inline below (and still attached for those who prefer it).
 
-How do I know?
+It's now wordwrapped, and the other patches don't appear to have been 
+resent at all.
 
-> > Sources on sourceforge.net seem published-enough to me, and if you
-> > insist they can't be used, you should provide some reasons...
-> > 
-> > [And no, just calling it "tainted" is not enough.]
-> 
-> {sigh}
-> 
-> Again, for the last time:
->   - this code was written by an anonymous person, using documents or
->     information that was obtained and used in a manner that was not
->     legal according to their employment agreement.
+Here's the appropriate section from SubmittingPatches.  Note the section 
+on configuring your mailer.
 
-This code is written by anonymous person. He may have used documents
-improperly, but I see no signs of that, and don't see why I should
-believe you saying so.
+----
 
-If have proof of that, you should talk to sourceforge to take that
-code down... or probably their employer should ask sourceforge to do
-that.
+7) No MIME, no links, no compression, no attachments.  Just plain text.
 
-The documents are on the web from more than year now, on
-well-known. That seems to indicate that your theory is not true.
+Linus and other kernel developers need to be able to read and comment
+on the changes you are submitting.  It is important for a kernel
+developer to be able to "quote" your changes, using standard e-mail
+tools, so that they may comment on specific portions of your code.
 
->   - because of this, we can not use this code, because we KNOW the
->     information was obtained in a improper manner.
+For this reason, all patches should be submitting e-mail "inline".
+WARNING:  Be wary of your editor's word-wrap corrupting your patch,
+if you choose to cut-n-paste your patch.
 
-Whole wikipedia is written by "anonymous" people. Does that mean that
-all information in wikipedia was obtained in a improper manner?
+Do not attach the patch as a MIME attachment, compressed or not.
+Many popular e-mail applications will not always transmit a MIME
+attachment as plain text, making it impossible to comment on your
+code.  A MIME attachment also takes Linus a bit more time to process,
+decreasing the likelihood of your MIME-attached change being accepted.
 
->   - so, to get something like this into the kernel, we need to rewrite
->     the code, using information obtained LEGALLY from either the
->     manufacturer of the chips or computers, or from another TOTALLY
->     SEPARATE location.
+Exception:  If your mailer is mangling patches then someone may ask
+you to re-send them using MIME.
 
-I'm LEGALLY obtaining the information from sourceforge.net. That is
-rather well-known, and non-anonymous source. They continue to publish
-this information.
+See Documentation/email-clients.txt for hints about configuring
+your e-mail client so that it sends your patches untouched.
 
-> Does that help explain this?
+----
 
-Unfortunately, no :-(.
-									Pavel
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+James Morris
+<jmorris@namei.org>
