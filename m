@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbYJGXbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbYJGXd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbYJGXbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbYJGXbD
+	id S1757383AbYJGXd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYJGXdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:31:03 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47772 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754882AbYJGXbB (ORCPT
+	Tue, 7 Oct 2008 19:33:18 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:37638 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbYJGXdR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:31:01 -0400
-Date: Wed, 8 Oct 2008 01:37:09 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/3] Provide rdtscll() asm/msr.h for user space
-Message-ID: <20081007233709.GW20740@one.firstfloor.org>
-References: <20081007143.793379346@firstfloor.org> <48EBD555.9060104@kernel.org> <20081007231149.GT20740@one.firstfloor.org> <48EBEFCC.4090302@kernel.org>
-Mime-Version: 1.0
+	Tue, 7 Oct 2008 19:33:17 -0400
+Date: Tue, 7 Oct 2008 17:33:16 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [RFC] Normalizing byteorder/unaligned access API
+Message-ID: <20081007233315.GM25780@parisc-linux.org>
+References: <1223416391.8195.22.camel@brick> <1223417543.7484.7.camel@localhost.localdomain> <1223419166.8195.37.camel@brick>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48EBEFCC.4090302@kernel.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1223419166.8195.37.camel@brick>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 04:25:00PM -0700, H. Peter Anvin wrote:
-> >Anyways if you insist I can probably deal without
-> >but I (and likely others) would think something nasty about you every time 
-> >I have to cut'n'paste that code again. Do you really want to risk that? @)
-> 
-> If you're really incapable of maintaining a single user-mode header file 
-> with a handful of one-liners in a sane way, then definitely.
+On Tue, Oct 07, 2008 at 03:39:25PM -0700, Harvey Harrison wrote:
+> As an example, in the write command handling in achba.c, a patch similar to the following
+> (assumes the existence of a __be24 type somewhere):
 
-These are typical benchmark or test programs which I like to write with 
-as little dependencies as possible because they compile/run on all kinds
-of systems with often dubious setup.
+What type could be defined to be '__be24'?  Would
 
-The other issue is that everyone will have to do this now, which just
-seems wrong to me. 
+typedef struct {
+	unsigned char data[3];
+} __be24;
 
--Andi (who never got this strange meme which is floating around
-in the kernel community for some time that cut'n'pasting interfaces
-into user programs is a sane thing. To me it seems insane.)
+do the trick?  It's not an integral type, but I'm not sure if that matters.
+
+> +				cmnd_lba = unaligned_be24_to_cpup(&tmp->lba) & 0x001FFFFF;
+
+That might be easier to read if you're using a 500-column terminal.  For
+the rest of us,
+				cmnd_lba = scsi_get_u24(cmnd + 2) & 0x1FFFFF;
+is much easier to read.
 
 -- 
-ak@linux.intel.com
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
