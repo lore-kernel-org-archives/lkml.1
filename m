@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYJGUem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbYJGUe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbYJGUem (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYJGUee
+	id S1757187AbYJGUe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbYJGUel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:34:34 -0400
-Received: from mga09.intel.com ([134.134.136.24]:8249 "EHLO mga09.intel.com"
+	Tue, 7 Oct 2008 16:34:41 -0400
+Received: from mga09.intel.com ([134.134.136.24]:52324 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753781AbYJGUed convert rfc822-to-8bit (ORCPT
+	id S1756676AbYJGUej convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:34:33 -0400
+	Tue, 7 Oct 2008 16:34:39 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
-   d="scan'208";a="448278095"
+   d="scan'208";a="448278113"
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Subject: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology support for Linux - Overview
-Date: Tue, 7 Oct 2008 13:34:30 -0700
-Message-ID: <D936D925018D154694D8A362EEB0892005AC105B@orsmsx416.amr.corp.intel.com>
+Subject: [RFC][PATCH 0b/3] TXT: Intel(R) Trusted Execution Technology support for Linux - Details
+Date: Tue, 7 Oct 2008 13:34:38 -0700
+Message-ID: <D936D925018D154694D8A362EEB0892005AC105C@orsmsx416.amr.corp.intel.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology support for Linux - Overview
-Thread-Index: AckovBnQaIeJDmhWSnyqvU6212Xk8w==
+Thread-Topic: [RFC][PATCH 0b/3] TXT: Intel(R) Trusted Execution Technology support for Linux - Details
+Thread-Index: AckovB44mAQ13ZnSS3G1NK5cp2t+7g==
 From: "Cihula, Joseph" <joseph.cihula@intel.com>
 To: <linux-kernel@vger.kernel.org>
 Cc: "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
@@ -34,142 +34,170 @@ Cc: "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
        "Nakajima, Jun" <jun.nakajima@intel.com>,
        "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
        <mingo@elte.hu>, <tytso@mit.edu>
-X-OriginalArrivalTime: 07 Oct 2008 20:34:31.0920 (UTC) FILETIME=[1A6EC700:01C928BC]
+X-OriginalArrivalTime: 07 Oct 2008 20:34:38.0945 (UTC) FILETIME=[1E9EB510:01C928BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux community,
+How Does it Work?
+================
 
-The following patches are to add support for Intel(R) Trusted Execution
-Technology (Intel(R) TXT) and the Trusted Boot open source project
-(tboot).
-
-We request your feedback and suggestions.
-
-
-
-Intel(R) TXT Overview:
-=====================
-
-Intel's technology for safer computing, Intel(R) Trusted Execution
-Technology
-(Intel(R) TXT), defines platform-level enhancements that provide the
-building
-blocks for creating trusted platforms.
-
-Intel TXT was formerly known by the code name LaGrande Technology (LT).
-
-Intel TXT in Brief:
-o  Provides dynamic root of trust for measurement (DRTM)
-o  Data protection in case of improper shutdown
-o  Measurement and verification of launched environment
-
-Intel TXT is part of the vPro(TM) brand and is also available some
-non-vPro
-systems.  It is available on systems based on the Q35 or X38 Express
-chipsets
-(e.g. Dell Optiplex 755, HP dc7800, etc.).  However, TXT will be on all
-vPro(TM) client platforms starting this year (Montevina and McCreary
--based),
-with plans for server support in the near future.
-
-For more information, see http://www.intel.com/technology/security/.
-This
-site also has a link to the Intel TXT MLE Developers Manual, which has
-been updated for the new released platforms.
-
-Intel TXT has been presented at various events over the past few years,
-some
-of which are:
-      LinuxTAG 2008:
-http://www.linuxtag.org/2008/en/conf/events/vp-donnerstag/details.html?t
-alkid=110
-      TRUST2008:
-http://www.trust2008.eu/downloads/Keynote-Speakers/3_David-Grawrock_The-
-Front-Door-of-Trusted-Computing.pdf
-      IDF 2008, Shanghai:
-http://inteldeveloperforum.com.edgesuite.net/shanghai_2008/aep/PROS003/i
-ndex.html
-      IDFs 2006, 2007 (I'm not sure if/where they are online)
-
-Trusted Boot Project Overview:
-=============================
-
-Trusted Boot (tboot) is an open source, pre- kernel/VMM module that uses
-Intel TXT to perform a measured and verified launch of an OS kernel/VMM.
-
-It is hosted on SourceForge at http://sourceforge.net/projects/tboot.
-
-Tboot currently supports launching Xen (open source VMM/hypervisor w/
-TXT
-support since v3.2), and now Linux kernels.  Linux support is provided
-in the
-latest (tboot-20081007) release.
-
-
-Value Proposition for Linux or "Why should you care?"
-=====================================================
-
-While there are many products and technologies that attempt to measure
-or
-protect the integrity of a running kernel, they all assume the kernel is
-"good" to begin with.  The Integrity Measurement Architecture (IMA) and
-Linux
-Integrity Module interface are examples of such solutions.
-
-To get trust in the initial kernel without using Intel TXT, a static
-root of
-trust must be used.  This bases trust in BIOS starting at system reset
-and
-requires measurement of all code executed between system reset through
+o  Tboot is an executable that is launched by the bootloader as the
+"kernel"
+   (the binary the bootloader executes).
+o  It performs all of the work necessary to determine if the platform
+supports
+   Intel TXT and, if so, executes the GETSEC[SENTER] processor
+instruction
+   that initiates the dynamic root of trust.
+   -  If tboot determines that the system does not support Intel TXT or
+is not
+      configured correctly (e.g. the SINIT AC Module was incorrect), it
+will
+      directly launch the kernel with no changes to any state.
+   -  Tboot will output various information about its progress to the
+first
+      (ttyS0/COM1) serial port; this can be disabled by a command line
+switch.
+      It can also be compiled to put the information into a hardcoded
+memory
+      location in low memory so that systems without a serial port can
+still
+      get the log.
+o  The GETSEC[SENTER] instruction will return control to tboot and it
+then
+   verifies certain aspects of the environment (e.g. TPM NV lock, e820
+table
+   does not have invalid entries, etc.).
+o  It will wake the APs from the special sleep state the GETSEC[SENTER]
+   instruction had put them in and place them into a wait-for-SIPI
+state.
+   -  Because the processors will not respond to an INIT or SIPI when in
 the
-completion of the kernel boot as well as data objects used by that code.
-In
-the case of a Linux kernel, this means all of BIOS, any option ROMs, the
-bootloader and the boot config.  In practice, this is a lot of
-code/data, much
-of which is subject to change from boot to boot (e.g. changing NICs may
-change
-option ROMs).  Without reference hashes, these measurement changes are
-difficult to assess or confirm as benign.  This process also does not
-provide DMA protection, memory configuration/alias checks and locks,
+      TXT environment, it is necessary to create a small VT-x guest for
+the
+      APs.  When they run in this guest, they will simply wait for the
+      INIT-SIPI-SIPI sequence, which will cause VMEXITs, and then
+disable VT
+      and jump to the SIPI vector.  This approach seemed like a better
+choice
+      than having to insert special code into the kernel's MP wakeup
+sequence.
+o  Tboot then applies an (optional) user-defined launch policy to verify
+the
+   kernel and initrd.
+   -  This policy is rooted in TPM NV and is described in the tboot
+project.
+      The tboot project also contains code for tools to create and
+provision
+      the policy.
+   -  Policies are completely under user control and if not present then
+any
+      kernel will be launched.
+   -  Policy action is flexible and can include halting on failures or
+simply
+      logging them an continuing.
+o  Tboot adjusts the e820 table provided by the bootloader to reserve
+its own
+   location in memory as well as to reserve certain other TXT-related
+regions.
+o  Tboot will populate a shared page with some data about itself and
+pass this
+   to the Linux kernel as it transfers control.
+   -  The location of the shared page is passed via the boot_params
+struct as
+      a physical address.
+o  The kernel will look for the tboot shared page address and, if it
+exists,
+   map it.
+o  At this point, tboot and TXT are out of the picture until a shutdown
+(S<n>)
+o  In order to put a system into any of the sleep states after a TXT
+launch,
+   TXT must first be exited.  This is to prevent attacks that attempt to
 crash
-protection, or policy support.
-
-By using the hardware-based root of trust that Intel TXT provides, many
-of
-these issues can be mitigated.  Specifically: many pre-launch components
-can
-be removed from the trust chain, DMA protection is provided to all
-launched
-components, a large number of platform configuration checks are
-performed and
-values locked, protection is provided for any data in the event of an
-improper
-shutdown, and there is support for policy-based execution/verification.
-This
-provides a more stable measurement and a higher assurance of system
-configuration and initial state than would be otherwise possible.  Since
+   the system to gain control on reboot and steal data left in memory.
+   -  The kernel will perform all of its sleep preparation and populate
 the
-tboot project is open source, source code for almost all parts of the
-trust
-chain is available (excepting SMM and Intel-provided firmware).
+      shared page with the ACPI data needed to put the platform in the
+desired
+      sleep state.
+   -  Then the kernel jumps into tboot via the vector specified in the
+shared
+      page.
+   -  Tboot will clean up the environment and disable TXT, then use the
+      kernel-provided ACPI information to actually place the platform
+into the
+      desired sleep state.
+   -  In the case of S3, tboot will also register itself as the resume
+vector.
+      This is necessary because it must re-establish the measured
+environment
+      upon resume.  Once the TXT environment has been restored, it will
+      restore the TPM PCRs and then transfer control back to the
+kernel's S3
+      resume vector.
+   -  S4 is not supported by this patch, but we expect to fix that
+shortly
+      (the current suspend code brings the APs out of suspend with an
+INIT,
+      which doesn't work under TXT).
 
-Patchset:
-========
+That's pretty much it for TXT support.
 
-These patches were tested on the 2.6.27-rc6 kernel and apply cleanly to
-2.6.27-rc9.
 
-Patch 0a/3:  Overview and motivation (this email)
-Patch 0b/3:  Details and how it works
-Patch 1/3:   Support for AddressRangeUnusuable ACPI memory type (already
-             accepted but not in 2.6.27-rc9)
-Patch 2/3:   Disable VT-d (Intel IOMMU) Protected Memory Regions (PMRs)
-             (submitted to maintainer)
-Patch 3/3:   Intel TXT and tboot support
+Configuring the System:
+======================
 
+This code works with 32bit, 32bit PAE, and 64bit (x86_64) kernels.
+
+In BIOS, the user must enable:  TPM, TXT, VT-x, VT-d.  Not all BIOSes
+allow
+these to be individually enabled/disabled and the screens in which to
+find
+them are BIOS-specific.
+
+grub.conf needs to be modified as follows:
+        title Linux 2.6.27-rc9 w/ tboot
+          root (hd0,0)
+                kernel /tboot.gz
+                module /vmlinuz-2.6.27-rc9 ro root=LABEL=/ rhgb
+console=ttyS0,115200 3
+                module /initrd-2.6.27-rc9.img
+                module /Q35_SINIT_16.BIN
+
+As mentioned previously, the tboot source can be downloaded from the
+Trusted
+Boot SourceForge project.
+
+The kernel option for enabling Intel TXT support is found under the
+Security
+top-level menu and is called "Enable Intel(R) Trusted Execution
+Technology (TXT)".
+It is marked as EXPERIMENTAL and depends only on the generic x86 support
+(to allow
+maximum flexibility in kernel build options), since the tboot code will
+detect whether
+the platform actually supports Intel TXT and thus whether any of the
+kernel code is
+executed.
+
+The Q35_SINIT_16.BIN file is what Intel TXT refers to as an
+Authenticated Code
+Module.  It is specific to the chipset in the system and can also be
+found on
+the Trusted Boot site.  It is an (unencrypted) binary module signed by
+Intel
+that is used as part of the DRTM process to verify and configure the
+system.
+It is signed because it operates at a higher privilege level in the
+system
+than any other macrocode and its correct operation is critical to the
+establishment of the DRTM.
+
+
+We welcome your comments and suggestions and genuinely value your
+feedback.
 
 Joseph Cihula
 Shane Wang
