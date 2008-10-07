@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbYJGISm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYJGIcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756145AbYJGISm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 04:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYJGISY
+	id S1754926AbYJGIcF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 04:32:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYJGIbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 04:18:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37055 "EHLO
+	Tue, 7 Oct 2008 04:31:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59238 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbYJGISX (ORCPT
+	with ESMTP id S1751618AbYJGIbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 04:18:23 -0400
+	Tue, 7 Oct 2008 04:31:51 -0400
 Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: minyard@acm.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+To: David Miller <davem@davemloft.net>
+Cc: dada1@cosmosbay.com, minyard@acm.org, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org, shemminger@vyatta.com,
        paulmck@linux.vnet.ibm.com
-In-Reply-To: <48EA8197.6080502@cosmosbay.com>
+In-Reply-To: <20081006.144002.56418911.davem@davemloft.net>
 References: <20081006185026.GA10383@minyard.local>
 	 <48EA8197.6080502@cosmosbay.com>
+	 <20081006.144002.56418911.davem@davemloft.net>
 Content-Type: text/plain
-Date: Tue, 07 Oct 2008 10:17:59 +0200
-Message-Id: <1223367480.26330.7.camel@lappy.programming.kicks-ass.net>
+Date: Tue, 07 Oct 2008 10:31:30 +0200
+Message-Id: <1223368290.26330.10.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,19 +30,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-06 at 23:22 +0200, Eric Dumazet wrote:
+On Mon, 2008-10-06 at 14:40 -0700, David Miller wrote:
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Mon, 06 Oct 2008 23:22:31 +0200
+> 
+> > Me wondering what impact this synchronize_rcu() can have on mono-threaded
+> > VOIP applications using lot of UDP sockets. What is the maximum delay of
+> > this function ?
+> 
+> The cost is enormous, we really can't use it here.
+> 
+> I have a patch that did top-level socket destruction using RCU,
+> and that didn't use synchronize_rcu(), and that killed connection
+> rates by up to %20.
 
-> Or just add SLAB_DESTROY_BY_RCU to slab creation in proto_register()
-> for "struct proto udp_prot/udpv6_prot" so that kmem_cache_free() 
-> done in sk_prot_free() can defer freeing to RCU...
+Did you ever figure out why you lost those 20% ?
 
-Be careful!, SLAB_DESTROY_BY_RCU just means the slab page gets
-RCU-freed, this means that slab object pointers stay pointing to valid
-memory, but it does _NOT_ mean those slab objects themselves remain
-valid.
+> I can only imagine what the cost would be if I had to add such a call
+> in there.
 
-The slab allocator is free to re-use those objects at any time -
-irrespective of the rcu-grace period. Therefore you will have to be able
-to validate that the object you point to is indeed the object you
-expect, otherwise strange and wonderful things will happen.
+Yeah, sync_rcu() is rediculously expensive, at best 3 jiffies IIRC.
 
