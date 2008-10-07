@@ -1,82 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbYJGV1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbYJGV2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757992AbYJGV1A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYJGV0u
+	id S1758063AbYJGV2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYJGV2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:26:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36559
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753370AbYJGV0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:26:49 -0400
-Date: Tue, 07 Oct 2008 14:26:24 -0700 (PDT)
-Message-Id: <20081007.142624.145010147.davem@davemloft.net>
-To: a.p.zijlstra@chello.nl
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no, dlezcano@fr.ibm.com,
-       penberg@cs.helsinki.fi, neilb@suse.de
-Subject: Re: [PATCH 18/32] net: sk_allocation() - concentrate socket
- related allocations
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081002131608.821584767@chello.nl>
-References: <20081002130504.927878499@chello.nl>
-	<20081002131608.821584767@chello.nl>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 17:28:01 -0400
+Received: from xenotime.net ([66.160.160.81]:55485 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753443AbYJGV2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:28:01 -0400
+Date: Tue, 7 Oct 2008 14:27:56 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: David Sanders <linux@sandersweb.net>
+cc: Adrian Bunk <bunk@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Btrfs mainline plans
+In-Reply-To: <200810071720.02962.linux@sandersweb.net>
+Message-ID: <Pine.LNX.4.64.0810071427220.8747@shark.he.net>
+References: <1222717460.30627.56.camel@think.oraclecorp.com>
+ <1223395284.16546.121.camel@think.oraclecorp.com> <20081007202538.GC1610@cs181140183.pp.htv.fi>
+ <200810071720.02962.linux@sandersweb.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Thu, 02 Oct 2008 15:05:22 +0200
+On Tue, 7 Oct 2008, David Sanders wrote:
 
-> @@ -952,6 +955,7 @@ static void tcp_v6_send_reset(struct soc
->  #ifdef CONFIG_TCP_MD5SIG
->  	struct tcp_md5sig_key *key;
->  #endif
-> +	gfp_t gfp_mask = GFP_ATOMIC;
->  
->  	if (th->rst)
->  		return;
-> @@ -969,13 +973,16 @@ static void tcp_v6_send_reset(struct soc
->  		tot_len += TCPOLEN_MD5SIG_ALIGNED;
->  #endif
->  
-> +	if (sk)
-> +		gfp_mask = sk_allocation(skb->sk, gfp_mask);
-> +
->  	/*
->  	 * We need to grab some memory, and put together an RST,
->  	 * and then put it into the queue to be sent.
->  	 */
->  
->  	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
-> -			 GFP_ATOMIC);
-> +			 sk_allocation(sk, GFP_ATOMIC));
->  	if (buff == NULL)
->  		return;
->  
+> On Tuesday 07 October 2008 04:25:39 pm Adrian Bunk wrote:
+> > The 2.6.29 merge window will start in January - everything else is much
+> > more unlikely than an incompetent chick from Alaska getting only one
+> > heart attack away from the big red button.
+> 
+> These comments are inappropriate for this list.
 
-I don't think this is doing what you intend it to do.
+and you dropped several mailing list cc's.  Please don't do that.
 
-First, you're conditionally calling sk_allocation() if
-'sk' is non-NULL.  But then later you unconditionally
-use sk_allocation() in the alloc_skb() call.
-
-Furthermore, in the conditionalized case you're using
-"skb->sk" instead of plain "sk" which is what you actually
-checked against NULL.
-
-I have no fundamental problem with this change, so please
-audit this patch for similar problems, fix them all up,
-and resubmit.
-
-I'm also tossing the rest of your networking changes since
-they'll have some dependency on this one, please resend those
-at the same time as the fixed up version of this one.
-
-Thanks.
+-- 
+~Randy
