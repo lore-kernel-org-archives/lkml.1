@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbYJGHJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYJGHSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbYJGHJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 03:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYJGHJk
+	id S1756071AbYJGHSn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 03:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYJGHS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 03:09:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42051 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbYJGHJk (ORCPT
+	Tue, 7 Oct 2008 03:18:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58856 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751488AbYJGHS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 03:09:40 -0400
-Date: Tue, 7 Oct 2008 09:15:44 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, dipankar@in.ibm.com,
-       tglx@linuxtronix.de
-Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
-Message-ID: <20081007071544.GC20740@one.firstfloor.org>
-References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	Tue, 7 Oct 2008 03:18:29 -0400
+Date: Tue, 7 Oct 2008 03:18:27 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       netdev@vger.kernel.org, Paul McKenney <paulmck@us.ibm.com>
+Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm,
+	for adaptive dcache hash table sizing (resend)
+Message-ID: <20081007071827.GB5010@infradead.org>
+References: <20081007064834.GA5959@wotan.suse.de> <20081007070225.GB5959@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081007030822.GC6820@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081007070225.GB5959@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Could you please try the patch at the following URL (from Thomas
-> Gleixner)?
+On Tue, Oct 07, 2008 at 09:02:25AM +0200, Nick Piggin wrote:
+> (resending with correct netdev address)
 > 
-> http://www.rdrop.com/users/paulmck/patches/2.6.27-rc7-tglx-timer-1.patch
+> Hi,
 > 
-> This fixed some CPU hotplug hangs that I was seeing in 2.6.27-rc7 and
-> -rc8.  Alternatively, try 2.6.27-rc9, which seems to include Thomas's
-> patch.
+> I thought I should quickly bring this patch up to date and write it up
+> properly, because IMO it is still useful. I earlier had tried to turn the
+> algorithm into a library that could be plugged into with specific lookup
+> functions and such, but that got really nasty and also difficult to retain
+> a really light fastpath. I don't think it is too nasty to open-code it...
+> 
+> Describe the "Dynamic dynamic data structure" (DDDS) algorithm, and implement
+> adaptive dcache hash table sizing using DDDS.
+> 
+> The dcache hash size is increased to the next power of 2 if the number
+> of dentries exceeds the current size of the dcache hash table. It is decreased
+> in size if it is currently more than 3 times the number of dentries.
+> 
+> This might be a dumb thing to do. It also currently performs the hash resizing
+> check for each dentry insertion/deletion, and calls the resizing in-line from
+> there: that's bad, because resizing takes several RCU grace periods. Rather it
+> should kick off a thread to do the resizing, or even have a background worker
+> thread checking the sizes periodically and resizing if required.
+> 
+> With this algorithm, I can fit a whole kernel source and git tree in my dcache
+> hash table that is still 1/8th the size it would be before the patch.
+> 
+> I'm cc'ing netdev because Dave did express some interest in using this for
+> some networking hashes, and network guys in general are pretty cluey when it
+> comes to hashes and such ;)
 
-Still happens with rc9.  This time with frame pointers:
-
-bash          D 00000000ffff975e     0  4770   4757
- ffff8804bcda3bf8 0000000000000082 ffff8804bcda3c18 0000000000000296
- ffff8804bde4e6b0 ffff8804be6fc630 ffff8804bde4e8f8 0000000e00000296
- ffff8804bcda3c18 ffffffff808cfd98 ffff880288064780 ffff88027d18ec98
-Call Trace:
- [<ffffffff805c4915>] schedule_timeout+0x22/0xb4
- [<ffffffff8020a009>] ? __switch_to+0x320/0x330
- [<ffffffff802602ed>] ? cpupri_set+0xc5/0xd8
- [<ffffffff805c476f>] wait_for_common+0xcd/0x131
- [<ffffffff8022db87>] ? default_wake_function+0x0/0xf
- [<ffffffff805c485d>] wait_for_completion+0x18/0x1a
- [<ffffffff80243fbf>] synchronize_rcu+0x35/0x3c
- [<ffffffff8024403e>] ? wakeme_after_rcu+0x0/0x12
- [<ffffffff8022ed25>] partition_sched_domains+0x9b/0x1dd
- [<ffffffff8022dbb3>] ? wake_up_process+0x10/0x12
- [<ffffffff8022ee95>] update_sched_domains+0x2e/0x35
- [<ffffffff805c8342>] notifier_call_chain+0x33/0x5b
- [<ffffffff80249291>] __raw_notifier_call_chain+0x9/0xb
- [<ffffffff802492a2>] raw_notifier_call_chain+0xf/0x11
- [<ffffffff805c1c3a>] _cpu_up+0xd3/0x10c
- [<ffffffff805c1cca>] cpu_up+0x57/0x67
- [<ffffffff805a5787>] store_online+0x4d/0x75
- [<ffffffff803e67bb>] sysdev_store+0x1b/0x1d
- [<ffffffff802cce10>] sysfs_write_file+0xe0/0x11c
- [<ffffffff8028b661>] vfs_write+0xae/0x137
- [<ffffffff8028bb0a>] sys_write+0x47/0x6f
- [<ffffffff8020b34b>] system_call_fastpath+0x16/0x1b
-
-BTW it also happens reliably every time. Reproduced it three times
-now. I just do
-
-laut:~ # echo 0 > /sys/devices/system/cpu/cpu15/online 
-laut:~ # echo 0 > /sys/devices/system/cpu/cpu14/online 
-laut:~ # echo 1 > /sys/devices/system/cpu/cpu14/online 
-laut:~ # echo 1 > /sys/devices/system/cpu/cpu15/online 
-<hang>
-
--Andi
+Without even looking at the code I'd say geeting the dcache lookup data
+structure as a hash is the main problem here.  Dcache lookup is
+fundamentally a tree lookup, with some very nice domain splits
+(superblocks or directories).  Mapping these back to a global hash is
+a rather bad idea, not just for scalability purposes.
 
