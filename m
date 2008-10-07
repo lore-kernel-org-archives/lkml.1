@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbYJGVVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYJGVVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758321AbYJGVVv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbYJGVVF
+	id S1757867AbYJGVVJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:21:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154AbYJGVUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:21:05 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:47158 "EHLO mail.vyatta.com"
+	Tue, 7 Oct 2008 17:20:05 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:42444 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757432AbYJGVVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:21:04 -0400
-Date: Tue, 7 Oct 2008 23:20:56 +0200
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Miller <davem@davemloft.net>
-Cc: dada1@cosmosbay.com, benny+usenet@amorsen.dk, minyard@acm.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-Message-ID: <20081007232056.036e26e6@speedy>
-In-Reply-To: <20081007.135548.56141000.davem@davemloft.net>
-References: <m37i8k3hv1.fsf@ursa.amorsen.dk>
-	<48EB5D28.7000503@cosmosbay.com>
-	<20081007160729.60c076c4@speedy>
-	<20081007.135548.56141000.davem@davemloft.net>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1757976AbYJGVUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:20:02 -0400
+Date: Wed, 8 Oct 2008 01:20:25 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [1/3] POHMELFS: vfs changes.
+Message-ID: <20081007212025.GA12380@2ka.mipt.ru>
+References: <20081007211925.GA1274@2ka.mipt.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007211925.GA1274@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Oct 2008 13:55:48 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
-> From: Stephen Hemminger <shemminger@vyatta.com>
-> Date: Tue, 7 Oct 2008 16:07:29 +0200
-> 
-> > The idea of keeping chains short is the problem. That code should
-> > just be pulled because it doesn't help that much, and also creates
-> > bias on the port randomization.
-> 
-> I have that patch from Vitaly Mayatskikh which does exactly this.
-> 
-> I keep looking at it, but I can't bring myself to apply it since
-> I'm not completely convinced.
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 07e9d92..57beb4b 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -495,6 +495,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+ 		lru_cache_add(page);
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
+ 
+ #ifdef CONFIG_NUMA
+ struct page *__page_cache_alloc(gfp_t gfp)
+@@ -610,6 +611,7 @@ int __lock_page_killable(struct page *page)
+ 	return __wait_on_bit_lock(page_waitqueue(page), &wait,
+ 					sync_page_killable, TASK_KILLABLE);
+ }
++EXPORT_SYMBOL_GPL(__lock_page_killable);
+ 
+ /**
+  * __lock_page_nosync - get a lock on the page, without calling sync_page()
 
-Some one on a busy server should run it and measure the delta in hash chains.
-I would, but don't run anything that has more than a few UDP's open.
+
+-- 
+	Evgeniy Polyakov
