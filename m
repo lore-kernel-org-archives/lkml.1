@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbYJGAvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYJGAvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758352AbYJGAvi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757510AbYJGAoJ
+	id S1757263AbYJGAvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYJGAoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:44:09 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60605 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:44:12 -0400
+Received: from ns.suse.de ([195.135.220.2]:46837 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757506AbYJGAoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:44:07 -0400
-Date: Mon, 6 Oct 2008 17:38:43 -0700
+	id S1757517AbYJGAoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:44:11 -0400
+Date: Mon, 6 Oct 2008 17:38:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,141 +22,70 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: [patch 30/71] x86: fix oprofile + hibernation badness
-Message-ID: <20081007003843.GE3055@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 31/71] x86: PAT proper tracking of set_memory_uc and friends
+Message-ID: <20081007003845.GF3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-oprofile-hibernation-badness.patch"
+Content-Disposition: inline; filename="x86-pat-proper-tracking-of-set_memory_uc-and-friends.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Andi Kleen <ak@linux.intel.com>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-commit 80a8c9fffa78f57d7d4351af2f15a56386805ceb upstream
+commit c15238df3b65e34fadb1021b0fb0d5aebc7c42c6 upstream
 
-Vegard Nossum reported oprofile + hibernation problems:
+Big thinko in pat memtype tracking code. reserve_memtype should be called
+with physical address and not virtual address.
 
-> Now some warnings:
->
-> ------------[ cut here ]------------
-> WARNING: at /uio/arkimedes/s29/vegardno/git-working/linux-2.6/kernel/smp.c:328 s
-> mp_call_function_mask+0x194/0x1a0()
-
-The usual problem: the suspend function when interrupts are
-already disabled calls smp_call_function which is not allowed with
-interrupt off. But at this point all the other CPUs should be already
-down anyways, so it should be enough to just drop that.
-
-This patch should fix that problem at least by fixing cpu hotplug&
-suspend support.
-
-[ mingo@elte.hu: fixed 5 coding style errors. ]
-
-Backported by Chuck Ebbert
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Tested-by: Vegard Nossum <vegard.nossum@gmail.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/oprofile/nmi_int.c |   39 ++++++++++++++++++++++++++++++++++++---
- 1 file changed, 36 insertions(+), 3 deletions(-)
+ arch/x86/mm/pageattr.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/moduleparam.h>
- #include <linux/kdebug.h>
-+#include <linux/cpu.h>
- #include <asm/nmi.h>
- #include <asm/msr.h>
- #include <asm/apic.h>
-@@ -28,23 +29,48 @@ static DEFINE_PER_CPU(unsigned long, sav
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -789,7 +789,7 @@ int set_memory_uc(unsigned long addr, in
+ 	/*
+ 	 * for now UC MINUS. see comments in ioremap_nocache()
+ 	 */
+-	if (reserve_memtype(addr, addr + numpages * PAGE_SIZE,
++	if (reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
+ 			    _PAGE_CACHE_UC_MINUS, NULL))
+ 		return -EINVAL;
  
- static int nmi_start(void);
- static void nmi_stop(void);
-+static void nmi_cpu_start(void *dummy);
-+static void nmi_cpu_stop(void *dummy);
+@@ -808,7 +808,7 @@ int set_memory_wc(unsigned long addr, in
+ 	if (!pat_wc_enabled)
+ 		return set_memory_uc(addr, numpages);
  
- /* 0 == registered but off, 1 == registered and on */
- static int nmi_enabled = 0;
+-	if (reserve_memtype(addr, addr + numpages * PAGE_SIZE,
++	if (reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
+ 		_PAGE_CACHE_WC, NULL))
+ 		return -EINVAL;
  
-+#ifdef CONFIG_SMP
-+static int oprofile_cpu_notifier(struct notifier_block *b, unsigned long action,
-+				 void *data)
-+{
-+	int cpu = (unsigned long)data;
-+	switch (action) {
-+	case CPU_DOWN_FAILED:
-+	case CPU_ONLINE:
-+		smp_call_function_single(cpu, nmi_cpu_start, NULL, 0, 0);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+		smp_call_function_single(cpu, nmi_cpu_stop, NULL, 0, 1);
-+		break;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block oprofile_cpu_nb = {
-+	.notifier_call = oprofile_cpu_notifier
-+};
-+#endif
-+
- #ifdef CONFIG_PM
+@@ -824,7 +824,7 @@ int _set_memory_wb(unsigned long addr, i
  
- static int nmi_suspend(struct sys_device *dev, pm_message_t state)
+ int set_memory_wb(unsigned long addr, int numpages)
  {
-+	/* Only one CPU left, just stop that one */
- 	if (nmi_enabled == 1)
--		nmi_stop();
-+		nmi_cpu_stop(NULL);
- 	return 0;
- }
+-	free_memtype(addr, addr + numpages * PAGE_SIZE);
++	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
  
- static int nmi_resume(struct sys_device *dev)
- {
- 	if (nmi_enabled == 1)
--		nmi_start();
-+		nmi_cpu_start(NULL);
- 	return 0;
- }
- 
-@@ -448,6 +474,9 @@ int __init op_nmi_init(struct oprofile_o
- 	}
- 
- 	init_sysfs();
-+#ifdef CONFIG_SMP
-+	register_cpu_notifier(&oprofile_cpu_nb);
-+#endif
- 	using_nmi = 1;
- 	ops->create_files = nmi_create_files;
- 	ops->setup = nmi_setup;
-@@ -461,6 +490,10 @@ int __init op_nmi_init(struct oprofile_o
- 
- void op_nmi_exit(void)
- {
--	if (using_nmi)
-+	if (using_nmi) {
- 		exit_sysfs();
-+#ifdef CONFIG_SMP
-+		unregister_cpu_notifier(&oprofile_cpu_nb);
-+#endif
-+	}
+ 	return _set_memory_wb(addr, numpages);
  }
 
 -- 
