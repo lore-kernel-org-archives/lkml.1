@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760456AbYJGBBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760571AbYJGBBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760456AbYJGBBS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 21:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757948AbYJGAp4
+	id S1760571AbYJGBBg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 21:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYJGAqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:45:56 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47150 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:46:00 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60997 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757945AbYJGApz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:45:55 -0400
-Date: Mon, 6 Oct 2008 17:40:00 -0700
+	id S1757970AbYJGAp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:45:59 -0400
+Date: Mon, 6 Oct 2008 17:40:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 57/71] sctp: do not enable peer features if we cant do them.
-Message-ID: <20081007004000.GF3055@suse.de>
+Subject: [patch 58/71] sctp: Fix oops when INIT-ACK indicates that peer
+	doesnt support AUTH
+Message-ID: <20081007004002.GG3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0007-sctp-do-not-enable-peer-features-if-we-can-t-do-the.patch"
+Content-Disposition: inline; filename="0008-sctp-Fix-oops-when-INIT-ACK-indicates-that-peer-doe.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,50 +43,67 @@ know.
 ------------------
 From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-[ Upstream commit 0ef46e285c062cbe35d60c0adbff96f530d31c86 ]
+[ Upstream commit add52379dde2e5300e2d574b172e62c6cf43b3d3 ]
 
-Do not enable peer features like addip and auth, if they
-are administratively disabled localy.  If the peer resports
-that he supports something that we don't, neither end can
-use it so enabling it is pointless.  This solves a problem
-when talking to a peer that has auth and addip enabled while
-we do not.  Found by Andrei Pelinescu-Onciul <andrei@iptel.org>.
+If INIT-ACK is received with SupportedExtensions parameter which
+indicates that the peer does not support AUTH, the packet will be
+silently ignore, and sctp_process_init() do cleanup all of the
+transports in the association.
+When T1-Init timer is expires, OOPS happen while we try to choose
+a different init transport.
+
+The solution is to only clean up the non-active transports, i.e
+the ones that the peer added.  However, that introduces a problem
+with sctp_connectx(), because we don't mark the proper state for
+the transports provided by the user.  So, we'll simply mark
+user-provided transports as ACTIVE.  That will allow INIT
+retransmissions to work properly in the sctp_connectx() context
+and prevent the crash.
 
 Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sctp/sm_make_chunk.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ net/sctp/associola.c     |    9 +++++----
+ net/sctp/sm_make_chunk.c |    6 ++----
+ 2 files changed, 7 insertions(+), 8 deletions(-)
 
+--- a/net/sctp/associola.c
++++ b/net/sctp/associola.c
+@@ -597,11 +597,12 @@ struct sctp_transport *sctp_assoc_add_pe
+ 	/* Check to see if this is a duplicate. */
+ 	peer = sctp_assoc_lookup_paddr(asoc, addr);
+ 	if (peer) {
++		/* An UNKNOWN state is only set on transports added by
++		 * user in sctp_connectx() call.  Such transports should be
++		 * considered CONFIRMED per RFC 4960, Section 5.4.
++		 */
+ 		if (peer->state == SCTP_UNKNOWN) {
+-			if (peer_state == SCTP_ACTIVE)
+-				peer->state = SCTP_ACTIVE;
+-			if (peer_state == SCTP_UNCONFIRMED)
+-				peer->state = SCTP_UNCONFIRMED;
++			peer->state = SCTP_ACTIVE;
+ 		}
+ 		return peer;
+ 	}
 --- a/net/sctp/sm_make_chunk.c
 +++ b/net/sctp/sm_make_chunk.c
-@@ -1886,11 +1886,13 @@ static void sctp_process_ext_param(struc
- 			    /* if the peer reports AUTH, assume that he
- 			     * supports AUTH.
- 			     */
--			    asoc->peer.auth_capable = 1;
-+			    if (sctp_auth_enable)
-+				    asoc->peer.auth_capable = 1;
- 			    break;
- 		    case SCTP_CID_ASCONF:
- 		    case SCTP_CID_ASCONF_ACK:
--			    asoc->peer.asconf_capable = 1;
-+			    if (sctp_addip_enable)
-+				    asoc->peer.asconf_capable = 1;
- 			    break;
- 		    default:
- 			    break;
-@@ -2455,6 +2457,9 @@ static int sctp_process_param(struct sct
- 		break;
+@@ -2321,12 +2321,10 @@ clean_up:
+ 	/* Release the transport structures. */
+ 	list_for_each_safe(pos, temp, &asoc->peer.transport_addr_list) {
+ 		transport = list_entry(pos, struct sctp_transport, transports);
+-		list_del_init(pos);
+-		sctp_transport_free(transport);
++		if (transport->state != SCTP_ACTIVE)
++			sctp_assoc_rm_peer(asoc, transport);
+ 	}
  
- 	case SCTP_PARAM_SET_PRIMARY:
-+		if (!sctp_addip_enable)
-+			goto fall_through;
-+
- 		addr_param = param.v + sizeof(sctp_addip_param_t);
- 
- 		af = sctp_get_af_specific(param_type2af(param.p->type));
+-	asoc->peer.transport_count = 0;
+-
+ nomem:
+ 	return 0;
+ }
 
 -- 
