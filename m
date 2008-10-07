@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbYJGUfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbYJGUgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbYJGUfq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbYJGUf0
+	id S1756727AbYJGUgD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbYJGUf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:35:26 -0400
-Received: from mga02.intel.com ([134.134.136.20]:20903 "EHLO mga02.intel.com"
+	Tue, 7 Oct 2008 16:35:27 -0400
+Received: from mga02.intel.com ([134.134.136.20]:20913 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756224AbYJGUfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:35:23 -0400
+	id S1757275AbYJGUfY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 16:35:24 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
-   d="scan'208";a="345106194"
+   d="scan'208";a="345106224"
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C928BC.24762681"
-Subject: [RFC][PATCH 1/3] TXT: ACPI AddressRangeUnusuable support
-Date: Tue, 7 Oct 2008 13:34:47 -0700
-Message-ID: <D936D925018D154694D8A362EEB0892005AC105D@orsmsx416.amr.corp.intel.com>
-X-MS-Has-Attach: yes
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [RFC][PATCH 2/3] TXT: Intel IOMMU PMR Disable
+Date: Tue, 7 Oct 2008 13:34:52 -0700
+Message-ID: <D936D925018D154694D8A362EEB0892005AC105E@orsmsx416.amr.corp.intel.com>
+X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC][PATCH 1/3] TXT: ACPI AddressRangeUnusuable support
-Thread-Index: AckovCNcAKCe62ABSySTNEx3lrEXsA==
+Thread-Topic: [RFC][PATCH 2/3] TXT: Intel IOMMU PMR Disable
+Thread-Index: AckovCaqOpdV0yk+RfiIxVbPkDYs2g==
 From: "Cihula, Joseph" <joseph.cihula@intel.com>
 To: <linux-kernel@vger.kernel.org>
 Cc: "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
@@ -32,198 +34,76 @@ Cc: "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
        "Nakajima, Jun" <jun.nakajima@intel.com>,
        "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
        <mingo@elte.hu>, <tytso@mit.edu>
-X-OriginalArrivalTime: 07 Oct 2008 20:34:49.0133 (UTC) FILETIME=[24B145D0:01C928BC]
+X-OriginalArrivalTime: 07 Oct 2008 20:34:53.0383 (UTC) FILETIME=[2739C570:01C928BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Disable Intel VT-d (IOMMU) Protected Memory Regions (PMRs) when DMA
+remapping is enabled.
 
-------_=_NextPart_001_01C928BC.24762681
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Leaving the PMRs enabled may add more delay to the VT-d DMA request
+processing (as another lookup may be performed) but whether they are
+even used is not deterministic:
+	DMA requests that are subject to address remapping, and
+accessing the
+	protected memory regions may or may not be blocked by hardware.
+For
+	such requests, software must not depend on hardware protection
+of the
+	protected memory regions, and instead program the DMA-remapping
+	page-tables to block DMA to protected memory regions.
+	-- from the description field of the PMEN_REG register in the
+v1.2 (May '08) VT-d spec.
 
-See attached commit message (w/ patch), copied below:
+Signed-off-by:  Shane Wang <shane.wang@intel.com>
+Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
 
-Add support for the E820_UNUSABLE memory type, which is defined in
-Revision 3.0b (Oct.  10, 2006) of the ACPI Specification on p.  394
-Table
-14-1:
-
-  AddressRangeUnusuable This range of address contains memory in which
-  errors have been detected.  This range must not be used by the OSPM.
-
-Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
-Signed-off-by: Shane Wang <shane.wang@intel.com>
-Signed-off-by: Gang Wei <gang.wei@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/x86/kernel/e820.c |    4 ++++
- include/asm-x86/e820.h |    1 +
- 2 files changed, 5 insertions(+)
-
-diff -puN
-arch/x86/kernel/e820.c~acpi-add-support-for-addressrangeunusuable-acpi-m
-emory-type arch/x86/kernel/e820.c
----
-a/arch/x86/kernel/e820.c~acpi-add-support-for-addressrangeunusuable-acpi
--memory-type
-+++ a/arch/x86/kernel/e820.c
-@@ -148,6 +148,9 @@ void __init e820_print_map(char *who)
- 		case E820_NVS:
- 			printk(KERN_CONT "(ACPI NVS)\n");
- 			break;
-+		case E820_UNUSABLE:
-+			printk("(unusable)\n");
-+			break;
- 		default:
- 			printk(KERN_CONT "type %u\n", e820.map[i].type);
- 			break;
-@@ -1260,6 +1263,7 @@ static inline const char *e820_type_to_s
- 	case E820_RAM:	return "System RAM";
- 	case E820_ACPI:	return "ACPI Tables";
- 	case E820_NVS:	return "ACPI Non-volatile Storage";
-+	case E820_UNUSABLE:	return "Unusable memory";
- 	default:	return "reserved";
- 	}
+diff -r 29cfdc52a076 drivers/pci/intel-iommu.c
+--- a/drivers/pci/intel-iommu.c Mon Oct 06 12:50:47 2008 -0700
++++ b/drivers/pci/intel-iommu.c Mon Oct 06 15:54:59 2008 -0700
+@@ -742,6 +742,22 @@ static void iommu_disable_protect_mem_re
+        spin_unlock_irqrestore(&iommu->register_lock, flags);
  }
-diff -puN
-include/asm-x86/e820.h~acpi-add-support-for-addressrangeunusuable-acpi-m
-emory-type include/asm-x86/e820.h
----
-a/include/asm-x86/e820.h~acpi-add-support-for-addressrangeunusuable-acpi
--memory-type
-+++ a/include/asm-x86/e820.h
-@@ -43,6 +43,7 @@
- #define E820_RESERVED	2
- #define E820_ACPI	3
- #define E820_NVS	4
-+#define E820_UNUSABLE	5
-=20
- /* reserved RAM used by kernel itself */
- #define E820_RESERVED_KERN        128
 
++static void disable_pmr(struct intel_iommu *iommu)
++{
++       u32 data;
++
++       data = readl(iommu->reg + DMAR_PMEN_REG);
++       if (!(data & DMA_PMEN_PRS))
++               return;
++
++       data = data & ~DMA_PMEN_EPM;
++       writel(data, iommu->reg + DMAR_PMEN_REG);
++
++       IOMMU_WAIT_OP(iommu, DMAR_PMEN_REG,
++               readl, !(data & DMA_PMEN_PRS), data);
++       return;
++}
++
+ static int iommu_enable_translation(struct intel_iommu *iommu)
+ {
+        u32 sts;
+@@ -755,6 +771,7 @@ static int iommu_enable_translation(stru
+                readl, (sts & DMA_GSTS_TES), sts);
 
-------_=_NextPart_001_01C928BC.24762681
-Content-Type: message/rfc822
-Content-Transfer-Encoding: 7bit
-
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Received: from orsmsx335.jf.intel.com ([10.22.226.40]) by orsmsx416.amr.corp.intel.com with Microsoft SMTPSVC(6.0.3790.1830); Tue, 26 Aug 2008 11:45:45 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Received: from azsmsx333.amr.corp.intel.com ([10.2.121.77]) by orsmsx335.jf.intel.com with Microsoft SMTPSVC(6.0.3790.1830); Tue, 26 Aug 2008 11:45:45 -0700
-Received: from fmsmga001.fm.intel.com ([10.253.24.23]) by azsmsx333.amr.corp.intel.com with Microsoft SMTPSVC(6.0.3790.1830); Tue, 26 Aug 2008 11:45:45 -0700
-Received: from fmsmga101.fm.intel.com ([10.1.193.65])  by fmsmga001-1.fm.intel.com with ESMTP; 26 Aug 2008 11:46:45 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])  by mga01.intel.com with ESMTP; 26 Aug 2008 11:43:54 -0700
-Received: from imap1.linux-foundation.org (imap1.linux-foundation.org [140.211.169.55]) by smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with ESMTP id m7QIinbk031036 (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO); Tue, 26 Aug 2008 11:44:50 -0700
-Received: from localhost.localdomain (localhost [127.0.0.1]) by imap1.linux-foundation.org (8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with ESMTP id m7QIinld021343; Tue, 26 Aug 2008 11:44:49 -0700
-Content-class: urn:content-classes:message
-Subject: - acpi-add-support-for-addressrangeunusuable-acpi-memory-type.patch removed from -mm tree
-Date: Tue, 26 Aug 2008 11:44:49 -0700
-Message-ID: <200808261844.m7QIinld021343@imap1.linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: - acpi-add-support-for-addressrangeunusuable-acpi-memory-type.patch removed from -mm tree
-Thread-Index: AckHq/M8DymmjbyVT/6tTW8tuGvnzw==
-From: <akpm@linux-foundation.org>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>,
-	<andi@firstfloor.org>,
-	"Wei, Gang" <gang.wei@intel.com>,
-	<mingo@elte.hu>,
-	"Wang, Shane" <shane.wang@intel.com>,
-	<tglx@linutronix.de>,
-	<mm-commits@vger.kernel.org>
-
-
-The patch titled
-     acpi: add support for AddressRangeUnusuable ACPI memory type
-has been removed from the -mm tree.  Its filename was
-     acpi-add-support-for-addressrangeunusuable-acpi-memory-type.patch
-
-This patch was dropped because it was merged into mainline or a =
-subsystem tree
-
-The current -mm tree may be found at =
-http://userweb.kernel.org/~akpm/mmotm/
-
-------------------------------------------------------
-Subject: acpi: add support for AddressRangeUnusuable ACPI memory type
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-
-Add support for the E820_UNUSABLE memory type, which is defined in
-Revision 3.0b (Oct.  10, 2006) of the ACPI Specification on p.  394 =
-Table
-14-1:
-
-  AddressRangeUnusuable This range of address contains memory in which
-  errors have been detected.  This range must not be used by the OSPM.
-
-Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
-Signed-off-by: Shane Wang <shane.wang@intel.com>
-Signed-off-by: Gang Wei <gang.wei@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/x86/kernel/e820.c |    4 ++++
- include/asm-x86/e820.h |    1 +
- 2 files changed, 5 insertions(+)
-
-diff -puN =
-arch/x86/kernel/e820.c~acpi-add-support-for-addressrangeunusuable-acpi-me=
-mory-type arch/x86/kernel/e820.c
---- =
-a/arch/x86/kernel/e820.c~acpi-add-support-for-addressrangeunusuable-acpi-=
-memory-type
-+++ a/arch/x86/kernel/e820.c
-@@ -148,6 +148,9 @@ void __init e820_print_map(char *who)
- 		case E820_NVS:
- 			printk(KERN_CONT "(ACPI NVS)\n");
- 			break;
-+		case E820_UNUSABLE:
-+			printk("(unusable)\n");
-+			break;
- 		default:
- 			printk(KERN_CONT "type %u\n", e820.map[i].type);
- 			break;
-@@ -1260,6 +1263,7 @@ static inline const char *e820_type_to_s
- 	case E820_RAM:	return "System RAM";
- 	case E820_ACPI:	return "ACPI Tables";
- 	case E820_NVS:	return "ACPI Non-volatile Storage";
-+	case E820_UNUSABLE:	return "Unusable memory";
- 	default:	return "reserved";
- 	}
+        iommu->gcmd |= DMA_GCMD_TE;
++       disable_pmr(iommu);
+        spin_unlock_irqrestore(&iommu->register_lock, flags);
+        return 0;
  }
-diff -puN =
-include/asm-x86/e820.h~acpi-add-support-for-addressrangeunusuable-acpi-me=
-mory-type include/asm-x86/e820.h
---- =
-a/include/asm-x86/e820.h~acpi-add-support-for-addressrangeunusuable-acpi-=
-memory-type
-+++ a/include/asm-x86/e820.h
-@@ -43,6 +43,7 @@
- #define E820_RESERVED	2
- #define E820_ACPI	3
- #define E820_NVS	4
-+#define E820_UNUSABLE	5
-=20
- /* reserved RAM used by kernel itself */
- #define E820_RESERVED_KERN        128
-_
+diff -r 29cfdc52a076 drivers/pci/intel-iommu.h
+--- a/drivers/pci/intel-iommu.h Mon Oct 06 12:50:47 2008 -0700
++++ b/drivers/pci/intel-iommu.h Mon Oct 06 15:54:59 2008 -0700
+@@ -158,6 +158,10 @@ static inline void dmar_writeq(void __io
+ #define DMA_GSTS_FLS (((u32)1) << 29)
+ #define DMA_GSTS_AFLS (((u32)1) << 28)
+ #define DMA_GSTS_WBFS (((u32)1) << 27)
++
++/* PMEN_REG */
++#define DMA_PMEN_EPM (((u32)1) << 31)
++#define DMA_PMEN_PRS (((u32)1) << 0)
 
-Patches currently in -mm which might be from joseph.cihula@intel.com are
-
-linux-next.patch
-
-
-------_=_NextPart_001_01C928BC.24762681--
+ /* CCMD_REG */
+ #define DMA_CCMD_ICC (((u64)1) << 63)
