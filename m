@@ -1,422 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbYJGVWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758559AbYJGVXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758454AbYJGVWQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbYJGVVS
+	id S1758559AbYJGVXX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbYJGVWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:21:18 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:42447 "EHLO 2ka.mipt.ru"
+	Tue, 7 Oct 2008 17:22:33 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:44596 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757127AbYJGVVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:21:14 -0400
-Date: Wed, 8 Oct 2008 01:21:06 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [2/3] POHMELFS: documentation.
-Message-ID: <20081007212106.GB12380@2ka.mipt.ru>
-References: <20081007211925.GA1274@2ka.mipt.ru>
-Mime-Version: 1.0
+	id S1758455AbYJGVWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:22:18 -0400
+Date: Tue, 7 Oct 2008 14:22:15 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       dipankar@in.ibm.com, tglx@linuxtronix.de
+Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
+Message-ID: <20081007212215.GN6384@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com> <20081007071544.GC20740@one.firstfloor.org> <20081007152629.GH6384@linux.vnet.ibm.com> <20081007154939.GN20740@one.firstfloor.org> <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081007211925.GA1274@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20081007210947.GP20740@one.firstfloor.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+On Tue, Oct 07, 2008 at 11:09:47PM +0200, Andi Kleen wrote:
+> On Tue, Oct 07, 2008 at 09:34:01AM -0700, Paul E. McKenney wrote:
+> > Thank you!  Hmmm, classic RCU, worked just fine in 2.6.27-rc7 with
+> > Thomas's patch.  I was doing random onlines and offlines in a loop,
+> > with about 3 seconds between each operation continuously for more than
+> > ten hours, both x86 and Power.  So could you please try 2.6.27-rc7 with
+> > Thomas's patch as follows?
+> > 
+> > http://www.rdrop.com/users/paulmck/patches/2.6.27-rc7-tglx-timer-1.patch
+> 
+> Same effect. Hung on the first try
+> 
+> bash          D 00000000ffff25c1     0  4755   4742
+>  ffff88027b127bf8 0000000000000086 ffff88027b127c18 0000000000000296
+>  ffff88027c80b330 ffff8804be488b90 ffff88027c80b578 0000000300000296
+>  ffff88027b127c18 ffffffff808cbd18 ffff88002805d600 ffff88027d182098
+> Call Trace:
+>  [<ffffffff805c318d>] schedule_timeout+0x22/0xb4
+>  [<ffffffff8020a029>] ? __switch_to+0x320/0x330
+>  [<ffffffff8025fa65>] ? cpupri_set+0xc5/0xd8
+>  [<ffffffff805c2fe7>] wait_for_common+0xcd/0x131
+>  [<ffffffff8022d297>] ? default_wake_function+0x0/0xf
+>  [<ffffffff805c30d5>] wait_for_completion+0x18/0x1a
+>  [<ffffffff8024374b>] synchronize_rcu+0x35/0x3c
+>  [<ffffffff802437ca>] ? wakeme_after_rcu+0x0/0x12
+>  [<ffffffff8022e435>] partition_sched_domains+0x9b/0x1dd
+>  [<ffffffff8022d2c3>] ? wake_up_process+0x10/0x12
+>  [<ffffffff8022e5a5>] update_sched_domains+0x2e/0x35
+>  [<ffffffff805c6bb2>] notifier_call_chain+0x33/0x5b
+>  [<ffffffff80248a29>] __raw_notifier_call_chain+0x9/0xb
+>  [<ffffffff80248a3a>] raw_notifier_call_chain+0xf/0x11
+>  [<ffffffff805c06e6>] _cpu_up+0xd3/0x10c
+>  [<ffffffff805c0776>] cpu_up+0x57/0x67
+>  [<ffffffff805a4ab7>] store_online+0x4d/0x75
+>  [<ffffffff803e5d0b>] sysdev_store+0x1b/0x1d
+>  [<ffffffff802cc49c>] sysfs_write_file+0xe0/0x11c
+>  [<ffffffff8028ad1d>] vfs_write+0xae/0x137
+>  [<ffffffff8028b1c6>] sys_write+0x47/0x6f
+>  [<ffffffff8020b36b>] system_call_fastpath+0x16/0x1b
 
-diff --git a/Documentation/filesystems/pohmelfs/design_notes.txt b/Documentation/filesystems/pohmelfs/design_notes.txt
-new file mode 100644
-index 0000000..291f7d3
---- /dev/null
-+++ b/Documentation/filesystems/pohmelfs/design_notes.txt
-@@ -0,0 +1,69 @@
-+POHMELFS: Parallel Optimized Host Message Exchange Layered File System.
-+
-+		Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+
-+Homepage: http://tservice.net.ru/~s0mbre/old/?section=projects&item=pohmelfs
-+
-+POHMELFS first began as a network filesystem with coherent local data and
-+metadata caches but is now evolving into a parallel distributed filesystem.
-+
-+Main features of this FS include:
-+ * Locally coherent cache for data and metadata with (potentially) byte-range locks.
-+ 	Since all Linux filesystems lock the whole inode during writing, algorithm
-+	is very simlpe and does not use byte-ranges, although they are sent in
-+	locking messages.
-+ * Completely async processing of all events except hard, symlinks and rename events.
-+	Object creation and data reading and writing are processed asynchronously.
-+ * Flexible object architecture optimized for network processing.
-+        Ability to create long paths to objects and remove arbitrarily huge
-+        directories with a single network command.
-+        (like removing the whole kernel tree via a single network command).
-+ * Very high performance.
-+ * Fast and scalable multithreaded userspace server. Being in userspace it works
-+ 	with any underlying filesystem and still is much faster than async in-kernel NFS one.
-+ * Client is able to switch between different servers (if one goes down, client
-+ 	automatically reconnects to second and so on).
-+ * Transactions support. Full failover for all operations.
-+ 	Resending transactions to different servers on timeout or error.
-+ * Read request (data read, directory listing, lookup requests) balancing between multiple servers.
-+ * Write requests are replicated to multiple servers and completed only when all of them are acked.
-+ * Ability to add and/or remove servers from the working set at run-time from userspace (via
-+	netlink, so the same command could be processed from a real network. However, since
-+	the server does not support it yet, I dropped the network part).
-+
-+POHMELFS is based on transactions, which are potentially long-standing objects that live
-+in the client's memory. Each transaction contains all the information needed to process a given
-+command (or set of commands, which is frequently used during data writing: single transactions
-+can contain creation and data writing commands). Transactions are committed by all the servers
-+to which they are sent and, in case of failures, are eventually resent or dropped with an error.
-+For example, reading will return error if no servers are available.
-+
-+POHMELFS uses a asynchronous approach to data processing. Courtesy of transactions, it is
-+possible to detach replies from requests and, if the command requires data to be received, the
-+caller sleeps waiting for it. Thus, it is possible to issue multiple read commands to different
-+servers and async threads will pickup replies in parallel, find appropriate transactions in the
-+system and put the data where it belongs (like the page or inode cache).
-+
-+The main feature of POHMELFS is writeback data and the metadata cache.
-+Only a few non-performance critical operations use the write-through cache and
-+are synchronous: hard and symbolic link creation, and object rename. Creation
-+and removal of objects, as long as writing, are asynchronous and are sent to
-+the server during system writeback. Only one writer at a time is allowed for any
-+given inode, which is guarded by appropriate locking protocol.
-+Because of this feature, POHMELFS is extremely fast at metadata intensive
-+workloads and can fully utilize the bandwidth to the servers when doing bulk
-+data transfers.
-+
-+POHMELFS clients operate with a working set of servers and are capable of balancing read-only
-+operations (like lookups or directory listings) between them.
-+Administrators can add or remove servers from the set at run-time via special commands (described
-+in Documentation/pohmelfs/info.txt file). Writes are replicated to all servers.
-+
-+POHMELFS is capable of full data channel encryption and/or strong crypto hashing.
-+One can select any kernel supported cipher, encryption mode, hash type and operation mode
-+(hmac or digest). It is also possible to use both or neither (default). Crypto configuration
-+is checked during mount time and, if the server does not support it, appropriate capabilities
-+will be disabled or mount will fail (if 'crypto_fail_unsupported' mount option is specified).
-+Crypto performance heavily depends on the number of crypto threads, which asynchronously perform
-+crypto operations and send the resulting data to server or submit it up the stack. This number
-+can be controlled via a mount option.
-diff --git a/Documentation/filesystems/pohmelfs/info.txt b/Documentation/filesystems/pohmelfs/info.txt
-new file mode 100644
-index 0000000..4dc0c9b
---- /dev/null
-+++ b/Documentation/filesystems/pohmelfs/info.txt
-@@ -0,0 +1,84 @@
-+POHMELFS usage information.
-+
-+Mount options:
-+idx=%u
-+ Each mountpoint is associated with special index via this option.
-+ Administrator can add or remove servers from given index, so all mounts,
-+ which were attached to it, were updated.
-+ Default it is 0.
-+
-+trans_scan_timeout=%u
-+ This timeout, expressed in milliseconds, specifies time to scan trasaction
-+ trees looking for stale requests, which have to be resent, or if number of
-+ retries exceed specified limit, dropped with error.
-+ Default is 5 seconds.
-+
-+drop_scan_timeout=%u
-+ Internal timeout, expressed in milliseconds, which specifies how frequently
-+ inodes marked to be dropped are freed. It also specifies how frequently
-+ system checks, that servers has to be added or removed from current working set.
-+ Default is 1 second.
-+
-+wait_on_page_timeout=%u
-+ Number of milliseconds to wait for reply from remote server for data reading command.
-+ If this timeout is exceeded, reading returns error.
-+ Default is 5 seconds.
-+
-+trans_retries=%u
-+ Number of times, transaction will be resent to the server, which did not answer for the
-+ last @trans_scan_timeout milliseconds. When number of resends exceeds this limit,
-+ transaction is completed with error.
-+ Default is 5 resends.
-+
-+crypto_thread_num=%u
-+ Number of crypto processing threads. Threads are used both for RX and TX traffic.
-+ Default is 2, or no threads if crypto operations are not supported.
-+
-+trans_max_pages=%u
-+ Maximum number of pages in single transaction. This parameter also control number of pages,
-+ allocated for crypto processing (each crypto thread has pool of pages, number of which is
-+ equal to 'trans_max_pages'.
-+ Default is 100 pages.
-+
-+crypto_fail_unsupported
-+ If specified, mount will fail if server does not support requested crypto operations.
-+ By default mount will disable non-matching crypto operations.
-+
-+lock_timeout=%u
-+ Maximum number of milliseconds to wait for the lock for any object to be written into.
-+ Default is 5 seconds.
-+
-+Usage examples.
-+
-+Add (or remove if it already exists) server server1.net:1025 into working set with index $idx
-+with appropriate hash algorithm and key file and cipher algorithm, mode and key file:
-+$cfg -a server1.net -p 1025 -i $idx -K $hash_key -k $cipher_key
-+
-+Mount filesystem with given index $idx to /mnt mountpoint.
-+Client will connect to all servers specified in working set via previous command:
-+mount -t pohmel -o idx=$idx q /mnt
-+
-+One can add or remove servers from working set after mounting too.
-+
-+
-+Server installation.
-+
-+Creating a server, which listens at port 1025 and 0.0.0.0 address.
-+Working root directory (note, that server chroots there, so you have to have appropriate permissions)
-+is set to /mnt, server will negotiate hash/cipher with client, in case client requested it, there
-+are appropriate key files.
-+Number of working threads is set to 10.
-+
-+# ./fserver -a 0.0.0.0 -p 1025 -r /mnt -w 10 -K hash_key -k cipher_key
-+
-+ -A 6			 - listen on ipv6 address. Default: Disabled.
-+ -r root                 - path to root directory. Default: /tmp.
-+ -a addr                 - listen address. Default: 0.0.0.0.
-+ -p port                 - listen port. Default: 1025.
-+ -w workers              - number of workers per connected client. Default: 1.
-+ -K file		 - hash key size. Default: none.
-+ -k file		 - cipher key size. Default: none.
-+ -h                      - this help.
-+
-+Number of worker threads specifies how many workers will be created for each client.
-+Bulk single-client transafers usually are better handled with smaller number (like 1-3).
-diff --git a/Documentation/filesystems/pohmelfs/network_protocol.txt b/Documentation/filesystems/pohmelfs/network_protocol.txt
-new file mode 100644
-index 0000000..de12f8c
---- /dev/null
-+++ b/Documentation/filesystems/pohmelfs/network_protocol.txt
-@@ -0,0 +1,217 @@
-+POHMELFS network protocol.
-+
-+Basic structure used in network communication is following command:
-+
-+struct netfs_cmd
-+{
-+	__u16			cmd;	/* Command number */
-+	__u16			csize;	/* Attached crypto information size */
-+	__u16			cpad;	/* Attached padding size */
-+	__u16			ext;	/* External flags */
-+	__u32			size;	/* Size of the attached data */
-+	__u32			trans;	/* Transaction id */
-+	__u64			id;	/* Object ID to operate on. Used for feedback.*/
-+	__u64			start;	/* Start of the object. */
-+	__u64			iv;	/* IV sequence */
-+	__u8			data[0];
-+};
-+
-+Commands can be embedded into transaction command (which in turn has own command),
-+so one can extend protocol as needed without breaking backward compatibility as long
-+as old commands are supported. All string lengths include tail 0 byte.
-+
-+All commans are transfered over the network in big-endian. CPU endianess is used at the end peers.
-+
-+@cmd - command number, which specifies command to be processed. Following
-+	commands are used currently:
-+
-+	NETFS_READDIR	= 1,	/* Read directory for given inode number */
-+	NETFS_READ_PAGE,	/* Read data page from the server */
-+	NETFS_WRITE_PAGE,	/* Write data page to the server */
-+	NETFS_CREATE,		/* Create directory entry */
-+	NETFS_REMOVE,		/* Remove directory entry */
-+	NETFS_LOOKUP,		/* Lookup single object */
-+	NETFS_LINK,		/* Create a link */
-+	NETFS_TRANS,		/* Transaction */
-+	NETFS_OPEN,		/* Open intent */
-+	NETFS_INODE_INFO,	/* Metadata cache coherency synchronization message */
-+	NETFS_PAGE_CACHE,	/* Page cache invalidation message */
-+	NETFS_READ_PAGES,	/* Read multiple contiguous pages in one go */
-+	NETFS_RENAME,		/* Rename object */
-+	NETFS_CAPABILITIES,	/* Capabilities of the client, for example supported crypto */
-+	NETFS_LOCK,		/* Distributed lock message */
-+
-+@ext - external flags. Used by different commands to specify some extra arguments
-+	like partial size of the embedded objects or creation flags.
-+
-+@size - size of the attached data. For NETFS_READ_PAGE and NETFS_READ_PAGES no data is attached,
-+	but size of the requested data is incorporated here. It does not include size of the command
-+	header (struct netfs_cmd) itself.
-+
-+@id - id of the object this command operates on. Each command can use it for own purpose.
-+
-+@start - start of the object this command operates on. Each command can use it for own purpose.
-+
-+@csize, @cpad - size and padding size of the (attached if needed) crypto information.
-+
-+Command specifications.
-+
-+@NETFS_READDIR
-+This command is used to sync content of the remote dir to the client.
-+
-+@ext - length of the path to object.
-+@size - the same.
-+@id - local inode number of the directory to read.
-+@start - zero.
-+
-+
-+@NETFS_READ_PAGE
-+This command is used to read data from remote server.
-+Data size does not exceed local page cache size.
-+
-+@id - inode number.
-+@start - first byte offset.
-+@size - number of bytes to read plus length of the path to object.
-+@ext - object path length.
-+
-+
-+@NETFS_CREATE
-+Used to create object.
-+It does not require that all directories on top of the object were
-+already created, it will create them automatically. Each object has
-+associated @netfs_path_entry data structure, which contains creation
-+mode (permissions and type) and length of the name as long as name itself.
-+
-+@start - 0
-+@size - size of the all data structures needed to create a path
-+@id - local inode number
-+@ext - 0
-+
-+
-+@NETFS_REMOVE
-+Used to remove object.
-+
-+@ext - length of the path to object.
-+@size - the same.
-+@id - local inode number.
-+@start - zero.
-+
-+
-+@NETFS_LOOKUP
-+Lookup information about object on server.
-+
-+@ext - length of the path to object.
-+@size - the same.
-+@id - local inode number of the directory to look object in.
-+@start - local inode number of the object to look at.
-+
-+
-+@NETFS_LINK
-+Create hard of symlink.
-+Command is sent as "object_path|target_path".
-+
-+@size - size of the above string.
-+@id - parent local inode number.
-+@start - 1 for symlink, 0 for hardlink.
-+@ext - size of the "object_path" above.
-+
-+
-+@NETFS_TRANS
-+Transaction header.
-+
-+@size - incorporates all embedded command sizes including theirs header sizes.
-+@start - transaction generation number - unique id used to find transaction.
-+@ext - transaction flags. Unused at the moment.
-+@id - 0.
-+
-+
-+@NETFS_OPEN
-+Open intent for given transaction.
-+
-+@id - local inode number.
-+@start - 0.
-+@size - path length to the object.
-+@ext - open flags (O_RDWR and so on).
-+
-+
-+@NETFS_INODE_INFO
-+Metadata update command.
-+It is sent to servers when attributes of the object are changed and received
-+when data or metadata were updated. It operates with the following structure:
-+
-+struct netfs_inode_info
-+{
-+	unsigned int		mode;
-+	unsigned int		nlink;
-+	unsigned int		uid;
-+	unsigned int		gid;
-+	unsigned int		blocksize;
-+	unsigned int		padding;
-+	__u64			ino;
-+	__u64			blocks;
-+	__u64			rdev;
-+	__u64			size;
-+	__u64			version;
-+};
-+
-+It effectively mirrors stat(2) returned data.
-+
-+
-+@ext - path length to the object.
-+@size - the same plus size of the netfs_inode_info structure.
-+@id - local inode number.
-+@start - 0.
-+
-+
-+@NETFS_PAGE_CACHE
-+Command is only received by clients. It contains information about
-+page to be marked as not up-to-date.
-+
-+@id - client's inode number.
-+@start - last byte of the page to be invalidated. If it is not equal to
-+	current inode size, it will be vmtruncated().
-+@size - 0
-+@ext - 0
-+
-+
-+@NETFS_READ_PAGES
-+Used to read multiple contiguous pages in one go.
-+
-+@start - first byte of the contiguous region to read.
-+@size - contains of two fields: lower 8 bits are used to represent page cache shift
-+	used by client, another 3 bytes are used to get number of pages.
-+@id - local inode number.
-+@ext - path length to the object.
-+
-+
-+@NETFS_RENAME
-+Used to rename object.
-+Attached data is formed into following string: "old_path|new_path".
-+
-+@id - local inode number.
-+@start - parent inode number.
-+@size - length of the above string.
-+@ext - length of the old path part.
-+
-+
-+@NETFS_CAPABILITIES
-+Used to exchange crypto capabilities with server.
-+If crypto capabilities are not supported by server, then client will disable it
-+or fail (if 'crypto_fail_unsupported' mount options was specified).
-+
-+@id - superblock index. Used to specify crypto information for group of servers.
-+@size - size of the attached capabilities structure.
-+@start - 0.
-+@size - 0.
-+@scsize - 0.
-+
-+@NETFS_LOCK
-+Used to send lock request/release messages. Although it sends byte range request
-+and is capable of flushing pages based on that, it is not used, since all Linux
-+filesystems lock the whole inode.
-+
-+@id - lock generation number.
-+@start - start of the locked range.
-+@size - size of the locked range.
-+@ext - lock type: read/write. Not used actually. 15'th bit is used to determine,
-+	if it is lock request (1) or release (0).
+Thus far, as usual, I cannot reproduce, either on x86 or Power.  You are
+running on hyperthreaded machines?  If so, what happens if you disable
+CONFIG_SCHED_SMT and CONFIG_SCHED_MC?
 
+You are running on a 16-CPU x86-64 box?
 
-
--- 
-	Evgeniy Polyakov
+							Thanx, Paul
