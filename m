@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbYJGMaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYJGMd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754308AbYJGMaT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 08:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYJGMaG
+	id S1754344AbYJGMd3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 08:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYJGMdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 08:30:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52025 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992AbYJGMaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 08:30:05 -0400
-Message-ID: <48EB5611.9090005@redhat.com>
-Date: Tue, 07 Oct 2008 14:29:05 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: prasad@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
-       mingo@elte.hu, jason.wessel@windriver.com, richardj_moore@uk.ibm.com
-Subject: Re: [RFC Patch 0/9] Hardware Breakpoint interfaces
-References: <20081007113815.GA23523@in.ibm.com>
-In-Reply-To: <20081007113815.GA23523@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 7 Oct 2008 08:33:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44633 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752474AbYJGMdV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 08:33:21 -0400
+Date: Tue, 7 Oct 2008 13:31:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, RFC] shmat: introduce flag SHM_MAP_HINT
+Message-ID: <20081007133132.69f69cc0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081007112418.GC5126@localhost.localdomain>
+References: <20081006132651.GG3180@one.firstfloor.org>
+	<1223303879-5555-1-git-send-email-kirill@shutemov.name>
+	<20081007195837.5A6B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081007112418.GC5126@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-K.Prasad wrote:
-> - Enable KGDB and KVM to use the register_kernel_hw_breakpoint()
->   interface for their HW Breakpoint usage, in the absence of which
->   they will be broken during simultaneous use.
->   
+> > Honestly, I don't like that qemu specific feature insert into shmem core.
+> > At least, this patch is too few comments.
+> > Therefore, an develpper can't understand why SHM_MAP_HINT exist.
+> > 
+> > I think this patch description is too short and too poor.
+> > I don't like increasing mysterious interface.
+> 
+> Sorry for it. I'll fix it in next patch version.
 
-KVM conceptually isn't a kernel use of the debug registers.  KVM 
-modifies the debug registers while the guest is running, and restores 
-them after the guest returns.
+I also don't see the point of this interface. We have POSIX shared memory
+objects in Linux which are much cleaner and neater. They support mmap()
+and mmap supports address hints.
 
-Right now, as an optimization, KVM defers restoring the debug registers 
-until after the next context switch out of the kvm task, or until the 
-next exit to userspace (whichever comes earlier); we should change this 
-to avoid the deferral if kernel breakpoints are in effect.  This will 
-allow simultaneous use of KVM breakpoints and kernel breakpoints.
+There seems to be no reason at all to add further hacks to the historical
+ugly SYS5 interface.
 
--- 
-error compiling committee.c: too many arguments to function
-
+Alan
