@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbYJGApu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbYJGAqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbYJGApu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYJGAnE
+	id S1758047AbYJGAqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbYJGAnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:43:04 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60355 "EHLO mx2.suse.de"
+	Mon, 6 Oct 2008 20:43:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60400 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757277AbYJGAnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:43:01 -0400
-Date: Mon, 6 Oct 2008 17:38:04 -0700
+	id S1756816AbYJGAnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:43:09 -0400
+Date: Mon, 6 Oct 2008 17:38:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,88 +22,68 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 14/71] ALSA: oxygen: fix distorted output on AK4396-based
-	cards
-Message-ID: <20081007003804.GO3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 16/71] ALSA: remove unneeded power_mutex lock in
+	snd_pcm_drop
+Message-ID: <20081007003808.GQ3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-oxygen-fix-distorted-output-on-ak4396-based-cards.patch"
+Content-Disposition: inline; filename="alsa-remove-unneeded-power_mutex-lock-in-snd_pcm_drop.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Clemens Ladisch <clemens@ladisch.de>
+From: Takashi Iwai <tiwai@suse.de>
 
-Upstream-commit-id: df91bc23dcb052ff2da71b3482bf3c5fbf4b8a53
+Upstream-commit-id: 24e8fc498e9618338854bfbcf8d1d737e0bf1775
 
-When changing the sample rate, the CMI8788's master clock output becomes
-unstable for a short time.  The AK4396 needs the master clock to do SPI
-writes, so writing to an AK4396 control register directly after a sample
-rate change will garble the value.  In our case, this leads to the DACs
-being misconfigured to I2S sample format, which results in a wrong
-output level and horrible distortions on samples louder than -6 dB.
+The power_mutex lock in snd_pcm_drop may cause a possible deadlock
+chain, and above all, it's unneeded.  Let's get rid of it.
 
-To fix this, we need to wait until the new master clock signal has
-become stable before doing SPI writes.
-
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/oxygen/hifier.c |    4 ++++
- sound/pci/oxygen/oxygen.c |    4 ++++
- 2 files changed, 8 insertions(+)
+ sound/core/pcm_native.c |   13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
---- a/sound/pci/oxygen/hifier.c
-+++ b/sound/pci/oxygen/hifier.c
-@@ -17,6 +17,7 @@
-  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -1545,16 +1545,10 @@ static int snd_pcm_drop(struct snd_pcm_s
+ 	card = substream->pcm->card;
  
-+#include <linux/delay.h>
- #include <linux/pci.h>
- #include <sound/control.h>
- #include <sound/core.h>
-@@ -95,6 +96,9 @@ static void set_ak4396_params(struct oxy
- 	else
- 		value |= AK4396_DFS_QUAD;
- 	data->ak4396_ctl2 = value;
-+
-+	msleep(1); /* wait for the new MCLK to become stable */
-+
- 	ak4396_write(chip, AK4396_CONTROL_1, AK4396_DIF_24_MSB);
- 	ak4396_write(chip, AK4396_CONTROL_2, value);
- 	ak4396_write(chip, AK4396_CONTROL_1, AK4396_DIF_24_MSB | AK4396_RSTN);
---- a/sound/pci/oxygen/oxygen.c
-+++ b/sound/pci/oxygen/oxygen.c
-@@ -28,6 +28,7 @@
-  * GPIO 1 -> DFS1 of AK5385
-  */
+ 	if (runtime->status->state == SNDRV_PCM_STATE_OPEN ||
+-	    runtime->status->state == SNDRV_PCM_STATE_DISCONNECTED)
++	    runtime->status->state == SNDRV_PCM_STATE_DISCONNECTED ||
++	    runtime->status->state == SNDRV_PCM_STATE_SUSPENDED)
+ 		return -EBADFD;
  
-+#include <linux/delay.h>
- #include <linux/mutex.h>
- #include <linux/pci.h>
- #include <sound/ac97_codec.h>
-@@ -173,6 +174,9 @@ static void set_ak4396_params(struct oxy
- 	else
- 		value |= AK4396_DFS_QUAD;
- 	data->ak4396_ctl2 = value;
+-	snd_power_lock(card);
+-	if (runtime->status->state == SNDRV_PCM_STATE_SUSPENDED) {
+-		result = snd_power_wait(card, SNDRV_CTL_POWER_D0);
+-		if (result < 0)
+-			goto _unlock;
+-	}
+-
+ 	snd_pcm_stream_lock_irq(substream);
+ 	/* resume pause */
+ 	if (runtime->status->state == SNDRV_PCM_STATE_PAUSED)
+@@ -1563,8 +1557,7 @@ static int snd_pcm_drop(struct snd_pcm_s
+ 	snd_pcm_stop(substream, SNDRV_PCM_STATE_SETUP);
+ 	/* runtime->control->appl_ptr = runtime->status->hw_ptr; */
+ 	snd_pcm_stream_unlock_irq(substream);
+- _unlock:
+-	snd_power_unlock(card);
 +
-+	msleep(1); /* wait for the new MCLK to become stable */
-+
- 	for (i = 0; i < 4; ++i) {
- 		ak4396_write(chip, i,
- 			     AK4396_CONTROL_1, AK4396_DIF_24_MSB);
+ 	return result;
+ }
+ 
 
 -- 
