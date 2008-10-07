@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbYJGVep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYJGViT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757618AbYJGVep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 17:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYJGVeh
+	id S1757532AbYJGViT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 17:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbYJGViK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 17:34:37 -0400
-Received: from gw.goop.org ([64.81.55.164]:43502 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbYJGVeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 17:34:36 -0400
-Message-ID: <48EBD5AC.8080608@goop.org>
-Date: Tue, 07 Oct 2008 14:33:32 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+	Tue, 7 Oct 2008 17:38:10 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:6403 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754403AbYJGViI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 17:38:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=JM7mxNBP4Wplr62ekcQ93v8U5Ir272A69d5rQT2jVxZoMGSzC52tVUAx+LFK82vrVO
+         xcnma7Y1G1SA78l21/aPeCstrgk8zTU2wCtBnRCa+mXHFjnvUVBde9/M3oqisuU61BEX
+         nqqbvoH6n23QIlOhUgeKtPulkvoVNkqIcZhgs=
+Message-ID: <2f11576a0810071438x59e51b74rc8c1919c14739395@mail.gmail.com>
+Date: Wed, 8 Oct 2008 06:38:07 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Ingo Molnar" <mingo@redhat.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Hugh Dickins" <hugh@veritas.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20081007211038.GQ20740@one.firstfloor.org>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       yinghai@kernel.org
-Subject: Re: [patch 3/7] x86, cpa: make the kernel physical mapping initialization
- a two pass sequence
-References: <20080923210035.413932000@linux-os.sc.intel.com> <20080923211444.369122000@linux-os.sc.intel.com> <48EA798D.1090303@goop.org> <20081007015833.GO15609@linux-os.sc.intel.com> <48EB8008.1020700@goop.org> <20081007205845.GP15609@linux-os.sc.intel.com>
-In-Reply-To: <20081007205845.GP15609@linux-os.sc.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1223396117-8118-1-git-send-email-kirill@shutemov.name>
+	 <2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com>
+	 <20081007211038.GQ20740@one.firstfloor.org>
+X-Google-Sender-Auth: c664102e5a508f2f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> On Tue, Oct 07, 2008 at 08:28:08AM -0700, Jeremy Fitzhardinge wrote:
->   
->> Well, that's OK.  We just need to preserve the original page permissions
->> when fragmenting the large mappings.  (This isn't a case that affects
->> Xen, because it will already be 4k mappings.)
->>     
+>> Sorry, no.
+>> This description still doesn't explain why this interface is needed.
+>>
+>> The one of the points is this interface is used by another person or not.
+>> You should explain how large this interface benefit has.
+>>
+>> Andi kleen explained this interface _can_  be used another one.
+>> but nobody explain who use it actually.
 >
-> Jeremy, Can you please check if the appended patch fixes your issue and Ack
-> it? Test booted on three different 64bit platforms with and without
-> DEBUG_PAGEALLOC.
->   
+> Anyone who doesn't want to use fixed addresses.
 
-Will do.
-
->> Great.  Also, do you think you'll have a chance to look at unifying the
->> 32 and 64 bit code (where 32 uses the 64-bit version)?
->>     
->
-> 32bit can't use the 64-bit version. 64bit uses large pages in the
-> static mapping setup by head_64.S while the 32bit uses small mappings.
->   
-
-The 64-bit code would obviously need a little bit of modification to 
-make it work.
-
-I don't see why 4k vs 2M initial mappings makes a difference.  32-bit 
-dynamically sets up a pagetable in head.S.  The physical mapping setup 
-can replace those mappings with large pages if it wants to.
-
-Functionally both pieces of code are doing the same thing, and there's 
-no reason why they couldn't be unified.
-
-> I am also not sure why the Xen 32bit didn't break. With or with out may
-> recent changes, 32bit kernel is always doing set_pte() and doesn't seem
-> to care about the previous mappings. So what is special with 32bit xen
-> that doesn't cause this failure. Thanks.
->   
-
-I have a fairly sleazy hack in 32-bit Xen which means that set_pte 
-doesn't override the page permissions when doing the physical mapping 
-setup.  It's something I'd like to get rid of.
-
-    J
+yup.
+however, almost application doesn't use new flag because almost
+application want to works on cross platform. (or merely lazy)
+then, this explain isn't enough, imo.
