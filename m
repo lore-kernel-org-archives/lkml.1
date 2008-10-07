@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYJGWzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbYJGW54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbYJGWzx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 18:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYJGWzk
+	id S1756582AbYJGW54 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 18:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYJGW5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 18:55:40 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:17547 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754471AbYJGWzi (ORCPT
+	Tue, 7 Oct 2008 18:57:48 -0400
+Received: from mga05.intel.com ([192.55.52.89]:54629 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753969AbYJGW5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 18:55:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gASF4YQ98xKkroTKSRqQYCS/WJUBRpZ18WzyXu/RkLcdbHlKByainOkvGkudN/8urO
-         eiHmcpteh88/BycAlrHJT6NBc3unNu5x5dsY36mL0goX6BzVTfl7md1rgYLhJSNOgnpe
-         T5yVwdlHHkF65MOtcs56u2oe+gj2h6OlpUYo0=
-Message-ID: <41840b750810071555k7cef48b4m7e7b89583928a5be@mail.gmail.com>
-Date: Tue, 7 Oct 2008 18:55:37 -0400
-From: "Shem Multinymous" <multinymous@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Laptop shock detection and harddisk protection
-Cc: "Pavel Machek" <pavel@suse.cz>, "Thomas Renninger" <trenn@suse.de>,
-       "Tejun Heo" <tj@kernel.org>, "Elias Oltmanns" <eo@nebensachen.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <20081007211905.GB8151@kroah.com>
+	Tue, 7 Oct 2008 18:57:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,375,1220252400"; 
+   d="scan'208";a="624522929"
+Message-ID: <48EBE96A.6080700@linux.intel.com>
+Date: Tue, 07 Oct 2008 15:57:46 -0700
+From: Joseph Cihula <joseph.cihula@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+CC: shane.wang@intel.com, gang.wei@intel.com, arjan@linux.intel.com,
+       asit.k.mallick@intel.com, jun.nakajima@intel.com, chrisw@sous-sol.org,
+       jbeulich@novell.com, mingo@elte.hu, tytso@mit.edu,
+       linux-kernel@vger.kernel.org, joseph.cihula@intel.com
+Subject: [RFC][PATCH 1/3] TXT: ACPI AddressRangeUnusuable support
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48C7FCEE.8060404@kernel.org> <20080917180405.GB3162@kroah.com>
-	 <20080918111845.GH27832@elf.ucw.cz> <200809191104.00171.trenn@suse.de>
-	 <20080924051417.GA29993@kroah.com> <20081007204011.GG6604@elf.ucw.cz>
-	 <20081007211905.GB8151@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been staying off the public discussion to avoid fuelling the flame;
-my position has been stated earlier and in private communication.
-But at this point I must go on record:
+(re-posted with apologies for formatting and email addresses)
 
-On Tue, Oct 7, 2008 at 5:19 PM, Greg KH <greg@kroah.com> wrote:
->  - this code was written by an anonymous person, using documents or
->    information that was obtained and used in a manner that was not
->    legal according to their employment agreement.
+Commit message (w/ patch), copied below:
 
-The above statement is false. I have never had access to non-public ThinkPad
-specifications as part of my employment, nor have I been employed
-by anyone who (to my knowledge) even possesses non-public ThinkPad
-specifications.
+Add support for the E820_UNUSABLE memory type, which is defined in 
+Revision 3.0b (Oct.  10, 2006) of the ACPI Specification on p.  394 Table
+14-1:
 
-I have contacted Greg KH privately in an effort to clarify the source
-of his false impression.
+  AddressRangeUnusuable This range of address contains memory in which
+  errors have been detected.  This range must not be used by the OSPM.
 
-  Shem
+Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
+Signed-off-by: Shane Wang <shane.wang@intel.com>
+Signed-off-by: Gang Wei <gang.wei@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/kernel/e820.c |    4 ++++
+ include/asm-x86/e820.h |    1 +
+ 2 files changed, 5 insertions(+)
+
+diff -puN 
+arch/x86/kernel/e820.c~acpi-add-support-for-addressrangeunusuable-acpi-memory-type 
+arch/x86/kernel/e820.c
+--- 
+a/arch/x86/kernel/e820.c~acpi-add-support-for-addressrangeunusuable-acpi-memory-type
++++ a/arch/x86/kernel/e820.c
+@@ -148,6 +148,9 @@ void __init e820_print_map(char *who)
+         case E820_NVS:
+             printk(KERN_CONT "(ACPI NVS)\n");
+             break;
++        case E820_UNUSABLE:
++            printk("(unusable)\n");
++            break;
+         default:
+             printk(KERN_CONT "type %u\n", e820.map[i].type);
+             break;
+@@ -1260,6 +1263,7 @@ static inline const char *e820_type_to_s
+     case E820_RAM:    return "System RAM";
+     case E820_ACPI:    return "ACPI Tables";
+     case E820_NVS:    return "ACPI Non-volatile Storage";
++    case E820_UNUSABLE:    return "Unusable memory";
+     default:    return "reserved";
+     }
+ }
+diff -puN 
+include/asm-x86/e820.h~acpi-add-support-for-addressrangeunusuable-acpi-memory-type 
+include/asm-x86/e820.h
+--- 
+a/include/asm-x86/e820.h~acpi-add-support-for-addressrangeunusuable-acpi-memory-type
++++ a/include/asm-x86/e820.h
+@@ -43,6 +43,7 @@
+ #define E820_RESERVED    2
+ #define E820_ACPI    3
+ #define E820_NVS    4
++#define E820_UNUSABLE    5
+ 
+ /* reserved RAM used by kernel itself */
+ #define E820_RESERVED_KERN        128
+
