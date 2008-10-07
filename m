@@ -1,54 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbYJGJyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbYJGJ46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbYJGJyr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 05:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYJGJyj
+	id S1753793AbYJGJ46 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 05:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYJGJ4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 05:54:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33803 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751027AbYJGJyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 05:54:38 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] MN10300: MEI are renaming themselves to Panasonic
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Date: Tue, 07 Oct 2008 10:54:30 +0100
-Message-ID: <20081007095429.27008.27795.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 7 Oct 2008 05:56:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36658 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbYJGJ4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 05:56:48 -0400
+Subject: Re: [PATCH, RFC] percpu_counters: make fbc->count read atomic on
+	32 bit architecture
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@mit.edu>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <20081006232322.c383fac5.akpm@linux-foundation.org>
+References: <E1KmetO-00053M-5u@closure.thunk.org>
+	 <20081006232322.c383fac5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 07 Oct 2008 11:55:47 +0200
+Message-Id: <1223373347.26330.19.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MEI are renaming themselves to Panasonic, so update the MAINTAINERS record for
-the MN10300 arch.
+On Mon, 2008-10-06 at 23:23 -0700, Andrew Morton wrote:
+> On Sun, 05 Oct 2008 21:28:10 -0400 "Theodore Ts'o" <tytso@mit.edu> wrote:
+> 
+> > The following patch has been sitting in the ext4 patch queue for about
+> > six weeks.  It was there it was a suspected cause for block allocation
+> > bug.  As I recall, it we found the true root cause since then, but this
+> > has stuck around since it's a potential problem.  Andrew has expressed
+> > concerns that this patch might have performance impacts.
+> 
+> Performace impacts I guess we'll just have to put up with.  iirc I was
+> thinking that this implementation should be pushed down to a kernel-wide
+> atomic64_t and then the percpu_counters would just use that type.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+something like so?
+
+or should I use a global seqlock hash table?
+
+i386 could then do a version using cmpxchg8, although I'm not sure
+that's a win, as I've heard thats an awefuly expensive op to use.
+
 ---
+Subject: 
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue Oct 07 11:52:37 CEST 2008
 
- MAINTAINERS |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/asm-generic/atomic_64.h |  132 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 132 insertions(+)
 
+Index: linux-2.6/include/asm-generic/atomic_64.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-generic/atomic_64.h
+@@ -0,0 +1,132 @@
++#ifndef _ASM_GENERIC_ATOMIC64_H
++#define _ASM_GENERIC_ATOMIC64_H
++
++#include <linux/types.h>
++
++#if BITS_PER_LONG == 32
++
++#include <linux/seqlock.h>
++
++typedef struct {
++	s64 counter;
++	seqlock_t slock;
++} atomic64_t;
++
++ATOMIC64_INIT(i)	{ .counter = (i), .slock = __SEQLOCK_UNLOCKED(i.slock) }
++
++static inline s64 atomic64_read(atomic64_t *v)
++{
++	unsigned seq = read_seqbegin(&v->slock);
++	s64 val;
++
++	do {
++		val = v->counter;
++	} while (read_seqretry(&v->slock, seq));
++
++	return val;
++}
++
++static inline void atomic64_set(s64 i, atomic64_t *v)
++{
++	write_seqlock(&v->slock);
++	v->counter = i;
++	write_sequnlock(&v->slock);
++}
++
++static inline void atomic64_add(s64 i, atomic64_t *v)
++{
++	write_seqlock(&v->slock);
++	v->counter += i;
++	write_sequnlock(&v->slock);
++}
++
++static inline void atomic64_sub(s64 i, atomic64_t *v)
++{
++	write_seqlock(&v->slock);
++	v->counter -= i;
++	write_sequnlock(&v->slock);
++}
++
++static inline int atomic64_sub_and_test(s64 i, atomic64_t *v)
++{
++	int ret;
++
++	write_seqlock(&v->slock);
++	v->counter -= i;
++	ret = !v->counter;
++	write_sequnlock(&v->slock);
++
++	return ret;
++}
++
++static inline void atomic64_inc(atomic64_t *v)
++{
++	write_seqlock(&v->slock);
++	v->counter++;
++	write_sequnlock(&v->slock);
++}
++
++static inline void atomic64_dec(atomic64_t *v)
++{
++	write_seqlock(&v->slock);
++	v->counter--;
++	write_sequnlock(&v->slock);
++}
++
++static inline int atomic64_dec_and_test(atomic64_t *v)
++{
++	int ret;
++
++	write_seqlock(&v->slock);
++	v->counter--;
++	ret = !v->counter;
++	write_sequnlock(&v->slock);
++
++	return ret;
++}
++
++static inline int atomic64_add_and_test(atomic64_t *v)
++{
++	int ret;
++
++	write_seqlock(&v->slock);
++	v->counter++;
++	ret = !v->counter;
++	write_sequnlock(&v->slock);
++
++	return ret;
++}
++
++static inline int atomic64_add_negative(s64 i, atomic64_t *v)
++{
++	int ret;
++
++	write_seqlock(&v->slock);
++	v->counter += i;
++	ret = v->counter < 0;
++	write_sequnlock(&v->slock);
++
++	return ret;
++}
++
++static inline s64 atomic64_add_return(s64 i, atomic64_t *v)
++{
++	s64 val;
++
++	write_seqlock(&v->slock);
++	v->counter += i;
++	val = v->counter;
++	write_sequnlock(&v->slock);
++
++	return val;
++}
++
++static inline s64 atomic64_sub_return(s64 i, atomic64_t *v)
++{
++	return atomic64_add_return(-i, v);
++}
++
++#define atomic64_inc_return(v)  (atomic64_add_return(1, (v)))
++#define atomic64_dec_return(v)  (atomic64_sub_return(1, (v)))
++
++#endif
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3596d17..c4164c6 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2756,7 +2756,7 @@ L:	linux-mm@kvack.org
- L:	linux-kernel@vger.kernel.org
- S:	Maintained
- 
--MEI MN10300/AM33 PORT
-+PANASONIC MN10300/AM33 PORT
- P:	David Howells
- M:	dhowells@redhat.com
- P:	Koichi Yasutake
 
