@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYJGPFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYJGPH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYJGPFf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 11:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYJGPFU
+	id S1754827AbYJGPH6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 11:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbYJGPHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 11:05:20 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52944 "EHLO e4.ny.us.ibm.com"
+	Tue, 7 Oct 2008 11:07:47 -0400
+Received: from smtp2a.orange.fr ([80.12.242.140]:35518 "EHLO smtp2a.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752961AbYJGPFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 11:05:18 -0400
-Date: Tue, 7 Oct 2008 08:05:10 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, minyard@acm.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+	id S1752615AbYJGPHq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 11:07:46 -0400
+X-ME-UUID: 20081007150744625.98961700008F@mwinf2a18.orange.fr
+Message-ID: <48EB7B39.1020607@cosmosbay.com>
+Date: Tue, 07 Oct 2008 17:07:37 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: paulmck@linux.vnet.ibm.com, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Corey Minyard <minyard@acm.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        shemminger@vyatta.com
 Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-Message-ID: <20081007150510.GF6384@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081006185026.GA10383@minyard.local> <48EA8197.6080502@cosmosbay.com> <1223367480.26330.7.camel@lappy.programming.kicks-ass.net> <48EB2AE3.3080200@cosmosbay.com> <48EB6EE4.8030703@linux-foundation.org> <48EB7747.9060505@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48EB7747.9060505@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20081006185026.GA10383@minyard.local> <48EA8197.6080502@cosmosbay.com> <20081006.144002.56418911.davem@davemloft.net> <48EA9A59.1090306@acm.org> <20081007083750.GB17079@2ka.mipt.ru> <48EB6F2D.100@linux-foundation.org> <20081007143346.GA6384@linux.vnet.ibm.com> <48EB7617.3060304@linux-foundation.org>
+In-Reply-To: <48EB7617.3060304@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 04:50:47PM +0200, Eric Dumazet wrote:
-> Christoph Lameter a écrit :
->> Eric Dumazet wrote:
->>>>> Or just add SLAB_DESTROY_BY_RCU to slab creation in proto_register()
->>>>> for "struct proto udp_prot/udpv6_prot" so that kmem_cache_free() done
->>>>> in sk_prot_free() can defer freeing to RCU...
->>>> Be careful!, SLAB_DESTROY_BY_RCU just means the slab page gets
->>>> RCU-freed, this means that slab object pointers stay pointing to valid
->>>> memory, but it does _NOT_ mean those slab objects themselves remain
->>>> valid.
->>>>
->>>> The slab allocator is free to re-use those objects at any time -
->>>> irrespective of the rcu-grace period. Therefore you will have to be able
->>>> to validate that the object you point to is indeed the object you
->>>> expect, otherwise strange and wonderful things will happen.
->>>>
->>> Thanks for this clarification. I guess we really need a rcu head then :)
->> No you just need to make sure that the object you located is still active
->> (f.e. refcount > 0) and that it is really a match (hash pointers may be
->> updated asynchronously and therefore point to the object that has been 
->> reused
->> for something else).
->> Generally it is advisable to use SLAB_DESTROY_BY_RCU because it preserves 
->> the
->> cache hot advantages of the objects. Regular RCU freeing will let the 
->> object
->> expire for a tick or so which will result in the cacheline cooling down.
->
-> Seems really good to master this SLAB_DESTROY_BY_RCU thing (I see almost no 
-> use of it in current kernel)
+Christoph Lameter a écrit :
+> Paul E. McKenney wrote:
+> 
+>> But care is required -- SLAB_DESTROY_BY_RCU permits objects to be freed
+>> and reallocated while a reader holds a reference.  The only guarantee is
+>> that the -type- of the data structure will not change while a reader holds
+>> a reference.  With something like UDP, this might well be sufficient.
+> 
+> Right so after the hash lookup operation you are not assured that the object
+> has not been freed or even reallocated for a different purpose. So after
+> finding the pointer to the object two things need to happen (under rcu_lock):
+> 
+> 1. Verify that the object is still in use
+> 2. Verify that the object is matching the hash
+> 
+> If not then the operation needs to be redone because we have a stale hash pointer.
 
-It is not the easiest thing to use...
+OK... so restart full lookup at the begining of hash chain if we detect
+points 1 or 2 invalid.
 
-> 1) Hum, do you know why "struct file" objects dont use SLAB_DESTROY_BY_RCU 
-> then, since we noticed a performance regression for several workloads at 
-> RCUification of file structures ?
->
-> 2) What prevents an object to be *freed* (and deleted from a hash chain), 
-> then re-allocated and inserted to another chain (different keys) ? (final 
-> refcount=1)
+Not that expensive since everything should be cache hot :)
 
-Nothing prevents this from happening.  You either have to have some sort
-of validation step based on object identity (e.g., a generation number
-that is incremented on each allocation), or have an algorithm that
-doesn't care if searches sometimes spuriously fail to find something
-that really is in the list.
+One has to take care to group all components (keys to compute the hash, 
+and the *next* pointer) in one cache line to minimize cache misses,
+since we now need to access them all to compute/check hash value.
 
-Which is one of the reasons that its use is rare.  But perhaps more
-experience with it will show more/better ways to use it.
+Now if a freed object is re-inserted with same hash value, 
+same hash chain, we'll also restart the lookup, but it is harmless.
 
-> If the lookup detects a key mismatch, how will it continue to the next 
-> item, since 'next' pointer will have been reused for the new chain
-> insertion...
->
-> Me confused...
 
-One way to approach this is to have a generation number that is
-incremented each time the object is recycled along with a pointer to the
-list header.  The list header contains the most recent generation number
-of any element in the list.  Then if either the generation number of
-a give element is greater than that of the header when you started the
-search, or the element's pointer no longer references the list header
-you started your search from, restart the search.  Read-side memory
-barriers may also be required in some cases.
 
-It may be possible to simplify this in some special cases.
 
-There are probably better ways to approach this, but that is one way.
-
-						Thanx, Paul
