@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbYJGXFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYJGXGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756941AbYJGXFv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYJGXFn
+	id S1757555AbYJGXGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbYJGXGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:05:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46263 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129AbYJGXFn (ORCPT
+	Tue, 7 Oct 2008 19:06:45 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49685 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753390AbYJGXGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:05:43 -0400
-Date: Wed, 8 Oct 2008 01:11:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/3] Provide rdtscll() asm/msr.h for user space
-Message-ID: <20081007231149.GT20740@one.firstfloor.org>
-References: <20081007143.793379346@firstfloor.org> <48EBD555.9060104@kernel.org>
+	Tue, 7 Oct 2008 19:06:44 -0400
+Date: Wed, 8 Oct 2008 00:05:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
+Message-ID: <20081008000518.13f48462@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081007211038.GQ20740@one.firstfloor.org>
+References: <1223396117-8118-1-git-send-email-kirill@shutemov.name>
+	<2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com>
+	<20081007211038.GQ20740@one.firstfloor.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48EBD555.9060104@kernel.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 02:32:05PM -0700, H. Peter Anvin wrote:
-> I really don't think this belongs in the kernel.  It's not even a case 
-> of "usable by accident" anymore, and hasn't worked for a while, so it's 
-> not a matter of legacy, either.
+On Tue, 7 Oct 2008 23:10:38 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Actually it that's not true because most distros still use relatively old kernel
-includes.  It really only broke with paravirt, which especially on 64bit
-is extremly new.
-
-I think on a few of the latest distros actually break it in their
-default setup, that is why I looked at fixing it (ran into this
-in suse 11.0, in 10.3 it was all still ok) 
-
+> > Sorry, no.
+> > This description still doesn't explain why this interface is needed.
+> > 
+> > The one of the points is this interface is used by another person or not.
+> > You should explain how large this interface benefit has.
+> > 
+> > Andi kleen explained this interface _can_  be used another one.
+> > but nobody explain who use it actually.
 > 
-> Mixing fundamentally unrelated kernel and userspace variants of the same 
-> function just makes the aggregation uglier than both.
+> Anyone who doesn't want to use fixed addresses. 
 
-I disagree on the fundamentally unrelated. They are the same semantically
-(although the paravirt entry point is misnamed, it shouldn't call
-itself RDTSC)
+Can use shm_open and mmap to get POSIX standard shm behaviour via a sane
+interface without adding more crap to the sys3 shm madness. 
 
-> 
-> (Also, most userspace variants I have seen have what the kernel calls 
-> "rdtscll" and calls it "rdtsc".)
+Sorry this patch is completely bogus - introduce the user programs
+involved to 1990s technology. They have to be updated to use such a
+change as is proposed anyway so they might as well use shm_open/mmap at
+which point no kernel changes are needed.
 
-At least asm/msr.h has used it like this forever (2.4). 
-
-> I would suggest writing a <sys/tsc.h> header file and submitting to the 
-> glibc people, instead, or perhaps even better, start a libarch/libx86 tree.
-
-That wouldn't work on old kernels. asm/msr.h has been the traditional 
-interface for this and rdtsc has worked forever (at least dating back to 2.0)
-rdtscll is a bit newer, but still in Linux terms ancient (2.4)
-
-Also in my experience distributions are extremly slow at keeping up
-with glibc, so even if this was added to glibc it would be probably
-years before it would be actually usable :/ And I see about zero
-point in changing a perfectly fine include name breaking everything old.
-
-Anyways if you insist I can probably deal without
-but I (and likely others) would think something nasty about you every time 
-I have to cut'n'paste that code again. Do you really want to risk that? @)
-
--Andi
-
--- 
-ak@linux.intel.com
+Alan
