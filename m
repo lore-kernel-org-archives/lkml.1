@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbYJHANL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbYJHART@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbYJHANL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYJHAM4
+	id S1757265AbYJHART (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbYJHARK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:12:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60081 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751495AbYJHAMz (ORCPT
+	Tue, 7 Oct 2008 20:17:10 -0400
+Received: from b01.ext.isohunt.com ([208.71.112.51]:32802 "EHLO
+	mail.isohunt.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754260AbYJHARK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:12:55 -0400
-Message-ID: <48EBFAFC.3020501@zytor.com>
-Date: Tue, 07 Oct 2008 17:12:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 7 Oct 2008 20:17:10 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Oct 2008 20:17:09 EDT
+Date: Tue, 7 Oct 2008 16:53:31 -0700
+From: "Robin H. Johnson" <robbat2@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Subject: kernel/acct.c and testing for accounting still running?
+Message-ID: <20081007235331.GT9967@curie-int.orbis-terrarum.net>
 MIME-Version: 1.0
-To: David Daney <ddaney@caviumnetworks.com>
-CC: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org,
-       "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
-Subject: Re: [PATCH 1/4] serial: 8250 driver replaceable i/o functions.
-References: <48EBF426.9080500@caviumnetworks.com> <48EBF56D.3030203@caviumnetworks.com>
-In-Reply-To: <48EBF56D.3030203@caviumnetworks.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JvUS8mwutKMHKosv"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Daney wrote:
-> /* sane hardware needs no mapping */
-> -static inline int map_8250_in_reg(struct uart_8250_port *up, int offset)
-> +static inline int map_8250_in_reg(struct uart_port *p, int offset)
-> {
-> -    if (up->port.iotype != UPIO_AU)
-> +    if (p->iotype != UPIO_AU)
->         return offset;
->     return au_io_in_map[offset];
-> }
 
-With your changes, these functions cannot be called with p->iotype != 
-UPIO_AU anymore, correct?  So there is no need for this test...
+--JvUS8mwutKMHKosv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-hpa
+I ran into a bit of flapping with my init.d acct lately, and in tracing
+why, I noticed that there seems to be absolutely no way that the kernel
+exposes to show that it's running any accounting.
+
+Could we expose acct_list in sysfs or procfs, as uid:0, gid:0, perms
+0600?
+
+--=20
+Robin Hugh Johnson
+Gentoo Linux Developer & Infra Guy
+E-Mail     : robbat2@gentoo.org
+GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+
+--JvUS8mwutKMHKosv
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
+
+iEYEARECAAYFAkjr9nsACgkQPpIsIjIzwizUOgCg59nzGdU1b5VHskbUhd8K/KG3
+rDMAoJLf8teyb1RdkJJC6lyAHkUJOwBx
+=p1r/
+-----END PGP SIGNATURE-----
+
+--JvUS8mwutKMHKosv--
