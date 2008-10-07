@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYJGBYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbYJGBdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYJGBYa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 21:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbYJGBYV
+	id S1755638AbYJGBdV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 21:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYJGBdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 21:24:21 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37755 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754302AbYJGBYV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 21:24:21 -0400
-Date: Mon, 6 Oct 2008 21:24:18 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] ftrace: stack tracer only record when on stack
-Message-ID: <alpine.DEB.1.10.0810062122420.19491@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 6 Oct 2008 21:33:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34190 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752487AbYJGBdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 21:33:07 -0400
+Message-ID: <48EABBD3.1010401@kernel.org>
+Date: Tue, 07 Oct 2008 10:30:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: avorontsov@ru.mvista.com
+CC: Matt Sealey <matt@genesi-usa.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Li Yang <leoli@freescale.com>,
+       Wang Jian <lark@linux.net.cn>
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru> <48EA77EF.6080502@genesi-usa.com> <20081006213209.GA13072@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081006213209.GA13072@oksana.dev.rtsoft.ru>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Oct 2008 01:32:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Anton Vorontsov wrote:
+> On Mon, Oct 06, 2008 at 03:41:19PM -0500, Matt Sealey wrote:
+>> There is a simple problem with the patch which is that an "IRQ 0" can and does
+>> actually exist on a bunch of platforms, at least to the best of my knowledge.
+>>
+>> Checking for -1 (which means for definite, no irq at all, because it is
+>> totally unambiguous, as a -1 IRQ numbering is "impossible") is more correct.
+> 
+> This was discussed years ago.
+> 
+> http://lkml.org/lkml/2005/11/22/159
+> http://lkml.org/lkml/2005/11/22/227
+> 
 
-The stack trace API does not record if the stack is not on the current
-task's stack. That is, if the stack is the interrupt stack or NMI stack,
-the output does not show. Also, the size of those stacks are not
-consistent with the size of the thread stack, this makes the calculation
-of the stack size usually bogus.
+Would this break any existing platforms?  If so, can those be fixed
+together or does it become a much bigger problem that way?
 
-This all confuses the stack tracer. I unfortunately do not have time to
-fix all these problems, but this patch does record the worst stack when
-the stack pointer is on the tasks stack (instead of bogus numbers).
+Thanks.
 
-The patch simply returns if the stack pointer is not on the task's stack.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace_stack.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: linux-tip.git/kernel/trace/trace_stack.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace_stack.c	2008-10-04 00:42:31.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace_stack.c	2008-10-06 21:06:20.000000000 -0400
-@@ -44,6 +44,10 @@ static inline void check_stack(void)
- 	if (this_size <= max_stack_size)
- 		return;
- 
-+	/* we do not handle interrupt stacks yet */
-+	if (!object_is_on_stack(&this_size))
-+		return;
-+
- 	raw_local_irq_save(flags);
- 	__raw_spin_lock(&max_stack_lock);
- 
-
+-- 
+tejun
