@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYJGAtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbYJGAtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbYJGAtn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Oct 2008 20:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbYJGAnr
+	id S1757547AbYJGAtW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Oct 2008 20:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757402AbYJGAno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Oct 2008 20:43:47 -0400
-Received: from mail.suse.de ([195.135.220.2]:46778 "EHLO mx1.suse.de"
+	Mon, 6 Oct 2008 20:43:44 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60487 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757414AbYJGAnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Oct 2008 20:43:46 -0400
-Date: Mon, 6 Oct 2008 17:38:31 -0700
+	id S1756216AbYJGAnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Oct 2008 20:43:43 -0400
+Date: Mon, 6 Oct 2008 17:38:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,61 +22,170 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joel Becker <Joel.Becker@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [patch 25/71] ocfs2: Increment the reference count of an
-	already-active stack.
-Message-ID: <20081007003831.GZ3055@suse.de>
+       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 24/71] APIC routing fix
+Message-ID: <20081007003829.GY3055@suse.de>
 References: <20081007002606.723632097@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ocfs2-increment-the-reference-count-of-an-already-active-stack.patch"
+Content-Disposition: inline; filename="apic-routing-fix.patch"
 In-Reply-To: <20081007003634.GA3055@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Joel Becker <Joel.Becker@oracle.com>
+From: Yinghai Lu <yhlu.kernel@gmail.com>
 
-commit d6817cdbd143f87f9d7c59a4c3194091190eeb84 upstream
+commit e0da33646826b66ef933d47ea2fb7a693fd849bf upstream
 
-The ocfs2_stack_driver_request() function failed to increment the
-refcount of an already-active stack.  It only did the increment on the
-first reference.  Whoops.
+x86: introduce max_physical_apicid for bigsmp switching
 
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
-Tested-by: Marcos Matsunaga <marcos.matsunaga@oracle.com>
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+a multi-socket test-system with 3 or 4 ioapics, when 4 dualcore cpus or
+2 quadcore cpus installed, needs to switch to bigsmp or physflat.
+
+CPU apic id is [4,11] instead of [0,7], and we need to check max apic
+id instead of cpu numbers.
+
+also add check for 32 bit when acpi is not compiled in or acpi=off.
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ocfs2/stackglue.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/x86/kernel/apic_32.c      |    5 ++++-
+ arch/x86/kernel/apic_64.c      |    3 +++
+ arch/x86/kernel/genapic_64.c   |    2 +-
+ arch/x86/kernel/mpparse.c      |    5 +++++
+ arch/x86/kernel/setup.c        |    1 +
+ arch/x86/kernel/setup_32.c     |   11 ++++++-----
+ arch/x86/mach-generic/bigsmp.c |    2 +-
+ include/asm-x86/mpspec.h       |    1 +
+ 8 files changed, 22 insertions(+), 8 deletions(-)
 
---- a/fs/ocfs2/stackglue.c
-+++ b/fs/ocfs2/stackglue.c
-@@ -97,13 +97,14 @@ static int ocfs2_stack_driver_request(co
- 		goto out;
- 	}
+--- a/arch/x86/kernel/apic_32.c
++++ b/arch/x86/kernel/apic_32.c
+@@ -1536,6 +1536,9 @@ void __cpuinit generic_processor_info(in
+ 		 */
+ 		cpu = 0;
  
--	/* Ok, the stack is pinned */
--	p->sp_count++;
- 	active_stack = p;
--
- 	rc = 0;
- 
- out:
-+	/* If we found it, pin it */
-+	if (!rc)
-+		active_stack->sp_count++;
++	if (apicid > max_physical_apicid)
++		max_physical_apicid = apicid;
 +
- 	spin_unlock(&ocfs2_stack_lock);
- 	return rc;
- }
+ 	/*
+ 	 * Would be preferable to switch to bigsmp when CONFIG_HOTPLUG_CPU=y
+ 	 * but we need to work other dependencies like SMP_SUSPEND etc
+@@ -1543,7 +1546,7 @@ void __cpuinit generic_processor_info(in
+ 	 * if (CPU_HOTPLUG_ENABLED || num_processors > 8)
+ 	 *       - Ashok Raj <ashok.raj@intel.com>
+ 	 */
+-	if (num_processors > 8) {
++	if (max_physical_apicid >= 8) {
+ 		switch (boot_cpu_data.x86_vendor) {
+ 		case X86_VENDOR_INTEL:
+ 			if (!APIC_XAPIC(version)) {
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -1090,6 +1090,9 @@ void __cpuinit generic_processor_info(in
+ 		 */
+ 		cpu = 0;
+ 	}
++	if (apicid > max_physical_apicid)
++		max_physical_apicid = apicid;
++
+ 	/* are we being called early in kernel startup? */
+ 	if (x86_cpu_to_apicid_early_ptr) {
+ 		u16 *cpu_to_apicid = x86_cpu_to_apicid_early_ptr;
+--- a/arch/x86/kernel/genapic_64.c
++++ b/arch/x86/kernel/genapic_64.c
+@@ -51,7 +51,7 @@ void __init setup_apic_routing(void)
+ 	else
+ #endif
+ 
+-	if (num_possible_cpus() <= 8)
++	if (max_physical_apicid < 8)
+ 		genapic = &apic_flat;
+ 	else
+ 		genapic = &apic_physflat;
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -402,6 +402,11 @@ static int __init smp_read_mpc(struct mp
+ 		++mpc_record;
+ #endif
+ 	}
++
++#ifdef CONFIG_X86_GENERICARCH
++       generic_bigsmp_probe();
++#endif
++
+ 	setup_apic_routing();
+ 	if (!num_processors)
+ 		printk(KERN_ERR "MPTABLE: no processors registered!\n");
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -914,6 +914,12 @@ void __init setup_arch(char **cmdline_p)
+ 
+ #ifdef CONFIG_ACPI
+ 	acpi_boot_init();
++#endif
++
++#ifdef CONFIG_X86_LOCAL_APIC
++	if (smp_found_config)
++		get_smp_config();
++#endif
+ 
+ #if defined(CONFIG_SMP) && defined(CONFIG_X86_PC)
+ 	if (def_to_bigsmp)
+@@ -921,11 +927,6 @@ void __init setup_arch(char **cmdline_p)
+ 			"CONFIG_X86_PC cannot handle it.\nUse "
+ 			"CONFIG_X86_GENERICARCH or CONFIG_X86_BIGSMP.\n");
+ #endif
+-#endif
+-#ifdef CONFIG_X86_LOCAL_APIC
+-	if (smp_found_config)
+-		get_smp_config();
+-#endif
+ 
+ 	e820_register_memory();
+ 	e820_mark_nosave_regions();
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -17,6 +17,7 @@ unsigned int num_processors;
+ unsigned disabled_cpus __cpuinitdata;
+ /* Processor that is doing the boot up */
+ unsigned int boot_cpu_physical_apicid = -1U;
++unsigned int max_physical_apicid;
+ EXPORT_SYMBOL(boot_cpu_physical_apicid);
+ 
+ DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
+--- a/arch/x86/mach-generic/bigsmp.c
++++ b/arch/x86/mach-generic/bigsmp.c
+@@ -48,7 +48,7 @@ static const struct dmi_system_id bigsmp
+ static int probe_bigsmp(void)
+ {
+ 	if (def_to_bigsmp)
+-	dmi_bigsmp = 1;
++		dmi_bigsmp = 1;
+ 	else
+ 		dmi_check_system(bigsmp_dmi_table);
+ 	return dmi_bigsmp;
+--- a/include/asm-x86/mpspec.h
++++ b/include/asm-x86/mpspec.h
+@@ -35,6 +35,7 @@ extern DECLARE_BITMAP(mp_bus_not_pci, MA
+ extern int mp_bus_id_to_pci_bus[MAX_MP_BUSSES];
+ 
+ extern unsigned int boot_cpu_physical_apicid;
++extern unsigned int max_physical_apicid;
+ extern int smp_found_config;
+ extern int mpc_default_type;
+ extern unsigned long mp_lapic_addr;
 
 -- 
