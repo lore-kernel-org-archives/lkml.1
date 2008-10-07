@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYJGXzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbYJGX5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbYJGXzp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 19:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYJGXzg
+	id S1758083AbYJGX5e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 19:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYJGX50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 19:55:36 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:39120 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754597AbYJGXzf (ORCPT
+	Tue, 7 Oct 2008 19:57:26 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:35640 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbYJGX5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 19:55:35 -0400
-Date: Tue, 7 Oct 2008 17:55:34 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: [RFC] Normalizing byteorder/unaligned access API
-Message-ID: <20081007235533.GN25780@parisc-linux.org>
-References: <1223416391.8195.22.camel@brick> <20081007232807.GL25780@parisc-linux.org> <1223422542.8195.42.camel@brick>
+	Tue, 7 Oct 2008 19:57:25 -0400
+Message-ID: <48EBF75F.2000404@caviumnetworks.com>
+Date: Tue, 07 Oct 2008 16:57:19 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223422542.8195.42.camel@brick>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org
+CC: "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
+Subject: [PATCH 3/4] serial: Allow port type to specify bugs that are not
+ probed for.
+References: <48EBF426.9080500@caviumnetworks.com>
+In-Reply-To: <48EBF426.9080500@caviumnetworks.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Oct 2008 23:57:19.0472 (UTC) FILETIME=[6EDBDF00:01C928D8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 04:35:42PM -0700, Harvey Harrison wrote:
-> On Tue, 2008-10-07 at 17:28 -0600, Matthew Wilcox wrote:
-> > On Tue, Oct 07, 2008 at 02:53:11PM -0700, Harvey Harrison wrote:
-> > > In addition, there are some subsystems (scsi) that are looking into some
-> > > differently sized endian helpers (be24) and it may be worthwhile to have
-> > > some agreement whether it is worth making them common infrastructure and
-> > > whether they should present a similar API to the common byteorder/unaligned
-> > > API.
-> > 
-> > I still think SCSI should have its own accessors, even if they're
-> > just wrappers around the common BE code.
-> > 
-> 
-> I thought it was generally discouraged that subsystems have trivial
-> wrappers like that, otherwise you wind up with:
-> 
-> scsi_get_u32
-> usb_get_u32
-> v4l_get_u32
-> 
-> ... and so on, where as if they all used the common names, people more
-> used to other areas of the kernel can still recognize what the code
-> is doing without having the lookup another define.
+Allow port type to specify bugs that are not probed for.
 
-My point is that they don't have to recognise what the code is doing.
-They don't have to know if the protocol is BE or LE, only that USB code
-is accessing the data in the appropriate way for USB.
+Add a bugs field to the serial8250_config and propagate it to the
+port's bugs field when the port is registered and configured.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+---
+ drivers/serial/8250.c |    2 ++
+ drivers/serial/8250.h |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index c575b61..19a8373 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1197,6 +1197,7 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
+ 	up->port.fifosize = uart_config[up->port.type].fifo_size;
+ 	up->capabilities = uart_config[up->port.type].flags;
+ 	up->tx_loadsz = uart_config[up->port.type].tx_loadsz;
++	up->bugs |= uart_config[up->port.type].bugs;
+ 
+ 	if (up->port.type == PORT_UNKNOWN)
+ 		goto out;
+@@ -2981,6 +2982,7 @@ int serial8250_register_port(struct uart_port *port)
+ 			uart->port.fifosize = uart_config[port->type].fifo_size;
+ 			uart->capabilities = uart_config[port->type].flags;
+ 			uart->tx_loadsz = uart_config[port->type].tx_loadsz;
++			uart->bugs = uart_config[port->type].bugs;
+ 		}
+ 
+ 		set_io_fns_from_upio(&uart->port);
+diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
+index 5202603..c9b3002 100644
+--- a/drivers/serial/8250.h
++++ b/drivers/serial/8250.h
+@@ -34,6 +34,7 @@ struct serial8250_config {
+ 	const char	*name;
+ 	unsigned short	fifo_size;
+ 	unsigned short	tx_loadsz;
++	unsigned short	bugs;
+ 	unsigned char	fcr;
+ 	unsigned int	flags;
+ };
