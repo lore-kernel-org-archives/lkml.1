@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYJGUSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbYJGUTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbYJGUSc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 16:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYJGUSX
+	id S1756377AbYJGUTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 16:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYJGUS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 16:18:23 -0400
-Received: from ns.suse.de ([195.135.220.2]:38473 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753743AbYJGUSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 16:18:22 -0400
-Date: Tue, 7 Oct 2008 13:18:20 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, joel.becker@oracle.com,
-       ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org,
-       tao.ma@oracle.com
-Subject: Re: [PATCH 10/39] ocfs2: Add helper function in uptodate.c for removing xattr clusters
-Message-ID: <20081007201820.GC26373@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-11-git-send-email-mfasheh@suse.com> <20081001231156.c52c98b5.akpm@linux-foundation.org>
+	Tue, 7 Oct 2008 16:18:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54252 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753828AbYJGUS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 16:18:58 -0400
+Date: Tue, 7 Oct 2008 13:17:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: riel@redhat.com, Lee.Schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no, dlezcano@fr.ibm.com,
+       penberg@cs.helsinki.fi, neilb@suse.de, davem@davemloft.net
+Subject: Re: split-lru performance mesurement part2
+Message-Id: <20081007131719.8bb24698.akpm@linux-foundation.org>
+In-Reply-To: <20081007231851.3B88.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081003153810.5dd0a33e@bree.surriel.com>
+	<20081004232549.CE53.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081007231851.3B88.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081001231156.c52c98b5.akpm@linux-foundation.org>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 01, 2008 at 11:11:56PM -0700, Andrew Morton wrote:
-> > On Wed, 24 Sep 2008 15:00:51 -0700 Mark Fasheh <mfasheh@suse.com> wrote:
-> > +/* Called when we remove xattr clusters from an inode. */
-> > +void ocfs2_remove_xattr_clusters_from_cache(struct inode *inode,
-> > +					    sector_t block,
-> > +					    u32 c_len)
-> > +{
-> > +	u64 i, b_len = ocfs2_clusters_to_blocks(inode->i_sb, 1) * c_len;
-> > +
-> > +	for (i = 0; i < b_len; i++, block++)
-> > +		ocfs2_remove_block_from_cache(inode, block);
-> > +}
+On Tue,  7 Oct 2008 23:26:54 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> Hi
 > 
-> I really really hope that `i' and `b_len' didn't really need to be
-> 64-bit here.
+> > yup,
+> > I know many people want to other benchmark result too.
+> > I'll try to mesure other bench at next week.
+> 
+> I ran another benchmark today.
+> I choice dbench because dbench is one of most famous and real workload like i/o benchmark.
+> 
+> 
+> % dbench client.txt 4000
+> 
+> mainline:  Throughput 13.4231 MB/sec  4000 clients  4000 procs  max_latency=1421988.159 ms
+> mmotm(*):  Throughput  7.0354 MB/sec  4000 clients  4000 procs  max_latency=2369213.380 ms
+> 
+> (*) mmotm 2/Oct + Hugh's recently slub fix
+> 
+> 
+> Wow!
+> mmotm is slower than mainline largely (about half performance).
+> 
+> Therefore, I mesured it on "mainline + split-lru(only)" build.
+> 
+> 
+> mainline + split-lru(only): Throughput 14.4062 MB/sec  4000 clients  4000 procs  max_latency=1152231.896 ms
+> 
+> 
+> OK!
+> split-lru outperform mainline from viewpoint of both throughput and latency :)
+> 
+> 
+> 
+> However, I don't understand why this regression happend.
 
-Yeah, there's no way currently that any of those variables should get even
-close to that large. I made them unsigned ints with the patch below.
-	--Mark
+erk.
 
---
-Mark Fasheh
+dbench is pretty chaotic and it could be that a good change causes
+dbench to get worse.  That's happened plenty of times in the past.
 
-From: Mark Fasheh <mfasheh@suse.com>
 
-ocfs2: use smaller counters in ocfs2_remove_xattr_clusters_from_cache
+> Do you have any suggestion?
 
-i and b_len don't really need to be u64's. Xattr extent lengths should be
-limited by the VFS, and then the size of our on-disk length field.
 
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/uptodate.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+One of these:
 
-diff --git a/fs/ocfs2/uptodate.c b/fs/ocfs2/uptodate.c
-index 5235140..187b99f 100644
---- a/fs/ocfs2/uptodate.c
-+++ b/fs/ocfs2/uptodate.c
-@@ -562,7 +562,7 @@ void ocfs2_remove_xattr_clusters_from_cache(struct inode *inode,
- 					    sector_t block,
- 					    u32 c_len)
- {
--	u64 i, b_len = ocfs2_clusters_to_blocks(inode->i_sb, 1) * c_len;
-+	unsigned int i, b_len = ocfs2_clusters_to_blocks(inode->i_sb, 1) * c_len;
- 
- 	for (i = 0; i < b_len; i++, block++)
- 		ocfs2_remove_block_from_cache(inode, block);
--- 
-1.5.4.1
+vmscan-give-referenced-active-and-unmapped-pages-a-second-trip-around-the-lru.patch
+vm-dont-run-touch_buffer-during-buffercache-lookups.patch
 
+perhaps?
