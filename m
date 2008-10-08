@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYJHTYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYJHTZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbYJHTYp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 15:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYJHTYf
+	id S1755787AbYJHTZM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 15:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYJHTY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 15:24:35 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:40004 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754572AbYJHTYe (ORCPT
+	Wed, 8 Oct 2008 15:24:57 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:50982 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754646AbYJHTY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 15:24:34 -0400
-Date: Thu, 9 Oct 2008 00:54:20 +0530
+	Wed, 8 Oct 2008 15:24:56 -0400
+Date: Thu, 9 Oct 2008 00:54:45 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
        akpm@linux-foundation.org, mingo@elte.hu, jason.wessel@windriver.com,
        avi@qumranet.com, richardj_moore@uk.ibm.com
-Subject: [RFC Patch 3/9] Modifying generic debug exception to use virtual
-	debug registers
-Message-ID: <20081008192420.GC4989@in.ibm.com>
+Subject: [RFC Patch 4/9] Modify kprobe exception handler to recognise
+	single-stepping by HW Breakpoint handler
+Message-ID: <20081008192445.GD4989@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
 References: <20081008192044.GA4510@in.ibm.com>
 MIME-Version: 1.0
@@ -30,211 +30,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies the breakpoint exception handler code to use the abstract
-register names.
+This patch modifies the kprobe handler to help it recognise single-stepping by
+the HW Breakpoint exception code. A per-cpu variable called 'sstep_reason' to
+distinguish the source of single-step exceptions.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/traps_32.c |   67 ++++++++++++++++-----------------------------
- arch/x86/kernel/traps_64.c |   64 ++++++++++++++++++++----------------------
- 2 files changed, 54 insertions(+), 77 deletions(-)
+ arch/x86/kernel/kprobes.c |   18 ++++++++++++++++--
+ include/asm-x86/kprobes.h |    8 ++++++++
+ 2 files changed, 24 insertions(+), 2 deletions(-)
 
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_32.c
+Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/kprobes.c
 ===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/traps_32.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_32.c
-@@ -890,11 +890,12 @@ void __kprobes do_int3(struct pt_regs *r
- void __kprobes do_debug(struct pt_regs *regs, long error_code)
- {
- 	struct task_struct *tsk = current;
--	unsigned int condition;
-+	unsigned long dr6;
+--- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/kprobes.c
++++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/kprobes.c
+@@ -54,6 +54,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
++#include <asm/debugreg.h>
  
- 	trace_hardirqs_fixup();
+ void jprobe_return_end(void);
  
--	get_debugreg(condition, 6);
-+	get_debugreg(dr6, 6);
-+	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
+@@ -517,6 +518,7 @@ static int __kprobes kprobe_handler(stru
+ 	kprobe_opcode_t *addr;
+ 	struct kprobe *p;
+ 	struct kprobe_ctlblk *kcb;
++	unsigned int *ssr;
  
- 	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
-@@ -902,60 +903,40 @@ void __kprobes do_debug(struct pt_regs *
- 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
- 	tsk->thread.debugctlmsr = 0;
- 
--	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	/* Store the virtualized DR6 value */
-+	tsk->thread.vdr6 = dr6;
-+
-+	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
-+			SIGTRAP) == NOTIFY_STOP)
- 		return;
- 	/* It's safe to allow irq's after DR6 has been saved */
- 	if (regs->flags & X86_EFLAGS_IF)
- 		local_irq_enable();
- 
--	/* Mask out spurious debug traps due to lazy DR7 setting */
--	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
--		if (!tsk->thread.debugreg7)
--			goto clear_dr7;
-+	if (regs->flags & X86_VM_MASK) {
-+		handle_vm86_trap((struct kernel_vm86_regs *) regs,
-+				error_code, 1);
-+		return;
- 	}
- 
--	if (regs->flags & X86_VM_MASK)
--		goto debug_vm86;
--
--	/* Save debug status register where ptrace can see it */
--	tsk->thread.debugreg6 = condition;
--
- 	/*
--	 * Single-stepping through TF: make sure we ignore any events in
--	 * kernel space (but re-enable TF when returning to user mode).
-+	 * Single-stepping through system calls: ignore any exceptions in
-+	 * kernel space, but re-enable TF when returning to user mode.
-+	 *
-+	 * We already checked v86 mode above, so we can check for kernel mode
-+	 * by just checking the CPL of CS.
+ 	addr = (kprobe_opcode_t *)(regs->ip - sizeof(kprobe_opcode_t));
+ 	if (*addr != BREAKPOINT_INSTRUCTION) {
+@@ -541,6 +543,7 @@ static int __kprobes kprobe_handler(stru
  	 */
--	if (condition & DR_STEP) {
--		/*
--		 * We already checked v86 mode above, so we can
--		 * check for kernel mode by just checking the CPL
--		 * of CS.
--		 */
--		if (!user_mode(regs))
--			goto clear_TF_reenable;
-+	if ((dr6 & DR_STEP) && !user_mode(regs)) {
-+		tsk->thread.vdr6 &= ~DR_STEP;
-+		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
-+		regs->flags &= ~X86_EFLAGS_TF;
- 	}
+ 	preempt_disable();
  
--	/* Ok, finally something we can handle */
--	send_sigtrap(tsk, regs, error_code);
--
--	/*
--	 * Disable additional traps. They'll be re-enabled when
--	 * the signal is delivered.
--	 */
--clear_dr7:
--	set_debugreg(0, 7);
--	return;
--
--debug_vm86:
--	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
--	return;
--
--clear_TF_reenable:
--	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
--	regs->flags &= ~X86_EFLAGS_TF;
--	return;
-+	if (tsk->thread.vdr6 & (DR_STEP|DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
-+		send_sigtrap(tsk, regs, error_code);
- }
++	ssr = &(__get_cpu_var(sstep_reason));
+ 	kcb = get_kprobe_ctlblk();
+ 	p = get_kprobe(addr);
  
-+
- /*
-  * Note that we play around with the 'TS' bit in an attempt to get
-  * the correct behaviour even in the presence of the asynchronous
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_64.c
+@@ -560,14 +563,17 @@ static int __kprobes kprobe_handler(stru
+ 			 * for jprobe processing, so get out doing nothing
+ 			 * more here.
+ 			 */
+-			if (!p->pre_handler || !p->pre_handler(p, regs))
++			if (!p->pre_handler || !p->pre_handler(p, regs)) {
+ 				setup_singlestep(p, regs, kcb);
++				(*ssr) |= SSTEP_KPROBE;
++			}
+ 			return 1;
+ 		}
+ 	} else if (kprobe_running()) {
+ 		p = __get_cpu_var(current_kprobe);
+ 		if (p->break_handler && p->break_handler(p, regs)) {
+ 			setup_singlestep(p, regs, kcb);
++			(*ssr) |= SSTEP_KPROBE;
+ 			return 1;
+ 		}
+ 	} /* else: not a kprobe fault; let the kernel handle it */
+@@ -952,6 +958,7 @@ int __kprobes kprobe_exceptions_notify(s
+ {
+ 	struct die_args *args = data;
+ 	int ret = NOTIFY_DONE;
++	unsigned int *ssr = &(__get_cpu_var(sstep_reason));
+ 
+ 	if (args->regs && user_mode_vm(args->regs))
+ 		return ret;
+@@ -962,8 +969,15 @@ int __kprobes kprobe_exceptions_notify(s
+ 			ret = NOTIFY_STOP;
+ 		break;
+ 	case DIE_DEBUG:
+-		if (post_kprobe_handler(args->regs))
++		/* We could be here due to single-stepping after a pre-handler
++		 * execution of HW Breakpoint or kprobes. We determine the cause
++		 * using the bitmask flag 'sstep_reason'.
++		 */
++		if (((*ssr) & SSTEP_KPROBE) &&
++					post_kprobe_handler(args->regs)) {
++			current->thread.vdr6 &= ~DR_STEP;
+ 			ret = NOTIFY_STOP;
++		}
+ 		break;
+ 	case DIE_GPF:
+ 		/*
+Index: linux-bkpt-lkml-27-rc9/include/asm-x86/kprobes.h
 ===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/traps_64.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/traps_64.c
-@@ -894,13 +894,14 @@ asmlinkage __kprobes struct pt_regs *syn
- asmlinkage void __kprobes do_debug(struct pt_regs * regs,
- 				   unsigned long error_code)
- {
-+	unsigned long dr6;;
- 	struct task_struct *tsk = current;
--	unsigned long condition;
- 	siginfo_t info;
+--- linux-bkpt-lkml-27-rc9.orig/include/asm-x86/kprobes.h
++++ linux-bkpt-lkml-27-rc9/include/asm-x86/kprobes.h
+@@ -30,6 +30,14 @@
+ struct pt_regs;
+ struct kprobe;
  
- 	trace_hardirqs_fixup();
- 
--	get_debugreg(condition, 6);
-+	get_debugreg(dr6, 6);
-+	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
- 
- 	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
-@@ -908,48 +909,43 @@ asmlinkage void __kprobes do_debug(struc
- 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
- 	tsk->thread.debugctlmsr = 0;
- 
--	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	/* Store the virtualized DR6 value */
-+	tsk->thread.vdr6 = dr6;
++/* Single stepping can be initiated for kprobes post handler or following HW
++ * Breakpoint exception. The bitmask below is used to identify the cause.
++ */
++#define SSTEP_KPROBE 1
++#define SSTEP_HWBKPT 2
 +
-+	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
-+			SIGTRAP) == NOTIFY_STOP)
- 		return;
- 
- 	preempt_conditional_sti(regs);
- 
--	/* Mask out spurious debug traps due to lazy DR7 setting */
--	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
--		if (!tsk->thread.debugreg7)
--			goto clear_dr7;
-+	if (regs->flags & X86_VM_MASK) {
-+		handle_vm86_trap((struct kernel_vm86_regs *) regs,
-+				error_code, 1);
-+		return;
- 	}
- 
--	tsk->thread.debugreg6 = condition;
--
- 	/*
--	 * Single-stepping through TF: make sure we ignore any events in
--	 * kernel space (but re-enable TF when returning to user mode).
-+	 * Single-stepping through system calls: ignore any exceptions in
-+	 * kernel space, but re-enable TF when returning to user mode.
-+	 *
-+	 * We already checked v86 mode above, so we can check for kernel mode
-+	 * by just checking the CPL of CS.
- 	 */
--	if (condition & DR_STEP) {
--		if (!user_mode(regs))
--			goto clear_TF_reenable;
-+	if ((dr6 & DR_STEP) && !user_mode(regs)) {
-+		tsk->thread.vdr6 &= ~DR_STEP;
-+		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
-+		regs->flags &= ~X86_EFLAGS_TF;
- 	}
- 
--	/* Ok, finally something we can handle */
--	tsk->thread.trap_no = 1;
--	tsk->thread.error_code = error_code;
--	info.si_signo = SIGTRAP;
--	info.si_errno = 0;
--	info.si_code = TRAP_BRKPT;
--	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
--	force_sig_info(SIGTRAP, &info, tsk);
--
--clear_dr7:
--	set_debugreg(0, 7);
--	preempt_conditional_cli(regs);
--	return;
--
--clear_TF_reenable:
--	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
--	regs->flags &= ~X86_EFLAGS_TF;
--	preempt_conditional_cli(regs);
--	return;
-+	if (tsk->thread.vdr6 & (DR_STEP|DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
-+		tsk->thread.trap_no = 1;
-+		tsk->thread.error_code = error_code;
-+		info.si_signo = SIGTRAP;
-+		info.si_errno = 0;
-+		info.si_code = TRAP_BRKPT;
-+		info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
-+		force_sig_info(SIGTRAP, &info, tsk);
-+	}
- }
- 
- static int kernel_math_error(struct pt_regs *regs, const char *str, int trapnr)
++DECLARE_PER_CPU(unsigned int, sstep_reason);
++
+ typedef u8 kprobe_opcode_t;
+ #define BREAKPOINT_INSTRUCTION	0xcc
+ #define RELATIVEJUMP_INSTRUCTION 0xe9
