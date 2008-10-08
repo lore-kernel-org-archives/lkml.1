@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYJHQqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYJHQzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYJHQqq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 12:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYJHQq0
+	id S1754962AbYJHQzK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 12:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYJHQy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 12:46:26 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40698 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753167AbYJHQqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 12:46:25 -0400
-Date: Wed, 8 Oct 2008 13:39:34 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] ACPI Suspend: Enable ACPI during resume if SCI_EN is
-	not set
-Message-ID: <20081008113933.GC1651@ucw.cz>
-References: <200810040005.06220.rjw@sisk.pl>
+	Wed, 8 Oct 2008 12:54:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54878 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754111AbYJHQy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 12:54:57 -0400
+Message-ID: <48ECE5A4.1040003@redhat.com>
+Date: Wed, 08 Oct 2008 12:53:56 -0400
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810040005.06220.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+References: <20080804130317.994042639@chello.nl> <20080804131012.246115111@chello.nl> <48974512.7000206@goop.org> <1217876046.3589.61.camel@twins> <489757EC.3000309@goop.org> <alpine.LFD.1.10.0808041230070.3340@nehalem.linux-foundation.org> <20081008152708.GA11207@goodmis.org> <alpine.LFD.2.00.0810080836410.3208@nehalem.linux-foundation.org> <48ECD9C8.4000700@redhat.com> <alpine.LFD.2.00.0810080906520.3208@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810080906520.3208@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-10-04 00:05:05, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
-> 
-> On some machines, like for example MSI Wind U100, the BIOS doesn't
-> enable ACPI before returning control to the OS, which sometimes
-> causes resume to fail.  This is against the ACPI specification,
-> which clearly states that "When the platform is waking from an S1, S2
-> or S3 state, OSPM assumes the hardware is already in the ACPI mode
-> and will not issue an ACPI_ENABLE", but it won't hurt to check the
-> SCI_EN bit and enable ACPI during resume from S3 if this bit is not
-> set.
-> 
-> Fortunately, we already have acpi_enable() for that, so use it in the
-> resume code path, before executing _BFS, in analogy with the
-> resume-from-hibernation code path.
-> 
-> NOTE: We aren't supposed to set SCI_EN directly, because it's owned
-> by the hardware.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Linus Torvalds wrote:
+>
+>   
+> I know for a fact that some people thought unlocking in non-nested order 
+> was a bug. And I believe that belief is a dangerous one.
+>   
 
-ACK.
+Ah, OK. You are fighting against nesting nazis, fair enough.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I have written a bit of code where nesting was not possible (similar to
+your example, but I call those traversal locking not nesting). I just 
+find that
+the locks should be nested when the nesting is natural. Breaking the nesting
+on natural nesting locks is a bug, IMHO.  But as you know, there are several
+programmers out there that can not determine the difference between natural
+nesting locks and non nesting locks.
+
+By adding such a rule, those that can not tell the difference will be 
+making a
+lot of needless noise, hence, it is best not to make any such rule.
+
+Lesson learned.  I'll now go back to debugging my code.
+
+-- Steve
+
