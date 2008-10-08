@@ -1,20 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbYJHMoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbYJHMtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbYJHMoR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 08:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYJHMoG
+	id S1754800AbYJHMtS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 08:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYJHMtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 08:44:06 -0400
-Received: from mail.ukfsn.org ([77.75.108.10]:46783 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbYJHMoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 08:44:05 -0400
-Date: Wed, 8 Oct 2008 13:44:01 +0100
-From: Nick Warne <nick@ukfsn.org>
-To: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: [PATCH] Trivial patch to submitting-patches Documantation
-Message-ID: <20081008134401.68910c46@sauron.linicks.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+	Wed, 8 Oct 2008 08:49:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48660 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750863AbYJHMtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 08:49:05 -0400
+Date: Wed, 8 Oct 2008 13:46:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+       Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
+Message-ID: <20081008134604.27d3eb7a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081008110243.GN7971@one.firstfloor.org>
+References: <20081007211038.GQ20740@one.firstfloor.org>
+	<20081008000518.13f48462@lxorguk.ukuu.org.uk>
+	<20081007232059.GU20740@one.firstfloor.org>
+	<20081008004030.7a0e9915@lxorguk.ukuu.org.uk>
+	<20081007235737.GD7971@one.firstfloor.org>
+	<20081008093424.4e88a3c2@lxorguk.ukuu.org.uk>
+	<20081008084350.GI7971@one.firstfloor.org>
+	<20081008095851.01790b6a@lxorguk.ukuu.org.uk>
+	<20081008091112.GK7971@one.firstfloor.org>
+	<20081008112037.6fa37c0b@lxorguk.ukuu.org.uk>
+	<20081008110243.GN7971@one.firstfloor.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -22,23 +45,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Diff'ed against 2.6.26.5 stable tree.
+> > kernel is not to provide nappies for people who think programming is too
+> > hard but to provide services that can be used to build applications.
+> 
+> Outsourcing kernel locking to user space is not the way to go.
 
-Test-by tag is wrong.
+You mean like say flock, O_APPEND  ...
 
-Signed-off-by: Nick Warne <nick@ukfsn.org>
+Putting stuff in user space is good, it means we don't carry tons of
+never used app specific crap in the kernel, in every users kernel,
+unpageable and basically unused.
 
---- linux-2.6.26.y/Documentation/SubmittingPatches	2008-10-08 13:36:07.000000000 +0100
-+++ linux-2.6.26.y/Documentation/SubmittingPatchesNEW	2008-10-08 13:39:38.000000000 +0100
-@@ -405,7 +405,7 @@
- have been included in the discussion
- 
- 
--14) Using Test-by: and Reviewed-by:
-+14) Using Tested-by: and Reviewed-by:
- 
- A Tested-by: tag indicates that the patch has been successfully tested (in
- some environment) by the person named.  This tag informs maintainers that
-
--- 
-Free Software Foundation Associate Member 5508
+Alan
