@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbYJHNBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYJHNBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbYJHNBV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYJHNA5
+	id S1754847AbYJHNBe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYJHNBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:00:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53210 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755280AbYJHNA5 (ORCPT
+	Wed, 8 Oct 2008 09:01:17 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:50552 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754632AbYJHNBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:00:57 -0400
-Date: Wed, 8 Oct 2008 09:00:56 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/4] integrity: special fs magic
-Message-ID: <20081008130056.GC31684@infradead.org>
-References: <cover.1223401603.git.zohar@linux.vnet.ibm.com> <87b9b5f88d5ed93a7985c14b413cf8d74ceea69c.1223401604.git.zohar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87b9b5f88d5ed93a7985c14b413cf8d74ceea69c.1223401604.git.zohar@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 8 Oct 2008 09:01:15 -0400
+Subject: [PATCH] sched_clock: prevent scd->clock from moving backwards
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1223470773.6336.13.camel@norville.austin.ibm.com>
+References: <48D959E8.4000303@goop.org>
+	 <1223470773.6336.13.camel@norville.austin.ibm.com>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 08:00:54 -0500
+Message-Id: <1223470854.6336.15.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 02:00:12PM -0400, Mimi Zohar wrote:
-> Discussion on the mailing list questioned the use of these
-> magic values in userspace, concluding these values are already
-> exported to userspace via statfs and their correct/incorrect
-> usage is left up to the userspace application.
-> 
->   - Move special fs magic number definitions to magic.h
->   - Add magic.h include
+sched_clock: prevent scd->clock from moving backwards
 
-This should be patch 1, and we can put in in ASAP even if the rest needs
-some more work.
+When sched_clock_cpu() couples the clocks between two cpus, it may
+increment scd->clock beyond the GTOD tick window that __update_sched_clock()
+uses to clamp the clock.  A later call to __update_sched_clock() may move
+the clock back to scd->tick_gtod + TICK_NSEC, violating the clock's
+monotonic property.
+
+This patch ensures that scd->clock will not be set backward.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+index e8ab096..a989d64 100644
+--- a/kernel/sched_clock.c
++++ b/kernel/sched_clock.c
+@@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
+ 
+ 	/*
+ 	 * scd->clock = clamp(scd->tick_gtod + delta,
+-	 * 		      max(scd->tick_gtod, scd->clock),
+-	 * 		      scd->tick_gtod + TICK_NSEC);
++	 *		      max(scd->tick_gtod, scd->clock),
++	 *		      min(scd->clock, scd->tick_gtod + TICK_NSEC));
+ 	 */
+ 
+ 	clock = scd->tick_gtod + delta;
+ 	min_clock = wrap_max(scd->tick_gtod, scd->clock);
+-	max_clock = scd->tick_gtod + TICK_NSEC;
++	max_clock = wrap_min(scd->clock, scd->tick_gtod + TICK_NSEC);
+ 
+ 	clock = wrap_max(clock, min_clock);
+ 	clock = wrap_min(clock, max_clock);
+
 
