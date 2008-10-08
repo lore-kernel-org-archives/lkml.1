@@ -1,103 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbYJHAkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYJHAks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757432AbYJHAkb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYJHAkT
+	id S1758164AbYJHAks (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYJHAk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:40:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:37433 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752649AbYJHAkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:40:18 -0400
-Message-ID: <48EC016E.4040708@goop.org>
-Date: Tue, 07 Oct 2008 17:40:14 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+	Tue, 7 Oct 2008 20:40:26 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:39045 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756421AbYJHAkY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 20:40:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Bc6HwZTq2uFKWe8d59o2OerG1ZWCqL7/F05Kn//yKq0grUsI3F8s2zGIpChq3aTimVG2voStMKFprRJ3alKbssovixc9ILbf4ZpqB/PWEMmKLKM2rj5is8O+/BrM8uKGm+qrZhZccm+Vea2IdQGkEaE21ETEKKCZn/Ez7HmkSEQ=  ;
+X-YMail-OSG: T4X1aEkVM1m2CSju55qqKJhDF8cvS7sfOORyj04VL5CcmTrCbazMwsWyc.ho83UGN5hEmQKcpVRjJMvY5gKnQEYff29FoVfrIgKplT2e29ZomM7VqlpdIeZziyZMkAv8P81pmXa4gyy9uH0qRfv9SrEMF3GWobCoY2GUaK6RdoRrYwbiolU-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+Date: Wed, 8 Oct 2008 11:40:14 +1100
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <200810080327.44530.nickpiggin@yahoo.com.au> <20081007105056.16d9e785.akpm@linux-foundation.org>
+In-Reply-To: <20081007105056.16d9e785.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Nakajima, Jun" <jun.nakajima@intel.com>,
-       "akataria@vmware.com" <akataria@vmware.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Gerd Hoffmann <kraxel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
-       Zach Amsden <zach@vmware.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [RFC] CPUID usage for interaction between Hypervisors	and	Linux.
-References: <1222881242.9381.17.camel@alok-dev1>	 <48E3B19D.6060905@zytor.com> <1222882431.9381.23.camel@alok-dev1>	 <48E3BC21.4080803@goop.org> <1222895153.9381.69.camel@alok-dev1> <48E3FDD5.7040106@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15D927EA4@orsmsx505.amr.corp.intel.com> <48E422CA.2010606@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA221@orsmsx505.amr.corp.intel.com> <48E6AB15.8060405@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DCBA325@orsmsx505.amr.corp.intel.com> <48E6BA5B.2090804@zytor.com> <0B53E02A2965CE4F9ADB38B34501A3A15DE4F934@orsmsx505.amr.corp.intel.com> <48EBF396.8000502@goop.org> <48EBF49E.9030803@zytor.com>
-In-Reply-To: <48EBF49E.9030803@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810081140.15382.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->>>
->>> The big difference here is that you could create a VM at runtime (by 
->>> combining the existing interfaces) that did not exist before (or was 
->>> not tested before). For example, a hypervisor could show hyper-v, 
->>> osx-v (if any), linux-v, etc., and a guest could create a VM with 
->>> hyper-v MMU, osx-v interrupt handling, Linux-v timer, etc. And such 
->>> combinations/variations can grow exponentially.
->>
->> That would be crazy.
->>
+On Wednesday 08 October 2008 04:50, Andrew Morton wrote:
+> On Wed, 8 Oct 2008 03:27:44 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
+wrote:
+> > On Tuesday 07 October 2008 21:29, Andi Kleen wrote:
+> > > > Maybe cmpxchg8b is good for i486 or later x86, but i386 or other
+> > > > architectures that do not have similar instruction needs some locking
+> > > > primitive. I think lazy
+> > >
+> > > We have a cmpxchg emulation on 386. That works because only UP 386s are
+> > > supported, so it can be done in software.
+> > >
+> > > > seqlock is one option for making file->f_pos access atomic.
+> > >
+> > > The question is if it's the right option. At least all the common
+> > > operations on fds (read/write) are all writers, not readers.
+> >
+> > Common operations are read, do something, write. So seqlocks then cost
+> > one atomic operation, a couple of memory barriers (all noops on x86),
+> > and some predictable branches etc.
+> >
+> > cmpxchg based would require 2 lock ; cmpxchg8b on 32-bit. Fairly heavy.
+> > Also I don't think we have generic accessors to do this, so I think
+> > that is for another project.
+> >
+> > Anyway, I think importantly this creates some usable accessors for the
+> > f_pos problem. I think we actually need to touch a _lot_ of code to
+> > cover all f_pos accesses in the kernel, but I guess this gets the ball
+> > rolling.
 >
-> Not necessarily, although the example above is extreme.  Redundant 
-> interfaces is the norm in an evolving platform.
-
-Sure.  A common feature across all hypervisor-specific ABIs may get 
-subsumed into a generic interface which is equivalent to all the 
-others.  That's fine.  But nobody should expect to be able to mix 
-hyperV's lazy tlb interface with KVM's pv mmu updates and expect to get 
-a working result.
-
->>> Or are you suggesting that multiple interfaces be _available_ to 
->>> guests at runtime but the guest chooses one of them?
->>
->> Right, that's what I've been suggesting.    I think hypervisors 
->> should be able to offer multiple ABIs to guests, but a guest has to 
->> commit to using one exclusively (ie, once they start to use one then 
->> the others turn themselves off, kill the domain, etc).
+> Aneesh is proposing using using seqlocks to make percpu_counter.count
+> atomic on 32-bit.
 >
-> Not inherently.  Of course, there may be interfaces which are 
-> interently or by policy mutually exclusive, but a hypervisor should 
-> only export the interfaces it wants a guest to be able to use.
+> This patch uses seqlocks to make file.f_pos atomic on 32-bit.
+>
+> I think we should come up with a common atomic 64-bit type.  We already
+> partly have that: atomic64_t.  But for reasons which I don't recall,
+> atomic64_t is 64-bit-only at present.
+>
+> If we generalise atomic64_t to all architectures then we can use it in
+> both the above applications and surely in other places in the future.
 
-It should export any interface that it implements fully, but those 
-interfaces may have contradictory or inconsistent semantics which 
-prevent them from being used concurrently.
+seqlocks can't really make it a general 64-bit atomic type. Well, they
+_could_, but then your actual type is much bigger than 64 bits, or you
+map to a hash of seqlocks or something awful...
 
-> This is particularly so with CPUID, which is a *data export* 
-> interface, it doesn't perform any action. 
+Anyway, my main point is that the bulk of the work will be in the changes
+all over the kernel to use the accessors. How it works behind that is
+obviously trivially changed by comparison (it could start off without
+changing any code at all and just wrap the racy accessors).
 
-Well, sure.  There's two distinct issues:
 
-   1. Using cpuid to get information about the kernel's environment.  If
-      the environment is sane, then cpuid is a read-only, side-effect
-      free way of getting information, and any information gathered is
-      fair game.
-   2. One of the pieces of information you can get with cpuid is a
-      discovery of what paravirtual hypercall interfaces the environment
-      supports, which the guest can compare against its list of
-      interfaces that it supports.  If there's some amount of
-      intersection, it can decide to use one of those interfaces.
+> > So.. is everyone agreed that corrupting f_pos is a bad thing? (serious
+> > question) If so, then we should get something like this merged sooner
+> > rather than later.
+>
+> - two threads/processes sharing the same fd
+>
+> - both appending the same fd
+>
+> - both hit the small race window right around the time when the file
+>   flips over a multiple of 4G.
+>
+> It's pretty damn improbable, and I think we can afford to spend the
+> time to get this right in 2.6.29.
 
-I'm saying that *in general* a guest should expect to be able to use one 
-and only one of those interfaces.  There will be explicitly defined 
-exceptions to that - such as using generic ABIs in addition to 
-hypervisor specific ABIs - but a guest can't expect to to be able to mix 
-and match.
+My question is: what is "right"? Do we actually care about this and
+intend to fix it? Because there have been people in the past who have
+said no...
 
-A tricky issue with selecting an ABI is if two hypervisors end up using 
-exactly the same mechanism for implementing hypercalls (or whatever), so 
-that there needs to be some explicit way for the guest to nominate which 
-interface its actually using...
-
-    J
