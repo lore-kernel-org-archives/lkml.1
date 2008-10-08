@@ -1,95 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbYJHXwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbYJHXwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbYJHXwH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 19:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYJHXvz
+	id S1757248AbYJHXwn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 19:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYJHXwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 19:51:55 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:58690 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753414AbYJHXvy (ORCPT
+	Wed, 8 Oct 2008 19:52:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:41870 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754898AbYJHXwd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 19:51:54 -0400
+	Wed, 8 Oct 2008 19:52:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=gNxRwIif93f4akp6I0T+xB7VwrFNed2HLEz51BThFG82m/zFV+R0Vla7fUzuq2jodx
-         fJRCAz/NdaIw1zl/Np72mH9B4FgMerEdTxndbNk5o2Y6jROS2Dpsiorp7U0JOFe3ENWf
-         1CyzhOvUHvaf3S6F8Uux3M2+vNlZQAxdZc4UY=
-Subject: Re: [patch] clean hex output of ftrace
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: trem <tremyfr@yahoo.fr>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <Pine.LNX.4.30.0810081515510.1836-100000@perches.com>
-References: <Pine.LNX.4.30.0810081515510.1836-100000@perches.com>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 16:51:49 -0700
-Message-Id: <1223509909.8195.101.camel@brick>
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=XztzF1gtvKvSI5KDPst3ilJJ8SQCB3T4Y9tsqDBeqAWOrMh0+ewE1zxhhcktkyOb+I
+         CFinvoeD/ZoTNWNC/Z2bR/JV+5mFjoAEzP4Ns6ftdOttSNVBHo0fG3Rb4n8IBzMpoCLM
+         TyzWw1mvYxGa9HEJ/W1SzkUQsVgX7pq505wC0=
+Date: Thu, 9 Oct 2008 01:52:40 +0200
+From: dcg <diegocg@gmail.com>
+To: "Ping Cheng" <pingc@wacom.com>
+Cc: <dmitry.torokhov@gmail.com>, <linux-kernel@vger.kernel.org>
+Subject: Re: Wacom tablet not working with 2.6.27-rc: kernel or X.org driver
+ fault?
+Message-ID: <20081009015240.7f935fdc@diego-desktop>
+In-Reply-To: <6753EB6004AFF34FAA275742C104F95271BCC8@wacom-nt10.wacom.com>
+References: <20081008231131.4feb01cd@diego-desktop>
+ <6753EB6004AFF34FAA275742C104F95271BCC8@wacom-nt10.wacom.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-08 at 15:22 -0700, Joe Perches wrote:
-> I'm surprised Harvey Harrison hasn't changed it to pack_hex_byte
-> and removed the static.
-> 
+El Wed, 8 Oct 2008 15:42:11 -0700, "Ping Cheng" <pingc@wacom.com> escribió:
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [PATCH] ftrace: Fix inversion of hex output and use common routines
+> The bug with ubuntu is related to kernel 2.6.26 and the user's newer
+> tablet.  They have to upgrade wacom.ko from linuxwacom themselves or
+> wait for ubuntu to do the job for them.  That has nothing to do with
+> kernel.org.
 
-Fix the output of ftrace in hex mode as the hi/lo nibbles are output in
-reverse order. Without this patch, the output of ftrace is:
+Well, it's not just a matter of newer tablets, the bug reported in ubuntu
+is from a user with a tablet which worked with the kernel included
+in ubuntu, which does not include any patch to the wacom's kernel
+driver, and X.org 7.3, and stopped working properly (ie, it "works", but
+click events don't work, and the pointer does weird things) installing
+X.org 7.4 (just like my wacom bamboo tablet). A newer version of X.org
+driver should not stop working with the devices and kernel.org drivers
+it used to work before.
 
-raw mode : 6474 0 141531612444 0 140 + 6402 120 S
-hex mode : 000091a4 00000000 000000023f1f50c1 00000000 c8 000000b2 00009120 87 ffff00c8 00000035
-
-There is an inversion on ouput hex(6474) is 194a
-
-[based on a patch by Philippe Reynes <tremyfr@yahoo.fr>]
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- kernel/trace/trace.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 8f3fb3d..763f763 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -396,14 +396,12 @@ trace_seq_putmem(struct trace_seq *s, void *mem, size_t len)
- }
- 
- #define HEX_CHARS 17
--static const char hex2asc[] = "0123456789abcdef";
- 
- static int
- trace_seq_putmem_hex(struct trace_seq *s, void *mem, size_t len)
- {
- 	unsigned char hex[HEX_CHARS];
- 	unsigned char *data = mem;
--	unsigned char byte;
- 	int i, j;
- 
- 	BUG_ON(len >= HEX_CHARS);
-@@ -413,10 +411,8 @@ trace_seq_putmem_hex(struct trace_seq *s, void *mem, size_t len)
- #else
- 	for (i = len-1, j = 0; i >= 0; i--) {
- #endif
--		byte = data[i];
--
--		hex[j++] = hex2asc[byte & 0x0f];
--		hex[j++] = hex2asc[byte >> 4];
-+		hex[j++] = hex_asc_hi(data[i]);
-+		hex[j++] = hex_asc_lo(data[i]);
- 	}
- 	hex[j++] = ' ';
- 
--- 
-1.6.0.2.471.g47a76
-
-
-
+Now that I'm looking at it, the xserver-xorg-input-wacom ubuntu package
+is not compiled from X.org 7.4, but from linuxwacom.sf.net sources, and
+is using the version 0.8.1.4, IOW, the -dev branch of linuxwacom.sf.net.
+So maybe the problem is that there's a bug in the -dev branch of
+linuxwacom, but in any case it should get fixed ASAP, as many people is
+going to hit this problem...
