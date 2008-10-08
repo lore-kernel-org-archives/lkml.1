@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYJHQO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYJHQTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYJHQO3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 12:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYJHQOR
+	id S1754827AbYJHQTP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 12:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYJHQS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 12:14:17 -0400
-Received: from ffm.saftware.de ([83.141.3.46]:45157 "EHLO ffm.saftware.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754110AbYJHQOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 12:14:16 -0400
-Message-ID: <48ECDC58.1020603@linuxtv.org>
-Date: Wed, 08 Oct 2008 18:14:16 +0200
-From: Andreas Oberritter <obi@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Wed, 8 Oct 2008 12:18:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50595 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752649AbYJHQS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 12:18:58 -0400
+Message-ID: <48ECDD37.8050506@linux-foundation.org>
+Date: Wed, 08 Oct 2008 11:17:59 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Ben Hutchings <bhutchings@solarflare.com>
-CC: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH v2] 8139too: move wmb before TX DMA start
-References: <48EC64E1.5070806@linuxtv.org> <20081008101558.GH7331@solarflare.com>
-In-Reply-To: <20081008101558.GH7331@solarflare.com>
-X-Enigmail-Version: 0.95.0
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
+References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org>
+In-Reply-To: <1223458431-12640-2-git-send-email-apw@shadowen.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Oberritter <obi@linuxtv.org>
+Andy Whitcroft wrote:
+> When working with hugepages, hugetlbfs assumes that those hugepages
+> are smaller than MAX_ORDER.  Specifically it assumes that the mem_map
+> is contigious and uses that to optimise access to the elements of the
+> mem_map that represent the hugepage.  Gigantic pages (such as 16GB pages
+> on powerpc) by definition are of greater order than MAX_ORDER (larger
+> than MAX_ORDER_NR_PAGES in size).  This means that we can no longer make
+> use of the buddy alloctor guarentees for the contiguity of the mem_map,
+> which ensures that the mem_map is at least contigious for maximmally
+> aligned areas of MAX_ORDER_NR_PAGES pages.
 
-The write barrier should be used before starting a DMA transfer. This fixes
-a problem, where almost all packets received on another machine had garbled
-content. Tested with an RTL8100C on a MIPS machine.
+But the memmap is contiguous in most cases. FLATMEM, VMEMMAP etc. Its only
+some special sparsemem configurations that couldhave the issue because they
+break up the vmemmap. x86_64 uses VMEMMAP by default. Is this for i386?
 
-Signed-off-by: Andreas Oberritter <obi@linuxtv.org>
----
-Added a comment on Ben's request explaining the reason for the barrier.
-
-diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-index 53bd903..3c5fac6 100644
---- a/drivers/net/8139too.c
-+++ b/drivers/net/8139too.c
-@@ -1716,13 +1716,18 @@ static int rtl8139_start_xmit (struct sk_buff *skb, struct net_device *dev)
- 	}
- 
- 	spin_lock_irqsave(&tp->lock, flags);
-+	/*
-+	 * Writing to TxStatus triggers a DMA transfer of the data
-+	 * copied to tp->tx_buf[entry] above. Use a memory barrier
-+	 * to make sure that the device sees the updated data.
-+	 */
-+	wmb();
- 	RTL_W32_F (TxStatus0 + (entry * sizeof (u32)),
- 		   tp->tx_flag | max(len, (unsigned int)ETH_ZLEN));
- 
- 	dev->trans_start = jiffies;
- 
- 	tp->cur_tx++;
--	wmb();
- 
- 	if ((tp->cur_tx - NUM_TX_DESC) == tp->dirty_tx)
- 		netif_stop_queue (dev);
