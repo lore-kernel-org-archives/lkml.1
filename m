@@ -1,63 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbYJHAx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbYJHAyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758121AbYJHAx5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbYJHAxs
+	id S1758386AbYJHAyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbYJHAyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:53:48 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:39466 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753459AbYJHAxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:53:47 -0400
-Date: Tue, 7 Oct 2008 20:53:38 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Quentin Godfroy <godfroy@clipper.ens.fr>
-Cc: Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: possible (ext4 related?) memory leak in kernel 2.6.26
-Message-ID: <20081008005338.GH15929@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Quentin Godfroy <godfroy@clipper.ens.fr>,
-	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080930222358.1FF30EAC415@quatramaran.ens.fr> <20081003003548.GA18138@mit.edu> <20081005091526.GA678@goelette.ens.fr> <20081005122752.GB27335@mit.edu> <20081005161214.GA2985@goelette.ens.fr> <20081006025006.GA9289@mit.edu> <48EA2F20.7020309@redhat.com> <20081006175502.GA12937@mit.edu> <20081007221256.GF15929@mit.edu> <20081008000227.GA32052@goelette.ens.fr>
+	Tue, 7 Oct 2008 20:54:08 -0400
+Received: from ozlabs.org ([203.10.76.45]:42173 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756845AbYJHAyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 20:54:06 -0400
+Date: Wed, 8 Oct 2008 11:53:56 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: eranian@gmail.com
+Cc: linux-kernel@vger.kernel.org,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: perfmon3 interface overview
+Message-ID: <20081008005356.GA13615@yookeroo.seuss>
+Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
+	eranian@gmail.com, linux-kernel@vger.kernel.org,
+	perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com> <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com> <20081003061713.GL3002@yookeroo.seuss> <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com> <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com> <20081005055339.GC469@yookeroo.seuss> <7c86c4470810051423v2116193vc2e1b67ce480488d@mail.gmail.com> <20081007035616.GB19037@yookeroo.seuss> <7c86c4470810070246x7ab8cc32k82177c7fdcf72b3f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081008000227.GA32052@goelette.ens.fr>
+In-Reply-To: <7c86c4470810070246x7ab8cc32k82177c7fdcf72b3f@mail.gmail.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08, 2008 at 02:02:27AM +0200, Quentin Godfroy wrote:
+On Tue, Oct 07, 2008 at 11:46:53AM +0200, stephane eranian wrote:
+> David,
 > 
-> I rebooted, but as I didn't know exactly how to trigger the bug except than
-> by waiting a few days I was waiting to see.
+> On Tue, Oct 7, 2008 at 5:56 AM, David Gibson
+> <david@gibson.dropbear.id.au> wrote:
+> > On Sun, Oct 05, 2008 at 11:23:15PM +0200, stephane eranian wrote:
+> >> I see, so you were just decoupling to double the number of available bits.
+> >> I guess we have a minimum of 32 bits. It seems overkill to support up to
+> >> 32 'types'. We could force flags to uint64_t. But then we would have to do
+> >> the same for all other syscalls to be consistent. Defining flags as long
+> >> won't work because of 32-bit vs. 64-bit ABI compatibility issues.
+> >
+> > I guess so.  I guess there's also the possibility that you might later
+> > have some flags that can apply to many of the syscalls, and it would
+> > be nice to have them in a standard bit position for all calls.  That
+> > might make bit allocation a bit interesting if you're squeezing type
+> > into the same field.
+> >
+> I can see that for subsets of the calls, e.g., read and write of registers.
+> It is not clear to me what kind of 'service' would apply to all calls.
 > 
-> Do you have an idea about how to trigger the bug?
+> As Corey suggested yesteday, the flags for read and write operations
+> are not just single bit. A portion of the 64 bits, 8 in his proposal, are used
+> to encode the 'type' of register (PMD, PMC, PMD_ATTR). That simplifies
+> checking for valid bits in this portion of flags.
 
-The bug is that each time a transaction commits, if the buffer head
-hasn't been leaked already, it will leak pinning the memory until the
-total size of the journal is taking up memory.  If you have a 2gigs of
-memory, and a single filesystem with 256meg journal, you might not
-notice the problem at all.  If you less than 256 megs of memory,
-you'll notice fairly quickly.   
+Yes, that was always what I had in mind if flags and type were
+combined.
 
-So you can test to see if you are running into problems by running the
-buffer_dump program to trigger a dump of buffers in use.  Some buffers
-will always be pinned, such as the super block, block group
-descriptors, and journal super blocks.  And there will be some number
-of buffers that are in use; but the number of dirty buffers should be
-no more than, oh, 30 or 40, and over the next couple of hours, it
-should not be growing.  Even before you start runninng to memory
-exhaustion problems, the number of in-use buffers should relatively
-quick rise to hundreds or thousands after a few hours of run-time.
+> OTOH, if I go back to your original proposal:
+>    int pfm_write_pmrs(int fd, int flags, int type, void *v, size_t);
+> 
+> The 'type' field would have the same encoding as proposed by Corey.
+> 32 bits would be plentyful for types. Flags could remain at 32-bits
+> across the board, thereby avoiding the problems outlined by Arnd
+> in his follow-up message. Separating the type also makes it look
+> less like an ioctl(). So I think we should go with that proposal.
 
-Regards,
+Works for me.
 
-						- Ted
+> [snip]
+> >>
+> >> If I summarize our discussion. It seems we can define the API as follows:
+> >>
+> >>     int pfm_create_session(int fd, uint64_t flags, pfarg_sinfo_t *sif,
+> >> [ char *smpl_name, void *smpl_arg, size_t arg_size]);
+> >>     int pfm_read_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
+> >>     int pfm_write_pmrs(int fd, uint64_t flags, void *tab, size_t sz);
+> >>     int pfm_attach_session(int fd, uint64_t flags, int target);   /*
+> >> attach, detach with target=-1 */
+> >>     int pfm_control_session(int fd, uint64_t flags);   /* for start/stop */
+> >
+> > Unless you have other functions in mind for this, I'd suggest a name
+> > that's a little less generic here.  pfm_set_running() maybe.
+> >
+> What about pfm_set_state() or pfm_set_session_state()?
+
+I guess so.
+
+> >>     int pfm_control_sets(int fd, uint64_t flags, void *sets, size_t
+> >>     sz);
+> >
+> > Hrm.  This now has identical signature to the {read,write}_pmrs.  I
+> > wonder if these could be sensibly combined.  Maybe have
+> > pfm_get_info(), pfm_set_info() which can get/set control structures
+> > for several different namespaces: PMCs PMDs and now event sets.
+> >
+> I think this would be too generic as it would be mixing very different
+> data types. This is not the case for pfm_write_pmrs() and pfm_read_pmrs()
+> because you are always passing 'register descriptions'.
+> 
+> There is a fundamental difference between pfm_control_sets() and
+> pfm_write_pmrs()/pfm_read_pmrs(). For the latter, the 'action' is hardcoded
+> in the name of the syscall, i.e., read or write, what varies is whether or not
+> we are passing PMD or PMC. For the former, the 'action', i.e., create new
+> set or get info about a set, is hardcoded in the flags, and it determines the
+
+Uh.. I was assuming if combined we'd drop the selecting flag from
+control_sets() and instead make the pfm_read_stuff() call be the
+get_info() equivalent when used on the eventsets space and
+pfm_write_stuff() be the create/modify sets call.
+
+The fact that the structure is different for read/write in this case
+is a bit funny.  In fact it would probably be best to have different
+'type' fields for read and write too (EVTSET_INFOm only usable for
+reads , and EVTSET_CONTROL only for writes, maybe).
+
+
+I'm not dead-set on combining these calls, but it seems to me we've
+already just about made the read/write calls into a read/write array
+of control structures in some namespace call, which pretty much is
+what the event set call is too.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
