@@ -1,89 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYJHGeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbYJHGeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbYJHGeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 02:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYJHGeE
+	id S1754910AbYJHGeg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 02:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYJHGeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 02:34:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:9458 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbYJHGeB (ORCPT
+	Wed, 8 Oct 2008 02:34:23 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57015 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754587AbYJHGeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 02:34:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=OahSYOoHyp1Sgpx6/zwP0LjNt3840yZkS+H7JJ/n15qBxhPZtbSNSJTnVKb/9HqiY9
-         5wDxs12fLE8nGM2jvQjHBTUV8rxgyyX5UEtRUQkx/oTXASNfT0wLw2LXOUzKNr0ddaOd
-         8fNHTmXPkRSh17TmXgF5WQnXDW3b1eIeF2teM=
-Date: Wed, 8 Oct 2008 08:33:52 +0200
-To: Mark de Wever <koraq@xs4all.nl>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Gadi Oxman <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch][repost] ide-tape build fix
-Message-ID: <20081008063352.GA13530@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Mark de Wever <koraq@xs4all.nl>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-	Gadi Oxman <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080921185138.GA16310@localhost> <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost> <48D80949.4080901@ru.mvista.com> <20080923074845.GB5656@gollum.tnic> <20080923165914.GA7803@localhost> <9ea470500809231011p5ea37fc4u71eeeddf6ccec45a@mail.gmail.com> <20080923212018.GA3348@localhost> <20081007182615.GA2400@localhost>
+	Wed, 8 Oct 2008 02:34:21 -0400
+Message-ID: <48EC53D3.9020203@jp.fujitsu.com>
+Date: Wed, 08 Oct 2008 15:31:47 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007182615.GA2400@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+To: Alex Chiang <achiang@hp.com>
+CC: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 00/15] PCI: let the core manage slot names
+References: <20081003230125.9989.31145.stgit@bob.kio>
+In-Reply-To: <20081003230125.9989.31145.stgit@bob.kio>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Alex-san,
 
-On Tue, Oct 07, 2008 at 08:26:15PM +0200, Mark de Wever wrote:
-> I never got a reaction on this patch, but please apply it.
+I have some ideas and made some patches for comments I sent about
+your [PATCH v4 02/15] and [PATCH v4 03/15]. Please take a look.
+There are three patches.
+
+  - [01/03] Sample patch for [PATCH v4 02/15]
+
+  - [02/03] Sample patch for [PATCH v4 03/15]
+    NOTE:This doesn't target the comment about changing exported
+         symbol name.
+
+  - [03/03] Sample patch for [PATCH v4 14/15]
+    This is needed because above two patches make your [PATCH v4
+    14/15] can not be applied.
+
+Note: I made those patches as replacement of your corresponding
+ones. So those patches are NOT for applying on top your original
+patches.
+
+Thanks,
+Kenji Kaneshige
+
+
+Alex Chiang wrote:
+> Hi all,
 > 
-> In order to compile the kernel with IDETAPE_DEBUG_LOG enabled I had to
-> apply the following build fix.
-
-Bugger, I should be getting at least warnings when compiling this but I don't.
-This is because I don't have CONFIG_LBD enabled. However, the %ld and %d
-format specifiers are also not entirely correct but gcc doesn't warn about them
-- I guess it checks only size but not signedness...
-
-> Signed-off-by: Mark de Wever <koraq@xs4all.nl>
+> This is v4 of the series that implements a series of changes
+> that allows the PCI core to manage slot names, rather than
+> individual hotplug drivers.
 > 
-> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> index 3833189..7258eca 100644
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -978,9 +978,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
->  	struct request *postponed_rq = tape->postponed_rq;
->  	u8 stat;
->  
-> -	debug_log(DBG_SENSE, "sector: %ld, nr_sectors: %ld,"
-> +	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %ld,"
-
-the other format specifiers should be rq->nr_sectors: %lu, rq->current_nr_sectors: %u.
-
->  			" current_nr_sectors: %d\n",
-> -			rq->sector, rq->nr_sectors, rq->current_nr_sectors);
-> +			(unsigned long long)rq->sector, rq->nr_sectors, 
-> +			rq->current_nr_sectors);
->  
->  	if (!blk_special_request(rq)) {
->  		/* We do not support buffer cache originated requests. */
+> Thank you to Kenji-san and Taku-san for testing and finding my bugs.
+> Thanks to Willy for helping me out with the locking issues in
+> pci_hp_register.
+> 
+> Again, I have tested by loading pci_slot, acpiphp, and fakephp in various
+> combinations, and using the new dup_slots=1 param to fakephp. I also had:
+> 
+> CONFIG_DEBUG_SPINLOCK=y
+> CONFIG_DEBUG_MUTEXES=y
+> CONFIG_DEBUG_SPINLOCK_SLEEP=y
+> 
+> and didn't see any complaints.
+> 
+> This series applies against Jesse's linux-next branch. I just fetched his
+> branch and peeked at it, and based on the log, my series _should_ apply
+> with minimal fuzz (but I didn't do a rebase because I didn't think to
+> check until writing this mail ;).
+> 
+> It would be great if folks could give one last (hopefully!) review.
+> 
+> Thanks.
+> 
+> /ac
+> 
+> v3 -> v4:
+> 	- Do not access hotplug_slot_name() before name initialization
+> 	- Serialize pci_hp_register/deregister
+> 
+> v2 -> v3:
+> 	- incorporate Willy's code review comments
+> 	- fix possible memory leak, pointed out by Rolf Eike Beer
+> 	- make false name collision detection work for empty slots
+> 	- add 'dup_slots' module_param to fakephp to help debug all this ;)
+> 
+> v1 -> v2:
+> 	- fix possible false name collisions
+> 
+> ---
+> 
+> Alex Chiang (15):
+>       PCI Hotplug: fakephp: add duplicate slot name debugging
+>       PCI: Hotplug core: remove 'name'
+>       PCI: shcphp: remove 'name' parameter
+>       PCI: SGI Hotplug: stop managing bss_hotplug_slot->name
+>       PCI: rpaphp: kmalloc/kfree slot->name directly
+>       PCI: pciehp: remove 'name' parameter
+>       PCI: ibmphp: stop managing hotplug_slot->name
+>       PCI: fakephp: remove 'name' parameter
+>       PCI: cpqphp: stop managing hotplug_slot->name
+>       PCI: cpci_hotplug: stop managing hotplug_slot->name
+>       PCI: acpiphp: remove 'name' parameter
+>       PCI, PCI Hotplug: introduce slot_name helpers
+>       PCI: prevent duplicate slot names
+>       PCI Hotplug: serialize pci_hp_register/deregister
+>       PCI Hotplug core: add 'name' param pci_hp_register interface
+> 
+> 
+>  drivers/pci/hotplug/acpiphp.h           |    9 +-
+>  drivers/pci/hotplug/acpiphp_core.c      |   32 +++--
+>  drivers/pci/hotplug/cpci_hotplug.h      |    6 +
+>  drivers/pci/hotplug/cpci_hotplug_core.c |   75 +++++--------
+>  drivers/pci/hotplug/cpci_hotplug_pci.c  |    4 -
+>  drivers/pci/hotplug/cpqphp.h            |   13 +-
+>  drivers/pci/hotplug/cpqphp_core.c       |   43 +++----
+>  drivers/pci/hotplug/fakephp.c           |   26 +++-
+>  drivers/pci/hotplug/ibmphp.h            |    5 -
+>  drivers/pci/hotplug/ibmphp_ebda.c       |   19 +--
+>  drivers/pci/hotplug/pci_hotplug_core.c  |   68 ++++++------
+>  drivers/pci/hotplug/pciehp.h            |    9 +-
+>  drivers/pci/hotplug/pciehp_core.c       |   49 +++-----
+>  drivers/pci/hotplug/pciehp_ctrl.c       |   53 +++++----
+>  drivers/pci/hotplug/pciehp_hpc.c        |    1 
+>  drivers/pci/hotplug/rpaphp_slot.c       |    9 +-
+>  drivers/pci/hotplug/sgi_hotplug.c       |   18 +--
+>  drivers/pci/hotplug/shpchp.h            |    9 +-
+>  drivers/pci/hotplug/shpchp_core.c       |   52 +++------
+>  drivers/pci/hotplug/shpchp_ctrl.c       |   48 ++++----
+>  drivers/pci/slot.c                      |  181 +++++++++++++++++++++++--------
+>  include/linux/pci.h                     |    9 +-
+>  include/linux/pci_hotplug.h             |   11 +-
+>  23 files changed, 407 insertions(+), 342 deletions(-)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 > 
 
-Would you like to redo your patch and add a proper comment ontop?
 
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
