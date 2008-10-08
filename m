@@ -1,109 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYJHAks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYJHAl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758164AbYJHAks (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYJHAk0
+	id S1758064AbYJHAl6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYJHAlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:40:26 -0400
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:39045 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756421AbYJHAkY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:40:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Bc6HwZTq2uFKWe8d59o2OerG1ZWCqL7/F05Kn//yKq0grUsI3F8s2zGIpChq3aTimVG2voStMKFprRJ3alKbssovixc9ILbf4ZpqB/PWEMmKLKM2rj5is8O+/BrM8uKGm+qrZhZccm+Vea2IdQGkEaE21ETEKKCZn/Ez7HmkSEQ=  ;
-X-YMail-OSG: T4X1aEkVM1m2CSju55qqKJhDF8cvS7sfOORyj04VL5CcmTrCbazMwsWyc.ho83UGN5hEmQKcpVRjJMvY5gKnQEYff29FoVfrIgKplT2e29ZomM7VqlpdIeZziyZMkAv8P81pmXa4gyy9uH0qRfv9SrEMF3GWobCoY2GUaK6RdoRrYwbiolU-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org
-Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
-Date: Wed, 8 Oct 2008 11:40:14 +1100
-User-Agent: KMail/1.9.5
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <200810080327.44530.nickpiggin@yahoo.com.au> <20081007105056.16d9e785.akpm@linux-foundation.org>
-In-Reply-To: <20081007105056.16d9e785.akpm@linux-foundation.org>
+	Tue, 7 Oct 2008 20:41:50 -0400
+Received: from kroah.org ([198.145.64.141]:50428 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753163AbYJHAlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 20:41:50 -0400
+Date: Tue, 7 Oct 2008 17:38:34 -0700
+From: Greg KH <greg@kroah.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: sysfs: tagged directories not merged completely yet
+Message-ID: <20081008003834.GA8680@kroah.com>
+References: <20080922153455.GA6238@kroah.com> <48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org> <20081003101331.GH28946@ZenIV.linux.org.uk> <20081005053236.GA9472@kroah.com> <m1bpxwajyy.fsf@frodo.ebiederm.org> <20081007222726.GA9465@kroah.com> <20081007225424.GA9430@us.ibm.com> <20081007233936.GA23282@kroah.com> <20081008001203.GA21918@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810081140.15382.nickpiggin@yahoo.com.au>
+In-Reply-To: <20081008001203.GA21918@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 October 2008 04:50, Andrew Morton wrote:
-> On Wed, 8 Oct 2008 03:27:44 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Tuesday 07 October 2008 21:29, Andi Kleen wrote:
-> > > > Maybe cmpxchg8b is good for i486 or later x86, but i386 or other
-> > > > architectures that do not have similar instruction needs some locking
-> > > > primitive. I think lazy
-> > >
-> > > We have a cmpxchg emulation on 386. That works because only UP 386s are
-> > > supported, so it can be done in software.
-> > >
-> > > > seqlock is one option for making file->f_pos access atomic.
-> > >
-> > > The question is if it's the right option. At least all the common
-> > > operations on fds (read/write) are all writers, not readers.
-> >
-> > Common operations are read, do something, write. So seqlocks then cost
-> > one atomic operation, a couple of memory barriers (all noops on x86),
-> > and some predictable branches etc.
-> >
-> > cmpxchg based would require 2 lock ; cmpxchg8b on 32-bit. Fairly heavy.
-> > Also I don't think we have generic accessors to do this, so I think
-> > that is for another project.
-> >
-> > Anyway, I think importantly this creates some usable accessors for the
-> > f_pos problem. I think we actually need to touch a _lot_ of code to
-> > cover all f_pos accesses in the kernel, but I guess this gets the ball
-> > rolling.
->
-> Aneesh is proposing using using seqlocks to make percpu_counter.count
-> atomic on 32-bit.
->
-> This patch uses seqlocks to make file.f_pos atomic on 32-bit.
->
-> I think we should come up with a common atomic 64-bit type.  We already
-> partly have that: atomic64_t.  But for reasons which I don't recall,
-> atomic64_t is 64-bit-only at present.
->
-> If we generalise atomic64_t to all architectures then we can use it in
-> both the above applications and surely in other places in the future.
+On Tue, Oct 07, 2008 at 07:12:03PM -0500, Serge E. Hallyn wrote:
+> Quoting Greg KH (greg@kroah.com):
+> > On Tue, Oct 07, 2008 at 05:54:24PM -0500, Serge E. Hallyn wrote:
+> > > Quoting Greg KH (greg@kroah.com):
+> > > > On Tue, Oct 07, 2008 at 01:27:17AM -0700, Eric W. Biederman wrote:
+> > > > > Unless someone will give an example of how having multiple superblocks
+> > > > > sharing inodes is a problem in practice for sysfs and call it good
+> > > > > for 2.6.28.  Certainly it shouldn't be an issue if the network namespace
+> > > > > code is compiled out.  And it should greatly improve testing of the
+> > > > > network namespace to at least have access to sysfs.
+> > > > 
+> > > > But if the network namespace code is in?  THen we have problems, right?
+> > > > And that's the whole point here.
+> > > > 
+> > > > The fact that you are trying to limit userspace view of in-kernel data
+> > > > structures, based on that specific user, is, in my opinion, crazy.
+> > > > 
+> > > > Why not just keep all users from seeing sysfs, and then have a user
+> > > > daemon doing something on top of FUSE if you really want to see this
+> > > > kind of stuff.
+> > > 
+> > > Well the blocker is really that when you create a new network namespace,
+> > > it wants to create a new loopback interface, but
+> > > /sys/devices/virtual/net/lo already exists.  That's the same issue with
+> > > user namespace when the fair scheduler is enabled, which tries to
+> > > re-create /sys/kernel/uids/0.
+> > > 
+> > > Otherwise yeah at least for my own uses, containers wouldn't need to
+> > > look at /sys at all.
+> > > 
+> > > Heck you wouldn't even need FUSE, just mount -t tmpfs /sys/class/net
+> > > and manually link the right devices from /sys/devices/virtual/net.
+> > 
+> > Great, that sounds like a solution.
+> > 
+> > So tell me again why we need these huge sysfs reworks? :)
+> 
+> Because :
+> 
+> > > Well the blocker is really that when you create a new network namespace,
 
-seqlocks can't really make it a general 64-bit atomic type. Well, they
-_could_, but then your actual type is much bigger than 64 bits, or you
-map to a hash of seqlocks or something awful...
+No, wait.  Why would you want to do such a thing in the first place?
 
-Anyway, my main point is that the bulk of the work will be in the changes
-all over the kernel to use the accessors. How it works behind that is
-obviously trivially changed by comparison (it could start off without
-changing any code at all and just wrap the racy accessors).
+> > > it wants to create a new loopback interface, but
+> > > /sys/devices/virtual/net/lo already exists.  That's the same issue with
+> 
+> So at least we'd have to do something to allow creation of 'duplicate'
+> devices in different namespaces.  It might be fine if we just ended up
+> with /sys/devices/virtual/net/lo, if created in a child net namespace,
+> be named /sys/devices/virtual/net/lo.childXYZ.  Then userspace can
+> mount -t tmpfs none /sys/class/net and ln -s
+> /sys/devices/virtual/net/lo.childXYZ /sys/class/net/lo.
 
+ick.
 
-> > So.. is everyone agreed that corrupting f_pos is a bad thing? (serious
-> > question) If so, then we should get something like this merged sooner
-> > rather than later.
->
-> - two threads/processes sharing the same fd
->
-> - both appending the same fd
->
-> - both hit the small race window right around the time when the file
->   flips over a multiple of 4G.
->
-> It's pretty damn improbable, and I think we can afford to spend the
-> time to get this right in 2.6.29.
+I agree with Tejun here, what's this whole network namespace stuff, what
+problems is it trying to solve and what are its goals?
 
-My question is: what is "right"? Do we actually care about this and
-intend to fix it? Because there have been people in the past who have
-said no...
+thanks,
 
+greg k-h
