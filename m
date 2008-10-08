@@ -1,124 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYJHXWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYJHXd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbYJHXWs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 19:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbYJHXWj
+	id S1756707AbYJHXd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 19:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYJHXds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 19:22:39 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:55731 "EHLO fieldses.org"
+	Wed, 8 Oct 2008 19:33:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54282 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754799AbYJHXWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 19:22:38 -0400
-Date: Wed, 8 Oct 2008 19:22:37 -0400
-To: linux-nfs@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: nfsd 2.6.28 merge plans
-Message-ID: <20081008232237.GH14527@fieldses.org>
+	id S1754512AbYJHXds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 19:33:48 -0400
+Date: Wed, 8 Oct 2008 19:33:06 -0400
+From: Dave Jones <davej@redhat.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: fsl_upm compile failure.
+Message-ID: <20081008233306.GA31771@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+References: <20081008222815.GA20542@redhat.com> <20081008230219.GA8075@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081008230219.GA8075@oksana.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus's release announcement for -rc9 suggested 2.6.27 could be released
-(and the 2.6.28 merge window opened) any day now.
+On Thu, Oct 09, 2008 at 03:02:19AM +0400, Anton Vorontsov wrote:
+ > Hi,
+ > 
+ > On Wed, Oct 08, 2008 at 06:28:15PM -0400, Dave Jones wrote:
+ > > Hi Anton, 
+ > >  I tried reenabling CONFIG_MTD_NAND_FSL_UPM in the Fedora kernel
+ > > today (currently on 2.6.27-rc9-git1), and got the error below.
+ > > 
+ > > ERROR: "fsl_lbc_lock" [drivers/mtd/nand/fsl_upm.ko] undefined!
+ > 
+ > Weird. It works for me with mpc836x_rdk_defconfig and
+ > MTD_NAND_FSL_UPM=m...
+ > 
+ > Hm..
+ > 
+ >   CC      drivers/mtd/nand/fsl_upm.mod.o
+ >   LD [M]  drivers/mtd/nand/fsl_upm.ko
+ > 
+ > Can you send me the .config file you use?
+ 
+http://davej.fedorapeople.org/ppc.config
 
-What I'm currently planning to merge is the contents of
+ > But the patch looks obviously correct. Much thanks for catching this.
+ > 
+ > Though better option would be to uninline the fsl_upm_run_pattern()..
+ > it is quite big anyway... Something like this:
 
-	git://linux-nfs.org/~bfields/linux.git for-2.6.28
+I'll leave it to you to decide what to push to Linus
 
-summarized below.
+	Dave
 
-Chuck's contributed a ton of small patches preparing for ipv6 support
-(which we expect to complete in 2.6.29), Tom Tucker has added support
-for fast memory registration to the server rdma code, and Benny's
-NFSv4.1 work continues to produce miscellaneous NFSv4.1 bugfixes and
-cleanups.
-
-There's also one pure locking patch, which makes vfs support for posix
-locking configurable.
-
-And I've got some grace period patches (which I hope will also pave the
-way for nfsd lock migration support in 2.6.29), and some minor tweaks to
-our rpcsec_gss code which (together with recent nfs-utils patches)
-finally makes rpcsec_gss for v2 and v3 work as well as it does for v4.
-
-Thanks to everyone who's contributed!
-
---b.
-
-Benny Halevy (9):
-      nfsd: properly xdr-encode stateid4.seqid as uint32_t for cb_recall
-      nfsd: properly xdr-encode deleg stateid returned from open
-      nfsd: fix nfsd4_encode_open buffer space reservation
-      nfsd: nfs4xdr encode_stateid helper function
-      nfsd: don't declare p in ENCODE_SEQID_OP_HEAD
-      nfsd: properly xdr-decode NFS4_OPEN_CLAIM_DELEGATE_CUR stateid
-      nfsd: nfs4xdr decode_stateid helper function
-      nfsd: do_probe_callback should not clear rpc stats
-      nfsd: use nfs client rpc callback program
-
-Chuck Lever (32):
-      SUNRPC: Add address family field to svc_serv data structure
-      SUNRPC: Use proper INADDR_ANY when setting up RPC services on IPv6
-      SUNRPC: Set V6ONLY socket option for RPC listener sockets
-      SUNRPC: Simplify rpcb_register() API
-      SUNRPC: Split portmap unregister API into separate function
-      SUNRPC: Support IPv6 when registering kernel RPC services
-      NLM: Clean up before introducing new debugging messages
-      lockd: address-family independent printable addresses
-      lockd: Specify address family for source address
-      lockd: Add address family-agnostic helper for zeroing the port number
-      SUNRPC: Make svc_addr's argument a constant
-      lockd: Use sockaddr_storage + length for h_addr field
-      lockd: Use sockaddr_storage for h_saddr field
-      NSM: Use sockaddr_storage for sm_addr field
-      lockd: Teach nlm_cmp_addr() to support AF_INET6 addresses
-      lockd: Support AF_INET6 when hashing addresses in nlm_lookup_host
-      lockd: Combine __nsm_find() and nsm_find().
-      lockd: Update nsm_find() to support non-AF_INET addresses
-      SUNRPC: Register both netids for AF_INET6 servers
-      SUNRPC: Use short-hand IPv6 ANYADDR for RPCB_SET
-      SUNRPC: Fix up svc_unregister()
-      SUNRPC: Clean up debug messages in rpcb_clnt.c
-      NLM: Convert nlm_lookup_host() to use a single argument
-      lockd: Support non-AF_INET addresses in nlm_lookup_host()
-      lockd: Adjust nlmclnt_lookup_host() signature to accomodate non-AF_INET
-      lockd: Adjust nlmsvc_lookup_host() to accomodate AF_INET6 addresses
-      lockd: change nlmclnt_grant() to take a "struct sockaddr *"
-      lockd: Add helper to sanity check incoming NOTIFY requests
-      lockd: Remove unused fields in the nlm_reboot structure
-      NLM: Always start both UDP and TCP listeners
-      NLM: Remove "proto" argument from lockd_up()
-      NLM: Remove unused argument from svc_addsock() function
-
-J. Bruce Fields (7):
-      nfsd: permit unauthenticated stat of export root
-      locks: allow lockd to process blocked locks during grace period
-      lockd: don't depend on lockd main loop to end grace
-      nfsd: common grace period control
-      lockd: move grace period checks to common code
-      lockd: reject reclaims outside the grace period
-      Merge branch 'from-tomtucker' into for-2.6.28
-
-Jeff Layton (1):
-      knfsd: allocate readahead cache in individual chunks
-
-Thomas Petazzoni (1):
-      Configure out file locking features
-
-Tom Tucker (10):
-      svcrdma: Add Fast Reg MR Data Types
-      svcrdma: Add FRMR get/put services
-      svcrdma: Query device for Fast Reg support during connection setup
-      svcrdma: Add a service to register a Fast Reg MR with the device
-      svcrdma: Modify post recv path to use local dma key
-      svcrdma: Add support to svc_rdma_send to handle chained WR
-      svcrdma: Modify the RPC recv path to use FRMR when available
-      svcrdma: Modify the RPC reply path to use FRMR when available
-      svcrdma: Update svc_rdma_send_error to use DMA LKEY
-      svcrdma: Fix IRD/ORD polarity
-
+-- 
+http://www.codemonkey.org.uk
