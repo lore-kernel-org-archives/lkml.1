@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbYJHQqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYJHQqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755065AbYJHQqd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 12:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYJHQqX
+	id S1755554AbYJHQqq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 12:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYJHQq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 12:46:23 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46266 "EHLO UNKNOWN"
+	Wed, 8 Oct 2008 12:46:26 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40698 "EHLO UNKNOWN"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752788AbYJHQqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 12:46:22 -0400
-Date: Wed, 8 Oct 2008 12:56:11 +0200
+	id S1753167AbYJHQqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 12:46:25 -0400
+Date: Wed, 8 Oct 2008 13:39:34 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Mikulas Patocka <mpatocka@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
-Subject: Re: [PATCH 2/3] Fix fsync livelock
-Message-ID: <20081008105611.GA1396@ucw.cz>
-References: <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com> <20081001225404.4e973465.akpm@linux-foundation.org> <Pine.LNX.4.64.0810051814060.23248@hs20-bc2-1.build.redhat.com> <20081005153306.7e644c9f@infradead.org> <Pine.LNX.4.64.0810051901190.31780@hs20-bc2-1.build.redhat.com> <20081005160724.54dd1a27@infradead.org> <Pine.LNX.4.64.0810051910580.663@hs20-bc2-1.build.redhat.com> <20081005162847.7bf0ead1@infradead.org> <Pine.LNX.4.64.0810051949290.5798@hs20-bc2-1.build.redhat.com> <20081005173019.0a358b09@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] ACPI Suspend: Enable ACPI during resume if SCI_EN is
+	not set
+Message-ID: <20081008113933.GC1651@ucw.cz>
+References: <200810040005.06220.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081005173019.0a358b09@infradead.org>
+In-Reply-To: <200810040005.06220.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-10-05 17:30:19, Arjan van de Ven wrote:
-> On Sun, 5 Oct 2008 20:01:46 -0400 (EDT)
-> Mikulas Patocka <mpatocka@redhat.com> wrote:
+On Sat 2008-10-04 00:05:05, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > I assume that if very few people complained about the livelock till
-> > now, very few people will see degraded write performance. My patch
-> > blocks the writes only if the livelock happens, so if the livelock
-> > doesn't happen in unpatched kernel for most people, the patch won't
-> > make it worse.
+> ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
 > 
-> I object to calling this a livelock. It's not. 
+> On some machines, like for example MSI Wind U100, the BIOS doesn't
+> enable ACPI before returning control to the OS, which sometimes
+> causes resume to fail.  This is against the ACPI specification,
+> which clearly states that "When the platform is waking from an S1, S2
+> or S3 state, OSPM assumes the hardware is already in the ACPI mode
+> and will not issue an ACPI_ENABLE", but it won't hurt to check the
+> SCI_EN bit and enable ACPI during resume from S3 if this bit is not
+> set.
+> 
+> Fortunately, we already have acpi_enable() for that, so use it in the
+> resume code path, before executing _BFS, in analogy with the
+> resume-from-hibernation code path.
+> 
+> NOTE: We aren't supposed to set SCI_EN directly, because it's owned
+> by the hardware.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-8 hours of process in D state is a livelock. And we can do minimal fix
-here, this almost never happens in real life anyway.
+ACK.
 
-Latency imposed of writer should not be a problem...
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
