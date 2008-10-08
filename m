@@ -1,169 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYJHDxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbYJHD7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbYJHDxg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 23:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbYJHDx1
+	id S1754406AbYJHD7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 23:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYJHD7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 23:53:27 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:48473 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750888AbYJHDx1 (ORCPT
+	Tue, 7 Oct 2008 23:59:04 -0400
+Received: from szxga03-in.huawei.com ([119.145.14.66]:62169 "EHLO
+	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751309AbYJHD7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 23:53:27 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AowFAI7H60hMQWq+/2dsb2JhbACBcrxRgWo
-Date: Tue, 7 Oct 2008 23:53:25 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] markers: remove 2 exported symbols
-Message-ID: <20081008035325.GA31788@Krystal>
-References: <48EC199D.40808@cn.fujitsu.com> <20081008024325.GA29227@Krystal> <48EC2377.6020706@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48EC2377.6020706@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:51:02 up 125 days,  8:31,  9 users,  load average: 0.33, 0.30,
-	0.29
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 7 Oct 2008 23:59:03 -0400
+Date: Wed, 08 Oct 2008 11:58:59 +0800
+From: Franko Fang <huananhu@huawei.com>
+Subject: Re: PATCH 10/4]linux-usb: To support more Huawei data card productIDs,
+ fix kernel 2.6.27-rc7
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, zihan@huawei.com,
+       zhangqianchun@huawei.com
+Message-id: <004d01c928fa$31ebc5c0$f9100b0a@china.huawei.com>
+MIME-version: 1.0
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+X-Priority: 3
+X-MSMail-priority: Normal
+References: <faf7b1bd45d66.45d66faf7b1bd@huawei.com>
+ <20081008032139.GA14931@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> >> __mark_empty_function() and marker_probe_cb_noarg()
-> >> should not be seen by outer code. this patch remove them.
-> >>
-> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> >> ---
-> >> diff --git a/include/linux/marker.h b/include/linux/marker.h
-> >> index 1290653..f4d4d28 100644
-> >> --- a/include/linux/marker.h
-> >> +++ b/include/linux/marker.h
-> >> @@ -132,12 +132,8 @@ static inline void __printf(1, 2) ___mark_check_format(const char *fmt, ...)
-> >>  			___mark_check_format(format, ## args);		\
-> >>  	} while (0)
-> >>  
-> >> -extern marker_probe_func __mark_empty_function;
-> >> -
-> > 
-> > Hi Lai,
-> > 
-> > Hrm ? Have a good look at the macro __trace_mark() in
-> > include/linux/marker.h, you'll see that __mark_empty_function is
-> > referenced. Have you tested this against code with declared markers ?
-> 
-> Sorry for this,
-> I have markers in my kernel test code.
-> I hasn't tested this patch, for I thought it's to simple.
-> I used "grep" to find "__mark_empty_function",
-> but I missed one line of the results.
-> 
-> Other problems:
-> 1)
-> why we need marker_probe_cb_noarg()?
-> marker_probe_cb_noarg() has no performance optimization,
-> and no additional format check, or other thing?
-> 
+Well, ok, and I will try it again.
+Thanks.
 
-marker_probe_cb_noarg() does not need to setup the variable arguments,
-because the format string explicitly contains the MARK_NOARGS string. So
-this is a performance optimization.
+----- Original Message ----- 
+From: "Greg KH" <greg@kroah.com>
+To: "fangxiaozhi 00110321" <huananhu@huawei.com>
+Cc: <linux-usb@vger.kernel.org>; <linux-kernel@vger.kernel.org>; <zihan@huawei.com>; <zhangqianchun@huawei.com>
+Sent: Wednesday, October 08, 2008 11:21 AM
+Subject: Re: PATCH 10/4]linux-usb: To support more Huawei data card productIDs, fix kernel 2.6.27-rc7
 
-> if we remove marker_probe_cb_noarg, we can remove struct marker.call also.
-> 
-> 2)
-> why we use va_list *?
-> As I know, sizeof(va_list) = 4 or 8.
-> 
 
-It becomes hellish when we want to pass it as parameter to another C
-function, because va_list is typedef'd as an array on some
-architectures, and the array gets propoted to a pointer type, which is
-in turn incompatible with the array. C language mess :-( Not much we can
-do about it.
-
-Mathieu
-
+> On Wed, Oct 08, 2008 at 09:31:35AM +0800, fangxiaozhi 00110321 wrote:
+>>   From: fangxiaozhi <huananhu@huawei.com>
+>>  
+>>  1. This patch is based on the kernel of 2.6.27-rc7 
+>>  2. In this patch, we want to do one thing: add more Huawei product IDs into the USB driver. Then it can support  more Huawei data card devices. So to declare the unusual device for new Huawei data card devices 
+>>  in unusual_devs.h and to declare more new product IDs in option.c.
+>>  3. To modify the data value and length in the function of 
+>>  usb_stor_huawei_e220_init in initializers.c
+>>    That's because based on the USB standard, while sending SET_FETURE_D to the device, it requires the corresponding data to be zero, and its sending length also must be zero.
+>>    In our old solution, it can be compatible with our WCDMA data card devices, but can not support our CDMA data card devices. 
+>>     But in this new solution, it can be compatible with all of our data card devices.
+>> 
+>>  Signed-off-by: fangxiaozhi <huananhu@huawei.com>
+>>  -------------------------------------------------------------------
+>> 
+>> diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/serial/option.c linux-2.6.27-rc7/drivers/usb/serial/option.c
+>> --- linux-2.6.27-rc7-orig/drivers/usb/serial/option.c 2008-09-22 06:29:55.000000000 +0800
+>> +++ linux-2.6.27-rc7/drivers/usb/serial/option.c 2008-09-24 12:00:14.000000000 +0800
+>> @@ -106,11 +106,20 @@ static int  option_send_setup(struct tty
+>>  #define HUAWEI_PRODUCT_E220                 0x1003
+>>  #define HUAWEI_PRODUCT_E220BIS                 0x1004
+>>  #define HUAWEI_PRODUCT_E1401                 0x1401
+>> +#define HUAWEI_PRODUCT_E1402                 0x1402
 > 
-> please ignore this patch.
+> Hm, all of the tabs seem to have been converted to spaces in this patch,
+> and it does not apply at all.
 > 
-> Thanks, Lai.
+> Care to fix your email client settings and try again?
 > 
-> > 
-> >>  extern void marker_probe_cb(const struct marker *mdata,
-> >>  	void *call_private, ...);
-> >> -extern void marker_probe_cb_noarg(const struct marker *mdata,
-> >> -	void *call_private, ...);
-> > 
-> > This second change is correct. marker_probe_cb is referenced by
-> > __trace_mark(), but not marker_probe_cb_noarg, which is only connected
-> > when non-empty format string is found by the registration function in
-> > marker.c.
-> > 
-> >>  
-> >>  /*
-> >>   * Connect a probe to a marker.
-> >> diff --git a/kernel/marker.c b/kernel/marker.c
-> >> index 7d1faec..4440a09 100644
-> >> --- a/kernel/marker.c
-> >> +++ b/kernel/marker.c
-> >> @@ -81,11 +81,10 @@ static struct hlist_head marker_table[MARKER_TABLE_SIZE];
-> >>   * though the function pointer change and the marker enabling are two distinct
-> >>   * operations that modifies the execution flow of preemptible code.
-> >>   */
-> >> -void __mark_empty_function(void *probe_private, void *call_private,
-> >> +static void __mark_empty_function(void *probe_private, void *call_private,
-> >>  	const char *fmt, va_list *args)
-> >>  {
-> >>  }
-> >> -EXPORT_SYMBOL_GPL(__mark_empty_function);
-> >>  
-> > 
-> > Same as comment above.
-> > 
-> >>  /*
-> >>   * marker_probe_cb Callback that prepares the variable argument list for probes.
-> >> @@ -157,7 +156,7 @@ EXPORT_SYMBOL_GPL(marker_probe_cb);
-> >>   *
-> >>   * Should be connected to markers "MARK_NOARGS".
-> >>   */
-> >> -void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
-> >> +static void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
-> >>  {
-> >>  	va_list args;	/* not initialized */
-> >>  	char ptype;
-> >> @@ -197,7 +196,6 @@ void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
-> >>  	}
-> >>  	preempt_enable();
-> >>  }
-> >> -EXPORT_SYMBOL_GPL(marker_probe_cb_noarg);
-> >>  
-> > 
-> > This one is ok.
-> > 
-> > So overall, if you could check why you have not hit any problem when
-> > removing __mark_empty_function, that would be great. The only reason I
-> > see is that you had no markers in your kernel test code.
-> > 
-> > Mathieu
-> > 
-> >>  static void free_old_closure(struct rcu_head *head)
-> >>  {
-> >>
-> >>
-> >>
-> > 
+> thanks,
 > 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> greg k-h
