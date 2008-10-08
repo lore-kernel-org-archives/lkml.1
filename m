@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbYJHSlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYJHSqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbYJHSlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 14:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYJHSlg
+	id S1755481AbYJHSqH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 14:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYJHSpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 14:41:36 -0400
-Received: from mga07.intel.com ([143.182.124.22]:54612 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754580AbYJHSlf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 14:41:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,379,1220252400"; 
-   d="scan'208";a="56913508"
-Message-ID: <48ECFE2A.5040708@linux.intel.com>
-Date: Wed, 08 Oct 2008 11:38:34 -0700
-From: Joseph Cihula <joseph.cihula@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, shane.wang@intel.com, gang.wei@intel.com,
-       arjan@linux.intel.com, asit.k.mallick@intel.com, jun.nakajima@intel.com,
-       chrisw@sous-sol.org, jbeulich@novell.com, mingo@elte.hu, tytso@mit.edu,
-       joseph.cihula@intel.com
-Subject: Re: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology
- support for Linux - Overview
-References: <48EBE6DE.4090509@linux.intel.com> <1223450693.1378.27.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1223450693.1378.27.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Oct 2008 14:45:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35910
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753087AbYJHSpw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 14:45:52 -0400
+Date: Wed, 08 Oct 2008 11:45:27 -0700 (PDT)
+Message-Id: <20081008.114527.189056050.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: shemminger@vyatta.com, benny+usenet@amorsen.dk, minyard@acm.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48ECBBD8.9060602@cosmosbay.com>
+References: <20081007160729.60c076c4@speedy>
+	<20081007.135548.56141000.davem@davemloft.net>
+	<48ECBBD8.9060602@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-10-07 at 15:46 -0700, Joseph Cihula wrote:
-> 
->> Intel TXT was formerly known by the code name LaGrande Technology (LT).
-> 
-> Am I the only one who despairs at this? I mean, Intel text, come on
-> guys, slap the marketing department already ;-)
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Wed, 08 Oct 2008 15:55:36 +0200
 
-It's better than the original acronym, "TET" ;-)
+> David Miller a écrit :
+> > From: Stephen Hemminger <shemminger@vyatta.com>
+> > Date: Tue, 7 Oct 2008 16:07:29 +0200
+> > 
+> >> The idea of keeping chains short is the problem. That code should
+> >> just be pulled because it doesn't help that much, and also creates
+> >> bias on the port randomization.
+> > I have that patch from Vitaly Mayatskikh which does exactly this.
+> > I keep looking at it, but I can't bring myself to apply it since
+> > I'm not completely convinced.
+> 
+> Vitaly patch might be appropriate if only few UDP ports are opened.
+> 
+> We could zap the code to search short chains and extend Vitaly's
+> idea with following patch :
 
-Joe
+I really like this, and I've applied it to net-next-2.6
+
+I think the "increment until back in range" do/while loop can
+be improved a bit.  It can spin for more than 60,000 iterations
+in some edge case scenerios as-is :-)
+
+Ugh, there's also that expensive divide in there for the modulus.
