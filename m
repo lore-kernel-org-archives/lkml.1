@@ -1,81 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYJHACo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYJHADY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbYJHACo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758554AbYJHACY
+	id S1758709AbYJHADY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbYJHADO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:02:24 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:31704 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758742AbYJHACW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:02:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=n2aXcorOWjCEcH4up8+9rXHgMCkFHyNNBEJqGz9fxCgHH8SJJQdhpdY7KUONBgLLQQ
-         o1e9iMHhkjKokDGqSYhI/WVLy2rQOmWk6tV9+y2CKP+S5f/u5Lhi0uvH0NiRY2Xeq7K4
-         HCBMjjwOFgN/C/F6eqzANoViBNAjyBblU7sHE=
-Subject: Re: [RFC] Normalizing byteorder/unaligned access API
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-In-Reply-To: <20081007235533.GN25780@parisc-linux.org>
-References: <1223416391.8195.22.camel@brick>
-	 <20081007232807.GL25780@parisc-linux.org> <1223422542.8195.42.camel@brick>
-	 <20081007235533.GN25780@parisc-linux.org>
-Content-Type: text/plain
-Date: Tue, 07 Oct 2008 17:02:18 -0700
-Message-Id: <1223424138.8195.47.camel@brick>
+	Tue, 7 Oct 2008 20:03:14 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:4620 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754260AbYJHADN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 20:03:13 -0400
+Date: Wed, 8 Oct 2008 02:02:27 +0200
+From: Quentin Godfroy <godfroy@clipper.ens.fr>
+To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: possible (ext4 related?) memory leak in kernel 2.6.26
+Message-ID: <20081008000227.GA32052@goelette.ens.fr>
+References: <20080930211854.GZ10831@mit.edu> <20080930222358.1FF30EAC415@quatramaran.ens.fr> <20081003003548.GA18138@mit.edu> <20081005091526.GA678@goelette.ens.fr> <20081005122752.GB27335@mit.edu> <20081005161214.GA2985@goelette.ens.fr> <20081006025006.GA9289@mit.edu> <48EA2F20.7020309@redhat.com> <20081006175502.GA12937@mit.edu> <20081007221256.GF15929@mit.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007221256.GF15929@mit.edu>
+User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Wed, 08 Oct 2008 02:02:36 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 17:55 -0600, Matthew Wilcox wrote:
-> On Tue, Oct 07, 2008 at 04:35:42PM -0700, Harvey Harrison wrote:
-> > On Tue, 2008-10-07 at 17:28 -0600, Matthew Wilcox wrote:
-> > > On Tue, Oct 07, 2008 at 02:53:11PM -0700, Harvey Harrison wrote:
-> > > > In addition, there are some subsystems (scsi) that are looking into some
-> > > > differently sized endian helpers (be24) and it may be worthwhile to have
-> > > > some agreement whether it is worth making them common infrastructure and
-> > > > whether they should present a similar API to the common byteorder/unaligned
-> > > > API.
-> > > 
-> > > I still think SCSI should have its own accessors, even if they're
-> > > just wrappers around the common BE code.
-> > > 
-> > 
-> > I thought it was generally discouraged that subsystems have trivial
-> > wrappers like that, otherwise you wind up with:
-> > 
-> > scsi_get_u32
-> > usb_get_u32
-> > v4l_get_u32
-> > 
-> > ... and so on, where as if they all used the common names, people more
-> > used to other areas of the kernel can still recognize what the code
-> > is doing without having the lookup another define.
+On Tue, Oct 07, 2008 at 06:12:56PM -0400, Theodore Tso wrote:
+> On Mon, Oct 06, 2008 at 01:55:02PM -0400, Theodore Tso wrote:
+> > Here are updates to the two patches I sent you.  The first fixes some
+> > printk labels and requires that the debugging dump ioctl be triggered
+> > by root; the second fixes the think-o that Eric pointed out earlier
+> > this morning.
 > 
-> My point is that they don't have to recognise what the code is doing.
-> They don't have to know if the protocol is BE or LE, only that USB code
-> is accessing the data in the appropriate way for USB.
-> 
+> Hey Quentin, just wanted to check in and find out if the patches seem
+> to be working for you.  They seem to solve the problem on my side; I
+> can no longer reproduce the problem.  Is it working for you?
 
-Or you go the packed-struct route and use the common helpers, and sparse tells
-you if you use the wrong endianness.  Even better, the structs act as decent
-documentation of the data being worked on.
+I rebooted, but as I didn't know exactly how to trigger the bug except than
+by waiting a few days I was waiting to see.
 
-YMMV,
+Do you have an idea about how to trigger the bug?
 
-Harvey
-
+Regards,
+Quentin Godfroy
