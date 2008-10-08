@@ -1,181 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbYJHRvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbYJHR5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbYJHRvU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 13:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYJHRvM
+	id S1755274AbYJHR5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 13:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYJHR5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 13:51:12 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:38677 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754582AbYJHRvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 13:51:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=wjZbZUf+QvW4NCS3U6MkD5ttGF2tcQ97qt6J7VA672+8znAGDMmuKzz8nwNgXzwaajDG/sBTvxA/TMEcf+xqhAdFMXonwyFCc8FEoYp0lFb3KYnYuYurn2xgNXcqkyKqc1Yin3JuccUX4eEzfP4gn9IZ3unHGDVJQ5+iAiaR3cA=  ;
-X-YMail-OSG: vo8_bMoVM1n0jwVVXhW8I7WBtysHE.Z63GwhlLar9ero.m45gqO8kXLQw.GjucJpS6bHvAnHtA7BkirJnPJoF.5Tju39YeMHAadt7wSEoN4v0fRey_Ea03CWjZ3O8rrXnoVPD3OHeIrrKw_uIkgaELe_
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Samuel Ortiz <sameo@openedhand.com>
-Subject: Re: [patch 2.6.27-rc8-git] add drivers/mfd/twl4030-core.c
-Date: Wed, 8 Oct 2008 10:50:59 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
-References: <200810061047.50127.david-b@pacbell.net> <20081008171814.GB4766@localdomain>
-In-Reply-To: <20081008171814.GB4766@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200810081051.00132.david-b@pacbell.net>
+	Wed, 8 Oct 2008 13:57:13 -0400
+Received: from mail.ukfsn.org ([77.75.108.10]:57699 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753487AbYJHR5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 13:57:13 -0400
+Date: Wed, 8 Oct 2008 18:57:10 +0100
+From: Nick Warne <nick@ukfsn.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] Trivial patch to submitting-patches Documantation
+Message-ID: <20081008185710.2754d60b@sauron.linicks.net>
+In-Reply-To: <20081008103155.133f2692@tpl>
+References: <20081008134401.68910c46@sauron.linicks.net>
+	<20081008103155.133f2692@tpl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 October 2008, Samuel Ortiz wrote:
-> Thanks, applied to my mfd tree.
+On Wed, 8 Oct 2008 10:31:55 -0600
+Jonathan Corbet <corbet@lwn.net> wrote:
 
-Great!
-
-> > +#if defined(CONFIG_TWL4030_BCI_BATTERY) || \
-> > +     defined(CONFIG_TWL4030_BCI_BATTERY_MODUEL)
+> On Wed, 8 Oct 2008 13:44:01 +0100
+> Nick Warne <nick@ukfsn.org> wrote:
 > 
-> minor typo, you probably meant: CONFIG_TWL4030_BCI_BATTERY_MODULE
+> > Diff'ed against 2.6.26.5 stable tree.
+> > 
+> > Test-by tag is wrong.
+> 
+> I have a fix for this in my docs tree already.  Linus didn't pull it
+> (not surprising, given that I just put it up last week), so I'll try
+> again in the merge window.
+> 
+> Thanks,
+> jon
 
-Yes, good catch.  You'll tweak?
+Jon,
 
-Appended is that simple IRQ cleanup I mentioned.
-(Get a load of the diffstat!)
+Did you see/catch my other trivial issue:
 
-There's more substantial IRQ stuff on the way, but
-it won't be ready before the 2.6.28 merges start.
+http://marc.info/?l=linux-kernel&m=122316762030204&w=2
 
-- Dave
+In Documentation/cdrom/ide-cd, from line 148 is:
 
-================== CUT HERE
-From: David Brownell <dbrownell@users.sourceforge.net>
+"Lacking anything else, you could use the
+cdtester program in Documentation/cdrom/sbpcd".
 
-twl4030-core irq simplification
+This file is not present in stable 2.6.26.5 at least.
 
-Simplify twl4030 IRQ handling by removing a needless custom flow
-handler.  The top level IRQs, from the PIH, are well suited for
-handle_simple_irq() ... they can't be acked or masked.
 
-Switching resolves some issues with how IRQs were dispatched.
-Notably, abuse of desc->status, IRQ accounting, and handling
-of various faults.
+Thanks,
 
-In short, use standard genirq code.
-
-Drivers that request_irq() to the PIH will need to pay more
-attention to things like setting IRQF_DISABLED (since it's
-no longer ignored), and making I2C calls from handlers (you'll
-need a lockdep workaround).
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/mfd/twl4030-core.c |   68 +--------------------------------------------
- 1 file changed, 2 insertions(+), 66 deletions(-)
-
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -535,68 +535,6 @@ EXPORT_SYMBOL(twl4030_i2c_read_u8);
- 
- /*----------------------------------------------------------------------*/
- 
--/*
-- * do_twl4030_module_irq() is the desc->handle method for each of the twl4030
-- * module interrupts that doesn't chain to another irq_chip (GPIO, power, etc).
-- * It executes in kernel thread context.  On entry, cpu interrupts are disabled.
-- */
--static void do_twl4030_module_irq(unsigned int irq, irq_desc_t *desc)
--{
--	struct irqaction *action;
--	const unsigned int cpu = smp_processor_id();
--
--	/*
--	 * Earlier this was desc->triggered = 1;
--	 */
--	desc->status |= IRQ_LEVEL;
--
--	/*
--	 * The desc->handle method would normally call the desc->chip->ack
--	 * method here, but we won't bother since our ack method is NULL.
--	 */
--
--	if (!desc->depth) {
--		kstat_cpu(cpu).irqs[irq]++;
--
--		action = desc->action;
--		if (action) {
--			int ret;
--			int status = 0;
--			int retval = 0;
--
--			local_irq_enable();
--
--			do {
--				/* Call the ISR with cpu interrupts enabled */
--				ret = action->handler(irq, action->dev_id);
--				if (ret == IRQ_HANDLED)
--					status |= action->flags;
--				retval |= ret;
--				action = action->next;
--			} while (action);
--
--			if (status & IRQF_SAMPLE_RANDOM)
--				add_interrupt_randomness(irq);
--
--			local_irq_disable();
--
--			if (retval != IRQ_HANDLED)
--				printk(KERN_ERR "ISR for TWL4030 module"
--					" irq %d can't handle interrupt\n",
--					irq);
--
--			/*
--			 * Here is where we should call the unmask method, but
--			 * again we won't bother since it is NULL.
--			 */
--		} else
--			printk(KERN_CRIT "TWL4030 module irq %d has no ISR"
--					" but can't be masked!\n", irq);
--	} else
--		printk(KERN_CRIT "TWL4030 module irq %d is disabled but can't"
--				" be masked!\n", irq);
--}
--
- static unsigned twl4030_irq_base;
- 
- static struct completion irq_event;
-@@ -611,7 +549,6 @@ static int twl4030_irq_thread(void *data)
- 	static unsigned i2c_errors;
- 	const static unsigned max_i2c_errors = 100;
- 
--	daemonize("twl4030-irq");
- 	current->flags |= PF_NOFREEZE;
- 
- 	while (!kthread_should_stop()) {
-@@ -691,8 +628,7 @@ static struct task_struct * __init start_twl4030_irq_thread(long irq)
- 	struct task_struct *thread;
- 
- 	init_completion(&irq_event);
--	thread = kthread_run(twl4030_irq_thread, (void *)irq,
--			     "twl4030 irq %ld", irq);
-+	thread = kthread_run(twl4030_irq_thread, (void *)irq, "twl4030-irq");
- 	if (!thread)
- 		pr_err("%s: could not create twl4030 irq %ld thread!\n",
- 		       DRIVER_NAME, irq);
-@@ -1126,7 +1062,7 @@ static void twl_init_irq(int irq_num, unsigned irq_base, unsigned irq_end)
- 	/* install an irq handler for each of the PIH modules */
- 	for (i = irq_base; i < irq_end; i++) {
- 		set_irq_chip_and_handler(i, &twl4030_irq_chip,
--				do_twl4030_module_irq);
-+				handle_simple_irq);
- 		activate_irq(i);
- 	}
- 
-
+Nick
+-- 
+Free Software Foundation Associate Member 5508
