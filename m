@@ -1,124 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYJHCj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYJHCni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYJHCj7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 22:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYJHCju
+	id S1757549AbYJHCni (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 22:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYJHCn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 22:39:50 -0400
-Received: from mga11.intel.com ([192.55.52.93]:14786 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753258AbYJHCju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 22:39:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,376,1220252400"; 
-   d="scan'208";a="388845689"
-Subject: Re: [PATCH] USB: improve ehci_watchdog's side effect in CPU power
-	management
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       gregkh@suse.de, linux-usb@vger.kernel.org
-In-Reply-To: <20081002165649.00d021db.akpm@linux-foundation.org>
-References: <1222334744.9267.41.camel@yangyi-dev>
-	 <20081002165649.00d021db.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Organization: Intel
-Date: Wed, 08 Oct 2008 18:40:20 +0800
-Message-Id: <1223462420.2845.11.camel@yangyi-dev>
+	Tue, 7 Oct 2008 22:43:29 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:63211 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752884AbYJHCn3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 22:43:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AowFANe660hMQWq+/2dsb2JhbACBcrxdgWo
+Date: Tue, 7 Oct 2008 22:43:25 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] markers: remove 2 exported symbols
+Message-ID: <20081008024325.GA29227@Krystal>
+References: <48EC199D.40808@cn.fujitsu.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <48EC199D.40808@cn.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:38:26 up 125 days,  7:18,  9 users,  load average: 0.36, 0.49,
+	0.33
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-02 at 16:56 -0700, Andrew Morton wrote:
-> On Thu, 25 Sep 2008 17:25:44 +0800
-> Yi Yang <yi.y.yang@intel.com> wrote:
+* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
 > 
-> > ehci_watchdog will wake up CPU very frequently so that CPU
-> > stays at C3 very short, average residence time is about 50
-> > ms on Aspire One, but we expect it should be about 1 second
-> > or more, so this kind of periodic timer is very bad for power
-> > saving.
-> > 
-> > We can't remove this timer because of some bad USB controller
-> > chipset, but at least we should reduce its side effect to as
-> > possible as low.
-> > 
-> > This patch can make CPU stay at C3 longer, average residence time
-> > is about twice as long as original. 
-> > 
-> > Please consider to apply it, thanks
-> > 
-> > Signed-off-by: Yi Yang <yi.y.yang@intel.com>
-> > ---
-> >  ehci.h |   12 +++++++-----
-> >  1 file changed, 7 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
-> > index 5799298..9d530d9 100644
-> > --- a/drivers/usb/host/ehci.h
-> > +++ b/drivers/usb/host/ehci.h
-> > @@ -181,14 +181,16 @@ timer_action (struct ehci_hcd *ehci, enum ehci_timer_action action)
-> >  	 * the async ring; just the I/O watchdog.  Note that if a
-> >  	 * SHRINK were pending, OFF would never be requested.
-> >  	 */
-> > -	if (timer_pending(&ehci->watchdog)
-> > -			&& ((BIT(TIMER_ASYNC_SHRINK) | BIT(TIMER_ASYNC_OFF))
-> > -				& ehci->actions))
-> > -		return;
-> > +	enum ehci_timer_action oldactions = ehci->actions;
-> >  
-> >  	if (!test_and_set_bit (action, &ehci->actions)) {
-> >  		unsigned long t;
-> >  
-> > +		if (timer_pending(&ehci->watchdog)
-> > +			&& ((BIT(TIMER_ASYNC_SHRINK) | BIT(TIMER_ASYNC_OFF))
-> > +				& oldactions))
-> > +			return;
-> > +
-> >  		switch (action) {
-> >  		case TIMER_IO_WATCHDOG:
-> >  			t = EHCI_IO_JIFFIES;
-> > @@ -204,7 +206,7 @@ timer_action (struct ehci_hcd *ehci, enum ehci_timer_action action)
-> >  			t = DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1;
-> >  			break;
-> >  		}
-> > -		mod_timer(&ehci->watchdog, t + jiffies);
-> > +		mod_timer(&ehci->watchdog, round_jiffies(t + jiffies));
-> >  	}
-> >  }
-> >  
+> __mark_empty_function() and marker_probe_cb_noarg()
+> should not be seen by outer code. this patch remove them.
 > 
-> <looks>
-> 
-> <regrets it>
-> 
-> 
-> Why does this:
-> 
-> 	t = DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1;
-> 
-> add "1000" to a jiffies value when it doesn't know what HZ is?  It'll
-> be adding anywhere from one second up to ten seconds to the timeout
-> interval depending upon compile-time options.
-I don't know why original author did so.
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/include/linux/marker.h b/include/linux/marker.h
+> index 1290653..f4d4d28 100644
+> --- a/include/linux/marker.h
+> +++ b/include/linux/marker.h
+> @@ -132,12 +132,8 @@ static inline void __printf(1, 2) ___mark_check_format(const char *fmt, ...)
+>  			___mark_check_format(format, ## args);		\
+>  	} while (0)
+>  
+> -extern marker_probe_func __mark_empty_function;
+> -
 
-> 
-> I suspect s/1000/HZ/ would improve things here.  Or just delete it -
-> doesn't the subsequent round_jiffies() do the same thing, only better? 
-> This code needs help, I suspect.
-If 1000 is substituted with HZ, this computation is meaningless, we can
-invoke ﻿EHCI_SHRINK_FRAMES directly.
+Hi Lai,
 
-I think the best way to do with this bad case is to remove such a
-watchdog completely unless we detect a bad usb chipset which will lost
-data frame if we don't start watchdog timer.
+Hrm ? Have a good look at the macro __trace_mark() in
+include/linux/marker.h, you'll see that __mark_empty_function is
+referenced. Have you tested this against code with declared markers ?
+
+>  extern void marker_probe_cb(const struct marker *mdata,
+>  	void *call_private, ...);
+> -extern void marker_probe_cb_noarg(const struct marker *mdata,
+> -	void *call_private, ...);
+
+This second change is correct. marker_probe_cb is referenced by
+__trace_mark(), but not marker_probe_cb_noarg, which is only connected
+when non-empty format string is found by the registration function in
+marker.c.
+
+>  
+>  /*
+>   * Connect a probe to a marker.
+> diff --git a/kernel/marker.c b/kernel/marker.c
+> index 7d1faec..4440a09 100644
+> --- a/kernel/marker.c
+> +++ b/kernel/marker.c
+> @@ -81,11 +81,10 @@ static struct hlist_head marker_table[MARKER_TABLE_SIZE];
+>   * though the function pointer change and the marker enabling are two distinct
+>   * operations that modifies the execution flow of preemptible code.
+>   */
+> -void __mark_empty_function(void *probe_private, void *call_private,
+> +static void __mark_empty_function(void *probe_private, void *call_private,
+>  	const char *fmt, va_list *args)
+>  {
+>  }
+> -EXPORT_SYMBOL_GPL(__mark_empty_function);
+>  
+
+Same as comment above.
+
+>  /*
+>   * marker_probe_cb Callback that prepares the variable argument list for probes.
+> @@ -157,7 +156,7 @@ EXPORT_SYMBOL_GPL(marker_probe_cb);
+>   *
+>   * Should be connected to markers "MARK_NOARGS".
+>   */
+> -void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
+> +static void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
+>  {
+>  	va_list args;	/* not initialized */
+>  	char ptype;
+> @@ -197,7 +196,6 @@ void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
+>  	}
+>  	preempt_enable();
+>  }
+> -EXPORT_SYMBOL_GPL(marker_probe_cb_noarg);
+>  
+
+This one is ok.
+
+So overall, if you could check why you have not hit any problem when
+removing __mark_empty_function, that would be great. The only reason I
+see is that you had no markers in your kernel test code.
+
+Mathieu
+
+>  static void free_old_closure(struct rcu_head *head)
+>  {
 > 
 > 
-> Also, do we really need to inline this large function into at least
-> five callsites?
 > 
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
