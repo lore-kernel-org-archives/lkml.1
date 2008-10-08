@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756961AbYJHVht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbYJHViI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756961AbYJHVht (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 17:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbYJHVgl
+	id S1756826AbYJHViI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 17:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757016AbYJHVgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 17:36:41 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:54419 "EHLO mail.vyatta.com"
+	Wed, 8 Oct 2008 17:36:51 -0400
+Received: from mga11.intel.com ([192.55.52.93]:10731 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756888AbYJHVgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 17:36:39 -0400
-Date: Wed, 8 Oct 2008 23:36:30 +0200
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Graham, David" <david.graham@intel.com>
-Cc: "Hillier, Gernot " 
-	<IMCEAMAILTO-gernot+2Ehillier+40siemens+2Ecom@intel.com>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Hockert, Jeff W" <jeff.w.hockert@intel.com>,
-       "Graham, David" <david.graham@intel.com>
-Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on
- Supermicro X7DB3
-Message-ID: <20081008233630.53d26853@speedy>
-In-Reply-To: <E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com>
-References: <EA929A9653AAE14F841771FB1DE5A1365F498F4EDC@rrsmsx501.amr.corp.intel.com>
-	<E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757000AbYJHVgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 17:36:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,380,1220252400"; 
+   d="scan'208";a="624900634"
+Message-Id: <20081008210526.258371000@linux-os.sc.intel.com>
+References: <20081008210101.487661000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 08 Oct 2008 14:01:05 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, youquan.song@intel.com,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 4/4] tip, dmar: remove the quirk which disables dma-remapping when intr-remapping enabled
+Content-Disposition: inline; filename=enable_dmar.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Oct 2008 08:25:49 -0700
-"Graham, David" <david.graham@intel.com> wrote:
+From: Youquan Song <youquan.song@intel.com>
+Subject: remove the quirk which disables dma-remapping when intr-remapping enabled
 
-> Hi Gernot,
-> 
-> Thanks for reporting this issue. We have witnessed this in our labs too,
-> only on platforms that have BMC management firmware. I'm very familiar
-> with the problem, and believe that we have fixed it, though the
-> application of the fix may not be simple. The problem is a result of
-> improper synchronization between the platform FW and the e1000e driver
-> when they attempt concurrent access to LAN resources, and fixes were
-> made both on the driver side, and on the FW side. On some platforms a
-> simple driver update resolves the problem, others require FW fixes too.
-> 
-> The 0.2.0 driver in 2.6.25 has no fixes for this problem, and so I am
-> not surprised that you see it there. The first set of changes for this
-> issue are already in the 0.3.3.3-k2 driver that you are still seeing the
-> problem with on 2.6.26, so either those changes are not good, or your
-> issue requires one of the additional fixes.
-> 
-> There have been further improvements made to the driver synchronization
-> code since the 0.3.3.3-k2 driver, and it is possible that a newer driver
-> would resolve the issue. It'd be good for us to know if that's the case.
-> The driver version is not yet (AFAICS) upstream, but is already
-> available in the standalone e1000e-0.4.1.7 driver on sourceforge.
-> (google "sourceforge e1000e"). Would you be able to try that, as a first
-> step ? 
+Now that we have DMA-remapping support for queued invalidation, we
+can enable both DMA-remapping and interrupt-remapping at the same time.
 
-Repeat rant heard from many users and vendors:
-  Why does Intel continue to not do driver development in mainline kernel?
+Signed-off-by: Youquan Song <youquan.song@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+Index: tip/drivers/pci/dmar.c
+===================================================================
+--- tip.orig/drivers/pci/dmar.c	2008-10-08 09:49:30.000000000 -0700
++++ tip/drivers/pci/dmar.c	2008-10-08 10:13:36.000000000 -0700
+@@ -462,39 +462,22 @@
  
+ 	ret = dmar_table_detect();
+ 
+-#ifdef CONFIG_DMAR
+ 	{
++#ifdef CONFIG_INTR_REMAP
+ 		struct acpi_table_dmar *dmar;
+-		/*
+-		 * for now we will disable dma-remapping when interrupt
+-		 * remapping is enabled.
+-		 * When support for queued invalidation for IOTLB invalidation
+-		 * is added, we will not need this any more.
+-		 */
+ 		dmar = (struct acpi_table_dmar *) dmar_tbl;
+-		if (ret && cpu_has_x2apic && dmar->flags & 0x1) {
++		if (ret && cpu_has_x2apic && dmar->flags & 0x1)
+ 			printk(KERN_INFO
+ 			       "Queued invalidation will be enabled to support "
+ 			       "x2apic and Intr-remapping.\n");
+-			printk(KERN_INFO
+-			       "Disabling IOMMU detection, because of missing "
+-			       "queued invalidation support for IOTLB "
+-			       "invalidation\n");
+-			printk(KERN_INFO
+-			       "Use \"nox2apic\", if you want to use Intel "
+-			       " IOMMU for DMA-remapping and don't care about "
+-			       " x2apic support\n");
+-
+-			dmar_disabled = 1;
+-			goto end;
+-		}
++#endif
+ 
++#ifdef CONFIG_DMAR
+ 		if (ret && !no_iommu && !iommu_detected && !swiotlb &&
+ 		    !dmar_disabled)
+ 			iommu_detected = 1;
+-	}
+-end:
+ #endif
++	}
+ 	if (dmar_tbl)
+ 		early_acpi_os_unmap_memory(dmar_tbl, dmar_tbl_size);
+ 
+
+-- 
+
