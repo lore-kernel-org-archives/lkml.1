@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYJHIX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYJHIYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbYJHIX3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 04:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYJHIXV
+	id S1754919AbYJHIYB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 04:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbYJHIXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 04:23:21 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:55331 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbYJHIXT convert rfc822-to-8bit (ORCPT
+	Wed, 8 Oct 2008 04:23:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54637 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754723AbYJHIXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 04:23:19 -0400
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: "Gadiyar, Anand" <gadiyar@ti.com>,
-       "johnpol@2ka.mipt.ru" <johnpol@2ka.mipt.ru>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Chikkature Rajashekar, Madhusudhan" <madhu.cr@ti.com>
-Date: Wed, 8 Oct 2008 13:50:47 +0530
-Subject: RE: [PATCH 4/5] W1: Export w1_read_8 function
-Thread-Topic: [PATCH 4/5] W1: Export w1_read_8 function
-Thread-Index: AckpFwfRX/MmeudqRFiihm0naWvutQAB5v9w
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107B10@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+	Wed, 8 Oct 2008 04:23:42 -0400
+Subject: Re: [PATCH] x86 ACPI: Blacklist two HP machines with buggy BIOSes
+	(Re: 2.6.27-rc8+ - first impressions)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Jason Vas Dias <jason.vas.dias@gmail.com>
+In-Reply-To: <87tzbpmocm.fsf@basil.nowhere.org>
+References: <20081005183603.GA3263@amd.corenet.prv>
+	 <200810060029.42471.rjw@sisk.pl> <20081006062235.GA2808@amd.corenet.prv>
+	 <200810061159.30103.rjw@sisk.pl>
+	 <alpine.LFD.2.00.0810060749570.3208@nehalem.linux-foundation.org>
+	 <20081006150055.GA16930@elte.hu>
+	 <alpine.LFD.1.10.0810061815060.10470@ftp.linux-mips.org>
+	 <87tzbpmocm.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 10:23:22 +0200
+Message-Id: <1223454202.1378.38.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry. I missed linux-omap in the CC list for this one.)
+On Mon, 2008-10-06 at 22:59 +0200, Andi Kleen wrote:
 
-> -----Original Message-----
-> From: Gadiyar, Anand 
-> Sent: Wednesday, October 08, 2008 12:55 PM
-> To: johnpol@2ka.mipt.ru
-> Cc: linux-kernel@vger.kernel.org; 
-> linux-kernel@vger.kernel.org; 'Madhusudhan Chikkature'
-> Subject: [PATCH 4/5] W1: Export w1_read_8 function
-> 
-> From: Madhusudhan Chikkature <madhu.cr@ti.com>
-> 
-> This patch exports the w1_read_8 function for use of drivers.
-> 
-> Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
-> Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> ---
->  drivers/w1/w1.h    |    1 +
->  drivers/w1/w1_io.c |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/w1/w1_io.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/w1/w1_io.c	2008-09-19 13:39:41.000000000 +0530
-> +++ linux-2.6/drivers/w1/w1_io.c	2008-09-26 16:39:31.000000000 +0530
-> @@ -177,7 +177,7 @@ u8 w1_triplet(struct w1_master *dev, int
->   * @param dev     the master device
->   * @return        the byte read
->   */
-> -static u8 w1_read_8(struct w1_master * dev)
-> +u8 w1_read_8(struct w1_master * dev)
->  {
->  	int i;
->  	u8 res = 0;
-> @@ -190,6 +190,7 @@ static u8 w1_read_8(struct w1_master * d
->  
->  	return res;
->  }
-> +EXPORT_SYMBOL_GPL(w1_read_8);
->  
->  /**
->   * Writes a series of bytes.
-> Index: linux-2.6/drivers/w1/w1.h
-> ===================================================================
-> --- linux-2.6.orig/drivers/w1/w1.h	2008-09-19 13:39:41.000000000 +0530
-> +++ linux-2.6/drivers/w1/w1.h	2008-09-26 16:42:45.000000000 +0530
-> @@ -189,6 +189,7 @@ struct w1_master *w1_search_master_id(u3
->  
->  u8 w1_triplet(struct w1_master *dev, int bdir);
->  void w1_write_8(struct w1_master *, u8);
-> +u8 w1_read_8(struct w1_master *);
->  int w1_reset_bus(struct w1_master *);
->  u8 w1_calc_crc8(u8 *, int);
->  void w1_write_block(struct w1_master *, const u8 *, int);
+> The real reason is actually a workaround in the BIOS for problems
+> in the older Linux code that caused duplicated timer interrupts.
+
+That really made me blink - so instead of fixing Linux they fudged their
+BIOS?
+
+*utter amazement*
+
