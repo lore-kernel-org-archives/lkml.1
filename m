@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYJHK4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYJHLIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYJHK4n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 06:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYJHK4f
+	id S1755322AbYJHLIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 07:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYJHLIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 06:56:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57479 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754345AbYJHK4f (ORCPT
+	Wed, 8 Oct 2008 07:08:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:32802 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbYJHLIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 06:56:35 -0400
-Date: Wed, 8 Oct 2008 13:02:43 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
-Message-ID: <20081008110243.GN7971@one.firstfloor.org>
-References: <20081007211038.GQ20740@one.firstfloor.org> <20081008000518.13f48462@lxorguk.ukuu.org.uk> <20081007232059.GU20740@one.firstfloor.org> <20081008004030.7a0e9915@lxorguk.ukuu.org.uk> <20081007235737.GD7971@one.firstfloor.org> <20081008093424.4e88a3c2@lxorguk.ukuu.org.uk> <20081008084350.GI7971@one.firstfloor.org> <20081008095851.01790b6a@lxorguk.ukuu.org.uk> <20081008091112.GK7971@one.firstfloor.org> <20081008112037.6fa37c0b@lxorguk.ukuu.org.uk>
+	Wed, 8 Oct 2008 07:08:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type;
+        b=IT1w8Ogsm5cJDnaCoa6991zWTpwcL5GPw4Ksw0F4PN+BU9AcyLs9hrHtZSxXbroJi7
+         2Mf92NmnA/C32Hd01xUs7yCkAUgRi0BT3fzuEXRJ6An0FLRkZvsdZjgLj7KcKvpvTMV3
+         Zg1zYt/lEyg3mecwNQS0juvMAHJ06402N7gCc=
+Date: Wed, 8 Oct 2008 13:08:06 +0200
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       varenet@parisc-linux.org
+Subject: PATCH - New S1D1... Epson frambuffer maintainer
+Message-Id: <20081008130806.958423b3.kristoffer.ericson@gmail.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081008112037.6fa37c0b@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08, 2008 at 11:20:37AM +0100, Alan Cox wrote:
-> > That is racy when multi threaded because shmat() doesn't replace, so you 
-> > would need to munmap() inbetween and someone else could steal the area
-> > then. Yes you could stick a loop around it. It could livelock.
-> > No, it's not a good interface I would advocate.
-> 
-> You could just use pthread mutexes in your application. The rôle of the
+This is a multi-part message in MIME format.
 
-malloc() can call mmap, so that would require putting a mutex around
-each malloc(). Good luck finding them all.
+--Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-> kernel is not to provide nappies for people who think programming is too
-> hard but to provide services that can be used to build applications.
+I'm stepping up as maintainer for the Epson S1D13XXXFB driver
+since I have 2 platforms currently using it.
 
-Outsourcing kernel locking to user space is not the way to go.
+Signed-off-by: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
+Acked-by: Thibaut Var_ne <varenet@parisc-linux.org>
 
--Andi
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8dae455..aed3ee5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1610,6 +1610,11 @@ P:	Christopher Hoover
+ M:	ch@murgatroid.com, ch@hpl.hp.com
+ S:	Maintained
+ 
++EPSON S1D13XXX FRAMEBUFFER DRIVER
++P:	Kristoffer Ericson
++M:	kristoffer.ericson@gmail.com
++S:	Maintained
++
+ ETHEREXPRESS-16 NETWORK DRIVER
+ P:	Philip Blundell
+ M:	philb@gnu.org
+
 
 -- 
-ak@linux.intel.com
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+--Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke
+Content-Type: application/octet-stream;
+ name="epson-add-maintainer.patch"
+Content-Disposition: attachment;
+ filename="epson-add-maintainer.patch"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRBSU5FUlMKaW5kZXggOGRhZTQ1NS4uYWVk
+M2VlNSAxMDA2NDQKLS0tIGEvTUFJTlRBSU5FUlMKKysrIGIvTUFJTlRBSU5FUlMKQEAgLTE2MTAs
+NiArMTYxMCwxMSBAQCBQOglDaHJpc3RvcGhlciBIb292ZXIKIE06CWNoQG11cmdhdHJvaWQuY29t
+LCBjaEBocGwuaHAuY29tCiBTOglNYWludGFpbmVkCiAKK0VQU09OIFMxRDEzWFhYIEZSQU1FQlVG
+RkVSIERSSVZFUgorUDoJS3Jpc3RvZmZlciBFcmljc29uCitNOglrcmlzdG9mZmVyLmVyaWNzb25A
+Z21haWwuY29tCitTOglNYWludGFpbmVkCisKIEVUSEVSRVhQUkVTUy0xNiBORVRXT1JLIERSSVZF
+UgogUDoJUGhpbGlwIEJsdW5kZWxsCiBNOglwaGlsYkBnbnUub3JnCg==
+
+--Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke--
