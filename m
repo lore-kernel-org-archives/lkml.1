@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYJHXNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYJHXO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYJHXNX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 19:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYJHXNN
+	id S1757323AbYJHXO1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 19:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYJHXOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 19:13:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51063 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbYJHXNM (ORCPT
+	Wed, 8 Oct 2008 19:14:17 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:20303 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751977AbYJHXOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 19:13:12 -0400
-Subject: Re: [PATCH] sched_clock: prevent scd->clock from moving backwards
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1223470854.6336.15.camel@norville.austin.ibm.com>
-References: <48D959E8.4000303@goop.org>
-	 <1223470773.6336.13.camel@norville.austin.ibm.com>
-	 <1223470854.6336.15.camel@norville.austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 09 Oct 2008 01:05:04 +0200
-Message-Id: <1223507104.7382.6.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 8 Oct 2008 19:14:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Rv4ElnKxX98vORau7+dj0P8P7J/4h8dqSSBR3gLLcPIbrKXHd70Rj/WK/wLWTghmcYFUtJTK+hheJfaNKA9VnGT3g3L8P4imfagqqTHalwkPb/0/nYZpDrTtMAcfQ9O+VQOLwHqH97j3Irc7ZRjLoIV4UzWOai6pOpbk9omJZ2w=  ;
+X-YMail-OSG: fwNiLvUVM1lNTAPpA3eYuMdlOR6Qe.u0WYlk4Fux82rYdFlkUvGhi0bNe3ZugopzOKifUUoKTYy7.zqeryjE_odFN2v1gmw6D0EV2BrULSNus_5WVLa7DmyuDoqGLUvxx5sl8k.xY8P8TMl4rFfJV575EIAjxALdjEQYeLoV
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Samuel Ortiz <sameo@openedhand.com>
+Subject: Re: [patch 2.6.27-rc8-git] add drivers/mfd/twl4030-core.c
+Date: Wed, 8 Oct 2008 16:14:14 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
+References: <200810061047.50127.david-b@pacbell.net> <200810081051.00132.david-b@pacbell.net> <20081008224123.GD4766@localdomain>
+In-Reply-To: <20081008224123.GD4766@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810081614.14792.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-08 at 08:00 -0500, Dave Kleikamp wrote:
-> sched_clock: prevent scd->clock from moving backwards
-> 
-> When sched_clock_cpu() couples the clocks between two cpus, it may
-> increment scd->clock beyond the GTOD tick window that __update_sched_clock()
-> uses to clamp the clock.  A later call to __update_sched_clock() may move
-> the clock back to scd->tick_gtod + TICK_NSEC, violating the clock's
-> monotonic property.
-> 
-> This patch ensures that scd->clock will not be set backward.
+On Wednesday 08 October 2008, Samuel Ortiz wrote:
+> > There's more substantial IRQ stuff on the way, but
+> > it won't be ready before the 2.6.28 merges start.
+>
+> I can still take patches during the merge window, if
+> you think they're really ready and necessary.
 
-Ah, yes indeed, this comes from the tick not happening at the same time
-on different cpus, so if we use a local timestamp to move a remote clock
-forward, this scenario could indeed happen.
+I think they're necessary, but they'll be more ready
+a bit later in the merge window.
 
-The fix looks good to me, good catch, thanks shaggy!
+Other issues are still stabilizing; right now we're
+chasing down some unrelated issues.
 
-A related 'fix' which I'm still not quite sure about is making the
-window 'tick_gtod + 2*TICK_NSEC'. That increases the max observed
-difference to 4 jiffies, but allows ticks to be 'late' a bit without
-first holding back time and then jumping ahead again.
+Like ... it turns out some power management support
+in the I2C driver is causing trouble with this
+driver (intermittent failures).  Workaround is to
+turn off I2C power management; the real fix seems
+to involve recognizing that OMAP2 != OMAP3.
 
-> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+The problem first surfaced when the $SUBJECT core
+moved from drivers/i2c/chips to drivers/mfd, and
+some timings changed.  Intermittent failure then
+morphed intoGood fun! ;)
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> 
-> diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-> index e8ab096..a989d64 100644
-> --- a/kernel/sched_clock.c
-> +++ b/kernel/sched_clock.c
-> @@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
->  
->  	/*
->  	 * scd->clock = clamp(scd->tick_gtod + delta,
-> -	 * 		      max(scd->tick_gtod, scd->clock),
-> -	 * 		      scd->tick_gtod + TICK_NSEC);
-> +	 *		      max(scd->tick_gtod, scd->clock),
-> +	 *		      min(scd->clock, scd->tick_gtod + TICK_NSEC));
->  	 */
->  
->  	clock = scd->tick_gtod + delta;
->  	min_clock = wrap_max(scd->tick_gtod, scd->clock);
-> -	max_clock = scd->tick_gtod + TICK_NSEC;
-> +	max_clock = wrap_min(scd->clock, scd->tick_gtod + TICK_NSEC);
->  
->  	clock = wrap_max(clock, min_clock);
->  	clock = wrap_min(clock, max_clock);
-> 
-> 
+- Dave
 
