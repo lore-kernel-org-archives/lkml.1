@@ -1,154 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbYJHNOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbYJHNRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953AbYJHNOZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbYJHNON
+	id S1755256AbYJHNRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYJHNRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:14:13 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:60503 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYJHNOM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:14:12 -0400
-Message-ID: <48ECB215.4040409@linux.vnet.ibm.com>
-Date: Wed, 08 Oct 2008 18:43:57 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: righi.andrea@gmail.com, Michael Rubin <mrubin@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       dave@linux.vnet.ibm.com, chlunde@ping.uio.no, dpshah@google.com,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, agk@sourceware.org,
-       m.innocenti@cineca.it, s-uchida@ap.jp.nec.com, ryov@valinux.co.jp,
-       matt@bluehost.com, dradford@bluehost.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH -mm 0/2] memcg: per cgroup dirty_ratio
-References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com> <20080912131816.e0cfac7a.akpm@linux-foundation.org> <532480950809221641y3471267esff82a14be8056586@mail.gmail.com> <48EB4236.1060100@linux.vnet.ibm.com> <48EB851D.2030300@gmail.com> <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Oct 2008 09:17:20 -0400
+Received: from verein.lst.de ([213.95.11.210]:43565 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752652AbYJHNRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 09:17:19 -0400
+Date: Wed, 8 Oct 2008 15:16:56 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Tiger Yang <tiger.yang@oracle.com>
+Cc: Mark Fasheh <mfasheh@suse.com>, Christoph Hellwig <hch@lst.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] [PATCH 13/39] ocfs2: Add extended attribute support
+Message-ID: <20081008131656.GD25392@lst.de>
+References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com> <20081002081644.GB24717@lst.de> <20081007220811.GG26373@wotan.suse.de> <48EC1359.6040109@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EC1359.6040109@oracle.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Tue, 07 Oct 2008 17:49:49 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
+On Wed, Oct 08, 2008 at 09:56:41AM +0800, Tiger Yang wrote:
+> Mark Fasheh wrote:
+> >>>+static inline struct xattr_handler *ocfs2_xattr_handler(int name_index)
+> >>>+{
+> >>>+	struct xattr_handler *handler = NULL;
+> >>>+
+> >>>+	if (name_index > 0 && name_index < OCFS2_XATTR_MAX)
+> >>>+		handler = ocfs2_xattr_handler_map[name_index];
+> >>>+
+> >>>+	return handler;
+> >>>+}
+> >>You seem to need the handler mostly for getting back to the prefix
+> >>from the handler.  This is a pretty clear indicator that you don't
+> >>want to use the xattr_handler splitting but deal with the whole
+> >>attr name.  Take a look at the btrfs code after my recent xattr changes
+> >>on how to handle this more nicely.
+> >
+> >Tao, Can you look into this?
 > 
->> Balbir Singh wrote:
->>> Michael Rubin wrote:
->>>> On Fri, Sep 12, 2008 at 1:18 PM, Andrew Morton
->>>> <akpm@linux-foundation.org> wrote:
->>>>> One thing to think about please: Michael Rubin is hitting problems with
->>>>> the existing /proc/sys/vm/dirty-ratio.  Its present granularity of 1%
->>>>> is just too coarse for really large machines, and as
->>>>> memory-size/disk-speed ratios continue to increase, this will just get
->>>>> worse.
->>>> Re-sending since I top-posted before. Never again. Also adding more
->>>> thoughts on a byte based interface.
->>>>
->>>> Currently the problem we are hitting is that we cannot specify pdflush
->>>> to have background limits less than 1% of memory. I am currently
->>>> finishing up a patch right now that adds a dirty_ratio_millis
->>>> interface.  I hope to submit the patch to LKML by the end of the week.
->>>>
->>>> The idea is that we don't want to break backwards compatibility and we
->>>> also don't want to have two conflicting knobs in the sysctl or
->>>> /proc/sys/vm/ space. I thought adding a new knob for those who want to
->>>> specify finer grained functionality was a compromise. So the patch has
->>>> a vm_dirty_ratio and a vm_dirty_ratio_millis interface. The first to
->>>> specify 0-100% and the second to specify .0 to .999%.
->>>>
->>>> So to represent 0.125% of RAM we set
->>>> vm_dirty_ratio = 0
->>>> vm_dirty_ratio_millis = 125
->>>>
->>>> The same for the background_ratio.
->>>>
->>>> I would also prefer using a bytes interface but I am not sure how to
->>>> offer that without  either removing the legacy interface of the ratios
->>>> or by offering a concurrent interface that might be confusing such as
->>>> when users are looking at the old one and not aware of a new one.
->>>>
->>> Just provide a vm_dirty_ration_in_bytes interface and keep it in sync with
->>> vm_dirty_ratio (they are just two representations of the same internal value)
->>> and for higher resolution propose that users use the bytes interface.
->> Hi Balbir,
->>
->> now that I read carefully the documentation, the description in
->> Documentation/filesystems/proc.txt seems to be a bit misleading. In
->> proc.txt we say that dirty_ratio and dirty_background_ratio are "a
->> percentage of total system memory", but in mm/page-writeback.c we apply
->> the percentages to the dirtyable memory: free pages + reclaimable pages.
->> So, first of all I think we should clarify this in the documentation...
->>
->> Saying that, keeping in sync the vm_dirty_amount_in_bytes according to
->> dirty_ratio_in_percentage is not a trivial task. One is a static value,
->> the other depends on the dirtyable memory in the system. If we want to
->> preserve the same behaviour we should do the following:
->>
->> dirty_ratio = x => dirty_amount_in_bytes = x * dirtyable_memory / 100
->>
->> dirty_amount_in_bytes = y => dirty_ratio = y / dirtyable_memory * 100
->>
->> But anytime the dirtyable memory (or the total memory in the system)
->> changes we should update both values accordingly to preserve the
->> coherency between them (ouch!).
->>
+> I have looked the patch for btrfs about this. We are different.
+> Btrfs store the whole xattr name including the prefix "user." 
+> "trusted.", we store index number instead of it.
 
-I see what you mean.
+In which case you shouldn't need to look the handler up anyway.  I'll
+re-review the code once you post the next version.
 
->> Possible solutions:
->>
->> 1) introduce fine-grained dirty_ratio handling decimals by an opportune
->>    parser (disadvantage: this would break the compatibility with all the
->>    userspace apps that expect to read an int from vm_dirty_ratio)
->>
->> 2) introduce dirty_ratio + dirty_ratio_millis (disadvantage: can
->>    generate unexpected behaviours when something is written to
->>    dirty_ratio ignoring the existence of dirty_ratio_millis)
->>
->> 3) introduce dirty_ratio + dirty_amount_in_bytes mutually exclusive,
->>    writing to one automatically "disable" the other (disadvantage:
->>    writing to dirty_ratio ignoring dirty_amount_in_bytes can cause
->>    unexpected behaviours)
->>
->> 4) introduce dirty_ratio + dirty_amount_in_bytes and change the
->>    old behaviour: when something is written to dirty_ratio,
->>    dirty_amount_in_bytes is evaluated in function of totalram_pages (or
->>    the memcg limit) and then we always use this static value, instead of
->>    something that depends on the dirtyable memory - we can easily update
->>    dirty_amount_in_bytes also when totalram_pages or the memcg limit
->>    changes (disadvantage: change an old - working - behaviour).
->>
->> 5) handle fine-grained dirty_ratio decimals by an opportune parser when
->>    writing something to dirty_ratio; export the percentage units via
->>    dirty_ratio, and the decimals via dirty_ratio_decimals; writing to
->>    dirty_ratio_decimals is not allowed.
->>
->> I tend to choose 5. The same for dirty_background_ratio.
->>
-> 
-> Hmm... I agree to "5"... like this ?
-> ==
-> prvoides
->   - vm.dirty_ratio (1/100)
->   - vm.dirty_ratio_percentmille(1/100,000, pcm)
-> 
-> and allow
-> #echo 0.05 > vm/dirty_ratio
-> #cat vm/dirty_ratio 
-> 0
-> #cat vm/dirty_ratio_percentmille
-> 500
-> ==
-
-I guess this would be the easiest way forward, I'll let you select the
-granularity of the interface and its meaning.
-
-
--- 
-	Balbir
