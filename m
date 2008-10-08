@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYJHVfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYJHVf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbYJHVfP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 17:35:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbYJHVfA
+	id S1756613AbYJHVf5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 17:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbYJHVfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 17:35:00 -0400
-Received: from phunq.net ([64.81.85.152]:57534 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754911AbYJHVe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 17:34:59 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [RFC] Btrfs mainline plans
-Date: Wed, 8 Oct 2008 14:33:32 -0700
-User-Agent: KMail/1.9.5
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>
-References: <1222717460.30627.56.camel@think.oraclecorp.com> <20081005141113.GA6132@us.ibm.com> <20081005150957.GC12047@cs181140183.pp.htv.fi>
-In-Reply-To: <20081005150957.GC12047@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810081433.32766.phillips@phunq.net>
+	Wed, 8 Oct 2008 17:35:48 -0400
+Received: from mga09.intel.com ([134.134.136.24]:8676 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754948AbYJHVfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 17:35:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,380,1220252400"; 
+   d="scan'208";a="448772721"
+Message-Id: <20081008210525.834190000@linux-os.sc.intel.com>
+References: <20081008210101.487661000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 08 Oct 2008 14:01:02 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, youquan.song@intel.com,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 1/4] tip, dmar: use spin_lock_irqsave() in qi_submit_sync()
+Content-Disposition: inline; filename=fix_spin_lock_qi_submit_sync.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 October 2008 08:09, Adrian Bunk wrote:
-> "accelerate its development and will broaden its developer base" is not 
-> about users/testers but about people doing code development.
-> 
-> For people wanting to try WIP code you don't need it in mainline.
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: use spin_lock_irqsave() in qi_submit_sync()
 
-But it saves time for the user, who does not have to run around chasing
-links, carefully checking for a kernel match, downloading, patching,
-building and installing a single purpose kernel, and bringing it up on
-a machine that would probably have only required one click on the new
-filesystem option otherwise.  The considerable time thus saved can be
-invested profitably in running test cases and filing bug reports.
+Next patch in the series will use queued invalidation interface
+qi_submit_sync() for DMA-remapping aswell, which can be called from interrupt
+context.
+
+So use spin_lock_irqsave() instead of spin_lock() in qi_submit_sync().
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Youquan Song <youquan.song@intel.com>
+---
+
+Index: tip/drivers/pci/dmar.c
+===================================================================
+--- tip.orig/drivers/pci/dmar.c	2008-10-07 15:42:47.000000000 -0700
++++ tip/drivers/pci/dmar.c	2008-10-07 16:27:47.000000000 -0700
+@@ -592,11 +592,11 @@
  
-> Stable kernels will anyway usually contain months old code of the
-> WIP filesystem that is not usable for testing, so for any meaningful
-> testing you will still have to follow the btrfs tree and not mainline.
+ 	hw = qi->desc;
+ 
+-	spin_lock(&qi->q_lock);
++	spin_lock_irqsave(&qi->q_lock, flags);
+ 	while (qi->free_cnt < 3) {
+-		spin_unlock(&qi->q_lock);
++		spin_unlock_irqrestore(&qi->q_lock, flags);
+ 		cpu_relax();
+-		spin_lock(&qi->q_lock);
++		spin_lock_irqsave(&qi->q_lock, flags);
+ 	}
+ 
+ 	index = qi->free_head;
+@@ -617,15 +617,22 @@
+ 	qi->free_head = (qi->free_head + 2) % QI_LENGTH;
+ 	qi->free_cnt -= 2;
+ 
+-	spin_lock_irqsave(&iommu->register_lock, flags);
++	spin_lock(&iommu->register_lock);
+ 	/*
+ 	 * update the HW tail register indicating the presence of
+ 	 * new descriptors.
+ 	 */
+ 	writel(qi->free_head << 4, iommu->reg + DMAR_IQT_REG);
+-	spin_unlock_irqrestore(&iommu->register_lock, flags);
++	spin_unlock(&iommu->register_lock);
+ 
+ 	while (qi->desc_status[wait_index] != QI_DONE) {
++		/*
++		 * We will leave the interrupts disabled, to prevent interrupt
++		 * context to queue another cmd while a cmd is already submitted
++		 * and waiting for completion on this cpu. This is to avoid
++		 * a deadlock where the interrupt context can wait indefinitely
++		 * for free slots in the queue.
++		 */
+ 		spin_unlock(&qi->q_lock);
+ 		cpu_relax();
+ 		spin_lock(&qi->q_lock);
+@@ -634,7 +641,7 @@
+ 	qi->desc_status[index] = QI_DONE;
+ 
+ 	reclaim_free_desc(qi);
+-	spin_unlock(&qi->q_lock);
++	spin_unlock_irqrestore(&qi->q_lock, flags);
+ }
+ 
+ /*
 
-True, but the trick here is getting started.  It is much easier to
-justify the effort of going out and getting the latest patch if one
-knows from experience that it basically already works.
+-- 
 
-> This is not meant as a statement on the quality of ext4 or btrfs, or any 
-> comparison of the development times of ext4 and btrfs, but for ext4 the 
-> advantages Andrew thinks would happen with an early btrfs merge do not 
-> seem to have happened.
-
-Are you sure about that?  I see 33 messages on linux-ext4 yesterday,
-from a broad range of contributors.  Versus eight from a much narrower
-range of contributors, Oct 4 a year ago.
-
-There is little question that an early merge helps both developers and
-users employ their time more efficiently, once a project is past the
-point where we wonder about its value and/or viability.  In my opinion,
-Btrfs clearly has both.  Particularly because we need a way to stem the
-loss of mindshare to ZFS in the storage space, which is significant at
-the moment.  And Btrfs is closest to the finish line in that regard.
-It needs all the help it can get.
-
-Regards,
-
-Daniel
