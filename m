@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYJIAIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbYJIAKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYJIAIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 20:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbYJIAIA
+	id S1757026AbYJIAKh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 20:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYJIAKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 20:08:00 -0400
-Received: from xenotime.net ([66.160.160.81]:43905 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754142AbYJIAH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 20:07:58 -0400
-Date: Wed, 8 Oct 2008 17:07:51 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: mtrr_cleanup update command line
-Message-Id: <20081008170751.6d86b8e2.rdunlap@xenotime.net>
-In-Reply-To: <20080930165739.7847be37.rdunlap@xenotime.net>
-References: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>
-	<20080930165739.7847be37.rdunlap@xenotime.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 8 Oct 2008 20:10:30 -0400
+Received: from brain.cel.usyd.edu.au ([129.78.24.68]:47659 "EHLO
+	brain.cel.usyd.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754054AbYJIAK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 20:10:29 -0400
+Message-Id: <5.1.1.5.2.20081008234248.023134f0@brain.cel.usyd.edu.au>
+X-Mailer: QUALCOMM Windows Eudora Version 5.1.1
+Date: Wed, 08 Oct 2008 23:47:29 +1000
+To: balbir@linux.vnet.ibm.com
+From: sena seneviratne <auntvini@cel.usyd.edu.au>
+Subject: Re: Fwd: Re: New Metrics to measure Load average
+Cc: peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org
+In-Reply-To: <48EB50F8.1030906@linux.vnet.ibm.com>
+References: <5.1.1.5.2.20081007064952.0236cb00@brain.cel.usyd.edu.au>
+ <5.1.1.5.2.20081007064952.0236cb00@brain.cel.usyd.edu.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Sep 2008 16:57:39 -0700 Randy Dunlap wrote:
+Dear Balbir Singh,
 
-> On Tue, 30 Sep 2008 16:29:38 -0700 Yinghai Lu wrote:
-> 
-> > change enable_mtrr_cleanup to mtrr-cleanup, disable_mtrr_cleanup to nomtrr-cleanup.
-> > 
-> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> > 
-> > ---
-> >  Documentation/kernel-parameters.txt |    4 ++--
-> >  arch/x86/Kconfig                    |    2 +-
-> >  arch/x86/kernel/cpu/mtrr/main.c     |    4 ++--
-> >  3 files changed, 5 insertions(+), 5 deletions(-)
-> > 
-> > Index: linux-2.6/Documentation/kernel-parameters.txt
-> > ===================================================================
-> > --- linux-2.6.orig/Documentation/kernel-parameters.txt
-> > +++ linux-2.6/Documentation/kernel-parameters.txt
-> > @@ -614,8 +614,8 @@ and is between 256 and 4096 characters.
-> >  			See drivers/char/README.epca and
-> >  			Documentation/digiepca.txt.
-> >  
-> > -	disable_mtrr_cleanup [X86]
-> > -	enable_mtrr_cleanup [X86]
-> > +	nomtrr-cleanup [X86]
-> > +	mtrr-cleanup [X86]
-> >  			The kernel tries to adjust MTRR layout from continuous
-> >  			to discrete, to make X server driver able to add WB
-> >  			entry later. This parameter enables/disables that.
-> 
-> Looks like Documentation/kernel-parameters.txt needs a comment that says that
-> entries are supposed to be listed in alphabetical order, not grouped by <subject>.
-> Please don't add them like this.
+Ok I will do it soon.
 
-BTW, this comment is alread in Documentation/kernel-parameters.txt, at the top of the file:
+Thanks for your commitment
 
-The following is a consolidated list of the kernel parameters as implemented
-(mostly) by the __setup() macro and sorted into English Dictionary order
-(defined as ignoring all punctuation and sorting digits before letters in a
-case insensitive manner), and with descriptions where known.
+The tester's signature is a position  which is required to include in the 
+patch which will be posted to
+Mr Lunix.
+
+I thought you can take that place?
+
+Sena Seneviratne
+CEL
+Sydney University
+Australia
 
 
-> E.g., the "apic" entries are not grouped together and these mtrr entries should
-> not be grouped together unless they all begin with "mtrr", which is an option here:
-> they could be renamed to "mtrr-cleanup" and "mtrr-nocleanup".
-> And "disable_mtrr_trim" could be renamed to "mtrr-notrim".
 
----
-~Randy
+At 05:37 PM 10/7/2008 +0530, you wrote:
+>sena seneviratne wrote:
+> > Hi Balbir Singh,
+> >
+> > I have done changes to the load average inside current functions.
+> > This means without introducing any new function.
+> >
+> > Please go through our previous correspondence in this regard.
+> >
+> > Also I had discused this fact with Peter Williams who had introduced
+> > some new functions in the same area.
+> >
+> > Would do you be able to test my code?
+>
+>Please post your patches, I can't guarantee to test your code, but I can
+>definitely take a look at them.
+>
+>--
+>         Balbir
+>
+>--
+>This message has been scanned for viruses and
+>dangerous content by MailScanner, and is
+>believed to be clean.
+
