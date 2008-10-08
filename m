@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYJHV6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYJHWDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbYJHV6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 17:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYJHV6h
+	id S1756557AbYJHWDT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 18:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYJHWDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 17:58:37 -0400
-Received: from khc.piap.pl ([195.187.100.11]:32806 "EHLO khc.piap.pl"
+	Wed, 8 Oct 2008 18:03:03 -0400
+Received: from khc.piap.pl ([195.187.100.11]:56556 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754551AbYJHV6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 17:58:36 -0400
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: "Bill Gatliff" <bgat@billgatliff.com>,
-       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Toggling GPIO at 38Khz
-References: <9e4733910810072043m6c69f3bdv104bd32928fe64ae@mail.gmail.com>
-	<48ECA101.8010604@billgatliff.com>
-	<9e4733910810080606ne8bdbb8v81d42069c985ae98@mail.gmail.com>
+	id S1754591AbYJHWDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 18:03:02 -0400
+To: "Hillier\, Gernot" <gernot.hillier@siemens.com>
+Cc: jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, bruce.w.allan@intel.com
+Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro X7DB3
+References: <48EB7161.60004@siemens.com> <m33aj78jnh.fsf@maximus.localdomain>
+	<48ECB727.6050905@siemens.com>
 From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 08 Oct 2008 23:58:34 +0200
-In-Reply-To: <9e4733910810080606ne8bdbb8v81d42069c985ae98@mail.gmail.com> (Jon Smirl's message of "Wed\, 8 Oct 2008 09\:06\:30 -0400")
-Message-ID: <m363o292b9.fsf@maximus.localdomain>
+Date: Thu, 09 Oct 2008 00:03:00 +0200
+In-Reply-To: <48ECB727.6050905@siemens.com> (Gernot Hillier's message of "Wed\, 08 Oct 2008 15\:35\:35 +0200")
+Message-ID: <m31vyq923v.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jon Smirl" <jonsmirl@gmail.com> writes:
+"Hillier, Gernot" <gernot.hillier@siemens.com> writes:
 
-> These are external boards people buy to use with MythTV. They are most
-> commonly used on the x86, but the NSLU2 has been modified to use them
-> too.
->
-> The hardware can't be changed, people have bought thousands of these devices.
->
-> Many people cut up a serial cable and solder it themselves...
+>         Region 0: Memory at d0020000 (32-bit, non-prefetchable) [size=128K]
+>         Region 1: Memory at d0000000 (32-bit, non-prefetchable) [size=128K]
+>         Region 2: I/O ports at 4000 [size=32]
+>         [virtual] Expansion ROM at d0080000 [disabled] [size=64K]
 
-Sure but you only need to bit-bang at 36 or so kHz while transmitting,
-right? The receive side is a slow one as the receiver chip has an
-integrated "demodulator".
+Doesn't look like a spurious reset, though.
 
-If so then personally... I'd abandon the simple TX circuit, and use
-a hardware ~36 kHz oscillator, gated by the serial output signal.
-I don't think such transmitters are in thousands. Tens, maybe - the
-cost of replacing/modifying them all should be insignificant. I guess
-one could design and produce such a TXer in less than 20 minutes.
+> - Control "DisINTx-" changes to "DisINTx+" if the card is correctly
+> initialized
+> - Interrupt changes from IRQ 18 to IRQ 4345 if card is correctly initialized
+> - Message Signalled Interrupts change from "Enable-" to "Enable+"
+
+The "normal" effects of enabling MSI.
 -- 
 Krzysztof Halasa
