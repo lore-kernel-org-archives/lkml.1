@@ -1,95 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYJHNGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbYJHNOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbYJHNGm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbYJHNGd
+	id S1754953AbYJHNOZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbYJHNON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:06:33 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:7258 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbYJHNGc (ORCPT
+	Wed, 8 Oct 2008 09:14:13 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:60503 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYJHNOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:06:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wmqeHqDepIbDSwN4K+F+SIKU+RZ8W+vDT8NSnhF0BtTkMfSNlC2exG+kr/a9nGcha7
-         Zm8C/UctihfLpQosVF7uY3gkKQ3oc/FOnwSHmpAfYql5rYTRroXb4DHunmoH+BKNFrf/
-         fm3me07QtuF7ya4V67xa3y7XIg0K016EdDqqw=
-Message-ID: <9e4733910810080606ne8bdbb8v81d42069c985ae98@mail.gmail.com>
-Date: Wed, 8 Oct 2008 09:06:30 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Bill Gatliff" <bgat@billgatliff.com>
-Subject: Re: Toggling GPIO at 38Khz
-Cc: "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <48ECA101.8010604@billgatliff.com>
+	Wed, 8 Oct 2008 09:14:12 -0400
+Message-ID: <48ECB215.4040409@linux.vnet.ibm.com>
+Date: Wed, 08 Oct 2008 18:43:57 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
 MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: righi.andrea@gmail.com, Michael Rubin <mrubin@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       dave@linux.vnet.ibm.com, chlunde@ping.uio.no, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, agk@sourceware.org,
+       m.innocenti@cineca.it, s-uchida@ap.jp.nec.com, ryov@valinux.co.jp,
+       matt@bluehost.com, dradford@bluehost.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH -mm 0/2] memcg: per cgroup dirty_ratio
+References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com> <20080912131816.e0cfac7a.akpm@linux-foundation.org> <532480950809221641y3471267esff82a14be8056586@mail.gmail.com> <48EB4236.1060100@linux.vnet.ibm.com> <48EB851D.2030300@gmail.com> <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9e4733910810072043m6c69f3bdv104bd32928fe64ae@mail.gmail.com>
-	 <48ECA101.8010604@billgatliff.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 8, 2008 at 8:01 AM, Bill Gatliff <bgat@billgatliff.com> wrote:
-> Jon Smirl wrote:
->
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 07 Oct 2008 17:49:49 +0200
+> Andrea Righi <righi.andrea@gmail.com> wrote:
+> 
+>> Balbir Singh wrote:
+>>> Michael Rubin wrote:
+>>>> On Fri, Sep 12, 2008 at 1:18 PM, Andrew Morton
+>>>> <akpm@linux-foundation.org> wrote:
+>>>>> One thing to think about please: Michael Rubin is hitting problems with
+>>>>> the existing /proc/sys/vm/dirty-ratio.  Its present granularity of 1%
+>>>>> is just too coarse for really large machines, and as
+>>>>> memory-size/disk-speed ratios continue to increase, this will just get
+>>>>> worse.
+>>>> Re-sending since I top-posted before. Never again. Also adding more
+>>>> thoughts on a byte based interface.
+>>>>
+>>>> Currently the problem we are hitting is that we cannot specify pdflush
+>>>> to have background limits less than 1% of memory. I am currently
+>>>> finishing up a patch right now that adds a dirty_ratio_millis
+>>>> interface.  I hope to submit the patch to LKML by the end of the week.
+>>>>
+>>>> The idea is that we don't want to break backwards compatibility and we
+>>>> also don't want to have two conflicting knobs in the sysctl or
+>>>> /proc/sys/vm/ space. I thought adding a new knob for those who want to
+>>>> specify finer grained functionality was a compromise. So the patch has
+>>>> a vm_dirty_ratio and a vm_dirty_ratio_millis interface. The first to
+>>>> specify 0-100% and the second to specify .0 to .999%.
+>>>>
+>>>> So to represent 0.125% of RAM we set
+>>>> vm_dirty_ratio = 0
+>>>> vm_dirty_ratio_millis = 125
+>>>>
+>>>> The same for the background_ratio.
+>>>>
+>>>> I would also prefer using a bytes interface but I am not sure how to
+>>>> offer that without  either removing the legacy interface of the ratios
+>>>> or by offering a concurrent interface that might be confusing such as
+>>>> when users are looking at the old one and not aware of a new one.
+>>>>
+>>> Just provide a vm_dirty_ration_in_bytes interface and keep it in sync with
+>>> vm_dirty_ratio (they are just two representations of the same internal value)
+>>> and for higher resolution propose that users use the bytes interface.
+>> Hi Balbir,
 >>
->> Are there other techniques for generating pulse trains in the 36-56Khz
->> range on a simple GPIO pin?
+>> now that I read carefully the documentation, the description in
+>> Documentation/filesystems/proc.txt seems to be a bit misleading. In
+>> proc.txt we say that dirty_ratio and dirty_background_ratio are "a
+>> percentage of total system memory", but in mm/page-writeback.c we apply
+>> the percentages to the dirtyable memory: free pages + reclaimable pages.
+>> So, first of all I think we should clarify this in the documentation...
 >>
->
-> Yes.
->
-> Use the GPIO pin to enable the output of an external circuit.  Or, hope that the
-> GPIO pin in question is multiplexed with a timer/counter or PWM peripheral.
->
-> But somehow, I don't think either answer is what you were looking for.  :)
+>> Saying that, keeping in sync the vm_dirty_amount_in_bytes according to
+>> dirty_ratio_in_percentage is not a trivial task. One is a static value,
+>> the other depends on the dirtyable memory in the system. If we want to
+>> preserve the same behaviour we should do the following:
+>>
+>> dirty_ratio = x => dirty_amount_in_bytes = x * dirtyable_memory / 100
+>>
+>> dirty_amount_in_bytes = y => dirty_ratio = y / dirtyable_memory * 100
+>>
+>> But anytime the dirtyable memory (or the total memory in the system)
+>> changes we should update both values accordingly to preserve the
+>> coherency between them (ouch!).
+>>
 
-The existing LIRC driver for a serial port is here:
-http://lirc.cvs.sourceforge.net/viewvc/lirc/lirc/drivers/lirc_serial/lirc_serial.c?view=markup
+I see what you mean.
 
-An example of serial based hardware is here:
-http://iguanaworks.net/product2.psp
+>> Possible solutions:
+>>
+>> 1) introduce fine-grained dirty_ratio handling decimals by an opportune
+>>    parser (disadvantage: this would break the compatibility with all the
+>>    userspace apps that expect to read an int from vm_dirty_ratio)
+>>
+>> 2) introduce dirty_ratio + dirty_ratio_millis (disadvantage: can
+>>    generate unexpected behaviours when something is written to
+>>    dirty_ratio ignoring the existence of dirty_ratio_millis)
+>>
+>> 3) introduce dirty_ratio + dirty_amount_in_bytes mutually exclusive,
+>>    writing to one automatically "disable" the other (disadvantage:
+>>    writing to dirty_ratio ignoring dirty_amount_in_bytes can cause
+>>    unexpected behaviours)
+>>
+>> 4) introduce dirty_ratio + dirty_amount_in_bytes and change the
+>>    old behaviour: when something is written to dirty_ratio,
+>>    dirty_amount_in_bytes is evaluated in function of totalram_pages (or
+>>    the memcg limit) and then we always use this static value, instead of
+>>    something that depends on the dirtyable memory - we can easily update
+>>    dirty_amount_in_bytes also when totalram_pages or the memcg limit
+>>    changes (disadvantage: change an old - working - behaviour).
+>>
+>> 5) handle fine-grained dirty_ratio decimals by an opportune parser when
+>>    writing something to dirty_ratio; export the percentage units via
+>>    dirty_ratio, and the decimals via dirty_ratio_decimals; writing to
+>>    dirty_ratio_decimals is not allowed.
+>>
+>> I tend to choose 5. The same for dirty_background_ratio.
+>>
+> 
+> Hmm... I agree to "5"... like this ?
+> ==
+> prvoides
+>   - vm.dirty_ratio (1/100)
+>   - vm.dirty_ratio_percentmille(1/100,000, pcm)
+> 
+> and allow
+> #echo 0.05 > vm/dirty_ratio
+> #cat vm/dirty_ratio 
+> 0
+> #cat vm/dirty_ratio_percentmille
+> 500
+> ==
 
-These are external boards people buy to use with MythTV. They are most
-commonly used on the x86, but the NSLU2 has been modified to use them
-too.
-
-The hardware can't be changed, people have bought thousands of these devices.
-
-Many people cut up a serial cable and solder it themselves...
-http://www.lirc.org/transmitters.html
-
-The problems with these devices are obvious, I use a USB one for my
-own system. It has a PIC chip in it with PWM out.
-
-
->
-> 36 KHz bit-banging is a reach for any processor running Linux, methinks.  Maybe
-> you could launch an FIQ (assuming ARM) and then do the bit-bang as a burst in
-> there, so that you would have more control over the timing.  But that kind of
-> code isn't going to play well with the rest of the kernel...
->
-> If the hardware design isn't set, you might want to consider using that GPIO
-> line as a quasi-SPI link to a small, AVR-type microcontroller that does the
-> bit-banging on your behalf.  Long-term, that's going to be a more reliable and
-> flexible solution I think.
->
->
-> b.g.
-> --
-> Bill Gatliff
-> bgat@billgatliff.com
->
-
+I guess this would be the easiest way forward, I'll let you select the
+granularity of the interface and its meaning.
 
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+	Balbir
