@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYJHK3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYJHKaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbYJHK3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 06:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbYJHK3Z
+	id S1754001AbYJHKaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 06:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYJHK3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 06:29:25 -0400
-Received: from khc.piap.pl ([195.187.100.11]:58824 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbYJHK3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 06:29:24 -0400
-To: "Hillier\, Gernot" <gernot.hillier@siemens.com>
-Cc: jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bruce.w.allan@intel.com
-Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro X7DB3
-References: <48EB7161.60004@siemens.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 08 Oct 2008 12:29:22 +0200
-In-Reply-To: <48EB7161.60004@siemens.com> (Gernot Hillier's message of "Tue\, 07 Oct 2008 16\:25\:37 +0200")
-Message-ID: <m33aj78jnh.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Oct 2008 06:29:51 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55820 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755455AbYJHK3u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 06:29:50 -0400
+Subject: Re: linux-firmware patches
+From: David Woodhouse <dwmw2@infradead.org>
+To: Dave <kilroyd@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48EBAC11.7060803@gmail.com>
+References: <48EBAC11.7060803@gmail.com>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 11:29:46 +0100
+Message-Id: <1223461786.20499.29.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-10-07 at 19:36 +0100, Dave wrote:
+> Should patches to add firmware to the linux-firmware tree (and not the
+> main kernel) be sent to linux-kernel, or somewhere else? It wasn't
+> mentioned in the [ANNOUNCE]*, and I haven't been able to find an
+> example on list.
+> 
+> Just wanted to check before posting an 80k patch consisting of non-GPL
+> binary files.
 
-"Hillier, Gernot" <gernot.hillier@siemens.com> writes:
+Patches with binary files are going to be hard -- probably best just to
+commit to a git tree and ask me to pull. Or mail the files separately,
+with the changes to the WHENCE file as a separate patch.
 
-> On at least two machines using the Supermicro X7DB3 board with Intel
-> 82563EB (a.k.a. PCI device 8086:1096), we see sporadic problems on modprobe
-> (about 1 time in some hundred tries):
->
-> e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k2
-> e1000e: Copyright (c) 1999-2008 Intel Corporation.
-> e1000e 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> e1000e 0000:06:00.0: setting latency timer to 64
-> 0000:06:00.0: 0000:06:00.0: Hardware Error
-
-What does "lspci -vv" say about it when the above happens?
-
-I spurious chip reset (hardware) could probably cause that.
 -- 
-Krzysztof Halasa
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
