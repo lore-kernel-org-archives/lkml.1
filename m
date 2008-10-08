@@ -1,35 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbYJHGny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYJHGwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbYJHGny (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 02:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYJHGnq
+	id S1753937AbYJHGwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 02:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYJHGwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 02:43:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58012 "EHLO
+	Wed, 8 Oct 2008 02:52:42 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:32995 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751400AbYJHGnq (ORCPT
+	with ESMTP id S1751400AbYJHGwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 02:43:46 -0400
-Subject: Re: [BUG] SLOB's krealloc() seems bust
+	Wed, 8 Oct 2008 02:52:41 -0400
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit
+	arch
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linuxfoundation.org>
-In-Reply-To: <1223442947.13453.462.camel@calx>
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
-	 <1223441190.13453.459.camel@calx>
-	 <200810081554.33651.nickpiggin@yahoo.com.au>
-	 <200810081611.30897.nickpiggin@yahoo.com.au>
-	 <1223442947.13453.462.camel@calx>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+In-Reply-To: <6.0.0.20.2.20081008132532.056cc400@172.19.0.2>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2>
+	 <20081007105056.16d9e785.akpm@linux-foundation.org>
+	 <1223405963.26330.83.camel@lappy.programming.kicks-ass.net>
+	 <200810081335.44576.nickpiggin@yahoo.com.au>
+	 <6.0.0.20.2.20081008132532.056cc400@172.19.0.2>
 Content-Type: text/plain
-Date: Wed, 08 Oct 2008 08:43:40 +0200
-Message-Id: <1223448220.1378.13.camel@lappy.programming.kicks-ass.net>
+Date: Wed, 08 Oct 2008 08:51:51 +0200
+Message-Id: <1223448711.1378.16.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -37,10 +36,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-08 at 00:15 -0500, Matt Mackall wrote:
+On Wed, 2008-10-08 at 13:48 +0900, Hisashi Hifumi wrote:
 
-> Damnit, how many ways can we get confused by these little details? I'll
-> spin a final version and run it against the test harness shortly.
+> Simultaneous access by two or more writer can corrupt file content,
+> so this case needs some locks(flock or fcntl) to preserve synchronization
+> of file content. This is responsibility of user-space application.
+> But file->f_pos race issue can occur even if multiple threads just read 
+> simultaneously. I think this is not responsibility of user-space application. 
+> To avoid this currently, an application needs some locks to protect file offset
+> even if it just read a file. So I think f_pos race should be fixed.
 
-So I'll wait with testing for the next version?
+Just to add to all those who already said you're wrong :-)
+
+You're wrong, if two threads would like to read the same file they
+either dup() the fd or open() the file twice. There is absolutely no
+valid reason to have two threads read from the same fd without
+synchronising their access to it - never.
 
