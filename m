@@ -1,706 +1,444 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYJHJo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbYJHJtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYJHJo7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 05:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYJHJov
+	id S1755106AbYJHJtj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 05:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYJHJta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 05:44:51 -0400
-Received: from mga11.intel.com ([192.55.52.93]:14273 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbYJHJou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 05:44:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,377,1220252400"; 
-   d="asc'?scan'208";a="388967103"
-Subject: [PATCH -mm -v5] Separate atomic_t declaration from asm/atomic.h
-	into asm/atomic_def.h
-From: Huang Ying <ying.huang@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WKjy2FY205FeO22ERMMx"
-Date: Wed, 08 Oct 2008 17:44:30 +0800
-Message-Id: <1223459070.5872.167.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 8 Oct 2008 05:49:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:30568 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753943AbYJHJt2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 05:49:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=ei58pzx+PwtMDrVfMHFnkJdMevhmSfYdA79f5DDDyn1DOs9DKxGzjFnhWhN+xTI1rw
+         idLS5Dg0nyAryF3ocJof8HqjWKz48A2/FgUxbnT/Yxx5C38VDaatG08dIXEun55j2tEl
+         nJi3/CJWxWC4jogGAKMf2jxVimuj4gBB2UFkE=
+Message-ID: <cfd18e0f0810080249v5b09df84n292acd62b79e6d45@mail.gmail.com>
+Date: Wed, 8 Oct 2008 11:49:27 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [RFC patch 0/3] signals: add rt_tgsigqueueinfo syscall V2
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Roland McGrath" <roland@redhat.com>, "Oleg Nesterov" <oleg@tv-sign.ru>,
+       linux-api@vger.kernel.org, "Subrata Modak" <subrata@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LFD.1.10.0810021055400.5549@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081001095204.343984413@linutronix.de>
+	 <cfd18e0f0810010757j7a9f6deaj47a06f30e371af1e@mail.gmail.com>
+	 <alpine.LFD.1.10.0810021055400.5549@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Thomas,
 
---=-WKjy2FY205FeO22ERMMx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Thu, Oct 2, 2008 at 10:57 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 1 Oct 2008, Michael Kerrisk wrote:
+>> [CC+=linux-api@vger.kernel.org]
+>>
+>> On Wed, Oct 1, 2008 at 12:01 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> > Changes vs. V1: compat_sys_rt_sigqueueinfo implemented. Thanks Roland !
+>> >
+>> > sys_kill has a counterpart sys_tgkill which allows to send signals to
+>> > a particular thread. sys_rt_sigqueueinfo is lacking such a counterpart.
+>> >
+>> > Aside of the asymetry it is a show stopper for migrating applications
+>> > from other unix-alike RTOSes.
+>> >
+>> > The following patch series implements rt_tgsigqueueinfo and hooks it
+>> > up for x86.
+>>
+>> This is an excellent candidate for CCing to the new linux-api@vger
+>> (http://thread.gmane.org/gmane.linux.ltp/5658/), since it is an API
+>> change.
+>
+> Oops, yes forgot about that.
+>
+>> > Find below the raw documentation.
+>>
+>> Thanks -- I'll work that up into a man page when this gets closer to release.
+>
+> I'll send out test code later this week - once I get a breather from
+> bugs and regressions again.
 
-From: Huang Ying <ying.huang@intel.com>
+So I've done some testing of this interface (I've substantially
+revised the test programs that I sent yesterday, and have included
+them again below).
 
-asm/atomic.h contains both declaration and implementation of atomic_t.  So
-there are some implementation related files included in asm/atomic.h.  And
-atomic_t is a typedef.  Combination of above makes it impossible to use
-atomic_t in files included by atomic.h.  Such as atomic_t can not be used
-in linux/kernel.h on i386, because it is included by asm/atomic.h.
+Two potential issues that I see, both of which relate to
+inconsistencies with rt_sigqueueinfo():
 
-It is reasonable to separate declaration from implementation.  So a new
-file atomic_types.h is added for every architecture to accommodate the
-declaration of atomic_t.
+1) With rt_siqueueinfo(), we can get the PID (TGID) of the sender,
+which enables the receiver of the signal to know who the sender was,
+and perhaps use that information to (for example) send a signal in the
+other direction.
 
-Includes fixes from Andrew Moton.
+With rt_tgsigqueueinfo(), we don't quite have that ability: all that
+the receiver gets is the TGID of the sender, not the TID.  This means
+that we can't (for example) send a signal back to the precise thread
+that signaled us. I'm not sure if this matters or not (but perhaps it
+might when sender and receiver are in the same process?).  I'm also
+not sure whether we want to do anything about this (i.e., extending
+siginfo_t to include a si_tid field), but I wanted to point out this
+assymetry w.r.t. to rt_sigqueueinfo(), in case you had not considered
+it.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-Reviewed-by: Ingo Molnar <mingo@elte.hu>
+2) With rt_sigqueueinfo(), we can specify the si_pid and and si_uid
+fields that should be sent to the receiver.  This is not possible with
+rt_tgsigqueueinfo(), which always supplied the caller';s PID and UID
+in the si_pid and si_uid fields sent to the receiver.  See the
+following, created using my test programs below (the 111 & 222
+arguments to t_*sigqueueinfo set the si_pid and si_uid fields in the
+siginfo_t given to the *sigqueueinfo() syscall):
 
----
+$ ./multithread_sig_receiver 0
+Main: TGID = 11711; TID = 11711
+Main: blocked signals
+Thread 1: PID = 11711; TID = 11712
+Thread 1: about to wait for signals
+Thread 0: about to wait for signals
+                        $ ./t_rt_sigqueueinfo 11711 44 1 -1 111 222
+                        My PID is 11714
+Thread 0: got signal: si_signo=44 si_code=-1 si_pid=111 si_uid=222
+si_value.sival_int=1
+                        $ ./t_rt_tgsigqueueinfo 11711 11712 44 1 -1 111 222
+                        My PID is 11715
+Thread 1: got signal: si_signo=44 si_code=-1 si_pid=11715 si_uid=1000
+si_value.sival_int=1
 
- arch/alpha/include/asm/atomic.h           |   10 +---------
- arch/alpha/include/asm/atomic_types.h     |   13 +++++++++++++
- arch/arm/include/asm/atomic.h             |    3 +--
- arch/arm/include/asm/atomic_types.h       |    6 ++++++
- arch/avr32/include/asm/atomic.h           |    2 +-
- arch/avr32/include/asm/atomic_types.h     |    6 ++++++
- arch/blackfin/include/asm/atomic.h        |    4 +---
- arch/blackfin/include/asm/atomic_types.h  |    8 ++++++++
- arch/h8300/include/asm/atomic.h           |    3 ++-
- arch/h8300/include/asm/atomic_types.h     |    6 ++++++
- arch/ia64/include/asm/atomic.h            |    8 +-------
- arch/ia64/include/asm/atomic_types.h      |   11 +++++++++++
- arch/m68knommu/include/asm/atomic.h       |    2 +-
- arch/m68knommu/include/asm/atomic_types.h |    6 ++++++
- arch/mips/include/asm/atomic.h            |    3 +--
- arch/mips/include/asm/atomic_types.h      |    6 ++++++
- arch/powerpc/include/asm/atomic.h         |    2 +-
- arch/powerpc/include/asm/atomic_types.h   |    6 ++++++
- arch/s390/include/asm/atomic.h            |    4 +---
- arch/s390/include/asm/atomic_types.h      |    8 ++++++++
- arch/sh/include/asm/atomic.h              |    2 +-
- arch/sh/include/asm/atomic_types.h        |    8 ++++++++
- arch/sparc/include/asm/atomic_32.h        |    4 ++--
- arch/sparc/include/asm/atomic_64.h        |    2 +-
- arch/sparc/include/asm/atomic_types.h     |    8 ++++++++
- include/asm-cris/atomic.h                 |    3 +--
- include/asm-cris/atomic_types.h           |    6 ++++++
- include/asm-frv/atomic.h                  |    5 +----
- include/asm-frv/atomic_types.h            |    8 ++++++++
- include/asm-m32r/atomic.h                 |    8 +-------
- include/asm-m32r/atomic_types.h           |   11 +++++++++++
- include/asm-m68k/atomic.h                 |    2 +-
- include/asm-m68k/atomic_types.h           |    6 ++++++
- include/asm-mn10300/atomic.h              |   11 ++---------
- include/asm-mn10300/atomic_types.h        |   13 +++++++++++++
- include/asm-um/atomic_types.h             |    6 ++++++
- include/asm-x86/atomic_32.h               |   10 +---------
- include/asm-x86/atomic_64.h               |   10 +---------
- include/asm-x86/atomic_types.h            |   13 +++++++++++++
- include/asm-xtensa/atomic.h               |    3 +--
- include/asm-xtensa/atomic_types.h         |    6 ++++++
- 41 files changed, 185 insertions(+), 77 deletions(-)
+The problem is the different code paths taken by
+rt_tgsigqueueinfo()/tgkill() versus rt_sigqueueinfo():
 
---- a/arch/alpha/include/asm/atomic.h
-+++ b/arch/alpha/include/asm/atomic.h
-@@ -3,6 +3,7 @@
-=20
- #include <asm/barrier.h>
- #include <asm/system.h>
-+#include <asm/atomic_types.h>
-=20
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-@@ -12,15 +13,6 @@
-  * than regular operations.
-  */
-=20
--
--/*
-- * Counter is volatile to make sure gcc doesn't try to be clever
-- * and move things around on us. We need to use _exactly_ the address
-- * the user gave us, not some alias that contains the same information.
-- */
--typedef struct { volatile int counter; } atomic_t;
--typedef struct { volatile long counter; } atomic64_t;
--
- #define ATOMIC_INIT(i)		( (atomic_t) { (i) } )
- #define ATOMIC64_INIT(i)	( (atomic64_t) { (i) } )
-=20
---- a/arch/arm/include/asm/atomic.h
-+++ b/arch/arm/include/asm/atomic.h
-@@ -13,8 +13,7 @@
-=20
- #include <linux/compiler.h>
- #include <asm/system.h>
--
--typedef struct { volatile int counter; } atomic_t;
-+#include <asm/atomic_types.h>
-=20
- #define ATOMIC_INIT(i)	{ (i) }
-=20
---- a/arch/avr32/include/asm/atomic.h
-+++ b/arch/avr32/include/asm/atomic.h
-@@ -15,8 +15,8 @@
- #define __ASM_AVR32_ATOMIC_H
-=20
- #include <asm/system.h>
-+#include <asm/atomic_types.h>
-=20
--typedef struct { volatile int counter; } atomic_t;
- #define ATOMIC_INIT(i)  { (i) }
-=20
- #define atomic_read(v)		((v)->counter)
---- a/arch/blackfin/include/asm/atomic.h
-+++ b/arch/blackfin/include/asm/atomic.h
-@@ -2,6 +2,7 @@
- #define __ARCH_BLACKFIN_ATOMIC__
-=20
- #include <asm/system.h>	/* local_irq_XXX() */
-+#include <asm/atomic_types.h>
-=20
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-@@ -13,9 +14,6 @@
-  * Tony Kou (tonyko@lineo.ca)   Lineo Inc.   2001
-  */
-=20
--typedef struct {
--	int counter;
--} atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- #define atomic_read(v)		((v)->counter)
---- a/arch/h8300/include/asm/atomic.h
-+++ b/arch/h8300/include/asm/atomic.h
-@@ -1,12 +1,13 @@
- #ifndef __ARCH_H8300_ATOMIC__
- #define __ARCH_H8300_ATOMIC__
-=20
-+#include <asm/atomic_types.h>
-+
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-  * resource counting etc..
-  */
-=20
--typedef struct { int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- #define atomic_read(v)		((v)->counter)
---- a/arch/ia64/include/asm/atomic.h
-+++ b/arch/ia64/include/asm/atomic.h
-@@ -16,13 +16,7 @@
-=20
- #include <asm/intrinsics.h>
- #include <asm/system.h>
--
--/*
-- * On IA-64, counter must always be volatile to ensure that that the
-- * memory accesses are ordered.
-- */
--typedef struct { volatile __s32 counter; } atomic_t;
--typedef struct { volatile __s64 counter; } atomic64_t;
-+#include <asm/atomic_types.h>
-=20
- #define ATOMIC_INIT(i)		((atomic_t) { (i) })
- #define ATOMIC64_INIT(i)	((atomic64_t) { (i) })
---- a/arch/m68knommu/include/asm/atomic.h
-+++ b/arch/m68knommu/include/asm/atomic.h
-@@ -2,6 +2,7 @@
- #define __ARCH_M68KNOMMU_ATOMIC__
-=20
- #include <asm/system.h>
-+#include <asm/atomic_types.h>
-=20
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-@@ -12,7 +13,6 @@
-  * We do not have SMP m68k systems, so we don't have to deal with that.
-  */
-=20
--typedef struct { int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- #define atomic_read(v)		((v)->counter)
---- a/arch/mips/include/asm/atomic.h
-+++ b/arch/mips/include/asm/atomic.h
-@@ -19,8 +19,7 @@
- #include <asm/cpu-features.h>
- #include <asm/war.h>
- #include <asm/system.h>
--
--typedef struct { volatile int counter; } atomic_t;
-+#include <asm/atomic_types.h>
-=20
- #define ATOMIC_INIT(i)    { (i) }
-=20
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -5,7 +5,7 @@
-  * PowerPC atomic operations
-  */
-=20
--typedef struct { int counter; } atomic_t;
-+#include <asm/atomic_types.h>
-=20
- #ifdef __KERNEL__
- #include <linux/compiler.h>
---- a/arch/s390/include/asm/atomic.h
-+++ b/arch/s390/include/asm/atomic.h
-@@ -2,6 +2,7 @@
- #define __ARCH_S390_ATOMIC__
-=20
- #include <linux/compiler.h>
-+#include <asm/atomic_types.h>
-=20
- /*
-  *  include/asm-s390/atomic.h
-@@ -23,9 +24,6 @@
-  * S390 uses 'Compare And Swap' for atomicity in SMP enviroment
-  */
-=20
--typedef struct {
--	int counter;
--} __attribute__ ((aligned (4))) atomic_t;
- #define ATOMIC_INIT(i)  { (i) }
-=20
- #ifdef __KERNEL__
---- /dev/null
-+++ b/arch/alpha/include/asm/atomic_types.h
-@@ -0,0 +1,13 @@
-+#ifndef _ALPHA_ATOMIC_TYPES_H
-+#define _ALPHA_ATOMIC_TYPES_H
-+
-+
-+/*
-+ * Counter is volatile to make sure gcc doesn't try to be clever
-+ * and move things around on us. We need to use _exactly_ the address
-+ * the user gave us, not some alias that contains the same information.
-+ */
-+typedef struct { volatile int counter; } atomic_t;
-+typedef struct { volatile long counter; } atomic64_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/arm/include/asm/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef __ASM_ARM_ATOMIC_TYPES_H
-+#define __ASM_ARM_ATOMIC_TYPES_H
-+
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/avr32/include/asm/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef __ASM_AVR32_ATOMIC_TYPES_H
-+#define __ASM_AVR32_ATOMIC_TYPES_H
-+
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/blackfin/include/asm/atomic_types.h
-@@ -0,0 +1,8 @@
-+#ifndef __ARCH_BLACKFIN_ATOMIC_TYPES__
-+#define __ARCH_BLACKFIN_ATOMIC_TYPES__
-+
-+typedef struct {
-+	int counter;
-+} atomic_t;
-+
-+#endif
---- a/include/asm-cris/atomic.h
-+++ b/include/asm-cris/atomic.h
-@@ -7,14 +7,13 @@
-=20
- #include <asm/system.h>
- #include <asm/arch/atomic.h>
-+#include <asm/atomic_types.h>
-=20
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-  * resource counting etc..
-  */
-=20
--typedef struct { volatile int counter; } atomic_t;
--
- #define ATOMIC_INIT(i)  { (i) }
-=20
- #define atomic_read(v) ((v)->counter)
---- /dev/null
-+++ b/include/asm-cris/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef __ASM_CRIS_ATOMIC_TYPES__
-+#define __ASM_CRIS_ATOMIC_TYPES__
-+
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#endif
---- a/include/asm-frv/atomic.h
-+++ b/include/asm-frv/atomic.h
-@@ -17,6 +17,7 @@
- #include <linux/types.h>
- #include <asm/spr-regs.h>
- #include <asm/system.h>
-+#include <asm/atomic_types.h>
-=20
- #ifdef CONFIG_SMP
- #error not SMP safe
-@@ -35,10 +36,6 @@
- #define smp_mb__before_atomic_inc()	barrier()
- #define smp_mb__after_atomic_inc()	barrier()
-=20
--typedef struct {
--	int counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)		{ (i) }
- #define atomic_read(v)		((v)->counter)
- #define atomic_set(v, i)	(((v)->counter) =3D (i))
---- /dev/null
-+++ b/include/asm-frv/atomic_types.h
-@@ -0,0 +1,8 @@
-+#ifndef _ASM_ATOMIC_TYPES_H
-+#define _ASM_ATOMIC_TYPES_H
-+
-+typedef struct {
-+	int counter;
-+} atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/h8300/include/asm/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef __ARCH_H8300_ATOMIC_TYPES__
-+#define __ARCH_H8300_ATOMIC_TYPES__
-+
-+typedef struct { int counter; } atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/ia64/include/asm/atomic_types.h
-@@ -0,0 +1,11 @@
-+#ifndef _ASM_IA64_ATOMIC_TYPES_H
-+#define _ASM_IA64_ATOMIC_TYPES_H
-+
-+/*
-+ * On IA-64, counter must always be volatile to ensure that that the
-+ * memory accesses are ordered.
-+ */
-+typedef struct { volatile __s32 counter; } atomic_t;
-+typedef struct { volatile __s64 counter; } atomic64_t;
-+
-+#endif
---- a/include/asm-m32r/atomic.h
-+++ b/include/asm-m32r/atomic.h
-@@ -11,19 +11,13 @@
-=20
- #include <asm/assembler.h>
- #include <asm/system.h>
-+#include <asm/atomic_types.h>
-=20
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-  * resource counting etc..
-  */
-=20
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct { volatile int counter; } atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- /**
---- /dev/null
-+++ b/include/asm-m32r/atomic_types.h
-@@ -0,0 +1,11 @@
-+#ifndef _ASM_M32R_ATOMIC_TYPES_H
-+#define _ASM_M32R_ATOMIC_TYPES_H
-+
-+/*
-+ * Make sure gcc doesn't try to be clever and move things around
-+ * on us. We need to use _exactly_ the address the user gave us,
-+ * not some alias that contains the same information.
-+ */
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#endif
---- a/include/asm-m68k/atomic.h
-+++ b/include/asm-m68k/atomic.h
-@@ -3,6 +3,7 @@
-=20
-=20
- #include <asm/system.h>
-+#include <asm/atomic_types.h>
-=20
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-@@ -13,7 +14,6 @@
-  * We do not have SMP m68k systems, so we don't have to deal with that.
-  */
-=20
--typedef struct { int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- #define atomic_read(v)		((v)->counter)
---- /dev/null
-+++ b/include/asm-m68k/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef __ARCH_M68K_ATOMIC_TYPES__
-+#define __ARCH_M68K_ATOMIC_TYPES__
-+
-+typedef struct { int counter; } atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/m68knommu/include/asm/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef __ARCH_M68KNOMMU_ATOMIC_TYPES__
-+#define __ARCH_M68KNOMMU_ATOMIC_TYPES__
-+
-+typedef struct { int counter; } atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/mips/include/asm/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_ATOMIC_TYPES_H
-+#define _ASM_ATOMIC_TYPES_H
-+
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#endif
---- a/include/asm-mn10300/atomic.h
-+++ b/include/asm-mn10300/atomic.h
-@@ -11,6 +11,8 @@
- #ifndef _ASM_ATOMIC_H
- #define _ASM_ATOMIC_H
-=20
-+#include <asm/atomic_types.h>
-+
- #ifdef CONFIG_SMP
- #error not SMP safe
- #endif
-@@ -20,15 +22,6 @@
-  * resource counting etc..
-  */
-=20
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct {
--	int	counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- #ifdef __KERNEL__
---- /dev/null
-+++ b/include/asm-mn10300/atomic_types.h
-@@ -0,0 +1,13 @@
-+#ifndef _ASM_ATOMIC_TYPES_H
-+#define _ASM_ATOMIC_TYPES_H
-+
-+/*
-+ * Make sure gcc doesn't try to be clever and move things around
-+ * on us. We need to use _exactly_ the address the user gave us,
-+ * not some alias that contains the same information.
-+ */
-+typedef struct {
-+	int	counter;
-+} atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/powerpc/include/asm/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_POWERPC_ATOMIC_TYPES_H_
-+#define _ASM_POWERPC_ATOMIC_TYPES_H_
-+
-+typedef struct { int counter; } atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/arch/s390/include/asm/atomic_types.h
-@@ -0,0 +1,8 @@
-+#ifndef __ARCH_S390_ATOMIC_TYPES__
-+#define __ARCH_S390_ATOMIC_TYPES__
-+
-+typedef struct {
-+	int counter;
-+} __attribute__ ((aligned (4))) atomic_t;
-+
-+#endif
---- /dev/null
-+++ b/include/asm-um/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef __UM_ATOMIC_TYPES_H
-+#define __UM_ATOMIC_TYPES_H
-+
-+#include "asm/arch/atomic_types.h"
-+
-+#endif
---- a/include/asm-x86/atomic_32.h
-+++ b/include/asm-x86/atomic_32.h
-@@ -4,21 +4,13 @@
- #include <linux/compiler.h>
- #include <asm/processor.h>
- #include <asm/cmpxchg.h>
-+#include <asm/atomic_types.h>
-=20
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-  * resource counting etc..
-  */
-=20
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct {
--	int counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- /**
---- a/include/asm-x86/atomic_64.h
-+++ b/include/asm-x86/atomic_64.h
-@@ -3,6 +3,7 @@
-=20
- #include <asm/alternative.h>
- #include <asm/cmpxchg.h>
-+#include <asm/atomic_types.h>
-=20
- /* atomic_t should be 32 bit signed type */
-=20
-@@ -11,15 +12,6 @@
-  * resource counting etc..
-  */
-=20
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct {
--	int counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
-=20
- /**
---- /dev/null
-+++ b/include/asm-x86/atomic_types.h
-@@ -0,0 +1,13 @@
-+#ifndef __ARCH_X86_ATOMIC_TYPES__
-+#define __ARCH_X86_ATOMIC_TYPES__
-+
-+/*
-+ * Make sure gcc doesn't try to be clever and move things around
-+ * on us. We need to use _exactly_ the address the user gave us,
-+ * not some alias that contains the same information.
-+ */
-+typedef struct {
-+	int counter;
-+} atomic_t;
-+
-+#endif
---- a/include/asm-xtensa/atomic.h
-+++ b/include/asm-xtensa/atomic.h
-@@ -14,8 +14,7 @@
- #define _XTENSA_ATOMIC_H
-=20
- #include <linux/stringify.h>
--
--typedef struct { volatile int counter; } atomic_t;
-+#include <asm/atomic_types.h>
-=20
- #ifdef __KERNEL__
- #include <asm/processor.h>
---- /dev/null
-+++ b/include/asm-xtensa/atomic_types.h
-@@ -0,0 +1,6 @@
-+#ifndef _XTENSA_ATOMIC_TYPES_H
-+#define _XTENSA_ATOMIC_TYPES_H
-+
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#endif
---- a/arch/sparc/include/asm/atomic_32.h
-+++ b/arch/sparc/include/asm/atomic_32.h
-@@ -13,10 +13,10 @@
-=20
- #include <linux/types.h>
-=20
--typedef struct { volatile int counter; } atomic_t;
--
- #ifdef __KERNEL__
-=20
-+#include <asm/atomic_types.h>
-+
- #define ATOMIC_INIT(i)  { (i) }
-=20
- extern int __atomic_add_return(int, atomic_t *);
---- a/arch/sparc/include/asm/atomic_64.h
-+++ b/arch/sparc/include/asm/atomic_64.h
-@@ -9,8 +9,8 @@
-=20
- #include <linux/types.h>
- #include <asm/system.h>
-+#include <asm/atomic_types.h>
-=20
--typedef struct { volatile int counter; } atomic_t;
- typedef struct { volatile __s64 counter; } atomic64_t;
-=20
- #define ATOMIC_INIT(i)		{ (i) }
---- /dev/null
-+++ b/arch/sparc/include/asm/atomic_types.h
-@@ -0,0 +1,8 @@
-+#ifndef _ATOMIC_TYPES_H
-+#define _ATOMIC_TYPES_H
-+
-+typedef struct {
-+	volatile int counter;
-+} atomic_t;
-+
-+#endif
---- a/arch/sh/include/asm/atomic.h
-+++ b/arch/sh/include/asm/atomic.h
-@@ -7,7 +7,7 @@
-  *
-  */
-=20
--typedef struct { volatile int counter; } atomic_t;
-+#include <asm/atomic_types.h>
-=20
- #define ATOMIC_INIT(i)	( (atomic_t) { (i) } )
-=20
---- /dev/null
-+++ b/arch/sh/include/asm/atomic_types.h
-@@ -0,0 +1,8 @@
-+#ifndef _ASM_IA64_ATOMIC_TYPES_H
-+#define _ASM_IA64_ATOMIC_TYPES_H
-+
-+typedef struct {
-+	volatile int counter;
-+} atomic_t;
-+
-+#endif
+sys_rt_sigqueueinfo()  sys_tgkill()                sys_rt_sigqueueinfo()
+        |                   |                              |
+        v                   v                              v
+do_rt_sigqueueinfo()   do_tkill()                  kill_proc_info()
+        |                   |                              |
+        |                   v                              v
+        +------------> do_send_specific()          kill_pid_info()
+                            |                              |
+                            v                              v
+                       specific_send_sig_info()    group_send_sig_info()
+                            |                              |
+                            |                              v
+                            |                      __group_send_sig_info()
+                            |                              |
+                            |                              v
+                            +--------------------> send_signal()
+
+And in do_send_specifc() there are the lines:
+
+        info->si_pid = task_tgid_vnr(current);
+        info->si_uid = current->uid;
+
+I suspect this should be fixed to be consistent with sigqueueinfo().
+
+Cheers,
+
+Michael
+
+=====
+
+/*#* multithread_sig_receiver.c
+
+   Copyright 2008, Linux Foundation;
+   written by Michael Kerrisk <mtk.manpages@gmail.com>
+*/
+#define _GNU_SOURCE
+#include <sys/syscall.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <signal.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
+                        } while (0)
+
+#define errExitEN(en, msg) \
+                        do { errno = en; perror(msg); \
+                             exit(EXIT_FAILURE); } while (0)
+
+static sigset_t test_sigs;
+
+struct thread_arg {
+    int   thread_num;
+    char *argv_string;
+};
+
+static pid_t
+gettid(void)
+{
+    return syscall(SYS_gettid);
+}
+
+#if 0
+static void
+handler(int sig, siginfo_t *si, void *uc)
+{
+    printf("PID = %ld; TID = %ld; caught signal %d: \n",
+            (long) getpid(), (long) gettid(), sig);
+    printf("%p\n", si);
+    printf("si_signo=%d ", si->si_signo);
+    printf("si_code=%d ", si->si_code);
+    printf("si_pid=%ld ", (long) si->si_pid);
+    printf("si_uid=%ld ", (long) si->si_uid);
+    printf("si_value.sival_int=%d\n", si->si_value.sival_int);
+}
+#endif
+
+static void
+wait_for_signals(int tnum)
+{
+    siginfo_t si;
+
+    printf("Thread %d: about to wait for signals\n", tnum);
+
+    for (;;) {
+        if (sigwaitinfo(&test_sigs, &si) == -1)
+            errExit("sigwaitinfo");
+        printf("Thread %d: got signal: ", tnum);
+        printf("si_signo=%d ", si.si_signo);
+        printf("si_code=%d ", si.si_code);
+        printf("si_pid=%ld ", (long) si.si_pid);
+        printf("si_uid=%ld ", (long) si.si_uid);
+        printf("si_value.sival_int=%d\n", si.si_value.sival_int);
+    }
+} /* wait_for_signals */
 
 
---=-WKjy2FY205FeO22ERMMx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+static void *
+threadFunc(void *arg)
+{
+    struct thread_arg *ta = (struct thread_arg *) arg;
+    int nsecs;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+    printf("Thread %d: PID = %ld; TID = %ld\n", ta->thread_num,
+            (long) getpid(), (long) gettid());
 
-iEYEABECAAYFAkjsgPYACgkQKhFGF+eHlpgjIACgirDaT5lYjXXRy9Kt7+vukM8+
-fYwAn29e8vvlnNjiHyhhzAFNqb4kG1k2
-=bdZT
------END PGP SIGNATURE-----
+    nsecs = atoi(ta->argv_string);
 
---=-WKjy2FY205FeO22ERMMx--
+    if (nsecs > 0) {
+        printf("Thread %d: sleeping\n", ta->thread_num);
+        sleep(nsecs);
+        printf("Thread %d: finished sleeping\n", ta->thread_num);
+    }
 
+    wait_for_signals(ta->thread_num);
+    return NULL;        /* NOTREACHED */
+} /* threadFunc */
+
+
+#define MAX_ARGS 1000
+
+int
+main(int argc, char *argv[])
+{
+    pthread_t t;
+    int s, j;
+//    struct sigaction sa;
+    struct thread_arg ta[MAX_ARGS];
+    sigset_t new;
+
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <nsecs>...\n", argv[0]);
+        fprintf(stderr, "Each <nsecs> argument causes a separate "
+                "thread to be created;\n");
+        fprintf(stderr, "The thread sleeps <nsecs> seconds before "
+                "accepting signals with sigwaitinfo()\n");
+
+        fprintf(stderr, "\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    if (argc > MAX_ARGS) {
+        fprintf(stderr, "Too many arguments\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    sigemptyset(&test_sigs);
+    for (s = 1; s < NSIG; s++)
+        if (s != SIGINT && s != SIGQUIT && s != SIGTERM)
+            sigaddset(&test_sigs, s);
+
+    sigemptyset(&new);
+    if (sigprocmask(SIG_SETMASK, &new, NULL) == -1)
+        errExit("sigprocmask");
+
+#if 0
+    for (s = 1; s < NSIG; s++) {
+        if (sigismember(&test_sigs, s)) {
+            sa.sa_flags = SA_SIGINFO;
+            sa.sa_sigaction = handler;
+            sigemptyset(&sa.sa_mask);
+            if (sigaction(s, &sa, NULL) == -1 && errno != EINVAL)
+                errExit("sigaction");
+        }
+    }
+    printf("Established handler for signals\n");
+#endif
+
+    printf("Main: TGID = %ld; TID = %ld\n",
+            (long) getpid(), (long) gettid());
+
+    s = pthread_sigmask(SIG_SETMASK, &test_sigs, NULL);
+    if (s != 0)
+        errExit("pthread_sigmask");
+    printf("Main: blocked signals\n");
+
+    for (j = 0; j + 1 < argc; j++) {
+        ta[j].thread_num = j + 1;
+        ta[j].argv_string = argv[j + 1];
+
+        s = pthread_create(&t, NULL, threadFunc, &ta[j]);
+        if (s != 0)
+            errExitEN(s, "pthread_create");
+    }
+
+    wait_for_signals(0);
+} /* main */
+
+=====
+
+/*#* t_rt_tgsigqueueinfo.c
+
+   Copyright 2008, Linux Foundation;
+   written by Michael Kerrisk <mtk.manpages@gmail.com>
+*/
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <signal.h>
+#include <sys/types.h>
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
+                        } while (0)
+
+#if defined(__i386__)
+#define SYS_rt_tgsigqueueinfo 333
+#endif
+
+static int
+rt_tgsigqueueinfo(pid_t tgid, pid_t tid, int sig, siginfo_t *si)
+{
+    return syscall(SYS_rt_tgsigqueueinfo, tgid, tid, sig, si);
+}
+
+
+int
+main(int argc, char *argv[])
+{
+    pid_t tgid, tid;
+    siginfo_t si;
+    int sig, val;
+
+    if (argc < 5) {
+        fprintf(stderr, "Usage: %s <tgid> <tid> <sig> <val> "
+                "[<si_code> [<si_pid [<si_uid>]]]\n", argv[0]);
+        exit(EXIT_SUCCESS);
+    }
+
+    printf("My PID is %ld\n", (long) getpid());
+
+    tgid = atoi(argv[1]);
+    tid = atoi(argv[2]);
+    sig = atoi(argv[3]);
+    val = atoi(argv[4]);
+
+    si.si_signo = sig + 1;
+    si.si_code = (argc > 5) ? atoi(argv[5]) : SI_QUEUE;
+    si.si_pid = (argc > 6) ? atoi(argv[6]) : getpid();
+    si.si_uid = (argc > 7) ? atoi(argv[7]) : getuid();
+    si.si_value.sival_int = val;
+
+    /*
+    printf("Sending: si.si_signo = %d, si.si_code = %d, "
+            "si.si_pid = %ld, si.si_uid = %ld\n",
+            si.si_signo, si.si_code, (long) si.si_pid, (long) si.si_uid);
+    */
+    if (rt_tgsigqueueinfo(tgid, tid, sig, &si) == -1)
+        errExit("rt_tgsigqueueinfo");
+
+    exit(EXIT_SUCCESS);
+} /* main */
+
+=====
+
+/*#* t_rt_sigqueueinfo.c
+
+   Copyright 2008, Linux Foundation;
+   written by Michael Kerrisk <mtk.manpages@gmail.com>
+*/
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <signal.h>
+#include <sys/types.h>
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
+                        } while (0)
+
+static int
+rt_sigqueueinfo(pid_t tgid, int sig, siginfo_t *si)
+{
+    return syscall(SYS_rt_sigqueueinfo, tgid, sig, si);
+}
+
+
+int
+main(int argc, char *argv[])
+{
+    pid_t tgid;
+    siginfo_t si;
+    int sig, val;
+
+    if (argc < 4) {
+        fprintf(stderr, "Usage: %s <tgid> <sig> <val> "
+                "[<si_code> [<si_pid [<si_uid>]]]\n", argv[0]);
+        exit(EXIT_SUCCESS);
+    }
+
+    printf("My PID is %ld\n", (long) getpid());
+
+    tgid = atoi(argv[1]);
+    sig = atoi(argv[2]);
+    val = atoi(argv[3]);
+
+    si.si_signo = sig + 1;
+    si.si_code = (argc > 4) ? atoi(argv[4]) : SI_QUEUE;
+    si.si_pid = (argc > 5) ? atoi(argv[5]) : getpid();
+    si.si_uid = (argc > 6) ? atoi(argv[6]) : getuid();
+    si.si_value.sival_int = val;
+
+    /*
+    printf("Sending: si.si_signo = %d, si.si_code = %d, "
+            "si.si_pid = %ld, si.si_uid = %ld\n",
+            si.si_signo, si.si_code, (long) si.si_pid, (long) si.si_uid);
+    */
+    if (rt_sigqueueinfo(tgid, sig, &si) == -1)
+        errExit("rt_sigqueueinfo");
+
+    exit(EXIT_SUCCESS);
+} /* main */
+
+=====
