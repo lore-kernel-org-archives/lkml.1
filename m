@@ -1,63 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbYJHDM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbYJHDRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757828AbYJHDM5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 23:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbYJHDMt
+	id S1757600AbYJHDRm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 23:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYJHDRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 23:12:49 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:50859 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754379AbYJHDMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 23:12:48 -0400
-Date: Tue, 7 Oct 2008 20:12:45 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-netdev@vger.kernel.org, josh@freedesktop.org
-Subject: Re: [patch][rfc] ddds: "dynamic dynamic data structure" algorithm,
-	for adaptive dcache hash table sizing
-Message-ID: <20081008031245.GC7101@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081007064834.GA5959@wotan.suse.de> <20081007.140825.40261432.davem@davemloft.net> <20081008024813.GC6499@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081008024813.GC6499@wotan.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 7 Oct 2008 23:17:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43724
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754009AbYJHDRa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 23:17:30 -0400
+Date: Tue, 07 Oct 2008 20:17:05 -0700 (PDT)
+Message-Id: <20081007.201705.149744421.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08, 2008 at 04:48:13AM +0200, Nick Piggin wrote:
-> On Tue, Oct 07, 2008 at 02:08:25PM -0700, David Miller wrote:
-> > From: Nick Piggin <npiggin@suse.de>
-> > Date: Tue, 7 Oct 2008 08:48:34 +0200
-> > 
-> > > I'm cc'ing netdev because Dave did express some interest in using this for
-> > > some networking hashes, and network guys in general are pretty cluey when it
-> > > comes to hashes and such ;)
-> > 
-> > Interesting stuff.
-> > 
-> > Paul, many months ago, forwarded to me a some work done by Josh
-> > Triplett called "rcuhashbash" which had similar objectives.  He did
-> > post it to linux-kernel, and perhaps even your ideas are inspired by
-> > his work, I don't know. :-)
-> 
-> Hmm yes I did see that. It's not too similar, as it focuses on re-keying
-> an existing element into the same hash table. ddds can't do that kind of
-> thing (the underlying data structure isn't visible to the algorithm, so
-> it can't exactly modify data structures in-place), although in another
-> sense it is more general because the transfer function could transfer
-> items into another hash table and re-key them as it goes (if it did that,
-> it could probably use Josh's "atomic" re-keying algorithm too).
-> 
-> But largely it does seem like they are orthogonal (if I'm reading
-> rcuhashbash correctly).
 
-IIRC, one of the weaknesses of rcuhashbash was that the elements had
-to be copied in some cases.  Josh has been working on a variant that
-(hopefully) allows elements to be moved without copying, as is required
-by dcache.
+I realize that you want to get a final 2.6.27 out potentially on
+Wednesday.  However, the promiscuous count corruption and the
+device unregister deadlock have easy triggers and well tested fixes.
 
-							Thanx, Paul
+The rest are one and two liners and fix issues users have reported
+(and in some cases even analyzed :-).
+
+If this is too much, I can rebuild a tree with a smaller set of these
+fixes.  Just let me know.  In such a case I'd probably choose changes
+#2, #4, and #6 in the list below.
+
+1) If we do receive copy offload (CONFIG_NET_DMA), TCP can send two
+   ACKs for the same data packet.
+
+   This fix is very self contained, the new logic only kicks in specifically
+   in the CONFIG_NET_DMA case, and it is easily proven that we have in fact sent
+   an appropriate ACK out already for the code paths with the new logic.
+
+   Fix by Ali Saidi.
+
+2) Benjamin Thery hit and tracked down a deadlock in device unregister.  It
+   probably accounts for numerous still triggering cases of the famous:
+
+    unregister_netdevice: waiting for %s to become free. Usage count = %d
+
+   log messages and wedges.
+
+   The problem is parallel invocations of netdev_run_todo, where one needs
+   to run to release the reference the other is waiting for.
+
+   Herbert Xu fixes this by extending the coverage of the RTNL mutex
+   a little bit, and then once we have the element on a local list to
+   destroy from, we drop the RTNL mutex and don't take any other locks.
+
+   This fix has been verified by Benjamin.
+
+3) The Hybla TCP congestion control algorithm can get into a state where
+   the congestion window stops growing entirely.  This is a side effect
+   of rounding.  Fix from Daniele Lacamera.  It's pretty safe because
+   when this situation is detected the code mimicks new reno behavior.
+
+4) Jesper Dangaard Brouer reports a corruption of the promiscous count
+   on a device which is configured to a VLAN when bringing such a device
+   down.
+
+   The problem is that, in the VLAN paths, we invoke the ->change_rx_flags()
+   method multiple times.  It is done even after the device is marked down,
+   and this is what messes up the promiscuous count.
+
+   The fix from Patrick McHardy is to guard ->change_rx_flags() invocation
+   with IFF_UP tests.
+
+   Fix tested and verified by Jesper.
+
+5) Debugging some AX25 problems showed that netrom sockets get orphaned
+   far too late, which allows them to be seen unorphaned in sk_free().
+   This can cause serious problems.
+
+   Fix from Jarek Poplawski.
+
+6) Bernard (f6bvp) reports crashes in AX25, these are caused by a commit
+   of mine meant to fix a problem involving the leak of unaccepted sockets
+   when a listening socket is closed.
+
+   So, revert my broken fix, and add the more focused cure proposed by
+   Tihomir Heidelberg (9a4gl).
+
+   Bernard tested and validated these changes.
+
+7) Bluetooth bug fixes:
+
+   a) btusb and bpa10x drivers double free buffers on error paths.
+   b) reset quirks needed for some more dongles (A-Link BlueUSB21,
+      Tragus, and Belkin)
+
+Please pull, thanks a lot!
+
+The following changes since commit 0523820482dcb42784572ffd2296c2f08c275a2b:
+  Timo Teras (1):
+        af_key: Free dumping state on socket close
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Ali Saidi (1):
+      tcp: Fix possible double-ack w/ user dma
+
+Daniele Lacamera (1):
+      tcp: Fix tcp_hybla zero congestion window growth with small rho and large cwnd.
+
+David S. Miller (3):
+      Revert "ax25: Fix std timer socket destroy handling."
+      ax25: Quick fix for making sure unaccepted sockets get destroyed.
+      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
+
+Herbert Xu (1):
+      net: Fix netdev_run_todo dead-lock
+
+Jarek Poplawski (1):
+      netrom: Fix sock_orphan() use in nr_release
+
+Marcel Holtmann (3):
+      [Bluetooth] Fix double frees on error paths of btusb and bpa10x drivers
+      [Bluetooth] Add reset quirk for new Targus and Belkin dongles
+      [Bluetooth] Add reset quirk for A-Link BlueUSB21 dongle
+
+Patrick McHardy (1):
+      net: only invoke dev->change_rx_flags when device is UP
+
+ drivers/bluetooth/bpa10x.c |    2 --
+ drivers/bluetooth/btusb.c  |    8 +++++---
+ net/ax25/af_ax25.c         |    3 +++
+ net/ax25/ax25_std_timer.c  |    8 +++++---
+ net/core/dev.c             |   43 ++++++++++++++++---------------------------
+ net/core/rtnetlink.c       |    2 +-
+ net/ipv4/tcp_hybla.c       |    6 +++++-
+ net/ipv4/tcp_input.c       |    3 ++-
+ net/netrom/af_netrom.c     |    2 +-
+ 9 files changed, 38 insertions(+), 39 deletions(-)
