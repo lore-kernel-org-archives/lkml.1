@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbYJHT0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYJHT1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbYJHT0c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 15:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbYJHT0W
+	id S1756348AbYJHT1G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 15:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbYJHT0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 15:26:22 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:50491 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756165AbYJHT0V (ORCPT
+	Wed, 8 Oct 2008 15:26:53 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:56559 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754919AbYJHT0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 15:26:21 -0400
-Date: Thu, 9 Oct 2008 00:56:11 +0530
+	Wed, 8 Oct 2008 15:26:51 -0400
+Date: Thu, 9 Oct 2008 00:56:37 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
        akpm@linux-foundation.org, mingo@elte.hu, jason.wessel@windriver.com,
        avi@qumranet.com, richardj_moore@uk.ibm.com
-Subject: [RFC Patch 7/9] Modify signal handling code to refrain from
-	re-enabling HW Breakpoints
-Message-ID: <20081008192611.GG4989@in.ibm.com>
+Subject: [RFC Patch 8/9] Modify Ptrace to use wrapper routines to access
+	breakpoint registers
+Message-ID: <20081008192637.GH4989@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
 References: <20081008192044.GA4510@in.ibm.com>
 MIME-Version: 1.0
@@ -30,52 +30,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch disables re-enabling of Hardware Breakpoint registers through the 
-signal handling code. This is now during hw_breakpoint_handler().
+
+This patch modifies the ptrace code to use the new wrapper routines around the 
+debug/breakpoint registers.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/signal_32.c |    9 ---------
- arch/x86/kernel/signal_64.c |    8 --------
- 2 files changed, 17 deletions(-)
+ arch/x86/kernel/ptrace.c |  101 +----------------------------------------------
+ 1 file changed, 4 insertions(+), 97 deletions(-)
 
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/signal_32.c
+Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/ptrace.c
 ===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/signal_32.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/signal_32.c
-@@ -600,15 +600,6 @@ static void do_signal(struct pt_regs *re
+--- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/ptrace.c
++++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/ptrace.c
+@@ -462,98 +462,6 @@ static int genregs_set(struct task_struc
+ 	return ret;
+ }
  
- 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
- 	if (signr > 0) {
+-/*
+- * This function is trivial and will be inlined by the compiler.
+- * Having it separates the implementation details of debug
+- * registers from the interface details of ptrace.
+- */
+-static unsigned long ptrace_get_debugreg(struct task_struct *child, int n)
+-{
+-	switch (n) {
+-	case 0:		return child->thread.debugreg0;
+-	case 1:		return child->thread.debugreg1;
+-	case 2:		return child->thread.debugreg2;
+-	case 3:		return child->thread.debugreg3;
+-	case 6:		return child->thread.debugreg6;
+-	case 7:		return child->thread.debugreg7;
+-	}
+-	return 0;
+-}
+-
+-static int ptrace_set_debugreg(struct task_struct *child,
+-			       int n, unsigned long data)
+-{
+-	int i;
+-
+-	if (unlikely(n == 4 || n == 5))
+-		return -EIO;
+-
+-	if (n < 4 && unlikely(data >= debugreg_addr_limit(child)))
+-		return -EIO;
+-
+-	switch (n) {
+-	case 0:		child->thread.debugreg0 = data; break;
+-	case 1:		child->thread.debugreg1 = data; break;
+-	case 2:		child->thread.debugreg2 = data; break;
+-	case 3:		child->thread.debugreg3 = data; break;
+-
+-	case 6:
+-		if ((data & ~0xffffffffUL) != 0)
+-			return -EIO;
+-		child->thread.debugreg6 = data;
+-		break;
+-
+-	case 7:
 -		/*
--		 * Re-enable any watchpoints before delivering the
--		 * signal to user space. The processor register will
--		 * have been cleared if the watchpoint triggered
--		 * inside the kernel.
+-		 * Sanity-check data. Take one half-byte at once with
+-		 * check = (val >> (16 + 4*i)) & 0xf. It contains the
+-		 * R/Wi and LENi bits; bits 0 and 1 are R/Wi, and bits
+-		 * 2 and 3 are LENi. Given a list of invalid values,
+-		 * we do mask |= 1 << invalid_value, so that
+-		 * (mask >> check) & 1 is a correct test for invalid
+-		 * values.
+-		 *
+-		 * R/Wi contains the type of the breakpoint /
+-		 * watchpoint, LENi contains the length of the watched
+-		 * data in the watchpoint case.
+-		 *
+-		 * The invalid values are:
+-		 * - LENi == 0x10 (undefined), so mask |= 0x0f00.	[32-bit]
+-		 * - R/Wi == 0x10 (break on I/O reads or writes), so
+-		 *   mask |= 0x4444.
+-		 * - R/Wi == 0x00 && LENi != 0x00, so we have mask |=
+-		 *   0x1110.
+-		 *
+-		 * Finally, mask = 0x0f00 | 0x4444 | 0x1110 == 0x5f54.
+-		 *
+-		 * See the Intel Manual "System Programming Guide",
+-		 * 15.2.4
+-		 *
+-		 * Note that LENi == 0x10 is defined on x86_64 in long
+-		 * mode (i.e. even for 32-bit userspace software, but
+-		 * 64-bit kernel), so the x86_64 mask value is 0x5454.
+-		 * See the AMD manual no. 24593 (AMD64 System Programming)
 -		 */
--		if (current->thread.debugreg7)
--			set_debugreg(current->thread.debugreg7, 7);
+-#ifdef CONFIG_X86_32
+-#define	DR7_MASK	0x5f54
+-#else
+-#define	DR7_MASK	0x5554
+-#endif
+-		data &= ~DR_CONTROL_RESERVED;
+-		for (i = 0; i < 4; i++)
+-			if ((DR7_MASK >> ((data >> (16 + 4*i)) & 0xf)) & 1)
+-				return -EIO;
+-		child->thread.debugreg7 = data;
+-		if (data)
+-			set_tsk_thread_flag(child, TIF_DEBUG);
+-		else
+-			clear_tsk_thread_flag(child, TIF_DEBUG);
+-		break;
+-	}
 -
- 		/* Whee! Actually deliver the signal.  */
- 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
- 			/*
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/signal_64.c
-===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/signal_64.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/signal_64.c
-@@ -496,14 +496,6 @@ static void do_signal(struct pt_regs *re
+-	return 0;
+-}
+-
+ #ifdef X86_BTS
  
- 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
- 	if (signr > 0) {
--		/* Re-enable any watchpoints before delivering the
--		 * signal to user space. The processor register will
--		 * have been cleared if the watchpoint triggered
--		 * inside the kernel.
--		 */
--		if (current->thread.debugreg7)
--			set_debugreg(current->thread.debugreg7, 7);
--
- 		/* Whee!  Actually deliver the signal.  */
- 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
- 			/*
+ static int ptrace_bts_get_size(struct task_struct *child)
+@@ -888,7 +796,7 @@ long arch_ptrace(struct task_struct *chi
+ 		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
+ 			 addr <= offsetof(struct user, u_debugreg[7])) {
+ 			addr -= offsetof(struct user, u_debugreg[0]);
+-			tmp = ptrace_get_debugreg(child, addr / sizeof(data));
++			tmp = thread_get_debugreg(child, addr/sizeof(data));
+ 		}
+ 		ret = put_user(tmp, datap);
+ 		break;
+@@ -905,8 +813,7 @@ long arch_ptrace(struct task_struct *chi
+ 		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
+ 			 addr <= offsetof(struct user, u_debugreg[7])) {
+ 			addr -= offsetof(struct user, u_debugreg[0]);
+-			ret = ptrace_set_debugreg(child,
+-						  addr / sizeof(data), data);
++			ret = thread_set_debugreg(child, addr/sizeof(data), data);
+ 		}
+ 		break;
+ 
+@@ -1073,7 +980,7 @@ static int putreg32(struct task_struct *
+ 	case offsetof(struct user32, u_debugreg[0]) ...
+ 		offsetof(struct user32, u_debugreg[7]):
+ 		regno -= offsetof(struct user32, u_debugreg[0]);
+-		return ptrace_set_debugreg(child, regno / 4, value);
++		return thread_set_debugreg(child, regno / 4, value);
+ 
+ 	default:
+ 		if (regno > sizeof(struct user32) || (regno & 3))
+@@ -1132,7 +1039,7 @@ static int getreg32(struct task_struct *
+ 	case offsetof(struct user32, u_debugreg[0]) ...
+ 		offsetof(struct user32, u_debugreg[7]):
+ 		regno -= offsetof(struct user32, u_debugreg[0]);
+-		*val = ptrace_get_debugreg(child, regno / 4);
++		*val = thread_get_debugreg(child, regno / 4);
+ 		break;
+ 
+ 	default:
