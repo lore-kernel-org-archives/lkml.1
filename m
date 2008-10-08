@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbYJHIen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYJHIfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbYJHIen (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 04:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYJHIee
+	id S1754414AbYJHIfb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 04:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYJHIfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 04:34:34 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48293 "EHLO
+	Wed, 8 Oct 2008 04:35:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48298 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753352AbYJHIed (ORCPT
+	with ESMTP id S1751643AbYJHIfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 04:34:33 -0400
-Date: Wed, 8 Oct 2008 09:33:25 +0100
+	Wed, 8 Oct 2008 04:35:22 -0400
+Date: Wed, 8 Oct 2008 09:34:24 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Andi Kleen <andi@firstfloor.org>
 Cc: Andi Kleen <andi@firstfloor.org>,
@@ -21,7 +21,7 @@ Cc: Andi Kleen <andi@firstfloor.org>,
        Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
-Message-ID: <20081008093325.3d0d3bd6@lxorguk.ukuu.org.uk>
+Message-ID: <20081008093424.4e88a3c2@lxorguk.ukuu.org.uk>
 In-Reply-To: <20081007235737.GD7971@one.firstfloor.org>
 References: <1223396117-8118-1-git-send-email-kirill@shutemov.name>
 	<2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com>
@@ -41,28 +41,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Perhaps I'm confused but my /dev/shm doesn't have any such files,
-> but I see a variety of shm segments in ipcs.
-> 
-> What would the path passed to shm_open look like?
+Oh and as a PS you can also (for the hint case) do this:
 
-Well right now they don't get exposed as they are created unlinked but
-that is a trivial tweak to mm/shmem.c.
+	shmat giving an address
+	if error
+		shmat giving no address
 
-> > and nobody is wanting to map those at fixed addresses.
-> 
-> You're saying it should always use the address as a search hint?
-
-Nothing of the sort. I'm pointing out that mmap and shm_open already
-provide all the needed interfaces for this for real world applications
-today.
-> 
-> Just changing the semantics unconditionally would seem risky to me. After 
-> all as you point out they are primarily for compatibility and for that keeping
-> old semantics would seem better to me.
-
-We don't need to change any semantics, there is a perfectly good
-alternative standards based interface. At most you might want to make the
-sys3 shared memory segments appear in /dev/shm/ somewhere.
+from user space.
 
 Alan
