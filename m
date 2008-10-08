@@ -1,107 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYJHQWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYJHQcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYJHQWa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 12:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbYJHQWO
+	id S1754860AbYJHQcS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 12:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYJHQcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 12:22:14 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:46581 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754435AbYJHQWL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 12:22:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=FdEPCZbhkD0Lb6FSb82C1PtHee1ncHk/XlodUWzM+s3ZOv0iJ4dfRIq7bY9y4EtBVR
-         OfeHgarWbfQWzorZgtpK6CMBgJ8zHZgqqKSIpV1JSBqXAIydmuMFE76aEYsxWaKSa9PW
-         OdlekR5MDcr6sbRWmko8YwLLljA434P/dYgKw=
-Message-ID: <9ea470500810080922x326821c5p47053afa7a1d261e@mail.gmail.com>
-Date: Wed, 8 Oct 2008 18:22:10 +0200
-From: "Boris Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: "Mark de Wever" <koraq@xs4all.nl>
-Subject: Re: [patch][repost] ide-tape build fix
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
-       "Gadi Oxman" <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081008154552.GA3907@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48D79ABD.8060805@ru.mvista.com> <20080922204129.GA3495@localhost>
-	 <48D80949.4080901@ru.mvista.com> <20080923074845.GB5656@gollum.tnic>
-	 <20080923165914.GA7803@localhost>
-	 <9ea470500809231011p5ea37fc4u71eeeddf6ccec45a@mail.gmail.com>
-	 <20080923212018.GA3348@localhost> <20081007182615.GA2400@localhost>
-	 <20081008063352.GA13530@gollum.tnic> <20081008154552.GA3907@localhost>
+	Wed, 8 Oct 2008 12:32:01 -0400
+Received: from vena.lwn.net ([206.168.112.25]:38499 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752788AbYJHQcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 12:32:01 -0400
+Date: Wed, 8 Oct 2008 10:31:55 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Nick Warne <nick@ukfsn.org>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] Trivial patch to submitting-patches Documantation
+Message-ID: <20081008103155.133f2692@tpl>
+In-Reply-To: <20081008134401.68910c46@sauron.linicks.net>
+References: <20081008134401.68910c46@sauron.linicks.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 8, 2008 at 5:45 PM, Mark de Wever <koraq@xs4all.nl> wrote:
-> On Wed, Oct 08, 2008 at 08:33:52AM +0200, Borislav Petkov wrote:
-> Hi,
->> Bugger, I should be getting at least warnings when compiling this but I don't.
->> This is because I don't have CONFIG_LBD enabled. However, the %ld and %d
->> format specifiers are also not entirely correct but gcc doesn't warn about them
->> - I guess it checks only size but not signedness...
->
-> I guess so too.
->
->> Would you like to redo your patch and add a proper comment ontop?
->
-> Here you go.
->
-> @Boris do you want to add your Signed-off-by too?
+On Wed, 8 Oct 2008 13:44:01 +0100
+Nick Warne <nick@ukfsn.org> wrote:
 
-no, just
+> Diff'ed against 2.6.26.5 stable tree.
+> 
+> Test-by tag is wrong.
 
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
+I have a fix for this in my docs tree already.  Linus didn't pull it
+(not surprising, given that I just put it up last week), so I'll try
+again in the merge window.
 
-> @Bart please apply this patch.
->
-> --
-> Subject: ide-tape: Buildfix when IDETAPE_DEBUG_LOG is set to 1.
->
-> The format specifier for rq->sector didn't specify the proper size and
-> signedness. Borislav Petkov discovered that the signedness for
-> rq->nr_sectors and rq->current_nr_sectors also were incorrect.
->
-> Signed-off-by: Mark de Wever <koraq@xs4all.nl>
-> ---
->  drivers/ide/ide-tape.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> index 3833189..3d5f782 100644
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -978,9 +978,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
->        struct request *postponed_rq = tape->postponed_rq;
->        u8 stat;
->
-> -       debug_log(DBG_SENSE, "sector: %ld, nr_sectors: %ld,"
-> -                       " current_nr_sectors: %d\n",
-> -                       rq->sector, rq->nr_sectors, rq->current_nr_sectors);
-> +       debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %lu,"
-> +                       " current_nr_sectors: %u\n",
-> +                       (unsigned long long)rq->sector, rq->nr_sectors,
-> +                       rq->current_nr_sectors);
->
->        if (!blk_special_request(rq)) {
->                /* We do not support buffer cache originated requests. */
-> --
-> 1.5.6.5
->
-> Regards,
-> Mark de Wever
->
-
--- 
-Regards/Gruss,
-Boris
+Thanks,
+jon
