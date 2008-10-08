@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYJHNBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYJHNGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbYJHNBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755546AbYJHNBR
+	id S1755321AbYJHNGm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbYJHNGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:01:17 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:50552 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754632AbYJHNBP (ORCPT
+	Wed, 8 Oct 2008 09:06:33 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:7258 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbYJHNGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:01:15 -0400
-Subject: [PATCH] sched_clock: prevent scd->clock from moving backwards
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1223470773.6336.13.camel@norville.austin.ibm.com>
-References: <48D959E8.4000303@goop.org>
-	 <1223470773.6336.13.camel@norville.austin.ibm.com>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 08:00:54 -0500
-Message-Id: <1223470854.6336.15.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 8 Oct 2008 09:06:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wmqeHqDepIbDSwN4K+F+SIKU+RZ8W+vDT8NSnhF0BtTkMfSNlC2exG+kr/a9nGcha7
+         Zm8C/UctihfLpQosVF7uY3gkKQ3oc/FOnwSHmpAfYql5rYTRroXb4DHunmoH+BKNFrf/
+         fm3me07QtuF7ya4V67xa3y7XIg0K016EdDqqw=
+Message-ID: <9e4733910810080606ne8bdbb8v81d42069c985ae98@mail.gmail.com>
+Date: Wed, 8 Oct 2008 09:06:30 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Bill Gatliff" <bgat@billgatliff.com>
+Subject: Re: Toggling GPIO at 38Khz
+Cc: "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <48ECA101.8010604@billgatliff.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9e4733910810072043m6c69f3bdv104bd32928fe64ae@mail.gmail.com>
+	 <48ECA101.8010604@billgatliff.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched_clock: prevent scd->clock from moving backwards
+On Wed, Oct 8, 2008 at 8:01 AM, Bill Gatliff <bgat@billgatliff.com> wrote:
+> Jon Smirl wrote:
+>
+>>
+>> Are there other techniques for generating pulse trains in the 36-56Khz
+>> range on a simple GPIO pin?
+>>
+>
+> Yes.
+>
+> Use the GPIO pin to enable the output of an external circuit.  Or, hope that the
+> GPIO pin in question is multiplexed with a timer/counter or PWM peripheral.
+>
+> But somehow, I don't think either answer is what you were looking for.  :)
 
-When sched_clock_cpu() couples the clocks between two cpus, it may
-increment scd->clock beyond the GTOD tick window that __update_sched_clock()
-uses to clamp the clock.  A later call to __update_sched_clock() may move
-the clock back to scd->tick_gtod + TICK_NSEC, violating the clock's
-monotonic property.
+The existing LIRC driver for a serial port is here:
+http://lirc.cvs.sourceforge.net/viewvc/lirc/lirc/drivers/lirc_serial/lirc_serial.c?view=markup
 
-This patch ensures that scd->clock will not be set backward.
+An example of serial based hardware is here:
+http://iguanaworks.net/product2.psp
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+These are external boards people buy to use with MythTV. They are most
+commonly used on the x86, but the NSLU2 has been modified to use them
+too.
 
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index e8ab096..a989d64 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
- 
- 	/*
- 	 * scd->clock = clamp(scd->tick_gtod + delta,
--	 * 		      max(scd->tick_gtod, scd->clock),
--	 * 		      scd->tick_gtod + TICK_NSEC);
-+	 *		      max(scd->tick_gtod, scd->clock),
-+	 *		      min(scd->clock, scd->tick_gtod + TICK_NSEC));
- 	 */
- 
- 	clock = scd->tick_gtod + delta;
- 	min_clock = wrap_max(scd->tick_gtod, scd->clock);
--	max_clock = scd->tick_gtod + TICK_NSEC;
-+	max_clock = wrap_min(scd->clock, scd->tick_gtod + TICK_NSEC);
- 
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
+The hardware can't be changed, people have bought thousands of these devices.
+
+Many people cut up a serial cable and solder it themselves...
+http://www.lirc.org/transmitters.html
+
+The problems with these devices are obvious, I use a USB one for my
+own system. It has a PIC chip in it with PWM out.
 
 
+>
+> 36 KHz bit-banging is a reach for any processor running Linux, methinks.  Maybe
+> you could launch an FIQ (assuming ARM) and then do the bit-bang as a burst in
+> there, so that you would have more control over the timing.  But that kind of
+> code isn't going to play well with the rest of the kernel...
+>
+> If the hardware design isn't set, you might want to consider using that GPIO
+> line as a quasi-SPI link to a small, AVR-type microcontroller that does the
+> bit-banging on your behalf.  Long-term, that's going to be a more reliable and
+> flexible solution I think.
+>
+>
+> b.g.
+> --
+> Bill Gatliff
+> bgat@billgatliff.com
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
