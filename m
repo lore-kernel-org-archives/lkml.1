@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbYJHJeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbYJHJfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbYJHJeo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 05:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbYJHJeM
+	id S1755329AbYJHJfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 05:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbYJHJeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 05:34:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:21706 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbYJHJeK (ORCPT
+	Wed, 8 Oct 2008 05:34:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:45244 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754318AbYJHJeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 05:34:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=X5ioPUp5il4wk3IyGZ0NmM5NZbclioFcH46nR9nyZK0sIjulWR8VK3iznQkxUgmRoV
-         YItdK4Hn7iboDBrAoJOR9pY5BCPfUrPYmD8v6Rf2d8dNaZUcaIHnLT+E41LBmrZ6CWF7
-         bNZej1aYTf1dhMpOZNTrinmHuZRdQDOTnPw68=
-Subject: Re: FRV/ARM unaligned access question
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081008091055.GB19322@flint.arm.linux.org.uk>
-References: <1223450773.8195.80.camel@brick>
-	 <20081008073519.GA19322@flint.arm.linux.org.uk>
-	 <1223451379.8195.88.camel@brick>
-	 <20081008091055.GB19322@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 02:34:07 -0700
-Message-Id: <1223458447.8195.93.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Oct 2008 05:34:22 -0400
+Date: Wed, 8 Oct 2008 12:35:27 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org
+Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
+Message-ID: <20081008093526.GA4986@localhost.localdomain>
+References: <1223396117-8118-1-git-send-email-kirill@shutemov.name> <517f3f820810080157j3994ff10j8518178af02e5b22@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="pWyiEgJYm5f9v55/"
+Content-Disposition: inline
+In-Reply-To: <517f3f820810080157j3994ff10j8518178af02e5b22@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-29)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-08 at 10:10 +0100, Russell King wrote:
-> On Wed, Oct 08, 2008 at 12:36:19AM -0700, Harvey Harrison wrote:
-> > On Wed, 2008-10-08 at 08:35 +0100, Russell King wrote:
-> > > On Wed, Oct 08, 2008 at 12:26:13AM -0700, Harvey Harrison wrote:
-> > > > I noticed that frv/arm are the only two arches that currently use open-coded
-> > > > byteshifting routines for both the cpu endianness and the other endianness
-> > > > whereas just about all the other arches use a packed-struct version for the
-> > > > cpu-endian and then the byteshifting versions (lifted from arm) for the other
-> > > > endianness.
-> > > 
-> > > I'm sorry, I think you're mistaken.  I've looked at x86, m68k and
-> > > parisc, and they all use assembly for their swab functions in
-> > > asm/byteorder.h.
-> > > 
-> > 
-> > Sorry, not talking about byteorder at the moment, talking about
-> > unaligned.h.
-> 
-> At the moment, I've no idea what effect it'll have.  I'd need to run
-> some tests to discover what the effect will be.  Not sure when I'll
-> get around to that.
-> 
-> If someone else can be found to evaluate what the effect would be...
-> 
 
-I don't have hardware to test with, but I'll do some cross-compiles to
-investigate a bit.  I was just curious if there was any known issues on
-arm, or a specific arm compiler that made you choose the implementation
-you did.
+--pWyiEgJYm5f9v55/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
+On Wed, Oct 08, 2008 at 10:57:21AM +0200, Michael Kerrisk wrote:
+> Kirill,
+>=20
+> On Tue, Oct 7, 2008 at 6:15 PM, Kirill A. Shutemov <kirill@shutemov.name>=
+ wrote:
+> > If SHM_MAP_NOT_FIXED specified and shmaddr is not NULL, then the kernel=
+ takes
+> > shmaddr as a hint about where to place the mapping. The address of the =
+mapping
+> > is returned as the result of the call.
+> >
+> > It's similar to mmap() without MAP_FIXED.
+>=20
+> Please CC linux-api@vger.kernel.org on patches that change the
+> kernel-userspace interface.
 
-Harvey
+Ok, I will.
 
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.com/
+
+--pWyiEgJYm5f9v55/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjsft4ACgkQbWYnhzC5v6ojnACaA+yTJZGysNqJF+gPGEsWJJwR
+FU4AniTGA7SoT/IUJoim7mXpb0xHICly
+=x+Pb
+-----END PGP SIGNATURE-----
+
+--pWyiEgJYm5f9v55/--
