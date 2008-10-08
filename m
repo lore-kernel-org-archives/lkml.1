@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbYJHIjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbYJHIl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbYJHIjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 04:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYJHIjB
+	id S1755092AbYJHIl1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 04:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYJHIlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 04:39:01 -0400
-Received: from smtp2e.orange.fr ([80.12.242.113]:58170 "EHLO smtp2e.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbYJHIi7 convert rfc822-to-8bit (ORCPT
+	Wed, 8 Oct 2008 04:41:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38566 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753879AbYJHIlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 04:38:59 -0400
-X-ME-UUID: 20081008083858193.2F51570000B9@mwinf2e18.orange.fr
-Message-ID: <48EC70BB.9010709@cosmosbay.com>
-Date: Wed, 08 Oct 2008 10:35:07 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Cc: minyard@acm.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-References: <48EA8197.6080502@cosmosbay.com>	<20081006.144002.56418911.davem@davemloft.net>	<48EAF29D.8050203@cosmosbay.com> <20081007.112622.73930718.davem@davemloft.net>
-In-Reply-To: <20081007.112622.73930718.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Wed, 8 Oct 2008 04:41:18 -0400
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Tejun Heo <tj@kernel.org>, avorontsov@ru.mvista.com,
+       Matt Sealey <matt@genesi-usa.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Li Yang <leoli@freescale.com>,
+       Wang Jian <lark@linux.net.cn>
+In-Reply-To: <20081007103723.0224671e@lxorguk.ukuu.org.uk>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	 <48EA77EF.6080502@genesi-usa.com>
+	 <20081006213209.GA13072@oksana.dev.rtsoft.ru> <48EABBD3.1010401@kernel.org>
+	 <20081007103723.0224671e@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 09:40:54 +0100
+Message-Id: <1223455254.3145.143.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: Eric Dumazet <dada1@cosmosbay.com>
-> Date: Tue, 07 Oct 2008 07:24:45 +0200
-> 
->> Most UDP sockets are setup for long periods (RTP trafic), or if an application really
->> wants to {open/send or receive one UDP frame/close} many sockets, it already hits
->> RCU handling of its file structures and should not be slowed down that much.
-> 
-> As stated, I added RCU destruction generically for socket objects, and it
-> showed up clearly.
-> 
-> So "not be slowed down that much" has been disproven, at least to me,
-> already :-)
-> 
-> 
-RCU in hash table is ok for managing read mostly data, since
-only during the read access you avoid to dirty a rwlock...
+On Tue, 2008-10-07 at 10:37 +0100, Alan Cox wrote:
+> Zero means no IRQ. Any platform with bits of code left over exposing IRQ
+> 0 is already not supported by lots of driver code including libata.
 
-If we have a workload that insert/delete sockets as hell but
-receive few frames (that hit the hash table in a read only way),
-then you defeat the purpose of RCU, and pay the price of
-throwing away (in rcu queue) hot data that will become cold
-before reuse...
+...and must implement some kind of interrupt remapping crap just to work
+around this bogus design decision.
 
-BTW is there any chance your results were obtained before October 2005 ?
-
-At that time, RCU was able to queue an unlimited number of events.
-a single loop doing close(open("/dev/null",0)) could exhaust RAM...
-
-
-Refs: commit  5ee832dbc6770135ec8d63296af0a4374557bb79
-and many others...
-
-Anyway we can probably code something without call_rcu() cache blower
-for UDP, if time permits :)
-
-
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
