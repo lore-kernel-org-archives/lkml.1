@@ -1,164 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYJHKJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYJHKPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbYJHKJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 06:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYJHKJU
+	id S1754650AbYJHKPg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 06:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbYJHKP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 06:09:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:23053 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbYJHKJS (ORCPT
+	Wed, 8 Oct 2008 06:15:28 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:56824 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752974AbYJHKP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 06:09:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rUzKsZTuHj3a1AtBmZ1InEcbMDArehjDVz3szX/Iq2fxEvDTNNAas9VTdD1C1fLTWU
-         l+TfZgweoOHmHjqJ/1rfRWkB6J96ED0ra0eLTnvhV865ms07Fe4d3VETiyh5SWbYSIxj
-         lTq6ceBh3HnRxppb+/wFHBk3dYPE1IoOQYboo=
-Message-ID: <7c86c4470810080309yffd7994le912950e569b3d1b@mail.gmail.com>
-Date: Wed, 8 Oct 2008 12:09:16 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "David Gibson" <david@gibson.dropbear.id.au>, eranian@gmail.com,
-       linux-kernel@vger.kernel.org,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: perfmon3 interface overview
-In-Reply-To: <20081008005356.GA13615@yookeroo.seuss>
+	Wed, 8 Oct 2008 06:15:27 -0400
+Date: Wed, 8 Oct 2008 12:14:50 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: jens.axboe@oracle.com, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH/RFC 0/4] Add stop_machine_get/put_threads to
+	stop_machine infrastructrue.
+Message-ID: <20081008101450.GA2954@osiris.boeblingen.de.ibm.com>
+References: <20081003105632.357231142@de.ibm.com> <200810071239.58732.rusty@rustcorp.com.au> <20081007153854.GA4122@osiris.boeblingen.de.ibm.com> <200810081127.05311.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <7c86c4470809231432j4231cfa4g7dd158a7fe9c9277@mail.gmail.com>
-	 <7c86c4470809251448j65fb99f1nfdb3980e0716149a@mail.gmail.com>
-	 <20081003061713.GL3002@yookeroo.seuss>
-	 <7c86c4470810030354x6984372akfe18761da7504a0c@mail.gmail.com>
-	 <7c86c4470810030358m1a0fdcc5i5512a1c2a6696457@mail.gmail.com>
-	 <20081005055339.GC469@yookeroo.seuss>
-	 <7c86c4470810051423v2116193vc2e1b67ce480488d@mail.gmail.com>
-	 <20081007035616.GB19037@yookeroo.seuss>
-	 <7c86c4470810070246x7ab8cc32k82177c7fdcf72b3f@mail.gmail.com>
-	 <20081008005356.GA13615@yookeroo.seuss>
+In-Reply-To: <200810081127.05311.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+On Wed, Oct 08, 2008 at 10:27:04AM +1000, Rusty Russell wrote:
+> 
+> > Another thing that comes to mind is cpu hotplug: if somebody issued
+> > stop_machine_prepare() and then a cpu hotplug operation gets started we
+> > need to create or kill a kstop thread. For that we need the "sm" so we can
+> > save/find the task_struct pointer of the thread.
+> 
+> Erk, good point.  Suckage.
+> 
+> OK, idea #2.  Let's just always have a kstopmachine thread running on every 
+> online cpu.  Is there a sane way to reuse the workqueue threads for this?
 
+That's a very good idea and what the patch below does. It even simplifies
+the stop_machine code and it does work on an otherwise idle system.
+The only thing that needs to be addressed is that workqueue threads aka
+stop_machine threads are no real time threads now.
+We would need something like create_workqueue_prio() or create_workqueue_rt().
+Would that be acceptable?
 
-On Wed, Oct 8, 2008 at 2:53 AM, David Gibson
-<david@gibson.dropbear.id.au> wrote:
-David,
+---
+ kernel/stop_machine.c |   97 ++++++++++++++++----------------------------------
+ 1 file changed, 32 insertions(+), 65 deletions(-)
 
->> >>     int pfm_control_sets(int fd, uint64_t flags, void *sets, size_t
->> >>     sz);
->> >
->> > Hrm.  This now has identical signature to the {read,write}_pmrs.  I
->> > wonder if these could be sensibly combined.  Maybe have
->> > pfm_get_info(), pfm_set_info() which can get/set control structures
->> > for several different namespaces: PMCs PMDs and now event sets.
->> >
->> I think this would be too generic as it would be mixing very different
->> data types. This is not the case for pfm_write_pmrs() and pfm_read_pmrs()
->> because you are always passing 'register descriptions'.
->>
->> There is a fundamental difference between pfm_control_sets() and
->> pfm_write_pmrs()/pfm_read_pmrs(). For the latter, the 'action' is hardcoded
->> in the name of the syscall, i.e., read or write, what varies is whether or not
->> we are passing PMD or PMC. For the former, the 'action', i.e., create new
->> set or get info about a set, is hardcoded in the flags, and it determines the
->
-> Uh.. I was assuming if combined we'd drop the selecting flag from
-> control_sets() and instead make the pfm_read_stuff() call be the
-> get_info() equivalent when used on the eventsets space and
-> pfm_write_stuff() be the create/modify sets call.
->
-There is something I'd like o clarify about event sets. People may be
-wondering why we need a separate call to create new event sets. Why
-not create the sets when the session is created, e.g., 'create a
-session with 5 sets'.
-
-There are several reasons for not doing this. Each set has some attributes which
-describes how and when to switch to another set. Switching can be done based
-on timeout or based on the number of overflows of counters, each chosen on a
-per set basis, i.e,, it is possible to combine overflow and timeout switching.
-Furthermore, the timeout is defined per set and can thus vary from one
-set to the
-other. Overflow switching is controlled by a threshold passed as an
-attribute to the
-PMD registers.
-
-If we were to create sets with the sessions, it would be more than a matter of
-passing the number of sets. We would actually have to pass the set attributes
-(pfarg_set_desc_t) and a size parameter.
-
-We could do this in v3.0 but it would have to work incrementally as initially we
-won't support event sets in mainline. The call would look as follows:
-
-int pfm_create_session(int flags, pfarg_sinfo_t *sif);
-int pfm_create_session(int flags, pfarg_sinfo_t *sif, char *smpl_name,
-void *smpl_arg, size_t arg_size);
-int pfm_create_session(int flags, pfarg_sinfo_t *sif, char *smpl_name,
-void *smpl_arg, size_t arg_size, pfarg_set_desc_t *s, size_t sz);
-
-I think this call is a bit too complicated. It does a lot of things.
-Furthermore, you lose the ability to add sets on the fly. Deleting may
-be possible via another call.
-
-So my inclination is to keep this as a separate call. By default, one
-set is created (set0), with no switching attribute. It is possible
-to change the attributes by recreating the set. That means, unless you
-need more sets, you have nothing to do.
-
-
-> The fact that the structure is different for read/write in this case
-> is a bit funny.  In fact it would probably be best to have different
-> 'type' fields for read and write too (EVTSET_INFOm only usable for
-> reads , and EVTSET_CONTROL only for writes, maybe).
->
->
-> I'm not dead-set on combining these calls, but it seems to me we've
-> already just about made the read/write calls into a read/write array
-> of control structures in some namespace call, which pretty much is
-> what the event set call is too.
->
-I see, you are pushing it a bit further here. If I understand, you're saying:
-
-int pfm_read_session(int fd, int flags, int type, void *t, size_t sz);
-int pfm_write_session(int fd, int flags, int type, void *t, size_t sz);
-
-Where type could be:
-   PFM_RWFL_PMD           : write simplified pmds registers (pfarg_pmr_t)
-   PFM_RWFL_PMD_ATTR: read or write pmds registers with extended attributes.
-   PFM_RWFL_PMC           : write pmcs register (pfarg_pmr_t), note:
-this is for writing only.
-   PFM_RWFL_SETINFO    : read set information (pfarg_set_info_t). Only
-supported by pfm_read_session
-   PFM_RWFL_CREATSET: create new event sets (pfarg_set_desc_t). Only
-supported by pfm_write_session
-
-I am a bit worried this is too generic, especially for creating sets.
-Yet it offers the advantage of being
-very compact and extensible. I'd like to combine pfarg_set_info_t and
-pfarg_set_desc_t if possible, even
-if some fields are used in only one of the calls.
-
-In summary, here is the current proposal:
-
-   int pfm_create_session(int flags, pfarg_sinfo_t *sif,
-                                         [char *smpl_name,
-                                          void *smpl_arg,
-                                          size_t arg_sz]);
-
-  int pfm_read_session(int fd, int flags, int type, void *t, size_t sz);
-
-  int pfm_write_session(int fd, int flags, int type, void *t, size_t sz);
-
-  int pfm_attach_session((int fd, int flags, int target); /* target =
--1 for detach */
-
-  int pfm_set_state_session(int fd, int flags);
-
-  No other calls are necessary to support event sets and multiplexing.
+Index: linux-2.6/kernel/stop_machine.c
+===================================================================
+--- linux-2.6.orig/kernel/stop_machine.c
++++ linux-2.6/kernel/stop_machine.c
+@@ -37,9 +37,13 @@ struct stop_machine_data {
+ /* Like num_online_cpus(), but hotplug cpu uses us, so we need this. */
+ static unsigned int num_threads;
+ static atomic_t thread_ack;
+-static struct completion finished;
+ static DEFINE_MUTEX(lock);
+ 
++static struct workqueue_struct *stop_machine_wq;
++static struct work_struct *stop_machine_work;
++static struct stop_machine_data active, idle;
++static cpumask_t active_cpus;
++
+ static void set_state(enum stopmachine_state newstate)
+ {
+ 	/* Reset ack counter. */
+@@ -51,21 +55,21 @@ static void set_state(enum stopmachine_s
+ /* Last one to ack a state moves to the next state. */
+ static void ack_state(void)
+ {
+-	if (atomic_dec_and_test(&thread_ack)) {
+-		/* If we're the last one to ack the EXIT, we're finished. */
+-		if (state == STOPMACHINE_EXIT)
+-			complete(&finished);
+-		else
+-			set_state(state + 1);
+-	}
++	if (atomic_dec_and_test(&thread_ack))
++		set_state(state + 1);
+ }
+ 
+ /* This is the actual thread which stops the CPU.  It exits by itself rather
+  * than waiting for kthread_stop(), because it's easier for hotplug CPU. */
+-static int stop_cpu(struct stop_machine_data *smdata)
++static void stop_cpu(struct work_struct *unused)
+ {
+ 	enum stopmachine_state curstate = STOPMACHINE_NONE;
++	struct stop_machine_data *smdata;
+ 
++	if (cpu_isset(smp_processor_id(), active_cpus))
++		smdata = &active;
++	else
++		smdata = &idle;
+ 	/* Simple state machine */
+ 	do {
+ 		/* Chill out and ensure we re-read stopmachine_state. */
+@@ -90,7 +94,6 @@ static int stop_cpu(struct stop_machine_
+ 	} while (curstate != STOPMACHINE_EXIT);
+ 
+ 	local_irq_enable();
+-	do_exit(0);
+ }
+ 
+ /* Callback for CPUs which aren't supposed to do anything. */
+@@ -101,78 +104,33 @@ static int chill(void *unused)
+ 
+ int __stop_machine(int (*fn)(void *), void *data, const cpumask_t *cpus)
+ {
+-	int i, err;
+-	struct stop_machine_data active, idle;
+-	struct task_struct **threads;
++	int i;
+ 
++	/* Set up initial state. */
++	mutex_lock(&lock);
++	num_threads = num_online_cpus();
++	active_cpus = cpus ? *cpus : cpumask_of_cpu(first_cpu(cpu_online_map));
+ 	active.fn = fn;
+ 	active.data = data;
+ 	active.fnret = 0;
+ 	idle.fn = chill;
+ 	idle.data = NULL;
+ 
+-	/* This could be too big for stack on large machines. */
+-	threads = kcalloc(NR_CPUS, sizeof(threads[0]), GFP_KERNEL);
+-	if (!threads)
+-		return -ENOMEM;
+-
+-	/* Set up initial state. */
+-	mutex_lock(&lock);
+-	init_completion(&finished);
+-	num_threads = num_online_cpus();
+ 	set_state(STOPMACHINE_PREPARE);
+ 
+-	for_each_online_cpu(i) {
+-		struct stop_machine_data *smdata = &idle;
+-		struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+-
+-		if (!cpus) {
+-			if (i == first_cpu(cpu_online_map))
+-				smdata = &active;
+-		} else {
+-			if (cpu_isset(i, *cpus))
+-				smdata = &active;
+-		}
+-
+-		threads[i] = kthread_create((void *)stop_cpu, smdata, "kstop%u",
+-					    i);
+-		if (IS_ERR(threads[i])) {
+-			err = PTR_ERR(threads[i]);
+-			threads[i] = NULL;
+-			goto kill_threads;
+-		}
+-
+-		/* Place it onto correct cpu. */
+-		kthread_bind(threads[i], i);
+-
+-		/* Make it highest prio. */
+-		if (sched_setscheduler_nocheck(threads[i], SCHED_FIFO, &param))
+-			BUG();
+-	}
+-
+ 	/* We've created all the threads.  Wake them all: hold this CPU so one
+ 	 * doesn't hit this CPU until we're ready. */
+ 	get_cpu();
+-	for_each_online_cpu(i)
+-		wake_up_process(threads[i]);
+-
++	for_each_online_cpu(i) {
++		INIT_WORK(&stop_machine_work[i], stop_cpu);
++		queue_work_on(i, stop_machine_wq, &stop_machine_work[i]);
++	}
+ 	/* This will release the thread on our CPU. */
+ 	put_cpu();
+-	wait_for_completion(&finished);
++	flush_workqueue(stop_machine_wq);
+ 	mutex_unlock(&lock);
+ 
+-	kfree(threads);
+-
+ 	return active.fnret;
+-
+-kill_threads:
+-	for_each_online_cpu(i)
+-		if (threads[i])
+-			kthread_stop(threads[i]);
+-	mutex_unlock(&lock);
+-
+-	kfree(threads);
+-	return err;
+ }
+ 
+ int stop_machine(int (*fn)(void *), void *data, const cpumask_t *cpus)
+@@ -187,3 +145,12 @@ int stop_machine(int (*fn)(void *), void
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(stop_machine);
++
++static int __init stop_machine_init(void)
++{
++	stop_machine_wq = create_workqueue("kstop");
++	stop_machine_work = kcalloc(NR_CPUS, sizeof(struct work_struct),
++				    GFP_KERNEL);
++	return 0;
++}
++device_initcall(stop_machine_init);
