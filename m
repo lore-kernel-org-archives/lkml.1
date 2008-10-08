@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYJHSqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbYJHSzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbYJHSqH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 14:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYJHSpw
+	id S1755311AbYJHSzs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 14:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYJHSzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 14:45:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35910
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753087AbYJHSpw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 14:45:52 -0400
-Date: Wed, 08 Oct 2008 11:45:27 -0700 (PDT)
-Message-Id: <20081008.114527.189056050.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: shemminger@vyatta.com, benny+usenet@amorsen.dk, minyard@acm.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48ECBBD8.9060602@cosmosbay.com>
-References: <20081007160729.60c076c4@speedy>
-	<20081007.135548.56141000.davem@davemloft.net>
-	<48ECBBD8.9060602@cosmosbay.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 8 Oct 2008 14:55:40 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:43158 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYJHSzj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 14:55:39 -0400
+Date: Wed, 8 Oct 2008 19:55:32 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
+Message-ID: <20081008185532.GA13304@brain>
+References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org> <48ECDD37.8050506@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48ECDD37.8050506@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Wed, 08 Oct 2008 15:55:36 +0200
-
-> David Miller a écrit :
-> > From: Stephen Hemminger <shemminger@vyatta.com>
-> > Date: Tue, 7 Oct 2008 16:07:29 +0200
-> > 
-> >> The idea of keeping chains short is the problem. That code should
-> >> just be pulled because it doesn't help that much, and also creates
-> >> bias on the port randomization.
-> > I have that patch from Vitaly Mayatskikh which does exactly this.
-> > I keep looking at it, but I can't bring myself to apply it since
-> > I'm not completely convinced.
+On Wed, Oct 08, 2008 at 11:17:59AM -0500, Christoph Lameter wrote:
+> Andy Whitcroft wrote:
+> > When working with hugepages, hugetlbfs assumes that those hugepages
+> > are smaller than MAX_ORDER.  Specifically it assumes that the mem_map
+> > is contigious and uses that to optimise access to the elements of the
+> > mem_map that represent the hugepage.  Gigantic pages (such as 16GB pages
+> > on powerpc) by definition are of greater order than MAX_ORDER (larger
+> > than MAX_ORDER_NR_PAGES in size).  This means that we can no longer make
+> > use of the buddy alloctor guarentees for the contiguity of the mem_map,
+> > which ensures that the mem_map is at least contigious for maximmally
+> > aligned areas of MAX_ORDER_NR_PAGES pages.
 > 
-> Vitaly patch might be appropriate if only few UDP ports are opened.
-> 
-> We could zap the code to search short chains and extend Vitaly's
-> idea with following patch :
+> But the memmap is contiguous in most cases. FLATMEM, VMEMMAP etc. Its only
+> some special sparsemem configurations that couldhave the issue because they
+> break up the vmemmap. x86_64 uses VMEMMAP by default. Is this for i386?
 
-I really like this, and I've applied it to net-next-2.6
+With SPARSEMEM turned on and VMEMMAP turned off a valid combination,
+we will end up scribbling all over memory which is pretty serious so for
+that reason we should handle this case.  There are cirtain combinations
+of features which require SPARSMEM but preclude VMEMMAP which trigger this.
 
-I think the "increment until back in range" do/while loop can
-be improved a bit.  It can spin for more than 60,000 iterations
-in some edge case scenerios as-is :-)
-
-Ugh, there's also that expensive divide in there for the modulus.
+-apw
