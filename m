@@ -1,85 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYJHLIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYJHLRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYJHLIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 07:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYJHLIl
+	id S1755330AbYJHLRl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 07:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbYJHLRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 07:08:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:32802 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbYJHLIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 07:08:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type;
-        b=IT1w8Ogsm5cJDnaCoa6991zWTpwcL5GPw4Ksw0F4PN+BU9AcyLs9hrHtZSxXbroJi7
-         2Mf92NmnA/C32Hd01xUs7yCkAUgRi0BT3fzuEXRJ6An0FLRkZvsdZjgLj7KcKvpvTMV3
-         Zg1zYt/lEyg3mecwNQS0juvMAHJ06402N7gCc=
-Date: Wed, 8 Oct 2008 13:08:06 +0200
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       varenet@parisc-linux.org
-Subject: PATCH - New S1D1... Epson frambuffer maintainer
-Message-Id: <20081008130806.958423b3.kristoffer.ericson@gmail.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke"
+	Wed, 8 Oct 2008 07:17:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40413 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750786AbYJHLRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 07:17:32 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1223450773.8195.80.camel@brick>
+References: <1223450773.8195.80.camel@brick>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: dhowells@redhat.com, Russell King <rmk@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: FRV/ARM unaligned access question
+Date: Wed, 08 Oct 2008 12:16:06 +0100
+Message-ID: <19824.1223464566@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
---Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+> If there isn't an issue I'm missing, could ARM/FRV move over to the
+> packed-struct version?
 
-I'm stepping up as maintainer for the Epson S1D13XXXFB driver
-since I have 2 platforms currently using it.
+Using this source:
 
-Signed-off-by: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
-Acked-by: Thibaut Var_ne <varenet@parisc-linux.org>
+	typedef unsigned char u8;
+	typedef unsigned int u32;
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8dae455..aed3ee5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1610,6 +1610,11 @@ P:	Christopher Hoover
- M:	ch@murgatroid.com, ch@hpl.hp.com
- S:	Maintained
+	struct __una_u32 { u32 x __attribute__((packed)); };
+
+	#if 0 // packed struct
+	static inline u32 __get_unaligned_cpu32(const void *p)
+	{
+		const struct __una_u32 *ptr = (const struct __una_u32 *)p;
+		return ptr->x;
+	}
+
+	static inline u32 get_unaligned_be32(const void *p)
+	{
+		return __get_unaligned_cpu32((const u8 *)p);
+	}
+
+	#else // manual byteshift
+	static inline u32 __get_unaligned_be32(const u8 *p)
+	{
+		return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+	}
+
+	static inline u32 get_unaligned_be32(const void *p)
+	{
+		return __get_unaligned_be32((const u8 *)p);
+	}
+	#endif
+
+	u32 jump(u32 *p)
+	{
+		return get_unaligned_be32(p);
+	}
+
+I see the packed struct version compile (with -O2) to:
+
+	jump:
+		ldub @(gr8,gr0),gr6
+		ldubi @(gr8,1),gr4
+		ldubi @(gr8,2),gr5
+		ldubi @(gr8,3),gr8
+		slli gr6,#24,gr6
+		slli gr4,#16,gr4
+		or.p gr4, gr6, gr4
+		slli gr5,#8,gr5
+		or gr5, gr4, gr5
+		or.p gr8, gr5, gr8
+		ret
+
+and the byteshift version compile to:
+
+	jump:
+		ldubi.p @(gr8,1),gr7
+		mov gr8, gr5
+		ldubi @(gr5,2),gr6
+		ldub @(gr8,gr0),gr8
+		ldubi @(gr5,3),gr9
+		slli gr7,#16,gr7
+		slli gr6,#8,gr6
+		slli.p gr8,#24,gr8
+		or gr6, gr7, gr6
+		or gr8, gr9, gr8
+		or.p gr8, gr6, gr8
+		ret
+
+so they're more or less equivalent, give or take the compiler using an extra
+instruction unnecessarily.
+
+
+Switching to the packed struct algorithms also reduces the kernel size very
+slightly.  Before:
+
+	warthog>size vmlinux
+	   text    data     bss     dec     hex filename
+	2207836   66588  150189 2424613  24ff25 vmlinux
+
+After:
+
+	warthog>size vmlinux
+	   text    data     bss     dec     hex filename
+	2207804   66588  150189 2424581  24ff05 vmlinux
+
+The attached patch boots okay over NFS.
+
+David
+---
+[PATCH] FRV: Use packed-struct unalignment rather than manual-shift
+
+From: David Howells <dhowells@redhat.com>
+
+Use the packed-struct unalignment algorithms rather than the manual-shift
+unalignment algorithms.
+
+This makes the kernel very slightly smaller.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ include/asm-frv/unaligned.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+
+diff --git a/include/asm-frv/unaligned.h b/include/asm-frv/unaligned.h
+index 839a2fb..d06b9bc 100644
+--- a/include/asm-frv/unaligned.h
++++ b/include/asm-frv/unaligned.h
+@@ -12,8 +12,8 @@
+ #ifndef _ASM_UNALIGNED_H
+ #define _ASM_UNALIGNED_H
  
-+EPSON S1D13XXX FRAMEBUFFER DRIVER
-+P:	Kristoffer Ericson
-+M:	kristoffer.ericson@gmail.com
-+S:	Maintained
-+
- ETHEREXPRESS-16 NETWORK DRIVER
- P:	Philip Blundell
- M:	philb@gnu.org
-
-
--- 
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
-
---Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke
-Content-Type: application/octet-stream;
- name="epson-add-maintainer.patch"
-Content-Disposition: attachment;
- filename="epson-add-maintainer.patch"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRBSU5FUlMKaW5kZXggOGRhZTQ1NS4uYWVk
-M2VlNSAxMDA2NDQKLS0tIGEvTUFJTlRBSU5FUlMKKysrIGIvTUFJTlRBSU5FUlMKQEAgLTE2MTAs
-NiArMTYxMCwxMSBAQCBQOglDaHJpc3RvcGhlciBIb292ZXIKIE06CWNoQG11cmdhdHJvaWQuY29t
-LCBjaEBocGwuaHAuY29tCiBTOglNYWludGFpbmVkCiAKK0VQU09OIFMxRDEzWFhYIEZSQU1FQlVG
-RkVSIERSSVZFUgorUDoJS3Jpc3RvZmZlciBFcmljc29uCitNOglrcmlzdG9mZmVyLmVyaWNzb25A
-Z21haWwuY29tCitTOglNYWludGFpbmVkCisKIEVUSEVSRVhQUkVTUy0xNiBORVRXT1JLIERSSVZF
-UgogUDoJUGhpbGlwIEJsdW5kZWxsCiBNOglwaGlsYkBnbnUub3JnCg==
-
---Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke--
+-#include <linux/unaligned/le_byteshift.h>
+-#include <linux/unaligned/be_byteshift.h>
++#include <linux/unaligned/le_struct.h>
++#include <linux/unaligned/be_struct.h>
+ #include <linux/unaligned/generic.h>
+ 
+ #define get_unaligned	__get_unaligned_be
