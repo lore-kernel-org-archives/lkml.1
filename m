@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYJHWDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYJHWDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbYJHWDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 18:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYJHWDD
+	id S1756887AbYJHWDv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 18:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbYJHWDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 18:03:03 -0400
-Received: from khc.piap.pl ([195.187.100.11]:56556 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754591AbYJHWDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 18:03:02 -0400
-To: "Hillier\, Gernot" <gernot.hillier@siemens.com>
-Cc: jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bruce.w.allan@intel.com
-Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro X7DB3
-References: <48EB7161.60004@siemens.com> <m33aj78jnh.fsf@maximus.localdomain>
-	<48ECB727.6050905@siemens.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 09 Oct 2008 00:03:00 +0200
-In-Reply-To: <48ECB727.6050905@siemens.com> (Gernot Hillier's message of "Wed\, 08 Oct 2008 15\:35\:35 +0200")
-Message-ID: <m31vyq923v.fsf@maximus.localdomain>
+	Wed, 8 Oct 2008 18:03:42 -0400
+Received: from 57.Red-88-2-100.staticIP.rima-tde.net ([88.2.100.57]:39061 "EHLO
+	mail.leals.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752602AbYJHWDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 18:03:42 -0400
+X-Greylist: delayed 606 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Oct 2008 18:03:41 EDT
+From: Davi Leal <davi@leals.com>
+To: linux-kernel@vger.kernel.org
+Subject: free tg3 ethernet driver
+Date: Wed, 8 Oct 2008 23:53:30 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810082353.31033.davi@leals.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Hillier, Gernot" <gernot.hillier@siemens.com> writes:
+We would like to have a tg3 driver which would be accepted as free by the 
+FSF's standards.
 
->         Region 0: Memory at d0020000 (32-bit, non-prefetchable) [size=128K]
->         Region 1: Memory at d0000000 (32-bit, non-prefetchable) [size=128K]
->         Region 2: I/O ports at 4000 [size=32]
->         [virtual] Expansion ROM at d0080000 [disabled] [size=64K]
+At least some part of the driver seems to be GPL'ed; see [1].  However, the 
+FSF's hardware guide lists tg3 as non-free, so there seems to be a non-free 
+firmware somewhere.
 
-Doesn't look like a spurious reset, though.
+ [1]
+ http://www.broadcom.com/support/ethernet_nic/driver-sla.php?driver=570x-Linux
 
-> - Control "DisINTx-" changes to "DisINTx+" if the card is correctly
-> initialized
-> - Interrupt changes from IRQ 18 to IRQ 4345 if card is correctly initialized
-> - Message Signalled Interrupts change from "Enable-" to "Enable+"
 
-The "normal" effects of enabling MSI.
--- 
-Krzysztof Halasa
+We would like to be able to use the free driver with Linux 2.6.27 or later.
+
+Donation pledge group at
+  http://gnuherds.org/pledges?id=58
+Current donations: $101 USD
