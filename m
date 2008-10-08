@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbYJHCeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYJHCgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbYJHCeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 22:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYJHCeM
+	id S1757478AbYJHCgI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 22:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbYJHCfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 22:34:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:34004 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752884AbYJHCeK convert rfc822-to-8bit (ORCPT
+	Tue, 7 Oct 2008 22:35:54 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:35479 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754009AbYJHCfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 22:34:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,376,1220252400"; 
-   d="scan'208";a="448392128"
-From: "Zhao, Yu" <yu.zhao@intel.com>
-To: Javier Guerra Giraldez <javier@guerrag.com>
-CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
-       Roland Dreier <rdreier@cisco.com>, Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Date: Wed, 8 Oct 2008 10:32:35 +0800
-Subject: RE: [PATCH 0/6 v3] PCI: Linux kernel SR-IOV support
-Thread-Topic: [PATCH 0/6 v3] PCI: Linux kernel SR-IOV support
-Thread-Index: AckgzAvUIYxcMSpnS5qIvitt1UEggAIINAyg
-Message-ID: <D8078B8B3B09934AA9F8F2D5FB3F28CE08A3D24349@pdsmsx502.ccr.corp.intel.com>
-References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5EF@pdsmsx502.ccr.corp.intel.com>
- <200809271308.03547.javier@guerrag.com>
-In-Reply-To: <200809271308.03547.javier@guerrag.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 7 Oct 2008 22:35:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=n5sti/wlBUMggsRzMVUIRL2vYkKrJQZmdrLJ1ZenUIZdiqVlVnTqBHmZg68TcAIPhgWlSQP5UC762ocCgZCB/BgQNIlskZQxS/MZc9VT/EyRn0g9BRKHhoRrATUvTkws8wElS8iWqKwHCNyHdIMTNH1brrZLSVoBCbQzpAbLgs4=  ;
+X-YMail-OSG: FNJj_eAVM1nLDmof5.kj60Ee8qjPGHyDuMLSaYgXYOutG7X.AA3yIFn7avuTqGkeAGYRbI9GZidrEgpGdz2pQBogLVVnO1rICBeuWgGnLf.lx6RcNhaTKRMzz2_WENjQZoCtbvEm3.blQjpnsAsPpyvRvtVcwqBqKr6mpvaXEA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+Date: Wed, 8 Oct 2008 13:35:44 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <20081007105056.16d9e785.akpm@linux-foundation.org> <1223405963.26330.83.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1223405963.26330.83.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810081335.44576.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, September 28, 2008 2:08 AM, Javier Guerra Giraldez wrote:
->On Saturday 27 September 2008, Zhao, Yu wrote:
->> Greetings,
->>
->> Following patches are intended to support SR-IOV capability in the Linux
->> kernel. With these patches, people can turn a PCI device with the
->> capability into multiple ones from software perspective, which can benefit
->> KVM and achieve other purposes such as QoS, security, etc.
+On Wednesday 08 October 2008 05:59, Peter Zijlstra wrote:
+> On Tue, 2008-10-07 at 10:50 -0700, Andrew Morton wrote:
+
+> > It's pretty damn improbable, and I think we can afford to spend the
+> > time to get this right in 2.6.29.
 >
->sounds great, i think some Infiniband HBAs have this capability; they even
->suggested using on Xen for faster (no hypervisor intervention) communication
->between DomU's on the same box. (and transparently to out of the box, of
->course)
-
-Thanks. We will also push Xen patches soon. And please feel free to let us know if you have any question when integrating these patches with your products.
-
+> The whole point is that such usage is outside the specification and thus
+> we don't strictly need to fix this.
 >
->does it need an IOMMU (VT-d), or the whole magic is done by the PCI device?
+> So the question Nick is asking is, do we want to slow down the kernel
+> for a few broken user-space applications. Esp. since the race doesn't
+> affect anybody else except the broken users of the file descriptor.
 
-For native Linux, we can use Virtual Function without IOMMU. For KVM, it requires IOMMU so the guest can use VFs.
+Right you are. That's the fundamental question. The actual details of
+the fix and how likely the race is don't really matter until we
+answer the first question (except to say that the "fix" is never going
+to be free).
 
-For Xen HVM, it also requires IOMMU. For Xen PV, it doesn't need IOMMU.
-
->
->--
->Javier
+We've lasted this long with the current semantics. So the natural
+reaction to anything that strengthens the semantics now is "why?". If
+we do that then we can basically never return to the weaker semantics.
+So there had better be a really good reason.
