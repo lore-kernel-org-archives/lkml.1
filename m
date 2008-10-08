@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYJHT12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYJHT3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbYJHT12 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 15:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbYJHT1P
+	id S1755934AbYJHT3J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 15:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYJHT2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 15:27:15 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:56906 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754718AbYJHT1O (ORCPT
+	Wed, 8 Oct 2008 15:28:52 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:20098 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754497AbYJHT2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 15:27:14 -0400
-Date: Thu, 9 Oct 2008 00:57:00 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       akpm@linux-foundation.org, mingo@elte.hu, jason.wessel@windriver.com,
-       avi@qumranet.com, richardj_moore@uk.ibm.com
-Subject: [RFC Patch 9/9] Cleanup HW Breakpoint registers before kexec
-Message-ID: <20081008192700.GI4989@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20081008192044.GA4510@in.ibm.com>
+	Wed, 8 Oct 2008 15:28:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=YBB8NBfjl5W+IkP4jBg28hrArg2WeBYWUm+FmXEdYqPz1xHfkaqNNQs+PYpxua+MuR
+         gmaew8hjdWJ8kXT0bli72mdnY6j/jy4/dK795jvCwpYOVQp2cFHSdhSSkAZ9IvXEhlkF
+         j3Uq6DGErYcRLFvzcvwOmGx264/1ktuVkDeJk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [patch][repost] ide-tape build fix
+Date: Wed, 8 Oct 2008 20:37:04 +0200
+User-Agent: KMail/1.9.10
+Cc: "Mark de Wever" <koraq@xs4all.nl>,
+       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
+       "Gadi Oxman" <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <48D79ABD.8060805@ru.mvista.com> <20081008154552.GA3907@localhost> <9ea470500810080922x326821c5p47053afa7a1d261e@mail.gmail.com>
+In-Reply-To: <9ea470500810080922x326821c5p47053afa7a1d261e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081008192044.GA4510@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810082037.05889.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 08 October 2008, Boris Petkov wrote:
+> On Wed, Oct 8, 2008 at 5:45 PM, Mark de Wever <koraq@xs4all.nl> wrote:
+> > On Wed, Oct 08, 2008 at 08:33:52AM +0200, Borislav Petkov wrote:
+> > Hi,
+> >> Bugger, I should be getting at least warnings when compiling this but I don't.
+> >> This is because I don't have CONFIG_LBD enabled. However, the %ld and %d
+> >> format specifiers are also not entirely correct but gcc doesn't warn about them
+> >> - I guess it checks only size but not signedness...
+> >
+> > I guess so too.
+> >
+> >> Would you like to redo your patch and add a proper comment ontop?
+> >
+> > Here you go.
+> >
+> > @Boris do you want to add your Signed-off-by too?
+> 
+> no, just
+> 
+> Acked-by: Borislav Petkov <petkovbb@gmail.com>
+> 
+> > @Bart please apply this patch.
+> >
+> > --
+> > Subject: ide-tape: Buildfix when IDETAPE_DEBUG_LOG is set to 1.
+> >
+> > The format specifier for rq->sector didn't specify the proper size and
+> > signedness. Borislav Petkov discovered that the signedness for
+> > rq->nr_sectors and rq->current_nr_sectors also were incorrect.
+> >
+> > Signed-off-by: Mark de Wever <koraq@xs4all.nl>
 
-This patch disables Hardware breakpoints before doing a 'kexec' on the machine.
-
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
- arch/x86/kernel/machine_kexec_32.c |    2 ++
- arch/x86/kernel/machine_kexec_64.c |    2 ++
- 2 files changed, 4 insertions(+)
-
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_32.c
-===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/machine_kexec_32.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_32.c
-@@ -24,6 +24,7 @@
- #include <asm/desc.h>
- #include <asm/system.h>
- #include <asm/cacheflush.h>
-+#include <asm/debugreg.h>
- 
- #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
- static u32 kexec_pgd[1024] PAGE_ALIGNED;
-@@ -131,6 +132,7 @@ void machine_kexec(struct kimage *image)
- 
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
-+	disable_debug_registers();
- 
- 	if (image->preserve_context) {
- #ifdef CONFIG_X86_IO_APIC
-Index: linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_64.c
-===================================================================
---- linux-bkpt-lkml-27-rc9.orig/arch/x86/kernel/machine_kexec_64.c
-+++ linux-bkpt-lkml-27-rc9/arch/x86/kernel/machine_kexec_64.c
-@@ -17,6 +17,7 @@
- #include <asm/tlbflush.h>
- #include <asm/mmu_context.h>
- #include <asm/io.h>
-+#include <asm/debugreg.h>
- 
- #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
- static u64 kexec_pgd[512] PAGE_ALIGNED;
-@@ -190,6 +191,7 @@ void machine_kexec(struct kimage *image)
- 
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
-+	disable_debug_registers();
- 
- 	control_page = page_address(image->control_code_page) + PAGE_SIZE;
- 	memcpy(control_page, relocate_kernel, PAGE_SIZE);
+applied
