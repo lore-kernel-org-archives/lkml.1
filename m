@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYJHNdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYJHNf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbYJHNdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYJHNdg
+	id S1755490AbYJHNf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYJHNfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:33:36 -0400
-Received: from igw3.br.ibm.com ([32.104.18.26]:39154 "EHLO igw3.br.ibm.com"
+	Wed, 8 Oct 2008 09:35:15 -0400
+Received: from verein.lst.de ([213.95.11.210]:43971 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753381AbYJHNdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:33:35 -0400
-Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com
-In-Reply-To: <alpine.LRH.1.10.0810081556390.13169@tundra.namei.org>
-References: <cover.1223401603.git.zohar@linux.vnet.ibm.com>
-	 <98178f6ceb8fa8d23153c6e7f94757f406771859.1223401604.git.zohar@linux.vnet.ibm.com>
-	 <alpine.LRH.1.10.0810081556390.13169@tundra.namei.org>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 10:33:23 -0300
-Message-Id: <1223472803.5742.21.camel@blackbox>
+	id S1750753AbYJHNfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 09:35:14 -0400
+Date: Wed, 8 Oct 2008 15:34:53 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Tiger Yang <tiger.yang@oracle.com>
+Cc: Mark Fasheh <mfasheh@suse.com>, Christoph Hellwig <hch@lst.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] [PATCH 13/39] ocfs2: Add extended attribute support
+Message-ID: <20081008133453.GH25392@lst.de>
+References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com> <20081002081644.GB24717@lst.de> <20081007220811.GG26373@wotan.suse.de> <48EC1359.6040109@oracle.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EC1359.6040109@oracle.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-08 at 16:00 +1100, James Morris wrote:
-> On Tue, 7 Oct 2008, Mimi Zohar wrote:
-> 
-> > Based on discussions on the lkml mailing list, the TPM should be
-> > built in, but when it is not builtin, the internal TPM kernel
-> > interface did not protect itself from the removal of the TPM
-> > driver, while being used. 
-> 
-> If the TPM driver should be built in, why is there an option to make it 
-> modular?
-> 
-> - James
+On Wed, Oct 08, 2008 at 09:56:41AM +0800, Tiger Yang wrote:
+> I have looked the patch for btrfs about this. We are different.
+> Btrfs store the whole xattr name including the prefix "user." 
+> "trusted.", we store index number instead of it.
 
-Hi James,
+I looked at the git tree and there are two users of
+ocfs2_xattr_handler().
 
-It's recommended that the TPM driver should be built-in when using IMA to make sure 
-it's measuring the system as closely as possible to the start of the boot process,
-but it's not necessarily true when using it to store keys, for example.
-
-Rajiv
-
-
+ (1) for using the ->list handler in listattr.  That's something I fixed
+     in btrfs that I wanted to point you to.  The whole concept of a
+     ->list handler is stupid, and it was only added as a hack for
+     the tmpfs "generic" xattr support which is a mess.  Instead of
+     looking up a handler that would only do the same thing anyway
+     for all on-disk attributes just call the code directly and
+     have a map from index to prefix (look at
+     fs/xfs/linux-2.6/xfs_xattr.c for an example).  You
+     also have a check for OCFS2_MOUNT_NOUSERXATTR for the user
+     attributes, but that's much easier done by just checking the
+     index in an if (and I'd personally just kill it completely, the
+     options doesn't seem useful - but that's an unrelated bit)
+ 
+ (2) For generating the hash.  I don't quite understand why you want to
+     also hash the prefix if it's not store on disk anyway but sorted
+     into the numeric buckets.
