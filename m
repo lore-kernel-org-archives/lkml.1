@@ -1,821 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYJHT7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbYJHUBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbYJHT7W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 15:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbYJHT7N
+	id S1756003AbYJHUBw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 16:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbYJHUBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 15:59:13 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:57059 "EHLO 2ka.mipt.ru"
+	Wed, 8 Oct 2008 16:01:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:60714 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754602AbYJHT7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 15:59:11 -0400
-Date: Wed, 8 Oct 2008 23:59:10 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Chikkature Rajashekar, Madhusudhan" <madhu.cr@ti.com>,
-       "Gadiyar, Anand" <gadiyar@ti.com>
-Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-Message-ID: <20081008195908.GA12636@2ka.mipt.ru>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.9i
+	id S1752146AbYJHUBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 16:01:43 -0400
+Message-ID: <48ED11A3.3090605@goop.org>
+Date: Wed, 08 Oct 2008 13:01:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] xen: use spin_lock_nest_lock when pinning a pagetable
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all.
+When pinning/unpinning a pagetable with split pte locks, we can end up
+holding multiple pte locks at once (we need to hold the locks while
+there's a pending batched hypercall affecting the pte page).  Because
+all the pte locks are in the same lock class, lockdep thinks that
+we're potentially taking a lock recursively.
 
-Andrew, please apply the whole serie to the upcoming tree when merge
-window is opened. Thank you.
+This warning is spurious because we always take the pte locks while
+holding mm->page_table_lock.  lockdep now has spin_lock_nest_lock to
+express this kind of dominant lock use, so use it here so that lockdep
+knows what's going on.
 
-On Wed, Oct 08, 2008 at 12:46:25PM +0530, Gadiyar, Anand (gadiyar@ti.com) wrote:
-> From: Madhusudhan Chikkature <madhu.cr@ti.com>
-> 
-> The HDQ/1-Wire module of TI OMAP2430/3430 platforms implement the hardware
-> protocol of the master functions of the Benchmark HDQ and the Dallas
-> Semiconductor 1-Wire protocols. These protocols use a single wire for
-> communication between the master (HDQ/1-Wire controller) and the slave
-> (HDQ/1-Wire external compliant device).
-> 
-> This patch provides the HDQ driver to suppport TI OMAP2430/3430 platforms.
-> 
-> Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
-> Acked-by: Felipe Balbi <felipe.balbi@nokia.com>
-> Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> ---
-> Sending this series on behalf of Madhusudhan.
-> 
->  drivers/w1/masters/Kconfig    |    7
->  drivers/w1/masters/Makefile   |    1
->  drivers/w1/masters/omap_hdq.c |  730 ++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 738 insertions(+)
-> 
-> Index: linux-2.6/drivers/w1/masters/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/drivers/w1/masters/Kconfig   2008-09-19 13:39:41.000000000 +0530
-> +++ linux-2.6/drivers/w1/masters/Kconfig        2008-09-26 14:39:26.000000000 +0530
-> @@ -52,5 +52,12 @@ config W1_MASTER_GPIO
->           This support is also available as a module.  If so, the module
->           will be called w1-gpio.ko.
-> 
-> +config HDQ_MASTER_OMAP
-> +       tristate "OMAP HDQ driver"
-> +       depends on ARCH_OMAP2430 || ARCH_OMAP34XX
-> +       help
-> +         Say Y here if you want support for the 1-wire or HDQ Interface
-> +         on an OMAP processor.
-> +
->  endmenu
-> 
-> Index: linux-2.6/drivers/w1/masters/Makefile
-> ===================================================================
-> --- linux-2.6.orig/drivers/w1/masters/Makefile  2008-09-19 13:39:41.000000000 +0530
-> +++ linux-2.6/drivers/w1/masters/Makefile       2008-09-26 14:40:25.000000000 +0530
-> @@ -7,3 +7,4 @@ obj-$(CONFIG_W1_MASTER_DS2490)          += ds249
->  obj-$(CONFIG_W1_MASTER_DS2482)         += ds2482.o
->  obj-$(CONFIG_W1_MASTER_DS1WM)          += ds1wm.o
->  obj-$(CONFIG_W1_MASTER_GPIO)           += w1-gpio.o
-> +obj-$(CONFIG_HDQ_MASTER_OMAP)          += omap_hdq.o
-> Index: linux-2.6/drivers/w1/masters/omap_hdq.c
-> ===================================================================
-> --- /dev/null   1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6/drivers/w1/masters/omap_hdq.c     2008-09-26 14:28:36.000000000 +0530
-> @@ -0,0 +1,730 @@
-> +/*
-> + * drivers/w1/masters/omap_hdq.c
-> + *
-> + * Copyright (C) 2007 Texas Instruments, Inc.
-> + *
-> + * This file is licensed under the terms of the GNU General Public License
-> + * version 2. This program is licensed "as is" without any warranty of any
-> + * kind, whether express or implied.
-> + *
-> + */
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/err.h>
-> +#include <linux/clk.h>
-> +#include <linux/io.h>
-> +#include <asm/irq.h>
-> +#include <mach/hardware.h>
-> +
-> +#include "../w1.h"
-> +#include "../w1_int.h"
-> +
-> +#define        MOD_NAME        "OMAP_HDQ:"
-> +
-> +#define OMAP_HDQ_REVISION                      0x00
-> +#define OMAP_HDQ_TX_DATA                       0x04
-> +#define OMAP_HDQ_RX_DATA                       0x08
-> +#define OMAP_HDQ_CTRL_STATUS                   0x0c
-> +#define OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK     (1<<6)
-> +#define OMAP_HDQ_CTRL_STATUS_CLOCKENABLE       (1<<5)
-> +#define OMAP_HDQ_CTRL_STATUS_GO                        (1<<4)
-> +#define OMAP_HDQ_CTRL_STATUS_INITIALIZATION    (1<<2)
-> +#define OMAP_HDQ_CTRL_STATUS_DIR               (1<<1)
-> +#define OMAP_HDQ_CTRL_STATUS_MODE              (1<<0)
-> +#define OMAP_HDQ_INT_STATUS                    0x10
-> +#define OMAP_HDQ_INT_STATUS_TXCOMPLETE         (1<<2)
-> +#define OMAP_HDQ_INT_STATUS_RXCOMPLETE         (1<<1)
-> +#define OMAP_HDQ_INT_STATUS_TIMEOUT            (1<<0)
-> +#define OMAP_HDQ_SYSCONFIG                     0x14
-> +#define OMAP_HDQ_SYSCONFIG_SOFTRESET           (1<<1)
-> +#define OMAP_HDQ_SYSCONFIG_AUTOIDLE            (1<<0)
-> +#define OMAP_HDQ_SYSSTATUS                     0x18
-> +#define OMAP_HDQ_SYSSTATUS_RESETDONE           (1<<0)
-> +
-> +#define OMAP_HDQ_FLAG_CLEAR                    0
-> +#define OMAP_HDQ_FLAG_SET                      1
-> +#define OMAP_HDQ_TIMEOUT                       (HZ/5)
-> +
-> +#define OMAP_HDQ_MAX_USER                      4
-> +
-> +static DECLARE_WAIT_QUEUE_HEAD(hdq_wait_queue);
-> +static int w1_id;
-> +
-> +struct hdq_data {
-> +       struct device           *dev;
-> +       void __iomem            *hdq_base;
-> +       /* lock status update */
-> +       struct  mutex           hdq_mutex;
-> +       int                     hdq_usecount;
-> +       struct  clk             *hdq_ick;
-> +       struct  clk             *hdq_fck;
-> +       u8                      hdq_irqstatus;
-> +       /* device lock */
-> +       spinlock_t              hdq_spinlock;
-> +       /*
-> +        * Used to control the call to omap_hdq_get and omap_hdq_put.
-> +        * HDQ Protocol: Write the CMD|REG_address first, followed by
-> +        * the data wrire or read.
-> +        */
-> +       int                     init_trans;
-> +};
-> +
-> +static int omap_hdq_get(struct hdq_data *hdq_data);
-> +static int omap_hdq_put(struct hdq_data *hdq_data);
-> +static int omap_hdq_break(struct hdq_data *hdq_data);
-> +
-> +static int __init omap_hdq_probe(struct platform_device *pdev);
-> +static int omap_hdq_remove(struct platform_device *pdev);
-> +
-> +static struct platform_driver omap_hdq_driver = {
-> +       .probe =        omap_hdq_probe,
-> +       .remove =       omap_hdq_remove,
-> +       .driver =       {
-> +               .name = "omap_hdq",
-> +       },
-> +};
-> +
-> +static u8 omap_w1_read_byte(void *_hdq);
-> +static void omap_w1_write_byte(void *_hdq, u8 byte);
-> +static u8 omap_w1_reset_bus(void *_hdq);
-> +static void omap_w1_search_bus(void *_hdq, u8 search_type,
-> +       w1_slave_found_callback slave_found);
-> +
-> +
-> +static struct w1_bus_master omap_w1_master = {
-> +       .read_byte      = omap_w1_read_byte,
-> +       .write_byte     = omap_w1_write_byte,
-> +       .reset_bus      = omap_w1_reset_bus,
-> +       .search         = omap_w1_search_bus,
-> +};
-> +
-> +/* HDQ register I/O routines */
-> +static inline u8 hdq_reg_in(struct hdq_data *hdq_data, u32 offset)
-> +{
-> +       return __raw_readb(hdq_data->hdq_base + offset);
-> +}
-> +
-> +static inline void hdq_reg_out(struct hdq_data *hdq_data, u32 offset, u8 val)
-> +{
-> +       __raw_writeb(val, hdq_data->hdq_base + offset);
-> +}
-> +
-> +static inline u8 hdq_reg_merge(struct hdq_data *hdq_data, u32 offset,
-> +                       u8 val, u8 mask)
-> +{
-> +       u8 new_val = (__raw_readb(hdq_data->hdq_base + offset) & ~mask)
-> +                       | (val & mask);
-> +       __raw_writeb(new_val, hdq_data->hdq_base + offset);
-> +
-> +       return new_val;
-> +}
-> +
-> +/*
-> + * Wait for one or more bits in flag change.
-> + * HDQ_FLAG_SET: wait until any bit in the flag is set.
-> + * HDQ_FLAG_CLEAR: wait until all bits in the flag are cleared.
-> + * return 0 on success and -ETIMEDOUT in the case of timeout.
-> + */
-> +static int hdq_wait_for_flag(struct hdq_data *hdq_data, u32 offset,
-> +               u8 flag, u8 flag_set, u8 *status)
-> +{
-> +       int ret = 0;
-> +       unsigned long timeout = jiffies + OMAP_HDQ_TIMEOUT;
-> +
-> +       if (flag_set == OMAP_HDQ_FLAG_CLEAR) {
-> +               /* wait for the flag clear */
-> +               while (((*status = hdq_reg_in(hdq_data, offset)) & flag)
-> +                       && time_before(jiffies, timeout)) {
-> +                       set_current_state(TASK_UNINTERRUPTIBLE);
-> +                       schedule_timeout(1);
-> +               }
-> +               if (*status & flag)
-> +                       ret = -ETIMEDOUT;
-> +       } else if (flag_set == OMAP_HDQ_FLAG_SET) {
-> +               /* wait for the flag set */
-> +               while (!((*status = hdq_reg_in(hdq_data, offset)) & flag)
-> +                       && time_before(jiffies, timeout)) {
-> +                       set_current_state(TASK_UNINTERRUPTIBLE);
-> +                       schedule_timeout(1);
-> +               }
-> +               if (!(*status & flag))
-> +                       ret = -ETIMEDOUT;
-> +       } else
-> +               return -EINVAL;
-> +
-> +       return ret;
-> +}
-> +
-> +/* write out a byte and fill *status with HDQ_INT_STATUS */
-> +static int hdq_write_byte(struct hdq_data *hdq_data, u8 val, u8 *status)
-> +{
-> +       int ret;
-> +       u8 tmp_status;
-> +       unsigned long irqflags;
-> +
-> +       *status = 0;
-> +
-> +       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-> +       /* clear interrupt flags via a dummy read */
-> +       hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-> +       /* ISR loads it with new INT_STATUS */
-> +       hdq_data->hdq_irqstatus = 0;
-> +       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-> +
-> +       hdq_reg_out(hdq_data, OMAP_HDQ_TX_DATA, val);
-> +
-> +       /* set the GO bit */
-> +       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, OMAP_HDQ_CTRL_STATUS_GO,
-> +               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
-> +       /* wait for the TXCOMPLETE bit */
-> +       ret = wait_event_interruptible_timeout(hdq_wait_queue,
-> +               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
-> +       if (ret < 0) {
-> +               dev_dbg(hdq_data->dev, "wait interrupted");
-> +               return -EINTR;
-> +       }
-> +
-> +       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-> +       *status = hdq_data->hdq_irqstatus;
-> +       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-> +       /* check irqstatus */
-> +       if (!(*status & OMAP_HDQ_INT_STATUS_TXCOMPLETE)) {
-> +               dev_dbg(hdq_data->dev, "timeout waiting for"
-> +                       "TXCOMPLETE/RXCOMPLETE, %x", *status);
-> +               return -ETIMEDOUT;
-> +       }
-> +
-> +       /* wait for the GO bit return to zero */
-> +       ret = hdq_wait_for_flag(hdq_data, OMAP_HDQ_CTRL_STATUS,
-> +                       OMAP_HDQ_CTRL_STATUS_GO,
-> +                       OMAP_HDQ_FLAG_CLEAR, &tmp_status);
-> +       if (ret) {
-> +               dev_dbg(hdq_data->dev, "timeout waiting GO bit"
-> +                       "return to zero, %x", tmp_status);
-> +               return ret;
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +/* HDQ Interrupt service routine */
-> +static irqreturn_t hdq_isr(int irq, void *_hdq)
-> +{
-> +       struct hdq_data *hdq_data = _hdq;
-> +       unsigned long irqflags;
-> +
-> +       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-> +       hdq_data->hdq_irqstatus = hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-> +       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-> +       dev_dbg(hdq_data->dev, "hdq_isr: %x", hdq_data->hdq_irqstatus);
-> +
-> +       if (hdq_data->hdq_irqstatus &
-> +               (OMAP_HDQ_INT_STATUS_TXCOMPLETE | OMAP_HDQ_INT_STATUS_RXCOMPLETE
-> +               | OMAP_HDQ_INT_STATUS_TIMEOUT)) {
-> +               /* wake up sleeping process */
-> +               wake_up_interruptible(&hdq_wait_queue);
-> +       }
-> +
-> +       return IRQ_HANDLED;
-> +}
-> +
-> +/* HDQ Mode: always return success */
-> +static u8 omap_w1_reset_bus(void *_hdq)
-> +{
-> +       return 0;
-> +}
-> +
-> +/* W1 search callback function */
-> +static void omap_w1_search_bus(void *_hdq, u8 search_type,
-> +       w1_slave_found_callback slave_found)
-> +{
-> +       u64 module_id, rn_le, cs, id;
-> +
-> +       if (w1_id)
-> +               module_id = w1_id;
-> +       else
-> +               module_id = 0x1;
-> +
-> +       rn_le = cpu_to_le64(module_id);
-> +       /*
-> +        * HDQ might not obey truly the 1-wire spec.
-> +        * So calculate CRC based on module parameter.
-> +        */
-> +       cs = w1_calc_crc8((u8 *)&rn_le, 7);
-> +       id = (cs << 56) | module_id;
-> +
-> +       slave_found(_hdq, id);
-> +}
-> +
-> +static int _omap_hdq_reset(struct hdq_data *hdq_data)
-> +{
-> +       int ret;
-> +       u8 tmp_status;
-> +
-> +       hdq_reg_out(hdq_data, OMAP_HDQ_SYSCONFIG, OMAP_HDQ_SYSCONFIG_SOFTRESET);
-> +       /*
-> +        * Select HDQ mode & enable clocks.
-> +        * It is observed that INT flags can't be cleared via a read and GO/INIT
-> +        * won't return to zero if interrupt is disabled. So we always enable
-> +        * interrupt.
-> +        */
-> +       hdq_reg_out(hdq_data, OMAP_HDQ_CTRL_STATUS,
-> +               OMAP_HDQ_CTRL_STATUS_CLOCKENABLE |
-> +               OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK);
-> +
-> +       /* wait for reset to complete */
-> +       ret = hdq_wait_for_flag(hdq_data, OMAP_HDQ_SYSSTATUS,
-> +               OMAP_HDQ_SYSSTATUS_RESETDONE, OMAP_HDQ_FLAG_SET, &tmp_status);
-> +       if (ret)
-> +               dev_dbg(hdq_data->dev, "timeout waiting HDQ reset, %x",
-> +                               tmp_status);
-> +       else {
-> +               hdq_reg_out(hdq_data, OMAP_HDQ_CTRL_STATUS,
-> +                       OMAP_HDQ_CTRL_STATUS_CLOCKENABLE |
-> +                       OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK);
-> +               hdq_reg_out(hdq_data, OMAP_HDQ_SYSCONFIG,
-> +                       OMAP_HDQ_SYSCONFIG_AUTOIDLE);
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +/* Issue break pulse to the device */
-> +static int omap_hdq_break(struct hdq_data *hdq_data)
-> +{
-> +       int ret;
-> +       u8 tmp_status;
-> +       unsigned long irqflags;
-> +
-> +       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +       if (ret < 0)
-> +               return -EINTR;
-> +
-> +       if (!hdq_data->hdq_usecount) {
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +               return -EINVAL;
-> +       }
-> +
-> +       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-> +       /* clear interrupt flags via a dummy read */
-> +       hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-> +       /* ISR loads it with new INT_STATUS */
-> +       hdq_data->hdq_irqstatus = 0;
-> +       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-> +
-> +       /* set the INIT and GO bit */
-> +       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS,
-> +               OMAP_HDQ_CTRL_STATUS_INITIALIZATION | OMAP_HDQ_CTRL_STATUS_GO,
-> +               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_INITIALIZATION |
-> +               OMAP_HDQ_CTRL_STATUS_GO);
-> +
-> +       /* wait for the TIMEOUT bit */
-> +       ret = wait_event_interruptible_timeout(hdq_wait_queue,
-> +               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
-> +       if (ret < 0) {
-> +               dev_dbg(hdq_data->dev, "wait interrupted");
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +               return -EINTR;
-> +       }
-> +
-> +       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-> +       tmp_status = hdq_data->hdq_irqstatus;
-> +       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-> +       /* check irqstatus */
-> +       if (!(tmp_status & OMAP_HDQ_INT_STATUS_TIMEOUT)) {
-> +               dev_dbg(hdq_data->dev, "timeout waiting for TIMEOUT, %x",
-> +                               tmp_status);
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +               return -ETIMEDOUT;
-> +       }
-> +       /*
-> +        * wait for both INIT and GO bits rerurn to zero.
-> +        * zero wait time expected for interrupt mode.
-> +        */
-> +       ret = hdq_wait_for_flag(hdq_data, OMAP_HDQ_CTRL_STATUS,
-> +                       OMAP_HDQ_CTRL_STATUS_INITIALIZATION |
-> +                       OMAP_HDQ_CTRL_STATUS_GO, OMAP_HDQ_FLAG_CLEAR,
-> +                       &tmp_status);
-> +       if (ret)
-> +               dev_dbg(hdq_data->dev, "timeout waiting INIT&GO bits"
-> +                       "return to zero, %x", tmp_status);
-> +
-> +       mutex_unlock(&hdq_data->hdq_mutex);
-> +
-> +       return ret;
-> +}
-> +
-> +static int hdq_read_byte(struct hdq_data *hdq_data, u8 *val)
-> +{
-> +       int ret;
-> +       u8 status;
-> +       unsigned long irqflags;
-> +       unsigned long timeout = jiffies + OMAP_HDQ_TIMEOUT;
-> +
-> +       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +       if (ret < 0)
-> +               return -EINTR;
-> +
-> +       if (!hdq_data->hdq_usecount) {
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +               return -EINVAL;
-> +       }
-> +
-> +       if (!(hdq_data->hdq_irqstatus & OMAP_HDQ_INT_STATUS_RXCOMPLETE)) {
-> +               hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS,
-> +                       OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO,
-> +                       OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
-> +               /*
-> +                * The RX comes immediately after TX. It
-> +                * triggers another interrupt before we
-> +                * sleep. So we have to wait for RXCOMPLETE bit.
-> +                */
-> +               while (!(hdq_data->hdq_irqstatus
-> +                       & OMAP_HDQ_INT_STATUS_RXCOMPLETE)
-> +                       && time_before(jiffies, timeout)) {
-> +                       set_current_state(TASK_UNINTERRUPTIBLE);
-> +                       schedule_timeout(1);
-> +               }
-> +               hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, 0,
-> +                       OMAP_HDQ_CTRL_STATUS_DIR);
-> +               spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-> +               status = hdq_data->hdq_irqstatus;
-> +               spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-> +               /* check irqstatus */
-> +               if (!(status & OMAP_HDQ_INT_STATUS_RXCOMPLETE)) {
-> +                       dev_dbg(hdq_data->dev, "timeout waiting for"
-> +                               "RXCOMPLETE, %x", status);
-> +                       mutex_unlock(&hdq_data->hdq_mutex);
-> +                       return -ETIMEDOUT;
-> +               }
-> +       }
-> +       /* the data is ready. Read it in! */
-> +       *val = hdq_reg_in(hdq_data, OMAP_HDQ_RX_DATA);
-> +       mutex_unlock(&hdq_data->hdq_mutex);
-> +
-> +       return 0;
-> +
-> +}
-> +
-> +/* Enable clocks and set the controller to HDQ mode */
-> +static int omap_hdq_get(struct hdq_data *hdq_data)
-> +{
-> +       int ret = 0;
-> +
-> +       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +       if (ret < 0)
-> +               return -EINTR;
-> +
-> +       if (OMAP_HDQ_MAX_USER == hdq_data->hdq_usecount) {
-> +               dev_dbg(hdq_data->dev, "attempt to exceed the max use count");
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +               ret = -EINVAL;
-> +       } else {
-> +               hdq_data->hdq_usecount++;
-> +               try_module_get(THIS_MODULE);
-> +               if (1 == hdq_data->hdq_usecount) {
-> +                       if (clk_enable(hdq_data->hdq_ick)) {
-> +                               dev_dbg(hdq_data->dev, "Can not enable ick\n");
-> +                               clk_put(hdq_data->hdq_ick);
-> +                               clk_put(hdq_data->hdq_fck);
-> +                               mutex_unlock(&hdq_data->hdq_mutex);
-> +                               return -ENODEV;
-> +                       }
-> +                       if (clk_enable(hdq_data->hdq_fck)) {
-> +                               dev_dbg(hdq_data->dev, "Can not enable fck\n");
-> +                               clk_put(hdq_data->hdq_ick);
-> +                               clk_put(hdq_data->hdq_fck);
-> +                               mutex_unlock(&hdq_data->hdq_mutex);
-> +                               return -ENODEV;
-> +                       }
-> +
-> +                       /* make sure HDQ is out of reset */
-> +                       if (!(hdq_reg_in(hdq_data, OMAP_HDQ_SYSSTATUS) &
-> +                               OMAP_HDQ_SYSSTATUS_RESETDONE)) {
-> +                               ret = _omap_hdq_reset(hdq_data);
-> +                               if (ret)
-> +                                       /* back up the count */
-> +                                       hdq_data->hdq_usecount--;
-> +                       } else {
-> +                               /* select HDQ mode & enable clocks */
-> +                               hdq_reg_out(hdq_data, OMAP_HDQ_CTRL_STATUS,
-> +                                       OMAP_HDQ_CTRL_STATUS_CLOCKENABLE |
-> +                                       OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK);
-> +                               hdq_reg_out(hdq_data, OMAP_HDQ_SYSCONFIG,
-> +                                       OMAP_HDQ_SYSCONFIG_AUTOIDLE);
-> +                               hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-> +                       }
-> +               }
-> +       }
-> +       mutex_unlock(&hdq_data->hdq_mutex);
-> +
-> +       return ret;
-> +}
-> +
-> +/* Disable clocks to the module */
-> +static int omap_hdq_put(struct hdq_data *hdq_data)
-> +{
-> +       int ret = 0;
-> +
-> +       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +       if (ret < 0)
-> +               return -EINTR;
-> +
-> +       if (0 == hdq_data->hdq_usecount) {
-> +               dev_dbg(hdq_data->dev, "attempt to decrement use count"
-> +                       "when it is zero");
-> +               ret = -EINVAL;
-> +       } else {
-> +               hdq_data->hdq_usecount--;
-> +               module_put(THIS_MODULE);
-> +               if (0 == hdq_data->hdq_usecount) {
-> +                       clk_disable(hdq_data->hdq_ick);
-> +                       clk_disable(hdq_data->hdq_fck);
-> +               }
-> +       }
-> +       mutex_unlock(&hdq_data->hdq_mutex);
-> +
-> +       return ret;
-> +}
-> +
-> +/* Read a byte of data from the device */
-> +static u8 omap_w1_read_byte(void *_hdq)
-> +{
-> +       struct hdq_data *hdq_data = _hdq;
-> +       u8 val;
-> +       int ret;
-> +
-> +       ret = hdq_read_byte(hdq_data, &val);
-> +       if (ret) {
-> +               ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +               if (ret < 0) {
-> +                       dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-> +                       return -EINTR;
-> +               }
-> +               hdq_data->init_trans = 0;
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +               omap_hdq_put(hdq_data);
-> +               return -1;
-> +       }
-> +
-> +       /* Write followed by a read, release the module */
-> +       if (hdq_data->init_trans) {
-> +               ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +               if (ret < 0) {
-> +                       dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-> +                       return -EINTR;
-> +               }
-> +               hdq_data->init_trans = 0;
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +               omap_hdq_put(hdq_data);
-> +       }
-> +
-> +       return val;
-> +}
-> +
-> +/* Write a byte of data to the device */
-> +static void omap_w1_write_byte(void *_hdq, u8 byte)
-> +{
-> +       struct hdq_data *hdq_data = _hdq;
-> +       int ret;
-> +       u8 status;
-> +
-> +       /* First write to initialize the transfer */
-> +       if (hdq_data->init_trans == 0)
-> +               omap_hdq_get(hdq_data);
-> +
-> +       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +       if (ret < 0) {
-> +               dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-> +               return;
-> +       }
-> +       hdq_data->init_trans++;
-> +       mutex_unlock(&hdq_data->hdq_mutex);
-> +
-> +       hdq_write_byte(hdq_data, byte, &status);
-> +       dev_dbg(hdq_data->dev, "Ctrl status %x\n", status);
-> +
-> +       /* Second write, data transfered. Release the module */
-> +       if (hdq_data->init_trans > 1) {
-> +               omap_hdq_put(hdq_data);
-> +               ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-> +               if (ret < 0) {
-> +                       dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-> +                       return;
-> +               }
-> +               hdq_data->init_trans = 0;
-> +               mutex_unlock(&hdq_data->hdq_mutex);
-> +       }
-> +
-> +       return;
-> +}
-> +
-> +static int __init omap_hdq_probe(struct platform_device *pdev)
-> +{
-> +       struct hdq_data *hdq_data;
-> +       struct resource *res;
-> +       int ret, irq;
-> +       u8 rev;
-> +
-> +       if (!pdev)
-> +               return -ENODEV;
-> +
-> +       hdq_data = kmalloc(sizeof(*hdq_data), GFP_KERNEL);
-> +       if (!hdq_data) {
-> +               dev_dbg(&pdev->dev, "unable to allocate memory\n");
-> +               ret = -ENODEV;
-> +               goto err_kmalloc;
-> +       }
-> +
-> +       hdq_data->dev = &pdev->dev;
-> +       platform_set_drvdata(pdev, hdq_data);
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       if (!res) {
-> +               dev_dbg(&pdev->dev, "unable to get resource\n");
-> +               ret = ENXIO;
-> +               goto err_resource;
-> +       }
-> +
-> +       hdq_data->hdq_base = ioremap(res->start, SZ_4K);
-> +       if (!hdq_data->hdq_base) {
-> +               dev_dbg(&pdev->dev, "ioremap failed\n");
-> +               ret = -EINVAL;
-> +               goto err_ioremap;
-> +       }
-> +
-> +       /* get interface & functional clock objects */
-> +       hdq_data->hdq_ick = clk_get(&pdev->dev, "hdq_ick");
-> +       hdq_data->hdq_fck = clk_get(&pdev->dev, "hdq_fck");
-> +
-> +       if (IS_ERR(hdq_data->hdq_ick) || IS_ERR(hdq_data->hdq_fck)) {
-> +               dev_dbg(&pdev->dev, "Can't get HDQ clock objects\n");
-> +               if (IS_ERR(hdq_data->hdq_ick)) {
-> +                       ret = PTR_ERR(hdq_data->hdq_ick);
-> +                       goto err_clk;
-> +               }
-> +               if (IS_ERR(hdq_data->hdq_fck)) {
-> +                       ret = PTR_ERR(hdq_data->hdq_fck);
-> +                       clk_put(hdq_data->hdq_ick);
-> +                       goto err_clk;
-> +               }
-> +       }
-> +
-> +       hdq_data->hdq_usecount = 0;
-> +       mutex_init(&hdq_data->hdq_mutex);
-> +
-> +       if (clk_enable(hdq_data->hdq_ick)) {
-> +               dev_dbg(&pdev->dev, "Can not enable ick\n");
-> +               ret = -ENODEV;
-> +               goto err_ick;
-> +       }
-> +
-> +       if (clk_enable(hdq_data->hdq_fck)) {
-> +               dev_dbg(&pdev->dev, "Can not enable fck\n");
-> +               ret = -ENODEV;
-> +               goto err_fck;
-> +       }
-> +
-> +       rev = hdq_reg_in(hdq_data, OMAP_HDQ_REVISION);
-> +       dev_info(&pdev->dev, "OMAP HDQ Hardware Rev %c.%c. Driver in %s mode\n",
-> +               (rev >> 4) + '0', (rev & 0x0f) + '0', "Interrupt");
-> +
-> +       spin_lock_init(&hdq_data->hdq_spinlock);
-> +       omap_hdq_break(hdq_data);
-> +
-> +       irq = platform_get_irq(pdev, 0);
-> +       if (irq < 0) {
-> +               ret = -ENXIO;
-> +               goto err_irq;
-> +       }
-> +
-> +       ret = request_irq(irq, hdq_isr, IRQF_DISABLED, "omap_hdq", hdq_data);
-> +       if (ret < 0) {
-> +               dev_dbg(&pdev->dev, "could not request irq\n");
-> +               goto err_irq;
-> +       }
-> +
-> +       /* don't clock the HDQ until it is needed */
-> +       clk_disable(hdq_data->hdq_ick);
-> +       clk_disable(hdq_data->hdq_fck);
-> +
-> +       omap_w1_master.data = hdq_data;
-> +
-> +       ret = w1_add_master_device(&omap_w1_master);
-> +       if (ret) {
-> +               dev_dbg(&pdev->dev, "Failure in registering w1 master\n");
-> +               goto err_w1;
-> +       }
-> +
-> +       return 0;
-> +
-> +err_w1:
-> +err_irq:
-> +       clk_disable(hdq_data->hdq_fck);
-> +
-> +err_fck:
-> +       clk_disable(hdq_data->hdq_ick);
-> +
-> +err_ick:
-> +       clk_put(hdq_data->hdq_ick);
-> +       clk_put(hdq_data->hdq_fck);
-> +
-> +err_clk:
-> +       iounmap(hdq_data->hdq_base);
-> +
-> +err_ioremap:
-> +err_resource:
-> +       platform_set_drvdata(pdev, NULL);
-> +       kfree(hdq_data);
-> +
-> +err_kmalloc:
-> +       return ret;
-> +
-> +}
-> +
-> +static int omap_hdq_remove(struct platform_device *pdev)
-> +{
-> +       struct hdq_data *hdq_data = platform_get_drvdata(pdev);
-> +
-> +       mutex_lock(&hdq_data->hdq_mutex);
-> +
-> +       if (0 != hdq_data->hdq_usecount) {
-> +               dev_dbg(&pdev->dev, "removed when use count is not zero\n");
-> +               return -EBUSY;
-> +       }
-> +
-> +       mutex_unlock(&hdq_data->hdq_mutex);
-> +
-> +       /* remove module dependency */
-> +       clk_put(hdq_data->hdq_ick);
-> +       clk_put(hdq_data->hdq_fck);
-> +       free_irq(INT_24XX_HDQ_IRQ, hdq_data);
-> +       platform_set_drvdata(pdev, NULL);
-> +       iounmap(hdq_data->hdq_base);
-> +       kfree(hdq_data);
-> +
-> +       return 0;
-> +}
-> +
-> +static int __init
-> +omap_hdq_init(void)
-> +{
-> +       return platform_driver_register(&omap_hdq_driver);
-> +}
-> +module_init(omap_hdq_init);
-> +
-> +static void __exit
-> +omap_hdq_exit(void)
-> +{
-> +       platform_driver_unregister(&omap_hdq_driver);
-> +}
-> +module_exit(omap_hdq_exit);
-> +
-> +module_param(w1_id, int, S_IRUSR);
-> +MODULE_PARM_DESC(w1_id, "1-wire id for the slave detection");
-> +
-> +MODULE_AUTHOR("Texas Instruments");
-> +MODULE_DESCRIPTION("HDQ driver Library");
-> +MODULE_LICENSE("GPL");
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/xen/mmu.c |   74 +++++++++++++++++++++++++++++++++-------------------
+ arch/x86/xen/mmu.h |    3 --
+ 2 files changed, 48 insertions(+), 29 deletions(-)
 
--- 
-	Evgeniy Polyakov
+===================================================================
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -651,9 +651,12 @@
+  * For 64-bit, we must skip the Xen hole in the middle of the address
+  * space, just after the big x86-64 virtual hole.
+  */
+-static int xen_pgd_walk(pgd_t *pgd, int (*func)(struct page *, enum pt_level),
++static int xen_pgd_walk(struct mm_struct *mm,
++			int (*func)(struct mm_struct *mm, struct page *,
++				    enum pt_level),
+ 			unsigned long limit)
+ {
++	pgd_t *pgd = mm->pgd;
+ 	int flush = 0;
+ 	unsigned hole_low, hole_high;
+ 	unsigned pgdidx_limit, pudidx_limit, pmdidx_limit;
+@@ -698,7 +701,7 @@
+ 		pud = pud_offset(&pgd[pgdidx], 0);
+ 
+ 		if (PTRS_PER_PUD > 1) /* not folded */
+-			flush |= (*func)(virt_to_page(pud), PT_PUD);
++			flush |= (*func)(mm, virt_to_page(pud), PT_PUD);
+ 
+ 		for (pudidx = 0; pudidx < PTRS_PER_PUD; pudidx++) {
+ 			pmd_t *pmd;
+@@ -713,7 +716,7 @@
+ 			pmd = pmd_offset(&pud[pudidx], 0);
+ 
+ 			if (PTRS_PER_PMD > 1) /* not folded */
+-				flush |= (*func)(virt_to_page(pmd), PT_PMD);
++				flush |= (*func)(mm, virt_to_page(pmd), PT_PMD);
+ 
+ 			for (pmdidx = 0; pmdidx < PTRS_PER_PMD; pmdidx++) {
+ 				struct page *pte;
+@@ -727,7 +730,7 @@
+ 					continue;
+ 
+ 				pte = pmd_page(pmd[pmdidx]);
+-				flush |= (*func)(pte, PT_PTE);
++				flush |= (*func)(mm, pte, PT_PTE);
+ 			}
+ 		}
+ 	}
+@@ -735,20 +738,20 @@
+ out:
+ 	/* Do the top level last, so that the callbacks can use it as
+ 	   a cue to do final things like tlb flushes. */
+-	flush |= (*func)(virt_to_page(pgd), PT_PGD);
++	flush |= (*func)(mm, virt_to_page(pgd), PT_PGD);
+ 
+ 	return flush;
+ }
+ 
+ /* If we're using split pte locks, then take the page's lock and
+    return a pointer to it.  Otherwise return NULL. */
+-static spinlock_t *xen_pte_lock(struct page *page)
++static spinlock_t *xen_pte_lock(struct page *page, struct mm_struct *mm)
+ {
+ 	spinlock_t *ptl = NULL;
+ 
+ #if USE_SPLIT_PTLOCKS
+ 	ptl = __pte_lockptr(page);
+-	spin_lock(ptl);
++	spin_lock_nest_lock(ptl, &mm->page_table_lock);
+ #endif
+ 
+ 	return ptl;
+@@ -772,7 +775,8 @@
+ 	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
+ }
+ 
+-static int xen_pin_page(struct page *page, enum pt_level level)
++static int xen_pin_page(struct mm_struct *mm, struct page *page,
++			enum pt_level level)
+ {
+ 	unsigned pgfl = TestSetPagePinned(page);
+ 	int flush;
+@@ -813,7 +817,7 @@
+ 		 */
+ 		ptl = NULL;
+ 		if (level == PT_PTE)
+-			ptl = xen_pte_lock(page);
++			ptl = xen_pte_lock(page, mm);
+ 
+ 		MULTI_update_va_mapping(mcs.mc, (unsigned long)pt,
+ 					pfn_pte(pfn, PAGE_KERNEL_RO),
+@@ -834,11 +838,11 @@
+ /* This is called just after a mm has been created, but it has not
+    been used yet.  We need to make sure that its pagetable is all
+    read-only, and can be pinned. */
+-void xen_pgd_pin(pgd_t *pgd)
++static void __xen_pgd_pin(struct mm_struct *mm, pgd_t *pgd)
+ {
+ 	xen_mc_batch();
+ 
+-	if (xen_pgd_walk(pgd, xen_pin_page, USER_LIMIT)) {
++	if (xen_pgd_walk(mm, xen_pin_page, USER_LIMIT)) {
+ 		/* re-enable interrupts for kmap_flush_unused */
+ 		xen_mc_issue(0);
+ 		kmap_flush_unused();
+@@ -852,18 +856,24 @@
+ 		xen_do_pin(MMUEXT_PIN_L4_TABLE, PFN_DOWN(__pa(pgd)));
+ 
+ 		if (user_pgd) {
+-			xen_pin_page(virt_to_page(user_pgd), PT_PGD);
++			xen_pin_page(mm, virt_to_page(user_pgd), PT_PGD);
+ 			xen_do_pin(MMUEXT_PIN_L4_TABLE, PFN_DOWN(__pa(user_pgd)));
+ 		}
+ 	}
+ #else /* CONFIG_X86_32 */
+ #ifdef CONFIG_X86_PAE
+ 	/* Need to make sure unshared kernel PMD is pinnable */
+-	xen_pin_page(virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])), PT_PMD);
++	xen_pin_page(mm, virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])),
++		     PT_PMD);
+ #endif
+ 	xen_do_pin(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(pgd)));
+ #endif /* CONFIG_X86_64 */
+ 	xen_mc_issue(0);
++}
++
++static void xen_pgd_pin(struct mm_struct *mm)
++{
++	__xen_pgd_pin(mm, mm->pgd);
+ }
+ 
+ /*
+@@ -871,6 +881,10 @@
+  * mfns turned into pfns.  Search the list for any unpinned pgds and pin
+  * them (unpinned pgds are not currently in use, probably because the
+  * process is under construction or destruction).
++ *
++ * Expected to be called in stop_machine() ("equivalent to taking
++ * every spinlock in the system"), so the locking doesn't really
++ * matter all that much.
+  */
+ void xen_mm_pin_all(void)
+ {
+@@ -881,7 +895,7 @@
+ 
+ 	list_for_each_entry(page, &pgd_list, lru) {
+ 		if (!PagePinned(page)) {
+-			xen_pgd_pin((pgd_t *)page_address(page));
++			__xen_pgd_pin(&init_mm, (pgd_t *)page_address(page));
+ 			SetPageSavePinned(page);
+ 		}
+ 	}
+@@ -894,7 +908,8 @@
+  * that's before we have page structures to store the bits.  So do all
+  * the book-keeping now.
+  */
+-static __init int xen_mark_pinned(struct page *page, enum pt_level level)
++static __init int xen_mark_pinned(struct mm_struct *mm, struct page *page,
++				  enum pt_level level)
+ {
+ 	SetPagePinned(page);
+ 	return 0;
+@@ -902,10 +917,11 @@
+ 
+ void __init xen_mark_init_mm_pinned(void)
+ {
+-	xen_pgd_walk(init_mm.pgd, xen_mark_pinned, FIXADDR_TOP);
++	xen_pgd_walk(&init_mm, xen_mark_pinned, FIXADDR_TOP);
+ }
+ 
+-static int xen_unpin_page(struct page *page, enum pt_level level)
++static int xen_unpin_page(struct mm_struct *mm, struct page *page,
++			  enum pt_level level)
+ {
+ 	unsigned pgfl = TestClearPagePinned(page);
+ 
+@@ -923,7 +939,7 @@
+ 		 * partially-pinned state.
+ 		 */
+ 		if (level == PT_PTE) {
+-			ptl = xen_pte_lock(page);
++			ptl = xen_pte_lock(page, mm);
+ 
+ 			if (ptl)
+ 				xen_do_pin(MMUEXT_UNPIN_TABLE, pfn);
+@@ -945,7 +961,7 @@
+ }
+ 
+ /* Release a pagetables pages back as normal RW */
+-static void xen_pgd_unpin(pgd_t *pgd)
++static void __xen_pgd_unpin(struct mm_struct *mm, pgd_t *pgd)
+ {
+ 	xen_mc_batch();
+ 
+@@ -957,19 +973,25 @@
+ 
+ 		if (user_pgd) {
+ 			xen_do_pin(MMUEXT_UNPIN_TABLE, PFN_DOWN(__pa(user_pgd)));
+-			xen_unpin_page(virt_to_page(user_pgd), PT_PGD);
++			xen_unpin_page(mm, virt_to_page(user_pgd), PT_PGD);
+ 		}
+ 	}
+ #endif
+ 
+ #ifdef CONFIG_X86_PAE
+ 	/* Need to make sure unshared kernel PMD is unpinned */
+-	xen_unpin_page(virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])), PT_PMD);
++	xen_unpin_page(mm, virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])),
++		       PT_PMD);
+ #endif
+ 
+-	xen_pgd_walk(pgd, xen_unpin_page, USER_LIMIT);
++	xen_pgd_walk(mm, xen_unpin_page, USER_LIMIT);
+ 
+ 	xen_mc_issue(0);
++}
++
++static void xen_pgd_unpin(struct mm_struct *mm)
++{
++	__xen_pgd_unpin(mm, mm->pgd);
+ }
+ 
+ /*
+@@ -986,7 +1008,7 @@
+ 	list_for_each_entry(page, &pgd_list, lru) {
+ 		if (PageSavePinned(page)) {
+ 			BUG_ON(!PagePinned(page));
+-			xen_pgd_unpin((pgd_t *)page_address(page));
++			__xen_pgd_unpin(&init_mm, (pgd_t *)page_address(page));
+ 			ClearPageSavePinned(page);
+ 		}
+ 	}
+@@ -997,14 +1019,14 @@
+ void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next)
+ {
+ 	spin_lock(&next->page_table_lock);
+-	xen_pgd_pin(next->pgd);
++	xen_pgd_pin(next);
+ 	spin_unlock(&next->page_table_lock);
+ }
+ 
+ void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
+ {
+ 	spin_lock(&mm->page_table_lock);
+-	xen_pgd_pin(mm->pgd);
++	xen_pgd_pin(mm);
+ 	spin_unlock(&mm->page_table_lock);
+ }
+ 
+@@ -1095,7 +1117,7 @@
+ 
+ 	/* pgd may not be pinned in the error exit path of execve */
+ 	if (xen_page_pinned(mm->pgd))
+-		xen_pgd_unpin(mm->pgd);
++		xen_pgd_unpin(mm);
+ 
+ 	spin_unlock(&mm->page_table_lock);
+ }
+===================================================================
+--- a/arch/x86/xen/mmu.h
++++ b/arch/x86/xen/mmu.h
+@@ -17,9 +17,6 @@
+ void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next);
+ void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm);
+ void xen_exit_mmap(struct mm_struct *mm);
+-
+-void xen_pgd_pin(pgd_t *pgd);
+-//void xen_pgd_unpin(pgd_t *pgd);
+ 
+ pteval_t xen_pte_val(pte_t);
+ pmdval_t xen_pmd_val(pmd_t);
+
+
