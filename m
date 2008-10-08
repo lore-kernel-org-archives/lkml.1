@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbYJHAMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbYJHANL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbYJHAMS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbYJHAMG
+	id S1756786AbYJHANL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYJHAM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:12:06 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:54994 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754442AbYJHAME (ORCPT
+	Tue, 7 Oct 2008 20:12:56 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60081 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYJHAMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:12:04 -0400
-Date: Tue, 7 Oct 2008 19:12:03 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: sysfs: tagged directories not merged completely yet
-Message-ID: <20081008001203.GA21918@us.ibm.com>
-References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com> <48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org> <20081003101331.GH28946@ZenIV.linux.org.uk> <20081005053236.GA9472@kroah.com> <m1bpxwajyy.fsf@frodo.ebiederm.org> <20081007222726.GA9465@kroah.com> <20081007225424.GA9430@us.ibm.com> <20081007233936.GA23282@kroah.com>
+	Tue, 7 Oct 2008 20:12:55 -0400
+Message-ID: <48EBFAFC.3020501@zytor.com>
+Date: Tue, 07 Oct 2008 17:12:44 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007233936.GA23282@kroah.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: David Daney <ddaney@caviumnetworks.com>
+CC: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org,
+       "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
+Subject: Re: [PATCH 1/4] serial: 8250 driver replaceable i/o functions.
+References: <48EBF426.9080500@caviumnetworks.com> <48EBF56D.3030203@caviumnetworks.com>
+In-Reply-To: <48EBF56D.3030203@caviumnetworks.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg KH (greg@kroah.com):
-> On Tue, Oct 07, 2008 at 05:54:24PM -0500, Serge E. Hallyn wrote:
-> > Quoting Greg KH (greg@kroah.com):
-> > > On Tue, Oct 07, 2008 at 01:27:17AM -0700, Eric W. Biederman wrote:
-> > > > Unless someone will give an example of how having multiple superblocks
-> > > > sharing inodes is a problem in practice for sysfs and call it good
-> > > > for 2.6.28.  Certainly it shouldn't be an issue if the network namespace
-> > > > code is compiled out.  And it should greatly improve testing of the
-> > > > network namespace to at least have access to sysfs.
-> > > 
-> > > But if the network namespace code is in?  THen we have problems, right?
-> > > And that's the whole point here.
-> > > 
-> > > The fact that you are trying to limit userspace view of in-kernel data
-> > > structures, based on that specific user, is, in my opinion, crazy.
-> > > 
-> > > Why not just keep all users from seeing sysfs, and then have a user
-> > > daemon doing something on top of FUSE if you really want to see this
-> > > kind of stuff.
-> > 
-> > Well the blocker is really that when you create a new network namespace,
-> > it wants to create a new loopback interface, but
-> > /sys/devices/virtual/net/lo already exists.  That's the same issue with
-> > user namespace when the fair scheduler is enabled, which tries to
-> > re-create /sys/kernel/uids/0.
-> > 
-> > Otherwise yeah at least for my own uses, containers wouldn't need to
-> > look at /sys at all.
-> > 
-> > Heck you wouldn't even need FUSE, just mount -t tmpfs /sys/class/net
-> > and manually link the right devices from /sys/devices/virtual/net.
-> 
-> Great, that sounds like a solution.
-> 
-> So tell me again why we need these huge sysfs reworks? :)
+David Daney wrote:
+> /* sane hardware needs no mapping */
+> -static inline int map_8250_in_reg(struct uart_8250_port *up, int offset)
+> +static inline int map_8250_in_reg(struct uart_port *p, int offset)
+> {
+> -    if (up->port.iotype != UPIO_AU)
+> +    if (p->iotype != UPIO_AU)
+>         return offset;
+>     return au_io_in_map[offset];
+> }
 
-Because :
+With your changes, these functions cannot be called with p->iotype != 
+UPIO_AU anymore, correct?  So there is no need for this test...
 
-> > Well the blocker is really that when you create a new network namespace,
-> > it wants to create a new loopback interface, but
-> > /sys/devices/virtual/net/lo already exists.  That's the same issue with
-
-So at least we'd have to do something to allow creation of 'duplicate'
-devices in different namespaces.  It might be fine if we just ended up
-with /sys/devices/virtual/net/lo, if created in a child net namespace,
-be named /sys/devices/virtual/net/lo.childXYZ.  Then userspace can
-mount -t tmpfs none /sys/class/net and ln -s
-/sys/devices/virtual/net/lo.childXYZ /sys/class/net/lo.
-
--serge
+	-hpa
