@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYJHIhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbYJHIjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYJHIhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 04:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYJHIhm
+	id S1754945AbYJHIjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 04:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYJHIjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 04:37:42 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50776 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbYJHIhl (ORCPT
+	Wed, 8 Oct 2008 04:39:01 -0400
+Received: from smtp2e.orange.fr ([80.12.242.113]:58170 "EHLO smtp2e.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751307AbYJHIi7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 04:37:41 -0400
-Date: Wed, 8 Oct 2008 10:43:50 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
-Message-ID: <20081008084350.GI7971@one.firstfloor.org>
-References: <1223396117-8118-1-git-send-email-kirill@shutemov.name> <2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com> <20081007211038.GQ20740@one.firstfloor.org> <20081008000518.13f48462@lxorguk.ukuu.org.uk> <20081007232059.GU20740@one.firstfloor.org> <20081008004030.7a0e9915@lxorguk.ukuu.org.uk> <20081007235737.GD7971@one.firstfloor.org> <20081008093424.4e88a3c2@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081008093424.4e88a3c2@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 8 Oct 2008 04:38:59 -0400
+X-ME-UUID: 20081008083858193.2F51570000B9@mwinf2e18.orange.fr
+Message-ID: <48EC70BB.9010709@cosmosbay.com>
+Date: Wed, 08 Oct 2008 10:35:07 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Cc: minyard@acm.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       shemminger@vyatta.com, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
+References: <48EA8197.6080502@cosmosbay.com>	<20081006.144002.56418911.davem@davemloft.net>	<48EAF29D.8050203@cosmosbay.com> <20081007.112622.73930718.davem@davemloft.net>
+In-Reply-To: <20081007.112622.73930718.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08, 2008 at 09:34:24AM +0100, Alan Cox wrote:
-> Oh and as a PS you can also (for the hint case) do this:
+David Miller a écrit :
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Tue, 07 Oct 2008 07:24:45 +0200
 > 
-> 	shmat giving an address
-> 	if error
-> 		shmat giving no address
+>> Most UDP sockets are setup for long periods (RTP trafic), or if an application really
+>> wants to {open/send or receive one UDP frame/close} many sockets, it already hits
+>> RCU handling of its file structures and should not be slowed down that much.
 > 
-> from user space.
+> As stated, I added RCU destruction generically for socket objects, and it
+> showed up clearly.
+> 
+> So "not be slowed down that much" has been disproven, at least to me,
+> already :-)
+> 
+> 
+RCU in hash table is ok for managing read mostly data, since
+only during the read access you avoid to dirty a rwlock...
 
-No you can't here because shmat() starts searching from the wrong
-start address.
+If we have a workload that insert/delete sockets as hell but
+receive few frames (that hit the hash table in a read only way),
+then you defeat the purpose of RCU, and pay the price of
+throwing away (in rcu queue) hot data that will become cold
+before reuse...
 
-The only way would be to search manually in /proc/self/maps
-and handle the races, but I hope you're not advocating that.
+BTW is there any chance your results were obtained before October 2005 ?
 
--Andi
+At that time, RCU was able to queue an unlimited number of events.
+a single loop doing close(open("/dev/null",0)) could exhaust RAM...
 
--- 
-ak@linux.intel.com
+
+Refs: commit  5ee832dbc6770135ec8d63296af0a4374557bb79
+and many others...
+
+Anyway we can probably code something without call_rcu() cache blower
+for UDP, if time permits :)
+
+
+
