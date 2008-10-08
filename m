@@ -1,32 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYJHNBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbYJHNBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbYJHNBA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYJHNAt
+	id S1755616AbYJHNBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYJHNA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:00:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53183 "EHLO
+	Wed, 8 Oct 2008 09:00:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53210 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbYJHNAs (ORCPT
+	with ESMTP id S1755280AbYJHNA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:00:48 -0400
-Date: Wed, 8 Oct 2008 09:00:06 -0400
+	Wed, 8 Oct 2008 09:00:57 -0400
+Date: Wed, 8 Oct 2008 09:00:56 -0400
 From: Christoph Hellwig <hch@infradead.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <gregkh@suse.de>, Mark Ryden <markryde@gmail.com>,
-       Benjamin Thery <benjamin.thery@bull.net>,
-       David Shwatrz <dshwatrz@gmail.com>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
-Message-ID: <20081008130006.GB31684@infradead.org>
-References: <dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com> <48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de> <31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com> <48BF83E1.5040000@bull.net> <dac45060810070939v80918a0m3963d7fc6fcbb975@mail.gmail.com> <20081007164833.GA16056@suse.de> <m1abdgywnb.fsf@frodo.ebiederm.org> <20081007210902.GB7996@suse.de> <m18wt0qbwf.fsf@frodo.ebiederm.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/4] integrity: special fs magic
+Message-ID: <20081008130056.GC31684@infradead.org>
+References: <cover.1223401603.git.zohar@linux.vnet.ibm.com> <87b9b5f88d5ed93a7985c14b413cf8d74ceea69c.1223401604.git.zohar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m18wt0qbwf.fsf@frodo.ebiederm.org>
+In-Reply-To: <87b9b5f88d5ed93a7985c14b413cf8d74ceea69c.1223401604.git.zohar@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -34,15 +31,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 03:27:12PM -0700, Eric W. Biederman wrote:
-> Al reviewed sysfs with my patchset on top of it.
+On Tue, Oct 07, 2008 at 02:00:12PM -0400, Mimi Zohar wrote:
+> Discussion on the mailing list questioned the use of these
+> magic values in userspace, concluding these values are already
+> exported to userspace via statfs and their correct/incorrect
+> usage is left up to the userspace application.
 > 
-> Al's review found problems in  sysfs with my patchset on top of it.
-> 
-> If you look at what Al found the majority of those problems exist in sysfs
-> without my patches.
+>   - Move special fs magic number definitions to magic.h
+>   - Add magic.h include
 
-And when something is crap your fix it firdt before piling up more shit
-on top of it.  And sysfs is a really severe case of that, and you're
-piling a _lot_ of shit ontop.
+This should be patch 1, and we can put in in ASAP even if the rest needs
+some more work.
 
