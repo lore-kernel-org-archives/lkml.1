@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYJHXNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYJHXNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbYJHXNl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 19:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYJHXN3
+	id S1757298AbYJHXNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 19:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYJHXNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 19:13:29 -0400
-Received: from appsrv02.ibeamsolutions.com ([69.4.248.120]:1394 "EHLO
-	AppSrv02.ibeam-colo.local" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756956AbYJHXN2 (ORCPT
+	Wed, 8 Oct 2008 19:13:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51063 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbYJHXNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 19:13:28 -0400
-Thread-Topic: Market Analysis -- What to Buy in Today's Blood Bath
-thread-index: Ackpm3bUMqZkkdavRwKV77zBEQRtmg==
-Reply-To: <no-reply@imailerexpress.com>
-From: <InvestorRelations@ibeammail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Market Analysis -- What to Buy in Today's Blood Bath
-Date: Wed, 8 Oct 2008 19:13:24 -0400
-Message-ID: <605E9F36BC8A4F6B9238F6B99CB0325A@ibeamcolo.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Wed, 8 Oct 2008 19:13:12 -0400
+Subject: Re: [PATCH] sched_clock: prevent scd->clock from moving backwards
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1223470854.6336.15.camel@norville.austin.ibm.com>
+References: <48D959E8.4000303@goop.org>
+	 <1223470773.6336.13.camel@norville.austin.ibm.com>
+	 <1223470854.6336.15.camel@norville.austin.ibm.com>
+Content-Type: text/plain
+Date: Thu, 09 Oct 2008 01:05:04 +0200
+Message-Id: <1223507104.7382.6.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft CDO for Windows 2000
-Content-Class: urn:content-classes:message
-Importance: normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
-X-OriginalArrivalTime: 08 Oct 2008 23:13:24.0708 (UTC) FILETIME=[76D48A40:01C9299B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Shareholders,
+On Wed, 2008-10-08 at 08:00 -0500, Dave Kleikamp wrote:
+> sched_clock: prevent scd->clock from moving backwards
+> 
+> When sched_clock_cpu() couples the clocks between two cpus, it may
+> increment scd->clock beyond the GTOD tick window that __update_sched_clock()
+> uses to clamp the clock.  A later call to __update_sched_clock() may move
+> the clock back to scd->tick_gtod + TICK_NSEC, violating the clock's
+> monotonic property.
+> 
+> This patch ensures that scd->clock will not be set backward.
 
-Today's market tech analysis:  Dow closed well below our magical number of 9637.50, so it is now absolutely certain mathematically that it will have to touch 9062.50 at some point in time.  
+Ah, yes indeed, this comes from the tick not happening at the same time
+on different cpus, so if we use a local timestamp to move a remote clock
+forward, this scenario could indeed happen.
 
-However, if the S&P 500 can hold 1000, then we are on the reversal in time on the chart (Thurs), and the market is due for an up move unless it just crashes from here.  If we have an up move with a big reversal on Thursday, it will be exactly a year to the date of the all time closing high. 
+The fix looks good to me, good catch, thanks shaggy!
 
-Oct 9th is historically the most significant market day of the year, followed by July 17th.  Both lows after both crashes '87 and '00 were exactly 2 yrs 10 months (remember # wise, we have already fallen as far as it took for 2 yrs 10 months after '00) after the crash and the lows both hit on October 9th. 
+A related 'fix' which I'm still not quite sure about is making the
+window 'tick_gtod + 2*TICK_NSEC'. That increases the max observed
+difference to 4 jiffies, but allows ticks to be 'late' a bit without
+first holding back time and then jumping ahead again.
 
-The pros and tech traders know this!!  I am looking to see if the OEX (top 100 stocks) can hold 468.75 because if it can, it can stay in the current octave and move up, if it doesn't, it will have to frame shift into the lower octave, which means....DOWN, DOWN, DOWN and serious weakness.... 
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-So, today might look bad, but historically tomorrow Oct. 9th  is the day to focus on.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-There is an old saying; "Sell on Rosh Hashanah and Buy on Yom Kippur."  Tomorrow is Yom Kippur and so happens to be Oct. 9th.
-
-Stocks to to buy:  DGP (DB Double Long Gold), WMT (Wal-Mart), GOCH (CallTheGeeks.com), and of course my Ohio favorite CETG (Capital City Energy Group, Inc.).
-
-Your Stock Guy... 
-
-(UNSUBSCRIBE INFORMATION)
-
-To unsubscribe (opt out) of mailing lists from Investor Relations, click the following URL:
-
-http://imailerexpress.ibeamsolutions.com/optout.aspx?c=125636&r=653190
-
+> 
+> diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+> index e8ab096..a989d64 100644
+> --- a/kernel/sched_clock.c
+> +++ b/kernel/sched_clock.c
+> @@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
+>  
+>  	/*
+>  	 * scd->clock = clamp(scd->tick_gtod + delta,
+> -	 * 		      max(scd->tick_gtod, scd->clock),
+> -	 * 		      scd->tick_gtod + TICK_NSEC);
+> +	 *		      max(scd->tick_gtod, scd->clock),
+> +	 *		      min(scd->clock, scd->tick_gtod + TICK_NSEC));
+>  	 */
+>  
+>  	clock = scd->tick_gtod + delta;
+>  	min_clock = wrap_max(scd->tick_gtod, scd->clock);
+> -	max_clock = scd->tick_gtod + TICK_NSEC;
+> +	max_clock = wrap_min(scd->clock, scd->tick_gtod + TICK_NSEC);
+>  
+>  	clock = wrap_max(clock, min_clock);
+>  	clock = wrap_min(clock, max_clock);
+> 
+> 
 
