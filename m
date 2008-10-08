@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYJHKaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYJHKg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYJHKaA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 06:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYJHK3v
+	id S1755002AbYJHKg6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 06:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYJHKgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 06:29:51 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55820 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755455AbYJHK3u (ORCPT
+	Wed, 8 Oct 2008 06:36:49 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52725 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753161AbYJHKgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 06:29:50 -0400
-Subject: Re: linux-firmware patches
-From: David Woodhouse <dwmw2@infradead.org>
-To: Dave <kilroyd@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48EBAC11.7060803@gmail.com>
-References: <48EBAC11.7060803@gmail.com>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 11:29:46 +0100
-Message-Id: <1223461786.20499.29.camel@pmac.infradead.org>
+	Wed, 8 Oct 2008 06:36:48 -0400
+Date: Wed, 8 Oct 2008 11:27:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Li Yang <leoli@freescale.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Tejun Heo <tj@kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Wang Jian <lark@linux.net.cn>
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+Message-ID: <20081008112743.6a90baf7@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0810081159240.24611@vixen.sonytel.be>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48EA77EF.6080502@genesi-usa.com>
+	<20081006213209.GA13072@oksana.dev.rtsoft.ru>
+	<48EABBD3.1010401@kernel.org>
+	<20081007103723.0224671e@lxorguk.ukuu.org.uk>
+	<1223455254.3145.143.camel@macbook.infradead.org>
+	<20081008100025.1c535401@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.64.0810081159240.24611@vixen.sonytel.be>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 19:36 +0100, Dave wrote:
-> Should patches to add firmware to the linux-firmware tree (and not the
-> main kernel) be sent to linux-kernel, or somewhere else? It wasn't
-> mentioned in the [ANNOUNCE]*, and I haven't been able to find an
-> example on list.
+> > I'll leave you to argue with Linus about that, but since that was the
+> > decision back in 2005 (for good C reasons) we can safely rely on it.
 > 
-> Just wanted to check before posting an 80k patch consisting of non-GPL
-> binary files.
+> `git grep NO_IRQ include arch/*/include' is still quite enlightening...
 
-Patches with binary files are going to be hard -- probably best just to
-commit to a git tree and ask me to pull. Or mail the files separately,
-with the changes to the WHENCE file as a separate patch.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+Good guide to platform code we should delete really
