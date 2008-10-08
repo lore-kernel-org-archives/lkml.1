@@ -1,94 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYJHNjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYJHN4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbYJHNjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYJHNjJ
+	id S1755045AbYJHN4G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYJHNzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:39:09 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:41892 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753808AbYJHNjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:39:08 -0400
-Date: Wed, 8 Oct 2008 15:39:06 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/17] checkpatch: include/asm checks should be anchored
-In-Reply-To: <1218485592-6679-10-git-send-email-apw@shadowen.org>
-Message-ID: <Pine.LNX.4.64.0810081537560.24611@vixen.sonytel.be>
-References: <1218485592-6679-1-git-send-email-apw@shadowen.org>
- <1218485592-6679-10-git-send-email-apw@shadowen.org>
+	Wed, 8 Oct 2008 09:55:52 -0400
+Received: from smtp19.orange.fr ([80.12.242.18]:65265 "EHLO smtp19.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753197AbYJHNzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 09:55:51 -0400
+X-ME-UUID: 20081008135548725.B13721C0008F@mwinf1927.orange.fr
+Message-ID: <48ECBBD8.9060602@cosmosbay.com>
+Date: Wed, 08 Oct 2008 15:55:36 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-2033897805-1223473146=:24611"
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@vyatta.com, benny+usenet@amorsen.dk, minyard@acm.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/3] Convert the UDP hash lock to RCU
+References: <m37i8k3hv1.fsf@ursa.amorsen.dk>	<48EB5D28.7000503@cosmosbay.com>	<20081007160729.60c076c4@speedy> <20081007.135548.56141000.davem@davemloft.net>
+In-Reply-To: <20081007.135548.56141000.davem@davemloft.net>
+Content-Type: multipart/mixed;
+ boundary="------------020508010404090802020108"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This is a multi-part message in MIME format.
+--------------020508010404090802020108
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
----584349381-2033897805-1223473146=:24611
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+David Miller a =E9crit :
+> From: Stephen Hemminger <shemminger@vyatta.com>
+> Date: Tue, 7 Oct 2008 16:07:29 +0200
+>=20
+>> The idea of keeping chains short is the problem. That code should
+>> just be pulled because it doesn't help that much, and also creates
+>> bias on the port randomization.
+>=20
+> I have that patch from Vitaly Mayatskikh which does exactly this.
+>=20
+> I keep looking at it, but I can't bring myself to apply it since
+> I'm not completely convinced.
 
-On Mon, 11 Aug 2008, Andy Whitcroft wrote:
-> It is possible to have other include/asm paths within the tree which
-> are not subject to the do not edit checks.  Ignore those.
-> 
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> ---
->  scripts/checkpatch.pl |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index 482768c..0e5af8e 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -1134,7 +1134,7 @@ sub process {
->  			$realfile = $1;
->  			$realfile =~ s@^[^/]*/@@;
->  
-> -			if ($realfile =~ m@include/asm/@) {
-> +			if ($realfile =~ m@^include/asm/@) {
->  				ERROR("do not modify files in include/asm, change architecture specific files in include/asm-<architecture>\n" . "$here$rawline\n");
->  			}
->  			next;
+Vitaly patch might be appropriate if only few UDP ports are opened.
 
-I just stumbled on the same false positive, and found your patch.
-Shouldn't the error message be updated, too?
+We could zap the code to search short chains and extend Vitaly's
+idea with following patch :
 
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1134,8 +1134,8 @@ sub process {
- 			$realfile = $1;
- 			$realfile =~ s@^[^/]*/@@;
+[PATCH] udp: Improve port randomization
+
+Current UDP port allocation is suboptimal.
+We select the shortest chain to chose a port (out of 512)
+that will hash in this shortest chain.
+
+First, it can lead to give not so ramdom ports and ease
+give attackers more opportunities to break the system.
+
+Second, it can consume a lot of CPU to scan all table
+in order to find the shortest chain.
+
+Third, in some pathological cases we can fail to find
+a free port even if they are plenty of them.
+
+This patch zap the search for a short chain and only
+use one random seed. Problem of getting long chains
+should be addressed in another way, since we can
+obtain long chains with non random ports.
+
+Based on a report and patch from Vitaly Mayatskikh
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+
+
+--------------020508010404090802020108
+Content-Type: text/plain;
+ name="udp_random.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="udp_random.patch"
+
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index 85f8e8e..67d8430 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -155,55 +155,23 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
+ 	write_lock_bh(&udp_hash_lock);
  
--			if ($realfile =~ m@include/asm/@) {
--				ERROR("do not modify files in include/asm, change architecture specific files in include/asm-<architecture>\n" . "$here$rawline\n");
-+			if ($realfile =~ m@^include/asm/@) {
-+				ERROR("do not modify files in include/asm, change architecture specific files in arch/<architecture>/include/asm or include/asm-<architecture>\n" . "$here$rawline\n");
- 			}
- 			next;
+ 	if (!snum) {
+-		int i, low, high, remaining;
+-		unsigned rover, best, best_size_so_far;
++		int low, high, remaining;
++		unsigned rand;
++		unsigned short first;
+ 
+ 		inet_get_local_port_range(&low, &high);
+ 		remaining = (high - low) + 1;
+ 
+-		best_size_so_far = UINT_MAX;
+-		best = rover = net_random() % remaining + low;
+-
+-		/* 1st pass: look for empty (or shortest) hash chain */
+-		for (i = 0; i < UDP_HTABLE_SIZE; i++) {
+-			int size = 0;
+-
+-			head = &udptable[udp_hashfn(net, rover)];
+-			if (hlist_empty(head))
+-				goto gotit;
+-
+-			sk_for_each(sk2, node, head) {
+-				if (++size >= best_size_so_far)
+-					goto next;
+-			}
+-			best_size_so_far = size;
+-			best = rover;
+-		next:
+-			/* fold back if end of range */
+-			if (++rover > high)
+-				rover = low + ((rover - low)
+-					       & (UDP_HTABLE_SIZE - 1));
+-
+-
+-		}
+-
+-		/* 2nd pass: find hole in shortest hash chain */
+-		rover = best;
+-		for (i = 0; i < (1 << 16) / UDP_HTABLE_SIZE; i++) {
+-			if (! __udp_lib_lport_inuse(net, rover, udptable))
+-				goto gotit;
+-			rover += UDP_HTABLE_SIZE;
+-			if (rover > high)
+-				rover = low + ((rover - low)
+-					       & (UDP_HTABLE_SIZE - 1));
++		rand = net_random();
++		snum = first = rand % remaining + low;
++		rand |= 1;
++		while (__udp_lib_lport_inuse(net, snum, udptable)) {
++			do {
++				snum = snum + rand;
++			} while (snum < low || snum > high);
++			if (snum == first)
++				goto fail;
  		}
+-
+-
+-		/* All ports in use! */
+-		goto fail;
+-
+-gotit:
+-		snum = rover;
+ 	} else {
+ 		head = &udptable[udp_hashfn(net, snum)];
+ 
+
+--------------020508010404090802020108--
 
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-2033897805-1223473146=:24611--
