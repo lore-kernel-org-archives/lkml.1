@@ -1,122 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758457AbYJHCvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbYJHCwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758457AbYJHCvk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 22:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbYJHCv3
+	id S1758616AbYJHCwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 22:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbYJHCwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 22:51:29 -0400
-Received: from mga01.intel.com ([192.55.52.88]:63827 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755911AbYJHCv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 22:51:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,376,1220252400"; 
-   d="scan'208";a="388848343"
-Subject: Re: [PATCH] USB: improve ehci_watchdog's side effect in CPU power
-	management
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       gregkh@suse.de, linux-usb@vger.kernel.org, stern@rowland.harvard.edu,
-       leonidv11@gmail.com
-In-Reply-To: <20081002165649.00d021db.akpm@linux-foundation.org>
-References: <1222334744.9267.41.camel@yangyi-dev>
-	 <20081002165649.00d021db.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Organization: Intel
-Date: Wed, 08 Oct 2008 18:51:57 +0800
-Message-Id: <1223463117.2845.15.camel@yangyi-dev>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 7 Oct 2008 22:52:13 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38435 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756071AbYJHCwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 22:52:12 -0400
+Date: Tue, 7 Oct 2008 20:52:09 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+Message-ID: <20081008025209.GO25780@parisc-linux.org>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <20081007105056.16d9e785.akpm@linux-foundation.org> <1223405963.26330.83.camel@lappy.programming.kicks-ass.net> <200810081335.44576.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810081335.44576.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC to Alan Stern and Leonid, maybe they know why "﻿t =
-DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1".
+On Wed, Oct 08, 2008 at 01:35:44PM +1100, Nick Piggin wrote:
+> Right you are. That's the fundamental question. The actual details of
+> the fix and how likely the race is don't really matter until we
+> answer the first question (except to say that the "fix" is never going
+> to be free).
+> 
+> We've lasted this long with the current semantics. So the natural
+> reaction to anything that strengthens the semantics now is "why?". If
+> we do that then we can basically never return to the weaker semantics.
+> So there had better be a really good reason.
 
-commit b963801164618e25fbdc0cd452ce49c3628b46c8 did this change.
+And it's worth saying that letter-of-the-standard arguments aren't
+necessarily enough.  Linux does not honour the POSIX guarantee that
+writes are atomic (if they cross page boundaries, it's not certain).
+This seems like even more of a corner case to me.
 
-On Thu, 2008-10-02 at 16:56 -0700, Andrew Morton wrote:
-> On Thu, 25 Sep 2008 17:25:44 +0800
-> Yi Yang <yi.y.yang@intel.com> wrote:
-> 
-> > ehci_watchdog will wake up CPU very frequently so that CPU
-> > stays at C3 very short, average residence time is about 50
-> > ms on Aspire One, but we expect it should be about 1 second
-> > or more, so this kind of periodic timer is very bad for power
-> > saving.
-> > 
-> > We can't remove this timer because of some bad USB controller
-> > chipset, but at least we should reduce its side effect to as
-> > possible as low.
-> > 
-> > This patch can make CPU stay at C3 longer, average residence time
-> > is about twice as long as original. 
-> > 
-> > Please consider to apply it, thanks
-> > 
-> > Signed-off-by: Yi Yang <yi.y.yang@intel.com>
-> > ---
-> >  ehci.h |   12 +++++++-----
-> >  1 file changed, 7 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
-> > index 5799298..9d530d9 100644
-> > --- a/drivers/usb/host/ehci.h
-> > +++ b/drivers/usb/host/ehci.h
-> > @@ -181,14 +181,16 @@ timer_action (struct ehci_hcd *ehci, enum ehci_timer_action action)
-> >  	 * the async ring; just the I/O watchdog.  Note that if a
-> >  	 * SHRINK were pending, OFF would never be requested.
-> >  	 */
-> > -	if (timer_pending(&ehci->watchdog)
-> > -			&& ((BIT(TIMER_ASYNC_SHRINK) | BIT(TIMER_ASYNC_OFF))
-> > -				& ehci->actions))
-> > -		return;
-> > +	enum ehci_timer_action oldactions = ehci->actions;
-> >  
-> >  	if (!test_and_set_bit (action, &ehci->actions)) {
-> >  		unsigned long t;
-> >  
-> > +		if (timer_pending(&ehci->watchdog)
-> > +			&& ((BIT(TIMER_ASYNC_SHRINK) | BIT(TIMER_ASYNC_OFF))
-> > +				& oldactions))
-> > +			return;
-> > +
-> >  		switch (action) {
-> >  		case TIMER_IO_WATCHDOG:
-> >  			t = EHCI_IO_JIFFIES;
-> > @@ -204,7 +206,7 @@ timer_action (struct ehci_hcd *ehci, enum ehci_timer_action action)
-> >  			t = DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1;
-> >  			break;
-> >  		}
-> > -		mod_timer(&ehci->watchdog, t + jiffies);
-> > +		mod_timer(&ehci->watchdog, round_jiffies(t + jiffies));
-> >  	}
-> >  }
-> >  
-> 
-> <looks>
-> 
-> <regrets it>
-> 
-> 
-> Why does this:
-> 
-> 	t = DIV_ROUND_UP(EHCI_SHRINK_FRAMES * HZ, 1000) + 1;
-> 
-> add "1000" to a jiffies value when it doesn't know what HZ is?  It'll
-> be adding anywhere from one second up to ten seconds to the timeout
-> interval depending upon compile-time options.
-> 
-> I suspect s/1000/HZ/ would improve things here.  Or just delete it -
-> doesn't the subsequent round_jiffies() do the same thing, only better? 
-> This code needs help, I suspect.
-> 
-> 
-> Also, do we really need to inline this large function into at least
-> five callsites?
-> 
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
