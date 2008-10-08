@@ -1,96 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYJHW5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbYJHXCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYJHW5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 18:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYJHW5X
+	id S1756758AbYJHXCa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 19:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbYJHXCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 18:57:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:34250 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbYJHW5W (ORCPT
+	Wed, 8 Oct 2008 19:02:22 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:35925 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754799AbYJHXCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 18:57:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=vl95skQ72WbIzZF5TPrnMRg3/ZF5/m6dLJbNWKpLIwD662KG/5hjnxD+ziyRVz5YHB
-         S11kz13C3r5q070xXIvICUlma9FJ9lwpQXO2qYK7dHBdsr3rs9YpZSi+9sMOjtZnrAgY
-         iXH0yzvzLhy9B8p/vWOGR25a1K9OTnflHR7qo=
-Message-ID: <1f1b08da0810081557u14d7b7b8p872d8454016ae8bf@mail.gmail.com>
-Date: Wed, 8 Oct 2008 15:57:21 -0700
-From: "john stultz" <johnstul@us.ibm.com>
-To: "Rodolfo Giometti" <giometti@linux.it>
-Subject: Re: [PATCH 10/10] PPS: low level IRQ timestamps recording.
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Dave Jones" <davej@redhat.com>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Greg KH" <greg@kroah.com>, "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <1222933309-2524-11-git-send-email-giometti@linux.it>
+	Wed, 8 Oct 2008 19:02:21 -0400
+Date: Thu, 9 Oct 2008 03:02:19 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: fsl_upm compile failure.
+Message-ID: <20081008230219.GA8075@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081008222815.GA20542@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-References: <1222933309-2524-1-git-send-email-giometti@linux.it>
-	 <1222933309-2524-3-git-send-email-giometti@linux.it>
-	 <1222933309-2524-4-git-send-email-giometti@linux.it>
-	 <1222933309-2524-5-git-send-email-giometti@linux.it>
-	 <1222933309-2524-6-git-send-email-giometti@linux.it>
-	 <1222933309-2524-7-git-send-email-giometti@linux.it>
-	 <1222933309-2524-8-git-send-email-giometti@linux.it>
-	 <1222933309-2524-9-git-send-email-giometti@linux.it>
-	 <1222933309-2524-10-git-send-email-giometti@linux.it>
-	 <1222933309-2524-11-git-send-email-giometti@linux.it>
-X-Google-Sender-Auth: 9a9fae23c6ccc913
+In-Reply-To: <20081008222815.GA20542@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 2, 2008 at 12:41 AM, Rodolfo Giometti <giometti@linux.it> wrote:
-> Add low level IRQ timestamps recording for x86 (32 and 64 bits)
-> platforms and enable UART clients in order to use it.
+Hi,
+
+On Wed, Oct 08, 2008 at 06:28:15PM -0400, Dave Jones wrote:
+> Hi Anton, 
+>  I tried reenabling CONFIG_MTD_NAND_FSL_UPM in the Fedora kernel
+> today (currently on 2.6.27-rc9-git1), and got the error below.
+> 
+> ERROR: "fsl_lbc_lock" [drivers/mtd/nand/fsl_upm.ko] undefined!
+
+Weird. It works for me with mpc836x_rdk_defconfig and
+MTD_NAND_FSL_UPM=m...
+
+Hm..
+
+  CC      drivers/mtd/nand/fsl_upm.mod.o
+  LD [M]  drivers/mtd/nand/fsl_upm.ko
+
+Can you send me the .config file you use?
+
+> It seems that this isn't exported to modules.
+> diff below fixes this.  (Not tested yet, the Fedora ppc
+>  builders are a little slow).
+> 
+> 	Dave
+> 
+> --- 
+> 
+> CONFIG_MTD_NAND_FSL_UPM can be built modular, but needs to
+> use fsl_lbc_lock, which isn't currently exported.
+> 
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+> index 422c8fa..1c6c522 100644
+> --- a/arch/powerpc/sysdev/fsl_lbc.c
+> +++ b/arch/powerpc/sysdev/fsl_lbc.c
+> @@ -16,6 +16,7 @@
+>  #include <asm/fsl_lbc.h>
 >
-> This improves PPS precision. :)
+>  spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
+> +EXPORT_SYMBOL(fsl_lbc_lock);
 >
-> Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+>  struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+>  EXPORT_SYMBOL(fsl_lbc_regs);
 
-Hey Rodolfo,
-   First of all, kudos to your persistence on this patch set, it
-really has been a long time that you've been pushing this. Hopefully
-it won't take much longer. :)
+But the patch looks obviously correct. Much thanks for catching this.
 
-I've never had much experience with PPS devices, so other then knowing
-a fair number of folks who are interested in using them, most of the
-code is outside of my realm of knowledge, so I've not had much to
-comment upon.
+Though better option would be to uninline the fsl_upm_run_pattern()..
+it is quite big anyway... Something like this:
 
-However, Thomas asked me to check and see how this interacted with the
-timekeeping subsystem, so I took another look at the current code.
->From a quick review, I really don't see any interactions. The code
-seems fairly well isolated.
+diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
+index 303f548..af2b535 100644
+--- a/arch/powerpc/include/asm/fsl_lbc.h
++++ b/arch/powerpc/include/asm/fsl_lbc.h
+@@ -24,7 +24,6 @@
+ #define __ASM_FSL_LBC_H
+ 
+ #include <linux/types.h>
+-#include <linux/spinlock.h>
+ #include <asm/io.h>
+ 
+ struct fsl_lbc_bank {
+@@ -228,7 +227,6 @@ struct fsl_lbc_regs {
+ };
+ 
+ extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+-extern spinlock_t fsl_lbc_lock;
+ 
+ /*
+  * FSL UPM routines
+@@ -268,44 +266,7 @@ static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
+ 		cpu_relax();
+ }
+ 
+-/**
+- * fsl_upm_run_pattern - actually run an UPM pattern
+- * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
+- * @io_base:	remapped pointer to where memory access should happen
+- * @mar:	MAR register content during pattern execution
+- *
+- * This function triggers dummy write to the memory specified by the io_base,
+- * thus UPM pattern actually executed. Note that mar usage depends on the
+- * pre-programmed AMX bits in the UPM RAM.
+- */
+-static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
+-				      void __iomem *io_base, u32 mar)
+-{
+-	int ret = 0;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&fsl_lbc_lock, flags);
+-
+-	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
+-
+-	switch (upm->width) {
+-	case 8:
+-		out_8(io_base, 0x0);
+-		break;
+-	case 16:
+-		out_be16(io_base, 0x0);
+-		break;
+-	case 32:
+-		out_be32(io_base, 0x0);
+-		break;
+-	default:
+-		ret = -EINVAL;
+-		break;
+-	}
+-
+-	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
+-
+-	return ret;
+-}
++extern int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base,
++			       u32 mar);
+ 
+ #endif /* __ASM_FSL_LBC_H */
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+index 422c8fa..d81297c 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/of.h>
++#include <linux/spinlock.h>
+ #include <asm/fsl_lbc.h>
+ 
+ spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
+@@ -127,3 +128,43 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
+ 	return 0;
+ }
+ EXPORT_SYMBOL(fsl_upm_find);
++
++/**
++ * fsl_upm_run_pattern - actually run an UPM pattern
++ * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
++ * @io_base:	remapped pointer to where memory access should happen
++ * @mar:	MAR register content during pattern execution
++ *
++ * This function triggers dummy write to the memory specified by the io_base,
++ * thus UPM pattern actually executed. Note that mar usage depends on the
++ * pre-programmed AMX bits in the UPM RAM.
++ */
++int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
++{
++	int ret = 0;
++	unsigned long flags;
++
++	spin_lock_irqsave(&fsl_lbc_lock, flags);
++
++	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
++
++	switch (upm->width) {
++	case 8:
++		out_8(io_base, 0x0);
++		break;
++	case 16:
++		out_be16(io_base, 0x0);
++		break;
++	case 32:
++		out_be32(io_base, 0x0);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
++
++	return ret;
++}
++EXPORT_SYMBOL(fsl_upm_run_pattern);
 
-One question I have is:  Do you have any plans for integrating with
-the adjtimex() interface and its pps values?
 
-My only other comment is on this last patch #10, and as you said in
-your original post, its deferrable. I'd agree that dropping this patch
-for now would be best, since adding a getnstimeofday() call, which may
-take a few microseconds on common hardware, to every interrupt would
-be a bad idea.
+(This also adds missing linux/spinlock.h include to the fsl_lbc.c)
 
-It seems having a special flag on the IRQ for timestamping would be
-better, and then we could only enable it for PPS connected interrupts.
-It may add a touch more jitter but I think it would allow for better
-performance while still reducing jitter.
+Anyhow, whatever approach you chose, feel free to add my:
 
-So yea. Unless there are objections from the serial and parallel port
-maintainers, or someone who has more experience with PPS devices and
-might better critique the API proposed, I see no reason for holding
-this patch set back from my (limited) perspective.
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-thanks
--john
+Then please resend the patch with added
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+
+^^ Kumar would apply the patch to his powerpc.git tree, powerpc-next branch.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
