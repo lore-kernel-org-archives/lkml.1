@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYJHGZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbYJHGaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbYJHGZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 02:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJHGZr
+	id S1754230AbYJHGaR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 02:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYJHGaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 02:25:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57809 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbYJHGZq (ORCPT
+	Wed, 8 Oct 2008 02:30:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35636 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751259AbYJHGaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 02:25:46 -0400
-Subject: Re: [PATCH 18/32] net: sk_allocation() - concentrate socket
-	related allocations
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no, dlezcano@fr.ibm.com,
-       penberg@cs.helsinki.fi, neilb@suse.de,
-       Suresh Jayaraman <sjayaraman@suse.de>
-In-Reply-To: <20081007.142624.145010147.davem@davemloft.net>
-References: <20081002130504.927878499@chello.nl>
-	 <20081002131608.821584767@chello.nl>
-	 <20081007.142624.145010147.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 08:25:41 +0200
-Message-Id: <1223447141.1378.7.camel@lappy.programming.kicks-ass.net>
+	Wed, 8 Oct 2008 02:30:01 -0400
+Date: Tue, 7 Oct 2008 23:28:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit
+ arch
+Message-Id: <20081007232838.0321e6d4.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20081008132532.056cc400@172.19.0.2>
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2>
+	<20081007105056.16d9e785.akpm@linux-foundation.org>
+	<1223405963.26330.83.camel@lappy.programming.kicks-ass.net>
+	<200810081335.44576.nickpiggin@yahoo.com.au>
+	<6.0.0.20.2.20081008132532.056cc400@172.19.0.2>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-07 at 14:26 -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Thu, 02 Oct 2008 15:05:22 +0200
-> 
-> > @@ -952,6 +955,7 @@ static void tcp_v6_send_reset(struct soc
-> >  #ifdef CONFIG_TCP_MD5SIG
-> >  	struct tcp_md5sig_key *key;
-> >  #endif
-> > +	gfp_t gfp_mask = GFP_ATOMIC;
-> >  
-> >  	if (th->rst)
-> >  		return;
-> > @@ -969,13 +973,16 @@ static void tcp_v6_send_reset(struct soc
-> >  		tot_len += TCPOLEN_MD5SIG_ALIGNED;
-> >  #endif
-> >  
-> > +	if (sk)
-> > +		gfp_mask = sk_allocation(skb->sk, gfp_mask);
-> > +
-> >  	/*
-> >  	 * We need to grab some memory, and put together an RST,
-> >  	 * and then put it into the queue to be sent.
-> >  	 */
-> >  
-> >  	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
-> > -			 GFP_ATOMIC);
-> > +			 sk_allocation(sk, GFP_ATOMIC));
-> >  	if (buff == NULL)
-> >  		return;
-> >  
-> 
-> I don't think this is doing what you intend it to do.
-> 
-> First, you're conditionally calling sk_allocation() if
-> 'sk' is non-NULL.  But then later you unconditionally
-> use sk_allocation() in the alloc_skb() call.
-> 
-> Furthermore, in the conditionalized case you're using
-> "skb->sk" instead of plain "sk" which is what you actually
-> checked against NULL.
-> 
-> I have no fundamental problem with this change, so please
-> audit this patch for similar problems, fix them all up,
-> and resubmit.
-> 
-> I'm also tossing the rest of your networking changes since
-> they'll have some dependency on this one, please resend those
-> at the same time as the fixed up version of this one.
+On Wed, 08 Oct 2008 13:48:10 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-You're right - Suresh Jayaraman hit an oops here, just fixing up that
-obviously mis-merged conditional didn't fix it for him. So I'll work on
-fixing this for him.
+> 
+> At 11:35 08/10/08, Nick Piggin wrote:
+> >On Wednesday 08 October 2008 05:59, Peter Zijlstra wrote:
+> >>
+> >> The whole point is that such usage is outside the specification and thus
+> >> we don't strictly need to fix this.
+> >>
+> >> So the question Nick is asking is, do we want to slow down the kernel
+> >> for a few broken user-space applications. Esp. since the race doesn't
+> >> affect anybody else except the broken users of the file descriptor.
+> >
+> >Right you are. That's the fundamental question. The actual details of
+> >the fix and how likely the race is don't really matter until we
+> >answer the first question (except to say that the "fix" is never going
+> >to be free).
+> 
+> Simultaneous access by two or more writer can corrupt file content,
+> so this case needs some locks(flock or fcntl) to preserve synchronization
+> of file content. This is responsibility of user-space application.
+> But file->f_pos race issue can occur even if multiple threads just read 
+> simultaneously.
 
-Then I'll make a new patch-series against linux-next and include the
-driver parts you left out of 17.
+But how could that userspace code possibly be reliable even if f_pos
+updates were atomic?  The two threads/processes will still read
+either the same data, or one will get "A" and the other will get "B" or
+one will get "B" and the other will get "A".
 
-Thanks!
+And when that application gets fixed, so too does this f_pos problem?
 
+ I think this is not responsibility of user-space application. 
+> To avoid this currently, an application needs some locks to protect file offset
+> even if it just read a file. So I think f_pos race should be fixed.
