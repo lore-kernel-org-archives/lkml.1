@@ -1,137 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYJHNah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYJHNdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085AbYJHNah (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYJHNa0
+	id S1755357AbYJHNdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYJHNdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:30:26 -0400
-Received: from david.siemens.de ([192.35.17.14]:15630 "EHLO david.siemens.de"
+	Wed, 8 Oct 2008 09:33:36 -0400
+Received: from igw3.br.ibm.com ([32.104.18.26]:39154 "EHLO igw3.br.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753314AbYJHNaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:30:24 -0400
-Message-ID: <48ECB727.6050905@siemens.com>
-Date: Wed, 08 Oct 2008 15:35:35 +0200
-From: "Hillier, Gernot" <gernot.hillier@siemens.com>
-Organization: Siemens AG, CT SE 2
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.9) Gecko/20070801 SUSE/2.0.0.9-0.1 Thunderbird/2.0.0.9 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, bruce.w.allan@intel.com
-Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro
- X7DB3
-References: <48EB7161.60004@siemens.com> <m33aj78jnh.fsf@maximus.localdomain>
-In-Reply-To: <m33aj78jnh.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753381AbYJHNdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 09:33:35 -0400
+Subject: Re: [PATCH 1/4] integrity: TPM internel kernel interface
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com
+In-Reply-To: <alpine.LRH.1.10.0810081556390.13169@tundra.namei.org>
+References: <cover.1223401603.git.zohar@linux.vnet.ibm.com>
+	 <98178f6ceb8fa8d23153c6e7f94757f406771859.1223401604.git.zohar@linux.vnet.ibm.com>
+	 <alpine.LRH.1.10.0810081556390.13169@tundra.namei.org>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 10:33:23 -0300
+Message-Id: <1223472803.5742.21.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
-
-Krzysztof Halasa wrote:
-> Hi,
+On Wed, 2008-10-08 at 16:00 +1100, James Morris wrote:
+> On Tue, 7 Oct 2008, Mimi Zohar wrote:
 > 
-> "Hillier, Gernot" <gernot.hillier@siemens.com> writes:
+> > Based on discussions on the lkml mailing list, the TPM should be
+> > built in, but when it is not builtin, the internal TPM kernel
+> > interface did not protect itself from the removal of the TPM
+> > driver, while being used. 
 > 
->> On at least two machines using the Supermicro X7DB3 board with Intel
->> 82563EB (a.k.a. PCI device 8086:1096), we see sporadic problems on modprobe
->> (about 1 time in some hundred tries):
->>
->> e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k2
->> e1000e: Copyright (c) 1999-2008 Intel Corporation.
->> e1000e 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
->> e1000e 0000:06:00.0: setting latency timer to 64
->> 0000:06:00.0: 0000:06:00.0: Hardware Error
+> If the TPM driver should be built in, why is there an option to make it 
+> modular?
 > 
-> What does "lspci -vv" say about it when the above happens?
-> 
-> I spurious chip reset (hardware) could probably cause that.
+> - James
 
-Here's the output of "lspci -vv" in the error case (for the eth devices):
+Hi James,
 
-------- SNIP -----------
-06:00.0 Class 0200: Device 8086:1096 (rev 01)
-        Subsystem: Device 15d9:1096
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 32 bytes
-        Interrupt: pin A routed to IRQ 18
-        Region 0: Memory at d0020000 (32-bit, non-prefetchable) [size=128K]
-        Region 1: Memory at d0000000 (32-bit, non-prefetchable) [size=128K]
-        Region 2: I/O ports at 4000 [size=32]
-        [virtual] Expansion ROM at d0080000 [disabled] [size=64K]
-        Capabilities: [c8] Power Management version 2
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
-                Address: 00000000feeff00c  Data: 4158
-        Capabilities: [e0] Express (v1) Endpoint, MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
-                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 4096 bytes
-                DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM unknown, Latency L0 <128ns, L1 <64us
-                        ClockPM- Suprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-        Capabilities: [100] Advanced Error Reporting <?>
-        Capabilities: [140] Device Serial Number 06-c7-66-ff-ff-48-30-00
-        Kernel driver in use: e1000e
-        Kernel modules: e1000e
+It's recommended that the TPM driver should be built-in when using IMA to make sure 
+it's measuring the system as closely as possible to the start of the boot process,
+but it's not necessarily true when using it to store keys, for example.
 
-06:00.1 Class 0200: Device 8086:1096 (rev 01)
-        Subsystem: Device 15d9:1096
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 32 bytes
-        Interrupt: pin B routed to IRQ 19
-        Region 0: Memory at d0060000 (32-bit, non-prefetchable) [size=128K]
-        Region 1: Memory at d0040000 (32-bit, non-prefetchable) [size=128K]
-        Region 2: I/O ports at 4020 [size=32]
-        [virtual] Expansion ROM at d0090000 [disabled] [size=64K]
-        Capabilities: [c8] Power Management version 2
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
-                Address: 0000000000000000  Data: 0000
-        Capabilities: [e0] Express (v1) Endpoint, MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
-                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 4096 bytes
-                DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM unknown, Latency L0 <128ns, L1 <64us
-                        ClockPM- Suprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-        Capabilities: [100] Advanced Error Reporting <?>
-        Capabilities: [140] Device Serial Number 06-c7-66-ff-ff-48-30-00
-        Kernel driver in use: e1000e
-        Kernel modules: e1000e
-------- SNIP -----------
+Rajiv
 
-Retried this several times in the error and normal case. The only things
-which change are three values for device 06:00.0:
 
-- Control "DisINTx-" changes to "DisINTx+" if the card is correctly
-initialized
-- Interrupt changes from IRQ 18 to IRQ 4345 if card is correctly initialized
-- Message Signalled Interrupts change from "Enable-" to "Enable+"
-
-In addition, the "Data" field from "Message Signalled Interrupts" seems to 
-change w/o any clear pattern.
-
-For 06:00.1, everything seems to be the same in the error as well as in the
-normal case.
-
-Does this tell you anything valuable?
-
--- 
-Gernot Hillier, Siemens AG, CT SE 2
