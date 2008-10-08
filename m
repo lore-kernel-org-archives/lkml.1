@@ -1,121 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYJHWV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYJHWYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbYJHWV3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 18:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbYJHWVQ
+	id S1757006AbYJHWYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 18:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYJHWY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 18:21:16 -0400
-Received: from outbound-mail-22.bluehost.com ([69.89.21.17]:57111 "HELO
-	outbound-mail-22.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756826AbYJHWVO (ORCPT
+	Wed, 8 Oct 2008 18:24:29 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:29654 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755339AbYJHWY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 18:21:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=PAeX3WKKc6nCAqVnqkhkqxPRXIDvisq7Aa3utomRWjkOjViud7vkc01MrhG9i/bAnYVt9AF2543se9oHw4Sas48M5DHWfU2Ta45lbgqckvBmCBtQM19kdkZT8ASxEOwB;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: What's in pci-2.6.git
-Date: Wed, 8 Oct 2008 15:21:10 -0700
-User-Agent: KMail/1.9.10
+	Wed, 8 Oct 2008 18:24:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=tjD9Nd45rFQ7k0GV8+xKTQtuH1wRt7LAx3r5fh9Is7kRZasSmKXy830ltphxovVE9j
+         sc/wRkcTD5TGIkrQCfPqhsJRGW2gPIrmUdU2NWPCc8NYjSeAPfAsCu7igfI6gxYclhy3
+         suCjTVL3KyIh2W4YY5KoODR/Yc9ck/3DrNk7I=
+Message-ID: <c32efac40810081524q15b0a747oe49de0cf0a2aa2e2@mail.gmail.com>
+Date: Wed, 8 Oct 2008 15:24:27 -0700
+From: "Dave Hylands" <dhylands@gmail.com>
+To: "Remy Bohmer" <linux@bohmer.net>
+Subject: Re: Toggling GPIO at 38Khz
+Cc: "Jon Smirl" <jonsmirl@gmail.com>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <3efb10970810081157s5e0f8034n63856d2da42b3ad3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810081521.10262.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+References: <9e4733910810072043m6c69f3bdv104bd32928fe64ae@mail.gmail.com>
+	 <3efb10970810081157s5e0f8034n63856d2da42b3ad3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quite a few patches have queued up in my linux-next branch for 2.6.28, and a 
-couple of more are still pending (they've seen lots of review so should be 
-just about ready), specifically the I/O virtualization code and more PCI slot 
-driver fixes from Alex and Kenji-san.
+>> So how do I reliably generate 38Khz without destroying latency in the
+>> system? I also don't want to measure the speed of the code I'm
+>> executing - same code has to run on 90Mhz ARM and 3Ghz Core2. If a do
+>> a loop with nanosleep() I need to know how fast my code is to subtract
+>> it's execution time form the sleep time. The existing LIRC code works
+>> this way and measures it's timing loop.
+>> hrtimers look promising, but hrtimers doesn't have a periodic API. Is
 
-Full shortlog below, there's stuff all over the map...
+The 38 kHz decoders will actually work across a range of frequencies
+usually about +/- 4 kHz.
 
-Jesse
+If you have a spare UART, you could configure it at 76800 baud and
+just send out an appropriate bit pattern (taking into consideration
+start bit, stop bit, parity, etc.
 
-Alex Chiang (1):
-      PCI: connect struct pci_dev to struct pci_slot
+115200 baud might also work (3 bit times per 1/38400 of a second). It
+won't be a perfect square wave, butI think it would still work.
 
-Andi Kleen (1):
-      PCI: Document that most pci options are shared between i386 and x86-64
+You could also do something similar if you have a SPI interface. Just
+set the clock to the right frequency and use the bits sent out to
+generate your pulses.
 
-Arjan van de Ven (1):
-      PCI: introduce an pci_ioremap(pdev, barnr) function
-
-Bjorn Helgaas (3):
-      x86/PCI: follow lspci device/vendor style
-      PCI: follow lspci device/vendor style
-      PCI: tidy PME support messages
-
-Chuck Ebbert (1):
-      PCI: document the pcie_aspm kernel parameter
-
-Greg Kroah-Hartman (1):
-      PCI: fix compiler warnings in pci_get_subsys()
-
-Jean Delvare (1):
-      PCI: Check dynids driver_data value for validity
-
-Jeff Garzik (1):
-      PCI: documentation fix for pci_dma_mapping_error
-
-Jesse Barnes (5):
-      PCI: fix -Wakpm warnings in pci_pm_init debug output
-      PCI: remove #ifdef DEBUG around dev_dbg call
-      PCI: pcie whitespace cleanup
-      PCI: fix PCI sysfs rom file size for shadowed ROMs
-      PCI: use pci_find_ext_capability everywhere
-
-Jike Song (1):
-      PCI: utilize calculated results when detecting MSI features
-
-Kenji Kaneshige (2):
-      PCI: pciehp: fix irq initialization
-      PCI: fix get_##name merge error
-
-Mike Travis (1):
-      PCI: make CPU list affinity visible
-
-Milton Miller (1):
-      PCI: remove dynids.use_driver_data
-
-Rafael J. Wysocki (1):
-      PCI PM: Introduce function pci_wake_from_d3
-
-Roland Dreier (1):
-      PCI: fix MSI-HOWTO.txt info about MSI-X MMIO space
-
-Seth Heasley (1):
-      x86/PCI: irq and pci_ids patch for Intel Ibex Peak DeviceIDs
-
-Stephen Hemminger (1):
-      PCI: fix sparse warning in pci_remove_behind_bridge
-
-Stephen Rothwell (1):
-      PCI: hotplug/rpaphp: remove unused error path code
-
-Taku Izumi (2):
-      PCI: pciehp: change name tag of "hpdriver_portdrv" variable
-      PCI: pciehp: replace printk with dev_printk
-
-Thomas Petazzoni (1):
-      PCI: allow quirks to be compiled out
-
-Yinghai Lu (2):
-      PCI: change MSI-x vector to 32bit
-      PCI: use %pF instead of print_fn_descriptor_symbol() in quirks.c
-
-Zhang, Yanmin (1):
-      PCI: merge define of PCI_CFG_SPACE_SIZE
-
-Zhao, Yu (1):
-      PCI: fix hotplug get_##name return value problem
-
-akpm@linux-foundation.org (2):
-      PCI: ibmphp: list_for_each to list_for_each_entry
-      PCI: ibmphp: list_for_each to list_for_each_entry-checkpatch cleanups
+-- 
+Dave Hylands
+Shuswap, BC, Canada
+http://www.DaveHylands.com/
