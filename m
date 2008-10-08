@@ -1,171 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbYJHXSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYJHXWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbYJHXSN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 19:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYJHXR6
+	id S1756883AbYJHXWs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 19:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbYJHXWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 19:17:58 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:35981 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752887AbYJHXR6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 19:17:58 -0400
-Date: Thu, 9 Oct 2008 03:17:56 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: fsl_upm compile failure.
-Message-ID: <20081008231756.GA2150@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081008222815.GA20542@redhat.com> <20081008230219.GA8075@oksana.dev.rtsoft.ru>
+	Wed, 8 Oct 2008 19:22:39 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:55731 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754799AbYJHXWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 19:22:38 -0400
+Date: Wed, 8 Oct 2008 19:22:37 -0400
+To: linux-nfs@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: nfsd 2.6.28 merge plans
+Message-ID: <20081008232237.GH14527@fieldses.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081008230219.GA8075@oksana.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09, 2008 at 03:02:19AM +0400, Anton Vorontsov wrote:
-> Though better option would be to uninline the fsl_upm_run_pattern()..
-> it is quite big anyway... Something like this:
+Linus's release announcement for -rc9 suggested 2.6.27 could be released
+(and the 2.6.28 merge window opened) any day now.
 
-Even better. We don't need exported fsl_lbc_regs too. And also we can
-mark the lock and regs as static. Yeah, w/o inline things look much
-better.
+What I'm currently planning to merge is the contents of
 
+	git://linux-nfs.org/~bfields/linux.git for-2.6.28
 
-diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
-index 303f548..375f46c 100644
---- a/arch/powerpc/include/asm/fsl_lbc.h
-+++ b/arch/powerpc/include/asm/fsl_lbc.h
-@@ -24,7 +24,6 @@
- #define __ASM_FSL_LBC_H
- 
- #include <linux/types.h>
--#include <linux/spinlock.h>
- #include <asm/io.h>
- 
- struct fsl_lbc_bank {
-@@ -227,9 +226,6 @@ struct fsl_lbc_regs {
- 	u8 res8[0xF00];
- };
- 
--extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
--extern spinlock_t fsl_lbc_lock;
--
- /*
-  * FSL UPM routines
-  */
-@@ -268,44 +264,7 @@ static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
- 		cpu_relax();
- }
- 
--/**
-- * fsl_upm_run_pattern - actually run an UPM pattern
-- * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
-- * @io_base:	remapped pointer to where memory access should happen
-- * @mar:	MAR register content during pattern execution
-- *
-- * This function triggers dummy write to the memory specified by the io_base,
-- * thus UPM pattern actually executed. Note that mar usage depends on the
-- * pre-programmed AMX bits in the UPM RAM.
-- */
--static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
--				      void __iomem *io_base, u32 mar)
--{
--	int ret = 0;
--	unsigned long flags;
--
--	spin_lock_irqsave(&fsl_lbc_lock, flags);
--
--	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
--
--	switch (upm->width) {
--	case 8:
--		out_8(io_base, 0x0);
--		break;
--	case 16:
--		out_be16(io_base, 0x0);
--		break;
--	case 32:
--		out_be32(io_base, 0x0);
--		break;
--	default:
--		ret = -EINVAL;
--		break;
--	}
--
--	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
--
--	return ret;
--}
-+extern int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base,
-+			       u32 mar);
- 
- #endif /* __ASM_FSL_LBC_H */
-diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index 422c8fa..cb4f570 100644
---- a/arch/powerpc/sysdev/fsl_lbc.c
-+++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -13,12 +13,12 @@
- 
- #include <linux/kernel.h>
- #include <linux/of.h>
-+#include <linux/spinlock.h>
- #include <asm/fsl_lbc.h>
- 
--spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
-+static spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
- 
--struct fsl_lbc_regs __iomem *fsl_lbc_regs;
--EXPORT_SYMBOL(fsl_lbc_regs);
-+static struct fsl_lbc_regs __iomem *fsl_lbc_regs;
- 
- static char __initdata *compat_lbc[] = {
- 	"fsl,pq2-localbus",
-@@ -127,3 +127,43 @@ int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
- 	return 0;
- }
- EXPORT_SYMBOL(fsl_upm_find);
-+
-+/**
-+ * fsl_upm_run_pattern - actually run an UPM pattern
-+ * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
-+ * @io_base:	remapped pointer to where memory access should happen
-+ * @mar:	MAR register content during pattern execution
-+ *
-+ * This function triggers dummy write to the memory specified by the io_base,
-+ * thus UPM pattern actually executed. Note that mar usage depends on the
-+ * pre-programmed AMX bits in the UPM RAM.
-+ */
-+int fsl_upm_run_pattern(struct fsl_upm *upm, void __iomem *io_base, u32 mar)
-+{
-+	int ret = 0;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&fsl_lbc_lock, flags);
-+
-+	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
-+
-+	switch (upm->width) {
-+	case 8:
-+		out_8(io_base, 0x0);
-+		break;
-+	case 16:
-+		out_be16(io_base, 0x0);
-+		break;
-+	case 32:
-+		out_be32(io_base, 0x0);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(fsl_upm_run_pattern);
+summarized below.
+
+Chuck's contributed a ton of small patches preparing for ipv6 support
+(which we expect to complete in 2.6.29), Tom Tucker has added support
+for fast memory registration to the server rdma code, and Benny's
+NFSv4.1 work continues to produce miscellaneous NFSv4.1 bugfixes and
+cleanups.
+
+There's also one pure locking patch, which makes vfs support for posix
+locking configurable.
+
+And I've got some grace period patches (which I hope will also pave the
+way for nfsd lock migration support in 2.6.29), and some minor tweaks to
+our rpcsec_gss code which (together with recent nfs-utils patches)
+finally makes rpcsec_gss for v2 and v3 work as well as it does for v4.
+
+Thanks to everyone who's contributed!
+
+--b.
+
+Benny Halevy (9):
+      nfsd: properly xdr-encode stateid4.seqid as uint32_t for cb_recall
+      nfsd: properly xdr-encode deleg stateid returned from open
+      nfsd: fix nfsd4_encode_open buffer space reservation
+      nfsd: nfs4xdr encode_stateid helper function
+      nfsd: don't declare p in ENCODE_SEQID_OP_HEAD
+      nfsd: properly xdr-decode NFS4_OPEN_CLAIM_DELEGATE_CUR stateid
+      nfsd: nfs4xdr decode_stateid helper function
+      nfsd: do_probe_callback should not clear rpc stats
+      nfsd: use nfs client rpc callback program
+
+Chuck Lever (32):
+      SUNRPC: Add address family field to svc_serv data structure
+      SUNRPC: Use proper INADDR_ANY when setting up RPC services on IPv6
+      SUNRPC: Set V6ONLY socket option for RPC listener sockets
+      SUNRPC: Simplify rpcb_register() API
+      SUNRPC: Split portmap unregister API into separate function
+      SUNRPC: Support IPv6 when registering kernel RPC services
+      NLM: Clean up before introducing new debugging messages
+      lockd: address-family independent printable addresses
+      lockd: Specify address family for source address
+      lockd: Add address family-agnostic helper for zeroing the port number
+      SUNRPC: Make svc_addr's argument a constant
+      lockd: Use sockaddr_storage + length for h_addr field
+      lockd: Use sockaddr_storage for h_saddr field
+      NSM: Use sockaddr_storage for sm_addr field
+      lockd: Teach nlm_cmp_addr() to support AF_INET6 addresses
+      lockd: Support AF_INET6 when hashing addresses in nlm_lookup_host
+      lockd: Combine __nsm_find() and nsm_find().
+      lockd: Update nsm_find() to support non-AF_INET addresses
+      SUNRPC: Register both netids for AF_INET6 servers
+      SUNRPC: Use short-hand IPv6 ANYADDR for RPCB_SET
+      SUNRPC: Fix up svc_unregister()
+      SUNRPC: Clean up debug messages in rpcb_clnt.c
+      NLM: Convert nlm_lookup_host() to use a single argument
+      lockd: Support non-AF_INET addresses in nlm_lookup_host()
+      lockd: Adjust nlmclnt_lookup_host() signature to accomodate non-AF_INET
+      lockd: Adjust nlmsvc_lookup_host() to accomodate AF_INET6 addresses
+      lockd: change nlmclnt_grant() to take a "struct sockaddr *"
+      lockd: Add helper to sanity check incoming NOTIFY requests
+      lockd: Remove unused fields in the nlm_reboot structure
+      NLM: Always start both UDP and TCP listeners
+      NLM: Remove "proto" argument from lockd_up()
+      NLM: Remove unused argument from svc_addsock() function
+
+J. Bruce Fields (7):
+      nfsd: permit unauthenticated stat of export root
+      locks: allow lockd to process blocked locks during grace period
+      lockd: don't depend on lockd main loop to end grace
+      nfsd: common grace period control
+      lockd: move grace period checks to common code
+      lockd: reject reclaims outside the grace period
+      Merge branch 'from-tomtucker' into for-2.6.28
+
+Jeff Layton (1):
+      knfsd: allocate readahead cache in individual chunks
+
+Thomas Petazzoni (1):
+      Configure out file locking features
+
+Tom Tucker (10):
+      svcrdma: Add Fast Reg MR Data Types
+      svcrdma: Add FRMR get/put services
+      svcrdma: Query device for Fast Reg support during connection setup
+      svcrdma: Add a service to register a Fast Reg MR with the device
+      svcrdma: Modify post recv path to use local dma key
+      svcrdma: Add support to svc_rdma_send to handle chained WR
+      svcrdma: Modify the RPC recv path to use FRMR when available
+      svcrdma: Modify the RPC reply path to use FRMR when available
+      svcrdma: Update svc_rdma_send_error to use DMA LKEY
+      svcrdma: Fix IRD/ORD polarity
+
