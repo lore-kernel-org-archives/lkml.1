@@ -1,83 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYJHUXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYJHUZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYJHUXP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 16:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbYJHUW7
+	id S1756044AbYJHUZP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 16:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYJHUZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 16:22:59 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:50668 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754646AbYJHUW6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 16:22:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=xtAo2OnAfqal+TDSEb4ki3sX6sZ2lf/E0O5d02U5eLEXA3yU+gMAjvAFrAvhJDuoxM
-         i7PsPm2A4E1gx36R141dyiwhV61uztBMcL804OG8yjBxghfVoCU2kH7l9eubANr0xjs8
-         5/4aYesgFqkTL6UXktATYXGn9eDkYs4L5ldOc=
-Subject: Re: FRV/ARM unaligned access question
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Russell King <rmk@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <19824.1223464566@redhat.com>
-References: <1223450773.8195.80.camel@brick>  <19824.1223464566@redhat.com>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 13:22:50 -0700
-Message-Id: <1223497370.8195.97.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
+	Wed, 8 Oct 2008 16:25:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60172 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754482AbYJHUZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 16:25:02 -0400
+Message-ID: <48ED1728.5060708@redhat.com>
+Date: Wed, 08 Oct 2008 16:25:12 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Jeff Hansen <x@jeffhansen.com>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: x86_32 tsc/pit and hrtimers
+References: <Pine.LNX.4.64.0810071640110.25661@ren> <48ECFEDC.90305@redhat.com> <Pine.LNX.4.64.0810081342570.11108@ren>
+In-Reply-To: <Pine.LNX.4.64.0810081342570.11108@ren>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-08 at 12:16 +0100, David Howells wrote:
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
+Jeff Hansen wrote:
+> This worked perfectly!  I second adding a kernel option that forces 
+> trusting the TSC.  I can make a patch if you'd like.  Should the option 
+> be something like "trusttsc" or "tsc=noverify"?
+
+How about a "highres=noverify" flag, to disable all CLOCK_SOURCE_MUST_VERIFY 
+checking? People might want to use this with other timers too.
+
+-- Chris
+
+> On Wed, 8 Oct 2008, Chris Snook wrote:
 > 
-> Switching to the packed struct algorithms also reduces the kernel size very
-> slightly.  Before:
-> 
-> 	warthog>size vmlinux
-> 	   text    data     bss     dec     hex filename
-> 	2207836   66588  150189 2424613  24ff25 vmlinux
-> 
-> After:
-> 
-> 	warthog>size vmlinux
-> 	   text    data     bss     dec     hex filename
-> 	2207804   66588  150189 2424581  24ff05 vmlinux
-
-Probably smaller as now the le values aren't being byteswapped anymore,
-only the native endianess can use the struct version.  Care to look at
-the kernel size with the following instead?
-
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [PATCH] frv: switch unaligned access to the packed-struct implementation
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/asm-frv/unaligned.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-frv/unaligned.h b/include/asm-frv/unaligned.h
-index 839a2fb..6c61c05 100644
---- a/include/asm-frv/unaligned.h
-+++ b/include/asm-frv/unaligned.h
-@@ -13,7 +13,7 @@
- #define _ASM_UNALIGNED_H
- 
- #include <linux/unaligned/le_byteshift.h>
--#include <linux/unaligned/be_byteshift.h>
-+#include <linux/unaligned/be_struct.h>
- #include <linux/unaligned/generic.h>
- 
- #define get_unaligned	__get_unaligned_be
--- 
-1.6.0.2.471.g47a76
-
-
+>> Jeff Hansen wrote:
+>>>  Linus, Ingo, All,
+>>>
+>>>  I've been struggling with hrtimer support in 2.6.26.5 on an older
+>>>  x86_32/i386 system, and I'm wondering if there are any easy fixes 
+>>> that you
+>>>  (or anyone else) would suggest.
+>>>
+>>>  Basically, this system does not print out the message:
+>>>
+>>>  "Switched to high resolution mode on CPU 0"
+>>>
+>>>  indicating that one-shot, hrtimers, etc. won't work, since high 
+>>> resolution
+>>>  mode has not been enabled.  I've verified that hrtimers started with
+>>>  hrtimer_start do not have the expected resolution further than 1/HZ.
+>>>
+>>>  This system does not have LAPIC, ACPI, or HPET, so really the only
+>>>  clocksources I can use are TSC and PIT.  This should be fine (in 
+>>> theory,
+>>>  unless it wasn't designed like that), but apparently the clocksource 
+>>> flags
+>>>  are not initialized in such a way that one of them ever gets marked as
+>>>  CLOCK_SOURCE_VALID_FOR_HRES.
+>>>
+>>>  The flow of the flags on each of these clocksources is as follows:
+>>>
+>>>  1) The flags on the TSC clocksource are CLOCK_SOURCE_IS_CONTINUOUS |
+>>>      CLOCK_SOURCE_MUST_VERIFY, which causes PIT to be used as the 
+>>> watchdog
+>>>      clocksource. (see kernel/time/clocksource.c:~171)
+>>>  2) Around line 122 in kernel/time/clocksource.c, where most 
+>>> clocksources'
+>>>      flags usually get ORed with CLOCK_SOURCE_VALID_FOR_HRES, the 
+>>> PIT's do
+>>>      not because it is not CLOCK_SOURCE_IS_CONTINUOUS, and the TSC's 
+>>> do not
+>>>      also because the PIT (as the watchdog) is not
+>>>      CLOCK_SOURCE_IS_CONTINUOUS.
+>>>
+>>>  I get the same results on a new laptop booting into 32-bit Linux 
+>>> with hpet
+>>>  and acpi disabled.
+>>>
+>>>  Can you please tell me if this is supposed to work, and I just have a
+>>>  poorly configured kernel; or if TSC/PIT drivers were not designed to 
+>>> work
+>>>  this way in the first place.  If it wasn't designed to do this, do you
+>>>  have any tips on implementing this, since I'll be needing to do that?
+>>>
+>>>  -Jeff Hansen
+>>
+>> This is not supposed to work, but it might be worthwhile to add a boot 
+>> option to force the kernel to trust the TSC, as hardware that lacks 
+>> any high-res timers also tends to be primitive enough that the TSC can 
+>> be trusted, if it exists.  If you patch out the 
+>> CLOCK_SOURCE_MUST_VERIFY flag on the TSC, do you get 
+>> correctly-functioning high-res timers on this system?
+>>
+>> -- Chris
+>>
+>>
+>>
 
