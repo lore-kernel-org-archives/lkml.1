@@ -1,816 +1,364 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbYJHHUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYJHHW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbYJHHUN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 03:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYJHHT7
+	id S1754650AbYJHHW7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 03:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYJHHWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 03:19:59 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:40544 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbYJHHT4 convert rfc822-to-8bit (ORCPT
+	Wed, 8 Oct 2008 03:22:45 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:45888 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752589AbYJHHWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 03:19:56 -0400
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: "johnpol@2ka.mipt.ru" <johnpol@2ka.mipt.ru>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Chikkature Rajashekar, Madhusudhan" <madhu.cr@ti.com>
-Date: Wed, 8 Oct 2008 12:46:25 +0530
-Subject: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-Thread-Topic: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-Thread-Index: AckpFcY2NFbuNT7vTHmlzm2iVc78EA==
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+	Wed, 8 Oct 2008 03:22:43 -0400
+X-YMail-OSG: ikNDu5oVM1mX3suBMJB0LdZfegEzIiGxIDFZyWbl8Sx0WgSY9EyGD1fkwTlISdSO.eBMP31FAaZqfyWI0DtG1euM1V25J1Up6y2JCIiD7oST7IoyMBCxnLf9E9kw2zEJ4aI9XYhoU1ihNvlQ.KHuuT27HgCXh1Mme7u11XXBdaFi7nJG3qDqg91c_GHbnc2k.dAZgRp5LPlVJle0ThLmlca7W6Gr.lk-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [ANNOUNCE]: ConfigFS enabled Generic Target Mode and
+	iSCSI	Target Stack on v2.6.27-rc7
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: linux-iscsi-target-dev@googlegroups.com,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       iet-dev <iscsitarget-devel@lists.sourceforge.net>,
+       Greg KH <greg@kroah.com>, Jerome Martin <tramjoe.merin@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       Joel Becker <joel.becker@oracle.com>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <1223412658.15764.306.camel@haakon2.linux-iscsi.org>
+References: <1222716101.4296.41.camel@haakon2.linux-iscsi.org>
+	 <48E3B529.4060406@vlnb.net>
+	 <1222907050.15764.56.camel@haakon2.linux-iscsi.org>
+	 <48E4FE3F.2080707@vlnb.net>
+	 <1222982972.15764.118.camel@haakon2.linux-iscsi.org>
+	 <48EB325E.6050907@vlnb.net>
+	 <1223412658.15764.306.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 00:22:01 -0700
+Message-Id: <1223450521.15764.349.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Madhusudhan Chikkature <madhu.cr@ti.com>
+On Tue, 2008-10-07 at 17:01 -0700, Nicholas A. Bellinger wrote:
 
-The HDQ/1-Wire module of TI OMAP2430/3430 platforms implement the hardware
-protocol of the master functions of the Benchmark HDQ and the Dallas
-Semiconductor 1-Wire protocols. These protocols use a single wire for
-communication between the master (HDQ/1-Wire controller) and the slave
-(HDQ/1-Wire external compliant device).
+<SNIP>
 
-This patch provides the HDQ driver to suppport TI OMAP2430/3430 platforms.
+> > > The the Initiator Port ACLs need to go
+> > > under /sys/kernel/config/target/$FABRIC because the struct fabric_acl *
+> > > will always contain fabric dependent config items.  For example, Since
+> > > these struct fabric_acl_t do *NOT* symlink directly back to
+> > > target_core_mod under /sys/kernel/config/target/core/$HBA/$DEV, but to
+> > > fabric_lun_t (iscsi_lun_t in my case) to Symlink to
+> > > a /sys/kernel/config/target/core/$HBA/$DEV that has been registered with
+> > > the generic target configfs infrastructure.
+> > > 
+> > > Here is what I am thinking wrt /sys/kernel/config/target/iscsi and iSCSI
+> > > Initiator Node ACLs to iSCSI Portal Groups and iSCSI LUNs attached to
+> > > those Portal Groups.  There are two cases:
+> > > 
+> > > *) The production case with with user creating those ACLs under $FABRIC
+> > > (which is what I will focus on now).
+> > > 
+> > > * And "Demo Mode" case where any Initiator logging into
+> > > $FABRIC/$ENDPOINT/$PORTAL can have access to all
+> > > $FABRIC/$ENDPOINT/lun/lun_*/*my_ports*
+> > > 
+> > > The production ACL case would look like:
+> > > 
+> > > export CONFIGFS=/sys/kernel/config/
+> > > export TARGET=/sys/kernel/config/target/core/
+> > > export FABRIC=/sys/kernel/config/target/iscsi/
+> > > 
+> > > TARGET_IQN=iqn.2003-01.org.linux-iscsi.ps3-cell.ppc64:sn.f8f651bd5fec
+> > > INITIATOR_IQN=iqn.1993-08.org.debian:01.f82074ca555f
+> > > 
+> > > <Setup $STORAGE_OBJECTs under $TARGET>
+> > > 
+> > > # Create the LIO-target endpoint
+> > > mkdir -p "$FABRIC/$TARGET_IQN/tpgt_1/np/172.16.201.137:3260"
+> > > mkdir -p "$FABRIC/$TARGET_IQN/tpgt_1/lun/lun_0"
+> > > 
+> > > <Setup Port Symlinks from $TARGET to $TARGET_IQN/tpgt_1/lun/lun_0>
+> > > 
+> > > # Create the Initiator ACL under $TARGET_IQN/tpgt_1
+> > > mkdir -p $"FABRIC/$TARGET_IQN/tpgt_1/initiators/$INITIATOR_IQN"
+> > > # Allow $INITIATOR_IQN access to tpgt_1/lun/lun_0/
+> > > ln -s "$FABRIC/$TARGET_IQN/tpgt_1/lun/lun_0" \
+> > > 	"$FABRIC/$TARGET_IQN/tpgt_1/initiators/$INITIATOR_IQN/lun_0"
+> > > 
+> > >>From there, you don't have to worry about PAGE_SIZE limitiations w/o, I
+> > > can simply use use:
+> > > 
+> > > cat $FABRIC/iqn*/tpgt*/initiators/*/session
+> > > 
+> > > to see which acl'ed iSCSI Initiators are logged in on all iSCSI Target
+> > > Ports.
+> > > 
+> > > Also I should add that I am currently using /proc/scsi_target/mib
+> > > and /proc/iscsi_target_mib for READ-ONLY data with target_core_mod.ko
+> > > and iscsi_target_mod.ko respectively.  For the other "Demo Mode" case
+> > > mentioned above, I am currently using /proc/iscsi_target/mib/sess_attr
+> > > to see the active sessions for LIO-Target.
+> > 
+> > Sorry for the delay. I didn't have a chance to look at it sufficiently 
+> > close.
+> > 
+> > Basically the idea about how to manage ACLs is good, but I don't like, 
+> > that with it *ALL* the target drivers would have to implement the 
+> > necessary code. It shouldn't be so, management of all security stuff 
+> > should be purely duty of the mid-layer.
+> 
+> By the "mid-layer" I assume you mean the generic target mode engine, and
+> not the SCSI mid layer, yes..?
+> 
+> Point taken however that $TARGET_MOD could, and probably should have
+> some manner of generic ACL infrastructure available through FABRIC <->
+> TARGET API.  I will have a look at scst_register() and
+> scst_register_session() and see where it should be adapted to
+> target_core_mod.
+> 
+> Btw, saying that "management of all security stuff should be purely duty
+> of the mid-layer" is incorrect however.  The generic target engine needs
+> to make it *EASIER* for $FABRIC to allow those initiator ports access to
+> Mapped LUNs through fabric *DEPENDENT* endpoints, but trying to put all
+> fabric depepdent ACL endpoint logic in target_core_mod is IMHO a bad
+> idea.  
+> 
+> Since each SCSI fabric's method of attaching SCSI LUN to Initiator Port
+> Endpoints in $FABRIC_MOD to SCSI Device (I have been calling
+> this /sys/kernel/config/target/core/$STORAGE_OBJECT for target_core_mod)
+> to create the SCSI Target Port is different.  The reference I use for
+> iscsi_target_mod (and hence wrt target_core_mod) is proper T10/SCSI
+> terminlogy AFAIK.  Lets reference the objects in
+> http://www.haifa.il.ibm.com/satran/ips/EddyQuicksall-iSCSI-in-diagrams/portal_groups.pdf 
+> for the discussion so we can make sure we are on the same page..
+> 
+> For example, just because iSCSI uses TargetName + TargetPortalGroupTag
+> to attach target_core_mod's $STORAGE_OBJECTs at iSCSI Logical Units to,
+> does not mean that SAS, or another SCSI based target fabric know
+> anything about TargetName or TargetPortalGroupTag.  In iSCSI, this is
+> defined in Section 2.1: 
+> 
+>      The I_T nexus can be identified by the conjunction of the SCSI port
+>      names; that is, the I_T nexus identifier is the tuple (iSCSI
+>      Initiator Name + ',i,'+ ISID, iSCSI Target Name + ',t,'+ Portal 
+>      Group Tag).
+> 
+> Obviously the Initiator and Target Ports wrt iSCSI fabric are more
+> "symbolic" than devices attached to say a legacy Parallel SCSI bus
+> because of IP storage having multiple IP network portals across multiple
+> independent backbone providers and subnets (if you are using MC/S or
+> SCTP), etc, etc.  This is this reason I think it does not make sense to
+> try to locate fabric dependent ACLs
+> under /sys/kernel/config/target/core/$STORAGE_OBJECT.  
+> 
+> The type of things that need to be under $STORAGE_OBJECT, and that do
+> have a direct effect for $FABRIC mapped LUN endpoints are things like
+> device_type, max_sectors, sector_size, queue_depth and global READ-ONLY.
+> Of course, we want to be able to see *ALL* of
+> the /sys/kernel/config/target/$FABRIC dependent ACLs that have been
+> symlinked to said $STORAGE_OBJECT (this is one of the items on my list,
+> but not implemented in my current work).
+> 
+> >  And this is exactly implemented 
+> > in SCST. All what target drivers should do with it is to pass target's 
+> > name on its registration in scst_register() and then while registering a 
+> > session with remote initiator using scst_register_session() pass to it 
+> > the initiator's name. Everything else is done by the SCST core.
+> > 
+> 
+> At registration, I assume you mean admin wants to add an endpoint ACL
+> for a Initiator Port through $FABRIC/endpoint through $FABRIC_MOD..?
+> 
+> > Thus, I believe, all the ACL management should be done not in $FABRIC/, 
+> > but in $TARGET/. It would remove all the corresponding configfs 
+> > headaches from the target drivers writers.
+> > 
+> 
+> I am not sure what "corresponding configfs headaches" you have in mind,
+> but please be specific and I will address them. :-)
+> 
+> > But, in fact, I asked about completely different thing. SCSI target 
+> > mid-layer in some cases needs to export in user space amount of data, 
+> > which doesn't fit one page. /proc/scsi_tgt/sessions is one example. What 
+> > should we do for it?
+> > 
+> 
+> I did address point above in my work, and my commits
+> under /sys/kernel/config/target/iscsi implement how I get around the
+> PAGE_SIZE limitiations, which was something that I ran into (moving from
+> IOCTL and all, which requires overly complex kernel level information
+> code to get lots of output), to using ConfigFS, which has the same as
+> procfs and sysfs limits that you need to use seq_file() for > PAGE_SIZE.
+> Anyways, I did not end up using seq_file() for iscsi_target_mod current
+> configfs code, here is what I am using to address your above example wrt
+> getting all of session output:
+> 
+> >>From there, you don't have to worry about PAGE_SIZE limitiations w/o >
+> > > I can simply use use:
+> > > 
+> > > cat $FABRIC/iqn*/tpgt*/initiators/*/session
+> > > 
+> 
+> This ended up being `cat $FABRIC/iqn*/tpgt*/acls/*/info` to view all of
+> the active iSCSI Sessions on all iSCSI Target fabric endpoints..
+> 
+> The point is that regardless of kernel <-> user information output
+> method, it makes sense to break up large pieces of kernel level
+> information code and rely upon access through the VFS and cat to obtain
+> bulk output.
+> 
+> However, Joel has discussed removing the > PAGE_SIZE limitation for all
+> of the virtual filesystems, so I am sure he would be more than happy to
+> take a  patch that addressed your concern if it is really that big of a
+> deal for the SCSI control path.  With my current work with
+> target_core_mod and iscsi_target_mod wrt configfs I am not running into
+> this problem, so me producing this patch is not very high on my list..
+> 
+> > > I will be implementing this model over the next days..  I will post the
+> > > commit once its up and you can have a look..
+> > > 
+> 
+> Ok, I ended up using a slightly different model for ACLs
+> under /sys/kernel/config/target/iscsi that the one I mentioned from last
+> week to get things up and running.  I will be posting the commit and
+> info shortly.
+> 
 
-Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
-Acked-by: Felipe Balbi <felipe.balbi@nokia.com>
-Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
----
-Sending this series on behalf of Madhusudhan.
+Ok, here is the commit:
 
- drivers/w1/masters/Kconfig    |    7
- drivers/w1/masters/Makefile   |    1
- drivers/w1/masters/omap_hdq.c |  730 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 738 insertions(+)
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commit;h=d1dc1c1da8375c1b9099166d7d93f7f45477f892
 
-Index: linux-2.6/drivers/w1/masters/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/w1/masters/Kconfig   2008-09-19 13:39:41.000000000 +0530
-+++ linux-2.6/drivers/w1/masters/Kconfig        2008-09-26 14:39:26.000000000 +0530
-@@ -52,5 +52,12 @@ config W1_MASTER_GPIO
-          This support is also available as a module.  If so, the module
-          will be called w1-gpio.ko.
+In the example I am using two iSCSI Initiators (one Debian and one
+OpenSuse) that both have TPG LUN 0 and 1 mapped to their Initiator LUN 0
+and 1 under $FABRIC/$IQN/tpgt_1.
 
-+config HDQ_MASTER_OMAP
-+       tristate "OMAP HDQ driver"
-+       depends on ARCH_OMAP2430 || ARCH_OMAP34XX
-+       help
-+         Say Y here if you want support for the 1-wire or HDQ Interface
-+         on an OMAP processor.
-+
- endmenu
+Here is what it looks like from the CLI:
 
-Index: linux-2.6/drivers/w1/masters/Makefile
-===================================================================
---- linux-2.6.orig/drivers/w1/masters/Makefile  2008-09-19 13:39:41.000000000 +0530
-+++ linux-2.6/drivers/w1/masters/Makefile       2008-09-26 14:40:25.000000000 +0530
-@@ -7,3 +7,4 @@ obj-$(CONFIG_W1_MASTER_DS2490)          += ds249
- obj-$(CONFIG_W1_MASTER_DS2482)         += ds2482.o
- obj-$(CONFIG_W1_MASTER_DS1WM)          += ds1wm.o
- obj-$(CONFIG_W1_MASTER_GPIO)           += w1-gpio.o
-+obj-$(CONFIG_HDQ_MASTER_OMAP)          += omap_hdq.o
-Index: linux-2.6/drivers/w1/masters/omap_hdq.c
-===================================================================
---- /dev/null   1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/drivers/w1/masters/omap_hdq.c     2008-09-26 14:28:36.000000000 +0530
-@@ -0,0 +1,730 @@
-+/*
-+ * drivers/w1/masters/omap_hdq.c
-+ *
-+ * Copyright (C) 2007 Texas Instruments, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
-+#include <linux/err.h>
-+#include <linux/clk.h>
-+#include <linux/io.h>
-+#include <asm/irq.h>
-+#include <mach/hardware.h>
-+
-+#include "../w1.h"
-+#include "../w1_int.h"
-+
-+#define        MOD_NAME        "OMAP_HDQ:"
-+
-+#define OMAP_HDQ_REVISION                      0x00
-+#define OMAP_HDQ_TX_DATA                       0x04
-+#define OMAP_HDQ_RX_DATA                       0x08
-+#define OMAP_HDQ_CTRL_STATUS                   0x0c
-+#define OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK     (1<<6)
-+#define OMAP_HDQ_CTRL_STATUS_CLOCKENABLE       (1<<5)
-+#define OMAP_HDQ_CTRL_STATUS_GO                        (1<<4)
-+#define OMAP_HDQ_CTRL_STATUS_INITIALIZATION    (1<<2)
-+#define OMAP_HDQ_CTRL_STATUS_DIR               (1<<1)
-+#define OMAP_HDQ_CTRL_STATUS_MODE              (1<<0)
-+#define OMAP_HDQ_INT_STATUS                    0x10
-+#define OMAP_HDQ_INT_STATUS_TXCOMPLETE         (1<<2)
-+#define OMAP_HDQ_INT_STATUS_RXCOMPLETE         (1<<1)
-+#define OMAP_HDQ_INT_STATUS_TIMEOUT            (1<<0)
-+#define OMAP_HDQ_SYSCONFIG                     0x14
-+#define OMAP_HDQ_SYSCONFIG_SOFTRESET           (1<<1)
-+#define OMAP_HDQ_SYSCONFIG_AUTOIDLE            (1<<0)
-+#define OMAP_HDQ_SYSSTATUS                     0x18
-+#define OMAP_HDQ_SYSSTATUS_RESETDONE           (1<<0)
-+
-+#define OMAP_HDQ_FLAG_CLEAR                    0
-+#define OMAP_HDQ_FLAG_SET                      1
-+#define OMAP_HDQ_TIMEOUT                       (HZ/5)
-+
-+#define OMAP_HDQ_MAX_USER                      4
-+
-+static DECLARE_WAIT_QUEUE_HEAD(hdq_wait_queue);
-+static int w1_id;
-+
-+struct hdq_data {
-+       struct device           *dev;
-+       void __iomem            *hdq_base;
-+       /* lock status update */
-+       struct  mutex           hdq_mutex;
-+       int                     hdq_usecount;
-+       struct  clk             *hdq_ick;
-+       struct  clk             *hdq_fck;
-+       u8                      hdq_irqstatus;
-+       /* device lock */
-+       spinlock_t              hdq_spinlock;
-+       /*
-+        * Used to control the call to omap_hdq_get and omap_hdq_put.
-+        * HDQ Protocol: Write the CMD|REG_address first, followed by
-+        * the data wrire or read.
-+        */
-+       int                     init_trans;
-+};
-+
-+static int omap_hdq_get(struct hdq_data *hdq_data);
-+static int omap_hdq_put(struct hdq_data *hdq_data);
-+static int omap_hdq_break(struct hdq_data *hdq_data);
-+
-+static int __init omap_hdq_probe(struct platform_device *pdev);
-+static int omap_hdq_remove(struct platform_device *pdev);
-+
-+static struct platform_driver omap_hdq_driver = {
-+       .probe =        omap_hdq_probe,
-+       .remove =       omap_hdq_remove,
-+       .driver =       {
-+               .name = "omap_hdq",
-+       },
-+};
-+
-+static u8 omap_w1_read_byte(void *_hdq);
-+static void omap_w1_write_byte(void *_hdq, u8 byte);
-+static u8 omap_w1_reset_bus(void *_hdq);
-+static void omap_w1_search_bus(void *_hdq, u8 search_type,
-+       w1_slave_found_callback slave_found);
-+
-+
-+static struct w1_bus_master omap_w1_master = {
-+       .read_byte      = omap_w1_read_byte,
-+       .write_byte     = omap_w1_write_byte,
-+       .reset_bus      = omap_w1_reset_bus,
-+       .search         = omap_w1_search_bus,
-+};
-+
-+/* HDQ register I/O routines */
-+static inline u8 hdq_reg_in(struct hdq_data *hdq_data, u32 offset)
-+{
-+       return __raw_readb(hdq_data->hdq_base + offset);
-+}
-+
-+static inline void hdq_reg_out(struct hdq_data *hdq_data, u32 offset, u8 val)
-+{
-+       __raw_writeb(val, hdq_data->hdq_base + offset);
-+}
-+
-+static inline u8 hdq_reg_merge(struct hdq_data *hdq_data, u32 offset,
-+                       u8 val, u8 mask)
-+{
-+       u8 new_val = (__raw_readb(hdq_data->hdq_base + offset) & ~mask)
-+                       | (val & mask);
-+       __raw_writeb(new_val, hdq_data->hdq_base + offset);
-+
-+       return new_val;
-+}
-+
-+/*
-+ * Wait for one or more bits in flag change.
-+ * HDQ_FLAG_SET: wait until any bit in the flag is set.
-+ * HDQ_FLAG_CLEAR: wait until all bits in the flag are cleared.
-+ * return 0 on success and -ETIMEDOUT in the case of timeout.
-+ */
-+static int hdq_wait_for_flag(struct hdq_data *hdq_data, u32 offset,
-+               u8 flag, u8 flag_set, u8 *status)
-+{
-+       int ret = 0;
-+       unsigned long timeout = jiffies + OMAP_HDQ_TIMEOUT;
-+
-+       if (flag_set == OMAP_HDQ_FLAG_CLEAR) {
-+               /* wait for the flag clear */
-+               while (((*status = hdq_reg_in(hdq_data, offset)) & flag)
-+                       && time_before(jiffies, timeout)) {
-+                       set_current_state(TASK_UNINTERRUPTIBLE);
-+                       schedule_timeout(1);
-+               }
-+               if (*status & flag)
-+                       ret = -ETIMEDOUT;
-+       } else if (flag_set == OMAP_HDQ_FLAG_SET) {
-+               /* wait for the flag set */
-+               while (!((*status = hdq_reg_in(hdq_data, offset)) & flag)
-+                       && time_before(jiffies, timeout)) {
-+                       set_current_state(TASK_UNINTERRUPTIBLE);
-+                       schedule_timeout(1);
-+               }
-+               if (!(*status & flag))
-+                       ret = -ETIMEDOUT;
-+       } else
-+               return -EINVAL;
-+
-+       return ret;
-+}
-+
-+/* write out a byte and fill *status with HDQ_INT_STATUS */
-+static int hdq_write_byte(struct hdq_data *hdq_data, u8 val, u8 *status)
-+{
-+       int ret;
-+       u8 tmp_status;
-+       unsigned long irqflags;
-+
-+       *status = 0;
-+
-+       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-+       /* clear interrupt flags via a dummy read */
-+       hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-+       /* ISR loads it with new INT_STATUS */
-+       hdq_data->hdq_irqstatus = 0;
-+       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-+
-+       hdq_reg_out(hdq_data, OMAP_HDQ_TX_DATA, val);
-+
-+       /* set the GO bit */
-+       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, OMAP_HDQ_CTRL_STATUS_GO,
-+               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
-+       /* wait for the TXCOMPLETE bit */
-+       ret = wait_event_interruptible_timeout(hdq_wait_queue,
-+               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
-+       if (ret < 0) {
-+               dev_dbg(hdq_data->dev, "wait interrupted");
-+               return -EINTR;
-+       }
-+
-+       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-+       *status = hdq_data->hdq_irqstatus;
-+       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-+       /* check irqstatus */
-+       if (!(*status & OMAP_HDQ_INT_STATUS_TXCOMPLETE)) {
-+               dev_dbg(hdq_data->dev, "timeout waiting for"
-+                       "TXCOMPLETE/RXCOMPLETE, %x", *status);
-+               return -ETIMEDOUT;
-+       }
-+
-+       /* wait for the GO bit return to zero */
-+       ret = hdq_wait_for_flag(hdq_data, OMAP_HDQ_CTRL_STATUS,
-+                       OMAP_HDQ_CTRL_STATUS_GO,
-+                       OMAP_HDQ_FLAG_CLEAR, &tmp_status);
-+       if (ret) {
-+               dev_dbg(hdq_data->dev, "timeout waiting GO bit"
-+                       "return to zero, %x", tmp_status);
-+               return ret;
-+       }
-+
-+       return ret;
-+}
-+
-+/* HDQ Interrupt service routine */
-+static irqreturn_t hdq_isr(int irq, void *_hdq)
-+{
-+       struct hdq_data *hdq_data = _hdq;
-+       unsigned long irqflags;
-+
-+       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-+       hdq_data->hdq_irqstatus = hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-+       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-+       dev_dbg(hdq_data->dev, "hdq_isr: %x", hdq_data->hdq_irqstatus);
-+
-+       if (hdq_data->hdq_irqstatus &
-+               (OMAP_HDQ_INT_STATUS_TXCOMPLETE | OMAP_HDQ_INT_STATUS_RXCOMPLETE
-+               | OMAP_HDQ_INT_STATUS_TIMEOUT)) {
-+               /* wake up sleeping process */
-+               wake_up_interruptible(&hdq_wait_queue);
-+       }
-+
-+       return IRQ_HANDLED;
-+}
-+
-+/* HDQ Mode: always return success */
-+static u8 omap_w1_reset_bus(void *_hdq)
-+{
-+       return 0;
-+}
-+
-+/* W1 search callback function */
-+static void omap_w1_search_bus(void *_hdq, u8 search_type,
-+       w1_slave_found_callback slave_found)
-+{
-+       u64 module_id, rn_le, cs, id;
-+
-+       if (w1_id)
-+               module_id = w1_id;
-+       else
-+               module_id = 0x1;
-+
-+       rn_le = cpu_to_le64(module_id);
-+       /*
-+        * HDQ might not obey truly the 1-wire spec.
-+        * So calculate CRC based on module parameter.
-+        */
-+       cs = w1_calc_crc8((u8 *)&rn_le, 7);
-+       id = (cs << 56) | module_id;
-+
-+       slave_found(_hdq, id);
-+}
-+
-+static int _omap_hdq_reset(struct hdq_data *hdq_data)
-+{
-+       int ret;
-+       u8 tmp_status;
-+
-+       hdq_reg_out(hdq_data, OMAP_HDQ_SYSCONFIG, OMAP_HDQ_SYSCONFIG_SOFTRESET);
-+       /*
-+        * Select HDQ mode & enable clocks.
-+        * It is observed that INT flags can't be cleared via a read and GO/INIT
-+        * won't return to zero if interrupt is disabled. So we always enable
-+        * interrupt.
-+        */
-+       hdq_reg_out(hdq_data, OMAP_HDQ_CTRL_STATUS,
-+               OMAP_HDQ_CTRL_STATUS_CLOCKENABLE |
-+               OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK);
-+
-+       /* wait for reset to complete */
-+       ret = hdq_wait_for_flag(hdq_data, OMAP_HDQ_SYSSTATUS,
-+               OMAP_HDQ_SYSSTATUS_RESETDONE, OMAP_HDQ_FLAG_SET, &tmp_status);
-+       if (ret)
-+               dev_dbg(hdq_data->dev, "timeout waiting HDQ reset, %x",
-+                               tmp_status);
-+       else {
-+               hdq_reg_out(hdq_data, OMAP_HDQ_CTRL_STATUS,
-+                       OMAP_HDQ_CTRL_STATUS_CLOCKENABLE |
-+                       OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK);
-+               hdq_reg_out(hdq_data, OMAP_HDQ_SYSCONFIG,
-+                       OMAP_HDQ_SYSCONFIG_AUTOIDLE);
-+       }
-+
-+       return ret;
-+}
-+
-+/* Issue break pulse to the device */
-+static int omap_hdq_break(struct hdq_data *hdq_data)
-+{
-+       int ret;
-+       u8 tmp_status;
-+       unsigned long irqflags;
-+
-+       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+       if (ret < 0)
-+               return -EINTR;
-+
-+       if (!hdq_data->hdq_usecount) {
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+               return -EINVAL;
-+       }
-+
-+       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-+       /* clear interrupt flags via a dummy read */
-+       hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-+       /* ISR loads it with new INT_STATUS */
-+       hdq_data->hdq_irqstatus = 0;
-+       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-+
-+       /* set the INIT and GO bit */
-+       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS,
-+               OMAP_HDQ_CTRL_STATUS_INITIALIZATION | OMAP_HDQ_CTRL_STATUS_GO,
-+               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_INITIALIZATION |
-+               OMAP_HDQ_CTRL_STATUS_GO);
-+
-+       /* wait for the TIMEOUT bit */
-+       ret = wait_event_interruptible_timeout(hdq_wait_queue,
-+               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
-+       if (ret < 0) {
-+               dev_dbg(hdq_data->dev, "wait interrupted");
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+               return -EINTR;
-+       }
-+
-+       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-+       tmp_status = hdq_data->hdq_irqstatus;
-+       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-+       /* check irqstatus */
-+       if (!(tmp_status & OMAP_HDQ_INT_STATUS_TIMEOUT)) {
-+               dev_dbg(hdq_data->dev, "timeout waiting for TIMEOUT, %x",
-+                               tmp_status);
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+               return -ETIMEDOUT;
-+       }
-+       /*
-+        * wait for both INIT and GO bits rerurn to zero.
-+        * zero wait time expected for interrupt mode.
-+        */
-+       ret = hdq_wait_for_flag(hdq_data, OMAP_HDQ_CTRL_STATUS,
-+                       OMAP_HDQ_CTRL_STATUS_INITIALIZATION |
-+                       OMAP_HDQ_CTRL_STATUS_GO, OMAP_HDQ_FLAG_CLEAR,
-+                       &tmp_status);
-+       if (ret)
-+               dev_dbg(hdq_data->dev, "timeout waiting INIT&GO bits"
-+                       "return to zero, %x", tmp_status);
-+
-+       mutex_unlock(&hdq_data->hdq_mutex);
-+
-+       return ret;
-+}
-+
-+static int hdq_read_byte(struct hdq_data *hdq_data, u8 *val)
-+{
-+       int ret;
-+       u8 status;
-+       unsigned long irqflags;
-+       unsigned long timeout = jiffies + OMAP_HDQ_TIMEOUT;
-+
-+       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+       if (ret < 0)
-+               return -EINTR;
-+
-+       if (!hdq_data->hdq_usecount) {
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+               return -EINVAL;
-+       }
-+
-+       if (!(hdq_data->hdq_irqstatus & OMAP_HDQ_INT_STATUS_RXCOMPLETE)) {
-+               hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS,
-+                       OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO,
-+                       OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
-+               /*
-+                * The RX comes immediately after TX. It
-+                * triggers another interrupt before we
-+                * sleep. So we have to wait for RXCOMPLETE bit.
-+                */
-+               while (!(hdq_data->hdq_irqstatus
-+                       & OMAP_HDQ_INT_STATUS_RXCOMPLETE)
-+                       && time_before(jiffies, timeout)) {
-+                       set_current_state(TASK_UNINTERRUPTIBLE);
-+                       schedule_timeout(1);
-+               }
-+               hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, 0,
-+                       OMAP_HDQ_CTRL_STATUS_DIR);
-+               spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-+               status = hdq_data->hdq_irqstatus;
-+               spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-+               /* check irqstatus */
-+               if (!(status & OMAP_HDQ_INT_STATUS_RXCOMPLETE)) {
-+                       dev_dbg(hdq_data->dev, "timeout waiting for"
-+                               "RXCOMPLETE, %x", status);
-+                       mutex_unlock(&hdq_data->hdq_mutex);
-+                       return -ETIMEDOUT;
-+               }
-+       }
-+       /* the data is ready. Read it in! */
-+       *val = hdq_reg_in(hdq_data, OMAP_HDQ_RX_DATA);
-+       mutex_unlock(&hdq_data->hdq_mutex);
-+
-+       return 0;
-+
-+}
-+
-+/* Enable clocks and set the controller to HDQ mode */
-+static int omap_hdq_get(struct hdq_data *hdq_data)
-+{
-+       int ret = 0;
-+
-+       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+       if (ret < 0)
-+               return -EINTR;
-+
-+       if (OMAP_HDQ_MAX_USER == hdq_data->hdq_usecount) {
-+               dev_dbg(hdq_data->dev, "attempt to exceed the max use count");
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+               ret = -EINVAL;
-+       } else {
-+               hdq_data->hdq_usecount++;
-+               try_module_get(THIS_MODULE);
-+               if (1 == hdq_data->hdq_usecount) {
-+                       if (clk_enable(hdq_data->hdq_ick)) {
-+                               dev_dbg(hdq_data->dev, "Can not enable ick\n");
-+                               clk_put(hdq_data->hdq_ick);
-+                               clk_put(hdq_data->hdq_fck);
-+                               mutex_unlock(&hdq_data->hdq_mutex);
-+                               return -ENODEV;
-+                       }
-+                       if (clk_enable(hdq_data->hdq_fck)) {
-+                               dev_dbg(hdq_data->dev, "Can not enable fck\n");
-+                               clk_put(hdq_data->hdq_ick);
-+                               clk_put(hdq_data->hdq_fck);
-+                               mutex_unlock(&hdq_data->hdq_mutex);
-+                               return -ENODEV;
-+                       }
-+
-+                       /* make sure HDQ is out of reset */
-+                       if (!(hdq_reg_in(hdq_data, OMAP_HDQ_SYSSTATUS) &
-+                               OMAP_HDQ_SYSSTATUS_RESETDONE)) {
-+                               ret = _omap_hdq_reset(hdq_data);
-+                               if (ret)
-+                                       /* back up the count */
-+                                       hdq_data->hdq_usecount--;
-+                       } else {
-+                               /* select HDQ mode & enable clocks */
-+                               hdq_reg_out(hdq_data, OMAP_HDQ_CTRL_STATUS,
-+                                       OMAP_HDQ_CTRL_STATUS_CLOCKENABLE |
-+                                       OMAP_HDQ_CTRL_STATUS_INTERRUPTMASK);
-+                               hdq_reg_out(hdq_data, OMAP_HDQ_SYSCONFIG,
-+                                       OMAP_HDQ_SYSCONFIG_AUTOIDLE);
-+                               hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-+                       }
-+               }
-+       }
-+       mutex_unlock(&hdq_data->hdq_mutex);
-+
-+       return ret;
-+}
-+
-+/* Disable clocks to the module */
-+static int omap_hdq_put(struct hdq_data *hdq_data)
-+{
-+       int ret = 0;
-+
-+       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+       if (ret < 0)
-+               return -EINTR;
-+
-+       if (0 == hdq_data->hdq_usecount) {
-+               dev_dbg(hdq_data->dev, "attempt to decrement use count"
-+                       "when it is zero");
-+               ret = -EINVAL;
-+       } else {
-+               hdq_data->hdq_usecount--;
-+               module_put(THIS_MODULE);
-+               if (0 == hdq_data->hdq_usecount) {
-+                       clk_disable(hdq_data->hdq_ick);
-+                       clk_disable(hdq_data->hdq_fck);
-+               }
-+       }
-+       mutex_unlock(&hdq_data->hdq_mutex);
-+
-+       return ret;
-+}
-+
-+/* Read a byte of data from the device */
-+static u8 omap_w1_read_byte(void *_hdq)
-+{
-+       struct hdq_data *hdq_data = _hdq;
-+       u8 val;
-+       int ret;
-+
-+       ret = hdq_read_byte(hdq_data, &val);
-+       if (ret) {
-+               ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+               if (ret < 0) {
-+                       dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-+                       return -EINTR;
-+               }
-+               hdq_data->init_trans = 0;
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+               omap_hdq_put(hdq_data);
-+               return -1;
-+       }
-+
-+       /* Write followed by a read, release the module */
-+       if (hdq_data->init_trans) {
-+               ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+               if (ret < 0) {
-+                       dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-+                       return -EINTR;
-+               }
-+               hdq_data->init_trans = 0;
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+               omap_hdq_put(hdq_data);
-+       }
-+
-+       return val;
-+}
-+
-+/* Write a byte of data to the device */
-+static void omap_w1_write_byte(void *_hdq, u8 byte)
-+{
-+       struct hdq_data *hdq_data = _hdq;
-+       int ret;
-+       u8 status;
-+
-+       /* First write to initialize the transfer */
-+       if (hdq_data->init_trans == 0)
-+               omap_hdq_get(hdq_data);
-+
-+       ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+       if (ret < 0) {
-+               dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-+               return;
-+       }
-+       hdq_data->init_trans++;
-+       mutex_unlock(&hdq_data->hdq_mutex);
-+
-+       hdq_write_byte(hdq_data, byte, &status);
-+       dev_dbg(hdq_data->dev, "Ctrl status %x\n", status);
-+
-+       /* Second write, data transfered. Release the module */
-+       if (hdq_data->init_trans > 1) {
-+               omap_hdq_put(hdq_data);
-+               ret = mutex_lock_interruptible(&hdq_data->hdq_mutex);
-+               if (ret < 0) {
-+                       dev_dbg(hdq_data->dev, "Could not acquire mutex\n");
-+                       return;
-+               }
-+               hdq_data->init_trans = 0;
-+               mutex_unlock(&hdq_data->hdq_mutex);
-+       }
-+
-+       return;
-+}
-+
-+static int __init omap_hdq_probe(struct platform_device *pdev)
-+{
-+       struct hdq_data *hdq_data;
-+       struct resource *res;
-+       int ret, irq;
-+       u8 rev;
-+
-+       if (!pdev)
-+               return -ENODEV;
-+
-+       hdq_data = kmalloc(sizeof(*hdq_data), GFP_KERNEL);
-+       if (!hdq_data) {
-+               dev_dbg(&pdev->dev, "unable to allocate memory\n");
-+               ret = -ENODEV;
-+               goto err_kmalloc;
-+       }
-+
-+       hdq_data->dev = &pdev->dev;
-+       platform_set_drvdata(pdev, hdq_data);
-+
-+       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+       if (!res) {
-+               dev_dbg(&pdev->dev, "unable to get resource\n");
-+               ret = ENXIO;
-+               goto err_resource;
-+       }
-+
-+       hdq_data->hdq_base = ioremap(res->start, SZ_4K);
-+       if (!hdq_data->hdq_base) {
-+               dev_dbg(&pdev->dev, "ioremap failed\n");
-+               ret = -EINVAL;
-+               goto err_ioremap;
-+       }
-+
-+       /* get interface & functional clock objects */
-+       hdq_data->hdq_ick = clk_get(&pdev->dev, "hdq_ick");
-+       hdq_data->hdq_fck = clk_get(&pdev->dev, "hdq_fck");
-+
-+       if (IS_ERR(hdq_data->hdq_ick) || IS_ERR(hdq_data->hdq_fck)) {
-+               dev_dbg(&pdev->dev, "Can't get HDQ clock objects\n");
-+               if (IS_ERR(hdq_data->hdq_ick)) {
-+                       ret = PTR_ERR(hdq_data->hdq_ick);
-+                       goto err_clk;
-+               }
-+               if (IS_ERR(hdq_data->hdq_fck)) {
-+                       ret = PTR_ERR(hdq_data->hdq_fck);
-+                       clk_put(hdq_data->hdq_ick);
-+                       goto err_clk;
-+               }
-+       }
-+
-+       hdq_data->hdq_usecount = 0;
-+       mutex_init(&hdq_data->hdq_mutex);
-+
-+       if (clk_enable(hdq_data->hdq_ick)) {
-+               dev_dbg(&pdev->dev, "Can not enable ick\n");
-+               ret = -ENODEV;
-+               goto err_ick;
-+       }
-+
-+       if (clk_enable(hdq_data->hdq_fck)) {
-+               dev_dbg(&pdev->dev, "Can not enable fck\n");
-+               ret = -ENODEV;
-+               goto err_fck;
-+       }
-+
-+       rev = hdq_reg_in(hdq_data, OMAP_HDQ_REVISION);
-+       dev_info(&pdev->dev, "OMAP HDQ Hardware Rev %c.%c. Driver in %s mode\n",
-+               (rev >> 4) + '0', (rev & 0x0f) + '0', "Interrupt");
-+
-+       spin_lock_init(&hdq_data->hdq_spinlock);
-+       omap_hdq_break(hdq_data);
-+
-+       irq = platform_get_irq(pdev, 0);
-+       if (irq < 0) {
-+               ret = -ENXIO;
-+               goto err_irq;
-+       }
-+
-+       ret = request_irq(irq, hdq_isr, IRQF_DISABLED, "omap_hdq", hdq_data);
-+       if (ret < 0) {
-+               dev_dbg(&pdev->dev, "could not request irq\n");
-+               goto err_irq;
-+       }
-+
-+       /* don't clock the HDQ until it is needed */
-+       clk_disable(hdq_data->hdq_ick);
-+       clk_disable(hdq_data->hdq_fck);
-+
-+       omap_w1_master.data = hdq_data;
-+
-+       ret = w1_add_master_device(&omap_w1_master);
-+       if (ret) {
-+               dev_dbg(&pdev->dev, "Failure in registering w1 master\n");
-+               goto err_w1;
-+       }
-+
-+       return 0;
-+
-+err_w1:
-+err_irq:
-+       clk_disable(hdq_data->hdq_fck);
-+
-+err_fck:
-+       clk_disable(hdq_data->hdq_ick);
-+
-+err_ick:
-+       clk_put(hdq_data->hdq_ick);
-+       clk_put(hdq_data->hdq_fck);
-+
-+err_clk:
-+       iounmap(hdq_data->hdq_base);
-+
-+err_ioremap:
-+err_resource:
-+       platform_set_drvdata(pdev, NULL);
-+       kfree(hdq_data);
-+
-+err_kmalloc:
-+       return ret;
-+
-+}
-+
-+static int omap_hdq_remove(struct platform_device *pdev)
-+{
-+       struct hdq_data *hdq_data = platform_get_drvdata(pdev);
-+
-+       mutex_lock(&hdq_data->hdq_mutex);
-+
-+       if (0 != hdq_data->hdq_usecount) {
-+               dev_dbg(&pdev->dev, "removed when use count is not zero\n");
-+               return -EBUSY;
-+       }
-+
-+       mutex_unlock(&hdq_data->hdq_mutex);
-+
-+       /* remove module dependency */
-+       clk_put(hdq_data->hdq_ick);
-+       clk_put(hdq_data->hdq_fck);
-+       free_irq(INT_24XX_HDQ_IRQ, hdq_data);
-+       platform_set_drvdata(pdev, NULL);
-+       iounmap(hdq_data->hdq_base);
-+       kfree(hdq_data);
-+
-+       return 0;
-+}
-+
-+static int __init
-+omap_hdq_init(void)
-+{
-+       return platform_driver_register(&omap_hdq_driver);
-+}
-+module_init(omap_hdq_init);
-+
-+static void __exit
-+omap_hdq_exit(void)
-+{
-+       platform_driver_unregister(&omap_hdq_driver);
-+}
-+module_exit(omap_hdq_exit);
-+
-+module_param(w1_id, int, S_IRUSR);
-+MODULE_PARM_DESC(w1_id, "1-wire id for the slave detection");
-+
-+MODULE_AUTHOR("Texas Instruments");
-+MODULE_DESCRIPTION("HDQ driver Library");
-+MODULE_LICENSE("GPL");
+export TARGET=/sys/kernel/config/target/core/
+export FABRIC=/sys/kernel/config/target/iscsi/
+
+<Setup target_core_mod storage objects..>
+
+DEF_IQN="iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0"
+
+# The first mkdir(2) to $FABRIC will load iscsi_target_mod
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/np/172.16.201.137:3260"
+# Create TPG LUN 0 and symlink $STORAGE_OBJECT from target_core_mod
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0"
+ln -s $TARGET/iblock_0/lvm_test0 "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0/lio_west_port"
+# Create TPG LUN 1 and symlink $STORAGE_OBJECT from target_core_mod
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1"
+ln -s $TARGET/pscsi_0/sdd "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1/lio_east_port"
+
+INITIATOR_DEBIAN="iqn.1993-08.org.debian:01:2dadf92d0ef"
+
+# Create Node and two LUN ACL Symlinks for Debian Initiator
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_DEBIAN/lun_0"
+ln -s "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0" "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_DEBIAN/lun_0/."
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_DEBIAN/lun_1"
+ln -s "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1" "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_DEBIAN/lun_1/."
+
+INITIATOR_SUSE="iqn.1996-04.de.suse:01:1661f9ee7b5"
+
+# Create Node and two LUN ACL Symlinks for Suse Initiator
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_SUSE/lun_0"
+ln -s "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0" "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_SUSE/lun_0/."
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_SUSE/lun_1"
+ln -s "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1" "$FABRIC/$DEF_IQN/tpgt_1/acls/$INITIATOR_SUSE/lun_1/."
+
+# Enable the $FABRIC endpoint so it can accept new iSCSI sessions.
+echo 1 > $FABRIC/$DEF_IQN/tpgt_1/enable
+
+
+And running....
+
+
+target:/sys/kernel/config# tree $FABRIC
+/sys/kernel/config/target/iscsi/
+|-- iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+|   `-- tpgt_1
+|       |-- acls
+|       |   |-- iqn.1993-08.org.debian:01:2dadf92d0ef
+|       |   |   |-- control
+|       |   |   |-- info
+|       |   |   |-- lun_0
+|       |   |   |   `-- lun_0 -> ../../../../../../../target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0/tpgt_1/lun/lun_0
+|       |   |   `-- lun_1
+|       |   |       `-- lun_1 -> ../../../../../../../target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0/tpgt_1/lun/lun_1
+|       |   `-- iqn.1996-04.de.suse:01:1661f9ee7b5
+|       |       |-- control
+|       |       |-- info
+|       |       |-- lun_0
+|       |       |   `-- lun_0 -> ../../../../../../../target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0/tpgt_1/lun/lun_0
+|       |       `-- lun_1
+|       |           `-- lun_1 -> ../../../../../../../target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0/tpgt_1/lun/lun_1
+|       |-- control
+|       |-- enable
+|       |-- lun
+|       |   |-- lun_0
+|       |   |   |-- control
+|       |   |   |-- info
+|       |   |   `-- lio_west_port -> ../../../../../../target/core/iblock_0/lvm_test0
+|       |   `-- lun_1
+|       |       |-- control
+|       |       |-- info
+|       |       `-- lio_east_port -> ../../../../../../target/core/pscsi_0/sdd
+|       `-- np
+|           `-- 172.16.201.137:3260
+|               `-- portal_info
+`-- lio_version
+
+20 directories, 12 files
+
+Note that iSCSI Initiator LUN ACL Symlinks are done on a per TPGT
+context and are only allowed for TPG LUNs under the same
+$FABRIC/$IQN/$TPGT path.
+
+--------------------------------------------------------------------------------
+
+Dump information for all running iSCSI Sessons on all iSCSI Target
+endpoints..:
+
+target:/sys/kernel/config# cat $FABRIC/iqn*/tpgt*/acls/*/info
+
+InitiatorName: iqn.1993-08.org.debian:01:2dadf92d0ef
+InitiatorAlias: ubuntu
+LIO Session ID: 2   ISID: 0x00 02 3d 05 00 00  TSIH: 2  SessionType: Normal
+Cmds in Session Pool: 1  Session State: TARG_SESS_STATE_LOGGED_IN
+---------------------[iSCSI Session Values]-----------------------
+  CmdSN/WR  :  CmdSN/WC  :  ExpCmdSN  :  MaxCmdSN  :     ITT    :     TTT
+ 0x00000010   0x00000010   0x00000042   0x00000051   0x090a0040   0x000000e7
+----------------------[iSCSI Connections]-------------------------
+CID: 0  Connection State: TARG_CONN_STATE_LOGGED_IN
+   Address 172.16.201.129 TCP  StatSN: 0x0000006c
+InitiatorName: iqn.1996-04.de.suse:01:1661f9ee7b5
+InitiatorAlias: opensuse
+LIO Session ID: 13   ISID: 0x00 02 3d 01 00 00  TSIH: 13  SessionType: Normal
+Cmds in Session Pool: 1  Session State: TARG_SESS_STATE_LOGGED_IN
+---------------------[iSCSI Session Values]-----------------------
+  CmdSN/WR  :  CmdSN/WC  :  ExpCmdSN  :  MaxCmdSN  :     ITT    :     TTT
+ 0x00000010   0x00000010   0x00000022   0x00000031   0x040a0000   0x00000003
+----------------------[iSCSI Connections]-------------------------
+CID: 0  Connection State: TARG_CONN_STATE_LOGGED_IN
+   Address 172.16.201.136 TCP  StatSN: 0x00000003
+
+
+Anyways, you get the idea.  The primary functionality is up for getting
+ACLs iSCSI Initiator Nodes and LUNs symlinked to TPG LUNs symlinked to
+$STORAGE_OBJECTs from target_core_mod.   I will be continuing to convert
+stuff from the IOCTL, mostly things that need to be made into configfs
+attributes.  I am going to focus on the getting the remaining stuff
+under configfs up for iscsi_target_mod, and start looking at the much
+larger todo item of seeing how we can merge target_core_mod and scst
+core..  Please have a look and let me know what you think (espically the
+target_core_mod parts), and I will pull the latest SCST code and start
+looking at the FABRIC <-> TARGET you mentioned..
+
+--nab
+
