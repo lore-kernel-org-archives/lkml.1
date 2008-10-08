@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYJHQTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYJHQUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbYJHQTP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 12:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYJHQS7
+	id S1755208AbYJHQUq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 12:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYJHQUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 12:18:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50595 "EHLO
+	Wed, 8 Oct 2008 12:20:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35949 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752649AbYJHQS6 (ORCPT
+	by vger.kernel.org with ESMTP id S1754143AbYJHQUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 12:18:58 -0400
-Message-ID: <48ECDD37.8050506@linux-foundation.org>
-Date: Wed, 08 Oct 2008 11:17:59 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 8 Oct 2008 12:20:38 -0400
+Date: Wed, 8 Oct 2008 09:19:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steven Rostedt <srostedt@redhat.com>
+cc: Steven Rostedt <rostedt@goodmis.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+In-Reply-To: <48ECD9C8.4000700@redhat.com>
+Message-ID: <alpine.LFD.2.00.0810080906520.3208@nehalem.linux-foundation.org>
+References: <20080804130317.994042639@chello.nl> <20080804131012.246115111@chello.nl> <48974512.7000206@goop.org> <1217876046.3589.61.camel@twins> <489757EC.3000309@goop.org> <alpine.LFD.1.10.0808041230070.3340@nehalem.linux-foundation.org>
+ <20081008152708.GA11207@goodmis.org> <alpine.LFD.2.00.0810080836410.3208@nehalem.linux-foundation.org> <48ECD9C8.4000700@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
-References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org>
-In-Reply-To: <1223458431-12640-2-git-send-email-apw@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> When working with hugepages, hugetlbfs assumes that those hugepages
-> are smaller than MAX_ORDER.  Specifically it assumes that the mem_map
-> is contigious and uses that to optimise access to the elements of the
-> mem_map that represent the hugepage.  Gigantic pages (such as 16GB pages
-> on powerpc) by definition are of greater order than MAX_ORDER (larger
-> than MAX_ORDER_NR_PAGES in size).  This means that we can no longer make
-> use of the buddy alloctor guarentees for the contiguity of the mem_map,
-> which ensures that the mem_map is at least contigious for maximmally
-> aligned areas of MAX_ORDER_NR_PAGES pages.
 
-But the memmap is contiguous in most cases. FLATMEM, VMEMMAP etc. Its only
-some special sparsemem configurations that couldhave the issue because they
-break up the vmemmap. x86_64 uses VMEMMAP by default. Is this for i386?
 
+On Wed, 8 Oct 2008, Steven Rostedt wrote:
+> 
+> Unfortunately, you cut out my comment that I stated "unless there is a good
+> reason not to", which the below example is a good reason ;-)
+
+Well, teh thing is, as long as you think nesting is good, you end up being 
+very confused when it isn't.
+
+> I just find that seeing something like:
+> 
+>    lock(A);
+>    lock(B);
+> 
+>    [do something]
+> 
+>    unlock(A);
+>    unlock(B);
+> 
+> just seems to be sloppy.
+
+Of course you'll often get nesting almost by mistake.
+
+For example, any normal locking that is hierarchical tends to nest 
+naturally, especially if you end up using lots of small functions (which 
+you should). Or simply due to error handling.
+
+So in that sense, nesting may be a "natural" thing, but partly exactly 
+_because_ it is fairly natural, we should not try to make it even more 
+than that, because then when things don't nest (and it does happen), if 
+the "things should nest" camp gets too strong, bugs happen.
+
+They happen because somebody looks at the non-nesting case, and thinks 
+it's sloppy, and tries to fix it. And in the process just complicates 
+matters - and very likely introduces bugs.
+
+And THAT is why people shouldn't think that locks "should" nest. Because 
+they shouldn't. They often do, but we're better off making people very 
+aware of the fact that 'often' isn't 'good design', it's just a matter of 
+'it happens in practice' rather than 'it should be that way'.
+
+I know for a fact that some people thought unlocking in non-nested order 
+was a bug. And I believe that belief is a dangerous one.
+
+				Linus
