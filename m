@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYJHJEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYJHJFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013AbYJHJEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 05:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYJHJEk
+	id S1755455AbYJHJFR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 05:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbYJHJFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 05:04:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60367 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752474AbYJHJEj (ORCPT
+	Wed, 8 Oct 2008 05:05:03 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50519 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753610AbYJHJFC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 05:04:39 -0400
-Date: Wed, 8 Oct 2008 10:00:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>, avorontsov@ru.mvista.com,
-       Matt Sealey <matt@genesi-usa.com>, Jeff Garzik <jgarzik@pobox.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Li Yang <leoli@freescale.com>,
-       Wang Jian <lark@linux.net.cn>
-Subject: Re: [PATCH] pata_of_platform: fix no irq handling
-Message-ID: <20081008100025.1c535401@lxorguk.ukuu.org.uk>
-In-Reply-To: <1223455254.3145.143.camel@macbook.infradead.org>
-References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
-	<48EA77EF.6080502@genesi-usa.com>
-	<20081006213209.GA13072@oksana.dev.rtsoft.ru>
-	<48EABBD3.1010401@kernel.org>
-	<20081007103723.0224671e@lxorguk.ukuu.org.uk>
-	<1223455254.3145.143.camel@macbook.infradead.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 8 Oct 2008 05:05:02 -0400
+Date: Wed, 8 Oct 2008 11:11:12 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+       Hugh Dickins <hugh@veritas.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH, v3] shmat: introduce flag SHM_MAP_NOT_FIXED
+Message-ID: <20081008091112.GK7971@one.firstfloor.org>
+References: <1223396117-8118-1-git-send-email-kirill@shutemov.name> <2f11576a0810070931k79eb72dfr838a96650563b93a@mail.gmail.com> <20081007211038.GQ20740@one.firstfloor.org> <20081008000518.13f48462@lxorguk.ukuu.org.uk> <20081007232059.GU20740@one.firstfloor.org> <20081008004030.7a0e9915@lxorguk.ukuu.org.uk> <20081007235737.GD7971@one.firstfloor.org> <20081008093424.4e88a3c2@lxorguk.ukuu.org.uk> <20081008084350.GI7971@one.firstfloor.org> <20081008095851.01790b6a@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081008095851.01790b6a@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Oct 2008 09:40:54 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Tue, 2008-10-07 at 10:37 +0100, Alan Cox wrote:
-> > Zero means no IRQ. Any platform with bits of code left over exposing IRQ
-> > 0 is already not supported by lots of driver code including libata.
+On Wed, Oct 08, 2008 at 09:58:51AM +0100, Alan Cox wrote:
+> > > 	shmat giving an address
+> > > 	if error
+> > > 		shmat giving no address
+> > > 
+> > > from user space.
+> > 
+> > No you can't here because shmat() starts searching from the wrong
+> > start address.
 > 
-> ...and must implement some kind of interrupt remapping crap just to work
-> around this bogus design decision.
+> If you are only hinting a desired address then that by the very meaning
+> of the word "hint" means you will accept a different one.
 
-I'll leave you to argue with Linus about that, but since that was the
-decision back in 2005 (for good C reasons) we can safely rely on it.
+The point is to be able to let the search start below the range
+the kernel would normally start. It doesn't say that it has
+to be at address X.
+
+Yes hint is a little misleading, search hint is better.
+
+> 
+> > The only way would be to search manually in /proc/self/maps
+> > and handle the races, but I hope you're not advocating that.
+> 
+> Gak, mmap a range to find a space and then shmat over the top of that.
+
+That is racy when multi threaded because shmat() doesn't replace, so you 
+would need to munmap() inbetween and someone else could steal the area
+then. Yes you could stick a loop around it. It could livelock.
+No, it's not a good interface I would advocate.
+
+BTW the only alternative I would possiblye consider for the qemu case is to
+force compat_shmat() to always allocate in 4GB (right now it relies
+on the personality) and then let 64bit qemu use the int 0x80 entry point
+for that.  But it's more hackish than the imho cleaner and more 
+general flag.
+
+-Andi
+
+-- 
+ak@linux.intel.com
