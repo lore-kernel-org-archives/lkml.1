@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYJHT3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbYJHT3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbYJHT3J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 15:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYJHT2w
+	id S1756386AbYJHT3c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 15:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbYJHT2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 15:28:52 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:20098 "EHLO
+	Wed, 8 Oct 2008 15:28:55 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:22095 "EHLO
 	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754497AbYJHT2v (ORCPT
+	with ESMTP id S1754602AbYJHT2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 15:28:51 -0400
+	Wed, 8 Oct 2008 15:28:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=YBB8NBfjl5W+IkP4jBg28hrArg2WeBYWUm+FmXEdYqPz1xHfkaqNNQs+PYpxua+MuR
-         gmaew8hjdWJ8kXT0bli72mdnY6j/jy4/dK795jvCwpYOVQp2cFHSdhSSkAZ9IvXEhlkF
-         j3Uq6DGErYcRLFvzcvwOmGx264/1ktuVkDeJk=
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=pnjID9TKsYpsve+aUmTPZ8IDcZaS/VZrIcSPg4qX/WV8BOUy2UzvNrlYdMhSnVktvA
+         zxm3v0LsHLGNM2vUogpQxH1qrdYlc9Jznx5oqMqHMJ7aUJe/8RsQwZRZl71D7ZSPs7Av
+         tLOCmaEL/mChAkYaOOqrPiSyrH0vTkxKSTAQE=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [patch][repost] ide-tape build fix
-Date: Wed, 8 Oct 2008 20:37:04 +0200
+To: Elias Oltmanns <eo@nebensachen.de>
+Subject: Re: [PATCH 3/4 v2] ide: Implement disk shock protection support
+Date: Wed, 8 Oct 2008 20:56:33 +0200
 User-Agent: KMail/1.9.10
-Cc: "Mark de Wever" <koraq@xs4all.nl>,
-       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
-       "Gadi Oxman" <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <48D79ABD.8060805@ru.mvista.com> <20081008154552.GA3907@localhost> <9ea470500810080922x326821c5p47053afa7a1d261e@mail.gmail.com>
-In-Reply-To: <9ea470500810080922x326821c5p47053afa7a1d261e@mail.gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <87d4j2n3dn.fsf@denkblock.local> <87d4igqxlm.fsf@denkblock.local> <873ajcar3z.fsf@denkblock.local>
+In-Reply-To: <873ajcar3z.fsf@denkblock.local>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200810082056.33382.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810082037.05889.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 October 2008, Boris Petkov wrote:
-> On Wed, Oct 8, 2008 at 5:45 PM, Mark de Wever <koraq@xs4all.nl> wrote:
-> > On Wed, Oct 08, 2008 at 08:33:52AM +0200, Borislav Petkov wrote:
-> > Hi,
-> >> Bugger, I should be getting at least warnings when compiling this but I don't.
-> >> This is because I don't have CONFIG_LBD enabled. However, the %ld and %d
-> >> format specifiers are also not entirely correct but gcc doesn't warn about them
-> >> - I guess it checks only size but not signedness...
+On Sunday 05 October 2008, Elias Oltmanns wrote:
+> Elias Oltmanns <eo@nebensachen.de> wrote:
+> > Elias Oltmanns <eo@nebensachen.de> wrote:
+> >> Hi Bart,
+> >>
+> >> may I ask you to apply yet another inter-diff? This is in order to
+> >> address three issues:
+> >>
+> >> 1. Make sure that no negative value is being passed to
+> >>    jiffies_to_msecs() in ide_park_show().
+> >> 2. Drop the superfluous variable hwif in ide_special_rq().
+> >> 3. Skip initialisation of task and tf in ide_special_rq() if we are not
+> >>    handling a (un)park request.
 > >
-> > I guess so too.
-> >
-> >> Would you like to redo your patch and add a proper comment ontop?
-> >
-> > Here you go.
-> >
-> > @Boris do you want to add your Signed-off-by too?
+> > Well, #3 should have been done differently because we donn't want to
+> > check for REQ_(UN)?PARK_HEADS more often than is necessary.
 > 
-> no, just
+> While preparing the backport to 2.6.27, it has just occurred to me that
+> we need to clear the IDE_DFLAG_PARKED flag in ide_disk_pre_reset()
+> because this flag must not be set after *any* sort of access to the
+> device.
 > 
-> Acked-by: Borislav Petkov <petkovbb@gmail.com>
+> So, here is yet another revised version of the inter-diff. Just don't
+> hurry to apply in case I have an enlightening dream tonight and want to
+> change something more ;-).
 > 
-> > @Bart please apply this patch.
-> >
-> > --
-> > Subject: ide-tape: Buildfix when IDETAPE_DEBUG_LOG is set to 1.
-> >
-> > The format specifier for rq->sector didn't specify the proper size and
-> > signedness. Borislav Petkov discovered that the signedness for
-> > rq->nr_sectors and rq->current_nr_sectors also were incorrect.
-> >
-> > Signed-off-by: Mark de Wever <koraq@xs4all.nl>
+> Regards,
+> 
+> Elias
+> 
+> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 
-applied
+I merged this version into the original patch.
+
+[ Since it seems that there were no more enlightening dreams... ;) ]
