@@ -1,52 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYJHNXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYJHNah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085AbYJHNXE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 09:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYJHNWw
+	id S1755085AbYJHNah (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 09:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYJHNa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 09:22:52 -0400
-Received: from verein.lst.de ([213.95.11.210]:43713 "EHLO verein.lst.de"
+	Wed, 8 Oct 2008 09:30:26 -0400
+Received: from david.siemens.de ([192.35.17.14]:15630 "EHLO david.siemens.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694AbYJHNWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 09:22:51 -0400
-Date: Wed, 8 Oct 2008 15:22:32 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Mark Fasheh <mfasheh@suse.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Tao Ma <tao.ma@oracle.com>
-Subject: Re: [Ocfs2-devel] [PATCH 13/39] ocfs2: Add extended attribute support
-Message-ID: <20081008132232.GG25392@lst.de>
-References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com> <20081002081644.GB24717@lst.de> <20081007220811.GG26373@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007220811.GG26373@wotan.suse.de>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	id S1753314AbYJHNaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 09:30:24 -0400
+Message-ID: <48ECB727.6050905@siemens.com>
+Date: Wed, 08 Oct 2008 15:35:35 +0200
+From: "Hillier, Gernot" <gernot.hillier@siemens.com>
+Organization: Siemens AG, CT SE 2
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.9) Gecko/20070801 SUSE/2.0.0.9-0.1 Thunderbird/2.0.0.9 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, bruce.w.allan@intel.com
+Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro
+ X7DB3
+References: <48EB7161.60004@siemens.com> <m33aj78jnh.fsf@maximus.localdomain>
+In-Reply-To: <m33aj78jnh.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 03:08:11PM -0700, Mark Fasheh wrote:
-> On Thu, Oct 02, 2008 at 10:16:44AM +0200, Christoph Hellwig wrote:
-> > On Wed, Sep 24, 2008 at 03:00:54PM -0700, Mark Fasheh wrote:
-> > >  	xattr.o			\
-> > > +	xattr_user.o		\
-> > > +	xattr_trusted.o
-> > 
-> > Please don't split this up, it's always been a really stupid idea in
-> > extN.  The only difference between secure, trusted and user attrs is
-> > that they go into a different namespace bit (and have different
-> > permission checking, but that's handled in the VFS).  I have some
-> > upcoming patches to store a fs private flag in struct xattr_handler
-> > so that even those flags wrappers can go away, and each of the
-> > namespaces will just be five lines of code for the xattr_handler
-> > declaration.
+Hello!
+
+Krzysztof Halasa wrote:
+> Hi,
 > 
-> Ok. The following patch (in ocfs2.git now) removes those two files, and puts
-> the code for user and trusted xattrs at the bottom of xattr.c. Is that
-> mainly what you were getting at here?
+> "Hillier, Gernot" <gernot.hillier@siemens.com> writes:
+> 
+>> On at least two machines using the Supermicro X7DB3 board with Intel
+>> 82563EB (a.k.a. PCI device 8086:1096), we see sporadic problems on modprobe
+>> (about 1 time in some hundred tries):
+>>
+>> e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k2
+>> e1000e: Copyright (c) 1999-2008 Intel Corporation.
+>> e1000e 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+>> e1000e 0000:06:00.0: setting latency timer to 64
+>> 0000:06:00.0: 0000:06:00.0: Hardware Error
+> 
+> What does "lspci -vv" say about it when the above happens?
+> 
+> I spurious chip reset (hardware) could probably cause that.
 
-Yeah.
+Here's the output of "lspci -vv" in the error case (for the eth devices):
 
+------- SNIP -----------
+06:00.0 Class 0200: Device 8086:1096 (rev 01)
+        Subsystem: Device 15d9:1096
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 32 bytes
+        Interrupt: pin A routed to IRQ 18
+        Region 0: Memory at d0020000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at d0000000 (32-bit, non-prefetchable) [size=128K]
+        Region 2: I/O ports at 4000 [size=32]
+        [virtual] Expansion ROM at d0080000 [disabled] [size=64K]
+        Capabilities: [c8] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+                Address: 00000000feeff00c  Data: 4158
+        Capabilities: [e0] Express (v1) Endpoint, MSI 00
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 4096 bytes
+                DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM unknown, Latency L0 <128ns, L1 <64us
+                        ClockPM- Suprise- LLActRep- BwNot-
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+        Capabilities: [100] Advanced Error Reporting <?>
+        Capabilities: [140] Device Serial Number 06-c7-66-ff-ff-48-30-00
+        Kernel driver in use: e1000e
+        Kernel modules: e1000e
+
+06:00.1 Class 0200: Device 8086:1096 (rev 01)
+        Subsystem: Device 15d9:1096
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 32 bytes
+        Interrupt: pin B routed to IRQ 19
+        Region 0: Memory at d0060000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at d0040000 (32-bit, non-prefetchable) [size=128K]
+        Region 2: I/O ports at 4020 [size=32]
+        [virtual] Expansion ROM at d0090000 [disabled] [size=64K]
+        Capabilities: [c8] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [e0] Express (v1) Endpoint, MSI 00
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 4096 bytes
+                DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM unknown, Latency L0 <128ns, L1 <64us
+                        ClockPM- Suprise- LLActRep- BwNot-
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+        Capabilities: [100] Advanced Error Reporting <?>
+        Capabilities: [140] Device Serial Number 06-c7-66-ff-ff-48-30-00
+        Kernel driver in use: e1000e
+        Kernel modules: e1000e
+------- SNIP -----------
+
+Retried this several times in the error and normal case. The only things
+which change are three values for device 06:00.0:
+
+- Control "DisINTx-" changes to "DisINTx+" if the card is correctly
+initialized
+- Interrupt changes from IRQ 18 to IRQ 4345 if card is correctly initialized
+- Message Signalled Interrupts change from "Enable-" to "Enable+"
+
+In addition, the "Data" field from "Message Signalled Interrupts" seems to 
+change w/o any clear pattern.
+
+For 06:00.1, everything seems to be the same in the error as well as in the
+normal case.
+
+Does this tell you anything valuable?
+
+-- 
+Gernot Hillier, Siemens AG, CT SE 2
