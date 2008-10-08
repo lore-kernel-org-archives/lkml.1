@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYJHKlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYJHKwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbYJHKlu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 06:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbYJHKlm
+	id S1755481AbYJHKwp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 06:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYJHKwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 06:41:42 -0400
-Received: from web30101.mail.mud.yahoo.com ([209.191.69.33]:35574 "HELO
-	web30101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753783AbYJHKlm (ORCPT
+	Wed, 8 Oct 2008 06:52:36 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:10552 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752974AbYJHKwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 06:41:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=nd/xUCsH7ykirdDUzo3WGfu6sf4+pCMJ5g9RTB684K7TUCqUb5ivLNceSQB8qxW8FZfoZdtZFCrBzJh/Jbj4Quay8+8hCgfCkZFYDdwWtbDXqxJwdpHBMLw56PRnhRAgHShn+Weowtw2y0kArBMHvhuBG/QxTR8uk++GV1qnNjw=;
-X-YMail-OSG: pA7uBMEVM1nLUBUCbCGIUTedVc2_j4mmxsuqDESSC1u420kZtYVjEPkf4oAvSkkq0iC.2xQPV8J7rV5_kj44mpp.xdLskrfDX4Msc_6BhoeoJ0ijRxZ3.if3WLkYLZm8XTYxH5PmMucw.sebbix7IhUvjaxFc_i7CDNdLsUV
-X-Mailer: YahooMailWebService/0.7.247.3
-Date: Wed, 8 Oct 2008 03:41:41 -0700 (PDT)
-From: Parav Pandit <paravpandit@yahoo.com>
-Reply-To: paravpandit@yahoo.com
-Subject: sending TCP/IP packet based on NIC MTU size
-To: Linux kernel <linux-kernel@vger.kernel.org>
+	Wed, 8 Oct 2008 06:52:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=Ce4uwZjOmfCR7P1wMaS8mlOmbpUTtyIkNFH5eiaemfVDOzI2bjroLptpxKP5nfAtRS
+         TDS66Ic0Cb0tWhyL8t6Pun2Er4OJGV9HGj1SAS+9G8RiEXvbkH/p3rLgBhaxrz57eenj
+         JmNPYElHJHa/ojcuDhkmCWB1GtoN+gwEN0UQY=
+Message-ID: <48EC90EC.8060306@gmail.com>
+Date: Wed, 08 Oct 2008 12:52:28 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <513565.4838.qm@web30101.mail.mud.yahoo.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] documentation: clarify dirty_ratio and dirty_background_ratio
+ description
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The current documentation of dirty_ratio and dirty_background_ratio is a
+bit misleading.
 
-I am searching Linux kernel TCP/IP code which does following functionality.
+In the documentation we say that they are "a percentage of total system
+memory", but the current page writeback policy, intead, is to apply the
+percentages to the dirtyable memory, that means free pages + reclaimable
+pages.
 
-TCP/IP stack needs to check that - 
-how many bytes of a TCP stream it can send to NIC driver.
+Better to be more explicit to clarify this concept.
 
-Can anybody point me where this check in performed?
-Like if MTU size is set to 1500 for a NIC and VLAN is not set then it will send 1492 bytes. 
-If VLAN is set then it will send 1398 bytes to NIC.
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ Documentation/filesystems/proc.txt |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-Regards,
-Parav Pandit
-
-
-
-      
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index f566ad9..be69c8b 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -1380,15 +1380,16 @@ causes the kernel to prefer to reclaim dentries and inodes.
+ dirty_background_ratio
+ ----------------------
+ 
+-Contains, as a percentage of total system memory, the number of pages at which
+-the pdflush background writeback daemon will start writing out dirty data.
++Contains, as a percentage of the dirtyable system memory (free pages +
++reclaimable pages), the number of pages at which the pdflush background
++writeback daemon will start writing out dirty data.
+ 
+ dirty_ratio
+ -----------------
+ 
+-Contains, as a percentage of total system memory, the number of pages at which
+-a process which is generating disk writes will itself start writing out dirty
+-data.
++Contains, as a percentage of the dirtyable system memory (free pages +
++reclaimable pages), the number of pages at which a process which is generating
++disk writes will itself start writing out dirty data.
+ 
+ dirty_writeback_centisecs
+ -------------------------
