@@ -1,89 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYJHTcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbYJHTf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYJHTcl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 15:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYJHTca
+	id S1755956AbYJHTf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 15:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYJHTfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 15:32:30 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:8326 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbYJHTca (ORCPT
+	Wed, 8 Oct 2008 15:35:47 -0400
+Received: from mail27.svc.cra.dublin.eircom.net ([159.134.118.223]:37703 "HELO
+	mail27.svc.cra.dublin.eircom.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752045AbYJHTfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 15:32:30 -0400
-X-BigFish: VPS-20(zz98dR1447Rzzzzz2fh6bh62h)
-X-Spam-TCS-SCL: 1:0
-Message-ID: <48ED0ABB.2040607@am.sony.com>
-Date: Wed, 8 Oct 2008 12:32:11 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
-CC: linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RFC - size tool for kernel build system
-References: <48EBD268.50208@am.sony.com> <48ED0575.4060005@redhat.com>
-In-Reply-To: <48ED0575.4060005@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Oct 2008 19:32:12.0184 (UTC) FILETIME=[8FCA1980:01C9297C]
-X-SEL-encryption-scan: scanned
+	Wed, 8 Oct 2008 15:35:47 -0400
+From: Mark McLoughlin <markmc@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       Mark McLoughlin <markmc@redhat.com>
+Subject: [PATCH 1/2] virtio_net: Recycle some more rx buffer pages
+Date: Wed,  8 Oct 2008 20:34:58 +0100
+Message-Id: <1223494499-18732-1-git-send-email-markmc@redhat.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
-> The kernel build system is supposed to be stateless, and integrating
-> this with make would mess that up.
+Each time we re-fill the recv queue with buffers, we allocate
+one too many skbs and free it again when adding fails. We should
+recycle the pages allocated in this case.
 
-> If your goal is to get more people
-> to use Bloatwatch
-Not really.  Bloatwatch is a means to an end.  It's
-only the end I care about, which is more visibility
-into kernel size growth over time.
+A previous version of this patch made trim_pages() trim trailing
+unused pages from skbs with some paged data, but this actually
+caused a barely measurable slowdown.
 
-> so they don't make your job quite as difficult, it
-> would probably be more appropriate to put a size analysis script in
-> scripts/ (like checkpatch.pl) that looks at only the kernel you just
-> built and generates thorough statistics in a format readable by both
-> humans and Bloatwatch, preferably something easily diffed.
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+---
+ drivers/net/virtio_net.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
-The intent would be to do as you describe (although I don't
-really care if the format is readable by Bloatwatch).  I'm a
-Bloatwatch proponent (I'm not the author), but this suggestion
-doesn't really have anything to do with Bloatwatch.  Maybe I should
-have avoided mentioning it in my initial post.
-
-Having a make target to run the script is just
-a method of making it as easy as possible to run it.
-(Kind of like 'make checkstack' or 'make cscope')
-checkpatch.pl is different in that it operates on something
-not in the tree yet.  It doesn't make sense as a make target
-so I don't think it's comparable.
-
-Maybe it would be simpler to omit the baseline comparison
-capability at first, and just focus on a canonical size
-report (script and report format) for the kernel.
-
-> Then
-> developers could use that output in mailing list discussions without
-> having to use Bloatwatch, but embedded developers who care about this
-> enough to use Bloatwatch can be confident that they're working with the
-> same numbers that the rest of us are discussing with the plain text on
-> the lists.
-
-Discussing the number with the plain text on the lists is
-the ultimate goal.  My thinking is that I'd like it to
-be used kind of like 'powertop' (except not as a runtime tool
-but as a development-time tool).  The main intent is just
-to give developers more information about how their changes
-affect the kernel size.
-
-Thanks for the feedback.
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+index 0196a0d..985271a 100644
+--- a/drivers/net/virtio_net.c
++++ b/drivers/net/virtio_net.c
+@@ -82,6 +82,16 @@ static void give_a_page(struct virtnet_info *vi, struct page *page)
+ 	vi->pages = page;
+ }
+ 
++static void trim_pages(struct virtnet_info *vi, struct sk_buff *skb)
++{
++	unsigned int i;
++
++	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
++		give_a_page(vi, skb_shinfo(skb)->frags[i].page);
++	skb_shinfo(skb)->nr_frags = 0;
++	skb->data_len = 0;
++}
++
+ static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
+ {
+ 	struct page *p = vi->pages;
+@@ -121,14 +131,8 @@ static void receive_skb(struct net_device *dev, struct sk_buff *skb,
+ 	}
+ 	len -= sizeof(struct virtio_net_hdr);
+ 
+-	if (len <= MAX_PACKET_LEN) {
+-		unsigned int i;
+-
+-		for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
+-			give_a_page(dev->priv, skb_shinfo(skb)->frags[i].page);
+-		skb->data_len = 0;
+-		skb_shinfo(skb)->nr_frags = 0;
+-	}
++	if (len <= MAX_PACKET_LEN)
++		trim_pages(dev->priv, skb);
+ 
+ 	err = pskb_trim(skb, len);
+ 	if (err) {
+@@ -232,6 +236,7 @@ static void try_fill_recv(struct virtnet_info *vi)
+ 		err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, num, skb);
+ 		if (err) {
+ 			skb_unlink(skb, &vi->recv);
++			trim_pages(vi, skb);
+ 			kfree_skb(skb);
+ 			break;
+ 		}
+-- 
+1.5.4.3
 
