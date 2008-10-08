@@ -1,157 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbYJHAqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYJHAwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbYJHAqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbYJHAqE
+	id S1757511AbYJHAwx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYJHAwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:46:04 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:36824 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753459AbYJHAqC (ORCPT
+	Tue, 7 Oct 2008 20:52:45 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48011 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752788AbYJHAwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:46:02 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>
-References: <48D7AC44.6050208@bull.net> <20080922153455.GA6238@kroah.com>
-	<48D8FC1E.6000601@bull.net> <m1k5d2oh4y.fsf@frodo.ebiederm.org>
-	<20081003101331.GH28946@ZenIV.linux.org.uk>
-	<20081005053236.GA9472@kroah.com> <m1bpxwajyy.fsf@frodo.ebiederm.org>
-	<20081007222726.GA9465@kroah.com>
-Date: Tue, 07 Oct 2008 17:39:05 -0700
-In-Reply-To: <20081007222726.GA9465@kroah.com> (Greg KH's message of "Tue, 7
-	Oct 2008 15:27:26 -0700")
-Message-ID: <m1hc7nj4ye.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 7 Oct 2008 20:52:44 -0400
+To: "Cihula, Joseph" <joseph.cihula@intel.com>
+Cc: <linux-kernel@vger.kernel.org>, "Wang, Shane" <shane.wang@intel.com>,
+       "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
+       <mingo@elte.hu>, <tytso@mit.edu>
+Subject: Re: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
+From: Andi Kleen <andi@firstfloor.org>
+References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com>
+Date: Wed, 08 Oct 2008 02:52:41 +0200
+In-Reply-To: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> (Joseph Cihula's message of "Tue, 7 Oct 2008 13:34:57 -0700")
+Message-ID: <87myhflxgm.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Greg KH <greg@kroah.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4701]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: sysfs: tagged directories not merged completely yet
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+"Cihula, Joseph" <joseph.cihula@intel.com> writes:
 
-> On Tue, Oct 07, 2008 at 01:27:17AM -0700, Eric W. Biederman wrote:
->> Unless someone will give an example of how having multiple superblocks
->> sharing inodes is a problem in practice for sysfs and call it good
->> for 2.6.28.  Certainly it shouldn't be an issue if the network namespace
->> code is compiled out.  And it should greatly improve testing of the
->> network namespace to at least have access to sysfs.
->
-> But if the network namespace code is in?  THen we have problems, right?
+Quick review, not very deep (as in just Linux interfaces not design)
 
-Possibly.  Tejun and I looked at it a while ago and could not see any
-problems that you could trigger by having multiple superblocks share
-the same inodes but there might be some.  I don't like that aspect
-of it any more than Al does, I just haven't found an alternative
-that works, nor have I seen a suggestion that is better.
+> @@ -0,0 +1,258 @@
+> +/*
+> + * tboot.c: main implementation of helper functions used by kernel for
+> + *          runtime support
 
-> And that's the whole point here.
+This description is not very helpful for someone who doesn't know
+what tboot is.
 
-And my point is that compared to the other bugs Al found in sysfs
-my contribution is miniscule and minor, and pretty much fixed
-at this point.
+There should be at least a short paragraph here describing what it is
+Better more.
 
-Do I have to rewrite all of sysfs to the point where Al can not find
-bugs in it before I can merge my changes?
+> +	extern struct boot_params boot_params;
 
-If that is the standard while it seems ridiculous I can work with
-it.  I need something i can work with.
+That should be in some include
 
-> The fact that you are trying to limit userspace view of in-kernel data
-> structures, based on that specific user, is, in my opinion, crazy.
->
-> Why not just keep all users from seeing sysfs, and then have a user
-> daemon doing something on top of FUSE if you really want to see this
-> kind of stuff.
+> +	printk(KERN_INFO "TBOOT: found shared page at phys addr 0x%lx:\n",
+> +	       (unsigned long)boot_params.hdr.tboot_shared_addr);
+> +	printk(KERN_DEBUG "  version: %d\n", tboot_shared->version);
+> +	printk(KERN_DEBUG "  log_addr: 0x%08x\n", tboot_shared->log_addr);
+> +	printk(KERN_DEBUG "  shutdown_entry32: 0x%08x\n",
+> +	       tboot_shared->shutdown_entry32);
+> +	printk(KERN_DEBUG "  shutdown_entry64: 0x%08x\n",
+> +	       tboot_shared->shutdown_entry64);
+> +	printk(KERN_DEBUG "  shutdown_type: %d\n", tboot_shared->shutdown_type);
+> +	printk(KERN_DEBUG "  s3_tb_wakeup_entry: 0x%08x\n",
+> +	       tboot_shared->s3_tb_wakeup_entry);
+> +	printk(KERN_DEBUG "  s3_k_wakeup_entry: 0x%08x\n",
+> +	       tboot_shared->s3_k_wakeup_entry);
+> +	printk(KERN_DEBUG "  &acpi_sinfo: 0x%p\n", &tboot_shared->acpi_sinfo);
+> +	printk(KERN_DEBUG "  tboot_base: 0x%08x\n", tboot_shared->tboot_base);
+> +	printk(KERN_DEBUG "  tboot_size: 0x%x\n", tboot_shared->tboot_size);
 
-As Serge said.  The problem is very simply that with the network
-namespaces we create devices in different namespaces that have
-the same name.  lo being the first one we hit.  It wasn't my
-idea to export them to sysfs but it has happened.
+Having that much debug output by default is not nice.
 
-We need a way to put those devices in sysfs that doesn't break
-sysfs and is in some form backwards compatible with code that
-is running today.
+> +}
+> +
+> +static pgd_t *tboot_pg_dir;
+> +static inline void switch_to_tboot_pt(void)
+> +{
+> +	native_write_cr3(__pa(tboot_pg_dir));
+> +}
+> +
+> +struct tboot_pgt_struct {
+> +	unsigned long ptr;
+> +	struct tboot_pgt_struct *next;
+> +};
+> +static struct tboot_pgt_struct *tboot_pgt;
+> +
+> +/* Allocate (and save for later release) a page */
+> +static unsigned long alloc_tboot_page(void)
 
-Given that there is at least one directory per physical NIC
-in sysfs that I need to handle, the easiest approach I have
-found is simply to have a way of having entries with the
-same name in the same directory and have a filter on the superblock
-of sysfs so different ones are shown.
+Passing pointers around as unsigned long is not nice.
 
-> The "leakage" just seems too hard to stop.
+> +{
+> +	unsigned long ptr;
+> +	struct tboot_pgt_struct *pgt;
+> +
+> +	ptr = get_zeroed_page(GFP_ATOMIC);
 
-The goal is not to hide the fact you are in anamespace.  So
-information "leakage" isn't a problem.  I simply need a configuration
-where something works.
+In general GFP_ATOMIC is nasty and should be avoided if possible.
 
-If I could do what I am trying to do with FUSE I would be happy to
-do it that way, and for more esoteric things I have actively suggested
-it.
+> +	if (ptr) {
+> +		pgt = kmalloc(sizeof(*pgt), GFP_ATOMIC);
+> +		if (!pgt) {
+> +			free_page(ptr);
+> +			return 0;
+> +		}
+> +		pgt->ptr = ptr;
+> +		pgt->next = tboot_pgt;
+> +		tboot_pgt = pgt;
 
-> I know how the whole "we'll go back later and fix it up" stuff works,
-> I've used that excuse too many times in the past myself.  Never happens
-> :)
+Instead of allocating something here you could just use
+the list_head in struct page
 
-Sometimes.  That has to be balanced against the it is pointless to
-submit patches effect.  Which I am feeling pretty strongly right now.
+> +	pgd = tboot_pg_dir + pgd_index(vaddr);
+> +#ifdef __x86_64__
 
-A lot of false criticism and what feels like over reaction mixed in
-with the few real bugs.
+Is there any reason you cannot use the generic pgalloc.h allocators?
+Is it only for tracking the pages? Why not track it using 
+the page tables? Or insert it into the list (if you really
+need one, i'm not sure what the list is actually good for) 
+based on the page tables after the fact.
 
->> Greg I agree with Al that sysfs isn't perfect but we sure aren't going
->> to fix it if you keep dropping or taking years to merge every patch
->> from the people working on it, and then dropping those patches because
->> someone frowns at them.
->
-> "years"?  Come on, these did take a while due to travel and other stuff.
+That would avoid the ifdefery and clean this function up
+greatly.
+> +
+> +	/* Create identity map for tboot shutdown code. */
+> +	if (tboot_shared->version >= 0x02) {
+> +		map_base = PFN_DOWN(tboot_shared->tboot_base);
+> +		map_size = PFN_UP(tboot_shared->tboot_size);
+> +	} else {
+> +		map_base = 0;
+> +		map_size = PFN_UP(0xa0000);
 
-Yes.  "years".  This last round hasn't been too bad in comparison
-3-4 months.  Just before the start of the previous merge window to now.
+Avoid magic numbers like this.
 
-> These are core kernel changes, and need time to ensure that they work
-> properly, and get the proper review from people who understand this kind
-> of stuff.
+> +	}
+> +
+> +	if (map_pages_for_tboot(map_base << PAGE_SHIFT, map_base, map_size)) {
+> +		printk(KERN_DEBUG "error mapping tboot pages "
+> +				  "(mfns) @ 0x%x, 0x%x\n", map_base, map_size);
+> +		clean_up_tboot_mapping();
+> +		return;
+> +	}
+> +
+> +	switch_to_tboot_pt();
+> +
+> +#ifdef __x86_64__
+> +	asm volatile ("jmp *%%rdi" : : "D" (tboot_shared->shutdown_entry64));
+> +#else
+> +	asm volatile ("jmp *%%edi" : : "D" (tboot_shared->shutdown_entry32));
+> +#endif
 
-I totally agree.  And for that I have no problem if they are not merged
-into the stable release.  At the same time if they are not at least in
-a tree that merges into linux-next no one takes them seriously and the
-code is just ignored.
+Why not just use a C indirect function call?
 
-> And to call Al a generic "someone", is just rude and disrespectful.  I
-> trust his opinion in this area far more than I do yours, to be honest.
+> +#ifdef CONFIG_TXT
+> +static void tboot_sleep(u8 sleep_state)
+> +{
+> +	uint32_t shutdown_type;
+> +
+> +	switch (sleep_state) {
+> +	case ACPI_STATE_S3:
+> +		shutdown_type = TB_SHUTDOWN_S3;
+> +		break;
+> +	case ACPI_STATE_S4:
+> +		shutdown_type = TB_SHUTDOWN_S4;
+> +		break;
+> +	case ACPI_STATE_S5:
+> +		shutdown_type = TB_SHUTDOWN_S5;
+> +		break;
 
-> This whole series is dropped, if you want to resubmit them, feel free
-> to, _after_ adressing his issues.
+This could be much shorter with just an array lookup
 
-His issues are that sysfs has problems.
+> +	default:
+> +		return;
+> +	}
+> +
+> +	tboot_shutdown(shutdown_type);
+> +}
+> +#endif
+> +
+>  /*******************************************************************************
+>   *
+>   * FUNCTION:    acpi_enter_sleep_state
+> @@ -361,6 +392,20 @@ acpi_status asmlinkage acpi_enter_sleep_
+>  
+>  	PM1Acontrol |= sleep_enable_reg_info->access_bit_mask;
+>  	PM1Bcontrol |= sleep_enable_reg_info->access_bit_mask;
+> +
+> +#ifdef CONFIG_TXT
+> +	if (tboot_in_measured_env()) {
+> +		tboot_shared->acpi_sinfo.pm1a_cnt =
+> +			(uint16_t)acpi_gbl_FADT.xpm1a_control_block.address;
+> +		tboot_shared->acpi_sinfo.pm1b_cnt =
+> +			(uint16_t)acpi_gbl_FADT.xpm1b_control_block.address;
 
-Except for one I have already addressed Al's issues that were in my code.
+Why are the addresses truncated to 16bit?
 
-Greg do you understand sysfs well enough to know if I have addressed Al's issues?
+> +		tboot_shared->acpi_sinfo.pm1a_cnt_val = PM1Acontrol;
+> +		tboot_shared->acpi_sinfo.pm1b_cnt_val = PM1Bcontrol;
+> +		tboot_sleep(sleep_state);
+> +		printk(KERN_DEBUG "TBOOT failed entering s3 state\n");
 
-> bah,
+That should not be KERN_DEBUG
 
-Eric
+> +
+> +#define TB_SHUTDOWN_REBOOT      0
+> +#define TB_SHUTDOWN_S5          1
+> +#define TB_SHUTDOWN_S4          2
+> +#define TB_SHUTDOWN_S3          3
+> +#define TB_SHUTDOWN_HALT        4
+
+If you use the same values as ACPI you perhaps
+don't even need a lookup table above.
+
+
+> +/* {663C8DFF-E8B3-4b82-AABF-19EA4D057A08} */
+> +#define TBOOT_SHARED_UUID     \
+> +		((struct tboot_uuid){ 0x663c8dff, 0xe8b3, 0x4b82, 0xaabf,   \
+> +				{ 0x19, 0xea, 0x4d, 0x5, 0x7a, 0x8 } })
+
+Some comment where this magic number comes from?
+
+
+-Andi
+-- 
+ak@linux.intel.com
