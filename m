@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYJHVJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYJHVMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbYJHVJX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 17:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYJHVJO
+	id S1756054AbYJHVMN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 17:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYJHVL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 17:09:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47710 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753976AbYJHVJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 17:09:14 -0400
-Date: Wed, 8 Oct 2008 23:08:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       yinghai@kernel.org
-Subject: Re: [patch 3/7] x86, cpa: make the kernel physical mapping
-	initialization a two pass sequence
-Message-ID: <20081008210854.GA14309@elte.hu>
-References: <20080923210035.413932000@linux-os.sc.intel.com> <20080923211444.369122000@linux-os.sc.intel.com> <48EA798D.1090303@goop.org> <20081007015833.GO15609@linux-os.sc.intel.com> <48EB8008.1020700@goop.org> <20081007205845.GP15609@linux-os.sc.intel.com> <48ED0E22.8080809@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48ED0E22.8080809@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Wed, 8 Oct 2008 17:11:57 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:55381 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754724AbYJHVL4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 17:11:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type
+         :content-transfer-encoding;
+        b=NOb1B2l/g7XxMZg96SJ7Ahqtillj71NQQomDGhodVFdjyC94U24qzZRqlX117FHOGa
+         4BVb7sI9MQ1v/etXCDiCSDo6Ls2e9+Df8EkbA5j8ni46nXLlJSFlS8PSzKpOUOy/rB5S
+         22wn5085RC6Khi2FjoT7LsLw4ps6ljtk2mpsY=
+Date: Wed, 8 Oct 2008 23:11:31 +0200
+From: dcg <diegocg@gmail.com>
+To: pingc@wacom.com, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
+Subject: Wacom tablet not working with 2.6.27-rc: kernel or X.org driver
+ fault?
+Message-ID: <20081008231131.4feb01cd@diego-desktop>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, I just updated to Ubuntu Intrepid testing sources, which include
+X.org 7.4, and as kernel I'm using the latest Linus' tree. And my
+wacom tablet has stopped working properly, just like described in
+https://bugs.launchpad.net/ubuntu/+source/wacom-tools/+bug/260675
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+As this bug appeared when I updated X.org I'd blame the X driver for
+this bug (it's not a kernel regression), but there's people pointing
+to a kernel patch [1] that updates the kernel driver to the latest
+version to get this problem fixed, so I ask: Is there some bug in the
+kernel wacom module that can be sent as a simple fix to -stable (2.6.27
+will be released really soon), or have the linuxwacom people decided to
+change the compatibility between the X <-> kernel wacom interfaces
+without pushing the changes to one side, and then we must wait to 2.6.28
+because it's an "improvement"?
 
-> Suresh Siddha wrote:
->> On Tue, Oct 07, 2008 at 08:28:08AM -0700, Jeremy Fitzhardinge wrote:
->>   
->>> Well, that's OK.  We just need to preserve the original page permissions
->>> when fragmenting the large mappings.  (This isn't a case that affects
->>> Xen, because it will already be 4k mappings.)
->>>     
->>
->> Jeremy, Can you please check if the appended patch fixes your issue and Ack
->> it? Test booted on three different 64bit platforms with and without
->> DEBUG_PAGEALLOC.
->>   
->
-> This patch works fine under Xen.  Thanks for the quick fix.
->
-> Tested-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+It'd be interesting to get this issue fixed ASAP, as having stable
+releases of X.org and Linux which can't work together is not very
+nice, specially for the ones of us that use a tablet as mouse.
 
-applied to tip/x86/pat, thanks guys!
-
-If it fails testing for some reason then it might not make the first 
-v2.6.28 pull request, but it's definitely moving in the right direction 
-so the PAT/TLB changes seem v2.6.28 worthy.
-
-	Ingo
+[1]: http://launchpadlibrarian.net/17948041/wacom-1.49.patch
