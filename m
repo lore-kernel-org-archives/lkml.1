@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYJHKAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbYJHKCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYJHKAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 06:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYJHKAG
+	id S1755080AbYJHKCS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 06:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYJHKCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 06:00:06 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:37530 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753231AbYJHKAF (ORCPT
+	Wed, 8 Oct 2008 06:02:03 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:59721 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753935AbYJHKCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 06:00:05 -0400
-Date: Wed, 8 Oct 2008 11:59:59 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: David Woodhouse <dwmw2@infradead.org>, Li Yang <leoli@freescale.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Tejun Heo <tj@kernel.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Wang Jian <lark@linux.net.cn>
-Subject: Re: [PATCH] pata_of_platform: fix no irq handling
-In-Reply-To: <20081008100025.1c535401@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.64.0810081159240.24611@vixen.sonytel.be>
-References: <20081006172653.GA26427@oksana.dev.rtsoft.ru> <48EA77EF.6080502@genesi-usa.com>
- <20081006213209.GA13072@oksana.dev.rtsoft.ru> <48EABBD3.1010401@kernel.org>
- <20081007103723.0224671e@lxorguk.ukuu.org.uk> <1223455254.3145.143.camel@macbook.infradead.org>
- <20081008100025.1c535401@lxorguk.ukuu.org.uk>
+	Wed, 8 Oct 2008 06:02:01 -0400
+Message-ID: <48EC847A.5060900@cs.columbia.edu>
+Date: Wed, 08 Oct 2008 05:59:22 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1477599591-1223459999=:24611"
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: [RFC v5][PATCH 0/9] Kernel based checkpoint/restart
+References: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu> <20080917141601.GA14010@us.ibm.com>
+In-Reply-To: <20080917141601.GA14010@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-1477599591-1223459999=:24611
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 
-On Wed, 8 Oct 2008, Alan Cox wrote:
-> On Wed, 08 Oct 2008 09:40:54 +0100
-> David Woodhouse <dwmw2@infradead.org> wrote:
+Serge E. Hallyn wrote:
+> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>> These patches implement basic checkpoint-restart [CR]. This version (v5)
+>> supports basic tasks with simple private memory, and open files (regular
+>> files and directories only). The main changes include rework of memory
+>> restart code and response to feedback. See original announcements below.
+>>
+>> Oren.
 > 
-> > On Tue, 2008-10-07 at 10:37 +0100, Alan Cox wrote:
-> > > Zero means no IRQ. Any platform with bits of code left over exposing IRQ
-> > > 0 is already not supported by lots of driver code including libata.
-> > 
-> > ...and must implement some kind of interrupt remapping crap just to work
-> > around this bogus design decision.
+> At the kernel summit, it was asked whether at some point this CR work
+> could be used as the basis for a new suspend to disk implementation.
+> I answered that we don't plan to handle kernel threads.  In your
+> experience, are there any reasons why eventually we couldn't eventually
+> handle kernel threads?
 > 
-> I'll leave you to argue with Linus about that, but since that was the
-> decision back in 2005 (for good C reasons) we can safely rely on it.
+> -serge
 
-`git grep NO_IRQ include arch/*/include' is still quite enlightening...
+As far as I can see, there isn't an inherent reason not to handle
+kernel threads. However, I never looked deep into the problem.
 
-With kind regards,
+The main issue that I can see with it is similar to what the
+hibernation developers must tackle anyway - how to freeze kernel
+threads when some of them may still be needed to take the system
+down.
 
-Geert Uytterhoeven
-Software Architect
+Assuming that is solved, then we're left with how to freeze the
+kernel threads in a state that makes sense for a restart; for
+regular tasks this is right before going back to user-land (*),
+for kernel threads it may not be the best place :)
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+(*) however, tasks that are ptraced or in the middle of a vfork
+will require special treatment - since upon freezing they cannot
+be forced to that convenient position; so upon restart there must
+be special code to make their behavior after restart compatible
+with what they would have done originally - probably by emulation
+as opposed to rebuilding their old kernel stack. For instance,
+if a task was stopped due to ptrace before return from a syscall,
+then upon restart it should return to that exact state.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+So I'd assume that kernel threads could be treated in a similar
+manner by special-casing, if necessary.
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1477599591-1223459999=:24611--
+Question: I'd assume that at least for some of the kernel threads
+a simple re-launch at restart will do; how many really require that
+we save and restore their state ?
+
+Oren
+
