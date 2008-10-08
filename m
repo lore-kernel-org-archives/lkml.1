@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYJHJCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYJHJEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbYJHJCv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 05:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbYJHJCn
+	id S1755013AbYJHJEs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 05:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYJHJEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 05:02:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36673 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753895AbYJHJCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 05:02:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Miller <davem@davemloft.net>
-Subject: Re: Top kernel oopses/warnings for the week of October 7th, 2008
-Date: Wed, 8 Oct 2008 11:06:54 +0200
-User-Agent: KMail/1.9.9
-Cc: alan@lxorguk.ukuu.org.uk, arjan@linux.intel.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, mingo@elte.hu, netdev@vger.kernel.org,
-       linux-acpi@vger.kernel.org, tglx@tglx.de, tytso@mit.edu,
-       linux-ide@vger.kernel.org
-References: <48EBBE15.9030905@linux.intel.com> <20081007235833.1a89948f@lxorguk.ukuu.org.uk> <20081007.160835.257227518.davem@davemloft.net>
-In-Reply-To: <20081007.160835.257227518.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 8 Oct 2008 05:04:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60367 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752474AbYJHJEj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 05:04:39 -0400
+Date: Wed, 8 Oct 2008 10:00:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Tejun Heo <tj@kernel.org>, avorontsov@ru.mvista.com,
+       Matt Sealey <matt@genesi-usa.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Li Yang <leoli@freescale.com>,
+       Wang Jian <lark@linux.net.cn>
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+Message-ID: <20081008100025.1c535401@lxorguk.ukuu.org.uk>
+In-Reply-To: <1223455254.3145.143.camel@macbook.infradead.org>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48EA77EF.6080502@genesi-usa.com>
+	<20081006213209.GA13072@oksana.dev.rtsoft.ru>
+	<48EABBD3.1010401@kernel.org>
+	<20081007103723.0224671e@lxorguk.ukuu.org.uk>
+	<1223455254.3145.143.camel@macbook.infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810081106.55730.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 8 of October 2008, David Miller wrote:
-> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Date: Tue, 7 Oct 2008 23:58:33 +0100
-> 
-> > > This should have been fixed by:
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f5a6d958b5d0a10e7e7a9dee1862fb31d08c6d26
-> > 
-> > You mean - hidden by - that change should IMHO be reverted
-> 
-> Grrr... I totally agree.
+On Wed, 08 Oct 2008 09:40:54 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-Even though they are false positives in many cases?
+> On Tue, 2008-10-07 at 10:37 +0100, Alan Cox wrote:
+> > Zero means no IRQ. Any platform with bits of code left over exposing IRQ
+> > 0 is already not supported by lots of driver code including libata.
+> 
+> ...and must implement some kind of interrupt remapping crap just to work
+> around this bogus design decision.
 
-(Yes, they are).
+I'll leave you to argue with Linus about that, but since that was the
+decision back in 2005 (for good C reasons) we can safely rely on it.
