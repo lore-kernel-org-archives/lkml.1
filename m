@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbYJHA1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbYJHAaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbYJHA1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 20:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYJHA1K
+	id S1757542AbYJHAaQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 20:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbYJHA37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 20:27:10 -0400
-Received: from ozlabs.org ([203.10.76.45]:57784 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753163AbYJHA1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 20:27:09 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH/RFC 0/4] Add stop_machine_get/put_threads to stop_machine infrastructrue.
-Date: Wed, 8 Oct 2008 10:27:04 +1000
-User-Agent: KMail/1.9.9
-Cc: jens.axboe@oracle.com, schwidefsky@de.ibm.com,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <20081003105632.357231142@de.ibm.com> <200810071239.58732.rusty@rustcorp.com.au> <20081007153854.GA4122@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20081007153854.GA4122@osiris.boeblingen.de.ibm.com>
+	Tue, 7 Oct 2008 20:29:59 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:44087 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbYJHA36 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Oct 2008 20:29:58 -0400
+Message-ID: <48EBFEE5.7010401@caviumnetworks.com>
+Date: Tue, 07 Oct 2008 17:29:25 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org,
+       "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
+Subject: Re: [PATCH 1/4] serial: 8250 driver replaceable i/o functions.
+References: <48EBF426.9080500@caviumnetworks.com> <48EBF56D.3030203@caviumnetworks.com> <48EBFAFC.3020501@zytor.com>
+In-Reply-To: <48EBFAFC.3020501@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810081127.05311.rusty@rustcorp.com.au>
+X-OriginalArrivalTime: 08 Oct 2008 00:29:25.0944 (UTC) FILETIME=[EB202B80:01C928DC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 October 2008 02:38:54 Heiko Carstens wrote:
-> On Tue, Oct 07, 2008 at 11:39:58AM +1000, Rusty Russell wrote:
-> > That's exactly my idea.  We kmalloc already because NR_CPUS might be too
-> > big for the stack.  This version would just kmalloc a struct containing
-> > everything we need.
->
-> Ok, I did that but the resulting code is astonishingly ugly, so I thought I
-> should share it :)
+H. Peter Anvin wrote:
+> David Daney wrote:
+>> /* sane hardware needs no mapping */
+>> -static inline int map_8250_in_reg(struct uart_8250_port *up, int offset)
+>> +static inline int map_8250_in_reg(struct uart_port *p, int offset)
+>> {
+>> -    if (up->port.iotype != UPIO_AU)
+>> +    if (p->iotype != UPIO_AU)
+>>         return offset;
+>>     return au_io_in_map[offset];
+>> }
+> 
+> With your changes, these functions cannot be called with p->iotype != 
+> UPIO_AU anymore, correct?  So there is no need for this test...
+> 
 
-Yeah, the diffstat tells the story.
+I think you are probably correct.  However, with the patch it is 
+possible to move all this target specific code out of the driver.  So if 
+the patch is accepted, a better follow up would be to get rid of the 
+UPIO_AU things altogether.
 
-> Another thing that comes to mind is cpu hotplug: if somebody issued
-> stop_machine_prepare() and then a cpu hotplug operation gets started we
-> need to create or kill a kstop thread. For that we need the "sm" so we can
-> save/find the task_struct pointer of the thread.
+I gave an example of how that could be done with UPIO_TSI here:
 
-Erk, good point.  Suckage.
+http://marc.info/?l=linux-serial&m=122333633802691&w=2
 
-OK, idea #2.  Let's just always have a kstopmachine thread running on every 
-online cpu.  Is there a sane way to reuse the workqueue threads for this?
-
-Thanks,
-Rusty.
-
+David Daney
