@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbYJHRS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYJHRTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953AbYJHRS3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 13:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYJHRSV
+	id S1755339AbYJHRTc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 13:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYJHRTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 13:18:21 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:35405 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752788AbYJHRSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 13:18:20 -0400
-Date: Wed, 8 Oct 2008 19:18:15 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
-Subject: Re: [patch 2.6.27-rc8-git] add drivers/mfd/twl4030-core.c
-Message-ID: <20081008171814.GB4766@localdomain>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <200810061047.50127.david-b@pacbell.net>
+	Wed, 8 Oct 2008 13:19:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34057 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753699AbYJHRTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 13:19:23 -0400
+Message-ID: <48ECEB75.2080906@redhat.com>
+Date: Wed, 08 Oct 2008 13:18:45 -0400
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810061047.50127.david-b@pacbell.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+References: <20080804130317.994042639@chello.nl> <alpine.LFD.1.10.0808041230070.3340@nehalem.linux-foundation.org> <20081008152708.GA11207@goodmis.org> <200810090252.15384.nickpiggin@yahoo.com.au>
+In-Reply-To: <200810090252.15384.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Nick Piggin wrote:
+>
+>> This can be a source of bugs, where people might notice an outer lock
+>> being released and think the inner locks were too.
+>>
+>> Lately the kernel has been going through a lot of clean ups that have
+>> been making the kernel a much more maintainable beast. I feel we should
+>> enforce the rule of unlocking order (again, unless there is a good
+>> reason not to). Not for a technical reason, but just for a more
+>> maintainable one.
+>>     
+>
+> I don't really think it would make things more maintainable, FWIW.
+>   
 
-On Mon, Oct 06, 2008 at 10:47:49AM -0700, David Brownell wrote:
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> This patch adds the core of the TWL4030 driver, which supports
-> chips including the TPS65950.  These chips are multi-function; see 
-> 
->   http://focus.ti.com/docs/prod/folders/print/tps65950.html
-> 
-> Public specs are in the works.  For now, the block diagram on
-> the second page of the datasheet is fairly informative.
-> 
-> There are some known issues with this core code.  Most notably,
-> the IRQ dispatching needs simplification (to use more of genirq),
-> generalization (integrating support for secondary IRQ dispatch
-> as well as primary, and removing the build dependency on OMAP),
-> and then probably updating to leverage threaded IRQ support
-> (expected to arrive in mainline "soon").
-> 
-> Once the core is in mainline, drivers for other parts of this
-> chip can follow its lead and start swimming upstream too.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Thanks, applied to my mfd tree.
+I actually did come across one bug in my lifetime where the out of 
+nesting order
+of unlocks caused a bug. IIRC, it had to do (as Linus mentioned) with 
+lots of
+little functions that required locking. One of these functions was 
+between the
+out of order unlocking and was taking another inner lock.
 
+I don't remember the exact details, but it was something that made me 
+try to nest
+locks and unlocks nicely when possible. And as Linus pointed out, there 
+are several
+cases where it just doesn't make sense to nest.
 
-> +#if defined(CONFIG_TWL4030_BCI_BATTERY) || \
-> +	defined(CONFIG_TWL4030_BCI_BATTERY_MODUEL)
-minor typo, you probably meant: CONFIG_TWL4030_BCI_BATTERY_MODULE
+-- Steve
 
-Cheers,
-Samuel.
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
