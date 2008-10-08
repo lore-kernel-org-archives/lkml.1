@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbYJHXwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbYJHX4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbYJHXwn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 19:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYJHXwe
+	id S1757058AbYJHX4P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 19:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYJHXz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 19:52:34 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:41870 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754898AbYJHXwd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 19:52:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=XztzF1gtvKvSI5KDPst3ilJJ8SQCB3T4Y9tsqDBeqAWOrMh0+ewE1zxhhcktkyOb+I
-         CFinvoeD/ZoTNWNC/Z2bR/JV+5mFjoAEzP4Ns6ftdOttSNVBHo0fG3Rb4n8IBzMpoCLM
-         TyzWw1mvYxGa9HEJ/W1SzkUQsVgX7pq505wC0=
-Date: Thu, 9 Oct 2008 01:52:40 +0200
-From: dcg <diegocg@gmail.com>
-To: "Ping Cheng" <pingc@wacom.com>
-Cc: <dmitry.torokhov@gmail.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: Wacom tablet not working with 2.6.27-rc: kernel or X.org driver
- fault?
-Message-ID: <20081009015240.7f935fdc@diego-desktop>
-In-Reply-To: <6753EB6004AFF34FAA275742C104F95271BCC8@wacom-nt10.wacom.com>
-References: <20081008231131.4feb01cd@diego-desktop>
- <6753EB6004AFF34FAA275742C104F95271BCC8@wacom-nt10.wacom.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-pc-linux-gnu)
+	Wed, 8 Oct 2008 19:55:59 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:2161 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754839AbYJHXz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 19:55:58 -0400
+Date: Thu, 9 Oct 2008 01:52:46 +0200
+Message-Id: <200810082355.m98NtZkQ012577@goelette.ens.fr>
+From: Quentin Godfroy <godfroy@clipper.ens.fr>
+To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: possible (ext4 related?) memory leak in kernel 2.6.26
+References: <20081003003548.GA18138@mit.edu> <20081005091526.GA678@goelette.ens.fr> <20081005122752.GB27335@mit.edu> <20081005161214.GA2985@goelette.ens.fr> <20081006025006.GA9289@mit.edu> <48EA2F20.7020309@redhat.com> <20081006175502.GA12937@mit.edu> <20081007221256.GF15929@mit.edu> <20081008000227.GA32052@goelette.ens.fr> <20081008005338.GH15929@mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081008005338.GH15929@mit.edu>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Thu, 09 Oct 2008 01:55:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, 8 Oct 2008 15:42:11 -0700, "Ping Cheng" <pingc@wacom.com> escribió:
+On Tue, Oct 07, 2008 at 08:53:38PM -0400, Theodore Tso wrote:
+> On Wed, Oct 08, 2008 at 02:02:27AM +0200, Quentin Godfroy wrote:
+> > 
+> > I rebooted, but as I didn't know exactly how to trigger the bug except than
+> > by waiting a few days I was waiting to see.
+> > 
+> > Do you have an idea about how to trigger the bug?
+> 
+> The bug is that each time a transaction commits, if the buffer head
+> hasn't been leaked already, it will leak pinning the memory until the
+> total size of the journal is taking up memory.  If you have a 2gigs of
+> memory, and a single filesystem with 256meg journal, you might not
+> notice the problem at all.  If you less than 256 megs of memory,
+> you'll notice fairly quickly.   
 
-> The bug with ubuntu is related to kernel 2.6.26 and the user's newer
-> tablet.  They have to upgrade wacom.ko from linuxwacom themselves or
-> wait for ubuntu to do the job for them.  That has nothing to do with
-> kernel.org.
+Indeed after a couple of days of uptime the number of dirty blocks do not go
+further than ~50, so I think the bug is corrected as far as I am concerned.
 
-Well, it's not just a matter of newer tablets, the bug reported in ubuntu
-is from a user with a tablet which worked with the kernel included
-in ubuntu, which does not include any patch to the wacom's kernel
-driver, and X.org 7.3, and stopped working properly (ie, it "works", but
-click events don't work, and the pointer does weird things) installing
-X.org 7.4 (just like my wacom bamboo tablet). A newer version of X.org
-driver should not stop working with the devices and kernel.org drivers
-it used to work before.
+By the way, why does the kernel not commit to memory these remaining buffers
+when the memory is scarse (say instead of firing an OOM killer)?
 
-Now that I'm looking at it, the xserver-xorg-input-wacom ubuntu package
-is not compiled from X.org 7.4, but from linuxwacom.sf.net sources, and
-is using the version 0.8.1.4, IOW, the -dev branch of linuxwacom.sf.net.
-So maybe the problem is that there's a bug in the -dev branch of
-linuxwacom, but in any case it should get fixed ASAP, as many people is
-going to hit this problem...
+Regards
+Quentin Godfroy
