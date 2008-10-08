@@ -1,152 +1,474 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbYJHBRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYJHBcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbYJHBRl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Oct 2008 21:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYJHBRc
+	id S1756933AbYJHBcP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Oct 2008 21:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbYJHBb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Oct 2008 21:17:32 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57931 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbYJHBRc (ORCPT
+	Tue, 7 Oct 2008 21:31:58 -0400
+Received: from usaga01-in.huawei.com ([206.16.17.211]:57811 "EHLO
+	usaga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753004AbYJHBb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Oct 2008 21:17:32 -0400
-Date: Wed, 8 Oct 2008 10:16:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: righi.andrea@gmail.com
-Cc: balbir@linux.vnet.ibm.com, Michael Rubin <mrubin@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       dave@linux.vnet.ibm.com, chlunde@ping.uio.no, dpshah@google.com,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, agk@sourceware.org,
-       m.innocenti@cineca.it, s-uchida@ap.jp.nec.com, ryov@valinux.co.jp,
-       matt@bluehost.com, dradford@bluehost.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH -mm 0/2] memcg: per cgroup dirty_ratio
-Message-Id: <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48EB851D.2030300@gmail.com>
-References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com>
-	<20080912131816.e0cfac7a.akpm@linux-foundation.org>
-	<532480950809221641y3471267esff82a14be8056586@mail.gmail.com>
-	<48EB4236.1060100@linux.vnet.ibm.com>
-	<48EB851D.2030300@gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Oct 2008 21:31:56 -0400
+Date: Wed, 08 Oct 2008 09:31:35 +0800
+From: fangxiaozhi 00110321 <huananhu@huawei.com>
+Subject: PATCH 10/4]linux-usb: To support more Huawei data card product IDs,
+ fix kernel 2.6.27-rc7
+To: linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, zihan@huawei.com, zhangqianchun@huawei.com,
+       greg@kroah.com
+Message-id: <faf7b1bd45d66.45d66faf7b1bd@huawei.com>
+MIME-version: 1.0
+X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.14 (built Aug  8 2006)
+Content-type: text/plain; charset=us-ascii
+Content-language: zh-CN
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-Accept-Language: zh-CN
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Oct 2008 17:49:49 +0200
-Andrea Righi <righi.andrea@gmail.com> wrote:
+  From: fangxiaozhi <huananhu@huawei.com>
+ 
+ 1. This patch is based on the kernel of 2.6.27-rc7 
+ 2. In this patch, we want to do one thing: add more Huawei product IDs into the USB driver. Then it can support  more Huawei data card devices. So to declare the unusual device for new Huawei data card devices 
+ in unusual_devs.h and to declare more new product IDs in option.c.
+ 3. To modify the data value and length in the function of 
+ usb_stor_huawei_e220_init in initializers.c
+   That's because based on the USB standard, while sending SET_FETURE_D to the device, it requires the corresponding data to be zero, and its sending length also must be zero.
+   In our old solution, it can be compatible with our WCDMA data card devices, but can not support our CDMA data card devices. 
+    But in this new solution, it can be compatible with all of our data card devices.
 
-> Balbir Singh wrote:
-> > Michael Rubin wrote:
-> >> On Fri, Sep 12, 2008 at 1:18 PM, Andrew Morton
-> >> <akpm@linux-foundation.org> wrote:
-> >>> One thing to think about please: Michael Rubin is hitting problems with
-> >>> the existing /proc/sys/vm/dirty-ratio.  Its present granularity of 1%
-> >>> is just too coarse for really large machines, and as
-> >>> memory-size/disk-speed ratios continue to increase, this will just get
-> >>> worse.
-> >> Re-sending since I top-posted before. Never again. Also adding more
-> >> thoughts on a byte based interface.
-> >>
-> >> Currently the problem we are hitting is that we cannot specify pdflush
-> >> to have background limits less than 1% of memory. I am currently
-> >> finishing up a patch right now that adds a dirty_ratio_millis
-> >> interface.  I hope to submit the patch to LKML by the end of the week.
-> >>
-> >> The idea is that we don't want to break backwards compatibility and we
-> >> also don't want to have two conflicting knobs in the sysctl or
-> >> /proc/sys/vm/ space. I thought adding a new knob for those who want to
-> >> specify finer grained functionality was a compromise. So the patch has
-> >> a vm_dirty_ratio and a vm_dirty_ratio_millis interface. The first to
-> >> specify 0-100% and the second to specify .0 to .999%.
-> >>
-> >> So to represent 0.125% of RAM we set
-> >> vm_dirty_ratio = 0
-> >> vm_dirty_ratio_millis = 125
-> >>
-> >> The same for the background_ratio.
-> >>
-> >> I would also prefer using a bytes interface but I am not sure how to
-> >> offer that without  either removing the legacy interface of the ratios
-> >> or by offering a concurrent interface that might be confusing such as
-> >> when users are looking at the old one and not aware of a new one.
-> >>
-> > 
-> > Just provide a vm_dirty_ration_in_bytes interface and keep it in sync with
-> > vm_dirty_ratio (they are just two representations of the same internal value)
-> > and for higher resolution propose that users use the bytes interface.
-> 
-> Hi Balbir,
-> 
-> now that I read carefully the documentation, the description in
-> Documentation/filesystems/proc.txt seems to be a bit misleading. In
-> proc.txt we say that dirty_ratio and dirty_background_ratio are "a
-> percentage of total system memory", but in mm/page-writeback.c we apply
-> the percentages to the dirtyable memory: free pages + reclaimable pages.
-> So, first of all I think we should clarify this in the documentation...
-> 
-> Saying that, keeping in sync the vm_dirty_amount_in_bytes according to
-> dirty_ratio_in_percentage is not a trivial task. One is a static value,
-> the other depends on the dirtyable memory in the system. If we want to
-> preserve the same behaviour we should do the following:
-> 
-> dirty_ratio = x => dirty_amount_in_bytes = x * dirtyable_memory / 100
-> 
-> dirty_amount_in_bytes = y => dirty_ratio = y / dirtyable_memory * 100
-> 
-> But anytime the dirtyable memory (or the total memory in the system)
-> changes we should update both values accordingly to preserve the
-> coherency between them (ouch!).
-> 
-> Possible solutions:
-> 
-> 1) introduce fine-grained dirty_ratio handling decimals by an opportune
->    parser (disadvantage: this would break the compatibility with all the
->    userspace apps that expect to read an int from vm_dirty_ratio)
-> 
-> 2) introduce dirty_ratio + dirty_ratio_millis (disadvantage: can
->    generate unexpected behaviours when something is written to
->    dirty_ratio ignoring the existence of dirty_ratio_millis)
-> 
-> 3) introduce dirty_ratio + dirty_amount_in_bytes mutually exclusive,
->    writing to one automatically "disable" the other (disadvantage:
->    writing to dirty_ratio ignoring dirty_amount_in_bytes can cause
->    unexpected behaviours)
-> 
-> 4) introduce dirty_ratio + dirty_amount_in_bytes and change the
->    old behaviour: when something is written to dirty_ratio,
->    dirty_amount_in_bytes is evaluated in function of totalram_pages (or
->    the memcg limit) and then we always use this static value, instead of
->    something that depends on the dirtyable memory - we can easily update
->    dirty_amount_in_bytes also when totalram_pages or the memcg limit
->    changes (disadvantage: change an old - working - behaviour).
-> 
-> 5) handle fine-grained dirty_ratio decimals by an opportune parser when
->    writing something to dirty_ratio; export the percentage units via
->    dirty_ratio, and the decimals via dirty_ratio_decimals; writing to
->    dirty_ratio_decimals is not allowed.
-> 
-> I tend to choose 5. The same for dirty_background_ratio.
-> 
+ Signed-off-by: fangxiaozhi <huananhu@huawei.com>
+ -------------------------------------------------------------------
 
-Hmm... I agree to "5"... like this ?
-==
-prvoides
-  - vm.dirty_ratio (1/100)
-  - vm.dirty_ratio_percentmille(1/100,000, pcm)
+diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/serial/option.c linux-2.6.27-rc7/drivers/usb/serial/option.c
+--- linux-2.6.27-rc7-orig/drivers/usb/serial/option.c 2008-09-22 06:29:55.000000000 +0800
++++ linux-2.6.27-rc7/drivers/usb/serial/option.c 2008-09-24 12:00:14.000000000 +0800
+@@ -106,11 +106,20 @@ static int  option_send_setup(struct tty
+ #define HUAWEI_PRODUCT_E220                 0x1003
+ #define HUAWEI_PRODUCT_E220BIS                 0x1004
+ #define HUAWEI_PRODUCT_E1401                 0x1401
++#define HUAWEI_PRODUCT_E1402                 0x1402
+ #define HUAWEI_PRODUCT_E1403                 0x1403
++#define HUAWEI_PRODUCT_E1404                 0x1404
+ #define HUAWEI_PRODUCT_E1405                 0x1405
+ #define HUAWEI_PRODUCT_E1406                 0x1406
++#define HUAWEI_PRODUCT_E1407                 0x1407
+ #define HUAWEI_PRODUCT_E1408                 0x1408
+ #define HUAWEI_PRODUCT_E1409                 0x1409
++#define HUAWEI_PRODUCT_E140A                 0x140A
++#define HUAWEI_PRODUCT_E140B                 0x140B
++#define HUAWEI_PRODUCT_E140C                 0x140C
++#define HUAWEI_PRODUCT_E140D                 0x140D
++#define HUAWEI_PRODUCT_E140E                 0x140E
++#define HUAWEI_PRODUCT_E140F                 0x140F
+ #define HUAWEI_PRODUCT_E1410                 0x1410
+ #define HUAWEI_PRODUCT_E1411                 0x1411
+ #define HUAWEI_PRODUCT_E1412                 0x1412
+@@ -121,6 +130,44 @@ static int  option_send_setup(struct tty
+ #define HUAWEI_PRODUCT_E1417                 0x1417
+ #define HUAWEI_PRODUCT_E1418                 0x1418
+ #define HUAWEI_PRODUCT_E1419                 0x1419
++#define HUAWEI_PRODUCT_E141A                 0x141A
++#define HUAWEI_PRODUCT_E141B                 0x141B
++#define HUAWEI_PRODUCT_E141C                 0x141C
++#define HUAWEI_PRODUCT_E141D                 0x141D
++#define HUAWEI_PRODUCT_E141E                 0x141E
++#define HUAWEI_PRODUCT_E141F                 0x141F
++#define HUAWEI_PRODUCT_E1420                 0x1420
++#define HUAWEI_PRODUCT_E1421                 0x1421
++#define HUAWEI_PRODUCT_E1422                 0x1422
++#define HUAWEI_PRODUCT_E1423                 0x1423
++#define HUAWEI_PRODUCT_E1424                 0x1424
++#define HUAWEI_PRODUCT_E1425                 0x1425
++#define HUAWEI_PRODUCT_E1426                 0x1426
++#define HUAWEI_PRODUCT_E1427                 0x1427
++#define HUAWEI_PRODUCT_E1428                 0x1428
++#define HUAWEI_PRODUCT_E1429                 0x1429
++#define HUAWEI_PRODUCT_E142A                 0x142A
++#define HUAWEI_PRODUCT_E142B                 0x142B
++#define HUAWEI_PRODUCT_E142C                 0x142C
++#define HUAWEI_PRODUCT_E142D                 0x142D
++#define HUAWEI_PRODUCT_E142E                 0x142E
++#define HUAWEI_PRODUCT_E142F                 0x142F
++#define HUAWEI_PRODUCT_E1430                 0x1430
++#define HUAWEI_PRODUCT_E1431                 0x1431
++#define HUAWEI_PRODUCT_E1432                 0x1432
++#define HUAWEI_PRODUCT_E1433                 0x1433
++#define HUAWEI_PRODUCT_E1434                 0x1434
++#define HUAWEI_PRODUCT_E1435                 0x1435
++#define HUAWEI_PRODUCT_E1436                 0x1436
++#define HUAWEI_PRODUCT_E1437                 0x1437
++#define HUAWEI_PRODUCT_E1438                 0x1438
++#define HUAWEI_PRODUCT_E1439                 0x1439
++#define HUAWEI_PRODUCT_E143A                 0x143A
++#define HUAWEI_PRODUCT_E143B                 0x143B
++#define HUAWEI_PRODUCT_E143C                 0x143C
++#define HUAWEI_PRODUCT_E143D                 0x143D
++#define HUAWEI_PRODUCT_E143E                 0x143E
++#define HUAWEI_PRODUCT_E143F                 0x143F
+ 
+ #define NOVATELWIRELESS_VENDOR_ID         0x1410
+ 
+@@ -259,11 +306,20 @@ static struct usb_device_id option_ids[]
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1401, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1402, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1403, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1404, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1405, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1406, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1407, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1408, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1409, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140A, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140B, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140C, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140D, 0xff, 0xff, 0xff) }, 
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140E, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140F, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1410, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1411, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1412, 0xff, 0xff, 0xff) },
+@@ -274,6 +330,44 @@ static struct usb_device_id option_ids[]
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1417, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1418, 0xff, 0xff, 0xff) },
+  { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1419, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141A, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141B, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141C, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141D, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141E, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141F, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1420, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1421, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1422, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1423, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1424, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1425, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1426, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1427, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1428, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1429, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142A, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142B, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142C, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142D, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142E, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142F, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1430, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1431, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1432, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1433, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1434, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1435, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1436, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1437, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1438, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1439, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143A, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143B, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143C, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143D, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143E, 0xff, 0xff, 0xff) },
++ { USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143F, 0xff, 0xff, 0xff) },
+  { USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_9508) },
+  { USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V640) }, /* Novatel Merlin V640/XV620 */
+  { USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V620) }, /* Novatel Merlin V620/S620 */
+diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c linux-2.6.27-rc7/drivers/usb/storage/initializers.c
+--- linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c 2008-09-22 06:29:55.000000000 +0800
++++ linux-2.6.27-rc7/drivers/usb/storage/initializers.c 2008-09-24 12:04:40.000000000 +0800
+@@ -95,11 +95,11 @@ int usb_stor_huawei_e220_init(struct us_
+ {
+  int result;
+ 
+- us->iobuf[0] = 0x1;
++ us->iobuf[0] = 0x0;
+  result = usb_stor_control_msg(us, us->send_ctrl_pipe,
+                                       USB_REQ_SET_FEATURE,
+                                       USB_TYPE_STANDARD | USB_RECIP_DEVICE,
+-                                      0x01, 0x0, us->iobuf, 0x1, 1000);
++                                      0x01, 0x0, us->iobuf, 0x0, 1000);
+  US_DEBUGP("usb_control_msg performing result is %d\n", result);
+  return (result ? 0 : -1);
+ }
+diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/storage/unusual_devs.h linux-2.6.27-rc7/drivers/usb/storage/unusual_devs.h
+--- linux-2.6.27-rc7-orig/drivers/usb/storage/unusual_devs.h 2008-09-22 06:29:55.000000000 +0800
++++ linux-2.6.27-rc7/drivers/usb/storage/unusual_devs.h 2008-09-24 12:08:58.000000000 +0800
+@@ -1622,11 +1622,21 @@ UNUSUAL_DEV( 0x12d1, 0x1401, 0x0000, 0x0
+          "Mass Storage",
+          US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+          0),
++UNUSUAL_DEV( 0x12d1, 0x1402, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),         
+ UNUSUAL_DEV( 0x12d1, 0x1403, 0x0000, 0x0000,
+          "HUAWEI MOBILE",
+          "Mass Storage",
+          US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+          0),
++UNUSUAL_DEV( 0x12d1, 0x1404, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
+ UNUSUAL_DEV( 0x12d1, 0x1405, 0x0000, 0x0000,
+          "HUAWEI MOBILE",
+          "Mass Storage",
+@@ -1637,6 +1647,11 @@ UNUSUAL_DEV( 0x12d1, 0x1406, 0x0000, 0x0
+          "Mass Storage",
+          US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+          0),
++UNUSUAL_DEV( 0x12d1, 0x1407, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
+ UNUSUAL_DEV( 0x12d1, 0x1408, 0x0000, 0x0000,
+          "HUAWEI MOBILE",
+          "Mass Storage",
+@@ -1647,6 +1662,36 @@ UNUSUAL_DEV( 0x12d1, 0x1409, 0x0000, 0x0
+          "Mass Storage",
+          US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+          0),
++UNUSUAL_DEV( 0x12d1, 0x140A, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),  
++UNUSUAL_DEV( 0x12d1, 0x140B, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0), 
++UNUSUAL_DEV( 0x12d1, 0x140C, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),  
++UNUSUAL_DEV( 0x12d1, 0x140D, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0), 
++UNUSUAL_DEV( 0x12d1, 0x140E, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0), 
++UNUSUAL_DEV( 0x12d1, 0x140F, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
+ UNUSUAL_DEV( 0x12d1, 0x1410, 0x0000, 0x0000,
+          "HUAWEI MOBILE",
+          "Mass Storage",
+@@ -1697,6 +1742,196 @@ UNUSUAL_DEV( 0x12d1, 0x1419, 0x0000, 0x0
+          "Mass Storage",
+          US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+          0),
++UNUSUAL_DEV( 0x12d1, 0x141A, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x141B, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x141C, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x141D, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x141E, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x141F, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1420, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1421, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1422, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x1423, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1424, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1425, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1426, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x1427, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1428, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1429, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x142A, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x142B, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x142C, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x142D, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x142E, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x142F, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1430, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x1431, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1432, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1433, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1434, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x1435, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1436, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1437, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x1438, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x1439, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x143A, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x143B, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x143C, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x143D, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++ UNUSUAL_DEV( 0x12d1, 0x143E, 0x0000, 0x0000,
++                "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
++UNUSUAL_DEV( 0x12d1, 0x143F, 0x0000, 0x0000,
++               "HUAWEI MOBILE",
++         "Mass Storage",
++         US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++                0),
+ 
+ /* Reported by Vilius Bilinkevicius <vilisas AT xxx DOT lt) */
+ UNUSUAL_DEV(  0x132b, 0x000b, 0x0001, 0x0001,
 
-and allow
-#echo 0.05 > vm/dirty_ratio
-#cat vm/dirty_ratio 
-0
-#cat vm/dirty_ratio_percentmille
-500
-==
 
-Thanks,
--Kame
-
+******************************************************************************************
+ This email and its attachments contain confidential information from HUAWEI, which is intended only for the person or entity whose address is listed above. Any use of the information contained here in any way (including, but not limited to, total or partial disclosure, reproduction, or dissemination) by persons other than the intended recipient(s) is prohibited. If you receive this email in error, please notify the sender by phone or email
+ immediately and delete it!
+ *****************************************************************************************
