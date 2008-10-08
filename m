@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYJHHyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYJHIJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbYJHHyx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 03:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbYJHHym
+	id S1754508AbYJHIJJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 04:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbYJHIIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 03:54:42 -0400
-Received: from ffm.saftware.de ([83.141.3.46]:40905 "EHLO ffm.saftware.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753750AbYJHHyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 03:54:41 -0400
-X-Greylist: delayed 606 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Oct 2008 03:54:41 EDT
-Message-ID: <48EC64E1.5070806@linuxtv.org>
-Date: Wed, 08 Oct 2008 09:44:33 +0200
-From: Andreas Oberritter <obi@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Wed, 8 Oct 2008 04:08:54 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:39922 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752788AbYJHIIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 04:08:53 -0400
+Date: Wed, 8 Oct 2008 10:08:48 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+Message-ID: <20081008080848.GA20525@anita.doom>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com> <48E8947A.5020608@kernel.org> <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org> <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] 8139too: move wmb before TX DMA start
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EB1993.1030606@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Oberritter <obi@linuxtv.org>
+Am 2008-10-07 10:10 +0200 schrieb Benny Halevy:
 
-The write barrier should be used before starting a DMA transfer. This fixes
-a problem, where almost all packets received on another machine had garbled
-content. Tested with an RTL8100C on a MIPS machine.
+> > Then I switched off and smoked a cigarette, booting then lasted a bit longer:
+> 
+> See, cigarettes are bad for you(r computer) ;-)
 
-Signed-off-by: Andreas Oberritter <obi@linuxtv.org>
+Yes... But where does he know from? I have no /dev/eyes still ;-)
 
-diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-index 53bd903..44344af 100644
---- a/drivers/net/8139too.c
-+++ b/drivers/net/8139too.c
-@@ -1716,13 +1716,13 @@ static int rtl8139_start_xmit (struct sk_buff *skb, struct net_device *dev)
- 	}
- 
- 	spin_lock_irqsave(&tp->lock, flags);
-+	wmb();
- 	RTL_W32_F (TxStatus0 + (entry * sizeof (u32)),
- 		   tp->tx_flag | max(len, (unsigned int)ETH_ZLEN));
- 
- 	dev->trans_start = jiffies;
- 
- 	tp->cur_tx++;
--	wmb();
- 
- 	if ((tp->cur_tx - NUM_TX_DESC) == tp->dirty_tx)
- 		netif_stop_queue (dev);
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
