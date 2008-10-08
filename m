@@ -1,63 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYJHH0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYJHH1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754964AbYJHH0Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 03:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYJHH0R
+	id S1755172AbYJHH1S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 03:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbYJHH1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 03:26:17 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:53081 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751782AbYJHH0Q (ORCPT
+	Wed, 8 Oct 2008 03:27:03 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:60438 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753640AbYJHH1A convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 03:26:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=cwZ3fWAgScrL2W+GJMxDWLbxxjpuNh3Z0ccaFShHzYIHZQfSOIjztjgBjljsfaX5XI
-         zHocq5du0wVmDBYvE1COB19i12JCBUQk5XtQsRPx/Y/y6QUY1JYWra1CayJLP8eem/Pi
-         f+rfMWbhQpKidwbl8b6y1M8+5d35a7/5U6Og0=
-Subject: FRV/ARM unaligned access question
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Russell King <rmk@arm.linux.org.uk>, David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 00:26:13 -0700
-Message-Id: <1223450773.8195.80.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Oct 2008 03:27:00 -0400
+From: "Gadiyar, Anand" <gadiyar@ti.com>
+To: "johnpol@2ka.mipt.ru" <johnpol@2ka.mipt.ru>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "Chikkature Rajashekar, Madhusudhan" <madhu.cr@ti.com>
+Date: Wed, 8 Oct 2008 12:53:57 +0530
+Subject: [PATCH 3/5] HDQ: OMAP: Add HDQ Device
+Thread-Topic: [PATCH 3/5] HDQ: OMAP: Add HDQ Device
+Thread-Index: AckpFtPv8pTj4195Tke8n+nk3fgaIQ==
+Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF4@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David, Russell,
+From: Madhusudhan Chikkature <madhu.cr@ti.com>
 
-I noticed that frv/arm are the only two arches that currently use open-coded
-byteshifting routines for both the cpu endianness and the other endianness
-whereas just about all the other arches use a packed-struct version for the
-cpu-endian and then the byteshifting versions (lifted from arm) for the other
-endianness.
+Device registeration for the TI OMAP2430/3430 HDQ driver.
 
-For frv, this was due to the consolidation of unaligned access helpers which
-removed the assembly version.  For ARM, I think it was done this way as the
-kernel could be compiled for either endianness and so it was just easiest to
-always have the byteshifting versions around.  
+Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
+Acked-by: Felipe Balbi <felipe.balbi@nokia.com>
+Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+---
+ arch/arm/mach-omap2/devices.c          |   33 +++++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/include/mach/irqs.h |    1 +
+ 2 files changed, 34 insertions(+)
 
->From the comments in the ARM version, time was spent to make sure the byteshifting
-helpers used a small amount or registers.  Was there a known problem with the
-packed-struct implementation on ARM that made you choose to use byte-shifting
-or was it just done this way to more easily support compiling for different
-endianness?
-
-If there isn't an issue I'm missing, could ARM/FRV move over to the packed-struct
-version?
-
-Cheers,
-
-Harvey
-
-
-
-
+Index: linux-2.6/arch/arm/mach-omap2/devices.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-omap2/devices.c	2008-09-19 13:39:38.000000000 +0530
++++ linux-2.6/arch/arm/mach-omap2/devices.c	2008-09-30 10:07:51.000000000 +0530
+@@ -201,6 +201,38 @@ static void omap_init_mcspi(void)
+ static inline void omap_init_mcspi(void) {}
+ #endif
+ 
++#if defined(CONFIG_HDQ_MASTER_OMAP) || defined(CONFIG_HDQ_MASTER_OMAP_MODULE)
++#if defined(CONFIG_ARCH_OMAP2430) || defined(CONFIG_ARCH_OMAP3430)
++#define OMAP_HDQ_BASE		0x480B2000
++#endif
++static struct resource omap_hdq_resources[] = {
++	{
++		.start		= OMAP_HDQ_BASE,
++		.end		= OMAP_HDQ_BASE + 0x1C,
++		.flags		= IORESOURCE_MEM,
++	},
++	{
++		.start		= INT_24XX_HDQ_IRQ,
++		.flags		= IORESOURCE_IRQ,
++	},
++};
++static struct platform_device omap_hdq_dev = {
++	.name		= "omap_hdq",
++	.id = 0,
++	.dev = {
++		.platform_data = NULL,
++	},
++	.num_resources		= ARRAY_SIZE(omap_hdq_resources),
++	.resource		= omap_hdq_resources,
++};
++static inline void omap_hdq_init(void)
++{
++	(void) platform_device_register(&omap_hdq_dev);
++}
++#else
++static inline void omap_hdq_init(void) {}
++#endif
++
+ /*-------------------------------------------------------------------------*/
+ 
+ static int __init omap2_init_devices(void)
+@@ -212,6 +244,7 @@ static int __init omap2_init_devices(voi
+ 	omap_init_mbox();
+ 	omap_init_mcspi();
+ 	omap_init_sti();
++	omap_hdq_init();
+ 
+ 	return 0;
+ }
+Index: linux-2.6/arch/arm/plat-omap/include/mach/irqs.h
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-omap/include/mach/irqs.h	2008-09-26 14:34:25.000000000 +0530
++++ linux-2.6/arch/arm/plat-omap/include/mach/irqs.h	2008-09-26 14:55:19.000000000 +0530
+@@ -265,6 +265,7 @@
+ #define INT_24XX_GPTIMER12	48
+ #define INT_24XX_I2C1_IRQ	56
+ #define INT_24XX_I2C2_IRQ	57
++#define INT_24XX_HDQ_IRQ	58
+ #define INT_24XX_MCBSP1_IRQ_TX	59
+ #define INT_24XX_MCBSP1_IRQ_RX	60
+ #define INT_24XX_MCBSP2_IRQ_TX	62
