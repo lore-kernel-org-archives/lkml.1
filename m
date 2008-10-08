@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYJHEY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYJHEcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYJHEY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 00:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYJHEYu
+	id S1753598AbYJHEcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 00:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYJHEcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 00:24:50 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:32617 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750826AbYJHEYt (ORCPT
+	Wed, 8 Oct 2008 00:32:24 -0400
+Received: from mga01.intel.com ([192.55.52.88]:9330 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbYJHEcX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 00:24:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VOR08dbQXVqyBPL19ceJO8jLBmbVOD7cpABAmTiSA519FktrMzDPRABWiHs/9pcdC3Abl8r0BTAWVccAczTCZNOMxzQbGnJxn/wCas66mXMv/t4WMlavahY3GByj4lRiolOwgx3eBGRnCpac8zs1lQffcTa5rhfJbeOU97NtISA=  ;
-X-YMail-OSG: gbWf_ZwVM1kHNx2k1CIQ5f.E4AMxQOEdCIJ8nO7V5H6lKNdA.NL8wlks4zTJfwNYTZoidexpaeKHFUBfnwu3AY6x_ni0XhScxiM2us89wJEYoSm2oFpytJUTuv7nBKzTq6De5.X.Cg9zcAGfz4W6Lrt97.TO_DrscLozUvkv.6YRmoKjEA7EiiJyojcs
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [Bug #11224] Only three cores found on quad-core machine.
-Date: Wed, 8 Oct 2008 15:24:40 +1100
-User-Agent: KMail/1.9.5
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <0pOgGB.A.uLG.E475IB@wind> <200810080218.18898.nickpiggin@yahoo.com.au> <20081007153203.GB3337@redhat.com>
-In-Reply-To: <20081007153203.GB3337@redhat.com>
+	Wed, 8 Oct 2008 00:32:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,377,1220252400"; 
+   d="scan'208";a="624629688"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810081524.40614.nickpiggin@yahoo.com.au>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [RFC][PATCH 1/3] TXT: ACPI AddressRangeUnusuable support
+Date: Tue, 7 Oct 2008 21:32:20 -0700
+Message-ID: <D936D925018D154694D8A362EEB0892005AC1429@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <87iqs3lxdz.fsf@basil.nowhere.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC][PATCH 1/3] TXT: ACPI AddressRangeUnusuable support
+Thread-Index: Acko4GZZ64A8RCLMS0KvBTugQJ6KkgAHjitg
+References: <D936D925018D154694D8A362EEB0892005AC105D@orsmsx416.amr.corp.intel.com> <87iqs3lxdz.fsf@basil.nowhere.org>
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: <linux-kernel@vger.kernel.org>, "Wang, Shane" <shane.wang@intel.com>,
+       "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
+       <mingo@elte.hu>, <tytso@mit.edu>
+X-OriginalArrivalTime: 08 Oct 2008 04:32:22.0540 (UTC) FILETIME=[DB7434C0:01C928FE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 October 2008 02:32, Dave Jones wrote:
-> On Wed, Oct 08, 2008 at 02:18:18AM +1100, Nick Piggin wrote:
->  > On Sunday 05 October 2008 04:32, Rafael J. Wysocki wrote:
->  > > This message has been generated automatically as a part of a report
->  > > of recent regressions.
->  > >
->  > > The following bug entry is on the current list of known regressions
->  > > from 2.6.26.  Please verify if it still should be listed and let me
->  > > know (either way).
->  > >
->  > >
->  > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11224
->  > > Subject		: Only three cores found on quad-core machine.
->  > > Submitter	: Dave Jones <davej@redhat.com>
->  > > Date		: 2008-08-01 18:15 (65 days old)
->  > > References	: http://marc.info/?l=linux-kernel&m=121761475224719&w=4
->  >
->  > Dave, is your CPU2 getting stuck in calibrate_delay? Can you still
->  > reproduce the bug? What if you boot the kernel with lpj=<something sane
->  > like 2666785> in order to skip the calibrate_delay code?
->  >
->  > If that helps, can you try adding some printks to narrow down where it
->  > is getting stuck?
->
-> This is going to sound strange, but I've forgotten which box that was.
-> I'm due to reinstall all my test boxes now that the next Fedora beta
-> has come out anyway, so I'll hopefully figure out by the end of the week :)
+> From: Andi Kleen [mailto:andi@firstfloor.org]
+> Sent: Tuesday, October 07, 2008 5:54 PM
+> 
+> "Cihula, Joseph" <joseph.cihula@intel.com> writes:
+> > +#define E820_UNUSABLE	5
+> >
+> >  /* reserved RAM used by kernel itself */
+> >  #define E820_RESERVED_KERN        128
+> >
+> > From: <akpm@linux-foundation.org>
+> 
+> Something got corrupted? Your patch contains a mailbox with another
+> version of the patch.
 
-That does sound strange ;) But I can't believe that! It would be really
-interesting if it was stuck in calibrate_delay, but maybe the backtrace
-is just messed up...
+It appears Outlook/Exchange munged more than just tabs and wrapping.  My
+most recent patch should be correct (at least the copy I received looks
+fine).
 
-If you do manage to reproduce it, I would be quite interested. Otherwise,
-I think we can say it's not a showstopper for 2.6.27.
+> 
+> > Subject: - acpi-add-support-for-addressrangeunusuable-acpi-memory-
+> type.patch removed from -mm tree
+> > To: "Cihula, Joseph" <joseph.cihula@intel.com>,
+> > 	<andi@firstfloor.org>,
+> > 	"Wei, Gang" <gang.wei@intel.com>,
+> > 	<mingo@elte.hu>,
+> > 	"Wang, Shane" <shane.wang@intel.com>,
+> > 	<tglx@linutronix.de>,
+> > 	<mm-commits@vger.kernel.org>
+> > Date: Tue, 26 Aug 2008 11:44:49 -0700
+> >
+> >
+> > The patch titled
+> >      acpi: add support for AddressRangeUnusuable ACPI memory type
+> > has been removed from the -mm tree.  Its filename was
+> >      acpi-add-support-for-addressrangeunusuable-acpi-memory-
+> type.patch
+> 
+> -Andi
+> --
+> ak@linux.intel.com
