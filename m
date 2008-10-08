@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbYJHPh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbYJHPiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970AbYJHPh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 11:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbYJHPhu
+	id S1755476AbYJHPiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 11:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYJHPhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 11:37:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:7512 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751495AbYJHPht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 11:37:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=f3V0Au7VBmvtop5+jVBW9J43rHRNwvNXpsWm3Sr+9KWvXCuTashI/m/rlWt774+H4H
-         zgGODRWiw5eknW85VUB7cHnyFEUqE/rmzUcA5BzmPAd+4Mp3Gv1RUdPekCDR4unSfABv
-         CQ4PC7BOwL7IzUz5fCvzpGe69cnNbkJfsiTiA=
-Date: Wed, 8 Oct 2008 19:40:28 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel/acct.c and testing for accounting still running?
-Message-ID: <20081008154028.GA2520@x200.localdomain>
-References: <20081007235331.GT9967@curie-int.orbis-terrarum.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007235331.GT9967@curie-int.orbis-terrarum.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Oct 2008 11:37:55 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:56445 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754550AbYJHPhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 11:37:54 -0400
+Subject: Re: [PATCH 2/4] integrity: special fs magic
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20081008130056.GC31684@infradead.org>
+References: <cover.1223401603.git.zohar@linux.vnet.ibm.com>
+	 <87b9b5f88d5ed93a7985c14b413cf8d74ceea69c.1223401604.git.zohar@linux.vnet.ibm.com>
+	 <20081008130056.GC31684@infradead.org>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 11:07:49 -0400
+Message-Id: <1223478469.3063.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 04:53:31PM -0700, Robin H. Johnson wrote:
-> I ran into a bit of flapping with my init.d acct lately, and in tracing
-> why, I noticed that there seems to be absolutely no way that the kernel
-> exposes to show that it's running any accounting.
+On Wed, 2008-10-08 at 09:00 -0400, Christoph Hellwig wrote:
+> On Tue, Oct 07, 2008 at 02:00:12PM -0400, Mimi Zohar wrote:
+> > Discussion on the mailing list questioned the use of these
+> > magic values in userspace, concluding these values are already
+> > exported to userspace via statfs and their correct/incorrect
+> > usage is left up to the userspace application.
+> > 
+> >   - Move special fs magic number definitions to magic.h
+> >   - Add magic.h include
 > 
-> Could we expose acct_list in sysfs or procfs, as uid:0, gid:0, perms
-> 0600?
+> This should be patch 1, and we can put in in ASAP even if the rest needs
+> some more work.
+> 
 
-What other OS do in this respect?
+The ordering of the first and second patches is interchangeable without
+requiring any patch changes.  
+
+Mimi
+
