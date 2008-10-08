@@ -1,44 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYJHPLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYJHP0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbYJHPLq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 11:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYJHPLi
+	id S1754716AbYJHP0Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 11:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYJHPZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 11:11:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50676 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753960AbYJHPLh (ORCPT
+	Wed, 8 Oct 2008 11:25:57 -0400
+Received: from mga01.intel.com ([192.55.52.88]:18650 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751643AbYJHPZ4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 11:11:37 -0400
-Message-ID: <48ECCD68.7020104@linux-foundation.org>
-Date: Wed, 08 Oct 2008 10:10:32 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 8 Oct 2008 11:25:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,379,1220252400"; 
+   d="scan'208";a="624790967"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rusty@rustcorp.com.au,
-       jeremy@goop.org, ebiederm@xmission.com, travis@sgi.com,
-       herbert@gondor.apana.org.au, xemul@openvz.org, penberg@cs.helsinki.fi
-Subject: Re: [patch 0/4] Cpu alloc V6: Replace percpu allocator in modules.c
-References: <20080929193500.470295078@quilx.com> <20081007163449.0716be54.akpm@linux-foundation.org>
-In-Reply-To: <20081007163449.0716be54.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro X7DB3
+Date: Wed, 8 Oct 2008 08:25:49 -0700
+Message-ID: <E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro X7DB3
+Thread-Index: Ackoi4zXIB96a+PaS9Sb3JXiuCbe4QAOO8jgAAAmgPAABKgV0A==
+References: <EA929A9653AAE14F841771FB1DE5A1365F498F4EDC@rrsmsx501.amr.corp.intel.com> 
+From: "Graham, David" <david.graham@intel.com>
+To: "Hillier, Gernot " 
+	<IMCEAMAILTO-gernot+2Ehillier+40siemens+2Ecom@intel.com>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Hockert, Jeff W" <jeff.w.hockert@intel.com>,
+       "Graham, David" <david.graham@intel.com>
+X-OriginalArrivalTime: 08 Oct 2008 15:25:53.0257 (UTC) FILETIME=[26DCCD90:01C9295A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 29 Sep 2008 12:35:00 -0700
-> Christoph Lameter <cl@linux-foundation.org> wrote:
-> 
->> Just do the bare mininum to establish a per cpu allocator. Later patchsets
->> will gradually build out the functionality.
-> 
-> I need to drop these - the dynalloc thing (I don't think I even know
-> what it does) in Ingo's trees make changes all over the place and
-> nothing much applies any more.
+Hi Gernot,
 
-Got a tree to rediff agains?
+Thanks for reporting this issue. We have witnessed this in our labs too,
+only on platforms that have BMC management firmware. I'm very familiar
+with the problem, and believe that we have fixed it, though the
+application of the fix may not be simple. The problem is a result of
+improper synchronization between the platform FW and the e1000e driver
+when they attempt concurrent access to LAN resources, and fixes were
+made both on the driver side, and on the FW side. On some platforms a
+simple driver update resolves the problem, others require FW fixes too.
 
+The 0.2.0 driver in 2.6.25 has no fixes for this problem, and so I am
+not surprised that you see it there. The first set of changes for this
+issue are already in the 0.3.3.3-k2 driver that you are still seeing the
+problem with on 2.6.26, so either those changes are not good, or your
+issue requires one of the additional fixes.
+
+There have been further improvements made to the driver synchronization
+code since the 0.3.3.3-k2 driver, and it is possible that a newer driver
+would resolve the issue. It'd be good for us to know if that's the case.
+The driver version is not yet (AFAICS) upstream, but is already
+available in the standalone e1000e-0.4.1.7 driver on sourceforge.
+(google "sourceforge e1000e"). Would you be able to try that, as a first
+step ? 
+
+If this does not resolve the issue for the Supermicro board, you likely
+also require a "FW-side" fix, and this comes in one of two flavors. If
+the board has an INTEL BMC, then we will need to update it with a new
+BMC version. If the board has a Supermicro BMC (I expect that it does),
+then we can provide a patch to some of the platform microcode using a
+EEPROM update.  To determine which is appropriate for you, we'll need to
+know more about the platform. There's probably a BMC version number on
+one of the BIOS menus. I can work with you to find the info we need, and
+then, to help you to perform the necessary steps to perform an upgrade. 
+
+Dave
+
+
+
+Dave-----Original Message-----
+From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
+On Behalf Of Hillier, Gernot
+Sent: Tuesday, October 07, 2008 7:26 AM
+To: Brandeburg, Jesse
+Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org; Allan, Bruce W
+Subject: e1000e: sporadic "hardware error"s with Intel 82563EB on
+Supermicro X7DB3
+
+Hi there,
+
+On at least two machines using the Supermicro X7DB3 board with Intel
+82563EB (a.k.a. PCI device 8086:1096), we see sporadic problems on
+modprobe
+(about 1 time in some hundred tries):
+
+e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k2
+e1000e: Copyright (c) 1999-2008 Intel Corporation.
+e1000e 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+e1000e 0000:06:00.0: setting latency timer to 64
+0000:06:00.0: 0000:06:00.0: Hardware Error
+0000:06:00.0: eth0: (PCI Express:2.5GB/s:Width x4) 00:30:48:67:f5:f6
+0000:06:00.0: eth0: Intel(R) PRO/1000 Network Connection
+0000:06:00.0: eth0: MAC: 3, PHY: 5, PBA No: 2050ff-0ff
+e1000e 0000:06:00.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+e1000e 0000:06:00.1: setting latency timer to 64
+0000:06:00.1: eth1: (PCI Express:2.5GB/s:Width x4) 00:30:48:67:f5:f7
+0000:06:00.1: eth1: Intel(R) PRO/1000 Network Connection
+0000:06:00.1: eth1: MAC: 3, PHY: 5, PBA No: 2050ff-0ff
+0000:06:00.0: eth0: Hardware Error
+
+eth0 is not available after module loading. During boot, this means the
+machine won't come up correctly. Problem can be "fixed" by removing and
+reloading the module.
+
+This happens on the rather old SUSE-patched 2.6.25.11 with e1000e 0.2.0
+as
+well as with vanilla 2.6.27-rc8 including e1000e 0.3.3.3-k2.
+
+The machines are equipped with two Quad-Core Xeons E5440 and 8GB of RAM.
+Both kernels are compiled for x86_64.
+
+Supermicro claims that there's no known hardware problem with these
+boards
+and that the Windows driver doesn't show any issue...
+
+Is there anything I can do to help narrowing down the problem? Anything
+I
+can test? Any help greatly appreciated...
+
+TIA!
+
+--
+Gernot Hillier
+Siemens AG, CT SE 2, Corporate Competence Center Embedded Linux
+--
+To unsubscribe from this list: send the line "unsubscribe netdev" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
