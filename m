@@ -1,42 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbYJHToZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYJHTqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbYJHToZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 15:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbYJHTli
+	id S1756560AbYJHTqd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 15:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYJHTqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 15:41:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54492 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755826AbYJHTlh (ORCPT
+	Wed, 8 Oct 2008 15:46:25 -0400
+Received: from kara.rubysoft.com ([64.34.171.174]:36965 "EHLO
+	kara.rubysoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752045AbYJHTqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 15:41:37 -0400
-Message-ID: <48ED0B68.2060001@linux-foundation.org>
-Date: Wed, 08 Oct 2008 14:35:04 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 8 Oct 2008 15:46:24 -0400
+Date: Wed, 8 Oct 2008 13:46:17 -0600 (MDT)
+From: Jeff Hansen <x@jeffhansen.com>
+X-X-Sender: ninkid@ren
+Reply-To: Jeff Hansen <x@jeffhansen.com>
+To: Chris Snook <csnook@redhat.com>
+cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: x86_32 tsc/pit and hrtimers
+In-Reply-To: <48ECFEDC.90305@redhat.com>
+Message-ID: <Pine.LNX.4.64.0810081342570.11108@ren>
+References: <Pine.LNX.4.64.0810071640110.25661@ren> <48ECFEDC.90305@redhat.com>
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
-References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org> <48ECDD37.8050506@linux-foundation.org> <20081008185532.GA13304@brain>
-In-Reply-To: <20081008185532.GA13304@brain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
+Chris,
 
-> With SPARSEMEM turned on and VMEMMAP turned off a valid combination,
-> we will end up scribbling all over memory which is pretty serious so for
-> that reason we should handle this case.  There are cirtain combinations
-> of features which require SPARSMEM but preclude VMEMMAP which trigger this.
+This worked perfectly!  I second adding a kernel option that forces 
+trusting the TSC.  I can make a patch if you'd like.  Should the option be 
+something like "trusttsc" or "tsc=noverify"?
 
-Which configurations are we talking about? 64 bit configs may generally be
-able to use VMEMMAP since they have lots of virtual address space.
+-Jeff
 
+---------------------------------------------------
+"If someone's gotta do it, it might as well be me."
 
+On Wed, 8 Oct 2008, Chris Snook wrote:
 
+> Jeff Hansen wrote:
+>>  Linus, Ingo, All,
+>>
+>>  I've been struggling with hrtimer support in 2.6.26.5 on an older
+>>  x86_32/i386 system, and I'm wondering if there are any easy fixes that you
+>>  (or anyone else) would suggest.
+>>
+>>  Basically, this system does not print out the message:
+>>
+>>  "Switched to high resolution mode on CPU 0"
+>>
+>>  indicating that one-shot, hrtimers, etc. won't work, since high resolution
+>>  mode has not been enabled.  I've verified that hrtimers started with
+>>  hrtimer_start do not have the expected resolution further than 1/HZ.
+>>
+>>  This system does not have LAPIC, ACPI, or HPET, so really the only
+>>  clocksources I can use are TSC and PIT.  This should be fine (in theory,
+>>  unless it wasn't designed like that), but apparently the clocksource flags
+>>  are not initialized in such a way that one of them ever gets marked as
+>>  CLOCK_SOURCE_VALID_FOR_HRES.
+>>
+>>  The flow of the flags on each of these clocksources is as follows:
+>>
+>>  1) The flags on the TSC clocksource are CLOCK_SOURCE_IS_CONTINUOUS |
+>>      CLOCK_SOURCE_MUST_VERIFY, which causes PIT to be used as the watchdog
+>>      clocksource. (see kernel/time/clocksource.c:~171)
+>>  2) Around line 122 in kernel/time/clocksource.c, where most clocksources'
+>>      flags usually get ORed with CLOCK_SOURCE_VALID_FOR_HRES, the PIT's do
+>>      not because it is not CLOCK_SOURCE_IS_CONTINUOUS, and the TSC's do not
+>>      also because the PIT (as the watchdog) is not
+>>      CLOCK_SOURCE_IS_CONTINUOUS.
+>>
+>>  I get the same results on a new laptop booting into 32-bit Linux with hpet
+>>  and acpi disabled.
+>>
+>>  Can you please tell me if this is supposed to work, and I just have a
+>>  poorly configured kernel; or if TSC/PIT drivers were not designed to work
+>>  this way in the first place.  If it wasn't designed to do this, do you
+>>  have any tips on implementing this, since I'll be needing to do that?
+>>
+>>  -Jeff Hansen
+>
+> This is not supposed to work, but it might be worthwhile to add a boot option 
+> to force the kernel to trust the TSC, as hardware that lacks any high-res 
+> timers also tends to be primitive enough that the TSC can be trusted, if it 
+> exists.  If you patch out the CLOCK_SOURCE_MUST_VERIFY flag on the TSC, do 
+> you get correctly-functioning high-res timers on this system?
+>
+> -- Chris
+>
+>
+>
