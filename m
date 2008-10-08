@@ -1,105 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbYJHFTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYJHFo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbYJHFTF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 01:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYJHFS5
+	id S1753897AbYJHFo1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 01:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYJHFoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 01:18:57 -0400
-Received: from waste.org ([66.93.16.53]:46634 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbYJHFS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 01:18:56 -0400
-Subject: Re: [BUG] SLOB's krealloc() seems bust
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linuxfoundation.org>
-In-Reply-To: <200810081611.30897.nickpiggin@yahoo.com.au>
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net>
-	 <1223441190.13453.459.camel@calx>
-	 <200810081554.33651.nickpiggin@yahoo.com.au>
-	 <200810081611.30897.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 08 Oct 2008 00:15:47 -0500
-Message-Id: <1223442947.13453.462.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 8 Oct 2008 01:44:19 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35715 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbYJHFoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 01:44:18 -0400
+Message-ID: <48EC4851.2080300@jp.fujitsu.com>
+Date: Wed, 08 Oct 2008 14:42:41 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>
+CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH v4 02/15] PCI Hotplug: serialize pci_hp_register/deregister
+References: <20081003230125.9989.31145.stgit@bob.kio> <20081003231737.9989.94126.stgit@bob.kio>
+In-Reply-To: <20081003231737.9989.94126.stgit@bob.kio>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I think we no longer need pci_hotplug_slot_list_lock with your patch.
 
-On Wed, 2008-10-08 at 16:11 +1100, Nick Piggin wrote:
-> On Wednesday 08 October 2008 15:54, Nick Piggin wrote:
-> > On Wednesday 08 October 2008 15:46, Matt Mackall wrote:
-> > > On Wed, 2008-10-08 at 15:22 +1100, Nick Piggin wrote:
-> > > > On Wednesday 08 October 2008 10:08, Matt Mackall wrote:
+Thanks,
+Kenji Kaneshige
+
+
+Alex Chiang wrote:
+> Add explicit locking to pci_hp_register/deregister. For a given pci_slot,
+> we want to make sure that the pci_slot->hotplug pointer isn't being
+> changed from underneath us.
 > 
-> > > > > diff -r 5e32b09a1b2b mm/slob.c
-> > > > > --- a/mm/slob.c	Fri Oct 03 14:04:43 2008 -0500
-> > > > > +++ b/mm/slob.c	Tue Oct 07 18:05:15 2008 -0500
-> > > > > @@ -514,9 +514,11 @@
-> > > > >  		return 0;
-> > > > >
-> > > > >  	sp = (struct slob_page *)virt_to_page(block);
-> > > > > -	if (slob_page(sp))
-> > > > > -		return ((slob_t *)block - 1)->units + SLOB_UNIT;
-> > > > > -	else
-> > > > > +	if (slob_page(sp)) {
-> > > > > +		int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
-> > > > > +		unsigned int *m = (unsigned int *)(block - align);
-> > > > > +		return SLOB_UNITS(*m); /* round up */
-> > > > > +	} else
-> > > > >  		return sp->page.private;
-> > > > >  }
-> > > >
-> > > > Yes, I came up with nearly the same patch before reading this
-> > > >
-> > > > --- linux-2.6/mm/slob.c 2008-10-08 14:43:17.000000000 +1100
-> > > > +++ suth/mm/slob.c      2008-10-08 15:11:06.000000000 +1100
-> > > > @@ -514,9 +514,11 @@ size_t ksize(const void *block)
-> > > >                 return 0;
-> > > >
-> > > >         sp = (struct slob_page *)virt_to_page(block);
-> > > > -       if (slob_page(sp))
-> > > > -               return (((slob_t *)block - 1)->units - 1) * SLOB_UNIT;
-> > > > -       else
-> > > > +       if (slob_page(sp)) {
-> > > > +               int align = max(ARCH_KMALLOC_MINALIGN,
-> > > > ARCH_SLAB_MINALIGN); +               unsigned int *m = (unsigned int
-> > > > *)(block - align); +               return *m + align;
-> > > > +       } else
-> > > >                 return sp->page.private;
-> > > >  }
-> > > >
-> > > > However, mine is lifted directly from kfree, wheras you do something a
-> > > > bit different. Hmm, ksize arguably could be used to find the underlying
-> > > > allocated slab size in order to use a little bit more than we'd asked
-> > > > for. So probably we should really just `return *m` (don't round up or
-> > > > add any padding).
-> > >
-> > > Huh? ksize should report how much space is available in the buffer. If
-> > > we request 33 bytes from SLUB and it gives us 64, ksize reports 64. If
-> > > we request 33 bytes from SLOB and it gives us 34, we should report 34.
-> >
-> > Oh.. hmm yeah right, I didn't realise what you were doing there.
-> > OK, so your patch looks good to me then (provided it is diffed against
-> > the previous one, for Linus).
+> Cc: jbarnes@virtuousgeek.org
+> Cc: kristen.c.accardi@intel.com
+> Cc: matthew@wil.cx
+> Cc: kaneshige.kenji@jp.fujitsu.com
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
 > 
-> OK, no, that's why I got confused. SLOB_UNITS will round you up to the
-> next SLOB_UNIT. You'd then have to multiply by SLOB_UNIT to get back to
-> bytes.
+>  drivers/pci/hotplug/pci_hotplug_core.c |    7 +++++++
+>  drivers/pci/slot.c                     |    4 ++--
+>  2 files changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+> index 0e7a511..e00266b 100644
+> --- a/drivers/pci/hotplug/pci_hotplug_core.c
+> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
+> @@ -37,6 +37,7 @@
+>  #include <linux/init.h>
+>  #include <linux/mount.h>
+>  #include <linux/namei.h>
+> +#include <linux/mutex.h>
+>  #include <linux/pci.h>
+>  #include <linux/pci_hotplug.h>
+>  #include <asm/uaccess.h>
+> @@ -554,6 +555,7 @@ out:
+>   *
+>   * Returns 0 if successful, anything else for an error.
+>   */
+> +static DEFINE_MUTEX(pci_hp_mutex);
+>  int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
+>  			const char *name)
+>  {
+> @@ -583,7 +585,9 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
+>  	if (IS_ERR(pci_slot))
+>  		return PTR_ERR(pci_slot);
+>  
+> +	mutex_lock(&pci_hp_mutex);
+>  	if (pci_slot->hotplug) {
+> +		mutex_unlock(&pci_hp_mutex);
+>  		dbg("%s: already claimed\n", __func__);
+>  		pci_destroy_slot(pci_slot);
+>  		return -EBUSY;
+> @@ -591,6 +595,7 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
+>  
+>  	slot->pci_slot = pci_slot;
+>  	pci_slot->hotplug = slot;
+> +	mutex_unlock(&pci_hp_mutex);
+>  
+>  	/*
+>  	 * Allow pcihp drivers to override the ACPI_PCI_SLOT name.
+> @@ -635,6 +640,7 @@ int pci_hp_deregister(struct hotplug_slot *hotplug)
+>  	if (temp != hotplug)
+>  		return -ENODEV;
+>  
+> +	mutex_lock(&pci_hp_mutex);
+>  	spin_lock(&pci_hotplug_slot_list_lock);
+>  	list_del(&hotplug->slot_list);
+>  	spin_unlock(&pci_hotplug_slot_list_lock);
+> @@ -645,6 +651,7 @@ int pci_hp_deregister(struct hotplug_slot *hotplug)
+>  
+>  	hotplug->release(hotplug);
+>  	slot->hotplug = NULL;
+> +	mutex_unlock(&pci_hp_mutex);
+>  	pci_destroy_slot(slot);
+>  
+>  	return 0;
+> diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
+> index 0c6db03..1fffb27 100644
+> --- a/drivers/pci/slot.c
+> +++ b/drivers/pci/slot.c
+> @@ -164,10 +164,10 @@ placeholder:
+>  	pr_debug("%s: created pci_slot on %04x:%02x:%02x\n",
+>  		 __func__, pci_domain_nr(parent), parent->number, slot_nr);
+>  
+> - out:
+> +out:
+>  	up_write(&pci_bus_sem);
+>  	return slot;
+> - err:
+> +err:
+>  	kfree(slot);
+>  	slot = ERR_PTR(err);
+>  	goto out;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
-Damnit, how many ways can we get confused by these little details? I'll
-spin a final version and run it against the test harness shortly.
-
--- 
-Mathematics is the supreme nostalgia of our time.
 
