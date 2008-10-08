@@ -1,123 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYJHGBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYJHGZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbYJHGBu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 02:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYJHGBn
+	id S1753938AbYJHGZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 02:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJHGZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 02:01:43 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55173 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbYJHGBm (ORCPT
+	Wed, 8 Oct 2008 02:25:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57809 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbYJHGZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 02:01:42 -0400
-Message-ID: <48EC4C67.9060501@jp.fujitsu.com>
-Date: Wed, 08 Oct 2008 15:00:07 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
-Subject: Re: [PATCH v4 03/15] PCI: prevent duplicate slot names
-References: <20081003230125.9989.31145.stgit@bob.kio> <20081003231742.9989.89860.stgit@bob.kio>
-In-Reply-To: <20081003231742.9989.89860.stgit@bob.kio>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 8 Oct 2008 02:25:46 -0400
+Subject: Re: [PATCH 18/32] net: sk_allocation() - concentrate socket
+	related allocations
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no, dlezcano@fr.ibm.com,
+       penberg@cs.helsinki.fi, neilb@suse.de,
+       Suresh Jayaraman <sjayaraman@suse.de>
+In-Reply-To: <20081007.142624.145010147.davem@davemloft.net>
+References: <20081002130504.927878499@chello.nl>
+	 <20081002131608.821584767@chello.nl>
+	 <20081007.142624.145010147.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 08 Oct 2008 08:25:41 +0200
+Message-Id: <1223447141.1378.7.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
+On Tue, 2008-10-07 at 14:26 -0700, David Miller wrote:
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Thu, 02 Oct 2008 15:05:22 +0200
+> 
+> > @@ -952,6 +955,7 @@ static void tcp_v6_send_reset(struct soc
+> >  #ifdef CONFIG_TCP_MD5SIG
+> >  	struct tcp_md5sig_key *key;
+> >  #endif
+> > +	gfp_t gfp_mask = GFP_ATOMIC;
+> >  
+> >  	if (th->rst)
+> >  		return;
+> > @@ -969,13 +973,16 @@ static void tcp_v6_send_reset(struct soc
+> >  		tot_len += TCPOLEN_MD5SIG_ALIGNED;
+> >  #endif
+> >  
+> > +	if (sk)
+> > +		gfp_mask = sk_allocation(skb->sk, gfp_mask);
+> > +
+> >  	/*
+> >  	 * We need to grab some memory, and put together an RST,
+> >  	 * and then put it into the queue to be sent.
+> >  	 */
+> >  
+> >  	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
+> > -			 GFP_ATOMIC);
+> > +			 sk_allocation(sk, GFP_ATOMIC));
+> >  	if (buff == NULL)
+> >  		return;
+> >  
+> 
+> I don't think this is doing what you intend it to do.
+> 
+> First, you're conditionally calling sk_allocation() if
+> 'sk' is non-NULL.  But then later you unconditionally
+> use sk_allocation() in the alloc_skb() call.
+> 
+> Furthermore, in the conditionalized case you're using
+> "skb->sk" instead of plain "sk" which is what you actually
+> checked against NULL.
+> 
+> I have no fundamental problem with this change, so please
+> audit this patch for similar problems, fix them all up,
+> and resubmit.
+> 
+> I'm also tossing the rest of your networking changes since
+> they'll have some dependency on this one, please resend those
+> at the same time as the fixed up version of this one.
 
-(snip.)
+You're right - Suresh Jayaraman hit an oops here, just fixing up that
+obviously mis-merged conditional didn't fix it for him. So I'll work on
+fixing this for him.
 
-> diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-> index e00266b..b196ea1 100644
-> --- a/drivers/pci/hotplug/pci_hotplug_core.c
-> +++ b/drivers/pci/hotplug/pci_hotplug_core.c
-> @@ -572,41 +572,32 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
->  		return -EINVAL;
->  	}
->  
-> -	/* Check if we have already registered a slot with the same name. */
-> -	if (get_slot_from_name(name))
-> -		return -EEXIST;
-> -
->  	/*
-> -	 * No problems if we call this interface from both ACPI_PCI_SLOT
-> -	 * driver and call it here again. If we've already created the
-> -	 * pci_slot, the interface will simply bump the refcount.
-> +	 * Look for existing slot. If we find it, and it was created by a
-> +	 * slot detection driver (ie, doesn't have a ->hotplug()) then we
-> +	 * allow the hotplug driver calling us to rename the slot if desired.
-> +	 *
-> +	 * Otherwise, create the slot and carry on with life.
->  	 */
-> -	pci_slot = pci_create_slot(bus, slot_nr, name);
-> -	if (IS_ERR(pci_slot))
-> -		return PTR_ERR(pci_slot);
-> -
->  	mutex_lock(&pci_hp_mutex);
-> -	if (pci_slot->hotplug) {
-> -		mutex_unlock(&pci_hp_mutex);
-> -		dbg("%s: already claimed\n", __func__);
-> -		pci_destroy_slot(pci_slot);
-> -		return -EBUSY;
-> +	pci_slot = pci_get_pci_slot(bus, slot_nr);
-> +	if (pci_slot) {
-> +		if (pci_slot->hotplug) {
-> +			result = -EBUSY;
-> +			goto err;
-> +		}
-> +
-> +		if (strcmp(kobject_name(&pci_slot->kobj), name))
-> +			if ((result = pci_rename_slot(pci_slot, name)))
-> +				goto err;
-> +	} else {
-> +		pci_slot = pci_create_slot(bus, slot_nr, name);
-> +		if ((result = IS_ERR(pci_slot)))
-> +			goto out;
->  	}
->
+Then I'll make a new patch-series against linux-next and include the
+driver parts you left out of 17.
 
-I think there still remain race condition. The situation I imagine
-is as follows, though I might be misunderstanding something.
-
-If pci_slot driver created pci_slot between pci_get_pci_slot() and
-pci_create_slot() in pci_hp_register() in the hotplug driver's thread,
-pci_rename_slot() would never be called and name specified by pci_slot
-driver would be used instead of the one specified by hotplug driver.
-
-
-> -void pci_update_slot_number(struct pci_slot *slot, int slot_nr)
-> +void pci_renumber_slot(struct pci_slot *slot, int slot_nr)
->  {
-> -	int name_count = 0;
->  	struct pci_slot *tmp;
->  
->  	down_write(&pci_bus_sem);
->  
->  	list_for_each_entry(tmp, &slot->bus->slots, list) {
->  		WARN_ON(tmp->number == slot_nr);
-> -		if (!strcmp(kobject_name(&tmp->kobj), kobject_name(&slot->kobj)))
-> -			name_count++;
-> +		goto out;
->  	}
->  
-> -	if (name_count > 1)
-> -		printk(KERN_WARNING "pci_update_slot_number found %d slots with the same name: %s\n", name_count, kobject_name(&slot->kobj));
-> -
->  	slot->number = slot_nr;
-> +out:
->  	up_write(&pci_bus_sem);
->  }
-> -EXPORT_SYMBOL_GPL(pci_update_slot_number);
-> +EXPORT_SYMBOL_GPL(pci_renumber_slot);
->  
-
-You changed exported symbol name. I think it should be made as
-an another patch.
-
-Thanks,
-Kenji Kaneshige
+Thanks!
 
