@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbYJHRAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbYJHRS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbYJHRAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 13:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYJHRAW
+	id S1754953AbYJHRS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 13:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYJHRSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 13:00:22 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:44505 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbYJHRAV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 13:00:21 -0400
-Message-ID: <48ECE71B.6030405@nortel.com>
-Date: Wed, 08 Oct 2008 11:00:11 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Wed, 8 Oct 2008 13:18:21 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:35405 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752788AbYJHRSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 13:18:20 -0400
+Date: Wed, 8 Oct 2008 19:18:15 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
+Subject: Re: [patch 2.6.27-rc8-git] add drivers/mfd/twl4030-core.c
+Message-ID: <20081008171814.GB4766@localdomain>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <200810061047.50127.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Bill Gatliff <bgat@billgatliff.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Toggling GPIO at 38Khz
-References: <9e4733910810072043m6c69f3bdv104bd32928fe64ae@mail.gmail.com> <48ECA101.8010604@billgatliff.com> <9e4733910810080606ne8bdbb8v81d42069c985ae98@mail.gmail.com>
-In-Reply-To: <9e4733910810080606ne8bdbb8v81d42069c985ae98@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Oct 2008 17:00:15.0916 (UTC) FILETIME=[5611FEC0:01C92967]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810061047.50127.david-b@pacbell.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
+Hi Dave,
 
-> The existing LIRC driver for a serial port is here:
-> http://lirc.cvs.sourceforge.net/viewvc/lirc/lirc/drivers/lirc_serial/lirc_serial.c?view=markup
+On Mon, Oct 06, 2008 at 10:47:49AM -0700, David Brownell wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> This patch adds the core of the TWL4030 driver, which supports
+> chips including the TPS65950.  These chips are multi-function; see 
+> 
+>   http://focus.ti.com/docs/prod/folders/print/tps65950.html
+> 
+> Public specs are in the works.  For now, the block diagram on
+> the second page of the datasheet is fairly informative.
+> 
+> There are some known issues with this core code.  Most notably,
+> the IRQ dispatching needs simplification (to use more of genirq),
+> generalization (integrating support for secondary IRQ dispatch
+> as well as primary, and removing the build dependency on OMAP),
+> and then probably updating to leverage threaded IRQ support
+> (expected to arrive in mainline "soon").
+> 
+> Once the core is in mainline, drivers for other parts of this
+> chip can follow its lead and start swimming upstream too.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Thanks, applied to my mfd tree.
 
-That driver basically does busy-wait bitbanging, using rdtsc on x86 if 
-available or udelay() if not.
 
-Your best bet is probably to use hrtimers combined with high res 
-timestamps to correct for accumulated error.
+> +#if defined(CONFIG_TWL4030_BCI_BATTERY) || \
+> +	defined(CONFIG_TWL4030_BCI_BATTERY_MODUEL)
+minor typo, you probably meant: CONFIG_TWL4030_BCI_BATTERY_MODULE
 
-Chris
+Cheers,
+Samuel.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
