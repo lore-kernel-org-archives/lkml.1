@@ -1,172 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYJHEyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbYJHE7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbYJHEyv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 00:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYJHEyn
+	id S1753809AbYJHE7d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 00:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYJHE7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 00:54:43 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:34180 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750867AbYJHEym (ORCPT
+	Wed, 8 Oct 2008 00:59:25 -0400
+Received: from sineb-mail-2.sun.com ([192.18.19.7]:62775 "EHLO
+	sineb-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbYJHE7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 00:54:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Xxf/pvSBpLDAs1KZcAv3yOFJihvg7G4gf07PIthVFA8BTEp/bqd4PlzcvE76yxYcbQ8tnkwwLKHV2t6DKUqFYTzjTUIsxK52qszo5yAyMVxESPBhppRToLJkb7Qz2aBZwP0M8IdwUzqRhfrxfuCyaTNbXisqdJvIwuugaAyfsHc=  ;
-X-YMail-OSG: LF7QcKcVM1n_3VRund7tsUOcbwmsLyY0pkKDXXSLSC2SRt2otFnTeIJA6EvmNaFc7TzrfUbflgsQRYGoUqdYWyCOZd6mS3nini55khms55hrT2uz5KQt7ae9susM1D8PF9eWmhs_SScZo55awE5nDIAho53IWfxgBZsbS6LR0r3h2SUVJ9_4O1yRJ5jU
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [BUG] SLOB's krealloc() seems bust
-Date: Wed, 8 Oct 2008 15:54:33 +1100
-User-Agent: KMail/1.9.5
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linuxfoundation.org>
-References: <1223387841.26330.36.camel@lappy.programming.kicks-ass.net> <200810081522.31739.nickpiggin@yahoo.com.au> <1223441190.13453.459.camel@calx>
-In-Reply-To: <1223441190.13453.459.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810081554.33651.nickpiggin@yahoo.com.au>
+	Wed, 8 Oct 2008 00:59:24 -0400
+X-Greylist: delayed 623 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Oct 2008 00:59:23 EDT
+Date: Wed, 08 Oct 2008 10:19:11 +0530
+From: Kalpak Shah <Kalpak.Shah@Sun.COM>
+Subject: Re: ext4 deadlocks
+In-reply-to: <20081007214637.GA2009@webber.adilger.int>
+To: Andreas Dilger <adilger@Sun.COM>
+Cc: Eric Sandeen <sandeen@sandeen.net>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <1223441351.4007.137.camel@localhost>
+MIME-version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6)
+Content-type: text/plain
+Content-transfer-encoding: 7BIT
+References: <48EBB9E9.4030105@goop.org> <48EBC6B9.7000608@sandeen.net>
+ <20081007214637.GA2009@webber.adilger.int>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 October 2008 15:46, Matt Mackall wrote:
-> On Wed, 2008-10-08 at 15:22 +1100, Nick Piggin wrote:
-> > On Wednesday 08 October 2008 10:08, Matt Mackall wrote:
-> > > On Tue, 2008-10-07 at 20:31 +0300, Pekka Enberg wrote:
-> > > > Hi Matt,
-> > > >
-> > > > On Tue, Oct 7, 2008 at 8:13 PM, Matt Mackall <mpm@selenic.com> wrote:
-> > > > >> > @@ -515,7 +515,7 @@
-> > > > >> >
-> > > > >> >        sp = (struct slob_page *)virt_to_page(block);
-> > > > >> >        if (slob_page(sp))
-> > > > >> > -               return ((slob_t *)block - 1)->units + SLOB_UNIT;
-> > > > >> > +               return (((slob_t *)block - 1)->units - 1) *
-> > > > >> > SLOB_UNIT;
-> > > > >>
-> > > > >> Hmm. I don't understand why we do the "minus one" thing here.
-> > > > >> Aren't we underestimating the size now?
-> > > > >
-> > > > > The first -1 takes us to the object header in front of the object
-> > > > > pointer. The second -1 subtracts out the size of the header.
-> > > > >
-> > > > > But it's entirely possible I'm off by one, so I'll double-check.
-> > > > > Nick?
-> > > >
-> > > > Yeah, I was referring to the second subtraction. Looking at
-> > > > slob_page_alloc(), for example, we compare the return value of
-> > > > slob_units() to SLOB_UNITS(size), so I don't think we count the
-> > > > header in ->units. I mean, we ought to be seeing the subtraction
-> > > > elsewhere in the code as well, no?
-> > >
-> > > Ok, I've looked a bit closer at it and I think we need a different fix.
-> > >
-> > > The underlying allocator, slob_alloc, takes a size in bytes and returns
-> > > an object of that size, with the first word containing the number of
-> > > slob_t units.
-> > >
-> > > kmalloc calls slob_alloc after adding on some space for header and
-> > > architecture padding. This space is not necessarily 1 slob unit:
-> > >
-> > >         unsigned int *m;
-> > >         int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
-> > > ...
-> > >                 m = slob_alloc(size + align, gfp, align, node);
-> > >                 *m = size;
-> > >  	        return (void *)m + align;
-> > >
-> > > Note that we overwrite the header with our own size -in bytes-.
-> > > kfree does the reverse:
-> >
-> > Right.
-> >
-> > >                 int align = max(ARCH_KMALLOC_MINALIGN,
-> > > ARCH_SLAB_MINALIGN); unsigned int *m = (unsigned int *)(block - align);
-> > >                 slob_free(m, *m + align);
-> > >
-> > > That second line is locating the kmalloc header. All looks good.
-> > >
-> > > The MINALIGN business was introduced by Nick with:
-> > >
-> > >  slob: improved alignment handling
-> > >
-> > > but seems to have missed ksize, which should now be doing the following
-> > > to match:
-> > >
-> > > diff -r 5e32b09a1b2b mm/slob.c
-> > > --- a/mm/slob.c	Fri Oct 03 14:04:43 2008 -0500
-> > > +++ b/mm/slob.c	Tue Oct 07 18:05:15 2008 -0500
-> > > @@ -514,9 +514,11 @@
-> > >  		return 0;
-> > >
-> > >  	sp = (struct slob_page *)virt_to_page(block);
-> > > -	if (slob_page(sp))
-> > > -		return ((slob_t *)block - 1)->units + SLOB_UNIT;
-> > > -	else
-> > > +	if (slob_page(sp)) {
-> > > +		int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
-> > > +		unsigned int *m = (unsigned int *)(block - align);
-> > > +		return SLOB_UNITS(*m); /* round up */
-> > > +	} else
-> > >  		return sp->page.private;
-> > >  }
-> >
-> > Yes, I came up with nearly the same patch before reading this
-> >
-> > --- linux-2.6/mm/slob.c 2008-10-08 14:43:17.000000000 +1100
-> > +++ suth/mm/slob.c      2008-10-08 15:11:06.000000000 +1100
-> > @@ -514,9 +514,11 @@ size_t ksize(const void *block)
-> >                 return 0;
-> >
-> >         sp = (struct slob_page *)virt_to_page(block);
-> > -       if (slob_page(sp))
-> > -               return (((slob_t *)block - 1)->units - 1) * SLOB_UNIT;
-> > -       else
-> > +       if (slob_page(sp)) {
-> > +               int align = max(ARCH_KMALLOC_MINALIGN,
-> > ARCH_SLAB_MINALIGN); +               unsigned int *m = (unsigned int
-> > *)(block - align); +               return *m + align;
-> > +       } else
-> >                 return sp->page.private;
-> >  }
-> >
-> > However, mine is lifted directly from kfree, wheras you do something a
-> > bit different. Hmm, ksize arguably could be used to find the underlying
-> > allocated slab size in order to use a little bit more than we'd asked
-> > for. So probably we should really just `return *m` (don't round up or
-> > add any padding).
->
-> Huh? ksize should report how much space is available in the buffer. If
-> we request 33 bytes from SLUB and it gives us 64, ksize reports 64. If
-> we request 33 bytes from SLOB and it gives us 34, we should report 34.
+On Tue, 2008-10-07 at 15:46 -0600, Andreas Dilger wrote:
+> On Oct 07, 2008  15:29 -0500, Eric Sandeen wrote:
+> > Jeremy Fitzhardinge wrote:
+> > > I tried giving ext4 a spin on my rawhide system, and it appears to 
+> > > deadlock pretty quickly: lots of processed blocked in either ext4 or jbd2.
+> > > 
+> > >  From the look of the sysrq-t dumps I captured, I think beagled is 
+> > > what's triggering it by doing something with EAs. I haven't had any 
+> > > lockups since I killed it off.
+> > > 
+> > > beagled       D 0000000000000000     0  3477      1
+> > >  ffff880125809778 0000000000000082 0000000000000000 ffff88013b078150
+> > >  ffffffff8187a780 ffffffff8187a780 ffff88010f8445c0 ffff88013badc5c0
+> > >  ffff88010f844970 0000000100000001 0000000000000000 ffff88010f844970
+> > > Call Trace:
+> > >  [<ffffffff812170d8>] ? scsi_sg_alloc+0x48/0x4a
+> > >  [<ffffffff8136d4ae>] __down_write_nested+0xa3/0xbd
+> > >  [<ffffffff8136d4d3>] __down_write+0xb/0xd
+> > >  [<ffffffff8136c813>] down_write+0x2f/0x33
+> > >  [<ffffffffa04b30a8>] ext4_expand_extra_isize_ea+0x67/0x6f2 [ext4dev]
+> > 
+> > At first glance it seems that we're trying a down_write on the xattr_sem
+> > here...
+> > 
+> > >  [<ffffffffa04762ed>] ? jbd2_journal_add_journal_head+0x113/0x1b0 [jbd2]
+> > >  [<ffffffffa0476173>] ? jbd2_journal_put_journal_head+0x1a/0x56 [jbd2]
+> > >  [<ffffffffa0471669>] ? jbd2_journal_get_write_access+0x31/0x38 [jbd2]
+> > >  [<ffffffffa0471a6c>] ? jbd2_journal_extend+0x1af/0x1ca [jbd2]
+> > >  [<ffffffffa0497f5c>] ext4_mark_inode_dirty+0x119/0x18b [ext4dev]
+> > >  [<ffffffffa0498156>] ext4_dirty_inode+0xab/0xc3 [ext4dev]
+> > >  [<ffffffff810e7310>] __mark_inode_dirty+0x38/0x194
+> > >  [<ffffffffa04b0574>] ext4_mb_new_blocks+0x700/0x70f [ext4dev]
+> > >  [<ffffffff8109f395>] ? mark_page_accessed+0x5f/0x6b
+> > >  [<ffffffff810eb5ba>] ? __find_get_block+0x1af/0x1c1
+> > >  [<ffffffff8136c3af>] ? __wait_on_bit+0x6f/0x7e
+> > >  [<ffffffff810ec154>] ? sync_buffer+0x0/0x44
+> > >  [<ffffffffa0493e50>] do_blk_alloc+0x9d/0xb3 [ext4dev]
+> > >  [<ffffffffa0493eb5>] ext4_new_meta_blocks+0x34/0x76 [ext4dev]
+> > >  [<ffffffffa0493f1b>] ext4_new_meta_block+0x24/0x26 [ext4dev]
+> > >  [<ffffffffa04b2e79>] ext4_xattr_block_set+0x50e/0x6d6 [ext4dev]
+> > >  [<ffffffffa04b39b4>] ext4_xattr_set_handle+0x281/0x3f0 [ext4dev]
+> > 
+> > Having already downed it here?
+> > 
+> > I'll look into it, not 100% sure what path gets us here (between
+> > in-inode EAs and external block EAs) but I'll see.
+> 
+> This looks suspiciously like a similar bug fixed in the past by Kalpak,
+> related to trying to grow large-inode space in ext4_expand_extra_isize_ea().
 
-Oh.. hmm yeah right, I didn't realise what you were doing there.
-OK, so your patch looks good to me then (provided it is diffed against
-the previous one, for Linus).
+ext4_xattr_set_handle() eventually ends up calling
+ext4_mark_inode_dirty() which tries to expand the inode by shifting the
+EAs. This leads to the xattr_sem being downed again and leading to a
+deadlock.
 
+This patch makes sure that if ext4_xattr_set_handle() is in the
+call-chain, ext4_mark_inode_dirty() will not expand the inode.
 
-> > > That leaves the question of why this morning's patch worked at all,
-> > > given that it was based on how SLOB worked before Nick's patch. But I
-> > > haven't finished working through that. Peter, can I get you to test the
-> > > above?
-> >
-> > I didn't have ksize in my slob user test harness, but added a couple of
-> > tests in there, and indeed ksize was returning complete garbage both
-> > before and after the latest patch to slob. I'd say it was simply luck.
->
-> I was going to dig your harness up this morning and realized it was on
-> my dead laptop. Send me another copy?
+Signed-off-by: Kalpak Shah <kalpak.shah@sun.com>
 
-OK, off-list.
+Index: linux-2.6.27-rc7/fs/ext4/xattr.c
+===================================================================
+--- linux-2.6.27-rc7.orig/fs/ext4/xattr.c
++++ linux-2.6.27-rc7/fs/ext4/xattr.c
+@@ -959,6 +959,7 @@ ext4_xattr_set_handle(handle_t *handle, 
+ 	struct ext4_xattr_block_find bs = {
+ 		.s = { .not_found = -ENODATA, },
+ 	};
++	unsigned long no_expand;
+ 	int error;
+ 
+ 	if (!name)
+@@ -966,6 +967,9 @@ ext4_xattr_set_handle(handle_t *handle, 
+ 	if (strlen(name) > 255)
+ 		return -ERANGE;
+ 	down_write(&EXT4_I(inode)->xattr_sem);
++	no_expand = EXT4_I(inode)->i_state & EXT4_STATE_NO_EXPAND;
++	EXT4_I(inode)->i_state |= EXT4_STATE_NO_EXPAND;
++
+ 	error = ext4_get_inode_loc(inode, &is.iloc);
+ 	if (error)
+ 		goto cleanup;
+@@ -1042,6 +1046,8 @@ ext4_xattr_set_handle(handle_t *handle, 
+ cleanup:
+ 	brelse(is.iloc.bh);
+ 	brelse(bs.bh);
++	if (no_expand == 0)
++		EXT4_I(inode)->i_state &= ~EXT4_STATE_NO_EXPAND;
+ 	up_write(&EXT4_I(inode)->xattr_sem);
+ 	return error;
+ }
+
+Thanks,
+Kalpak
+
