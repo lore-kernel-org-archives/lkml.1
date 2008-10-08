@@ -1,82 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbYJHPrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYJHPwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043AbYJHPrS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 11:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYJHPrE
+	id S1755008AbYJHPwf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 11:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYJHPw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 11:47:04 -0400
-Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:1974 "EHLO
-	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbYJHPrB (ORCPT
+	Wed, 8 Oct 2008 11:52:26 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:44814 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753167AbYJHPw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 11:47:01 -0400
-Date: Wed, 8 Oct 2008 17:45:52 +0200
-From: Mark de Wever <koraq@xs4all.nl>
-To: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Gadi Oxman <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch][repost] ide-tape build fix
-Message-ID: <20081008154552.GA3907@localhost>
-References: <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost> <48D80949.4080901@ru.mvista.com> <20080923074845.GB5656@gollum.tnic> <20080923165914.GA7803@localhost> <9ea470500809231011p5ea37fc4u71eeeddf6ccec45a@mail.gmail.com> <20080923212018.GA3348@localhost> <20081007182615.GA2400@localhost> <20081008063352.GA13530@gollum.tnic>
+	Wed, 8 Oct 2008 11:52:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RN4EFoatBjzsqHSIDKR3wPQmzbLq4Tf32xoDp8PDucOOAJivy57haH67FdOZQex1UCyDci/VXWOIOH8X9tlQ6VZzjZ70Jun/EdvqrV3qDu/waM2yNcUvf2hJ9LH0vEk16RVEBSDlI//nuCVpmJ4XA1jqfNE3L09/LEHZe901lNI=  ;
+X-YMail-OSG: 7u_cYOQVM1lcCvtbxiaHYHW37djpf1JD5nkLWCj.0Os635Uw2Bkya1JHMzmdiwXwfFThS5yGq4tPhbyDSx0hGPMnhcTCu5nPCZoFuwkm9CZx_Nap._MCK7414zGC_34yBgZewKxDm1.sX6WDJSbKkpqocOo8pygq9M7GYuQSgQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
+Date: Thu, 9 Oct 2008 02:52:14 +1100
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, hugh@veritas.com, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davej@redhat.com, srostedt@redhat.com
+References: <20080804130317.994042639@chello.nl> <alpine.LFD.1.10.0808041230070.3340@nehalem.linux-foundation.org> <20081008152708.GA11207@goodmis.org>
+In-Reply-To: <20081008152708.GA11207@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081008063352.GA13530@gollum.tnic>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810090252.15384.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08, 2008 at 08:33:52AM +0200, Borislav Petkov wrote:
-Hi,
-> Bugger, I should be getting at least warnings when compiling this but I don't.
-> This is because I don't have CONFIG_LBD enabled. However, the %ld and %d
-> format specifiers are also not entirely correct but gcc doesn't warn about them
-> - I guess it checks only size but not signedness...
+On Thursday 09 October 2008 02:27, Steven Rostedt wrote:
+> On Mon, Aug 04, 2008 at 12:31:22PM -0700, Linus Torvalds wrote:
+> > On Mon, 4 Aug 2008, Jeremy Fitzhardinge wrote:
+> > > OK.  I don't actually need to do this, but I was asking for
+> > > completeness.  But to clarify, you only need to do the reverse unlock
+> > > if you do it after unlocking the outer lock?  If you're still holding
+> > > the outer lock, you can unlock in any order?
+> >
+> > Release order should always be totally irrelevant, whether you hold outer
+> > locks or not. Only the order of _getting_ locks matter.
+>
+> Technically, you are 100% correct.
+>
+> > And yes, if there is an outer lock, even the order of getting locks is
+> > irrelevant, as long as anybody who gets more than one inner lock always
+> > holds the outer one.
+>
+> But I need to disagree on a programming practice style.  Unlocking locks
+> in a non nested order is just bad programming practice. Unless there is
+> a good reason to do so, one should never release locks in a non reverse
+> order they were taken.
 
-I guess so too.
+An outer one might be more likely to be contended, so you might want
+to release it asap.
 
-> Would you like to redo your patch and add a proper comment ontop?
+Other times, you have lock A and lock B held (like scheduler rqs).
+You can say unlock(A); unlock(B);
+or if (A < B) unlock(B); unlock(A); if (A > B) unlock (B);
 
-Here you go.
 
-@Boris do you want to add your Signed-off-by too?
+> This can be a source of bugs, where people might notice an outer lock
+> being released and think the inner locks were too.
+>
+> Lately the kernel has been going through a lot of clean ups that have
+> been making the kernel a much more maintainable beast. I feel we should
+> enforce the rule of unlocking order (again, unless there is a good
+> reason not to). Not for a technical reason, but just for a more
+> maintainable one.
 
-@Bart please apply this patch.
-
---
-Subject: ide-tape: Buildfix when IDETAPE_DEBUG_LOG is set to 1.
-
-The format specifier for rq->sector didn't specify the proper size and
-signedness. Borislav Petkov discovered that the signedness for
-rq->nr_sectors and rq->current_nr_sectors also were incorrect.
-
-Signed-off-by: Mark de Wever <koraq@xs4all.nl>
----
- drivers/ide/ide-tape.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 3833189..3d5f782 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -978,9 +978,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 	struct request *postponed_rq = tape->postponed_rq;
- 	u8 stat;
- 
--	debug_log(DBG_SENSE, "sector: %ld, nr_sectors: %ld,"
--			" current_nr_sectors: %d\n",
--			rq->sector, rq->nr_sectors, rq->current_nr_sectors);
-+	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %lu,"
-+			" current_nr_sectors: %u\n",
-+			(unsigned long long)rq->sector, rq->nr_sectors, 
-+			rq->current_nr_sectors);
- 
- 	if (!blk_special_request(rq)) {
- 		/* We do not support buffer cache originated requests. */
--- 
-1.5.6.5
-
-Regards,
-Mark de Wever
+I don't really think it would make things more maintainable, FWIW.
