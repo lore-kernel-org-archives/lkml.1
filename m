@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbYJHGaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYJHGeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbYJHGaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 02:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYJHGaF
+	id S1754328AbYJHGeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 02:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYJHGeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 02:30:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35636 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751259AbYJHGaB (ORCPT
+	Wed, 8 Oct 2008 02:34:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:9458 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbYJHGeB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 02:30:01 -0400
-Date: Tue, 7 Oct 2008 23:28:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit
- arch
-Message-Id: <20081007232838.0321e6d4.akpm@linux-foundation.org>
-In-Reply-To: <6.0.0.20.2.20081008132532.056cc400@172.19.0.2>
-References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2>
-	<20081007105056.16d9e785.akpm@linux-foundation.org>
-	<1223405963.26330.83.camel@lappy.programming.kicks-ass.net>
-	<200810081335.44576.nickpiggin@yahoo.com.au>
-	<6.0.0.20.2.20081008132532.056cc400@172.19.0.2>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Oct 2008 02:34:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=OahSYOoHyp1Sgpx6/zwP0LjNt3840yZkS+H7JJ/n15qBxhPZtbSNSJTnVKb/9HqiY9
+         5wDxs12fLE8nGM2jvQjHBTUV8rxgyyX5UEtRUQkx/oTXASNfT0wLw2LXOUzKNr0ddaOd
+         8fNHTmXPkRSh17TmXgF5WQnXDW3b1eIeF2teM=
+Date: Wed, 8 Oct 2008 08:33:52 +0200
+To: Mark de Wever <koraq@xs4all.nl>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Gadi Oxman <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch][repost] ide-tape build fix
+Message-ID: <20081008063352.GA13530@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Mark de Wever <koraq@xs4all.nl>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+	Gadi Oxman <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080921185138.GA16310@localhost> <48D79ABD.8060805@ru.mvista.com> <9ea470500809220656j6dfcf4c9q7a5a4185481ec994@mail.gmail.com> <20080922204129.GA3495@localhost> <48D80949.4080901@ru.mvista.com> <20080923074845.GB5656@gollum.tnic> <20080923165914.GA7803@localhost> <9ea470500809231011p5ea37fc4u71eeeddf6ccec45a@mail.gmail.com> <20080923212018.GA3348@localhost> <20081007182615.GA2400@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081007182615.GA2400@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Oct 2008 13:48:10 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
+Hi,
 
+On Tue, Oct 07, 2008 at 08:26:15PM +0200, Mark de Wever wrote:
+> I never got a reaction on this patch, but please apply it.
 > 
-> At 11:35 08/10/08, Nick Piggin wrote:
-> >On Wednesday 08 October 2008 05:59, Peter Zijlstra wrote:
-> >>
-> >> The whole point is that such usage is outside the specification and thus
-> >> we don't strictly need to fix this.
-> >>
-> >> So the question Nick is asking is, do we want to slow down the kernel
-> >> for a few broken user-space applications. Esp. since the race doesn't
-> >> affect anybody else except the broken users of the file descriptor.
-> >
-> >Right you are. That's the fundamental question. The actual details of
-> >the fix and how likely the race is don't really matter until we
-> >answer the first question (except to say that the "fix" is never going
-> >to be free).
+> In order to compile the kernel with IDETAPE_DEBUG_LOG enabled I had to
+> apply the following build fix.
+
+Bugger, I should be getting at least warnings when compiling this but I don't.
+This is because I don't have CONFIG_LBD enabled. However, the %ld and %d
+format specifiers are also not entirely correct but gcc doesn't warn about them
+- I guess it checks only size but not signedness...
+
+> Signed-off-by: Mark de Wever <koraq@xs4all.nl>
 > 
-> Simultaneous access by two or more writer can corrupt file content,
-> so this case needs some locks(flock or fcntl) to preserve synchronization
-> of file content. This is responsibility of user-space application.
-> But file->f_pos race issue can occur even if multiple threads just read 
-> simultaneously.
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index 3833189..7258eca 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -978,9 +978,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
+>  	struct request *postponed_rq = tape->postponed_rq;
+>  	u8 stat;
+>  
+> -	debug_log(DBG_SENSE, "sector: %ld, nr_sectors: %ld,"
+> +	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %ld,"
 
-But how could that userspace code possibly be reliable even if f_pos
-updates were atomic?  The two threads/processes will still read
-either the same data, or one will get "A" and the other will get "B" or
-one will get "B" and the other will get "A".
+the other format specifiers should be rq->nr_sectors: %lu, rq->current_nr_sectors: %u.
 
-And when that application gets fixed, so too does this f_pos problem?
+>  			" current_nr_sectors: %d\n",
+> -			rq->sector, rq->nr_sectors, rq->current_nr_sectors);
+> +			(unsigned long long)rq->sector, rq->nr_sectors, 
+> +			rq->current_nr_sectors);
+>  
+>  	if (!blk_special_request(rq)) {
+>  		/* We do not support buffer cache originated requests. */
+> 
 
- I think this is not responsibility of user-space application. 
-> To avoid this currently, an application needs some locks to protect file offset
-> even if it just read a file. So I think f_pos race should be fixed.
+Would you like to redo your patch and add a proper comment ontop?
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
