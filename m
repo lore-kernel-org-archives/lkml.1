@@ -1,79 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYJHQUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYJHQWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYJHQUq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 12:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYJHQUj
+	id S1755337AbYJHQWa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 12:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbYJHQWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 12:20:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35949 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754143AbYJHQUi (ORCPT
+	Wed, 8 Oct 2008 12:22:14 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:46581 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754435AbYJHQWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 12:20:38 -0400
-Date: Wed, 8 Oct 2008 09:19:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Rostedt <srostedt@redhat.com>
-cc: Steven Rostedt <rostedt@goodmis.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, hugh@veritas.com, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [RFC][PATCH 7/7] lockdep: spin_lock_nest_lock()
-In-Reply-To: <48ECD9C8.4000700@redhat.com>
-Message-ID: <alpine.LFD.2.00.0810080906520.3208@nehalem.linux-foundation.org>
-References: <20080804130317.994042639@chello.nl> <20080804131012.246115111@chello.nl> <48974512.7000206@goop.org> <1217876046.3589.61.camel@twins> <489757EC.3000309@goop.org> <alpine.LFD.1.10.0808041230070.3340@nehalem.linux-foundation.org>
- <20081008152708.GA11207@goodmis.org> <alpine.LFD.2.00.0810080836410.3208@nehalem.linux-foundation.org> <48ECD9C8.4000700@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 8 Oct 2008 12:22:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=FdEPCZbhkD0Lb6FSb82C1PtHee1ncHk/XlodUWzM+s3ZOv0iJ4dfRIq7bY9y4EtBVR
+         OfeHgarWbfQWzorZgtpK6CMBgJ8zHZgqqKSIpV1JSBqXAIydmuMFE76aEYsxWaKSa9PW
+         OdlekR5MDcr6sbRWmko8YwLLljA434P/dYgKw=
+Message-ID: <9ea470500810080922x326821c5p47053afa7a1d261e@mail.gmail.com>
+Date: Wed, 8 Oct 2008 18:22:10 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Mark de Wever" <koraq@xs4all.nl>
+Subject: Re: [patch][repost] ide-tape build fix
+Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
+       "Gadi Oxman" <gadio@netvision.net.il>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081008154552.GA3907@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48D79ABD.8060805@ru.mvista.com> <20080922204129.GA3495@localhost>
+	 <48D80949.4080901@ru.mvista.com> <20080923074845.GB5656@gollum.tnic>
+	 <20080923165914.GA7803@localhost>
+	 <9ea470500809231011p5ea37fc4u71eeeddf6ccec45a@mail.gmail.com>
+	 <20080923212018.GA3348@localhost> <20081007182615.GA2400@localhost>
+	 <20081008063352.GA13530@gollum.tnic> <20081008154552.GA3907@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 8, 2008 at 5:45 PM, Mark de Wever <koraq@xs4all.nl> wrote:
+> On Wed, Oct 08, 2008 at 08:33:52AM +0200, Borislav Petkov wrote:
+> Hi,
+>> Bugger, I should be getting at least warnings when compiling this but I don't.
+>> This is because I don't have CONFIG_LBD enabled. However, the %ld and %d
+>> format specifiers are also not entirely correct but gcc doesn't warn about them
+>> - I guess it checks only size but not signedness...
+>
+> I guess so too.
+>
+>> Would you like to redo your patch and add a proper comment ontop?
+>
+> Here you go.
+>
+> @Boris do you want to add your Signed-off-by too?
 
+no, just
 
-On Wed, 8 Oct 2008, Steven Rostedt wrote:
-> 
-> Unfortunately, you cut out my comment that I stated "unless there is a good
-> reason not to", which the below example is a good reason ;-)
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
 
-Well, teh thing is, as long as you think nesting is good, you end up being 
-very confused when it isn't.
+> @Bart please apply this patch.
+>
+> --
+> Subject: ide-tape: Buildfix when IDETAPE_DEBUG_LOG is set to 1.
+>
+> The format specifier for rq->sector didn't specify the proper size and
+> signedness. Borislav Petkov discovered that the signedness for
+> rq->nr_sectors and rq->current_nr_sectors also were incorrect.
+>
+> Signed-off-by: Mark de Wever <koraq@xs4all.nl>
+> ---
+>  drivers/ide/ide-tape.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index 3833189..3d5f782 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -978,9 +978,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
+>        struct request *postponed_rq = tape->postponed_rq;
+>        u8 stat;
+>
+> -       debug_log(DBG_SENSE, "sector: %ld, nr_sectors: %ld,"
+> -                       " current_nr_sectors: %d\n",
+> -                       rq->sector, rq->nr_sectors, rq->current_nr_sectors);
+> +       debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %lu,"
+> +                       " current_nr_sectors: %u\n",
+> +                       (unsigned long long)rq->sector, rq->nr_sectors,
+> +                       rq->current_nr_sectors);
+>
+>        if (!blk_special_request(rq)) {
+>                /* We do not support buffer cache originated requests. */
+> --
+> 1.5.6.5
+>
+> Regards,
+> Mark de Wever
+>
 
-> I just find that seeing something like:
-> 
->    lock(A);
->    lock(B);
-> 
->    [do something]
-> 
->    unlock(A);
->    unlock(B);
-> 
-> just seems to be sloppy.
-
-Of course you'll often get nesting almost by mistake.
-
-For example, any normal locking that is hierarchical tends to nest 
-naturally, especially if you end up using lots of small functions (which 
-you should). Or simply due to error handling.
-
-So in that sense, nesting may be a "natural" thing, but partly exactly 
-_because_ it is fairly natural, we should not try to make it even more 
-than that, because then when things don't nest (and it does happen), if 
-the "things should nest" camp gets too strong, bugs happen.
-
-They happen because somebody looks at the non-nesting case, and thinks 
-it's sloppy, and tries to fix it. And in the process just complicates 
-matters - and very likely introduces bugs.
-
-And THAT is why people shouldn't think that locks "should" nest. Because 
-they shouldn't. They often do, but we're better off making people very 
-aware of the fact that 'often' isn't 'good design', it's just a matter of 
-'it happens in practice' rather than 'it should be that way'.
-
-I know for a fact that some people thought unlocking in non-nested order 
-was a bug. And I believe that belief is a dangerous one.
-
-				Linus
+-- 
+Regards/Gruss,
+Boris
