@@ -1,960 +1,694 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbYJIXkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbYJIXrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbYJIXkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 19:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJIXkE
+	id S1755820AbYJIXrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 19:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYJIXrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 19:40:04 -0400
-Received: from tservice.net.ru ([195.178.208.66]:60934 "EHLO tservice.net.ru"
+	Thu, 9 Oct 2008 19:47:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56784 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbYJIXj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 19:39:59 -0400
-X-Greylist: delayed 1316 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Oct 2008 19:39:58 EDT
-Date: Fri, 10 Oct 2008 03:17:59 +0400
-From: Evgeniy Polyakov <s0mbre@tservice.net.ru>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
-Subject: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081009231759.GA8664@tservice.net.ru>
+	id S1750891AbYJIXrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 19:47:19 -0400
+Date: Fri, 10 Oct 2008 01:47:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 updates for v2.6.28, phase #1
+Message-ID: <20081009234705.GA20540@elte.hu>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="nFreZHaLTZJo0R7j"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
---nFreZHaLTZJo0R7j
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Please pull the latest x86-v28-for-linus-phase1 git tree from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase1
+
+these are the easiest, purely independent x86 topics with no conflicts, 
+in one nice Octopus merge.
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Adam Jackson (1):
+      x86, debug printouts: IOMMU setup failures should not be KERN_ERR
+
+Akinobu Mita (2):
+      x86: check for ioremap() failure in copy_oldmem_page()
+      x86: use platform_device_register_simple()
+
+Alex Nixon (1):
+      x86/paravirt: Remove duplicate paravirt_pagetable_setup_{start, done}()
+
+Alexander van Heukelum (1):
+      x86, 64-bit, dwarf2: push pushes 8 bytes and popf pops 8
+
+Alexey Dobriyan (3):
+      x86_64: remove empty lines from stack traces/oopses
+      seccomp: drop now bogus dependency on PROC_FS
+      x86: simpler SYSVIPC_COMPAT definition
+
+Andi Kleen (1):
+      x86: capitalize function call interrupts consistently
+
+Andrew Morton (2):
+      x86, ptrace: PEBS support, warning fix
+      arch/x86/pci/irq.c: attempt to clean up code layout
+
+Aristeu Rozanski (2):
+      x86, NMI watchdog: when booting with reset_devices, clear the performance counters
+      x86, NMI watchdog: setup before enabling NMI watchdog
+
+Arjan van de Ven (1):
+      x86: print DMI information in the oops trace
+
+Avi Kivity (1):
+      x86: default to reboot via ACPI
+
+Bill Nottingham (1):
+      x86_64: be less annoying on boot
+
+Bruce Allan (1):
+      x86: export set_memory_ro and set_memory_rw
+
+Christoph Hellwig (1):
+      x86: kill sys32_pause
+
+Cyrill Gorcunov (1):
+      x86: DS cleanup - dont treat 0 as NULL
+
+Dave Young (1):
+      i386: vmalloc size fix
+
+Dimitri Sivanich (1):
+      x86: remove EXPERIMENTAL restriction from CONFIG_HOTPLUG_CPU
+
+Eduardo Habkost (1):
+      x86, paravirt_ops: use unsigned long instead of u32 for alloc_p*() pfn args
+
+FUJITA Tomonori (1):
+      x86 gart: allocate size-aligned address for alloc_coherent, v2
+
+Gustavo F. Padovan (7):
+      x86: coding styles fixes to arch/x86/kernel/process_64.c
+      x86: add KERN_INFO to printks on process_64.c
+      x86: coding style fixes to arch/x86/kernel/crash_dump_64.c
+      x86: coding style fixes to arch/x86/kernel/signal_64.c
+      x86: coding style fixes to arch/x86/kernel/traps_64.c
+      x86: coding style fixes to arch/x86/kernel/sys_x86_64.c
+      x86: coding style fixes to arch/x86/kernel/traps_64.c
+
+H. Peter Anvin (5):
+      x86: doc: move x86-generic documentation from Doc/x86/i386
+      x86: doc: boot.txt: fix the size of the start_sys field
+      x86: <asm/asm.h> consistency cleanups
+      x86: msr-on-cpu: remove unnecessary level of abstraction
+      x86: additional defconfig updates
+
+Harvey Harrison (2):
+      x86: ds.c ptrace.c integer as NULL pointer sparse fixes
+      x86, olpc: fix endian bug in openfirmware workaround
+
+Hiroshi Shimamoto (1):
+      x86: acpi: move acpi_mcfg_64bit_base_addr into CONFIG_PCI_MMCONFIG
+
+Huang Weiyi (4):
+      arch/x86/kernel/visws_quirks.c: Removed duplicated #include
+      arch/x86/kernel/acpi/boot.c: removed duplicated #include
+      arch/x86/kernel/cpuid.c: removed duplicated #include
+      arch/x86/kernel/apm_32.c: remove duplicated #include
+
+Hugh Dickins (1):
+      x86: unsigned long pte_pfn
+
+Ingo Molnar (5):
+      x86: PEBS cleanup
+      x86: fix ds.c build error
+      x86: visws_quirks, fix build error
+      x86: quick TSC calibration, improve
+      x86, tsc calibration: fix
+
+J.A. Magallón (1):
+      x86: mtrr_cleanup try gran_size to less than 1M, cleanup
+
+Jan Beulich (2):
+      x86: pgd_{c,d}tor() cleanup
+      x86-64: eliminate dead code
+
+Jaswinder Singh (27):
+      x86: Introducing asm/syscalls.h
+      x86: process_32.c declare cpu_number before they get used
+      x86: signal_XX.c declare do_notify_resume before they get used
+      x86: time_XX.c declare functions before they get used
+      x86: setup.c declare saved_video_mode before they get used
+      x86: e820.c declare pci_mem_start before they get used
+      x86: pci-dma.c declare iommu_bio_merge before they get used
+      x86: pci-nommu.c declare nommu_dma_ops before they get used
+      x86: i387.c declare dump_fpu() before they get used
+      x86: ptrace.c declare functions before they get used
+      x86: proc.c declare cpuinfo_op before they get used
+      x86: common.c declare idle_regs before they get used
+      x86: mtrr/main.c declare range_state as static
+      x86: apic_XX.c declare functions before they get used
+      x86: vm86_32.c declare functions before they get used
+      x86: mm/init_XX.c declare functions before they get used
+      x86: mm/fault.c declare do_page_fault before they get used
+      x86: mm/ioremap.c declare early_ioremap_debug and early_ioremap_nested as static
+      x86: mm/pageattr.c declare arch_report_meminfo before they get used
+      x86: mm/pgtable_32.c declare set_pmd_pfn before they get used
+      x86: mach-default/setup.c declare no_broadcast before they get used
+      x86_64: Declare new_utsname in asm-x86/syscalls.h
+      X86_32: declare pt_regs_access as unsigned long
+      X86_SMP: smp.c declare functions before they get used
+      X86_SMP: smpboot.c declare idle_thread_array and smp_b_stepping as static
+      X86_SMP: ipi.c declare functions before they get used
+      X86_SMP: tlb_XX.c declare smp_invalidate_interrupt before they get used
+
+Jeff Chua (1):
+      x86: make sparsemem more available
+
+Jeremy Fitzhardinge (2):
+      x86_64: use save/loadsegment in ia32 compat
+      x86: another user of PTE_FLAGS_MASK
+
+Joe Korty (1):
+      x86: make poll_idle behave more like the other idle methods
+
+Joerg Roedel (5):
+      x86: convert pci-dma.c from round_up to roundup
+      x86: convert pageattr.c from round_up to roundup
+      x86: convert init_64.c from round_up to roundup
+      x86: convert numa_64.c from round_up to roundup
+      x86: convert discontig_32.c from round_up to roundup
+
+Li Zefan (1):
+      x86: remove nesting CONFIG_HOTPLUG_CPU
+
+Linus Torvalds (1):
+      x86: quick TSC calibration
+
+Luiz Fernando N. Capitulino (1):
+      x86: remove 8254 timer texts from Documentation
+
+Maciej W. Rozycki (1):
+      x86: fix up a comment in ack_APIC_irq()
+
+Marcin Slusarz (4):
+      x86, tsc: fix section mismatch warning
+      x86: fix MP_processor_info section mismatch warning
+      x86: mmconf: fix section mismatch warning
+      x86: mpparse.c: fix section mismatch warning
+
+Markus Metzger (1):
+      x86, ptrace: PEBS support
+
+Mathieu Desnoyers (3):
+      x86: alternatives : fix LOCK_PREFIX race with preemptible kernel and CPU hotplug
+      x86: revert replace LOCK_PREFIX in futex.h
+      x86: spinlock use LOCK_PREFIX
+
+Paolo Ciarrocchi (6):
+      x86: coding style fixes to arch/x86/boot/compressed/misc.c
+      x86: coding style fixes to arch/x86/kernel/bios_uv.c
+      x86: coding style fixes to arch/x86/lib/strstr_32.c
+      x86: coding style fixes to arch/x86/lib/string_32.c
+      x86: coding style fixes to arch/x86/kernel/paravirt_patch_32.c
+      x86: Coding style fixes to arch/x86/oprofile/op_model_p4.c
+
+Paul Bolle (1):
+      x86 setup: drop SWAP_DEV
+
+Petr Tesarik (1):
+      x86, tracehook: clean up implementation of syscall_get_error()
+
+Philipp Kohlbecher (1):
+      x86: fix comment in protected mode header
+
+Prarit Bhargava (1):
+      x86, pci: iommu fix potential overflow in alloc_iommu()
+
+Randy Dunlap (1):
+      documentation: move mtrr.txt to Doc/x86/ subdir
+
+Robert Richter (1):
+      x86: cleanup in amd_cpu_notify()
+
+Roland McGrath (6):
+      x86: tracehook_signal_handler
+      x86: tracehook syscall
+      x86: tracehook: asm/syscall.h
+      x86 signals: use asm/syscall.h
+      x86: tracehook: TIF_NOTIFY_RESUME
+      x86: tracehook: CONFIG_HAVE_ARCH_TRACEHOOK
+
+Russ Anderson (1):
+      x86: trivial printk fix in efi.c
+
+Thomas Gleixner (4):
+      x86: TSC: define the PIT latch value separate
+      x86: TSC: separate hpet/pmtimer calculation out
+      x86: TSC: use one set of reference variables
+      x86: TSC make the calibration loop smarter
+
+Tim Bird (1):
+      x86, bootup: add built-in kernel command line for x86 (v2)
+
+Uros Bizjak (1):
+      x86, cleanup: use X86_CR4_PGE in x86/power/hibernate_asm_32.S
+
+Uwe Kleine-König (1):
+      x86, debug: gpio_free might sleep
+
+Vegard Nossum (3):
+      x86: fix spurious '#' in kvm header
+      x86: consolidate header guards
+      x86: consolidate header guards
+
+Yinghai Lu (17):
+      x86: print per_cpu data address
+      x86_64: printout msr -v2
+      x86: fix arch/x86/kernel/cpu/mtrr/main.c warning
+      x86: use WARN_ONCE in workaround for mtrr mask
+      x86: don't need to go to chunksize to 4G
+      x86: mtrr_cleanup optimization, v2
+      x86: add mtrr_cleanup_debug command line
+      x86: mtrr_cleanup hole size should be less than half of chunk_size, v2
+      x86: mtrr_cleanup safe to get more spare regs now
+      x86: mtrr_cleanup prepare to make gran_size to less 1M
+      x86: mtrr_cleanup try gran_size to less than 1M
+      x86: change MTRR_SANITIZER to def_bool y
+      x86: mtrr_cleanup try gran_size to less than 1M, v3
+      x86, debug: mtrr_cleanup print out var mtrr before change it
+      x86: mtrr_cleanup: print out correct type v2
+      x86: mtrr_cleanup: first 1M may be covered in var mtrrs
+      x86: mtrr_cleanup: treat WRPROT as UNCACHEABLE
+
+dcg (1):
+      x86_64: be less annoying on boot, v2
+
+venkatesh.pallipadi@intel.com (1):
+      x86: PAT documentation updates with debug info
 
 
-Hi.
+ Documentation/00-INDEX                             |    2 -
+ Documentation/kernel-parameters.txt                |   12 +-
+ Documentation/x86/00-INDEX                         |    4 +
+ Documentation/x86/{i386 => }/boot.txt              |    2 +-
+ Documentation/{ => x86}/mtrr.txt                   |    4 +-
+ Documentation/x86/pat.txt                          |   54 +-
+ .../x86/{i386 => }/usb-legacy-support.txt          |    0
+ Documentation/x86/x86_64/boot-options.txt          |    4 -
+ Documentation/x86/{i386 => }/zero-page.txt         |    0
+ arch/x86/Kconfig                                   |   75 ++-
+ arch/x86/Kconfig.cpu                               |   18 +
+ arch/x86/boot/compressed/head_32.S                 |    5 +-
+ arch/x86/boot/compressed/misc.c                    |   12 +-
+ arch/x86/boot/header.S                             |    1 -
+ arch/x86/configs/i386_defconfig                    |   19 +-
+ arch/x86/configs/x86_64_defconfig                  |   29 +-
+ arch/x86/ia32/ia32_aout.c                          |   11 +-
+ arch/x86/ia32/ia32_signal.c                        |   21 +-
+ arch/x86/ia32/sys_ia32.c                           |    9 -
+ arch/x86/kernel/acpi/boot.c                        |    5 +-
+ arch/x86/kernel/alternative.c                      |    8 +-
+ arch/x86/kernel/aperture_64.c                      |    6 +-
+ arch/x86/kernel/apm_32.c                           |    1 -
+ arch/x86/kernel/asm-offsets_64.c                   |    2 +-
+ arch/x86/kernel/bios_uv.c                          |   10 +-
+ arch/x86/kernel/cpu/common_64.c                    |   51 +
+ arch/x86/kernel/cpu/intel.c                        |    3 +-
+ arch/x86/kernel/cpu/mtrr/generic.c                 |    7 +-
+ arch/x86/kernel/cpu/mtrr/if.c                      |    4 +-
+ arch/x86/kernel/cpu/mtrr/main.c                    |  274 ++++--
+ arch/x86/kernel/cpu/perfctr-watchdog.c             |   86 ++-
+ arch/x86/kernel/cpuid.c                            |    1 -
+ arch/x86/kernel/crash_dump_64.c                    |   13 +-
+ arch/x86/kernel/ds.c                               |  954 ++++++++++++++------
+ arch/x86/kernel/efi.c                              |    6 +-
+ arch/x86/kernel/entry_64.S                         |    4 +-
+ arch/x86/kernel/head64.c                           |    5 +-
+ arch/x86/kernel/ioport.c                           |    1 +
+ arch/x86/kernel/ipi.c                              |    3 +-
+ arch/x86/kernel/irq_32.c                           |    2 +-
+ arch/x86/kernel/irq_64.c                           |    2 +-
+ arch/x86/kernel/kvm.c                              |    2 +-
+ arch/x86/kernel/ldt.c                              |    1 +
+ arch/x86/kernel/nmi.c                              |   11 +-
+ arch/x86/kernel/olpc.c                             |    6 +-
+ arch/x86/kernel/paravirt.c                         |    1 +
+ arch/x86/kernel/paravirt_patch_32.c                |    2 +-
+ arch/x86/kernel/pci-dma.c                          |    2 +-
+ arch/x86/kernel/pci-gart_64.c                      |   27 +-
+ arch/x86/kernel/pcspeaker.c                        |   13 +-
+ arch/x86/kernel/process.c                          |    3 +-
+ arch/x86/kernel/process_32.c                       |   62 +-
+ arch/x86/kernel/process_64.c                       |  170 ++--
+ arch/x86/kernel/ptrace.c                           |  480 ++++++-----
+ arch/x86/kernel/reboot.c                           |    6 +-
+ arch/x86/kernel/setup.c                            |   16 +
+ arch/x86/kernel/setup_percpu.c                     |    9 +-
+ arch/x86/kernel/sigframe.h                         |    5 +
+ arch/x86/kernel/signal_32.c                        |   12 +-
+ arch/x86/kernel/signal_64.c                        |  112 +--
+ arch/x86/kernel/smpboot.c                          |    9 +-
+ arch/x86/kernel/sys_i386_32.c                      |    2 +
+ arch/x86/kernel/sys_x86_64.c                       |   44 +-
+ arch/x86/kernel/syscall_64.c                       |    4 +-
+ arch/x86/kernel/time_32.c                          |    1 +
+ arch/x86/kernel/tls.c                              |    1 +
+ arch/x86/kernel/traps_64.c                         |   66 +-
+ arch/x86/kernel/tsc.c                              |  290 +++++--
+ arch/x86/kernel/visws_quirks.c                     |   16 +-
+ arch/x86/kernel/vm86_32.c                          |    1 +
+ arch/x86/kernel/vmi_32.c                           |   10 +-
+ arch/x86/lib/msr-on-cpu.c                          |   78 +-
+ arch/x86/lib/string_32.c                           |   42 +-
+ arch/x86/lib/strstr_32.c                           |    6 +-
+ arch/x86/mach-default/setup.c                      |    4 +-
+ arch/x86/mm/discontig_32.c                         |    2 +-
+ arch/x86/mm/dump_pagetables.c                      |    4 +-
+ arch/x86/mm/fault.c                                |    3 +-
+ arch/x86/mm/init_32.c                              |    1 +
+ arch/x86/mm/init_64.c                              |    8 +-
+ arch/x86/mm/ioremap.c                              |    4 +-
+ arch/x86/mm/numa_64.c                              |   10 +-
+ arch/x86/mm/pageattr.c                             |    4 +-
+ arch/x86/mm/pgtable.c                              |    6 +-
+ arch/x86/mm/pgtable_32.c                           |    3 +-
+ arch/x86/oprofile/op_model_p4.c                    |  175 ++--
+ arch/x86/pci/amd_bus.c                             |    2 +-
+ arch/x86/pci/irq.c                                 |   67 +-
+ arch/x86/power/hibernate_asm_32.S                  |   14 +-
+ arch/x86/xen/enlighten.c                           |   20 +-
+ include/asm-x86/a.out-core.h                       |    6 +-
+ include/asm-x86/a.out.h                            |    6 +-
+ include/asm-x86/acpi.h                             |    6 +-
+ include/asm-x86/agp.h                              |    6 +-
+ include/asm-x86/alternative.h                      |    6 +-
+ include/asm-x86/amd_iommu.h                        |    6 +-
+ include/asm-x86/amd_iommu_types.h                  |    6 +-
+ include/asm-x86/apic.h                             |   15 +-
+ include/asm-x86/apicdef.h                          |    6 +-
+ include/asm-x86/arch_hooks.h                       |    6 +-
+ include/asm-x86/asm.h                              |   13 +-
+ include/asm-x86/atomic_32.h                        |    6 +-
+ include/asm-x86/atomic_64.h                        |    6 +-
+ include/asm-x86/auxvec.h                           |    6 +-
+ include/asm-x86/bios_ebda.h                        |    6 +-
+ include/asm-x86/bitops.h                           |    6 +-
+ include/asm-x86/boot.h                             |    6 +-
+ include/asm-x86/bootparam.h                        |    6 +-
+ include/asm-x86/bug.h                              |    6 +-
+ include/asm-x86/bugs.h                             |    6 +-
+ include/asm-x86/byteorder.h                        |    6 +-
+ include/asm-x86/cache.h                            |    6 +-
+ include/asm-x86/cacheflush.h                       |    6 +-
+ include/asm-x86/calgary.h                          |    6 +-
+ include/asm-x86/checksum_32.h                      |    6 +-
+ include/asm-x86/checksum_64.h                      |    6 +-
+ include/asm-x86/cmpxchg_32.h                       |    6 +-
+ include/asm-x86/cmpxchg_64.h                       |    6 +-
+ include/asm-x86/compat.h                           |    6 +-
+ include/asm-x86/cpu.h                              |    6 +-
+ include/asm-x86/cpufeature.h                       |    6 +-
+ include/asm-x86/current.h                          |    6 +-
+ include/asm-x86/debugreg.h                         |    6 +-
+ include/asm-x86/delay.h                            |    6 +-
+ include/asm-x86/desc.h                             |    6 +-
+ include/asm-x86/desc_defs.h                        |    6 +-
+ include/asm-x86/device.h                           |    6 +-
+ include/asm-x86/div64.h                            |    6 +-
+ include/asm-x86/dma-mapping.h                      |    6 +-
+ include/asm-x86/dma.h                              |    6 +-
+ include/asm-x86/dmi.h                              |    6 +-
+ include/asm-x86/ds.h                               |  266 +++++-
+ include/asm-x86/dwarf2.h                           |    6 +-
+ include/asm-x86/e820.h                             |    7 +-
+ include/asm-x86/edac.h                             |    6 +-
+ include/asm-x86/efi.h                              |    6 +-
+ include/asm-x86/elf.h                              |   11 +-
+ include/asm-x86/emergency-restart.h                |    6 +-
+ include/asm-x86/fb.h                               |    6 +-
+ include/asm-x86/fixmap.h                           |    6 +-
+ include/asm-x86/fixmap_32.h                        |    6 +-
+ include/asm-x86/fixmap_64.h                        |    6 +-
+ include/asm-x86/floppy.h                           |    6 +-
+ include/asm-x86/ftrace.h                           |    6 +-
+ include/asm-x86/futex.h                            |   12 +-
+ include/asm-x86/gart.h                             |   12 +-
+ include/asm-x86/genapic_32.h                       |    6 +-
+ include/asm-x86/genapic_64.h                       |    6 +-
+ include/asm-x86/geode.h                            |    6 +-
+ include/asm-x86/gpio.h                             |    2 +-
+ include/asm-x86/hardirq_32.h                       |    6 +-
+ include/asm-x86/hardirq_64.h                       |    6 +-
+ include/asm-x86/highmem.h                          |    6 +-
+ include/asm-x86/hpet.h                             |    6 +-
+ include/asm-x86/hugetlb.h                          |    6 +-
+ include/asm-x86/hw_irq.h                           |   26 +-
+ include/asm-x86/hypertransport.h                   |    6 +-
+ include/asm-x86/i387.h                             |    7 +-
+ include/asm-x86/i8253.h                            |    6 +-
+ include/asm-x86/i8259.h                            |    6 +-
+ include/asm-x86/ia32.h                             |    6 +-
+ include/asm-x86/ia32_unistd.h                      |    6 +-
+ include/asm-x86/idle.h                             |    6 +-
+ include/asm-x86/intel_arch_perfmon.h               |    6 +-
+ include/asm-x86/io.h                               |    8 +-
+ include/asm-x86/io_32.h                            |    6 +-
+ include/asm-x86/io_64.h                            |    7 +-
+ include/asm-x86/io_apic.h                          |    6 +-
+ include/asm-x86/ioctls.h                           |    6 +-
+ include/asm-x86/iommu.h                            |    6 +-
+ include/asm-x86/ipcbuf.h                           |    6 +-
+ include/asm-x86/ipi.h                              |    6 +-
+ include/asm-x86/irq.h                              |    6 +-
+ include/asm-x86/irq_regs_32.h                      |    6 +-
+ include/asm-x86/irq_vectors.h                      |    6 +-
+ include/asm-x86/ist.h                              |    6 +-
+ include/asm-x86/k8.h                               |    6 +-
+ include/asm-x86/kdebug.h                           |    6 +-
+ include/asm-x86/kexec.h                            |    6 +-
+ include/asm-x86/kgdb.h                             |    6 +-
+ include/asm-x86/kmap_types.h                       |    6 +-
+ include/asm-x86/kprobes.h                          |    6 +-
+ include/asm-x86/kvm.h                              |    6 +-
+ include/asm-x86/kvm_host.h                         |    8 +-
+ include/asm-x86/kvm_para.h                         |    6 +-
+ include/asm-x86/kvm_x86_emulate.h                  |    6 +-
+ include/asm-x86/ldt.h                              |    6 +-
+ include/asm-x86/lguest.h                           |    6 +-
+ include/asm-x86/lguest_hcall.h                     |    6 +-
+ include/asm-x86/linkage.h                          |    6 +-
+ include/asm-x86/local.h                            |    6 +-
+ include/asm-x86/mach-bigsmp/mach_apic.h            |    6 +-
+ include/asm-x86/mach-bigsmp/mach_apicdef.h         |    6 +-
+ include/asm-x86/mach-bigsmp/mach_ipi.h             |    6 +-
+ include/asm-x86/mach-default/apm.h                 |    6 +-
+ include/asm-x86/mach-default/mach_apic.h           |    6 +-
+ include/asm-x86/mach-default/mach_apicdef.h        |    6 +-
+ include/asm-x86/mach-default/mach_ipi.h            |    6 +-
+ include/asm-x86/mach-default/mach_mpparse.h        |    6 +-
+ include/asm-x86/mach-default/mach_mpspec.h         |    6 +-
+ include/asm-x86/mach-default/mach_timer.h          |    6 +-
+ include/asm-x86/mach-default/mach_traps.h          |    6 +-
+ include/asm-x86/mach-default/mach_wakecpu.h        |    6 +-
+ include/asm-x86/mach-es7000/mach_apic.h            |    6 +-
+ include/asm-x86/mach-es7000/mach_apicdef.h         |    6 +-
+ include/asm-x86/mach-es7000/mach_ipi.h             |    6 +-
+ include/asm-x86/mach-es7000/mach_mpparse.h         |    6 +-
+ include/asm-x86/mach-es7000/mach_wakecpu.h         |    6 +-
+ include/asm-x86/mach-generic/gpio.h                |    6 +-
+ include/asm-x86/mach-generic/irq_vectors_limits.h  |    6 +-
+ include/asm-x86/mach-generic/mach_apic.h           |    6 +-
+ include/asm-x86/mach-generic/mach_apicdef.h        |    6 +-
+ include/asm-x86/mach-generic/mach_ipi.h            |    6 +-
+ include/asm-x86/mach-generic/mach_mpparse.h        |    6 +-
+ include/asm-x86/mach-generic/mach_mpspec.h         |    6 +-
+ include/asm-x86/mach-numaq/mach_apic.h             |    6 +-
+ include/asm-x86/mach-numaq/mach_apicdef.h          |    6 +-
+ include/asm-x86/mach-numaq/mach_ipi.h              |    6 +-
+ include/asm-x86/mach-numaq/mach_mpparse.h          |    6 +-
+ include/asm-x86/mach-numaq/mach_wakecpu.h          |    6 +-
+ include/asm-x86/mach-rdc321x/gpio.h                |    9 +-
+ include/asm-x86/mach-summit/irq_vectors_limits.h   |    6 +-
+ include/asm-x86/mach-summit/mach_apic.h            |    6 +-
+ include/asm-x86/mach-summit/mach_apicdef.h         |    6 +-
+ include/asm-x86/mach-summit/mach_ipi.h             |    6 +-
+ include/asm-x86/mach-summit/mach_mpparse.h         |    6 +-
+ include/asm-x86/math_emu.h                         |    6 +-
+ include/asm-x86/mc146818rtc.h                      |    6 +-
+ include/asm-x86/mca.h                              |    6 +-
+ include/asm-x86/mca_dma.h                          |    6 +-
+ include/asm-x86/mce.h                              |    6 +-
+ include/asm-x86/mman.h                             |    6 +-
+ include/asm-x86/mmconfig.h                         |    6 +-
+ include/asm-x86/mmu.h                              |   11 +-
+ include/asm-x86/mmu_context.h                      |    6 +-
+ include/asm-x86/mmu_context_32.h                   |    6 +-
+ include/asm-x86/mmu_context_64.h                   |    6 +-
+ include/asm-x86/mmx.h                              |    6 +-
+ include/asm-x86/mmzone_32.h                        |    6 +-
+ include/asm-x86/mmzone_64.h                        |    6 +-
+ include/asm-x86/module.h                           |    6 +-
+ include/asm-x86/mpspec.h                           |    6 +-
+ include/asm-x86/mpspec_def.h                       |    6 +-
+ include/asm-x86/msgbuf.h                           |    6 +-
+ include/asm-x86/msidef.h                           |    6 +-
+ include/asm-x86/msr-index.h                        |    6 +-
+ include/asm-x86/msr.h                              |   29 +-
+ include/asm-x86/mtrr.h                             |    6 +-
+ include/asm-x86/mutex_32.h                         |    6 +-
+ include/asm-x86/mutex_64.h                         |    6 +-
+ include/asm-x86/nmi.h                              |    7 +-
+ include/asm-x86/nops.h                             |    6 +-
+ include/asm-x86/numa_32.h                          |    6 +-
+ include/asm-x86/numa_64.h                          |    6 +-
+ include/asm-x86/numaq.h                            |    6 +-
+ include/asm-x86/olpc.h                             |    6 +-
+ include/asm-x86/page.h                             |    6 +-
+ include/asm-x86/page_32.h                          |   10 +-
+ include/asm-x86/page_64.h                          |    7 +-
+ include/asm-x86/param.h                            |    6 +-
+ include/asm-x86/paravirt.h                         |   48 +-
+ include/asm-x86/parport.h                          |    6 +-
+ include/asm-x86/pat.h                              |    6 +-
+ include/asm-x86/pci-direct.h                       |    6 +-
+ include/asm-x86/pci.h                              |    6 +-
+ include/asm-x86/pci_32.h                           |    6 +-
+ include/asm-x86/pci_64.h                           |    6 +-
+ include/asm-x86/pda.h                              |    6 +-
+ include/asm-x86/percpu.h                           |    6 +-
+ include/asm-x86/pgalloc.h                          |    6 +-
+ include/asm-x86/pgtable-2level-defs.h              |    6 +-
+ include/asm-x86/pgtable-2level.h                   |    8 +-
+ include/asm-x86/pgtable-3level-defs.h              |    6 +-
+ include/asm-x86/pgtable-3level.h                   |   13 +-
+ include/asm-x86/pgtable.h                          |   15 +-
+ include/asm-x86/pgtable_32.h                       |   12 +-
+ include/asm-x86/pgtable_64.h                       |    8 +-
+ include/asm-x86/posix_types_32.h                   |    6 +-
+ include/asm-x86/posix_types_64.h                   |    6 +-
+ include/asm-x86/prctl.h                            |    6 +-
+ include/asm-x86/processor-flags.h                  |    6 +-
+ include/asm-x86/processor.h                        |   22 +-
+ include/asm-x86/proto.h                            |    6 +-
+ include/asm-x86/ptrace-abi.h                       |   20 +-
+ include/asm-x86/ptrace.h                           |   52 +-
+ include/asm-x86/pvclock-abi.h                      |    6 +-
+ include/asm-x86/pvclock.h                          |    6 +-
+ include/asm-x86/reboot.h                           |    6 +-
+ include/asm-x86/reboot_fixups.h                    |    6 +-
+ include/asm-x86/required-features.h                |    6 +-
+ include/asm-x86/resume-trace.h                     |    8 +-
+ include/asm-x86/rio.h                              |    6 +-
+ include/asm-x86/rwlock.h                           |    6 +-
+ include/asm-x86/rwsem.h                            |    6 +-
+ include/asm-x86/scatterlist.h                      |    6 +-
+ include/asm-x86/seccomp_32.h                       |    6 +-
+ include/asm-x86/seccomp_64.h                       |    6 +-
+ include/asm-x86/segment.h                          |    6 +-
+ include/asm-x86/sembuf.h                           |    6 +-
+ include/asm-x86/serial.h                           |    6 +-
+ include/asm-x86/setup.h                            |    7 +-
+ include/asm-x86/shmbuf.h                           |    6 +-
+ include/asm-x86/shmparam.h                         |    6 +-
+ include/asm-x86/sigcontext.h                       |    6 +-
+ include/asm-x86/sigcontext32.h                     |    6 +-
+ include/asm-x86/siginfo.h                          |    6 +-
+ include/asm-x86/signal.h                           |    9 +-
+ include/asm-x86/smp.h                              |   10 +-
+ include/asm-x86/socket.h                           |    6 +-
+ include/asm-x86/sockios.h                          |    6 +-
+ include/asm-x86/sparsemem.h                        |    6 +-
+ include/asm-x86/spinlock.h                         |   12 +-
+ include/asm-x86/spinlock_types.h                   |    6 +-
+ include/asm-x86/srat.h                             |    6 +-
+ include/asm-x86/stacktrace.h                       |    6 +-
+ include/asm-x86/stat.h                             |    6 +-
+ include/asm-x86/statfs.h                           |    6 +-
+ include/asm-x86/string_32.h                        |    6 +-
+ include/asm-x86/string_64.h                        |    6 +-
+ include/asm-x86/suspend_32.h                       |    6 +-
+ include/asm-x86/suspend_64.h                       |    6 +-
+ include/asm-x86/swiotlb.h                          |    6 +-
+ include/asm-x86/sync_bitops.h                      |    6 +-
+ include/asm-x86/syscall.h                          |  211 +++++
+ include/asm-x86/syscalls.h                         |   93 ++
+ include/asm-x86/system.h                           |    6 +-
+ include/asm-x86/system_64.h                        |    6 +-
+ include/asm-x86/tce.h                              |    6 +-
+ include/asm-x86/termbits.h                         |    6 +-
+ include/asm-x86/termios.h                          |    6 +-
+ include/asm-x86/therm_throt.h                      |    6 +-
+ include/asm-x86/thread_info.h                      |   10 +-
+ include/asm-x86/time.h                             |    8 +-
+ include/asm-x86/timer.h                            |   11 +-
+ include/asm-x86/timex.h                            |    6 +-
+ include/asm-x86/tlb.h                              |    6 +-
+ include/asm-x86/tlbflush.h                         |    6 +-
+ include/asm-x86/topology.h                         |    6 +-
+ include/asm-x86/trampoline.h                       |    6 +-
+ include/asm-x86/traps.h                            |   10 +-
+ include/asm-x86/tsc.h                              |    6 +-
+ include/asm-x86/types.h                            |    6 +-
+ include/asm-x86/uaccess.h                          |    6 +-
+ include/asm-x86/uaccess_32.h                       |    6 +-
+ include/asm-x86/uaccess_64.h                       |    6 +-
+ include/asm-x86/ucontext.h                         |    6 +-
+ include/asm-x86/unaligned.h                        |    6 +-
+ include/asm-x86/unistd_32.h                        |    6 +-
+ include/asm-x86/unistd_64.h                        |    6 +-
+ include/asm-x86/unwind.h                           |    6 +-
+ include/asm-x86/user32.h                           |    6 +-
+ include/asm-x86/user_32.h                          |    6 +-
+ include/asm-x86/user_64.h                          |    6 +-
+ include/asm-x86/uv/bios.h                          |    6 +-
+ include/asm-x86/uv/uv_bau.h                        |    6 +-
+ include/asm-x86/uv/uv_hub.h                        |    6 +-
+ include/asm-x86/uv/uv_mmrs.h                       |    6 +-
+ include/asm-x86/vdso.h                             |    6 +-
+ include/asm-x86/vga.h                              |    6 +-
+ include/asm-x86/vgtod.h                            |    6 +-
+ include/asm-x86/visws/cobalt.h                     |    6 +-
+ include/asm-x86/visws/lithium.h                    |    6 +-
+ include/asm-x86/visws/piix4.h                      |    6 +-
+ include/asm-x86/vm86.h                             |    6 +-
+ include/asm-x86/vmi_time.h                         |    6 +-
+ include/asm-x86/vsyscall.h                         |    6 +-
+ include/asm-x86/xen/events.h                       |    6 +-
+ include/asm-x86/xen/grant_table.h                  |    6 +-
+ include/asm-x86/xen/hypercall.h                    |    6 +-
+ include/asm-x86/xen/hypervisor.h                   |    6 +-
+ include/asm-x86/xen/interface.h                    |    6 +-
+ include/asm-x86/xen/interface_32.h                 |    6 +-
+ include/asm-x86/xen/interface_64.h                 |    6 +-
+ include/asm-x86/xen/page.h                         |    6 +-
+ 374 files changed, 3870 insertions(+), 2221 deletions(-)
+ create mode 100644 Documentation/x86/00-INDEX
+ rename Documentation/x86/{i386 => }/boot.txt (99%)
+ rename Documentation/{ => x86}/mtrr.txt (99%)
+ rename Documentation/x86/{i386 => }/usb-legacy-support.txt (100%)
+ rename Documentation/x86/{i386 => }/zero-page.txt (100%)
+ create mode 100644 include/asm-x86/syscall.h
+ create mode 100644 include/asm-x86/syscalls.h
 
-It was reported recently that tbench has a long history of regressions,
-starting at least from 2.6.23 kernel. I verified that in my test
-environment tbench 'lost' more than 100 MB/s from 470 down to 355
-between at least 2.6.24 and 2.6.27. 2.6.26-2.6.27 performance regression
-in my machines is rougly corresponds to 375 down to 355 MB/s.
-
-I spent several days in various tests and bisections (unfortunately
-bisect can not always point to the 'right' commit), and found following
-problems.
-
-First, related to the network, as lots of people expected: TSO/GSO over
-loopback with tbench workload eats about 5-10 MB/s, since TSO/GSO frame
-creation overhead is not paid by the optimized super-frame processing
-gains. Since it brings really impressive improvement in big-packet
-workload, it was (likely) decided not to add a patch for this, but
-instead one can disable TSO/GSO via ethtool. This patch was added in
-2.6.27 window, so it has its part in its regression.
-
-Second part in the 26-27 window regression (I remind, it is about 20
-MB/s) is related to the scheduler changes, which was expected by another
-group of people. I tracked it down to the
-a7be37ac8e1565e00880531f4e2aff421a21c803 commit, which, if being
-reverted, returns 2.6.27 tbench perfromance to the highest (for
-2.6.26-2.6.27) 365 MB/s mark. I also tested tree, stopped at above
-commit itself, i.e. not 2.6.27, and got 373 MB/s, so likely another
-changes in that merge ate couple of megs. Attached patch against 2.6.27.
-
-Curious reader can ask, where did we lost another 100 MB/s? This small
-issue was not detected (or at least reported in netdev@ with provocative
-enough subject), and it happend to live somehere in 2.6.24-2.6.25 changes.
-I was so lucky to 'guess' (just after couple of hundreds of compilations),
-that it corresponds to 8f4d37ec073c17e2d4aa8851df5837d798606d6f commit about
-high-resolution timers, attached patch against 2.6.25 brings tbench
-performance for the 2.6.25 kernel tree to 455 MB/s.
-
-There are still somewhat missed 20 MB/s, but 2.6.24 has 475 MB/s, so
-likely bug lives between 2.6.24 and above 8f4d37ec073 commit.
-
-I can test your patches (the most interesting attached one does not
-apply clearly to the current tree) for the 2.6.27 tree tomorrow
-(it is more than 3 A.M. in Moscow).
-
-P.S. I'm not currently subscribed to any of the mentioned lists (and write
-from long-ago-unused email), so can not find appropriate subject and reply
-into the thread.
-
--- 
-	Evgeniy Polyakov
-
---nFreZHaLTZJo0R7j
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="return-10mb-2.6.27.diff"
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 13dd2db..70eb173 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1243,9 +1243,6 @@ static void resched_task(struct task_struct *p)
-  */
- #define SRR(x, y) (((x) + (1UL << ((y) - 1))) >> (y))
- 
--/*
-- * delta *= weight / lw
-- */
- static unsigned long
- calc_delta_mine(unsigned long delta_exec, unsigned long weight,
- 		struct load_weight *lw)
-@@ -1273,6 +1270,12 @@ calc_delta_mine(unsigned long delta_exec, unsigned long weight,
- 	return (unsigned long)min(tmp, (u64)(unsigned long)LONG_MAX);
- }
- 
-+static inline unsigned long
-+calc_delta_fair(unsigned long delta_exec, struct load_weight *lw)
-+{
-+	return calc_delta_mine(delta_exec, NICE_0_LOAD, lw);
-+}
-+
- static inline void update_load_add(struct load_weight *lw, unsigned long inc)
- {
- 	lw->weight += inc;
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index fb8994c..3597a3c 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -334,34 +334,6 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
- #endif
- 
- /*
-- * delta *= w / rw
-- */
--static inline unsigned long
--calc_delta_weight(unsigned long delta, struct sched_entity *se)
--{
--	for_each_sched_entity(se) {
--		delta = calc_delta_mine(delta,
--				se->load.weight, &cfs_rq_of(se)->load);
--	}
--
--	return delta;
--}
--
--/*
-- * delta *= rw / w
-- */
--static inline unsigned long
--calc_delta_fair(unsigned long delta, struct sched_entity *se)
--{
--	for_each_sched_entity(se) {
--		delta = calc_delta_mine(delta,
--				cfs_rq_of(se)->load.weight, &se->load);
--	}
--
--	return delta;
--}
--
--/*
-  * The idea is to set a period in which each task runs once.
-  *
-  * When there are too many tasks (sysctl_sched_nr_latency) we have to stretch
-@@ -390,80 +362,47 @@ static u64 __sched_period(unsigned long nr_running)
-  */
- static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
--	return calc_delta_weight(__sched_period(cfs_rq->nr_running), se);
-+	u64 slice = __sched_period(cfs_rq->nr_running);
-+
-+	for_each_sched_entity(se) {
-+		cfs_rq = cfs_rq_of(se);
-+
-+		slice *= se->load.weight;
-+		do_div(slice, cfs_rq->load.weight);
-+	}
-+
-+
-+	return slice;
- }
- 
- /*
-  * We calculate the vruntime slice of a to be inserted task
-  *
-- * vs = s*rw/w = p
-+ * vs = s/w = p/rw
-  */
- static u64 sched_vslice_add(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
- 	unsigned long nr_running = cfs_rq->nr_running;
-+	unsigned long weight;
-+	u64 vslice;
- 
- 	if (!se->on_rq)
- 		nr_running++;
- 
--	return __sched_period(nr_running);
--}
--
--/*
-- * The goal of calc_delta_asym() is to be asymmetrically around NICE_0_LOAD, in
-- * that it favours >=0 over <0.
-- *
-- *   -20         |
-- *               |
-- *     0 --------+-------
-- *             .'
-- *    19     .'
-- *
-- */
--static unsigned long
--calc_delta_asym(unsigned long delta, struct sched_entity *se)
--{
--	struct load_weight lw = {
--		.weight = NICE_0_LOAD,
--		.inv_weight = 1UL << (WMULT_SHIFT-NICE_0_SHIFT)
--	};
-+	vslice = __sched_period(nr_running);
- 
- 	for_each_sched_entity(se) {
--		struct load_weight *se_lw = &se->load;
--		unsigned long rw = cfs_rq_of(se)->load.weight;
--
--#ifdef CONFIG_FAIR_SCHED_GROUP
--		struct cfs_rq *cfs_rq = se->my_q;
--		struct task_group *tg = NULL
--
--		if (cfs_rq)
--			tg = cfs_rq->tg;
--
--		if (tg && tg->shares < NICE_0_LOAD) {
--			/*
--			 * scale shares to what it would have been had
--			 * tg->weight been NICE_0_LOAD:
--			 *
--			 *   weight = 1024 * shares / tg->weight
--			 */
--			lw.weight *= se->load.weight;
--			lw.weight /= tg->shares;
--
--			lw.inv_weight = 0;
--
--			se_lw = &lw;
--			rw += lw.weight - se->load.weight;
--		} else
--#endif
-+		cfs_rq = cfs_rq_of(se);
- 
--		if (se->load.weight < NICE_0_LOAD) {
--			se_lw = &lw;
--			rw += NICE_0_LOAD - se->load.weight;
--		}
-+		weight = cfs_rq->load.weight;
-+		if (!se->on_rq)
-+			weight += se->load.weight;
- 
--		delta = calc_delta_mine(delta, rw, se_lw);
-+		vslice *= NICE_0_LOAD;
-+		do_div(vslice, weight);
- 	}
- 
--	return delta;
-+	return vslice;
- }
- 
- /*
-@@ -480,7 +419,11 @@ __update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
- 
- 	curr->sum_exec_runtime += delta_exec;
- 	schedstat_add(cfs_rq, exec_clock, delta_exec);
--	delta_exec_weighted = calc_delta_fair(delta_exec, curr);
-+	delta_exec_weighted = delta_exec;
-+	if (unlikely(curr->load.weight != NICE_0_LOAD)) {
-+		delta_exec_weighted = calc_delta_fair(delta_exec_weighted,
-+							&curr->load);
-+	}
- 	curr->vruntime += delta_exec_weighted;
- }
- 
-@@ -687,17 +630,8 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- 
- 	if (!initial) {
- 		/* sleeps upto a single latency don't count. */
--		if (sched_feat(NEW_FAIR_SLEEPERS)) {
--			unsigned long thresh = sysctl_sched_latency;
--
--			/*
--			 * convert the sleeper threshold into virtual time
--			 */
--			if (sched_feat(NORMALIZED_SLEEPER))
--				thresh = calc_delta_fair(thresh, se);
--
--			vruntime -= thresh;
--		}
-+		if (sched_feat(NEW_FAIR_SLEEPERS))
-+			vruntime -= sysctl_sched_latency;
- 
- 		/* ensure we never gain time by being placed backwards. */
- 		vruntime = max_vruntime(se->vruntime, vruntime);
-@@ -1277,13 +1211,11 @@ static unsigned long wakeup_gran(struct sched_entity *se)
- 	unsigned long gran = sysctl_sched_wakeup_granularity;
- 
- 	/*
--	 * More easily preempt - nice tasks, while not making it harder for
--	 * + nice tasks.
-+	 * More easily preempt - nice tasks, while not making
-+	 * it harder for + nice tasks.
- 	 */
--	if (sched_feat(ASYM_GRAN))
--		gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
--	else
--		gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
-+	if (unlikely(se->load.weight > NICE_0_LOAD))
-+		gran = calc_delta_fair(gran, &se->load);
- 
- 	return gran;
- }
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 9353ca7..34ef70f 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -1,5 +1,4 @@
- SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
--SCHED_FEAT(NORMALIZED_SLEEPER, 1)
- SCHED_FEAT(WAKEUP_PREEMPT, 1)
- SCHED_FEAT(START_DEBIT, 1)
- SCHED_FEAT(AFFINE_WAKEUPS, 1)
-
---nFreZHaLTZJo0R7j
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="return-80mb-2.6.25.diff"
-
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index c20c9e7..e06ecab 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -295,8 +295,8 @@ sysret_careful:
- 	/* Handle a signal */ 
- sysret_signal:
- 	TRACE_IRQS_ON
--	ENABLE_INTERRUPTS(CLBR_NONE)
--	testl $_TIF_DO_NOTIFY_MASK,%edx
-+	sti
-+	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
- 	jz    1f
- 
- 	/* Really a signal */
-@@ -390,7 +390,7 @@ int_very_careful:
- 	jmp int_restore_rest
- 	
- int_signal:
--	testl $_TIF_DO_NOTIFY_MASK,%edx
-+	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
- 	jz 1f
- 	movq %rsp,%rdi		# &ptregs -> arg1
- 	xorl %esi,%esi		# oldset -> arg2
-@@ -637,7 +637,7 @@ retint_careful:
- 	jmp retint_check
- 	
- retint_signal:
--	testl $_TIF_DO_NOTIFY_MASK,%edx
-+	testl $(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY),%edx
- 	jz    retint_swapgs
- 	TRACE_IRQS_ON
- 	ENABLE_INTERRUPTS(CLBR_NONE)
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index 0157a6f..1b085d2 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -667,9 +667,6 @@ void do_notify_resume(struct pt_regs *regs, void *_unused,
- 	/* deal with pending signal delivery */
- 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
- 		do_signal(regs);
--
--	if (thread_info_flags & _TIF_HRTICK_RESCHED)
--		hrtick_resched();
- 	
- 	clear_thread_flag(TIF_IRET);
- }
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 1c83e51..9691bb8 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -504,9 +504,6 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
- 	/* deal with pending signal delivery */
- 	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
- 		do_signal(regs);
--
--	if (thread_info_flags & _TIF_HRTICK_RESCHED)
--		hrtick_resched();
- }
- 
- void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
-diff --git a/include/asm-x86/thread_info_32.h b/include/asm-x86/thread_info_32.h
-index 5bd5082..0514e3b 100644
---- a/include/asm-x86/thread_info_32.h
-+++ b/include/asm-x86/thread_info_32.h
-@@ -132,7 +132,6 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_SYSCALL_AUDIT	6	/* syscall auditing active */
- #define TIF_SECCOMP		7	/* secure computing */
- #define TIF_RESTORE_SIGMASK	8	/* restore signal mask in do_signal() */
--#define TIF_HRTICK_RESCHED	9	/* reprogram hrtick timer */
- #define TIF_MEMDIE		16
- #define TIF_DEBUG		17	/* uses debug registers */
- #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
-@@ -152,7 +151,6 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
--#define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
- #define _TIF_DEBUG		(1<<TIF_DEBUG)
- #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-diff --git a/include/asm-x86/thread_info_64.h b/include/asm-x86/thread_info_64.h
-index 6c9b214..35ec680 100644
---- a/include/asm-x86/thread_info_64.h
-+++ b/include/asm-x86/thread_info_64.h
-@@ -112,7 +112,6 @@ static inline struct thread_info *stack_thread_info(void)
- #define TIF_SECCOMP		8	/* secure computing */
- #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
- #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
--#define TIF_HRTICK_RESCHED	11	/* reprogram hrtick timer */
- /* 16 free */
- #define TIF_IA32		17	/* 32bit process */ 
- #define TIF_FORK		18	/* ret_from_fork */
-@@ -135,7 +134,6 @@ static inline struct thread_info *stack_thread_info(void)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_MCE_NOTIFY		(1<<TIF_MCE_NOTIFY)
--#define _TIF_HRTICK_RESCHED	(1<<TIF_HRTICK_RESCHED)
- #define _TIF_IA32		(1<<TIF_IA32)
- #define _TIF_FORK		(1<<TIF_FORK)
- #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
-@@ -153,9 +151,6 @@ static inline struct thread_info *stack_thread_info(void)
- /* work to do on any return to user space */
- #define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
- 
--#define _TIF_DO_NOTIFY_MASK \
--	(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY|_TIF_HRTICK_RESCHED)
--
- /* flags to check in __switch_to() */
- #define _TIF_WORK_CTXSW \
-     (_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_BTS_TRACE_TS)
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 1ad56a7..386600e 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -214,11 +214,6 @@ static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer)
- 	return timer->base->get_time();
- }
- 
--static inline int hrtimer_is_hres_active(struct hrtimer *timer)
--{
--	return timer->base->cpu_base->hres_active;
--}
--
- /*
-  * The resolution of the clocks. The resolution value is returned in
-  * the clock_getres() system call to give application programmers an
-@@ -253,10 +248,6 @@ static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer)
- 	return timer->base->softirq_time;
- }
- 
--static inline int hrtimer_is_hres_active(struct hrtimer *timer)
--{
--	return 0;
--}
- #endif
- 
- extern ktime_t ktime_get(void);
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 6a1e7af..7b7905d 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -285,7 +285,6 @@ extern void trap_init(void);
- extern void account_process_tick(struct task_struct *task, int user);
- extern void update_process_times(int user);
- extern void scheduler_tick(void);
--extern void hrtick_resched(void);
- 
- extern void sched_show_task(struct task_struct *p);
- 
-@@ -887,7 +886,7 @@ struct sched_class {
- #endif
- 
- 	void (*set_curr_task) (struct rq *rq);
--	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
-+	void (*task_tick) (struct rq *rq, struct task_struct *p);
- 	void (*task_new) (struct rq *rq, struct task_struct *p);
- 	void (*set_cpus_allowed)(struct task_struct *p, cpumask_t *newmask);
- 
-diff --git a/kernel/Kconfig.hz b/kernel/Kconfig.hz
-index 526128a..4af1580 100644
---- a/kernel/Kconfig.hz
-+++ b/kernel/Kconfig.hz
-@@ -54,5 +54,3 @@ config HZ
- 	default 300 if HZ_300
- 	default 1000 if HZ_1000
- 
--config SCHED_HRTICK
--	def_bool HIGH_RES_TIMERS && X86
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8dcdec6..c481937 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -65,7 +65,6 @@
- #include <linux/reciprocal_div.h>
- #include <linux/unistd.h>
- #include <linux/pagemap.h>
--#include <linux/hrtimer.h>
- 
- #include <asm/tlb.h>
- #include <asm/irq_regs.h>
-@@ -452,12 +451,6 @@ struct rq {
- 	struct list_head migration_queue;
- #endif
- 
--#ifdef CONFIG_SCHED_HRTICK
--	unsigned long hrtick_flags;
--	ktime_t hrtick_expire;
--	struct hrtimer hrtick_timer;
--#endif
--
- #ifdef CONFIG_SCHEDSTATS
- 	/* latency stats */
- 	struct sched_info rq_sched_info;
-@@ -594,16 +587,16 @@ enum {
- 	SCHED_FEAT_NEW_FAIR_SLEEPERS	= 1,
- 	SCHED_FEAT_WAKEUP_PREEMPT	= 2,
- 	SCHED_FEAT_START_DEBIT		= 4,
--	SCHED_FEAT_HRTICK		= 8,
--	SCHED_FEAT_DOUBLE_TICK		= 16,
-+	SCHED_FEAT_TREE_AVG		= 8,
-+	SCHED_FEAT_APPROX_AVG		= 16,
- };
- 
- const_debug unsigned int sysctl_sched_features =
- 		SCHED_FEAT_NEW_FAIR_SLEEPERS	* 1 |
- 		SCHED_FEAT_WAKEUP_PREEMPT	* 1 |
- 		SCHED_FEAT_START_DEBIT		* 1 |
--		SCHED_FEAT_HRTICK		* 1 |
--		SCHED_FEAT_DOUBLE_TICK		* 0;
-+		SCHED_FEAT_TREE_AVG		* 0 |
-+		SCHED_FEAT_APPROX_AVG		* 0;
- 
- #define sched_feat(x) (sysctl_sched_features & SCHED_FEAT_##x)
- 
-@@ -841,173 +834,6 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
- }
- EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
- 
--static void __resched_task(struct task_struct *p, int tif_bit);
--
--static inline void resched_task(struct task_struct *p)
--{
--	__resched_task(p, TIF_NEED_RESCHED);
--}
--
--#ifdef CONFIG_SCHED_HRTICK
--/*
-- * Use HR-timers to deliver accurate preemption points.
-- *
-- * Its all a bit involved since we cannot program an hrt while holding the
-- * rq->lock. So what we do is store a state in in rq->hrtick_* and ask for a
-- * reschedule event.
-- *
-- * When we get rescheduled we reprogram the hrtick_timer outside of the
-- * rq->lock.
-- */
--static inline void resched_hrt(struct task_struct *p)
--{
--	__resched_task(p, TIF_HRTICK_RESCHED);
--}
--
--static inline void resched_rq(struct rq *rq)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&rq->lock, flags);
--	resched_task(rq->curr);
--	spin_unlock_irqrestore(&rq->lock, flags);
--}
--
--enum {
--	HRTICK_SET,		/* re-programm hrtick_timer */
--	HRTICK_RESET,		/* not a new slice */
--};
--
--/*
-- * Use hrtick when:
-- *  - enabled by features
-- *  - hrtimer is actually high res
-- */
--static inline int hrtick_enabled(struct rq *rq)
--{
--	if (!sched_feat(HRTICK))
--		return 0;
--	return hrtimer_is_hres_active(&rq->hrtick_timer);
--}
--
--/*
-- * Called to set the hrtick timer state.
-- *
-- * called with rq->lock held and irqs disabled
-- */
--static void hrtick_start(struct rq *rq, u64 delay, int reset)
--{
--	assert_spin_locked(&rq->lock);
--
--	/*
--	 * preempt at: now + delay
--	 */
--	rq->hrtick_expire =
--		ktime_add_ns(rq->hrtick_timer.base->get_time(), delay);
--	/*
--	 * indicate we need to program the timer
--	 */
--	__set_bit(HRTICK_SET, &rq->hrtick_flags);
--	if (reset)
--		__set_bit(HRTICK_RESET, &rq->hrtick_flags);
--
--	/*
--	 * New slices are called from the schedule path and don't need a
--	 * forced reschedule.
--	 */
--	if (reset)
--		resched_hrt(rq->curr);
--}
--
--static void hrtick_clear(struct rq *rq)
--{
--	if (hrtimer_active(&rq->hrtick_timer))
--		hrtimer_cancel(&rq->hrtick_timer);
--}
--
--/*
-- * Update the timer from the possible pending state.
-- */
--static void hrtick_set(struct rq *rq)
--{
--	ktime_t time;
--	int set, reset;
--	unsigned long flags;
--
--	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
--
--	spin_lock_irqsave(&rq->lock, flags);
--	set = __test_and_clear_bit(HRTICK_SET, &rq->hrtick_flags);
--	reset = __test_and_clear_bit(HRTICK_RESET, &rq->hrtick_flags);
--	time = rq->hrtick_expire;
--	clear_thread_flag(TIF_HRTICK_RESCHED);
--	spin_unlock_irqrestore(&rq->lock, flags);
--
--	if (set) {
--		hrtimer_start(&rq->hrtick_timer, time, HRTIMER_MODE_ABS);
--		if (reset && !hrtimer_active(&rq->hrtick_timer))
--			resched_rq(rq);
--	} else
--		hrtick_clear(rq);
--}
--
--/*
-- * High-resolution timer tick.
-- * Runs from hardirq context with interrupts disabled.
-- */
--static enum hrtimer_restart hrtick(struct hrtimer *timer)
--{
--	struct rq *rq = container_of(timer, struct rq, hrtick_timer);
--
--	WARN_ON_ONCE(cpu_of(rq) != smp_processor_id());
--
--	spin_lock(&rq->lock);
--	__update_rq_clock(rq);
--	rq->curr->sched_class->task_tick(rq, rq->curr, 1);
--	spin_unlock(&rq->lock);
--
--	return HRTIMER_NORESTART;
--}
--
--static inline void init_rq_hrtick(struct rq *rq)
--{
--	rq->hrtick_flags = 0;
--	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
--	rq->hrtick_timer.function = hrtick;
--	rq->hrtick_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
--}
--
--void hrtick_resched(void)
--{
--	struct rq *rq;
--	unsigned long flags;
--
--	if (!test_thread_flag(TIF_HRTICK_RESCHED))
--		return;
--
--	local_irq_save(flags);
--	rq = cpu_rq(smp_processor_id());
--	hrtick_set(rq);
--	local_irq_restore(flags);
--}
--#else
--static inline void hrtick_clear(struct rq *rq)
--{
--}
--
--static inline void hrtick_set(struct rq *rq)
--{
--}
--
--static inline void init_rq_hrtick(struct rq *rq)
--{
--}
--
--void hrtick_resched(void)
--{
--}
--#endif
--
- /*
-  * resched_task - mark a task 'to be rescheduled now'.
-  *
-@@ -1021,16 +847,16 @@ void hrtick_resched(void)
- #define tsk_is_polling(t) test_tsk_thread_flag(t, TIF_POLLING_NRFLAG)
- #endif
- 
--static void __resched_task(struct task_struct *p, int tif_bit)
-+static void resched_task(struct task_struct *p)
- {
- 	int cpu;
- 
- 	assert_spin_locked(&task_rq(p)->lock);
- 
--	if (unlikely(test_tsk_thread_flag(p, tif_bit)))
-+	if (unlikely(test_tsk_thread_flag(p, TIF_NEED_RESCHED)))
- 		return;
- 
--	set_tsk_thread_flag(p, tif_bit);
-+	set_tsk_thread_flag(p, TIF_NEED_RESCHED);
- 
- 	cpu = task_cpu(p);
- 	if (cpu == smp_processor_id())
-@@ -1096,10 +922,10 @@ void wake_up_idle_cpu(int cpu)
- #endif
- 
- #else
--static void __resched_task(struct task_struct *p, int tif_bit)
-+static inline void resched_task(struct task_struct *p)
- {
- 	assert_spin_locked(&task_rq(p)->lock);
--	set_tsk_thread_flag(p, tif_bit);
-+	set_tsk_need_resched(p);
- }
- #endif
- 
-@@ -3766,8 +3592,8 @@ void scheduler_tick(void)
- 	}
- 	rq->tick_timestamp = rq->clock;
- 	update_cpu_load(rq);
--	curr->sched_class->task_tick(rq, curr, 0);
--	update_sched_rt_period(rq);
-+	if (curr != rq->idle) /* FIXME: needed? */
-+		curr->sched_class->task_tick(rq, curr);
- 	spin_unlock(&rq->lock);
- 
- #ifdef CONFIG_SMP
-@@ -3913,8 +3739,6 @@ need_resched_nonpreemptible:
- 
- 	schedule_debug(prev);
- 
--	hrtick_clear(rq);
--
- 	/*
- 	 * Do the rq-clock update outside the rq lock:
- 	 */
-@@ -3952,20 +3776,14 @@ need_resched_nonpreemptible:
- 		++*switch_count;
- 
- 		context_switch(rq, prev, next); /* unlocks the rq */
--		/*
--		 * the context switch might have flipped the stack from under
--		 * us, hence refresh the local variables.
--		 */
--		cpu = smp_processor_id();
--		rq = cpu_rq(cpu);
- 	} else
- 		spin_unlock_irq(&rq->lock);
- 
--	hrtick_set(rq);
--
--	if (unlikely(reacquire_kernel_lock(current) < 0))
-+	if (unlikely(reacquire_kernel_lock(current) < 0)) {
-+		cpu = smp_processor_id();
-+		rq = cpu_rq(cpu);
- 		goto need_resched_nonpreemptible;
--
-+	}
- 	preempt_enable_no_resched();
- 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
- 		goto need_resched;
-@@ -7248,7 +7066,6 @@ void __init sched_init(void)
- 		INIT_LIST_HEAD(&rq->migration_queue);
- 		rq_attach_root(rq, &def_root_domain);
- #endif
--		init_rq_hrtick(rq);
- 		atomic_set(&rq->nr_iowait, 0);
- 		highest_cpu = i;
- 	}
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 0080968..14a5af5 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -677,29 +677,13 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
- 	cfs_rq->curr = NULL;
- }
- 
--static void
--entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
-+static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
- {
- 	/*
- 	 * Update run-time statistics of the 'current'.
- 	 */
- 	update_curr(cfs_rq);
- 
--#ifdef CONFIG_SCHED_HRTICK
--	/*
--	 * queued ticks are scheduled to match the slice, so don't bother
--	 * validating it and just reschedule.
--	 */
--	if (queued)
--		return resched_task(rq_of(cfs_rq)->curr);
--	/*
--	 * don't let the period tick interfere with the hrtick preemption
--	 */
--	if (!sched_feat(DOUBLE_TICK) &&
--			hrtimer_active(&rq_of(cfs_rq)->hrtick_timer))
--		return;
--#endif
--
- 	if (cfs_rq->nr_running > 1 || !sched_feat(WAKEUP_PREEMPT))
- 		check_preempt_tick(cfs_rq, curr);
- }
-@@ -803,43 +787,6 @@ static inline struct sched_entity *parent_entity(struct sched_entity *se)
- 
- #endif	/* CONFIG_FAIR_GROUP_SCHED */
- 
--#ifdef CONFIG_SCHED_HRTICK
--static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
--{
--	int requeue = rq->curr == p;
--	struct sched_entity *se = &p->se;
--	struct cfs_rq *cfs_rq = cfs_rq_of(se);
--
--	WARN_ON(task_rq(p) != rq);
--
--	if (hrtick_enabled(rq) && cfs_rq->nr_running > 1) {
--		u64 slice = sched_slice(cfs_rq, se);
--		u64 ran = se->sum_exec_runtime - se->prev_sum_exec_runtime;
--		s64 delta = slice - ran;
--
--		if (delta < 0) {
--			if (rq->curr == p)
--				resched_task(p);
--			return;
--		}
--
--		/*
--		 * Don't schedule slices shorter than 10000ns, that just
--		 * doesn't make sense. Rely on vruntime for fairness.
--		 */
--		if (!requeue)
--			delta = max(10000LL, delta);
--
--		hrtick_start(rq, delta, requeue);
--	}
--}
--#else
--static inline void
--hrtick_start_fair(struct rq *rq, struct task_struct *p)
--{
--}
--#endif
--
- /*
-  * The enqueue_task method is called before nr_running is
-  * increased. Here we update the fair scheduling stats and
-@@ -857,8 +804,6 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup)
- 		enqueue_entity(cfs_rq, se, wakeup);
- 		wakeup = 1;
- 	}
--
--	hrtick_start_fair(rq, rq->curr);
- }
- 
- /*
-@@ -879,8 +824,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int sleep)
- 			break;
- 		sleep = 1;
- 	}
--
--	hrtick_start_fair(rq, rq->curr);
- }
- 
- /*
-@@ -1152,7 +1095,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
- 
- static struct task_struct *pick_next_task_fair(struct rq *rq)
- {
--	struct task_struct *p;
- 	struct cfs_rq *cfs_rq = &rq->cfs;
- 	struct sched_entity *se;
- 
-@@ -1164,10 +1106,7 @@ static struct task_struct *pick_next_task_fair(struct rq *rq)
- 		cfs_rq = group_cfs_rq(se);
- 	} while (cfs_rq);
- 
--	p = task_of(se);
--	hrtick_start_fair(rq, p);
--
--	return p;
-+	return task_of(se);
- }
- 
- /*
-@@ -1322,14 +1261,14 @@ move_one_task_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
- /*
-  * scheduler tick hitting a task of our scheduling class:
-  */
--static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
-+static void task_tick_fair(struct rq *rq, struct task_struct *curr)
- {
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &curr->se;
- 
- 	for_each_sched_entity(se) {
- 		cfs_rq = cfs_rq_of(se);
--		entity_tick(cfs_rq, se, queued);
-+		entity_tick(cfs_rq, se);
- 	}
- }
- 
-diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
-index 2bcafa3..ef7a266 100644
---- a/kernel/sched_idletask.c
-+++ b/kernel/sched_idletask.c
-@@ -61,7 +61,7 @@ move_one_task_idle(struct rq *this_rq, int this_cpu, struct rq *busiest,
- }
- #endif
- 
--static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
-+static void task_tick_idle(struct rq *rq, struct task_struct *curr)
- {
- }
- 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 0a6d2e5..7f67b1a 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1149,7 +1149,7 @@ static void watchdog(struct rq *rq, struct task_struct *p)
- 	}
- }
- 
--static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
-+static void task_tick_rt(struct rq *rq, struct task_struct *p)
- {
- 	update_curr_rt(rq);
- 
-
---nFreZHaLTZJo0R7j--
