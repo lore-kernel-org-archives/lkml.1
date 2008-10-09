@@ -1,302 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbYJIEdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbYJIEql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbYJIEdb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758584AbYJIEa2
+	id S1757961AbYJIEql (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbYJIEqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:30:28 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:44272 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757755AbYJIEaU (ORCPT
+	Thu, 9 Oct 2008 00:46:31 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:29459 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbYJIEqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:30:20 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 26/42] ext4: Don't use 'struct dentry' for internal lookups
-Date: Thu,  9 Oct 2008 00:05:44 -0400
-Message-Id: <1223525160-9887-27-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-26-git-send-email-tytso@mit.edu>
-References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
- <1223525160-9887-2-git-send-email-tytso@mit.edu>
- <1223525160-9887-3-git-send-email-tytso@mit.edu>
- <1223525160-9887-4-git-send-email-tytso@mit.edu>
- <1223525160-9887-5-git-send-email-tytso@mit.edu>
- <1223525160-9887-6-git-send-email-tytso@mit.edu>
- <1223525160-9887-7-git-send-email-tytso@mit.edu>
- <1223525160-9887-8-git-send-email-tytso@mit.edu>
- <1223525160-9887-9-git-send-email-tytso@mit.edu>
- <1223525160-9887-10-git-send-email-tytso@mit.edu>
- <1223525160-9887-11-git-send-email-tytso@mit.edu>
- <1223525160-9887-12-git-send-email-tytso@mit.edu>
- <1223525160-9887-13-git-send-email-tytso@mit.edu>
- <1223525160-9887-14-git-send-email-tytso@mit.edu>
- <1223525160-9887-15-git-send-email-tytso@mit.edu>
- <1223525160-9887-16-git-send-email-tytso@mit.edu>
- <1223525160-9887-17-git-send-email-tytso@mit.edu>
- <1223525160-9887-18-git-send-email-tytso@mit.edu>
- <1223525160-9887-19-git-send-email-tytso@mit.edu>
- <1223525160-9887-20-git-send-email-tytso@mit.edu>
- <1223525160-9887-21-git-send-email-tytso@mit.edu>
- <1223525160-9887-22-git-send-email-tytso@mit.edu>
- <1223525160-9887-23-git-send-email-tytso@mit.edu>
- <1223525160-9887-24-git-send-email-tytso@mit.edu>
- <1223525160-9887-25-git-send-email-tytso@mit.edu>
- <1223525160-9887-26-git-send-email-tytso@mit.edu>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 9 Oct 2008 00:46:30 -0400
+From: Alex Chiang <achiang@hp.com>
+Subject: [PATCH v5 00/16] PCI: let the core manage slot names
+To: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
+       kaneshige.kenji@jp.fujitsu.com, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Wed, 08 Oct 2008 22:46:29 -0600
+Message-ID: <20081009043140.8678.44164.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a port of a patch from Linus which fixes a 200+ byte stack
-usage problem in ext4_get_parent().
+Hi all,
 
-It's more efficient to pass down only the actual parts of the dentry
-that matter: the parent inode and the name, instead of allocating a
-struct dentry on the stack.
+This is v5 of the series that implements a series of changes
+that allows the PCI core to manage slot names, rather than
+individual hotplug drivers.
 
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Thanks again to Kenji-san for continuing to point out that my
+previous attempts were racy and had horrible, complicated code. :)
+And thanks to Willy for reviewing my poor attempt at introducing
+locking.
+
+I've decided to do them both a favor and take a new approach that
+does not change any locking semantics in any of the existing interfaces
+today (pci_hp_register, pci_hp_deregister, pci_create_slot).
+
+Keep in mind that the problems we're trying to solve are:
+
+	- possible duplicate slot names from firmware
+	- allow hotplug drivers to override detection driver slot names
+
+The race that Kenji-san points out occurs during slot creation, where
+both a detection driver and hotplug driver try to create a slot at
+the same time, with different names.
+
+The solution is to combine slot creation _and_ slot rename into one
+atomic operation via an updated pci_create_slot() API. pci_create_slot
+is already serialized, so that's a good start.
+
+We add a 'rename' parameter to pci_create_slot. The hotplug drivers set
+it to 1. The detection drivers set it to 0. Now, when trying to create
+a new slot:
+
+	- check to see if it's already been created
+	- if yes, and we want a rename, then go ahead and rename it
+	- if yes, and we don't care about the name, then just return
+	- if no, then create the slot normally
+
+This logic is fully described in the changelog in patch 04/16. I believe
+it is a much simpler approach than the earlier crap I was producing.
+
+I tested this series with the pci_slot driver and fakephp dup_slots=1
+with multiple loads and unloads in different order, and it all seemed
+to work.
+
+I _hope_ this is the last round. ;)
+
+Thanks!
+
+/ac
+
+v4 -> v5:
+	- add 'rename' param to pci_create_slot
+	- make use of 'rename' param in pci_create_slot
+	- remove v4 serialization
+	- remove crap false name collsion code from v2 and v3
+	- rpaphp uses kstrdup (Thanks to Pekka Enberg for suggestion)
+
+v3 -> v4:
+        - Do not access hotplug_slot_name() before name initialization
+        - Serialize pci_hp_register/deregister
+
+v2 -> v3:
+        - incorporate Willy's code review comments
+        - fix possible memory leak, pointed out by Rolf Eike Beer
+        - make false name collision detection work for empty slots
+        - add 'dup_slots' module_param to fakephp to help debug all this ;)
+
+v1 -> v2:
+        - fix possible false name collisions
+
 ---
- fs/ext4/namei.c |   68 ++++++++++++++++++++++++++----------------------------
- 1 files changed, 33 insertions(+), 35 deletions(-)
 
-diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
-index a1f72d2..5295a92 100644
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -159,7 +159,7 @@ static void dx_set_count(struct dx_entry *entries, unsigned value);
- static void dx_set_limit(struct dx_entry *entries, unsigned value);
- static unsigned dx_root_limit(struct inode *dir, unsigned infosize);
- static unsigned dx_node_limit(struct inode *dir);
--static struct dx_frame *dx_probe(struct dentry *dentry,
-+static struct dx_frame *dx_probe(const struct qstr *d_name,
- 				 struct inode *dir,
- 				 struct dx_hash_info *hinfo,
- 				 struct dx_frame *frame,
-@@ -177,8 +177,10 @@ static int ext4_htree_next_block(struct inode *dir, __u32 hash,
- 				 struct dx_frame *frame,
- 				 struct dx_frame *frames,
- 				 __u32 *start_hash);
--static struct buffer_head * ext4_dx_find_entry(struct dentry *dentry,
--		       struct ext4_dir_entry_2 **res_dir, int *err);
-+static struct buffer_head * ext4_dx_find_entry(struct inode *dir,
-+		const struct qstr *d_name,
-+		struct ext4_dir_entry_2 **res_dir,
-+		int *err);
- static int ext4_dx_add_entry(handle_t *handle, struct dentry *dentry,
- 			     struct inode *inode);
- 
-@@ -345,7 +347,7 @@ struct stats dx_show_entries(struct dx_hash_info *hinfo, struct inode *dir,
-  * back to userspace.
-  */
- static struct dx_frame *
--dx_probe(struct dentry *dentry, struct inode *dir,
-+dx_probe(const struct qstr *d_name, struct inode *dir,
- 	 struct dx_hash_info *hinfo, struct dx_frame *frame_in, int *err)
- {
- 	unsigned count, indirect;
-@@ -356,8 +358,6 @@ dx_probe(struct dentry *dentry, struct inode *dir,
- 	u32 hash;
- 
- 	frame->bh = NULL;
--	if (dentry)
--		dir = dentry->d_parent->d_inode;
- 	if (!(bh = ext4_bread (NULL,dir, 0, 0, err)))
- 		goto fail;
- 	root = (struct dx_root *) bh->b_data;
-@@ -373,8 +373,8 @@ dx_probe(struct dentry *dentry, struct inode *dir,
- 	}
- 	hinfo->hash_version = root->info.hash_version;
- 	hinfo->seed = EXT4_SB(dir->i_sb)->s_hash_seed;
--	if (dentry)
--		ext4fs_dirhash(dentry->d_name.name, dentry->d_name.len, hinfo);
-+	if (d_name)
-+		ext4fs_dirhash(d_name->name, d_name->len, hinfo);
- 	hash = hinfo->hash;
- 
- 	if (root->info.unused_flags & 1) {
-@@ -649,7 +649,7 @@ int ext4_htree_fill_tree(struct file *dir_file, __u32 start_hash,
- 	}
- 	hinfo.hash = start_hash;
- 	hinfo.minor_hash = 0;
--	frame = dx_probe(NULL, dir_file->f_path.dentry->d_inode, &hinfo, frames, &err);
-+	frame = dx_probe(NULL, dir, &hinfo, frames, &err);
- 	if (!frame)
- 		return err;
- 
-@@ -805,15 +805,15 @@ static inline int ext4_match (int len, const char * const name,
-  */
- static inline int search_dirblock(struct buffer_head *bh,
- 				  struct inode *dir,
--				  struct dentry *dentry,
-+				  const struct qstr *d_name,
- 				  unsigned long offset,
- 				  struct ext4_dir_entry_2 ** res_dir)
- {
- 	struct ext4_dir_entry_2 * de;
- 	char * dlimit;
- 	int de_len;
--	const char *name = dentry->d_name.name;
--	int namelen = dentry->d_name.len;
-+	const char *name = d_name->name;
-+	int namelen = d_name->len;
- 
- 	de = (struct ext4_dir_entry_2 *) bh->b_data;
- 	dlimit = bh->b_data + dir->i_sb->s_blocksize;
-@@ -852,7 +852,8 @@ static inline int search_dirblock(struct buffer_head *bh,
-  * The returned buffer_head has ->b_count elevated.  The caller is expected
-  * to brelse() it when appropriate.
-  */
--static struct buffer_head * ext4_find_entry (struct dentry *dentry,
-+static struct buffer_head * ext4_find_entry (struct inode *dir,
-+					const struct qstr *d_name,
- 					struct ext4_dir_entry_2 ** res_dir)
- {
- 	struct super_block *sb;
-@@ -866,16 +867,15 @@ static struct buffer_head * ext4_find_entry (struct dentry *dentry,
- 	int num = 0;
- 	ext4_lblk_t  nblocks;
- 	int i, err;
--	struct inode *dir = dentry->d_parent->d_inode;
- 	int namelen;
- 
- 	*res_dir = NULL;
- 	sb = dir->i_sb;
--	namelen = dentry->d_name.len;
-+	namelen = d_name->len;
- 	if (namelen > EXT4_NAME_LEN)
- 		return NULL;
- 	if (is_dx(dir)) {
--		bh = ext4_dx_find_entry(dentry, res_dir, &err);
-+		bh = ext4_dx_find_entry(dir, d_name, res_dir, &err);
- 		/*
- 		 * On success, or if the error was file not found,
- 		 * return.  Otherwise, fall back to doing a search the
-@@ -928,7 +928,7 @@ restart:
- 			brelse(bh);
- 			goto next;
- 		}
--		i = search_dirblock(bh, dir, dentry,
-+		i = search_dirblock(bh, dir, d_name,
- 			    block << EXT4_BLOCK_SIZE_BITS(sb), res_dir);
- 		if (i == 1) {
- 			EXT4_I(dir)->i_dir_start_lookup = block;
-@@ -962,7 +962,7 @@ cleanup_and_exit:
- 	return ret;
- }
- 
--static struct buffer_head * ext4_dx_find_entry(struct dentry *dentry,
-+static struct buffer_head * ext4_dx_find_entry(struct inode *dir, const struct qstr *d_name,
- 		       struct ext4_dir_entry_2 **res_dir, int *err)
- {
- 	struct super_block * sb;
-@@ -973,14 +973,13 @@ static struct buffer_head * ext4_dx_find_entry(struct dentry *dentry,
- 	struct buffer_head *bh;
- 	ext4_lblk_t block;
- 	int retval;
--	int namelen = dentry->d_name.len;
--	const u8 *name = dentry->d_name.name;
--	struct inode *dir = dentry->d_parent->d_inode;
-+	int namelen = d_name->len;
-+	const u8 *name = d_name->name;
- 
- 	sb = dir->i_sb;
- 	/* NFS may look up ".." - look at dx_root directory block */
- 	if (namelen > 2 || name[0] != '.'||(name[1] != '.' && name[1] != '\0')){
--		if (!(frame = dx_probe(dentry, NULL, &hinfo, frames, err)))
-+		if (!(frame = dx_probe(d_name, dir, &hinfo, frames, err)))
- 			return NULL;
- 	} else {
- 		frame = frames;
-@@ -1041,7 +1040,7 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
- 	if (dentry->d_name.len > EXT4_NAME_LEN)
- 		return ERR_PTR(-ENAMETOOLONG);
- 
--	bh = ext4_find_entry(dentry, &de);
-+	bh = ext4_find_entry(dir, &dentry->d_name, &de);
- 	inode = NULL;
- 	if (bh) {
- 		unsigned long ino = le32_to_cpu(de->inode);
-@@ -1064,15 +1063,14 @@ struct dentry *ext4_get_parent(struct dentry *child)
- 	unsigned long ino;
- 	struct dentry *parent;
- 	struct inode *inode;
--	struct dentry dotdot;
-+	static const struct qstr dotdot = {
-+		.name = "..",
-+		.len = 2,
-+	};
- 	struct ext4_dir_entry_2 * de;
- 	struct buffer_head *bh;
- 
--	dotdot.d_name.name = "..";
--	dotdot.d_name.len = 2;
--	dotdot.d_parent = child; /* confusing, isn't it! */
--
--	bh = ext4_find_entry(&dotdot, &de);
-+	bh = ext4_find_entry(child->d_inode, &dotdot, &de);
- 	inode = NULL;
- 	if (!bh)
- 		return ERR_PTR(-ENOENT);
-@@ -1508,7 +1506,7 @@ static int ext4_dx_add_entry(handle_t *handle, struct dentry *dentry,
- 	struct ext4_dir_entry_2 *de;
- 	int err;
- 
--	frame = dx_probe(dentry, NULL, &hinfo, frames, &err);
-+	frame = dx_probe(&dentry->d_name, dir, &hinfo, frames, &err);
- 	if (!frame)
- 		return err;
- 	entries = frame->entries;
-@@ -2089,7 +2087,7 @@ static int ext4_rmdir(struct inode *dir, struct dentry *dentry)
- 		return PTR_ERR(handle);
- 
- 	retval = -ENOENT;
--	bh = ext4_find_entry(dentry, &de);
-+	bh = ext4_find_entry(dir, &dentry->d_name, &de);
- 	if (!bh)
- 		goto end_rmdir;
- 
-@@ -2151,7 +2149,7 @@ static int ext4_unlink(struct inode *dir, struct dentry *dentry)
- 		handle->h_sync = 1;
- 
- 	retval = -ENOENT;
--	bh = ext4_find_entry(dentry, &de);
-+	bh = ext4_find_entry(dir, &dentry->d_name, &de);
- 	if (!bh)
- 		goto end_unlink;
- 
-@@ -2312,7 +2310,7 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	if (IS_DIRSYNC(old_dir) || IS_DIRSYNC(new_dir))
- 		handle->h_sync = 1;
- 
--	old_bh = ext4_find_entry(old_dentry, &old_de);
-+	old_bh = ext4_find_entry(old_dir, &old_dentry->d_name, &old_de);
- 	/*
- 	 *  Check for inode number is _not_ due to possible IO errors.
- 	 *  We might rmdir the source, keep it as pwd of some process
-@@ -2325,7 +2323,7 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		goto end_rename;
- 
- 	new_inode = new_dentry->d_inode;
--	new_bh = ext4_find_entry(new_dentry, &new_de);
-+	new_bh = ext4_find_entry(new_dir, &new_dentry->d_name, &new_de);
- 	if (new_bh) {
- 		if (!new_inode) {
- 			brelse(new_bh);
-@@ -2392,7 +2390,7 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		struct buffer_head *old_bh2;
- 		struct ext4_dir_entry_2 *old_de2;
- 
--		old_bh2 = ext4_find_entry(old_dentry, &old_de2);
-+		old_bh2 = ext4_find_entry(old_dir, &old_dentry->d_name, &old_de2);
- 		if (old_bh2) {
- 			retval = ext4_delete_entry(handle, old_dir,
- 						   old_de2, old_bh2);
--- 
-1.5.6.1.205.ge2c7.dirty
+Alex Chiang (16):
+      PCI Hotplug: fakephp: add duplicate slot name debugging
+      PCI: Hotplug core: remove 'name'
+      PCI: shcphp: remove 'name' parameter
+      PCI: SGI Hotplug: stop managing bss_hotplug_slot->name
+      PCI: rpaphp: kmalloc/kfree slot->name directly
+      PCI: pciehp: remove 'name' parameter
+      PCI: ibmphp: stop managing hotplug_slot->name
+      PCI: fakephp: remove 'name' parameter
+      PCI: cpqphp: stop managing hotplug_slot->name
+      PCI: cpci_hotplug: stop managing hotplug_slot->name
+      PCI: acpiphp: remove 'name' parameter
+      PCI, PCI Hotplug: introduce slot_name helpers
+      PCI: prevent duplicate slot names
+      PCI: update pci_create_slot() to take a 'rename' param
+      PCI: rename pci_update_slot_number to pci_renumber_slot
+      PCI Hotplug core: add 'name' param pci_hp_register interface
+
+
+ drivers/acpi/pci_slot.c                 |    2 
+ drivers/pci/hotplug/acpiphp.h           |    9 +-
+ drivers/pci/hotplug/acpiphp_core.c      |   32 ++++---
+ drivers/pci/hotplug/cpci_hotplug.h      |    6 +
+ drivers/pci/hotplug/cpci_hotplug_core.c |   75 ++++++----------
+ drivers/pci/hotplug/cpci_hotplug_pci.c  |    4 -
+ drivers/pci/hotplug/cpqphp.h            |   13 +--
+ drivers/pci/hotplug/cpqphp_core.c       |   43 ++++-----
+ drivers/pci/hotplug/fakephp.c           |   26 ++++-
+ drivers/pci/hotplug/ibmphp.h            |    5 -
+ drivers/pci/hotplug/ibmphp_ebda.c       |   19 +---
+ drivers/pci/hotplug/pci_hotplug_core.c  |   30 ++----
+ drivers/pci/hotplug/pciehp.h            |    9 +-
+ drivers/pci/hotplug/pciehp_core.c       |   49 ++++------
+ drivers/pci/hotplug/pciehp_ctrl.c       |   53 ++++++-----
+ drivers/pci/hotplug/pciehp_hpc.c        |    1 
+ drivers/pci/hotplug/rpaphp_slot.c       |   10 +-
+ drivers/pci/hotplug/sgi_hotplug.c       |   18 +---
+ drivers/pci/hotplug/shpchp.h            |    9 +-
+ drivers/pci/hotplug/shpchp_core.c       |   52 ++++-------
+ drivers/pci/hotplug/shpchp_ctrl.c       |   48 +++++-----
+ drivers/pci/slot.c                      |  150 ++++++++++++++++++++++++-------
+ include/linux/pci.h                     |    9 +-
+ include/linux/pci_hotplug.h             |   11 +-
+ 24 files changed, 359 insertions(+), 324 deletions(-)
 
