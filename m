@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYJIEPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYJIEPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbYJIEPV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbYJIEHX
+	id S1759476AbYJIEPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757947AbYJIEH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:07:23 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54522 "EHLO
+	Thu, 9 Oct 2008 00:07:27 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54524 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757612AbYJIEGN (ORCPT
+	with ESMTP id S1757610AbYJIEGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Oct 2008 00:06:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Duane Griffin <duaneg@dghda.com>, Sami Liedes <sliedes@cc.hut.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 32/42] jbd2: abort instead of waiting for nonexistent transaction
-Date: Thu,  9 Oct 2008 00:05:50 -0400
-Message-Id: <1223525160-9887-33-git-send-email-tytso@mit.edu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 13/42] ext4: Retry block allocation if we have free blocks left
+Date: Thu,  9 Oct 2008 00:05:31 -0400
+Message-Id: <1223525160-9887-14-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-32-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-13-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -33,25 +32,6 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-11-git-send-email-tytso@mit.edu>
  <1223525160-9887-12-git-send-email-tytso@mit.edu>
  <1223525160-9887-13-git-send-email-tytso@mit.edu>
- <1223525160-9887-14-git-send-email-tytso@mit.edu>
- <1223525160-9887-15-git-send-email-tytso@mit.edu>
- <1223525160-9887-16-git-send-email-tytso@mit.edu>
- <1223525160-9887-17-git-send-email-tytso@mit.edu>
- <1223525160-9887-18-git-send-email-tytso@mit.edu>
- <1223525160-9887-19-git-send-email-tytso@mit.edu>
- <1223525160-9887-20-git-send-email-tytso@mit.edu>
- <1223525160-9887-21-git-send-email-tytso@mit.edu>
- <1223525160-9887-22-git-send-email-tytso@mit.edu>
- <1223525160-9887-23-git-send-email-tytso@mit.edu>
- <1223525160-9887-24-git-send-email-tytso@mit.edu>
- <1223525160-9887-25-git-send-email-tytso@mit.edu>
- <1223525160-9887-26-git-send-email-tytso@mit.edu>
- <1223525160-9887-27-git-send-email-tytso@mit.edu>
- <1223525160-9887-28-git-send-email-tytso@mit.edu>
- <1223525160-9887-29-git-send-email-tytso@mit.edu>
- <1223525160-9887-30-git-send-email-tytso@mit.edu>
- <1223525160-9887-31-git-send-email-tytso@mit.edu>
- <1223525160-9887-32-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -59,65 +39,193 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Duane Griffin <duaneg@dghda.com>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-The __jbd2_log_wait_for_space function sits in a loop checkpointing
-transactions until there is sufficient space free in the journal.
-However, if there are no transactions to be processed (e.g.  because the
-free space calculation is wrong due to a corrupted filesystem) it will
-never progress.
+When we truncate files, the meta-data blocks released are not reused
+untill we commit the truncate transaction.  That means delayed get_block
+request will return ENOSPC even if we have free blocks left.  Force a
+journal commit and retry block allocation if we get ENOSPC with free
+blocks left.
 
-Check for space being required when no transactions are outstanding and
-abort the journal instead of endlessly looping.
-
-This patch fixes the bug reported by Sami Liedes at:
-http://bugzilla.kernel.org/show_bug.cgi?id=10976
-
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
-Cc: Sami Liedes <sliedes@cc.hut.fi>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/jbd2/checkpoint.c |   19 +++++++++++++++++--
- 1 files changed, 17 insertions(+), 2 deletions(-)
+ fs/ext4/inode.c |   81 ++++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 57 insertions(+), 24 deletions(-)
 
-diff --git a/fs/jbd2/checkpoint.c b/fs/jbd2/checkpoint.c
-index 91389c8..af4651b 100644
---- a/fs/jbd2/checkpoint.c
-+++ b/fs/jbd2/checkpoint.c
-@@ -126,14 +126,29 @@ void __jbd2_log_wait_for_space(journal_t *journal)
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index b567e71..f97b347 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1634,6 +1634,7 @@ struct mpage_da_data {
+ 	struct writeback_control *wbc;
+ 	int io_done;
+ 	long pages_written;
++	int retval;
+ };
  
- 		/*
- 		 * Test again, another process may have checkpointed while we
--		 * were waiting for the checkpoint lock
-+		 * were waiting for the checkpoint lock. If there are no
-+		 * outstanding transactions there is nothing to checkpoint and
-+		 * we can't make progress. Abort the journal in this case.
+ /*
+@@ -1820,6 +1821,24 @@ static void ext4_da_block_invalidatepages(struct mpage_da_data *mpd,
+ 	return;
+ }
+ 
++static void ext4_print_free_blocks(struct inode *inode)
++{
++	struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
++	printk(KERN_EMERG "Total free blocks count %lld\n",
++			ext4_count_free_blocks(inode->i_sb));
++	printk(KERN_EMERG "Free/Dirty block details\n");
++	printk(KERN_EMERG "free_blocks=%lld\n",
++			percpu_counter_sum(&sbi->s_freeblocks_counter));
++	printk(KERN_EMERG "dirty_blocks=%lld\n",
++			percpu_counter_sum(&sbi->s_dirtyblocks_counter));
++	printk(KERN_EMERG "Block reservation details\n");
++	printk(KERN_EMERG "i_reserved_data_blocks=%lu\n",
++			EXT4_I(inode)->i_reserved_data_blocks);
++	printk(KERN_EMERG "i_reserved_meta_blocks=%lu\n",
++			EXT4_I(inode)->i_reserved_meta_blocks);
++	return;
++}
++
+ /*
+  * mpage_da_map_blocks - go through given space
+  *
+@@ -1834,7 +1853,7 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
+ 	int err = 0;
+ 	struct buffer_head new;
+ 	struct buffer_head *lbh = &mpd->lbh;
+-	sector_t next = lbh->b_blocknr;
++	sector_t next;
+ 
+ 	/*
+ 	 * We consider only non-mapped and non-allocated blocks
+@@ -1844,6 +1863,7 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
+ 	new.b_state = lbh->b_state;
+ 	new.b_blocknr = 0;
+ 	new.b_size = lbh->b_size;
++	next = lbh->b_blocknr;
+ 	/*
+ 	 * If we didn't accumulate anything
+ 	 * to write simply return
+@@ -1860,6 +1880,13 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
  		 */
- 		spin_lock(&journal->j_state_lock);
-+		spin_lock(&journal->j_list_lock);
- 		nblocks = jbd_space_needed(journal);
- 		if (__jbd2_log_space_left(journal) < nblocks) {
-+			int chkpt = journal->j_checkpoint_transactions != NULL;
+ 		if (err == -EAGAIN)
+ 			return 0;
 +
-+			spin_unlock(&journal->j_list_lock);
- 			spin_unlock(&journal->j_state_lock);
--			jbd2_log_do_checkpoint(journal);
-+			if (chkpt) {
-+				jbd2_log_do_checkpoint(journal);
-+			} else {
-+				printk(KERN_ERR "%s: no transactions\n",
-+				       __func__);
-+				jbd2_journal_abort(journal, 0);
-+			}
++		if (err == -ENOSPC &&
++				ext4_count_free_blocks(mpd->inode->i_sb)) {
++			mpd->retval = err;
++			return 0;
++		}
 +
- 			spin_lock(&journal->j_state_lock);
-+		} else {
-+			spin_unlock(&journal->j_list_lock);
+ 		/*
+ 		 * get block failure will cause us
+ 		 * to loop in writepages. Because
+@@ -1877,8 +1904,7 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
+ 		printk(KERN_EMERG "This should not happen.!! "
+ 					"Data will be lost\n");
+ 		if (err == -ENOSPC) {
+-			printk(KERN_CRIT "Total free blocks count %lld\n",
+-				ext4_count_free_blocks(mpd->inode->i_sb));
++			ext4_print_free_blocks(mpd->inode);
  		}
- 		mutex_unlock(&journal->j_checkpoint_mutex);
+ 		/* invlaidate all the pages */
+ 		ext4_da_block_invalidatepages(mpd, next,
+@@ -2085,39 +2111,36 @@ static int __mpage_da_writepage(struct page *page,
+  */
+ static int mpage_da_writepages(struct address_space *mapping,
+ 			       struct writeback_control *wbc,
+-			       get_block_t get_block)
++			       struct mpage_da_data *mpd)
+ {
+-	struct mpage_da_data mpd;
+ 	long to_write;
+ 	int ret;
+ 
+-	if (!get_block)
++	if (!mpd->get_block)
+ 		return generic_writepages(mapping, wbc);
+ 
+-	mpd.wbc = wbc;
+-	mpd.inode = mapping->host;
+-	mpd.lbh.b_size = 0;
+-	mpd.lbh.b_state = 0;
+-	mpd.lbh.b_blocknr = 0;
+-	mpd.first_page = 0;
+-	mpd.next_page = 0;
+-	mpd.get_block = get_block;
+-	mpd.io_done = 0;
+-	mpd.pages_written = 0;
++	mpd->lbh.b_size = 0;
++	mpd->lbh.b_state = 0;
++	mpd->lbh.b_blocknr = 0;
++	mpd->first_page = 0;
++	mpd->next_page = 0;
++	mpd->io_done = 0;
++	mpd->pages_written = 0;
++	mpd->retval = 0;
+ 
+ 	to_write = wbc->nr_to_write;
+ 
+-	ret = write_cache_pages(mapping, wbc, __mpage_da_writepage, &mpd);
++	ret = write_cache_pages(mapping, wbc, __mpage_da_writepage, mpd);
+ 
+ 	/*
+ 	 * Handle last extent of pages
+ 	 */
+-	if (!mpd.io_done && mpd.next_page != mpd.first_page) {
+-		if (mpage_da_map_blocks(&mpd) == 0)
+-			mpage_da_submit_io(&mpd);
++	if (!mpd->io_done && mpd->next_page != mpd->first_page) {
++		if (mpage_da_map_blocks(mpd) == 0)
++			mpage_da_submit_io(mpd);
  	}
+ 
+-	wbc->nr_to_write = to_write - mpd.pages_written;
++	wbc->nr_to_write = to_write - mpd->pages_written;
+ 	return ret;
+ }
+ 
+@@ -2357,6 +2380,7 @@ static int ext4_da_writepages(struct address_space *mapping,
+ {
+ 	handle_t *handle = NULL;
+ 	loff_t range_start = 0;
++	struct mpage_da_data mpd;
+ 	struct inode *inode = mapping->host;
+ 	int needed_blocks, ret = 0, nr_to_writebump = 0;
+ 	long to_write, pages_skipped = 0;
+@@ -2390,6 +2414,9 @@ static int ext4_da_writepages(struct address_space *mapping,
+ 	range_start =  wbc->range_start;
+ 	pages_skipped = wbc->pages_skipped;
+ 
++	mpd.wbc = wbc;
++	mpd.inode = mapping->host;
++
+ restart_loop:
+ 	to_write = wbc->nr_to_write;
+ 	while (!ret && to_write > 0) {
+@@ -2413,11 +2440,17 @@ restart_loop:
+ 			dump_stack();
+ 			goto out_writepages;
+ 		}
+-
+ 		to_write -= wbc->nr_to_write;
+-		ret = mpage_da_writepages(mapping, wbc,
+-					  ext4_da_get_block_write);
++
++		mpd.get_block = ext4_da_get_block_write;
++		ret = mpage_da_writepages(mapping, wbc, &mpd);
++
+ 		ext4_journal_stop(handle);
++
++		if (mpd.retval == -ENOSPC)
++			jbd2_journal_force_commit_nested(sbi->s_journal);
++
++		/* reset the retry count */
+ 		if (ret == MPAGE_DA_EXTENT_TAIL) {
+ 			/*
+ 			 * got one extent now try with
 -- 
 1.5.6.1.205.ge2c7.dirty
 
