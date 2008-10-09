@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbYJIKSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbYJIKXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574AbYJIKSk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 06:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbYJIKS3
+	id S1758673AbYJIKXY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 06:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYJIKXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 06:18:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53769 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756237AbYJIKS2 (ORCPT
+	Thu, 9 Oct 2008 06:23:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:45146 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753779AbYJIKXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 06:18:28 -0400
-Date: Thu, 9 Oct 2008 06:18:09 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Eric Sandeen <sandeen@sandeen.net>, Christoph Hellwig <hch@infradead.org>,
-       Ric Wheeler <rwheeler@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-fsdevel@vger.kernel.org,
-       dm-devel@redhat.com, viro@ZenIV.linux.org.uk,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, axboe@kernel.dk,
-       mtk.manpages@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Add timeout feature
-Message-ID: <20081009101809.GA1319@infradead.org>
-References: <20080908205337t-sato@mail.jp.nec.com> <20080908171119.GB22521@infradead.org> <48DBFD42.6030307@redhat.com> <D0B0D91F884647D6808626CDFF81E532@nsl.ad.nec.co.jp> <20080929141326.GA31781@infradead.org> <48E0E7D4.1090409@sandeen.net> <20080929143749.GA13286@infradead.org> <48E0EA0B.7000701@sandeen.net> <0AD458D29A8E4938BB3914BB5C562C39@nsl.ad.nec.co.jp>
+	Thu, 9 Oct 2008 06:23:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WkbzQNR9teiIaVtvxNQzGI5d6PZD6LMr7ElUXaNpSjl2uj6ry42zV2bWvrB7zOs/qA
+         o/OFu0g2oLxGoX6hSZSyL4chld+YectsS3WHVbaJPGr7JcaWP/iDXX/26L6+3zK4ReLN
+         6naYOJKbV/JhfxKeFjeVyYaQmra4YaMvI4n6U=
+Message-ID: <c62985530810090323vd5d08e0haa618ca0cbe0c73f@mail.gmail.com>
+Date: Thu, 9 Oct 2008 12:23:13 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] rudimentary tracing for Classic RCU
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
+       dipankar@in.ibm.com, tglx@linuxtronix.de, andi@firstfloor.org
+In-Reply-To: <20081009010846.GA10188@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <0AD458D29A8E4938BB3914BB5C562C39@nsl.ad.nec.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20081006141220.GA14160@basil.nowhere.org>
+	 <20081006232837.GA1157@basil.nowhere.org>
+	 <20081007030822.GC6820@linux.vnet.ibm.com>
+	 <20081007071544.GC20740@one.firstfloor.org>
+	 <20081007152629.GH6384@linux.vnet.ibm.com>
+	 <20081007154939.GN20740@one.firstfloor.org>
+	 <20081007163401.GJ6384@linux.vnet.ibm.com>
+	 <20081007210947.GP20740@one.firstfloor.org>
+	 <20081007212215.GN6384@linux.vnet.ibm.com>
+	 <20081009010846.GA10188@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09, 2008 at 07:12:17PM +0900, Takashi Sato wrote:
-> I think we need the timeout for the case someone dirties so much data
-> with mmap, hence the freeze process is swapped out and cannot unfreeze.
+2008/10/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> Hello!
+>
+> This is a tracing patch for Classic RCU, which creates an "rcu/rcucb"
+> file in debugfs.  This patch can be handy when you need to work out
+> why RCU is refusing to end the current grace period.
+>
+> Reading from the file results in something like the following:
+>
+>        rcu: cur=1129  completed=1128  np=0  s=0
+>                0,3,7
+>        rcu_bh: cur=-287  completed=-287  np=0  s=0
+>
+>        online: 0-7
 
-That is not supposed to happen.  That's why write blocks early on a
-frozen filesystem (the shared mmap write path is currently missing the
-check, but that's a rather small patch)
 
+Hi Paul,
+
+Why don't you use the ring-buffer tracing engine?
+You will really make your life better by putting it as a tracer in
+kernel/trace and by using the relevant API.
+That will avoid you to manage the debugfs things, the memory
+allocation, the buffer managment.....
