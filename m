@@ -1,164 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYJIWre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYJIWvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbYJIWre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 18:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYJIWrY
+	id S1755454AbYJIWvu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 18:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbYJIWvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 18:47:24 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:38905 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbYJIWrX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 18:47:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references
-         :in-reply-to:content-type:content-transfer-encoding:from;
-        b=MJP5Uv6sQc60/GQGJ21anLjgASdt8jfAOLW4mCj8dbGBNJOK3ERdw47z6MCtZHZdBq
-         oHEY5aMLlUsDAwxz1CPZtSxrY8a89ZpU68Sd4vIPXTREdDVjFtUWjdIp75KEmGmSC3zs
-         CqRtBGvRIqKKYe7kQ4pEi8BF9Z5K6AH/eAGww=
-Message-ID: <48EE89ED.3050309@gmail.com>
-Date: Thu, 09 Oct 2008 23:47:09 +0100
-User-Agent: Thunderbird 2.0.0.16 (X11/20080810)
+	Thu, 9 Oct 2008 18:51:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44936 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750722AbYJIWvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 18:51:41 -0400
+Message-ID: <48EE8AB2.5000302@redhat.com>
+Date: Thu, 09 Oct 2008 18:50:26 -0400
+From: Chris Snook <csnook@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@newmail.ru>
-CC: orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: rc9 + orinoco WPA patchset: BUG: scheduling while atomic loading
- firmware with PCMCIA adapter
-References: <200810091722.56812.arvidjaar@newmail.ru> <200810091959.54987.arvidjaar@newmail.ru> <1223568410.18104.42.camel@dhcp-100-3-195.bos.redhat.com> <200810092321.55033.arvidjaar@newmail.ru>
-In-Reply-To: <200810092321.55033.arvidjaar@newmail.ru>
+To: akataria@vmware.com
+CC: Alok kataria <alokkataria1@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Jeff Hansen <x@jeffhansen.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
+Subject: Re: [PATCH] Re: x86_32 tsc/pit and hrtimers
+References: <Pine.LNX.4.64.0810071640110.25661@ren>	 <48ED1728.5060708@redhat.com> <Pine.LNX.4.64.0810081542300.14815@ren>	 <48ED2A89.3000902@redhat.com> <Pine.LNX.4.64.0810081554380.14982@ren>	 <alpine.LFD.2.00.0810090910510.3237@apollo>	 <48EE4FC4.7070902@redhat.com>	 <alpine.LFD.2.00.0810092118100.3271@apollo>	 <Pine.LNX.4.64.0810091344250.24851@ren>	 <alpine.LFD.2.00.0810092152410.3271@apollo>	 <35f686220810091345h253d71e8s4fe9d7ea8e636ccc@mail.gmail.com>	 <48EE71A9.2010907@redhat.com> <1223589220.32639.24.camel@alok-dev1>
+In-Reply-To: <1223589220.32639.24.camel@alok-dev1>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Dave <kilroyd@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> The attached patch fixes 4K stack for me. I have not tested spectrum case.
+Alok Kataria wrote:
+> On Thu, 2008-10-09 at 14:03 -0700, Chris Snook wrote:
+>> Alok kataria wrote:
+>>> On Thu, Oct 9, 2008 at 12:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>>>> On Thu, 9 Oct 2008, Jeff Hansen wrote:
+>>>>
+>>>>> OK, so are we all agreed that something like clocksource_trust=tsc would be
+>>>>> the best?
+>>>> No, it's per affected device: tsc=trust or tsc=stable or whatever
+>>>> unintuitive name we want to come up. And it is a modification to TSC
+>>>> not to the clocksource layer.
+>>> Yep, this is cool. I too have a patch in my local tree which does a
+>>> similar thing i have a tsc_reliable flag which is set right now only
+>>> when we are running under a VMware hypervisor.
+>>> Along with marking the no_verify flag for TSC, this patch of mine also
+>>> skips the TSC synchornization checks.
+>>>
+>>>         The TSC synchronization loop which is run whenever a new cpu is
+>>> brought up is not actually needed on systems which are known to have a
+>>> reliable TSC. TSC between 2 cpus can be off by a marginal value on such
+>>> systems and thats okay for timekeeping, since we do check for tsc going
+>>> back in read_tsc.
+>>>
+>>> Can this reasoning be included and synchronization skipped for all
+>>> these systems with reliable aka trustworthy TSC's  ?
+>> In general, no.  Not all hardware/hypervisors behave this way, even when the TSC
+>> is otherwise stable once synchronized.
+> 
+> I agree that in general this should be no, but since this is a
+> commandline variable it will be normally set for only those systems
+> which have only TSC as a option or know that the TSC is reliable.
+> wouldn't doing this be ok for such systems ? 
 
-Thanks for identifying the problem. The Agere case looks good - a few suggestions for the Symbol case though:
+Hardware doesn't deliberately do any TSC synchronization, though you might get 
+it by accident in some configurations.  A VMware guest gets it for free thanks 
+to the hypervisor doing it in software, but we need to run the check when we're 
+booting on bare metal.  Jeff's patch enables the feature with as little risk as 
+possible.  TSC sync is pretty cheap, so it's not worth it to add a more 
+dangerous special case just for guests of certain hypervisors.
 
-> diff --git a/drivers/net/wireless/orinoco.c b/drivers/net/wireless/orinoco.c
-> --- a/drivers/net/wireless/orinoco.c
-> +++ b/drivers/net/wireless/orinoco.c
-> @@ -549,12 +556,16 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
->  		int secondary)
->  {
->  	hermes_t *hw = &priv->hw;
-> -	int ret;
-> +	int ret = 0;
->  	const unsigned char *ptr;
->  	const unsigned char *first_block;
->  
->  	/* Plug Data Area (PDA) */
-> -	__le16 pda[256];
-> +	__le16 *pda;
-
-Please initialise pda to NULL here...
-
-> +	pda = kzalloc(fw->pda_size, GFP_KERNEL);
-> +	if (!pda)
-> +		return -ENOMEM;
-
-And move the allocation to
-
->  	/* Binary block begins after the 0x1A marker */
->  	ptr = image;
-> @@ -563,22 +574,22 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
->  
->  	/* Read the PDA from EEPROM */
->  	if (secondary) {
-
- ... here.
-
-> -		ret = hermes_read_pda(hw, pda, fw->pda_addr, sizeof(pda), 1);
-> +		ret = hermes_read_pda(hw, pda, fw->pda_addr, fw->pda_size, 1);
->  		if (ret)
-> -			return ret;
-> +			goto free;
->  	}
->  
->  	/* Stop the firmware, so that it can be safely rewritten */
->  	if (priv->stop_fw) {
->  		ret = priv->stop_fw(priv, 1);
->  		if (ret)
-> -			return ret;
-> +			goto free;
->  	}
->  
->  	/* Program the adapter with new firmware */
->  	ret = hermes_program(hw, first_block, end);
->  	if (ret)
-> -		return ret;
-> +		goto free;
->  
->  	/* Write the PDA to the adapter */
->  	if (secondary) {
-> @@ -586,28 +597,31 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
->  		ptr = first_block + len;
->  		ret = hermes_apply_pda(hw, ptr, pda);
->  		if (ret)
-> -			return ret;
-> +			goto free;
-
-Then kfree(pda) here. We're done with it now.
-
->  	}
->  
->  	/* Run the firmware */
->  	if (priv->stop_fw) {
->  		ret = priv->stop_fw(priv, 0);
->  		if (ret)
-> -			return ret;
-> +			goto free;
-
-So this isn't needed.
-
->  	}
->  
->  	/* Reset hermes chip and make sure it responds */
->  	ret = hermes_init(hw);
->  
->  	/* hermes_reset() should return 0 with the secondary firmware */
-> -	if (secondary && ret != 0)
-> -		return -ENODEV;
-> +	if (secondary && ret != 0) {
-> +		ret = -ENODEV;
-> +		goto free;
-> +	}
-
-nor this.
-
->  
->  	/* And this should work with any firmware */
->  	if (!hermes_present(hw))
-> -		return -ENODEV;
-> +		ret = -ENODEV;
->  
-> -	return 0;
-
-or these.
-
-> +free:
- 
-But you absolutely have to kfree(pda) here. I would prefer the label be something like 'abort' (what we are doing), rather than 'free' - but there's merit in keeping with what you have called in in orinoco_dl_firmware which already has an 'abort' label.
-
-> +	return ret;
->  }
- 
-The net effect of the above suggestion is that we won't allocate memory when programming the primary firmware (which is just before we do the secondary).
-
-Dan Williams wrote:
-> maybe you should not use priv->pda_size but
-> #define SYMBOL_PDA_SIZE 256 and use that for the hermes_read_pda()
-> length just to ensure the patched code is functionally the same as
-> before the patch.
-
-Using fw->pda_size should be fine. The value comes from a const static, set to 0x100 for Symbol.
-
-
-Regards,
-
-Dave.
+-- Chris
