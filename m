@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYJISJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbYJISJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbYJISJD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYJISIv
+	id S1760176AbYJISJo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 14:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYJISJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:08:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:54529 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754713AbYJISIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:08:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=XCKjA17ddPWzkqtYFnx5//6W6MO5gAK/gL9v3j/0oOecACHxEz3HbIOxeY0gzQVmhw
-         3YWB8bN2qXEzf1zs9LHOYDlkRhOw1qr2yCbG8T1P09e5UzPC3yYv8IIofTXkKH9z9nbw
-         h9PKhOr5LS2l6hzj08CIVYLzJh6WUwYSoI0OM=
-Message-ID: <86802c440810091108w706c5382p6a7b283ba2ebe2b1@mail.gmail.com>
-Date: Thu, 9 Oct 2008 11:08:46 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Randy Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH 1/3] x86: mtrr_cleanup update command line
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081009102049.c22cf670.rdunlap@xenotime.net>
+	Thu, 9 Oct 2008 14:09:34 -0400
+Received: from smtp02.mtu.ru ([62.5.255.49]:54883 "EHLO smtp02.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753899AbYJISJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 14:09:34 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: loading ipmi_watchdog causes tons of other watchdog modules to be loaded
+To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Thu, 09 Oct 2008 22:09:14 +0400
+References: <200810091348.19828.a.miskiewicz@gmail.com> <ac3eb2510810090636w51e04a7fxfa36d8b016b236d@mail.gmail.com> <200810091922.24108.a.miskiewicz@gmail.com>
+User-Agent: KNode/0.10.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080930165739.7847be37.rdunlap@xenotime.net>
-	 <20081008170751.6d86b8e2.rdunlap@xenotime.net>
-	 <86802c440810081828m2b9210e6y81503bdffe12fb03@mail.gmail.com>
-	 <20081009102049.c22cf670.rdunlap@xenotime.net>
-X-Google-Sender-Auth: cec8435e564ab1a5
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20081009180920.05888143D6F1@smtp02.mtu.ru>
+X-DCC-STREAM-Metrics: smtp02.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 9, 2008 at 10:20 AM, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> On Wed, 8 Oct 2008 18:28:39 -0700 Yinghai Lu wrote:
->
->> On Wed, Oct 8, 2008 at 5:07 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
->> > On Tue, 30 Sep 2008 16:57:39 -0700 Randy Dunlap wrote:
->> >
->> > BTW, this comment is alread in Documentation/kernel-parameters.txt, at the top of the file:
->>
->> oh...
->>
->> >
->> > The following is a consolidated list of the kernel parameters as implemented
->> > (mostly) by the __setup() macro and sorted into English Dictionary order
->> > (defined as ignoring all punctuation and sorting digits before letters in a
->> > case insensitive manner), and with descriptions where known.
->> >
->> >
->> how about
->>
->> like to filter out disable, enable, no, etc...
->
-> I don't think that mtrr gets any special treatment here.
-> All "acpi" parameters are not grouped together (unless they begin with
-> "acpi").  All "apic" parameters are not grouped together.
-> All "*iommu*" parameters are not grouped together....
+Arkadiusz Miskiewicz wrote:
 
-could adjust acpi iommu to same layout
+> On Thursday 09 October 2008, Kay Sievers wrote:
+>> On Thu, Oct 9, 2008 at 1:48 PM, Arkadiusz Miskiewicz
+>>
+>> <a.miskiewicz@gmail.com> wrote:
+>> > No udev on the system. kernel 2.6.25.18-1.
+>> >
+>> > After loading ipmi_watchdog and doing "cat /dev/watchdog" tons of
+>> > other, useles, watchdog modules is loaded. Any idea what introduced
+>> > such weird behaviour?
+>>
+>> I guess the /proc/sys/kernel/modprobe, which lets the kernel fork a
+>> modprobe process when you touch a "dangling" device node, which does
+>> not have corresponding driver.
+> 
+> ... but that ipmi_watchdog is the correct driver that handles
+> /dev/watchdog, so this shouldn't be happening, correct?
+> 
 
-YH
+That's true, but it declares itself as handler for this device entry very
+deep in some callback. It is quite possible that event that would have
+triggered this callback did not yet happen. 
+
