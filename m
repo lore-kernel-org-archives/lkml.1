@@ -1,140 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbYJIMOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbYJIMUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759019AbYJIMOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 08:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbYJIMOQ
+	id S1758908AbYJIMUM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 08:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbYJIMT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 08:14:16 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:57243 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757264AbYJIMOP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 08:14:15 -0400
-Date: Thu, 09 Oct 2008 21:14:14 +0900 (JST)
-Message-Id: <20081009.211414.193713198.ryov@valinux.co.jp>
-To: baramsori72@gmail.com
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@sourceware.org,
-       fernando@oss.ntt.co.jp, xemul@openvz.org, balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.7.0:
- Introduction
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <2891419e0810082315v28f2f4cbu5f95230db3be0bc1@mail.gmail.com>
-References: <2891419e0810080129sb6b35y11362f4bef71c174@mail.gmail.com>
-	<20081008.194022.226783199.ryov@valinux.co.jp>
-	<2891419e0810082315v28f2f4cbu5f95230db3be0bc1@mail.gmail.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 08:19:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59604 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756356AbYJIMT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 08:19:59 -0400
+Date: Thu, 9 Oct 2008 14:19:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] UV: cosmetic fix to interrupt handler definition
+Message-ID: <20081009121946.GA1558@elte.hu>
+References: <E1Knh2A-0000HU-WA@eag09.americas.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Knh2A-0000HU-WA@eag09.americas.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1281]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dong-Jae,
 
-> So, I tested dm-ioband and bio-cgroup patches with another IO testing
-> tool, xdd ver6.5(http://www.ioperformance.com/),  after your reply.
-> Xdd supports O_DIRECT mode and time limit options.
-> I think, personally, it is proper tool for testing of IO controllers
-> in Linux Container ML.
+* Cliff Wickman <cpw@sgi.com> wrote:
 
-Xdd is really useful for me. Thanks for letting me know.
-
-> And I found some strange points in test results. In fact, it will be
-> not strange for other persons^^
+> From: Cliff Wickman <cpw@sgi.com>
 > 
-> 1. dm-ioband can control IO bandwidth well in O_DIRECT mode(read and
-> write), I think the result is very reasonable. but it can't control it
-> in Buffered mode when I checked just only output of xdd. I think
-> bio-cgroup patches is for solving the problems, is it right? If so,
-> how can I check or confirm the role of bio-cgroup patches?
->
-> 2. As showed in test results, the IO performance in Buffered IO mode
-> is very low compared with it in O_DIRECT mode. In my opinion, the
-> reverse case is more natural in real life.
-> Can you give me a answer about it?
+> The UV Broadcast Assist Unit (BAU) interrupt handler is erroneously
+> declared with a hardcoded vector 220 (that was used during testing).
+> It should be declared with the vector that is reserved for it.
+> 
+> The interrupt handler does not use the 220 that is pushed onto its
+> stack, so this error had no runtime effect.
+> 
+> Diffed against 2.6.27-rc8
+> 
+> Signed-off-by: Cliff Wickman <cpw@sgi.com>
 
-Your results show all xdd programs belong to the same cgroup,
-could you explain me in detail about your test procedure?
+applied to tip/x86/uv, thanks Cliff!
 
-To know how many I/Os are actually issued to a physical device in
-buffered mode within a measurement period, you should check the
-/sys/block/<dev>/stat file just before starting a test program and
-just after the end of the test program. The contents of the stat file
-is described in the following document:
-   kernel/Documentation/block/stat.txt
-
-> 3. Compared with physical bandwidth(when it is checked with one
-> process and without dm-ioband device), the sum of the bandwidth by
-> dm-ioband has very considerable gap with the physical bandwidth. I
-> wonder the reason. Is it overhead of dm-ioband or bio-cgroup patches?
-> or Are there any another reasons?
-
-The followings are the results on my PC with SATA disk, and there is
-no big difference between with and without dm-ioband. Please try the
-same thing if you have time.
-
-without dm-ioband
-=================
-# xdd.linux -op write -queuedepth 16 -targets 1 /dev/sdb1 \
-  -reqsize 8 -numreqs 128000 -verbose -timelimit 30 -dio -randomize
-
-T  Q       Bytes      Ops    Time      Rate    IOPS   Latency
-%CPU  OP_Type    ReqSize
-0 16   140001280    17090    30.121     4.648     567.38    0.0018
-0.01   write        8192
-
-with dm-ioband
-==============
-* cgroup1 (weight 10)
-# cat /cgroup/1/bio.id
-1
-# echo $$ > /cgroup/1/tasks
-# xdd.linux -op write -queuedepth 16 -targets 1 /dev/mapper/ioband1
-  -reqsize 8 -numreqs 128000 -verbose -timelimit 30 -dio -randomize
-T  Q       Bytes      Ops    Time      Rate      IOPS   Latency
-%CPU  OP_Type    ReqSize     
-0 16    14393344     1757    30.430     0.473      57.74    0.0173
-0.00   write        8192 
-
-* cgroup2 (weight 20)
-# cat /cgroup/2/bio.id
-2
-# echo $$ > /cgroup/2/tasks
-# xdd.linux -op write -queuedepth 16 -targets 1 /dev/mapper/ioband1
-  -reqsize 8 -numreqs 128000 -verbose -timelimit 30 -dio -randomize
-T  Q       Bytes      Ops    Time      Rate      IOPS   Latency
-%CPU  OP_Type    ReqSize     
-0 16    44113920     5385    30.380     1.452     177.25    0.0056
-0.00   write        8192 
-
-* cgroup3 (weight 60)
-# cat /cgroup/3/bio.id
-3
-# echo $$ > /cgroup/3/tasks
-# xdd.linux -op write -queuedepth 16 -targets 1 /dev/mapper/ioband1
-  -reqeize 8 -numreqs 128000 -verbose -timelimit 30 -dio -randomize
-T  Q       Bytes      Ops    Time      Rate      IOPS   Latency
-%CPU  OP_Type    ReqSize     
-0 16    82485248    10069    30.256     2.726     332.79    0.0030
-0.00   write        8192 
-
-Total
-=====
-                  Bytes        Ops    Rate   IOPS
-  w/o dm-ioband  140001280    17090  4.648  567.38
-  w/  dm-ioband  140992512    17211  4.651  567.78
-
-> > Could you give me the O_DIRECT patch?
-> >
-> Of course, if you want. But it is nothing
-> Tiobench tool is very simple and light source code, so I just add the
-> O_DIRECT option in tiotest.c of tiobench testing tool.
-> Anyway, after I make a patch file, I send it to you
-
-Thank you very much!
-
-Ryo Tsuruta
+	Ingo
