@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbYJIVLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbYJIVQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbYJIVLv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 17:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYJIVLn
+	id S1756293AbYJIVQl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 17:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYJIVQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 17:11:43 -0400
-Received: from ns.suse.de ([195.135.220.2]:37601 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753397AbYJIVLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 17:11:42 -0400
-Date: Thu, 9 Oct 2008 14:08:29 -0700
-From: Greg KH <gregkh@suse.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
-Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
-Message-ID: <20081009210829.GA5674@suse.de>
-References: <20080924230054.GA27730@suse.de> <20081009210137.GA7126@cs181140183.pp.htv.fi>
+	Thu, 9 Oct 2008 17:16:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39728 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753014AbYJIVQa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 17:16:30 -0400
+Date: Thu, 9 Oct 2008 14:14:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: splice vs O_APPEND
+In-Reply-To: <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu>
+Message-ID: <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org>
+References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org> <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu>
+ <alpine.LFD.2.00.0810091218300.3210@nehalem.linux-foundation.org> <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081009210137.GA7126@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 12:01:37AM +0300, Adrian Bunk wrote:
-> On Wed, Sep 24, 2008 at 04:00:54PM -0700, Greg KH wrote:
-> > As we all discussed at the Kernel Summit this past week, I said I would
-> > create a drivers/staging directory and start throwing lots of drivers
-> > that are not of "mergable" status into it.
-> >...
-> > The 3rd patch creates the drivers/staging/ directory and Kconfig entries
-> > and adds it to the build system.
-> > 
-> > The 4th patch is an example of a driver that would go into this
-> > directory, along with a driver_name.README file detailing what needs to
-> > be done to this driver for cleanup/fixing, and who to contact about it.
-> > It's also in such bad shape it doesn't even build against the kernel
-> > kernel :)
-> > 
-> > (I'll fix that up before submitting, all drivers should at least build
-> > properly...)
-> > 
-> > So, does this all look good to everyone?  Any questions/issues?
-> > 
-> > Oh, I guess I should add a MAINTAINER entry for this section of the
-> > kernel, so to paraphrase Linus, I now get to be known as the "Maintainer
-> > of Crap".
+
+
+On Thu, 9 Oct 2008, Miklos Szeredi wrote:
 > 
-> Sorry for being late in the discussion, I'm currently catching up with 
-> my email backlog.
-> 
-> What does that mean in practice for kernel development?
+> The thing is, the append-only attribute is absolutely useless without
+> being able to depend on it.  So in that sense I think the IS_APPEND
+> issue is important, and I'm fine with your original proposal for that
+> (except we don't need the IS_IMMUTABLE check).
 
-Nothing.
+Heh. In the meantime, I had grown to hate that more complex patch.
 
-> Will breaking crap be considered OK?
+So because I do see your point with IS_APPEND (being different from 
+O_APPEND), but because I also think that O_APPEND itself is a gray and 
+murky area, I just committed the following. I doubt anybody will ever even 
+notice it, but while I think it's all debatable, we might as well debate 
+it with this in place. I do agree that it's "safer" behaviour.
 
-Yes.
+		Linus
 
-> As an example, let's assume some crap drivers use the BKL in a way that 
-> it might require the BKL in some core part of the kernel. Will the 
-> person removing the BKL in the core part of the kernel be forced to fix 
-> the locking of all possibly affected crap drivers no matter how broken 
-> and undocumented it is, or can he simply ignore the crap and leave the 
-> fixing to the Maintainer of Crap?
+---
+commit a05b4085484ac45558810e4c5928e5a291c20f65
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Thu Oct 9 14:04:54 2008 -0700
 
-He can ignore the crap and leave the fixing to the Maintainer of Crap.
+    Don't allow splice() to files opened with O_APPEND
+    
+    This is debatable, but while we're debating it, let's disallow the
+    combination of splice and an O_APPEND destination.
+    
+    It's not entirely clear what the semantics of O_APPEND should be, and
+    POSIX apparently expects pwrite() to ignore O_APPEND, for example.  So
+    we could make up any semantics we want, including the old ones.
+    
+    But Miklos convinced me that we should at least give it some thought,
+    and that accepting writes at arbitrary offsets is wrong at least for
+    IS_APPEND() files (which always have O_APPEND set, even if the reverse
+    isn't true: you can obviously have O_APPEND set on a regular file).
+    
+    So disallow O_APPEND entirely for now.  I doubt anybody cares, and this
+    way we have one less gray area to worry about.
+    
+    Reported-and-argued-for-by: Miklos Szeredi <miklos@szeredi.hu>
+    Cc: Jens Axboe <ens.axboe@oracle.com>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Although a short note to the Maintainer of Crap about the crap that
-needs fixing in the tree of crap, would be polite, it is not required.
-
-thanks,
-
-greg "surrounded by crap" k-h
+diff --git a/fs/splice.c b/fs/splice.c
+index 1bbc6f4..a1e701c 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -898,6 +898,9 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
+ 	if (unlikely(!(out->f_mode & FMODE_WRITE)))
+ 		return -EBADF;
+ 
++	if (unlikely(out->f_flags & O_APPEND))
++		return -EINVAL;
++
+ 	ret = rw_verify_area(WRITE, out, ppos, len);
+ 	if (unlikely(ret < 0))
+ 		return ret;
