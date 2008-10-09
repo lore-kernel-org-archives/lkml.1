@@ -1,185 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759718AbYJIMeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYJIMhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759718AbYJIMeh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 08:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758496AbYJIMeJ
+	id S1759301AbYJIMhi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 08:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYJIMha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 08:34:09 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36371 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759503AbYJIMeH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 08:34:07 -0400
-Message-ID: <48EDF9F5.9020802@jp.fujitsu.com>
-Date: Thu, 09 Oct 2008 21:32:53 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+	Thu, 9 Oct 2008 08:37:30 -0400
+Received: from sidv0150.hsr.ch ([152.96.52.150]:54727 "EHLO strongswan.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756561AbYJIMha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 08:37:30 -0400
+X-Greylist: delayed 1626 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Oct 2008 08:37:29 EDT
+Message-ID: <48EDF4AD.50907@strongswan.org>
+Date: Thu, 09 Oct 2008 14:10:21 +0200
+From: Tobias Brunner <tobias.brunner@strongswan.org>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
-Subject: Re: [PATCH v5 04/16] PCI: prevent duplicate slot names
-References: <20081009043140.8678.44164.stgit@bob.kio> <20081009044649.8678.30990.stgit@bob.kio> <48ED9716.3040301@jp.fujitsu.com> <20081009055654.GA30972@ldl.fc.hp.com>
-In-Reply-To: <20081009055654.GA30972@ldl.fc.hp.com>
+To: "David S. Miller" <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.27-rc9] af_key: fix SADB_X_SPDDELETE response
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> Thank your new patches. Very quick!!!
-> 
-> I'm trying to get into 2.6.28. ;)
-> 
->> Though I have not reviewed/tested your patches yet (of course), I have
->> one concern as I said in the e-mail soon before. Does the new one
->> consider the following senario?
->>
->> 	Scenario C:
->> 	hotplug driver(A)               	hotplug_driver(B)
->> 	--------------                  	----------------
->>        pci_create_slot(name=A, rename=1)
->> 						pci_create_slot(name=B, rename=1)
->>
->> The hotplug driver (A) creates the slot with name "A". The the hotplug
->> driver (B) tries to create the same slot, but wants the name "B" instead.
->> In this case, hotplug driver fails to create the slot and the slot name
->> should not be changed to "B" from "A".
-> 
-> Hm... I don't think this is a common scenario but...
-> 
+When deleting an SPD entry using SADB_X_SPDDELETE, c.data.byid is not 
+initialized to zero in pfkey_spddelete(). Thus, key_notify_policy() 
+responds with a PF_KEY message of type SADB_X_SPDDELETE2 instead of 
+SADB_X_SPDDELETE.
 
-It was a common scenario until recently because acpiphp and
-native hotplug drivers(pciehp, shpchp) had different naming
-rules. That is, acpiphp used _SUN number, while pciehp/shpchp
-used bus number and physical slot number pair. Although the
-pciehp/shpchp driver has been changed not to use bus_number
-for slot names and acpiphp and pciehp/shpchp has the same
-names on my system now, but I think the scenario is still
-possible because naming rule of each hotplug driver could be
-changed in the future again.
+Signed-off-by: Tobias Brunner <tobias.brunner@strongswan.org>
 
-By the way, acpiphp was changed to handle 64bit _SUN number
-recently for new ia64 HP servers, IIRC. Are hotplug slots
-on that server can also be handled through PCIe controller?
-If it is yes, I think _SUN doesn't match physical slot number
-because physical slot number (in Slot Capabilities Register)
-has only 13bit. In this case, the above scenario will happen.
-
-> int pci_hp_register(...)
-> {
-> 	...
-> 
->         pci_slot = pci_create_slot(bus, slot_nr, name, 1);
->         if (IS_ERR(pci_slot))    
->                 return PTR_ERR(pci_slot);
-> 
->         if (pci_slot->hotplug) {
->                 dbg("%s: already claimed\n", __func__);
->                 pci_destroy_slot(pci_slot);
->                 return -EBUSY;
->         }
-> 	...
-> }
-> 
-> I could maybe move that check into pci_create_slot() instead.
-> 
-> struct pci_slot *pci_create_slot(...)
-> {
-> 	...
-> 
->         /*
->          * Get existing slot and rename if desired
->          */
->         slot = get_slot(parent, slot_nr);
->         if (slot && rename) {
-> 		if ((err = slot->hotplug ? -EBUSY : 0)
-> 		     || (err = rename_slot(slot, name))) {
->                         kobject_put(&slot->kobj);
->                         slot = NULL;
->                         goto err;
->                 } else
->                         goto out;
->         } else if (slot)
->                 goto out;
-> 	...
-> }
-> 
-> Seems a little ugly to me, but maybe it's necessary?
-> 
-
-I don't like this, and I think it's wrong because callers
-might get -EBUSY even though they are not related to hotplug.
-
-I thought of the following alternative ideas, when I was making
-sample patches. What do you think about those? My was concerned
-that both need to add hotplug related code into generic pci slot
-management code/API.
-
-- Add 'hotplug' arg to pci_create_slot(), instead of 'rename'
-  flag. The pci_create_slot() would be as follows:
-
-	struct pci_slot *pci_create_slot(..., struct hotplug_slot *hotplug)
-	{
-		...
-		/*
-		 * Get existing slot and rename if desired
-		 */
-		slot = get_slot(parent, slot_nr);
-		if (slot) {
-			if (hotplug) {
-				if ((err = slot->hotplug ? -EBUSY : 0)
-				     || err = rename_slot(slot, name))) {
-					Some cleanups;
-					return err;
-				}
-			}
-			goto out;
-		}
-		...
-	out:
-		if (hotplug)
-			slot->hotplug = hotplug;
-		...
-	}
-
-- Introduce new API to setup pci_slot->hotplug and rename. This would be
-  as follows:
-
-	int pci_slot_hp_register(struct pci_slot *pci_slot,
-				 struct hotplug_slot *hotplug_slot, const char *name)
-	{
-		...
-
-		if (pci_slot->hotplug) {
-			Some cleanups;
-			return -EBUSY;
-		}
-		if ((err = rename_slot(slot, name))
-			Some cleanups;
-			return err;
-		}
-		pci_slot->hotplug = hotplug;
-		...
-	}
-
-  It is intended to be used by pci_hp_register() as follows:
-
-	int pci_hp_register(...)
-	{
-		...
-	        pci_slot = pci_create_slot(bus, slot_nr, name);
-        	if ((result = IS_ERR(pci_slot)))
-                	goto out;
-		if ((err = pci_slot_hp_register(pci_slot, hotplug, name)))
-			goto out;
-		...
-	}
-
-Thanks,
-Kenji Kaneshige
-
+--- a/net/key/af_key.c	2008-10-09 13:10:04.000000000 +0200
++++ b/net/key/af_key.c	2008-10-09 13:49:11.000000000 +0200
+@@ -2317,6 +2317,7 @@
+ 
+ 	c.seq = hdr->sadb_msg_seq;
+ 	c.pid = hdr->sadb_msg_pid;
++	c.data.byid = 0;
+ 	c.event = XFRM_MSG_DELPOLICY;
+ 	km_policy_notify(xp, pol->sadb_x_policy_dir-1, &c);
+ 
 
