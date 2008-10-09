@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbYJIHeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYJIHgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757789AbYJIHeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 03:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbYJIHeH
+	id S1758116AbYJIHgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 03:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbYJIHgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 03:34:07 -0400
-Received: from www.tglx.de ([62.245.132.106]:58423 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755635AbYJIHeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 03:34:05 -0400
-Date: Thu, 9 Oct 2008 09:24:51 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, dipankar@in.ibm.com
-Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
-In-Reply-To: <20081009045646.GB24560@one.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0810090921320.3237@apollo>
-References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com> <20081007071544.GC20740@one.firstfloor.org> <20081007152629.GH6384@linux.vnet.ibm.com> <20081007154939.GN20740@one.firstfloor.org>
- <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009013321.GA11291@linux.vnet.ibm.com> <20081009045646.GB24560@one.firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Oct 2008 03:36:03 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:46216 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755948AbYJIHgB (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 03:36:01 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: John Kacur <jkacur@gmail.com>
+Cc: Bryan Wu <cooloney@kernel.org>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>
+Subject: Re: Fwd: [PATCH 7/9] ASoC: Blackfin: I2S CPU DAI driver
+In-Reply-To: Your message of "Thu, 09 Oct 2008 08:58:08 +0200."
+             <520f0cf10810082358t274a46afy7d9c5bbc5ca56de7@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1220516528-20301-1-git-send-email-cooloney@kernel.org> <1220516528-20301-8-git-send-email-cooloney@kernel.org> <20080904144343.GB32531@rakim.wolfsonmicro.main> <520f0cf10810082353r2694535evc3edbcb2b3c76796@mail.gmail.com>
+            <520f0cf10810082358t274a46afy7d9c5bbc5ca56de7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1223537753_7177P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 09 Oct 2008 03:35:53 -0400
+Message-ID: <38521.1223537753@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Oct 2008, Andi Kleen wrote:
-> It actually does. The stall detector makes the online echo return after three seconds,
-> although it's not 100% clear to me why.
-> 
-> here's the backtrace
-> 
-> RCU detected CPU 14 stall (t=4295149800/5928 jiffies)
-> Pid: 0, comm: swapper Not tainted 2.6.27-rc9 #5
-> 
-> Call Trace:
->  <IRQ>  [<ffffffff8025d188>] __rcu_pending+0x6e/0x1d9
->  [<ffffffff8025d329>] rcu_pending+0x36/0x6e
->  [<ffffffff8023b480>] update_process_times+0x37/0x5b
->  [<ffffffff8024be72>] tick_periodic+0x68/0x74
->  [<ffffffff8024be9f>] tick_handle_periodic+0x21/0x66
->  [<ffffffff8021bcd2>] smp_apic_timer_interrupt+0x8a/0xa8
->  [<ffffffff8020bfe6>] apic_timer_interrupt+0x66/0x70
->  <EOI>  [<ffffffff803adb39>] ? acpi_safe_halt+0x2b/0x3e
->  [<ffffffff803adbfa>] ? acpi_idle_enter_c1+0xae/0x102
->  [<ffffffff804ffdd6>] ? cpuidle_idle_call+0x70/0xa2
->  [<ffffffff8020a097>] ? cpu_idle+0x7e/0x9c
->  [<ffffffff805bef4a>] ? start_secondary+0x157/0x15c
-> 
-> Timer issue?
+--==_Exmh_1223537753_7177P
+Content-Type: text/plain; charset=us-ascii
 
-Hmm, this is periodic mode so rather unlikely, but who knows. Does
-this happen with nohz and/or highres as well ?
+On Thu, 09 Oct 2008 08:58:08 +0200, John Kacur said:
 
-Thanks,
+> My eyes fell upon this switch statement, probably I have similar
+> criticisms as to what has already been said, but:
+> 1. Surely the default case is also an -EINVAL
+> 2. Why not let all the EINVALS fall through, it will shorten up the
+> code, and IMO make it more readable, something like this?
+> +       switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
+> +       case SND_SOC_DAIFMT_CBM_CFM: /* Passing Case */
+> +               break;
+> +       case SND_SOC_DAIFMT_CBS_CFS: /* Failing Cases */
+> +       case SND_SOC_DAIFMT_CBM_CFS:
+> +       case SND_SOC_DAIFMT_CBS_CFM:
+> +               ret = -EINVAL;
+> +               break;
+> +       default:
+> +               printk(KERN_INFO "Unknown SND_SOC_DAIFMT kind\n");
+> +               ret = -EINVAL;
+> +               break;
+> +       }
 
-	tglx
+Even shorter, but puts the default in a non-standard place:
+
++       switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
++       case SND_SOC_DAIFMT_CBM_CFM: /* Passing Case */
++               break;
++       default:			/* So much Fail we should say something */
++               printk(KERN_INFO "Unknown SND_SOC_DAIFMT kind\n");
++       case SND_SOC_DAIFMT_CBS_CFS: /* Failing Cases */
++       case SND_SOC_DAIFMT_CBM_CFS:
++       case SND_SOC_DAIFMT_CBS_CFM:
++               ret = -EINVAL;
++               break;
++	}
+
+(I see a checkpatch update to check where default: is, coming in 3.. 2.. 1.. :)
+
+
+--==_Exmh_1223537753_7177P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI7bRZcC3lWbTT17ARAmCBAJ0WnjsEdPPb/yVOCA7+c4RV3VWWWACeKniQ
+ByWIBDPOxcKOcTLhH37kiOA=
+=jy4h
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1223537753_7177P--
