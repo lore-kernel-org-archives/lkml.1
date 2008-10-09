@@ -1,97 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYJIVVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbYJIVWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbYJIVVx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 17:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbYJIVV3
+	id S1757668AbYJIVWr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 17:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYJIVWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 17:21:29 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57896 "EHLO pasmtpB.tele.dk"
+	Thu, 9 Oct 2008 17:22:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45223 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757432AbYJIVV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 17:21:28 -0400
-Date: Thu, 9 Oct 2008 23:20:53 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: splice vs O_APPEND
-Message-ID: <20081009212052.GS19428@kernel.dk>
-References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org> <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091218300.3210@nehalem.linux-foundation.org> <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org>
+	id S1753353AbYJIVWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 17:22:37 -0400
+Date: Thu, 9 Oct 2008 23:22:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched_clock: prevent scd->clock from moving backwards
+Message-ID: <20081009212219.GA10675@elte.hu>
+References: <48D959E8.4000303@goop.org> <1223470773.6336.13.camel@norville.austin.ibm.com> <1223470854.6336.15.camel@norville.austin.ibm.com> <1223507104.7382.6.camel@lappy.programming.kicks-ass.net> <20081009090605.GA21798@elte.hu> <20081009151703.GA8010@elte.hu> <1223574862.6407.16.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org>
+In-Reply-To: <1223574862.6407.16.camel@norville.austin.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09 2008, Linus Torvalds wrote:
+
+* Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
+
+> On Thu, 2008-10-09 at 17:17 +0200, Ingo Molnar wrote:
 > 
-> 
-> On Thu, 9 Oct 2008, Miklos Szeredi wrote:
+> > hm, -tip testing found a sporadic hard lockup during bootup, and i've 
+> > bisected it back to this patch. They happened on 64-bit test-systems. 
+> > I've attached the .config that produced the problem.
 > > 
-> > The thing is, the append-only attribute is absolutely useless without
-> > being able to depend on it.  So in that sense I think the IS_APPEND
-> > issue is important, and I'm fine with your original proposal for that
-> > (except we don't need the IS_IMMUTABLE check).
+> > i reverted the patch and the lockups went away. But i cannot see what's 
+> > wrong with it ...
 > 
-> Heh. In the meantime, I had grown to hate that more complex patch.
+> I could have sworn I ran with the patch, but maybe I got my patch queue
+> messed up and never tested it right.
 > 
-> So because I do see your point with IS_APPEND (being different from 
-> O_APPEND), but because I also think that O_APPEND itself is a gray and 
-> murky area, I just committed the following. I doubt anybody will ever even 
-> notice it, but while I think it's all debatable, we might as well debate 
-> it with this in place. I do agree that it's "safer" behaviour.
+> I think I see the problem.
 > 
-> 		Linus
-> 
-> ---
-> commit a05b4085484ac45558810e4c5928e5a291c20f65
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Thu Oct 9 14:04:54 2008 -0700
-> 
->     Don't allow splice() to files opened with O_APPEND
->     
->     This is debatable, but while we're debating it, let's disallow the
->     combination of splice and an O_APPEND destination.
->     
->     It's not entirely clear what the semantics of O_APPEND should be, and
->     POSIX apparently expects pwrite() to ignore O_APPEND, for example.  So
->     we could make up any semantics we want, including the old ones.
->     
->     But Miklos convinced me that we should at least give it some thought,
->     and that accepting writes at arbitrary offsets is wrong at least for
->     IS_APPEND() files (which always have O_APPEND set, even if the reverse
->     isn't true: you can obviously have O_APPEND set on a regular file).
->     
->     So disallow O_APPEND entirely for now.  I doubt anybody cares, and this
->     way we have one less gray area to worry about.
->     
->     Reported-and-argued-for-by: Miklos Szeredi <miklos@szeredi.hu>
->     Cc: Jens Axboe <ens.axboe@oracle.com>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-A little late I see, but FWIW I agree. I doubt that anyone uses splice
-with O_APPEND anyways, so should be zero-impact on that account at
-least.
-
-
-> 
-> diff --git a/fs/splice.c b/fs/splice.c
-> index 1bbc6f4..a1e701c 100644
-> --- a/fs/splice.c
-> +++ b/fs/splice.c
-> @@ -898,6 +898,9 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
->  	if (unlikely(!(out->f_mode & FMODE_WRITE)))
->  		return -EBADF;
+> --- a/kernel/sched_clock.c
+> +++ b/kernel/sched_clock.c
+> @@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct
+> sched_clock_data *scd, u64 now)
 >  
-> +	if (unlikely(out->f_flags & O_APPEND))
-> +		return -EINVAL;
-> +
->  	ret = rw_verify_area(WRITE, out, ppos, len);
->  	if (unlikely(ret < 0))
->  		return ret;
+>         /*
+>          * scd->clock = clamp(scd->tick_gtod + delta,
+> -        *                    max(scd->tick_gtod, scd->clock),
+> -        *                    scd->tick_gtod + TICK_NSEC);
+> +        *                    max(scd->tick_gtod, scd->clock),
+> +        *                    min(scd->clock, scd->tick_gtod +
+> TICK_NSEC));
+>          */
+>  
+>         clock = scd->tick_gtod + delta;
+>         min_clock = wrap_max(scd->tick_gtod, scd->clock);
+> -       max_clock = scd->tick_gtod + TICK_NSEC;
+> +       max_clock = wrap_min(scd->clock, scd->tick_gtod + TICK_NSEC);
+>  
+>         clock = wrap_max(clock, min_clock);
+>         clock = wrap_min(clock, max_clock);
+> 
+> We want wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC), not
+> wrap_min(). [...]
 
--- 
-Jens Axboe
+ah, so the lockup bug was probably that sched_clock() was never going 
+forwards properly so some task was scheduled forever and livelocked the 
+system?
 
+> [...] The problem I am trying to fix is that scd->tick_gtod + 
+> TICK_NSEC may be too low.  The upper bound needs to be at LEAST 
+> scd->clock.  Limiting it to scd->clock all the time is disastrous.
+> :-)
+> 
+> I'll fix the patch and retest it before sending it again.
+> 
+> Sorry about my sloppiness.
+
+no problem - and it's good that our bad-patch filters worked properly 
+and efficiently :-)
+
+	Ingo
