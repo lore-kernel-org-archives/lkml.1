@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbYJISkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760517AbYJISke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756444AbYJISkD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYJISjv
+	id S1760517AbYJISke (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 14:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYJISkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:39:51 -0400
-Received: from mga02.intel.com ([134.134.136.20]:43811 "EHLO mga02.intel.com"
+	Thu, 9 Oct 2008 14:40:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37904 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753899AbYJISjv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:39:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,384,1220252400"; 
-   d="scan'208";a="449163846"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1754721AbYJISkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 14:40:23 -0400
+Message-ID: <48EE4FC4.7070902@redhat.com>
+Date: Thu, 09 Oct 2008 14:39:00 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
-Date: Thu, 9 Oct 2008 11:39:09 -0700
-Message-ID: <D936D925018D154694D8A362EEB0892005B12CD5@orsmsx416.amr.corp.intel.com>
-In-Reply-To: <20081009182809.GE6912@sequoia.sous-sol.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
-Thread-Index: AckqPNZfOCrx0/rUS3+YXJvCaAvf5QAASEZQ
-References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com> <48EE3E71.8010604@goop.org> <20081009182809.GE6912@sequoia.sous-sol.org>
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-To: "Chris Wright" <chrisw@sous-sol.org>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: <linux-kernel@vger.kernel.org>, "Wang, Shane" <shane.wang@intel.com>,
-       "Wei, Gang" <gang.wei@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
-       <mingo@elte.hu>, <tytso@mit.edu>
-X-OriginalArrivalTime: 09 Oct 2008 18:39:49.0769 (UTC) FILETIME=[692D5F90:01C92A3E]
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Jeff Hansen <x@jeffhansen.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] Re: x86_32 tsc/pit and hrtimers
+References: <Pine.LNX.4.64.0810071640110.25661@ren> <48ECFEDC.90305@redhat.com> <Pine.LNX.4.64.0810081342570.11108@ren> <48ED1728.5060708@redhat.com> <Pine.LNX.4.64.0810081542300.14815@ren> <48ED2A89.3000902@redhat.com> <Pine.LNX.4.64.0810081554380.14982@ren> <alpine.LFD.2.00.0810090910510.3237@apollo>
+In-Reply-To: <alpine.LFD.2.00.0810090910510.3237@apollo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Chris Wright [mailto:chrisw@sous-sol.org]
-> Sent: Thursday, October 09, 2008 11:28 AM
+Thomas Gleixner wrote:
+> On Wed, 8 Oct 2008, Jeff Hansen wrote:
 > 
-> * Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> > Cihula, Joseph wrote:
-> >> --- a/security/Kconfig	Mon Oct 06 12:50:47 2008 -0700
-> >> +++ b/security/Kconfig	Tue Oct 07 00:13:02 2008 -0700
-> >> @@ -115,6 +115,23 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
-> >>  	  /proc/sys/vm/mmap_min_addr tunable.
-> >>   +config TXT
-> >
-> > This should be X86_TXT; perhaps even X86_INTEL_TXT unless someone
-else
-> > is likely to implement this stuff.  ("TXT" is awfully generic.)
+>> [HRTIMER]: Add highres=noverify option to bypass clocksource verification
+>>
+>> This disregards the CLOCK_SOURCE_MUST_VERIFY flag on all clocksources.
+>> This is particularly useful on legacy x86_32 systems that have no ACPI,
+>> LAPIC, or HPET timers, where only TSC and PIT are available.
 > 
-> config NOTEPAD_EXE? (sorry, couldn't resist ;-)
+> While I agree in principle, adding this to highres is the wrong thing
+> to do. This is a property of clocksources and not of high resolution
+> timer support.
+> 
+> The affected clocksource is TSC and it should go there as a command
+> line option e.g. tsc=stable, which in turn clears the
+> CLOCK_SOURCE_MUST_VERIFY flag in the tsc clocksource.
+> 
+> Thanks,
+> 
+> 	tglx
 
-Nobody in Linux-land uses the .txt file extension, so no conflicts,
-right ;-)
+Fair enough, but do you think it's worthwhile to have an option to 
+disable CLOCK_SOURCE_MUST_VERIFY checking for all timers, or should we 
+implement this on a case-by-case basis when there's legitimate cause, 
+like with TSC?
 
-We'll add some prefix for the next version, as Jeremy suggests.
-
-> Is there anything for ia64?
-
-Not at this time, but we're taking requests ;-)
-
-Joe
+-- Chris
