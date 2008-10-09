@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbYJII5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbYJIJCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbYJII5A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 04:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYJII4v
+	id S1757787AbYJIJCB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 05:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJIJBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 04:56:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33673 "EHLO
+	Thu, 9 Oct 2008 05:01:53 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44919 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbYJII4u (ORCPT
+	with ESMTP id S1752753AbYJIJBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 04:56:50 -0400
-Date: Thu, 9 Oct 2008 10:56:49 +0200
+	Thu, 9 Oct 2008 05:01:52 -0400
+Date: Thu, 9 Oct 2008 11:01:51 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: Why is arch/x86/kernel/acpi/sleep.c:temp_stack 10k?
-Message-ID: <20081009085649.GC29957@atrey.karlin.mff.cuni.cz>
-References: <1222819957.13453.15.camel@calx>
+To: kernel list <linux-kernel@vger.kernel.org>
+Subject: is memmap=200m@200m,exactmap supposed to work
+Message-ID: <20081009090151.GD29957@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1222819957.13453.15.camel@calx>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-> We've got:
-> 
-> #if defined(CONFIG_SMP) && defined(CONFIG_64BIT)
-> static char temp_stack[10240];
-> #endif
-> 
-> and:
-> 
-> #ifdef CONFIG_SMP
->         stack_start.sp = temp_stack + 4096;
-> #endif
-> 
-> ..which suggests we use at most 4k of the stack?
+I'm trying to debug weirdly crashing machine.
 
-I guess someone (probably me) was "playing it safe" -- not exactly
-remembering if stack grows down or up. I guess it should be safe to
-change it... will do that.
+Interesting part is "blue lightning" screen corruption that happens
+just after you press "enter" in grub.
+
+I'd like to tell the machine not to use low memory, and not to use
+memory near graphics ram. Ideally, I'd like to
+
+memmap=200m@200m,exactmap
+
+...but that will not boot, with "BUG: Int 6: CR2 00000000". Is there
+any "known good, but very safe, memory map I should pass?"
+
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
