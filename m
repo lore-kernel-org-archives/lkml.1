@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759707AbYJIRul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbYJIRvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759707AbYJIRul (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYJIRuc
+	id S1760280AbYJIRvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYJIRu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:50:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51717 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754026AbYJIRub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:50:31 -0400
-Date: Thu, 9 Oct 2008 13:50:04 -0400
-From: Dave Jones <davej@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: correct broken links and email address
-Message-ID: <20081009175004.GB20608@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	=?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
-	cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <48EF21F7.1020308@freemail.hu> <48EE0025.8060007@freemail.hu> <20081009142215.605f757c@lxorguk.ukuu.org.uk>
+	Thu, 9 Oct 2008 13:50:59 -0400
+Received: from sous-sol.org ([216.99.217.87]:50579 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756537AbYJIRu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:50:58 -0400
+Date: Thu, 9 Oct 2008 10:50:00 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Cihula, Joseph" <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
+       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
+       mingo@elte.hu, tytso@mit.edu
+Subject: Re: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
+Message-ID: <20081009175000.GC6912@sequoia.sous-sol.org>
+References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com> <20081009130518.GE1623@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081009142215.605f757c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081009130518.GE1623@ucw.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09, 2008 at 02:22:15PM +0100, Alan Cox wrote:
- > On Thu, 09 Oct 2008 14:59:17 +0200
- > Németh Márton <nm127@freemail.hu> wrote:
- > 
- > > From: Márton Németh <nm127@freemail.hu>
- > > 
- > > Replace the no longer working links and email address in the
- > > documentation and in source code.
- > > 
- > > Signed-off-by: Márton Németh <nm127@freemail.hu>
- > 
- > Someone needs to update the bugzilla addresses for cpufreq bugs too I
- > think..
- 
-I did that when the list moved.
+* Pavel Machek (pavel@suse.cz) wrote:
+> > +struct tboot_acpi_sleep_info {
+> > +	u16 pm1a_cnt;
+> > +	u16 pm1b_cnt;
+> > +	u16 pm1a_evt;
+> > +	u16 pm1b_evt;
+> > +	u16 pm1a_cnt_val;
+> > +	u16 pm1b_cnt_val;
+> > +}  __attribute__ ((__packed__));
+> > +
+> > +struct tboot_shared {
+> > +	/* version 0x01+ fields: */
+> > +	struct tboot_uuid uuid; /* TBOOT_SHARED_UUID */
+> > +	u32  version;      	/* Version number: 2 is current */
+> > +	u32  log_addr;     	/* physical addr of tb_log_t log */
+> > +	u32  shutdown_entry32;	/* entry point for tboot shutdown from
+> > 32b */
+> > +	u32  shutdown_entry64;	/* entry point for tboot shutdown from
+> > 64b */
+> 
+> should these be function pointers?
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+I asked earlier, I didn't understand why it needs to be 2 fields, since
+it's u32 in both cases and can't both be used at once.
