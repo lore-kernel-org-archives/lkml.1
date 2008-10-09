@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYJIAna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYJIAnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbYJIAna (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 20:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbYJIAme
+	id S1756794AbYJIAnB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 20:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYJIAma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 20:42:34 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43745 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757028AbYJIAmc (ORCPT
+	Wed, 8 Oct 2008 20:42:30 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:26759 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756224AbYJIAm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 20:42:32 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: righi.andrea@gmail.com
-Subject: Re: [PATCH] documentation: clarify dirty_ratio and dirty_background_ratio description
-Cc: kosaki.motohiro@jp.fujitsu.com, Randy Dunlap <randy.dunlap@oracle.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <48EC90EC.8060306@gmail.com>
-References: <48EC90EC.8060306@gmail.com>
-Message-Id: <20081009094134.DEB8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 8 Oct 2008 20:42:28 -0400
+Message-ID: <48ED5350.6010502@chelsio.com>
+Date: Wed, 08 Oct 2008 17:41:52 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Steve Wise <swise@opengridcomputing.com>
+Subject: Re: [PATCH 2.6.28 1/1] cxgb3 - fix race in EEH
+References: <20080926000528.11959.63712.stgit@speedy5> <20081002180011.16254a4e.akpm@linux-foundation.org>
+In-Reply-To: <20081002180011.16254a4e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu,  9 Oct 2008 09:42:28 +0900 (JST)
+X-OriginalArrivalTime: 09 Oct 2008 00:41:46.0531 (UTC) FILETIME=[CEF68730:01C929A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The current documentation of dirty_ratio and dirty_background_ratio is a
-> bit misleading.
-> 
-> In the documentation we say that they are "a percentage of total system
-> memory", but the current page writeback policy, intead, is to apply the
-> percentages to the dirtyable memory, that means free pages + reclaimable
-> pages.
-> 
-> Better to be more explicit to clarify this concept.
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+Andrew Morton wrote:
+> On Thu, 25 Sep 2008 17:05:28 -0700
+> Divy Le Ray <divy@chelsio.com> wrote:
+>
+>   
+>> A SGE queue set timer might access registers while in EEH recovery,
+>> triggering an EEH error loop. Stop all timers early in EEH process.
+>>     
+>
+> <looks>
+>
+> It's deeply weird that t3_reset_qset() does
+>
+> 	memset(&q->tx_reclaim_timer, 0, sizeof(q->tx_reclaim_timer));
+>
+> There are lots of things in the timer_list which the driver has no
+> business modifying.  For example, this might break the metadata in
+> Thomas's debugobjects stuff, which attempts to catch things being done
+> in the wrong order (I don't think it will, but still...).
+>
+> Rerunning init_timer() should repair the damage, but I suspect a simple
+>
+> 	q->tx_reclaim_timer.function = NULL;	/* explanation goes here */
+>
+> would suffice here.
+>
+>
+> t3_sge_alloc_qset() could use the newer setup_timer().
+>
+>   
+Hi Andrew,
 
-looks good to me.
+Your suggestion is implemented in the first patch of the series I just 
+posted.
+I apologize for the delayed reply.
 
-
-
-> ---
->  Documentation/filesystems/proc.txt |   11 ++++++-----
->  1 files changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-> index f566ad9..be69c8b 100644
-> --- a/Documentation/filesystems/proc.txt
-> +++ b/Documentation/filesystems/proc.txt
-> @@ -1380,15 +1380,16 @@ causes the kernel to prefer to reclaim dentries and inodes.
->  dirty_background_ratio
->  ----------------------
->  
-> -Contains, as a percentage of total system memory, the number of pages at which
-> -the pdflush background writeback daemon will start writing out dirty data.
-> +Contains, as a percentage of the dirtyable system memory (free pages +
-> +reclaimable pages), the number of pages at which the pdflush background
-> +writeback daemon will start writing out dirty data.
->  
->  dirty_ratio
->  -----------------
->  
-> -Contains, as a percentage of total system memory, the number of pages at which
-> -a process which is generating disk writes will itself start writing out dirty
-> -data.
-> +Contains, as a percentage of the dirtyable system memory (free pages +
-> +reclaimable pages), the number of pages at which a process which is generating
-> +disk writes will itself start writing out dirty data.
->  
->  dirty_writeback_centisecs
->  -------------------------
-
-
-
-
-
+Cheers,
+Divy
