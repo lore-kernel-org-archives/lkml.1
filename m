@@ -1,116 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbYJINOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759436AbYJINRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759217AbYJINOA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 09:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbYJINNt
+	id S1759436AbYJINRw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 09:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758163AbYJINRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 09:13:49 -0400
-Received: from goliath.siemens.de ([192.35.17.28]:17556 "EHLO
-	goliath.siemens.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757879AbYJINNr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 09:13:47 -0400
-Message-ID: <48EE04C0.6070504@siemens.com>
-Date: Thu, 09 Oct 2008 15:18:56 +0200
-From: "Hillier, Gernot" <gernot.hillier@siemens.com>
-Organization: Siemens AG, CT SE 2
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.9) Gecko/20070801 SUSE/2.0.0.9-0.1 Thunderbird/2.0.0.9 Mnenhy/0.7.5.666
+	Thu, 9 Oct 2008 09:17:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43319 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758139AbYJINRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 09:17:44 -0400
+Date: Thu, 9 Oct 2008 15:17:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, jeremy@goop.org, arnd@arndb.de,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
+Message-ID: <20081009131701.GA21112@elte.hu>
+References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu> <20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>
 MIME-Version: 1.0
-To: "Graham, David" <david.graham@intel.com>
-CC: "Hillier, Gernot " 
-	<IMCEAMAILTO-gernot+2Ehillier+40siemens+2Ecom@intel.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Hockert, Jeff W" <jeff.w.hockert@intel.com>
-Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro
- X7DB3
-References: <EA929A9653AAE14F841771FB1DE5A1365F498F4EDC@rrsmsx501.amr.corp.intel.com> <E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com>
-In-Reply-To: <E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223557122.11830.14.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear David,
 
-first of all thanks for your quick answer! This is what I call great
-support from a hardware vendor!! :-)
+* Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 
-Graham, David wrote:
-> Thanks for reporting this issue. We have witnessed this in our labs too,
-> only on platforms that have BMC management firmware. I'm very familiar
-> with the problem, and believe that we have fixed it, though the
-> application of the fix may not be simple. The problem is a result of
-> improper synchronization between the platform FW and the e1000e driver
-> when they attempt concurrent access to LAN resources, and fixes were
-> made both on the driver side, and on the FW side. On some platforms a
-> simple driver update resolves the problem, others require FW fixes too.
+> On Thu, 2008-10-09 at 14:46 +0200, Ingo Molnar wrote:
+> > * Oren Laadan <orenl@cs.columbia.edu> wrote:
+> > 
+> > > These patches implement basic checkpoint-restart [CR]. This version 
+> > > (v6) supports basic tasks with simple private memory, and open files 
+> > > (regular files and directories only). Changes mainly cleanups. See 
+> > > original announcements below.
+> > 
+> > i'm wondering about the following productization aspect: it would be 
+> > very useful to applications and users if they knew whether it is safe to 
+> > checkpoint a given app. I.e. whether that app has any state that cannot 
+> > be stored/restored yet.
+> 
+> Absolutely!
+> 
+> My first inclination was to do this at checkpoint time: detect and 
+> tell users why an app or container can't actually be checkpointed.  
+> But, if I get you right, you're talking about something that happens 
+> more during the runtime of the app than during the checkpoint.  This 
+> sounds like a wonderful approach to me, and much better than what I 
+> was thinking of.
+> 
+> What kind of mechanism do you have in mind?
+> 
+> int sys_remap_file_pages(...)
+> {
+> 	...
+> 	oh_crap_we_dont_support_this_yet(current);
+> }
+> 
+> Then the oh_crap..() function sets a task flag or something?
 
-That sounds quite promising and seems to fit to our problem.
+yeah, something like that. A key aspect of it is that is has to be very 
+low-key on the source code level - we dont want to sprinkle the kernel 
+with anything ugly. Perhaps something pretty explicit:
 
-However, one detail confuses us: we can currently reproduce this problem on
-two machines. One of them is equipped with an optional IPMI card, the other
-one isn't. (The Supermicro X7DB3 doesn't include full IPMI support onboard,
-but has a "LP IPMI 2.0 (SIMLP) Slot" where you can place an optional card).
+  current->flags |= PF_NOCR;
 
-The box with the IPMI card shows the hardware errors quite often (in one of
-about 200 tries) while the other box still shows the problem, but much more
-seldom (in one of >1000 tries). Now we wonder if the BMC is on the IPMI
-card or on the board itself - in the first case, I'm not sure if you thesis
-fully explains the problems we can see.
+as we do the same thing today for certain facilities:
 
-And there's another detail I'd like to mention: we first found the problem
-by doing continuous reboots as originally described, but we found we can
-also reproduce it with an endless loop of "rmmod;sleep 3;modprobe". Does
-this somehow contradict with your thesis?
+  current->flags |= PF_NOFREEZE;
 
-> There have been further improvements made to the driver synchronization
-> code since the 0.3.3.3-k2 driver, and it is possible that a newer driver
-> would resolve the issue. It'd be good for us to know if that's the case.
-> The driver version is not yet (AFAICS) upstream, but is already
-> available in the standalone e1000e-0.4.1.7 driver on sourceforge.
-> (google "sourceforge e1000e"). Would you be able to try that, as a first
-> step ? 
+you probably want to hide it behind:
 
-Yes, I did. Unfortunately, 0.4.1.7 still shows the problem - on both machines:
+  set_current_nocr();
 
-e1000e: Intel(R) PRO/1000 Network Driver - 0.4.1.7-NAPI
-e1000e: Copyright (c) 1999-2008 Intel Corporation.
-ACPI: PCI Interrupt 0000:06:00.0[A] -> GSI 18 (level, low) -> IRQ 18
-PCI: Setting latency timer of device 0000:06:00.0 to 64
-0000:06:00.0: 0000:06:00.0: Hardware Error
-0000:06:00.0: eth0: (PCI Express:2.5GB/s:Width x4) 00:30:48:66:c7:06
-0000:06:00.0: eth0: Intel(R) PRO/1000 Network Connection
-0000:06:00.0: eth0: MAC: 5, PHY: 5, PBA No: 2050ff-0ff
-ACPI: PCI Interrupt 0000:06:00.1[B] -> GSI 19 (level, low) -> IRQ 19
-PCI: Setting latency timer of device 0000:06:00.1 to 64
-0000:06:00.1: eth1: (PCI Express:2.5GB/s:Width x4) 00:30:48:66:c7:07
-0000:06:00.1: eth1: Intel(R) PRO/1000 Network Connection
-0000:06:00.1: eth1: MAC: 5, PHY: 5, PBA No: 2050ff-0ff
-0000:06:00.0: eth0: Hardware Error
-0000:06:00.0: eth0: Hardware Error
-0000:06:00.0: eth0: Hardware Error
-0000:06:00.0: eth0: Hardware Error
-0000:06:00.0: eth0: Hardware Error
+and have a set_task_nocr() as well, in case there's some proxy state 
+installed by another task.
 
-Is there any further debug code I could add to narrow down things?
+Via such wrappers there's no overhead at all in the 
+!CONFIG_CHECKPOINT_RESTART case.
 
-> If this does not resolve the issue for the Supermicro board, you likely
-> also require a "FW-side" fix, and this comes in one of two flavors. If
-> the board has an INTEL BMC, then we will need to update it with a new
-> BMC version. If the board has a Supermicro BMC (I expect that it does),
-> then we can provide a patch to some of the platform microcode using a
-> EEPROM update.  To determine which is appropriate for you, we'll need to
-> know more about the platform. There's probably a BMC version number on
-> one of the BIOS menus. I can work with you to find the info we need, and
-> then, to help you to perform the necessary steps to perform an upgrade. 
+Plus you could drive the debug mechanism via it as well, by using a 
+trivial extension of the facility:
 
-Sorry, but we can't provide any further details about this yet. We still
-try to get through to the Supermicro developers, but so far our FAE contact
-insists on telling us "don't use e1000e, e1000 is the right driver for your
-hardware".
+  set_current_nocr("CR: sys_remap_file_pages not supported yet.");
+  ...
+  set_task_nocr(t, "CR: PI futexes not supported yet.");
 
--- 
-Gernot Hillier
-Siemens AG, CT SE 2
+	Ingo
