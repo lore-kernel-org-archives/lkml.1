@@ -1,44 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbYJIT12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYJITav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761186AbYJIT12 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 15:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761030AbYJIT04
+	id S1760724AbYJITav (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 15:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbYJITam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 15:26:56 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:23308 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761005AbYJIT0z (ORCPT
+	Thu, 9 Oct 2008 15:30:42 -0400
+Received: from bytemail.bytemark.co.uk ([80.68.81.165]:48755 "EHLO
+	bytemail.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753397AbYJITal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 15:26:55 -0400
-Date: Thu, 9 Oct 2008 12:26:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25 on Power5 64bit] badness in fs/sysfs/dir.c:424
-Message-Id: <20081009122643.0fe3ec07.randy.dunlap@oracle.com>
-In-Reply-To: <20081009140933.GC28224@vanheusden.com>
-References: <20081009140933.GC28224@vanheusden.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Oct 2008 15:30:41 -0400
+Message-ID: <48EE5BE6.1090700@bytemark.co.uk>
+Date: Thu, 09 Oct 2008 20:30:46 +0100
+From: Alex Howells <alex@bytemark.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: r8169 counters, Intel Atom 230 (D945GCLF)
+References: <48EE1867.1070003@bytemark.co.uk> <20081009185805.GA19721@electric-eye.fr.zoreil.com>
+In-Reply-To: <20081009185805.GA19721@electric-eye.fr.zoreil.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Oct 2008 16:09:34 +0200 Folkert van Heusden wrote:
+Francois Romieu wrote:
+> It is fixed by patch #0009 at:
+> http://userweb.kernel.org/~romieu/r8169/2.6.27-rc9/20081007/
 
-> Hi,
-> 
-> While running my modprobe-killerscript I got the following in dmesg:
+Confirmed fixed. Thanks very much Francois.
 
-Hi,
-Where are your scripts, please?
 
----
-~Randy
