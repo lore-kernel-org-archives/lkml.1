@@ -1,107 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbYJIHcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbYJIHeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757399AbYJIHcE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 03:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYJIHby
+	id S1757789AbYJIHeS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 03:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbYJIHeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 03:31:54 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:29368 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755732AbYJIHby (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 03:31:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=VpnOMY0iSFlWNkmMWk9xXGTzxwKwuqQn0l+h786iHsBSPdNY3VwC/H915lf1hYy+kN
-         lR6OSpypDtOZcTi9xLtJVB3WDj6gr7hZaHQflcH6T4qOtzOPEVhw+vxhSIeL9hlTybUo
-         IXcoq4KC83qAqJajqubQug8YEtU9Ef+dvQptM=
-Message-ID: <48EDB373.2050704@gmail.com>
-Date: Thu, 09 Oct 2008 09:32:03 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 9 Oct 2008 03:34:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:58423 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755635AbYJIHeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 03:34:05 -0400
+Date: Thu, 9 Oct 2008 09:24:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, dipankar@in.ibm.com
+Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
+In-Reply-To: <20081009045646.GB24560@one.firstfloor.org>
+Message-ID: <alpine.LFD.2.00.0810090921320.3237@apollo>
+References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com> <20081007071544.GC20740@one.firstfloor.org> <20081007152629.GH6384@linux.vnet.ibm.com> <20081007154939.GN20740@one.firstfloor.org>
+ <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009013321.GA11291@linux.vnet.ibm.com> <20081009045646.GB24560@one.firstfloor.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] documentation: clarify dirty_ratio and dirty_background_ratio
- description
-References: <48EC90EC.8060306@gmail.com> <20081009105157.dd47d109.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081009105157.dd47d109.kamezawa.hiroyu@jp.fujitsu.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 08 Oct 2008 12:52:28 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
+On Thu, 9 Oct 2008, Andi Kleen wrote:
+> It actually does. The stall detector makes the online echo return after three seconds,
+> although it's not 100% clear to me why.
 > 
->> The current documentation of dirty_ratio and dirty_background_ratio is a
->> bit misleading.
->>
->> In the documentation we say that they are "a percentage of total system
->> memory", but the current page writeback policy, intead, is to apply the
->> percentages to the dirtyable memory, that means free pages + reclaimable
->> pages.
->>
-> Right.
+> here's the backtrace
 > 
->> Better to be more explicit to clarify this concept.
->>
->> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> RCU detected CPU 14 stall (t=4295149800/5928 jiffies)
+> Pid: 0, comm: swapper Not tainted 2.6.27-rc9 #5
 > 
-> But I wonder "reclaimable memory" seems to be a difficult word for users....
+> Call Trace:
+>  <IRQ>  [<ffffffff8025d188>] __rcu_pending+0x6e/0x1d9
+>  [<ffffffff8025d329>] rcu_pending+0x36/0x6e
+>  [<ffffffff8023b480>] update_process_times+0x37/0x5b
+>  [<ffffffff8024be72>] tick_periodic+0x68/0x74
+>  [<ffffffff8024be9f>] tick_handle_periodic+0x21/0x66
+>  [<ffffffff8021bcd2>] smp_apic_timer_interrupt+0x8a/0xa8
+>  [<ffffffff8020bfe6>] apic_timer_interrupt+0x66/0x70
+>  <EOI>  [<ffffffff803adb39>] ? acpi_safe_halt+0x2b/0x3e
+>  [<ffffffff803adbfa>] ? acpi_idle_enter_c1+0xae/0x102
+>  [<ffffffff804ffdd6>] ? cpuidle_idle_call+0x70/0xa2
+>  [<ffffffff8020a097>] ? cpu_idle+0x7e/0x9c
+>  [<ffffffff805bef4a>] ? start_secondary+0x157/0x15c
 > 
-> "free pages + mapped pages + file cache, not including locked page and HugePage"
-> ?
-> Anyway,
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Timer issue?
 
-Sounds better. I'll add these details and post a new patch.
+Hmm, this is periodic mode so rather unlikely, but who knows. Does
+this happen with nohz and/or highres as well ?
 
 Thanks,
--Andrea
 
-> 
->> ---
->>  Documentation/filesystems/proc.txt |   11 ++++++-----
->>  1 files changed, 6 insertions(+), 5 deletions(-)
->>
->> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
->> index f566ad9..be69c8b 100644
->> --- a/Documentation/filesystems/proc.txt
->> +++ b/Documentation/filesystems/proc.txt
->> @@ -1380,15 +1380,16 @@ causes the kernel to prefer to reclaim dentries and inodes.
->>  dirty_background_ratio
->>  ----------------------
->>  
->> -Contains, as a percentage of total system memory, the number of pages at which
->> -the pdflush background writeback daemon will start writing out dirty data.
->> +Contains, as a percentage of the dirtyable system memory (free pages +
->> +reclaimable pages), the number of pages at which the pdflush background
->> +writeback daemon will start writing out dirty data.
->>  
->>  dirty_ratio
->>  -----------------
->>  
->> -Contains, as a percentage of total system memory, the number of pages at which
->> -a process which is generating disk writes will itself start writing out dirty
->> -data.
->> +Contains, as a percentage of the dirtyable system memory (free pages +
->> +reclaimable pages), the number of pages at which a process which is generating
->> +disk writes will itself start writing out dirty data.
->>  
->>  dirty_writeback_centisecs
->>  -------------------------
->>
+	tglx
