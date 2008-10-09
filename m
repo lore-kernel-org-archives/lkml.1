@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750981AbYJIEMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbYJIEMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750981AbYJIEMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbYJIEGz
+	id S1759025AbYJIEMw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbYJIEG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:06:55 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54493 "EHLO
+	Thu, 9 Oct 2008 00:06:57 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54495 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757546AbYJIEGM (ORCPT
+	with ESMTP id S1757541AbYJIEGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Oct 2008 00:06:12 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 10/42] ext4: Signed arithmetic fix
-Date: Thu,  9 Oct 2008 00:05:28 -0400
-Message-Id: <1223525160-9887-11-git-send-email-tytso@mit.edu>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 23/42] ext4: Renumber EXT4_IOC_MIGRATE
+Date: Thu,  9 Oct 2008 00:05:41 -0400
+Message-Id: <1223525160-9887-24-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-10-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-23-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -29,6 +28,19 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-8-git-send-email-tytso@mit.edu>
  <1223525160-9887-9-git-send-email-tytso@mit.edu>
  <1223525160-9887-10-git-send-email-tytso@mit.edu>
+ <1223525160-9887-11-git-send-email-tytso@mit.edu>
+ <1223525160-9887-12-git-send-email-tytso@mit.edu>
+ <1223525160-9887-13-git-send-email-tytso@mit.edu>
+ <1223525160-9887-14-git-send-email-tytso@mit.edu>
+ <1223525160-9887-15-git-send-email-tytso@mit.edu>
+ <1223525160-9887-16-git-send-email-tytso@mit.edu>
+ <1223525160-9887-17-git-send-email-tytso@mit.edu>
+ <1223525160-9887-18-git-send-email-tytso@mit.edu>
+ <1223525160-9887-19-git-send-email-tytso@mit.edu>
+ <1223525160-9887-20-git-send-email-tytso@mit.edu>
+ <1223525160-9887-21-git-send-email-tytso@mit.edu>
+ <1223525160-9887-22-git-send-email-tytso@mit.edu>
+ <1223525160-9887-23-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -36,95 +48,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Pick an ioctl number for EXT4_IOC_MIGRATE that won't conflict with
+other ext4 ioctl's.  Since there haven't been any major userspace
+users of this ioctl, we can afford to change this now, to avoid
+potential problems later.
 
-This patch converts some usage of ext4_fsblk_t to s64.  This is needed
-so that some of the sign conversion works as expected in if loops.
+Also, reorder the ioctl numbers in ext4.h to avoid this sort of
+mistake in the future.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/balloc.c |   19 ++++++++++---------
- fs/ext4/ext4.h   |    5 ++---
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ fs/ext4/ext4.h |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 87b198c..e4274aa 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -1603,10 +1603,10 @@ out:
- }
- 
- int ext4_claim_free_blocks(struct ext4_sb_info *sbi,
--						ext4_fsblk_t nblocks)
-+						s64 nblocks)
- {
- 	s64 free_blocks, dirty_blocks;
--	ext4_fsblk_t root_blocks = 0;
-+	s64 root_blocks = 0;
- 	struct percpu_counter *fbc = &sbi->s_freeblocks_counter;
- 	struct percpu_counter *dbc = &sbi->s_dirtyblocks_counter;
- 
-@@ -1631,7 +1631,7 @@ int ext4_claim_free_blocks(struct ext4_sb_info *sbi,
- 	/* Check whether we have space after
- 	 * accounting for current dirty blocks
- 	 */
--	if (free_blocks < ((s64)(root_blocks + nblocks) + dirty_blocks))
-+	if (free_blocks < ((root_blocks + nblocks) + dirty_blocks))
- 		/* we don't have free space */
- 		return -ENOSPC;
- 
-@@ -1650,10 +1650,10 @@ int ext4_claim_free_blocks(struct ext4_sb_info *sbi,
-  * On success, return nblocks
-  */
- ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
--						ext4_fsblk_t nblocks)
-+						s64 nblocks)
- {
--	ext4_fsblk_t free_blocks, dirty_blocks;
--	ext4_fsblk_t root_blocks = 0;
-+	s64 free_blocks, dirty_blocks;
-+	s64 root_blocks = 0;
- 	struct percpu_counter *fbc = &sbi->s_freeblocks_counter;
- 	struct percpu_counter *dbc = &sbi->s_dirtyblocks_counter;
- 
-@@ -1667,14 +1667,15 @@ ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
- 
- 	if (free_blocks - (nblocks + root_blocks + dirty_blocks) <
- 						EXT4_FREEBLOCKS_WATERMARK) {
--		free_blocks  = percpu_counter_sum_positive(fbc);
--		dirty_blocks = percpu_counter_sum_positive(dbc);
-+		free_blocks  = percpu_counter_sum(fbc);
-+		dirty_blocks = percpu_counter_sum(dbc);
- 	}
- 	if (free_blocks <= (root_blocks + dirty_blocks))
- 		/* we don't have free space */
- 		return 0;
-+
- 	if (free_blocks - (root_blocks + dirty_blocks) < nblocks)
--		return free_blocks - root_blocks;
-+		return free_blocks - (root_blocks + dirty_blocks);
- 	return nblocks;
- }
- 
 diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 0154c2d..e13b9de 100644
+index 068adc1..50a4846 100644
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -983,10 +983,9 @@ extern ext4_fsblk_t ext4_new_blocks(handle_t *handle, struct inode *inode,
- 					unsigned long *count, int *errp);
- extern ext4_fsblk_t ext4_old_new_blocks(handle_t *handle, struct inode *inode,
- 			ext4_fsblk_t goal, unsigned long *count, int *errp);
--extern int ext4_claim_free_blocks(struct ext4_sb_info *sbi,
--						ext4_fsblk_t nblocks);
-+extern int ext4_claim_free_blocks(struct ext4_sb_info *sbi, s64 nblocks);
- extern ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
--						ext4_fsblk_t nblocks);
-+					 s64 nblocks);
- extern void ext4_free_blocks(handle_t *handle, struct inode *inode,
- 			ext4_fsblk_t block, unsigned long count, int metadata);
- extern void ext4_free_blocks_sb(handle_t *handle, struct super_block *sb,
+@@ -291,8 +291,6 @@ struct ext4_new_group_data {
+ #define	EXT4_IOC_SETFLAGS		FS_IOC_SETFLAGS
+ #define	EXT4_IOC_GETVERSION		_IOR('f', 3, long)
+ #define	EXT4_IOC_SETVERSION		_IOW('f', 4, long)
+-#define EXT4_IOC_GROUP_EXTEND		_IOW('f', 7, unsigned long)
+-#define EXT4_IOC_GROUP_ADD		_IOW('f', 8, struct ext4_new_group_input)
+ #define	EXT4_IOC_GETVERSION_OLD		FS_IOC_GETVERSION
+ #define	EXT4_IOC_SETVERSION_OLD		FS_IOC_SETVERSION
+ #ifdef CONFIG_JBD2_DEBUG
+@@ -300,7 +298,10 @@ struct ext4_new_group_data {
+ #endif
+ #define EXT4_IOC_GETRSVSZ		_IOR('f', 5, long)
+ #define EXT4_IOC_SETRSVSZ		_IOW('f', 6, long)
+-#define EXT4_IOC_MIGRATE		_IO('f', 7)
++#define EXT4_IOC_GROUP_EXTEND		_IOW('f', 7, unsigned long)
++#define EXT4_IOC_GROUP_ADD		_IOW('f', 8, struct ext4_new_group_input)
++#define EXT4_IOC_MIGRATE		_IO('f', 9)
++ /* note ioctl 11 reserved for filesystem-independent FIEMAP ioctl */
+ 
+ /*
+  * ioctl commands in 32 bit emulation
 -- 
 1.5.6.1.205.ge2c7.dirty
 
