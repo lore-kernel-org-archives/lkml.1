@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYJIEPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759139AbYJIEQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbYJIEPu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757947AbYJIEH1
+	id S1759139AbYJIEQJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbYJIEH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:07:27 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54524 "EHLO
+	Thu, 9 Oct 2008 00:07:29 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54565 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757610AbYJIEGN (ORCPT
+	with ESMTP id S1757662AbYJIEGY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:06:13 -0400
+	Thu, 9 Oct 2008 00:06:24 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 13/42] ext4: Retry block allocation if we have free blocks left
-Date: Thu,  9 Oct 2008 00:05:31 -0400
-Message-Id: <1223525160-9887-14-git-send-email-tytso@mit.edu>
+Cc: Josef Bacik <jbacik@redhat.com>, Mark Fasheh <mfasheh@suse.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-fsdevel@vger.kernel.org
+Subject: [PATCH 38/42] generic block based fiemap implementation
+Date: Thu,  9 Oct 2008 00:05:56 -0400
+Message-Id: <1223525160-9887-39-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-13-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-38-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -32,6 +32,31 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-11-git-send-email-tytso@mit.edu>
  <1223525160-9887-12-git-send-email-tytso@mit.edu>
  <1223525160-9887-13-git-send-email-tytso@mit.edu>
+ <1223525160-9887-14-git-send-email-tytso@mit.edu>
+ <1223525160-9887-15-git-send-email-tytso@mit.edu>
+ <1223525160-9887-16-git-send-email-tytso@mit.edu>
+ <1223525160-9887-17-git-send-email-tytso@mit.edu>
+ <1223525160-9887-18-git-send-email-tytso@mit.edu>
+ <1223525160-9887-19-git-send-email-tytso@mit.edu>
+ <1223525160-9887-20-git-send-email-tytso@mit.edu>
+ <1223525160-9887-21-git-send-email-tytso@mit.edu>
+ <1223525160-9887-22-git-send-email-tytso@mit.edu>
+ <1223525160-9887-23-git-send-email-tytso@mit.edu>
+ <1223525160-9887-24-git-send-email-tytso@mit.edu>
+ <1223525160-9887-25-git-send-email-tytso@mit.edu>
+ <1223525160-9887-26-git-send-email-tytso@mit.edu>
+ <1223525160-9887-27-git-send-email-tytso@mit.edu>
+ <1223525160-9887-28-git-send-email-tytso@mit.edu>
+ <1223525160-9887-29-git-send-email-tytso@mit.edu>
+ <1223525160-9887-30-git-send-email-tytso@mit.edu>
+ <1223525160-9887-31-git-send-email-tytso@mit.edu>
+ <1223525160-9887-32-git-send-email-tytso@mit.edu>
+ <1223525160-9887-33-git-send-email-tytso@mit.edu>
+ <1223525160-9887-34-git-send-email-tytso@mit.edu>
+ <1223525160-9887-35-git-send-email-tytso@mit.edu>
+ <1223525160-9887-36-git-send-email-tytso@mit.edu>
+ <1223525160-9887-37-git-send-email-tytso@mit.edu>
+ <1223525160-9887-38-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -39,193 +64,283 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Josef Bacik <jbacik@redhat.com>
 
-When we truncate files, the meta-data blocks released are not reused
-untill we commit the truncate transaction.  That means delayed get_block
-request will return ENOSPC even if we have free blocks left.  Force a
-journal commit and retry block allocation if we get ENOSPC with free
-blocks left.
+Any block based fs (this patch includes ext3) just has to declare its own
+fiemap() function and then call this generic function with its own
+get_block_t. This works well for block based filesystems that will map
+multiple contiguous blocks at one time, but will work for filesystems that
+only map one block at a time, you will just end up with an "extent" for each
+block. One gotcha is this will not play nicely where there is hole+data
+after the EOF. This function will assume its hit the end of the data as soon
+as it hits a hole after the EOF, so if there is any data past that it will
+not pick that up. AFAIK no block based fs does this anyway, but its in the
+comments of the function anyway just in case.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-fsdevel@vger.kernel.org
 ---
- fs/ext4/inode.c |   81 ++++++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 57 insertions(+), 24 deletions(-)
+ fs/ext2/ext2.h          |    2 +
+ fs/ext2/file.c          |    1 +
+ fs/ext2/inode.c         |    8 +++
+ fs/ext3/file.c          |    1 +
+ fs/ext3/inode.c         |    8 +++
+ fs/ioctl.c              |  118 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/ext3_fs.h |    2 +
+ include/linux/fs.h      |    3 +
+ 8 files changed, 143 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index b567e71..f97b347 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1634,6 +1634,7 @@ struct mpage_da_data {
- 	struct writeback_control *wbc;
- 	int io_done;
- 	long pages_written;
-+	int retval;
+diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
+index 47d88da..bae998c 100644
+--- a/fs/ext2/ext2.h
++++ b/fs/ext2/ext2.h
+@@ -133,6 +133,8 @@ extern void ext2_truncate (struct inode *);
+ extern int ext2_setattr (struct dentry *, struct iattr *);
+ extern void ext2_set_inode_flags(struct inode *inode);
+ extern void ext2_get_inode_flags(struct ext2_inode_info *);
++extern int ext2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		       u64 start, u64 len);
+ int __ext2_write_begin(struct file *file, struct address_space *mapping,
+ 		loff_t pos, unsigned len, unsigned flags,
+ 		struct page **pagep, void **fsdata);
+diff --git a/fs/ext2/file.c b/fs/ext2/file.c
+index 5f2fa9c..45ed071 100644
+--- a/fs/ext2/file.c
++++ b/fs/ext2/file.c
+@@ -86,4 +86,5 @@ const struct inode_operations ext2_file_inode_operations = {
+ #endif
+ 	.setattr	= ext2_setattr,
+ 	.permission	= ext2_permission,
++	.fiemap		= ext2_fiemap,
  };
+diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
+index 991d6df..7658b33 100644
+--- a/fs/ext2/inode.c
++++ b/fs/ext2/inode.c
+@@ -31,6 +31,7 @@
+ #include <linux/writeback.h>
+ #include <linux/buffer_head.h>
+ #include <linux/mpage.h>
++#include <linux/fiemap.h>
+ #include "ext2.h"
+ #include "acl.h"
+ #include "xip.h"
+@@ -704,6 +705,13 @@ int ext2_get_block(struct inode *inode, sector_t iblock, struct buffer_head *bh_
  
- /*
-@@ -1820,6 +1821,24 @@ static void ext4_da_block_invalidatepages(struct mpage_da_data *mpd,
- 	return;
  }
  
-+static void ext4_print_free_blocks(struct inode *inode)
++int ext2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		u64 start, u64 len)
 +{
-+	struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
-+	printk(KERN_EMERG "Total free blocks count %lld\n",
-+			ext4_count_free_blocks(inode->i_sb));
-+	printk(KERN_EMERG "Free/Dirty block details\n");
-+	printk(KERN_EMERG "free_blocks=%lld\n",
-+			percpu_counter_sum(&sbi->s_freeblocks_counter));
-+	printk(KERN_EMERG "dirty_blocks=%lld\n",
-+			percpu_counter_sum(&sbi->s_dirtyblocks_counter));
-+	printk(KERN_EMERG "Block reservation details\n");
-+	printk(KERN_EMERG "i_reserved_data_blocks=%lu\n",
-+			EXT4_I(inode)->i_reserved_data_blocks);
-+	printk(KERN_EMERG "i_reserved_meta_blocks=%lu\n",
-+			EXT4_I(inode)->i_reserved_meta_blocks);
-+	return;
++	return generic_block_fiemap(inode, fieinfo, start, len,
++				    ext2_get_block);
 +}
 +
- /*
-  * mpage_da_map_blocks - go through given space
-  *
-@@ -1834,7 +1853,7 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
- 	int err = 0;
- 	struct buffer_head new;
- 	struct buffer_head *lbh = &mpd->lbh;
--	sector_t next = lbh->b_blocknr;
-+	sector_t next;
- 
- 	/*
- 	 * We consider only non-mapped and non-allocated blocks
-@@ -1844,6 +1863,7 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
- 	new.b_state = lbh->b_state;
- 	new.b_blocknr = 0;
- 	new.b_size = lbh->b_size;
-+	next = lbh->b_blocknr;
- 	/*
- 	 * If we didn't accumulate anything
- 	 * to write simply return
-@@ -1860,6 +1880,13 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
- 		 */
- 		if (err == -EAGAIN)
- 			return 0;
-+
-+		if (err == -ENOSPC &&
-+				ext4_count_free_blocks(mpd->inode->i_sb)) {
-+			mpd->retval = err;
-+			return 0;
-+		}
-+
- 		/*
- 		 * get block failure will cause us
- 		 * to loop in writepages. Because
-@@ -1877,8 +1904,7 @@ static int  mpage_da_map_blocks(struct mpage_da_data *mpd)
- 		printk(KERN_EMERG "This should not happen.!! "
- 					"Data will be lost\n");
- 		if (err == -ENOSPC) {
--			printk(KERN_CRIT "Total free blocks count %lld\n",
--				ext4_count_free_blocks(mpd->inode->i_sb));
-+			ext4_print_free_blocks(mpd->inode);
- 		}
- 		/* invlaidate all the pages */
- 		ext4_da_block_invalidatepages(mpd, next,
-@@ -2085,39 +2111,36 @@ static int __mpage_da_writepage(struct page *page,
-  */
- static int mpage_da_writepages(struct address_space *mapping,
- 			       struct writeback_control *wbc,
--			       get_block_t get_block)
-+			       struct mpage_da_data *mpd)
+ static int ext2_writepage(struct page *page, struct writeback_control *wbc)
  {
--	struct mpage_da_data mpd;
- 	long to_write;
- 	int ret;
+ 	return block_write_full_page(page, ext2_get_block, wbc);
+diff --git a/fs/ext3/file.c b/fs/ext3/file.c
+index acc4913..3be1e06 100644
+--- a/fs/ext3/file.c
++++ b/fs/ext3/file.c
+@@ -134,5 +134,6 @@ const struct inode_operations ext3_file_inode_operations = {
+ 	.removexattr	= generic_removexattr,
+ #endif
+ 	.permission	= ext3_permission,
++	.fiemap		= ext3_fiemap,
+ };
  
--	if (!get_block)
-+	if (!mpd->get_block)
- 		return generic_writepages(mapping, wbc);
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index 507d868..ebfec4d 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -36,6 +36,7 @@
+ #include <linux/mpage.h>
+ #include <linux/uio.h>
+ #include <linux/bio.h>
++#include <linux/fiemap.h>
+ #include "xattr.h"
+ #include "acl.h"
  
--	mpd.wbc = wbc;
--	mpd.inode = mapping->host;
--	mpd.lbh.b_size = 0;
--	mpd.lbh.b_state = 0;
--	mpd.lbh.b_blocknr = 0;
--	mpd.first_page = 0;
--	mpd.next_page = 0;
--	mpd.get_block = get_block;
--	mpd.io_done = 0;
--	mpd.pages_written = 0;
-+	mpd->lbh.b_size = 0;
-+	mpd->lbh.b_state = 0;
-+	mpd->lbh.b_blocknr = 0;
-+	mpd->first_page = 0;
-+	mpd->next_page = 0;
-+	mpd->io_done = 0;
-+	mpd->pages_written = 0;
-+	mpd->retval = 0;
- 
- 	to_write = wbc->nr_to_write;
- 
--	ret = write_cache_pages(mapping, wbc, __mpage_da_writepage, &mpd);
-+	ret = write_cache_pages(mapping, wbc, __mpage_da_writepage, mpd);
- 
- 	/*
- 	 * Handle last extent of pages
- 	 */
--	if (!mpd.io_done && mpd.next_page != mpd.first_page) {
--		if (mpage_da_map_blocks(&mpd) == 0)
--			mpage_da_submit_io(&mpd);
-+	if (!mpd->io_done && mpd->next_page != mpd->first_page) {
-+		if (mpage_da_map_blocks(mpd) == 0)
-+			mpage_da_submit_io(mpd);
- 	}
- 
--	wbc->nr_to_write = to_write - mpd.pages_written;
-+	wbc->nr_to_write = to_write - mpd->pages_written;
+@@ -981,6 +982,13 @@ out:
  	return ret;
  }
  
-@@ -2357,6 +2380,7 @@ static int ext4_da_writepages(struct address_space *mapping,
- {
- 	handle_t *handle = NULL;
- 	loff_t range_start = 0;
-+	struct mpage_da_data mpd;
- 	struct inode *inode = mapping->host;
- 	int needed_blocks, ret = 0, nr_to_writebump = 0;
- 	long to_write, pages_skipped = 0;
-@@ -2390,6 +2414,9 @@ static int ext4_da_writepages(struct address_space *mapping,
- 	range_start =  wbc->range_start;
- 	pages_skipped = wbc->pages_skipped;
++int ext3_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		u64 start, u64 len)
++{
++	return generic_block_fiemap(inode, fieinfo, start, len,
++				    ext3_get_block);
++}
++
+ /*
+  * `handle' can be NULL if create is zero
+  */
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index 045d960..33a6b7e 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -13,6 +13,8 @@
+ #include <linux/security.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
++#include <linux/writeback.h>
++#include <linux/buffer_head.h>
  
-+	mpd.wbc = wbc;
-+	mpd.inode = mapping->host;
+ #include <asm/ioctls.h>
+ 
+@@ -224,6 +226,122 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+ 	return error;
+ }
+ 
++#define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
++#define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
 +
- restart_loop:
- 	to_write = wbc->nr_to_write;
- 	while (!ret && to_write > 0) {
-@@ -2413,11 +2440,17 @@ restart_loop:
- 			dump_stack();
- 			goto out_writepages;
- 		}
--
- 		to_write -= wbc->nr_to_write;
--		ret = mpage_da_writepages(mapping, wbc,
--					  ext4_da_get_block_write);
++/*
++ * @inode - the inode to map
++ * @arg - the pointer to userspace where we copy everything to
++ * @get_block - the fs's get_block function
++ *
++ * This does FIEMAP for block based inodes.  Basically it will just loop
++ * through get_block until we hit the number of extents we want to map, or we
++ * go past the end of the file and hit a hole.
++ *
++ * If it is possible to have data blocks beyond a hole past @inode->i_size, then
++ * please do not use this function, it will stop at the first unmapped block
++ * beyond i_size
++ */
++int generic_block_fiemap(struct inode *inode,
++			 struct fiemap_extent_info *fieinfo, u64 start,
++			 u64 len, get_block_t *get_block)
++{
++	struct buffer_head tmp;
++	unsigned int start_blk;
++	long long length = 0, map_len = 0;
++	u64 logical = 0, phys = 0, size = 0;
++	u32 flags = FIEMAP_EXTENT_MERGED;
++	int ret = 0;
 +
-+		mpd.get_block = ext4_da_get_block_write;
-+		ret = mpage_da_writepages(mapping, wbc, &mpd);
++	if ((ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC)))
++		return ret;
 +
- 		ext4_journal_stop(handle);
++	start_blk = logical_to_blk(inode, start);
 +
-+		if (mpd.retval == -ENOSPC)
-+			jbd2_journal_force_commit_nested(sbi->s_journal);
++	/* guard against change */
++	mutex_lock(&inode->i_mutex);
 +
-+		/* reset the retry count */
- 		if (ret == MPAGE_DA_EXTENT_TAIL) {
- 			/*
- 			 * got one extent now try with
++	length = (long long)min_t(u64, len, i_size_read(inode));
++	map_len = length;
++
++	do {
++		/*
++		 * we set b_size to the total size we want so it will map as
++		 * many contiguous blocks as possible at once
++		 */
++		memset(&tmp, 0, sizeof(struct buffer_head));
++		tmp.b_size = map_len;
++
++		ret = get_block(inode, start_blk, &tmp, 0);
++		if (ret)
++			break;
++
++		/* HOLE */
++		if (!buffer_mapped(&tmp)) {
++			/*
++			 * first hole after going past the EOF, this is our
++			 * last extent
++			 */
++			if (length <= 0) {
++				flags = FIEMAP_EXTENT_MERGED|FIEMAP_EXTENT_LAST;
++				ret = fiemap_fill_next_extent(fieinfo, logical,
++							      phys, size,
++							      flags);
++				break;
++			}
++
++			length -= blk_to_logical(inode, 1);
++
++			/* if we have holes up to/past EOF then we're done */
++			if (length <= 0)
++				break;
++
++			start_blk++;
++		} else {
++			if (length <= 0 && size) {
++				ret = fiemap_fill_next_extent(fieinfo, logical,
++							      phys, size,
++							      flags);
++				if (ret)
++					break;
++			}
++
++			logical = blk_to_logical(inode, start_blk);
++			phys = blk_to_logical(inode, tmp.b_blocknr);
++			size = tmp.b_size;
++			flags = FIEMAP_EXTENT_MERGED;
++
++			length -= tmp.b_size;
++			start_blk += logical_to_blk(inode, size);
++
++			/*
++			 * if we are past the EOF we need to loop again to see
++			 * if there is a hole so we can mark this extent as the
++			 * last one, and if not keep mapping things until we
++			 * find a hole, or we run out of slots in the extent
++			 * array
++			 */
++			if (length <= 0)
++				continue;
++
++			ret = fiemap_fill_next_extent(fieinfo, logical, phys,
++						      size, flags);
++			if (ret)
++				break;
++		}
++		cond_resched();
++	} while (1);
++
++	mutex_unlock(&inode->i_mutex);
++
++	/* if ret is 1 then we just hit the end of the extent array */
++	if (ret == 1)
++		ret = 0;
++
++	return ret;
++}
++EXPORT_SYMBOL(generic_block_fiemap);
++
+ static int file_ioctl(struct file *filp, unsigned int cmd,
+ 		unsigned long arg)
+ {
+diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
+index 80171ee..8120fa1 100644
+--- a/include/linux/ext3_fs.h
++++ b/include/linux/ext3_fs.h
+@@ -837,6 +837,8 @@ extern void ext3_truncate (struct inode *);
+ extern void ext3_set_inode_flags(struct inode *);
+ extern void ext3_get_inode_flags(struct ext3_inode_info *);
+ extern void ext3_set_aops(struct inode *inode);
++extern int ext3_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		       u64 start, u64 len);
+ 
+ /* ioctl.c */
+ extern int ext3_ioctl (struct inode *, struct file *, unsigned int,
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 194fb23..385c9a1 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1998,6 +1998,9 @@ extern int vfs_fstat(unsigned int, struct kstat *);
+ 
+ extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
+ 		    unsigned long arg);
++extern int generic_block_fiemap(struct inode *inode,
++				struct fiemap_extent_info *fieinfo, u64 start,
++				u64 len, get_block_t *get_block);
+ 
+ extern void get_filesystem(struct file_system_type *fs);
+ extern void put_filesystem(struct file_system_type *fs);
 -- 
 1.5.6.1.205.ge2c7.dirty
 
