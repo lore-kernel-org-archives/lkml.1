@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbYJIRqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759707AbYJIRul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760160AbYJIRqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbYJIRqM
+	id S1759707AbYJIRul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYJIRuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:46:12 -0400
-Received: from sous-sol.org ([216.99.217.87]:43466 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753807AbYJIRqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:46:11 -0400
-Date: Thu, 9 Oct 2008 10:44:27 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "Cihula, Joseph" <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
-       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
-       mingo@elte.hu, tytso@mit.edu
-Subject: Re: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology
-	support for Linux - Overview
-Message-ID: <20081009174427.GB6912@sequoia.sous-sol.org>
-References: <D936D925018D154694D8A362EEB0892005AC105B@orsmsx416.amr.corp.intel.com> <20081009125311.GD1623@ucw.cz>
+	Thu, 9 Oct 2008 13:50:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51717 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754026AbYJIRub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:50:31 -0400
+Date: Thu, 9 Oct 2008 13:50:04 -0400
+From: Dave Jones <davej@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: correct broken links and email address
+Message-ID: <20081009175004.GB20608@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	=?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
+	cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <48EF21F7.1020308@freemail.hu> <48EE0025.8060007@freemail.hu> <20081009142215.605f757c@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081009125311.GD1623@ucw.cz>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081009142215.605f757c@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Machek (pavel@suse.cz) wrote:
-> Ok, I don't get it, why would I want to measure my kernel?
+On Thu, Oct 09, 2008 at 02:22:15PM +0100, Alan Cox wrote:
+ > On Thu, 09 Oct 2008 14:59:17 +0200
+ > Németh Márton <nm127@freemail.hu> wrote:
+ > 
+ > > From: Márton Németh <nm127@freemail.hu>
+ > > 
+ > > Replace the no longer working links and email address in the
+ > > documentation and in source code.
+ > > 
+ > > Signed-off-by: Márton Németh <nm127@freemail.hu>
+ > 
+ > Someone needs to update the bugzilla addresses for cpufreq bugs too I
+ > think..
+ 
+I did that when the list moved.
 
-Trusted boot.  There's always the double-edge sword w/ this.  Clearly,
-a requirement is that you don't just brick your own box, and have some
-policy/mechanism for defining how you'd use trusted boot.  I believe
-that's all there w/ TXT patch (since it's mostly handled before kernel
-boots, TXT kernel bit is just to help w/ handoff).
+	Dave
 
-> I see why Disney would want to do that, but I don't see why we would
-> want to help them.
-> 
-> Plus, the fact that trusted mode is pretty much incompatible with
-> s3/s4 makes it useless, right?
-
-Why do you say that?  Did you look at patch 3/3, see tboot_sleep().
-
-thanks,
--chris
+-- 
+http://www.codemonkey.org.uk
