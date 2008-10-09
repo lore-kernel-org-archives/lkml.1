@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbYJIQaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYJIQak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759835AbYJIQaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 12:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYJIQaI
+	id S1760173AbYJIQak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 12:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760040AbYJIQa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 12:30:08 -0400
-Received: from mail.suse.de ([195.135.220.2]:41166 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbYJIQaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 12:30:06 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+	Thu, 9 Oct 2008 12:30:26 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59985 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760035AbYJIQaZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 12:30:25 -0400
+To: torvalds@linux-foundation.org
+CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org>
+	(message from Linus Torvalds on Thu, 9 Oct 2008 09:17:59 -0700 (PDT))
 Subject: Re: splice vs O_APPEND
-References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu>
-	<alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org>
-	<E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu>
-X-Yow: I'm wet!  I'm wild!
-Date: Thu, 09 Oct 2008 18:30:01 +0200
-In-Reply-To: <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> (Miklos Szeredi's message
-	of "Thu, 09 Oct 2008 18:04:10 +0200")
-Message-ID: <jeskr5g29i.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org>
+Message-Id: <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 09 Oct 2008 18:30:10 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> writes:
+On Thu, 9 Oct 2008, Linus Torvalds wrote:
+> And it turns out that handling O_APPEND is actually pretty easy, so 
+> instead of doing -EINVAL, we can just implement it. Something like this 
+> (untested, of course).
+> 
+> Does this look better?
 
-> pwrite() for example honors O_APPEND and ignores the position, AFAICS.
+Yeah, only the append is now racy because the O_APPEND check is
+outside i_mutex.  So maybe just stick with -EINVAL in
+do_splice_from()?  That also covers do_splice_direct(), which is used
+in NFS and sendfile() and a couple of other places.
 
-If it does, then it violates POSIX (see
-<http://www.opengroup.org/austin/docs/austin_325.txt>, where the
-behavior of pwrite with O_APPEND is clarified).
+We know that nobody is currently relying on O_APPEND semantics with
+splice, so this should be OK.
 
-Andreas.
+Untested patch...
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Miklos
+
+Index: linux-2.6/fs/splice.c
+===================================================================
+--- linux-2.6.orig/fs/splice.c	2008-08-29 14:39:20.000000000 +0200
++++ linux-2.6/fs/splice.c	2008-10-09 18:19:25.000000000 +0200
+@@ -892,6 +892,9 @@ static long do_splice_from(struct pipe_i
+ {
+ 	int ret;
+ 
++	if (out->f_flags & O_APPEND)
++		return -EINVAL;
++
+ 	if (unlikely(!out->f_op || !out->f_op->splice_write))
+ 		return -EINVAL;
+ 
