@@ -1,51 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbYJIEGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbYJIEGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756325AbYJIEGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYJIEFv
+	id S1755596AbYJIEGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757279AbYJIEGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:05:51 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:36673 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbYJIEFu (ORCPT
+	Thu, 9 Oct 2008 00:06:06 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54445 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757119AbYJIEGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:05:50 -0400
-Date: Wed, 8 Oct 2008 22:05:49 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 11/15] PCI: rpaphp: kmalloc/kfree slot->name directly
-Message-ID: <20081009040549.GB4668@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20081003230125.9989.31145.stgit@bob.kio> <20081003231823.9989.50968.stgit@bob.kio> <84144f020810052344x5b90c22fjd7b984e1d2dddde2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020810052344x5b90c22fjd7b984e1d2dddde2@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 9 Oct 2008 00:06:04 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/42] Ext4 patches queued up for the 2.6.28 merge window
+Date: Thu,  9 Oct 2008 00:05:18 -0400
+Message-Id: <1223525160-9887-1-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pekka Enberg <penberg@cs.helsinki.fi>:
-> On Sat, Oct 4, 2008 at 2:18 AM, Alex Chiang <achiang@hp.com> wrote:
-> > @@ -63,10 +63,9 @@ struct slot *alloc_slot_struct(struct device_node *dn,
-> >                                           GFP_KERNEL);
-> >        if (!slot->hotplug_slot->info)
-> >                goto error_hpslot;
-> > -       slot->hotplug_slot->name = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
-> > -       if (!slot->hotplug_slot->name)
-> > +       slot->name = kmalloc(strlen(drc_name) + 1, GFP_KERNEL);
-> > +       if (!slot->name)
-> >                goto error_info;
-> > -       slot->name = slot->hotplug_slot->name;
-> >        strcpy(slot->name, drc_name);
-> 
-> Minor nit: you could use kstrdup() here.
+These are the patches which we have queued up to push to Linus for the
+2.6.28 merge window.
 
-Good call, I've made a change, thanks.
+It includes the FIEMAP patches, for which we have (finally!) reached
+consensus on the linux-fsdevel mailing list.
 
-/ac
+Patches which I believe should be -stable candidates have been marked
+with an '*' below.  Please let me know if there are other patches that
+should be considered -stable candidates, or if you disagree with a
+patch was marked.
 
+						- Ted
+
+Alexey Dobriyan (1):
+    * ext4: fix #11321: create /proc/ext4/*/stats more carefully
+
+Andi Kleen (1):
+      ext4: Avoid double dirtying of super block in ext4_put_super()
+
+Aneesh Kumar K.V (12):
+    * ext4: invalidate pages if delalloc block allocation fails.
+    * ext4: Retry block reservation
+    * ext4: Add percpu dirty block accounting.
+    * ext4: Switch to non delalloc mode when we are low on free blocks count.
+    * ext4: Signed arithmetic fix
+    * ext4: Fix ext4 nomballoc allocator for ENOSPC
+    * ext4: Don't add the inode to journal handle until after the block is allocated
+    * ext4: Retry block allocation if we have free blocks left
+      ext4: truncate block allocated on a failed ext4_write_begin
+      ext4: Properly update i_disksize.
+      ext4: elevate write count for migrate ioctl
+      ext4: hook the ext3 migrate interface to the EXT4_IOC_SETFLAGS ioctl
+
+Duane Griffin (1):
+    * jbd2: abort instead of waiting for nonexistent transaction
+
+Eric Sandeen (2):
+      ext4: use percpu data structures for lg_prealloc_list
+      Hook ext4 to the vfs fiemap interface.
+
+Frederic Bohe (2):
+      Update flex_bg free blocks and free inodes counters when resizing.
+      ext4: fix initialization of UNINIT bitmap blocks
+
+Josef Bacik (1):
+      generic block based fiemap implementation
+
+Kalpak Shah (1):
+    * ext4: fix xattr deadlock
+
+Li Zefan (1):
+    * ext4: add missing unlock in ext4_check_descriptors() on error path
+
+Mark Fasheh (2):
+      vfs: vfs-level fiemap interface
+      ocfs2: fiemap support
+
+Mingming Cao (1):
+    * percpu counter: clean up percpu_counter_sum_and_set()
+
+Theodore Ts'o (18):
+      ext4: Add printk priority levels to clean up checkpatch warnings
+      ext4: Fix long long checkpatch warnings
+      ext4: Fix whitespace checkpatch warnings/errors
+      ext4: Make sure all the block allocation paths reserve blocks
+      ext4: Avoid printk floods in the face of directory corruption
+      jbd2: clean up how the journal device name is printed
+      ext4: Renumber EXT4_IOC_MIGRATE
+      ext4/jbd2: Avoid WARN() messages when failing to write to the superblock
+      ext4: Don't use 'struct dentry' for internal lookups
+      ext4: move /proc setup and teardown out of mballoc.c
+      ext4: Combine proc file handling into a single set of functions
+      ext4: Use readahead when reading an inode from the inode table
+      ext4: Remove old legacy block allocator
+      ext4: Add debugging markers that can be used by systemtap
+    * jbd2: Fix buffer head leak when writing the commit block
+      Update ext4 MAINTAINERS file
+      ext4: Rename ext4dev to ext4
+
+ Documentation/filesystems/fiemap.txt |  228 ++++++
+ MAINTAINERS                          |    5 +-
+ fs/Kconfig                           |   74 +-
+ fs/Makefile                          |    2 +-
+ fs/ext2/ext2.h                       |    2 +
+ fs/ext2/file.c                       |    1 +
+ fs/ext2/inode.c                      |    8 +
+ fs/ext3/file.c                       |    1 +
+ fs/ext3/inode.c                      |    8 +
+ fs/ext4/Makefile                     |   10 +-
+ fs/ext4/acl.h                        |   12 +-
+ fs/ext4/balloc.c                     | 1457 +++-------------------------------
+ fs/ext4/bitmap.c                     |    6 +-
+ fs/ext4/dir.c                        |   64 +-
+ fs/ext4/ext4.h                       |  131 ++--
+ fs/ext4/ext4_extents.h               |   15 +
+ fs/ext4/ext4_i.h                     |   39 +-
+ fs/ext4/ext4_sb.h                    |   25 +-
+ fs/ext4/extents.c                    |  281 ++++++-
+ fs/ext4/file.c                       |   10 +-
+ fs/ext4/fsync.c                      |    7 +-
+ fs/ext4/hash.c                       |    8 +-
+ fs/ext4/ialloc.c                     |   71 +-
+ fs/ext4/inode.c                      |  620 +++++++++------
+ fs/ext4/ioctl.c                      |   84 +--
+ fs/ext4/mballoc.c                    |  208 ++----
+ fs/ext4/mballoc.h                    |    1 -
+ fs/ext4/migrate.c                    |   10 +-
+ fs/ext4/namei.c                      |  402 +++++-----
+ fs/ext4/resize.c                     |   33 +-
+ fs/ext4/super.c                      |  247 ++++--
+ fs/ext4/symlink.c                    |    8 +-
+ fs/ext4/xattr.c                      |   14 +-
+ fs/ext4/xattr.h                      |   12 +-
+ fs/ioctl.c                           |  273 +++++++
+ fs/jbd2/checkpoint.c                 |   22 +-
+ fs/jbd2/commit.c                     |   22 +-
+ fs/jbd2/journal.c                    |   75 +-
+ fs/ocfs2/alloc.c                     |    9 -
+ fs/ocfs2/alloc.h                     |    9 +
+ fs/ocfs2/extent_map.c                |  346 +++++++--
+ fs/ocfs2/extent_map.h                |    3 +
+ fs/ocfs2/file.c                      |    1 +
+ include/linux/ext3_fs.h              |    2 +
+ include/linux/fiemap.h               |   64 ++
+ include/linux/fs.h                   |   21 +
+ include/linux/jbd2.h                 |    3 +-
+ include/linux/percpu_counter.h       |   12 +-
+ lib/percpu_counter.c                 |    8 +-
+ 49 files changed, 2482 insertions(+), 2492 deletions(-)
