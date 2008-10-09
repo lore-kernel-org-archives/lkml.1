@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYJIU5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbYJIU57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYJIU5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 16:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbYJIU53
+	id S1757198AbYJIU57 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 16:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbYJIU5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 16:57:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47299 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754312AbYJIU52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 16:57:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] sky2: Fix recent WOL regression
-Date: Thu, 9 Oct 2008 23:01:35 +0200
-User-Agent: KMail/1.9.9
-Cc: shemminger@vyatta.com, jeff@garzik.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       tino.keitel@gmx.de, netdev@vger.kernel.org, jbarnes@virtuousgeek.org
-References: <200810022339.34025.rjw@sisk.pl> <200810090055.56598.rjw@sisk.pl> <20081008.161210.79287275.davem@davemloft.net>
-In-Reply-To: <20081008.161210.79287275.davem@davemloft.net>
+	Thu, 9 Oct 2008 16:57:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58087 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756295AbYJIU5s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 16:57:48 -0400
+Message-ID: <48EE703C.7070901@zytor.com>
+Date: Thu, 09 Oct 2008 13:57:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ulrich Drepper <drepper@redhat.com>
+CC: mtk.manpages@gmail.com, Al Viro <viro@zeniv.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: dup2() vs dup3() inconsistency when
+References: <cfd18e0f0810090510i87f088fi9eeea829ae2b58c1@mail.gmail.com> <48EE3D84.6000003@zytor.com> <48EE6A2B.8030005@redhat.com> <48EE6CD6.10007@zytor.com> <48EE6F22.5070306@redhat.com>
+In-Reply-To: <48EE6F22.5070306@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810092301.36633.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 9 of October 2008, David Miller wrote:
-> From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Date: Thu, 9 Oct 2008 00:55:55 +0200
+Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> > On Friday, 3 of October 2008, Stephen Hemminger wrote:
-> > > On Thu, 2 Oct 2008 23:39:33 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > sky2: Fix recent WOL regression
-> > > > 
-> > > > Since dev->power.should_wakeup bit is used by the PCI core to
-> > > > decide whether the device should wake up the system from sleep
-> > > > states, set/unset this bit whenever WOL is enabled/disabled using
-> > > > sky2_set_wol() (this fixes a regression from 2.6.26 on the Tino's
-> > > > machine).
-> > > > 
-> > > > Remove an open-coded reference to the standard PCI PM registers that
-> > > > is not used any more.
-> > > > 
-> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > Reported-by: Tino Keitel <tino.keitel@gmx.de>
-> > > > ---
-> > > 
-> > > Acked-by: Stephen Hemminger <shemminger@vyatta.com>
-> > > 
-> > > Thanks for fixing this.
-> > 
-> > Can you please include this patch into your next push for Jeff?
-> > 
-> > It seems to have been overlooked.
+> H. Peter Anvin wrote:
+>> The result of dup3(fd, fd, O_CLOEXEC) is to set the O_CLOEXEC flag on fd.
 > 
-> I missed this ACK but I did add the patch to my tree as you
-> can see from another email of mine.
+> That's bad and disregarded by Al and myself because it is one and the
+> same descriptor and therefore it changes the source descriptor.
 
-I saw it, thanks!
+It's not the source descriptor, per se, it is the "new" descriptor, 
+which happens to have a side effect of closing the "old" descriptor.
+
+>> Step (2) could be considered a bit dubious, but the behaviour of
+>> dup2(fd, fd) is a direct consequence of the chosen semantics.
+> 
+> The behavior of dup2(fd,fd) is just a result of an accident in the
+> original implementation.  It makes no sense and the mistake doesn't have
+> to be repeated.
+
+Inconsistency is bad, too, and one could *definitely* argue that the 
+fundamental problem is the one of closing a pre-existing descriptor 
+rather than forcing the user to do that explicitly if that behaviour was 
+desired.
+
+	-hpa
