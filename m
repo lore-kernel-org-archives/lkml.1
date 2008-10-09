@@ -1,323 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbYJIAhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbYJIAif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676AbYJIAhE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 20:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbYJIAep
+	id S1757594AbYJIAif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 20:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbYJIAiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 20:34:45 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:19205 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757456AbYJIAem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 20:34:42 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 8/8 2.6.28] cxgb3 - Add 1G fiber support
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 08 Oct 2008 17:34:35 -0700
-Message-ID: <20081009003435.13510.77967.stgit@speedy5>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Oct 2008 20:38:25 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41893 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754054AbYJIAiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 20:38:24 -0400
+Date: Wed, 8 Oct 2008 17:38:22 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Tao Ma <tao.ma@oracle.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] [PATCH 13/39] ocfs2: Add extended attribute support
+Message-ID: <20081009003822.GH26373@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <1222293680-15451-1-git-send-email-mfasheh@suse.com> <1222293680-15451-14-git-send-email-mfasheh@suse.com> <20081002081644.GB24717@lst.de> <20081007220811.GG26373@wotan.suse.de> <48EC1359.6040109@oracle.com> <20081008133453.GH25392@lst.de> <48ECBDF8.9060008@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48ECBDF8.9060008@oracle.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Wed, Oct 08, 2008 at 10:04:40PM +0800, Tao Ma wrote:
+> 
+> 
+> Christoph Hellwig wrote:
+> > On Wed, Oct 08, 2008 at 09:56:41AM +0800, Tiger Yang wrote:
+> >> I have looked the patch for btrfs about this. We are different.
+> >> Btrfs store the whole xattr name including the prefix "user." 
+> >> "trusted.", we store index number instead of it.
+> > 
+> > I looked at the git tree and there are two users of
+> > ocfs2_xattr_handler().
+> > 
+> >  (1) for using the ->list handler in listattr.  That's something I fixed
+> >      in btrfs that I wanted to point you to.  The whole concept of a
+> >      ->list handler is stupid, and it was only added as a hack for
+> >      the tmpfs "generic" xattr support which is a mess.  Instead of
+> >      looking up a handler that would only do the same thing anyway
+> >      for all on-disk attributes just call the code directly and
+> >      have a map from index to prefix (look at
+> >      fs/xfs/linux-2.6/xfs_xattr.c for an example).  You
+> >      also have a check for OCFS2_MOUNT_NOUSERXATTR for the user
+> >      attributes, but that's much easier done by just checking the
+> >      index in an if (and I'd personally just kill it completely, the
+> >      options doesn't seem useful - but that's an unrelated bit)
+> yes, you are right. The handler for list is borrowed from ext3 and 
+> somewhat ugly. We just need the prefix name but use such a complicated 
+> method. Just a map from index to prefix should work fine.
+> >  
+> >  (2) For generating the hash.  I don't quite understand why you want to
+> >      also hash the prefix if it's not store on disk anyway but sorted
+> >      into the numeric buckets.
+> This is done intentionally. See the design doc 
+> http://oss.oracle.com/osswiki/OCFS2/DesignDocs/ExtendedAttributes.
+> "Each entry has a 32-bit hash value associated with it. The hash value 
+> is calculated using the full (prefix.suffix) name of the xattr to avoid 
+> hash collisions when the same suffix is used in multiple attribute 
+> namespaces. "
+> So Mark, do you think we need this prefix hash?
+> Anyway, if we make consensus that the hash calculation doesn't need 
+> prefix any more, we can remove the ocfs2_xattr_handler safely.
 
-Add support for 1G optical Vitesse PHY.
+Removing the prefix hash should be fine. Technically, this changes the disk
+format, but nobody should be using this for production yet anyway.
+	--Mark
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
-
- drivers/net/cxgb3/common.h  |    1 
- drivers/net/cxgb3/t3_hw.c   |   23 +++++
- drivers/net/cxgb3/vsc8211.c |  196 ++++++++++++++++++++++++++++++++++++++++---
- 3 files changed, 208 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
-index 416d3dd..593fb64 100644
---- a/drivers/net/cxgb3/common.h
-+++ b/drivers/net/cxgb3/common.h
-@@ -691,6 +691,7 @@ int t3_mdio_change_bits(struct cphy *phy, int mmd, int reg, unsigned int clear,
- 			unsigned int set);
- int t3_phy_reset(struct cphy *phy, int mmd, int wait);
- int t3_phy_advertise(struct cphy *phy, unsigned int advert);
-+int t3_phy_advertise_fiber(struct cphy *phy, unsigned int advert);
- int t3_set_phy_speed_duplex(struct cphy *phy, int speed, int duplex);
- int t3_phy_lasi_intr_enable(struct cphy *phy);
- int t3_phy_lasi_intr_disable(struct cphy *phy);
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 9d9c0ba..4da5b09 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -408,6 +408,29 @@ int t3_phy_advertise(struct cphy *phy, unsigned int advert)
- }
- 
- /**
-+ *	t3_phy_advertise_fiber - set fiber PHY advertisement register
-+ *	@phy: the PHY to operate on
-+ *	@advert: bitmap of capabilities the PHY should advertise
-+ *
-+ *	Sets a fiber PHY's advertisement register to advertise the
-+ *	requested capabilities.
-+ */
-+int t3_phy_advertise_fiber(struct cphy *phy, unsigned int advert)
-+{
-+	unsigned int val = 0;
-+
-+	if (advert & ADVERTISED_1000baseT_Half)
-+		val |= ADVERTISE_1000XHALF;
-+	if (advert & ADVERTISED_1000baseT_Full)
-+		val |= ADVERTISE_1000XFULL;
-+	if (advert & ADVERTISED_Pause)
-+		val |= ADVERTISE_1000XPAUSE;
-+	if (advert & ADVERTISED_Asym_Pause)
-+		val |= ADVERTISE_1000XPSE_ASYM;
-+	return mdio_write(phy, 0, MII_ADVERTISE, val);
-+}
-+
-+/**
-  *	t3_set_phy_speed_duplex - force PHY speed and duplex
-  *	@phy: the PHY to operate on
-  *	@speed: requested PHY speed
-diff --git a/drivers/net/cxgb3/vsc8211.c b/drivers/net/cxgb3/vsc8211.c
-index 68e6334..306c2dc 100644
---- a/drivers/net/cxgb3/vsc8211.c
-+++ b/drivers/net/cxgb3/vsc8211.c
-@@ -33,28 +33,40 @@
- 
- /* VSC8211 PHY specific registers. */
- enum {
-+	VSC8211_SIGDET_CTRL = 19,
-+	VSC8211_EXT_CTRL = 23,
- 	VSC8211_INTR_ENABLE = 25,
- 	VSC8211_INTR_STATUS = 26,
-+	VSC8211_LED_CTRL = 27,
- 	VSC8211_AUX_CTRL_STAT = 28,
-+	VSC8211_EXT_PAGE_AXS = 31,
- };
- 
- enum {
- 	VSC_INTR_RX_ERR = 1 << 0,
--	VSC_INTR_MS_ERR = 1 << 1,	/* master/slave resolution error */
--	VSC_INTR_CABLE = 1 << 2,	/* cable impairment */
--	VSC_INTR_FALSE_CARR = 1 << 3,	/* false carrier */
--	VSC_INTR_MEDIA_CHG = 1 << 4,	/* AMS media change */
--	VSC_INTR_RX_FIFO = 1 << 5,	/* Rx FIFO over/underflow */
--	VSC_INTR_TX_FIFO = 1 << 6,	/* Tx FIFO over/underflow */
--	VSC_INTR_DESCRAMBL = 1 << 7,	/* descrambler lock-lost */
--	VSC_INTR_SYMBOL_ERR = 1 << 8,	/* symbol error */
--	VSC_INTR_NEG_DONE = 1 << 10,	/* autoneg done */
--	VSC_INTR_NEG_ERR = 1 << 11,	/* autoneg error */
--	VSC_INTR_LINK_CHG = 1 << 13,	/* link change */
--	VSC_INTR_ENABLE = 1 << 15,	/* interrupt enable */
-+	VSC_INTR_MS_ERR = 1 << 1,  /* master/slave resolution error */
-+	VSC_INTR_CABLE = 1 << 2,  /* cable impairment */
-+	VSC_INTR_FALSE_CARR = 1 << 3,  /* false carrier */
-+	VSC_INTR_MEDIA_CHG = 1 << 4,  /* AMS media change */
-+	VSC_INTR_RX_FIFO = 1 << 5,  /* Rx FIFO over/underflow */
-+	VSC_INTR_TX_FIFO = 1 << 6,  /* Tx FIFO over/underflow */
-+	VSC_INTR_DESCRAMBL = 1 << 7,  /* descrambler lock-lost */
-+	VSC_INTR_SYMBOL_ERR = 1 << 8,  /* symbol error */
-+	VSC_INTR_NEG_DONE = 1 << 10, /* autoneg done */
-+	VSC_INTR_NEG_ERR = 1 << 11, /* autoneg error */
-+	VSC_INTR_DPLX_CHG = 1 << 12, /* duplex change */
-+	VSC_INTR_LINK_CHG = 1 << 13, /* link change */
-+	VSC_INTR_SPD_CHG = 1 << 14, /* speed change */
-+	VSC_INTR_ENABLE = 1 << 15, /* interrupt enable */
-+};
-+
-+enum {
-+	VSC_CTRL_CLAUSE37_VIEW = 1 << 4,   /* Switch to Clause 37 view */
-+	VSC_CTRL_MEDIA_MODE_HI = 0xf000    /* High part of media mode select */
- };
- 
- #define CFG_CHG_INTR_MASK (VSC_INTR_LINK_CHG | VSC_INTR_NEG_ERR | \
-+			   VSC_INTR_DPLX_CHG | VSC_INTR_SPD_CHG | \
- 	 		   VSC_INTR_NEG_DONE)
- #define INTR_MASK (CFG_CHG_INTR_MASK | VSC_INTR_TX_FIFO | VSC_INTR_RX_FIFO | \
- 		   VSC_INTR_ENABLE)
-@@ -184,6 +196,112 @@ static int vsc8211_get_link_status(struct cphy *cphy, int *link_ok,
- 	return 0;
- }
- 
-+static int vsc8211_get_link_status_fiber(struct cphy *cphy, int *link_ok,
-+					 int *speed, int *duplex, int *fc)
-+{
-+	unsigned int bmcr, status, lpa, adv;
-+	int err, sp = -1, dplx = -1, pause = 0;
-+
-+	err = mdio_read(cphy, 0, MII_BMCR, &bmcr);
-+	if (!err)
-+		err = mdio_read(cphy, 0, MII_BMSR, &status);
-+	if (err)
-+		return err;
-+
-+	if (link_ok) {
-+		/*
-+		 * BMSR_LSTATUS is latch-low, so if it is 0 we need to read it
-+		 * once more to get the current link state.
-+		 */
-+		if (!(status & BMSR_LSTATUS))
-+			err = mdio_read(cphy, 0, MII_BMSR, &status);
-+		if (err)
-+			return err;
-+		*link_ok = (status & BMSR_LSTATUS) != 0;
-+	}
-+	if (!(bmcr & BMCR_ANENABLE)) {
-+		dplx = (bmcr & BMCR_FULLDPLX) ? DUPLEX_FULL : DUPLEX_HALF;
-+		if (bmcr & BMCR_SPEED1000)
-+			sp = SPEED_1000;
-+		else if (bmcr & BMCR_SPEED100)
-+			sp = SPEED_100;
-+		else
-+			sp = SPEED_10;
-+	} else if (status & BMSR_ANEGCOMPLETE) {
-+		err = mdio_read(cphy, 0, MII_LPA, &lpa);
-+		if (!err)
-+			err = mdio_read(cphy, 0, MII_ADVERTISE, &adv);
-+		if (err)
-+			return err;
-+
-+		if (adv & lpa & ADVERTISE_1000XFULL) {
-+			dplx = DUPLEX_FULL;
-+			sp = SPEED_1000;
-+		} else if (adv & lpa & ADVERTISE_1000XHALF) {
-+			dplx = DUPLEX_HALF;
-+			sp = SPEED_1000;
-+		}
-+
-+		if (fc && dplx == DUPLEX_FULL) {
-+			if (lpa & adv & ADVERTISE_1000XPAUSE)
-+				pause = PAUSE_RX | PAUSE_TX;
-+			else if ((lpa & ADVERTISE_1000XPAUSE) &&
-+				 (adv & lpa & ADVERTISE_1000XPSE_ASYM))
-+				pause = PAUSE_TX;
-+			else if ((lpa & ADVERTISE_1000XPSE_ASYM) &&
-+				 (adv & ADVERTISE_1000XPAUSE))
-+				pause = PAUSE_RX;
-+		}
-+	}
-+	if (speed)
-+		*speed = sp;
-+	if (duplex)
-+		*duplex = dplx;
-+	if (fc)
-+		*fc = pause;
-+	return 0;
-+}
-+
-+/*
-+ * Enable/disable auto MDI/MDI-X in forced link speed mode.
-+ */
-+static int vsc8211_set_automdi(struct cphy *phy, int enable)
-+{
-+	int err;
-+
-+	err = mdio_write(phy, 0, VSC8211_EXT_PAGE_AXS, 0x52b5);
-+	if (err)
-+		return err;
-+
-+	err = mdio_write(phy, 0, 18, 0x12);
-+	if (err)
-+		return err;
-+
-+	err = mdio_write(phy, 0, 17, enable ? 0x2803 : 0x3003);
-+	if (err)
-+		return err;
-+
-+	err = mdio_write(phy, 0, 16, 0x87fa);
-+	if (err)
-+		return err;
-+
-+	err = mdio_write(phy, 0, VSC8211_EXT_PAGE_AXS, 0);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+int vsc8211_set_speed_duplex(struct cphy *phy, int speed, int duplex)
-+{
-+	int err;
-+
-+	err = t3_set_phy_speed_duplex(phy, speed, duplex);
-+	if (!err)
-+		err = vsc8211_set_automdi(phy, 1);
-+	return err;
-+}
-+
- static int vsc8211_power_down(struct cphy *cphy, int enable)
- {
- 	return t3_mdio_change_bits(cphy, 0, MII_BMCR, BMCR_PDOWN,
-@@ -221,12 +339,66 @@ static struct cphy_ops vsc8211_ops = {
- 	.power_down = vsc8211_power_down,
- };
- 
-+static struct cphy_ops vsc8211_fiber_ops = {
-+	.reset = vsc8211_reset,
-+	.intr_enable = vsc8211_intr_enable,
-+	.intr_disable = vsc8211_intr_disable,
-+	.intr_clear = vsc8211_intr_clear,
-+	.intr_handler = vsc8211_intr_handler,
-+	.autoneg_enable = vsc8211_autoneg_enable,
-+	.autoneg_restart = vsc8211_autoneg_restart,
-+	.advertise = t3_phy_advertise_fiber,
-+	.set_speed_duplex = t3_set_phy_speed_duplex,
-+	.get_link_status = vsc8211_get_link_status_fiber,
-+	.power_down = vsc8211_power_down,
-+};
-+
- int t3_vsc8211_phy_prep(struct cphy *phy, struct adapter *adapter,
- 			int phy_addr, const struct mdio_ops *mdio_ops)
- {
-+	int err;
-+	unsigned int val;
-+
- 	cphy_init(phy, adapter, phy_addr, &vsc8211_ops, mdio_ops,
- 		  SUPPORTED_10baseT_Full | SUPPORTED_100baseT_Full |
- 		  SUPPORTED_1000baseT_Full | SUPPORTED_Autoneg | SUPPORTED_MII |
- 		  SUPPORTED_TP | SUPPORTED_IRQ, "10/100/1000BASE-T");
-+	msleep(20);       /* PHY needs ~10ms to start responding to MDIO */
-+
-+	err = mdio_read(phy, 0, VSC8211_EXT_CTRL, &val);
-+	if (err)
-+		return err;
-+	if (val & VSC_CTRL_MEDIA_MODE_HI) {
-+		/* copper interface, just need to configure the LEDs */
-+		return mdio_write(phy, 0, VSC8211_LED_CTRL, 0x100);
-+	}
-+
-+	phy->caps = SUPPORTED_1000baseT_Full | SUPPORTED_Autoneg |
-+		    SUPPORTED_MII | SUPPORTED_FIBRE | SUPPORTED_IRQ;
-+	phy->desc = "1000BASE-X";
-+	phy->ops = &vsc8211_fiber_ops;
-+
-+	err = mdio_write(phy, 0, VSC8211_EXT_PAGE_AXS, 1);
-+	if (err)
-+		return err;
-+
-+	err = mdio_write(phy, 0, VSC8211_SIGDET_CTRL, 1);
-+	if (err)
-+		return err;
-+
-+	err = mdio_write(phy, 0, VSC8211_EXT_PAGE_AXS, 0);
-+	if (err)
-+		return err;
-+
-+	err = mdio_write(phy, 0, VSC8211_EXT_CTRL,
-+			 val | VSC_CTRL_CLAUSE37_VIEW);
-+	if (err)
-+		return err;
-+
-+	err = vsc8211_reset(phy, 0);
-+	if (err)
-+		return err;
-+
-+	udelay(5); /* delay after reset before next SMI */
- 	return 0;
- }
-
+--
+Mark Fasheh
