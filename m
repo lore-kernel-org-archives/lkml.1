@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbYJIAo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYJIApb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbYJIAo7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 20:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757949AbYJIAnP
+	id S1758545AbYJIApb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 20:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbYJIAnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 20:43:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59333
+	Wed, 8 Oct 2008 20:43:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59338
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757341AbYJIAnN (ORCPT
+	by vger.kernel.org with ESMTP id S1757341AbYJIAnT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 20:43:13 -0400
-Date: Wed, 08 Oct 2008 17:42:47 -0700 (PDT)
-Message-Id: <20081008.174247.83149544.davem@davemloft.net>
+	Wed, 8 Oct 2008 20:43:19 -0400
+Date: Wed, 08 Oct 2008 17:42:54 -0700 (PDT)
+Message-Id: <20081008.174254.38166611.davem@davemloft.net>
 To: divy@chelsio.com
 Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Subject: Re: [PATCH 7/8 2.6.28] cxgb3 - Support for Aeluros 2005 PHY
+Subject: Re: [PATCH 8/8 2.6.28] cxgb3 - Add 1G fiber support
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081009003429.13478.3529.stgit@speedy5>
-References: <20081009003429.13478.3529.stgit@speedy5>
+In-Reply-To: <20081009003435.13510.77967.stgit@speedy5>
+References: <20081009003435.13510.77967.stgit@speedy5>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,10 +28,9 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
-Date: Wed, 08 Oct 2008 17:34:29 -0700
+Date: Wed, 08 Oct 2008 17:34:35 -0700
 
-> Add support for SR PHY.
-> Auto-detect phy module type, and report type changes.
+> Add support for 1G optical Vitesse PHY.
 > 
 > Signed-off-by: Divy Le Ray <divy@chelsio.com>
 
