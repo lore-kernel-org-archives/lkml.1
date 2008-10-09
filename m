@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYJIC0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYJICi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbYJIC0t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 22:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYJIC0l
+	id S1757424AbYJICi4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 22:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYJICir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 22:26:41 -0400
-Received: from venus.billgatliff.com ([209.251.101.201]:33366 "EHLO
-	venus.billgatliff.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbYJIC0l (ORCPT
+	Wed, 8 Oct 2008 22:38:47 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:46844 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753783AbYJICiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 22:26:41 -0400
-Message-ID: <48ED6BE5.30908@billgatliff.com>
-Date: Wed, 08 Oct 2008 21:26:45 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 8 Oct 2008 22:38:46 -0400
+Date: Wed, 8 Oct 2008 22:38:37 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Quentin Godfroy <godfroy@clipper.ens.fr>
+Cc: Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: possible (ext4 related?) memory leak in kernel 2.6.26
+Message-ID: <20081009023837.GC17512@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Quentin Godfroy <godfroy@clipper.ens.fr>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20081005091526.GA678@goelette.ens.fr> <20081005122752.GB27335@mit.edu> <20081005161214.GA2985@goelette.ens.fr> <20081006025006.GA9289@mit.edu> <48EA2F20.7020309@redhat.com> <20081006175502.GA12937@mit.edu> <20081007221256.GF15929@mit.edu> <20081008000227.GA32052@goelette.ens.fr> <20081008005338.GH15929@mit.edu> <200810082355.m98NtZkQ012577@goelette.ens.fr>
 MIME-Version: 1.0
-To: Dave Hylands <dhylands@gmail.com>
-CC: Remy Bohmer <linux@bohmer.net>, Jon Smirl <jonsmirl@gmail.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Toggling GPIO at 38Khz
-References: <9e4733910810072043m6c69f3bdv104bd32928fe64ae@mail.gmail.com>	<3efb10970810081157s5e0f8034n63856d2da42b3ad3@mail.gmail.com> <c32efac40810081524q15b0a747oe49de0cf0a2aa2e2@mail.gmail.com>
-In-Reply-To: <c32efac40810081524q15b0a747oe49de0cf0a2aa2e2@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810082355.m98NtZkQ012577@goelette.ens.fr>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hylands wrote:
+On Thu, Oct 09, 2008 at 01:52:46AM +0200, Quentin Godfroy wrote:
+> 
+> Indeed after a couple of days of uptime the number of dirty blocks do not go
+> further than ~50, so I think the bug is corrected as far as I am concerned.
+> 
+> By the way, why does the kernel not commit to memory these remaining buffers
+> when the memory is scarse (say instead of firing an OOM killer)?
 
-> You could also do something similar if you have a SPI interface. Just
-> set the clock to the right frequency and use the bits sent out to
-> generate your pulses.
+The bug was the jbd2 code was bumping the reference count for the
+buffers, so they were considered "in-use" and thus couldn't be freed
+and released for other uses.
 
-Good point.  I have seen that very thing done before, albeit for something other
-than IRDA.  SPI is particularly nice for that, because you don't have to deal
-with the start/stop bits imposed by UART protocols.
+Regards,
 
-
-b.g.
--- 
-Bill Gatliff
-bgat@billgatliff.com
+						- Ted
