@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYJIQEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbYJIQIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbYJIQEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 12:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbYJIQE0
+	id S1757807AbYJIQIN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 12:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYJIQH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 12:04:26 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:42010 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752643AbYJIQE0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 12:04:26 -0400
-To: torvalds@linux-foundation.org
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org>
-	(message from Linus Torvalds on Thu, 9 Oct 2008 08:37:50 -0700 (PDT))
-Subject: Re: splice vs O_APPEND
-References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org>
-Message-Id: <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 09 Oct 2008 18:04:10 +0200
+	Thu, 9 Oct 2008 12:07:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58769 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750987AbYJIQH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 12:07:56 -0400
+Subject: Re: rc9 + orinoco WPA patchset: BUG: scheduling while atomic
+	loading firmware with PCMCIA adapter
+From: Dan Williams <dcbw@redhat.com>
+To: Andrey Borzenkov <arvidjaar@newmail.ru>
+Cc: Matthew Wilcox <matthew@wil.cx>, orinoco-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200810091959.54987.arvidjaar@newmail.ru>
+References: <200810091722.56812.arvidjaar@newmail.ru>
+	 <20081009133125.GW25780@parisc-linux.org>
+	 <200810091959.54987.arvidjaar@newmail.ru>
+Content-Type: text/plain
+Date: Thu, 09 Oct 2008 12:06:50 -0400
+Message-Id: <1223568410.18104.42.camel@dhcp-100-3-195.bos.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Oct 2008, Linus Torvalds wrote:
-> I do wonder if we shouldn't just do this in rw_verify_area(). The whole 
-> reason for that function is that we used to have all those flock checks 
-> etc spread out all over, and some path would inevitably just miss one 
-> check or another. It's kind of stupid to expect low-level filesystems to 
-> do the IS_APPEND/IS_IMMUTABLE checks.
+On Thu, 2008-10-09 at 19:59 +0400, Andrey Borzenkov wrote:
+> On Thursday 09 October 2008, Matthew Wilcox wrote:
+> > 
+> > On Thu, Oct 09, 2008 at 05:22:55PM +0400, Andrey Borzenkov wrote:
+> > > After loading orinoco and "inserting" adapter I get either BUG with
+> > > endless loop (attached) or kernel panic on NULL pointer dereference
+> > > (was not able capture). Adapter works fine with wlags49 driver.
+> > 
+> > It looks like you've fallen off the bottom of the kernel stack.  Do you
+> > have 4k stacks enabled in your config?
+> > 
+> 
+> You are right. Using 8K stacks load and runs fine. Hmm ... not nice
+> from it :p
 
-Do we expect them?  I thought we don't care if it's marked immutable
-or append-only after the file has been opened, same as with normal
-permissions.
+== driver bug; the driver should not require large stacks and this
+should get fixed.
 
-> Comments?
+Dan
 
-Your patch still ignores O_APPEND, is that what we want?  It sounds
-sort of strange.  pwrite() for example honors O_APPEND and ignores the
-position, AFAICS.
 
-Miklos
