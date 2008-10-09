@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbYJITUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbYJITVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760669AbYJITUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 15:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbYJITUE
+	id S1760720AbYJITVF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 15:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbYJITUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 15:20:04 -0400
-Received: from www.tglx.de ([62.245.132.106]:38154 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755511AbYJITUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 15:20:01 -0400
-Date: Thu, 9 Oct 2008 21:18:53 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Snook <csnook@redhat.com>
-cc: Jeff Hansen <x@jeffhansen.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] Re: x86_32 tsc/pit and hrtimers
-In-Reply-To: <48EE4FC4.7070902@redhat.com>
-Message-ID: <alpine.LFD.2.00.0810092118100.3271@apollo>
-References: <Pine.LNX.4.64.0810071640110.25661@ren> <48ECFEDC.90305@redhat.com> <Pine.LNX.4.64.0810081342570.11108@ren> <48ED1728.5060708@redhat.com> <Pine.LNX.4.64.0810081542300.14815@ren> <48ED2A89.3000902@redhat.com> <Pine.LNX.4.64.0810081554380.14982@ren>
- <alpine.LFD.2.00.0810090910510.3237@apollo> <48EE4FC4.7070902@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Oct 2008 15:20:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35171
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756696AbYJITUv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 15:20:51 -0400
+Date: Thu, 09 Oct 2008 12:20:26 -0700 (PDT)
+Message-Id: <20081009.122026.239988133.davem@davemloft.net>
+To: romieu@fr.zoreil.com
+Cc: jamagallon@ono.com, greg@kroah.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, bonbons@linux-vserver.org, ivecera@redhat.com,
+       edward_hsu@realtek.com.tw
+Subject: Re: Update request for r8169
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081009190015.GB19721@electric-eye.fr.zoreil.com>
+References: <20081006071229.GA23039@electric-eye.fr.zoreil.com>
+	<20081007222202.GA9393@electric-eye.fr.zoreil.com>
+	<20081009190015.GB19721@electric-eye.fr.zoreil.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Oct 2008, Chris Snook wrote:
-> 
-> Fair enough, but do you think it's worthwhile to have an option to disable
-> CLOCK_SOURCE_MUST_VERIFY checking for all timers, or should we implement this
-> on a case-by-case basis when there's legitimate cause, like with TSC?
+From: Francois Romieu <romieu@fr.zoreil.com>
+Date: Thu, 9 Oct 2008 21:00:15 +0200
 
-Case-by-case is preferred.
+> Francois Romieu <romieu@fr.zoreil.com> :
+> [...]
+> > Those who base their work on 2.6.27-rc can use the patchkit available
+> > at http://userweb.kernel.org/~romieu/r8169/2.6.26-rc9. It includes the
+>                                              ^^^^^^^^^^
+> It should read as 2.6.27-rc9.
 
-Thanks,
+Francois, when you get a chance can you send me a set of
+patches against net-next-2.6 with the r8169 driver changes
+you have pending?
 
-	tglx
+Thanks!
