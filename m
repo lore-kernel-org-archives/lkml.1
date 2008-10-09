@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbYJIEOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbYJIEOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759347AbYJIEOd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbYJIEHR
+	id S1758286AbYJIEOu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYJIEHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:07:17 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54510 "EHLO
+	Thu, 9 Oct 2008 00:07:20 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54514 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757598AbYJIEGN (ORCPT
+	with ESMTP id S1757591AbYJIEGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Oct 2008 00:06:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 21/42] ext4: elevate write count for migrate ioctl
-Date: Thu,  9 Oct 2008 00:05:39 -0400
-Message-Id: <1223525160-9887-22-git-send-email-tytso@mit.edu>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 28/42] ext4: Combine proc file handling into a single set of functions
+Date: Thu,  9 Oct 2008 00:05:46 -0400
+Message-Id: <1223525160-9887-29-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-21-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-28-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -40,6 +39,13 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-19-git-send-email-tytso@mit.edu>
  <1223525160-9887-20-git-send-email-tytso@mit.edu>
  <1223525160-9887-21-git-send-email-tytso@mit.edu>
+ <1223525160-9887-22-git-send-email-tytso@mit.edu>
+ <1223525160-9887-23-git-send-email-tytso@mit.edu>
+ <1223525160-9887-24-git-send-email-tytso@mit.edu>
+ <1223525160-9887-25-git-send-email-tytso@mit.edu>
+ <1223525160-9887-26-git-send-email-tytso@mit.edu>
+ <1223525160-9887-27-git-send-email-tytso@mit.edu>
+ <1223525160-9887-28-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -47,100 +53,209 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Previously mballoc created a separate set of functions for each proc
+file.  This combines the tunables into a single set of functions which
+gets used for all of the per-superblock proc files, saving
+approximately 2k of compiled object code.
 
-The migrate ioctl writes to the filsystem, so we need to elevate the
-write count.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/ext4.h    |    3 +--
- fs/ext4/ioctl.c   |   21 ++++++++++++++++++++-
- fs/ext4/migrate.c |   10 +---------
- 3 files changed, 22 insertions(+), 12 deletions(-)
+ fs/ext4/ext4.h    |   16 ++++++++++++
+ fs/ext4/ext4_sb.h |   12 ++++----
+ fs/ext4/mballoc.c |   69 ++++------------------------------------------------
+ fs/ext4/super.c   |   42 ++++++++++++++++++++++++++++++++
+ 4 files changed, 70 insertions(+), 69 deletions(-)
 
 diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 3e47b99..9b6ad8f 100644
+index b9c9371..163c445 100644
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -1084,8 +1084,7 @@ extern long ext4_ioctl(struct file *, unsigned int, unsigned long);
- extern long ext4_compat_ioctl(struct file *, unsigned int, unsigned long);
+@@ -957,6 +957,22 @@ void ext4_get_group_no_and_offset(struct super_block *sb, ext4_fsblk_t blocknr,
  
- /* migrate.c */
--extern int ext4_ext_migrate(struct inode *, struct file *, unsigned int,
--		       unsigned long);
-+extern int ext4_ext_migrate(struct inode *);
- /* namei.c */
- extern int ext4_orphan_add(handle_t *, struct inode *);
- extern int ext4_orphan_del(handle_t *, struct inode *);
-diff --git a/fs/ext4/ioctl.c b/fs/ext4/ioctl.c
-index ca09dd1..9f3044a 100644
---- a/fs/ext4/ioctl.c
-+++ b/fs/ext4/ioctl.c
-@@ -267,7 +267,26 @@ setversion_out:
- 	}
+ extern struct proc_dir_entry *ext4_proc_root;
  
- 	case EXT4_IOC_MIGRATE:
--		return ext4_ext_migrate(inode, filp, cmd, arg);
-+	{
-+		int err;
-+		if (!is_owner_or_cap(inode))
-+			return -EACCES;
++#ifdef CONFIG_PROC_FS
++extern const struct file_operations ext4_ui_proc_fops;
 +
-+		err = mnt_want_write(filp->f_path.mnt);
-+		if (err)
-+			return err;
-+		/*
-+		 * inode_mutex prevent write and truncate on the file.
-+		 * Read still goes through. We take i_data_sem in
-+		 * ext4_ext_swap_inode_data before we switch the
-+		 * inode format to prevent read.
-+		 */
-+		mutex_lock(&(inode->i_mutex));
-+		err = ext4_ext_migrate(inode);
-+		mutex_unlock(&(inode->i_mutex));
-+		mnt_drop_write(filp->f_path.mnt);
-+		return err;
-+	}
++#define	EXT4_PROC_HANDLER(name, var)					\
++do {									\
++	proc = proc_create_data(name, mode, sbi->s_proc,		\
++				&ext4_ui_proc_fops, &sbi->s_##var);	\
++	if (proc == NULL) {						\
++		printk(KERN_ERR "EXT4-fs: can't create %s\n", name);	\
++		goto err_out;						\
++	}								\
++} while (0)
++#else
++#define EXT4_PROC_HANDLER(name, var)
++#endif
++
+ /*
+  * Function prototypes
+  */
+diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
+index 95e046e..f92af01 100644
+--- a/fs/ext4/ext4_sb.h
++++ b/fs/ext4/ext4_sb.h
+@@ -108,12 +108,12 @@ struct ext4_sb_info {
  
- 	default:
- 		return -ENOTTY;
-diff --git a/fs/ext4/migrate.c b/fs/ext4/migrate.c
-index 46fc0b5..f2a9cf4 100644
---- a/fs/ext4/migrate.c
-+++ b/fs/ext4/migrate.c
-@@ -447,8 +447,7 @@ static int free_ext_block(handle_t *handle, struct inode *inode)
+ 	/* tunables */
+ 	unsigned long s_stripe;
+-	unsigned long s_mb_stream_request;
+-	unsigned long s_mb_max_to_scan;
+-	unsigned long s_mb_min_to_scan;
+-	unsigned long s_mb_stats;
+-	unsigned long s_mb_order2_reqs;
+-	unsigned long s_mb_group_prealloc;
++	unsigned int s_mb_stream_request;
++	unsigned int s_mb_max_to_scan;
++	unsigned int s_mb_min_to_scan;
++	unsigned int s_mb_stats;
++	unsigned int s_mb_order2_reqs;
++	unsigned int s_mb_group_prealloc;
+ 	/* where last allocation was done - for stream allocation */
+ 	unsigned long s_mb_last_group;
+ 	unsigned long s_mb_last_start;
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 705870c..3373f89 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -2721,63 +2721,6 @@ ext4_mb_free_committed_blocks(struct super_block *sb)
+ #define EXT4_MB_STREAM_REQ		"stream_req"
+ #define EXT4_MB_GROUP_PREALLOC		"group_prealloc"
  
+-#define MB_PROC_FOPS(name)					\
+-static int ext4_mb_##name##_proc_show(struct seq_file *m, void *v)	\
+-{								\
+-	struct ext4_sb_info *sbi = m->private;			\
+-								\
+-	seq_printf(m, "%ld\n", sbi->s_mb_##name);		\
+-	return 0;						\
+-}								\
+-								\
+-static int ext4_mb_##name##_proc_open(struct inode *inode, struct file *file)\
+-{								\
+-	return single_open(file, ext4_mb_##name##_proc_show, PDE(inode)->data);\
+-}								\
+-								\
+-static ssize_t ext4_mb_##name##_proc_write(struct file *file,	\
+-		const char __user *buf, size_t cnt, loff_t *ppos)	\
+-{								\
+-	struct ext4_sb_info *sbi = PDE(file->f_path.dentry->d_inode)->data;\
+-	char str[32];						\
+-	long value;						\
+-	if (cnt >= sizeof(str))					\
+-		return -EINVAL;					\
+-	if (copy_from_user(str, buf, cnt))			\
+-		return -EFAULT;					\
+-	value = simple_strtol(str, NULL, 0);			\
+-	if (value <= 0)						\
+-		return -ERANGE;					\
+-	sbi->s_mb_##name = value;				\
+-	return cnt;						\
+-}								\
+-								\
+-static const struct file_operations ext4_mb_##name##_proc_fops = {	\
+-	.owner		= THIS_MODULE,				\
+-	.open		= ext4_mb_##name##_proc_open,		\
+-	.read		= seq_read,				\
+-	.llseek		= seq_lseek,				\
+-	.release	= single_release,			\
+-	.write		= ext4_mb_##name##_proc_write,		\
+-};
+-
+-MB_PROC_FOPS(stats);
+-MB_PROC_FOPS(max_to_scan);
+-MB_PROC_FOPS(min_to_scan);
+-MB_PROC_FOPS(order2_reqs);
+-MB_PROC_FOPS(stream_request);
+-MB_PROC_FOPS(group_prealloc);
+-
+-#define	MB_PROC_HANDLER(name, var)					\
+-do {									\
+-	proc = proc_create_data(name, mode, sbi->s_proc,		\
+-				&ext4_mb_##var##_proc_fops, sbi);	\
+-	if (proc == NULL) {						\
+-		printk(KERN_ERR "EXT4-fs: can't to create %s\n", name);	\
+-		goto err_out;						\
+-	}								\
+-} while (0)
+-
+ static int ext4_mb_init_per_dev_proc(struct super_block *sb)
+ {
+ 	mode_t mode = S_IFREG | S_IRUGO | S_IWUSR;
+@@ -2787,12 +2730,12 @@ static int ext4_mb_init_per_dev_proc(struct super_block *sb)
+ 	if (sbi->s_proc == NULL)
+ 		return -EINVAL;
+ 
+-	MB_PROC_HANDLER(EXT4_MB_STATS_NAME, stats);
+-	MB_PROC_HANDLER(EXT4_MB_MAX_TO_SCAN_NAME, max_to_scan);
+-	MB_PROC_HANDLER(EXT4_MB_MIN_TO_SCAN_NAME, min_to_scan);
+-	MB_PROC_HANDLER(EXT4_MB_ORDER2_REQ, order2_reqs);
+-	MB_PROC_HANDLER(EXT4_MB_STREAM_REQ, stream_request);
+-	MB_PROC_HANDLER(EXT4_MB_GROUP_PREALLOC, group_prealloc);
++	EXT4_PROC_HANDLER(EXT4_MB_STATS_NAME, mb_stats);
++	EXT4_PROC_HANDLER(EXT4_MB_MAX_TO_SCAN_NAME, mb_max_to_scan);
++	EXT4_PROC_HANDLER(EXT4_MB_MIN_TO_SCAN_NAME, mb_min_to_scan);
++	EXT4_PROC_HANDLER(EXT4_MB_ORDER2_REQ, mb_order2_reqs);
++	EXT4_PROC_HANDLER(EXT4_MB_STREAM_REQ, mb_stream_request);
++	EXT4_PROC_HANDLER(EXT4_MB_GROUP_PREALLOC, mb_group_prealloc);
+ 	return 0;
+ 
+ err_out:
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 7feeec6..9f5468f 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -3541,6 +3541,48 @@ static int ext4_get_sb(struct file_system_type *fs_type,
+ 	return get_sb_bdev(fs_type, flags, dev_name, data, ext4_fill_super, mnt);
  }
  
--int ext4_ext_migrate(struct inode *inode, struct file *filp,
--				unsigned int cmd, unsigned long arg)
-+int ext4_ext_migrate(struct inode *inode)
- {
- 	handle_t *handle;
- 	int retval = 0, i;
-@@ -516,12 +515,6 @@ int ext4_ext_migrate(struct inode *inode, struct file *filp,
- 	 * when we add extents we extent the journal
- 	 */
- 	/*
--	 * inode_mutex prevent write and truncate on the file. Read still goes
--	 * through. We take i_data_sem in ext4_ext_swap_inode_data before we
--	 * switch the inode format to prevent read.
--	 */
--	mutex_lock(&(inode->i_mutex));
--	/*
- 	 * Even though we take i_mutex we can still cause block allocation
- 	 * via mmap write to holes. If we have allocated new blocks we fail
- 	 * migrate.  New block allocation will clear EXT4_EXT_MIGRATE flag.
-@@ -623,7 +616,6 @@ err_out:
- 	tmp_inode->i_nlink = 0;
- 
- 	ext4_journal_stop(handle);
--	mutex_unlock(&(inode->i_mutex));
- 
- 	if (tmp_inode)
- 		iput(tmp_inode);
++#ifdef CONFIG_PROC_FS
++static int ext4_ui_proc_show(struct seq_file *m, void *v)
++{
++	unsigned int *p = m->private;
++
++	seq_printf(m, "%u\n", *p);
++	return 0;
++}
++
++static int ext4_ui_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, ext4_ui_proc_show, PDE(inode)->data);
++}
++
++static ssize_t ext4_ui_proc_write(struct file *file, const char __user *buf,
++			       size_t cnt, loff_t *ppos)
++{
++	unsigned int *p = PDE(file->f_path.dentry->d_inode)->data;
++	char str[32];
++	unsigned long value;
++
++	if (cnt >= sizeof(str))
++		return -EINVAL;
++	if (copy_from_user(str, buf, cnt))
++		return -EFAULT;
++	value = simple_strtol(str, NULL, 0);
++	if (value < 0)
++		return -ERANGE;
++	*p = value;
++	return cnt;
++}
++
++const struct file_operations ext4_ui_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= ext4_ui_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++	.write		= ext4_ui_proc_write,
++};
++#endif
++
+ static struct file_system_type ext4dev_fs_type = {
+ 	.owner		= THIS_MODULE,
+ 	.name		= "ext4dev",
 -- 
 1.5.6.1.205.ge2c7.dirty
 
