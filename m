@@ -1,84 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbYJIIsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbYJIIy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758132AbYJIIsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 04:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYJIIsn
+	id S1757171AbYJIIy1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 04:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJIIyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 04:48:43 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47539 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbYJIIsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 04:48:42 -0400
-Date: Thu, 9 Oct 2008 10:48:09 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Aaron Carroll <aaronc@gelato.unsw.edu.au>, Bodo Eggert <7eggert@gmx.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Give kjournald a IOPRIO_CLASS_RT io priority
-Message-ID: <20081009084809.GD19428@kernel.dk>
-References: <biqkw-aK-3@gated-at.bofh.it> <birgx-1pQ-9@gated-at.bofh.it> <bisPe-3xx-9@gated-at.bofh.it> <bisYW-3HQ-13@gated-at.bofh.it> <E1KlQ9s-0003Oh-Cz@be1.7eggert.dyndns.org> <20081002233426.GG30001@disturbed> <48E71EFC.7040403@gelato.unsw.edu.au> <20081006031829.GQ30001@disturbed> <20081007180652.GA19428@kernel.dk> <20081007222219.GW30001@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081007222219.GW30001@disturbed>
+	Thu, 9 Oct 2008 04:54:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34215 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754AbYJIIyR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 04:54:17 -0400
+Subject: Re: [PATCH 01/42] percpu counter: clean up
+	percpu_counter_sum_and_set()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mingming Cao <cmm@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1223525160-9887-2-git-send-email-tytso@mit.edu>
+References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
+	 <1223525160-9887-2-git-send-email-tytso@mit.edu>
+Content-Type: text/plain
+Date: Thu, 09 Oct 2008 10:52:52 +0200
+Message-Id: <1223542372.7382.30.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08 2008, Dave Chinner wrote:
-> On Tue, Oct 07, 2008 at 08:06:53PM +0200, Jens Axboe wrote:
-> > On Mon, Oct 06 2008, Dave Chinner wrote:
-> > > On Sat, Oct 04, 2008 at 05:45:00PM +1000, Aaron Carroll wrote:
-> > > > Dave Chinner wrote:
-> > > >> On Thu, Oct 02, 2008 at 05:32:04PM +0200, Bodo Eggert wrote:
-> > > >>> Sounds like you need a priority class besides sync and async.
-> > > >>
-> > > >> There's BIO_META now as well, which I was testing at the same time
-> > > >> as RT priority. Marking all the metadata I/O as BIO_META did help,
-> > > >> but once again I never got to determining if that was a result of
-> > > >> the different tagging or the priority increase.
-> > > >
-> > > > What exactly do you want META to mean?  Strict prioritisation over
-> > > > all other non-META requests, or just more frequent and/or larger
-> > > > dispatches?  Should META requests be sorted?
-> > > 
-> > > The real question is "what was it supposed to mean"? AFAICT, it was
-> > > added to a couple of filesystems to be used to tag superblock read
-> > > I/O. Why - I don't know - there's a distinct lack of documentation
-> > > surrounding these bio flags. :/
-> > 
-> > It was added to be able to differentiate between data and meta data IO
-> > when using blktrace, that is all.
+On Thu, 2008-10-09 at 00:05 -0400, Theodore Ts'o wrote:
+> From: Mingming Cao <cmm@us.ibm.com>
 > 
-> Ok.
+> percpu_counter_sum_and_set() and percpu_counter_sum() is the same except
+> the former updates the global counter after accounting.  Since we are
+> taking the fbc->lock to calculate the precise value of the counter in
+> percpu_counter_sum() anyway, it should simply set fbc->count too, as the
+> percpu_counter_sum_and_set() does.
 > 
-> > > Realistically, I'm not sure that having a separate queue for
-> > > BIO_META will buy us anything, given that noop is quite often the
-> > > fastest scheduler for XFS because it enables interleaved metadata
-> > > I/O to be merged with data I/O. Like I said, I was not able to spend
-> > > the time to determine exactly how BIO_META affected I/O patterns, so
-> > > I can't really comment on whether it is really necessary or not.
-> > 
-> > There's no seperate queue for meta data IO anywhere. CFQ will give
-> > _slight_ preference to meta data IO as a side effect, preferring the
-> > meta IO for otherwise same IO in what to serve next in the same queue.
-> > And it will not allow preemption of a meta data IO for a data IO.
-> > 
-> > So using meta should not yield any important boosts by itself.
-> 
-> Which means that performance increase I saw on CFQ was a result of
-> removing the BIO_SYNC tagging "optimisation" XFS uses for metadata,
-> not from adding BIO_META.....
-> 
-> Could you please document what these tags actually mean and do
-> so that other people don't get as confused as me about this
-> stuff....
+> This patch merge these two interfaces into one.
 
-Sure, I've added such a patch for 2.6.28.
+I totally missed the patch introducing this _and_set() horror, but this
+does look like a good cleanup.
 
--- 
-Jens Axboe
+Thanks Mingming!
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: <linux-ext4@vger.kernel.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> ---
+>  fs/ext4/balloc.c               |    2 +-
+>  include/linux/percpu_counter.h |   12 +++---------
+>  lib/percpu_counter.c           |    8 +++-----
+>  3 files changed, 7 insertions(+), 15 deletions(-)
+> 
+> diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+> index e9fa960..00a94d5 100644
+> --- a/fs/ext4/balloc.c
+> +++ b/fs/ext4/balloc.c
+> @@ -1624,7 +1624,7 @@ ext4_fsblk_t ext4_has_free_blocks(struct ext4_sb_info *sbi,
+>  #ifdef CONFIG_SMP
+>  	if (free_blocks - root_blocks < FBC_BATCH)
+>  		free_blocks =
+> -			percpu_counter_sum_and_set(&sbi->s_freeblocks_counter);
+> +			percpu_counter_sum(&sbi->s_freeblocks_counter);
+>  #endif
+>  	if (free_blocks <= root_blocks)
+>  		/* we don't have free space */
+> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+> index 2083888..9007ccd 100644
+> --- a/include/linux/percpu_counter.h
+> +++ b/include/linux/percpu_counter.h
+> @@ -35,7 +35,7 @@ int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
+>  void percpu_counter_destroy(struct percpu_counter *fbc);
+>  void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+>  void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
+> -s64 __percpu_counter_sum(struct percpu_counter *fbc, int set);
+> +s64 __percpu_counter_sum(struct percpu_counter *fbc);
+>  
+>  static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
+>  {
+> @@ -44,19 +44,13 @@ static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
+>  
+>  static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
+>  {
+> -	s64 ret = __percpu_counter_sum(fbc, 0);
+> +	s64 ret = __percpu_counter_sum(fbc);
+>  	return ret < 0 ? 0 : ret;
+>  }
+>  
+> -static inline s64 percpu_counter_sum_and_set(struct percpu_counter *fbc)
+> -{
+> -	return __percpu_counter_sum(fbc, 1);
+> -}
+> -
+> -
+>  static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
+>  {
+> -	return __percpu_counter_sum(fbc, 0);
+> +	return __percpu_counter_sum(fbc);
+>  }
+>  
+>  static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+> diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+> index 4a8ba4b..a866389 100644
+> --- a/lib/percpu_counter.c
+> +++ b/lib/percpu_counter.c
+> @@ -52,7 +52,7 @@ EXPORT_SYMBOL(__percpu_counter_add);
+>   * Add up all the per-cpu counts, return the result.  This is a more accurate
+>   * but much slower version of percpu_counter_read_positive()
+>   */
+> -s64 __percpu_counter_sum(struct percpu_counter *fbc, int set)
+> +s64 __percpu_counter_sum(struct percpu_counter *fbc)
+>  {
+>  	s64 ret;
+>  	int cpu;
+> @@ -62,11 +62,9 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc, int set)
+>  	for_each_online_cpu(cpu) {
+>  		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
+>  		ret += *pcount;
+> -		if (set)
+> -			*pcount = 0;
+> +		*pcount = 0;
+>  	}
+> -	if (set)
+> -		fbc->count = ret;
+> +	fbc->count = ret;
+>  
+>  	spin_unlock(&fbc->lock);
+>  	return ret;
 
