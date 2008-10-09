@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYJIUyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYJIU5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbYJIUyn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 16:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYJIUyf
+	id S1756731AbYJIU5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 16:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbYJIU53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 16:54:35 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:58556 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbYJIUyf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 16:54:35 -0400
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       arnd@arndb.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20081009194350.GA31214@us.ibm.com>
-References: <20081009190405.13A253CB@kernel>
-	 <20081009190406.1B257119@kernel>  <20081009194350.GA31214@us.ibm.com>
-Content-Type: text/plain
-Date: Thu, 09 Oct 2008 13:54:31 -0700
-Message-Id: <1223585671.11830.40.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 9 Oct 2008 16:57:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47299 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754312AbYJIU52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 16:57:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] sky2: Fix recent WOL regression
+Date: Thu, 9 Oct 2008 23:01:35 +0200
+User-Agent: KMail/1.9.9
+Cc: shemminger@vyatta.com, jeff@garzik.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       tino.keitel@gmx.de, netdev@vger.kernel.org, jbarnes@virtuousgeek.org
+References: <200810022339.34025.rjw@sisk.pl> <200810090055.56598.rjw@sisk.pl> <20081008.161210.79287275.davem@davemloft.net>
+In-Reply-To: <20081008.161210.79287275.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810092301.36633.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 14:43 -0500, Serge E. Hallyn wrote:
-> Hmm, I don't know too much about aio, but is it possible to succeed with
-> io_getevents if we didn't first do a submit?  It looks like the contexts
-> are looked up out of current->mm, so I don't think we need this call
-> here.
+On Thursday, 9 of October 2008, David Miller wrote:
+> From: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Date: Thu, 9 Oct 2008 00:55:55 +0200
 > 
-> Otherwise, this is neat.
+> > On Friday, 3 of October 2008, Stephen Hemminger wrote:
+> > > On Thu, 2 Oct 2008 23:39:33 +0200
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > sky2: Fix recent WOL regression
+> > > > 
+> > > > Since dev->power.should_wakeup bit is used by the PCI core to
+> > > > decide whether the device should wake up the system from sleep
+> > > > states, set/unset this bit whenever WOL is enabled/disabled using
+> > > > sky2_set_wol() (this fixes a regression from 2.6.26 on the Tino's
+> > > > machine).
+> > > > 
+> > > > Remove an open-coded reference to the standard PCI PM registers that
+> > > > is not used any more.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > Reported-by: Tino Keitel <tino.keitel@gmx.de>
+> > > > ---
+> > > 
+> > > Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+> > > 
+> > > Thanks for fixing this.
+> > 
+> > Can you please include this patch into your next push for Jeff?
+> > 
+> > It seems to have been overlooked.
+> 
+> I missed this ACK but I did add the patch to my tree as you
+> can see from another email of mine.
 
-Good question.  I know nothing, either. :)
-
-My thought was that any process *trying* to do aio stuff of any kind is
-going to be really confused if it gets checkpointed.  Or, it might try
-to submit an aio right after it checks the list of them.  I thought it
-best to be cautious and say, if you screw with aio, no checkpointing for
-you!
-
--- Dave
-
+I saw it, thanks!
