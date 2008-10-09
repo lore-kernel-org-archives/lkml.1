@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbYJIJgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYJIJ6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758566AbYJIJgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 05:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYJIJgI
+	id S1758116AbYJIJ6f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 05:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbYJIJ60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 05:36:08 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:64605 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbYJIJgH (ORCPT
+	Thu, 9 Oct 2008 05:58:26 -0400
+Received: from smarthost01.mail.zen.net.uk ([212.23.3.140]:46016 "EHLO
+	smarthost01.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753824AbYJIJ6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 05:36:07 -0400
-Message-ID: <48EF21F7.1020308@freemail.hu>
-Date: Fri, 10 Oct 2008 11:35:51 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: cpufreq@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] cpufreq: correct broken links and email address
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32722; Body=3 Fuz1=3
-	Fuz2=3
+	Thu, 9 Oct 2008 05:58:25 -0400
+Subject: Re: [PATCH] documentation: explain memory barriers
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org
+In-Reply-To: <48ED9BFB.4060904@redhat.com>
+References: <20080911101616.GA24064@agk.fab.redhat.com>
+	 <Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>
+	 <Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>
+	 <20080923154905.50d4b0fa.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>
+	 <20080923164623.ce82c1c2.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>
+	 <20081001225404.4e973465.akpm@linux-foundation.org>
+	 <20081008181223.6954c7b2.randy.dunlap@oracle.com>
+	 <48ED5BC6.8040006@redhat.com>
+	 <20081008183125.2a24e3c2.akpm@linux-foundation.org>
+	 <48ED9BFB.4060904@redhat.com>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Thu, 09 Oct 2008 10:58:18 +0100
+Message-Id: <1223546298.3984.100.camel@achroite>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-Originating-Smarthost01-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Thu, 2008-10-09 at 01:51 -0400, Chris Snook wrote:
+> Andrew Morton wrote:
+> > On Wed, 08 Oct 2008 21:17:58 -0400 Chris Snook <csnook@redhat.com> wrote:
+> > 
+> >> Randy Dunlap wrote:
+> >>> On Wed, 1 Oct 2008 22:54:04 -0700 Andrew Morton wrote:
+> >>>
+> >>>> This sequence is repeated three or four times and should be pulled out
+> >>>> into a well-commented function.  That comment should explain the logic
+> >>>> behind the use of these barriers, please.
+> >>> and on 2008-OCT-08 Ben Hutchings wrote:
+> >>>
+> >>>> All memory barriers need a comment to explain why and what they're doing.
+> > 
+> > I approve this message.
+> > 
+> >> Seriously?  When a barrier is used, it's generally self-evident what 
+> >> it's doing.
+> > 
+> > fs/buffer.c:sync_buffer().  Have fun.
+> 
+> The real disaster there is the clear_buffer_##name macro and friends, as
+> evidenced by fs/ext2/inode.c:599
+> 
+>                 clear_buffer_new(bh_result); /* What's this do? */
+> 
+> I'm completely in favor of documenting everything that can potentially interact
+> with that train wreck, but I maintain that the vast majority of memory barriers
+> are self-evident.
 
-Replace the no longer working links and email address in the
-documentation and in source code.
+Acquire and release barriers attached to operations are usually self-
+evident; standalone wmb() and rmb() much less so.  It is helpful to be
+explicit about exactly which memory operations need to be ordered, which
+are often not the memory operations immediately preceding and following
+it.  "all" may have been a bit strong though.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -upr 
-linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c 
-linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
---- linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c    
-2008-10-08 17:11:44.000000000 +0200
-+++ linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c    
-2008-10-10 10:48:11.000000000 +0200
-@@ -171,7 +171,7 @@ static unsigned int cpufreq_p4_get_frequ
-     }
- 
-     if (c->x86 != 0xF) {
--        printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. 
-Please send an e-mail to <cpufreq@lists.linux.org.uk>\n");
-+        printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. 
-Please send an e-mail to <cpufreq@vger.kernel.org>\n");
-         return 0;
-     }
- 
-diff -upr 
-linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c 
-linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
---- 
-linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c    
-2008-10-08 17:11:44.000000000 +0200
-+++ 
-linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c    
-2008-10-10 10:48:39.000000000 +0200
-@@ -26,7 +26,7 @@
- #include <asm/cpufeature.h>
- 
- #define PFX        "speedstep-centrino: "
--#define MAINTAINER    "cpufreq@lists.linux.org.uk"
-+#define MAINTAINER    "cpufreq@vger.kernel.org"
- 
- #define dprintk(msg...) \
-     cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "speedstep-centrino", msg)
-diff -upr linux-2.6.27-rc9.orig/Documentation/cpu-freq/index.txt 
-linux-2.6.27-rc9.new/Documentation/cpu-freq/index.txt
---- linux-2.6.27-rc9.orig/Documentation/cpu-freq/index.txt    2008-07-13 
-23:51:29.000000000 +0200
-+++ linux-2.6.27-rc9.new/Documentation/cpu-freq/index.txt    2008-10-10 
-10:46:08.000000000 +0200
-@@ -35,11 +35,9 @@ Mailing List
- ------------
- There is a CPU frequency changing CVS commit and general list where
- you can report bugs, problems or submit patches. To post a message,
--send an email to cpufreq@lists.linux.org.uk, to subscribe go to
--http://lists.linux.org.uk/mailman/listinfo/cpufreq. Previous post to the
--mailing list are available to subscribers at
--http://lists.linux.org.uk/mailman/private/cpufreq/.
--
-+send an email to cpufreq@vger.kernel.org, to subscribe go to
-+http://vger.kernel.org/vger-lists.html#cpufreq and follow the
-+instructions there.
- 
- Links
- -----
-@@ -50,7 +48,7 @@ how to access the CVS repository:
- * http://cvs.arm.linux.org.uk/
- 
- the CPUFreq Mailing list:
--* http://lists.linux.org.uk/mailman/listinfo/cpufreq
-+* http://vger.kernel.org/vger-lists.html#cpufreq
- 
- Clock and voltage scaling for the SA-1100:
- * http://www.lartmaker.nl/projects/scaling
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
