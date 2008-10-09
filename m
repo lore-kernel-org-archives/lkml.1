@@ -1,35 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbYJIPK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbYJIPMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbYJIPK0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 11:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYJIPKR
+	id S1759976AbYJIPMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 11:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbYJIPMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 11:10:17 -0400
-Received: from india245.server4you.de ([85.25.150.237]:54121 "EHLO hohwie.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbYJIPKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 11:10:16 -0400
-X-Greylist: delayed 548 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Oct 2008 11:10:15 EDT
-Date: Thu, 9 Oct 2008 17:01:00 +0200
-X-OfflineIMAP-x2045970985-6f7574626f78-494e424f582e6f7574626f78: 1223564463-029447264773-v4.0.16
-From: Joerg Hohwieler <joerg@hohwie.com>
-To: linux-kernel@vger.kernel.org
-Subject: Intel G33 chipset support on 2.4.xx ?
-Message-ID: <20081009150100.GC5800@hohwie.com>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 9 Oct 2008 11:12:41 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:50777 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754092AbYJIPMk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 11:12:40 -0400
+Subject: Re: [PATCH] Improve buffered streaming write ordering
+From: Chris Mason <chris.mason@oracle.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 <linux-ext4@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20081002234309.GH30001@disturbed>
+References: <1222886451.9158.34.camel@think.oraclecorp.com>
+	 <20081001215239.ee2ae63f.akpm@linux-foundation.org>
+	 <1222950054.6745.18.camel@think.oraclecorp.com>
+	 <20081002181856.GB29613@skywalker>  <20081002234309.GH30001@disturbed>
+Content-Type: text/plain
+Date: Thu, 09 Oct 2008 11:11:20 -0400
+Message-Id: <1223565080.14090.28.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unfortunately I don't have any hardware to test it ...
+On Fri, 2008-10-03 at 09:43 +1000, Dave Chinner wrote:
+> On Thu, Oct 02, 2008 at 11:48:56PM +0530, Aneesh Kumar K.V wrote:
+> > On Thu, Oct 02, 2008 at 08:20:54AM -0400, Chris Mason wrote:
+> > > On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
+> > > For a 4.5GB streaming buffered write, this printk inside
+> > > ext4_da_writepage shows up 37,2429 times in /var/log/messages.
+> > > 
+> > 
+> > Part of that can happen due to shrink_page_list -> pageout -> writepagee
+> > call back with lots of unallocated buffer_heads(blocks).
+> 
+> Quite frankly, a simple streaming buffered write should *never*
+> trigger writeback from the LRU in memory reclaim. That indicates
+> that some feedback loop has broken down and we are not cleaning
+> pages fast enough or perhaps in the correct order. Page reclaim in
+> this case should be reclaiming clean pages (those that have already
+> been written back), not writing back random dirty pages.
 
-So, is the Intel G33 chipset fully supported by any
-linux-2.4.xx release?
+Here are some go faster stripes for the XFS buffered writeback.  This
+patch has a lot of debatable features to it, but the idea is to show
+which knobs are slowing us down today.
+
+The first change is to avoid calling balance_dirty_pages_ratelimited on
+every page.  When we know we're doing a largeish write it makes more
+sense to balance things less often.  This might just mean our
+ratelimit_pages magic value is too small.
+
+The second change makes xfs bump wbc->nr_to_write (suggested by
+Christoph), which probably makes delalloc go in bigger chunks.
+
+On unpatched kernels, XFS does streaming writes to my 4 drive array at
+around 205MB/s.  With the patch below, I come in at 326MB/s.  O_DIRECT
+runs at 330MB/s, so that's pretty good.
+
+With just the nr_to_write change, I get around 315MB/s.
+
+With just the balance_dirty_pages_nr change, I get around 240MB/s.
+
+-chris
+
+diff --git a/fs/xfs/linux-2.6/xfs_aops.c b/fs/xfs/linux-2.6/xfs_aops.c
+index a44d68e..c72bd54 100644
+--- a/fs/xfs/linux-2.6/xfs_aops.c
++++ b/fs/xfs/linux-2.6/xfs_aops.c
+@@ -944,6 +944,9 @@ xfs_page_state_convert(
+ 	int			trylock = 0;
+ 	int			all_bh = unmapped;
+ 
++
++	wbc->nr_to_write *= 4;
++
+ 	if (startio) {
+ 		if (wbc->sync_mode == WB_SYNC_NONE && wbc->nonblocking)
+ 			trylock |= BMAPI_TRYLOCK;
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 876bc59..b6c26e3 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2389,6 +2389,7 @@ static ssize_t generic_perform_write(struct file *file,
+ 	long status = 0;
+ 	ssize_t written = 0;
+ 	unsigned int flags = 0;
++	unsigned long nr = 0;
+ 
+ 	/*
+ 	 * Copies from kernel address space cannot fail (NFSD is a big user).
+@@ -2460,11 +2461,17 @@ again:
+ 		}
+ 		pos += copied;
+ 		written += copied;
+-
+-		balance_dirty_pages_ratelimited(mapping);
++		nr++;
++		if (nr > 256) {
++			balance_dirty_pages_ratelimited_nr(mapping, nr);
++			nr = 0;
++		}
+ 
+ 	} while (iov_iter_count(i));
+ 
++	if (nr)
++		balance_dirty_pages_ratelimited_nr(mapping, nr);
++
+ 	return written ? written : status;
+ }
+ 
 
 
-Best regards,
-Joerg Hohwieler
+
