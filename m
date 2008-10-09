@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbYJIRZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbYJIR3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756627AbYJIRZY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbYJIRZL
+	id S1759516AbYJIR3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYJIR3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:25:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:36338 "EHLO mail.goop.org"
+	Thu, 9 Oct 2008 13:29:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:36381 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753856AbYJIRZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:25:09 -0400
-Message-ID: <48EE3E71.8010604@goop.org>
-Date: Thu, 09 Oct 2008 10:25:05 -0700
+	id S1752718AbYJIR3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:29:35 -0400
+Message-ID: <48EE3F7B.6040802@goop.org>
+Date: Thu, 09 Oct 2008 10:29:31 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
 MIME-Version: 1.0
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-CC: linux-kernel@vger.kernel.org, "Wang, Shane" <shane.wang@intel.com>,
-       "Wei, Gang" <gang.wei@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
-       mingo@elte.hu, tytso@mit.edu
-Subject: Re: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
-References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
-In-Reply-To: <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
+To: Pavel Machek <pavel@suse.cz>
+CC: Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit
+ arch
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <20081007105056.16d9e785.akpm@linux-foundation.org> <1223405963.26330.83.camel@lappy.programming.kicks-ass.net> <200810081335.44576.nickpiggin@yahoo.com.au> <20081008025209.GO25780@parisc-linux.org> <20081009122319.GC1623@ucw.cz>
+In-Reply-To: <20081009122319.GC1623@ucw.cz>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -32,38 +34,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cihula, Joseph wrote:
-> --- a/security/Kconfig	Mon Oct 06 12:50:47 2008 -0700
-> +++ b/security/Kconfig	Tue Oct 07 00:13:02 2008 -0700
-> @@ -115,6 +115,23 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
->  	  /proc/sys/vm/mmap_min_addr tunable.
->  
->  
-> +config TXT
->   
+Pavel Machek wrote:
+> We have append-only files, and normal users should not be able to work
+> around that restriction.
 
-This should be X86_TXT; perhaps even X86_INTEL_TXT unless someone else 
-is likely to implement this stuff.  ("TXT" is awfully generic.)
-
-
-> +        bool "Enable Intel(R) Trusted Execution Technology (TXT)"
-> +        depends on EXPERIMENTAL && X86
-> +        help
-> +          This option enables support for booting the kernel with
-> +          the Trusted Boot (tboot) module. This will utilize
-> +          Intel(R) Trusted Execution Technology (TXT) to perform a
-> +          measured launch of the kernel. If the system does not
-> +          support TXT, this will have no effect.
-> +
-> +          See <http://www.intel.com/technology/security/> for more
-> +          information about Intel(R) TXT.
-> +          And see <http://tboot.sourceforge.net> for more information
-> +          about tboot.
-> +
-> +          If you are unsure as to whether this is required, answer N.
-> +
->  source security/selinux/Kconfig
->  source security/smack/Kconfig
->   
+Well, apparently Posix breaks this, and we're supposed to let pwrite() 
+write anywhere in an O_APPEND file.  So any security-related argument 
+goes out the window.
 
     J
