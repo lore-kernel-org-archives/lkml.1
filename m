@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbYJISJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbYJISQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbYJISJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYJISJe
+	id S1759600AbYJISQD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 14:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbYJISPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:09:34 -0400
-Received: from smtp02.mtu.ru ([62.5.255.49]:54883 "EHLO smtp02.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753899AbYJISJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:09:34 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: loading ipmi_watchdog causes tons of other watchdog modules to be loaded
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Thu, 09 Oct 2008 22:09:14 +0400
-References: <200810091348.19828.a.miskiewicz@gmail.com> <ac3eb2510810090636w51e04a7fxfa36d8b016b236d@mail.gmail.com> <200810091922.24108.a.miskiewicz@gmail.com>
-User-Agent: KNode/0.10.9
+	Thu, 9 Oct 2008 14:15:51 -0400
+Received: from sous-sol.org ([216.99.217.87]:60481 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753511AbYJISPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 14:15:51 -0400
+Date: Thu, 9 Oct 2008 11:14:51 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       linux-kernel@vger.kernel.org, "Wang, Shane" <shane.wang@intel.com>,
+       "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
+       mingo@elte.hu, tytso@mit.edu
+Subject: Re: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology
+	support for Linux - Overview
+Message-ID: <20081009181451.GD6912@sequoia.sous-sol.org>
+References: <D936D925018D154694D8A362EEB0892005AC105B@orsmsx416.amr.corp.intel.com> <20081009125311.GD1623@ucw.cz> <20081009174427.GB6912@sequoia.sous-sol.org> <20081009175938.GA12507@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <20081009180920.05888143D6F1@smtp02.mtu.ru>
-X-DCC-STREAM-Metrics: smtp02.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
+Content-Disposition: inline
+In-Reply-To: <20081009175938.GA12507@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arkadiusz Miskiewicz wrote:
+* Pavel Machek (pavel@suse.cz) wrote:
+> I have never used trusted boot and I'm not sure I want to. Why would I
+> want to do that?
 
-> On Thursday 09 October 2008, Kay Sievers wrote:
->> On Thu, Oct 9, 2008 at 1:48 PM, Arkadiusz Miskiewicz
->>
->> <a.miskiewicz@gmail.com> wrote:
->> > No udev on the system. kernel 2.6.25.18-1.
->> >
->> > After loading ipmi_watchdog and doing "cat /dev/watchdog" tons of
->> > other, useles, watchdog modules is loaded. Any idea what introduced
->> > such weird behaviour?
->>
->> I guess the /proc/sys/kernel/modprobe, which lets the kernel fork a
->> modprobe process when you touch a "dangling" device node, which does
->> not have corresponding driver.
-> 
-> ... but that ipmi_watchdog is the correct driver that handles
-> /dev/watchdog, so this shouldn't be happening, correct?
-> 
+So that you can reason that you've booted kernel/initrd that you wanted
+to (and have established a root of trust for follow-on, like Joe's IMA
+example), and in the case that you didn't (say bluepill), you have a
+policy in place to handle it.
 
-That's true, but it declares itself as handler for this device entry very
-deep in some callback. It is quite possible that event that would have
-triggered this callback did not yet happen. 
+> You exit/reenter the trusted mode accross sleep... so any guarantees
+> "trusted" mode does are void, right?
 
+You exit from kernel to tboot on any shutdown, which handles the proper
+teardown of the measured env (meaning you also come back on via tboot).
+So things like saving tpm state, scrubbing secrets from memory, etc.
+
+thanks,
+-chris
