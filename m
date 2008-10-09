@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbYJIEMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbYJIENO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbYJIEMw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbYJIEG5
+	id S1758509AbYJIENO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYJIEHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:06:57 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54495 "EHLO
+	Thu, 9 Oct 2008 00:07:00 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54492 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757541AbYJIEGM (ORCPT
+	with ESMTP id S1756340AbYJIEGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:06:12 -0400
+	Thu, 9 Oct 2008 00:06:11 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 23/42] ext4: Renumber EXT4_IOC_MIGRATE
-Date: Thu,  9 Oct 2008 00:05:41 -0400
-Message-Id: <1223525160-9887-24-git-send-email-tytso@mit.edu>
+Subject: [PATCH 25/42] ext4/jbd2: Avoid WARN() messages when failing to write to the superblock
+Date: Thu,  9 Oct 2008 00:05:43 -0400
+Message-Id: <1223525160-9887-26-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-23-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-25-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -41,6 +41,8 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-21-git-send-email-tytso@mit.edu>
  <1223525160-9887-22-git-send-email-tytso@mit.edu>
  <1223525160-9887-23-git-send-email-tytso@mit.edu>
+ <1223525160-9887-24-git-send-email-tytso@mit.edu>
+ <1223525160-9887-25-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -48,44 +50,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pick an ioctl number for EXT4_IOC_MIGRATE that won't conflict with
-other ext4 ioctl's.  Since there haven't been any major userspace
-users of this ioctl, we can afford to change this now, to avoid
-potential problems later.
-
-Also, reorder the ioctl numbers in ext4.h to avoid this sort of
-mistake in the future.
+This fixes some very common warnings reported by kerneloops.org
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/ext4.h |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ fs/ext4/super.c   |   23 ++++++++++++++++++++++-
+ fs/jbd2/journal.c |   27 +++++++++++++++++++++++++--
+ 2 files changed, 47 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 068adc1..50a4846 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -291,8 +291,6 @@ struct ext4_new_group_data {
- #define	EXT4_IOC_SETFLAGS		FS_IOC_SETFLAGS
- #define	EXT4_IOC_GETVERSION		_IOR('f', 3, long)
- #define	EXT4_IOC_SETVERSION		_IOW('f', 4, long)
--#define EXT4_IOC_GROUP_EXTEND		_IOW('f', 7, unsigned long)
--#define EXT4_IOC_GROUP_ADD		_IOW('f', 8, struct ext4_new_group_input)
- #define	EXT4_IOC_GETVERSION_OLD		FS_IOC_GETVERSION
- #define	EXT4_IOC_SETVERSION_OLD		FS_IOC_SETVERSION
- #ifdef CONFIG_JBD2_DEBUG
-@@ -300,7 +298,10 @@ struct ext4_new_group_data {
- #endif
- #define EXT4_IOC_GETRSVSZ		_IOR('f', 5, long)
- #define EXT4_IOC_SETRSVSZ		_IOW('f', 6, long)
--#define EXT4_IOC_MIGRATE		_IO('f', 7)
-+#define EXT4_IOC_GROUP_EXTEND		_IOW('f', 7, unsigned long)
-+#define EXT4_IOC_GROUP_ADD		_IOW('f', 8, struct ext4_new_group_input)
-+#define EXT4_IOC_MIGRATE		_IO('f', 9)
-+ /* note ioctl 11 reserved for filesystem-independent FIEMAP ioctl */
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 8175318..fb5766e 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2810,13 +2810,34 @@ static void ext4_commit_super(struct super_block *sb,
  
- /*
-  * ioctl commands in 32 bit emulation
+ 	if (!sbh)
+ 		return;
++	if (buffer_write_io_error(sbh)) {
++		/*
++		 * Oh, dear.  A previous attempt to write the
++		 * superblock failed.  This could happen because the
++		 * USB device was yanked out.  Or it could happen to
++		 * be a transient write error and maybe the block will
++		 * be remapped.  Nothing we can do but to retry the
++		 * write and hope for the best.
++		 */
++		printk(KERN_ERR "ext4: previous I/O error to "
++		       "superblock detected for %s.\n", sb->s_id);
++		clear_buffer_write_io_error(sbh);
++		set_buffer_uptodate(sbh);
++	}
+ 	es->s_wtime = cpu_to_le32(get_seconds());
+ 	ext4_free_blocks_count_set(es, ext4_count_free_blocks(sb));
+ 	es->s_free_inodes_count = cpu_to_le32(ext4_count_free_inodes(sb));
+ 	BUFFER_TRACE(sbh, "marking dirty");
+ 	mark_buffer_dirty(sbh);
+-	if (sync)
++	if (sync) {
+ 		sync_dirty_buffer(sbh);
++		if (buffer_write_io_error(sbh)) {
++			printk(KERN_ERR "ext4: I/O error while writing "
++			       "superblock for %s.\n", sb->s_id);
++			clear_buffer_write_io_error(sbh);
++			set_buffer_uptodate(sbh);
++		}
++	}
+ }
+ 
+ 
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index 81186a2..01c3901 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -1255,6 +1255,22 @@ void jbd2_journal_update_superblock(journal_t *journal, int wait)
+ 		goto out;
+ 	}
+ 
++	if (buffer_write_io_error(bh)) {
++		/*
++		 * Oh, dear.  A previous attempt to write the journal
++		 * superblock failed.  This could happen because the
++		 * USB device was yanked out.  Or it could happen to
++		 * be a transient write error and maybe the block will
++		 * be remapped.  Nothing we can do but to retry the
++		 * write and hope for the best.
++		 */
++		printk(KERN_ERR "JBD2: previous I/O error detected "
++		       "for journal superblock update for %s.\n",
++		       journal->j_devname);
++		clear_buffer_write_io_error(bh);
++		set_buffer_uptodate(bh);
++	}
++
+ 	spin_lock(&journal->j_state_lock);
+ 	jbd_debug(1,"JBD: updating superblock (start %ld, seq %d, errno %d)\n",
+ 		  journal->j_tail, journal->j_tail_sequence, journal->j_errno);
+@@ -1266,9 +1282,16 @@ void jbd2_journal_update_superblock(journal_t *journal, int wait)
+ 
+ 	BUFFER_TRACE(bh, "marking dirty");
+ 	mark_buffer_dirty(bh);
+-	if (wait)
++	if (wait) {
+ 		sync_dirty_buffer(bh);
+-	else
++		if (buffer_write_io_error(bh)) {
++			printk(KERN_ERR "JBD2: I/O error detected "
++			       "when updating journal superblock for %s.\n",
++			       journal->j_devname);
++			clear_buffer_write_io_error(bh);
++			set_buffer_uptodate(bh);
++		}
++	} else
+ 		ll_rw_block(SWRITE, 1, &bh);
+ 
+ out:
 -- 
 1.5.6.1.205.ge2c7.dirty
 
