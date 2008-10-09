@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYJIHI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYJIHOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755626AbYJIHI3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 03:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbYJIHIO
+	id S1757310AbYJIHOj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 03:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYJIHOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 03:08:14 -0400
-Received: from mga11.intel.com ([192.55.52.93]:15838 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756925AbYJIHIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 03:08:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,382,1220252400"; 
-   d="scan'208";a="625067454"
-Date: Thu, 9 Oct 2008 15:06:34 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [patch]x86: arch_add_memory round up address
-Message-ID: <20081009070634.GA12715@sli10-desk.sh.intel.com>
-References: <1223530290.30941.9.camel@sli10-desk.sh.intel.com> <86802c440810082304j3274555etb7eca011f7459253@mail.gmail.com> <1223532485.7312.0.camel@sli10-desk.sh.intel.com> <86802c440810082322s4eb7e7e6ib60f68de316b06bc@mail.gmail.com> <20081009062831.GA9024@sli10-desk.sh.intel.com> <86802c440810082340r101f99aem3839d55360451851@mail.gmail.com>
+	Thu, 9 Oct 2008 03:14:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52453 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755432AbYJIHO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 03:14:29 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] rudimentary tracing for Classic RCU
+Cc: kosaki.motohiro@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       rjw@sisk.pl, dipankar@in.ibm.com, tglx@linuxtronix.de
+In-Reply-To: <48EDAD55.2000502@cn.fujitsu.com>
+References: <20081009065529.GC24560@one.firstfloor.org> <48EDAD55.2000502@cn.fujitsu.com>
+Message-Id: <20081009161232.DEDC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440810082340r101f99aem3839d55360451851@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu,  9 Oct 2008 16:14:26 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09, 2008 at 02:40:34PM +0800, Yinghai Lu wrote:
-> On Wed, Oct 8, 2008 at 11:28 PM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > On Thu, Oct 09, 2008 at 02:22:50PM +0800, Yinghai Lu wrote:
-> >> On Wed, Oct 8, 2008 at 11:08 PM, Shaohua Li <shaohua.li@intel.com> wrote:
-> >> > On Thu, 2008-10-09 at 14:04 +0800, Yinghai Lu wrote:
-> >> >> On Wed, Oct 8, 2008 at 10:31 PM, Shaohua Li <shaohua.li@intel.com> wrote:
-> >> >> > Round up address to a page, otherwise the last page isn't mapped.
-> >> >> >
-> >> >> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> >> >> > ---
-> >> >> >  arch/x86/mm/init_64.c |    3 ++-
-> >> >> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >> >> >
-> >> >> > Index: linux/arch/x86/mm/init_64.c
-> >> >> > ===================================================================
-> >> >> > --- linux.orig/arch/x86/mm/init_64.c    2008-10-09 11:42:33.000000000 +0800
-> >> >> > +++ linux/arch/x86/mm/init_64.c 2008-10-09 11:43:22.000000000 +0800
-> >> >> > @@ -721,7 +721,8 @@ int arch_add_memory(int nid, u64 start,
-> >> >> >        unsigned long nr_pages = size >> PAGE_SHIFT;
-> >> >> >        int ret;
-> >> >> >
-> >> >> > -       last_mapped_pfn = init_memory_mapping(start, start + size-1);
-> >> >> > +       last_mapped_pfn = init_memory_mapping(start,
-> >> >> > +               round_up(start + size-1, PAGE_SIZE));
-> >> >> >        if (last_mapped_pfn > max_pfn_mapped)
-> >> >> >                max_pfn_mapped = last_mapped_pfn;
-> >> >>
-> >> >> should use
-> >> >>
-> >> >> last_mapped_pfn = init_memory_mapping(start, start + size);
-> >> > No, this still can't guarantee page aligned, though this works in my
-> >> > test
-> >>
-> >> who will call arch_add_memory? that should be start and size already
-> >> be page aligned.
-> > It's memory hotplug. Doing a round up is always ok and safe even it might be already aligned.
-> >
+Hi Lai-san,
+
+> >> In this case, why not define it as:
+> >> static char buf[20*NR_CPUS + 100];
+> > 
+> > Actually you should near never use NR_CPUS now but always num_possible_cpus()
+> > (or even num_online_cpus()) Using NR_CPUS can lead to extreme waste
+> > of memory on kernels which are compiled for 4096 CPUs for example.
+> > 
+> > And with num_possible_cpus() kmalloc is needed.
 > 
-> it seems rounding up in that case is wrong...
+> I thought the default value of NR_CPUS is 32.
+
+it's pointless.
+Almost distribution use _very_ large NR_CPUS (likes 4096).
+So, We should concern large NR_CPUS.
+
+
 > 
-> if the caller call that funtion with extra half page, you don't need
-> map that half page, because you can not use it.
-shouldn't we mark such page as reserved and so it will not be used? This is the way we handle hole.
+> if NR_CPUS is too large, I think using seq_file is good idea,
+> and rcuclassic_trace_mutex is not need too.
+
+
