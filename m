@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760134AbYJIRWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbYJIRWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760134AbYJIRWB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYJIRVw
+	id S1760278AbYJIRWl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbYJIRWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:21:52 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35532 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754026AbYJIRVw (ORCPT
+	Thu, 9 Oct 2008 13:22:30 -0400
+Received: from gv-out-0910.google.com ([216.239.58.188]:8912 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754026AbYJIRW3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:21:52 -0400
-Message-ID: <48EE3D84.6000003@zytor.com>
-Date: Thu, 09 Oct 2008 10:21:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 9 Oct 2008 13:22:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=Wf6Y4keS6oFMt//76z9zYwhFVyNtKuILk1+rAfJ+2QjCvLvXyy955FjGY5Yl1Gvsru
+         i6LplXyXFC8jyacbF0inSbPDF3BJqBLzYleb891nx2qTmUKH/77g2nI7uLelAAFpgCN2
+         BPupzRPCbC7JTSsURZiGsJUgQO97MKHilHOGA=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: loading ipmi_watchdog causes tons of other watchdog modules to be loaded
+Date: Thu, 9 Oct 2008 19:22:23 +0200
+User-Agent: PLD Linux KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <200810091348.19828.a.miskiewicz@gmail.com> <ac3eb2510810090636w51e04a7fxfa36d8b016b236d@mail.gmail.com>
+In-Reply-To: <ac3eb2510810090636w51e04a7fxfa36d8b016b236d@mail.gmail.com>
 MIME-Version: 1.0
-To: mtk.manpages@gmail.com
-CC: Al Viro <viro@zeniv.linux.org.uk>, Ulrich Drepper <drepper@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: dup2() vs dup3() inconsistency when
-References: <cfd18e0f0810090510i87f088fi9eeea829ae2b58c1@mail.gmail.com>
-In-Reply-To: <cfd18e0f0810090510i87f088fi9eeea829ae2b58c1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200810091922.24108.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk wrote:
-> Al,
-> 
-> your 2008-07-26 commit 6c5d0512a091480c9f981162227fdb1c9d70e555 for
-> fs/fcntl.c:sys_dup3 contains
-> 
-> +       if (unlikely(oldfd == newfd))
-> +               return -EINVAL;
-> 
-> This makes dup2() and dup3() differ with respect to the oldfd==newfd
-> case (dup2() becomes a no-op, just returning oldfd, dup3() gives the
-> EINVAL error.
-> 
-> Your commit log doesn't explain the rationale for this change.  What
-> is it?  (I could guess that it is to error on a case that may be a
-> user programming error, but I want to check this with you, so that I
-> add the right text to the man page.)
-> 
+On Thursday 09 October 2008, Kay Sievers wrote:
+> On Thu, Oct 9, 2008 at 1:48 PM, Arkadiusz Miskiewicz
+>
+> <a.miskiewicz@gmail.com> wrote:
+> > No udev on the system. kernel 2.6.25.18-1.
+> >
+> > After loading ipmi_watchdog and doing "cat /dev/watchdog" tons of other,
+> > useles, watchdog modules is loaded. Any idea what introduced such weird
+> > behaviour?
+>
+> I guess the /proc/sys/kernel/modprobe, which lets the kernel fork a
+> modprobe process when you touch a "dangling" device node, which does
+> not have corresponding driver.
 
-The dup2() behavior comes from the logical consequence of dup2()'s 
-"close on reuse"; one would think it would be logical for dup3() to 
-behave the same way.
+... but that ipmi_watchdog is the correct driver that handles /dev/watchdog, 
+so this shouldn't be happening, correct?
 
-	-hpa
+> Kay
+
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
