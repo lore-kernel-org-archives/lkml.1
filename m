@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbYJILXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbYJILYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758124AbYJILXH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 07:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbYJILW6
+	id S1758708AbYJILYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 07:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbYJILYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 07:22:58 -0400
-Received: from smtpauth.net4india.com ([202.71.129.41]:50352 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756123AbYJILW6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 07:22:58 -0400
-From: David John <davidjon@xenontk.org>
-To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, clemens@ladisch.de,
-       venkatesh.pallipadi@intel.com, vojtech@suse.cz, bob.picco@hp.com
-Subject: [PATCH] HPET: Remove the BKL.
-Date: Thu,  9 Oct 2008 16:52:51 +0530
-Message-Id: <1223551371-3764-1-git-send-email-davidjon@xenontk.org>
-X-Mailer: git-send-email 1.6.0.2
+	Thu, 9 Oct 2008 07:24:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54758 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756708AbYJILYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 07:24:07 -0400
+Message-ID: <48EDE9BD.9070602@redhat.com>
+Date: Thu, 09 Oct 2008 07:23:41 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [mmotm 02/Oct PATCH 1/3] adjust Quicklists field of /proc/meminfo
+References: <20081009153432.DEC7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081009153432.DEC7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Concurrent access is protected by the spin lock hpet_lock. The
-BKL is not required.
+KOSAKI Motohiro wrote:
+> vmscan-split-lru-lists-into-anon-file-sets.patch changed /proc/meminfo output length,
+> but only Quicklists: field doesn't.
+> (because quicklists field added after than split-lru)
 
-Signed-off-by: David John <davidjon@xenontk.org>
----
- drivers/char/hpet.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index b3f5dbc..0237eeb 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -194,7 +194,6 @@ static int hpet_open(struct inode *inode, struct file *file)
- 	if (file->f_mode & FMODE_WRITE)
- 		return -EINVAL;
- 
--	lock_kernel();
- 	spin_lock_irq(&hpet_lock);
- 
- 	for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
-@@ -209,7 +208,6 @@ static int hpet_open(struct inode *inode, struct file *file)
- 
- 	if (!devp) {
- 		spin_unlock_irq(&hpet_lock);
--		unlock_kernel();
- 		return -EBUSY;
- 	}
- 
-@@ -217,7 +215,6 @@ static int hpet_open(struct inode *inode, struct file *file)
- 	devp->hd_irqdata = 0;
- 	devp->hd_flags |= HPET_OPEN;
- 	spin_unlock_irq(&hpet_lock);
--	unlock_kernel();
- 
- 	return 0;
- }
-@@ -586,7 +583,7 @@ static const struct file_operations hpet_fops = {
- 	.llseek = no_llseek,
- 	.read = hpet_read,
- 	.poll = hpet_poll,
--	.ioctl = hpet_ioctl,
-+	.unlocked_ioctl = hpet_ioctl,
- 	.open = hpet_open,
- 	.release = hpet_release,
- 	.fasync = hpet_fasync,
+Acked-by: Rik van Riel <riel@redhat.com>
+
+-- 
+All rights reversed.
