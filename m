@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760428AbYJIRx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbYJIRyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760428AbYJIRx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbYJIRxr
+	id S1760472AbYJIRyf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbYJIRy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:53:47 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:42052 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754327AbYJIRxq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=ZKjURPMKLC8uPc5J/yqPCxPdkbYDoCb832qQnSiDzlh5UP5rTyGpyNnkuReknJnuZg
-         aoyU7XRyO0wyEXIzTtmAEHz5tcHHLlYgj1Ol3TWqRkdlhE1bFeJMzvCG723nCHkFHyt5
-         ZP2WXmWCzAGqZ+1nDieA+k+XcF8Hm9tK75waw=
-Message-ID: <efa8e58e0810091053s4b1d25b7u621ee92be84d2041@mail.gmail.com>
-Date: Thu, 9 Oct 2008 19:53:45 +0200
-From: "=?UTF-8?Q?Rune_V._Sj=C3=B8en?=" <rvsjoen@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: NAPI enabled driver (tg3) silent packet loss ?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 9 Oct 2008 13:54:26 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:40137 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754944AbYJIRyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:54:24 -0400
+Subject: Re: [PATCH] sched_clock: prevent scd->clock from moving backwards
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081009151703.GA8010@elte.hu>
+References: <48D959E8.4000303@goop.org>
+	 <1223470773.6336.13.camel@norville.austin.ibm.com>
+	 <1223470854.6336.15.camel@norville.austin.ibm.com>
+	 <1223507104.7382.6.camel@lappy.programming.kicks-ass.net>
+	 <20081009090605.GA21798@elte.hu>  <20081009151703.GA8010@elte.hu>
+Content-Type: text/plain
+Date: Thu, 09 Oct 2008 12:54:22 -0500
+Message-Id: <1223574862.6407.16.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am sending frames to a host using, all the frames are accounted for
-in the rx_ucast_packets counter of the device.
-However the application shows a substantial packet loss. I assume that
-the rx_ucast_packets counter is incremented when the frame is received
-and then it is put into the ring buffer. I am having a hard time
-figuring out where these packets are lost, and my suspicion lies with
-the NAPI enabled tg3.
+On Thu, 2008-10-09 at 17:17 +0200, Ingo Molnar wrote:
 
-If the ring buffer overflows will the driver overwrite/drop packets
-without incrementing any counters ? That would explain why the packets
-are counted as received and then lost (by not being passed to the next
-layer).
+> hm, -tip testing found a sporadic hard lockup during bootup, and i've 
+> bisected it back to this patch. They happened on 64-bit test-systems. 
+> I've attached the .config that produced the problem.
+> 
+> i reverted the patch and the lockups went away. But i cannot see what's 
+> wrong with it ...
 
+I could have sworn I ran with the patch, but maybe I got my patch queue
+messed up and never tested it right.
+
+I think I see the problem.
+
+--- a/kernel/sched_clock.c
++++ b/kernel/sched_clock.c
+@@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct
+sched_clock_data *scd, u64 now)
+ 
+        /*
+         * scd->clock = clamp(scd->tick_gtod + delta,
+-        *                    max(scd->tick_gtod, scd->clock),
+-        *                    scd->tick_gtod + TICK_NSEC);
++        *                    max(scd->tick_gtod, scd->clock),
++        *                    min(scd->clock, scd->tick_gtod +
+TICK_NSEC));
+         */
+ 
+        clock = scd->tick_gtod + delta;
+        min_clock = wrap_max(scd->tick_gtod, scd->clock);
+-       max_clock = scd->tick_gtod + TICK_NSEC;
++       max_clock = wrap_min(scd->clock, scd->tick_gtod + TICK_NSEC);
+ 
+        clock = wrap_max(clock, min_clock);
+        clock = wrap_min(clock, max_clock);
+
+We want wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC), not
+wrap_min().  The problem I am trying to fix is that scd->tick_gtod +
+TICK_NSEC may be too low.  The upper bound needs to be at LEAST
+scd->clock.  Limiting it to scd->clock all the time is disastrous.  :-)
+
+I'll fix the patch and retest it before sending it again.
+
+Sorry about my sloppiness.
+
+Shaggy
 -- 
-Rune V. Sjoen
-You always pass failure on the way to success
+David Kleikamp
+IBM Linux Technology Center
+
