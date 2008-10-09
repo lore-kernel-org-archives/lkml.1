@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbYJIEad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYJIEax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbYJIEad (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756510AbYJIE3Y
+	id S1759161AbYJIEax (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbYJIE30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:29:24 -0400
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:52195 "EHLO
+	Thu, 9 Oct 2008 00:29:26 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:52215 "EHLO
 	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYJIE3T (ORCPT
+	with ESMTP id S1751812AbYJIE3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:29:19 -0400
-Message-Id: <20081009042914.764918475@nttdata.co.jp>
+	Thu, 9 Oct 2008 00:29:20 -0400
+Message-Id: <20081009042916.295927224@nttdata.co.jp>
 References: <20081009042814.398846861@nttdata.co.jp>
 User-Agent: quilt/0.45-1
-Date: Thu, 09 Oct 2008 13:28:16 +0900
+Date: Thu, 09 Oct 2008 13:28:17 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
        Chris Wright <chrisw@sous-sol.org>
@@ -21,96 +21,453 @@ Cc: "Serge E. Hallyn" <serue@us.ibm.com>, David Howells <dhowells@redhat.com>,
        linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
        Toshiharu Harada <haradats@nttdata.co.jp>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #10 (linux-next) 2/8] Add in_execve flag into task_struct.
-X-OriginalArrivalTime: 09 Oct 2008 04:29:16.0585 (UTC) FILETIME=[97077990:01C929C7]
+Subject: [TOMOYO #10 (linux-next) 3/8] LSM adapter functions.
+X-OriginalArrivalTime: 09 Oct 2008 04:29:18.0132 (UTC) FILETIME=[97F38740:01C929C7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows LSM modules to determine whether current process is in an
-execve operation or not so that they can behave differently while an execve
-operation is in progress.
-
-This allows TOMOYO to dispense with a readability check on a file to be
-executed under the process's current credentials, and to do it instead under
-the proposed credentials.
-
-This is required with the new COW credentials because TOMOYO is no longer
-allowed to mark the state temporarily in the security struct attached to the
-task_struct.
-
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- fs/compat.c           |    3 +++
- fs/exec.c             |    3 +++
- include/linux/sched.h |    2 ++
- 3 files changed, 8 insertions(+)
+ security/tomoyo/tomoyo.c |  319 +++++++++++++++++++++++++++++++++++++++++++++++
+ security/tomoyo/tomoyo.h |  106 +++++++++++++++
+ 2 files changed, 425 insertions(+)
 
---- linux-next.orig/fs/compat.c
-+++ linux-next/fs/compat.c
-@@ -1357,6 +1357,7 @@ int compat_do_execve(char * filename,
- 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
- 	if (retval < 0)
- 		goto out_free;
-+	current->in_execve = 1;
- 
- 	retval = -ENOMEM;
- 	bprm->cred = prepare_exec_creds();
-@@ -1409,6 +1410,7 @@ int compat_do_execve(char * filename,
- 		goto out;
- 
- 	/* execve succeeded */
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 	acct_update_integrals(current);
- 	free_bprm(bprm);
-@@ -1425,6 +1427,7 @@ out_file:
- 	}
- 
- out_unlock:
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 
- out_free:
---- linux-next.orig/fs/exec.c
-+++ linux-next/fs/exec.c
-@@ -1305,6 +1305,7 @@ int do_execve(char * filename,
- 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
- 	if (retval < 0)
- 		goto out_free;
-+	current->in_execve = 1;
- 
- 	retval = -ENOMEM;
- 	bprm->cred = prepare_exec_creds();
-@@ -1358,6 +1359,7 @@ int do_execve(char * filename,
- 		goto out;
- 
- 	/* execve succeeded */
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 	acct_update_integrals(current);
- 	free_bprm(bprm);
-@@ -1376,6 +1378,7 @@ out_file:
- 	}
- 
- out_unlock:
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 
- out_free:
---- linux-next.orig/include/linux/sched.h
-+++ linux-next/include/linux/sched.h
-@@ -1052,6 +1052,8 @@ struct task_struct {
- 	/* ??? */
- 	unsigned int personality;
- 	unsigned did_exec:1;
-+	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
-+				 * execve */
- 	pid_t pid;
- 	pid_t tgid;
- 
+--- /dev/null
++++ linux-next/security/tomoyo/tomoyo.c
+@@ -0,0 +1,319 @@
++/*
++ * security/tomoyo/tomoyo.c
++ *
++ * LSM hooks for TOMOYO Linux.
++ *
++ * Copyright (C) 2005-2008  NTT DATA CORPORATION
++ *
++ * Version: 2.2.0-pre   2008/10/01
++ *
++ */
++
++#include <linux/security.h>
++#include "common.h"
++#include "tomoyo.h"
++#include "realpath.h"
++#include <linux/audit.h>
++#include <linux/device_cgroup.h>
++
++static int tmy_cred_prepare(struct cred *new, const struct cred *old, gfp_t gfp)
++{
++	new->security = old->security;
++	return 0;
++}
++
++static int tmy_bprm_set_creds(struct linux_binprm *bprm)
++{
++	if (bprm->cred_prepared)
++		return 0;
++	if (!sbin_init_started)
++		tmy_load_policy(bprm->filename);
++	bprm->cred->security = NULL;
++	return 0;
++}
++
++static int tmy_bprm_check_security(struct linux_binprm *bprm)
++{
++	struct domain_info *domain = bprm->cred->security;
++	/*
++	 * Execute permission is checked against pathname passed to do_execve()
++	 * using current domain.
++	 */
++	if (!domain) {
++		struct domain_info *next_domain = NULL;
++		int retval = tmy_find_next_domain(bprm, &next_domain);
++		if (!retval)
++			bprm->cred->security = next_domain;
++		return retval;
++	}
++	/*
++	 * Read permission is checked against interpreters using next domain.
++	 */
++	return tmy_check_open_permission(domain, bprm->file->f_path.dentry,
++					 bprm->file->f_path.mnt, 1);
++}
++
++static int tmy_sysctl(struct ctl_table *table, int op)
++{
++	int error;
++	char *name;
++	if ((op & 6) == 0)
++		return 0;
++	name = sysctlpath_from_table(table);
++	if (!name)
++		return -ENOMEM;
++	error = tmy_check_file_perm(tmy_domain(), name, op & 6, "sysctl");
++	tmy_free(name);
++	return error;
++}
++
++struct check_result_entry {
++	struct list_head list;
++	struct task_struct *task;
++	int error;
++};
++
++static LIST_HEAD(check_result_list);
++static DEFINE_SPINLOCK(check_result_list_lock);
++
++/* Remember error code for security_inode_*(). */
++static int tmy_save_result(const int error)
++{
++	struct check_result_entry *entry;
++	if (!error)
++		return 0;
++	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
++	if (!entry)
++		return -ENOMEM;
++	entry->task = current;
++	entry->error = error;
++	spin_lock(&check_result_list_lock);
++	list_add(&entry->list, &check_result_list);
++	spin_unlock(&check_result_list_lock);
++	return 0;
++}
++
++/* Fetch error code from security_inode_*(). */
++static int tmy_load_result(void)
++{
++	struct task_struct *task = current;
++	struct check_result_entry *p;
++	struct check_result_entry *entry = NULL;
++	if (list_empty(&check_result_list))
++		return 0;
++	spin_lock(&check_result_list_lock);
++	list_for_each_entry(p, &check_result_list, list) {
++		if (p->task != task)
++			continue;
++		list_del(&p->list);
++		entry = p;
++		break;
++	}
++	spin_unlock(&check_result_list_lock);
++	if (entry) {
++		int error = entry->error;
++		kfree(entry);
++		return error;
++	}
++	return 0;
++}
++
++/* Clear error code if security_inode_*() was not called. */
++static void tmy_path_clear(void)
++{
++	tmy_load_result();
++}
++
++static int tmy_path_truncate(struct path *path, loff_t length,
++			     unsigned int time_attrs, struct file *filp)
++{
++	return tmy_save_result(tmy_check_1path_perm(tmy_domain(),
++						    TMY_TYPE_TRUNCATE_ACL,
++						    path->dentry, path->mnt));
++}
++
++static int tmy_path_unlink(struct path *parent, struct dentry *dentry)
++{
++	return tmy_save_result(tmy_check_1path_perm(tmy_domain(),
++						    TMY_TYPE_UNLINK_ACL,
++						    dentry, parent->mnt));
++}
++
++static int tmy_path_mkdir(struct path *parent, struct dentry *dentry, int mode)
++{
++	return tmy_save_result(tmy_check_1path_perm(tmy_domain(),
++						    TMY_TYPE_MKDIR_ACL,
++						    dentry, parent->mnt));
++}
++
++static int tmy_path_rmdir(struct path *parent, struct dentry *dentry)
++{
++	return tmy_save_result(tmy_check_1path_perm(tmy_domain(),
++						    TMY_TYPE_RMDIR_ACL,
++						    dentry, parent->mnt));
++}
++
++static int tmy_path_symlink(struct path *parent, struct dentry *dentry,
++			    const char *old_name)
++{
++	return tmy_save_result(tmy_check_1path_perm(tmy_domain(),
++						    TMY_TYPE_SYMLINK_ACL,
++						    dentry, parent->mnt));
++}
++
++static int tmy_path_mknod(struct path *parent, struct dentry *dentry, int mode,
++			  unsigned int dev)
++{
++	struct vfsmount *mnt = parent->mnt;
++	int type = TMY_TYPE_CREATE_ACL;
++	switch (mode & S_IFMT) {
++	case S_IFCHR:
++		type = TMY_TYPE_MKCHAR_ACL;
++		break;
++	case S_IFBLK:
++		type = TMY_TYPE_MKBLOCK_ACL;
++		break;
++	case S_IFIFO:
++		type = TMY_TYPE_MKFIFO_ACL;
++		break;
++	case S_IFSOCK:
++		type = TMY_TYPE_MKSOCK_ACL;
++		break;
++	}
++	return tmy_save_result(tmy_check_1path_perm(tmy_domain(),
++						    type, dentry, mnt));
++}
++
++static int tmy_path_link(struct dentry *old_dentry, struct path *new_dir,
++			 struct dentry *new_dentry)
++{
++	return tmy_save_result(tmy_check_2path_perm(tmy_domain(),
++						    TMY_TYPE_LINK_ACL,
++						    old_dentry, new_dir->mnt,
++						    new_dentry, new_dir->mnt));
++}
++
++static int tmy_path_rename(struct path *old_parent, struct dentry *old_dentry,
++			   struct path *new_parent, struct dentry *new_dentry)
++{
++	return tmy_save_result(tmy_check_2path_perm(tmy_domain(),
++						    TMY_TYPE_RENAME_ACL,
++						    old_dentry,
++						    old_parent->mnt,
++						    new_dentry,
++						    new_parent->mnt));
++}
++
++static int tmy_inode_link(struct dentry *old_dentry, struct inode *inode,
++			  struct dentry *new_dentry)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_unlink(struct inode *inode, struct dentry *dentry)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_symlink(struct inode *inode, struct dentry *dentry,
++			     const char *name)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_mkdir(struct inode *inode, struct dentry *dentry,
++			   int mask)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_rmdir(struct inode *inode, struct dentry *dentry)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_create(struct inode *dir, struct dentry *dentry, int mode)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_mknod(struct inode *inode, struct dentry *dentry,
++			   int mode, dev_t dev)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
++			    struct inode *new_inode, struct dentry *new_dentry)
++{
++	return tmy_load_result();
++}
++
++static int tmy_inode_setattr(struct dentry *dentry, struct iattr *iattr)
++{
++	return tmy_load_result();
++}
++
++static int tmy_file_fcntl(struct file *file, unsigned int cmd,
++			  unsigned long arg)
++{
++	if (cmd == F_SETFL && ((arg ^ file->f_flags) & O_APPEND))
++		return tmy_check_rewrite_permission(tmy_domain(), file);
++	return 0;
++}
++
++static int tmy_dentry_open(struct file *f, const struct cred *cred)
++{
++	int flags = f->f_flags;
++	if ((flags + 1) & O_ACCMODE)
++		flags++;
++	flags |= f->f_flags & (O_APPEND | O_TRUNC);
++	/* Don't check read permission here if called from do_execve(). */
++	if (current->in_execve)
++		return 0;
++	return tmy_check_open_permission(tmy_domain(), f->f_path.dentry,
++					 f->f_path.mnt, flags);
++}
++
++static struct security_operations tomoyo_security_ops = {
++	.name                      = "tomoyo",
++	.cred_prepare              = tmy_cred_prepare,
++	.bprm_set_creds            = tmy_bprm_set_creds,
++	.bprm_check_security       = tmy_bprm_check_security,
++	.sysctl                    = tmy_sysctl,
++	.file_fcntl                = tmy_file_fcntl,
++	.dentry_open               = tmy_dentry_open,
++	.path_truncate             = tmy_path_truncate,
++	.path_unlink               = tmy_path_unlink,
++	.path_mkdir                = tmy_path_mkdir,
++	.path_rmdir                = tmy_path_rmdir,
++	.path_symlink              = tmy_path_symlink,
++	.path_mknod                = tmy_path_mknod,
++	.path_link                 = tmy_path_link,
++	.path_rename               = tmy_path_rename,
++	.inode_create              = tmy_inode_create,
++	.inode_setattr             = tmy_inode_setattr,
++	.inode_unlink              = tmy_inode_unlink,
++	.inode_mkdir               = tmy_inode_mkdir,
++	.inode_rmdir               = tmy_inode_rmdir,
++	.inode_symlink             = tmy_inode_symlink,
++	.inode_mknod               = tmy_inode_mknod,
++	.inode_link                = tmy_inode_link,
++	.inode_rename              = tmy_inode_rename,
++	.path_clear                = tmy_path_clear,
++};
++
++static int __init tmy_init(void)
++{
++	struct cred *cred = (struct cred *) current_cred();
++	if (!security_module_enable(&tomoyo_security_ops))
++		return 0;
++	/* register ourselves with the security framework */
++	if (register_security(&tomoyo_security_ops))
++		panic("Failure registering TOMOYO Linux");
++	printk(KERN_INFO "TOMOYO Linux initialized\n");
++	cred->security = &KERNEL_DOMAIN;
++	return 0;
++}
++
++security_initcall(tmy_init);
+--- /dev/null
++++ linux-next/security/tomoyo/tomoyo.h
+@@ -0,0 +1,106 @@
++/*
++ * security/tomoyo/tomoyo.h
++ *
++ * Implementation of the Domain-Based Mandatory Access Control.
++ *
++ * Copyright (C) 2005-2008  NTT DATA CORPORATION
++ *
++ * Version: 2.2.0-pre   2008/10/01
++ *
++ */
++
++#ifndef _LINUX_TOMOYO_H
++#define _LINUX_TOMOYO_H
++
++struct path_info;
++struct dentry;
++struct vfsmount;
++struct inode;
++struct linux_binprm;
++struct pt_regs;
++struct tmy_page_buffer;
++
++char *sysctlpath_from_table(struct ctl_table *table);
++int tmy_check_file_perm(struct domain_info *domain, const char *filename,
++			const u8 perm, const char *operation);
++int tmy_check_exec_perm(struct domain_info *domain,
++			const struct path_info *filename,
++			struct tmy_page_buffer *buf);
++int tmy_check_open_permission(struct domain_info *domain,
++			      struct dentry *dentry, struct vfsmount *mnt,
++			      const int flag);
++int tmy_check_1path_perm(struct domain_info *domain, const u8 operation,
++			 struct dentry *dentry, struct vfsmount *mnt);
++int tmy_check_2path_perm(struct domain_info *domain, const u8 operation,
++			 struct dentry *dentry1, struct vfsmount *mnt1,
++			 struct dentry *dentry2, struct vfsmount *mnt2);
++int tmy_check_rewrite_permission(struct domain_info *domain,
++				 struct file *filp);
++int tmy_find_next_domain(struct linux_binprm *bprm,
++			 struct domain_info **next_domain);
++
++/* Index numbers for Access Controls. */
++
++#define TYPE_SINGLE_PATH_ACL                 0
++#define TYPE_DOUBLE_PATH_ACL                 1
++
++/* Index numbers for File Controls. */
++
++/*
++ * TYPE_READ_WRITE_ACL is special. TYPE_READ_WRITE_ACL is automatically set
++ * if both TYPE_READ_ACL and TYPE_WRITE_ACL are set. Both TYPE_READ_ACL and
++ * TYPE_WRITE_ACL are automatically set if TYPE_READ_WRITE_ACL is set.
++ * TYPE_READ_WRITE_ACL is automatically cleared if either TYPE_READ_ACL or
++ * TYPE_WRITE_ACL is cleared. Both TYPE_READ_ACL and TYPE_WRITE_ACL are
++ * automatically cleared if TYPE_READ_WRITE_ACL is cleared.
++ */
++
++#define TMY_TYPE_READ_WRITE_ACL    0
++#define TMY_TYPE_EXECUTE_ACL       1
++#define TMY_TYPE_READ_ACL          2
++#define TMY_TYPE_WRITE_ACL         3
++#define TMY_TYPE_CREATE_ACL        4
++#define TMY_TYPE_UNLINK_ACL        5
++#define TMY_TYPE_MKDIR_ACL         6
++#define TMY_TYPE_RMDIR_ACL         7
++#define TMY_TYPE_MKFIFO_ACL        8
++#define TMY_TYPE_MKSOCK_ACL        9
++#define TMY_TYPE_MKBLOCK_ACL      10
++#define TMY_TYPE_MKCHAR_ACL       11
++#define TMY_TYPE_TRUNCATE_ACL     12
++#define TMY_TYPE_SYMLINK_ACL      13
++#define TMY_TYPE_REWRITE_ACL      14
++#define MAX_SINGLE_PATH_OPERATION 15
++
++#define TMY_TYPE_LINK_ACL         0
++#define TMY_TYPE_RENAME_ACL       1
++#define MAX_DOUBLE_PATH_OPERATION 2
++
++#define TMY_DOMAINPOLICY          0
++#define TMY_EXCEPTIONPOLICY       1
++#define TMY_DOMAIN_STATUS         2
++#define TMY_PROCESS_STATUS        3
++#define TMY_MEMINFO               4
++#define TMY_SELFDOMAIN            5
++#define TMY_VERSION               6
++#define TMY_PROFILE               7
++#define TMY_MANAGER               8
++#define TMY_UPDATESCOUNTER        9
++
++extern struct domain_info KERNEL_DOMAIN;
++
++static inline struct domain_info *tmy_domain(void)
++{
++	return current_cred()->security;
++}
++
++static inline struct domain_info *tmy_real_domain(struct task_struct *task)
++{
++	/* Caller must hold tasklist_lock. */
++	const struct cred *cred = get_task_cred(task);
++	struct domain_info *domain = cred->security;
++	put_cred(cred);
++	return domain;
++}
++
++#endif
 
 --
 
