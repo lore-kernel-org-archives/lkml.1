@@ -1,116 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYJIFuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYJIFxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYJIFuB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 01:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYJIFtw
+	id S1757357AbYJIFxL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 01:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYJIFw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 01:49:52 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:54811 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750795AbYJIFtw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 01:49:52 -0400
-Date: Thu, 9 Oct 2008 14:39:49 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/6] memcg: lazy lru freeing
-Message-Id: <20081009143949.b3cf91b7.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081001170005.1997d7c8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081001170005.1997d7c8.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Oct 2008 01:52:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46358 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751494AbYJIFw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 01:52:56 -0400
+Message-ID: <48ED9BFB.4060904@redhat.com>
+Date: Thu, 09 Oct 2008 01:51:55 -0400
+From: Chris Snook <csnook@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Ben Hutchings <bhutchings@solarflare.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org
+Subject: Re: [PATCH] documentation: explain memory barriers
+References: <20080911101616.GA24064@agk.fab.redhat.com>	<Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>	<Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>	<20080923154905.50d4b0fa.akpm@linux-foundation.org>	<Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>	<20080923164623.ce82c1c2.akpm@linux-foundation.org>	<Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>	<20081001225404.4e973465.akpm@linux-foundation.org>	<20081008181223.6954c7b2.randy.dunlap@oracle.com>	<48ED5BC6.8040006@redhat.com> <20081008183125.2a24e3c2.akpm@linux-foundation.org>
+In-Reply-To: <20081008183125.2a24e3c2.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=Big5
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Oct 2008 17:00:05 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Free page_cgroup from its LRU in batched manner.
+Andrew Morton wrote:
+> On Wed, 08 Oct 2008 21:17:58 -0400 Chris Snook <csnook@redhat.com> wrote:
 > 
-> When uncharge() is called, page is pushed onto per-cpu vector and
-> removed from LRU, later.. This routine resembles to global LRU's pagevec.
-> This patch is half of the whole patch and a set with following lazy LRU add
-> patch.
+>> Randy Dunlap wrote:
+>>> On Wed, 1 Oct 2008 22:54:04 -0700 Andrew Morton wrote:
+>>>
+>>>> This sequence is repeated three or four times and should be pulled out
+>>>> into a well-commented function.  That comment should explain the logic
+>>>> behind the use of these barriers, please.
+>>> and on 2008-OCT-08 Ben Hutchings wrote:
+>>>
+>>>> All memory barriers need a comment to explain why and what they're doing.
 > 
-> After this, a pc, which is PageCgroupLRU(pc)==true, is on LRU.
-> This LRU bit is guarded by lru_lock().
+> I approve this message.
 > 
->  PageCgroupUsed(pc) && PageCgroupLRU(pc) means "pc" is used and on LRU.
->  This check makes sense only when both 2 locks, lock_page_cgroup()/lru_lock(),
->  are aquired.
+>> Seriously?  When a barrier is used, it's generally self-evident what 
+>> it's doing.
 > 
->  PageCgroupUsed(pc) && !PageCgroupLRU(pc) means "pc" is used but not on LRU.
->  !PageCgroupUsed(pc) && PageCgroupLRU(pc) means "pc" is unused but still on
->  LRU. lru walk routine should avoid touching this.
-> 
-> Changelog (v5) => (v6):
->  - Fixing race and added PCG_LRU bit
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
+> fs/buffer.c:sync_buffer().  Have fun.
 
-(snip)
+The real disaster there is the clear_buffer_##name macro and friends, as
+evidenced by fs/ext2/inode.c:599
 
-> +static void
-> +__release_page_cgroup(struct memcg_percpu_vec *mpv)
-> +{
-> +	unsigned long flags;
-> +	struct mem_cgroup_per_zone *mz, *prev_mz;
-> +	struct page_cgroup *pc;
-> +	int i, nr;
-> +
-> +	local_irq_save(flags);
-> +	nr = mpv->nr;
-> +	mpv->nr = 0;
-> +	prev_mz = NULL;
-> +	for (i = nr - 1; i >= 0; i--) {
-> +		pc = mpv->vec[i];
-> +		mz = page_cgroup_zoneinfo(pc);
-> +		if (prev_mz != mz) {
-> +			if (prev_mz)
-> +				spin_unlock(&prev_mz->lru_lock);
-> +			prev_mz = mz;
-> +			spin_lock(&mz->lru_lock);
-> +		}
-> +		/*
-> +		 * this "pc" may be charge()->uncharge() while we are waiting
-> +		 * for this. But charge() path check LRU bit and remove this
-> +		 * from LRU if necessary.
-> +		 */
-> +		if (!PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
-> +			ClearPageCgroupLRU(pc);
-> +			__mem_cgroup_remove_list(mz, pc);
-> +			css_put(&pc->mem_cgroup->css);
-> +		}
-> +	}
-> +	if (prev_mz)
-> +		spin_unlock(&prev_mz->lru_lock);
-> +	local_irq_restore(flags);
-> +
-> +}
-> +
-I'm wondering if page_cgroup_zoneinfo is safe without lock_page_cgroup
-because it dereferences pc->mem_cgroup.
-I'm worring if the pc has been moved to another lru by re-charge(and re-uncharge),
-and __mem_cgroup_remove_list toches a wrong(old) group.
+                clear_buffer_new(bh_result); /* What's this do? */
 
-Hmm, there are many things to be done for re-charge and re-uncharge,
-so "if (!PageCgroupUsed(pc) && PageCgroupLRU(pc))" would be enough.
-(it can avoid race between re-charge.)
+I'm completely in favor of documenting everything that can potentially interact
+with that train wreck, but I maintain that the vast majority of memory barriers
+are self-evident.
 
-Another user of page_cgroup_zoneinfo without lock_page_cgroup is
-__mem_cgroup_move_lists called by mem_cgroup_isolate_pages,
-but mem_cgroup_isolate_pages handles pc which is actually on the mz->lru
-so it would be ok.
-(I think adding VM_BUG_ON(mz != page_cgroup_zoneifno(pc)) would make sense,
-or add new arg *mz to __mem_cgroup_move_lists?)
-
-
-Thanks,
-Daisuke Nishimura.
+-- Chris
