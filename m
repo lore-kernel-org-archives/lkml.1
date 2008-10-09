@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbYJISGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbYJISHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbYJISGh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYJISG1
+	id S1760158AbYJISHO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 14:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYJISG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:06:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35650 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbYJISG0 (ORCPT
+	Thu, 9 Oct 2008 14:06:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16949 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754042AbYJISG6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:06:26 -0400
-Date: Thu, 9 Oct 2008 20:07:47 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Matt Mackall <mpm@selenic.com>
-Cc: "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] x86: trim ACPI sleep stack buffer
-Message-ID: <20081009180747.GC12507@elf.ucw.cz>
-References: <1222819957.13453.15.camel@calx> <20081009085649.GC29957@atrey.karlin.mff.cuni.cz> <1223571381.17706.94.camel@calx> <alpine.LFD.1.10.0810091319160.3007@localhost.localdomain> <4911F71203A09E4D9981D27F9D83085803123361@orsmsx503.amr.corp.intel.com> <1223574110.17706.109.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223574110.17706.109.camel@calx>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 9 Oct 2008 14:06:58 -0400
+Date: Thu, 9 Oct 2008 11:06:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Nick Warne <nick@ukfsn.org>, jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: [PATCH] doc/cdrom: Trvial documentation error, file not present
+Message-Id: <20081009110630.32c0d2f7.randy.dunlap@oracle.com>
+In-Reply-To: <20081005014624.0c8aa924@sauron.linicks.net>
+References: <20081005014624.0c8aa924@sauron.linicks.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-10-09 12:41:50, Matt Mackall wrote:
-> On Thu, 2008-10-09 at 10:23 -0700, Moore, Robert wrote:
-> > Sounds like you need a
-> > 
-> > #define DEFAULT_STACK_SIZE 4096
-> > 
-> > Somewhere.
-> 
-> Or maybe something like this:
-> 
-> 
-> x86: remove magic number from ACPI sleep stack buffer
-> 
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
+On Sun, 5 Oct 2008 01:46:24 +0100 Nick Warne wrote:
 
-Acked-by: Pavel Machek <pavel@suse.cz>
-
-> diff -r 375a00b8bf10 arch/x86/kernel/acpi/sleep.c
-> --- a/arch/x86/kernel/acpi/sleep.c	Thu Oct 09 12:38:55 2008 -0500
-> +++ b/arch/x86/kernel/acpi/sleep.c	Thu Oct 09 12:40:10 2008 -0500
-> @@ -97,7 +97,7 @@
->  #else /* CONFIG_64BIT */
->  	header->trampoline_segment = setup_trampoline() >> 4;
->  #ifdef CONFIG_SMP
-> -	stack_start.sp = temp_stack + 4096;
-> +	stack_start.sp = temp_stack + sizeof(temp_stack);
->  #endif
->  	initial_code = (unsigned long)wakeup_long64;
->  	saved_magic = 0x123456789abcdef0;
+> In Documentation/cdrom/ide-cd, from line 148 is:
 > 
+> "Lacking anything else, you could use the
+> cdtester program in Documentation/cdrom/sbpcd".
 > 
+> This file is not present in stable 2.6.26.5 at least.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+The sbpcd tester program is not included in the kernel source tree,
+so remove the reference to it.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Reported-by: Nick Warne <nick@ukfsn.org>
+---
+ Documentation/cdrom/ide-cd |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- linux-2.6.27-rc9-git2.orig/Documentation/cdrom/ide-cd
++++ linux-2.6.27-rc9-git2/Documentation/cdrom/ide-cd
+@@ -145,8 +145,7 @@ useful for reading photocds.
+ 
+ To play an audio CD, you should first unmount and remove any data
+ CDROM.  Any of the CDROM player programs should then work (workman,
+-workbone, cdplayer, etc.).  Lacking anything else, you could use the
+-cdtester program in Documentation/cdrom/sbpcd.
++workbone, cdplayer, etc.).
+ 
+ On a few drives, you can read digital audio directly using a program
+ such as cdda2wav.  The only types of drive which I've heard support
