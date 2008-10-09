@@ -1,102 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYJIUSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYJIUTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbYJIUSp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 16:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYJIUSg
+	id S1756596AbYJIUTL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 16:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYJIUSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 16:18:36 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:25169 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbYJIUSf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 16:18:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=LYB0GiwLKo9cyP3XlyD9rOMgEpXJxyA9KhZleqFHKYIeeD3gUrjrigo5GgD/XTituf
-         EFHVvnSnHa/0Q6X57Gxxf3kcA5zKPdbAOgiS8tA4qjIgXQZDI3SqWktxV4XuD4pbFfNv
-         foTsdU18roX4w3EZlZvLh9b5j1pz5g4fVtNpA=
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: loading ipmi_watchdog causes tons of other watchdog modules to be loaded
-Date: Thu, 9 Oct 2008 22:18:28 +0200
-User-Agent: PLD Linux KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
-References: <200810091348.19828.a.miskiewicz@gmail.com> <200810092102.16110.a.miskiewicz@gmail.com> <ac3eb2510810091209rd76c8a4j83a6a48d5db5d4f9@mail.gmail.com>
-In-Reply-To: <ac3eb2510810091209rd76c8a4j83a6a48d5db5d4f9@mail.gmail.com>
+	Thu, 9 Oct 2008 16:18:55 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:48185 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753511AbYJIUSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 16:18:54 -0400
+Message-ID: <48EE6720.6010601@linux.vnet.ibm.com>
+Date: Thu, 09 Oct 2008 15:18:40 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200810092218.29000.a.miskiewicz@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adam Litke <agl@us.ibm.com>, Kumar Gala <galak@kernel.crashing.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v3] powerpc: properly reserve in bootmem the lmb reserved
+ regions that cross NUMA nodes
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 of October 2008, Kay Sievers wrote:
-> On Thu, Oct 9, 2008 at 9:02 PM, Arkadiusz Miskiewicz
->
-> <a.miskiewicz@gmail.com> wrote:
-> > On Thursday 09 October 2008, Kay Sievers wrote:
-> >> On Thu, Oct 9, 2008 at 7:22 PM, Arkadiusz Miskiewicz
-> >>
-> >> > ... but that ipmi_watchdog is the correct driver that handles
-> >> > /dev/watchdog, so this shouldn't be happening, correct?
-> >>
-> >> While the driver you expect to work is loaded, what does:
-> >>   ls -l /dev/watchdog
-> >> print?
-> >>
-> >> If the devno of this node is 10:130, what does:
-> >>   find /sys/class /sys/devices/ -name dev | xargs grep 10:130
-> >> print?
-> >
-> > # ls -l /dev/watchdog
-> > crw------- 1 root root 10, 130 sie  8 17:00 /dev/watchdog
-> > # find /sys/class /sys/devices/ -name dev | xargs grep 10:130
-> > /sys/class/misc/watchdog/dev:10:130
->
-> Ok, so you actually have a driver bound to that device number, and it
-> should not trigger the usual module autoloading mechanism.
->
-> What does:
->   ls -l /sys/class/misc/watchdog/
+If there are multiple reserved memory blocks via lmb_reserve() that are
+contiguous addresses and on different NUMA nodes we are losing track of which 
+address ranges to reserve in bootmem on which node.  I discovered this 
+when I recently got to try 16GB huge pages on a system with more then 2 nodes.
 
-# ls -l /sys/class/misc/watchdog/
-razem 0
--r--r--r-- 1 root root 4096 paź  9 22:02 dev
-drwxr-xr-x 2 root root    0 paź  9 22:02 power
-lrwxrwxrwx 1 root root    0 paź  9 22:22 subsystem -> ../../misc
--rw-r--r-- 1 root root 4096 paź  9 22:02 uevent
+When scanning the device tree in early boot we call lmb_reserve() with 
+the addresses of the 16G pages that we find so that the memory doesn't 
+get used for something else.  For example the addresses for the pages 
+could be 4000000000, 4400000000, 4800000000, 4C00000000, etc - 8 pages, 
+one on each of eight nodes.  In the lmb after all the pages have been 
+reserved it will look something like the following:
+
+lmb_dump_all:
+    memory.cnt            = 0x2
+    memory.size           = 0x3e80000000
+    memory.region[0x0].base       = 0x0
+                      .size     = 0x1e80000000
+    memory.region[0x1].base       = 0x4000000000
+                      .size     = 0x2000000000
+    reserved.cnt          = 0x5
+    reserved.size         = 0x3e80000000
+    reserved.region[0x0].base       = 0x0
+                      .size     = 0x7b5000
+    reserved.region[0x1].base       = 0x2a00000
+                      .size     = 0x78c000
+    reserved.region[0x2].base       = 0x328c000
+                      .size     = 0x43000
+    reserved.region[0x3].base       = 0xf4e8000
+                      .size     = 0xb18000
+    reserved.region[0x4].base       = 0x4000000000
+                      .size     = 0x2000000000
 
 
-> and
->   ls -l /sys/class/misc/watchdog/device/
-> print?
+The reserved.region[0x4] contains the 16G pages.  In 
+arch/powerpc/mm/num.c: do_init_bootmem() we loop through each of the 
+node numbers looking for the reserved regions that belong to the 
+particular node.  It is not able to identify region 0x4 as being a part 
+of each of the 8 nodes.  It is assuming that a reserved region is only
+on a single node.
 
-# LC_ALL=C ls -l /sys/class/misc/watchdog/device/
-ls: cannot access /sys/class/misc/watchdog/device/: No such file or directory
+This patch takes out the reserved region loop from inside
+the loop that goes over each node.  It looks up the active region containing
+the start of the reserved region.  If it extends past that active region then
+it adjusts the size and gets the next active region containing it.
+
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+---
+
+Changes:
+	v2:
+	-style changes as suggested by Adam Litke
+	v3:
+	-moved helper function to powerpc code since it is the only user at present
+	-made end_pfn consistently exclusive
+	-other minor code cleanups
+
+Please consider for 2.6.28.
+
+ numa.c |  108 ++++++++++++++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 80 insertions(+), 28 deletions(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index d9a1813..72447f1 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -89,6 +89,46 @@ static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
+ 	return 0;
+ }
+ 
++/*
++ * get_active_region_work_fn - A helper function for get_node_active_region
++ *	Returns datax set to the start_pfn and end_pfn if they contain
++ *	the initial value of datax->start_pfn between them
++ * @start_pfn: start page(inclusive) of region to check
++ * @end_pfn: end page(exclusive) of region to check
++ * @datax: comes in with ->start_pfn set to value to search for and
++ *	goes out with active range if it contains it
++ * Returns 1 if search value is in range else 0
++ */
++static int __init get_active_region_work_fn(unsigned long start_pfn,
++					unsigned long end_pfn, void *datax)
++{
++	struct node_active_region *data;
++	data = (struct node_active_region *)datax;
++
++	if (start_pfn <= data->start_pfn && end_pfn > data->start_pfn) {
++		data->start_pfn = start_pfn;
++		data->end_pfn = end_pfn;
++		return 1;
++	}
++	return 0;
++
++}
++
++/*
++ * get_node_active_region - Return active region containing start_pfn
++ * @start_pfn: The page to return the region for.
++ * @node_ar: Returned set to the active region containing start_pfn
++ */
++static void __init get_node_active_region(unsigned long start_pfn,
++		       struct node_active_region *node_ar)
++{
++	int nid = early_pfn_to_nid(start_pfn);
++
++	node_ar->nid = nid;
++	node_ar->start_pfn = start_pfn;
++	work_with_active_regions(nid, get_active_region_work_fn, node_ar);
++}
++
+ static void __cpuinit map_cpu_to_node(int cpu, int node)
+ {
+ 	numa_cpu_lookup_table[cpu] = node;
+@@ -837,38 +877,50 @@ void __init do_init_bootmem(void)
+ 				  start_pfn, end_pfn);
+ 
+ 		free_bootmem_with_active_regions(nid, end_pfn);
++	}
+ 
+-		/* Mark reserved regions on this node */
+-		for (i = 0; i < lmb.reserved.cnt; i++) {
+-			unsigned long physbase = lmb.reserved.region[i].base;
+-			unsigned long size = lmb.reserved.region[i].size;
+-			unsigned long start_paddr = start_pfn << PAGE_SHIFT;
+-			unsigned long end_paddr = end_pfn << PAGE_SHIFT;
+-
+-			if (early_pfn_to_nid(physbase >> PAGE_SHIFT) != nid &&
+-			    early_pfn_to_nid((physbase+size-1) >> PAGE_SHIFT) != nid)
+-				continue;
+-
+-			if (physbase < end_paddr &&
+-			    (physbase+size) > start_paddr) {
+-				/* overlaps */
+-				if (physbase < start_paddr) {
+-					size -= start_paddr - physbase;
+-					physbase = start_paddr;
+-				}
+-
+-				if (size > end_paddr - physbase)
+-					size = end_paddr - physbase;
+-
+-				dbg("reserve_bootmem %lx %lx\n", physbase,
+-				    size);
+-				reserve_bootmem_node(NODE_DATA(nid), physbase,
+-						     size, BOOTMEM_DEFAULT);
+-			}
++	/* Mark reserved regions */
++	for (i = 0; i < lmb.reserved.cnt; i++) {
++		unsigned long physbase = lmb.reserved.region[i].base;
++		unsigned long size = lmb.reserved.region[i].size;
++		unsigned long start_pfn = physbase >> PAGE_SHIFT;
++		unsigned long end_pfn = ((physbase + size) >> PAGE_SHIFT);
++		struct node_active_region node_ar;
++
++		get_node_active_region(start_pfn, &node_ar);
++		while (start_pfn < end_pfn) {
++			/*
++			 * if reserved region extends past active region
++			 * then trim size to active region
++			 */
++			if (end_pfn > node_ar.end_pfn)
++				size = (node_ar.end_pfn << PAGE_SHIFT)
++					- (start_pfn << PAGE_SHIFT);
++			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
++				node_ar.nid);
++			reserve_bootmem_node(NODE_DATA(node_ar.nid), physbase,
++						size, BOOTMEM_DEFAULT);
++			/*
++			 * if reserved region is contained in the active region
++			 * then done.
++			 */
++			if (end_pfn <= node_ar.end_pfn)
++				break;
++
++			/*
++			 * reserved region extends past the active region
++			 *   get next active region that contains this
++			 *   reserved region
++			 */
++			start_pfn = node_ar.end_pfn;
++			physbase = start_pfn << PAGE_SHIFT;
++			get_node_active_region(start_pfn, &node_ar);
+ 		}
+ 
+-		sparse_memory_present_with_active_regions(nid);
+ 	}
++
++	for_each_online_node(nid)
++		sparse_memory_present_with_active_regions(nid);
+ }
+ 
+ void __init paging_init(void)
 
 
-> Does the /sys/class/misc/watchdog/ directory exist, before you load
-> the module you expect to be the driver behind /dev/watchdog?
 
-It doesn't exist before. modprobe ipmi_watchdog, 
-then /sys/class/misc/watchdog/ becomes available.
 
-> To clarify, the other modules get loaded, after you loaded but module,
-> the above /sys/class/misc/watchdog/ directory exists, and only if you
-> read from the device, all the other modules get loaded?
-
-Exactly.  I load ipmi_watchdog, /sys/class/misc/watchdog/ becomes available 
-(no /sys/class/misc/watchdog/device/ though), then cat /dev/watchdog and this 
-causes that other watchdog modules are loaded.
-
-> Kay
-
--- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
