@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbYJILot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbYJILpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758621AbYJILot (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 07:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbYJILol
+	id S1758906AbYJILpI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 07:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbYJILox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 07:44:41 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:38176 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756356AbYJILok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 07:44:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=u+S8HqDcdcd4dR3UeanaHQlZI6wqz/88Tp+G9VgugEKK773DCQtVUga1lu+8Bb2id3
-         MSBRsyQMJKxEQUxE85qF0SIBNVl8pn6cPZdeVWurKhgPsU1hwIkmHY3aX0dhGBSWCzko
-         BEdQXkp8RbLO2yK3M6qoQB7yLEXd7bribS+Qo=
-Message-ID: <c62985530810090444k4ee22a45p94d3b61670259d5d@mail.gmail.com>
-Date: Thu, 9 Oct 2008 13:44:38 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] rudimentary tracing for Classic RCU
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rjw@sisk.pl, dipankar@in.ibm.com, tglx@linuxtronix.de
-In-Reply-To: <20081009105305.GF24560@one.firstfloor.org>
+	Thu, 9 Oct 2008 07:44:53 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40211 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758716AbYJILow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 07:44:52 -0400
+Date: Thu, 9 Oct 2008 04:44:49 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       dipankar@in.ibm.com, tglx@linutronix.de
+Subject: Re: RCU hang on cpu re-hotplug with 2.6.27rc8
+Message-ID: <20081009114449.GA6628@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com> <20081007071544.GC20740@one.firstfloor.org> <20081007152629.GH6384@linux.vnet.ibm.com> <20081007154939.GN20740@one.firstfloor.org> <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009013321.GA11291@linux.vnet.ibm.com> <20081009045646.GB24560@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081006232837.GA1157@basil.nowhere.org>
-	 <20081007071544.GC20740@one.firstfloor.org>
-	 <20081007152629.GH6384@linux.vnet.ibm.com>
-	 <20081007154939.GN20740@one.firstfloor.org>
-	 <20081007163401.GJ6384@linux.vnet.ibm.com>
-	 <20081007210947.GP20740@one.firstfloor.org>
-	 <20081007212215.GN6384@linux.vnet.ibm.com>
-	 <20081009010846.GA10188@linux.vnet.ibm.com>
-	 <c62985530810090323vd5d08e0haa618ca0cbe0c73f@mail.gmail.com>
-	 <20081009105305.GF24560@one.firstfloor.org>
+In-Reply-To: <20081009045646.GB24560@one.firstfloor.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/9 Andi Kleen <andi@firstfloor.org>:
->> Why don't you use the ring-buffer tracing engine?
->
-> Because he doesn't actually need a ring buffer, it's a snapshot in
-> time.
+On Thu, Oct 09, 2008 at 06:56:46AM +0200, Andi Kleen wrote:
+> [fix up Thomas' address to not bounce]
+> 
+> On Wed, Oct 08, 2008 at 06:33:21PM -0700, Paul E. McKenney wrote:
+> > The attached patch (similar to one in -tip, but set up for mainline and
+> > tweaked to make stall-checking on by default) should get you a stack
+> > trace of any CPUs holding up RCU grace periods for more than about
+> > three seconds.
+> > 
+> > On the off-chance that this helps.
+> 
+> It actually does. The stall detector makes the online echo return
+> after three seconds, although it's not 100% clear to me why.
 
-You have the possibility to implement a read callback to not use the
-ring buffer.
+Interesting.  This behavior would be consistent with the CPU entering
+dyntick-idle mode without RCU's being aware of this.  Except that your
+earlier .config file says "# CONFIG_NO_HZ is not set".  And that would
+mean that the CPU really should be invoking RCU's state machine every
+scheduling tick.
 
-> ftrace-of-bork wants to assimilate everything?
+I confess confusion.
 
-I just proposed that to unify the tracers.
+						Thanx, Paul
+
+> here's the backtrace
+> 
+> RCU detected CPU 14 stall (t=4295149800/5928 jiffies)
+> Pid: 0, comm: swapper Not tainted 2.6.27-rc9 #5
+> 
+> Call Trace:
+>  <IRQ>  [<ffffffff8025d188>] __rcu_pending+0x6e/0x1d9
+>  [<ffffffff8025d329>] rcu_pending+0x36/0x6e
+>  [<ffffffff8023b480>] update_process_times+0x37/0x5b
+>  [<ffffffff8024be72>] tick_periodic+0x68/0x74
+>  [<ffffffff8024be9f>] tick_handle_periodic+0x21/0x66
+>  [<ffffffff8021bcd2>] smp_apic_timer_interrupt+0x8a/0xa8
+>  [<ffffffff8020bfe6>] apic_timer_interrupt+0x66/0x70
+>  <EOI>  [<ffffffff803adb39>] ? acpi_safe_halt+0x2b/0x3e
+>  [<ffffffff803adbfa>] ? acpi_idle_enter_c1+0xae/0x102
+>  [<ffffffff804ffdd6>] ? cpuidle_idle_call+0x70/0xa2
+>  [<ffffffff8020a097>] ? cpu_idle+0x7e/0x9c
+>  [<ffffffff805bef4a>] ? start_secondary+0x157/0x15c
+> 
+> Timer issue?
+> 
+> 
+> -Andi
