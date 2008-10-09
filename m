@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbYJIRyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbYJIR6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760472AbYJIRyf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbYJIRy0
+	id S1760219AbYJIR6R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbYJIR6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:54:26 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:40137 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754944AbYJIRyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:54:24 -0400
-Subject: Re: [PATCH] sched_clock: prevent scd->clock from moving backwards
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081009151703.GA8010@elte.hu>
-References: <48D959E8.4000303@goop.org>
-	 <1223470773.6336.13.camel@norville.austin.ibm.com>
-	 <1223470854.6336.15.camel@norville.austin.ibm.com>
-	 <1223507104.7382.6.camel@lappy.programming.kicks-ass.net>
-	 <20081009090605.GA21798@elte.hu>  <20081009151703.GA8010@elte.hu>
-Content-Type: text/plain
-Date: Thu, 09 Oct 2008 12:54:22 -0500
-Message-Id: <1223574862.6407.16.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 13:58:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37120 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754295AbYJIR6B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:58:01 -0400
+Date: Thu, 9 Oct 2008 19:59:38 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: "Cihula, Joseph" <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
+       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
+       mingo@elte.hu, tytso@mit.edu
+Subject: Re: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology
+	support for Linux - Overview
+Message-ID: <20081009175938.GA12507@elf.ucw.cz>
+References: <D936D925018D154694D8A362EEB0892005AC105B@orsmsx416.amr.corp.intel.com> <20081009125311.GD1623@ucw.cz> <20081009174427.GB6912@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081009174427.GB6912@sequoia.sous-sol.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 17:17 +0200, Ingo Molnar wrote:
-
-> hm, -tip testing found a sporadic hard lockup during bootup, and i've 
-> bisected it back to this patch. They happened on 64-bit test-systems. 
-> I've attached the .config that produced the problem.
+On Thu 2008-10-09 10:44:27, Chris Wright wrote:
+> * Pavel Machek (pavel@suse.cz) wrote:
+> > Ok, I don't get it, why would I want to measure my kernel?
 > 
-> i reverted the patch and the lockups went away. But i cannot see what's 
-> wrong with it ...
+> Trusted boot.  There's always the double-edge sword w/ this.  Clearly,
+> a requirement is that you don't just brick your own box, and have some
+> policy/mechanism for defining how you'd use trusted boot.  I believe
+> that's all there w/ TXT patch (since it's mostly handled before kernel
+> boots, TXT kernel bit is just to help w/ handoff).
 
-I could have sworn I ran with the patch, but maybe I got my patch queue
-messed up and never tested it right.
+I have never used trusted boot and I'm not sure I want to. Why would I
+want to do that?
 
-I think I see the problem.
+> > I see why Disney would want to do that, but I don't see why we would
+> > want to help them.
+> > 
+> > Plus, the fact that trusted mode is pretty much incompatible with
+> > s3/s4 makes it useless, right?
+> 
+> Why do you say that?  Did you look at patch 3/3, see tboot_sleep().
 
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct
-sched_clock_data *scd, u64 now)
- 
-        /*
-         * scd->clock = clamp(scd->tick_gtod + delta,
--        *                    max(scd->tick_gtod, scd->clock),
--        *                    scd->tick_gtod + TICK_NSEC);
-+        *                    max(scd->tick_gtod, scd->clock),
-+        *                    min(scd->clock, scd->tick_gtod +
-TICK_NSEC));
-         */
- 
-        clock = scd->tick_gtod + delta;
-        min_clock = wrap_max(scd->tick_gtod, scd->clock);
--       max_clock = scd->tick_gtod + TICK_NSEC;
-+       max_clock = wrap_min(scd->clock, scd->tick_gtod + TICK_NSEC);
- 
-        clock = wrap_max(clock, min_clock);
-        clock = wrap_min(clock, max_clock);
-
-We want wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC), not
-wrap_min().  The problem I am trying to fix is that scd->tick_gtod +
-TICK_NSEC may be too low.  The upper bound needs to be at LEAST
-scd->clock.  Limiting it to scd->clock all the time is disastrous.  :-)
-
-I'll fix the patch and retest it before sending it again.
-
-Sorry about my sloppiness.
-
-Shaggy
+You exit/reenter the trusted mode accross sleep... so any guarantees
+"trusted" mode does are void, right?
+								Pavel
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
