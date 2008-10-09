@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbYJIId4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbYJIIg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756529AbYJIId4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 04:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYJIIdq
+	id S1756825AbYJIIg0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 04:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYJIIgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 04:33:46 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:57013 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751788AbYJIIdp (ORCPT
+	Thu, 9 Oct 2008 04:36:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:11105 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbYJIIgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 04:33:45 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Folkert van Heusden <folkert@vanheusden.com>
-Subject: Re: [2.6.27-rc7] oops in usbcore
-Date: Thu, 9 Oct 2008 10:33:42 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
-References: <20081009082946.GG23933@vanheusden.com>
-In-Reply-To: <20081009082946.GG23933@vanheusden.com>
+	Thu, 9 Oct 2008 04:36:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=s691nd9uetMJI3SNd+N/uhUyDv9mRml9rVeqV0iYW0J0L9273ld/nSP1mBj8igVCCK
+         GT+jPvY8e+jWqOPQp7chQNrQ/9IRmY7SprX17qMZQez9y5FNp/WalEwt1/EUUY2DkK1I
+         l6WSG9fTUZvNg4dUFZeKbf/bli2hyzFjp/vyQ=
+Message-ID: <58cb370e0810090136t327734cerf6eb933422b9791c@mail.gmail.com>
+Date: Thu, 9 Oct 2008 10:36:14 +0200
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/7] ide: locking improvements
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081009065141.GV19428@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810091033.43665.oliver@neukum.org>
+References: <20081008202930.19112.90371.sendpatchset@localhost.localdomain>
+	 <20081009065141.GV19428@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 9. Oktober 2008 10:29:50 schrieb Folkert van Heusden:
+On Thu, Oct 9, 2008 at 8:51 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Wed, Oct 08 2008, Bartlomiej Zolnierkiewicz wrote:
+>>
+>> Locking improvements in preparation for replacing the global ide_lock
+>> spinlock by per-hwgroup spinlocks [1].
+>>
+>> [1] patch (which is partially based on 2005 patch from Scalex86) for this
+>> is also ready but it needs some more audit and testing
+>>
+>> diffstat:
+>>  drivers/ide/ide-cd.c     |   38 ++++++-------
+>>  drivers/ide/ide-io.c     |  129 ++++++++++++++++++++---------------------------
+>>  drivers/ide/ide-ioctls.c |    3 -
+>>  drivers/ide/ide-lib.c    |    7 --
+>>  drivers/ide/ide-proc.c   |   25 +--------
+>>  drivers/ide/ide.c        |    7 --
+>>  6 files changed, 80 insertions(+), 129 deletions(-)
+>
+> Sorry, but I just have to ask 'why'? IDE is seeing a whole lot of churn
+> for something that should essentially be a stable code base in
+> maintenance mode, and now scalability improvements?
 
-> lpc-ntpd is a atomic clock receiver driver doing read()-calls on an fd
-> from a serial device (connected via usb), nothing fancy
-> (http://vanheusden.com/lpc-ntpd/ ).
+It is the stable code but being in "maintenance only mode" has never
+been true and as long as there are active users & developers there is
+really no reason to change it.
 
-Which devices? Please post lsusb -v
+> Just doesn't make ANY sense to me, sorry. We may end up with a cleaner
+> code base, but likely also a buggier one. It's not like hardware
+> coverage testing is all that great, considering some of the ancient
+> stuff it supports :-)
 
-	Regards
-		Oliver
+The changes above are relatively safe/simple and are not hardware specific.
+
+Thanks for worring about IDE but we should be fine. :)
+
+Bart
