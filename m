@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYJIES2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbYJIETB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYJIES2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbYJIEHu
+	id S1759514AbYJIETB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYJIEHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:07:50 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54532 "EHLO
+	Thu, 9 Oct 2008 00:07:54 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54528 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757600AbYJIEGN (ORCPT
+	with ESMTP id S1756043AbYJIEGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Oct 2008 00:06:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 22/42] ext4: hook the ext3 migration interface to the EXT4_IOC_SETFLAGS ioctl
-Date: Thu,  9 Oct 2008 00:05:40 -0400
-Message-Id: <1223525160-9887-23-git-send-email-tytso@mit.edu>
+Subject: [PATCH 15/42] ext4: Properly update i_disksize.
+Date: Thu,  9 Oct 2008 00:05:33 -0400
+Message-Id: <1223525160-9887-16-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-22-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-15-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -34,13 +34,6 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-13-git-send-email-tytso@mit.edu>
  <1223525160-9887-14-git-send-email-tytso@mit.edu>
  <1223525160-9887-15-git-send-email-tytso@mit.edu>
- <1223525160-9887-16-git-send-email-tytso@mit.edu>
- <1223525160-9887-17-git-send-email-tytso@mit.edu>
- <1223525160-9887-18-git-send-email-tytso@mit.edu>
- <1223525160-9887-19-git-send-email-tytso@mit.edu>
- <1223525160-9887-20-git-send-email-tytso@mit.edu>
- <1223525160-9887-21-git-send-email-tytso@mit.edu>
- <1223525160-9887-22-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -50,73 +43,172 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-This patch hooks the ext3 to ext4 migrate interface to
-EXT4_IOC_SETFLAGS ioctl. The userspace interface is via chattr +e.  We
-only allow setting extent flags.  Clearing extent flag (migrating from
-ext4 to ext3) is not supported.
+With delayed allocation we use i_data_sem to update i_disksize.  We need
+to update i_disksize only if the new size specified is greater than the
+current value and we need to make sure we don't race with other
+i_disksize update.  With delayed allocation we will switch to the
+write_begin function for non-delayed allocation if we are low on free
+blocks.  This means the write_begin function for non-delayed allocation
+also needs to use the same locking.
+
+We also need to check and update i_disksize even if the new size is less
+that inode.i_size because of delayed allocation.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/ext4.h  |    2 +-
- fs/ext4/ioctl.c |   17 ++++++++++++++++-
- 2 files changed, 17 insertions(+), 2 deletions(-)
+ fs/ext4/ext4.h    |   11 ++++++++++
+ fs/ext4/extents.c |    9 ++++---
+ fs/ext4/inode.c   |   54 +++++++++++++++++++++++++++++-----------------------
+ 3 files changed, 46 insertions(+), 28 deletions(-)
 
 diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 9b6ad8f..068adc1 100644
+index e13b9de..3e47b99 100644
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -245,7 +245,7 @@ struct flex_groups {
- #define EXT4_RESERVED_FL		0x80000000 /* reserved for ext4 lib */
+@@ -1218,6 +1218,17 @@ do {								\
+ #define EXT4_FREEBLOCKS_WATERMARK 0
+ #endif
  
- #define EXT4_FL_USER_VISIBLE		0x000BDFFF /* User visible flags */
--#define EXT4_FL_USER_MODIFIABLE		0x000380FF /* User modifiable flags */
-+#define EXT4_FL_USER_MODIFIABLE		0x000B80FF /* User modifiable flags */
++static inline void ext4_update_i_disksize(struct inode *inode, loff_t newsize)
++{
++	/*
++	 * XXX: replace with spinlock if seen contended -bzzz
++	 */
++	down_write(&EXT4_I(inode)->i_data_sem);
++	if (newsize > EXT4_I(inode)->i_disksize)
++		EXT4_I(inode)->i_disksize = newsize;
++	up_write(&EXT4_I(inode)->i_data_sem);
++	return ;
++}
  
  /*
-  * Inode dynamic state flags
-diff --git a/fs/ext4/ioctl.c b/fs/ext4/ioctl.c
-index 9f3044a..3e14060 100644
---- a/fs/ext4/ioctl.c
-+++ b/fs/ext4/ioctl.c
-@@ -34,7 +34,7 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 		return put_user(flags, (int __user *) arg);
- 	case EXT4_IOC_SETFLAGS: {
- 		handle_t *handle = NULL;
--		int err;
-+		int err, migrate = 0;
- 		struct ext4_iloc iloc;
- 		unsigned int oldflags;
- 		unsigned int jflag;
-@@ -82,6 +82,17 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 			if (!capable(CAP_SYS_RESOURCE))
- 				goto flags_out;
- 		}
-+		if (oldflags & EXT4_EXTENTS_FL) {
-+			/* We don't support clearning extent flags */
-+			if (!(flags & EXT4_EXTENTS_FL)) {
-+				err = -EOPNOTSUPP;
-+				goto flags_out;
-+			}
-+		} else if (flags & EXT4_EXTENTS_FL) {
-+			/* migrate the file */
-+			migrate = 1;
-+			flags &= ~EXT4_EXTENTS_FL;
+  * Inodes and files operations
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index 797f060..e8758df 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -2878,10 +2878,11 @@ static void ext4_falloc_update_inode(struct inode *inode,
+ 	 * Update only when preallocation was requested beyond
+ 	 * the file size.
+ 	 */
+-	if (!(mode & FALLOC_FL_KEEP_SIZE) &&
+-				new_size > i_size_read(inode)) {
+-		i_size_write(inode, new_size);
+-		EXT4_I(inode)->i_disksize = new_size;
++	if (!(mode & FALLOC_FL_KEEP_SIZE)) {
++		if (new_size > i_size_read(inode))
++			i_size_write(inode, new_size);
++		if (new_size > EXT4_I(inode)->i_disksize)
++			ext4_update_i_disksize(inode, new_size);
+ 	}
+ 
+ }
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 634f0bc..22fcbb6 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1434,16 +1434,18 @@ static int ext4_ordered_write_end(struct file *file,
+ 	ret = ext4_jbd2_file_inode(handle, inode);
+ 
+ 	if (ret == 0) {
+-		/*
+-		 * generic_write_end() will run mark_inode_dirty() if i_size
+-		 * changes.  So let's piggyback the i_disksize mark_inode_dirty
+-		 * into that.
+-		 */
+ 		loff_t new_i_size;
+ 
+ 		new_i_size = pos + copied;
+-		if (new_i_size > EXT4_I(inode)->i_disksize)
+-			EXT4_I(inode)->i_disksize = new_i_size;
++		if (new_i_size > EXT4_I(inode)->i_disksize) {
++			ext4_update_i_disksize(inode, new_i_size);
++			/* We need to mark inode dirty even if
++			 * new_i_size is less that inode->i_size
++			 * bu greater than i_disksize.(hint delalloc)
++			 */
++			ext4_mark_inode_dirty(handle, inode);
 +		}
++
+ 		ret2 = generic_write_end(file, mapping, pos, len, copied,
+ 							page, fsdata);
+ 		copied = ret2;
+@@ -1468,8 +1470,14 @@ static int ext4_writeback_write_end(struct file *file,
+ 	loff_t new_i_size;
  
- 		handle = ext4_journal_start(inode, 1);
- 		if (IS_ERR(handle)) {
-@@ -109,6 +120,10 @@ flags_err:
+ 	new_i_size = pos + copied;
+-	if (new_i_size > EXT4_I(inode)->i_disksize)
+-		EXT4_I(inode)->i_disksize = new_i_size;
++	if (new_i_size > EXT4_I(inode)->i_disksize) {
++		ext4_update_i_disksize(inode, new_i_size);
++		/* We need to mark inode dirty even if
++		 * new_i_size is less that inode->i_size
++		 * bu greater than i_disksize.(hint delalloc)
++		 */
++		ext4_mark_inode_dirty(handle, inode);
++	}
  
- 		if ((jflag ^ oldflags) & (EXT4_JOURNAL_DATA_FL))
- 			err = ext4_change_inode_journal_flag(inode, jflag);
-+		if (err)
-+			goto flags_out;
-+		if (migrate)
-+			err = ext4_ext_migrate(inode);
- flags_out:
- 		mutex_unlock(&inode->i_mutex);
- 		mnt_drop_write(filp->f_path.mnt);
+ 	ret2 = generic_write_end(file, mapping, pos, len, copied,
+ 							page, fsdata);
+@@ -1494,6 +1502,7 @@ static int ext4_journalled_write_end(struct file *file,
+ 	int ret = 0, ret2;
+ 	int partial = 0;
+ 	unsigned from, to;
++	loff_t new_i_size;
+ 
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 	to = from + len;
+@@ -1508,11 +1517,12 @@ static int ext4_journalled_write_end(struct file *file,
+ 				to, &partial, write_end_fn);
+ 	if (!partial)
+ 		SetPageUptodate(page);
+-	if (pos+copied > inode->i_size)
++	new_i_size = pos + copied;
++	if (new_i_size > inode->i_size)
+ 		i_size_write(inode, pos+copied);
+ 	EXT4_I(inode)->i_state |= EXT4_STATE_JDATA;
+-	if (inode->i_size > EXT4_I(inode)->i_disksize) {
+-		EXT4_I(inode)->i_disksize = inode->i_size;
++	if (new_i_size > EXT4_I(inode)->i_disksize) {
++		ext4_update_i_disksize(inode, new_i_size);
+ 		ret2 = ext4_mark_inode_dirty(handle, inode);
+ 		if (!ret)
+ 			ret = ret2;
+@@ -2227,18 +2237,9 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 		if (disksize > i_size_read(inode))
+ 			disksize = i_size_read(inode);
+ 		if (disksize > EXT4_I(inode)->i_disksize) {
+-			/*
+-			 * XXX: replace with spinlock if seen contended -bzzz
+-			 */
+-			down_write(&EXT4_I(inode)->i_data_sem);
+-			if (disksize > EXT4_I(inode)->i_disksize)
+-				EXT4_I(inode)->i_disksize = disksize;
+-			up_write(&EXT4_I(inode)->i_data_sem);
+-
+-			if (EXT4_I(inode)->i_disksize == disksize) {
+-				ret = ext4_mark_inode_dirty(handle, inode);
+-				return ret;
+-			}
++			ext4_update_i_disksize(inode, disksize);
++			ret = ext4_mark_inode_dirty(handle, inode);
++			return ret;
+ 		}
+ 		ret = 0;
+ 	}
+@@ -2654,6 +2655,11 @@ static int ext4_da_write_end(struct file *file,
+ 				EXT4_I(inode)->i_disksize = new_i_size;
+ 			}
+ 			up_write(&EXT4_I(inode)->i_data_sem);
++			/* We need to mark inode dirty even if
++			 * new_i_size is less that inode->i_size
++			 * bu greater than i_disksize.(hint delalloc)
++			 */
++			ext4_mark_inode_dirty(handle, inode);
+ 		}
+ 	}
+ 	ret2 = generic_write_end(file, mapping, pos, len, copied,
 -- 
 1.5.6.1.205.ge2c7.dirty
 
