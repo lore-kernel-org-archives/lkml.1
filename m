@@ -1,87 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbYJINFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbYJINHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbYJINFn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 09:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbYJINFf
+	id S1759459AbYJINHc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 09:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757879AbYJINHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 09:05:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45743 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753479AbYJINFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 09:05:34 -0400
-Date: Thu, 9 Oct 2008 15:05:18 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-Cc: linux-kernel@vger.kernel.org, "Wang, Shane" <shane.wang@intel.com>,
-       "Wei, Gang" <gang.wei@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
-       mingo@elte.hu, tytso@mit.edu
-Subject: Re: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
-Message-ID: <20081009130518.GE1623@ucw.cz>
-References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
+	Thu, 9 Oct 2008 09:07:24 -0400
+Received: from mail02a.mail.t-online.hu ([84.2.40.7]:58624 "EHLO
+	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757440AbYJINHY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 09:07:24 -0400
+X-Greylist: delayed 478 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Oct 2008 09:07:24 EDT
+Message-ID: <48EE0025.8060007@freemail.hu>
+Date: Thu, 09 Oct 2008 14:59:17 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: cpufreq@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: correct broken links and email address
+References: <48EF21F7.1020308@freemail.hu>
+In-Reply-To: <48EF21F7.1020308@freemail.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32712; Body=3 Fuz1=3
+	Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Márton Németh <nm127@freemail.hu>
 
-> (large) Patch inline below (and still attached for those who prefer it).
-> 
-> Linux kernel changes to support tboot and Intel TXT.
+Replace the no longer working links and email address in the
+documentation and in source code.
 
-Please pick a better acronym. TXT is already taken.
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -upr linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c	2008-10-08 17:11:44.000000000 +0200
++++ linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c	2008-10-10 10:48:11.000000000 +0200
+@@ -171,7 +171,7 @@ static unsigned int cpufreq_p4_get_frequ
+ 	}
 
-> +struct tboot_acpi_sleep_info {
-> +	u16 pm1a_cnt;
-> +	u16 pm1b_cnt;
-> +	u16 pm1a_evt;
-> +	u16 pm1b_evt;
-> +	u16 pm1a_cnt_val;
-> +	u16 pm1b_cnt_val;
-> +}  __attribute__ ((__packed__));
-> +
-> +struct tboot_shared {
-> +	/* version 0x01+ fields: */
-> +	struct tboot_uuid uuid; /* TBOOT_SHARED_UUID */
-> +	u32  version;      	/* Version number: 2 is current */
-> +	u32  log_addr;     	/* physical addr of tb_log_t log */
-> +	u32  shutdown_entry32;	/* entry point for tboot shutdown from
-> 32b */
-> +	u32  shutdown_entry64;	/* entry point for tboot shutdown from
-> 64b */
+ 	if (c->x86 != 0xF) {
+-		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@lists.linux.org.uk>\n");
++		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@vger.kernel.org>\n");
+ 		return 0;
+ 	}
 
-should these be function pointers?
+diff -upr linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+--- linux-2.6.27-rc9.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c	2008-10-08 17:11:44.000000000 +0200
++++ linux-2.6.27-rc9.new/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c	2008-10-10 10:48:39.000000000 +0200
+@@ -26,7 +26,7 @@
+ #include <asm/cpufeature.h>
 
-> +	u32  shutdown_type;	/* type of shutdown (TB_SHUTDOWN_*) */
-> +	u32  s3_tb_wakeup_entry;/* entry point for tboot s3 wake up */
-> +	u32  s3_k_wakeup_entry;	/* entry point for kernel s3 wake up */
-> +	struct tboot_acpi_sleep_info
-> +		  acpi_sinfo;	/* where kernel put acpi sleep info in
-> Sx */
-> +	u8   reserved[52];	/* this pad is for compat with old field
-> */
-> +	/* version 0x02+ fields: */
-> +	u32  tboot_base;	/* starting addr for tboot */
-> +	u32  tboot_size;	/* size of tboot */
-> +} __attribute__ ((__packed__));
-> +
-> +/* {663C8DFF-E8B3-4b82-AABF-19EA4D057A08} */
-> +#define TBOOT_SHARED_UUID     \
-> +		((struct tboot_uuid){ 0x663c8dff, 0xe8b3, 0x4b82,
-> 0xaabf,   \
-> +				{ 0x19, 0xea, 0x4d, 0x5, 0x7a, 0x8 } })
+ #define PFX		"speedstep-centrino: "
+-#define MAINTAINER	"cpufreq@lists.linux.org.uk"
++#define MAINTAINER	"cpufreq@vger.kernel.org"
 
-Can we use normal magic number like rest of kernel does?
-								Pavel
+ #define dprintk(msg...) \
+ 	cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "speedstep-centrino", msg)
+diff -upr linux-2.6.27-rc9.orig/Documentation/cpu-freq/index.txt linux-2.6.27-rc9.new/Documentation/cpu-freq/index.txt
+--- linux-2.6.27-rc9.orig/Documentation/cpu-freq/index.txt	2008-07-13 23:51:29.000000000 +0200
++++ linux-2.6.27-rc9.new/Documentation/cpu-freq/index.txt	2008-10-10 10:46:08.000000000 +0200
+@@ -35,11 +35,9 @@ Mailing List
+ ------------
+ There is a CPU frequency changing CVS commit and general list where
+ you can report bugs, problems or submit patches. To post a message,
+-send an email to cpufreq@lists.linux.org.uk, to subscribe go to
+-http://lists.linux.org.uk/mailman/listinfo/cpufreq. Previous post to the
+-mailing list are available to subscribers at
+-http://lists.linux.org.uk/mailman/private/cpufreq/.
+-
++send an email to cpufreq@vger.kernel.org, to subscribe go to
++http://vger.kernel.org/vger-lists.html#cpufreq and follow the
++instructions there.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ Links
+ -----
+@@ -50,7 +48,7 @@ how to access the CVS repository:
+ * http://cvs.arm.linux.org.uk/
+
+ the CPUFreq Mailing list:
+-* http://lists.linux.org.uk/mailman/listinfo/cpufreq
++* http://vger.kernel.org/vger-lists.html#cpufreq
+
+ Clock and voltage scaling for the SA-1100:
+ * http://www.lartmaker.nl/projects/scaling
+
