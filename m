@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYJIPjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbYJIPqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbYJIPjs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 11:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbYJIPjj
+	id S1759953AbYJIPqH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 11:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYJIPpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 11:39:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34396 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754997AbYJIPji (ORCPT
+	Thu, 9 Oct 2008 11:45:55 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:14853 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753856AbYJIPpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 11:39:38 -0400
-Date: Thu, 9 Oct 2008 08:37:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: splice vs O_APPEND
-In-Reply-To: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org>
-References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Oct 2008 11:45:55 -0400
+Date: Thu, 9 Oct 2008 08:45:05 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch]fix wrong sysfs file attribute
+Message-Id: <20081009084505.e5496a7c.randy.dunlap@oracle.com>
+In-Reply-To: <1223530282.30941.7.camel@sli10-desk.sh.intel.com>
+References: <1223530282.30941.7.camel@sli10-desk.sh.intel.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 09 Oct 2008 13:31:22 +0800 Shaohua Li wrote:
 
-
-On Thu, 9 Oct 2008, Miklos Szeredi wrote:
->
-> While looking at the f_pos corruption thing, I found that splice() to
-> a regular file totally ignores O_APPEND.  Which allows users to bypass
-> the append-only restriction.  Bad...
+> This attribute just has write operation.
 > 
-> The only question is how this should be solved?  Should splice()
-> respect O_APPEND and ignore the offset?  Or should it just return
-> -EINVAL?
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> ---
+>  drivers/base/memory.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux/drivers/base/memory.c
+> ===================================================================
+> --- linux.orig/drivers/base/memory.c	2008-10-09 11:41:40.000000000 +0800
+> +++ linux/drivers/base/memory.c	2008-10-09 11:41:52.000000000 +0800
+> @@ -325,7 +325,7 @@ memory_probe_store(struct class *class, 
+>  
+>  	return count;
+>  }
+> -static CLASS_ATTR(probe, 0700, NULL, memory_probe_store);
+> +static CLASS_ATTR(probe, 0200, NULL, memory_probe_store);
+>  
+>  static int memory_probe_init(void)
+>  {
 
-Good catch. sendfile() has the same issue, but I don't think we ever did 
-sendpage() for any filesystems, so it won't ever be relevant, and this is 
-probably just a splice issue.
+#include <stat.h>
 
-EINVAL seems the simplest thing. Should check S_IMMUTABLE too for that 
-matter. Possible patch appended.
++static CLASS_ATTR(probe, S_IWUSR, NULL, memory_probe_store);
 
-I do wonder if we shouldn't just do this in rw_verify_area(). The whole 
-reason for that function is that we used to have all those flock checks 
-etc spread out all over, and some path would inevitably just miss one 
-check or another. It's kind of stupid to expect low-level filesystems to 
-do the IS_APPEND/IS_IMMUTABLE checks.
-
-Comments?
-
-		Linus
+is almost readable.
 
 ---
- fs/splice.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/fs/splice.c b/fs/splice.c
-index 1bbc6f4..769b2d3 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -891,6 +891,7 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
- 			   loff_t *ppos, size_t len, unsigned int flags)
- {
- 	int ret;
-+	struct inode *inode;
- 
- 	if (unlikely(!out->f_op || !out->f_op->splice_write))
- 		return -EINVAL;
-@@ -898,6 +899,12 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
- 	if (unlikely(!(out->f_mode & FMODE_WRITE)))
- 		return -EBADF;
- 
-+	inode = out->f_dentry->d_inode;
-+	if (IS_IMMUTABLE(inode))
-+		return -EPERM;
-+	if (IS_APPEND(inode))
-+		return -EINVAL;
-+
- 	ret = rw_verify_area(WRITE, out, ppos, len);
- 	if (unlikely(ret < 0))
- 		return ret;
+~Randy
