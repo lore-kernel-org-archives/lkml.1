@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbYJIEOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYJIEPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758286AbYJIEOu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYJIEHU
+	id S1757291AbYJIEPV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbYJIEHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:07:20 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54514 "EHLO
+	Thu, 9 Oct 2008 00:07:23 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54522 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757591AbYJIEGN (ORCPT
+	with ESMTP id S1757612AbYJIEGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Oct 2008 00:06:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 28/42] ext4: Combine proc file handling into a single set of functions
-Date: Thu,  9 Oct 2008 00:05:46 -0400
-Message-Id: <1223525160-9887-29-git-send-email-tytso@mit.edu>
+Cc: Duane Griffin <duaneg@dghda.com>, Sami Liedes <sliedes@cc.hut.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 32/42] jbd2: abort instead of waiting for nonexistent transaction
+Date: Thu,  9 Oct 2008 00:05:50 -0400
+Message-Id: <1223525160-9887-33-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-28-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-32-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -46,6 +48,10 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-26-git-send-email-tytso@mit.edu>
  <1223525160-9887-27-git-send-email-tytso@mit.edu>
  <1223525160-9887-28-git-send-email-tytso@mit.edu>
+ <1223525160-9887-29-git-send-email-tytso@mit.edu>
+ <1223525160-9887-30-git-send-email-tytso@mit.edu>
+ <1223525160-9887-31-git-send-email-tytso@mit.edu>
+ <1223525160-9887-32-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -53,209 +59,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Previously mballoc created a separate set of functions for each proc
-file.  This combines the tunables into a single set of functions which
-gets used for all of the per-superblock proc files, saving
-approximately 2k of compiled object code.
+From: Duane Griffin <duaneg@dghda.com>
 
+The __jbd2_log_wait_for_space function sits in a loop checkpointing
+transactions until there is sufficient space free in the journal.
+However, if there are no transactions to be processed (e.g.  because the
+free space calculation is wrong due to a corrupted filesystem) it will
+never progress.
+
+Check for space being required when no transactions are outstanding and
+abort the journal instead of endlessly looping.
+
+This patch fixes the bug reported by Sami Liedes at:
+http://bugzilla.kernel.org/show_bug.cgi?id=10976
+
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+Cc: Sami Liedes <sliedes@cc.hut.fi>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/ext4.h    |   16 ++++++++++++
- fs/ext4/ext4_sb.h |   12 ++++----
- fs/ext4/mballoc.c |   69 ++++------------------------------------------------
- fs/ext4/super.c   |   42 ++++++++++++++++++++++++++++++++
- 4 files changed, 70 insertions(+), 69 deletions(-)
+ fs/jbd2/checkpoint.c |   19 +++++++++++++++++--
+ 1 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index b9c9371..163c445 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -957,6 +957,22 @@ void ext4_get_group_no_and_offset(struct super_block *sb, ext4_fsblk_t blocknr,
+diff --git a/fs/jbd2/checkpoint.c b/fs/jbd2/checkpoint.c
+index 91389c8..af4651b 100644
+--- a/fs/jbd2/checkpoint.c
++++ b/fs/jbd2/checkpoint.c
+@@ -126,14 +126,29 @@ void __jbd2_log_wait_for_space(journal_t *journal)
  
- extern struct proc_dir_entry *ext4_proc_root;
- 
-+#ifdef CONFIG_PROC_FS
-+extern const struct file_operations ext4_ui_proc_fops;
+ 		/*
+ 		 * Test again, another process may have checkpointed while we
+-		 * were waiting for the checkpoint lock
++		 * were waiting for the checkpoint lock. If there are no
++		 * outstanding transactions there is nothing to checkpoint and
++		 * we can't make progress. Abort the journal in this case.
+ 		 */
+ 		spin_lock(&journal->j_state_lock);
++		spin_lock(&journal->j_list_lock);
+ 		nblocks = jbd_space_needed(journal);
+ 		if (__jbd2_log_space_left(journal) < nblocks) {
++			int chkpt = journal->j_checkpoint_transactions != NULL;
 +
-+#define	EXT4_PROC_HANDLER(name, var)					\
-+do {									\
-+	proc = proc_create_data(name, mode, sbi->s_proc,		\
-+				&ext4_ui_proc_fops, &sbi->s_##var);	\
-+	if (proc == NULL) {						\
-+		printk(KERN_ERR "EXT4-fs: can't create %s\n", name);	\
-+		goto err_out;						\
-+	}								\
-+} while (0)
-+#else
-+#define EXT4_PROC_HANDLER(name, var)
-+#endif
++			spin_unlock(&journal->j_list_lock);
+ 			spin_unlock(&journal->j_state_lock);
+-			jbd2_log_do_checkpoint(journal);
++			if (chkpt) {
++				jbd2_log_do_checkpoint(journal);
++			} else {
++				printk(KERN_ERR "%s: no transactions\n",
++				       __func__);
++				jbd2_journal_abort(journal, 0);
++			}
 +
- /*
-  * Function prototypes
-  */
-diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-index 95e046e..f92af01 100644
---- a/fs/ext4/ext4_sb.h
-+++ b/fs/ext4/ext4_sb.h
-@@ -108,12 +108,12 @@ struct ext4_sb_info {
- 
- 	/* tunables */
- 	unsigned long s_stripe;
--	unsigned long s_mb_stream_request;
--	unsigned long s_mb_max_to_scan;
--	unsigned long s_mb_min_to_scan;
--	unsigned long s_mb_stats;
--	unsigned long s_mb_order2_reqs;
--	unsigned long s_mb_group_prealloc;
-+	unsigned int s_mb_stream_request;
-+	unsigned int s_mb_max_to_scan;
-+	unsigned int s_mb_min_to_scan;
-+	unsigned int s_mb_stats;
-+	unsigned int s_mb_order2_reqs;
-+	unsigned int s_mb_group_prealloc;
- 	/* where last allocation was done - for stream allocation */
- 	unsigned long s_mb_last_group;
- 	unsigned long s_mb_last_start;
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index 705870c..3373f89 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -2721,63 +2721,6 @@ ext4_mb_free_committed_blocks(struct super_block *sb)
- #define EXT4_MB_STREAM_REQ		"stream_req"
- #define EXT4_MB_GROUP_PREALLOC		"group_prealloc"
- 
--#define MB_PROC_FOPS(name)					\
--static int ext4_mb_##name##_proc_show(struct seq_file *m, void *v)	\
--{								\
--	struct ext4_sb_info *sbi = m->private;			\
--								\
--	seq_printf(m, "%ld\n", sbi->s_mb_##name);		\
--	return 0;						\
--}								\
--								\
--static int ext4_mb_##name##_proc_open(struct inode *inode, struct file *file)\
--{								\
--	return single_open(file, ext4_mb_##name##_proc_show, PDE(inode)->data);\
--}								\
--								\
--static ssize_t ext4_mb_##name##_proc_write(struct file *file,	\
--		const char __user *buf, size_t cnt, loff_t *ppos)	\
--{								\
--	struct ext4_sb_info *sbi = PDE(file->f_path.dentry->d_inode)->data;\
--	char str[32];						\
--	long value;						\
--	if (cnt >= sizeof(str))					\
--		return -EINVAL;					\
--	if (copy_from_user(str, buf, cnt))			\
--		return -EFAULT;					\
--	value = simple_strtol(str, NULL, 0);			\
--	if (value <= 0)						\
--		return -ERANGE;					\
--	sbi->s_mb_##name = value;				\
--	return cnt;						\
--}								\
--								\
--static const struct file_operations ext4_mb_##name##_proc_fops = {	\
--	.owner		= THIS_MODULE,				\
--	.open		= ext4_mb_##name##_proc_open,		\
--	.read		= seq_read,				\
--	.llseek		= seq_lseek,				\
--	.release	= single_release,			\
--	.write		= ext4_mb_##name##_proc_write,		\
--};
--
--MB_PROC_FOPS(stats);
--MB_PROC_FOPS(max_to_scan);
--MB_PROC_FOPS(min_to_scan);
--MB_PROC_FOPS(order2_reqs);
--MB_PROC_FOPS(stream_request);
--MB_PROC_FOPS(group_prealloc);
--
--#define	MB_PROC_HANDLER(name, var)					\
--do {									\
--	proc = proc_create_data(name, mode, sbi->s_proc,		\
--				&ext4_mb_##var##_proc_fops, sbi);	\
--	if (proc == NULL) {						\
--		printk(KERN_ERR "EXT4-fs: can't to create %s\n", name);	\
--		goto err_out;						\
--	}								\
--} while (0)
--
- static int ext4_mb_init_per_dev_proc(struct super_block *sb)
- {
- 	mode_t mode = S_IFREG | S_IRUGO | S_IWUSR;
-@@ -2787,12 +2730,12 @@ static int ext4_mb_init_per_dev_proc(struct super_block *sb)
- 	if (sbi->s_proc == NULL)
- 		return -EINVAL;
- 
--	MB_PROC_HANDLER(EXT4_MB_STATS_NAME, stats);
--	MB_PROC_HANDLER(EXT4_MB_MAX_TO_SCAN_NAME, max_to_scan);
--	MB_PROC_HANDLER(EXT4_MB_MIN_TO_SCAN_NAME, min_to_scan);
--	MB_PROC_HANDLER(EXT4_MB_ORDER2_REQ, order2_reqs);
--	MB_PROC_HANDLER(EXT4_MB_STREAM_REQ, stream_request);
--	MB_PROC_HANDLER(EXT4_MB_GROUP_PREALLOC, group_prealloc);
-+	EXT4_PROC_HANDLER(EXT4_MB_STATS_NAME, mb_stats);
-+	EXT4_PROC_HANDLER(EXT4_MB_MAX_TO_SCAN_NAME, mb_max_to_scan);
-+	EXT4_PROC_HANDLER(EXT4_MB_MIN_TO_SCAN_NAME, mb_min_to_scan);
-+	EXT4_PROC_HANDLER(EXT4_MB_ORDER2_REQ, mb_order2_reqs);
-+	EXT4_PROC_HANDLER(EXT4_MB_STREAM_REQ, mb_stream_request);
-+	EXT4_PROC_HANDLER(EXT4_MB_GROUP_PREALLOC, mb_group_prealloc);
- 	return 0;
- 
- err_out:
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 7feeec6..9f5468f 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -3541,6 +3541,48 @@ static int ext4_get_sb(struct file_system_type *fs_type,
- 	return get_sb_bdev(fs_type, flags, dev_name, data, ext4_fill_super, mnt);
- }
- 
-+#ifdef CONFIG_PROC_FS
-+static int ext4_ui_proc_show(struct seq_file *m, void *v)
-+{
-+	unsigned int *p = m->private;
-+
-+	seq_printf(m, "%u\n", *p);
-+	return 0;
-+}
-+
-+static int ext4_ui_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, ext4_ui_proc_show, PDE(inode)->data);
-+}
-+
-+static ssize_t ext4_ui_proc_write(struct file *file, const char __user *buf,
-+			       size_t cnt, loff_t *ppos)
-+{
-+	unsigned int *p = PDE(file->f_path.dentry->d_inode)->data;
-+	char str[32];
-+	unsigned long value;
-+
-+	if (cnt >= sizeof(str))
-+		return -EINVAL;
-+	if (copy_from_user(str, buf, cnt))
-+		return -EFAULT;
-+	value = simple_strtol(str, NULL, 0);
-+	if (value < 0)
-+		return -ERANGE;
-+	*p = value;
-+	return cnt;
-+}
-+
-+const struct file_operations ext4_ui_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= ext4_ui_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= ext4_ui_proc_write,
-+};
-+#endif
-+
- static struct file_system_type ext4dev_fs_type = {
- 	.owner		= THIS_MODULE,
- 	.name		= "ext4dev",
+ 			spin_lock(&journal->j_state_lock);
++		} else {
++			spin_unlock(&journal->j_list_lock);
+ 		}
+ 		mutex_unlock(&journal->j_checkpoint_mutex);
+ 	}
 -- 
 1.5.6.1.205.ge2c7.dirty
 
