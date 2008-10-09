@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbYJIENy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbYJIEOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbYJIENy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbYJIEHK
+	id S1759277AbYJIEOT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbYJIEHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:07:10 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54507 "EHLO
+	Thu, 9 Oct 2008 00:07:13 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54505 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757572AbYJIEGM (ORCPT
+	with ESMTP id S1757597AbYJIEGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:06:12 -0400
+	Thu, 9 Oct 2008 00:06:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 40/42] Update ext4 MAINTAINERS file
-Date: Thu,  9 Oct 2008 00:05:58 -0400
-Message-Id: <1223525160-9887-41-git-send-email-tytso@mit.edu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 14/42] ext4: truncate block allocated on a failed ext4_write_begin
+Date: Thu,  9 Oct 2008 00:05:32 -0400
+Message-Id: <1223525160-9887-15-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-40-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-14-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -32,32 +33,6 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-12-git-send-email-tytso@mit.edu>
  <1223525160-9887-13-git-send-email-tytso@mit.edu>
  <1223525160-9887-14-git-send-email-tytso@mit.edu>
- <1223525160-9887-15-git-send-email-tytso@mit.edu>
- <1223525160-9887-16-git-send-email-tytso@mit.edu>
- <1223525160-9887-17-git-send-email-tytso@mit.edu>
- <1223525160-9887-18-git-send-email-tytso@mit.edu>
- <1223525160-9887-19-git-send-email-tytso@mit.edu>
- <1223525160-9887-20-git-send-email-tytso@mit.edu>
- <1223525160-9887-21-git-send-email-tytso@mit.edu>
- <1223525160-9887-22-git-send-email-tytso@mit.edu>
- <1223525160-9887-23-git-send-email-tytso@mit.edu>
- <1223525160-9887-24-git-send-email-tytso@mit.edu>
- <1223525160-9887-25-git-send-email-tytso@mit.edu>
- <1223525160-9887-26-git-send-email-tytso@mit.edu>
- <1223525160-9887-27-git-send-email-tytso@mit.edu>
- <1223525160-9887-28-git-send-email-tytso@mit.edu>
- <1223525160-9887-29-git-send-email-tytso@mit.edu>
- <1223525160-9887-30-git-send-email-tytso@mit.edu>
- <1223525160-9887-31-git-send-email-tytso@mit.edu>
- <1223525160-9887-32-git-send-email-tytso@mit.edu>
- <1223525160-9887-33-git-send-email-tytso@mit.edu>
- <1223525160-9887-34-git-send-email-tytso@mit.edu>
- <1223525160-9887-35-git-send-email-tytso@mit.edu>
- <1223525160-9887-36-git-send-email-tytso@mit.edu>
- <1223525160-9887-37-git-send-email-tytso@mit.edu>
- <1223525160-9887-38-git-send-email-tytso@mit.edu>
- <1223525160-9887-39-git-send-email-tytso@mit.edu>
- <1223525160-9887-40-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -65,32 +40,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ext4 entry was copied from ext3 and was never correct.  Update it
-so that Theodore Ts'o is listed as the maintainer, and point the
-website to http://ext4.wiki.kernel.org.
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
+For blocksize < pagesize we need to remove blocks that got allocated in
+block_write_begin() if we fail with ENOSPC for later blocks.
+block_write_begin() internally does this if it allocated pages locally.
+This makes sure we don't have blocks outside inode.i_size during ENOSPC.
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- MAINTAINERS |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ fs/ext4/inode.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8dae455..dce9cb9 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1639,9 +1639,10 @@ L:	linux-ext4@vger.kernel.org
- S:	Maintained
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index f97b347..634f0bc 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1391,6 +1391,13 @@ retry:
+ 		unlock_page(page);
+ 		ext4_journal_stop(handle);
+ 		page_cache_release(page);
++		/*
++		 * block_write_begin may have instantiated a few blocks
++		 * outside i_size.  Trim these off again. Don't need
++		 * i_size_read because we hold i_mutex.
++		 */
++		if (pos + len > inode->i_size)
++			vmtruncate(inode, inode->i_size);
+ 	}
  
- EXT4 FILE SYSTEM
--P:	Stephen Tweedie, Andrew Morton
--M:	sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com
-+P:	Theodore Ts'o
-+M:	tytso@mit.edu, adilger@sun.com
- L:	linux-ext4@vger.kernel.org
-+W:	http://ext4.wiki.kernel.org
- S:	Maintained
+ 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
+@@ -2560,6 +2567,13 @@ retry:
+ 		unlock_page(page);
+ 		ext4_journal_stop(handle);
+ 		page_cache_release(page);
++		/*
++		 * block_write_begin may have instantiated a few blocks
++		 * outside i_size.  Trim these off again. Don't need
++		 * i_size_read because we hold i_mutex.
++		 */
++		if (pos + len > inode->i_size)
++			vmtruncate(inode, inode->i_size);
+ 	}
  
- F71805F HARDWARE MONITORING DRIVER
+ 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
 -- 
 1.5.6.1.205.ge2c7.dirty
 
