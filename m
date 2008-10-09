@@ -1,571 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbYJIEVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759650AbYJIEVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbYJIEVY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbYJIEIN
+	id S1759650AbYJIEVi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbYJIEJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:08:13 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:60617 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757824AbYJIEGe (ORCPT
+	Thu, 9 Oct 2008 00:09:19 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:26545 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758145AbYJIEJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:06:34 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Mark Fasheh <mfasheh@suse.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
-Subject: [PATCH 37/42] ocfs2: fiemap support
-Date: Thu,  9 Oct 2008 00:05:55 -0400
-Message-Id: <1223525160-9887-38-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-37-git-send-email-tytso@mit.edu>
-References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
- <1223525160-9887-2-git-send-email-tytso@mit.edu>
- <1223525160-9887-3-git-send-email-tytso@mit.edu>
- <1223525160-9887-4-git-send-email-tytso@mit.edu>
- <1223525160-9887-5-git-send-email-tytso@mit.edu>
- <1223525160-9887-6-git-send-email-tytso@mit.edu>
- <1223525160-9887-7-git-send-email-tytso@mit.edu>
- <1223525160-9887-8-git-send-email-tytso@mit.edu>
- <1223525160-9887-9-git-send-email-tytso@mit.edu>
- <1223525160-9887-10-git-send-email-tytso@mit.edu>
- <1223525160-9887-11-git-send-email-tytso@mit.edu>
- <1223525160-9887-12-git-send-email-tytso@mit.edu>
- <1223525160-9887-13-git-send-email-tytso@mit.edu>
- <1223525160-9887-14-git-send-email-tytso@mit.edu>
- <1223525160-9887-15-git-send-email-tytso@mit.edu>
- <1223525160-9887-16-git-send-email-tytso@mit.edu>
- <1223525160-9887-17-git-send-email-tytso@mit.edu>
- <1223525160-9887-18-git-send-email-tytso@mit.edu>
- <1223525160-9887-19-git-send-email-tytso@mit.edu>
- <1223525160-9887-20-git-send-email-tytso@mit.edu>
- <1223525160-9887-21-git-send-email-tytso@mit.edu>
- <1223525160-9887-22-git-send-email-tytso@mit.edu>
- <1223525160-9887-23-git-send-email-tytso@mit.edu>
- <1223525160-9887-24-git-send-email-tytso@mit.edu>
- <1223525160-9887-25-git-send-email-tytso@mit.edu>
- <1223525160-9887-26-git-send-email-tytso@mit.edu>
- <1223525160-9887-27-git-send-email-tytso@mit.edu>
- <1223525160-9887-28-git-send-email-tytso@mit.edu>
- <1223525160-9887-29-git-send-email-tytso@mit.edu>
- <1223525160-9887-30-git-send-email-tytso@mit.edu>
- <1223525160-9887-31-git-send-email-tytso@mit.edu>
- <1223525160-9887-32-git-send-email-tytso@mit.edu>
- <1223525160-9887-33-git-send-email-tytso@mit.edu>
- <1223525160-9887-34-git-send-email-tytso@mit.edu>
- <1223525160-9887-35-git-send-email-tytso@mit.edu>
- <1223525160-9887-36-git-send-email-tytso@mit.edu>
- <1223525160-9887-37-git-send-email-tytso@mit.edu>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 9 Oct 2008 00:09:16 -0400
+Date: Wed, 8 Oct 2008 22:09:14 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH v4 02/15] PCI Hotplug: serialize
+	pci_hp_register/deregister
+Message-ID: <20081009040914.GC4668@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+	kristen.c.accardi@intel.com, kaneshige.kenji@jp.fujitsu.com
+References: <20081003230125.9989.31145.stgit@bob.kio> <20081003231737.9989.94126.stgit@bob.kio> <20081006144534.GD25780@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081006144534.GD25780@parisc-linux.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark Fasheh <mfasheh@suse.com>
+* Matthew Wilcox <matthew@wil.cx>:
+> On Fri, Oct 03, 2008 at 05:17:37PM -0600, Alex Chiang wrote:
+> > Add explicit locking to pci_hp_register/deregister. For a given pci_slot,
+> > we want to make sure that the pci_slot->hotplug pointer isn't being
+> > changed from underneath us.
+> 
+> I'm torn between saying this goes too far and this doesn't go far
+> enough.  If pci_hp_register() and pci_hp_deregister() can race against
+> each other,
 
-Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
-refactored so that the extent cache can be skipped in favor of going
-directly to the on-disk records. This makes it easier for us to determine
-which extent is the last one in the btree. Also, I'm not sure we want to be
-caching fiemap lookups anyway as they're not directly related to data
-read/write.
+I think Kenji-san was more worried about the race for multiple
+callers of pci_create_slot() and all the horrible crap I was
+introducing to account for slot renaming.
 
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: ocfs2-devel@oss.oracle.com
-Cc: linux-fsdevel@vger.kernel.org
----
- fs/ocfs2/alloc.c      |    9 --
- fs/ocfs2/alloc.h      |    9 ++
- fs/ocfs2/extent_map.c |  346 +++++++++++++++++++++++++++++++++++++++++--------
- fs/ocfs2/extent_map.h |    3 +
- fs/ocfs2/file.c       |    1 +
- 5 files changed, 306 insertions(+), 62 deletions(-)
+I've figured out a different approach which I'll be sending out
+shortly. I didn't change any of the locking semantics in
+pci_hp_register/deregister, so I disclaim responsibility for any
+existing races that exist today. ;) (note, I don't think there
+are any).
 
-diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
-index 10bfb46..29ff57e 100644
---- a/fs/ocfs2/alloc.c
-+++ b/fs/ocfs2/alloc.c
-@@ -990,15 +990,6 @@ out:
- }
- 
- /*
-- * This is only valid for leaf nodes, which are the only ones that can
-- * have empty extents anyway.
-- */
--static inline int ocfs2_is_empty_extent(struct ocfs2_extent_rec *rec)
--{
--	return !rec->e_leaf_clusters;
--}
--
--/*
-  * This function will discard the rightmost extent record.
-  */
- static void ocfs2_shift_records_right(struct ocfs2_extent_list *el)
-diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
-index 42ff94b..60cd3d5 100644
---- a/fs/ocfs2/alloc.h
-+++ b/fs/ocfs2/alloc.h
-@@ -146,4 +146,13 @@ static inline unsigned int ocfs2_rec_clusters(struct ocfs2_extent_list *el,
- 		return le16_to_cpu(rec->e_leaf_clusters);
- }
- 
-+/*
-+ * This is only valid for leaf nodes, which are the only ones that can
-+ * have empty extents anyway.
-+ */
-+static inline int ocfs2_is_empty_extent(struct ocfs2_extent_rec *rec)
-+{
-+	return !rec->e_leaf_clusters;
-+}
-+
- #endif /* OCFS2_ALLOC_H */
-diff --git a/fs/ocfs2/extent_map.c b/fs/ocfs2/extent_map.c
-index c58668a..aed268e 100644
---- a/fs/ocfs2/extent_map.c
-+++ b/fs/ocfs2/extent_map.c
-@@ -25,6 +25,7 @@
- #include <linux/fs.h>
- #include <linux/init.h>
- #include <linux/types.h>
-+#include <linux/fiemap.h>
- 
- #define MLOG_MASK_PREFIX ML_EXTENT_MAP
- #include <cluster/masklog.h>
-@@ -32,6 +33,7 @@
- #include "ocfs2.h"
- 
- #include "alloc.h"
-+#include "dlmglue.h"
- #include "extent_map.h"
- #include "inode.h"
- #include "super.h"
-@@ -282,6 +284,51 @@ out:
- 		kfree(new_emi);
- }
- 
-+static int ocfs2_last_eb_is_empty(struct inode *inode,
-+				  struct ocfs2_dinode *di)
-+{
-+	int ret, next_free;
-+	u64 last_eb_blk = le64_to_cpu(di->i_last_eb_blk);
-+	struct buffer_head *eb_bh = NULL;
-+	struct ocfs2_extent_block *eb;
-+	struct ocfs2_extent_list *el;
-+
-+	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), last_eb_blk,
-+			       &eb_bh, OCFS2_BH_CACHED, inode);
-+	if (ret) {
-+		mlog_errno(ret);
-+		goto out;
-+	}
-+
-+	eb = (struct ocfs2_extent_block *) eb_bh->b_data;
-+	el = &eb->h_list;
-+
-+	if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
-+		ret = -EROFS;
-+		OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
-+		goto out;
-+	}
-+
-+	if (el->l_tree_depth) {
-+		ocfs2_error(inode->i_sb,
-+			    "Inode %lu has non zero tree depth in "
-+			    "leaf block %llu\n", inode->i_ino,
-+			    (unsigned long long)eb_bh->b_blocknr);
-+		ret = -EROFS;
-+		goto out;
-+	}
-+
-+	next_free = le16_to_cpu(el->l_next_free_rec);
-+
-+	if (next_free == 0 ||
-+	    (next_free == 1 && ocfs2_is_empty_extent(&el->l_recs[0])))
-+		ret = 1;
-+
-+out:
-+	brelse(eb_bh);
-+	return ret;
-+}
-+
- /*
-  * Return the 1st index within el which contains an extent start
-  * larger than v_cluster.
-@@ -373,42 +420,28 @@ out:
- 	return ret;
- }
- 
--int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
--		       u32 *p_cluster, u32 *num_clusters,
--		       unsigned int *extent_flags)
-+static int ocfs2_get_clusters_nocache(struct inode *inode,
-+				      struct buffer_head *di_bh,
-+				      u32 v_cluster, unsigned int *hole_len,
-+				      struct ocfs2_extent_rec *ret_rec,
-+				      unsigned int *is_last)
- {
--	int ret, i;
--	unsigned int flags = 0;
--	struct buffer_head *di_bh = NULL;
--	struct buffer_head *eb_bh = NULL;
-+	int i, ret, tree_height, len;
- 	struct ocfs2_dinode *di;
--	struct ocfs2_extent_block *eb;
-+	struct ocfs2_extent_block *uninitialized_var(eb);
- 	struct ocfs2_extent_list *el;
- 	struct ocfs2_extent_rec *rec;
--	u32 coff;
--
--	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL) {
--		ret = -ERANGE;
--		mlog_errno(ret);
--		goto out;
--	}
--
--	ret = ocfs2_extent_map_lookup(inode, v_cluster, p_cluster,
--				      num_clusters, extent_flags);
--	if (ret == 0)
--		goto out;
-+	struct buffer_head *eb_bh = NULL;
- 
--	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), OCFS2_I(inode)->ip_blkno,
--			       &di_bh, OCFS2_BH_CACHED, inode);
--	if (ret) {
--		mlog_errno(ret);
--		goto out;
--	}
-+	memset(ret_rec, 0, sizeof(*ret_rec));
-+	if (is_last)
-+		*is_last = 0;
- 
- 	di = (struct ocfs2_dinode *) di_bh->b_data;
- 	el = &di->id2.i_list;
-+	tree_height = le16_to_cpu(el->l_tree_depth);
- 
--	if (el->l_tree_depth) {
-+	if (tree_height > 0) {
- 		ret = ocfs2_find_leaf(inode, el, v_cluster, &eb_bh);
- 		if (ret) {
- 			mlog_errno(ret);
-@@ -431,46 +464,143 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
- 	i = ocfs2_search_extent_list(el, v_cluster);
- 	if (i == -1) {
- 		/*
--		 * A hole was found. Return some canned values that
--		 * callers can key on. If asked for, num_clusters will
--		 * be populated with the size of the hole.
-+		 * Holes can be larger than the maximum size of an
-+		 * extent, so we return their lengths in a seperate
-+		 * field.
- 		 */
--		*p_cluster = 0;
--		if (num_clusters) {
-+		if (hole_len) {
- 			ret = ocfs2_figure_hole_clusters(inode, el, eb_bh,
--							 v_cluster,
--							 num_clusters);
-+							 v_cluster, &len);
- 			if (ret) {
- 				mlog_errno(ret);
- 				goto out;
- 			}
-+
-+			*hole_len = len;
- 		}
--	} else {
--		rec = &el->l_recs[i];
-+		goto out_hole;
-+	}
- 
--		BUG_ON(v_cluster < le32_to_cpu(rec->e_cpos));
-+	rec = &el->l_recs[i];
- 
--		if (!rec->e_blkno) {
--			ocfs2_error(inode->i_sb, "Inode %lu has bad extent "
--				    "record (%u, %u, 0)", inode->i_ino,
--				    le32_to_cpu(rec->e_cpos),
--				    ocfs2_rec_clusters(el, rec));
--			ret = -EROFS;
--			goto out;
-+	BUG_ON(v_cluster < le32_to_cpu(rec->e_cpos));
-+
-+	if (!rec->e_blkno) {
-+		ocfs2_error(inode->i_sb, "Inode %lu has bad extent "
-+			    "record (%u, %u, 0)", inode->i_ino,
-+			    le32_to_cpu(rec->e_cpos),
-+			    ocfs2_rec_clusters(el, rec));
-+		ret = -EROFS;
-+		goto out;
-+	}
-+
-+	*ret_rec = *rec;
-+
-+	/*
-+	 * Checking for last extent is potentially expensive - we
-+	 * might have to look at the next leaf over to see if it's
-+	 * empty.
-+	 *
-+	 * The first two checks are to see whether the caller even
-+	 * cares for this information, and if the extent is at least
-+	 * the last in it's list.
-+	 *
-+	 * If those hold true, then the extent is last if any of the
-+	 * additional conditions hold true:
-+	 *  - Extent list is in-inode
-+	 *  - Extent list is right-most
-+	 *  - Extent list is 2nd to rightmost, with empty right-most
-+	 */
-+	if (is_last) {
-+		if (i == (le16_to_cpu(el->l_next_free_rec) - 1)) {
-+			if (tree_height == 0)
-+				*is_last = 1;
-+			else if (eb->h_blkno == di->i_last_eb_blk)
-+				*is_last = 1;
-+			else if (eb->h_next_leaf_blk == di->i_last_eb_blk) {
-+				ret = ocfs2_last_eb_is_empty(inode, di);
-+				if (ret < 0) {
-+					mlog_errno(ret);
-+					goto out;
-+				}
-+				if (ret == 1)
-+					*is_last = 1;
-+			}
- 		}
-+	}
-+
-+out_hole:
-+	ret = 0;
-+out:
-+	brelse(eb_bh);
-+	return ret;
-+}
-+
-+static void ocfs2_relative_extent_offsets(struct super_block *sb,
-+					  u32 v_cluster,
-+					  struct ocfs2_extent_rec *rec,
-+					  u32 *p_cluster, u32 *num_clusters)
-+
-+{
-+	u32 coff = v_cluster - le32_to_cpu(rec->e_cpos);
-+
-+	*p_cluster = ocfs2_blocks_to_clusters(sb, le64_to_cpu(rec->e_blkno));
-+	*p_cluster = *p_cluster + coff;
-+
-+	if (num_clusters)
-+		*num_clusters = le16_to_cpu(rec->e_leaf_clusters) - coff;
-+}
-+
-+int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
-+		       u32 *p_cluster, u32 *num_clusters,
-+		       unsigned int *extent_flags)
-+{
-+	int ret;
-+	unsigned int uninitialized_var(hole_len), flags = 0;
-+	struct buffer_head *di_bh = NULL;
-+	struct ocfs2_extent_rec rec;
- 
--		coff = v_cluster - le32_to_cpu(rec->e_cpos);
-+	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL) {
-+		ret = -ERANGE;
-+		mlog_errno(ret);
-+		goto out;
-+	}
- 
--		*p_cluster = ocfs2_blocks_to_clusters(inode->i_sb,
--						    le64_to_cpu(rec->e_blkno));
--		*p_cluster = *p_cluster + coff;
-+	ret = ocfs2_extent_map_lookup(inode, v_cluster, p_cluster,
-+				      num_clusters, extent_flags);
-+	if (ret == 0)
-+		goto out;
- 
--		if (num_clusters)
--			*num_clusters = ocfs2_rec_clusters(el, rec) - coff;
-+	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), OCFS2_I(inode)->ip_blkno,
-+			       &di_bh, OCFS2_BH_CACHED, inode);
-+	if (ret) {
-+		mlog_errno(ret);
-+		goto out;
-+	}
- 
--		flags = rec->e_flags;
-+	ret = ocfs2_get_clusters_nocache(inode, di_bh, v_cluster, &hole_len,
-+					 &rec, NULL);
-+	if (ret) {
-+		mlog_errno(ret);
-+		goto out;
-+	}
- 
--		ocfs2_extent_map_insert_rec(inode, rec);
-+	if (rec.e_blkno == 0ULL) {
-+		/*
-+		 * A hole was found. Return some canned values that
-+		 * callers can key on. If asked for, num_clusters will
-+		 * be populated with the size of the hole.
-+		 */
-+		*p_cluster = 0;
-+		if (num_clusters) {
-+			*num_clusters = hole_len;
-+		}
-+	} else {
-+		ocfs2_relative_extent_offsets(inode->i_sb, v_cluster, &rec,
-+					      p_cluster, num_clusters);
-+		flags = rec.e_flags;
-+
-+		ocfs2_extent_map_insert_rec(inode, &rec);
- 	}
- 
- 	if (extent_flags)
-@@ -478,7 +608,6 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
- 
- out:
- 	brelse(di_bh);
--	brelse(eb_bh);
- 	return ret;
- }
- 
-@@ -521,3 +650,114 @@ int ocfs2_extent_map_get_blocks(struct inode *inode, u64 v_blkno, u64 *p_blkno,
- out:
- 	return ret;
- }
-+
-+static int ocfs2_fiemap_inline(struct inode *inode, struct buffer_head *di_bh,
-+			       struct fiemap_extent_info *fieinfo,
-+			       u64 map_start)
-+{
-+	int ret;
-+	unsigned int id_count;
-+	struct ocfs2_dinode *di;
-+	u64 phys;
-+	u32 flags = FIEMAP_EXTENT_DATA_INLINE|FIEMAP_EXTENT_LAST;
-+	struct ocfs2_inode_info *oi = OCFS2_I(inode);
-+
-+	di = (struct ocfs2_dinode *)di_bh->b_data;
-+	id_count = le16_to_cpu(di->id2.i_data.id_count);
-+
-+	if (map_start < id_count) {
-+		phys = oi->ip_blkno << inode->i_sb->s_blocksize_bits;
-+		phys += offsetof(struct ocfs2_dinode, id2.i_data.id_data);
-+
-+		ret = fiemap_fill_next_extent(fieinfo, 0, phys, id_count,
-+					      flags);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+#define OCFS2_FIEMAP_FLAGS	(FIEMAP_FLAG_SYNC)
-+
-+int ocfs2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
-+		 u64 map_start, u64 map_len)
-+{
-+	int ret, is_last;
-+	u32 mapping_end, cpos;
-+	unsigned int hole_size;
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	u64 len_bytes, phys_bytes, virt_bytes;
-+	struct buffer_head *di_bh = NULL;
-+	struct ocfs2_extent_rec rec;
-+
-+	ret = fiemap_check_flags(fieinfo, OCFS2_FIEMAP_FLAGS);
-+	if (ret)
-+		return ret;
-+
-+	ret = ocfs2_inode_lock(inode, &di_bh, 0);
-+	if (ret) {
-+		mlog_errno(ret);
-+		goto out;
-+	}
-+
-+	down_read(&OCFS2_I(inode)->ip_alloc_sem);
-+
-+	/*
-+	 * Handle inline-data separately.
-+	 */
-+	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL) {
-+		ret = ocfs2_fiemap_inline(inode, di_bh, fieinfo, map_start);
-+		goto out_unlock;
-+	}
-+
-+	cpos = map_start >> osb->s_clustersize_bits;
-+	mapping_end = ocfs2_clusters_for_bytes(inode->i_sb,
-+					       map_start + map_len);
-+	mapping_end -= cpos;
-+	is_last = 0;
-+	while (cpos < mapping_end && !is_last) {
-+		u32 fe_flags;
-+
-+		ret = ocfs2_get_clusters_nocache(inode, di_bh, cpos,
-+						 &hole_size, &rec, &is_last);
-+		if (ret) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+
-+		if (rec.e_blkno == 0ULL) {
-+			cpos += hole_size;
-+			continue;
-+		}
-+
-+		fe_flags = 0;
-+		if (rec.e_flags & OCFS2_EXT_UNWRITTEN)
-+			fe_flags |= FIEMAP_EXTENT_UNWRITTEN;
-+		if (is_last)
-+			fe_flags |= FIEMAP_EXTENT_LAST;
-+		len_bytes = (u64)le16_to_cpu(rec.e_leaf_clusters) << osb->s_clustersize_bits;
-+		phys_bytes = le64_to_cpu(rec.e_blkno) << osb->sb->s_blocksize_bits;
-+		virt_bytes = (u64)le32_to_cpu(rec.e_cpos) << osb->s_clustersize_bits;
-+
-+		ret = fiemap_fill_next_extent(fieinfo, virt_bytes, phys_bytes,
-+					      len_bytes, fe_flags);
-+		if (ret)
-+			break;
-+
-+		cpos = le32_to_cpu(rec.e_cpos)+ le16_to_cpu(rec.e_leaf_clusters);
-+	}
-+
-+	if (ret > 0)
-+		ret = 0;
-+
-+out_unlock:
-+	brelse(di_bh);
-+
-+	up_read(&OCFS2_I(inode)->ip_alloc_sem);
-+
-+	ocfs2_inode_unlock(inode, 0);
-+out:
-+
-+	return ret;
-+}
-diff --git a/fs/ocfs2/extent_map.h b/fs/ocfs2/extent_map.h
-index de91e3e..1b97490 100644
---- a/fs/ocfs2/extent_map.h
-+++ b/fs/ocfs2/extent_map.h
-@@ -50,4 +50,7 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster, u32 *p_cluster,
- int ocfs2_extent_map_get_blocks(struct inode *inode, u64 v_blkno, u64 *p_blkno,
- 				u64 *ret_count, unsigned int *extent_flags);
- 
-+int ocfs2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
-+		 u64 map_start, u64 map_len);
-+
- #endif  /* _EXTENT_MAP_H */
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index ec2ed15..ed38796 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -2228,6 +2228,7 @@ const struct inode_operations ocfs2_file_iops = {
- 	.getattr	= ocfs2_getattr,
- 	.permission	= ocfs2_permission,
- 	.fallocate	= ocfs2_fallocate,
-+	.fiemap		= ocfs2_fiemap,
- };
- 
- const struct inode_operations ocfs2_special_file_iops = {
--- 
-1.5.6.1.205.ge2c7.dirty
+> > diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
+> > index 0c6db03..1fffb27 100644
+> > --- a/drivers/pci/slot.c
+> > +++ b/drivers/pci/slot.c
+> > @@ -164,10 +164,10 @@ placeholder:
+> >  	pr_debug("%s: created pci_slot on %04x:%02x:%02x\n",
+> >  		 __func__, pci_domain_nr(parent), parent->number, slot_nr);
+> >  
+> > - out:
+> > +out:
+> >  	up_write(&pci_bus_sem);
+> >  	return slot;
+> > - err:
+> > +err:
+> >  	kfree(slot);
+> >  	slot = ERR_PTR(err);
+> >  	goto out;
+> 
+> Gratuitous whitespace change?
+
+Maybe... I'm gonna keep this same hunk, but fold it into a bigger
+patch so it won't be as noticable. ;)
+
+/ac
 
