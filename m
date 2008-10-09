@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbYJIQ2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbYJIQaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbYJIQ2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 12:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYJIQ22
+	id S1759835AbYJIQaW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 12:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYJIQaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 12:28:28 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:43840 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753486AbYJIQ21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 12:28:27 -0400
-Date: Thu, 9 Oct 2008 17:28:07 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, metan@atrey.karlin.mff.cuni.cz,
-       thommycheck@gmail.com, milan@ucw.cz
-Subject: Re: 2.6.27-rc8 regression on arm: kernel will no longer boot on Sharp Zaurus c-3000
-Message-ID: <20081009162807.GC4697@flint.arm.linux.org.uk>
-References: <20081009091929.GE29957@atrey.karlin.mff.cuni.cz> <1223553647.3194.8.camel@hammer.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223553647.3194.8.camel@hammer.suse.cz>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 9 Oct 2008 12:30:08 -0400
+Received: from mail.suse.de ([195.135.220.2]:41166 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750987AbYJIQaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 12:30:06 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: splice vs O_APPEND
+References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu>
+	<alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org>
+	<E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu>
+X-Yow: I'm wet!  I'm wild!
+Date: Thu, 09 Oct 2008 18:30:01 +0200
+In-Reply-To: <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> (Miklos Szeredi's message
+	of "Thu, 09 Oct 2008 18:04:10 +0200")
+Message-ID: <jeskr5g29i.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09, 2008 at 02:00:46PM +0200, Stanislav Brabec wrote:
-> Pavel Machek wrote:
-> > ...unfortunately, its kind of hard to debug, as I'm testing kernels
-> > using kexec and only see messages late in boot. 2.6.26 works ok.
-> 
-> Lost patch:
-> http://lists.arm.linux.org.uk/lurker/message/20081007.113509.c17e1e65.en.html
-> 
-> OT: 2.6.26 does not work OK. You need I2C init patch.
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-... and now queued for Linus.
+> pwrite() for example honors O_APPEND and ignores the position, AFAICS.
+
+If it does, then it violates POSIX (see
+<http://www.opengroup.org/austin/docs/austin_325.txt>, where the
+behavior of pwrite with O_APPEND is clarified).
+
+Andreas.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
