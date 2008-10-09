@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbYJIR6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbYJIR6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbYJIR6R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbYJIR6E
+	id S1760545AbYJIR6d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760237AbYJIR6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:58:04 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37120 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754295AbYJIR6B (ORCPT
+	Thu, 9 Oct 2008 13:58:18 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:31671 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760089AbYJIR6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:58:01 -0400
-Date: Thu, 9 Oct 2008 19:59:38 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: "Cihula, Joseph" <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
-       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
-       mingo@elte.hu, tytso@mit.edu
-Subject: Re: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted Execution Technology
-	support for Linux - Overview
-Message-ID: <20081009175938.GA12507@elf.ucw.cz>
-References: <D936D925018D154694D8A362EEB0892005AC105B@orsmsx416.amr.corp.intel.com> <20081009125311.GD1623@ucw.cz> <20081009174427.GB6912@sequoia.sous-sol.org>
+	Thu, 9 Oct 2008 13:58:16 -0400
+Message-ID: <48EE4622.4080207@chelsio.com>
+Date: Thu, 09 Oct 2008 10:57:54 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081009174427.GB6912@sequoia.sous-sol.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Steve Wise <swise@opengridcomputing.com>
+Subject: Re: [PATCH 2/8 2.6.28] cxgb3 - Allocate multiqueues at init time
+References: <20081009003402.13315.18192.stgit@speedy5> <20081008.174202.160320028.davem@davemloft.net>
+In-Reply-To: <20081008.174202.160320028.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Oct 2008 17:57:49.0703 (UTC) FILETIME=[8B19D170:01C92A38]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-10-09 10:44:27, Chris Wright wrote:
-> * Pavel Machek (pavel@suse.cz) wrote:
-> > Ok, I don't get it, why would I want to measure my kernel?
-> 
-> Trusted boot.  There's always the double-edge sword w/ this.  Clearly,
-> a requirement is that you don't just brick your own box, and have some
-> policy/mechanism for defining how you'd use trusted boot.  I believe
-> that's all there w/ TXT patch (since it's mostly handled before kernel
-> boots, TXT kernel bit is just to help w/ handoff).
+David Miller wrote:
+> From: Divy Le Ray <divy@chelsio.com>
+> Date: Wed, 08 Oct 2008 17:34:02 -0700
+>
+>   
+>> Allocate a queue set per core, up to the maximum of available qsets.
+>> Share the queue sets on multi port adapters.
+>> Rename MSI-X interrupt vectors ethX-N, N being the queue set number.
+>>
+>> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+>>     
+>
+> Applied, but...
+>
+> This "num processors" logic and policy belongs in some generic place.
+> Perhaps "num_possible_cpus()" is more appropriate, who knows right?
+>   
 
-I have never used trusted boot and I'm not sure I want to. Why would I
-want to do that?
+I'll look into it.
 
-> > I see why Disney would want to do that, but I don't see why we would
-> > want to help them.
-> > 
-> > Plus, the fact that trusted mode is pretty much incompatible with
-> > s3/s4 makes it useless, right?
-> 
-> Why do you say that?  Did you look at patch 3/3, see tboot_sleep().
+Cheers,
+Divy
 
-You exit/reenter the trusted mode accross sleep... so any guarantees
-"trusted" mode does are void, right?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
