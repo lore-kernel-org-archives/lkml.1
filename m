@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbYJISVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbYJIS3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760133AbYJISVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYJISVf
+	id S1758380AbYJIS3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 14:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYJIS3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:21:35 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:57085 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753807AbYJISVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:21:35 -0400
-Subject: [PATCH] sched_clock: prevent scd->clock from moving backwards
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1223574862.6407.16.camel@norville.austin.ibm.com>
-References: <48D959E8.4000303@goop.org>
-	 <1223470773.6336.13.camel@norville.austin.ibm.com>
-	 <1223470854.6336.15.camel@norville.austin.ibm.com>
-	 <1223507104.7382.6.camel@lappy.programming.kicks-ass.net>
-	 <20081009090605.GA21798@elte.hu>  <20081009151703.GA8010@elte.hu>
-	 <1223574862.6407.16.camel@norville.austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 09 Oct 2008 13:21:30 -0500
-Message-Id: <1223576490.6394.3.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 14:29:04 -0400
+Received: from sous-sol.org ([216.99.217.87]:33875 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750878AbYJIS3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 14:29:03 -0400
+Date: Thu, 9 Oct 2008 11:28:09 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Cihula, Joseph" <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
+       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
+       mingo@elte.hu, tytso@mit.edu
+Subject: Re: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
+Message-ID: <20081009182809.GE6912@sequoia.sous-sol.org>
+References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com> <48EE3E71.8010604@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EE3E71.8010604@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 12:54 -0500, Dave Kleikamp wrote:
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Cihula, Joseph wrote:
+>> --- a/security/Kconfig	Mon Oct 06 12:50:47 2008 -0700
+>> +++ b/security/Kconfig	Tue Oct 07 00:13:02 2008 -0700
+>> @@ -115,6 +115,23 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
+>>  	  /proc/sys/vm/mmap_min_addr tunable.
+>>   +config TXT
+>
+> This should be X86_TXT; perhaps even X86_INTEL_TXT unless someone else  
+> is likely to implement this stuff.  ("TXT" is awfully generic.)
 
-> I'll fix the patch and retest it before sending it again.
+config NOTEPAD_EXE? (sorry, couldn't resist ;-)
 
-I'm definitely running with the new patch now.  Here goes:
- -------------------------------------------------
-sched_clock: prevent scd->clock from moving backwards
-
-When sched_clock_cpu() couples the clocks between two cpus, it may
-increment scd->clock beyond the GTOD tick window that __update_sched_clock()
-uses to clamp the clock.  A later call to __update_sched_clock() may move
-the clock back to scd->tick_gtod + TICK_NSEC, violating the clock's
-monotonic property.
-
-This patch ensures that scd->clock will not be set backward.
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index e8ab096..8178724 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
- 
- 	/*
- 	 * scd->clock = clamp(scd->tick_gtod + delta,
--	 * 		      max(scd->tick_gtod, scd->clock),
--	 * 		      scd->tick_gtod + TICK_NSEC);
-+	 *		      max(scd->tick_gtod, scd->clock),
-+	 *		      max(scd->clock, scd->tick_gtod + TICK_NSEC));
- 	 */
- 
- 	clock = scd->tick_gtod + delta;
- 	min_clock = wrap_max(scd->tick_gtod, scd->clock);
--	max_clock = scd->tick_gtod + TICK_NSEC;
-+	max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
- 
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
-
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+Is there anything for ia64?
