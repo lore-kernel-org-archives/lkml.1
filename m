@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbYJIS3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbYJISep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbYJIS3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYJIS3E
+	id S1759502AbYJISep (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 14:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYJISee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:29:04 -0400
-Received: from sous-sol.org ([216.99.217.87]:33875 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750878AbYJIS3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:29:03 -0400
-Date: Thu, 9 Oct 2008 11:28:09 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Cihula, Joseph" <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
-       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>,
-       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
-       mingo@elte.hu, tytso@mit.edu
-Subject: Re: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
-Message-ID: <20081009182809.GE6912@sequoia.sous-sol.org>
-References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com> <48EE3E71.8010604@goop.org>
+	Thu, 9 Oct 2008 14:34:34 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:8177 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752773AbYJISee (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 14:34:34 -0400
+X-IronPort-AV: E=Sophos;i="4.33,384,1220241600"; 
+   d="scan'208";a="60846341"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: RFC - size tool for kernel build system
+Date: Thu, 9 Oct 2008 14:34:35 -0400
+User-Agent: KMail/1.9.5
+Cc: "Tim Bird" <tim.bird@am.sony.com>,
+       "linux-embedded" <linux-embedded@vger.kernel.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+References: <48EBD268.50208@am.sony.com> <20081009152151.GB17013@cs181140183.pp.htv.fi>
+In-Reply-To: <20081009152151.GB17013@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48EE3E71.8010604@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810091434.35783.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 09 Oct 2008 18:34:32.0440 (UTC) FILETIME=[AC08CF80:01C92A3D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Cihula, Joseph wrote:
->> --- a/security/Kconfig	Mon Oct 06 12:50:47 2008 -0700
->> +++ b/security/Kconfig	Tue Oct 07 00:13:02 2008 -0700
->> @@ -115,6 +115,23 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
->>  	  /proc/sys/vm/mmap_min_addr tunable.
->>   +config TXT
->
-> This should be X86_TXT; perhaps even X86_INTEL_TXT unless someone else  
-> is likely to implement this stuff.  ("TXT" is awfully generic.)
+On Thu 9 Oct 2008 11:21, Adrian Bunk pondered:
+> On Tue, Oct 07, 2008 at 02:19:36PM -0700, Tim Bird wrote:
+> > I've been thinking about a tool that might be useful
+> > to track kernel size changes.  I'm posting this
+> > Request For Comments to get feedback, and determine
+> > if this is something that would be worthwhile to
+> > pursue.
+> > 
+> > What I envision is some new kernel build targets, specifically
+> > related to gathering size information and generating a size
+> > comparison report.  Some small helper scripts would be written
+> > to gather the necessary information, and generate the report.
+> >...
+> > Any comments?
+> 
+> The building blocks that would be useful are IMHO:
+> - a make target that generates a report for one kernel
+>   (like the checkstack or export_report targets)
 
-config NOTEPAD_EXE? (sorry, couldn't resist ;-)
+and the report includes sizes of more than just the text section? Which is my 
+biggest pet peeve with bloat-o-meter today, since it uses nm, not readelf - 
+and saving data is just as important as saving instruction.
 
-Is there anything for ia64?
+> - a script that compares two such reports and outputs the
+>   size differences
+> 
+> That's also easy to do, and if that's what's wanted I can send a patch 
+> that does it.
+> 
+> Everything else is IMHO overdesigned.
+
+I understand the desire though - make it easier to compare two setups.
+
+capturing a make target into a file, (make size_report > config1.size) and 
+running a compare on two outputs seems like a more "standard" way of doing 
+things...
