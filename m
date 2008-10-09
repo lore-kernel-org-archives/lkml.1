@@ -1,112 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbYJIPtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbYJIPxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759774AbYJIPtD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 11:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbYJIPsy
+	id S1755310AbYJIPxe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 11:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYJIPx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 11:48:54 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:27048 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754459AbYJIPsx (ORCPT
+	Thu, 9 Oct 2008 11:53:26 -0400
+Received: from relay.gothnet.se ([82.193.160.251]:1333 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750904AbYJIPxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 11:48:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=CPZz3XDkIXU8v6PHNxqMYhqp+y6a2trBamLD5sRKgkb16My83DrseRkZNHAYSpCSMg
-         mbhcClm+zuIzF0gr0cAV+Pzvy4xLgbkWn7ocT+4K7+B1nqsYKYd+O7QKBgXdmkWwub2g
-         wFqrE8zRzfZwULyPOtBx413j4vWsWYu0I0jxU=
-Message-ID: <5767b9100810090848q50f3adefj4b34f8433dba61d2@mail.gmail.com>
-Date: Thu, 9 Oct 2008 23:48:51 +0800
-From: "Conke Hu" <conke.hu@gmail.com>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: s3c24xx nand: add command line partition table parsing support (resend)
-Cc: Linux-arm-kernel@lists.arm.linux.org.uk, "Ben Dooks" <ben-linux@fluff.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <5767b9100809180858r3bb9952el3bc76dab18930713@mail.gmail.com>
+	Thu, 9 Oct 2008 11:53:25 -0400
+Message-ID: <48EE28ED.1070401@tungstengraphics.com>
+Date: Thu, 09 Oct 2008 17:53:17 +0200
+From: Thomas Hellstrom <thomas@tungstengraphics.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080926)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dave Airlie <airlied@gmail.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Alan Hourihane <alanh@tungstengraphics.com>
+Subject: Re: AGP PAT issue.
+References: <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADF3FC.7070002@keyaccess.nl> <20080822041544.GF30284@elte.hu> <48AF1B6A.80408@keyaccess.nl> <48C8259B.7040702@keyaccess.nl> <20080911081702.GA27425@elte.hu> <48C8D731.4000309@keyaccess.nl> <7E82351C108FA840AB1866AC776AEC462CA8E8B7@orsmsx505.amr.corp.intel.com> <48CB0CDD.9020706@keyaccess.nl>
+In-Reply-To: <48CB0CDD.9020706@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5767b9100809171813u7e26d516x12558a178b78f852@mail.gmail.com>
-	 <20080918112703.GA25491@flint.arm.linux.org.uk>
-	 <5767b9100809180855j58150b4ct4e2a4b9bb5ac7885@mail.gmail.com>
-	 <5767b9100809180858r3bb9952el3bc76dab18930713@mail.gmail.com>
+X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russel,
-    Is this one OK? we're looking forward to applying this patch :)
+Rene Herman wrote:
+> On 13-09-08 02:26, Pallipadi, Venkatesh wrote:
+> 
+>>>>> Haven't been subcribed to any lists recently and someone was 
+>>>>> talking about "the other thread" before but just noticed that 
+>>>>> an-rc6 was cut.
+>>>>>
+>>>>> Please note that the shutdown issue remains unfixed in it (I'm 
+>>>>> doing my coalescing changes locally).
+>>>>>
+>>>> here's what is pending in tip/x86/pat for v2.6.28:
+>>>>
+>>> Only talking about .27 and just making sure again the issue is known.
+>>>
+>>> The above mentioned subject for the entry cache one ("fix Xorg 
+>>> startup/shutdown slowdown with PAT") after all mistakingly says it 
+>>> does something for shutdown.
+>>>
+>> Can you try the patch here 
+>> http://www.ussg.iu.edu/hypermail/linux/kernel/0809.1/2074.html
+>>
+>> That should resolve both reserve and free issues..
+> 
+> Not for .27 though.
+> 
+> Rene.
 
-regards,
-conke
+Hi!
+What's the status on this?
 
-On Thu, Sep 18, 2008 at 11:58 PM, Conke Hu <conke.hu@gmail.com> wrote:
-> Add mtd id and  command line partition table parsing support for
-> s3c24xx nand driver.
->
-> Signed-off-by: Conke Hu <conke.hu@gmail.com>
-> Signed-off-by: Linke Wang <linke.wang@gmail.com>
-> ------------------
-> diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
-> index 556139e..db0d331 100644
-> --- a/drivers/mtd/nand/s3c2410.c
-> +++ b/drivers/mtd/nand/s3c2410.c
-> @@ -48,6 +48,8 @@
->  #include <asm/plat-s3c/regs-nand.h>
->  #include <asm/plat-s3c/nand.h>
->
-> +#define S3C_NAND_NAME_LEN 16
-> +
->  #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
->  static int hardware_ecc = 1;
->  #else
-> @@ -60,6 +62,9 @@ static int clock_stop = 1;
->  static const int clock_stop = 0;
->  #endif
->
-> +#ifdef CONFIG_MTD_PARTITIONS
-> +static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
-> +#endif
->
->  /* new oob placement block for use with hardware ecc generation
->  */
-> @@ -80,6 +85,7 @@ struct s3c2410_nand_mtd {
->        struct s3c2410_nand_set         *set;
->        struct s3c2410_nand_info        *info;
->        int                             scan_res;
-> +       char                    name[S3C_NAND_NAME_LEN];
->  };
->
->  enum s3c_cpu_type {
-> @@ -649,6 +655,15 @@ static int s3c2410_nand_add_partition(struct
-> s3c2410_nand_info *info,
->                                      struct s3c2410_nand_mtd *mtd,
->                                      struct s3c2410_nand_set *set)
->  {
-> +#ifdef CONFIG_MTD_CMDLINE_PARTS
-> +       int nr_parts;
-> +       struct mtd_partition *partitions;
-> +
-> +       nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes, &partitions, 0);
-> +       if (nr_parts > 0 && partitions != NULL)
-> +               return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
-> +#endif
-> +
->        if (set == NULL)
->                return add_mtd_device(&mtd->mtd);
->
-> @@ -892,6 +907,9 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
->        for (setno = 0; setno < nr_sets; setno++, nmtd++) {
->                pr_debug("initialising set %d (%p, info %p)\n", setno, nmtd, info);
->
-> +               snprintf(nmtd->name, sizeof(nmtd->name), "s3c_nand%d", setno);
-> +               nmtd->mtd.name = nmtd->name;
-> +
->                s3c2410_nand_init_chip(info, nmtd, sets);
->
->                nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
->
+There are graphics devices we're working with that require large 
+(non-AGP) write-combined memory buffers at any time.
+We can solve the tlb- and cache flush latencies by using pools of these 
+pages to allocate from and free to, but sooner or later we'll probably 
+end up with _huge_ memtype lists. In the (very unlikely) worst case I 
+guess they'd contain every other lowmem page in they system.
+
+If I understand things correctly the patch above will fix this issue?
+Will it be considered for future kernel inclusion.
+
+Any enlightenment on this subject would be greatly appreciated.
+Thanks,
+/Thomas
+
+
+
