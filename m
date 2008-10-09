@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYJIGvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbYJIGw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbYJIGvn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 02:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbYJIGvf
+	id S1758662AbYJIGw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 02:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYJIGwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 02:51:35 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51275 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbYJIGve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 02:51:34 -0400
-Date: Thu, 9 Oct 2008 15:51:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH 6/6] memcg: lazy lru addition
-Message-Id: <20081009155116.ccf0833d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081009152132.df6e54c4.nishimura@mxp.nes.nec.co.jp>
-References: <20081001165233.404c8b9c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081001170119.80a617b7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081009152132.df6e54c4.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 02:52:16 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46726 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752087AbYJIGwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 02:52:15 -0400
+Date: Thu, 9 Oct 2008 08:51:43 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] ide: locking improvements
+Message-ID: <20081009065141.GV19428@kernel.dk>
+References: <20081008202930.19112.90371.sendpatchset@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081008202930.19112.90371.sendpatchset@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Oct 2008 15:21:32 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-
-> On Wed, 1 Oct 2008 17:01:19 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > Delaying add_to_lru() and do it in batched manner like page_vec.
-> > For doing that 2 flags PCG_USED and PCG_LRU.
-> > 
-> > Because __set_page_cgroup_lru() itself doesn't take lock_page_cgroup(),
-> > we need a sanity check inside lru_lock().
-> > 
-> > And this delaying make css_put()/get() complicated. 
-> > To make it clear,
-> >  * css_get() is called from mem_cgroup_add_list().
-> >  * css_put() is called from mem_cgroup_remove_list().
-> >  * css_get()->css_put() is called while try_charge()->commit/cancel sequence.
-> > is newly added.
-> > 
+On Wed, Oct 08 2008, Bartlomiej Zolnierkiewicz wrote:
 > 
-> I like this new policy, but
+> Locking improvements in preparation for replacing the global ide_lock
+> spinlock by per-hwgroup spinlocks [1].
 > 
-> > @@ -710,17 +774,18 @@ static void __mem_cgroup_commit_charge(s
+> [1] patch (which is partially based on 2005 patch from Scalex86) for this
+> is also ready but it needs some more audit and testing
 > 
-> ===
->                 if (PageCgroupLRU(pc)) {
->                         ClearPageCgroupLRU(pc);
->                         __mem_cgroup_remove_list(mz, pc);
->                         css_put(&pc->mem_cgroup->css);
->                 }
->                 spin_unlock_irqrestore(&mz->lru_lock, flags);
->         }
-> ===
-> 
-> Is this css_put needed yet?
-> 
-Oh, nice catch. it's unnecessary.
-I'll fix this in the next. Thank you for review.
+> diffstat:
+>  drivers/ide/ide-cd.c     |   38 ++++++-------
+>  drivers/ide/ide-io.c     |  129 ++++++++++++++++++++---------------------------
+>  drivers/ide/ide-ioctls.c |    3 -
+>  drivers/ide/ide-lib.c    |    7 --
+>  drivers/ide/ide-proc.c   |   25 +--------
+>  drivers/ide/ide.c        |    7 --
+>  6 files changed, 80 insertions(+), 129 deletions(-)
 
+Sorry, but I just have to ask 'why'? IDE is seeing a whole lot of churn
+for something that should essentially be a stable code base in
+maintenance mode, and now scalability improvements?
 
-I'll post still-under-discuss set (v7), tomorrow.
-includes
-  - charge/commit/cancel
-  - move account & force_empty
-  - lazy lru free
-  - lazy lru add
-Currently works well under my test..
+Just doesn't make ANY sense to me, sorry. We may end up with a cleaner
+code base, but likely also a buggier one. It's not like hardware
+coverage testing is all that great, considering some of the ancient
+stuff it supports :-)
 
-In the next week, I'd like to restart Mem+Swap series.
-
-Thanks,
--Kame
+-- 
+Jens Axboe
 
