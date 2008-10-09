@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbYJINha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759866AbYJINkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759812AbYJINha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 09:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbYJINhW
+	id S1759866AbYJINkG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 09:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758851AbYJINjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 09:37:22 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:32773 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758484AbYJINhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 09:37:21 -0400
-Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, jeremy@goop.org, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20081009131701.GA21112@elte.hu>
-References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>
-	 <20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>
-	 <20081009131701.GA21112@elte.hu>
-Content-Type: text/plain
-Date: Thu, 09 Oct 2008 06:34:06 -0700
-Message-Id: <1223559246.11830.23.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 09:39:53 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:49605 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758773AbYJINjw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 09:39:52 -0400
+To: matthew@wil.cx
+CC: pavel@suse.cz, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       andi@firstfloor.org, hifumi.hisashi@oss.ntt.co.jp,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       aneesh.kumar@linux.vnet.ibm.com, tytso@mit.edu
+In-reply-to: <20081009130131.GV25780@parisc-linux.org> (message from Matthew
+	Wilcox on Thu, 9 Oct 2008 07:01:32 -0600)
+Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <20081007105056.16d9e785.akpm@linux-foundation.org> <1223405963.26330.83.camel@lappy.programming.kicks-ass.net> <200810081335.44576.nickpiggin@yahoo.com.au> <20081008025209.GO25780@parisc-linux.org> <20081009122319.GC1623@ucw.cz> <20081009130131.GV25780@parisc-linux.org>
+Message-Id: <E1KnvjE-0003Jn-Tk@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 09 Oct 2008 15:38:56 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 15:17 +0200, Ingo Molnar wrote:
-> * Dave Hansen <dave@linux.vnet.ibm.com> wrote
-> > On Thu, 2008-10-09 at 14:46 +0200, Ingo Molnar wrote:
-> > > i'm wondering about the following productization aspect: it would be 
-> > > very useful to applications and users if they knew whether it is safe to 
-> > > checkpoint a given app. I.e. whether that app has any state that cannot 
-> > > be stored/restored yet.
+On Thu, 9 Oct 2008, Matthew Wilcox wrote:
+> On Thu, Oct 09, 2008 at 02:23:19PM +0200, Pavel Machek wrote:
+> > On Tue 2008-10-07 20:52:09, Matthew Wilcox wrote:
+> > > And it's worth saying that letter-of-the-standard arguments aren't
+> > > necessarily enough.  Linux does not honour the POSIX guarantee that
+> > > writes are atomic (if they cross page boundaries, it's not certain).
+> > > This seems like even more of a corner case to me.
 > > 
-> > Absolutely!
-> > 
-> > My first inclination was to do this at checkpoint time: detect and 
-> > tell users why an app or container can't actually be checkpointed.  
-> > But, if I get you right, you're talking about something that happens 
-> > more during the runtime of the app than during the checkpoint.  This 
-> > sounds like a wonderful approach to me, and much better than what I 
-> > was thinking of.
-> > 
-> > What kind of mechanism do you have in mind?
-> > 
-> > int sys_remap_file_pages(...)
-> > {
-> >       ...
-> >       oh_crap_we_dont_support_this_yet(current);
-> > }
-> > 
-> > Then the oh_crap..() function sets a task flag or something?
+> > We have append-only files, and normal users should not be able to work
+> > around that restriction.
 > 
-> yeah, something like that. A key aspect of it is that is has to be very 
-> low-key on the source code level - we dont want to sprinkle the kernel 
-> with anything ugly. Perhaps something pretty explicit:
+> Is it possible to work around this restriction by exploiting this?
 > 
->   current->flags |= PF_NOCR;
-
-Am I miscounting, or are we out of these suckers on 32-bit platforms?
-
-> as we do the same thing today for certain facilities:
+> IS_APPEND() forces the user to have O_APPEND in their flags.
+> O_APPEND is only checked in generic_write_checks() where it sets '*pos'
+> to i_size.
 > 
->   current->flags |= PF_NOFREEZE;
+> For the majority of filesystems, generic_write_checks() is called from 
+> __generic_file_aio_write_nolock.  __generic_file_aio_write_nolock is
+> only called from generic_file_aio_write_nolock (which passes the address
+> of a kiocb->ki_pos) and generic_file_aio_write (same).
 > 
-> you probably want to hide it behind:
+> The filesystems that call generic_write_checks() directly are:
+> XFS (xfs_write): Passes the address of a local variable
+> OCFS2 (ocfs2_file_aio_write): Passes the address of a ki_pos
+> CIFS (cifs_user_write): Not sure.
+> NFS (nfs_file_direct_write): "Note that O_APPEND is not supported".
+> NTFS (ntfs_file_aio_write_nolock): Address of a local variable
+> FUSE (fuse_file_aio_write): Address of a local variable
+> FUSE (fuse_direct_write): Not sure.
 > 
->   set_current_nocr();
+> So the only two that might be affected are CIFS and FUSE (O_DIRECT?!) as
+> far as I can tell.  I'm having a hard time believing this is a security
+> problem.
 
-Yeah, that all looks reasonable.  Letting this be a dynamic thing where
-you can move back and forth between the two states would make a lot of
-sense too.  But, for now, I guess it can be a one-way trip.
+And even in those cases it's actually a local variable, since
+sys_write() does:
 
-I'll cook something up real fast.
+		loff_t pos = file_pos_read(file);
+		ret = vfs_write(file, buf, count, &pos);
+		file_pos_write(file, pos);
 
--- Dave
+So there's no way to corrupt the starting position for an append mode
+write, as that always comes from the file size.
 
+Two append writes to the same file could corrupt f_pos, but that would
+only matter for subsequent reads or non-append mode writes.
+
+Miklos
