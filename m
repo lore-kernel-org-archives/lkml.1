@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbYJIRPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbYJIRTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbYJIRPR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYJIRPB
+	id S1758332AbYJIRTp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYJIRTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:15:01 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43484 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245AbYJIRPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:15:00 -0400
-Date: Thu, 9 Oct 2008 13:14:53 -0400
-From: Dave Jones <davej@redhat.com>
-To: x86@kernel.org
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Update cacheline size on X86_GENERIC
-Message-ID: <20081009171453.GA15321@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, x86@kernel.org,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 9 Oct 2008 13:19:36 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:46253 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbYJIRTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:19:35 -0400
+Date: Thu, 09 Oct 2008 13:19:32 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] x86: trim ACPI sleep stack buffer
+In-reply-to: <1223571381.17706.94.camel@calx>
+X-X-Sender: lenb@localhost.localdomain
+To: Matt Mackall <mpm@selenic.com>
+Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Message-id: <alpine.LFD.1.10.0810091319160.3007@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <1222819957.13453.15.camel@calx>
+ <20081009085649.GC29957@atrey.karlin.mff.cuni.cz>
+ <1223571381.17706.94.camel@calx>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just noticed that configuring a kernel to use CONFIG_X86_GENERIC
-(as is typical for a distro kernel) configures it to use a 128 byte cacheline size.
-This made sense when that was commonplace (P4 era) but current
-Intel, AMD and VIA cpus use 64 byte cachelines.
+applied to acpi-test.
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+thanks Matt,
+-Len
 
---- linux-2.6.26.noarch/arch/x86/Kconfig.cpu~	2008-10-09 12:59:56.000000000 -0400
-+++ linux-2.6.26.noarch/arch/x86/Kconfig.cpu	2008-10-09 13:11:32.000000000 -0400
-@@ -301,8 +301,8 @@ config X86_CPU
- # Define implied options from the CPU selection here
- config X86_L1_CACHE_BYTES
- 	int
--	default "128" if GENERIC_CPU || MPSC
--	default "64" if MK8 || MCORE2
-+	default "128" if MPENTIUM4 || MPSC
-+	default "64" if MK8 || MCORE2 || GENERIC_CPU
- 	depends on X86_64
- 
- config X86_INTERNODE_CACHE_BYTES
-@@ -316,10 +316,10 @@ config X86_CMPXCHG
- 
- config X86_L1_CACHE_SHIFT
- 	int
--	default "7" if MPENTIUM4 || X86_GENERIC || GENERIC_CPU || MPSC
-+	default "7" if MPENTIUM4 || MPSC
- 	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
- 	default "5" if MWINCHIP3D || MWINCHIP2 || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
--	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7
-+	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7 || X86_GENERIC || GENERIC_CPU
- 
- config X86_XADD
- 	def_bool y
+On Thu, 9 Oct 2008, Matt Mackall wrote:
 
--- 
-http://www.codemonkey.org.uk
+> On Thu, 2008-10-09 at 10:56 +0200, Pavel Machek wrote:
+> > > We've got:
+> > > 
+> > > #if defined(CONFIG_SMP) && defined(CONFIG_64BIT)
+> > > static char temp_stack[10240];
+> > > #endif
+> > > 
+> > > and:
+> > > 
+> > > #ifdef CONFIG_SMP
+> > >         stack_start.sp = temp_stack + 4096;
+> > > #endif
+> > > 
+> > > ..which suggests we use at most 4k of the stack?
+> > 
+> > I guess someone (probably me) was "playing it safe" -- not exactly
+> > remembering if stack grows down or up. I guess it should be safe to
+> > change it... will do that.
+> > 									Pavel
+> 
+> I've already got a patch, I was just wondering if there was some obscure
+> architectural reason for it that I wasn't aware of.
+> 
+> 
+> x86: trim ACPI sleep stack buffer
+> 
+> x86_64 SMP suspend to RAM uses a 10k temporary stack for saving the
+> kernel state, but only 4k of it is used. Shrink it to 4k.
+> 
+> Signed-off-by: Matt Mackall <mpm@selenic.com>
+> 
+> diff -r 73d55a1b6c10 arch/x86/kernel/acpi/sleep.c
+> --- a/arch/x86/kernel/acpi/sleep.c	Wed Oct 08 14:48:45 2008 -0500
+> +++ b/arch/x86/kernel/acpi/sleep.c	Thu Oct 09 11:51:54 2008 -0500
+> @@ -21,7 +21,7 @@
+>  static unsigned long acpi_realmode;
+>  
+>  #if defined(CONFIG_SMP) && defined(CONFIG_64BIT)
+> -static char temp_stack[10240];
+> +static char temp_stack[4096];
+>  #endif
+>  
+>  /**
+> 
+> -- 
+> Mathematics is the supreme nostalgia of our time.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
