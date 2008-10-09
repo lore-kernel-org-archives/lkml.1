@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYJIW6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYJIXAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYJIW6E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 18:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbYJIW5y
+	id S1754300AbYJIXAi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 19:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYJIXAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 18:57:54 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:52734 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbYJIW5x (ORCPT
+	Thu, 9 Oct 2008 19:00:30 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:42040 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbYJIXAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 18:57:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=vEcbAIQDjR3QPdS5FySStw02OYr/kEbjEImB7bhY+JBgtsO3iLxNG21P4dWwSbKtZG
-         rw5xCDyAbKIjXgmiR4k2Zjq8FlYuQpfsvUVtPRZOe8rN2gZAs7khx8VCFuimpTBDRboN
-         HU5lEi/h5BXk89sYEhA0Ev8MUOUYjd5sYqYkg=
-Message-ID: <9c9fda240810091557j529495d5q284a8ab0e0d752dd@mail.gmail.com>
-Date: Fri, 10 Oct 2008 07:57:51 +0900
-From: "Kyungmin Park" <kmpark@infradead.org>
-To: apgmoorthy <moorthy.apg@samsung.com>,
-       "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.
-Cc: linux-mtd@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>,
-       dedekind@infradead.org
-In-Reply-To: <000b01c92215$ae62d4e0$3dd66c6b@sisodomain.com>
+	Thu, 9 Oct 2008 19:00:30 -0400
+Message-ID: <48EE8D06.9060503@nortel.com>
+Date: Thu, 09 Oct 2008 17:00:22 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=KOI8-R
-Content-Disposition: inline
-References: <19198934.52871221827459790.JavaMail.weblogic@epml16>
-	 <9c9fda240809220011w49c0875q804f836550ff3476@mail.gmail.com>
-	 <000001c91e42$1aa86c50$3dd66c6b@sisodomain.com>
-	 <9c9fda240809251731y48272a63j988e0001dc50d78@mail.gmail.com>
-	 <1222404711.5012.5.camel@sauron>
-	 <A09E9029F2344F78959A3E36179C468E@sisodomain.com>
-	 <1222417176.5012.17.camel@sauron>
-	 <000b01c92215$ae62d4e0$3dd66c6b@sisodomain.com>
-X-Google-Sender-Auth: 8bc0540e2768f554
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: cgroup task groups appears sensitive to absolute magnitude of shares
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Oct 2008 23:00:26.0401 (UTC) FILETIME=[D1561110:01C92A62]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m99Mw8dq022506
 
-Hi,
-I want to merge it if there are no objection.
-David, please commit it at MTD tree.
-Thank you,Kyungmin Park.
-On Mon, Sep 29, 2008 at 6:28 PM, apgmoorthy <moorthy.apg@samsung.com> wrote:>> Hi David,>>   Please do comment on this patch.>>   "Not to expose whole OOB" suggestion by Kyungmin should be fine , but> looking for your suggestion.>> With Regards> Gangheyamoorthy.A.P>> -----Original Message-----> From: Artem Bityutskiy [mailto:dedekind@infradead.org]> Sent: Friday, September 26, 2008 1:50 PM> To: Amit Kumar Sharma> Cc: Kyungmin Park; apgmoorthy; linux-mtd@lists.infradead.org; Kyungmin Park;> lkml; David Woodhouse> Subject: Re: [ANNOUNCE] [PATCH] [MTD] Flex-OneNAND MTD Driver available.>>> On Fri, 2008-09-26 at 13:31 +0530, Amit Kumar Sharma wrote:>> Hi Artem>>>> we have following erro message  if we maintain 64 bytes>> eccpos.>>>> /flash_eraseall -j /dev/mtd4>> ./flash_eraseall: /dev/mtd4: unable to get NAND oobinfo>>>> ./nandwrite -j /dev/mtd2 /jffs2.img>> MEMSETOOBSEL: Inappropriate ioctl for device>>>> but i think as OneNAND has hw ecc controller so Jffs2 will>> not face any problem>> still i think mtd should consider for 128 bytes eccpos for>> 4K page size.>> Well, anyway, in Linux ABI is a holy cow, you cannot change it.> That is a tough rule. Old user-space binaries have to always> works.>> Thus you may do one of:> 1. Invent a new ioctl for 4KiB page NANDs> 2. Add sysfs support> 3. Just do not expose whole OOB as Kyungmin suggested>> But I think assume dwmw2 would need to comment on this and> tell which approach would agree on.>> --> Best regards,> Artem Bityutskiy (‚…‘¿√À…  ·“‘£Õ)>>ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+
+When using cgroups-based task groups, the amount of cpu time for each 
+class should be based on the relative shares of the different groups.
+
+However, my testing shows that the absolute value of the shares matters 
+as well, with larger shares values giving more accurate results (to a 
+point).  Consider the two testcases below, where the only difference is 
+that in the second case all the shares are increased by a factor of 10. 
+  Notice that the accuracy in group 4 is significantly improved.
+
+
+[root@localhost schedtest]#  ./fairtest  test5.dat
+using settling delay of 1 sec, runtime of 2 sec
+group hierarchy (name, weight, hogs, expected usage):
+1,    40,   2, 55.555553
+2,    20,   2, 27.777777
+3,    10,   2, 13.888888
+4,     2,   2, 2.777778
+group       actual(%)    expected(%)   avg latency(ms)  max_latency(ms)
+       1        54.90         55.56               5/5              6/57
+       2        27.43         27.78               8/7              63/8
+       3        13.71         13.89             12/13            18/379
+       4         3.96          2.78               7/7             57/57
+
+
+
+[root@localhost schedtest]# ./fairtest  test3.dat
+using settling delay of 1 sec, runtime of 10 sec
+group hierarchy (name, weight, hogs, expected usage):
+1,   400,   2, 55.555557
+2,   200,   2, 27.777779
+3,   100,   2, 13.888889
+4,    20,   2, 2.777778
+group      actual(%)    expected(%)   avg latency(ms)  max_latency(ms)
+       1        55.20         55.56               5/5             22/31
+       2        28.02         27.78               7/8             23/21
+       3        14.00         13.89             12/11             20/33
+       4         2.78          2.78               9/9             24/20
+
+
+I suspect that this is due to the following calculation in 
+__update_group_shares_cpu():
+
+shares = (sd_shares * rq_weight) / (sd_rq_weight + 1);
+
+Because these are integers, the result will give greater rounding error 
+when sd_shares is small.
+
+Going to 4000/2000/1000/200 doesn't seem to give noticeable 
+improvements, and going to 40000/20000/10000/2000 causes the test to 
+behave unpredictably, either taking abnormally long to complete or else 
+not completing at all.
+
+Is it worth doing anything about this (automatic normalization of group 
+shares?), or should we just document this behaviour somewhere and live 
+with it?
+
+Chris
