@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbYJIX4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbYJIX4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753750AbYJIX4b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 19:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYJIXzA
+	id S1759373AbYJIX4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 19:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYJIXzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 9 Oct 2008 19:55:00 -0400
-Received: from xenotime.net ([66.160.160.81]:59569 "HELO xenotime.net"
+Received: from xenotime.net ([66.160.160.81]:57707 "HELO xenotime.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752858AbYJIXy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752667AbYJIXy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Oct 2008 19:54:57 -0400
 Date: Thu, 09 Oct 2008 16:52:35 -0700
 From: Randy Dunlap <rdunlap@xenotime.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 6/8] docs: add URL for paper on submitting patches
-Message-ID: <12235963552620@xenotime.net>
+Subject: [PATCH 4/8] docs: fix ManagementStyle book name
+Message-ID: <12235963552413@xenotime.net>
 In-Reply-To: <12235963551043@xenotime.net>
 X-Mailer: gregkh_patchbomb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
+From: Jiri Pirko <jpirko@redhat.com>
 
-Add a reference to paper to SubmittingPatches
+Just corrected the book name. I'm probably the only one who ever read
+this file :-)
 
-For this year's OLS I wrote a paper on successfull strategies
-to submit difficult kernel patches. Add a reference to it to
-SubmittingPatches.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-
 ---
- Documentation/SubmittingPatches |    5 +++++
- 1 file changed, 5 insertions(+)
+ Documentation/ManagementStyle |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.27-rc9-git2.orig/Documentation/SubmittingPatches
-+++ linux-2.6.27-rc9-git2/Documentation/SubmittingPatches
-@@ -672,4 +672,9 @@ Kernel Documentation/CodingStyle:
+--- linux-2.6.27-rc9-git2.orig/Documentation/ManagementStyle
++++ linux-2.6.27-rc9-git2/Documentation/ManagementStyle
+@@ -17,7 +17,7 @@ companies.  If you sign purchase orders 
+ budget of your group, you're almost certainly not a kernel manager. 
+ These suggestions may or may not apply to you. 
  
- Linus Torvalds's mail on the canonical patch format:
-   <http://lkml.org/lkml/2005/4/7/183>
-+
-+Andi Kleen, "On submitting kernel patches"
-+  Some strategies to get difficult or controversal changes in.
-+  http://halobates.de/on-submitting-patches.pdf
-+
- --
+-First off, I'd suggest buying "Seven Habits of Highly Successful
++First off, I'd suggest buying "Seven Habits of Highly Effective
+ People", and NOT read it.  Burn it, it's a great symbolic gesture. 
+ 
+ (*) This document does so not so much by answering the question, but by
 
 
 -- 
