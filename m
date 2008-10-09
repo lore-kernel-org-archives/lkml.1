@@ -1,88 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbYJIVQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYJIVRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756293AbYJIVQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 17:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYJIVQb
+	id S1757164AbYJIVRU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 17:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYJIVRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 17:16:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39728 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753014AbYJIVQa (ORCPT
+	Thu, 9 Oct 2008 17:17:11 -0400
+Received: from mga01.intel.com ([192.55.52.88]:11461 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753272AbYJIVRJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 17:16:30 -0400
-Date: Thu, 9 Oct 2008 14:14:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: splice vs O_APPEND
-In-Reply-To: <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org>
-References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org> <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu>
- <alpine.LFD.2.00.0810091218300.3210@nehalem.linux-foundation.org> <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 9 Oct 2008 17:17:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,385,1220252400"; 
+   d="scan'208";a="389635404"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted ExecutionTechnologysupport for Linux - Overview
+Date: Thu, 9 Oct 2008 14:16:14 -0700
+Message-ID: <D936D925018D154694D8A362EEB0892005B12EC4@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <20081009184552.GF12507@elf.ucw.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC][PATCH 0a/3] TXT: Intel(R) Trusted ExecutionTechnologysupport for Linux - Overview
+Thread-Index: AckqPw/LdRiYrtn+T9O9ZN2TwOAx5wAD4skg
+References: <D936D925018D154694D8A362EEB0892005AC105B@orsmsx416.amr.corp.intel.com> <20081009125311.GD1623@ucw.cz> <20081009174427.GB6912@sequoia.sous-sol.org> <20081009175938.GA12507@elf.ucw.cz> <20081009181451.GD6912@sequoia.sous-sol.org> <20081009182149.GE12507@elf.ucw.cz> <D936D925018D154694D8A362EEB0892005B12CC8@orsmsx416.amr.corp.intel.com> <20081009184552.GF12507@elf.ucw.cz>
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Cc: "Chris Wright" <chrisw@sous-sol.org>, <linux-kernel@vger.kernel.org>,
+       "Wang, Shane" <shane.wang@intel.com>, "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       "Chris Wright" <chrisw@redhat.com>, "Jan Beulich" <jbeulich@novell.com>,
+       <mingo@elte.hu>, <tytso@mit.edu>
+X-OriginalArrivalTime: 09 Oct 2008 21:16:53.0039 (UTC) FILETIME=[59E243F0:01C92A54]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 9 Oct 2008, Miklos Szeredi wrote:
+> From: Pavel Machek [mailto:pavel@suse.cz]
+> Sent: Thursday, October 09, 2008 11:46 AM
 > 
-> The thing is, the append-only attribute is absolutely useless without
-> being able to depend on it.  So in that sense I think the IS_APPEND
-> issue is important, and I'm fine with your original proposal for that
-> (except we don't need the IS_IMMUTABLE check).
+> > > > > You exit/reenter the trusted mode accross sleep... so any
+guarantees
+> > > > > "trusted" mode does are void, right?
+> > > >
+> > > > You exit from kernel to tboot on any shutdown, which handles the
+proper
+> > > > teardown of the measured env (meaning you also come back on via
+tboot).
+> > > > So things like saving tpm state, scrubbing secrets from memory,
+etc.
+> > >
+> > > Aha, so instead sleep mode is useless because I'll have to remount
+all
+> > > the crypto filesystems and restart all the apps...
+> >
+> > Sleep mode works the same as it does today (caveat S4 issue which we
+> > will fix), it just goes through the tboot code before putting the
+> > platform HW into the appropriate state.  What this process is adding
+is
+> > that on resume, tboot will get control from BIOS instead of the
+kernel.
+> > Then tboot will re-launch the TXT environment before going back to
+the
+> > kernel at the kernel's expected S3 resume vector.  The
+re-establishing
+> > of the protected environment won't disrupt the subsequent kernel
+resume
+> > process.
+> 
+> No, I don't get it. So presumably useful thing to do is to seal my
+> crypto partition so that only known-good kernel can access it?
+> 
+> But then, the crypto keys will be in ram during suspend/resume
+> (because I have the filesystem mounted) => I loose any guarantees?
 
-Heh. In the meantime, I had grown to hate that more complex patch.
+This goes to the threat model for S3.  The current code assumes that the
+S3 resume process is trusted.  That is, the memory image will not be
+compromised between the time tboot turns off TXT in order to put the
+platform into S3 and the time TXT is re-launched.  For this model, the
+purpose of re-launching is to re-establish the original PCR values and
+the reset protection.
 
-So because I do see your point with IS_APPEND (being different from 
-O_APPEND), but because I also think that O_APPEND itself is a gray and 
-murky area, I just committed the following. I doubt anybody will ever even 
-notice it, but while I think it's all debatable, we might as well debate 
-it with this in place. I do agree that it's "safer" behaviour.
+If stronger protection is desired, the apps that manage keys would need
+to seal the keys to the current DRTM PCRs and then clear the plaintext
+copies, before the system enters S3.  The tboot and Linux code would
+also need to put a (U)MAC over all of the image (the kernel could UMAC
+userspace and tboot would UMAC the kernel).  The UMAC that tboot
+calculates would get sealed before entry into S3 and then unsealed and
+validated upon resume.  OF course this adds time to both entry and
+resume.
 
-		Linus
-
----
-commit a05b4085484ac45558810e4c5928e5a291c20f65
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Thu Oct 9 14:04:54 2008 -0700
-
-    Don't allow splice() to files opened with O_APPEND
-    
-    This is debatable, but while we're debating it, let's disallow the
-    combination of splice and an O_APPEND destination.
-    
-    It's not entirely clear what the semantics of O_APPEND should be, and
-    POSIX apparently expects pwrite() to ignore O_APPEND, for example.  So
-    we could make up any semantics we want, including the old ones.
-    
-    But Miklos convinced me that we should at least give it some thought,
-    and that accepting writes at arbitrary offsets is wrong at least for
-    IS_APPEND() files (which always have O_APPEND set, even if the reverse
-    isn't true: you can obviously have O_APPEND set on a regular file).
-    
-    So disallow O_APPEND entirely for now.  I doubt anybody cares, and this
-    way we have one less gray area to worry about.
-    
-    Reported-and-argued-for-by: Miklos Szeredi <miklos@szeredi.hu>
-    Cc: Jens Axboe <ens.axboe@oracle.com>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/fs/splice.c b/fs/splice.c
-index 1bbc6f4..a1e701c 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -898,6 +898,9 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
- 	if (unlikely(!(out->f_mode & FMODE_WRITE)))
- 		return -EBADF;
- 
-+	if (unlikely(out->f_flags & O_APPEND))
-+		return -EINVAL;
-+
- 	ret = rw_verify_area(WRITE, out, ppos, len);
- 	if (unlikely(ret < 0))
- 		return ret;
+Joe
