@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbYJIVXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbYJIV3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758480AbYJIVXL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 17:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbYJIVWy
+	id S1757241AbYJIV3i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 17:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbYJIV30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 17:22:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47499 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753565AbYJIVWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 17:22:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.27-rc8: throttling broken
-Date: Thu, 9 Oct 2008 23:27:25 +0200
-User-Agent: KMail/1.9.9
-Cc: jikos@suse.cz, kernel list <linux-kernel@vger.kernel.org>,
-       linux-acpi@ucw.cz, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <20081009171238.GB1370@ucw.cz>
-In-Reply-To: <20081009171238.GB1370@ucw.cz>
+	Thu, 9 Oct 2008 17:29:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57176 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755035AbYJIV3Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 17:29:25 -0400
+Date: Thu, 9 Oct 2008 14:27:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: splice vs O_APPEND
+In-Reply-To: <20081009212052.GS19428@kernel.dk>
+Message-ID: <alpine.LFD.2.00.0810091427160.3210@nehalem.linux-foundation.org>
+References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org> <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu>
+ <alpine.LFD.2.00.0810091218300.3210@nehalem.linux-foundation.org> <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org> <20081009212052.GS19428@kernel.dk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810092327.26301.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 9 of October 2008, Pavel Machek wrote:
-> Hi!
-> 
-> On 2.6.27-rc8 on via/fic subnotebook, throttling seems to be broken. I
-> can do echo 15 > /proc/acpi/processor/*/throttling, and proc file
-> reflects new value, but cpu still runs at same speed.
-> 
-> It worked on opensuse11/sled10 kernels at least...
 
-Any chance to check 2.6.26.x on that?
 
-Thanks,
-Rafael
+On Thu, 9 Oct 2008, Jens Axboe wrote:
+> 
+> A little late I see, but FWIW I agree.
+
+Well, not too late, since I hadn't pushed it out. I amended the commit to 
+have an acked-by from you.
+
+And now it _is_ pushed out.
+
+		Linus
