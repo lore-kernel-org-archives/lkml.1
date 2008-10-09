@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760458AbYJIEUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbYJIEVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760458AbYJIEUy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758016AbYJIEIJ
+	id S1760470AbYJIEVY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbYJIEIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:08:09 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54467 "EHLO
+	Thu, 9 Oct 2008 00:08:13 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:60617 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757332AbYJIEGI (ORCPT
+	with ESMTP id S1757824AbYJIEGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:06:08 -0400
+	Thu, 9 Oct 2008 00:06:34 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 27/42] ext4: move /proc setup and teardown out of mballoc.c
-Date: Thu,  9 Oct 2008 00:05:45 -0400
-Message-Id: <1223525160-9887-28-git-send-email-tytso@mit.edu>
+Cc: Mark Fasheh <mfasheh@suse.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
+Subject: [PATCH 37/42] ocfs2: fiemap support
+Date: Thu,  9 Oct 2008 00:05:55 -0400
+Message-Id: <1223525160-9887-38-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-27-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-37-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -45,6 +46,16 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-25-git-send-email-tytso@mit.edu>
  <1223525160-9887-26-git-send-email-tytso@mit.edu>
  <1223525160-9887-27-git-send-email-tytso@mit.edu>
+ <1223525160-9887-28-git-send-email-tytso@mit.edu>
+ <1223525160-9887-29-git-send-email-tytso@mit.edu>
+ <1223525160-9887-30-git-send-email-tytso@mit.edu>
+ <1223525160-9887-31-git-send-email-tytso@mit.edu>
+ <1223525160-9887-32-git-send-email-tytso@mit.edu>
+ <1223525160-9887-33-git-send-email-tytso@mit.edu>
+ <1223525160-9887-34-git-send-email-tytso@mit.edu>
+ <1223525160-9887-35-git-send-email-tytso@mit.edu>
+ <1223525160-9887-36-git-send-email-tytso@mit.edu>
+ <1223525160-9887-37-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -52,298 +63,509 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...and into the core setup/teardown code in fs/ext4/super.c so that
-other parts of ext4 can define tuning parameters.
+From: Mark Fasheh <mfasheh@suse.com>
 
+Plug ocfs2 into ->fiemap. Some portions of ocfs2_get_clusters() had to be
+refactored so that the extent cache can be skipped in favor of going
+directly to the on-disk records. This makes it easier for us to determine
+which extent is the last one in the btree. Also, I'm not sure we want to be
+caching fiemap lookups anyway as they're not directly related to data
+read/write.
+
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: ocfs2-devel@oss.oracle.com
+Cc: linux-fsdevel@vger.kernel.org
 ---
- fs/ext4/ext4.h    |    2 +
- fs/ext4/ext4_sb.h |    2 +-
- fs/ext4/mballoc.c |   76 +++++++++++++++-------------------------------------
- fs/ext4/mballoc.h |    1 -
- fs/ext4/super.c   |   17 ++++++++++++
- 5 files changed, 42 insertions(+), 56 deletions(-)
+ fs/ocfs2/alloc.c      |    9 --
+ fs/ocfs2/alloc.h      |    9 ++
+ fs/ocfs2/extent_map.c |  346 +++++++++++++++++++++++++++++++++++++++++--------
+ fs/ocfs2/extent_map.h |    3 +
+ fs/ocfs2/file.c       |    1 +
+ 5 files changed, 306 insertions(+), 62 deletions(-)
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 50a4846..b9c9371 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -955,6 +955,8 @@ ext4_group_first_block_no(struct super_block *sb, ext4_group_t group_no)
- void ext4_get_group_no_and_offset(struct super_block *sb, ext4_fsblk_t blocknr,
- 			unsigned long *blockgrpp, ext4_grpblk_t *offsetp);
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 10bfb46..29ff57e 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -990,15 +990,6 @@ out:
+ }
  
-+extern struct proc_dir_entry *ext4_proc_root;
+ /*
+- * This is only valid for leaf nodes, which are the only ones that can
+- * have empty extents anyway.
+- */
+-static inline int ocfs2_is_empty_extent(struct ocfs2_extent_rec *rec)
+-{
+-	return !rec->e_leaf_clusters;
+-}
+-
+-/*
+  * This function will discard the rightmost extent record.
+  */
+ static void ocfs2_shift_records_right(struct ocfs2_extent_list *el)
+diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
+index 42ff94b..60cd3d5 100644
+--- a/fs/ocfs2/alloc.h
++++ b/fs/ocfs2/alloc.h
+@@ -146,4 +146,13 @@ static inline unsigned int ocfs2_rec_clusters(struct ocfs2_extent_list *el,
+ 		return le16_to_cpu(rec->e_leaf_clusters);
+ }
+ 
++/*
++ * This is only valid for leaf nodes, which are the only ones that can
++ * have empty extents anyway.
++ */
++static inline int ocfs2_is_empty_extent(struct ocfs2_extent_rec *rec)
++{
++	return !rec->e_leaf_clusters;
++}
++
+ #endif /* OCFS2_ALLOC_H */
+diff --git a/fs/ocfs2/extent_map.c b/fs/ocfs2/extent_map.c
+index c58668a..aed268e 100644
+--- a/fs/ocfs2/extent_map.c
++++ b/fs/ocfs2/extent_map.c
+@@ -25,6 +25,7 @@
+ #include <linux/fs.h>
+ #include <linux/init.h>
+ #include <linux/types.h>
++#include <linux/fiemap.h>
+ 
+ #define MLOG_MASK_PREFIX ML_EXTENT_MAP
+ #include <cluster/masklog.h>
+@@ -32,6 +33,7 @@
+ #include "ocfs2.h"
+ 
+ #include "alloc.h"
++#include "dlmglue.h"
+ #include "extent_map.h"
+ #include "inode.h"
+ #include "super.h"
+@@ -282,6 +284,51 @@ out:
+ 		kfree(new_emi);
+ }
+ 
++static int ocfs2_last_eb_is_empty(struct inode *inode,
++				  struct ocfs2_dinode *di)
++{
++	int ret, next_free;
++	u64 last_eb_blk = le64_to_cpu(di->i_last_eb_blk);
++	struct buffer_head *eb_bh = NULL;
++	struct ocfs2_extent_block *eb;
++	struct ocfs2_extent_list *el;
++
++	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), last_eb_blk,
++			       &eb_bh, OCFS2_BH_CACHED, inode);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
++	}
++
++	eb = (struct ocfs2_extent_block *) eb_bh->b_data;
++	el = &eb->h_list;
++
++	if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
++		ret = -EROFS;
++		OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
++		goto out;
++	}
++
++	if (el->l_tree_depth) {
++		ocfs2_error(inode->i_sb,
++			    "Inode %lu has non zero tree depth in "
++			    "leaf block %llu\n", inode->i_ino,
++			    (unsigned long long)eb_bh->b_blocknr);
++		ret = -EROFS;
++		goto out;
++	}
++
++	next_free = le16_to_cpu(el->l_next_free_rec);
++
++	if (next_free == 0 ||
++	    (next_free == 1 && ocfs2_is_empty_extent(&el->l_recs[0])))
++		ret = 1;
++
++out:
++	brelse(eb_bh);
++	return ret;
++}
 +
  /*
-  * Function prototypes
-  */
-diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-index a5577e0..95e046e 100644
---- a/fs/ext4/ext4_sb.h
-+++ b/fs/ext4/ext4_sb.h
-@@ -61,6 +61,7 @@ struct ext4_sb_info {
- 	struct percpu_counter s_dirs_counter;
- 	struct percpu_counter s_dirtyblocks_counter;
- 	struct blockgroup_lock s_blockgroup_lock;
-+	struct proc_dir_entry *s_proc;
- 
- 	/* root of the per fs reservation window tree */
- 	spinlock_t s_rsv_window_lock;
-@@ -122,7 +123,6 @@ struct ext4_sb_info {
- 	int s_mb_history_cur;
- 	int s_mb_history_max;
- 	int s_mb_history_num;
--	struct proc_dir_entry *s_mb_proc;
- 	spinlock_t s_mb_history_lock;
- 	int s_mb_history_filter;
- 
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index 01a7daa..705870c 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -2170,9 +2170,10 @@ static void ext4_mb_history_release(struct super_block *sb)
- {
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 
--	remove_proc_entry("mb_groups", sbi->s_mb_proc);
--	remove_proc_entry("mb_history", sbi->s_mb_proc);
--
-+	if (sbi->s_proc != NULL) {
-+		remove_proc_entry("mb_groups", sbi->s_proc);
-+		remove_proc_entry("mb_history", sbi->s_proc);
-+	}
- 	kfree(sbi->s_mb_history);
+  * Return the 1st index within el which contains an extent start
+  * larger than v_cluster.
+@@ -373,42 +420,28 @@ out:
+ 	return ret;
  }
  
-@@ -2181,10 +2182,10 @@ static void ext4_mb_history_init(struct super_block *sb)
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	int i;
- 
--	if (sbi->s_mb_proc != NULL) {
--		proc_create_data("mb_history", S_IRUGO, sbi->s_mb_proc,
-+	if (sbi->s_proc != NULL) {
-+		proc_create_data("mb_history", S_IRUGO, sbi->s_proc,
- 				 &ext4_mb_seq_history_fops, sb);
--		proc_create_data("mb_groups", S_IRUGO, sbi->s_mb_proc,
-+		proc_create_data("mb_groups", S_IRUGO, sbi->s_proc,
- 				 &ext4_mb_seq_groups_fops, sb);
- 	}
- 
-@@ -2720,8 +2721,6 @@ ext4_mb_free_committed_blocks(struct super_block *sb)
- #define EXT4_MB_STREAM_REQ		"stream_req"
- #define EXT4_MB_GROUP_PREALLOC		"group_prealloc"
- 
+-int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
+-		       u32 *p_cluster, u32 *num_clusters,
+-		       unsigned int *extent_flags)
++static int ocfs2_get_clusters_nocache(struct inode *inode,
++				      struct buffer_head *di_bh,
++				      u32 v_cluster, unsigned int *hole_len,
++				      struct ocfs2_extent_rec *ret_rec,
++				      unsigned int *is_last)
+ {
+-	int ret, i;
+-	unsigned int flags = 0;
+-	struct buffer_head *di_bh = NULL;
+-	struct buffer_head *eb_bh = NULL;
++	int i, ret, tree_height, len;
+ 	struct ocfs2_dinode *di;
+-	struct ocfs2_extent_block *eb;
++	struct ocfs2_extent_block *uninitialized_var(eb);
+ 	struct ocfs2_extent_list *el;
+ 	struct ocfs2_extent_rec *rec;
+-	u32 coff;
 -
--
- #define MB_PROC_FOPS(name)					\
- static int ext4_mb_##name##_proc_show(struct seq_file *m, void *v)	\
- {								\
-@@ -2771,7 +2770,7 @@ MB_PROC_FOPS(group_prealloc);
- 
- #define	MB_PROC_HANDLER(name, var)					\
- do {									\
--	proc = proc_create_data(name, mode, sbi->s_mb_proc,		\
-+	proc = proc_create_data(name, mode, sbi->s_proc,		\
- 				&ext4_mb_##var##_proc_fops, sbi);	\
- 	if (proc == NULL) {						\
- 		printk(KERN_ERR "EXT4-fs: can't to create %s\n", name);	\
-@@ -2784,20 +2783,9 @@ static int ext4_mb_init_per_dev_proc(struct super_block *sb)
- 	mode_t mode = S_IFREG | S_IRUGO | S_IWUSR;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	struct proc_dir_entry *proc;
--	char devname[BDEVNAME_SIZE], *p;
- 
--	if (proc_root_ext4 == NULL) {
--		sbi->s_mb_proc = NULL;
-+	if (sbi->s_proc == NULL)
- 		return -EINVAL;
+-	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL) {
+-		ret = -ERANGE;
+-		mlog_errno(ret);
+-		goto out;
 -	}
--	bdevname(sb->s_bdev, devname);
--	p = devname;
--	while ((p = strchr(p, '/')))
--		*p = '!';
 -
--	sbi->s_mb_proc = proc_mkdir(devname, proc_root_ext4);
--	if (!sbi->s_mb_proc)
--		goto err_create_dir;
+-	ret = ocfs2_extent_map_lookup(inode, v_cluster, p_cluster,
+-				      num_clusters, extent_flags);
+-	if (ret == 0)
+-		goto out;
++	struct buffer_head *eb_bh = NULL;
  
- 	MB_PROC_HANDLER(EXT4_MB_STATS_NAME, stats);
- 	MB_PROC_HANDLER(EXT4_MB_MAX_TO_SCAN_NAME, max_to_scan);
-@@ -2805,43 +2793,31 @@ static int ext4_mb_init_per_dev_proc(struct super_block *sb)
- 	MB_PROC_HANDLER(EXT4_MB_ORDER2_REQ, order2_reqs);
- 	MB_PROC_HANDLER(EXT4_MB_STREAM_REQ, stream_request);
- 	MB_PROC_HANDLER(EXT4_MB_GROUP_PREALLOC, group_prealloc);
--
- 	return 0;
+-	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), OCFS2_I(inode)->ip_blkno,
+-			       &di_bh, OCFS2_BH_CACHED, inode);
+-	if (ret) {
+-		mlog_errno(ret);
+-		goto out;
+-	}
++	memset(ret_rec, 0, sizeof(*ret_rec));
++	if (is_last)
++		*is_last = 0;
  
- err_out:
--	remove_proc_entry(EXT4_MB_GROUP_PREALLOC, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_STREAM_REQ, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_ORDER2_REQ, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_MIN_TO_SCAN_NAME, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_MAX_TO_SCAN_NAME, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_STATS_NAME, sbi->s_mb_proc);
--	remove_proc_entry(devname, proc_root_ext4);
--	sbi->s_mb_proc = NULL;
--err_create_dir:
--	printk(KERN_ERR "EXT4-fs: Unable to create %s\n", devname);
--
-+	remove_proc_entry(EXT4_MB_GROUP_PREALLOC, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_STREAM_REQ, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_ORDER2_REQ, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_MIN_TO_SCAN_NAME, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_MAX_TO_SCAN_NAME, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_STATS_NAME, sbi->s_proc);
- 	return -ENOMEM;
- }
+ 	di = (struct ocfs2_dinode *) di_bh->b_data;
+ 	el = &di->id2.i_list;
++	tree_height = le16_to_cpu(el->l_tree_depth);
  
- static int ext4_mb_destroy_per_dev_proc(struct super_block *sb)
- {
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
--	char devname[BDEVNAME_SIZE], *p;
- 
--	if (sbi->s_mb_proc == NULL)
-+	if (sbi->s_proc == NULL)
- 		return -EINVAL;
- 
--	bdevname(sb->s_bdev, devname);
--	p = devname;
--	while ((p = strchr(p, '/')))
--		*p = '!';
--	remove_proc_entry(EXT4_MB_GROUP_PREALLOC, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_STREAM_REQ, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_ORDER2_REQ, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_MIN_TO_SCAN_NAME, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_MAX_TO_SCAN_NAME, sbi->s_mb_proc);
--	remove_proc_entry(EXT4_MB_STATS_NAME, sbi->s_mb_proc);
--	remove_proc_entry(devname, proc_root_ext4);
-+	remove_proc_entry(EXT4_MB_GROUP_PREALLOC, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_STREAM_REQ, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_ORDER2_REQ, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_MIN_TO_SCAN_NAME, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_MAX_TO_SCAN_NAME, sbi->s_proc);
-+	remove_proc_entry(EXT4_MB_STATS_NAME, sbi->s_proc);
- 
- 	return 0;
- }
-@@ -2863,11 +2839,6 @@ int __init init_ext4_mballoc(void)
- 		kmem_cache_destroy(ext4_pspace_cachep);
- 		return -ENOMEM;
- 	}
--#ifdef CONFIG_PROC_FS
--	proc_root_ext4 = proc_mkdir("fs/ext4", NULL);
--	if (proc_root_ext4 == NULL)
--		printk(KERN_ERR "EXT4-fs: Unable to create fs/ext4\n");
--#endif
- 	return 0;
- }
- 
-@@ -2876,9 +2847,6 @@ void exit_ext4_mballoc(void)
- 	/* XXX: synchronize_rcu(); */
- 	kmem_cache_destroy(ext4_pspace_cachep);
- 	kmem_cache_destroy(ext4_ac_cachep);
--#ifdef CONFIG_PROC_FS
--	remove_proc_entry("fs/ext4", NULL);
--#endif
- }
- 
- 
-diff --git a/fs/ext4/mballoc.h b/fs/ext4/mballoc.h
-index c7c9906..b3b4828 100644
---- a/fs/ext4/mballoc.h
-+++ b/fs/ext4/mballoc.h
-@@ -257,7 +257,6 @@ static void ext4_mb_store_history(struct ext4_allocation_context *ac);
- 
- #define in_range(b, first, len)	((b) >= (first) && (b) <= (first) + (len) - 1)
- 
--static struct proc_dir_entry *proc_root_ext4;
- struct buffer_head *read_block_bitmap(struct super_block *, ext4_group_t);
- 
- static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap,
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index fb5766e..7feeec6 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -34,6 +34,7 @@
- #include <linux/namei.h>
- #include <linux/quotaops.h>
- #include <linux/seq_file.h>
-+#include <linux/proc_fs.h>
- #include <linux/log2.h>
- #include <linux/crc16.h>
- #include <asm/uaccess.h>
-@@ -45,6 +46,8 @@
- #include "namei.h"
- #include "group.h"
- 
-+struct proc_dir_entry *ext4_proc_root;
+-	if (el->l_tree_depth) {
++	if (tree_height > 0) {
+ 		ret = ocfs2_find_leaf(inode, el, v_cluster, &eb_bh);
+ 		if (ret) {
+ 			mlog_errno(ret);
+@@ -431,46 +464,143 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
+ 	i = ocfs2_search_extent_list(el, v_cluster);
+ 	if (i == -1) {
+ 		/*
+-		 * A hole was found. Return some canned values that
+-		 * callers can key on. If asked for, num_clusters will
+-		 * be populated with the size of the hole.
++		 * Holes can be larger than the maximum size of an
++		 * extent, so we return their lengths in a seperate
++		 * field.
+ 		 */
+-		*p_cluster = 0;
+-		if (num_clusters) {
++		if (hole_len) {
+ 			ret = ocfs2_figure_hole_clusters(inode, el, eb_bh,
+-							 v_cluster,
+-							 num_clusters);
++							 v_cluster, &len);
+ 			if (ret) {
+ 				mlog_errno(ret);
+ 				goto out;
+ 			}
 +
- static int ext4_load_journal(struct super_block *, struct ext4_super_block *,
- 			     unsigned long journal_devnum);
- static int ext4_create_journal(struct super_block *, struct ext4_super_block *,
-@@ -512,6 +515,8 @@ static void ext4_put_super(struct super_block *sb)
- 		mark_buffer_dirty(sbi->s_sbh);
- 		ext4_commit_super(sb, es, 1);
- 	}
-+	if (sbi->s_proc)
-+		remove_proc_entry(sb->s_id, ext4_proc_root);
++			*hole_len = len;
+ 		}
+-	} else {
+-		rec = &el->l_recs[i];
++		goto out_hole;
++	}
  
- 	for (i = 0; i < sbi->s_gdb_count; i++)
- 		brelse(sbi->s_group_desc[i]);
-@@ -1916,6 +1921,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
- 	unsigned long journal_devnum = 0;
- 	unsigned long def_mount_opts;
- 	struct inode *root;
-+	char *cp;
- 	int ret = -EINVAL;
- 	int blocksize;
- 	int db_count;
-@@ -1936,6 +1942,10 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+-		BUG_ON(v_cluster < le32_to_cpu(rec->e_cpos));
++	rec = &el->l_recs[i];
  
- 	unlock_kernel();
- 
-+	/* Cleanup superblock name */
-+	for (cp = sb->s_id; (cp = strchr(cp, '/'));)
-+		*cp = '!';
+-		if (!rec->e_blkno) {
+-			ocfs2_error(inode->i_sb, "Inode %lu has bad extent "
+-				    "record (%u, %u, 0)", inode->i_ino,
+-				    le32_to_cpu(rec->e_cpos),
+-				    ocfs2_rec_clusters(el, rec));
+-			ret = -EROFS;
+-			goto out;
++	BUG_ON(v_cluster < le32_to_cpu(rec->e_cpos));
 +
- 	blocksize = sb_min_blocksize(sb, EXT4_MIN_BLOCK_SIZE);
- 	if (!blocksize) {
- 		printk(KERN_ERR "EXT4-fs: unable to set blocksize\n");
-@@ -2221,6 +2231,9 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
- 		goto failed_mount;
++	if (!rec->e_blkno) {
++		ocfs2_error(inode->i_sb, "Inode %lu has bad extent "
++			    "record (%u, %u, 0)", inode->i_ino,
++			    le32_to_cpu(rec->e_cpos),
++			    ocfs2_rec_clusters(el, rec));
++		ret = -EROFS;
++		goto out;
++	}
++
++	*ret_rec = *rec;
++
++	/*
++	 * Checking for last extent is potentially expensive - we
++	 * might have to look at the next leaf over to see if it's
++	 * empty.
++	 *
++	 * The first two checks are to see whether the caller even
++	 * cares for this information, and if the extent is at least
++	 * the last in it's list.
++	 *
++	 * If those hold true, then the extent is last if any of the
++	 * additional conditions hold true:
++	 *  - Extent list is in-inode
++	 *  - Extent list is right-most
++	 *  - Extent list is 2nd to rightmost, with empty right-most
++	 */
++	if (is_last) {
++		if (i == (le16_to_cpu(el->l_next_free_rec) - 1)) {
++			if (tree_height == 0)
++				*is_last = 1;
++			else if (eb->h_blkno == di->i_last_eb_blk)
++				*is_last = 1;
++			else if (eb->h_next_leaf_blk == di->i_last_eb_blk) {
++				ret = ocfs2_last_eb_is_empty(inode, di);
++				if (ret < 0) {
++					mlog_errno(ret);
++					goto out;
++				}
++				if (ret == 1)
++					*is_last = 1;
++			}
+ 		}
++	}
++
++out_hole:
++	ret = 0;
++out:
++	brelse(eb_bh);
++	return ret;
++}
++
++static void ocfs2_relative_extent_offsets(struct super_block *sb,
++					  u32 v_cluster,
++					  struct ocfs2_extent_rec *rec,
++					  u32 *p_cluster, u32 *num_clusters)
++
++{
++	u32 coff = v_cluster - le32_to_cpu(rec->e_cpos);
++
++	*p_cluster = ocfs2_blocks_to_clusters(sb, le64_to_cpu(rec->e_blkno));
++	*p_cluster = *p_cluster + coff;
++
++	if (num_clusters)
++		*num_clusters = le16_to_cpu(rec->e_leaf_clusters) - coff;
++}
++
++int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
++		       u32 *p_cluster, u32 *num_clusters,
++		       unsigned int *extent_flags)
++{
++	int ret;
++	unsigned int uninitialized_var(hole_len), flags = 0;
++	struct buffer_head *di_bh = NULL;
++	struct ocfs2_extent_rec rec;
+ 
+-		coff = v_cluster - le32_to_cpu(rec->e_cpos);
++	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL) {
++		ret = -ERANGE;
++		mlog_errno(ret);
++		goto out;
++	}
+ 
+-		*p_cluster = ocfs2_blocks_to_clusters(inode->i_sb,
+-						    le64_to_cpu(rec->e_blkno));
+-		*p_cluster = *p_cluster + coff;
++	ret = ocfs2_extent_map_lookup(inode, v_cluster, p_cluster,
++				      num_clusters, extent_flags);
++	if (ret == 0)
++		goto out;
+ 
+-		if (num_clusters)
+-			*num_clusters = ocfs2_rec_clusters(el, rec) - coff;
++	ret = ocfs2_read_block(OCFS2_SB(inode->i_sb), OCFS2_I(inode)->ip_blkno,
++			       &di_bh, OCFS2_BH_CACHED, inode);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
++	}
+ 
+-		flags = rec->e_flags;
++	ret = ocfs2_get_clusters_nocache(inode, di_bh, v_cluster, &hole_len,
++					 &rec, NULL);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
++	}
+ 
+-		ocfs2_extent_map_insert_rec(inode, rec);
++	if (rec.e_blkno == 0ULL) {
++		/*
++		 * A hole was found. Return some canned values that
++		 * callers can key on. If asked for, num_clusters will
++		 * be populated with the size of the hole.
++		 */
++		*p_cluster = 0;
++		if (num_clusters) {
++			*num_clusters = hole_len;
++		}
++	} else {
++		ocfs2_relative_extent_offsets(inode->i_sb, v_cluster, &rec,
++					      p_cluster, num_clusters);
++		flags = rec.e_flags;
++
++		ocfs2_extent_map_insert_rec(inode, &rec);
  	}
  
-+	if (ext4_proc_root)
-+		sbi->s_proc = proc_mkdir(sb->s_id, ext4_proc_root);
-+
- 	bgl_lock_init(&sbi->s_blockgroup_lock);
+ 	if (extent_flags)
+@@ -478,7 +608,6 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
  
- 	for (i = 0; i < db_count; i++) {
-@@ -2500,6 +2513,8 @@ failed_mount2:
- 		brelse(sbi->s_group_desc[i]);
- 	kfree(sbi->s_group_desc);
- failed_mount:
-+	if (sbi->s_proc)
-+		remove_proc_entry(sb->s_id, ext4_proc_root);
- #ifdef CONFIG_QUOTA
- 	for (i = 0; i < MAXQUOTAS; i++)
- 		kfree(sbi->s_qf_names[i]);
-@@ -3538,6 +3553,7 @@ static int __init init_ext4_fs(void)
- {
- 	int err;
- 
-+	ext4_proc_root = proc_mkdir("fs/ext4", NULL);
- 	err = init_ext4_mballoc();
- 	if (err)
- 		return err;
-@@ -3567,6 +3583,7 @@ static void __exit exit_ext4_fs(void)
- 	destroy_inodecache();
- 	exit_ext4_xattr();
- 	exit_ext4_mballoc();
-+	remove_proc_entry("fs/ext4", NULL);
+ out:
+ 	brelse(di_bh);
+-	brelse(eb_bh);
+ 	return ret;
  }
  
- MODULE_AUTHOR("Remy Card, Stephen Tweedie, Andrew Morton, Andreas Dilger, Theodore Ts'o and others");
+@@ -521,3 +650,114 @@ int ocfs2_extent_map_get_blocks(struct inode *inode, u64 v_blkno, u64 *p_blkno,
+ out:
+ 	return ret;
+ }
++
++static int ocfs2_fiemap_inline(struct inode *inode, struct buffer_head *di_bh,
++			       struct fiemap_extent_info *fieinfo,
++			       u64 map_start)
++{
++	int ret;
++	unsigned int id_count;
++	struct ocfs2_dinode *di;
++	u64 phys;
++	u32 flags = FIEMAP_EXTENT_DATA_INLINE|FIEMAP_EXTENT_LAST;
++	struct ocfs2_inode_info *oi = OCFS2_I(inode);
++
++	di = (struct ocfs2_dinode *)di_bh->b_data;
++	id_count = le16_to_cpu(di->id2.i_data.id_count);
++
++	if (map_start < id_count) {
++		phys = oi->ip_blkno << inode->i_sb->s_blocksize_bits;
++		phys += offsetof(struct ocfs2_dinode, id2.i_data.id_data);
++
++		ret = fiemap_fill_next_extent(fieinfo, 0, phys, id_count,
++					      flags);
++		if (ret < 0)
++			return ret;
++	}
++
++	return 0;
++}
++
++#define OCFS2_FIEMAP_FLAGS	(FIEMAP_FLAG_SYNC)
++
++int ocfs2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		 u64 map_start, u64 map_len)
++{
++	int ret, is_last;
++	u32 mapping_end, cpos;
++	unsigned int hole_size;
++	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
++	u64 len_bytes, phys_bytes, virt_bytes;
++	struct buffer_head *di_bh = NULL;
++	struct ocfs2_extent_rec rec;
++
++	ret = fiemap_check_flags(fieinfo, OCFS2_FIEMAP_FLAGS);
++	if (ret)
++		return ret;
++
++	ret = ocfs2_inode_lock(inode, &di_bh, 0);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
++	}
++
++	down_read(&OCFS2_I(inode)->ip_alloc_sem);
++
++	/*
++	 * Handle inline-data separately.
++	 */
++	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL) {
++		ret = ocfs2_fiemap_inline(inode, di_bh, fieinfo, map_start);
++		goto out_unlock;
++	}
++
++	cpos = map_start >> osb->s_clustersize_bits;
++	mapping_end = ocfs2_clusters_for_bytes(inode->i_sb,
++					       map_start + map_len);
++	mapping_end -= cpos;
++	is_last = 0;
++	while (cpos < mapping_end && !is_last) {
++		u32 fe_flags;
++
++		ret = ocfs2_get_clusters_nocache(inode, di_bh, cpos,
++						 &hole_size, &rec, &is_last);
++		if (ret) {
++			mlog_errno(ret);
++			goto out;
++		}
++
++		if (rec.e_blkno == 0ULL) {
++			cpos += hole_size;
++			continue;
++		}
++
++		fe_flags = 0;
++		if (rec.e_flags & OCFS2_EXT_UNWRITTEN)
++			fe_flags |= FIEMAP_EXTENT_UNWRITTEN;
++		if (is_last)
++			fe_flags |= FIEMAP_EXTENT_LAST;
++		len_bytes = (u64)le16_to_cpu(rec.e_leaf_clusters) << osb->s_clustersize_bits;
++		phys_bytes = le64_to_cpu(rec.e_blkno) << osb->sb->s_blocksize_bits;
++		virt_bytes = (u64)le32_to_cpu(rec.e_cpos) << osb->s_clustersize_bits;
++
++		ret = fiemap_fill_next_extent(fieinfo, virt_bytes, phys_bytes,
++					      len_bytes, fe_flags);
++		if (ret)
++			break;
++
++		cpos = le32_to_cpu(rec.e_cpos)+ le16_to_cpu(rec.e_leaf_clusters);
++	}
++
++	if (ret > 0)
++		ret = 0;
++
++out_unlock:
++	brelse(di_bh);
++
++	up_read(&OCFS2_I(inode)->ip_alloc_sem);
++
++	ocfs2_inode_unlock(inode, 0);
++out:
++
++	return ret;
++}
+diff --git a/fs/ocfs2/extent_map.h b/fs/ocfs2/extent_map.h
+index de91e3e..1b97490 100644
+--- a/fs/ocfs2/extent_map.h
++++ b/fs/ocfs2/extent_map.h
+@@ -50,4 +50,7 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster, u32 *p_cluster,
+ int ocfs2_extent_map_get_blocks(struct inode *inode, u64 v_blkno, u64 *p_blkno,
+ 				u64 *ret_count, unsigned int *extent_flags);
+ 
++int ocfs2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		 u64 map_start, u64 map_len);
++
+ #endif  /* _EXTENT_MAP_H */
+diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+index ec2ed15..ed38796 100644
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -2228,6 +2228,7 @@ const struct inode_operations ocfs2_file_iops = {
+ 	.getattr	= ocfs2_getattr,
+ 	.permission	= ocfs2_permission,
+ 	.fallocate	= ocfs2_fallocate,
++	.fiemap		= ocfs2_fiemap,
+ };
+ 
+ const struct inode_operations ocfs2_special_file_iops = {
 -- 
 1.5.6.1.205.ge2c7.dirty
 
