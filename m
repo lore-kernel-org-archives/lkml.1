@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbYJINCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbYJINFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759689AbYJINCB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 09:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbYJINBw
+	id S1759329AbYJINFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 09:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbYJINFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 09:01:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:19017 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756191AbYJINBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 09:01:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bIxEH7Mw4XOwqJ56kUMJ4z/MNJSXMn82q98O2LGVW58QfDE4osxJCeOpJDSj7kPAiR
-         7XNt33YA0roeqc0Kx/Veryx45XhMMkTK6+AamNBkWinm8gg7eiLCF4GnyOQL4c8HRjKh
-         hvBgg9OYbdTVlv4vDC0empnps1oAo7LqeMvZ0=
-Message-ID: <c62985530810090601m132021b7x8d8743b1aaba990a@mail.gmail.com>
-Date: Thu, 9 Oct 2008 15:01:47 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] rudimentary tracing for Classic RCU
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
-       dipankar@in.ibm.com, tglx@linuxtronix.de, andi@firstfloor.org
-In-Reply-To: <20081009115407.GD6628@linux.vnet.ibm.com>
+	Thu, 9 Oct 2008 09:05:35 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45743 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753479AbYJINFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 09:05:34 -0400
+Date: Thu, 9 Oct 2008 15:05:18 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Cihula, Joseph" <joseph.cihula@intel.com>
+Cc: linux-kernel@vger.kernel.org, "Wang, Shane" <shane.wang@intel.com>,
+       "Wei, Gang" <gang.wei@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Chris Wright <chrisw@redhat.com>, Jan Beulich <jbeulich@novell.com>,
+       mingo@elte.hu, tytso@mit.edu
+Subject: Re: [RFC][PATCH 3/3] TXT: Intel(R) TXT and tboot kernel support
+Message-ID: <20081009130518.GE1623@ucw.cz>
+References: <D936D925018D154694D8A362EEB0892005AC105F@orsmsx416.amr.corp.intel.com> <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081006232837.GA1157@basil.nowhere.org>
-	 <20081007071544.GC20740@one.firstfloor.org>
-	 <20081007152629.GH6384@linux.vnet.ibm.com>
-	 <20081007154939.GN20740@one.firstfloor.org>
-	 <20081007163401.GJ6384@linux.vnet.ibm.com>
-	 <20081007210947.GP20740@one.firstfloor.org>
-	 <20081007212215.GN6384@linux.vnet.ibm.com>
-	 <20081009010846.GA10188@linux.vnet.ibm.com>
-	 <c62985530810090323vd5d08e0haa618ca0cbe0c73f@mail.gmail.com>
-	 <20081009115407.GD6628@linux.vnet.ibm.com>
+In-Reply-To: <D936D925018D154694D8A362EEB0892005AC10E3@orsmsx416.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> Well, one reason is that I didn't know about it.  ;-)
->
-> Does it allow the user to trigger a one-shot trace?  Right now, what
-> one does is:
->
->        cat /debug/rcu/rcucb
->
-> whenever one wants to see what RCU is up to.  You really don't want to
-> see every new value, as that would generate hundreds of trace records
-> per second -- per CPU.  What does the user do with the ring-buffer
-> tracing enging?
->
->                                                        Thanx, Paul
+Hi!
 
-With a tracer from the unified tracing buffer, you have often one
-function, used somewhere in the kernel, which will add periodically
-some specific entries. For example mmiotrace receives entries which
-contain IO access.
-When the user tries to read the entries, he has to read the pipe
-/debug/tracing/trace_pipe. During this reading,  the tracing engine
-calls a read callback given by the tracer. This read callback is
-nothing related to entries on the buffer: if the tracer has to print
-something special, this is the ususal function.
-Than if the read gave some content, the pipe reading returns. Else,
-the tracing engine tells the tracer to format its entries from the
-ring buffer. If there is no entries, the pipe reading sleeps and waits
-for new entries.
+> (large) Patch inline below (and still attached for those who prefer it).
+> 
+> Linux kernel changes to support tboot and Intel TXT.
 
-So after some thought, I don't think the current tracing engine is
-really adapted for what you want. It is a pipe system and it's not
-adapted for your one-shot captures.
+Please pick a better acronym. TXT is already taken.
 
-Sorry for the noise.
+> +struct tboot_acpi_sleep_info {
+> +	u16 pm1a_cnt;
+> +	u16 pm1b_cnt;
+> +	u16 pm1a_evt;
+> +	u16 pm1b_evt;
+> +	u16 pm1a_cnt_val;
+> +	u16 pm1b_cnt_val;
+> +}  __attribute__ ((__packed__));
+> +
+> +struct tboot_shared {
+> +	/* version 0x01+ fields: */
+> +	struct tboot_uuid uuid; /* TBOOT_SHARED_UUID */
+> +	u32  version;      	/* Version number: 2 is current */
+> +	u32  log_addr;     	/* physical addr of tb_log_t log */
+> +	u32  shutdown_entry32;	/* entry point for tboot shutdown from
+> 32b */
+> +	u32  shutdown_entry64;	/* entry point for tboot shutdown from
+> 64b */
 
-But it only requires few features to add for the unified tracing
-engine to support such one-shot tracer.
+should these be function pointers?
+
+> +	u32  shutdown_type;	/* type of shutdown (TB_SHUTDOWN_*) */
+> +	u32  s3_tb_wakeup_entry;/* entry point for tboot s3 wake up */
+> +	u32  s3_k_wakeup_entry;	/* entry point for kernel s3 wake up */
+> +	struct tboot_acpi_sleep_info
+> +		  acpi_sinfo;	/* where kernel put acpi sleep info in
+> Sx */
+> +	u8   reserved[52];	/* this pad is for compat with old field
+> */
+> +	/* version 0x02+ fields: */
+> +	u32  tboot_base;	/* starting addr for tboot */
+> +	u32  tboot_size;	/* size of tboot */
+> +} __attribute__ ((__packed__));
+> +
+> +/* {663C8DFF-E8B3-4b82-AABF-19EA4D057A08} */
+> +#define TBOOT_SHARED_UUID     \
+> +		((struct tboot_uuid){ 0x663c8dff, 0xe8b3, 0x4b82,
+> 0xaabf,   \
+> +				{ 0x19, 0xea, 0x4d, 0x5, 0x7a, 0x8 } })
+
+Can we use normal magic number like rest of kernel does?
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
