@@ -1,51 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbYJIOKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbYJIOMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759936AbYJIOKo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 10:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbYJIOKg
+	id S1759545AbYJIOMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 10:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYJIOM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 10:10:36 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:55943 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752401AbYJIOKf (ORCPT
+	Thu, 9 Oct 2008 10:12:28 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:35320 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbYJIOM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 10:10:35 -0400
+	Thu, 9 Oct 2008 10:12:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xaimROTsgbkHsdlPYo9uwRZ+RjgP141kr59a43mHEAH42wJtNDS9Tc1olY9LVIYr6M
-         frnMt7k/BDpEGgOO0cSmaL2UItnDtgi83ZP3Ew1lQqXH0eFwfkrY0KpwFU5xBU1NZPpV
-         CjeO+Z/y/47RoKcnV4OAGLSq7TUA7GwleTJKg=
-Message-ID: <a4e6962a0810090710o2fec824dwb78660098b68ef50@mail.gmail.com>
-Date: Thu, 9 Oct 2008 09:10:35 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Latchesar Ionkov" <lucho@ionkov.net>
-Subject: Re: [V9fs-developer] [PATCH 04/10] 9p: move dirread to fs layer
-Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
-In-Reply-To: <f158dc670810090640s408626f6mc787cb96efeb155a@mail.gmail.com>
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=qeopuJsf27HAu2yHf3fHvva4nFIfxnYexII/A+3GYgPGATI4VKCoImoLsXbvKEZLAH
+         Cu2jK2clyU+/U3FalflCz1seXiF1ivfE+eRGCjPJnLGeudUBJI6BPgTPGOH41hpZw9Zg
+         t1XkPdFLih24eZfOxy0z2vVsP2bRcIazx2gZI=
+Message-ID: <d970ff420810090712p7a70d22bw37aea8d62a1a436f@mail.gmail.com>
+Date: Thu, 9 Oct 2008 11:12:25 -0300
+From: Alemao <xcarandiru@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Physmap drivers (FSL UPM NAND)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1223500147-19654-5-git-send-email-ericvh@gmail.com>
-	 <f158dc670810081510t3b5be588v8298aa20a26039c5@mail.gmail.com>
-	 <a4e6962a0810081612i7f30ec16gf727da56816530ab@mail.gmail.com>
-	 <f158dc670810090640s408626f6mc787cb96efeb155a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 9, 2008 at 8:40 AM, Latchesar Ionkov <lucho@ionkov.net> wrote:
-> I don't think that there is anything at the moment that uses dirread,
-> but the remote framebuffer that Abishek is working on uses some other
-> of the client operations.
->
+Hi all,
 
-Ah -- okay, I probably need to sit down down with him over email and
-figure out what he's using and what he needs -- the client functions
-interfaces haven't changed, but some of the ways in which reads and
-writes work has which might mess him up...
+Im trying to use a physmap driver for NOR and NAND flash devices.
 
-        -eric
+With NOR, everything ok. It uses CFI driver.
+
+The problem is with NAND, cause it is connected at Freescale
+LocalBus UPM, and at a first look, the UPM driver is loading after the
+physmap (lines 14-15 in kernel output)
+
+Here some outputs from the board:
+
+Bootloader (U-Boot 1.2.0):
+
+CPU:   e300c1, MPC8360E, Rev: 21 at 499.999 MHz, CSB:  333 MHz
+Board: MPC8360KTX
+I2C:   ready
+DDR RAM: 128 MB
+FLASH: 16 MB
+NAND:  64 MiB
+In:    serial
+Out:   serial
+Err:   serial
+
+
+Kernel (linux-2.6.17):
+
+1               physmap nor flash device: 1000000 at ff000000
+2               NOR flash: Found 1 x16 devices at 0x0 in 16-bit bank
+3                Amd/Fujitsu Extended Query Table at 0x0040
+4                number of CFI chips: 1
+5               Using physmap partition definition
+6               Creating 6 MTD partitions on "NOR flash":
+7               0x00000000-0x00040000 : "u-boot"
+8               0x00040000-0x00060000 : "env."
+9               0x00060000-0x00080000 : "sys"
+10              0x00080000-0x000c0000 : "logs"
+11              0x000c0000-0x00860000 : "admin"
+12              0x00860000-0x01000000 : "users"
+13
+14              physmap nand flash device: 4000000 at 60000000
+15              UPM: User-Programmable Machine NAND driver
+
+
+Device Tree Source:
+
+localbus@e0005000 {
+   compatible = "fsl,board-localbus";
+   #address-cells = <2>;
+   #size-cells = <1>;
+   reg = <e0005000 d8>;    // BRx, ORx, etc
+
+   ranges = <0 0 ff000000 1000000     // nor flash,  16 MB
+                     1 0 60000000 4000000>;   // nand flash, 64 MB
+
+   flash@0,0 {
+       compatible = "atmel,29LV256", "cfi-flash";
+       reg = <0 0 1000000>;
+       bank-width = <2>;
+       device-width = <1>;
+   };
+
+   nand@1,0 {
+       compatible = "stmicro,NAND512W3A", "fsl,upm-nand";
+       reg = <1 0 4000000>;   //reg = <1 0 1>;
+       width = <1>;
+       upm = "A";
+       upm-addr-offset = <16>;
+       upm-cmd-offset = <8>;
+       gpios = <4 18>;
+       gpio-parent = <&qe_pio>;
+       wait-pattern;
+       wait-write;
+   };
+};
+
+The CFI driver is at linux/drivers/mtd/chips
+The UPM driver is at linux/drivers/mtd/nand
+
+So, how can I load the UPM driver before physmap?
+
+Thanks in advance,
+
+--
+Alemao
