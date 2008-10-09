@@ -1,65 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759786AbYJIRoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbYJIRoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759786AbYJIRoa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbYJIRoW
+	id S1760254AbYJIRoy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759335AbYJIRoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:44:22 -0400
-Received: from waste.org ([66.93.16.53]:49023 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755420AbYJIRoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:44:21 -0400
-Subject: RE: [PATCH] x86: trim ACPI sleep stack buffer
-From: Matt Mackall <mpm@selenic.com>
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <4911F71203A09E4D9981D27F9D83085803123361@orsmsx503.amr.corp.intel.com>
-References: <1222819957.13453.15.camel@calx>
-	 <20081009085649.GC29957@atrey.karlin.mff.cuni.cz>
-	 <1223571381.17706.94.camel@calx>
-	 <alpine.LFD.1.10.0810091319160.3007@localhost.localdomain>
-	 <4911F71203A09E4D9981D27F9D83085803123361@orsmsx503.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Thu, 09 Oct 2008 12:41:50 -0500
-Message-Id: <1223574110.17706.109.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 9 Oct 2008 13:44:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55690 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755543AbYJIRoo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:44:44 -0400
+Message-ID: <48EE4302.2010404@zytor.com>
+Date: Thu, 09 Oct 2008 10:44:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Alain Knaff <alain@knaff.lu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu>
+In-Reply-To: <48D96C60.6000104@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 10:23 -0700, Moore, Robert wrote:
-> Sounds like you need a
-> 
-> #define DEFAULT_STACK_SIZE 4096
-> 
-> Somewhere.
+Hi Alain,
 
-Or maybe something like this:
+Are you planning to submit an updated patch any time soon?  If so, 
+please separate the ARM, x86, library and generic portions into separate 
+patches.  It looks like at least some of them already went into ARM, 
+which makes it impractical to include this as a monolithic patch, which 
+it really shouldn't have to be, anyway.
 
-
-x86: remove magic number from ACPI sleep stack buffer
-
-Signed-off-by: Matt Mackall <mpm@selenic.com>
-
-diff -r 375a00b8bf10 arch/x86/kernel/acpi/sleep.c
---- a/arch/x86/kernel/acpi/sleep.c	Thu Oct 09 12:38:55 2008 -0500
-+++ b/arch/x86/kernel/acpi/sleep.c	Thu Oct 09 12:40:10 2008 -0500
-@@ -97,7 +97,7 @@
- #else /* CONFIG_64BIT */
- 	header->trampoline_segment = setup_trampoline() >> 4;
- #ifdef CONFIG_SMP
--	stack_start.sp = temp_stack + 4096;
-+	stack_start.sp = temp_stack + sizeof(temp_stack);
- #endif
- 	initial_code = (unsigned long)wakeup_long64;
- 	saved_magic = 0x123456789abcdef0;
-
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+	-hpa
