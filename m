@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbYJIMFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbYJIMF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759129AbYJIMFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 08:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbYJIMFQ
+	id S1759147AbYJIMF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 08:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbYJIMF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 08:05:16 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:47449 "EHLO
+	Thu, 9 Oct 2008 08:05:26 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:47624 "EHLO
 	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757975AbYJIMFO (ORCPT
+	with ESMTP id S1758895AbYJIMFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 08:05:14 -0400
+	Thu, 9 Oct 2008 08:05:24 -0400
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 1/5] sched: load calculation for each group in sched
-	domain
+Subject: [RFC PATCH v2 2/5] sched: calculate statistics for current load
+	balance domain
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -24,8 +24,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
        Tim Connors <tconnors@astro.swin.edu.au>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Thu, 09 Oct 2008 17:39:25 +0530
-Message-ID: <20081009120924.27010.59999.stgit@drishya.in.ibm.com>
+Date: Thu, 09 Oct 2008 17:39:34 +0530
+Message-ID: <20081009120934.27010.45896.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081009120705.27010.12857.stgit@drishya.in.ibm.com>
 References: <20081009120705.27010.12857.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -36,135 +36,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add data structures for per group stats, and function
-to calculate the required per group stats.
+Add data structures and function to collect per sched domain
+statistics required for load balance decision.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched.c |  114 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 114 insertions(+), 0 deletions(-)
+ kernel/sched.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 51 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index ad1962d..ab77937 100644
+index ab77937..cfd83d9 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -3064,6 +3064,120 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
- 	return 0;
+@@ -3178,6 +3178,57 @@ int get_group_loads(struct sched_group *group, int this_cpu,
+ 	return need_balance;
  }
  
-+/* Helper functions for find_busiest_group */
++/* Struct to hold sched domain level loads */
 +
-+int get_load_idx(struct sched_domain *sd, enum cpu_idle_type idle)
-+{
-+	if (idle == CPU_NOT_IDLE)
-+		return sd->busy_idx;
-+	else if (idle == CPU_NEWLY_IDLE)
-+		return sd->newidle_idx;
-+	else
-+		return sd->idle_idx;
-+}
-+
-+/* Struct to return group stats */
-+
-+struct group_loads {
-+	struct sched_group *group;
-+	unsigned long nr_running;
-+	unsigned long load; /* Decay average load */
-+	unsigned long load_per_cpu; /* Decay load / cpu_power */
-+	unsigned long weighted_load; /* Instantaneous load (load.weight)*/
-+	unsigned long avg_load_per_task; /* Instantaneous load/ nr_running */
-+	unsigned int group_imbalance;
-+	int local_group;
-+	int balance_cpu;
++struct sd_loads {
++	struct sched_domain *sd;
++	unsigned long load; /* Total decay load */
++	unsigned long cpu_power; /* Total cpu_power */
++	unsigned long max_load; /* load of busiest group */
++	unsigned long load_per_cpu; /* Decay load per cpu in this sd
++				     * (load/cpu_power)
++				     */
++	struct group_loads local; /* this_cpu's group,
++				   * need to pull from busiest
++				   */
++	struct group_loads busiest; /* Candidate group to pull */
++	/* sched_mc power_save balance groups */
++	struct group_loads min_load_group; /* Group that is least loaded and
++					    * can fit the tasks into the
++					    * leader group
++					    */
++	struct group_loads power_save_leader_group; /* Group that is almost
++						     * full but can still pull
++						     * tasks from
++						     * min_load_group
++						     */
 +};
 +
-+/* Helper function to calculate basic group level stats */
++/* Function to aggregate per group loads to sched domain loads */
 +
-+int get_group_loads(struct sched_group *group, int this_cpu,
-+		    const cpumask_t *valid_cpus, enum cpu_idle_type idle,
-+		    int load_idx,
-+		    struct group_loads *gl)
++void update_sd_loads(struct sd_loads *sdl, struct group_loads *gl)
 +{
-+	struct rq *rq;
-+	unsigned long load, min_load, max_load, avg_load_per_task_per_cpu;
-+	int cpu;
-+	int local_group = 0;
-+	int first_idle_cpu = -1;
-+	int need_balance = 1;
++	int group_capacity = gl->group->__cpu_power / SCHED_LOAD_SCALE;
++	sdl->max_load = 0;
 +
-+	gl->group = group;
-+	gl->nr_running = 0;
-+	gl->load = 0;
-+	gl->weighted_load = 0;
-+	gl->avg_load_per_task = 0;
-+	gl->group_imbalance = 0;
-+	gl->balance_cpu = -1;
-+	max_load = 0;
-+	min_load = ~0UL;
++	if (gl->local_group)
++		sdl->local = *gl;
++	else {
++		sdl->load += gl->load;
++		sdl->cpu_power += gl->group->__cpu_power;
 +
-+	gl->local_group = cpu_isset(this_cpu, group->cpumask);
 +
-+	for_each_cpu_mask_nr(cpu, group->cpumask) {
-+		if (!cpu_isset(cpu, *valid_cpus))
-+			continue;
++		/* Find the busiest */
++		if (gl->load > sdl->max_load &&
++			(gl->nr_running > group_capacity ||
++			 gl->group_imbalance)) {
 +
-+		rq = cpu_rq(cpu);
-+
-+		/* Bias balancing toward cpus of our domain */
-+		if (gl->local_group) {
-+			if (idle_cpu(cpu) && first_idle_cpu == -1)
-+				first_idle_cpu = cpu;
-+
-+			load = target_load(cpu, load_idx);
-+		} else {
-+			load = source_load(cpu, load_idx);
-+			if (load > max_load)
-+				max_load = load;
-+			if (load < min_load)
-+				min_load = load;
++			sdl->max_load = gl->load;
++			sdl->busiest = *gl;
 +		}
-+		gl->nr_running += rq->nr_running;
-+		gl->load += load;
-+		gl->weighted_load += weighted_cpuload(cpu);
-+		gl->avg_load_per_task += cpu_avg_load_per_task(cpu);
 +	}
-+
-+	/*
-+	 * Consider the group unbalanced when the imbalance is larger
-+	 * than the average weight of two tasks.
-+	 *
-+	 * APZ: with cgroup the avg task weight can vary wildly and
-+	 *      might not be a suitable number - should we keep a
-+	 *      normalized nr_running number somewhere that negates
-+	 *      the hierarchy?
-+	 */
-+
-+	avg_load_per_task_per_cpu = sg_div_cpu_power(group,
-+				gl->avg_load_per_task * SCHED_LOAD_SCALE);
-+
-+	if (!gl->local_group &&
-+	    ((max_load - min_load) > 2*avg_load_per_task_per_cpu))
-+			gl->group_imbalance = 1;
-+
-+	if (local_group) {
-+		if (first_idle_cpu != -1)
-+			gl->balance_cpu = first_idle_cpu;
-+		else
-+			gl->balance_cpu = first_cpu(group->cpumask);
-+
-+		/*
-+		 * First idle cpu or the first cpu(busiest) in this sched group
-+		 * is eligible for doing load balancing at this and above
-+		 * domains. In the newly idle case, we will allow all the cpu's
-+		 * to do the newly idle load balance.
-+		 */
-+		if (idle != CPU_NEWLY_IDLE && gl->balance_cpu != this_cpu)
-+			need_balance = 0;
-+	}
-+	gl->load_per_cpu = sg_div_cpu_power(group, gl->load * SCHED_LOAD_SCALE);
-+
-+	return need_balance;
 +}
 +
  /*
