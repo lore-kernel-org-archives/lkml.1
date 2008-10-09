@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbYJIS7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbYJITB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760587AbYJIS7A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbYJIS6u
+	id S1760536AbYJITB3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 15:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbYJITBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:58:50 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:20018 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754894AbYJIS6t (ORCPT
+	Thu, 9 Oct 2008 15:01:17 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:60923 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756696AbYJITBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:58:49 -0400
-Message-ID: <ac3eb2510810091158x3b677959j480c554b86c1ee26@mail.gmail.com>
-Date: Thu, 9 Oct 2008 20:58:44 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Arkadiusz Miskiewicz" <a.miskiewicz@gmail.com>
-Subject: Re: loading ipmi_watchdog causes tons of other watchdog modules to be loaded
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200810091922.24108.a.miskiewicz@gmail.com>
+	Thu, 9 Oct 2008 15:01:17 -0400
+Date: Thu, 9 Oct 2008 21:00:15 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: =?unknown-8bit?B?Si5BLiBNYWdhbGzDs24=?= <jamagallon@ono.com>
+Cc: Greg KH <greg@kroah.com>, Linux-Kernel <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       Bruno =?unknown-8bit?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>,
+       Ivan Vecera <ivecera@redhat.com>,
+       Edward Hsu <edward_hsu@realtek.com.tw>
+Subject: Re: Update request for r8169
+Message-ID: <20081009190015.GB19721@electric-eye.fr.zoreil.com>
+References: <20081006021614.1c7fcaff@werewolf.home> <20081006035945.GA26148@kroah.com> <20081006071229.GA23039@electric-eye.fr.zoreil.com> <20081007222202.GA9393@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200810091348.19828.a.miskiewicz@gmail.com>
-	 <ac3eb2510810090636w51e04a7fxfa36d8b016b236d@mail.gmail.com>
-	 <200810091922.24108.a.miskiewicz@gmail.com>
+In-Reply-To: <20081007222202.GA9393@electric-eye.fr.zoreil.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 9, 2008 at 7:22 PM, Arkadiusz Miskiewicz
-<a.miskiewicz@gmail.com> wrote:
-> On Thursday 09 October 2008, Kay Sievers wrote:
->> On Thu, Oct 9, 2008 at 1:48 PM, Arkadiusz Miskiewicz
->>
->> <a.miskiewicz@gmail.com> wrote:
->> > No udev on the system. kernel 2.6.25.18-1.
->> >
->> > After loading ipmi_watchdog and doing "cat /dev/watchdog" tons of other,
->> > useles, watchdog modules is loaded. Any idea what introduced such weird
->> > behaviour?
->>
->> I guess the /proc/sys/kernel/modprobe, which lets the kernel fork a
->> modprobe process when you touch a "dangling" device node, which does
->> not have corresponding driver.
->
-> ... but that ipmi_watchdog is the correct driver that handles /dev/watchdog,
-> so this shouldn't be happening, correct?
+Francois Romieu <romieu@fr.zoreil.com> :
+[...]
+> Those who base their work on 2.6.27-rc can use the patchkit available
+> at http://userweb.kernel.org/~romieu/r8169/2.6.26-rc9. It includes the
+                                             ^^^^^^^^^^
+It should read as 2.6.27-rc9.
 
-While the driver you expect to work is loaded, what does:
-  ls -l /dev/watchdog
-print?
-
-If the devno of this node is 10:130, what does:
-  find /sys/class /sys/devices/ -name dev | xargs grep 10:130
-print?
-
-Kay
+-- 
+Ueimor
