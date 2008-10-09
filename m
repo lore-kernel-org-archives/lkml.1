@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760238AbYJITQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbYJITTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760238AbYJITQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 15:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbYJITQa
+	id S1760332AbYJITTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 15:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbYJITTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 15:16:30 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:51666 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752348AbYJITQ3 (ORCPT
+	Thu, 9 Oct 2008 15:19:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:24524 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbYJITTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 15:16:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AoYFAGD07UhMQWq+/2dsb2JhbACBcr1ZgWo
-Date: Thu, 9 Oct 2008 15:16:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Building a tracing userspace tool in the kernel tree
-Message-ID: <20081009191626.GA29344@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 9 Oct 2008 15:19:31 -0400
+Message-ID: <ac3eb2510810091209rd76c8a4j83a6a48d5db5d4f9@mail.gmail.com>
+Date: Thu, 9 Oct 2008 21:09:26 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Arkadiusz Miskiewicz" <a.miskiewicz@gmail.com>
+Subject: Re: loading ipmi_watchdog causes tons of other watchdog modules to be loaded
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200810092102.16110.a.miskiewicz@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:05:48 up 126 days, 23:46, 10 users,  load average: 1.04, 0.58,
-	0.52
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <200810091348.19828.a.miskiewicz@gmail.com>
+	 <200810091922.24108.a.miskiewicz@gmail.com>
+	 <ac3eb2510810091158x3b677959j480c554b86c1ee26@mail.gmail.com>
+	 <200810092102.16110.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+On Thu, Oct 9, 2008 at 9:02 PM, Arkadiusz Miskiewicz
+<a.miskiewicz@gmail.com> wrote:
+> On Thursday 09 October 2008, Kay Sievers wrote:
+>> On Thu, Oct 9, 2008 at 7:22 PM, Arkadiusz Miskiewicz
+>>
+>
+>> > ... but that ipmi_watchdog is the correct driver that handles
+>> > /dev/watchdog, so this shouldn't be happening, correct?
+>>
+>> While the driver you expect to work is loaded, what does:
+>>   ls -l /dev/watchdog
+>> print?
+>>
+>> If the devno of this node is 10:130, what does:
+>>   find /sys/class /sys/devices/ -name dev | xargs grep 10:130
+>> print?
+>
+> # ls -l /dev/watchdog
+> crw------- 1 root root 10, 130 sie  8 17:00 /dev/watchdog
+> # find /sys/class /sys/devices/ -name dev | xargs grep 10:130
+> /sys/class/misc/watchdog/dev:10:130
 
-At the kernel summit, people seemed to be interested to have the basic
-userspace tools required to extract and pretty-print a trace available
-within the kernel tree. Therefore, what I am trying to do is something
-along the lines of
+Ok, so you actually have a driver bound to that device number, and it
+should not trigger the usual module autoloading mechanism.
 
-ltt/usr/
-ltt/usr/tracectl/    (control tracing)
-ltt/usr/tracesplice/ (splice buffers to disk)
-ltt/usr/tracecat/    (merge sort and format the binary buffers into
-                      human-readable text)
+What does:
+  ls -l /sys/class/misc/watchdog/
+and
+  ls -l /sys/class/misc/watchdog/device/
+print?
 
-That would however require to create a Makefile which behaves a little
-bit like what scripts/ is currently doing with hostprogs-y, only that
-it's different in the sense that those tools are not required to build
-the kernel and this could therefore become a more standard part of the
-build process than what scripts/ is.
+Does the /sys/class/misc/watchdog/ directory exist, before you load
+the module you expect to be the driver behind /dev/watchdog?
 
-Is there some magic statements to put in Makefile and ltt/Makefile to
-get this to build nicely with the rest of the tree ?
+To clarify, the other modules get loaded, after you loaded but module,
+the above /sys/class/misc/watchdog/ directory exists, and only if you
+read from the device, all the other modules get loaded?
 
-Thanks,
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Kay
