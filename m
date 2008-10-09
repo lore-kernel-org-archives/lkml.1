@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759879AbYJIER2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758987AbYJIESH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759879AbYJIER2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYJIEHk
+	id S1758987AbYJIESH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:18:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757769AbYJIEHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:07:40 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54541 "EHLO
+	Thu, 9 Oct 2008 00:07:48 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54530 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757613AbYJIEGO (ORCPT
+	with ESMTP id S1757601AbYJIEGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:06:14 -0400
+	Thu, 9 Oct 2008 00:06:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Li Zefan <lizf@cn.fujitsu.com>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 20/42] ext4: add missing unlock in ext4_check_descriptors() on error path
-Date: Thu,  9 Oct 2008 00:05:38 -0400
-Message-Id: <1223525160-9887-21-git-send-email-tytso@mit.edu>
+Cc: Kalpak Shah <kalpak.shah@sun.com>, "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 35/42] ext4: fix xattr deadlock
+Date: Thu,  9 Oct 2008 00:05:53 -0400
+Message-Id: <1223525160-9887-36-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <1223525160-9887-20-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-35-git-send-email-tytso@mit.edu>
 References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-2-git-send-email-tytso@mit.edu>
  <1223525160-9887-3-git-send-email-tytso@mit.edu>
@@ -38,6 +38,21 @@ References: <1223525160-9887-1-git-send-email-tytso@mit.edu>
  <1223525160-9887-18-git-send-email-tytso@mit.edu>
  <1223525160-9887-19-git-send-email-tytso@mit.edu>
  <1223525160-9887-20-git-send-email-tytso@mit.edu>
+ <1223525160-9887-21-git-send-email-tytso@mit.edu>
+ <1223525160-9887-22-git-send-email-tytso@mit.edu>
+ <1223525160-9887-23-git-send-email-tytso@mit.edu>
+ <1223525160-9887-24-git-send-email-tytso@mit.edu>
+ <1223525160-9887-25-git-send-email-tytso@mit.edu>
+ <1223525160-9887-26-git-send-email-tytso@mit.edu>
+ <1223525160-9887-27-git-send-email-tytso@mit.edu>
+ <1223525160-9887-28-git-send-email-tytso@mit.edu>
+ <1223525160-9887-29-git-send-email-tytso@mit.edu>
+ <1223525160-9887-30-git-send-email-tytso@mit.edu>
+ <1223525160-9887-31-git-send-email-tytso@mit.edu>
+ <1223525160-9887-32-git-send-email-tytso@mit.edu>
+ <1223525160-9887-33-git-send-email-tytso@mit.edu>
+ <1223525160-9887-34-git-send-email-tytso@mit.edu>
+ <1223525160-9887-35-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -45,34 +60,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+From: Kalpak Shah <kalpak.shah@sun.com>
 
-If there group descriptors are corrupted we need unlock the block
-group lock before returning from the function; else we will oops when
-freeing a spinlock which is still being held.
+ext4_xattr_set_handle() eventually ends up calling
+ext4_mark_inode_dirty() which tries to expand the inode by shifting
+the EAs.  This leads to the xattr_sem being downed again and leading
+to a deadlock.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+This patch makes sure that if ext4_xattr_set_handle() is in the
+call-chain, ext4_mark_inode_dirty() will not expand the inode.
+
+Signed-off-by: Kalpak Shah <kalpak.shah@sun.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/super.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ fs/ext4/xattr.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 64e1c21..8175318 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1623,8 +1623,10 @@ static int ext4_check_descriptors(struct super_block *sb)
- 			       "Checksum for group %lu failed (%u!=%u)\n",
- 			       i, le16_to_cpu(ext4_group_desc_csum(sbi, i,
- 			       gdp)), le16_to_cpu(gdp->bg_checksum));
--			if (!(sb->s_flags & MS_RDONLY))
-+			if (!(sb->s_flags & MS_RDONLY)) {
-+				spin_unlock(sb_bgl_lock(sbi, i));
- 				return 0;
-+			}
- 		}
- 		spin_unlock(sb_bgl_lock(sbi, i));
- 		if (!flexbg_flag)
+diff --git a/fs/ext4/xattr.c b/fs/ext4/xattr.c
+index 8954208..362b0ed 100644
+--- a/fs/ext4/xattr.c
++++ b/fs/ext4/xattr.c
+@@ -959,6 +959,7 @@ ext4_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
+ 	struct ext4_xattr_block_find bs = {
+ 		.s = { .not_found = -ENODATA, },
+ 	};
++	unsigned long no_expand;
+ 	int error;
+ 
+ 	if (!name)
+@@ -966,6 +967,9 @@ ext4_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
+ 	if (strlen(name) > 255)
+ 		return -ERANGE;
+ 	down_write(&EXT4_I(inode)->xattr_sem);
++	no_expand = EXT4_I(inode)->i_state & EXT4_STATE_NO_EXPAND;
++	EXT4_I(inode)->i_state |= EXT4_STATE_NO_EXPAND;
++
+ 	error = ext4_get_inode_loc(inode, &is.iloc);
+ 	if (error)
+ 		goto cleanup;
+@@ -1042,6 +1046,8 @@ ext4_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
+ cleanup:
+ 	brelse(is.iloc.bh);
+ 	brelse(bs.bh);
++	if (no_expand == 0)
++		EXT4_I(inode)->i_state &= ~EXT4_STATE_NO_EXPAND;
+ 	up_write(&EXT4_I(inode)->xattr_sem);
+ 	return error;
+ }
 -- 
 1.5.6.1.205.ge2c7.dirty
 
