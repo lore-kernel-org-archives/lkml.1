@@ -1,39 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbYJIVom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbYJIVvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757070AbYJIVom (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 17:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYJIVoe
+	id S1757086AbYJIVvn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 17:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbYJIVve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 17:44:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37966
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753596AbYJIVod (ORCPT
+	Thu, 9 Oct 2008 17:51:34 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:16847 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755683AbYJIVvd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 17:44:33 -0400
-Date: Thu, 09 Oct 2008 14:44:09 -0700 (PDT)
-Message-Id: <20081009.144409.170605081.davem@davemloft.net>
-To: tobias.brunner@strongswan.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc9] af_key: fix SADB_X_SPDDELETE response
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48EDF4AD.50907@strongswan.org>
-References: <48EDF4AD.50907@strongswan.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 9 Oct 2008 17:51:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qkwOX3p0FTIF7hAKPnf0fypsLni7Ky7BvRRUuwxQHfujMoS/heTLsG907kqDrRzghG
+         pIu5kS5veVdrWf7CnAwGFOXBfR+3uwt/7oWLuRPClZv4xU9/EJLYyvwzjiDfuq4Xa7Cp
+         9z7ZFBfmopUhUFkHXnO+aaVhFD8U0K877xyK4=
+Message-ID: <86802c440810091451y4a3caceg1abaa75464c40a72@mail.gmail.com>
+Date: Thu, 9 Oct 2008 14:51:32 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: [PATCH] pci: print out DMA mask info
+Cc: "Grant Grundler" <grundler@parisc-linux.org>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+In-Reply-To: <20081009213551.GC25780@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1223506943-6543-1-git-send-email-yinghai@kernel.org>
+	 <20081009211837.GC18444@colo.lackof.org> <48EE7745.2020603@kernel.org>
+	 <20081009213551.GC25780@parisc-linux.org>
+X-Google-Sender-Auth: d47d26e604cac72c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tobias Brunner <tobias.brunner@strongswan.org>
-Date: Thu, 09 Oct 2008 14:10:21 +0200
+On Thu, Oct 9, 2008 at 2:35 PM, Matthew Wilcox <matthew@wil.cx> wrote:
 
-> When deleting an SPD entry using SADB_X_SPDDELETE, c.data.byid is not initialized to zero in pfkey_spddelete(). Thus, key_notify_policy() responds with a PF_KEY message of type SADB_X_SPDDELETE2 instead of SADB_X_SPDDELETE.
-> 
-> Signed-off-by: Tobias Brunner <tobias.brunner@strongswan.org>
+>
+> Why's that interesting to the sysadmin of the machine?  To the driver
+> writer, certainly.  But what's the use of it to the people using the
+> machine?
+>
+> --
+> Matthew Wilcox                          Intel Open Source Technology Centre
+> "Bill, look, we understand that you're interested in selling us this
+> operating system, but compare it to ours.  We can't possibly take such
+> a retrograde step."
 
-This patch does not apply cleanly to net-next-2.6, a lot has
-changed in this area over the past several weeks.
+make linux kernel act like black box as other os?
 
-Please respin this so that I can add it, thanks.
+YH
