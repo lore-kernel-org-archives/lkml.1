@@ -1,194 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYJITlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbYJIToJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708AbYJITlX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 15:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760492AbYJITlF
+	id S1760665AbYJIToJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 15:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbYJITnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 15:41:05 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:58521 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbYJITlE (ORCPT
+	Thu, 9 Oct 2008 15:43:55 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:54284 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbYJITnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 15:41:04 -0400
-Date: Thu, 9 Oct 2008 12:40:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       mingo@elte.hu
-Subject: Re: [PATCH] resource: ensure MMIO exclusivity for device drivers
-Message-Id: <20081009124025.00f5178d.randy.dunlap@oracle.com>
-In-Reply-To: <20081006144629.25091ac0@infradead.org>
-References: <20081006144629.25091ac0@infradead.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 9 Oct 2008 15:43:55 -0400
+Date: Thu, 9 Oct 2008 14:43:50 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       arnd@arndb.de
+Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
+Message-ID: <20081009194350.GA31214@us.ibm.com>
+References: <20081009190405.13A253CB@kernel> <20081009190406.1B257119@kernel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081009190406.1B257119@kernel>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Oct 2008 14:46:29 -0700 Arjan van de Ven wrote:
-
->  Documentation/kernel-parameters.txt |    4 ++
->  arch/x86/mm/init_32.c               |    2 +
->  arch/x86/mm/init_64.c               |    2 +
->  drivers/pci/pci-sysfs.c             |    3 ++
->  drivers/pci/pci.c                   |   50 +++++++++++++++++++++++++++-
->  include/linux/ioport.h              |    9 +++--
->  include/linux/pci.h                 |    1 +
->  kernel/resource.c                   |   61 +++++++++++++++++++++++++++++++++--
->  8 files changed, 124 insertions(+), 8 deletions(-)
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 4b9ee9b..e0b0a6b 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -882,6 +882,10 @@ and is between 256 and 4096 characters. It is defined in the file
->  
->  	inttest=	[IA64]
->  
-> +	iomem=		Disable strict checking of access to MMIO memory
-> +		strict	regions from userspace.
-> +		relaxed
+> These are just a few simple examples of things we know we can't
+> checkpoint now.  There are plenty more, but this should give
+> everyone an idea how this will look in practice.
+> 
+> 
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> ---
+> 
+>  linux-2.6.git-dave/fs/aio.c     |    7 +++++++
+>  linux-2.6.git-dave/ipc/mqueue.c |    3 +++
+>  linux-2.6.git-dave/net/socket.c |    5 +++++
+>  3 files changed, 15 insertions(+)
+> 
+> diff -puN fs/aio.c~no-checkpointing-for-sockets fs/aio.c
+> --- linux-2.6.git/fs/aio.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
+> +++ linux-2.6.git-dave/fs/aio.c	2008-10-09 11:56:58.000000000 -0700
+> @@ -19,6 +19,7 @@
+> 
+>  #define DEBUG 0
+> 
+> +#include <linux/checkpoint.h>
+>  #include <linux/sched.h>
+>  #include <linux/fs.h>
+>  #include <linux/file.h>
+> @@ -1663,6 +1664,8 @@ asmlinkage long sys_io_submit(aio_contex
+>  	if (unlikely(!access_ok(VERIFY_READ, iocbpp, (nr*sizeof(*iocbpp)))))
+>  		return -EFAULT;
+> 
+> +	process_deny_checkpointing(current);
 > +
->  	iommu=		[x86]
->  		off
->  		force
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index a9301a2..d61e756 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -1367,6 +1372,47 @@ err_out:
->  }
->  
->  /**
-> + *	pci_request_region - Reserved PCI I/O and memory resource
-
-	                     Reserve
-
-> + *	@pdev: PCI device whose resources are to be reserved
-> + *	@bar: BAR to be reserved
-> + *	@res_name: Name to be associated with resource.
-> + *
-> + *	Mark the PCI region associated with PCI device @pdev BR @bar as
-
-	                                                     BAR (or why not?)
-
-> + *	being reserved by owner @res_name.  Do not access any
-> + *	address inside the PCI regions unless this call returns
-> + *	successfully.
-> + *
-> + *	Returns 0 on success, or %EBUSY on error.  A warning
-> + *	message is also printed on failure.
-> + */
-> +int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
-> +{
-> +	return __pci_request_region(pdev, bar, res_name, 0);
-> +}
+>  	ctx = lookup_ioctx(ctx_id);
+>  	if (unlikely(!ctx)) {
+>  		pr_debug("EINVAL: io_submit: invalid context id\n");
+> @@ -1742,6 +1745,8 @@ asmlinkage long sys_io_cancel(aio_contex
+>  	if (unlikely(!ctx))
+>  		return -EINVAL;
+> 
+> +	process_deny_checkpointing(current);
 > +
-> +/**
-> + *	pci_request_region_relaxed - Reserved PCI I/O and memory resource
+>  	spin_lock_irq(&ctx->ctx_lock);
+>  	ret = -EAGAIN;
+>  	kiocb = lookup_kiocb(ctx, iocb, key);
+> @@ -1796,6 +1801,8 @@ asmlinkage long sys_io_getevents(aio_con
+>  	struct kioctx *ioctx = lookup_ioctx(ctx_id);
+>  	long ret = -EINVAL;
+> 
+> +	process_deny_checkpointing(current);
 
-	                             Reserve
+Hmm, I don't know too much about aio, but is it possible to succeed with
+io_getevents if we didn't first do a submit?  It looks like the contexts
+are looked up out of current->mm, so I don't think we need this call
+here.
 
-> + *	@pdev: PCI device whose resources are to be reserved
-> + *	@bar: BAR to be reserved
-> + *	@res_name: Name to be associated with resource.
-> + *
-> + *	Mark the PCI region associated with PCI device @pdev BR @bar as
+Otherwise, this is neat.
 
-	                                                     BAR
+-serge
 
-> + *	being reserved by owner @res_name.  Do not access any
-> + *	address inside the PCI regions unless this call returns
-> + *	successfully.
-> + *
-> + *	Returns 0 on success, or %EBUSY on error.  A warning
-> + *	message is also printed on failure.
-> + *
-> + *	The key difference that _relaxed makes is that userspace is
-> + *	explicitly allowed to map the resource via /dev/mem or
-> + * 	sysfs.
-> + */
-> +int pci_request_region_relaxed(struct pci_dev *pdev, int bar, const char *res_name)
-> +{
-> +	return __pci_request_region(pdev, bar, res_name, 1);
-> +}
-> +/**
->   * pci_release_selected_regions - Release selected PCI I/O and memory resources
->   * @pdev: PCI device whose resources were previously reserved
->   * @bars: Bitmask of BARs to be released
-
-> diff --git a/kernel/resource.c b/kernel/resource.c
-> index 7797dae..d08fa31 100644
-> --- a/kernel/resource.c
-> +++ b/kernel/resource.c
-> @@ -864,3 +866,56 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
->  
->  	return err;
->  }
 > +
-> +#ifdef CONFIG_STRICT_DEVMEM
-> +static int strict_iomem_checks = 1;
-> +#else
-> +static int strict_iomem_checks = 0;
-> +#endif
+>  	if (likely(ioctx)) {
+>  		if (likely(min_nr <= nr && min_nr >= 0 && nr >= 0))
+>  			ret = read_events(ioctx, min_nr, nr, events, timeout);
+> diff -puN ipc/mqueue.c~no-checkpointing-for-sockets ipc/mqueue.c
+> --- linux-2.6.git/ipc/mqueue.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
+> +++ linux-2.6.git-dave/ipc/mqueue.c	2008-10-09 11:56:58.000000000 -0700
+> @@ -14,6 +14,7 @@
+>   */
+> 
+>  #include <linux/capability.h>
+> +#include <linux/checkpoint.h>
+>  #include <linux/init.h>
+>  #include <linux/pagemap.h>
+>  #include <linux/file.h>
+> @@ -655,6 +656,8 @@ asmlinkage long sys_mq_open(const char _
+>  	char *name;
+>  	int fd, error;
+> 
+> +	process_deny_checkpointing(current);
 > +
-> +/*
-> + * check if an address is reserved in the iomem resource tree
-> + * returns 1 if reserved, 0 if not reserved.
-> + */
-> +int iomem_is_reserved(u64 addr)
-> +{
-> +	struct resource *p = &iomem_resource;
-> +	int err = 0;
-> +	loff_t l;
-> +	int size= PAGE_SIZE;
+>  	error = audit_mq_open(oflag, mode, u_attr);
+>  	if (error != 0)
+>  		return error;
+> diff -puN net/socket.c~no-checkpointing-for-sockets net/socket.c
+> --- linux-2.6.git/net/socket.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
+> +++ linux-2.6.git-dave/net/socket.c	2008-10-09 11:56:58.000000000 -0700
+> @@ -87,6 +87,7 @@
+>  #include <linux/audit.h>
+>  #include <linux/wireless.h>
+>  #include <linux/nsproxy.h>
+> +#include <linux/checkpoint.h>
+> 
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+> @@ -1236,6 +1237,8 @@ asmlinkage long sys_socket(int family, i
+>  	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
+>  		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
+> 
+> +	process_deny_checkpointing(current);
 > +
-> +	if (!strict_iomem_checks)
-> +		return 0;
+>  	retval = sock_create(family, type, protocol, &sock);
+>  	if (retval < 0)
+>  		goto out;
+> @@ -2130,6 +2133,8 @@ asmlinkage long sys_socketcall(int call,
+>  	a0 = a[0];
+>  	a1 = a[1];
+> 
+> +	process_deny_checkpointing(current);
 > +
-> +	read_lock(&resource_lock);
-> +	for (p = p->child; p ; p = r_next(NULL, p, &l)) {
-> +		/*
-> +		 * We can probably skip the resources without
-> +		 * IORESOURCE_IO attribute?
-> +		 */
-> +		if (p->start >= addr + size)
-> +			continue;
-> +		if (p->end < addr)
-> +			continue;
-> +		if (p->flags & IORESOURCE_BUSY &&
-> +		    !(p->flags & IORESOURCE_RELAXED)) {
-> +			err = 1;
-> +			break;
-> +		}
-> +	}
-> +	read_unlock(&resource_lock);
-> +
-> +	return err;
-> +}
-> +EXPORT_SYMBOL(iomem_is_reserved);
-> +
-> +static int __init strict_iomem(char *str)
-> +{
-> +	if (strstr(str, "relaxed"))
-> +		strict_iomem_checks = 0;
-> +	if (strstr(str, "strict"))
-> +		strict_iomem_checks = 0;
-
-	Why not                     = 1;
-
-> +	return 1;
-> +}
-> +
-> +__setup("iomem=", strict_iomem);
-
-
----
-~Randy
+>  	switch (call) {
+>  	case SYS_SOCKET:
+>  		err = sys_socket(a0, a1, a[2]);
+> _
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
