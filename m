@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbYJIHge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYJIH75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758642AbYJIHge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 03:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758251AbYJIHgX
+	id S1757415AbYJIH75 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 03:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756046AbYJIH7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 03:36:23 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:30630 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758244AbYJIHgW (ORCPT
+	Thu, 9 Oct 2008 03:59:49 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43142 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755983AbYJIH7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 03:36:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=HnVDGmMegPeoHuNjBvyZ2teX5+j5Fg6Mj+8Sdsu0MFJHtmduDccZcUcH4MwqZqcxG0
-         ZNoMVs06DuEtKIQlcRLQDePqKPK1wLdMUY/FMQH3fukN3ihAUCu60NNy+MjyyxSf4tiL
-         lwIsPoWhOqmXwT3DE9G2uL9kZpC7q/COlNptQ=
-Message-ID: <48EDB47E.60604@gmail.com>
-Date: Thu, 09 Oct 2008 09:36:30 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] documentation: clarify dirty_ratio and dirty_background_ratio
- description (v2)
-References: <48EC90EC.8060306@gmail.com> <20081009105157.dd47d109.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081009105157.dd47d109.kamezawa.hiroyu@jp.fujitsu.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 03:59:48 -0400
+Date: Thu, 9 Oct 2008 10:06:01 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Andi Kleen <andi@firstfloor.org>,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       rjw@sisk.pl, dipankar@in.ibm.com, tglx@linuxtronix.de
+Subject: Re: [PATCH] rudimentary tracing for Classic RCU
+Message-ID: <20081009080601.GD24560@one.firstfloor.org>
+References: <20081009065529.GC24560@one.firstfloor.org> <48EDAD55.2000502@cn.fujitsu.com> <20081009161232.DEDC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081009161232.DEDC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current documentation of dirty_ratio and dirty_background_ratio is a
-bit misleading.
+On Thu, Oct 09, 2008 at 04:14:26PM +0900, KOSAKI Motohiro wrote:
+> Hi Lai-san,
+> 
+> > >> In this case, why not define it as:
+> > >> static char buf[20*NR_CPUS + 100];
+> > > 
+> > > Actually you should near never use NR_CPUS now but always num_possible_cpus()
+> > > (or even num_online_cpus()) Using NR_CPUS can lead to extreme waste
+> > > of memory on kernels which are compiled for 4096 CPUs for example.
+> > > 
+> > > And with num_possible_cpus() kmalloc is needed.
+> > 
+> > I thought the default value of NR_CPUS is 32.
+> 
+> it's pointless.
+> Almost distribution use _very_ large NR_CPUS (likes 4096).
 
-In the documentation we say that they are "a percentage of total system
-memory", but the current page writeback policy, intead, is to apply the
-percentages to the dirtyable memory, that means free pages + reclaimable
-pages.
+Right now it's more like 8-128, but at least there is some effort
+to make a 4096 CPU distribution possible and Mike Travis has been
+ tirelessly working on eradicating all the rogue NR_CPUs all over 
+the tree.  So it's better to not add more.
 
-Better to be more explicit to clarify this concept.
+> So, We should concern large NR_CPUS.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- Documentation/filesystems/proc.txt |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
+Agreed.
 
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-index 394eb2c..474bf8b 100644
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -1380,15 +1380,18 @@ causes the kernel to prefer to reclaim dentries and inodes.
- dirty_background_ratio
- ----------------------
- 
--Contains, as a percentage of total system memory, the number of pages at which
--the pdflush background writeback daemon will start writing out dirty data.
-+Contains, as a percentage of the dirtyable system memory (free pages + mapped
-+pages + file cache, not including locked pages and HugePages), the number of
-+pages at which the pdflush background writeback daemon will start writing out
-+dirty data.
- 
- dirty_ratio
- -----------------
- 
--Contains, as a percentage of total system memory, the number of pages at which
--a process which is generating disk writes will itself start writing out dirty
--data.
-+Contains, as a percentage of the dirtyable system memory (free pages + mapped
-+pages + file cache, not including locked pages and HugePages), the number of
-+pages at which a process which is generating disk writes will itself start
-+writing out dirty data.
- 
- dirty_writeback_centisecs
- -------------------------
+-Andi
+
+-- 
+ak@linux.intel.com
