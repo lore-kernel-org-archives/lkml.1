@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbYJIR6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbYJIR6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760545AbYJIR6d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760237AbYJIR6S
+	id S1760634AbYJIR6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760543AbYJIR6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:58:18 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:31671 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760089AbYJIR6Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:58:16 -0400
-Message-ID: <48EE4622.4080207@chelsio.com>
-Date: Thu, 09 Oct 2008 10:57:54 -0700
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 9 Oct 2008 13:58:34 -0400
+Received: from mga03.intel.com ([143.182.124.21]:10099 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760533AbYJIR6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:58:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,384,1220252400"; 
+   d="scan'208";a="57485830"
+Message-ID: <48EE463F.5000704@intel.com>
+Date: Thu, 09 Oct 2008 10:58:23 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080626)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve Wise <swise@opengridcomputing.com>
-Subject: Re: [PATCH 2/8 2.6.28] cxgb3 - Allocate multiqueues at init time
-References: <20081009003402.13315.18192.stgit@speedy5> <20081008.174202.160320028.davem@davemloft.net>
-In-Reply-To: <20081008.174202.160320028.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+Subject: Re: Intel G33 chipset support on 2.4.xx ?
+References: <20081009150100.GC5800@hohwie.com>
+In-Reply-To: <20081009150100.GC5800@hohwie.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Oct 2008 17:57:49.0703 (UTC) FILETIME=[8B19D170:01C92A38]
+X-OriginalArrivalTime: 09 Oct 2008 17:58:23.0641 (UTC) FILETIME=[9F545890:01C92A38]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Divy Le Ray <divy@chelsio.com>
-> Date: Wed, 08 Oct 2008 17:34:02 -0700
->
->   
->> Allocate a queue set per core, up to the maximum of available qsets.
->> Share the queue sets on multi port adapters.
->> Rename MSI-X interrupt vectors ethX-N, N being the queue set number.
->>
->> Signed-off-by: Divy Le Ray <divy@chelsio.com>
->>     
->
-> Applied, but...
->
-> This "num processors" logic and policy belongs in some generic place.
-> Perhaps "num_possible_cpus()" is more appropriate, who knows right?
->   
+Joerg Hohwieler wrote:
+> Unfortunately I don't have any hardware to test it ...
+> 
+> So, is the Intel G33 chipset fully supported by any
+> linux-2.4.xx release?
 
-I'll look into it.
+why would it?
 
-Cheers,
-Divy
+2.4 has been in maintenance mode since before this motherboard even came out, so
+no, obviously this is not the case.
 
+some stuff will work (hdd, cpus, usb), but most of the peripherals will not or
+only offer basic functionality (gfx, ethernet)
+
+Auke
