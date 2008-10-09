@@ -1,47 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbYJIBSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYJIB2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757573AbYJIBSz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Oct 2008 21:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbYJIBSq
+	id S1757300AbYJIB2u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Oct 2008 21:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbYJIB2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Oct 2008 21:18:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39221 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751690AbYJIBSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Oct 2008 21:18:46 -0400
-Message-ID: <48ED5BC6.8040006@redhat.com>
-Date: Wed, 08 Oct 2008 21:17:58 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Wed, 8 Oct 2008 21:28:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:40884 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752818AbYJIB2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Oct 2008 21:28:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=UPhShjd2OJIKVgsF8X3iE6kPTo74e0AjW5alO807+mMBWqfdpjsUlbtT8TkyuGVr57
+         UQxCck+4jjcgxVEketcyCd9Ys4U+wEAqVgJTMPDofH5RlPO/v2f9D0yCLgKUyfcCowCL
+         J2zp1BCrxmq0GafJr+rf7iYKLbHj/wzbIM+Mw=
+Message-ID: <86802c440810081828m2b9210e6y81503bdffe12fb03@mail.gmail.com>
+Date: Wed, 8 Oct 2008 18:28:39 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Randy Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH 1/3] x86: mtrr_cleanup update command line
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081008170751.6d86b8e2.rdunlap@xenotime.net>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Ben Hutchings <bhutchings@solarflare.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org
-Subject: Re: [PATCH] documentation: explain memory barriers
-References: <20080911101616.GA24064@agk.fab.redhat.com>	<Pine.LNX.4.64.0809221705480.15511@hs20-bc2-1.build.redhat.com>	<Pine.LNX.4.64.0809231817390.11559@hs20-bc2-1.build.redhat.com>	<20080923154905.50d4b0fa.akpm@linux-foundation.org>	<Pine.LNX.4.64.0809231902010.19496@hs20-bc2-1.build.redhat.com>	<20080923164623.ce82c1c2.akpm@linux-foundation.org>	<Pine.LNX.4.64.0809241451320.18811@hs20-bc2-1.build.redhat.com>	<20081001225404.4e973465.akpm@linux-foundation.org> <20081008181223.6954c7b2.randy.dunlap@oracle.com>
-In-Reply-To: <20081008181223.6954c7b2.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080930165739.7847be37.rdunlap@xenotime.net>
+	 <20081008170751.6d86b8e2.rdunlap@xenotime.net>
+X-Google-Sender-Auth: 04bbf1c9243e27c7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Wed, 1 Oct 2008 22:54:04 -0700 Andrew Morton wrote:
-> 
->> This sequence is repeated three or four times and should be pulled out
->> into a well-commented function.  That comment should explain the logic
->> behind the use of these barriers, please.
-> 
-> and on 2008-OCT-08 Ben Hutchings wrote:
-> 
->> All memory barriers need a comment to explain why and what they're doing.
+On Wed, Oct 8, 2008 at 5:07 PM, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> On Tue, 30 Sep 2008 16:57:39 -0700 Randy Dunlap wrote:
+>
+> BTW, this comment is alread in Documentation/kernel-parameters.txt, at the top of the file:
 
-Seriously?  When a barrier is used, it's generally self-evident what 
-it's doing.  The real problem is when a barrier is *not* used.  It would 
-probably be more helpful to comment every non-barrier line of code to 
-explain why it's okay if memory operations are getting reordered.
+oh...
 
--- Chris
+>
+> The following is a consolidated list of the kernel parameters as implemented
+> (mostly) by the __setup() macro and sorted into English Dictionary order
+> (defined as ignoring all punctuation and sorting digits before letters in a
+> case insensitive manner), and with descriptions where known.
+>
+>
+how about
+
+like to filter out disable, enable, no, etc...
+
+diff --git a/Documentation/kernel-parameters.txt
+b/Documentation/kernel-parameters.txt
+index 4b9ee9b..782e2b0 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -620,35 +620,6 @@ and is between 256 and 4096 characters. It is
+defined in the file
+                        See drivers/char/README.epca and
+                        Documentation/digiepca.txt.
+
+-       disable_mtrr_cleanup [X86]
+-       enable_mtrr_cleanup [X86]
+-                       The kernel tries to adjust MTRR layout from continuous
+-                       to discrete, to make X server driver able to add WB
+-                       entry later. This parameter enables/disables that.
+-
+-       mtrr_chunk_size=nn[KMG] [X86]
+-                       used for mtrr cleanup. It is largest continous chunk
+-                       that could hold holes aka. UC entries.
+-
+-       mtrr_gran_size=nn[KMG] [X86]
+-                       Used for mtrr cleanup. It is granularity of mtrr block.
+-                       Default is 1.
+-                       Large value could prevent small alignment from
+-                       using up MTRRs.
+-
+-       mtrr_spare_reg_nr=n [X86]
+-                       Format: <integer>
+-                       Range: 0,7 : spare reg number
+-                       Default : 1
+-                       Used for mtrr cleanup. It is spare mtrr entries number.
+-                       Set to 2 or more if your graphical card needs more.
+-
+-       disable_mtrr_trim [X86, Intel and AMD only]
+-                       By default the kernel will trim any uncacheable
+-                       memory out of your available memory pool based on
+-                       MTRR settings.  This parameter disables that behavior,
+-                       possibly causing your machine to run very slowly.
+-
+        dmasound=       [HW,OSS] Sound subsystem buffers
+
+        dscc4.setup=    [NET]
+@@ -1310,6 +1281,35 @@ and is between 256 and 4096 characters. It is
+defined in the file
+                        [HW] Make the MicroTouch USB driver use raw coordinates
+                        ('y', default) or cooked coordinates ('n')
+
++       disable_mtrr_cleanup [X86]
++       enable_mtrr_cleanup [X86]
++                       The kernel tries to adjust MTRR layout from continuous
++                       to discrete, to make X server driver able to add WB
++                       entry later. This parameter enables/disables that.
++
++       mtrr_chunk_size=nn[KMG] [X86]
++                       used for mtrr cleanup. It is largest continous chunk
++                       that could hold holes aka. UC entries.
++
++       mtrr_gran_size=nn[KMG] [X86]
++                       Used for mtrr cleanup. It is granularity of mtrr block.
++                       Default is 1.
++                       Large value could prevent small alignment from
++                       using up MTRRs.
++
++       mtrr_spare_reg_nr=n [X86]
++                       Format: <integer>
++                       Range: 0,7 : spare reg number
++                       Default : 1
++                       Used for mtrr cleanup. It is spare mtrr entries number.
++                       Set to 2 or more if your graphical card needs more.
++
++       disable_mtrr_trim [X86, Intel and AMD only]
++                       By default the kernel will trim any uncacheable
++                       memory out of your available memory pool based on
++                       MTRR settings.  This parameter disables that behavior,
++                       possibly causing your machine to run very slowly.
++
+        n2=             [NET] SDL Inc. RISCom/N2 synchronous serial card
+
+        NCR_D700=       [HW,SCSI]
