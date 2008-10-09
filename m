@@ -1,81 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYJIXXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYJIXbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYJIXXI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 19:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYJIXW4
+	id S1756702AbYJIXbe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 19:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYJIXbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 19:22:56 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:54767 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750891AbYJIXW4 (ORCPT
+	Thu, 9 Oct 2008 19:31:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:47861 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbYJIXbY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 19:22:56 -0400
-Subject: Re: [PATCH] Re: x86_32 tsc/pit and hrtimers
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Chris Snook <csnook@redhat.com>
-Cc: Alok kataria <alokkataria1@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Jeff Hansen <x@jeffhansen.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-In-Reply-To: <48EE8AB2.5000302@redhat.com>
-References: <Pine.LNX.4.64.0810071640110.25661@ren>
-	 <48ED1728.5060708@redhat.com> <Pine.LNX.4.64.0810081542300.14815@ren>
-	 <48ED2A89.3000902@redhat.com> <Pine.LNX.4.64.0810081554380.14982@ren>
-	 <alpine.LFD.2.00.0810090910510.3237@apollo>	 <48EE4FC4.7070902@redhat.com>
-	 <alpine.LFD.2.00.0810092118100.3271@apollo>
-	 <Pine.LNX.4.64.0810091344250.24851@ren>
-	 <alpine.LFD.2.00.0810092152410.3271@apollo>
-	 <35f686220810091345h253d71e8s4fe9d7ea8e636ccc@mail.gmail.com>
-	 <48EE71A9.2010907@redhat.com> <1223589220.32639.24.camel@alok-dev1>
-	 <48EE8AB2.5000302@redhat.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 09 Oct 2008 16:22:55 -0700
-Message-Id: <1223594575.32639.58.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 19:31:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Occj7E3Nv5PwughTKj5IldZqYpknhfElIdXBSyYGLghbjLgWZD5gzwLMjYoPPR0XyZ
+         UicHMmw/NuRLjOTLeN9VF0NM7nMy6OqhW+sbaV0dqH6IfvoRq5+7R7yDW+Z6Mr84Ytw1
+         AskOMfzZmOCVsOxH3EyB4e2YSutwkT1AAHaOM=
+Date: Fri, 10 Oct 2008 03:34:06 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: kees.cook@canonical.com, viro@zeniv.linux.org.uk,
+       linux-api@vger.kernel.org
+Subject: [PATCH] proc: remove kernel.maps_protect sysctl
+Message-ID: <20081009233406.GA17625@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 15:50 -0700, Chris Snook wrote:
-> Alok Kataria wrote:
-> > On Thu, 2008-10-09 at 14:03 -0700, Chris Snook wrote:
-> >
-> > I agree that in general this should be no, but since this is a
-> > commandline variable it will be normally set for only those systems
-> > which have only TSC as a option or know that the TSC is reliable.
-> > wouldn't doing this be ok for such systems ?
-> 
-> Hardware doesn't deliberately do any TSC synchronization, though you might get
-> it by accident in some configurations.  A VMware guest gets it for free thanks
-> to the hypervisor doing it in software, but we need to run the check when we're
-> booting on bare metal. 
+	[added to proc.git]
 
-The TSC sync algorithm right now expects that TSC are perfectly in sync
-between cpus.
-But, the hardware doesn't deliberately do any synchronization, so we can
-have situations where TSC was (accidently ? )off by a marginal value
-during boot and as a result we mark TSC as unstable and don't use it as
-a clocksource at all. For systems like the ones Jeff is using wouldn't
-that be a problem. IOW, even though the TSC was *marginally* off during
-bootup it should still be used as a clocksource, since you have no other
-option, no ? 
+commit b8f3039ba6e44e04f5eca64435c4c6a61e2db59f
+Author: Alexey Dobriyan <adobriyan@gmail.com>
+Date:   Fri Oct 10 03:27:16 2008 +0400
 
->  Jeff's patch enables the feature with as little risk as
-> possible.  TSC sync is pretty cheap, so it's not worth it to add a more
-> dangerous special case just for guests of certain hypervisors.
+    proc: remove kernel.maps_protect
+    
+    After commit 831830b5a2b5d413407adf380ef62fe17d6fcbf2 aka
+    "restrict reading from /proc/<pid>/maps to those who share ->mm or can ptrace"
+    sysctl stopped being relevant because commit moved security checks from ->show
+    time to ->start time (mm_for_maps()).
+    
+    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+    Acked-by: Kees Cook <kees.cook@canonical.com>
 
-I am not saying that we should go ahead and disable TSC sync for all
-cases, we can very well do that just when running on a particular type
-of system. The point here is to understand what should we do in a case
-like above, on physical hardware.
-
-Thanks,
-Alok
-
-> -- Chris
-
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index f566ad9..63ed861 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -1332,13 +1332,6 @@ determine whether or not they are still functioning properly.
+ Because the NMI watchdog shares registers with oprofile, by disabling the NMI
+ watchdog, oprofile may have more registers to utilize.
+ 
+-maps_protect
+-------------
+-
+-Enables/Disables the protection of the per-process proc entries "maps" and
+-"smaps".  When enabled, the contents of these files are visible only to
+-readers that are allowed to ptrace() the given process.
+-
+ msgmni
+ ------
+ 
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index c1332dd..b5918ae 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -148,9 +148,6 @@ static unsigned int pid_entry_count_dirs(const struct pid_entry *entries,
+ 	return count;
+ }
+ 
+-int maps_protect;
+-EXPORT_SYMBOL(maps_protect);
+-
+ static struct fs_struct *get_fs_struct(struct task_struct *task)
+ {
+ 	struct fs_struct *fs;
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 32e7c28..9413e78 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -45,8 +45,6 @@ do {						\
+ extern int nommu_vma_show(struct seq_file *, struct vm_area_struct *);
+ #endif
+ 
+-extern int maps_protect;
+-
+ extern int proc_tid_stat(struct seq_file *m, struct pid_namespace *ns,
+ 				struct pid *pid, struct task_struct *task);
+ extern int proc_tgid_stat(struct seq_file *m, struct pid_namespace *ns,
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 73d1891..4806830 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -210,9 +210,6 @@ static int show_map(struct seq_file *m, void *v)
+ 	dev_t dev = 0;
+ 	int len;
+ 
+-	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
+-		return -EACCES;
+-
+ 	if (file) {
+ 		struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 		dev = inode->i_sb->s_dev;
+@@ -742,22 +739,11 @@ const struct file_operations proc_pagemap_operations = {
+ #ifdef CONFIG_NUMA
+ extern int show_numa_map(struct seq_file *m, void *v);
+ 
+-static int show_numa_map_checked(struct seq_file *m, void *v)
+-{
+-	struct proc_maps_private *priv = m->private;
+-	struct task_struct *task = priv->task;
+-
+-	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
+-		return -EACCES;
+-
+-	return show_numa_map(m, v);
+-}
+-
+ static const struct seq_operations proc_pid_numa_maps_op = {
+         .start  = m_start,
+         .next   = m_next,
+         .stop   = m_stop,
+-        .show   = show_numa_map_checked
++        .show   = show_numa_map,
+ };
+ 
+ static int numa_maps_open(struct inode *inode, struct file *file)
+diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
+index 5d84e71..219bd79 100644
+--- a/fs/proc/task_nommu.c
++++ b/fs/proc/task_nommu.c
+@@ -110,11 +110,6 @@ int task_statm(struct mm_struct *mm, int *shared, int *text,
+ static int show_map(struct seq_file *m, void *_vml)
+ {
+ 	struct vm_list_struct *vml = _vml;
+-	struct proc_maps_private *priv = m->private;
+-	struct task_struct *task = priv->task;
+-
+-	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
+-		return -EACCES;
+ 
+ 	return nommu_vma_show(m, vml->vma);
+ }
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 50ec088..cc3e0d7 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -80,7 +80,6 @@ extern int pid_max_min, pid_max_max;
+ extern int sysctl_drop_caches;
+ extern int percpu_pagelist_fraction;
+ extern int compat_log;
+-extern int maps_protect;
+ extern int latencytop_enabled;
+ extern int sysctl_nr_open_min, sysctl_nr_open_max;
+ #ifdef CONFIG_RCU_TORTURE_TEST
+@@ -810,16 +809,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ #endif
+-#ifdef CONFIG_PROC_FS
+-	{
+-		.ctl_name       = CTL_UNNUMBERED,
+-		.procname       = "maps_protect",
+-		.data           = &maps_protect,
+-		.maxlen         = sizeof(int),
+-		.mode           = 0644,
+-		.proc_handler   = &proc_dointvec,
+-	},
+-#endif
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "poweroff_cmd",
