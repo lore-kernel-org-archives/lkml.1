@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbYJIEtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbYJIEtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759820AbYJIEtZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 00:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYJIErN
+	id S1759158AbYJIEtI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 00:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbYJIErK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 00:47:13 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:17029 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758576AbYJIErL (ORCPT
+	Thu, 9 Oct 2008 00:47:10 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:41440 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757230AbYJIErG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 00:47:11 -0400
+	Thu, 9 Oct 2008 00:47:06 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v5 08/16] PCI: cpqphp: stop managing hotplug_slot->name
+Subject: [PATCH v5 01/16] PCI Hotplug core: add 'name' param pci_hp_register
+	interface
 To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-       Alex Chiang <achiang@hp.com>
-Date: Wed, 08 Oct 2008 22:47:10 -0600
-Message-ID: <20081009044710.8678.79549.stgit@bob.kio>
+       kaneshige.kenji@jp.fujitsu.com, Alex Chiang <achiang@hp.com>
+Date: Wed, 08 Oct 2008 22:46:34 -0600
+Message-ID: <20081009044634.8678.35718.stgit@bob.kio>
 In-Reply-To: <20081009043140.8678.44164.stgit@bob.kio>
 References: <20081009043140.8678.44164.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -27,222 +28,232 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We no longer need to manage our version of hotplug_slot->name
-since the PCI and hotplug core manage it on our behalf.
+Update pci_hp_register() to take a const char *name parameter.
 
-Now, we simply advise the PCI core of the name that we would
-like, and let the core take care of the rest.
+The motivation for this is to clean up the individual hotplug
+drivers so that each one does not have to manage its own name.
+The PCI core should be the place where we manage the name.
+
+We update the interface and all callsites first, in a
+"no functional change" manner, and clean up the drivers later.
 
 Cc: jbarnes@virtuousgeek.org
 Cc: kristen.c.accardi@intel.com
+Cc: kaneshige.kenji@jp.fujitsu.com
+Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug/cpqphp.h      |   13 ++++-------
- drivers/pci/hotplug/cpqphp_core.c |   42 +++++++++++++++++--------------------
- 2 files changed, 24 insertions(+), 31 deletions(-)
+ drivers/pci/hotplug/acpiphp_core.c      |    3 ++-
+ drivers/pci/hotplug/cpci_hotplug_core.c |    3 ++-
+ drivers/pci/hotplug/cpqphp_core.c       |    3 ++-
+ drivers/pci/hotplug/fakephp.c           |    3 ++-
+ drivers/pci/hotplug/ibmphp_ebda.c       |    3 ++-
+ drivers/pci/hotplug/pci_hotplug_core.c  |   15 ++++++++-------
+ drivers/pci/hotplug/pciehp_core.c       |    3 ++-
+ drivers/pci/hotplug/rpaphp_slot.c       |    2 +-
+ drivers/pci/hotplug/sgi_hotplug.c       |    3 ++-
+ drivers/pci/hotplug/shpchp_core.c       |    3 ++-
+ include/linux/pci_hotplug.h             |    3 ++-
+ 11 files changed, 27 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpqphp.h b/drivers/pci/hotplug/cpqphp.h
-index b1decfa..afaf8f6 100644
---- a/drivers/pci/hotplug/cpqphp.h
-+++ b/drivers/pci/hotplug/cpqphp.h
-@@ -449,6 +449,11 @@ extern u8 cpqhp_disk_irq;
+diff --git a/drivers/pci/hotplug/acpiphp_core.c b/drivers/pci/hotplug/acpiphp_core.c
+index 0e496e8..e984176 100644
+--- a/drivers/pci/hotplug/acpiphp_core.c
++++ b/drivers/pci/hotplug/acpiphp_core.c
+@@ -340,7 +340,8 @@ int acpiphp_register_hotplug_slot(struct acpiphp_slot *acpiphp_slot)
  
- /* inline functions */
+ 	retval = pci_hp_register(slot->hotplug_slot,
+ 					acpiphp_slot->bridge->pci_bus,
+-					acpiphp_slot->device);
++					acpiphp_slot->device,
++					slot->name);
+ 	if (retval == -EBUSY)
+ 		goto error_hpslot;
+ 	if (retval) {
+diff --git a/drivers/pci/hotplug/cpci_hotplug_core.c b/drivers/pci/hotplug/cpci_hotplug_core.c
+index 9359479..5e5dee8 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_core.c
++++ b/drivers/pci/hotplug/cpci_hotplug_core.c
+@@ -285,7 +285,8 @@ cpci_hp_register_bus(struct pci_bus *bus, u8 first, u8 last)
+ 		info->attention_status = cpci_get_attention_status(slot);
  
-+static inline char *slot_name(struct slot *slot)
-+{
-+	return hotplug_slot_name(slot->hotplug_slot);
-+}
-+
- /*
-  * return_resource
-  *
-@@ -696,14 +701,6 @@ static inline int get_presence_status(struct controller *ctrl, struct slot *slot
- 	return presence_save;
- }
- 
--#define SLOT_NAME_SIZE 10
--
--static inline void make_slot_name(char *buffer, int buffer_size, struct slot *slot)
--{
--	snprintf(buffer, buffer_size, "%d", slot->number);
--}
--
--
- static inline int wait_for_ctrl_irq(struct controller *ctrl)
- {
-         DECLARE_WAITQUEUE(wait, current);
+ 		dbg("registering slot %s", slot->hotplug_slot->name);
+-		status = pci_hp_register(slot->hotplug_slot, bus, i);
++		status = pci_hp_register(slot->hotplug_slot, bus, i,
++					 slot->hotplug_slot->name);
+ 		if (status) {
+ 			err("pci_hp_register failed with error %d", status);
+ 			goto error_name;
 diff --git a/drivers/pci/hotplug/cpqphp_core.c b/drivers/pci/hotplug/cpqphp_core.c
-index a7fe458..724d42c 100644
+index 54defec..a7fe458 100644
 --- a/drivers/pci/hotplug/cpqphp_core.c
 +++ b/drivers/pci/hotplug/cpqphp_core.c
-@@ -315,14 +315,15 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
- {
- 	struct slot *slot = hotplug_slot->private;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	kfree(slot->hotplug_slot->info);
--	kfree(slot->hotplug_slot->name);
- 	kfree(slot->hotplug_slot);
- 	kfree(slot);
- }
- 
-+#define SLOT_NAME_SIZE 10
-+
- static int ctrl_slot_setup(struct controller *ctrl,
- 			void __iomem *smbios_start,
- 			void __iomem *smbios_table)
-@@ -335,6 +336,7 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 	u8 slot_number;
- 	u8 ctrl_slot;
- 	u32 tempdword;
-+	char name[SLOT_NAME_SIZE];
- 	void __iomem *slot_entry= NULL;
- 	int result = -ENOMEM;
- 
-@@ -363,16 +365,12 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 		if (!hotplug_slot->info)
- 			goto error_hpslot;
- 		hotplug_slot_info = hotplug_slot->info;
--		hotplug_slot->name = kmalloc(SLOT_NAME_SIZE, GFP_KERNEL);
--
--		if (!hotplug_slot->name)
--			goto error_info;
- 
- 		slot->ctrl = ctrl;
- 		slot->bus = ctrl->bus;
- 		slot->device = slot_device;
- 		slot->number = slot_number;
--		dbg("slot->number = %d\n", slot->number);
-+		dbg("slot->number = %u\n", slot->number);
- 
- 		slot_entry = get_SMBIOS_entry(smbios_start, smbios_table, 9,
- 					slot_entry);
-@@ -418,9 +416,9 @@ static int ctrl_slot_setup(struct controller *ctrl,
- 		/* register this slot with the hotplug pci core */
- 		hotplug_slot->release = &release_slot;
- 		hotplug_slot->private = slot;
--		make_slot_name(hotplug_slot->name, SLOT_NAME_SIZE, slot);
-+		snprintf(name, SLOT_NAME_SIZE, "%u", slot->number);
- 		hotplug_slot->ops = &cpqphp_hotplug_slot_ops;
--		
-+
- 		hotplug_slot_info->power_status = get_slot_enabled(ctrl, slot);
- 		hotplug_slot_info->attention_status =
- 			cpq_get_attention_status(ctrl, slot);
-@@ -437,10 +435,10 @@ static int ctrl_slot_setup(struct controller *ctrl,
+@@ -436,7 +436,8 @@ static int ctrl_slot_setup(struct controller *ctrl,
+ 				slot_number);
  		result = pci_hp_register(hotplug_slot,
  					 ctrl->pci_dev->subordinate,
- 					 slot->device,
--					 hotplug_slot->name);
-+					 name);
+-					 slot->device);
++					 slot->device,
++					 hotplug_slot->name);
  		if (result) {
  			err("pci_hp_register failed with error %d\n", result);
--			goto error_name;
-+			goto error_info;
- 		}
- 		
- 		slot->next = ctrl->slot;
-@@ -452,8 +450,6 @@ static int ctrl_slot_setup(struct controller *ctrl,
+ 			goto error_name;
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 146ca9c..3069f21 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -126,7 +126,8 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->release = &dummy_release;
+ 	slot->private = dslot;
+ 
+-	retval = pci_hp_register(slot, dev->bus, PCI_SLOT(dev->devfn));
++	retval = pci_hp_register(slot, dev->bus, PCI_SLOT(dev->devfn),
++				 slot->name);
+ 	if (retval) {
+ 		err("pci_hp_register failed with error %d\n", retval);
+ 		goto error_dslot;
+diff --git a/drivers/pci/hotplug/ibmphp_ebda.c b/drivers/pci/hotplug/ibmphp_ebda.c
+index 8f286ac..85528d6 100644
+--- a/drivers/pci/hotplug/ibmphp_ebda.c
++++ b/drivers/pci/hotplug/ibmphp_ebda.c
+@@ -966,7 +966,8 @@ static int __init ebda_rsrc_controller (void)
+ 	list_for_each_entry(tmp_slot, &ibmphp_slot_head, ibm_slot_list) {
+ 		snprintf (tmp_slot->hotplug_slot->name, 30, "%s", create_file_name (tmp_slot));
+ 		pci_hp_register(tmp_slot->hotplug_slot,
+-			pci_find_bus(0, tmp_slot->bus), tmp_slot->device);
++			pci_find_bus(0, tmp_slot->bus), tmp_slot->device,
++			tmp_slot->hotplug_slot->name);
  	}
  
- 	return 0;
--error_name:
--	kfree(hotplug_slot->name);
- error_info:
- 	kfree(hotplug_slot_info);
- error_hpslot:
-@@ -639,7 +635,7 @@ static int set_attention_status (struct hotplug_slot *hotplug_slot, u8 status)
- 	u8 device;
- 	u8 function;
+ 	print_ebda_hpc ();
+diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+index 27d2b6f..0e7a511 100644
+--- a/drivers/pci/hotplug/pci_hotplug_core.c
++++ b/drivers/pci/hotplug/pci_hotplug_core.c
+@@ -547,13 +547,15 @@ out:
+  * @bus: bus this slot is on
+  * @slot: pointer to the &struct hotplug_slot to register
+  * @slot_nr: slot number
++ * @name: name registered with kobject core
+  *
+  * Registers a hotplug slot with the pci hotplug subsystem, which will allow
+  * userspace interaction to the slot.
+  *
+  * Returns 0 if successful, anything else for an error.
+  */
+-int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
++int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
++			const char *name)
+ {
+ 	int result;
+ 	struct pci_slot *pci_slot;
+@@ -569,7 +571,7 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+ 	}
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+ 	/* Check if we have already registered a slot with the same name. */
+-	if (get_slot_from_name(slot->name))
++	if (get_slot_from_name(name))
+ 		return -EEXIST;
  
- 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
- 		return -ENODEV;
-@@ -666,7 +662,7 @@ static int process_SI(struct hotplug_slot *hotplug_slot)
- 	u8 device;
- 	u8 function;
+ 	/*
+@@ -577,7 +579,7 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+ 	 * driver and call it here again. If we've already created the
+ 	 * pci_slot, the interface will simply bump the refcount.
+ 	 */
+-	pci_slot = pci_create_slot(bus, slot_nr, slot->name);
++	pci_slot = pci_create_slot(bus, slot_nr, name);
+ 	if (IS_ERR(pci_slot))
+ 		return PTR_ERR(pci_slot);
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+@@ -593,8 +595,8 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
+ 	/*
+ 	 * Allow pcihp drivers to override the ACPI_PCI_SLOT name.
+ 	 */
+-	if (strcmp(kobject_name(&pci_slot->kobj), slot->name)) {
+-		result = kobject_rename(&pci_slot->kobj, slot->name);
++	if (strcmp(kobject_name(&pci_slot->kobj), name)) {
++		result = kobject_rename(&pci_slot->kobj, name);
+ 		if (result) {
+ 			pci_destroy_slot(pci_slot);
+ 			return result;
+@@ -607,8 +609,7 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr)
  
- 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
- 		return -ENODEV;
-@@ -698,7 +694,7 @@ static int process_SS(struct hotplug_slot *hotplug_slot)
- 	u8 device;
- 	u8 function;
+ 	result = fs_add_slot(pci_slot);
+ 	kobject_uevent(&pci_slot->kobj, KOBJ_ADD);
+-	dbg("Added slot %s to the list\n", slot->name);
+-
++	dbg("Added slot %s to the list\n", name);
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
- 		return -ENODEV;
-@@ -721,7 +717,7 @@ static int hardware_test(struct hotplug_slot *hotplug_slot, u32 value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	return cpqhp_hardware_test(ctrl, value);	
+ 	return result;
  }
-@@ -732,7 +728,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
+diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
+index c748a19..3ace5e0 100644
+--- a/drivers/pci/hotplug/pciehp_core.c
++++ b/drivers/pci/hotplug/pciehp_core.c
+@@ -226,7 +226,8 @@ static int init_slots(struct controller *ctrl)
+ duplicate_name:
+ 		retval = pci_hp_register(hotplug_slot,
+ 					 ctrl->pci_dev->subordinate,
+-					 slot->device);
++					 slot->device,
++					 slot->name);
+ 		if (retval) {
+ 			/*
+ 			 * If slot N already exists, we'll try to create
+diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+index 5088450..736d3b4 100644
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -137,7 +137,7 @@ int rpaphp_register_slot(struct slot *slot)
+ 		slotno = PCI_SLOT(PCI_DN(slot->dn->child)->devfn);
+ 	else
+ 		slotno = -1;
+-	retval = pci_hp_register(php_slot, slot->bus, slotno);
++	retval = pci_hp_register(php_slot, slot->bus, slotno, slot->name);
+ 	if (retval) {
+ 		err("pci_hp_register failed with error %d\n", retval);
+ 		return retval;
+diff --git a/drivers/pci/hotplug/sgi_hotplug.c b/drivers/pci/hotplug/sgi_hotplug.c
+index 410fe03..6d20bbd 100644
+--- a/drivers/pci/hotplug/sgi_hotplug.c
++++ b/drivers/pci/hotplug/sgi_hotplug.c
+@@ -653,7 +653,8 @@ static int sn_hotplug_slot_register(struct pci_bus *pci_bus)
+ 		bss_hotplug_slot->ops = &sn_hotplug_slot_ops;
+ 		bss_hotplug_slot->release = &sn_release_slot;
  
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+-		rc = pci_hp_register(bss_hotplug_slot, pci_bus, device);
++		rc = pci_hp_register(bss_hotplug_slot, pci_bus, device,
++				     bss_hotplug_slot->name);
+ 		if (rc)
+ 			goto register_err;
  
- 	*value = get_slot_enabled(ctrl, slot);
- 	return 0;
-@@ -743,7 +739,7 @@ static int get_attention_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 	
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
+diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
+index cc38615..bf50966 100644
+--- a/drivers/pci/hotplug/shpchp_core.c
++++ b/drivers/pci/hotplug/shpchp_core.c
+@@ -146,7 +146,8 @@ static int init_slots(struct controller *ctrl)
+ 		    slot->hp_slot, slot->number, ctrl->slot_device_offset);
+ duplicate_name:
+ 		retval = pci_hp_register(slot->hotplug_slot,
+-				ctrl->pci_dev->subordinate, slot->device);
++				ctrl->pci_dev->subordinate, slot->device,
++				hotplug_slot->name);
+ 		if (retval) {
+ 			/*
+ 			 * If slot N already exists, we'll try to create
+diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
+index a08cd06..5efba66 100644
+--- a/include/linux/pci_hotplug.h
++++ b/include/linux/pci_hotplug.h
+@@ -165,7 +165,8 @@ struct hotplug_slot {
+ };
+ #define to_hotplug_slot(n) container_of(n, struct hotplug_slot, kobj)
  
- 	*value = cpq_get_attention_status(ctrl, slot);
- 	return 0;
-@@ -754,7 +750,7 @@ static int get_latch_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = cpq_get_latch_status(ctrl, slot);
- 
-@@ -766,7 +762,7 @@ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 *value)
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = get_presence_status(ctrl, slot);
- 
-@@ -778,7 +774,7 @@ static int get_max_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = ctrl->speed_capability;
- 
-@@ -790,7 +786,7 @@ static int get_cur_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
- 	struct slot *slot = hotplug_slot->private;
- 	struct controller *ctrl = slot->ctrl;
- 
--	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
-+	dbg("%s - physical_slot = %s\n", __func__, slot_name(slot));
- 
- 	*value = ctrl->speed;
- 
+-extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr);
++extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr,
++			   const char *name);
+ extern int pci_hp_deregister(struct hotplug_slot *slot);
+ extern int __must_check pci_hp_change_slot_info	(struct hotplug_slot *slot,
+ 						 struct hotplug_slot_info *info);
 
