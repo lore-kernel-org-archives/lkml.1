@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYJIVF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbYJIVLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbYJIVF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 17:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYJIVFL
+	id S1756532AbYJIVLv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 17:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYJIVLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 17:05:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39735 "EHLO mx2.redhat.com"
+	Thu, 9 Oct 2008 17:11:43 -0400
+Received: from ns.suse.de ([195.135.220.2]:37601 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754276AbYJIVFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 17:05:10 -0400
-Message-ID: <48EE71A9.2010907@redhat.com>
-Date: Thu, 09 Oct 2008 17:03:37 -0400
-From: Chris Snook <csnook@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753397AbYJIVLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 17:11:42 -0400
+Date: Thu, 9 Oct 2008 14:08:29 -0700
+From: Greg KH <gregkh@suse.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>
+Subject: Re: [patch 00/04] RFC: Staging tree (drivers/staging)
+Message-ID: <20081009210829.GA5674@suse.de>
+References: <20080924230054.GA27730@suse.de> <20081009210137.GA7126@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Alok kataria <alokkataria1@gmail.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Jeff Hansen <x@jeffhansen.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, akataria@vmware.com
-Subject: Re: [PATCH] Re: x86_32 tsc/pit and hrtimers
-References: <Pine.LNX.4.64.0810071640110.25661@ren>	 <48ED1728.5060708@redhat.com> <Pine.LNX.4.64.0810081542300.14815@ren>	 <48ED2A89.3000902@redhat.com> <Pine.LNX.4.64.0810081554380.14982@ren>	 <alpine.LFD.2.00.0810090910510.3237@apollo>	 <48EE4FC4.7070902@redhat.com>	 <alpine.LFD.2.00.0810092118100.3271@apollo>	 <Pine.LNX.4.64.0810091344250.24851@ren>	 <alpine.LFD.2.00.0810092152410.3271@apollo> <35f686220810091345h253d71e8s4fe9d7ea8e636ccc@mail.gmail.com>
-In-Reply-To: <35f686220810091345h253d71e8s4fe9d7ea8e636ccc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081009210137.GA7126@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok kataria wrote:
-> On Thu, Oct 9, 2008 at 12:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
->> On Thu, 9 Oct 2008, Jeff Hansen wrote:
->>
->>> OK, so are we all agreed that something like clocksource_trust=tsc would be
->>> the best?
->> No, it's per affected device: tsc=trust or tsc=stable or whatever
->> unintuitive name we want to come up. And it is a modification to TSC
->> not to the clocksource layer.
+On Fri, Oct 10, 2008 at 12:01:37AM +0300, Adrian Bunk wrote:
+> On Wed, Sep 24, 2008 at 04:00:54PM -0700, Greg KH wrote:
+> > As we all discussed at the Kernel Summit this past week, I said I would
+> > create a drivers/staging directory and start throwing lots of drivers
+> > that are not of "mergable" status into it.
+> >...
+> > The 3rd patch creates the drivers/staging/ directory and Kconfig entries
+> > and adds it to the build system.
+> > 
+> > The 4th patch is an example of a driver that would go into this
+> > directory, along with a driver_name.README file detailing what needs to
+> > be done to this driver for cleanup/fixing, and who to contact about it.
+> > It's also in such bad shape it doesn't even build against the kernel
+> > kernel :)
+> > 
+> > (I'll fix that up before submitting, all drivers should at least build
+> > properly...)
+> > 
+> > So, does this all look good to everyone?  Any questions/issues?
+> > 
+> > Oh, I guess I should add a MAINTAINER entry for this section of the
+> > kernel, so to paraphrase Linus, I now get to be known as the "Maintainer
+> > of Crap".
 > 
-> Yep, this is cool. I too have a patch in my local tree which does a
-> similar thing i have a tsc_reliable flag which is set right now only
-> when we are running under a VMware hypervisor.
-> Along with marking the no_verify flag for TSC, this patch of mine also
-> skips the TSC synchornization checks.
+> Sorry for being late in the discussion, I'm currently catching up with 
+> my email backlog.
 > 
->         The TSC synchronization loop which is run whenever a new cpu is
-> brought up is not actually needed on systems which are known to have a
-> reliable TSC. TSC between 2 cpus can be off by a marginal value on such
-> systems and thats okay for timekeeping, since we do check for tsc going
-> back in read_tsc.
-> 
-> Can this reasoning be included and synchronization skipped for all
-> these systems with reliable aka trustworthy TSC's  ?
+> What does that mean in practice for kernel development?
 
-In general, no.  Not all hardware/hypervisors behave this way, even when the TSC 
-is otherwise stable once synchronized.
+Nothing.
 
--- Chris
+> Will breaking crap be considered OK?
+
+Yes.
+
+> As an example, let's assume some crap drivers use the BKL in a way that 
+> it might require the BKL in some core part of the kernel. Will the 
+> person removing the BKL in the core part of the kernel be forced to fix 
+> the locking of all possibly affected crap drivers no matter how broken 
+> and undocumented it is, or can he simply ignore the crap and leave the 
+> fixing to the Maintainer of Crap?
+
+He can ignore the crap and leave the fixing to the Maintainer of Crap.
+
+Although a short note to the Maintainer of Crap about the crap that
+needs fixing in the tree of crap, would be polite, it is not required.
+
+thanks,
+
+greg "surrounded by crap" k-h
