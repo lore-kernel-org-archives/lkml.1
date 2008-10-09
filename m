@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760501AbYJISpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbYJISrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760501AbYJISpN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 14:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYJISpA
+	id S1755068AbYJISrp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 14:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbYJISre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 14:45:00 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41057 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbYJISo7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 14:44:59 -0400
-Message-ID: <48EE50EE.4070505@zytor.com>
-Date: Thu, 09 Oct 2008 11:43:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: mtrr_cleanup update command line
-References: <1222817380-29481-1-git-send-email-yhlu.kernel@gmail.com>	 <20080930165739.7847be37.rdunlap@xenotime.net>	 <20081008170751.6d86b8e2.rdunlap@xenotime.net>	 <86802c440810081828m2b9210e6y81503bdffe12fb03@mail.gmail.com>	 <20081009102049.c22cf670.rdunlap@xenotime.net> <86802c440810091108w706c5382p6a7b283ba2ebe2b1@mail.gmail.com>
-In-Reply-To: <86802c440810091108w706c5382p6a7b283ba2ebe2b1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Oct 2008 14:47:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44027
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753407AbYJISrd convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 14:47:33 -0400
+Date: Thu, 09 Oct 2008 11:47:09 -0700 (PDT)
+Message-Id: <20081009.114709.102722304.davem@davemloft.net>
+To: rvsjoen@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NAPI enabled driver (tg3) silent packet loss ?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <efa8e58e0810091053s4b1d25b7u621ee92be84d2041@mail.gmail.com>
+References: <efa8e58e0810091053s4b1d25b7u621ee92be84d2041@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->>>
->>> like to filter out disable, enable, no, etc...
->> I don't think that mtrr gets any special treatment here.
->> All "acpi" parameters are not grouped together (unless they begin with
->> "acpi").  All "apic" parameters are not grouped together.
->> All "*iommu*" parameters are not grouped together....
-> 
-> could adjust acpi iommu to same layout
-> 
+From: "Rune V. Sjøen" <rvsjoen@gmail.com>
+Date: Thu, 9 Oct 2008 19:53:45 +0200
 
-I think the point is that it shouldn't be...
+[ netdev@vger.kernel.org is the place to discuss networking
+  things ]
 
-	-hpa
+> I am sending frames to a host using, all the frames are accounted for
+> in the rx_ucast_packets counter of the device.
+> However the application shows a substantial packet loss. I assume that
+> the rx_ucast_packets counter is incremented when the frame is received
+> and then it is put into the ring buffer. I am having a hard time
+> figuring out where these packets are lost, and my suspicion lies with
+> the NAPI enabled tg3.
+> 
+> If the ring buffer overflows will the driver overwrite/drop packets
+> without incrementing any counters ? That would explain why the packets
+> are counted as received and then lost (by not being passed to the next
+> layer).
+
+No, the generic device dropped counter will increment, or the
+device specific RX ring full condition will be indicated.
+
+You can also check if the networking stack itself is dropping
+the packet, using netstat -s and friends.
