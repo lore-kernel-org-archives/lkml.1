@@ -1,68 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYJIVVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYJIVVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413AbYJIVVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 17:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbYJIVVR
+	id S1756048AbYJIVVx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 17:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbYJIVV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 17:21:17 -0400
-Received: from b01.ext.isohunt.com ([208.71.112.51]:47258 "EHLO
-	mail.isohunt.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756005AbYJIVVQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 17:21:16 -0400
-Date: Thu, 9 Oct 2008 14:03:45 -0700
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: kernel/acct.c and testing for accounting still running?
-Message-ID: <20081009210345.GC9967@curie-int.orbis-terrarum.net>
-References: <20081007235331.GT9967@curie-int.orbis-terrarum.net> <20081008154028.GA2520@x200.localdomain>
+	Thu, 9 Oct 2008 17:21:29 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57896 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757432AbYJIVV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 17:21:28 -0400
+Date: Thu, 9 Oct 2008 23:20:53 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: splice vs O_APPEND
+Message-ID: <20081009212052.GS19428@kernel.dk>
+References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org> <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091218300.3210@nehalem.linux-foundation.org> <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="hCenlVgnDQUGHXTR"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081008154028.GA2520@x200.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 09 2008, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 9 Oct 2008, Miklos Szeredi wrote:
+> > 
+> > The thing is, the append-only attribute is absolutely useless without
+> > being able to depend on it.  So in that sense I think the IS_APPEND
+> > issue is important, and I'm fine with your original proposal for that
+> > (except we don't need the IS_IMMUTABLE check).
+> 
+> Heh. In the meantime, I had grown to hate that more complex patch.
+> 
+> So because I do see your point with IS_APPEND (being different from 
+> O_APPEND), but because I also think that O_APPEND itself is a gray and 
+> murky area, I just committed the following. I doubt anybody will ever even 
+> notice it, but while I think it's all debatable, we might as well debate 
+> it with this in place. I do agree that it's "safer" behaviour.
+> 
+> 		Linus
+> 
+> ---
+> commit a05b4085484ac45558810e4c5928e5a291c20f65
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Thu Oct 9 14:04:54 2008 -0700
+> 
+>     Don't allow splice() to files opened with O_APPEND
+>     
+>     This is debatable, but while we're debating it, let's disallow the
+>     combination of splice and an O_APPEND destination.
+>     
+>     It's not entirely clear what the semantics of O_APPEND should be, and
+>     POSIX apparently expects pwrite() to ignore O_APPEND, for example.  So
+>     we could make up any semantics we want, including the old ones.
+>     
+>     But Miklos convinced me that we should at least give it some thought,
+>     and that accepting writes at arbitrary offsets is wrong at least for
+>     IS_APPEND() files (which always have O_APPEND set, even if the reverse
+>     isn't true: you can obviously have O_APPEND set on a regular file).
+>     
+>     So disallow O_APPEND entirely for now.  I doubt anybody cares, and this
+>     way we have one less gray area to worry about.
+>     
+>     Reported-and-argued-for-by: Miklos Szeredi <miklos@szeredi.hu>
+>     Cc: Jens Axboe <ens.axboe@oracle.com>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
---hCenlVgnDQUGHXTR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+A little late I see, but FWIW I agree. I doubt that anyone uses splice
+with O_APPEND anyways, so should be zero-impact on that account at
+least.
 
-On Wed, Oct 08, 2008 at 07:40:28PM +0400, Alexey Dobriyan wrote:
-> On Tue, Oct 07, 2008 at 04:53:31PM -0700, Robin H. Johnson wrote:
-> > Could we expose acct_list in sysfs or procfs, as uid:0, gid:0, perms
-> > 0600?
-> What other OS do in this respect?
-Searching indicates that FreeBSD exports two sysctls, acct_configured
-and acct_suspended.=20
 
-I'm not sure from reading their source if they support multiple
-concurrent accounting targets , as I'm not familar with their VFS code.
-(Linux does, and you can see it used if you start use bootchart in an
-init that also brings up a normal accounting instance)
+> 
+> diff --git a/fs/splice.c b/fs/splice.c
+> index 1bbc6f4..a1e701c 100644
+> --- a/fs/splice.c
+> +++ b/fs/splice.c
+> @@ -898,6 +898,9 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
+>  	if (unlikely(!(out->f_mode & FMODE_WRITE)))
+>  		return -EBADF;
+>  
+> +	if (unlikely(out->f_flags & O_APPEND))
+> +		return -EINVAL;
+> +
+>  	ret = rw_verify_area(WRITE, out, ppos, len);
+>  	if (unlikely(ret < 0))
+>  		return ret;
 
---=20
-Robin Hugh Johnson
-Gentoo Linux Developer & Infra Guy
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+-- 
+Jens Axboe
 
---hCenlVgnDQUGHXTR
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
-
-iEYEARECAAYFAkjucbEACgkQPpIsIjIzwix3IwCgpxNnZnu8aYxh2b+XEOxC3+FQ
-NRQAoPQI9uMZlk6PDL5ESW9fjFpX22vX
-=Gp9u
------END PGP SIGNATURE-----
-
---hCenlVgnDQUGHXTR--
