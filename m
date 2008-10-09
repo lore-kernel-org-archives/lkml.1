@@ -1,364 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYJIITH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbYJIIVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbYJIITH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 04:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbYJIISu
+	id S1757784AbYJIIVt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 04:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbYJIIVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 04:18:50 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:41232 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755890AbYJIISs (ORCPT
+	Thu, 9 Oct 2008 04:21:42 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:3914 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755943AbYJIIVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 04:18:48 -0400
-Date: Thu, 9 Oct 2008 13:48:34 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 29/42] ext4: Use readahead when reading an inode from
-	the inode table
-Message-ID: <20081009081834.GD9918@skywalker>
-References: <1223525160-9887-21-git-send-email-tytso@mit.edu> <1223525160-9887-22-git-send-email-tytso@mit.edu> <1223525160-9887-23-git-send-email-tytso@mit.edu> <1223525160-9887-24-git-send-email-tytso@mit.edu> <1223525160-9887-25-git-send-email-tytso@mit.edu> <1223525160-9887-26-git-send-email-tytso@mit.edu> <1223525160-9887-27-git-send-email-tytso@mit.edu> <1223525160-9887-28-git-send-email-tytso@mit.edu> <1223525160-9887-29-git-send-email-tytso@mit.edu> <1223525160-9887-30-git-send-email-tytso@mit.edu>
+	Thu, 9 Oct 2008 04:21:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Czk1iGiZaxdZOE6880NvFq+aI+qQuG+v1sco20zEBUzbGtDqRRBX/Tt7lsDzNzrkMF
+         LyV0Sp/kMfVkNwEYAwmE3Sl0Y5MrUri+mvNiz8DqYEuwF0J2E0Mc6fbdXtE4qgYxQEXJ
+         AN+A0mVvBT/RivTYz7r8Qi/ZwZReoUVCd15JA=
+Message-ID: <fbd277f20810090121m41e87a8eg9e6b7a1d4ec62776@mail.gmail.com>
+Date: Thu, 9 Oct 2008 16:21:40 +0800
+From: "bibo mao" <bibo.mao@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [patch 1/1] combine two adjacent mtrr region with the same type
+Cc: akpm@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1223525160-9887-30-git-send-email-tytso@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09, 2008 at 12:05:47AM -0400, Theodore Ts'o wrote:
-> With modern hard drives, reading 64k takes roughly the same time as
-> reading a 4k block.  So request readahead for adjacent inode table
-> blocks to reduce the time it takes when iterating over directories
-> (especially when doing this in htree sort order) in a cold cache case.
-> With this patch, the time it takes to run "git status" on a kernel
-> tree after flushing the caches via "echo 3 > /proc/sys/vm/drop_caches"
-> is reduced by 21%.
-> 
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> ---
->  fs/ext4/ext4.h    |    2 +
->  fs/ext4/ext4_sb.h |    1 +
->  fs/ext4/inode.c   |  134 +++++++++++++++++++++++++---------------------------
->  fs/ext4/super.c   |   27 ++++++++++-
->  4 files changed, 92 insertions(+), 72 deletions(-)
+This patch is to combine two adjacent mtrr region with the same type.
 
+ kernel/cpu/mtrr/main.c          |   17 +++++++++++++++--
+ 3 files changed, 15 insertions(+), 2 deletions(-)
 
-Need documentation for the new mount option and the /proc tunable.
+Signed-off-by: bibo mao <bibo.mao@gmail.com>
 
+-------------------------------------------------------------------------------
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 6e212f3..c3adf83 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -305,7 +305,7 @@ int mtrr_add_page(unsigned long base, unsigned long size,
+ {
+ 	int i, j, replace, error;
+ 	mtrr_type ltype;
+-	unsigned long lbase, lsize;
++	unsigned long lbase, lsize, newbase;
 
-> 
-> diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-> index 163c445..922d187 100644
-> --- a/fs/ext4/ext4.h
-> +++ b/fs/ext4/ext4.h
-> @@ -790,6 +790,8 @@ static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
->  #define	EXT4_DEF_RESUID		0
->  #define	EXT4_DEF_RESGID		0
-> 
-> +#define EXT4_DEF_INODE_READAHEAD_BLKS	32
-> +
->  /*
->   * Default mount options
->   */
-> diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-> index f92af01..94e0757 100644
-> --- a/fs/ext4/ext4_sb.h
-> +++ b/fs/ext4/ext4_sb.h
-> @@ -52,6 +52,7 @@ struct ext4_sb_info {
->  	int s_desc_per_block_bits;
->  	int s_inode_size;
->  	int s_first_ino;
-> +	unsigned int s_inode_readahead_blks;
->  	spinlock_t s_next_gen_lock;
->  	u32 s_next_generation;
->  	u32 s_hash_seed[4];
-> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> index 22fcbb6..ef4ca3d 100644
-> --- a/fs/ext4/inode.c
-> +++ b/fs/ext4/inode.c
-> @@ -3833,41 +3833,6 @@ out_stop:
->  	ext4_journal_stop(handle);
->  }
-> 
-> -static ext4_fsblk_t ext4_get_inode_block(struct super_block *sb,
-> -		unsigned long ino, struct ext4_iloc *iloc)
-> -{
-> -	ext4_group_t block_group;
-> -	unsigned long offset;
-> -	ext4_fsblk_t block;
-> -	struct ext4_group_desc *gdp;
-> -
-> -	if (!ext4_valid_inum(sb, ino)) {
-> -		/*
-> -		 * This error is already checked for in namei.c unless we are
-> -		 * looking at an NFS filehandle, in which case no error
-> -		 * report is needed
-> -		 */
-> -		return 0;
-> -	}
-> -
-> -	block_group = (ino - 1) / EXT4_INODES_PER_GROUP(sb);
-> -	gdp = ext4_get_group_desc(sb, block_group, NULL);
-> -	if (!gdp)
-> -		return 0;
-> -
-> -	/*
-> -	 * Figure out the offset within the block group inode table
-> -	 */
-> -	offset = ((ino - 1) % EXT4_INODES_PER_GROUP(sb)) *
-> -		EXT4_INODE_SIZE(sb);
-> -	block = ext4_inode_table(sb, gdp) +
-> -		(offset >> EXT4_BLOCK_SIZE_BITS(sb));
-> -
-> -	iloc->block_group = block_group;
-> -	iloc->offset = offset & (EXT4_BLOCK_SIZE(sb) - 1);
-> -	return block;
-> -}
-> -
->  /*
->   * ext4_get_inode_loc returns with an extra refcount against the inode's
->   * underlying buffer_head on success. If 'in_mem' is true, we have all
-> @@ -3877,19 +3842,35 @@ static ext4_fsblk_t ext4_get_inode_block(struct super_block *sb,
->  static int __ext4_get_inode_loc(struct inode *inode,
->  				struct ext4_iloc *iloc, int in_mem)
->  {
-> -	ext4_fsblk_t block;
-> -	struct buffer_head *bh;
-> +	struct ext4_group_desc	*gdp;
-> +	struct buffer_head	*bh;
-> +	struct super_block	*sb = inode->i_sb;
-> +	ext4_fsblk_t		block;
-> +	int			inodes_per_block, inode_offset;
-> +
-> +	iloc->bh = 0;
-> +	if (!ext4_valid_inum(sb, inode->i_ino))
-> +		return -EIO;
-> 
-> -	block = ext4_get_inode_block(inode->i_sb, inode->i_ino, iloc);
-> -	if (!block)
-> +	iloc->block_group = (inode->i_ino - 1) / EXT4_INODES_PER_GROUP(sb);
-> +	gdp = ext4_get_group_desc(sb, iloc->block_group, NULL);
-> +	if (!gdp)
->  		return -EIO;
-> 
-> -	bh = sb_getblk(inode->i_sb, block);
-> +	/*
-> +	 * Figure out the offset within the block group inode table
-> +	 */
-> +	inodes_per_block = (EXT4_BLOCK_SIZE(sb) / EXT4_INODE_SIZE(sb));
-> +	inode_offset = ((inode->i_ino - 1) %
-> +			EXT4_INODES_PER_GROUP(sb));
-> +	block = ext4_inode_table(sb, gdp) + (inode_offset / inodes_per_block);
-> +	iloc->offset = (inode_offset % inodes_per_block) * EXT4_INODE_SIZE(sb);
-> +
-> +	bh = sb_getblk(sb, block);
->  	if (!bh) {
-> -		ext4_error (inode->i_sb, "ext4_get_inode_loc",
-> -				"unable to read inode block - "
-> -				"inode=%lu, block=%llu",
-> -				 inode->i_ino, block);
-> +		ext4_error(sb, "ext4_get_inode_loc", "unable to read "
-> +			   "inode block - inode=%lu, block=%llu",
-> +			   inode->i_ino, block);
->  		return -EIO;
->  	}
->  	if (!buffer_uptodate(bh)) {
-> @@ -3917,28 +3898,12 @@ static int __ext4_get_inode_loc(struct inode *inode,
->  		 */
->  		if (in_mem) {
->  			struct buffer_head *bitmap_bh;
-> -			struct ext4_group_desc *desc;
-> -			int inodes_per_buffer;
-> -			int inode_offset, i;
-> -			ext4_group_t block_group;
-> -			int start;
-> -
-> -			block_group = (inode->i_ino - 1) /
-> -					EXT4_INODES_PER_GROUP(inode->i_sb);
-> -			inodes_per_buffer = bh->b_size /
-> -				EXT4_INODE_SIZE(inode->i_sb);
-> -			inode_offset = ((inode->i_ino - 1) %
-> -					EXT4_INODES_PER_GROUP(inode->i_sb));
-> -			start = inode_offset & ~(inodes_per_buffer - 1);
-> +			int i, start;
-> 
-> -			/* Is the inode bitmap in cache? */
-> -			desc = ext4_get_group_desc(inode->i_sb,
-> -						block_group, NULL);
-> -			if (!desc)
-> -				goto make_io;
-> +			start = inode_offset & ~(inodes_per_block - 1);
-> 
-> -			bitmap_bh = sb_getblk(inode->i_sb,
-> -				ext4_inode_bitmap(inode->i_sb, desc));
-> +			/* Is the inode bitmap in cache? */
-> +			bitmap_bh = sb_getblk(sb, ext4_inode_bitmap(sb, gdp));
->  			if (!bitmap_bh)
->  				goto make_io;
-> 
-> @@ -3951,14 +3916,14 @@ static int __ext4_get_inode_loc(struct inode *inode,
->  				brelse(bitmap_bh);
->  				goto make_io;
->  			}
-> -			for (i = start; i < start + inodes_per_buffer; i++) {
-> +			for (i = start; i < start + inodes_per_block; i++) {
->  				if (i == inode_offset)
->  					continue;
->  				if (ext4_test_bit(i, bitmap_bh->b_data))
->  					break;
->  			}
->  			brelse(bitmap_bh);
-> -			if (i == start + inodes_per_buffer) {
-> +			if (i == start + inodes_per_block) {
->  				/* all other inodes are free, so skip I/O */
->  				memset(bh->b_data, 0, bh->b_size);
->  				set_buffer_uptodate(bh);
-> @@ -3969,6 +3934,36 @@ static int __ext4_get_inode_loc(struct inode *inode,
-> 
->  make_io:
->  		/*
-> +		 * If we need to do any I/O, try to pre-readahead extra
-> +		 * blocks from the inode table.
-> +		 */
-> +		if (EXT4_SB(sb)->s_inode_readahead_blks) {
-> +			ext4_fsblk_t b, end, table;
-> +			unsigned num;
-> +
-> +			table = ext4_inode_table(sb, gdp);
-> +			/* Make sure s_inode_readahead_blks is a power of 2 */
-> +			while (EXT4_SB(sb)->s_inode_readahead_blks &
-> +			       (EXT4_SB(sb)->s_inode_readahead_blks-1))
-> +				EXT4_SB(sb)->s_inode_readahead_blks = 
-> +				   (EXT4_SB(sb)->s_inode_readahead_blks &
-> +				    (EXT4_SB(sb)->s_inode_readahead_blks-1));
-> +			b = block & ~(EXT4_SB(sb)->s_inode_readahead_blks-1);
-> +			if (table > b)
-> +				b = table;
-> +			end = b + EXT4_SB(sb)->s_inode_readahead_blks;
-> +			num = EXT4_INODES_PER_GROUP(sb);
-> +			if (EXT4_HAS_RO_COMPAT_FEATURE(sb,
-> +				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-> +				num -= le16_to_cpu(gdp->bg_itable_unused);
-> +			table += num / inodes_per_block;
-> +			if (end > table)
-> +				end = table;
-> +			while (b <= end)
-> +				sb_breadahead(sb, b++);
-> +		}
-> +
-> +		/*
->  		 * There are other valid inodes in the buffer, this inode
->  		 * has in-inode xattrs, or we don't have this inode in memory.
->  		 * Read the block from disk.
-> @@ -3978,10 +3973,9 @@ make_io:
->  		submit_bh(READ_META, bh);
->  		wait_on_buffer(bh);
->  		if (!buffer_uptodate(bh)) {
-> -			ext4_error(inode->i_sb, "ext4_get_inode_loc",
-> -					"unable to read inode block - "
-> -					"inode=%lu, block=%llu",
-> -					inode->i_ino, block);
-> +			ext4_error(sb, __func__,
-> +				   "unable to read inode block - inode=%lu, "
-> +				   "block=%llu", inode->i_ino, block);
->  			brelse(bh);
->  			return -EIO;
->  		}
-> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-> index 9f5468f..6583aee 100644
-> --- a/fs/ext4/super.c
-> +++ b/fs/ext4/super.c
-> @@ -515,8 +515,10 @@ static void ext4_put_super(struct super_block *sb)
->  		mark_buffer_dirty(sbi->s_sbh);
->  		ext4_commit_super(sb, es, 1);
->  	}
-> -	if (sbi->s_proc)
-> +	if (sbi->s_proc) {
-> +		remove_proc_entry("inode_readahead_blks", sbi->s_proc);
->  		remove_proc_entry(sb->s_id, ext4_proc_root);
-> +	}
-> 
->  	for (i = 0; i < sbi->s_gdb_count; i++)
->  		brelse(sbi->s_group_desc[i]);
-> @@ -779,6 +781,10 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
->  	else if (test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_WRITEBACK_DATA)
->  		seq_puts(seq, ",data=writeback");
-> 
-> +	if (sbi->s_inode_readahead_blks != EXT4_DEF_INODE_READAHEAD_BLKS)
-> +		seq_printf(seq, ",inode_readahead_blks=%u",
-> +			   sbi->s_inode_readahead_blks);
-> +
->  	ext4_show_quota_options(seq, sb);
->  	return 0;
->  }
-> @@ -913,6 +919,7 @@ enum {
->  	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
->  	Opt_grpquota, Opt_extents, Opt_noextents, Opt_i_version,
->  	Opt_mballoc, Opt_nomballoc, Opt_stripe, Opt_delalloc, Opt_nodelalloc,
-> +	Opt_inode_readahead_blks
->  };
-> 
->  static match_table_t tokens = {
-> @@ -973,6 +980,7 @@ static match_table_t tokens = {
->  	{Opt_resize, "resize"},
->  	{Opt_delalloc, "delalloc"},
->  	{Opt_nodelalloc, "nodelalloc"},
-> +	{Opt_inode_readahead_blks, "inode_readahead_blks=%u"},
->  	{Opt_err, NULL},
->  };
-> 
-> @@ -1381,6 +1389,13 @@ set_qf_format:
->  		case Opt_delalloc:
->  			set_opt(sbi->s_mount_opt, DELALLOC);
->  			break;
-> +		case Opt_inode_readahead_blks:
-> +			if (match_int(&args[0], &option))
-> +				return 0;
-> +			if (option < 0 || option > (1 << 30))
-> +				return 0;
-> +			sbi->s_inode_readahead_blks = option;
-> +			break;
->  		default:
->  			printk(KERN_ERR
->  			       "EXT4-fs: Unrecognized mount option \"%s\" "
-> @@ -1938,6 +1953,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
->  	sbi->s_mount_opt = 0;
->  	sbi->s_resuid = EXT4_DEF_RESUID;
->  	sbi->s_resgid = EXT4_DEF_RESGID;
-> +	sbi->s_inode_readahead_blks = EXT4_DEF_INODE_READAHEAD_BLKS;
->  	sbi->s_sb_block = sb_block;
-> 
->  	unlock_kernel();
-> @@ -2234,6 +2250,11 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
->  	if (ext4_proc_root)
->  		sbi->s_proc = proc_mkdir(sb->s_id, ext4_proc_root);
-> 
-> +	if (sbi->s_proc)
-> +		proc_create_data("inode_readahead_blks", 0644, sbi->s_proc,
-> +				 &ext4_ui_proc_fops,
-> +				 &sbi->s_inode_readahead_blks);
-> +
->  	bgl_lock_init(&sbi->s_blockgroup_lock);
-> 
->  	for (i = 0; i < db_count; i++) {
-> @@ -2513,8 +2534,10 @@ failed_mount2:
->  		brelse(sbi->s_group_desc[i]);
->  	kfree(sbi->s_group_desc);
->  failed_mount:
-> -	if (sbi->s_proc)
-> +	if (sbi->s_proc) {
-> +		remove_proc_entry("inode_readahead_blks", sbi->s_proc);
->  		remove_proc_entry(sb->s_id, ext4_proc_root);
-> +	}
->  #ifdef CONFIG_QUOTA
->  	for (i = 0; i < MAXQUOTAS; i++)
->  		kfree(sbi->s_qf_names[i]);
-> -- 
-> 1.5.6.1.205.ge2c7.dirty
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ 	if (!mtrr_if)
+ 		return -ENXIO;
+@@ -344,7 +344,7 @@ int mtrr_add_page(unsigned long base, unsigned long size,
+ 	mutex_lock(&mtrr_mutex);
+ 	for (i = 0; i < num_var_ranges; ++i) {
+ 		mtrr_if->get(i, &lbase, &lsize, &ltype);
+-		if (!lsize || base > lbase + lsize - 1 || base + size - 1 < lbase)
++		if (!lsize || base > lbase + lsize || base + size < lbase)
+ 			continue;
+ 		/*  At this point we know there is some kind of overlap/enclosure  */
+ 		if (base < lbase || base + size - 1 > lbase + lsize - 1) {
+@@ -356,6 +356,19 @@ int mtrr_add_page(unsigned long base, unsigned long size,
+ 				}
+ 				else if (types_compatible(type, ltype))
+ 					continue;
++			} else if ((base == lbase + lsize) || (lbase ==base + size)) {
++				if (type != ltype)
++					continue;
++				/* New region adjacent with an existing region  */
++				newbase = (base < lbase) ? base : lbase;
++				if (!mtrr_if->validate_add_page(newbase,lsize + size,type) &&
++				   mtrr_if->get_free_region(newbase, lsize + size, replace)>=0) {
++					base = newbase;
++					size += lsize;
++					replace = i;
++					continue;
++				} else
++					continue;
+ 			}
+ 			printk(KERN_WARNING
+ 			       "mtrr: 0x%lx000,0x%lx000 overlaps existing"
