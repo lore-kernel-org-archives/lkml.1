@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbYJIWK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYJIWPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbYJIWK2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 18:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbYJIWKU
+	id S1757233AbYJIWPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 18:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbYJIWPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 18:10:20 -0400
-Received: from 1wt.eu ([62.212.114.60]:4688 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753348AbYJIWKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 18:10:19 -0400
-Date: Fri, 10 Oct 2008 00:09:04 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Davi Leal <davi@leals.com>, linux-kernel@vger.kernel.org,
-       gnuherds-app-dev@nongnu.org
-Subject: Re: free tg3 ethernet driver
-Message-ID: <20081009220904.GK24654@1wt.eu>
-References: <200810082353.31033.davi@leals.com> <20081008230827.6e1423fe@lxorguk.ukuu.org.uk> <200810092236.58534.davi@leals.com> <20081009225143.7999311d@lxorguk.ukuu.org.uk>
+	Thu, 9 Oct 2008 18:15:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40203 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbYJIWPc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 18:15:32 -0400
+Subject: Re: Building a tracing userspace tool in the kernel tree
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20081009191626.GA29344@Krystal>
+References: <20081009191626.GA29344@Krystal>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 00:15:13 +0200
+Message-Id: <1223590513.7382.45.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081009225143.7999311d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09, 2008 at 10:51:43PM +0100, Alan Cox wrote:
-> On Thu, 9 Oct 2008 22:36:57 +0200
-> Davi Leal <davi@leals.com> wrote:
+On Thu, 2008-10-09 at 15:16 -0400, Mathieu Desnoyers wrote:
+> Hi Sam,
 > 
-> > Alan Cox wrote:
-> > > Well if you want to write new firmware for the device you'll need to
-> > > reverse engineer the chip internals or convince Broadcom to document them
-> > > for you. I suspect you'll have to get to the point of xraying the
-> > > component slice by slice and need a multi-million dollar budget.
-> > 
-> > People position seem to be continue to pledge to pay $151 to the developer(s) 
-> > (even if it's Broadcom in case they apply to the pledge system) who provide a 
-> > free driver for tg3 devices.
+> At the kernel summit, people seemed to be interested to have the basic
+> userspace tools required to extract and pretty-print a trace available
+> within the kernel tree. Therefore, what I am trying to do is something
+> along the lines of
 > 
-> Well thats good, another 1.999849 million dollars and you might get
-> started.
-> 
-> With the best will in the world if you go and pay Broadcom zillions to
-> open source the firmware the only incentive you create is for them to
-> keep future firmware proprietary to sell to you next time around.
+> ltt/usr/
+> ltt/usr/tracectl/    (control tracing)
+> ltt/usr/tracesplice/ (splice buffers to disk)
+> ltt/usr/tracecat/    (merge sort and format the binary buffers into
+>                       human-readable text)
 
-Very true. If I start cooking awful cakes and I see people come to pay
-me for throwing them away, I'll sure restart ASAP.
+I'd rather have you provide that interface from the kernel much like
+ftrace does. So we can do:
 
-> If on the other hand you buy non Broadcom equipment if you feel this
-> way about the firmware then you create a far better economic incentive,
-> and at $10 a NIC its not really hard to do that.
+# cat /debug/tracing/lttng/trace
 
-And that's not counting with the fact that their crappy BNX2 has been
-showing horrible performance for several years now on servers, dropping
-frames like mad, and reminding the poor reliability and performance of
-Dlink's DL2000...
 
-Willy
 
