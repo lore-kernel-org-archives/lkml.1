@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYJIHP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYJIHQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756740AbYJIHP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 03:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYJIHPO
+	id S1758125AbYJIHQQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 03:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbYJIHP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 03:15:14 -0400
-Received: from www.tglx.de ([62.245.132.106]:54297 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272AbYJIHPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 03:15:13 -0400
-Date: Thu, 9 Oct 2008 09:14:34 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeff Hansen <x@jeffhansen.com>
-cc: Chris Snook <csnook@redhat.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] Re: x86_32 tsc/pit and hrtimers
-In-Reply-To: <Pine.LNX.4.64.0810081554380.14982@ren>
-Message-ID: <alpine.LFD.2.00.0810090910510.3237@apollo>
-References: <Pine.LNX.4.64.0810071640110.25661@ren> <48ECFEDC.90305@redhat.com> <Pine.LNX.4.64.0810081342570.11108@ren> <48ED1728.5060708@redhat.com> <Pine.LNX.4.64.0810081542300.14815@ren> <48ED2A89.3000902@redhat.com>
- <Pine.LNX.4.64.0810081554380.14982@ren>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 9 Oct 2008 03:15:59 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44823 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754609AbYJIHP6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 03:15:58 -0400
+Message-ID: <48EDAFA0.1090808@linux.vnet.ibm.com>
+Date: Thu, 09 Oct 2008 12:45:44 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] memcg: update patch set v7
+References: <20081007190121.d96e58a6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081007190121.d96e58a6.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Oct 2008, Jeff Hansen wrote:
-
-> [HRTIMER]: Add highres=noverify option to bypass clocksource verification
+KAMEZAWA Hiroyuki wrote:
+> Hi, Andrew. please allow me to test under -mm if ok.
 > 
-> This disregards the CLOCK_SOURCE_MUST_VERIFY flag on all clocksources.
-> This is particularly useful on legacy x86_32 systems that have no ACPI,
-> LAPIC, or HPET timers, where only TSC and PIT are available.
+> This series is against the newest -mmotm(stamp-2008-10-02-16-17)
+> and I think ready-to-go.
+> 
+> All comments are reflected.
+> (and CONFIG_CGROUP_MEM_RES_CTLR=n case is fixed.)
+> 
+> Including following patches.
+> 
+> [1/6] ... account swap cache under lock
+> [2/6] ... set page->mapping to be NULL before uncharge
+> [3/6] ... avoid to account not-on-LRU pages.
+> [4/6] ... optimize per cpu statistics on memcg.
+> [5/6] ... make page_cgroup->flags atomic.
+> [6/6] ... allocate page_cgroup at boot.
+> 
+> I did tests I can. But I think patch 6/6 needs wider testers.
+> It has some dependency to configs/archs.
+> 
+> (*) the newest mmotm needs some patches to be driven.
 
-While I agree in principle, adding this to highres is the wrong thing
-to do. This is a property of clocksources and not of high resolution
-timer support.
+Kamezawa-San,
 
-The affected clocksource is TSC and it should go there as a command
-line option e.g. tsc=stable, which in turn clears the
-CLOCK_SOURCE_MUST_VERIFY flag in the tsc clocksource.
+Thanks for the patchset. I would like to see these tested in -mm as well. The
+complaint that I am hearing from Fedora is that for them to enable the memory
+controller, they would like to see the struct page overhead go (for 32 bit
+systems that have 32 byte cachelines). This series helps us address that issue
+and helps with performance.
 
-Thanks,
-
-	tglx
-
-
+-- 
+	Balbir
