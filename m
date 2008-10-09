@@ -1,45 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbYJIR3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbYJIRl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759516AbYJIR3p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 13:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYJIR3f
+	id S1759239AbYJIRl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 13:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYJIRlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 13:29:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:36381 "EHLO mail.goop.org"
+	Thu, 9 Oct 2008 13:41:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56180 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752718AbYJIR3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 13:29:35 -0400
-Message-ID: <48EE3F7B.6040802@goop.org>
-Date: Thu, 09 Oct 2008 10:29:31 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080919)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [RESEND] [PATCH] VFS: make file->f_pos access atomic on 32bit
- arch
-References: <6.0.0.20.2.20081007140438.0580f110@172.19.0.2> <20081007105056.16d9e785.akpm@linux-foundation.org> <1223405963.26330.83.camel@lappy.programming.kicks-ass.net> <200810081335.44576.nickpiggin@yahoo.com.au> <20081008025209.GO25780@parisc-linux.org> <20081009122319.GC1623@ucw.cz>
-In-Reply-To: <20081009122319.GC1623@ucw.cz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754733AbYJIRlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 13:41:15 -0400
+Subject: Re: [PATCH 2/2] virtio_net: Improve the recv buffer allocation
+	scheme
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, netdev@vger.kernel.org
+In-Reply-To: <20081009153035.GA21542@gondor.apana.org.au>
+References: <1223494499-18732-1-git-send-email-markmc@redhat.com>
+	 <1223494499-18732-2-git-send-email-markmc@redhat.com>
+	 <200810091155.59731.rusty@rustcorp.com.au>
+	 <20081009153035.GA21542@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Thu, 09 Oct 2008 18:40:13 +0100
+Message-Id: <1223574013.13792.23.camel@blaa>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> We have append-only files, and normal users should not be able to work
-> around that restriction.
+On Thu, 2008-10-09 at 23:30 +0800, Herbert Xu wrote: 
+> On Thu, Oct 09, 2008 at 11:55:59AM +1100, Rusty Russell wrote:
+> >
+> > There are three approaches we should investigate before adding YA feature.  
+> > Obviously, we can simply increase the number of ring entries.
+> 
+> That's not going to work so well as you need to increase the ring
+> size by MAX_SKB_FRAGS times to achieve the same level of effect.
+> 
+> Basically the current scheme is either going to suck at non-TSO
+> traffic or it's going to chew too much resources.
 
-Well, apparently Posix breaks this, and we're supposed to let pwrite() 
-write anywhere in an O_APPEND file.  So any security-related argument 
-goes out the window.
+Yeah ... to put some numbers on it, assume we have a 256 entry ring now.
 
-    J
+Currently, with GSO enabled in the host the guest will fill this with 12
+buffer heads with 20 buffers per head (a 10 byte buffer, an MTU sized
+buffer and 18 page sized buffers).
+
+That means we allocate ~900k for receive buffers, 12k for the ring, fail
+to use 16 ring entries and the ring ends up with a capacity of 12
+packets. In the case of MTU sized packets from an off-host source,
+that's a huge amount of overhead for ~17k of data.
+
+If we wanted to match the packet capacity that Herbert's suggestion
+enables (i.e. 256 packets), we'd need to bump the ring size to 4k
+entries (assuming we reduce it to 19 entries per packet). This would
+mean we'd need to allocate ~200k for the ring and ~18M in receive
+buffers. Again, assuming MTU sized packets, that's massive overhead for
+~400k of data.
+
+> > Secondly, we can put the virtio_net_hdr at the head of the skb data (this is 
+> > also worth considering for xmit I think if we have headroom) and drop 
+> > MAX_SKB_FRAGS which contains a gratuitous +2.
+> 
+> That's fine but having skb->data in the ring still means two
+> different kinds of memory in there and it sucks when you only
+> have 1500-byte packets.
+
+Also, including virtio_net_hdr in the data buffer would need another
+feature flag. Rightly or wrongly, KVM's implementation requires
+virtio_net_hdr to be the first buffer:
+
+    if (elem.in_num < 1 || elem.in_sg[0].iov_len != sizeof(*hdr)) {
+        fprintf(stderr, "virtio-net header not in first element\n");
+        exit(1);
+    }
+
+i.e. it's part of the ABI ... at least as KVM sees it :-)
+
+> > > The size of the logical buffer is
+> > > returned to the guest rather than the size of the individual smaller
+> > > buffers.
+> > 
+> > That's a virtio transport breakage: can you use the standard virtio mechanism, 
+> > just put the extended length or number of extra buffers inside the 
+> > virtio_net_hdr?
+> 
+> Sure that sounds reasonable.
+
+
+I'll give that a shot.
+
+Cheers,
+Mark.
+
