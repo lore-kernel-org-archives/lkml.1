@@ -1,121 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbYJJNvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbYJJNwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759465AbYJJNvY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 09:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYJJNvQ
+	id S1760043AbYJJNwG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 09:52:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbYJJNvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 09:51:16 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:28104 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755807AbYJJNvP (ORCPT
+	Fri, 10 Oct 2008 09:51:53 -0400
+Received: from stinky.trash.net ([213.144.137.162]:54951 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756368AbYJJNvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 09:51:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=APJNhPBfQhlAMzK1cyhhPQmNj/FxTsBNT6Ii3p8iuTqTekWqKrTeVJTXu4FQuI5Alk
-         Qzm0zZ2/i4SsEPZeo67WbzbJWsGTed1pO96fJbDnjeWAYydxYPj/K93DNANMSeC1yrcR
-         0X0ql2RvrHanYz065Khk3JtEeqm5688Y9SOXE=
-Message-ID: <c62985530810100651x2a61764bj1f98b98d50e9abe4@mail.gmail.com>
-Date: Fri, 10 Oct 2008 15:51:13 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 3/6] tracing/ftrace: Fix a race condition in sched_switch tracer
-Cc: "Ingo Molnar" <mingo@elte.hu>, Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0810100935570.26408@gandalf.stny.rr.com>
+	Fri, 10 Oct 2008 09:51:52 -0400
+Message-ID: <48EF5DF5.7070708@trash.net>
+Date: Fri, 10 Oct 2008 15:51:49 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081010113510.A07A9D1BD59@perso1.free.fr>
-	 <alpine.DEB.1.10.0810100935570.26408@gandalf.stny.rr.com>
+To: Nir Tzachar <nir.tzachar@gmail.com>
+CC: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
+References: <9b2db90b0810092324o729e29c0i2e654c812592bbd2@mail.gmail.com>
+In-Reply-To: <9b2db90b0810092324o729e29c0i2e654c812592bbd2@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------040401060501090200000002"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/10 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Fri, 10 Oct 2008, Frederic Weisbecker wrote:
->>
->> This patch fixes a race condition in the sched_switch tracer.
->> If several tasks (IE: concurrent initcalls) are playing with
->> tracing_start_cmdline_record() and tracing_stop_cmdline_record(),
->> the following situation could happen:
->>
->>
->> _ Task A and B are using the same tracepoint probe. Task A holds it. Task B is
->> sleeping and doesn't hold it.
->> _ Task A frees the sched tracer, then sched_ref is decremented to 0.
->> _ Task A is preempted and hadn't yet unregistered its tracepoint probe,
->> then B runs.
->> _ B increments sched_ref, sees it's 1 and then guess it has to register its probe. But it has not been freed by task A.
->> _ A lot of bad things can happen after that...
->
-> OK, I see the issue.
->
->>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> CC: Steven Rostedt <rostedt@goodmis.org>
->> ---
->>  kernel/trace/trace_sched_switch.c |    5 +++++
->>  1 files changed, 5 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
->> index b8f56be..59de514 100644
->> --- a/kernel/trace/trace_sched_switch.c
->> +++ b/kernel/trace/trace_sched_switch.c
->> @@ -17,6 +17,7 @@
->>  static struct trace_array    *ctx_trace;
->>  static int __read_mostly     tracer_enabled;
->>  static atomic_t                      sched_ref;
->> +static DEFINE_MUTEX(tracepoint_mutex);
->>
->>  static void
->>  probe_sched_switch(struct rq *__rq, struct task_struct *prev,
->> @@ -125,18 +126,22 @@ static void tracing_start_sched_switch(void)
->>  {
->>       long ref;
->>
->> +     mutex_lock(&tracepoint_mutex);
->>       ref = atomic_inc_return(&sched_ref);
->>       if (ref == 1)
->>               tracing_sched_register();
->
-> Could you make another patch to convert sched_ref to an int. With a mutex
-> lock, there's no reason for this to be atomic.
->
-> We can simply do:
->
->        if (!(sched_ref++))
->                tracing_sched_register();
->
->> +     mutex_unlock(&tracepoint_mutex);
->>  }
->>
->>  static void tracing_stop_sched_switch(void)
->>  {
->>       long ref;
->>
->> +     mutex_lock(&tracepoint_mutex);
->>       ref = atomic_dec_and_test(&sched_ref);
->>       if (ref)
->>               tracing_sched_unregister();
->
-> and
->
->        if (!(--sched_ref))
->                tracing_sched_unregister();
->
->> +     mutex_unlock(&tracepoint_mutex);
->
-> Also, lets change the name. sched_register_mutex?
->
->>  }
->>
->>  void tracing_start_cmdline_record(void)
+This is a multi-part message in MIME format.
+--------------040401060501090200000002
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I didn't want to change it into an int because probe_sched_switch().
-But actually that shouldn't be a problem.
-Ok I will apply your comments in the next days (I can't until this week-end)....
+Nir Tzachar wrote:
+> Hello.
+> 
+> The following warning is reproducible with the code below on 2.6.25.6,
+> which uses sendmsg on a udp socket using two iovecs:
+> 
+> ....
+> And I always get  the following warning twice:
+> 
+> [ 6658.338116] ------------[ cut here ]------------
+> [ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89
+> nf_nat_fn+0x33/0x155()
+
+Thanks for the report. Does this patch fix it?
+
+
+--------------040401060501090200000002
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+index 5a955c4..5bd4833 100644
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -92,7 +92,7 @@ static int ipv4_get_l4proto(const struct sk_buff *skb, unsigned int nhoff,
+ 
+ 	/* Conntrack defragments packets, we might still see fragments
+ 	 * inside ICMP packets though. */
+-	if (iph->frag_off & htons(IP_OFFSET))
++	if (iph->frag_off & htons(IP_MF | IP_OFFSET))
+ 		return -NF_DROP;
+ 
+ 	*dataoff = nhoff + (iph->ihl << 2);
+
+--------------040401060501090200000002--
