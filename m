@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbYJJI57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYJJI7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbYJJI57 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 04:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYJJI5t
+	id S1755543AbYJJI7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 04:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYJJI7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 04:57:49 -0400
-Received: from mail4.hitachi.co.jp ([133.145.228.5]:36150 "EHLO
-	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752483AbYJJI5s (ORCPT
+	Fri, 10 Oct 2008 04:59:00 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:60369 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbYJJI66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 04:57:48 -0400
-X-AuditID: 0ac90648-aad1eba000004214-9f-48ef190a786f
-Message-ID: <48EF1902.5050905@hitachi.com>
-Date: Fri, 10 Oct 2008 17:57:38 +0900
+	Fri, 10 Oct 2008 04:58:58 -0400
+X-AuditID: 0ac90650-ae6cfba000006fc9-eb-48ef195025e3
+Message-ID: <48EF1949.3060901@hitachi.com>
+Date: Fri, 10 Oct 2008 17:58:49 +0900
 From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
     Gecko/20030624 Netscape/7.1 (ax)
@@ -21,7 +21,7 @@ MIME-Version: 1.0
 To: tytso@mit.edu, adilger@sun.com
 Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, jack@suse.cz
-Subject: [PATCH 1/4] jbd2: abort when failed to log metadata buffers
+Subject: [PATCH 2/4] jbd2: fix error handling for checkpoint io
 References: <48EF168A.4000705@hitachi.com>
 In-Reply-To: <48EF168A.4000705@hitachi.com>
 Content-Type: text/plain; charset="us-ascii"
@@ -31,36 +31,318 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we failed to write metadata buffers to the journal space and
-succeeded to write the commit record, stale data can be written
-back to the filesystem as metadata in the recovery phase.
+When a checkpointing IO fails, current JBD2 code doesn't check the
+error and continue journaling.  This means latest metadata can be
+lost from both the journal and filesystem.
 
-To avoid this, when we failed to write out metadata buffers,
-abort the journal before writing the commit record.
+This patch leaves the failed metadata blocks in the journal space
+and aborts journaling in the case of jbd2_log_do_checkpoint().
+To achieve this, we need to do:
 
-We can also avoid this kind of corruption by using check-summing
-feature because it can detect invalid metadata blocks in the
-journal and avoid them from being replayed.  So we don't need to
-care about asynchronous commit record writeout with a check sum.
+1. don't remove the failed buffer from the checkpoint list where in
+   the case of __try_to_free_cp_buf() because it may be released or
+   overwritten by a later transaction
+2. jbd2_log_do_checkpoint() is the last chance, remove the failed
+   buffer from the checkpoint list and abort the journal
+3. when checkpointing fails, don't update the journal super block to
+   prevent the journaled contents from being cleaned.  For safety,
+   don't update j_tail and j_tail_sequence either
+4. when checkpointing fails, notify this error to the ext4 layer so
+   that ext4 don't clear the needs_recovery flag, otherwise the
+   journaled contents are ignored and cleaned in the recovery phase
+5. if the recovery fails, keep the needs_recovery flag
+6. prevent jbd2_cleanup_journal_tail() from being called between
+   __jbd2_journal_drop_transaction() and jbd2_journal_abort()
+   (a possible race issue between jbd2_log_do_checkpoint()s called by
+   jbd2_journal_flush() and __jbd2_log_wait_for_space())
 
 Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 ---
- fs/jbd2/commit.c |    3 +++
- 1 file changed, 3 insertions(+)
+ fs/jbd2/checkpoint.c |   49 ++++++++++++++++++++++++++++++-----------
+ fs/jbd2/journal.c    |   28 ++++++++++++++++++-----
+ fs/jbd2/recovery.c   |    7 ++++-
+ include/linux/jbd2.h |    2 -
+ 4 files changed, 65 insertions(+), 21 deletions(-)
 
-Index: linux-2.6.27-rc9-ex4-1/fs/jbd2/commit.c
+Index: linux-2.6.27-rc9-ex4-1/fs/jbd2/checkpoint.c
 ===================================================================
---- linux-2.6.27-rc9-ex4-1.orig/fs/jbd2/commit.c
-+++ linux-2.6.27-rc9-ex4-1/fs/jbd2/commit.c
-@@ -783,6 +783,9 @@ wait_for_iobuf:
- 		/* AKPM: bforget here */
+--- linux-2.6.27-rc9-ex4-1.orig/fs/jbd2/checkpoint.c
++++ linux-2.6.27-rc9-ex4-1/fs/jbd2/checkpoint.c
+@@ -94,7 +94,8 @@ static int __try_to_free_cp_buf(struct j
+ 	int ret = 0;
+ 	struct buffer_head *bh = jh2bh(jh);
+ 
+-	if (jh->b_jlist == BJ_None && !buffer_locked(bh) && !buffer_dirty(bh)) {
++	if (jh->b_jlist == BJ_None && !buffer_locked(bh) &&
++	    !buffer_dirty(bh) && !buffer_write_io_error(bh)) {
+ 		JBUFFER_TRACE(jh, "remove from checkpoint list");
+ 		ret = __jbd2_journal_remove_checkpoint(jh) + 1;
+ 		jbd_unlock_bh_state(bh);
+@@ -176,21 +177,25 @@ static void jbd_sync_bh(journal_t *journ
+  * buffers. Note that we take the buffers in the opposite ordering
+  * from the one in which they were submitted for IO.
+  *
++ * Return 0 on success, and return <0 if some buffers have failed
++ * to be written out.
++ *
+  * Called with j_list_lock held.
+  */
+-static void __wait_cp_io(journal_t *journal, transaction_t *transaction)
++static int __wait_cp_io(journal_t *journal, transaction_t *transaction)
+ {
+ 	struct journal_head *jh;
+ 	struct buffer_head *bh;
+ 	tid_t this_tid;
+ 	int released = 0;
++	int ret = 0;
+ 
+ 	this_tid = transaction->t_tid;
+ restart:
+ 	/* Did somebody clean up the transaction in the meanwhile? */
+ 	if (journal->j_checkpoint_transactions != transaction ||
+ 			transaction->t_tid != this_tid)
+-		return;
++		return ret;
+ 	while (!released && transaction->t_checkpoint_io_list) {
+ 		jh = transaction->t_checkpoint_io_list;
+ 		bh = jh2bh(jh);
+@@ -210,6 +215,9 @@ restart:
+ 			spin_lock(&journal->j_list_lock);
+ 			goto restart;
+ 		}
++		if (unlikely(buffer_write_io_error(bh)))
++			ret = -EIO;
++
+ 		/*
+ 		 * Now in whatever state the buffer currently is, we know that
+ 		 * it has been written out and so we can drop it from the list
+@@ -219,6 +227,8 @@ restart:
+ 		jbd2_journal_remove_journal_head(bh);
+ 		__brelse(bh);
+ 	}
++
++	return ret;
+ }
+ 
+ #define NR_BATCH	64
+@@ -242,7 +252,8 @@ __flush_batch(journal_t *journal, struct
+  * Try to flush one buffer from the checkpoint list to disk.
+  *
+  * Return 1 if something happened which requires us to abort the current
+- * scan of the checkpoint list.
++ * scan of the checkpoint list.  Return <0 if the buffer has failed to
++ * be written out.
+  *
+  * Called with j_list_lock held and drops it if 1 is returned
+  * Called under jbd_lock_bh_state(jh2bh(jh)), and drops it
+@@ -274,6 +285,9 @@ static int __process_buffer(journal_t *j
+ 		jbd2_log_wait_commit(journal, tid);
+ 		ret = 1;
+ 	} else if (!buffer_dirty(bh)) {
++		ret = 1;
++		if (unlikely(buffer_write_io_error(bh)))
++			ret = -EIO;
+ 		J_ASSERT_JH(jh, !buffer_jbddirty(bh));
+ 		BUFFER_TRACE(bh, "remove from checkpoint");
+ 		__jbd2_journal_remove_checkpoint(jh);
+@@ -281,7 +295,6 @@ static int __process_buffer(journal_t *j
+ 		jbd_unlock_bh_state(bh);
+ 		jbd2_journal_remove_journal_head(bh);
+ 		__brelse(bh);
+-		ret = 1;
+ 	} else {
+ 		/*
+ 		 * Important: we are about to write the buffer, and
+@@ -314,6 +327,7 @@ static int __process_buffer(journal_t *j
+  * to disk. We submit larger chunks of data at once.
+  *
+  * The journal should be locked before calling this function.
++ * Called with j_checkpoint_mutex held.
+  */
+ int jbd2_log_do_checkpoint(journal_t *journal)
+ {
+@@ -339,6 +353,7 @@ int jbd2_log_do_checkpoint(journal_t *jo
+ 	 * OK, we need to start writing disk blocks.  Take one transaction
+ 	 * and write it.
+ 	 */
++	result = 0;
+ 	spin_lock(&journal->j_list_lock);
+ 	if (!journal->j_checkpoint_transactions)
+ 		goto out;
+@@ -357,7 +372,7 @@ restart:
+ 		int batch_count = 0;
+ 		struct buffer_head *bhs[NR_BATCH];
+ 		struct journal_head *jh;
+-		int retry = 0;
++		int retry = 0, err;
+ 
+ 		while (!retry && transaction->t_checkpoint_list) {
+ 			struct buffer_head *bh;
+@@ -371,6 +386,8 @@ restart:
+ 			}
+ 			retry = __process_buffer(journal, jh, bhs, &batch_count,
+ 						 transaction);
++			if (retry < 0 && !result)
++				result = retry;
+ 			if (!retry && (need_resched() ||
+ 				spin_needbreak(&journal->j_list_lock))) {
+ 				spin_unlock(&journal->j_list_lock);
+@@ -395,14 +412,18 @@ restart:
+ 		 * Now we have cleaned up the first transaction's checkpoint
+ 		 * list. Let's clean up the second one
+ 		 */
+-		__wait_cp_io(journal, transaction);
++		err = __wait_cp_io(journal, transaction);
++		if (!result)
++			result = err;
+ 	}
+ out:
+ 	spin_unlock(&journal->j_list_lock);
+-	result = jbd2_cleanup_journal_tail(journal);
+ 	if (result < 0)
+-		return result;
+-	return 0;
++		jbd2_journal_abort(journal, result);
++	else
++		result = jbd2_cleanup_journal_tail(journal);
++
++	return (result < 0) ? result : 0;
+ }
+ 
+ /*
+@@ -418,8 +439,9 @@ out:
+  * This is the only part of the journaling code which really needs to be
+  * aware of transaction aborts.  Checkpointing involves writing to the
+  * main filesystem area rather than to the journal, so it can proceed
+- * even in abort state, but we must not update the journal superblock if
+- * we have an abort error outstanding.
++ * even in abort state, but we must not update the super block if
++ * checkpointing may have failed.  Otherwise, we would lose some metadata
++ * buffers which should be written-back to the filesystem.
+  */
+ 
+ int jbd2_cleanup_journal_tail(journal_t *journal)
+@@ -428,6 +450,9 @@ int jbd2_cleanup_journal_tail(journal_t 
+ 	tid_t		first_tid;
+ 	unsigned long	blocknr, freed;
+ 
++	if (is_journal_aborted(journal))
++		return 1;
++
+ 	/* OK, work out the oldest transaction remaining in the log, and
+ 	 * the log block it starts at.
+ 	 *
+Index: linux-2.6.27-rc9-ex4-1/fs/jbd2/journal.c
+===================================================================
+--- linux-2.6.27-rc9-ex4-1.orig/fs/jbd2/journal.c
++++ linux-2.6.27-rc9-ex4-1/fs/jbd2/journal.c
+@@ -1451,9 +1451,12 @@ recovery_error:
+  *
+  * Release a journal_t structure once it is no longer in use by the
+  * journaled object.
++ * Return <0 if we couldn't clean up the journal.
+  */
+-void jbd2_journal_destroy(journal_t *journal)
++int jbd2_journal_destroy(journal_t *journal)
+ {
++	int err = 0;
++
+ 	/* Wait for the commit thread to wake up and die. */
+ 	journal_kill_thread(journal);
+ 
+@@ -1476,11 +1479,16 @@ void jbd2_journal_destroy(journal_t *jou
+ 	J_ASSERT(journal->j_checkpoint_transactions == NULL);
+ 	spin_unlock(&journal->j_list_lock);
+ 
+-	/* We can now mark the journal as empty. */
+-	journal->j_tail = 0;
+-	journal->j_tail_sequence = ++journal->j_transaction_sequence;
+ 	if (journal->j_sb_buffer) {
+-		jbd2_journal_update_superblock(journal, 1);
++		if (!is_journal_aborted(journal)) {
++			/* We can now mark the journal as empty. */
++			journal->j_tail = 0;
++			journal->j_tail_sequence =
++				++journal->j_transaction_sequence;
++			jbd2_journal_update_superblock(journal, 1);
++		} else {
++			err = -EIO;
++		}
+ 		brelse(journal->j_sb_buffer);
  	}
  
-+	if (err)
-+		jbd2_journal_abort(journal, err);
+@@ -1492,6 +1500,8 @@ void jbd2_journal_destroy(journal_t *jou
+ 		jbd2_journal_destroy_revoke(journal);
+ 	kfree(journal->j_wbuf);
+ 	kfree(journal);
 +
- 	jbd_debug(3, "JBD: commit phase 5\n");
++	return err;
+ }
  
- 	if (!JBD2_HAS_INCOMPAT_FEATURE(journal,
+ 
+@@ -1717,10 +1727,16 @@ int jbd2_journal_flush(journal_t *journa
+ 	spin_lock(&journal->j_list_lock);
+ 	while (!err && journal->j_checkpoint_transactions != NULL) {
+ 		spin_unlock(&journal->j_list_lock);
++		mutex_lock(&journal->j_checkpoint_mutex);
+ 		err = jbd2_log_do_checkpoint(journal);
++		mutex_unlock(&journal->j_checkpoint_mutex);
+ 		spin_lock(&journal->j_list_lock);
+ 	}
+ 	spin_unlock(&journal->j_list_lock);
++
++	if (is_journal_aborted(journal))
++		return -EIO;
++
+ 	jbd2_cleanup_journal_tail(journal);
+ 
+ 	/* Finally, mark the journal as really needing no recovery.
+@@ -1742,7 +1758,7 @@ int jbd2_journal_flush(journal_t *journa
+ 	J_ASSERT(journal->j_head == journal->j_tail);
+ 	J_ASSERT(journal->j_tail_sequence == journal->j_transaction_sequence);
+ 	spin_unlock(&journal->j_state_lock);
+-	return err;
++	return 0;
+ }
+ 
+ /**
+Index: linux-2.6.27-rc9-ex4-1/fs/jbd2/recovery.c
+===================================================================
+--- linux-2.6.27-rc9-ex4-1.orig/fs/jbd2/recovery.c
++++ linux-2.6.27-rc9-ex4-1/fs/jbd2/recovery.c
+@@ -225,7 +225,7 @@ do {									\
+  */
+ int jbd2_journal_recover(journal_t *journal)
+ {
+-	int			err;
++	int			err, err2;
+ 	journal_superblock_t *	sb;
+ 
+ 	struct recovery_info	info;
+@@ -263,7 +263,10 @@ int jbd2_journal_recover(journal_t *jour
+ 	journal->j_transaction_sequence = ++info.end_transaction;
+ 
+ 	jbd2_journal_clear_revoke(journal);
+-	sync_blockdev(journal->j_fs_dev);
++	err2 = sync_blockdev(journal->j_fs_dev);
++	if (!err)
++		err = err2;
++
+ 	return err;
+ }
+ 
+Index: linux-2.6.27-rc9-ex4-1/include/linux/jbd2.h
+===================================================================
+--- linux-2.6.27-rc9-ex4-1.orig/include/linux/jbd2.h
++++ linux-2.6.27-rc9-ex4-1/include/linux/jbd2.h
+@@ -1061,7 +1061,7 @@ extern void	   jbd2_journal_clear_featur
+ 		   (journal_t *, unsigned long, unsigned long, unsigned long);
+ extern int	   jbd2_journal_create     (journal_t *);
+ extern int	   jbd2_journal_load       (journal_t *journal);
+-extern void	   jbd2_journal_destroy    (journal_t *);
++extern int	   jbd2_journal_destroy    (journal_t *);
+ extern int	   jbd2_journal_recover    (journal_t *journal);
+ extern int	   jbd2_journal_wipe       (journal_t *, int);
+ extern int	   jbd2_journal_skip_recovery	(journal_t *);
 
 
