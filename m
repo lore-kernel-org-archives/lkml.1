@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763800AbYJJUQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763211AbYJJUTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763800AbYJJUQW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761424AbYJJUQO
+	id S1763211AbYJJUTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbYJJUTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:16:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41301 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761051AbYJJUQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:16:14 -0400
-Message-ID: <48EFB7D7.4040108@kernel.org>
-Date: Fri, 10 Oct 2008 13:15:19 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Fri, 10 Oct 2008 16:19:45 -0400
+Received: from kroah.org ([198.145.64.141]:43692 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760380AbYJJUTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 16:19:44 -0400
+Date: Fri, 10 Oct 2008 13:16:10 -0700
+From: Greg KH <greg@kroah.com>
+To: Stefan Bader <stefan.bader@canonical.com>
+Cc: stable@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [stable] [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in
+	used_vectors bitmap
+Message-ID: <20081010201610.GA32164@kroah.com>
+References: <48EFB4B2.2020508@canonical.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #9, sparse
- IRQ support
-References: <20081010001727.GA14132@elte.hu> <20081010185912.GF21876@elte.hu> <48EFA8CA.1020600@kernel.org> <20081010194712.GA31926@elte.hu> <48EFB704.9070308@kernel.org> <20081010201418.GA9046@elte.hu>
-In-Reply-To: <20081010201418.GA9046@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EFB4B2.2020508@canonical.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
+On Fri, Oct 10, 2008 at 04:01:54PM -0400, Stefan Bader wrote:
+> Affected: 2.6.24-2.6.27
 > 
->> Ingo Molnar wrote:
->>> * Yinghai Lu <yinghai@kernel.org> wrote:
->>>
->>>> Ingo Molnar wrote:
->>>>> * Ingo Molnar <mingo@elte.hu> wrote:
->>>>>
->>>>>> Linus,
->>>>>>
->>>>>> Please pull the latest x86-v28-for-linus-phase9 git tree from:
->>>>>>
->>>>>> Sparse IRQ support - make NR_IRQS dynamic by turning it into nr_irqs, 
->>>>>> an by creating irq descriptors in a sparse way.
->>>>>>
->>>>>> Includes a number of dependent x86 topics: timers/hpet-percpu, IO-APIC 
->>>>>> and local APIC code unification, UV support updates.
->>>>>>
->>>>>> Has been cross-built on all architectures we could get crosscompilers 
->>>>>> for:
->>>>>>
->>>>>>   http://www.tglx.de/autoqa/index
->>>>>>
->>>>>> It should be largely uneventful for sparse-irq unaware, non-x86 
->>>>>> architectures.
->>>>> please find updated pull request below. Relative to phase-N-1. Updates 
->>>>> from today in this class of topics:
->>>>>
->>>>>   b570868: x86: apic - unify APIC_DIVISOR
->>>>>
->>>>> And i removed:
->>>>>
->>>>>   eada62c: acpi/x86: introduce __apci_map_table, v4
->>>>>
->>>>> [ Cc:-ed Yinghai for that - we can live without that patch (i.e. we at
->>>>>   most get a leak warning) and can have that via acpi.git, correct? ]
->>>> yes. we have several patches that even didn't pick up for a while.
->>>>
->>>> also please ask Linus to pull pci tree from Jesse before sparseirq.
->>>>
->>>> because we need
->>>> 	PCI: change MSI-x vector to 32bit
->>>>
->>>> in pci tree.
->>> is it absolutely needed?
->>>
->> qla2xxx with MSI-X will crash. only happend with the new card that support msi-x.
->>
->> so it is not absolutely needed.
+> Someone from the community found out, that after repeatedly unloading and
+> loading a device driver that uses MSI IRQs, the system eventually assigned
+> the vector initially reserved for IRQ0 to the device driver.
 > 
-> but as Jesse noted we have:
+> The reason for this is, that although IRQ0 is tied to the FIRST_DEVICE_VECTOR
+> when declaring the irq_vector table, the corresponding bit in the used_vectors
+> map is not set. So, if vectors are released and assigned often enough, the
+> vector will get assigned to another interrupt. This happens more often with
+> MSI interrupts as those are exclusively using a vector.
 > 
->  9e40236: pci: change msi-x vector to 32bit
+> Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
 > 
-> included in irq/sparseirq so it should be fine and there's no dependency 
-> on the PCI tree.
+> Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
 
-good. so sparseirq could be pulled before pci tree.
+Hint, if you want patches to go into the -stable tree, just add:
+	cc: Stable <stable@kernel.org>
+to the patch when you submit it in the signed-off-by area, and it will
+be automatically sent to us when it goes into the main kernel tree.
 
-YH
+That makes it easier for the stable team, as we don't have to track
+things "by hand" to determine when and if a patch does go into Linus's
+tree.
+
+So if you can, please do this in the future.
+
+thanks,
+
+greg k-h
