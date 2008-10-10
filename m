@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbYJJQnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYJJQpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760765AbYJJQnb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758412AbYJJQnX
+	id S1761284AbYJJQpp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758900AbYJJQph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:43:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:46398 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758159AbYJJQnW (ORCPT
+	Fri, 10 Oct 2008 12:45:37 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:56160 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758423AbYJJQpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:43:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=niyYMziu6NJvrvlzG9/biONGvW8YeQmq3qsoZFLhcf66U/UpQbZM/tvuPkGcW1OWan
-         ijFtQocmi4BrRgtlm2zqIJza6nBdFw1ckTkbl+KBaMeP25TlIFxcikIBVbZkbqSNGiQ6
-         MhSAqjUp6hCm3UlLJKuR/j05aJl1KG48tO5v4=
-Message-ID: <23165e010810100943ua84228cn2faa03a5eb59255@mail.gmail.com>
-Date: Fri, 10 Oct 2008 18:43:21 +0200
-From: "Nicolas Cannasse" <ncannasse@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: recv() hangs until SIGCHLD ?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 10 Oct 2008 12:45:36 -0400
+Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       arnd@arndb.de, Dave Hansen <dave@linux.vnet.ibm.com>
+In-Reply-To: <20081010140430.GA14640@us.ibm.com>
+References: <20081009190405.13A253CB@kernel>
+	 <20081009190406.1B257119@kernel> <48EF2BAB.1010009@fr.ibm.com>
+	 <20081010140430.GA14640@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 18:45:32 +0200
+Message-Id: <1223657132.10017.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2008-10-10 at 09:04 -0500, Serge E. Hallyn wrote:
+> Remember a part of Ingo's motivation is to push c/r developers to
+> address the lacking features that users use most, earlier.  So the
+> warnings and subsequent email complaints are what we're after.  Hence a
+> single 'checkpointable or not' flag.
+> 
+> Given the single flag, how do you know at sys_mq_unlink() whether the
+> process also has an opensocket?
+> 
+> Rather than make this tracking facility more complicated and intrusive,
+> if people complain that they couldn't checkpoint bc of a warning about
+> aio, then we implement aio c/r!  We don't just try and reduce the amount
+> of time that you can't checkpoint bc of lack of aio c/r support  :)
+> 
+> -serge
 
-We've been tracking a bug in our server application for some time now,
-and now that we could isolate it we're stuck without a meaningful
-explanation. Hope somehow would be able to give use some answers.
+Serge,
 
-We run a multithread application which is using pthreads and sockets.
-A thread uses accept() then dispatch the socket to one of the workers
-threads that process it. Sockets are then not used simultaneously by
-several threads.
+It's exactly what I meant before, the tracking facility would be awfully
+complicated. It cannot be done that way.
+But there's also something awkward with the flag thing : can you provide
+right now an exhaustive list of all the places where you must raise it ?
 
-In some rare cases, one (or several) threads are hanging in recv().
-Both lsof and ls /proc/<pid>/fd show that the socket used is in
-ESTABLISHED mode but when checking on the host on which it's connected
-(a mysql DB) we can't find the corresponding client socket (as it's
-been closed already on the other side).
+I'd rather do some heavy checking at checkpoint time.
 
-We are using the Boehm GC which uses the signals SIGXCPU and SIGPWR to
-pause+restart the threads when running a GC cycle. We are correctly
-handling EINTR in send() and recv() by restarting the call in case
-they get interrupted this way.
+Greg.
 
-However, when attaching GDB to our locked thread it seems that even
-when the GC runs, recv() does not exit (the breakpoint after it is not
-reached). If we send SIGCHLD to the hanging thread with GDB, recv()
-does exit and the thread is correctly unlocked. If we don't, it will
-hang forever.
 
-Additional details : recv() is using MSG_NOSIGNAL and we have enabled
-TCP_NODELAY on the socket by using setsockopt. Some other
-not-multithreaded apps are using the same Databases and this behavior
-does not occur for them.
-
-Any idea how we can stop this from happening or what additional things
-we can check to get more informations on what's occurring ?
-
-Thanks a lot,
-Nicolas
