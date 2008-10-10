@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYJJJPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbYJJJRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbYJJJPg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 05:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYJJJPZ
+	id S1756078AbYJJJRn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 05:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYJJJRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 05:15:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36361 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Oct 2008 05:17:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38781 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751414AbYJJJPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 05:15:23 -0400
-Date: Fri, 10 Oct 2008 11:15:11 +0200
+	id S1751009AbYJJJRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 05:17:34 -0400
+Date: Fri, 10 Oct 2008 11:17:11 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <s0mbre@tservice.net.ru>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081010091511.GC5116@elte.hu>
-References: <20081009231759.GA8664@tservice.net.ru> <20081010080910.GA31723@tservice.net.ru>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched_clock: prevent scd->clock from moving backwards
+Message-ID: <20081010091711.GA7805@elte.hu>
+References: <48D959E8.4000303@goop.org> <1223470773.6336.13.camel@norville.austin.ibm.com> <1223470854.6336.15.camel@norville.austin.ibm.com> <1223507104.7382.6.camel@lappy.programming.kicks-ass.net> <20081009090605.GA21798@elte.hu> <20081009151703.GA8010@elte.hu> <1223574862.6407.16.camel@norville.austin.ibm.com> <1223576490.6394.3.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081010080910.GA31723@tservice.net.ru>
+In-Reply-To: <1223576490.6394.3.camel@norville.austin.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,90 +39,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-hi Evgeniy,
+* Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
 
-* Evgeniy Polyakov <s0mbre@tservice.net.ru> wrote:
-
-> Hi Peter.
+> On Thu, 2008-10-09 at 12:54 -0500, Dave Kleikamp wrote:
 > 
-> I've enabled kernel hacking option and scheduler debugging and turned
-> off hrticks and performance jumped to 382 MB/s:
+> > I'll fix the patch and retest it before sending it again.
 > 
-> vanilla 27: 347.222
-> no TSO/GSO: 357.331
-> no hrticks: 382.983
+> I'm definitely running with the new patch now.  Here goes:
+>  -------------------------------------------------
+> sched_clock: prevent scd->clock from moving backwards
 > 
-> I use tsc clocksource, also available acpi_pm and jiffies,
-> with acpi_pm performance is even lower (I stopped test after it dropped
-> below 340 MB/s mark), jiffies do not work at all, looks like sockets
-> stuck in time_wait state when this clock source is used, although that
-> may be some different issue.
+> When sched_clock_cpu() couples the clocks between two cpus, it may
+> increment scd->clock beyond the GTOD tick window that __update_sched_clock()
+> uses to clamp the clock.  A later call to __update_sched_clock() may move
+> the clock back to scd->tick_gtod + TICK_NSEC, violating the clock's
+> monotonic property.
 > 
-> So I think hrticks are guilty, but still not as good as .25 tree without
-> mentioned changes (455 MB/s) and .24 (475 MB/s).
+> This patch ensures that scd->clock will not be set backward.
+> 
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-i'm glad that you are looking into this! That is an SMP box, right? If 
-yes then could you try this sched-domains tuning utility i have written 
-yesterday (incidentally):
-
-  http://redhat.com/~mingo/cfs-scheduler/tune-sched-domains
-
-just run it without options to see the current sched-domains options. On 
-a testsystem i have it displays this:
-
-# tune-sched-domains
-usage: tune-sched-domains <val>
-current val on cpu0/domain0:
-SD flag: 47
-+   1: SD_LOAD_BALANCE:          Do load balancing on this domain
-+   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
-+   4: SD_BALANCE_EXEC:          Balance on exec
-+   8: SD_BALANCE_FORK:          Balance on fork, clone
--  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
-+  32: SD_WAKE_AFFINE:           Wake task to waking CPU
--  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
-
-then could you check what effects it has if you turn off 
-SD_BALANCE_NEWIDLE? On my box i did it via:
-
-# tune-sched-domains $[47-2]
-changed /proc/sys/kernel/sched_domain/cpu0/domain0/flags: 47 => 45
-SD flag: 45
-+   1: SD_LOAD_BALANCE:          Do load balancing on this domain
--   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
-+   4: SD_BALANCE_EXEC:          Balance on exec
-+   8: SD_BALANCE_FORK:          Balance on fork, clone
--  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
-+  32: SD_WAKE_AFFINE:           Wake task to waking CPU
--  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
-changed /proc/sys/kernel/sched_domain/cpu0/domain1/flags: 1101 => 45
-SD flag: 45
-+   1: SD_LOAD_BALANCE:          Do load balancing on this domain
--   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
-+   4: SD_BALANCE_EXEC:          Balance on exec
-+   8: SD_BALANCE_FORK:          Balance on fork, clone
--  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
-+  32: SD_WAKE_AFFINE:           Wake task to waking CPU
--  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
-
-and please, when tuning such scheduler bits, could you run latest 
-tip/master:
-
-   http://people.redhat.com/mingo/tip.git/README
-
-and you need to have CONFIG_SCHED_DEBUG=y enabled for the tuning knobs.
-
-so that it's all in sync with upcoming scheduler changes/tunings/fixes.
-
-It will also make it much easier for us to apply any fix patches you 
-might send :-)
-
-For advanced tuners: you can specify two or more domain flags options as 
-well on the command line - that will be put into domain1/domain2/etc. I 
-usually tune these flags via something like:
-
-  tune-sched-domains $[1*1+1*2+1*4+1*8+0*16+1*32+1*64]
-
-that makes it easy to set/clear each of the flags.
+applied to tip/sched/clock, thanks Dave!
 
 	Ingo
