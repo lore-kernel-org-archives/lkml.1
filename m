@@ -1,117 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763158AbYJJT3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763438AbYJJTab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763158AbYJJT3W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760417AbYJJT3H
+	id S1763438AbYJJTab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761119AbYJJTaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:29:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46871 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759625AbYJJT3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:29:04 -0400
-Date: Fri, 10 Oct 2008 20:27:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Tejun Heo <tj@kernel.org>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Tom Mortensen <tmmlkml@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Gwendal Grignou <gwendal@google.com>,
-       Brian Rademacher <rad@radfiles.net>, linux-ide@vger.kernel.org,
-       linux-raid maillist <linux-raid@vger.kernel.org>,
-       Linux Kernel Maillist <linux-kernel@vger.kernel.org>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       smartmontools-support@lists.sourceforge.net, xfs@oss.sgi.com
-Subject: Re: exception Emask 0x0 SAct 0x1 / SErr 0x0 action 0x2 frozen
-Message-ID: <20081010202751.67a6d122@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.1.10.0810101505420.12937@p34.internal.lan>
-References: <3E6D0C24877245C3A5A327129A7B4CA7@909927SOSLA>
-	<alpine.DEB.1.10.0809220828490.23159@p34.internal.lan>
-	<5419A02543384E69AF2BA82FF6E66C14@909927SOSLA>
-	<alpine.DEB.1.10.0809220903400.23159@p34.internal.lan>
-	<4B1ABD0393EF40FFB0A12242FE8356AF@909927SOSLA>
-	<alpine.DEB.1.10.0809220915470.23159@p34.internal.lan>
-	<alpine.DEB.1.10.0809220926240.23159@p34.internal.lan>
-	<e7510f760809231114y6cbaf13aqf7c63bd48a73c978@mail.gmail.com>
-	<48DBAB81.8050900@tmr.com>
-	<48E08E2D.6050905@kernel.org>
-	<a52a95e30809301347s70b57ebfh280a6871329afd72@mail.gmail.com>
-	<alpine.DEB.1.10.0809301715280.14600@p34.internal.lan>
-	<alpine.LNX.2.00.0809301946020.16014@filesrv1.baby-dragons.com>
-	<alpine.DEB.1.10.0810010403500.16900@p34.internal.lan>
-	<alpine.DEB.1.10.0810010710520.22435@p34.internal.lan>
-	<48E6D481.7050407@kernel.org>
-	<alpine.DEB.1.10.0810040410170.14969@p34.internal.lan>
-	<alpine.DEB.1.10.0810101505420.12937@p34.internal.lan>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Oct 2008 15:30:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53853 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758856AbYJJTaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:30:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>,
+       Parag Warudkar <parag.lkml@gmail.com>
+Subject: Re: [linux-pm] WARNING: at kernel/power/main.c:176 suspend_test_finish+0x70/0x80()
+Date: Fri, 10 Oct 2008 21:34:26 +0200
+User-Agent: KMail/1.9.9
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0810101257030.2185-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0810101257030.2185-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810102134.27112.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> [420781.333189] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
->                               ^^ ^^(b0/d8)^^ ^^(4f:c2)
-> [420781.333190]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
-> (timeout)                    ^^ 40:00:ff
-> [420781.333194] ata6.00: status: { DRDY }
-
-They are the send and received task file (command blocks) for the failed
-command.
-
-> [420781.333200] ata6: hard resetting link
-> [420781.638589] ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [420781.662166] ata6.00: configured for UDMA/133
-> [420781.662166] ata6: EH complete
+On Friday, 10 of October 2008, Alan Stern wrote:
+> On Fri, 10 Oct 2008, Parag Warudkar wrote:
 > 
-> (at the time there was little to no I/O occuring on this block device, but 
-> disks on the raid5 volume were being accessed at the time, so there was 
-> system activity, mainly disk reads 300-500KiB/s over ethernet)
-> 
->   Nick's(?) problem:
-> 
-> > Nick
+> > On Fri, Oct 10, 2008 at 10:31 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
 > > 
-> > ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> > ata1.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->                 ^^ ^^ (ea/00) vs. (b0/d8) - mind are always the same (FYI)
-> >         res 40/00:00:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->                ^^ ^^ (40:00: but no ff)
+> > > There's a bug that affects USB power management: commmit
+> > > f9dd45ce10a014bdfd5432828c44630ea7fefedd needs to be reverted.  Greg KH
+> > > has been asked to do this a few times but he hasn't gotten around to it
+> > > yet.
+> > 
+> > Hi Alan,
+> > 
+> > Thanks for the info.
+> > 
+> > I can't seem to find that commit in mainline. If you have pointer to
+> > the patch I will submit a revert.
 > 
->            The rest of the messages are the same.  Is there any correlation
->            that can be made here?  When this happens to others, is it
->            always the same codes as shown above or do they change?  If they
->            do not change, how come they vary between users who have this
->            problem?
-> 
-> > ata1.00: status: { DRDY }
-> > ata1: soft resetting link
-> > ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> > ata1.00: configured for UDMA/133
-> > ata1: EH complete
-> > sd 1:0:0:0: [sda] 2930277168 512-byte hardware sectors (1500302 MB)
-> > sd 1:0:0:0: [sda] Write Protect is off
-> > sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> > sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-> > support DPO or FUA
-> 
-> Can anything be said about these errors, can we classify them into groups?
-> Or are they just random? It does not appear to happen more or less with 
-> one filesystem or another either, one guy is using ext3, I am using XFS-- 
-> certainly something much deeper..
-> 
-> Justin.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> It isn't in mainline; it's in linux-next.  Sorry, I wasn't sure which 
+> kernel you were using.
 
+I understood it was the mainline from the report.
 
--- 
---
-	"Alan, I'm getting a bit worried about you."
-				-- Linus Torvalds
+Parag, could you please try to suspend without the USB drivers and see if the
+delay is still there?
+
+Thanks,
+Rafael
