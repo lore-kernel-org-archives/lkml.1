@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYJJJmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYJJJnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbYJJJmr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 05:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYJJJmi
+	id S1757563AbYJJJnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 05:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYJJJnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 05:42:38 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:53895 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751765AbYJJJmh (ORCPT
+	Fri, 10 Oct 2008 05:43:31 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:3029 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479AbYJJJna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 05:42:37 -0400
-Date: Fri, 10 Oct 2008 11:42:35 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Tim Bird <tim.bird@am.sony.com>
-cc: Adrian Bunk <bunk@kernel.org>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: RFC - size tool for kernel build system
-In-Reply-To: <48EE9A1C.8040301@am.sony.com>
-Message-ID: <Pine.LNX.4.64.0810101141340.12257@vixen.sonytel.be>
-References: <48EBD268.50208@am.sony.com> <20081009152151.GB17013@cs181140183.pp.htv.fi>
- <48EE9A1C.8040301@am.sony.com>
+	Fri, 10 Oct 2008 05:43:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=U+hwrWsbKl8gkCst+11yGt8LNcDW6rMSUutyzmMe5ANR7rfdjDkZCxEa2H6AxZs8Nv
+         spv06BM0TvZh0Zs1TWHKx2RiteRmF5Gq/Flc7WJtrpUYTLVgh2bGcqpqkCtU3sGAL80z
+         M6c4tusslJ5TIzf9T8zL7irtBMFUKhdkFbPiY=
+Date: Fri, 10 Oct 2008 10:43:03 +0100
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [Patch] kernel/kallsyms.c: fix double return's
+Message-ID: <20081010094223.GA2925@hack.voiplan.pt>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-231544204-1223631755=:12257"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-231544204-1223631755=:12257
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Commit 6dd06c9fbe025f542bce4cdb91790c0f91962722 introduced double
+returns in the function kallsyms_lookup(), it's weird.
+The second one should be removed.
 
-On Thu, 9 Oct 2008, Tim Bird wrote:
-> Adrian Bunk wrote:
-> > The building blocks that would be useful are IMHO:
-> > - a make target that generates a report for one kernel
-> >   (like the checkstack or export_report targets)
-> > - a script that compares two such reports and outputs the
-> >   size differences
-> > 
-> > That's also easy to do, and if that's what's wanted I can send a patch 
-> > that does it.
-> 
-> I took a stab at this with the attached two scripts.  These are
-> not quite ready for prime time, but show the basic idea.
-> I only have a partial list of subsystems, and am skipping the
-> runtime data collection, for now.
-> 
-> I have only made the scripts, not any make targets for them.
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 
-Seems to work fine, after I hacked my $CROSS_COMPILE prefix into the hardcoded
-nm launch.
+---
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 38fc10a..5072cf1 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -260,7 +260,6 @@ const char *kallsyms_lookup(unsigned long addr,
+ 	/* see if it's in a module */
+ 	return module_address_lookup(addr, symbolsize, offset, modname,
+ 				     namebuf);
+-	return NULL;
+ }
+ 
+ int lookup_symbol_name(unsigned long addr, char *symname)
 
-Thanks!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-231544204-1223631755=:12257--
