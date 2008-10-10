@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762964AbYJJTk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763008AbYJJTox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762964AbYJJTk6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760412AbYJJTks
+	id S1763008AbYJJTox (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbYJJTop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:40:48 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:53094 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757751AbYJJTkr (ORCPT
+	Fri, 10 Oct 2008 15:44:45 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35929 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760417AbYJJTop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:40:47 -0400
-Subject: Re: [GIT PULL] s390 patches for 2.6.28
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-In-Reply-To: <1223645557.5449.1.camel@localhost>
-References: <1223645557.5449.1.camel@localhost>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 10 Oct 2008 21:38:30 +0200
-Message-Id: <1223667510.6580.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 15:44:45 -0400
+Date: Fri, 10 Oct 2008 15:44:42 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] WARNING: at kernel/power/main.c:176
+ suspend_test_finish+0x70/0x80()
+In-Reply-To: <200810102134.27112.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0810101542320.2185-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-10 at 15:32 +0200, Martin Schwidefsky wrote:
-> Hi Linus,
+On Fri, 10 Oct 2008, Rafael J. Wysocki wrote:
+
+> I understood it was the mainline from the report.
 > 
-> please pull from 'for-linus' branch of
-> 
-> 	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
-> 
-> to receive the following updates:
+> Parag, could you please try to suspend without the USB drivers and see if the
+> delay is still there?
 
-Fixed the merge conflicts with latest update on your git tree and pushed
-the patches to git390 again. Should work now.
+Or even better, suspend with the USB drivers present, and with
+CONFIG_USB_DEBUG, CONFIG_PM_SLEEP, and CONFIG_PRINTK_TIME all enabled.  
+The resulting detailed timing information should pinpoint the problem.
 
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Alan Stern
 
