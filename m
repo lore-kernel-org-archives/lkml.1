@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764878AbYJJXBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764751AbYJJXCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764878AbYJJXBx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 19:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763516AbYJJXAH
+	id S1764751AbYJJXCj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 19:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYJJXC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 19:00:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54794 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764612AbYJJXAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 19:00:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH -next] PM: Simplify the new suspend/hibernation framework for devices
-Date: Sat, 11 Oct 2008 01:04:17 +0200
-User-Agent: KMail/1.9.9
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Hannes Reinecke <hare@suse.de>
-References: <200810060055.07601.rjw@sisk.pl> <200810110047.35993.rjw@sisk.pl> <20081010224343.GA30203@kroah.com>
-In-Reply-To: <20081010224343.GA30203@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 10 Oct 2008 19:02:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41339 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753659AbYJJXC1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 19:02:27 -0400
+Date: Fri, 10 Oct 2008 16:01:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ashutosh Naik" <ashutosh@chelsio.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, rusty@rustcorp.com.au,
+       kxie@chelsio.com, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] Prevent modpost from looking for a .cmd file for a
+ static library linked into a module
+Message-Id: <20081010160129.1159a2ef.akpm@linux-foundation.org>
+In-Reply-To: <8A71B368A89016469F72CD08050AD334038D52CF@maui.asicdesigners.com>
+References: <8A71B368A89016469F72CD08050AD334038D52CF@maui.asicdesigners.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810110104.18707.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 11 of October 2008, Greg KH wrote:
-> On Sat, Oct 11, 2008 at 12:47:34AM +0200, Rafael J. Wysocki wrote:
-> > On Friday, 10 of October 2008, Greg KH wrote:
-> > > On Mon, Oct 06, 2008 at 10:46:05PM +0200, Rafael J. Wysocki wrote:
-> > > > On Monday, 6 of October 2008, Rafael J. Wysocki wrote:
-> > > > > Hi Greg,
-> > > > > 
-> > > > > I promised at the KS that I would simplify the new suspend/hibernation
-> > > > > framework for devices to avoid the confusion with two types of PM
-> > > > > operations and pointers to PM operations from too many places.
-> > > > > 
-> > > > > The appended patch is intended for this purpose.  Unfortunately, I can't
-> > > > > split it into subsystem-related patches, because compilation would be broken
-> > > > > between them.
-> > > > > 
-> > > > > The patch applies to linux-next, but it's trivial to make it apply to the
-> > > > > mainline.  It's been compiled on x86 (both 32-bit and 64-bit) and tested
-> > > > > on hp nx6325, doesn't appear to break anything.
-> > > > 
-> > > > This one had a checkpatch.pl problem, sorry for that.  Updated patch is
-> > > > appended.
-> > > 
-> > > I've added this to my tree (Jesse, is this ok, as it does have a PCI
-> > > portion?)
-> > > 
-> > > But it's too late for .28, especially due to the -next tree not up and
-> > > running right now.  I'll let it bake in -mm and -next and it should go
-> > > into .29.
-> > > 
-> > > Is that ok?
-> > 
-> > Well, if anyone pushes anything depending on this framework for .27, that will
-> > become a !@#$%^&* mess (we've had this problem once already).
+On Tue, 7 Oct 2008 11:26:15 -0700
+"Ashutosh Naik" <ashutosh@chelsio.com> wrote:
+
 > 
-> Do we have any drivers that depend on this framework in any tree?  Is
-> anyone needing this now?
+> This patch prevents modpost to look for a .cmd file when a module is
+> linked with a static library
+> 
+> Signed-off-by: Ashutosh Naik <ashutosh.naik@gmail.com>
 
-Well, I thought that the Hannes' work would depend on it quite a bit. :-)
+What is the reason for this change?
 
-Apart from this no one should really need it right now.  I hope.
+Presumably there is some user-observeable behaviour which it corrects? 
+What is it, and under what circumstances does it occur?
 
-Thanks,
-Rafael
+
+> diff -ruN linux-2.6.26.5/scripts/mod/sumversion.c
+> linux-2.6.26.5-mod/scripts/mod/sumversion.c
+> --- linux-2.6.26.5/scripts/mod/sumversion.c	2008-09-08
+> 10:40:20.000000000 -0700
+> +++ linux-2.6.26.5-mod/scripts/mod/sumversion.c	2008-10-07
+> 09:32:24.000000000 -0700
+> @@ -290,6 +290,15 @@
+>  	release_file(file, len);
+>  	return 1;
+>  }
+> +/* Check whether the file is a static library or not */
+> +static int is_static_library(const char *objfile)
+> +{
+> +	int len = strlen(objfile);
+> +	if((objfile[len -2]=='.') && (objfile[len - 1]=='a'))
+> +		return 1;
+> +	else
+> +		return 0;	
+> +}
+>  
+>  /* We have dir/file.o.  Open dir/.file.o.cmd, look for deps_ line to
+>   * figure out source file. */
+> @@ -420,7 +429,7 @@
+>  	while ((fname = strsep(&sources, " ")) != NULL) {
+>  		if (!*fname)
+>  			continue;
+> -		if (!parse_source_files(fname, &md))
+> +		if (!(is_static_library(fname)) &&
+> !parse_source_files(fname, &md))
+>  			goto release;
+>  	}
+
+The patch was wordwrapped.  I fixed that and queued it for sending to
+Sam.  Please send me an updated, complete changelog, thanks.
+
