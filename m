@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763039AbYJJTes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763558AbYJJTf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763039AbYJJTes (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760356AbYJJTek
+	id S1763558AbYJJTf3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbYJJTfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:34:40 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53887 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758561AbYJJTej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:34:39 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [Bug #11224] Only three cores found on quad-core machine.
-Date: Fri, 10 Oct 2008 21:39:08 +0200
-User-Agent: KMail/1.9.9
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <0pOgGB.A.uLG.E475IB@wind> <200810081524.40614.nickpiggin@yahoo.com.au> <20081010153938.GC12937@redhat.com>
-In-Reply-To: <20081010153938.GC12937@redhat.com>
+	Fri, 10 Oct 2008 15:35:18 -0400
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:58467 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760356AbYJJTfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:35:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=kkH25HLLHSVKqGmzPAH3RDqLmiXKURN+WLDd44UHajuBqLSAmOXlHd5f1BNqsWWo9bxuavTvSIPq7tEcRubLQGA37Ir8b9I7rhleomJJwf0aGeB7Sq+ij/nOuK8nXpgH;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #9, sparse =?iso-8859-1?q?IRQ=09support?=
+Date: Fri, 10 Oct 2008 12:34:56 -0700
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <20081010001727.GA14132@elte.hu> <20081010185912.GF21876@elte.hu> <48EFA8CA.1020600@kernel.org>
+In-Reply-To: <48EFA8CA.1020600@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810102139.09411.rjw@sisk.pl>
+Message-Id: <200810101234.57440.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 of October 2008, Dave Jones wrote:
-> On Wed, Oct 08, 2008 at 03:24:40PM +1100, Nick Piggin wrote:
->  > On Wednesday 08 October 2008 02:32, Dave Jones wrote:
->  > > On Wed, Oct 08, 2008 at 02:18:18AM +1100, Nick Piggin wrote:
->  > >  > On Sunday 05 October 2008 04:32, Rafael J. Wysocki wrote:
->  > >  > > This message has been generated automatically as a part of a report
->  > >  > > of recent regressions.
->  > >  > >
->  > >  > > The following bug entry is on the current list of known regressions
->  > >  > > from 2.6.26.  Please verify if it still should be listed and let me
->  > >  > > know (either way).
->  > >  > >
->  > >  > >
->  > >  > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11224
->  > >  > > Subject		: Only three cores found on quad-core machine.
->  > >  > > Submitter	: Dave Jones <davej@redhat.com>
->  > >  > > Date		: 2008-08-01 18:15 (65 days old)
->  > >  > > References	: http://marc.info/?l=linux-kernel&m=121761475224719&w=4
->  > >  >
->  > >  > Dave, is your CPU2 getting stuck in calibrate_delay? Can you still
->  > >  > reproduce the bug? What if you boot the kernel with lpj=<something sane
->  > >  > like 2666785> in order to skip the calibrate_delay code?
->  > >  >
->  > >  > If that helps, can you try adding some printks to narrow down where it
->  > >  > is getting stuck?
->  > >
->  > > This is going to sound strange, but I've forgotten which box that was.
->  > > I'm due to reinstall all my test boxes now that the next Fedora beta
->  > > has come out anyway, so I'll hopefully figure out by the end of the week :)
->  > 
->  > That does sound strange ;) But I can't believe that! It would be really
->  > interesting if it was stuck in calibrate_delay, but maybe the backtrace
->  > is just messed up...
->  > 
->  > If you do manage to reproduce it, I would be quite interested. Otherwise,
->  > I think we can say it's not a showstopper for 2.6.27.
-> 
-> Ok, this can be closed out. 2.6.27 seems to work fine on all the
-> quad core machines I have in my cube.
+On Friday, October 10, 2008 12:11 pm Yinghai Lu wrote:
+> Ingo Molnar wrote:
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> >> Linus,
+> >>
+> >> Please pull the latest x86-v28-for-linus-phase9 git tree from:
+> >>
+> >> Sparse IRQ support - make NR_IRQS dynamic by turning it into nr_irqs,
+> >> an by creating irq descriptors in a sparse way.
+> >>
+> >> Includes a number of dependent x86 topics: timers/hpet-percpu, IO-APIC
+> >> and local APIC code unification, UV support updates.
+> >>
+> >> Has been cross-built on all architectures we could get crosscompilers
+> >> for:
+> >>
+> >>   http://www.tglx.de/autoqa/index
+> >>
+> >> It should be largely uneventful for sparse-irq unaware, non-x86
+> >> architectures.
+> >
+> > please find updated pull request below. Relative to phase-N-1. Updates
+> > from today in this class of topics:
+> >
+> >   b570868: x86: apic - unify APIC_DIVISOR
+> >
+> > And i removed:
+> >
+> >   eada62c: acpi/x86: introduce __apci_map_table, v4
+> >
+> > [ Cc:-ed Yinghai for that - we can live without that patch (i.e. we at
+> >   most get a leak warning) and can have that via acpi.git, correct? ]
+>
+> yes. we have several patches that even didn't pick up for a while.
+>
+> also please ask Linus to pull pci tree from Jesse before sparseirq.
+>
+> because we need
+> 	PCI: change MSI-x vector to 32bit
+>
+> in pci tree.
 
-Thanks, closed.
+I should have my pull ready soon; I'd like to do some cross compile tests with 
+my latest bits first.  But I think Ingo has a copy of this commit anyway so 
+it may be ok for Linus to pull anyway.
 
-Rafael
+-- 
+Jesse Barnes, Intel Open Source Technology Center
