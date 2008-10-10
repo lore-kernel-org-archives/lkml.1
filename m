@@ -1,172 +1,504 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbYJJJE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbYJJJE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757731AbYJJJE3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 05:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYJJJET
+	id S1757879AbYJJJE6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 05:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbYJJJEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 05:04:19 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:34027 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754150AbYJJJER (ORCPT
+	Fri, 10 Oct 2008 05:04:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40586 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbYJJJEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 05:04:17 -0400
-X-AuditID: 0ac90647-ad453ba00000286d-af-48ef1a8f080a
-Message-ID: <48EF1A89.1080300@hitachi.com>
-Date: Fri, 10 Oct 2008 18:04:09 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: tytso@mit.edu, adilger@sun.com
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: [PATCH] ext4: add an option to control error handling on file data
-Content-Type: text/plain; charset="us-ascii"
+	Fri, 10 Oct 2008 05:04:44 -0400
+Date: Fri, 10 Oct 2008 18:04:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/5] memcg: more updates (still under test) v7
+Message-Id: <20081010180423.f8f4e6e7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081010175936.f3b1f4e0.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081010175936.f3b1f4e0.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the journal doesn't abort when it gets an IO error in file data
-blocks, the file data corruption will spread silently.  Because
-most of applications and commands do buffered writes without fsync(),
-they don't notice the IO error.  It's scary for mission critical
-systems.  On the other hand, if the journal aborts whenever it gets
-an IO error in file data blocks, the system will easily become
-inoperable.  So this patch introduces a filesystem option to
-determine whether it aborts the journal or just call printk() when
-it gets an IO error in file data.
+This patch provides a function to move account information of a page between
+mem_cgroups and rewrite force_empty to make use of this.
 
-If you mount an ext4 fs with data_err=abort option, it aborts on file
-data write error.  If you mount it with data_err=ignore, it doesn't
-abort, just call printk().  data_err=ignore is the default.
+This moving of page_cgroup is done under
+ - lru_lock of source/destination mem_cgroup is held.
+ - lock_page_cgroup() is held.
 
-Here is the corresponding patch of the ext3 version:
-http://kerneltrap.org/mailarchive/linux-kernel/2008/9/9/3239374
+Then, a routine which touches pc->mem_cgroup without lock_page_cgroup() should
+confirm pc->mem_cgroup is still valid or not. Typlical code can be following.
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- Documentation/filesystems/ext4.txt |    5 +++++
- fs/ext4/ext4.h                     |    3 +++
- fs/ext4/super.c                    |   16 ++++++++++++++++
- fs/jbd2/commit.c                   |    2 ++
- include/linux/jbd2.h               |    3 +++
- 5 files changed, 29 insertions(+)
+(while page is not under lock_page())
+	mem = pc->mem_cgroup;
+	mz = page_cgroup_zoneinfo(pc)
+	spin_lock_irqsave(&mz->lru_lock);
+	if (pc->mem_cgroup == mem)
+		...../* some list handling */
+	spin_unlock_irq(&mz->lru_lock);
 
-Index: linux-2.6.27-rc9-ex4-1/Documentation/filesystems/ext4.txt
+Of course, better way is
+	lock_page_cgroup(pc);
+	....
+	unlock_page_cgroup(pc);
+
+But you should confirm the nest of lock and avoid deadlock.
+
+If you treats page_cgroup from mem_cgroup's LRU under mz->lru_lock,
+you don't have to worry about what pc->mem_cgroup points to.
+moved pages are added to head of lru, not to tail.
+
+Expected users of this routine is:
+  - force_empty (rmdir)
+  - moving tasks between cgroup (for moving account information.)
+  - hierarchy (maybe useful.)
+
+force_empty(rmdir) uses this move_account and move pages to its parent.
+This "move" will not cause OOM (I added "oom" parameter to try_charge().)
+
+If the parent is busy (not enough memory), force_empty calls try_to_free_page()
+and reduce usage.
+
+Purpose of this behavior is
+  - Fix "forget all" behavior of force_empty and avoid leak of accounting.
+  - By "moving first, free if necessary", keep pages on memory as much as
+    possible.
+
+Adding a switch to change behavior of force_empty to
+  - free first, move if necessary
+  - free all, if there is mlocked/busy pages, return -EBUSY.
+is under consideration.
+
+Changelog: (v6) -> (v7)
+Changelog: (v5) -> (v6)
+  - removed unnecessary check.
+  - do all under lock_page_cgroup().
+  - removed res_counter_charge() from move function itself.
+    (and modifies try_charge() function.)
+  - add argument to add_list() to specify to add page_cgroup head or tail.
+  - merged with force_empty patch. (to answer who is user? question)
+
+Changelog: (v4) -> (v5)
+  - check for lock_page() is removed.
+  - rewrote description.
+
+Changelog: (v2) -> (v4)
+  - added lock_page_cgroup().
+  - splitted out from new-force-empty patch.
+  - added how-to-use text.
+  - fixed race in __mem_cgroup_uncharge_common().
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ Documentation/controllers/memory.txt |   10 -
+ mm/memcontrol.c                      |  267 +++++++++++++++++++++++++++--------
+ 2 files changed, 216 insertions(+), 61 deletions(-)
+
+Index: mmotm-2.6.27-rc8+/mm/memcontrol.c
 ===================================================================
---- linux-2.6.27-rc9-ex4-1.orig/Documentation/filesystems/ext4.txt
-+++ linux-2.6.27-rc9-ex4-1/Documentation/filesystems/ext4.txt
-@@ -218,6 +218,11 @@ errors=remount-ro(*)	Remount the filesys
- errors=continue		Keep going on a filesystem error.
- errors=panic		Panic and halt the machine if an error occurs.
- 
-+data_err=ignore(*)	Just print an error message if an error occurs
-+			in a file data buffer in ordered mode.
-+data_err=abort		Abort the journal if an error occurs in a file
-+			data buffer in ordered mode.
-+
- grpid			Give objects the same group ID as their creator.
- bsdgroups
- 
-Index: linux-2.6.27-rc9-ex4-1/fs/ext4/ext4.h
-===================================================================
---- linux-2.6.27-rc9-ex4-1.orig/fs/ext4/ext4.h
-+++ linux-2.6.27-rc9-ex4-1/fs/ext4/ext4.h
-@@ -556,6 +556,9 @@ do {									       \
- #define EXT4_MOUNT_I_VERSION            0x2000000 /* i_version support */
- #define EXT4_MOUNT_DELALLOC		0x8000000 /* Delalloc support */
- #define EXT4_MOUNT_AKPM_LOCK_HACK	0x10000000 /* akpm lock hack */
-+#define EXT4_MOUNT_DATA_ERR_ABORT	0x20000000 /* Abort on file data write
-+						    * error in ordered mode */
-+
- /* Compatibility, for having both ext2_fs.h and ext4_fs.h included at once */
- #ifndef _LINUX_EXT2_FS_H
- #define clear_opt(o, opt)		o &= ~EXT4_MOUNT_##opt
-Index: linux-2.6.27-rc9-ex4-1/fs/ext4/super.c
-===================================================================
---- linux-2.6.27-rc9-ex4-1.orig/fs/ext4/super.c
-+++ linux-2.6.27-rc9-ex4-1/fs/ext4/super.c
-@@ -779,6 +779,9 @@ static int ext4_show_options(struct seq_
- 		seq_printf(seq, ",inode_readahead_blks=%u",
- 			   sbi->s_inode_readahead_blks);
- 
-+	if (test_opt(sb, DATA_ERR_ABORT))
-+		seq_puts(seq, ",data_err=abort");
-+
- 	ext4_show_quota_options(seq, sb);
- 	return 0;
- }
-@@ -908,6 +911,7 @@ enum {
- 	Opt_commit, Opt_journal_update, Opt_journal_inum, Opt_journal_dev,
- 	Opt_journal_checksum, Opt_journal_async_commit,
- 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
-+	Opt_data_err_abort, Opt_data_err_ignore,
- 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
- 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
- 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
-@@ -954,6 +958,8 @@ static match_table_t tokens = {
- 	{Opt_data_journal, "data=journal"},
- 	{Opt_data_ordered, "data=ordered"},
- 	{Opt_data_writeback, "data=writeback"},
-+	{Opt_data_err_abort, "data_err=abort"},
-+	{Opt_data_err_ignore, "data_err=ignore"},
- 	{Opt_offusrjquota, "usrjquota="},
- 	{Opt_usrjquota, "usrjquota=%s"},
- 	{Opt_offgrpjquota, "grpjquota="},
-@@ -1189,6 +1195,12 @@ static int parse_options(char *options, 
- 				sbi->s_mount_opt |= data_opt;
- 			}
- 			break;
-+		case Opt_data_err_abort:
-+			set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
-+			break;
-+		case Opt_data_err_ignore:
-+			clear_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
-+			break;
- #ifdef CONFIG_QUOTA
- 		case Opt_usrjquota:
- 			qtype = USRQUOTA;
-@@ -2544,6 +2556,10 @@ static void ext4_init_journal_params(str
- 		journal->j_flags |= JBD2_LOCK_HACK;
- 	else
- 		journal->j_flags &= ~JBD2_LOCK_HACK;
-+	if (test_opt(sb, DATA_ERR_ABORT))
-+		journal->j_flags |= JBD2_ABORT_ON_SYNCDATA_ERR;
-+	else
-+		journal->j_flags &= ~JBD2_ABORT_ON_SYNCDATA_ERR;
- 	spin_unlock(&journal->j_state_lock);
+--- mmotm-2.6.27-rc8+.orig/mm/memcontrol.c
++++ mmotm-2.6.27-rc8+/mm/memcontrol.c
+@@ -257,7 +257,7 @@ static void __mem_cgroup_remove_list(str
  }
  
-Index: linux-2.6.27-rc9-ex4-1/fs/jbd2/commit.c
-===================================================================
---- linux-2.6.27-rc9-ex4-1.orig/fs/jbd2/commit.c
-+++ linux-2.6.27-rc9-ex4-1/fs/jbd2/commit.c
-@@ -683,6 +683,8 @@ start_journal_io:
- 		printk(KERN_WARNING
- 			"JBD2: Detected IO errors while flushing file data "
- 		       "on %s\n", journal->j_devname);
-+		if (journal->j_flags & JBD2_ABORT_ON_SYNCDATA_ERR)
-+			jbd2_journal_abort(journal, err);
- 		err = 0;
+ static void __mem_cgroup_add_list(struct mem_cgroup_per_zone *mz,
+-				struct page_cgroup *pc)
++				struct page_cgroup *pc, bool hot)
+ {
+ 	int lru = LRU_BASE;
+ 
+@@ -271,7 +271,10 @@ static void __mem_cgroup_add_list(struct
  	}
  
-Index: linux-2.6.27-rc9-ex4-1/include/linux/jbd2.h
-===================================================================
---- linux-2.6.27-rc9-ex4-1.orig/include/linux/jbd2.h
-+++ linux-2.6.27-rc9-ex4-1/include/linux/jbd2.h
-@@ -968,6 +968,9 @@ struct journal_s
- #define JBD2_LOADED	0x010	/* The journal superblock has been loaded */
- #define JBD2_BARRIER	0x020	/* Use IDE barriers */
- #define JBD2_LOCK_HACK	0x040	/* akpm's locking hack */
-+#define JBD2_ABORT_ON_SYNCDATA_ERR	0x080	/* Abort the journal on file
-+						 * data write error in ordered
-+						 * mode */
+ 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
+-	list_add(&pc->lru, &mz->lists[lru]);
++	if (hot)
++		list_add(&pc->lru, &mz->lists[lru]);
++	else
++		list_add_tail(&pc->lru, &mz->lists[lru]);
+ 
+ 	mem_cgroup_charge_statistics(pc->mem_cgroup, pc, true);
+ }
+@@ -467,21 +470,12 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	return nr_taken;
+ }
+ 
+-
+-/**
+- * mem_cgroup_try_charge - get charge of PAGE_SIZE.
+- * @mm: an mm_struct which is charged against. (when *memcg is NULL)
+- * @gfp_mask: gfp_mask for reclaim.
+- * @memcg: a pointer to memory cgroup which is charged against.
+- *
+- * charge aginst memory cgroup pointed by *memcg. if *memcg == NULL, estimated
+- * memory cgroup from @mm is got and stored in *memcg.
+- *
+- * Retruns 0 if success. -ENOMEM at failure.
++/*
++ * Unlike exported interface, "oom" parameter is added. if oom==true,
++ * oom-killer can be invoked.
+  */
+-
+-int mem_cgroup_try_charge(struct mm_struct *mm,
+-			gfp_t gfp_mask, struct mem_cgroup **memcg)
++static int __mem_cgroup_try_charge(struct mm_struct *mm,
++			gfp_t gfp_mask, struct mem_cgroup **memcg, bool oom)
+ {
+ 	struct mem_cgroup *mem;
+ 	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+@@ -528,7 +522,8 @@ int mem_cgroup_try_charge(struct mm_stru
+ 			continue;
+ 
+ 		if (!nr_retries--) {
+-			mem_cgroup_out_of_memory(mem, gfp_mask);
++			if (oom)
++				mem_cgroup_out_of_memory(mem, gfp_mask);
+ 			goto nomem;
+ 		}
+ 	}
+@@ -538,6 +533,24 @@ nomem:
+ 	return -ENOMEM;
+ }
+ 
++/**
++ * mem_cgroup_try_charge - get charge of PAGE_SIZE.
++ * @mm: an mm_struct which is charged against. (when *memcg is NULL)
++ * @gfp_mask: gfp_mask for reclaim.
++ * @memcg: a pointer to memory cgroup which is charged against.
++ *
++ * charge aginst memory cgroup pointed by *memcg. if *memcg == NULL, estimated
++ * memory cgroup from @mm is got and stored in *memcg.
++ *
++ * Retruns 0 if success. -ENOMEM at failure.
++ */
++
++int mem_cgroup_try_charge(struct mm_struct *mm,
++			  gfp_t mask, struct mem_cgroup **memcg)
++{
++	return __mem_cgroup_try_charge(mm, mask, memcg, false);
++}
++
+ /*
+  * commit a charge got by mem_cgroup_try_charge() and makes page_cgroup to be
+  * USED state. If already USED, uncharge and return.
+@@ -567,11 +580,109 @@ static void __mem_cgroup_commit_charge(s
+ 	mz = page_cgroup_zoneinfo(pc);
+ 
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+-	__mem_cgroup_add_list(mz, pc);
++	__mem_cgroup_add_list(mz, pc, true);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 	unlock_page_cgroup(pc);
+ }
+ 
++/**
++ * mem_cgroup_move_account - move account of the page
++ * @pc:	page_cgroup of the page.
++ * @from: mem_cgroup which the page is moved from.
++ * @to:	mem_cgroup which the page is moved to. @from != @to.
++ *
++ * The caller must confirm following.
++ * 1. disable irq.
++ * 2. lru_lock of old mem_cgroup(@from) should be held.
++ *
++ * returns 0 at success,
++ * returns -EBUSY when lock is busy or "pc" is unstable.
++ *
++ * This function does "uncharge" from old cgroup but doesn't do "charge" to
++ * new cgroup. It should be done by a caller.
++ */
++
++static int mem_cgroup_move_account(struct page_cgroup *pc,
++	struct mem_cgroup *from, struct mem_cgroup *to)
++{
++	struct mem_cgroup_per_zone *from_mz, *to_mz;
++	int nid, zid;
++	int ret = -EBUSY;
++
++	VM_BUG_ON(!irqs_disabled());
++	VM_BUG_ON(from == to);
++
++	nid = page_cgroup_nid(pc);
++	zid = page_cgroup_zid(pc);
++	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
++	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
++
++
++	if (!trylock_page_cgroup(pc))
++		return ret;
++
++	if (!PageCgroupUsed(pc))
++		goto out;
++
++	if (pc->mem_cgroup != from)
++		goto out;
++
++	if (spin_trylock(&to_mz->lru_lock)) {
++		__mem_cgroup_remove_list(from_mz, pc);
++		css_put(&from->css);
++		res_counter_uncharge(&from->res, PAGE_SIZE);
++		pc->mem_cgroup = to;
++		css_get(&to->css);
++		__mem_cgroup_add_list(to_mz, pc, false);
++		ret = 0;
++		spin_unlock(&to_mz->lru_lock);
++	}
++out:
++	unlock_page_cgroup(pc);
++	return ret;
++}
++
++/*
++ * move charges to its parent.
++ */
++
++static int mem_cgroup_move_parent(struct page_cgroup *pc,
++				  struct mem_cgroup *child,
++				  gfp_t gfp_mask)
++{
++	struct cgroup *cg = child->css.cgroup;
++	struct cgroup *pcg = cg->parent;
++	struct mem_cgroup *parent;
++	struct mem_cgroup_per_zone *mz;
++	unsigned long flags;
++	int ret;
++
++	/* Is ROOT ? */
++	if (!pcg)
++		return -EINVAL;
++
++	parent = mem_cgroup_from_cont(pcg);
++
++	ret = __mem_cgroup_try_charge(NULL, gfp_mask, &parent, false);
++	if (ret)
++		return ret;
++
++	mz = mem_cgroup_zoneinfo(child,
++			page_cgroup_nid(pc), page_cgroup_zid(pc));
++
++	spin_lock_irqsave(&mz->lru_lock, flags);
++	ret = mem_cgroup_move_account(pc, child, parent);
++	spin_unlock_irqrestore(&mz->lru_lock, flags);
++
++	/* drop extra refcnt */
++	css_put(&parent->css);
++	/* uncharge if move fails */
++	if (ret)
++		res_counter_uncharge(&parent->res, PAGE_SIZE);
++
++	return ret;
++}
++
+ /*
+  * Charge the memory controller for page usage.
+  * Return
+@@ -593,7 +704,7 @@ static int mem_cgroup_charge_common(stru
+ 	prefetchw(pc);
+ 
+ 	mem = memcg;
+-	ret = mem_cgroup_try_charge(mm, gfp_mask, &mem);
++	ret = __mem_cgroup_try_charge(mm, gfp_mask, &mem, true);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -892,46 +1003,52 @@ int mem_cgroup_resize_limit(struct mem_c
+  * This routine traverse page_cgroup in given list and drop them all.
+  * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
+  */
+-#define FORCE_UNCHARGE_BATCH	(128)
+-static void mem_cgroup_force_empty_list(struct mem_cgroup *mem,
++static int mem_cgroup_force_empty_list(struct mem_cgroup *mem,
+ 			    struct mem_cgroup_per_zone *mz,
+ 			    enum lru_list lru)
+ {
+-	struct page_cgroup *pc;
+-	struct page *page;
+-	int count = FORCE_UNCHARGE_BATCH;
++	struct page_cgroup *pc, *busy;
+ 	unsigned long flags;
++	unsigned long loop;
+ 	struct list_head *list;
++	int ret = 0;
+ 
+ 	list = &mz->lists[lru];
+ 
+-	spin_lock_irqsave(&mz->lru_lock, flags);
+-	while (!list_empty(list)) {
+-		pc = list_entry(list->prev, struct page_cgroup, lru);
+-		page = pc->page;
+-		if (!PageCgroupUsed(pc))
++	loop = MEM_CGROUP_ZSTAT(mz, lru);
++	/* give some margin against EBUSY etc...*/
++	loop += 256;
++	busy = NULL;
++	while (loop--) {
++		ret = 0;
++		spin_lock_irqsave(&mz->lru_lock, flags);
++		if (list_empty(list)) {
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 			break;
+-		get_page(page);
++		}
++		pc = list_entry(list->prev, struct page_cgroup, lru);
++		if (busy == pc) {
++			list_move(&pc->lru, list);
++			busy = 0;
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
++			continue;
++		}
+ 		spin_unlock_irqrestore(&mz->lru_lock, flags);
+-		/*
+-		 * Check if this page is on LRU. !LRU page can be found
+-		 * if it's under page migration.
+-		 */
+-		if (PageLRU(page)) {
+-			__mem_cgroup_uncharge_common(page,
+-					MEM_CGROUP_CHARGE_TYPE_FORCE);
+-			put_page(page);
+-			if (--count <= 0) {
+-				count = FORCE_UNCHARGE_BATCH;
+-				cond_resched();
+-			}
+-		} else {
+-			spin_lock_irqsave(&mz->lru_lock, flags);
++
++		ret = mem_cgroup_move_parent(pc, mem, GFP_HIGHUSER_MOVABLE);
++		if (ret == -ENOMEM)
+ 			break;
+-		}
+-		spin_lock_irqsave(&mz->lru_lock, flags);
++
++		if (ret == -EBUSY || ret == -EINVAL) {
++			/* found lock contention or "pc" is obsolete. */
++			busy = pc;
++			cond_resched();
++		} else
++			busy = NULL;
+ 	}
+-	spin_unlock_irqrestore(&mz->lru_lock, flags);
++	if (!ret && !list_empty(list))
++		return -EBUSY;
++	return ret;
+ }
  
  /*
-  * Function declarations for the journaling transaction and buffer
-
-
+@@ -940,34 +1057,68 @@ static void mem_cgroup_force_empty_list(
+  */
+ static int mem_cgroup_force_empty(struct mem_cgroup *mem)
+ {
+-	int ret = -EBUSY;
+-	int node, zid;
++	int ret;
++	int node, zid, shrink;
++	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 
+ 	css_get(&mem->css);
+-	/*
+-	 * page reclaim code (kswapd etc..) will move pages between
+-	 * active_list <-> inactive_list while we don't take a lock.
+-	 * So, we have to do loop here until all lists are empty.
+-	 */
++
++	shrink = 0;
++move_account:
+ 	while (mem->res.usage > 0) {
++		ret = -EBUSY;
+ 		if (atomic_read(&mem->css.cgroup->count) > 0)
+ 			goto out;
++
+ 		/* This is for making all *used* pages to be on LRU. */
+ 		lru_add_drain_all();
+-		for_each_node_state(node, N_POSSIBLE)
+-			for (zid = 0; zid < MAX_NR_ZONES; zid++) {
++		ret = 0;
++		for_each_node_state(node, N_POSSIBLE) {
++			for (zid = 0; !ret && zid < MAX_NR_ZONES; zid++) {
+ 				struct mem_cgroup_per_zone *mz;
+ 				enum lru_list l;
+ 				mz = mem_cgroup_zoneinfo(mem, node, zid);
+-				for_each_lru(l)
+-					mem_cgroup_force_empty_list(mem, mz, l);
++				for_each_lru(l) {
++					ret = mem_cgroup_force_empty_list(mem,
++								  mz, l);
++					if (ret)
++						break;
++				}
+ 			}
++			if (ret)
++				break;
++		}
++		/* it seems parent cgroup doesn't have enough mem */
++		if (ret == -ENOMEM)
++			goto try_to_free;
+ 		cond_resched();
+ 	}
+ 	ret = 0;
+ out:
+ 	css_put(&mem->css);
+ 	return ret;
++
++try_to_free:
++	/* returns EBUSY if we come here twice. */
++	if (shrink)  {
++		ret = -EBUSY;
++		goto out;
++	}
++	/* try to free all pages in this cgroup */
++	shrink = 1;
++	while (nr_retries && mem->res.usage > 0) {
++		int progress;
++		progress = try_to_free_mem_cgroup_pages(mem,
++						  GFP_HIGHUSER_MOVABLE);
++		if (!progress)
++			nr_retries--;
++
++	}
++	/* try move_account...there may be some *locked* pages. */
++	if (mem->res.usage)
++		goto move_account;
++	ret = 0;
++	goto out;
+ }
+ 
+ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+Index: mmotm-2.6.27-rc8+/Documentation/controllers/memory.txt
+===================================================================
+--- mmotm-2.6.27-rc8+.orig/Documentation/controllers/memory.txt
++++ mmotm-2.6.27-rc8+/Documentation/controllers/memory.txt
+@@ -211,7 +211,9 @@ The memory.force_empty gives an interfac
+ 
+ # echo 1 > memory.force_empty
+ 
+-will drop all charges in cgroup. Currently, this is maintained for test.
++Will move account to parent. if parent is full, will try to free pages.
++If both parent and child are busy, returns -EBUSY;
++This file, memory.force_empty, is just for debug purpose.
+ 
+ 4. Testing
+ 
+@@ -242,8 +244,10 @@ reclaimed.
+ 
+ A cgroup can be removed by rmdir, but as discussed in sections 4.1 and 4.2, a
+ cgroup might have some charge associated with it, even though all
+-tasks have migrated away from it. Such charges are automatically dropped at
+-rmdir() if there are no tasks.
++tasks have migrated away from it.
++Such charges are moved to its parent as much as possible and freed if parent
++is full. (see force_empty)
++If both of them are busy, rmdir() returns -EBUSY.
+ 
+ 5. TODO
+ 
 
