@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYJJPAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761820AbYJJPAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbYJJPAO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 11:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbYJJO61
+	id S1761820AbYJJPAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 11:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760931AbYJJO63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 10:58:27 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42853 "EHLO
+	Fri, 10 Oct 2008 10:58:29 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42857 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760804AbYJJO6W (ORCPT
+	by vger.kernel.org with ESMTP id S1760135AbYJJO6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 10 Oct 2008 10:58:22 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 05/14] mfd: Add WM8350 comparator register definitions
-Date: Fri, 10 Oct 2008 15:58:07 +0100
-Message-Id: <1223650696-15552-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 06/14] mfd: Add WM8350 RTC register definitions
+Date: Fri, 10 Oct 2008 15:58:08 +0100
+Message-Id: <1223650696-15552-6-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223650696-15552-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1223650696-15552-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 References: <1223649928.6814.333.camel@dell-desktop.example.com>
  <1223650696-15552-1-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223650696-15552-2-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223650696-15552-3-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1223650696-15552-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223650696-15552-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/mfd/wm8350/comparator.h |  167 +++++++++++++++++++++++++++++++++
- 1 files changed, 167 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/mfd/wm8350/comparator.h
+ include/linux/mfd/wm8350/rtc.h |  260 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 260 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/mfd/wm8350/rtc.h
 
-diff --git a/include/linux/mfd/wm8350/comparator.h b/include/linux/mfd/wm8350/comparator.h
+diff --git a/include/linux/mfd/wm8350/rtc.h b/include/linux/mfd/wm8350/rtc.h
 new file mode 100644
-index 0000000..0537886
+index 0000000..cb337ea
 --- /dev/null
-+++ b/include/linux/mfd/wm8350/comparator.h
-@@ -0,0 +1,167 @@
++++ b/include/linux/mfd/wm8350/rtc.h
+@@ -0,0 +1,260 @@
 +/*
-+ * comparator.h  --  Comparator Aux ADC for Wolfson WM8350 PMIC
++ * rtc.h  --  RTC driver for Wolfson WM8350 PMIC
 + *
 + * Copyright 2007 Wolfson Microelectronics PLC
 + *
@@ -51,160 +52,253 @@ index 0000000..0537886
 + *  option) any later version.
 + */
 +
-+#ifndef __LINUX_MFD_WM8350_COMPARATOR_H_
-+#define __LINUX_MFD_WM8350_COMPARATOR_H_
++#ifndef __LINUX_MFD_WM8350_RTC_H
++#define __LINUX_MFD_WM8350_RTC_H
 +
 +/*
-+ * Registers
++ * Register values.
 + */
-+
-+#define WM8350_DIGITISER_CONTROL_1              0x90
-+#define WM8350_DIGITISER_CONTROL_2              0x91
-+#define WM8350_AUX1_READBACK                    0x98
-+#define WM8350_AUX2_READBACK                    0x99
-+#define WM8350_AUX3_READBACK                    0x9A
-+#define WM8350_AUX4_READBACK                    0x9B
-+#define WM8350_CHIP_TEMP_READBACK               0x9F
-+#define WM8350_GENERIC_COMPARATOR_CONTROL       0xA3
-+#define WM8350_GENERIC_COMPARATOR_1             0xA4
-+#define WM8350_GENERIC_COMPARATOR_2             0xA5
-+#define WM8350_GENERIC_COMPARATOR_3             0xA6
-+#define WM8350_GENERIC_COMPARATOR_4             0xA7
++#define WM8350_RTC_SECONDS_MINUTES              0x10
++#define WM8350_RTC_HOURS_DAY                    0x11
++#define WM8350_RTC_DATE_MONTH                   0x12
++#define WM8350_RTC_YEAR                         0x13
++#define WM8350_ALARM_SECONDS_MINUTES            0x14
++#define WM8350_ALARM_HOURS_DAY                  0x15
++#define WM8350_ALARM_DATE_MONTH                 0x16
++#define WM8350_RTC_TIME_CONTROL                 0x17
 +
 +/*
-+ * R144 (0x90) - Digitiser Control (1)
++ * R16 (0x10) - RTC Seconds/Minutes
 + */
-+#define WM8350_AUXADC_CTC                       0x4000
-+#define WM8350_AUXADC_POLL                      0x2000
-+#define WM8350_AUXADC_HIB_MODE                  0x1000
-+#define WM8350_AUXADC_SEL8                      0x0080
-+#define WM8350_AUXADC_SEL7                      0x0040
-+#define WM8350_AUXADC_SEL6                      0x0020
-+#define WM8350_AUXADC_SEL5                      0x0010
-+#define WM8350_AUXADC_SEL4                      0x0008
-+#define WM8350_AUXADC_SEL3                      0x0004
-+#define WM8350_AUXADC_SEL2                      0x0002
-+#define WM8350_AUXADC_SEL1                      0x0001
++#define WM8350_RTC_MINS_MASK                    0x7F00
++#define WM8350_RTC_MINS_SHIFT                        8
++#define WM8350_RTC_SECS_MASK                    0x007F
++#define WM8350_RTC_SECS_SHIFT                        0
 +
 +/*
-+ * R145 (0x91) - Digitiser Control (2)
++ * R17 (0x11) - RTC Hours/Day
 + */
-+#define WM8350_AUXADC_MASKMODE_MASK             0x3000
-+#define WM8350_AUXADC_CRATE_MASK                0x0700
-+#define WM8350_AUXADC_CAL                       0x0004
-+#define WM8350_AUX_RBMODE                       0x0002
-+#define WM8350_AUXADC_WAIT                      0x0001
++#define WM8350_RTC_DAY_MASK                     0x0700
++#define WM8350_RTC_DAY_SHIFT                         8
++#define WM8350_RTC_HPM_MASK                     0x0020
++#define WM8350_RTC_HPM_SHIFT                         5
++#define WM8350_RTC_HRS_MASK                     0x001F
++#define WM8350_RTC_HRS_SHIFT                         0
++
++/* Bit values for R21 (0x15) */
++#define WM8350_RTC_DAY_SUN                           1
++#define WM8350_RTC_DAY_MON                           2
++#define WM8350_RTC_DAY_TUE                           3
++#define WM8350_RTC_DAY_WED                           4
++#define WM8350_RTC_DAY_THU                           5
++#define WM8350_RTC_DAY_FRI                           6
++#define WM8350_RTC_DAY_SAT                           7
++
++#define WM8350_RTC_HPM_AM                            0
++#define WM8350_RTC_HPM_PM                            1
 +
 +/*
-+ * R152 (0x98) - AUX1 Readback
++ * R18 (0x12) - RTC Date/Month
 + */
-+#define WM8350_AUXADC_SCALE1_MASK               0x6000
-+#define WM8350_AUXADC_REF1                      0x1000
-+#define WM8350_AUXADC_DATA1_MASK                0x0FFF
++#define WM8350_RTC_MTH_MASK                     0x1F00
++#define WM8350_RTC_MTH_SHIFT                         8
++#define WM8350_RTC_DATE_MASK                    0x003F
++#define WM8350_RTC_DATE_SHIFT                        0
++
++/* Bit values for R22 (0x16) */
++#define WM8350_RTC_MTH_JAN                           1
++#define WM8350_RTC_MTH_FEB                           2
++#define WM8350_RTC_MTH_MAR                           3
++#define WM8350_RTC_MTH_APR                           4
++#define WM8350_RTC_MTH_MAY                           5
++#define WM8350_RTC_MTH_JUN                           6
++#define WM8350_RTC_MTH_JUL                           7
++#define WM8350_RTC_MTH_AUG                           8
++#define WM8350_RTC_MTH_SEP                           9
++#define WM8350_RTC_MTH_OCT                          10
++#define WM8350_RTC_MTH_NOV                          11
++#define WM8350_RTC_MTH_DEC                          12
++#define WM8350_RTC_MTH_JAN_BCD                    0x01
++#define WM8350_RTC_MTH_FEB_BCD                    0x02
++#define WM8350_RTC_MTH_MAR_BCD                    0x03
++#define WM8350_RTC_MTH_APR_BCD                    0x04
++#define WM8350_RTC_MTH_MAY_BCD                    0x05
++#define WM8350_RTC_MTH_JUN_BCD                    0x06
++#define WM8350_RTC_MTH_JUL_BCD                    0x07
++#define WM8350_RTC_MTH_AUG_BCD                    0x08
++#define WM8350_RTC_MTH_SEP_BCD                    0x09
++#define WM8350_RTC_MTH_OCT_BCD                    0x10
++#define WM8350_RTC_MTH_NOV_BCD                    0x11
++#define WM8350_RTC_MTH_DEC_BCD                    0x12
 +
 +/*
-+ * R153 (0x99) - AUX2 Readback
++ * R19 (0x13) - RTC Year
 + */
-+#define WM8350_AUXADC_SCALE2_MASK               0x6000
-+#define WM8350_AUXADC_REF2                      0x1000
-+#define WM8350_AUXADC_DATA2_MASK                0x0FFF
++#define WM8350_RTC_YHUNDREDS_MASK               0x3F00
++#define WM8350_RTC_YHUNDREDS_SHIFT                   8
++#define WM8350_RTC_YUNITS_MASK                  0x00FF
++#define WM8350_RTC_YUNITS_SHIFT                      0
 +
 +/*
-+ * R154 (0x9A) - AUX3 Readback
++ * R20 (0x14) - Alarm Seconds/Minutes
 + */
-+#define WM8350_AUXADC_SCALE3_MASK               0x6000
-+#define WM8350_AUXADC_REF3                      0x1000
-+#define WM8350_AUXADC_DATA3_MASK                0x0FFF
++#define WM8350_RTC_ALMMINS_MASK                 0x7F00
++#define WM8350_RTC_ALMMINS_SHIFT                     8
++#define WM8350_RTC_ALMSECS_MASK                 0x007F
++#define WM8350_RTC_ALMSECS_SHIFT                     0
++
++/* Bit values for R20 (0x14) */
++#define WM8350_RTC_ALMMINS_DONT_CARE                -1
++#define WM8350_RTC_ALMSECS_DONT_CARE                -1
 +
 +/*
-+ * R155 (0x9B) - AUX4 Readback
++ * R21 (0x15) - Alarm Hours/Day
 + */
-+#define WM8350_AUXADC_SCALE4_MASK               0x6000
-+#define WM8350_AUXADC_REF4                      0x1000
-+#define WM8350_AUXADC_DATA4_MASK                0x0FFF
++#define WM8350_RTC_ALMDAY_MASK                  0x0F00
++#define WM8350_RTC_ALMDAY_SHIFT                      8
++#define WM8350_RTC_ALMHPM_MASK                  0x0020
++#define WM8350_RTC_ALMHPM_SHIFT                      5
++#define WM8350_RTC_ALMHRS_MASK                  0x001F
++#define WM8350_RTC_ALMHRS_SHIFT                      0
++
++/* Bit values for R21 (0x15) */
++#define WM8350_RTC_ALMDAY_DONT_CARE                 -1
++#define WM8350_RTC_ALMDAY_SUN                        1
++#define WM8350_RTC_ALMDAY_MON                        2
++#define WM8350_RTC_ALMDAY_TUE                        3
++#define WM8350_RTC_ALMDAY_WED                        4
++#define WM8350_RTC_ALMDAY_THU                        5
++#define WM8350_RTC_ALMDAY_FRI                        6
++#define WM8350_RTC_ALMDAY_SAT                        7
++
++#define WM8350_RTC_ALMHPM_AM                         0
++#define WM8350_RTC_ALMHPM_PM                         1
++
++#define WM8350_RTC_ALMHRS_DONT_CARE                 -1
 +
 +/*
-+ * R156 (0x9C) - USB Voltage Readback
++ * R22 (0x16) - Alarm Date/Month
 + */
-+#define WM8350_AUXADC_DATA_USB_MASK             0x0FFF
++#define WM8350_RTC_ALMMTH_MASK                  0x1F00
++#define WM8350_RTC_ALMMTH_SHIFT                      8
++#define WM8350_RTC_ALMDATE_MASK                 0x003F
++#define WM8350_RTC_ALMDATE_SHIFT                     0
++
++/* Bit values for R22 (0x16) */
++#define WM8350_RTC_ALMDATE_DONT_CARE                -1
++
++#define WM8350_RTC_ALMMTH_DONT_CARE                 -1
++#define WM8350_RTC_ALMMTH_JAN                        1
++#define WM8350_RTC_ALMMTH_FEB                        2
++#define WM8350_RTC_ALMMTH_MAR                        3
++#define WM8350_RTC_ALMMTH_APR                        4
++#define WM8350_RTC_ALMMTH_MAY                        5
++#define WM8350_RTC_ALMMTH_JUN                        6
++#define WM8350_RTC_ALMMTH_JUL                        7
++#define WM8350_RTC_ALMMTH_AUG                        8
++#define WM8350_RTC_ALMMTH_SEP                        9
++#define WM8350_RTC_ALMMTH_OCT                       10
++#define WM8350_RTC_ALMMTH_NOV                       11
++#define WM8350_RTC_ALMMTH_DEC                       12
++#define WM8350_RTC_ALMMTH_JAN_BCD                 0x01
++#define WM8350_RTC_ALMMTH_FEB_BCD                 0x02
++#define WM8350_RTC_ALMMTH_MAR_BCD                 0x03
++#define WM8350_RTC_ALMMTH_APR_BCD                 0x04
++#define WM8350_RTC_ALMMTH_MAY_BCD                 0x05
++#define WM8350_RTC_ALMMTH_JUN_BCD                 0x06
++#define WM8350_RTC_ALMMTH_JUL_BCD                 0x07
++#define WM8350_RTC_ALMMTH_AUG_BCD                 0x08
++#define WM8350_RTC_ALMMTH_SEP_BCD                 0x09
++#define WM8350_RTC_ALMMTH_OCT_BCD                 0x10
++#define WM8350_RTC_ALMMTH_NOV_BCD                 0x11
++#define WM8350_RTC_ALMMTH_DEC_BCD                 0x12
 +
 +/*
-+ * R157 (0x9D) - LINE Voltage Readback
++ * R23 (0x17) - RTC Time Control
 + */
-+#define WM8350_AUXADC_DATA_LINE_MASK            0x0FFF
++#define WM8350_RTC_BCD                          0x8000
++#define WM8350_RTC_BCD_MASK                     0x8000
++#define WM8350_RTC_BCD_SHIFT                        15
++#define WM8350_RTC_12HR                         0x4000
++#define WM8350_RTC_12HR_MASK                    0x4000
++#define WM8350_RTC_12HR_SHIFT                       14
++#define WM8350_RTC_DST                          0x2000
++#define WM8350_RTC_DST_MASK                     0x2000
++#define WM8350_RTC_DST_SHIFT                        13
++#define WM8350_RTC_SET                          0x0800
++#define WM8350_RTC_SET_MASK                     0x0800
++#define WM8350_RTC_SET_SHIFT                        11
++#define WM8350_RTC_STS                          0x0400
++#define WM8350_RTC_STS_MASK                     0x0400
++#define WM8350_RTC_STS_SHIFT                        10
++#define WM8350_RTC_ALMSET                       0x0200
++#define WM8350_RTC_ALMSET_MASK                  0x0200
++#define WM8350_RTC_ALMSET_SHIFT                      9
++#define WM8350_RTC_ALMSTS                       0x0100
++#define WM8350_RTC_ALMSTS_MASK                  0x0100
++#define WM8350_RTC_ALMSTS_SHIFT                      8
++#define WM8350_RTC_PINT                         0x0070
++#define WM8350_RTC_PINT_MASK                    0x0070
++#define WM8350_RTC_PINT_SHIFT                        4
++#define WM8350_RTC_DSW                          0x000F
++#define WM8350_RTC_DSW_MASK                     0x000F
++#define WM8350_RTC_DSW_SHIFT                         0
++
++/* Bit values for R23 (0x17) */
++#define WM8350_RTC_BCD_BINARY                        0
++#define WM8350_RTC_BCD_BCD                           1
++
++#define WM8350_RTC_12HR_24HR                         0
++#define WM8350_RTC_12HR_12HR                         1
++
++#define WM8350_RTC_DST_DISABLED                      0
++#define WM8350_RTC_DST_ENABLED                       1
++
++#define WM8350_RTC_SET_RUN                           0
++#define WM8350_RTC_SET_SET                           1
++
++#define WM8350_RTC_STS_RUNNING                       0
++#define WM8350_RTC_STS_STOPPED                       1
++
++#define WM8350_RTC_ALMSET_RUN                        0
++#define WM8350_RTC_ALMSET_SET                        1
++
++#define WM8350_RTC_ALMSTS_RUNNING                    0
++#define WM8350_RTC_ALMSTS_STOPPED                    1
++
++#define WM8350_RTC_PINT_DISABLED                     0
++#define WM8350_RTC_PINT_SECS                         1
++#define WM8350_RTC_PINT_MINS                         2
++#define WM8350_RTC_PINT_HRS                          3
++#define WM8350_RTC_PINT_DAYS                         4
++#define WM8350_RTC_PINT_MTHS                         5
++
++#define WM8350_RTC_DSW_DISABLED                      0
++#define WM8350_RTC_DSW_1HZ                           1
++#define WM8350_RTC_DSW_2HZ                           2
++#define WM8350_RTC_DSW_4HZ                           3
++#define WM8350_RTC_DSW_8HZ                           4
++#define WM8350_RTC_DSW_16HZ                          5
++#define WM8350_RTC_DSW_32HZ                          6
++#define WM8350_RTC_DSW_64HZ                          7
++#define WM8350_RTC_DSW_128HZ                         8
++#define WM8350_RTC_DSW_256HZ                         9
++#define WM8350_RTC_DSW_512HZ                        10
++#define WM8350_RTC_DSW_1024HZ                       11
 +
 +/*
-+ * R158 (0x9E) - BATT Voltage Readback
++ * R218 (0xDA) - RTC Tick Control
 + */
-+#define WM8350_AUXADC_DATA_BATT_MASK            0x0FFF
++#define WM8350_RTC_TICKSTS                      0x4000
++#define WM8350_RTC_CLKSRC                       0x2000
++#define WM8350_RTC_TRIM_MASK                    0x03FF
 +
 +/*
-+ * R159 (0x9F) - Chip Temp Readback
++ * RTC Interrupts.
 + */
-+#define WM8350_AUXADC_DATA_CHIPTEMP_MASK        0x0FFF
-+
-+/*
-+ * R163 (0xA3) - Generic Comparator Control
-+ */
-+#define WM8350_DCMP4_ENA                        0x0008
-+#define WM8350_DCMP3_ENA                        0x0004
-+#define WM8350_DCMP2_ENA                        0x0002
-+#define WM8350_DCMP1_ENA                        0x0001
-+
-+/*
-+ * R164 (0xA4) - Generic comparator 1
-+ */
-+#define WM8350_DCMP1_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP1_GT                         0x1000
-+#define WM8350_DCMP1_THR_MASK                   0x0FFF
-+
-+/*
-+ * R165 (0xA5) - Generic comparator 2
-+ */
-+#define WM8350_DCMP2_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP2_GT                         0x1000
-+#define WM8350_DCMP2_THR_MASK                   0x0FFF
-+
-+/*
-+ * R166 (0xA6) - Generic comparator 3
-+ */
-+#define WM8350_DCMP3_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP3_GT                         0x1000
-+#define WM8350_DCMP3_THR_MASK                   0x0FFF
-+
-+/*
-+ * R167 (0xA7) - Generic comparator 4
-+ */
-+#define WM8350_DCMP4_SRCSEL_MASK                0xE000
-+#define WM8350_DCMP4_GT                         0x1000
-+#define WM8350_DCMP4_THR_MASK                   0x0FFF
-+
-+/*
-+ * Interrupts.
-+ */
-+#define WM8350_IRQ_AUXADC_DATARDY		16
-+#define WM8350_IRQ_AUXADC_DCOMP4		17
-+#define WM8350_IRQ_AUXADC_DCOMP3		18
-+#define WM8350_IRQ_AUXADC_DCOMP2		19
-+#define WM8350_IRQ_AUXADC_DCOMP1		20
-+#define WM8350_IRQ_SYS_HYST_COMP_FAIL		21
-+#define WM8350_IRQ_SYS_CHIP_GT115		22
-+#define WM8350_IRQ_SYS_CHIP_GT140		23
-+
-+/*
-+ * USB/2, LINE & BATT = ((VRTC * 2) / 4095)) * 10e6 uV
-+ * Where VRTC = 2.7 V
-+ */
-+#define WM8350_AUX_COEFF			1319
-+
-+#define WM8350_AUXADC_AUX1			0
-+#define WM8350_AUXADC_AUX2			1
-+#define WM8350_AUXADC_AUX3			2
-+#define WM8350_AUXADC_AUX4			3
-+#define WM8350_AUXADC_USB			4
-+#define WM8350_AUXADC_LINE			5
-+#define WM8350_AUXADC_BATT			6
-+#define WM8350_AUXADC_TEMP			7
++#define WM8350_IRQ_RTC_PER			7
++#define WM8350_IRQ_RTC_SEC			8
++#define WM8350_IRQ_RTC_ALM			9
 +
 +#endif
 -- 
