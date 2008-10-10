@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763595AbYJJTsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763713AbYJJTsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763595AbYJJTsY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761579AbYJJTsQ
+	id S1763713AbYJJTsz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762011AbYJJTsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:48:16 -0400
-Received: from mail.ukfsn.org ([77.75.108.10]:43942 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760916AbYJJTsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:48:15 -0400
-Date: Fri, 10 Oct 2008 20:48:12 +0100
-From: Nick Warne <nick@ukfsn.org>
-To: FD Cami <francois.cami@free.fr>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Alex Howells <alex@bytemark.co.uk>, trivial@kernel.org,
-       linux-kernel@vger.kernel.org, Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH] Remove Andrew Morton's old email accounts
-Message-ID: <20081010204812.5ef36353@sauron.linicks.net>
-In-Reply-To: <20081010212553.4c80d595@moria>
-References: <20081010151539.6a2ff040@sauron.linicks.net>
-	<48EF6B47.1080800@bytemark.co.uk>
-	<20081010093427.31ddb955.randy.dunlap@oracle.com>
-	<20081010192600.547eedcc@moria>
-	<20081010111031.9518a142.akpm@linux-foundation.org>
-	<20081010212553.4c80d595@moria>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+	Fri, 10 Oct 2008 15:48:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58279 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761963AbYJJTsq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:48:46 -0400
+Date: Fri, 10 Oct 2008 12:42:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
+       pbadari@us.ibm.com, mel@csn.ul.ie, lcm@us.ibm.com, garyhade@us.ibm.com,
+       mingo@elte.hu, greg@kroah.com, dave@linux.vnet.ibm.com,
+       nish.aravamudan@gmail.com
+Subject: Re: [PATCH 1/2] [REPOST] mm: show node to memory section
+ relationship with symlinks in sysfs
+Message-Id: <20081010124239.f92b5568.akpm@linux-foundation.org>
+In-Reply-To: <20081009192115.GB8793@us.ibm.com>
+References: <20081009192115.GB8793@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,33 +30,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008 21:25:53 +0200
-FD Cami <francois.cami@free.fr> wrote:
+On Thu, 9 Oct 2008 12:21:15 -0700
+Gary Hade <garyhade@us.ibm.com> wrote:
 
-> On Fri, 10 Oct 2008 11:10:31 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+> Show node to memory section relationship with symlinks in sysfs
 > 
-> > On Fri, 10 Oct 2008 19:26:00 +0200 FD Cami <francois.cami@free.fr>
-> > wrote:
-> > 
-> > > Also, should we change all instances of your old email addresses
-> > > to the current one ?
-> > 
-> > If they're there, please just delete any email address.  People can
-> > use the real name an an index into MAINTAINERS to find the current
-> > email address.
-> 
-> Remove Andrew Morton's email addresses.
-> There is still one akpm@osdl.org living in
-> linux-2.6.27/Documentation/zh_CN/SubmittingDrivers but I am not sure
-> how not to break this file. Li Yang CC'ed for this reason.
-> 
-> Should we think about systematically removing maintainers' email
-> addresses from the code and documentation ?
+> Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> the memory sections located on nodeX.  For example:
+> /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> indicates that memory section 135 resides on node1.
 
-I guess the easiest thing to do is have a Documents/mail_addresses file
-that gets referred to (and updated) as and when.
+I'm not seeing here a description of why the kernel needs this feature.
+Why is it useful?  How will it be used?  What value does it have to
+our users?
 
-Nick
--- 
-Free Software Foundation Associate Member 5508
+
