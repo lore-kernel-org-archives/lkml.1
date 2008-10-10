@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763363AbYJJUz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762745AbYJJU5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763363AbYJJUz2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759671AbYJJUzP
+	id S1762745AbYJJU5X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759244AbYJJU5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:55:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51972 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759469AbYJJUzN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:55:13 -0400
-Date: Fri, 10 Oct 2008 13:42:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Gadiyar, Anand" <gadiyar@ti.com>
-Cc: johnpol@2ka.mipt.ru, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, madhu.cr@ti.com
-Subject: Re: [PATCH 3/5] HDQ: OMAP: Add HDQ Device
-Message-Id: <20081010134222.8f29748d.akpm@linux-foundation.org>
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF4@dbde02.ent.ti.com>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF4@dbde02.ent.ti.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 16:57:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38549 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757816AbYJJU5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 16:57:12 -0400
+Date: Fri, 10 Oct 2008 22:56:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>, Tejun Heo <tj@kernel.org>
+Subject: Re: [bug] latest -git boot hang
+Message-ID: <20081010205642.GA28840@elte.hu>
+References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081010204015.GA15668@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Oct 2008 12:53:57 +0530
-"Gadiyar, Anand" <gadiyar@ti.com> wrote:
 
-> From: Madhusudhan Chikkature <madhu.cr@ti.com>
-> 
-> Device registeration for the TI OMAP2430/3430 HDQ driver.
-> 
-> Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
-> Acked-by: Felipe Balbi <felipe.balbi@nokia.com>
-> Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> ---
->  arch/arm/mach-omap2/devices.c          |   33 +++++++++++++++++++++++++++++++++
->  arch/arm/plat-omap/include/mach/irqs.h |    1 +
->  2 files changed, 34 insertions(+)
-> 
-> Index: linux-2.6/arch/arm/mach-omap2/devices.c
-> ===================================================================
-> --- linux-2.6.orig/arch/arm/mach-omap2/devices.c	2008-09-19 13:39:38.000000000 +0530
-> +++ linux-2.6/arch/arm/mach-omap2/devices.c	2008-09-30 10:07:51.000000000 +0530
-> @@ -201,6 +201,38 @@ static void omap_init_mcspi(void)
->  static inline void omap_init_mcspi(void) {}
->  #endif
->  
-> +#if defined(CONFIG_HDQ_MASTER_OMAP) || defined(CONFIG_HDQ_MASTER_OMAP_MODULE)
-> +#if defined(CONFIG_ARCH_OMAP2430) || defined(CONFIG_ARCH_OMAP3430)
+> bisection ongoing. [...]
 
-gad.
+the result is:
 
-> +#define OMAP_HDQ_BASE		0x480B2000
-> +#endif
-> +static struct resource omap_hdq_resources[] = {
-> +	{
-> +		.start		= OMAP_HDQ_BASE,
-> +		.end		= OMAP_HDQ_BASE + 0x1C,
-> +		.flags		= IORESOURCE_MEM,
-> +	},
-> +	{
-> +		.start		= INT_24XX_HDQ_IRQ,
-> +		.flags		= IORESOURCE_IRQ,
-> +	},
-> +};
-> +static struct platform_device omap_hdq_dev = {
-> +	.name		= "omap_hdq",
-> +	.id = 0,
-> +	.dev = {
-> +		.platform_data = NULL,
-> +	},
-> +	.num_resources		= ARRAY_SIZE(omap_hdq_resources),
-> +	.resource		= omap_hdq_resources,
-> +};
-> +static inline void omap_hdq_init(void)
-> +{
-> +	(void) platform_device_register(&omap_hdq_dev);
-> +}
+ # bad:  [f6bccf69] Merge git://git.kernel.org/pub/scm/linux/kernel/gi
+ # good: [3fa8749e] Linux 2.6.27
+ # good: [d403a648] Merge phase #1 of git://git.kernel.org/pub/scm/lin
+ # bad:  [ad3316bf] block: Find bio sector offset given idx and offset
+ # bad:  [10865dfa] sg: convert the non-data path to use the block lay
+ # good: [88e34126] block: update add_partition() error handling
+ # bad:  [4c46501d] block: move holder_dir from disk to part0
+ # good: [f615b48c] sd/ide-disk: apply extended minors to sd and ide
+ # bad:  [80795aef] block: move capacity from disk to part0
+ # bad:  [ed9e1982] block: implement and use {disk|part}_to_dev()
+ # bad:  [870d6656] block: implement CONFIG_DEBUG_BLOCK_EXT_DEVT
 
-The (void) thing is frowned upon.
+| 870d6656126add8e383645732b03df2b7ccd4f94 is first bad commit
+| commit 870d6656126add8e383645732b03df2b7ccd4f94
+| Author: Tejun Heo <tj@kernel.org>
+| Date:   Mon Aug 25 19:47:25 2008 +0900
+|
+|     block: implement CONFIG_DEBUG_BLOCK_EXT_DEVT
 
-Failing to check the return value from registration functions is also
-frowned upon!
+and meanwhile 2 other test-systems failed to boot as well - both have 
+CONFIG_DEBUG_BLOCK_EXT_DEVT=y.
 
+So i guess this debug feature is working as expected.
 
+I guess we should mark CONFIG_DEBUG_BLOCK_EXT_DEVT=y as really dangerous 
+to enable because contemporary distributions (i tried Fedora 9) fail 
+with it too?
+
+	Ingo
