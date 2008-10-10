@@ -1,120 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYJJFLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYJJFN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbYJJFLi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 01:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYJJFLa
+	id S1755342AbYJJFN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 01:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYJJFNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 01:11:30 -0400
-Received: from mga09.intel.com ([134.134.136.24]:14815 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbYJJFL3 convert rfc822-to-8bit (ORCPT
+	Fri, 10 Oct 2008 01:13:46 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:61557 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751317AbYJJFNp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 01:11:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,386,1220252400"; 
-   d="scan'208";a="449408582"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Thu, 9 Oct 2008 22:10:10 -0700
-Subject: RE: [PATCH] Typo in x86 apic.c with DIVISOR setup
-Thread-Topic: [PATCH] Typo in x86 apic.c with DIVISOR setup
-Thread-Index: AckqkjRuwJgqXMsRT5qaJFOKmZgKKgAA+2Cg
-Message-ID: <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com>
-References: <20081010002203.GA23238@linux-os.sc.intel.com>
- <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com>
-In-Reply-To: <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 10 Oct 2008 01:13:45 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhQDAEGB7kh5LGoriGdsb2JhbACTWQEBARUiqWOBag
+X-IronPort-AV: E=Sophos;i="4.33,386,1220193000"; 
+   d="scan'208";a="226337647"
+Date: Fri, 10 Oct 2008 16:13:39 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 <linux-ext4@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] Improve buffered streaming write ordering
+Message-ID: <20081010051339.GD8181@disturbed>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	ext4 <linux-ext4@vger.kernel.org>,
+	Christoph Hellwig <hch@infradead.org>
+References: <1222886451.9158.34.camel@think.oraclecorp.com> <20081001215239.ee2ae63f.akpm@linux-foundation.org> <1222950054.6745.18.camel@think.oraclecorp.com> <20081002181856.GB29613@skywalker> <20081002234309.GH30001@disturbed> <1223565080.14090.28.camel@think.oraclecorp.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223565080.14090.28.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 09, 2008 at 11:11:20AM -0400, Chris Mason wrote:
+> On Fri, 2008-10-03 at 09:43 +1000, Dave Chinner wrote:
+> > On Thu, Oct 02, 2008 at 11:48:56PM +0530, Aneesh Kumar K.V wrote:
+> > > On Thu, Oct 02, 2008 at 08:20:54AM -0400, Chris Mason wrote:
+> > > > On Wed, 2008-10-01 at 21:52 -0700, Andrew Morton wrote:
+> > > > For a 4.5GB streaming buffered write, this printk inside
+> > > > ext4_da_writepage shows up 37,2429 times in /var/log/messages.
+> > > > 
+> > > 
+> > > Part of that can happen due to shrink_page_list -> pageout -> writepagee
+> > > call back with lots of unallocated buffer_heads(blocks).
+> > 
+> > Quite frankly, a simple streaming buffered write should *never*
+> > trigger writeback from the LRU in memory reclaim. That indicates
+> > that some feedback loop has broken down and we are not cleaning
+> > pages fast enough or perhaps in the correct order. Page reclaim in
+> > this case should be reclaiming clean pages (those that have already
+> > been written back), not writing back random dirty pages.
+> 
+> Here are some go faster stripes for the XFS buffered writeback.  This
+> patch has a lot of debatable features to it, but the idea is to show
+> which knobs are slowing us down today.
+> 
+> The first change is to avoid calling balance_dirty_pages_ratelimited on
+> every page.  When we know we're doing a largeish write it makes more
+> sense to balance things less often.  This might just mean our
+> ratelimit_pages magic value is too small.
 
+Ok, so how about doing something like this to reduce the
+number of balances on large writes, but causing at least one
+balance call for every write that occurs:
 
->-----Original Message-----
->From: Cyrill Gorcunov [mailto:gorcunov@gmail.com]
->Sent: Thursday, October 09, 2008 9:38 PM
->To: Pallipadi, Venkatesh
->Cc: Ingo Molnar; Thomas Gleixner; H. Peter Anvin; linux-kernel
->Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
->
->On Fri, Oct 10, 2008 at 4:22 AM, Venki Pallipadi
-><venkatesh.pallipadi@intel.com> wrote:
->>
->> Fix a typo in x86 apic.c CONFG_X86_64 -> CONFIG_X86_64.
->> The intention looks like was to have divisor of 1 on x86_64 kernel.
->>
->> Also, for DIVISOR value of 1 to work, APIC_TDR_DIV should also change
->> depending on divide by 1 or divide by 16 is used.
->>
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->>
->> ---
->>  arch/x86/kernel/apic.c |    6 ++++--
->>  1 file changed, 4 insertions(+), 2 deletions(-)
->>
->> Index: tip/arch/x86/kernel/apic.c
->> ===================================================================
->> --- tip.orig/arch/x86/kernel/apic.c     2008-10-09
->17:12:39.000000000 -0700
->> +++ tip/arch/x86/kernel/apic.c  2008-10-09 17:13:29.000000000 -0700
->> @@ -332,10 +332,12 @@ int lapic_get_maxlvt(void)
->>  */
->>
->>  /* Clock divisor */
->> -#ifdef CONFG_X86_64
->> +#ifdef CONFIG_X86_64
->>  #define APIC_DIVISOR 1
->> +#define APIC_TDR_DIV APIC_TDR_DIV_1
->>  #else
->>  #define APIC_DIVISOR 16
->> +#define APIC_TDR_DIV APIC_TDR_DIV_16
->>  #endif
->>
->>  /*
->> @@ -369,7 +371,7 @@ static void __setup_APIC_LVTT(unsigned i
->>        tmp_value = apic_read(APIC_TDCR);
->>        apic_write(APIC_TDCR,
->>                (tmp_value & ~(APIC_TDR_DIV_1 |
->APIC_TDR_DIV_TMBASE)) |
->> -               APIC_TDR_DIV_16);
->> +               APIC_TDR_DIV);
->>
->>        if (!oneshot)
->>                apic_write(APIC_TMICT, clocks / APIC_DIVISOR);
->>
->
->Hi Venki,
->
->you know I don't have code under my hands now to take a look on
->(i'm in office now) -- but if I recall correctly it's not a typo :) By
->writting (1) instead of (16) you make counter decrease faster by
->16 times (if to compare with what we have now). So we could get
->counter underflow before we've finish calibration. That is was the
->original intension of this 16 divisor being used. Did you test this
->patch?
->
+	int	nr = 0;
+	.....
+	while() {
+		....
+		if (!(nr % 256)) {
+			/* do balance */
+		}
+		nr++;
+		....
+	}
 
-Typo part I mentioned was this
+That way you get a balance on the first page on every write,
+but then hold off balancing on that write again for some
+number of pages.
 
->> -#ifdef CONFG_X86_64
->> +#ifdef CONFIG_X86_64
+> The second change makes xfs bump wbc->nr_to_write (suggested by
+> Christoph), which probably makes delalloc go in bigger chunks.
 
-Looks like intention was to use DIVISOR of 1 for x86_64 and divisor of
-16 for 32 bit kernel. Once I changed that, there was still one place in
-64 bit code that was assuming divisor of 16. The rest of the patch
-changes that part.
+Hmmmm.  Reasonable theory. We used to do gigantic delalloc extents -
+we paid no attention to congestion and could allocate and write
+several GB at a time. Latency was an issue, though, so it got
+changed to be bound by nr_to_write.
 
-Yes. Tested this patch on couple of systems here and worked fine.
+I guess we need to be issuing larger allocations. Can you remove
+you patches and see what effect using the allocsize mount
+option has on throughput? This changes the default delalloc EOF
+preallocation size, which means more or less allocations. The
+default is 64k and it can go as high as 1GB, IIRC.
 
-Thanks,
-Venki
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
