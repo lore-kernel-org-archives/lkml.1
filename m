@@ -1,68 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763545AbYJJTu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763884AbYJJTvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763545AbYJJTu5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758490AbYJJTut
+	id S1763884AbYJJTvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762219AbYJJTuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:50:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39167 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757889AbYJJTus (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:50:48 -0400
-Date: Fri, 10 Oct 2008 12:50:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, linux-mm@kvack.org,
-       nathalie.furmento@labri.fr
-Subject: Re: [PATCH] mm: use a radix-tree to make do_move_pages() complexity
- linear
-Message-Id: <20081010125010.164bcbb8.akpm@linux-foundation.org>
-In-Reply-To: <48EDF9DA.7000508@inria.fr>
-References: <48EDF9DA.7000508@inria.fr>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 15:50:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50801 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761345AbYJJTuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:50:50 -0400
+Date: Fri, 10 Oct 2008 21:50:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #9, sparse
+	IRQ?support
+Message-ID: <20081010195028.GC31926@elte.hu>
+References: <20081010001727.GA14132@elte.hu> <20081010185912.GF21876@elte.hu> <48EFA8CA.1020600@kernel.org> <200810101234.57440.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810101234.57440.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 09 Oct 2008 14:32:26 +0200
-Brice Goglin <Brice.Goglin@inria.fr> wrote:
 
-> Add a radix-tree in do_move_pages() to associate each page with
-> the struct page_to_node that describes its migration.
-> new_page_node() can now easily find out the page_to_node of the
-> given page instead of traversing the whole page_to_node array.
-> So the overall complexity is linear instead of quadratic.
+* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> On Friday, October 10, 2008 12:11 pm Yinghai Lu wrote:
+> > Ingo Molnar wrote:
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > >> Linus,
+> > >>
+> > >> Please pull the latest x86-v28-for-linus-phase9 git tree from:
+> > >>
+> > >> Sparse IRQ support - make NR_IRQS dynamic by turning it into nr_irqs,
+> > >> an by creating irq descriptors in a sparse way.
+> > >>
+> > >> Includes a number of dependent x86 topics: timers/hpet-percpu, IO-APIC
+> > >> and local APIC code unification, UV support updates.
+> > >>
+> > >> Has been cross-built on all architectures we could get crosscompilers
+> > >> for:
+> > >>
+> > >>   http://www.tglx.de/autoqa/index
+> > >>
+> > >> It should be largely uneventful for sparse-irq unaware, non-x86
+> > >> architectures.
+> > >
+> > > please find updated pull request below. Relative to phase-N-1. Updates
+> > > from today in this class of topics:
+> > >
+> > >   b570868: x86: apic - unify APIC_DIVISOR
+> > >
+> > > And i removed:
+> > >
+> > >   eada62c: acpi/x86: introduce __apci_map_table, v4
+> > >
+> > > [ Cc:-ed Yinghai for that - we can live without that patch (i.e. we at
+> > >   most get a leak warning) and can have that via acpi.git, correct? ]
+> >
+> > yes. we have several patches that even didn't pick up for a while.
+> >
+> > also please ask Linus to pull pci tree from Jesse before sparseirq.
+> >
+> > because we need
+> > 	PCI: change MSI-x vector to 32bit
+> >
+> > in pci tree.
 > 
-> We still need the page_to_node array since it is allocated by the
-> caller (sys_move_page()) and used by do_pages_stat() when no target
-> nodes are given by the application. And we need room to store all
-> these page_to_node entries for do_move_pages() as well anyway.
-> 
-> If a page is given twice by the application, the old code would
-> return -EBUSY (failure from the second isolate_lru_page()). Now,
-> radix_tree_insert() will return -EEXIST, and we convert it back
-> to -EBUSY to keep the user-space ABI.
-> 
-> The radix-tree is emptied at the end of do_move_pages() since
-> new_page_node() doesn't know when an entry is used for the last
-> time (unmap_and_move() could try another pass later).
-> Marking pp->page as ZERO_PAGE(0) was actually never used. We now
-> set it to NULL when pp is not in the radix-tree. It is faster
-> than doing a loop of radix_tree_lookup_gang()+delete().
+> I should have my pull ready soon; I'd like to do some cross compile tests with 
+> my latest bits first.  But I think Ingo has a copy of this commit anyway so 
+> it may be ok for Linus to pull anyway.
 
-Any O(n*n) code always catches up with us in the end.  But I do think
-that to merge this code we'd need some description of the problem which
-we fixed.
+Correct, it's safe to pull it, because irq/sparseirq has this commit:
 
-Please send a description of the situation under which the current code
-performs unacceptably.  Some before-and-after quantitative measurements
-would be good.
+  9e40236: pci: change msi-x vector to 32bit
 
-Because it could be (as far as I know) that the problem is purely
-theoretical, in which case we might not want the patch at all.
+it's content-equal with yours so your merge should be painless.
 
-Thanks.
+	Ingo
