@@ -1,91 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751312AbYJJEiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYJJEiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751312AbYJJEiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 00:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYJJEiJ
+	id S1754649AbYJJEiq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 00:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYJJEif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 00:38:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:10976 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYJJEiI (ORCPT
+	Fri, 10 Oct 2008 00:38:35 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:56362 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751340AbYJJEie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 00:38:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rowsY8wcp9zh5uypPXMSlneBSOr1dpyDNePQZ12AdEm9T3/y/uOWV9iw+qBtpImyEr
-         FAcduEXTWO7/Ok9v8nyQiXUhrJ4R3V2ruouT9Db0rNVAMsbs5JtjQUOjF/Fc/VFzAw82
-         yCFl06frJdL+x9wmesFWCNx+qRYDVU8H4mYQM=
-Message-ID: <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com>
-Date: Fri, 10 Oct 2008 08:38:07 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Venki Pallipadi" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081010002203.GA23238@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081010002203.GA23238@linux-os.sc.intel.com>
+	Fri, 10 Oct 2008 00:38:34 -0400
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: New ext4 patchset: 2.6.27-ext4-1
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1Ko9ln-0004sS-UM@closure.thunk.org>
+Date: Fri, 10 Oct 2008 00:38:31 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 4:22 AM, Venki Pallipadi
-<venkatesh.pallipadi@intel.com> wrote:
->
-> Fix a typo in x86 apic.c CONFG_X86_64 -> CONFIG_X86_64.
-> The intention looks like was to have divisor of 1 on x86_64 kernel.
->
-> Also, for DIVISOR value of 1 to work, APIC_TDR_DIV should also change
-> depending on divide by 1 or divide by 16 is used.
->
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->
-> ---
->  arch/x86/kernel/apic.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> Index: tip/arch/x86/kernel/apic.c
-> ===================================================================
-> --- tip.orig/arch/x86/kernel/apic.c     2008-10-09 17:12:39.000000000 -0700
-> +++ tip/arch/x86/kernel/apic.c  2008-10-09 17:13:29.000000000 -0700
-> @@ -332,10 +332,12 @@ int lapic_get_maxlvt(void)
->  */
->
->  /* Clock divisor */
-> -#ifdef CONFG_X86_64
-> +#ifdef CONFIG_X86_64
->  #define APIC_DIVISOR 1
-> +#define APIC_TDR_DIV APIC_TDR_DIV_1
->  #else
->  #define APIC_DIVISOR 16
-> +#define APIC_TDR_DIV APIC_TDR_DIV_16
->  #endif
->
->  /*
-> @@ -369,7 +371,7 @@ static void __setup_APIC_LVTT(unsigned i
->        tmp_value = apic_read(APIC_TDCR);
->        apic_write(APIC_TDCR,
->                (tmp_value & ~(APIC_TDR_DIV_1 | APIC_TDR_DIV_TMBASE)) |
-> -               APIC_TDR_DIV_16);
-> +               APIC_TDR_DIV);
->
->        if (!oneshot)
->                apic_write(APIC_TMICT, clocks / APIC_DIVISOR);
->
 
-Hi Venki,
+This new patchset adds better documentation for ext4 mount options and
+/proc/fs/ext4 files, and corrects the git commit authorship for a new
+patches in preparation for pushing to Linus.
 
-you know I don't have code under my hands now to take a look on
-(i'm in office now) -- but if I recall correctly it's not a typo :) By
-writting (1) instead of (16) you make counter decrease faster by
-16 times (if to compare with what we have now). So we could get
-counter underflow before we've finish calibration. That is was the
-original intension of this 16 divisor being used. Did you test this
-patch?
+As a git tree:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.27-ext4-1
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.27-ext4-1
+
+As a patchset:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.27-ext4-1
+
+                                                        - Ted
+
+Akira Fujita (7):
+      ext4: online defrag: Add the EXT4_IOC_DEFRAG ioctl and defrag main function.
+      ext4: Fix compile error at defrag.c in the current ext4 patch
+      ext4: online defrag: Allocate new contiguous blocks with mballoc.
+      ext4: online defrag: Read and write file data with memory page.
+      ext4: online defrag: Exchange the blocks between two inodes.
+      ext4: online defrag: Add the EXT4_IOC_FIBMAP ioctl.
+      ext4: online defrag: Add the EXT4_IOC_GROUP_INFO ioctl.
+
+Alexey Dobriyan (1):
+      ext4: fix #11321: create /proc/ext4/*/stats more carefully
+
+Andi Kleen (1):
+      ext4: Avoid double dirtying of super block in ext4_put_super()
+
+Aneesh Kumar K.V (14):
+      ext4: invalidate pages if delalloc block allocation fails.
+      ext4: Make sure all the block allocation paths reserve blocks
+      ext4: Retry block reservation
+      ext4: Add percpu dirty block accounting.
+      ext4: Switch to non delalloc mode when we are low on free blocks count.
+      ext4: Signed arithmetic fix
+      ext4: Fix ext4 nomballoc allocator for ENOSPC
+      ext4: Don't add the inode to journal handle until after the block is allocated
+      ext4: Retry block allocation if we have free blocks left
+      ext4: truncate block allocated on a failed ext4_write_begin
+      ext4: Properly update i_disksize.
+      ext4: elevate write count for migrate ioctl
+      ext4: hook the ext3 migration interface to the EXT4_IOC_SETFLAGS ioctl
+      ext4: undo the stable boundary patch changes
+
+Duane Griffin (1):
+      jbd2: abort instead of waiting for nonexistent transaction
+
+Eric Sandeen (3):
+      ext4: Avoid printk floods in the face of directory corruption
+      ext4: use percpu data structures for lg_prealloc_list
+      Hook ext4 to the vfs fiemap interface.
+
+Frederic Bohe (2):
+      Update flex_bg free blocks and free inodes counters when resizing.
+      ext4: fix initialization of UNINIT bitmap blocks
+
+Josef Bacik (1):
+      generic block based fiemap implementation
+
+Kalpak Shah (1):
+      ext4: fix xattr deadlock
+
+Li Zefan (1):
+      ext4: add missing unlock in ext4_check_descriptors() on error path
+
+Mark Fasheh (2):
+      vfs: vfs-level fiemap interface
+      ocfs2: fiemap support
+
+Mingming Cao (1):
+      percpu counter: clean up percpu_counter_sum_and_set()
+
+Theodore Ts'o (19):
+      ext4: Add printk priority levels to clean up checkpatch warnings
+      ext4: Fix long long checkpatch warnings
+      ext4: Fix whitespace checkpatch warnings/errors
+      jbd2: clean up how the journal device name is printed
+      ext4: Renumber EXT4_IOC_MIGRATE
+      ext4/jbd2: Avoid WARN() messages when failing to write to the superblock
+      ext4: Don't use 'struct dentry' for internal lookups
+      ext4: move /proc setup and teardown out of mballoc.c
+      ext4: Combine proc file handling into a single set of functions
+      ext4: Improve the documentation for ext4's /proc tunables
+      ext4: Use readahead when reading an inode from the inode table
+      ext4: Remove old legacy block allocator
+      ext4: Add debugging markers that can be used by systemtap
+      jbd2: Fix buffer head leak when writing the commit block
+      Update ext4 MAINTAINERS file
+      ext4: Rename ext4dev to ext4
+      ext4: Stable/Unstable boundary
+      Add a ioctl which dumps out all of the in-use buffer heads for a block device
+      ext4: akpm's locking hack to fix locking delays
+
+ Documentation/filesystems/ext4.txt   |    6 +
+ Documentation/filesystems/fiemap.txt |  228 ++++++
+ Documentation/filesystems/proc.txt   |   73 +-
+ MAINTAINERS                          |    5 +-
+ block/compat_ioctl.c                 |    1 +
+ block/ioctl.c                        |    5 +
+ fs/Kconfig                           |   74 +-
+ fs/Makefile                          |    2 +-
+ fs/buffer.c                          |   40 +
+ fs/ext2/ext2.h                       |    2 +
+ fs/ext2/file.c                       |    1 +
+ fs/ext2/inode.c                      |    8 +
+ fs/ext3/file.c                       |    1 +
+ fs/ext3/inode.c                      |    8 +
+ fs/ext4/Makefile                     |   12 +-
+ fs/ext4/acl.h                        |   12 +-
+ fs/ext4/balloc.c                     | 1457 ++-------------------------------
+ fs/ext4/bitmap.c                     |    6 +-
+ fs/ext4/defrag.c                     | 1495 ++++++++++++++++++++++++++++++++++
+ fs/ext4/dir.c                        |   64 +-
+ fs/ext4/ext4.h                       |  155 +++-
+ fs/ext4/ext4_extents.h               |   20 +
+ fs/ext4/ext4_i.h                     |   39 +-
+ fs/ext4/ext4_sb.h                    |   25 +-
+ fs/ext4/extents.c                    |  287 ++++++-
+ fs/ext4/file.c                       |   10 +-
+ fs/ext4/fsync.c                      |    7 +-
+ fs/ext4/hash.c                       |    8 +-
+ fs/ext4/ialloc.c                     |   71 +-
+ fs/ext4/inode.c                      |  622 +++++++++------
+ fs/ext4/ioctl.c                      |   89 +--
+ fs/ext4/mballoc.c                    |  208 ++----
+ fs/ext4/mballoc.h                    |    1 -
+ fs/ext4/migrate.c                    |   10 +-
+ fs/ext4/namei.c                      |  402 +++++-----
+ fs/ext4/resize.c                     |   33 +-
+ fs/ext4/super.c                      |  257 ++++--
+ fs/ext4/symlink.c                    |    8 +-
+ fs/ext4/xattr.c                      |   14 +-
+ fs/ext4/xattr.h                      |   12 +-
+ fs/ioctl.c                           |  273 +++++++
+ fs/jbd2/checkpoint.c                 |   22 +-
+ fs/jbd2/commit.c                     |   22 +-
+ fs/jbd2/journal.c                    |   75 +-
+ fs/jbd2/transaction.c                |   12 +-
+ fs/ocfs2/alloc.c                     |    9 -
+ fs/ocfs2/alloc.h                     |    9 +
+ fs/ocfs2/extent_map.c                |  346 +++++++--
+ fs/ocfs2/extent_map.h                |    3 +
+ fs/ocfs2/file.c                      |    1 +
+ include/linux/buffer_head.h          |    1 +
+ include/linux/ext3_fs.h              |    2 +
+ include/linux/fiemap.h               |   64 ++
+ include/linux/fs.h                   |   22 +
+ include/linux/jbd2.h                 |    4 +-
+ include/linux/percpu_counter.h       |   12 +-
+ lib/percpu_counter.c                 |    8 +-
+ 57 files changed, 4127 insertions(+), 2536 deletions(-)
