@@ -1,91 +1,80 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964AbYJJFmi (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 10 Oct 2008 01:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYJJFmW
+	id S1760181AbYJJLCY (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 10 Oct 2008 07:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbYJJLCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 01:42:22 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:61212 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755946AbYJJFmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 01:42:21 -0400
-Date: Fri, 10 Oct 2008 14:42:17 +0900 (JST)
-Message-Id: <20081010.144217.106262895.anemo@mba.ocn.ne.jp>
-To: dmitry.torokhov@gmail.com
-Cc: Henk.Vergonet@gmail.com, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-Subject: [PATCH] input: Move map_to_7segment.h to include/linux (v2)
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Message: 123
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 07:02:10 -0400
+Received: from connect-ua-211.dg.net.ua ([213.186.218.211]:44387 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757034AbYJJLCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 07:02:09 -0400
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?0JLQsNGI0YMg0YTQvtGC0L7Qs9GA0LDRhNGW0Y4g0L/RgNC+0LrQvtC80LU=?=  =?UTF-8?B?0L3RgnnQstCw0LvQuCEgKDEwLjEwLjIwMDggMTQ6MjIp?=
+Date: Fri, 10 Oct 2008 14:02:02 +0300
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <8f176106db3f0bad56645757ebfae76e@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
+MIME-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752964AbYJJFmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760181AbYJJLCY@vger.kernel.org>
 
-The map_to_7segment.h provides generic 7segment LED mappings and is
-designed to be used by other drivers.  Moving it to common area will
-make it more usable.  Also exporting it to userspace will help users
-of sysfs interface.
+=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
+=B8=D0=BC=D0=B8=D1=80!
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Signed-off-by: Henk Vergonet <henk.vergonet@gmail.com>
----
-Change from v1:
-* Export to userspace.
+=D0=A1=D1=8C=D0=BE=D0=B3=D0=BE=D0=B4=D0=BD=D1=96 =D0=92=D0=B0=D1=88=D1=83=
+ =D1=84=D0=BE=D1=82=D0=BE=D0=B3=D1=80=D0=B0=D1=84=D1=96=D1=8E =D0=BF=D1=
+=80=D0=BE=D0=BA=D0=BE=D0=BC=D0=B5=D0=BD=D1=82=D1=83=D0=B2=D0=B0=D0=BB=D0=
+=B8
+=D0=9F=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=BD=D1=83=D1=82=D0=B8 =D0=B2=
+=D1=81=D1=96 =D0=BA=D0=BE=D0=BC=D0=B5=D0=BD=D1=82=D0=B0=D1=80=D1=96 =D0=
+=BC=D0=BE=D0=B6=D0=BD=D0=B0 =D1=82=D1=83=D1=82:
 
-This is renaming patch.  I can send no-rename patch if requested.
+http://connect.ua/v2/ranking
 
- drivers/input/misc/yealink.c                       |    2 +-
- include/linux/Kbuild                               |    1 +
- .../input/misc => include/linux}/map_to_7segment.h |    2 --
- 3 files changed, 2 insertions(+), 3 deletions(-)
- rename {drivers/input/misc => include/linux}/map_to_7segment.h (99%)
+=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
+=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
+=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
+=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
+=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B4=D0=BE =D0=B1=D1=83=D1=84=D0=B5=
+=D1=80=D0=B0 =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=
+=B0=D0=B2=D1=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D0=B8=
+=D0=B9 =D1=80=D1=8F=D0=B4=D0=BE=D0=BA =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=
+=B5=D1=80=D0=B0 =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=
+=D1=82=D1=8C Enter.
 
-diff --git a/drivers/input/misc/yealink.c b/drivers/input/misc/yealink.c
-index facefd3..11b5c7e 100644
---- a/drivers/input/misc/yealink.c
-+++ b/drivers/input/misc/yealink.c
-@@ -52,8 +52,8 @@
- #include <linux/module.h>
- #include <linux/rwsem.h>
- #include <linux/usb/input.h>
-+#include <linux/map_to_7segment.h>
- 
--#include "map_to_7segment.h"
- #include "yealink.h"
- 
- #define DRIVER_VERSION "yld-20051230"
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index b68ec09..6e1755f 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -107,6 +107,7 @@ header-y += keyctl.h
- header-y += limits.h
- header-y += magic.h
- header-y += major.h
-+header-y += map_to_7segment.h
- header-y += matroxfb.h
- header-y += meye.h
- header-y += minix_fs.h
-diff --git a/drivers/input/misc/map_to_7segment.h b/include/linux/map_to_7segment.h
-similarity index 99%
-rename from drivers/input/misc/map_to_7segment.h
-rename to include/linux/map_to_7segment.h
-index a424094..db45f7c 100644
---- a/drivers/input/misc/map_to_7segment.h
-+++ b/include/linux/map_to_7segment.h
-@@ -1,6 +1,4 @@
- /*
-- * drivers/usb/input/map_to_7segment.h
-- *
-  * Copyright (c) 2005 Henk Vergonet <Henk.Vergonet@gmail.com>
-  *
-  * This program is free software; you can redistribute it and/or
--- 
-1.5.6.3
 
+=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
+=80=D0=B0=D1=97=D0=BD=D1=83!
+=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 Connect.ua
+
+-------------------------------
+
+=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
+=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
+ =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
+=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
+=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
+=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
+=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
+Connect.ua
+=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
+=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
+=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BB=D0=B5=D0=BD=D0=BD=D1=
+=8F =D0=BF=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =
+=D0=B2 =D0=BE=D0=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=
+=82=D0=B8.
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
