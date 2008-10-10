@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbYJJCnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbYJJCnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbYJJCnX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 22:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYJJCmv
+	id S1756500AbYJJCnk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 22:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYJJCmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 22:42:51 -0400
-Received: from sh.osrg.net ([192.16.179.4]:49402 "EHLO sh.osrg.net"
+	Thu, 9 Oct 2008 22:42:52 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49404 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYJJCmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 22:42:49 -0400
-Date: Fri, 10 Oct 2008 11:40:56 +0900
+	id S1750967AbYJJCmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 22:42:50 -0400
+Date: Fri, 10 Oct 2008 11:40:51 +0900
 To: yinghai@kernel.org
-Cc: grundler@parisc-linux.org, matthew@wil.cx, jbarnes@virtuousgeek.org,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
+Cc: grundler@parisc-linux.org, jbarnes@virtuousgeek.org, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
 Subject: Re: [PATCH] pci: print out DMA mask info
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <48EE8E55.4000009@kernel.org>
-References: <86802c440810091451y4a3caceg1abaa75464c40a72@mail.gmail.com>
-	<20081009225533.GB1914@colo.lackof.org>
-	<48EE8E55.4000009@kernel.org>
+In-Reply-To: <48EE7745.2020603@kernel.org>
+References: <1223506943-6543-1-git-send-email-yinghai@kernel.org>
+	<20081009211837.GC18444@colo.lackof.org>
+	<48EE7745.2020603@kernel.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081010114003X.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <20081010113959U.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 09 Oct 2008 16:05:57 -0700
+On Thu, 09 Oct 2008 14:27:33 -0700
 Yinghai Lu <yinghai@kernel.org> wrote:
 
 > Grant Grundler wrote:
-> > On Thu, Oct 09, 2008 at 02:51:32PM -0700, Yinghai Lu wrote:
-> >> On Thu, Oct 9, 2008 at 2:35 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> >>> Why's that interesting to the sysadmin of the machine?  To the driver
-> >>> writer, certainly.  But what's the use of it to the people using the
-> >>> machine?
-> > ...
-> >> make linux kernel act like black box as other os?
+> > On Wed, Oct 08, 2008 at 04:02:23PM -0700, Yinghai Lu wrote:
+> >> so can find out what is DMA mask is used for pci devices in addition to
+> >> default setting.
 > > 
-> > I don't understand your reply.
-> > If someone thinks linux is a black box, printing this message won't help them.
+> > I like the idea. I don't like the additional boot time output.
 > > 
-> could find out easily why some driver doesn't set dma mask correctly.
-> like why 
-> 	qlogic qla2xxx only set consistent to 64bit,
-> 	emulex lpfc not set consistent to 64bit
+> > But I'm thinking this could be an option to lspci.
+> > lspci already knows about the /sys tree. Can PCI export the two masks
+> > (dma_mask and dma_consistent_mask) and something like "lspci -td"
+> > would dump those in a nice way?
+> > 
+> in boot log, it could link with driver, pci info...
+> > 
+> >> got:
+> >> aacraid 0000:86:00.0: using 32bit DMA mask
+> >> aacraid 0000:86:00.0: using 32bit consistent DMA mask
+> >> aacraid 0000:86:00.0: using 64bit DMA mask
+> >> aacraid 0000:86:00.0: using 64bit consistent DMA mask
+> 
+> and aacraid do 32bit at first then 64bit...
+> 
+> so put that in boot message could be useful too.
 
-IIRC, except for one SGI architecture, coherent_dma_mask is
-meaningless, dma_mask is always equal to coherent_dma_mask. Lots of
-IOMMU implementations ignore coherent_dma_mask and use dma_mask for
-alloc_coherent(). Some drivers doesn't set up coherent_dma_mask.
-
-Theoretically, we need to fix this but it doesn't cause any
-problem. That's why nobody cares about it, I guess.
+IIRC, aacraid uses 32bit dma_mask at startup then it executes a
+special command to get dma information from the card, and sets proper
+dma_mask. So the above message is not wrong for aacraid, I think.
