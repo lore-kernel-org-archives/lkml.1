@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762046AbYJJQT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762122AbYJJQUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762046AbYJJQT7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759653AbYJJQTu
+	id S1762122AbYJJQUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbYJJQUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:19:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58905
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758774AbYJJQTt (ORCPT
+	Fri, 10 Oct 2008 12:20:18 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:46551 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759575AbYJJQUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:19:49 -0400
-Date: Fri, 10 Oct 2008 09:19:25 -0700 (PDT)
-Message-Id: <20081010.091925.120612769.davem@davemloft.net>
-To: jwboyer@gmail.com
-Cc: alan@redhat.com, torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH 22/27] serial: Make uart_port's ioport "unsigned long".
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081010125434.GB8590@yoda.jdub.homelinux.org>
-References: <20081010103447.31597.42992.stgit@localhost.localdomain>
-	<20081010105052.31597.41476.stgit@localhost.localdomain>
-	<20081010125434.GB8590@yoda.jdub.homelinux.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 10 Oct 2008 12:20:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=l1WGKfWJ5keFTTUPnS6gbU+ccUy7Qh24q+4hXkSQGosOJEsiaQ7BJHwsLtNyyAQbg2
+         iX+0J8qG8Qtm/LauooShueui4V7DeKUeGgdyHLtzMzaocjDZd4x8lta5z9tXsN/KKfPK
+         r+0xRIPbc6mXbg3+lsWFmVn37z1sC8qShkpqI=
+Message-ID: <86802c440810100920s5ce8e1acm54afc0e257b15235@mail.gmail.com>
+Date: Fri, 10 Oct 2008 09:20:15 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] More informative about unknown CPU
+Cc: "Hans Schou" <linux@schou.dk>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20081010150458.GG11695@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0810092014190.7473@sko.w0.dk>
+	 <20081010150458.GG11695@elte.hu>
+X-Google-Sender-Auth: b71efb424d237dfc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Josh Boyer <jwboyer@gmail.com>
-Date: Fri, 10 Oct 2008 08:54:34 -0400
+On Fri, Oct 10, 2008 at 8:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Hans Schou <linux@schou.dk> wrote:
+>
+>> Hi
+>>
+>> Write the name of the unknown vendor_id to output instead of just
+>> "file not found".
+>>
+>> Tag changed to 'vendor_id' as used in /proc/cpuinfo
+>>
+>> Signed-off-by: Hans Schou <linux@schou.dk>
+>
+> applied to tip/x86/unify-cpu-detect, thanks Hans!
+>
+>> --- linux.trees.git/arch/x86/kernel/cpu/common.c.orig   2008-10-09 17:33:29.000000000 +0200
+>> +++ linux.trees.git/arch/x86/kernel/cpu/common.c        2008-10-09 17:33:59.000000000 +0200
+>> @@ -413,7 +413,7 @@ static void __cpuinit get_cpu_vendor(str
+>>
+>>         if (!printed) {
+>>                 printed++;
+>> -               printk(KERN_ERR "CPU: Vendor unknown, using generic init.\n");
+>> +               printk(KERN_ERR "CPU: vendor_id '%s' unknown, using generic init.\n", v);
+>>                 printk(KERN_ERR "CPU: Your system may be unstable.\n");
+>
+> btw., this was whitespace damaged (i fixed that up by hand). See
+> Documentation/email-clients.txt about how to set up the email client.
+> (or, when you send x86 patches, you can attach the patch as a MIME
+> attachment)
+>
 
-> On Fri, Oct 10, 2008 at 11:50:56AM +0100, Alan Cox wrote:
-> >From: David Miller <davem@davemloft.net>
-> >
-> >Otherwise the top 32-bits of the resource value get chopped
-> >off on 64-bit systems, and the resulting I/O accesses go to
-> >random places.
-> >
-> >Thanks to testing and debugging by Josip Rodin, which helped
-> >track this down.
-> >
-> >Signed-off-by: David S. Miller <davem@davemloft.net>
-> >Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> I emailed on an earlier posting of this about using resource_size_t
-> instead as we have 32-bit CPUs with 64-bit address spaces.  If I'm
-> totally wrong, that's fine but I'm still wondering if that would be
-> a better general solution.
+What is unknown cpus?
 
-That seems like a fine idea to me, please post a follow-on patch
-if you like :-)
+>From Sis or Nvidia?
+
+YH
