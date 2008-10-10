@@ -1,126 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760554AbYJJOIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbYJJOOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760554AbYJJOIa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 10:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbYJJOIV
+	id S1760178AbYJJOOK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 10:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757295AbYJJONz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 10:08:21 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:50304 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757444AbYJJOIU (ORCPT
+	Fri, 10 Oct 2008 10:13:55 -0400
+Received: from stinky.trash.net ([213.144.137.162]:55420 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757541AbYJJONy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 10:08:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GjLk0qgIdcMzYxguRF7MzDuzxdR2L2g+7USMiWU8KRU6M5NUAEOYg1knydFXPvi1od
-         q+0Q9I1w0nuPsjRKsyqPqFfdD6uGa1yde2CsvLGUQHRZS/BtuZTtmXhMTicqHjy16nhf
-         mkQ/0ne+W62CA3O8sYQGR1uYhm4yTMiyI6DiM=
-Message-ID: <9e4733910810100708sa321030g70eab786ac3fe176@mail.gmail.com>
-Date: Fri, 10 Oct 2008 10:08:19 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jarod Wilson" <jarod@wilsonet.com>,
-       "Dmitry Torokhov" <dtor_core@ameritech.net>
-Subject: Re: [RFC PATCH 0/4] V3 - Implementation of IR support using the input subsystem
-Cc: "Pavel Machek" <pavel@suse.cz>, lirc-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1223646159.15204.12.camel@xavier.wilsonet.com>
+	Fri, 10 Oct 2008 10:13:54 -0400
+Message-ID: <48EF631E.1010601@trash.net>
+Date: Fri, 10 Oct 2008 16:13:50 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081006194032.15992.8393.stgit@terra>
-	 <20081009120333.GA1623@ucw.cz>
-	 <1223611899.13345.86.camel@xavier.wilsonet.com>
-	 <9e4733910810092204wbe6dd7dgde9c7ee50f698309@mail.gmail.com>
-	 <1223646159.15204.12.camel@xavier.wilsonet.com>
+To: Nir Tzachar <nir.tzachar@gmail.com>
+CC: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
+References: <9b2db90b0810092324o729e29c0i2e654c812592bbd2@mail.gmail.com> <48EF5DF5.7070708@trash.net> <48EF5E31.1070606@trash.net>
+In-Reply-To: <48EF5E31.1070606@trash.net>
+Content-Type: multipart/mixed;
+ boundary="------------000807010002030009010004"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 9:42 AM, Jarod Wilson <jarod@wilsonet.com> wrote:
-> On Fri, 2008-10-10 at 01:04 -0400, Jon Smirl wrote:
->> On Fri, Oct 10, 2008 at 12:11 AM, Jarod Wilson <jarod@wilsonet.com> wrote:
->> > On Thu, 2008-10-09 at 14:03 +0200, Pavel Machek wrote:
-> [...]
->> >> > How should multiple remotes be handled? Split them out into
->> >> > individual input devices, or group them onto a single IR device? I
->> >> > can implement either.
->> >>
->> >> Individual input devices, I'd say... so that app can only listen for
->> >> 'its' remote.
->> >
->> > I don't quite get it. How can we tell there are multiple remotes to set
->> > up multiple input devices when the system comes up? All we can know
->> > about at driver init time is the receiver(s), no? Or would this be keyed
->> > off a config file? Or ______ ?
+This is a multi-part message in MIME format.
+--------------000807010002030009010004
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Patrick McHardy wrote:
+> Patrick McHardy wrote:
+>> Nir Tzachar wrote:
+>>> Hello.
+>>>
+>>> The following warning is reproducible with the code below on 2.6.25.6,
+>>> which uses sendmsg on a udp socket using two iovecs:
+>>>
+>>> ....
+>>> And I always get  the following warning twice:
+>>>
+>>> [ 6658.338116] ------------[ cut here ]------------
+>>> [ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89
+>>> nf_nat_fn+0x33/0x155()
 >>
->>
->> We could create a sysfs attribut named ir_config. For each config file
->> you copy to it it creates a new input device. The config files have
->> lists of map this protocol, device, command tuple to this key. When a
->> remote button is pressed the raw codes are fed to the in-kernel
->> protocol engine. That engine turns the raw codes into tuples. Tuples
->> are matched against the configs that have been loaded until a hit is
->> found. If no hit they get sent out the catch-all device.
->
-> Okay. I presume the catch-all device would simply note that it saw
-> something, and not actually take any action beyond that.
+>> Thanks for the report. Does this patch fix it?
+> 
+> Actually, this can't be it. Let me look again.
 
-The catch-all device is an device in /dev/input. It gets the input
-tuples in protocol/device/command form sent to it. I should probably
-send all IR input to this device, and flag the events that were
-translated and sent to another input device.
+Found it - we lost an ifdef during the transition to nf_conntrack
+guarding an exception from defragmentation on loopback input.
 
->
-> Also, a minor clarification: If its config file based, then its not so
-> much one input device per remote, its one input device per config file,
-> so one could set up two separate config files that are actually commands
-> from the same remote, but have them listened to by different apps, or
-> one could group together commands from multiple remotes in a single
-> config so that multiple remotes would all control the same thing. Sounds
-> good to me, provides for a reasonable amount of flexibility.
+This patch should fix the warning.
 
-That is how it works.
+--------------000807010002030009010004
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
 
-> Of course, this suggests a receiver wouldn't be able to do anything
-> until the user provided a key mapping table of some sort. Would it make
-> sense to provide a default IR-to-key mapping for each receiver type? A
-> bit difficult to provide a sane default for something like a home-brew
-> serial IR receiver, but you could certainly provide sane defaults for
-> things like mceusb and imon (i.e., mappings for the remotes typically
-> bundled with those receivers).
+diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+index 5a955c4..7eb0b61 100644
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -150,10 +150,12 @@ static unsigned int ipv4_conntrack_defrag(unsigned int hooknum,
+ 					  const struct net_device *out,
+ 					  int (*okfn)(struct sk_buff *))
+ {
++#if !defined(CONFIG_NF_NAT) && !defined(CONFIG_NF_NAT_MODULE)
+ 	/* Previously seen (loopback)?  Ignore.  Do this before
+ 	   fragment check. */
+ 	if (skb->nfct)
+ 		return NF_ACCEPT;
++#endif
+ 
+ 	/* Gather fragments. */
+ 	if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
 
-Receivers can process the raw tuples using the catch-all device.
-
-You could write a little app like udev that listens to the catch-all
-device and then search the config files for untranslated tuples. When
-you match on an untranslated tuple, load that config file into the
-kernel.
-
-I'm taking the kids on their first trip to Disneyworld next week so I
-won't be able to work on this for a while.
-
->
->> Most remotes send out unique codes, they have to or they would turn on
->> unintended devices.
->
-> Yep, that's actually where the root of my concern was. I have at least a
-> half dozen different remote-controlled devices in my AV cabinet near my
-> myth box, and I obviously don't want anything but the codes I've set up
-> for my myth box acted upon on the myth box. :)
->
->
-> --
-> Jarod Wilson
-> jarod@wilsonet.com
->
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+--------------000807010002030009010004--
