@@ -1,71 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbYJJPXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYJJP04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760383AbYJJPXk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 11:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbYJJPXb
+	id S1760775AbYJJP04 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 11:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbYJJP0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 11:23:31 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:47352 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757425AbYJJPXa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 11:23:30 -0400
-Message-ID: <48EF7211.2000303@cs.columbia.edu>
-Date: Fri, 10 Oct 2008 11:17:37 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 10 Oct 2008 11:26:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58499 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757487AbYJJP0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 11:26:47 -0400
+Date: Fri, 10 Oct 2008 17:26:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [git pull] x86 updates for v2.6.28, phase #1
+Message-ID: <20081010152631.GB26231@elte.hu>
+References: <20081009234705.GA20540@elte.hu> <alpine.LFD.2.00.0810100808540.3524@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Daniel Lezcano <dlezcano@fr.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       arnd@arndb.de, Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 1/2] Track in-kernel when we expect	checkpoint/restart
- to work
-References: <20081009190405.13A253CB@kernel>	<1223626834.8787.8.camel@localhost.localdomain>	<48EF144D.1050906@fr.ibm.com> <20081010145934.GF11695@elte.hu>
-In-Reply-To: <20081010145934.GF11695@elte.hu>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810100808540.3524@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Ingo Molnar wrote:
-> * Daniel Lezcano <dlezcano@fr.ibm.com> wrote:
+> On Fri, 10 Oct 2008, Ingo Molnar wrote:
+> > 
+> > Vegard Nossum (3):
+> >       x86: consolidate header guards
+> >       x86: consolidate header guards
 > 
->>> By the way, why don't you introduce the reverse operation ?
->> I think implementing the reverse operation will be a nightmare, IMHO 
->> it is safe to say we deny checkpointing for the process life-cycle 
->> either if the created resource was destroyed before we initiate the 
->> checkpoint.
-> 
-> it's also a not too interesting case. The end goal is to just be able to 
-> checkpoint everything that matters - in the long run there simply wont 
-> be many places that are marked 'cannot checkpoint'.
-> 
-> So the ability to deny a checkpoint is a transitional feature - a 
-> flexible CR todo list in essence - but also needed for 
-> applications/users that want to rely on CR being a dependable facility.
-> 
-> It would be bad for most of the practical usecases of checkpointing to 
-> allow the checkpointing of an app, just to see it break on restore due 
-> to lost context.
+> Ok, so I pulled phase 1, but quite frankly, I think this was utter 
+> crap. Why the hell did this go in?
 
-Actually it need not wait for restore to fail - it can fail during the
-checkpoint, as soon as the unsupported feature is encountered.
+we'll fix that up. We'll move all header files to arch/x86/include/asm/ 
+anyway later in the merge window, once the dust settles, and can do a 
+separate commit for this as well.
 
-Adding that flag of what you suggest will help make it more vocal and
-obvious that a feature isn't supported, even without the user actually
-trying to take a checkpoint. I  like that I idea.
+The main motivation was that we had a few incidents of missing header 
+guards and Vegard asked whether he should script up some complete commit 
+that adds guards to all files and i agreed and didnt look closely enough 
+- my bad.
 
-Oren.
+this aspect of it:
 
-> 
-> 	Ingo
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+ -#ifndef _ASM_X86_I387_H
+ -#define _ASM_X86_I387_H
+ +#ifndef ASM_X86__I387_H
+ +#define ASM_X86__I387_H
+
+is indeed broken and deviates from the established convention of the 
+header guards as well.
+
+> And yes, yes, we could add the f*cking things back when we export them 
+> as header files, but what's the point, really? And no, I'm not 
+> guaranteeing that we're being super-careful about namespace issues in 
+> all kernel headers that can get exported to user space, but we _try_.
+
+yes, agreed. Sorry about that, it slipped through. (It was one of our 
+first real Git pulls and i meanwhile learned to look at them much more 
+carefully.)
+
+It's completely my fault because Vegard offered multiple iterations of 
+the script and asked us precisely what we wanted.
+
+	Ingo
