@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYJJFEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYJJFLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828AbYJJFEx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 01:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYJJFEm
+	id S1754518AbYJJFLi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 01:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYJJFLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 01:04:42 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:10597 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751950AbYJJFEl (ORCPT
+	Fri, 10 Oct 2008 01:11:30 -0400
+Received: from mga09.intel.com ([134.134.136.24]:14815 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751317AbYJJFL3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 01:04:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WPh3i+Ul2xC1NrHxscOUcWlR8Y4b80wO2fZ3XhepDNzzr501swGvx4NJ3e4FkHcsdw
-         SZjiAo8Pg/nZZNEUY0rG3kSdFyDZYYaSGCODBk4CZYpsny2AyMK3IqSeXlwv+4GMSSpP
-         wKP//RsYnzbdwAtqF0nOU9B+4b3A3KbHpEyOE=
-Message-ID: <9e4733910810092204wbe6dd7dgde9c7ee50f698309@mail.gmail.com>
-Date: Fri, 10 Oct 2008 01:04:40 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jarod Wilson" <jarod@wilsonet.com>
-Subject: Re: [RFC PATCH 0/4] V3 - Implementation of IR support using the input subsystem
-Cc: "Pavel Machek" <pavel@suse.cz>, lirc-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1223611899.13345.86.camel@xavier.wilsonet.com>
+	Fri, 10 Oct 2008 01:11:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,386,1220252400"; 
+   d="scan'208";a="449408582"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Date: Thu, 9 Oct 2008 22:10:10 -0700
+Subject: RE: [PATCH] Typo in x86 apic.c with DIVISOR setup
+Thread-Topic: [PATCH] Typo in x86 apic.c with DIVISOR setup
+Thread-Index: AckqkjRuwJgqXMsRT5qaJFOKmZgKKgAA+2Cg
+Message-ID: <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com>
+References: <20081010002203.GA23238@linux-os.sc.intel.com>
+ <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com>
+In-Reply-To: <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081006194032.15992.8393.stgit@terra>
-	 <20081009120333.GA1623@ucw.cz>
-	 <1223611899.13345.86.camel@xavier.wilsonet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 12:11 AM, Jarod Wilson <jarod@wilsonet.com> wrote:
-> On Thu, 2008-10-09 at 14:03 +0200, Pavel Machek wrote:
->> Hi!
+
+
+>-----Original Message-----
+>From: Cyrill Gorcunov [mailto:gorcunov@gmail.com]
+>Sent: Thursday, October 09, 2008 9:38 PM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Thomas Gleixner; H. Peter Anvin; linux-kernel
+>Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
+>
+>On Fri, Oct 10, 2008 at 4:22 AM, Venki Pallipadi
+><venkatesh.pallipadi@intel.com> wrote:
 >>
->> >  What should the IR API look like?  How are IR events mapped into
->> > keyboard events? Should they be mapped? Map them in the kernel or in
->> > user space? The maps are tiny, less than 1K per remote.  Sysfs can
->> > be used to load maps into the kernel driver. Make maps only for the
->> > common buttons and don't map unusual ones?
+>> Fix a typo in x86 apic.c CONFG_X86_64 -> CONFIG_X86_64.
+>> The intention looks like was to have divisor of 1 on x86_64 kernel.
 >>
->> Map them in kernel, in analogy with normal keyboards.
->
-> My thought was to basically follow what the ati_remote{,2} driver does.
->
->> > How should multiple remotes be handled? Split them out into
->> > individual input devices, or group them onto a single IR device? I
->> > can implement either.
+>> Also, for DIVISOR value of 1 to work, APIC_TDR_DIV should also change
+>> depending on divide by 1 or divide by 16 is used.
 >>
->> Individual input devices, I'd say... so that app can only listen for
->> 'its' remote.
+>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>>
+>> ---
+>>  arch/x86/kernel/apic.c |    6 ++++--
+>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>
+>> Index: tip/arch/x86/kernel/apic.c
+>> ===================================================================
+>> --- tip.orig/arch/x86/kernel/apic.c     2008-10-09
+>17:12:39.000000000 -0700
+>> +++ tip/arch/x86/kernel/apic.c  2008-10-09 17:13:29.000000000 -0700
+>> @@ -332,10 +332,12 @@ int lapic_get_maxlvt(void)
+>>  */
+>>
+>>  /* Clock divisor */
+>> -#ifdef CONFG_X86_64
+>> +#ifdef CONFIG_X86_64
+>>  #define APIC_DIVISOR 1
+>> +#define APIC_TDR_DIV APIC_TDR_DIV_1
+>>  #else
+>>  #define APIC_DIVISOR 16
+>> +#define APIC_TDR_DIV APIC_TDR_DIV_16
+>>  #endif
+>>
+>>  /*
+>> @@ -369,7 +371,7 @@ static void __setup_APIC_LVTT(unsigned i
+>>        tmp_value = apic_read(APIC_TDCR);
+>>        apic_write(APIC_TDCR,
+>>                (tmp_value & ~(APIC_TDR_DIV_1 |
+>APIC_TDR_DIV_TMBASE)) |
+>> -               APIC_TDR_DIV_16);
+>> +               APIC_TDR_DIV);
+>>
+>>        if (!oneshot)
+>>                apic_write(APIC_TMICT, clocks / APIC_DIVISOR);
+>>
 >
-> I don't quite get it. How can we tell there are multiple remotes to set
-> up multiple input devices when the system comes up? All we can know
-> about at driver init time is the receiver(s), no? Or would this be keyed
-> off a config file? Or ______ ?
-
-
-We could create a sysfs attribut named ir_config. For each config file
-you copy to it it creates a new input device. The config files have
-lists of map this protocol, device, command tuple to this key. When a
-remote button is pressed the raw codes are fed to the in-kernel
-protocol engine. That engine turns the raw codes into tuples. Tuples
-are matched against the configs that have been loaded until a hit is
-found. If no hit they get sent out the catch-all device.
-
-Most remotes send out unique codes, they have to or they would turn on
-unintended devices.
-
-
+>Hi Venki,
 >
->
-> --
-> Jarod Wilson
-> jarod@wilsonet.com
->
+>you know I don't have code under my hands now to take a look on
+>(i'm in office now) -- but if I recall correctly it's not a typo :) By
+>writting (1) instead of (16) you make counter decrease faster by
+>16 times (if to compare with what we have now). So we could get
+>counter underflow before we've finish calibration. That is was the
+>original intension of this 16 divisor being used. Did you test this
+>patch?
 >
 
+Typo part I mentioned was this
 
+>> -#ifdef CONFG_X86_64
+>> +#ifdef CONFIG_X86_64
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Looks like intention was to use DIVISOR of 1 for x86_64 and divisor of
+16 for 32 bit kernel. Once I changed that, there was still one place in
+64 bit code that was assuming divisor of 16. The rest of the patch
+changes that part.
+
+Yes. Tested this patch on couple of systems here and worked fine.
+
+Thanks,
+Venki
