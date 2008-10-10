@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763005AbYJJV3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbYJJVbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763005AbYJJV3T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 17:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759905AbYJJV3K
+	id S1763471AbYJJVbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 17:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759960AbYJJVbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 17:29:10 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:8748 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759655AbYJJV3I (ORCPT
+	Fri, 10 Oct 2008 17:31:21 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45006 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759310AbYJJVbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 17:29:08 -0400
-Date: Fri, 10 Oct 2008 15:29:05 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
-Subject: Re: [PATCH v5 04/16] PCI: prevent duplicate slot names
-Message-ID: <20081010212905.GH3286@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-	matthew@wil.cx
-References: <20081009043140.8678.44164.stgit@bob.kio> <20081009044649.8678.30990.stgit@bob.kio> <48ED9716.3040301@jp.fujitsu.com> <20081009055654.GA30972@ldl.fc.hp.com> <48EDF9F5.9020802@jp.fujitsu.com> <20081010021034.GA13292@ldl.fc.hp.com> <48EEDD7E.5090002@jp.fujitsu.com> <20081010052757.GA26341@ldl.fc.hp.com> <48EF0E21.5000500@jp.fujitsu.com>
+	Fri, 10 Oct 2008 17:31:20 -0400
+Message-ID: <48EFC9A0.5070907@zytor.com>
+Date: Fri, 10 Oct 2008 14:31:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48EF0E21.5000500@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Alain Knaff <alain@knaff.lu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu> <48EE4302.2010404@zytor.com> <48EEC7D1.80404@knaff.lu>
+In-Reply-To: <48EEC7D1.80404@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Alex Chiang wrote:
->> Ugh, I'm not sure which is worse, an unbalanced API vs passing a
->> hotplug_slot to pci_destroy_slot.
+Alain Knaff wrote:
+> H. Peter Anvin wrote:
+>> Hi Alain,
 >>
->> pci_destroy_slot should never touch the pci_slot->hotplug
->> argument, I think, because it is possible for non-hotplug callers
->> to call pci_create_slot.
+>> Are you planning to submit an updated patch any time soon?  If so,
+>> please separate the ARM, x86, library and generic portions into separate
+>> patches.  It looks like at least some of them already went into ARM,
+>> which makes it impractical to include this as a monolithic patch, which
+>> it really shouldn't have to be, anyway.
 >>
->> I think the rule should just be:
->>
->> 	- all hotplug drivers must use pci_hp_register/deregister
->> 	- hotplug drivers must pass a valid hotplug_slot argument
->>
->> 	- all detection drivers must use pci_create/destroy_slot
->> 	- detection drivers must pass NULL for hotplug_slot
->>
->
-> I'm still concerned about one thing. Now that we added hotplug
-> arg to pci_create_slot(), pci_bus_sem could be used for changing
-> pci_slot->hotplug. But if there is no generic API to clean up
-> pci_slot->hotplug, we can't use pci_bus_sem because pci hotplug
-> core cannot hold pci_bus_sem. As a result, we need to add the
-> following rule in addition to the above rules.
->
-> 	- hotplug core driver must hold some mutex/semaphore when
-> 	  calling pci_create_slot()
-> 	- hotplug core driver must hold the same mutex/semaphore
-> 	  when cleaning up pci_slot->hotplug.
->
-> That is, even though pci_create_slot provides the interface to
-> setup pci_slot->hotplug, caller needs to pay attention to race
-> condition about pci_slot->hotplug. I think it's a little strange.
+>>     -hpa
+> 
+> I'll look into it (the split) this weekend, if I'll find the time.
+> Should each part be compilable on its own? If so, it might be difficult
+> to do the split along the lines outlined above.
+> 
 
-I think we can use your earlier patch that replaced the hotplug
-list spinlock with a pci_hp_mutex, and that should implement the
-two new rules you mention, right?
+Not individually, but part 1 should compile, as should parts 1+2, etc.
 
-Let me try and insert your patch into the rest of my series and
-see how it looks.
+This pretty much means the order should be:
 
-/ac
+1. add library functions
+2. generic functionality
+3. x86 functionality
+4. ARM functionality
 
+Soem of these may be obsolete; I noticed collisions with the ARM tree.
+
+	-hpa
