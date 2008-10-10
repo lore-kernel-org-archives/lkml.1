@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbYJJIKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYJJIMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755767AbYJJIKt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 04:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYJJIJ5
+	id S1754872AbYJJIMs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 04:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYJJIMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 04:09:57 -0400
-Received: from mail.ukfsn.org ([77.75.108.10]:51338 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751670AbYJJIJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 04:09:53 -0400
-Message-ID: <48EF0DB7.90909@dgreaves.com>
-Date: Fri, 10 Oct 2008 09:09:27 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 10 Oct 2008 04:12:32 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57245 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbYJJIMb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 04:12:31 -0400
+Message-ID: <48EF0E21.5000500@jp.fujitsu.com>
+Date: Fri, 10 Oct 2008 17:11:13 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: SMART to USB/sata dock in 2.6.27-rc5 doesn't work : hardware
- limitation
-References: <48EE7E0A.8040701@dgreaves.com>
-In-Reply-To: <48EE7E0A.8040701@dgreaves.com>
-X-Enigmail-Version: 0.95.0
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH v5 04/16] PCI: prevent duplicate slot names
+References: <20081009043140.8678.44164.stgit@bob.kio> <20081009044649.8678.30990.stgit@bob.kio> <48ED9716.3040301@jp.fujitsu.com> <20081009055654.GA30972@ldl.fc.hp.com> <48EDF9F5.9020802@jp.fujitsu.com> <20081010021034.GA13292@ldl.fc.hp.com> <48EEDD7E.5090002@jp.fujitsu.com> <20081010052757.GA26341@ldl.fc.hp.com>
+In-Reply-To: <20081010052757.GA26341@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> Hi
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> I'm sorry, but I forgot to tell you one important thing. Now we
+>> are trying to change pci slot management API to setup
+>> pci_slot->hotplug.  We must consider how to implement the
+>> counterpart to clean up pci_slot->hotplug at the same time. My
+>> current idea is adding hotplug arg to pci_destroy_slot(), but
+>> it seems a little ugly...
 > 
-> I just bought a usb/sata adapter like this:
->   http://www.thinkgeek.com/computing/drives/a7ea/?cpg=ab
-> lsusb -v is below
+> Ugh, I'm not sure which is worse, an unbalanced API vs passing a
+> hotplug_slot to pci_destroy_slot.
 > 
-> Works OK as a hot-plug SATA disk so I can check what's on that old disk in the
-> corner; but smartctl doesn't work so I can't see if it has any errors, run
-> selftests etc.
+> pci_destroy_slot should never touch the pci_slot->hotplug
+> argument, I think, because it is possible for non-hotplug callers
+> to call pci_create_slot.
+> 
+> I think the rule should just be:
+> 
+> 	- all hotplug drivers must use pci_hp_register/deregister
+> 	- hotplug drivers must pass a valid hotplug_slot argument
+> 
+> 	- all detection drivers must use pci_create/destroy_slot
+> 	- detection drivers must pass NULL for hotplug_slot
+>
 
-So, for the record since I had no luck on google, I had an off-list reply that
-pointed here: Smartmontools for FireWire, USB, and SATA disks/systems
-  http://smartmontools.sourceforge.net/faq.html#testinghelp
+I'm still concerned about one thing. Now that we added hotplug
+arg to pci_create_slot(), pci_bus_sem could be used for changing
+pci_slot->hotplug. But if there is no generic API to clean up
+pci_slot->hotplug, we can't use pci_bus_sem because pci hotplug
+core cannot hold pci_bus_sem. As a result, we need to add the
+following rule in addition to the above rules.
 
-It's an odd URL target - it's actually about the fact that the usb/sata bridges
-built into the docks don't fully support the scsi command set in their hardware;
-so my SMART doesn't work and has no chance of being fixed by software. Future
-chipsets (and some current cypress ones) may have various developments in
-hardware to fix this.
+	- hotplug core driver must hold some mutex/semaphore when
+	  calling pci_create_slot()
+	- hotplug core driver must hold the same mutex/semaphore
+	  when cleaning up pci_slot->hotplug.
 
-HTH someone else.
+That is, even though pci_create_slot provides the interface to
+setup pci_slot->hotplug, caller needs to pay attention to race
+condition about pci_slot->hotplug. I think it's a little strange.
 
-David
+But I might be overcareful...
+
+Thanks,
+Kenji Kaneshige
 
 
--- 
-"Don't worry, you'll be fine; I saw it work in a cartoon once..."
+ 
+> If you prefer, we could wrap pci_create_slot for detection
+> drivers:
+> 
+> struct pci_slot *pci_slot_register(struct pci_bus *parent, int slot_nr,
+> 				   const char *name)
+> 
+> {
+> 	return pci_create_slot(parent, slot_nr, name, NULL);
+> }
+> EXPORT_SYMBOL_GPL(pci_slot_register);
+> 
+> And then do not export pci_create_slot().
+> 
+> Hm?
+> 
+> /ac
+> 
+> 
+> 
+
+
