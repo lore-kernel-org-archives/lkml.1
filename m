@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbYJJN1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbYJJNcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760030AbYJJN1r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 09:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbYJJN1h
+	id S1759488AbYJJNcr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 09:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbYJJNci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 09:27:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34136 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756429AbYJJN1h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 09:27:37 -0400
-Date: Fri, 10 Oct 2008 09:27:34 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Anders Kaseorg <andersk@MIT.EDU>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] ftrace: Make ftrace_test_p6nop disassembler-friendly
-In-Reply-To: <20081010085429.GB319@elte.hu>
-Message-ID: <alpine.DEB.1.10.0810100927110.26408@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0810092209460.21569@vinegar-pot.mit.edu> <20081010085429.GB319@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 10 Oct 2008 09:32:38 -0400
+Received: from ns.firmix.at ([62.141.48.66]:6026 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756832AbYJJNci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 09:32:38 -0400
+Subject: Re: dup2() vs dup3() inconsistency when
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: mtk.manpages@gmail.com
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ulrich Drepper <drepper@redhat.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <cfd18e0f0810100615o1ffd32d6u33603f93c4739171@mail.gmail.com>
+References: <cfd18e0f0810090510i87f088fi9eeea829ae2b58c1@mail.gmail.com>
+	 <48EE3D84.6000003@zytor.com> <48EE6A2B.8030005@redhat.com>
+	 <48EE6CD6.10007@zytor.com> <48EE6F22.5070306@redhat.com>
+	 <48EE703C.7070901@zytor.com>
+	 <cfd18e0f0810092204n50f88887t7776133620eff75b@mail.gmail.com>
+	 <1223640571.8832.60.camel@spike.firmix.at>
+	 <cfd18e0f0810100515u6f510cbat880020bae14aee71@mail.gmail.com>
+	 <1223643764.8832.67.camel@spike.firmix.at>
+	 <cfd18e0f0810100615o1ffd32d6u33603f93c4739171@mail.gmail.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Fri, 10 Oct 2008 15:31:56 +0200
+Message-Id: <1223645516.8832.73.camel@spike.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.336 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.336 required=5
+X-Spam-Score: -2.336 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 10 Oct 2008, Ingo Molnar wrote:
-
+On Fri, 2008-10-10 at 15:15 +0200, Michael Kerrisk wrote:
+> On Fri, Oct 10, 2008 at 3:02 PM, Bernd Petrovitsch <bernd@firmix.at> wrote:
+[....]
+> >> but to eliminate the blemish in its design in the new dup3() (since we
+> >> have alrady eliminated one other blemish).
+> >
+> > FWIW I consider the automatic close() in dup2() a feature (if only that
+> > it avoids an additional system call).
 > 
-> * Anders Kaseorg <andersk@MIT.EDU> wrote:
-> 
-> > Commit 4c3dc21b136f8cb4b72afee16c3ba7e961656c0b in tip introduced the
-> > 5-byte NOP ftrace_test_p6nop:
-> >   jmp . + 5
-> >   .byte 0x00, 0x00, 0x00
-> > This is not friendly to disassemblers because an odd number of 0x00s
-> > ends in the middle of an instruction boundary.  This changes the 0x00s
-> > to 1-byte NOPs (0x90).
-> > 
-> > Signed-off-by: Anders Kaseorg <andersk@mit.edu>
-> 
-> applied to tip/tracing/ftrace, good spotting Anders!
-> 
-> Steve, any objections?
+> Exploiting this "feature" can hide real errors that would be detected
+> if one does an explicit close().  (See the dup2 man page.)
 
-Nope, it's fine with me.
+If someone is interested in the return value of the automatic close(),
+he/she can call close() anyways and check the the result.
 
-Acked-by: Steven Rostedt <srostedt@redhat.com>
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
 
