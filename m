@@ -1,120 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbYJJNNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbYJJNOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759870AbYJJNNj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 09:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759435AbYJJNN1
+	id S1759529AbYJJNOM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 09:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbYJJNN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 09:13:27 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:19730 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756043AbYJJNN0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 09:13:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=TMtbioDDOLM02rX+FL9JqYg4MFR/ud2cSkg0fkyn2yXl+rPHxc6xtO66OXeQDicofN
-         Znps7ICrmdIqoSoqpOzfQ9/J/o2CjjX8wSyImLXUjN8NIkb2n0MgXND+uT+qhMnqc9Lv
-         7vlO4oDscaTJIeVOI1S4QmTxeSYSKpcJiMG5o=
-Message-ID: <48EF54EF.6040002@gmail.com>
-Date: Fri, 10 Oct 2008 15:13:19 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: balbir@linux.vnet.ibm.com, Michael Rubin <mrubin@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       dave@linux.vnet.ibm.com, chlunde@ping.uio.no, dpshah@google.com,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, agk@sourceware.org,
-       m.innocenti@cineca.it, s-uchida@ap.jp.nec.com, ryov@valinux.co.jp,
-       matt@bluehost.com, dradford@bluehost.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] page-writeback: fine-grained dirty_ratio and dirty_background_ratio
-References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com>	<20080912131816.e0cfac7a.akpm@linux-foundation.org>	<532480950809221641y3471267esff82a14be8056586@mail.gmail.com>	<48EB4236.1060100@linux.vnet.ibm.com>	<48EB851D.2030300@gmail.com>	<20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>	<48ECB215.4040409@linux.vnet.ibm.com>	<48EE236A.90007@gmail.com> <20081010094139.e7f8653d.kamezawa.hiroyu@jp.fujitsu.com> <48EF2138.9050307@gmail.com>
-In-Reply-To: <48EF2138.9050307@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 09:13:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37000 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756754AbYJJNNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 09:13:55 -0400
+Date: Fri, 10 Oct 2008 13:51:59 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Stefan Raspl <raspl@linux.vnet.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Benjamin Marzinski <bmarzins@redhat.com>,
+       Jonathan Brassow <jbrassow@redhat.com>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>
+Subject: [git pull] device-mapper patches for 2.6.28
+Message-ID: <20081010125159.GK5098@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org,
+	Stefan Raspl <raspl@linux.vnet.ibm.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Benjamin Marzinski <bmarzins@redhat.com>,
+	Jonathan Brassow <jbrassow@redhat.com>,
+	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Milan Broz <mbroz@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> KAMEZAWA Hiroyuki wrote:
->> <snip>
->>
->>> -int dirty_background_ratio = 5;
->>> +int dirty_background_ratio = 5 * PERCENT_PCM;
->>>  
->>>  /*
->>>   * free highmem will not be subtracted from the total free memory
->>> @@ -77,7 +77,7 @@ int vm_highmem_is_dirtyable;
->>>  /*
->>>   * The generator of dirty data starts writeback at this percentage
->>>   */
->>> -int vm_dirty_ratio = 10;
->>> +int vm_dirty_ratio = 10 * PERCENT_PCM;
->>>  
->>>  /*
->>>   * The interval between `kupdate'-style writebacks, in jiffies
->>> @@ -135,7 +135,8 @@ static int calc_period_shift(void)
->>>  {
->>>  	unsigned long dirty_total;
->>>  
->>> -	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) / 100;
->>> +	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory())
->>> +			/ ONE_HUNDRED_PCM;
->>>  	return 2 + ilog2(dirty_total - 1);
->>>  }
->>>  
->> I wonder...isn't this overflow in 32bit system ?
-> 
-> Correct! the worst case is (in pages):
-> 
-> 4GB = 100,000 * determine_dirtyable_memory()
-> 
-> that means 42950 pages (~168MB) of dirtyable memory is enough to overflow :(.
-> Using an u64 for dirty_total should resolve.
-> 
-> Delta patch is below.
-> 
-> Unfortunately I have all 64-bit machines right now. Maybe tomorrow I'll
-> be able to get a 32-bit box, if someone doesn't test this before.
-> 
-> Thanks!
-> -Andrea
+Please pull from:
 
-I've been able to quickly resolve creating a 1GB mem i386 VM with kvm. :)
+  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
 
-Everything seems to work fine and with the following fix it doesn't overflow.
+to get the following device-mapper patches for 2.6.28:
+ 
+Alasdair G Kergon (2):
+      dm crypt: remove inc_pending from write_io_submit
+      dm: detect lost queue
 
--Andrea
+Benjamin Marzinski (1):
+      dm mpath: use more error codes
 
+Jonathan Brassow (1):
+      dm raid1: kcopyd should stop on error if errors handled
 
-> 
-> ---
-> Subject: fix overflow in 32-bit systems using fine-grained dirty_ratio
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/page-writeback.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 6bc8c9b..29913e5 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -133,7 +133,7 @@ static struct prop_descriptor vm_dirties;
->   */
->  static int calc_period_shift(void)
->  {
-> -	unsigned long dirty_total;
-> +	u64 dirty_total;
->  
->  	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory())
->  			/ ONE_HUNDRED_PCM;
+Kiyoshi Ueda (1):
+      dm mpath: remove is_active from struct dm_path
+
+Mikulas Patocka (6):
+      dm exception store: introduce area_location function
+      dm exception store: use chunk_t for_areas
+      dm: export struct dm_dev
+      dm: publish dm_get_mapinfo
+      dm: publish dm_table_unplug_all
+      dm: publish dm_vcalloc
+
+Milan Broz (7):
+      dm crypt: tidy inc pending
+      dm crypt: tidy crypt alloc
+      dm crypt: tidy write loop pending
+      dm crypt: move dec_pending on error into write_io_submit
+      dm crypt: fix async inc_pending
+      dm crypt: tidy ctx pending
+      dm crypt: avoid unnecessary wait when splitting bio
+
+ drivers/md/dm-crypt.c           |  109 +++++++++++++++++++++++---------------
+ drivers/md/dm-exception-store.c |   29 +++++++----
+ drivers/md/dm-ioctl.c           |    4 +-
+ drivers/md/dm-mpath.c           |   35 +++++++------
+ drivers/md/dm-mpath.h           |    2 -
+ drivers/md/dm-raid1.c           |    4 +-
+ drivers/md/dm-table.c           |   97 ++++++++++++++++++++++------------
+ drivers/md/dm.h                 |   10 +---
+ include/linux/device-mapper.h   |   18 ++++++-
+ 9 files changed, 190 insertions(+), 118 deletions(-)
+
+Alasdair
+-- 
+agk@redhat.com
