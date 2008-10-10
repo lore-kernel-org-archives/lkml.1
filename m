@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbYJJMPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYJJMVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbYJJMPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 08:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbYJJMPZ
+	id S1757958AbYJJMVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 08:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYJJMVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 08:15:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:24892 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755023AbYJJMPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 08:15:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=oQLUgML4YlP7N/xJy53UOvIMTnHiW4zlOWJ0dZph44I2kHlIqC4V3u6kKJNf1plFKQ
-         zbMOJga4mHMYDXtRHuvMIFCxqkjT2M3YyVOCLncANcWaU33ZmpDSh3blvspEir5YDiJB
-         83K21VH5/0TcMlwfrZ1hb0XyaCmetIgPxnH1A=
-Message-ID: <cfd18e0f0810100515u6f510cbat880020bae14aee71@mail.gmail.com>
-Date: Fri, 10 Oct 2008 14:15:23 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Bernd Petrovitsch" <bernd@firmix.at>
-Subject: Re: dup2() vs dup3() inconsistency when
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Ulrich Drepper" <drepper@redhat.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1223640571.8832.60.camel@spike.firmix.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cfd18e0f0810090510i87f088fi9eeea829ae2b58c1@mail.gmail.com>
-	 <48EE3D84.6000003@zytor.com> <48EE6A2B.8030005@redhat.com>
-	 <48EE6CD6.10007@zytor.com> <48EE6F22.5070306@redhat.com>
-	 <48EE703C.7070901@zytor.com>
-	 <cfd18e0f0810092204n50f88887t7776133620eff75b@mail.gmail.com>
-	 <1223640571.8832.60.camel@spike.firmix.at>
+	Fri, 10 Oct 2008 08:21:01 -0400
+Received: from perso1.free.fr ([212.27.63.203]:46194 "EHLO perso1.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640AbYJJMVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 08:21:01 -0400
+XPARM: thesermon.free.fr
+XPARAM2: 193.50.29.42
+Subject: [PATCH 4/6] tracing/ftrace: Remove unused code in sched_switch tracer
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Date: Fri, 10 Oct 2008 14:21:08
+To: Ingo Molnar <mingo@elte.hu>
+Message-Id: <20081010122108.35784D1C02B@perso1.free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 2:09 PM, Bernd Petrovitsch <bernd@firmix.at> wrote:
-> On Fri, 2008-10-10 at 07:04 +0200, Michael Kerrisk wrote:
-> [....]
->> Well, as long as we are fixing the dup3() interface in the way that Al
->> and Ulrich have suggested, what about another fix:
->>
->> give an error if newfd is already open, thus forcing the user to do an
->> explicit close
->>
->> ?
->>
->> This silent close in dup2() is an implementation blemish.  Why not eliminate it?
->
-> Apart from the usual "do not break almost all existing apps" killer
-> reason: The alternative is that people will simply add a "close(newfd)"
-> everytime before "dup2(oldfd,newfd)" since close() is harmless on a
-> non-open fd.
 
-Bernd,
+When init_sched_switch_trace() is called, it has no reason to start
+the sched tracer if the sched_ref is not zero.
 
-I think you've missed the point.  The idea is not to change to dup2(),
-but to eliminate the blemish in its design in the new dup3() (since we
-have alrady eliminated one other blemish).
+_ If this is non-zero, the tracer is already used, but we can register it
+to the tracing engine. There is already a security which avoid the tracer
+probes not to be resgistered twice. 
 
-Cheers,
+_ If this is zero, this block will not be used.
 
-Michael
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_sched_switch.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
+index 59de514..96620c7 100644
+--- a/kernel/trace/trace_sched_switch.c
++++ b/kernel/trace/trace_sched_switch.c
+@@ -203,14 +203,6 @@ static struct tracer sched_switch_trace __read_mostly =
+ 
+ __init static int init_sched_switch_trace(void)
+ {
+-	int ret = 0;
+-
+-	if (atomic_read(&sched_ref))
+-		ret = tracing_sched_register();
+-	if (ret) {
+-		pr_info("error registering scheduler trace\n");
+-		return ret;
+-	}
+ 	return register_tracer(&sched_switch_trace);
+ }
+ device_initcall(init_sched_switch_trace);
+
