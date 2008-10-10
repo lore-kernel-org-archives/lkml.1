@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762042AbYJJXen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbYJJXir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762042AbYJJXen (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 19:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYJJXef
+	id S1760743AbYJJXir (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 19:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYJJXij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 19:34:35 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:49525 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752975AbYJJXef (ORCPT
+	Fri, 10 Oct 2008 19:38:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38246 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751295AbYJJXii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 19:34:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAB5+70hMQWq+/2dsb2JhbACBcrp5gWw
-Date: Fri, 10 Oct 2008 19:34:29 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: Michael Davidson <md@google.com>, Michael Rubin <mrubin@google.com>,
-       Jan Blunck <jblunck@suse.de>, Martin Bligh <mbligh@google.com>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: LTTng new trace format, cleanup, kernel 2.6.27 support
-Message-ID: <20081010233428.GA7035@Krystal>
+	Fri, 10 Oct 2008 19:38:38 -0400
+Date: Fri, 10 Oct 2008 16:32:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: garyhade@us.ibm.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       y-goto@jp.fujitsu.com, pbadari@us.ibm.com, mel@csn.ul.ie,
+       lcm@us.ibm.com, mingo@elte.hu, greg@kroah.com, dave@linux.vnet.ibm.com,
+       nish.aravamudan@gmail.com
+Subject: Re: [PATCH 1/2] [REPOST] mm: show node to memory section
+ relationship with symlinks in sysfs
+Message-Id: <20081010163230.ae9d964d.akpm@linux-foundation.org>
+In-Reply-To: <20081010231844.GA1718@us.ibm.com>
+References: <20081009192115.GB8793@us.ibm.com>
+	<20081010124239.f92b5568.akpm@linux-foundation.org>
+	<20081010213357.GD7369@us.ibm.com>
+	<20081010145950.f51def29.akpm@linux-foundation.org>
+	<20081010231844.GA1718@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:52:53 up 128 days,  3:33,  6 users,  load average: 1.21, 0.81,
-	0.50
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+On Fri, 10 Oct 2008 16:18:44 -0700
+Gary Hade <garyhade@us.ibm.com> wrote:
 
-I just cleaned up the LTTng trace format heavily, got rid of the
-heartbeat timer (by checking for overflow at the tracing site), got rid
-of the "special" compact channel; it removed about 5 FIXMEs in LTTng
-(cpu hotplug and compact channel related). Everything is compact now :
+> On Fri, Oct 10, 2008 at 02:59:50PM -0700, Andrew Morton wrote:
+> > On Fri, 10 Oct 2008 14:33:57 -0700
+> > Gary Hade <garyhade@us.ibm.com> wrote:
+> > 
+> > > On Fri, Oct 10, 2008 at 12:42:39PM -0700, Andrew Morton wrote:
+> > > > On Thu, 9 Oct 2008 12:21:15 -0700
+> > > > Gary Hade <garyhade@us.ibm.com> wrote:
+> > > > 
+> > > > > Show node to memory section relationship with symlinks in sysfs
+> > > > > 
+> > > > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> > > > > the memory sections located on nodeX.  For example:
+> > > > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> > > > > indicates that memory section 135 resides on node1.
+> > > > 
+> > > > I'm not seeing here a description of why the kernel needs this feature.
+> > > > Why is it useful?  How will it be used?  What value does it have to
+> > > > our users?
+> > > 
+> > > Sorry, I should have included that.  In our case, it is another
+> > > small step towards eventual total node removal.  We will need to
+> > > know which memory sections to offline for whatever node is targeted
+> > > for removal.  However, I suspect that exposing the node to section
+> > > information to user-level could be useful for other purposes.
+> > > For example, I have been thinking that using memory hotremove
+> > > functionality to modify the amount of available memory on specific
+> > > nodes without having to physically add/remove DIMMs might be useful
+> > > to those that test application or benchmark performance on a
+> > > multi-node system in various memory configurations.
+> > > 
+> > 
+> > hm, OK, thanks.  It does sound a bit thin, and if we merge this then
+> > not only do we get a porkier kernel,
+> 
+> Would you feel the same about the size increase if patch 2/2 (include
+> memory section subtree in sysfs with only sparsemem enabled) was
+> withdrawn?
+> 
+> Without patch 2/2 the size increase for non-Sparsemem or Sparsemem
+> wo/memory hotplug kernels is extremely small.  Even for memory hotplug
+> enabled kernels there is only a little extra code in ./drivers/base/node.o
+> which only gets linked into NUMA enabled kernels.  I can gather some numbers
+> if necessary.
 
-Event header is :
+Size is probably a minor issue on memory-hotpluggable machines.
 
-(32-bits alignment)
-27-bits TSC
-5-bits event ID
- ID #31 reserved to specify extended event ID
- ID #30 reserved to specify both ext. event ID and event size
- ID #29 reserved to specify ext. event ID, event size and ext. TSC
-<ext.>
-16-bits event ID (opt)
-16-bits event size (opt) size = 65535 to specify large event size
-32-bits large event size (opt)
-64-bits TSC (opt) (aligned on sizeof (void *))
-(event payload aligned on the maximum alignment required within the
- payload)
+> > we also get a new userspace interface which we're then locked into.
+> 
+> True.
 
-This is much more compact than the previous format, and permits a
-"tracer debug mode" in menuconfig which enables the "event size" field,
-which helps cross-checking the size expected by the userspace tool and
-the size written by the kernel.
+That's a bigger issue.  The later we leave this sort of thing, the more
+information we have.
 
-Note that this "event size" field can eventually be enabled on a
-per-event or per-channel basis. This will probably be useful to encode
-"binary blobs"...
-
-I also cleanup up the subbuffer header to make is much smaller than the
-previous one by removing unneeded information.
-
-I renamed the "facilities" channel to a better name : "metadata".  It
-contains marker descriptions.
-
-The trace major number is bumped to "2" and is completely incompatible
-with old LTTV. New version are LTTng 0.38 (for Linux 2.6.27) and LTTV
-0.11.0.
-
-Testing especially taking traces and reading them across different
-architectures is welcome (e.g. trace taken on powerpc 32, lttv running
-on x86_64).
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
