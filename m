@@ -1,101 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbYJJOda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760264AbYJJOhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbYJJOda (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 10:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbYJJOdW
+	id S1760264AbYJJOhg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 10:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbYJJOh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 10:33:22 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43361 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757324AbYJJOdW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 10:33:22 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: lrg@slimlogic.co.uk
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] regulator: Export regulator name via sysfs
-Date: Fri, 10 Oct 2008 15:33:20 +0100
-Message-Id: <1223649200-14713-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.5
+	Fri, 10 Oct 2008 10:37:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47353 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757024AbYJJOh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 10:37:27 -0400
+Date: Fri, 10 Oct 2008 16:37:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Vegard Nossum <vegardno@ifi.uio.no>, Dave Airlie <airlied@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drm: fix leak of uninitialized data to userspace
+	(acpi_system_read_event)
+Message-ID: <20081010143707.GC21104@elte.hu>
+References: <126003.45052.qm@web38204.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <126003.45052.qm@web38204.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a new file 'name' in the regulator sysfs class with a human
-readable name for the regulator for use in applications.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
+* Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 
-I've set the kernel version as 2.6.28 in the ABI file - if it doesn't
-get merged in this merge window that'll obviously need to be updated.
+> > From: Ingo Molnar <mingo@elte.hu>
+> 
+> > 
+> > * Vegard Nossum wrote:
+> >
+> > > ...so it seems that dev->unique is never updated to reflect the
+> > > actual length of the string. The remaining bytes (20 in this case)
+> > > are random uninitialized bytes that are copied into userspace.
+> > > 
+> > > This patch fixes the problem by setting dev->unique_len after the
+> > > snprintf().
+> > > 
+> > > Completely untested.
+> > > 
+> > > Reported-by: Sitsofe Wheeler 
+> > > Signed-off-by: Vegard Nossum 
+> > 
+> > i've stuck it into the tip/out-of-tree quick-fixes branch.
+> > 
+> > Sitsofe, could you please check very latest tip/master with 
+> > CONFIG_KMEMCHECK=y, does it find any other uninitialized memory access?
+> 
+> No other uninitialized memory access so far (although having kmemcheck on does seem to provoke rcu stall warnings)...
+> 
+> ...I take it back. This just turned up:
+> [  992.417019] WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f2363d14)
+> [  992.417033] 000110000002200061635f61646170746572000000000000cc2c030041433000
+> [  992.417077]  i i i i i i i i i i i i i i i i i i i u u u u u u u u u i i i i
+> [  992.417117]                                          ^
+> [  992.417121] 
+> [  992.417127] Pid: 1893, comm: acpid Not tainted (2.6.27-tipskw-00088-g9f41241-dirty #84) 900
+> [  992.417134] EIP: 0060:[<c025fbdd>] EFLAGS: 00000286 CPU: 0
+> [  992.417147] EIP is at acpi_bus_receive_event+0xd6/0x109
+> [  992.417153] EAX: 00054489 EBX: f2363d00 ECX: 00000006 EDX: ffffffed
+> [  992.417158] ESI: f2363d14 EDI: f6057f28 EBP: f6057f08 ESP: c0566d68
+> [  992.417164]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> [  992.417169] CR0: 8005003b CR2: f6671034 CR3: 360ea000 CR4: 000006c0
+> [  992.417175] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> [  992.417180] DR6: ffff4ff0 DR7: 00000400
+> [  992.417184]  [<c026b86f>] acpi_system_read_event+0x49/0xc5
+> [  992.417195]  [<c01b2381>] proc_reg_read+0x61/0x90
+> [  992.417206]  [<c017efb5>] vfs_read+0x95/0x120
+> [  992.417215]  [<c017f5f2>] sys_read+0x42/0x70
+> [  992.417222]  [<c010336d>] sysenter_do_call+0x12/0x35
+> [  992.417230]  [<ffffffff>] 0xffffffff
 
- Documentation/ABI/testing/sysfs-class-regulator |   13 +++++++++++++
- drivers/regulator/core.c                        |   18 ++++++++++++++++++
- 2 files changed, 31 insertions(+), 0 deletions(-)
+this too could be a real bug i think, uncovered by kmemcheck. Vegard?
 
-diff --git a/Documentation/ABI/testing/sysfs-class-regulator b/Documentation/ABI/testing/sysfs-class-regulator
-index 79a4a75..0731ff2 100644
---- a/Documentation/ABI/testing/sysfs-class-regulator
-+++ b/Documentation/ABI/testing/sysfs-class-regulator
-@@ -157,6 +157,19 @@ Description:
- 		platform code.
- 
- 
-+What:		/sys/class/regulator/.../name
-+Date:		October 2008
-+KernelVersion:	2.6.28
-+Contact:	Liam Girdwood <lrg@slimlogic.co.uk>
-+Description:
-+		Each regulator directory will contain a field called
-+		name. This holds a string identifying the regulator for
-+		display purposes.
-+
-+		NOTE: this will be empty if no suitable name is provided
-+		by platform or regulator drivers.
-+
-+
- What:		/sys/class/regulator/.../num_users
- Date:		April 2008
- KernelVersion:	2.6.26
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 9a6757d..02a7744 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -241,6 +241,22 @@ static ssize_t regulator_uA_show(struct device *dev,
- 	return sprintf(buf, "%d\n", _regulator_get_current_limit(rdev));
- }
- 
-+static ssize_t regulator_name_show(struct device *dev,
-+			     struct device_attribute *attr, char *buf)
-+{
-+	struct regulator_dev *rdev = dev_get_drvdata(dev);
-+	const char *name;
-+
-+	if (rdev->constraints->name)
-+		name = rdev->constraints->name;
-+	else if (rdev->desc->name)
-+		name = rdev->desc->name;
-+	else
-+		name = "";
-+
-+	return sprintf(buf, "%s\n", name);
-+}
-+
- static ssize_t regulator_opmode_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
-@@ -473,7 +489,9 @@ static ssize_t regulator_suspend_standby_state_show(struct device *dev,
- 	else
- 		return sprintf(buf, "disabled\n");
- }
-+
- static struct device_attribute regulator_dev_attrs[] = {
-+	__ATTR(name, 0444, regulator_name_show, NULL),
- 	__ATTR(microvolts, 0444, regulator_uV_show, NULL),
- 	__ATTR(microamps, 0444, regulator_uA_show, NULL),
- 	__ATTR(opmode, 0444, regulator_opmode_show, NULL),
--- 
-1.5.6.5
-
+	Ingo
