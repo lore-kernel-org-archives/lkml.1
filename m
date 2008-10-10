@@ -1,57 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYJJBGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYJJBNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792AbYJJBGd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 21:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYJJBGY
+	id S1754859AbYJJBNh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 21:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYJJBN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 21:06:24 -0400
-Received: from mga01.intel.com ([192.55.52.88]:35467 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753623AbYJJBGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 21:06:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,385,1220252400"; 
-   d="scan'208";a="625378866"
-Subject: Re: 2.6.27-rc8: throttling broken
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>
-Cc: Pavel Machek <pavel@suse.cz>, jikos@suse.cz,
-       kernel list <linux-kernel@vger.kernel.org>, linux-acpi@ucw.cz,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-In-Reply-To: <200810092327.26301.rjw@sisk.pl>
-References: <20081009171238.GB1370@ucw.cz>  <200810092327.26301.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 09:12:05 +0800
-Message-Id: <1223601125.3990.4.camel@yakui_zhao.sh.intel.com>
+	Thu, 9 Oct 2008 21:13:29 -0400
+Received: from sunrise.pg.gda.pl ([153.19.40.230]:38249 "EHLO
+	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbYJJBN2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 21:13:28 -0400
+Date: Fri, 10 Oct 2008 03:12:34 +0200
+From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+To: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: [PATCH 0/1] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081010031234.4030b176@merlin.oi.pg.gda.pl>
+In-Reply-To: <20081007222857.11f92ca0@merlin.oi.pg.gda.pl>
+References: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
+	<20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
+	<20081006202834.5b6c5092@merlin.oi.pg.gda.pl>
+	<20081006231434.7aaa41ee@lxorguk.ukuu.org.uk>
+	<20081007222857.11f92ca0@merlin.oi.pg.gda.pl>
+Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary=MP_6s.3wylyRul.fFvOScF0ahg
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 23:27 +0200, Rafael J. Wysocki wrote:
-> On Thursday, 9 of October 2008, Pavel Machek wrote:
-> > Hi!
-> > 
-> > On 2.6.27-rc8 on via/fic subnotebook, throttling seems to be broken. I
-> > can do echo 15 > /proc/acpi/processor/*/throttling, and proc file
-> > reflects new value, but cpu still runs at same speed.
-> > 
-> > It worked on opensuse11/sled10 kernels at least...
-After echo 15 > /proc/acpi/processor/*/throttling, what T-state is
-displayed by cat /proc/acpi/processor/*/throttling?
+--MP_6s.3wylyRul.fFvOScF0ahg
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If you do the above test on the 2.6.26.x kernel, what T-state is
-displayed ?
-Thanks.
-> 
-> Any chance to check 2.6.26.x on that?
-> 
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Welcome,
 
+now we have 2.6.26.6 kernel and still terminal resize leads to
+undesired effects. It is very inconvenient to wait for 2.6.27 for
+corrections.
+
+As Alan Cox previously said mutexes generally work but as we can
+observe in case of kill_pgrp() call inside mutex lock we got
+race because of rescheduling so lock is not working here.
+Rearanging code so the variable change is placed before kill_pgrp()
+call removes mentioned race situaction.  =20
+
+Signed-off-by: Adam Tla/lka <atlka@pg.gda.pl>
+
+I strongly suggest to patch actual 2.6.26.x kernel to remove this very
+nasty pts behaviour.
+
+Regards
+
+--=20
+Adam Tla=C5=82ka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
+
+--MP_6s.3wylyRul.fFvOScF0ahg
+Content-Type: text/x-patch; name=2.6.26.6_tty_io.patch
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=2.6.26.6_tty_io.patch
+
+--- drivers/char/tty_io_orig.c	2008-10-10 02:30:18.000000000 +0200
++++ drivers/char/tty_io.c	2008-10-10 02:33:38.000000000 +0200
+@@ -3014,6 +3014,9 @@ static int tiocswinsz(struct tty_struct 
+ 		}
+ 	}
+ #endif
++	tty->winsize = tmp_ws;
++	real_tty->winsize = tmp_ws;
++
+ 	/* Get the PID values and reference them so we can
+ 	   avoid holding the tty ctrl lock while sending signals */
+ 	spin_lock_irqsave(&tty->ctrl_lock, flags);
+@@ -3028,9 +3031,6 @@ static int tiocswinsz(struct tty_struct 
+ 
+ 	put_pid(pgrp);
+ 	put_pid(rpgrp);
+-
+-	tty->winsize = tmp_ws;
+-	real_tty->winsize = tmp_ws;
+ done:
+ 	mutex_unlock(&tty->termios_mutex);
+ 	return 0;
+
+--MP_6s.3wylyRul.fFvOScF0ahg
+Content-Type: text/x-patch; name=2.6.26.6_vt.patch
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=2.6.26.6_vt.patch
+
+--- drivers/char/vt_orig.c	2008-10-10 02:12:40.000000000 +0200
++++ drivers/char/vt.c	2008-10-10 02:31:28.000000000 +0200
+@@ -921,11 +921,11 @@ int vc_resize(struct vc_data *vc, unsign
+ 		if ((ws.ws_row != cws->ws_row || ws.ws_col != cws->ws_col))
+ 			pgrp = get_pid(vc->vc_tty->pgrp);
+ 		spin_unlock_irq(&vc->vc_tty->ctrl_lock);
++		*cws = ws;
+ 		if (pgrp) {
+ 			kill_pgrp(vc->vc_tty->pgrp, SIGWINCH, 1);
+ 			put_pid(pgrp);
+ 		}
+-		*cws = ws;
+ 		mutex_unlock(&vc->vc_tty->termios_mutex);
+ 	}
+ 
+
+--MP_6s.3wylyRul.fFvOScF0ahg--
