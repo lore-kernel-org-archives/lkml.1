@@ -1,128 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761316AbYJJOuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760356AbYJJOzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761316AbYJJOuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 10:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbYJJOu1
+	id S1760356AbYJJOzQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 10:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbYJJOzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 10:50:27 -0400
-Received: from sperry-02.control.lth.se ([130.235.83.189]:53262 "EHLO
-	sperry-02.control.lth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757651AbYJJOuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 10:50:25 -0400
-X-Greylist: delayed 1095 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Oct 2008 10:50:25 EDT
-Message-ID: <48EF6762.2080205@control.lth.se>
-Date: Fri, 10 Oct 2008 16:32:02 +0200
-From: Anders Blomdell <anders.blomdell@control.lth.se>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Fri, 10 Oct 2008 10:55:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44861 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757324AbYJJOzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 10:55:01 -0400
+Date: Fri, 10 Oct 2008 16:54:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.linux-foundation.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
+Message-ID: <20081010145422.GE11695@elte.hu>
+References: <20081009190405.13A253CB@kernel> <1223585671.11830.40.camel@nimitz> <20081010084614.GA319@elte.hu> <200810101517.17809.rjw@sisk.pl>
 MIME-Version: 1.0
-To: hskinnemoen@atmel.com
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] Make ATNGW100 serial ports configurable
-Content-Type: multipart/mixed;
- boundary="------------080002070903090607010000"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810101517.17809.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080002070903090607010000
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
---------------080002070903090607010000
-Content-Type: text/plain; x-mac-type="0"; x-mac-creator="0";
- name="atngw100_serial.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="atngw100_serial.patch"
+> > In the long run, could we expect a (experimental) version of 
+> > hibernation that would just use this checkpointing facility to 
+> > hibernate?
+> 
+> Surely not ACPI-compliant.
 
-Make configuration of ATNGW100 serial ports selectable in kernel configuration.
+what do you mean?
 
-Signed-off-by: Anders Blomdell <anders.blomdell@control.lth.se>
-
-
-
-diff -urb orig/arch/avr32/boards/atngw100/Kconfig linux-2.6.27-rc6/arch/avr32/boards/atngw100/Kconfig
---- orig/arch/avr32/boards/atngw100/Kconfig	2008-10-09 17:56:14.000000000 +0200
-+++ linux-2.6.27-rc6/arch/avr32/boards/atngw100/Kconfig	2008-10-09 16:26:08.000000000 +0200
-@@ -0,0 +1,18 @@
-+config SERIAL_ATMEL_USART0
-+	bool "Enable USART0"
-+	depends on SERIAL_ATMEL
-+	help
-+	  Enable USART0 (on expansion header J5, pins 12, 11)
-+
-+config SERIAL_ATMEL_USART2
-+	bool "Enable USART2"
-+	depends on SERIAL_ATMEL
-+	help
-+	  Enable USART2 (on expansion header J6, pins 27, 26)
-+
-+config SERIAL_ATMEL_USART3
-+	bool "Enable USART3"
-+	depends on SERIAL_ATMEL
-+	help
-+	  Enable USART3 (on expansion header J6, pins 17, 18)
-+
-diff -urb orig/arch/avr32/boards/atngw100/setup.c linux-2.6.27-rc6/arch/avr32/boards/atngw100/setup.c
---- orig/arch/avr32/boards/atngw100/setup.c	2008-10-09 17:54:55.000000000 +0200
-+++ linux-2.6.27-rc6/arch/avr32/boards/atngw100/setup.c	2008-10-09 16:33:50.000000000 +0200
-@@ -114,8 +114,20 @@
- 
- void __init setup_board(void)
- {
--	at32_map_usart(1, 0);	/* USART 1: /dev/ttyS0, DB9 */
-+	int i = 0;
-+
-+	at32_map_usart(1, i++);	/* USART 1: /dev/ttyS0, DB9 */
- 	at32_setup_serial_console(0);
-+
-+#ifdef CONFIG_SERIAL_ATMEL_USART0
-+	at32_map_usart(0, i++);	/* USART 0: /dev/ttySX, J5, pins 12, 11 */
-+#endif
-+#ifdef CONFIG_SERIAL_ATMEL_USART2
-+	at32_map_usart(2, i++);	/* USART 2: /dev/ttySX, J6, pins 27, 26 */
-+#endif
-+#ifdef CONFIG_SERIAL_ATMEL_USART3
-+	at32_map_usart(3, i++);	/* USART 3: /dev/ttySX, J6, pins 17, 18 */
-+#endif
- }
- 
- static const struct gpio_led ngw_leds[] = {
-@@ -170,7 +182,17 @@
- 
- 	at32_add_system_devices();
- 
--	at32_add_device_usart(0);
-+	i = 0;
-+	at32_add_device_usart(i++);
-+#ifdef CONFIG_SERIAL_ATMEL_USART0
-+	at32_add_device_usart(i++);
-+#endif
-+#ifdef CONFIG_SERIAL_ATMEL_USART2
-+	at32_add_device_usart(i++);
-+#endif
-+#ifdef CONFIG_SERIAL_ATMEL_USART3
-+	at32_add_device_usart(i++);
-+#endif
- 
- 	set_hw_addr(at32_add_device_eth(0, &eth_data[0]));
- 	set_hw_addr(at32_add_device_eth(1, &eth_data[1]));
-diff -urb orig/arch/avr32/Kconfig linux-2.6.27-rc6/arch/avr32/Kconfig
---- orig/arch/avr32/Kconfig	2008-10-09 17:54:55.000000000 +0200
-+++ linux-2.6.27-rc6/arch/avr32/Kconfig	2008-10-09 16:21:49.000000000 +0200
-@@ -125,6 +125,10 @@
- source "arch/avr32/boards/atstk1000/Kconfig"
- endif
- 
-+if BOARD_ATNGW100
-+source "arch/avr32/boards/atngw100/Kconfig"
-+endif
-+
- choice
- 	prompt "Boot loader type"
- 	default LOADER_U_BOOT
-
---------------080002070903090607010000--
+	Ingo
