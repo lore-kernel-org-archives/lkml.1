@@ -1,99 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbYJJMiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbYJJMi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759162AbYJJMiN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 08:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbYJJMh4
+	id S1759395AbYJJMi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 08:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbYJJMiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 08:37:56 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50375 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754459AbYJJMhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 08:37:55 -0400
-Date: Fri, 10 Oct 2008 14:37:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: James.Bottomley@HansenPartnership.com, knikanth@suse.de,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] BUG: nr_phys_segments cannot be less than nr_hw_segments
-Message-ID: <20081010123719.GE19428@kernel.dk>
-References: <20081002171356.GO19428@kernel.dk> <20081007022358N.fujita.tomonori@lab.ntt.co.jp> <20081010120344.GC19428@kernel.dk> <20081010213226J.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 10 Oct 2008 08:38:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:23435 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754459AbYJJMit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 08:38:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qzuRcLWWwMnWabPA6yxizx+uzi/VcCxyl0HxCej9isS76T2EdKODMqZlfQVZczrNHz
+         9OuaKgITOOlfFCJkTGe/1wE6SN3LLl7JYx42iql9DDTuX4TTyVHrfwPO3sunpejjyVyR
+         hMAkX4jrtlAb/HNpv8uAA41FOb7RHqt0gFcSc=
+Date: Fri, 10 Oct 2008 16:38:38 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
+Message-ID: <20081010123838.GB7328@localhost>
+References: <20081010002203.GA23238@linux-os.sc.intel.com> <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com> <aa79d98a0810092239p32153776qd0cda47e54929545@mail.gmail.com> <20081010090100.GC319@elte.hu> <aa79d98a0810100416q72ec10d5q7d841e02dc4d4f81@mail.gmail.com> <alpine.LFD.1.10.0810101221580.19747@ftp.linux-mips.org> <20081010115655.GC19487@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081010213226J.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081010115655.GC19487@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10 2008, FUJITA Tomonori wrote:
-> On Fri, 10 Oct 2008 14:03:44 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Tue, Oct 07 2008, FUJITA Tomonori wrote:
-> > > On Thu, 2 Oct 2008 19:13:57 +0200
-> > > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > On Thu, Oct 02 2008, James Bottomley wrote:
-> > > > > On Thu, 2008-10-02 at 18:58 +0200, Jens Axboe wrote:
-> > > > > > On Thu, Oct 02 2008, James Bottomley wrote:
-> > > > > > > The bug would appear to be that we sometimes only look at q->max_sectors
-> > > > > > > when deciding on mergability.  Either we have to insist on max_sectors
-> > > > > > > <= hw_max_sectors, or we have to start using min(q->max_sectors,
-> > > > > > > q->max_hw_sectors) for this.
-> > > > > > 
-> > > > > > q->max_sectors MUST always be <= q->max_hw_sectors, otherwise we could
-> > > > > > be sending down requests that are too large for the device to handle. So
-> > > > > > that condition would be a big bug. The sysfs interface checks for this,
-> > > > > > and blk_queue_max_sectors() makes sure that is true as well.
-> > > > > 
-> > > > > Yes, that seems always to be enforced.  Perhaps there are other ways of
-> > > > > tripping this problem ... I'm still sure if it occurs it's because we do
-> > > > > a physical merge where a virtual merge is forbidden.
-> > > > > 
-> > > > > > The fixes proposed still look weird. There is no phys vs hw segment
-> > > > > > constraints, the request must adhere to the limits set by both. It's
-> > > > > > mostly a moot point anyway, as 2.6.28 will get rid of the hw accounting
-> > > > > > anyway.
-> > > > > 
-> > > > > Agree all three proposed fixes look wrong.  However, if it's what I
-> > > > > think, just getting rid of hw accounting won't fix the problem because
-> > > > > we'll still have the case where a physical merge is forbidden by iommu
-> > > > > constraints ... this still needs to be accounted for.
-> > > > > 
-> > > > > What we really need is a demonstration of what actually is going
-> > > > > wrong ...
-> > > > 
-> > > > Yep, IIRC we both asked for that the last time as well... Nikanth?
-> > > 
-> > > Possibly, blk_phys_contig_segment might miscalculate
-> > > q->max_segment_size?
-> > > 
-> > > blk_phys_contig_segment does:
-> > > 
-> > > req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size;
-> > > 
-> > > But it's possible that req->biotail and the previous bio are supposed
-> > > be merged into one segment? Then we could create too large segment
-> > > here.
-> > 
-> > Hmm yes, that looks like it could indeed be a problem!
-> 
-> I think so.
-> 
-> 
-> > We could fix this
-> > with similar logic to what we used to do for the hw merging, keep track
-> > of the current segment size that this bio belongs to, so it would end up
-> > ala
-> 
-> Yeah, exactly.
-> 
-> You want a fix for this 2.6.28? Or disable this feature for 2.6.28?
+[Ingo Molnar - Fri, Oct 10, 2008 at 01:56:55PM +0200]
+| 
+| * Maciej W. Rozycki <macro@linux-mips.org> wrote:
+| 
+| > On Fri, 10 Oct 2008, Cyrill Gorcunov wrote:
+| > 
+| > > Btw I don't remember but hope it was not me who made this typo --
+| > 
+| >  What would be the difference so that you hope it wasn't you?  All the 
+| > people make mistakes, this one has been caught and that's what really 
+| > matters.
+| 
+| yeah, like most kernel newbies Cyrill is worrying way too much about 
+| mistakes. In 10 years time he too will have his healthy collection of 
+| embarrassing brown paperbag incidents and will be a lot more relaxed 
+| about it, just like the rest of us ;-)
+| 
+| what matters is to fix them quickly and to learn from those mistakes 
+| that are avoidable.
+| 
+| 	Ingo
+| 
 
-Lets fix it. It wont be part of the initial merge, since it'll need some
-dedicated testing, but we can get it there for 2.6.28. Shall I interpret
-your message as willingness to write up the fix? :)
+Just brought first paperbag -- usefull thing I've to say :)
+...
 
--- 
-Jens Axboe
+ok, what the conclusion will be on divisor side? I think
+something like that maybe. Maciej?
 
+		- Cyrill -
+
+---
+
+Index: linux-2.6.git/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic.c	2008-09-26 20:43:47.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic.c	2008-10-10 16:37:26.000000000 +0400
+@@ -332,11 +332,7 @@ int lapic_get_maxlvt(void)
+  */
+ 
+ /* Clock divisor */
+-#ifdef CONFG_X86_64
+-#define APIC_DIVISOR 1
+-#else
+ #define APIC_DIVISOR 16
+-#endif
+ 
+ /*
+  * This function sets up the local APIC timer, with a timeout of
+@@ -592,10 +588,10 @@ static int __init calibrate_APIC_clock(v
+ 	global_clock_event->event_handler = lapic_cal_handler;
+ 
+ 	/*
+-	 * Setup the APIC counter to 1e9. There is no way the lapic
++	 * Setup the APIC counter to maximum. There is no way the lapic
+ 	 * can underflow in the 100ms detection time frame
+ 	 */
+-	__setup_APIC_LVTT(1000000000, 0, 0);
++	__setup_APIC_LVTT(0xffffffff, 0, 0);
+ 
+ 	/* Let the interrupts run */
+ 	local_irq_enable();
