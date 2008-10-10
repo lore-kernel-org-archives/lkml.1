@@ -1,88 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbYJJD2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYJJDdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbYJJD2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 23:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYJJD2b
+	id S1754812AbYJJDdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 23:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYJJDdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 23:28:31 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:47447 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751539AbYJJD2b (ORCPT
+	Thu, 9 Oct 2008 23:33:32 -0400
+Received: from sunrise.pg.gda.pl ([153.19.40.230]:53129 "EHLO
+	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbYJJDdb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 23:28:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=iEFx9mrau2rDknFyL0/981wqNSxdX1fdb/LcKVZuvvQI9AtcxSvjNTHCPiFUjMw866CBEvliMe0UdW/ITq7BufboyzWuYm/M2SY8M4g86dPYgpJ5nGwl7ze5uWDe96H20T0qu5/NppkAX7Al1TYHcr3lW4hLtbBhm71JGEkmano=  ;
-X-YMail-OSG: QhvqiYIVM1kQPoR3rMMjzXeFfwsMlDmifsQGnYszSr_QjFSM9GfpgMUcrqF.SdOy8WFfKtl0FL0fCmhhYTwOIuW__h.Qq5vMROw_xIoecE9nPZvBMENst5KiaAB0oG.zp4w1SL7wehrc4HgIor5wVipN9MdI1yywMOtijojzF.XA9NrjSs972byWLzOj
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: Update cacheline size on X86_GENERIC
-Date: Fri, 10 Oct 2008 14:28:23 +1100
-User-Agent: KMail/1.9.5
-Cc: x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20081009171453.GA15321@redhat.com>
-In-Reply-To: <20081009171453.GA15321@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810101428.23662.nickpiggin@yahoo.com.au>
+	Thu, 9 Oct 2008 23:33:31 -0400
+Date: Fri, 10 Oct 2008 05:32:38 +0200
+From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+To: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: Re: [PATCH 0/1] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081010053238.5ad56876@merlin.oi.pg.gda.pl>
+In-Reply-To: <20081010031234.4030b176@merlin.oi.pg.gda.pl>
+References: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
+	<20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
+	<20081006202834.5b6c5092@merlin.oi.pg.gda.pl>
+	<20081006231434.7aaa41ee@lxorguk.ukuu.org.uk>
+	<20081007222857.11f92ca0@merlin.oi.pg.gda.pl>
+	<20081010031234.4030b176@merlin.oi.pg.gda.pl>
+Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 October 2008 04:14, Dave Jones wrote:
-> I just noticed that configuring a kernel to use CONFIG_X86_GENERIC
-> (as is typical for a distro kernel) configures it to use a 128 byte
-> cacheline size. This made sense when that was commonplace (P4 era) but
-> current
-> Intel, AMD and VIA cpus use 64 byte cachelines.
+Welcome,
 
-I think P4 technically did have 64 byte cachelines, but had some adjacent
-line prefetching. And AFAIK core2 CPUs can do similar prefetching (but
-maybe it's smarter and doesn't cause so much bouncing?).
+Fri, 10 Oct 2008 03:12:34 +0200 - Adam Tlałka <atlka@pg.gda.pl>:
+> now we have 2.6.26.6 kernel and still terminal resize leads to
+> undesired effects. It is very inconvenient to wait for 2.6.27 for
+> corrections.
 
-Anyway, GENERIC kernel should run well on all architectures, and while
-going too big causes slightly increased structures sometimes, going too
-small could result in horrible bouncing.
+Very funny, I've posted my patch just before 2.6.27 appeared so now it
+seems obsolete. Only argument for it now is the cleaner and more
+optimized code. Why?
+Now we have two distant places where we use ws and tty->winsize
+variables:
 
-Lastly, I think x86 will go to 128 byte lines in the next year or two, so
-maybe at this point we can just keep 128 byte alignment?
+(from drivers/char/tty_io.c:tty_do_resize())
 
-/random thoughts
+	mutex_lock(&real_tty->termios_mutex);
+=>      if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
+                goto done;
+        /* Get the PID values and reference them so we can
+           avoid holding the tty ctrl lock while sending signals */
+        spin_lock_irqsave(&tty->ctrl_lock, flags);
+        pgrp = get_pid(tty->pgrp);
+        rpgrp = get_pid(real_tty->pgrp);
+        spin_unlock_irqrestore(&tty->ctrl_lock, flags);
 
->
-> Signed-off-by: Dave Jones <davej@redhat.com>
->
-> --- linux-2.6.26.noarch/arch/x86/Kconfig.cpu~	2008-10-09 12:59:56.000000000
-> -0400 +++ linux-2.6.26.noarch/arch/x86/Kconfig.cpu	2008-10-09
-> 13:11:32.000000000 -0400 @@ -301,8 +301,8 @@ config X86_CPU
->  # Define implied options from the CPU selection here
->  config X86_L1_CACHE_BYTES
->  	int
-> -	default "128" if GENERIC_CPU || MPSC
-> -	default "64" if MK8 || MCORE2
-> +	default "128" if MPENTIUM4 || MPSC
-> +	default "64" if MK8 || MCORE2 || GENERIC_CPU
->  	depends on X86_64
->
->  config X86_INTERNODE_CACHE_BYTES
-> @@ -316,10 +316,10 @@ config X86_CMPXCHG
->
->  config X86_L1_CACHE_SHIFT
->  	int
-> -	default "7" if MPENTIUM4 || X86_GENERIC || GENERIC_CPU || MPSC
-> +	default "7" if MPENTIUM4 || MPSC
->  	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
->  	default "5" if MWINCHIP3D || MWINCHIP2 || MWINCHIPC6 || MCRUSOE ||
-> MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 ||
-> M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX -	default "6" if MK7 ||
-> MK8 || MPENTIUMM || MCORE2 || MVIAC7
-> +	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7 || X86_GENERIC
-> || GENERIC_CPU
->
->  config X86_XADD
->  	def_bool y
+        if (pgrp)
+                kill_pgrp(pgrp, SIGWINCH, 1);
+        if (rpgrp != pgrp && rpgrp)
+                kill_pgrp(rpgrp, SIGWINCH, 1);
+
+        put_pid(pgrp);
+        put_pid(rpgrp);
+
+=>      tty->winsize = *ws;
+=>      real_tty->winsize = *ws;
+done:
+	mutex_unlock(&real_tty->termios_mutex);
+ 
+Rearanged code
+
+	mutex_lock(&real_tty->termios_mutex);
+=>      if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
+                goto done;
+=>	tty->winsize = *ws;
+=>	real_tty->winsize = *ws;
+
+        /* Get the PID values and reference them so we can
+           avoid holding the tty ctrl lock while sending signals */
+        spin_lock_irqsave(&tty->ctrl_lock, flags);
+        pgrp = get_pid(tty->pgrp);
+        rpgrp = get_pid(real_tty->pgrp);
+        spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+
+        if (pgrp)
+                kill_pgrp(pgrp, SIGWINCH, 1);
+        if (rpgrp != pgrp && rpgrp)
+                kill_pgrp(rpgrp, SIGWINCH, 1);
+
+        put_pid(pgrp);
+        put_pid(rpgrp);
+
+done:
+	mutex_unlock(&real_tty->termios_mutex);
+
+is more logical and grouping acces to the same variable in one place
+mean that gcc can better optimize outputed machine code. So it should
+be a bit faster.
+If some app gets SIGWINCH and will be waiting on this mutex so in case
+of rearanged code it will be waiting shorter because variables setting
+is done before signal generation.
+
+Regards
+
+-- 
+Adam Tlałka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
+System  & Network Administration Group       - - - ~~~~~~
+Computer Center, Gdańsk University of Technology, Poland
