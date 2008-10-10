@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763884AbYJJTvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbYJJTyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763884AbYJJTvU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762219AbYJJTuu
+	id S1763626AbYJJTyZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761648AbYJJTyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:50:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50801 "EHLO mx3.mail.elte.hu"
+	Fri, 10 Oct 2008 15:54:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37983 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761345AbYJJTuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:50:50 -0400
-Date: Fri, 10 Oct 2008 21:50:28 +0200
+	id S1761147AbYJJTyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:54:15 -0400
+Date: Fri, 10 Oct 2008 21:53:39 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #9, sparse
-	IRQ?support
-Message-ID: <20081010195028.GC31926@elte.hu>
-References: <20081010001727.GA14132@elte.hu> <20081010185912.GF21876@elte.hu> <48EFA8CA.1020600@kernel.org> <200810101234.57440.jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.linux-foundation.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
+Message-ID: <20081010195339.GA509@elte.hu>
+References: <20081009190405.13A253CB@kernel> <200810101517.17809.rjw@sisk.pl> <20081010145422.GE11695@elte.hu> <200810102153.45174.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810101234.57440.jbarnes@virtuousgeek.org>
+In-Reply-To: <200810102153.45174.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,58 +41,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> On Friday, October 10, 2008 12:11 pm Yinghai Lu wrote:
-> > Ingo Molnar wrote:
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > >> Linus,
-> > >>
-> > >> Please pull the latest x86-v28-for-linus-phase9 git tree from:
-> > >>
-> > >> Sparse IRQ support - make NR_IRQS dynamic by turning it into nr_irqs,
-> > >> an by creating irq descriptors in a sparse way.
-> > >>
-> > >> Includes a number of dependent x86 topics: timers/hpet-percpu, IO-APIC
-> > >> and local APIC code unification, UV support updates.
-> > >>
-> > >> Has been cross-built on all architectures we could get crosscompilers
-> > >> for:
-> > >>
-> > >>   http://www.tglx.de/autoqa/index
-> > >>
-> > >> It should be largely uneventful for sparse-irq unaware, non-x86
-> > >> architectures.
-> > >
-> > > please find updated pull request below. Relative to phase-N-1. Updates
-> > > from today in this class of topics:
-> > >
-> > >   b570868: x86: apic - unify APIC_DIVISOR
-> > >
-> > > And i removed:
-> > >
-> > >   eada62c: acpi/x86: introduce __apci_map_table, v4
-> > >
-> > > [ Cc:-ed Yinghai for that - we can live without that patch (i.e. we at
-> > >   most get a leak warning) and can have that via acpi.git, correct? ]
-> >
-> > yes. we have several patches that even didn't pick up for a while.
-> >
-> > also please ask Linus to pull pci tree from Jesse before sparseirq.
-> >
-> > because we need
-> > 	PCI: change MSI-x vector to 32bit
-> >
-> > in pci tree.
+> > > Surely not ACPI-compliant.
+> > 
+> > what do you mean?
 > 
-> I should have my pull ready soon; I'd like to do some cross compile tests with 
-> my latest bits first.  But I think Ingo has a copy of this commit anyway so 
-> it may be ok for Linus to pull anyway.
+> The ACPI spec says quite specifically what should be done while 
+> entering hibernation and during resume from hibernation.  We're not 
+> following that in the current code, but we can (gradually) update the 
+> code to become ACPI-compilant in that respect.  However, if we go the 
+> checkpointing route, I don't think that will be possible any more.
 
-Correct, it's safe to pull it, because irq/sparseirq has this commit:
+ah, i see. I did not mean to utilize any ACPI paths but simple powerdown 
+or reboot.
 
-  9e40236: pci: change msi-x vector to 32bit
+If we checkpoint all apps to persistent disk areas (which the checkpoint 
+patches in this thread are about), then we can just reboot the kernel 
+and forget all its state.
 
-it's content-equal with yours so your merge should be painless.
+That capability can be used to build a really robust hibernation 
+implementation IMO: we could "hibernate/kexec" over between different 
+kernel versions transparently. (only a small delay will be noticed by 
+the user - if we do it smartly with in-kernel modesetting then not even 
+the screen contents will be changed over this.)
 
 	Ingo
