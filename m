@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762988AbYJJUL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763615AbYJJUMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762988AbYJJUL2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761366AbYJJULU
+	id S1763615AbYJJUMU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbYJJUMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:11:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54533 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761087AbYJJULT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:11:19 -0400
-Date: Fri, 10 Oct 2008 13:10:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] fastboot tree for v2.6.28
-In-Reply-To: <20081010003241.GA23940@elte.hu>
-Message-ID: <alpine.LFD.2.00.0810101254240.3503@nehalem.linux-foundation.org>
-References: <20081010003241.GA23940@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 10 Oct 2008 16:12:12 -0400
+Received: from iona.labri.fr ([147.210.8.143]:43238 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761087AbYJJUML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 16:12:11 -0400
+Message-ID: <48EFB6E6.4080708@inria.fr>
+Date: Fri, 10 Oct 2008 22:11:18 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, linux-mm@kvack.org,
+       nathalie.furmento@labri.fr
+Subject: Re: [PATCH] mm: use a radix-tree to make do_move_pages() complexity
+ linear
+References: <48EDF9DA.7000508@inria.fr> <20081010125010.164bcbb8.akpm@linux-foundation.org>
+In-Reply-To: <20081010125010.164bcbb8.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 10 Oct 2008, Ingo Molnar wrote:
+Andrew Morton wrote:
+> On Thu, 09 Oct 2008 14:32:26 +0200
+> Brice Goglin <Brice.Goglin@inria.fr> wrote:
 >
-> Please pull the latest fastboot-v28-for-linus git tree from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git fastboot-v28-for-linus
-> 
-> the (opt-in) fastboot async bootup feature, as described by Arjan in his 
-> v2.6.28 announcement:
-> 
->    http://lwn.net/Articles/299591/
-> 
-> tested and maintained in -tip because tip/tracing embedd-merges this 
-> topic. (for the fastboot tracer)
+>   
+>> Add a radix-tree in do_move_pages() to associate each page with
+>> the struct page_to_node that describes its migration.
+>> new_page_node() can now easily find out the page_to_node of the
+>> given page instead of traversing the whole page_to_node array.
+>> So the overall complexity is linear instead of quadratic.
+>>
+>> We still need the page_to_node array since it is allocated by the
+>> caller (sys_move_page()) and used by do_pages_stat() when no target
+>> nodes are given by the application. And we need room to store all
+>> these page_to_node entries for do_move_pages() as well anyway.
+>>
+>> If a page is given twice by the application, the old code would
+>> return -EBUSY (failure from the second isolate_lru_page()). Now,
+>> radix_tree_insert() will return -EEXIST, and we convert it back
+>> to -EBUSY to keep the user-space ABI.
+>>
+>> The radix-tree is emptied at the end of do_move_pages() since
+>> new_page_node() doesn't know when an entry is used for the last
+>> time (unmap_and_move() could try another pass later).
+>> Marking pp->page as ZERO_PAGE(0) was actually never used. We now
+>> set it to NULL when pp is not in the radix-tree. It is faster
+>> than doing a loop of radix_tree_lookup_gang()+delete().
+>>     
+>
+> Any O(n*n) code always catches up with us in the end.  But I do think
+> that to merge this code we'd need some description of the problem which
+> we fixed.
+>
+> Please send a description of the situation under which the current code
+> performs unacceptably.  Some before-and-after quantitative measurements
+> would be good.
+>
+> Because it could be (as far as I know) that the problem is purely
+> theoretical, in which case we might not want the patch at all.
+>   
 
-Ok, so I finally looked at the patch, I quite frankly, I think it's 
-fundamentally wrong.
+Just try sys_move_pages() on a 10-100MB buffer, you'll get something
+like 50MB/s on a recent Opteron machine. This throughput decreases
+significantly with the number of pages. With this patch, we get about
+350MB/s and the throughput is stable when the migrated buffer gets
+larger. I don't have detailled numbers at hand, I'll send them by monday.
 
-This is just an example of the wrongness:
+Brice
 
-	-module_init(uhci_hcd_init);
-	+module_init_async(uhci_hcd_init);
-	-module_init(ehci_hcd_init);
-	+module_init_async(ehci_hcd_init);
-	-module_init(ohci_hcd_mod_init);
-	+module_init_async(ohci_hcd_mod_init);
-
-	-device_initcall(pci_init);
-	+device_initcall_sync(pci_init);
-
-because there is absolutely _no_ excuse for doing the PCI part of the 
-probing asynchronously.
-
-The "ohci_hcd_mod_init" part is _especially_ dangerous, because clearly 
-nobody looked at the OHCI setup sequence, which includes a lot of odd 
-devices and not all of them at all PCI-related etc. Making it asynchronous 
-is not safe, nor is it appropriate.
-
-The fact is, those things all have one thing in common:
-
- - they call usb_add_hcd, and usb_add_hcd is a horrible and slow piece of 
-   crap that doesn't just add the host controller, but does all the 
-   probing too.
-
-In other words, what should be fixed is not the initcall sequence, and 
-certainly not make PCI device probing (or other random buses) be partly 
-asynchronous, but simply make that USB host controller startup function be 
-asynchronous.
-
-There are other devices too that may need synchronous core hub discovery 
-(eg the actual controller), but that want to do the "devices hanging off 
-this controller" asynchronously. Disks come to mind. That shouldn't mean 
-that the IDE driver discovery should be asynchronous, it should just mean 
-that the driver has some simple way to execute something asynchronously.
-
-In other words, I really think it's very wrong to make that 
-"async_init_wq" be somethign that is internal to do_initcalls. It should 
-be a workqueue that the initcalls can _choose_ to use at the appropriate 
-level (which may be deeper down, like 'usb_add_hcd()'), not be forced to 
-use at the outermost one.
-
-You can try to convince me otherwise, but I really do think this patch is 
-fundamentally the wrong approach.
-
-			Linus
