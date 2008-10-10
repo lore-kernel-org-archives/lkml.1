@@ -1,60 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYJJDoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYJJDoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbYJJDoI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 23:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYJJDn4
+	id S1755865AbYJJDoo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 23:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYJJDoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 23:43:56 -0400
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:31357 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751457AbYJJDnz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 23:43:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XmC4qwysG9YWxunXGM3Qd+aInvkF3HE7uXfAP2DQlPGqI2ay2OPw0OUx9qKZe+qsJGXO9TOPUHjpAh1Y3SObX3a0infc1Z9VWB/grkGWSs4RftVMFPtP9R8V/xdJLMUsilVetbqyFmhJOH+PUeeNnbynKRn0w357ZdxTysZ9HHU=  ;
-X-YMail-OSG: fcRL.CsVM1lqpRUc6qAAZtCNCeN6XZzfwwLiHN2UBNp8sobjxCDntr5MFKmmlrjyJcKpW_Z2aeSFHkLjQ9GbhWdopD65ZL9qj7VvAS7N7LdN4Q3Caqoj1vH0IWW2dA9Hj2fOlHfDatFWJu1aZaIPoWNegrYXCZYHj2qrBG23
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [git pull] x86 updates for v2.6.28, phase #6, misc
-Date: Fri, 10 Oct 2008 14:43:47 +1100
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-References: <20081010000817.GA9266@elte.hu>
-In-Reply-To: <20081010000817.GA9266@elte.hu>
+	Thu, 9 Oct 2008 23:44:34 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:54149 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751457AbYJJDod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 23:44:33 -0400
+Date: Thu, 9 Oct 2008 20:44:21 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, rjw@sisk.pl, dipankar@in.ibm.com, tglx@linuxtronix.de,
+       andi@firstfloor.org
+Subject: [PATCH] v2 rudimentary tracing for Classic RCU
+Message-ID: <20081010034421.GA12449@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081006141220.GA14160@basil.nowhere.org> <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com> <20081007071544.GC20740@one.firstfloor.org> <20081007152629.GH6384@linux.vnet.ibm.com> <20081007154939.GN20740@one.firstfloor.org> <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009010846.GA10188@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810101443.48237.nickpiggin@yahoo.com.au>
+In-Reply-To: <20081009010846.GA10188@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 October 2008 11:08, Ingo Molnar wrote:
+Hello!
 
-> out-of-topic modifications in x86-v28-for-linus-phase6:
-> -------------------------------------------------------
-> include/linux/kernel.h             # d974ae3: generic, memparse(): constify
-> arg include/linux/mm.h                 # f7d0b92: mm: define
-> USE_SPLIT_PTLOCKS rath # 59ea746: MM: virtual address debug
-> include/linux/mm_types.h           # f7d0b92: mm: define USE_SPLIT_PTLOCKS
-> rath include/linux/mmdebug.h            # 7aa413d: x86, MM: virtual address
-> debug, c # 59ea746: MM: virtual address debug lib/cmdline.c                
->      # d974ae3: generic, memparse(): constify arg mm/vmalloc.c             
->          # 7aa413d: x86, MM: virtual address debug, c # 59ea746: MM:
-> virtual address debug
+This is a tracing patch for Classic RCU, which creates an "rcu/rcucb"
+file in debugfs.  This patch can be handy when you need to work out
+why RCU is refusing to end the current grace period.
 
+Changes since v1:  Adds (crude) tracing for rcu_data structures.
 
-How come these kinds of things go into the x86 tree? Can't they
-be sent to other maintainer first (probably Andrew, in the case
-of random -mm stuff).
+Additional work needed:  Don't print rcu_data for offline CPUs.
+			 Documentation update.
 
-OK, it's pretty trivial stuff, but just on principle I can't see
-an advantage, and only disadvantages to doing this (and also I
-see the vmalloc change clashed with the vmalloc rewrite in -mm).
+Reading from the file results in something like the following:
+
+	rcu: cur=1129  completed=1128  np=0  s=0
+		0,3,7
+	rcu_bh: cur=-287  completed=-287  np=0  s=0
+
+	online: 0-7
+
+The first two lines are for rcu, the second two for rcu_bh.
+The cur= is the current grace-period number, and the completed=
+is the number of the last completed grace period.  If these two
+numbers are equal, the corresponding flavor of RCU is idle.
+The np= is a flag indicating that an additional RCU grace period
+beyond the current one will be required.  The s=, if non-zero,
+indicates that a round of reschedule IPIs has been send to
+attempt to expedite the current grace period.
+
+The second and fourth lines are a comma/dash-separated list of
+the CPUs that have not yet reported a quiescent state for the
+current grace period (CPUs 0, 3, and 7 for "rcu" above).
+
+The last line lists the online CPUs.
+
+Tested on x86 and Power.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ include/linux/rcuclassic.h |    3 
+ kernel/Kconfig.preempt     |    1 
+ kernel/Makefile            |    2 
+ kernel/rcuclassic.c        |    4 -
+ kernel/rcuclassic_trace.c  |  179 +++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 186 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+index 4ab8436..061a272 100644
+--- a/include/linux/rcuclassic.h
++++ b/include/linux/rcuclassic.h
+@@ -54,6 +54,9 @@ struct rcu_ctrlblk {
+ 				 /* for current batch to proceed.        */
+ } ____cacheline_internodealigned_in_smp;
+ 
++extern struct rcu_ctrlblk rcu_ctrlblk;
++extern struct rcu_ctrlblk rcu_bh_ctrlblk;
++
+ /* Is batch a before batch b ? */
+ static inline int rcu_batch_before(long a, long b)
+ {
+diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
+index 9fdba03..ba32338 100644
+--- a/kernel/Kconfig.preempt
++++ b/kernel/Kconfig.preempt
+@@ -68,7 +68,6 @@ config PREEMPT_RCU
+ 
+ config RCU_TRACE
+ 	bool "Enable tracing for RCU - currently stats in debugfs"
+-	depends on PREEMPT_RCU
+ 	select DEBUG_FS
+ 	default y
+ 	help
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 4e1d7df..e0bfce7 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -77,6 +77,8 @@ obj-$(CONFIG_CLASSIC_RCU) += rcuclassic.o
+ obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
+ ifeq ($(CONFIG_PREEMPT_RCU),y)
+ obj-$(CONFIG_RCU_TRACE) += rcupreempt_trace.o
++else
++obj-$(CONFIG_RCU_TRACE) += rcuclassic_trace.o
+ endif
+ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+index aad93cd..517eaa9 100644
+--- a/kernel/rcuclassic.c
++++ b/kernel/rcuclassic.c
+@@ -57,13 +57,13 @@ EXPORT_SYMBOL_GPL(rcu_lock_map);
+ 
+ 
+ /* Definition for rcupdate control block. */
+-static struct rcu_ctrlblk rcu_ctrlblk = {
++struct rcu_ctrlblk rcu_ctrlblk = {
+ 	.cur = -300,
+ 	.completed = -300,
+ 	.lock = __SPIN_LOCK_UNLOCKED(&rcu_ctrlblk.lock),
+ 	.cpumask = CPU_MASK_NONE,
+ };
+-static struct rcu_ctrlblk rcu_bh_ctrlblk = {
++struct rcu_ctrlblk rcu_bh_ctrlblk = {
+ 	.cur = -300,
+ 	.completed = -300,
+ 	.lock = __SPIN_LOCK_UNLOCKED(&rcu_bh_ctrlblk.lock),
+diff --git a/kernel/rcuclassic_trace.c b/kernel/rcuclassic_trace.c
+new file mode 100644
+index 0000000..a478256
+--- /dev/null
++++ b/kernel/rcuclassic_trace.c
+@@ -0,0 +1,179 @@
++/*
++ * Read-Copy Update tracing for classic implementation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright IBM Corporation, 2008
++ *
++ * Papers:  http://www.rdrop.com/users/paulmck/RCU
++ *
++ * For detailed explanation of Read-Copy Update mechanism see -
++ * 		Documentation/RCU
++ *
++ */
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/smp.h>
++#include <linux/rcupdate.h>
++#include <linux/interrupt.h>
++#include <linux/sched.h>
++#include <asm/atomic.h>
++#include <linux/bitops.h>
++#include <linux/module.h>
++#include <linux/completion.h>
++#include <linux/moduleparam.h>
++#include <linux/percpu.h>
++#include <linux/notifier.h>
++#include <linux/cpu.h>
++#include <linux/mutex.h>
++#include <linux/debugfs.h>
++
++static DEFINE_MUTEX(rcuclassic_trace_mutex);
++static char *rcuclassic_trace_buf;
++#define RCUCLASSIC_TRACE_BUF_SIZE (128 * num_possible_cpus() + 100)
++
++static int print_one_rcu_data(struct rcu_data *rdp, char *buf, char *ebuf)
++{
++	int cnt = 0;
++
++	if (cpu_is_offline(rdp->cpu))
++		return 0;
++	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt],
++		"%3d%cqb=%ld b=%ld pq=%d qsp=%d ql=%ld bl=%ld\n",
++		rdp->cpu, cpu_is_offline(rdp->cpu) ? '!' : ' ',
++		rdp->quiescbatch, rdp->batch, rdp->passed_quiesc,
++		rdp->qs_pending, rdp->qlen, rdp->blimit);
++	return cnt;
++}
++
++#define PRINT_RCU_DATA(name, buf, ebuf) \
++	do { \
++		int _p_r_d_i; \
++		\
++		for_each_possible_cpu(_p_r_d_i) \
++			(buf) += print_one_rcu_data(&per_cpu(name, _p_r_d_i), \
++						    buf, ebuf); \
++	} while (0)
++
++static ssize_t rcudata_read(struct file *filp, char __user *buffer,
++				size_t count, loff_t *ppos)
++{
++	ssize_t bcount;
++	char *buf = rcuclassic_trace_buf;
++	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
++
++	mutex_lock(&rcuclassic_trace_mutex);
++	buf += snprintf(buf, ebuf - buf, "rcu:\n");
++	PRINT_RCU_DATA(rcu_data, buf, ebuf);
++	buf += snprintf(buf, ebuf - buf, "rcu_bh:\n");
++	PRINT_RCU_DATA(rcu_bh_data, buf, ebuf);
++	bcount = simple_read_from_buffer(buffer, count, ppos,
++			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
++	mutex_unlock(&rcuclassic_trace_mutex);
++	return bcount;
++}
++
++static int print_one_rcu_ctrlblk(struct rcu_ctrlblk *rcp, char *buf, char *ebuf)
++{
++	int cnt = 0;
++
++	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "cur=%ld  completed=%ld  "
++			"np=%d  s=%d\n\t",
++			rcp->cur, rcp->completed,
++			rcp->next_pending, rcp->signaled);
++	cnt += cpulist_scnprintf(&buf[cnt], ebuf - &buf[cnt], rcp->cpumask);
++	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "\n");
++	return cnt;
++}
++
++static ssize_t rcucb_read(struct file *filp, char __user *buffer,
++				size_t count, loff_t *ppos)
++{
++	ssize_t bcount;
++	char *buf = rcuclassic_trace_buf;
++	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
++
++	mutex_lock(&rcuclassic_trace_mutex);
++	buf += snprintf(buf, ebuf - buf, "rcu: ");
++	buf += print_one_rcu_ctrlblk(&rcu_ctrlblk, buf, ebuf);
++	buf += snprintf(buf, ebuf - buf, "rcu_bh: ");
++	buf += print_one_rcu_ctrlblk(&rcu_bh_ctrlblk, buf, ebuf);
++	buf += snprintf(buf, ebuf - buf, "online: ");
++	buf += cpulist_scnprintf(buf, ebuf - buf, cpu_online_map);
++	buf += snprintf(buf, ebuf - buf, "\n");
++	bcount = simple_read_from_buffer(buffer, count, ppos,
++			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
++	mutex_unlock(&rcuclassic_trace_mutex);
++	return bcount;
++}
++
++static struct file_operations rcudata_fops = {
++	.owner = THIS_MODULE,
++	.read = rcudata_read,
++};
++
++static struct file_operations rcucb_fops = {
++	.owner = THIS_MODULE,
++	.read = rcucb_read,
++};
++
++static struct dentry *rcudir, *datadir, *cbdir;
++static int rcuclassic_debugfs_init(void)
++{
++	rcudir = debugfs_create_dir("rcu", NULL);
++	if (!rcudir)
++		goto out;
++	datadir = debugfs_create_file("rcudata", 0444, rcudir,
++				      NULL, &rcudata_fops);
++	if (!datadir)
++		goto free_out;
++	cbdir = debugfs_create_file("rcucb", 0444, rcudir, NULL, &rcucb_fops);
++	if (!cbdir)
++		goto free_out;
++	return 0;
++free_out:
++	if (datadir)
++		debugfs_remove(datadir);
++	debugfs_remove(rcudir);
++out:
++	return 1;
++}
++
++static int __init rcuclassic_trace_init(void)
++{
++	int ret;
++
++	rcuclassic_trace_buf = kmalloc(RCUCLASSIC_TRACE_BUF_SIZE, GFP_KERNEL);
++	if (!rcuclassic_trace_buf)
++		return 1;
++	ret = rcuclassic_debugfs_init();
++	if (ret)
++		kfree(rcuclassic_trace_buf);
++	return ret;
++}
++
++static void __exit rcuclassic_trace_cleanup(void)
++{
++	debugfs_remove(datadir);
++	debugfs_remove(cbdir);
++	debugfs_remove(rcudir);
++	kfree(rcuclassic_trace_buf);
++}
++
++
++module_init(rcuclassic_trace_init);
++module_exit(rcuclassic_trace_cleanup);
