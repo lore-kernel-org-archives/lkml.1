@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbYJJQ2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbYJJQ3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761360AbYJJQ2v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758766AbYJJQ2n
+	id S1762026AbYJJQ3Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759921AbYJJQ3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:28:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40007 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758508AbYJJQ2n (ORCPT
+	Fri, 10 Oct 2008 12:29:05 -0400
+Received: from outbound-mail-122.bluehost.com ([67.222.38.22]:37925 "HELO
+	outbound-mail-122.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759446AbYJJQ3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:28:43 -0400
-Date: Fri, 10 Oct 2008 09:27:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates for v2.6.28, phase #2 - PAT updates
-In-Reply-To: <20081009234951.GA24349@elte.hu>
-Message-ID: <alpine.LFD.2.00.0810100920370.3503@nehalem.linux-foundation.org>
-References: <20081009234951.GA24349@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 10 Oct 2008 12:29:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=H/1DsluFxWDP8xUGPCmMlKjMu3E8mS9mXzIf3E+yMIBky1dqsn8N8nRTzaWEgM2bpl4Z9oq7GXDnchIyQbku9n/rzix8uzOguzFKIpHGOlqqh8nY0mCW7cpseNyVaXkN;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Yinghai Lu" <yinghai@kernel.org>
+Subject: Re: [PATCH] pci: print out DMA mask info
+Date: Fri, 10 Oct 2008 09:28:40 -0700
+User-Agent: KMail/1.9.10
+Cc: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <1223506943-6543-1-git-send-email-yinghai@kernel.org> <200810100848.09557.jbarnes@virtuousgeek.org> <86802c440810100919xf79f406x403988da7988edc9@mail.gmail.com>
+In-Reply-To: <86802c440810100919xf79f406x403988da7988edc9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810100928.41992.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday, October 10, 2008 9:19 am Yinghai Lu wrote:
+> another command line parameter for debug?
+
+Sure, why not? :)
+
+> anyway looking at dma_mask print out is interesting..., some uses 39,
+> and some use 44bits...
+
+Yeah, many devices have limitations that prevent them from doing full 64 or 32 
+bit address cycles, so you'll see all sorts of values.
 
 
-On Fri, 10 Oct 2008, Ingo Molnar wrote:
-> 
-> Ingo Molnar (12):
->       Revert "reduce tlb/cache flush times of agpgart memory allocation"
->       Revert "introduce two APIs for page attribute"
->       Revert "x86: handle error returns in set_memory_*()"
->       Revert "x86: track memtype for RAM in page struct"
->       Revert "x86, cpa: global flush tlb after splitting large page and before doing cpa"
->       Revert "x86, cpa: remove cpa pool code"
->       Revert "x86, cpa: fix taking the pgd_lock with interrupts off"
->       Revert "x86, cpa: dont use large pages for kernel identity mapping with DEBUG_PAGEALLOC"
->       Revert "x86, cpa: make the kernel physical mapping initialization a two pass sequence"
->       Revert "x86, cpa: remove USER permission from the very early identity mapping attribute"
->       Revert "x86, cpa: rename PTE attribute macros for kernel direct mapping in early boot"
->       x86, pat: cleanups
-
-So half of the commits by Suresh were reverted. 
-
-Not only that, they were reverted WITH ABSOLUTELY NO EXPLANATIONS OF WHY 
-THEY WERE CLEARLY BUGGY PILES OF CRUD. The revert messages are just things 
-like
-
-	This reverts commit <sha1>.
-
-which makes both the original commit _and_ the revert just totally 
-pointless, because we didn't learn anything.
-
-So tell me exactly why I should pull this series again? Why should I ever 
-pull _any_ tree that cannot explain its commits? 
-
-Next time you revert, explain _why_. And if a tree has this many reverts 
-(and by "this many" I mean "dammit, there are three times as many commits 
-as there should be, because a third of the commits are crap, a third of 
-the commits are reverts of that crap, and a third of the commits actually 
-remain"), why should I pull it again? 
-
-In other words, why shouldn't I just think that this whole branch is a 
-total failure, which is what I think right now?
-
-		Linus
+-- 
+Jesse Barnes, Intel Open Source Technology Center
