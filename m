@@ -1,365 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbYJJJEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbYJJJE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757005AbYJJJEM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 05:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYJJJD5
+	id S1757731AbYJJJE3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 05:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYJJJET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 05:03:57 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59899 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbYJJJDz (ORCPT
+	Fri, 10 Oct 2008 05:04:19 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:34027 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754150AbYJJJER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 05:03:55 -0400
-Date: Fri, 10 Oct 2008 18:03:35 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/5] memcg: migration account fix
-Message-Id: <20081010180335.c9cf53c4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081010175936.f3b1f4e0.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081010175936.f3b1f4e0.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Oct 2008 05:04:17 -0400
+X-AuditID: 0ac90647-ad453ba00000286d-af-48ef1a8f080a
+Message-ID: <48EF1A89.1080300@hitachi.com>
+Date: Fri, 10 Oct 2008 18:04:09 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: tytso@mit.edu, adilger@sun.com
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: [PATCH] ext4: add an option to control error handling on file data
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, management of "charge" under page migration is done under following
-manner. (Assume migrate page contents from oldapge to newpage)
+If the journal doesn't abort when it gets an IO error in file data
+blocks, the file data corruption will spread silently.  Because
+most of applications and commands do buffered writes without fsync(),
+they don't notice the IO error.  It's scary for mission critical
+systems.  On the other hand, if the journal aborts whenever it gets
+an IO error in file data blocks, the system will easily become
+inoperable.  So this patch introduces a filesystem option to
+determine whether it aborts the journal or just call printk() when
+it gets an IO error in file data.
 
- before
-  - "newpage" is charged before migration.
- at success.
-  - "oldpage" is uncharged at somewhere(unmap, radix-tree-replace)
- at failure
-  - "newpage" is uncharged.
-  - "oldpage" is charged if necessary (*1)
+If you mount an ext4 fs with data_err=abort option, it aborts on file
+data write error.  If you mount it with data_err=ignore, it doesn't
+abort, just call printk().  data_err=ignore is the default.
 
-But (*1) is not trustable....because of GFP_ATOMIC.
+Here is the corresponding patch of the ext3 version:
+http://kerneltrap.org/mailarchive/linux-kernel/2008/9/9/3239374
 
-This patch tries to change behavior as following by charge/commit/cancel ops.
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ Documentation/filesystems/ext4.txt |    5 +++++
+ fs/ext4/ext4.h                     |    3 +++
+ fs/ext4/super.c                    |   16 ++++++++++++++++
+ fs/jbd2/commit.c                   |    2 ++
+ include/linux/jbd2.h               |    3 +++
+ 5 files changed, 29 insertions(+)
 
- before
-  - charge PAGE_SIZE (no target page)
- success
-  - commit charge against "newpage".
- failure
-  - commit charge against "oldpage".
-    (PCG_USED bit works effectively to avoid double-counting)
- 
- if "oldpage" or "newpage" is obsolete, uncharge it.
-  
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- include/linux/memcontrol.h |   19 ++++-------
- mm/memcontrol.c            |   75 +++++++++++++++++++++++++++++----------------
- mm/migrate.c               |   42 ++++++++-----------------
- 3 files changed, 70 insertions(+), 66 deletions(-)
-
-Index: mmotm-2.6.27-rc8+/mm/migrate.c
+Index: linux-2.6.27-rc9-ex4-1/Documentation/filesystems/ext4.txt
 ===================================================================
---- mmotm-2.6.27-rc8+.orig/mm/migrate.c
-+++ mmotm-2.6.27-rc8+/mm/migrate.c
-@@ -121,20 +121,6 @@ static void remove_migration_pte(struct 
- 	if (!is_migration_entry(entry) || migration_entry_to_page(entry) != old)
- 		goto out;
+--- linux-2.6.27-rc9-ex4-1.orig/Documentation/filesystems/ext4.txt
++++ linux-2.6.27-rc9-ex4-1/Documentation/filesystems/ext4.txt
+@@ -218,6 +218,11 @@ errors=remount-ro(*)	Remount the filesys
+ errors=continue		Keep going on a filesystem error.
+ errors=panic		Panic and halt the machine if an error occurs.
  
--	/*
--	 * Yes, ignore the return value from a GFP_ATOMIC mem_cgroup_charge.
--	 * Failure is not an option here: we're now expected to remove every
--	 * migration pte, and will cause crashes otherwise.  Normally this
--	 * is not an issue: mem_cgroup_prepare_migration bumped up the old
--	 * page_cgroup count for safety, that's now attached to the new page,
--	 * so this charge should just be another incrementation of the count,
--	 * to keep in balance with rmap.c's mem_cgroup_uncharging.  But if
--	 * there's been a force_empty, those reference counts may no longer
--	 * be reliable, and this charge can actually fail: oh well, we don't
--	 * make the situation any worse by proceeding as if it had succeeded.
--	 */
--	mem_cgroup_charge_migrate_fixup(new, mm, GFP_ATOMIC);
--
- 	get_page(new);
- 	pte = pte_mkold(mk_pte(new, vma->vm_page_prot));
- 	if (is_write_migration_entry(entry))
-@@ -382,9 +368,6 @@ static void migrate_page_copy(struct pag
- 	anon = PageAnon(page);
- 	page->mapping = NULL;
- 
--	if (!anon) /* This page was removed from radix-tree. */
--		mem_cgroup_uncharge_cache_page(page);
--
- 	/*
- 	 * If any waiters have accumulated on the new page then
- 	 * wake them up.
-@@ -621,6 +604,7 @@ static int unmap_and_move(new_page_t get
- 	struct page *newpage = get_new_page(page, private, &result);
- 	int rcu_locked = 0;
- 	int charge = 0;
-+	struct mem_cgroup *mem;
- 
- 	if (!newpage)
- 		return -ENOMEM;
-@@ -630,24 +614,26 @@ static int unmap_and_move(new_page_t get
- 		goto move_newpage;
- 	}
- 
--	charge = mem_cgroup_prepare_migration(page, newpage);
--	if (charge == -ENOMEM) {
--		rc = -ENOMEM;
--		goto move_newpage;
--	}
- 	/* prepare cgroup just returns 0 or -ENOMEM */
--	BUG_ON(charge);
--
- 	rc = -EAGAIN;
++data_err=ignore(*)	Just print an error message if an error occurs
++			in a file data buffer in ordered mode.
++data_err=abort		Abort the journal if an error occurs in a file
++			data buffer in ordered mode.
 +
- 	if (!trylock_page(page)) {
- 		if (!force)
- 			goto move_newpage;
- 		lock_page(page);
- 	}
+ grpid			Give objects the same group ID as their creator.
+ bsdgroups
  
-+	/* precharge against new page */
-+	charge = mem_cgroup_prepare_migration(page, &mem);
-+	if (charge == -ENOMEM) {
-+		rc = -ENOMEM;
-+		goto unlock;
-+	}
-+	BUG_ON(charge);
-+
- 	if (PageWriteback(page)) {
- 		if (!force)
--			goto unlock;
-+			goto uncharge;
- 		wait_on_page_writeback(page);
- 	}
- 	/*
-@@ -700,7 +686,9 @@ static int unmap_and_move(new_page_t get
- rcu_unlock:
- 	if (rcu_locked)
- 		rcu_read_unlock();
--
-+uncharge:
-+	if (!charge)
-+		mem_cgroup_end_migration(mem, page, newpage);
- unlock:
- 	unlock_page(page);
- 
-@@ -716,8 +704,6 @@ unlock:
- 	}
- 
- move_newpage:
--	if (!charge)
--		mem_cgroup_end_migration(newpage);
- 
- 	/*
- 	 * Move the new page to the LRU. If migration was not successful
-Index: mmotm-2.6.27-rc8+/include/linux/memcontrol.h
+Index: linux-2.6.27-rc9-ex4-1/fs/ext4/ext4.h
 ===================================================================
---- mmotm-2.6.27-rc8+.orig/include/linux/memcontrol.h
-+++ mmotm-2.6.27-rc8+/include/linux/memcontrol.h
-@@ -29,8 +29,6 @@ struct mm_struct;
+--- linux-2.6.27-rc9-ex4-1.orig/fs/ext4/ext4.h
++++ linux-2.6.27-rc9-ex4-1/fs/ext4/ext4.h
+@@ -556,6 +556,9 @@ do {									       \
+ #define EXT4_MOUNT_I_VERSION            0x2000000 /* i_version support */
+ #define EXT4_MOUNT_DELALLOC		0x8000000 /* Delalloc support */
+ #define EXT4_MOUNT_AKPM_LOCK_HACK	0x10000000 /* akpm lock hack */
++#define EXT4_MOUNT_DATA_ERR_ABORT	0x20000000 /* Abort on file data write
++						    * error in ordered mode */
++
+ /* Compatibility, for having both ext2_fs.h and ext4_fs.h included at once */
+ #ifndef _LINUX_EXT2_FS_H
+ #define clear_opt(o, opt)		o &= ~EXT4_MOUNT_##opt
+Index: linux-2.6.27-rc9-ex4-1/fs/ext4/super.c
+===================================================================
+--- linux-2.6.27-rc9-ex4-1.orig/fs/ext4/super.c
++++ linux-2.6.27-rc9-ex4-1/fs/ext4/super.c
+@@ -779,6 +779,9 @@ static int ext4_show_options(struct seq_
+ 		seq_printf(seq, ",inode_readahead_blks=%u",
+ 			   sbi->s_inode_readahead_blks);
  
- extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask);
--extern int mem_cgroup_charge_migrate_fixup(struct page *page,
--				struct mm_struct *mm, gfp_t gfp_mask);
- /* for swap handling */
- extern int mem_cgroup_try_charge(struct mm_struct *mm,
- 		gfp_t gfp_mask, struct mem_cgroup **ptr);
-@@ -60,8 +58,9 @@ extern struct mem_cgroup *mem_cgroup_fro
- 	((cgroup) == mem_cgroup_from_task((mm)->owner))
- 
- extern int
--mem_cgroup_prepare_migration(struct page *page, struct page *newpage);
--extern void mem_cgroup_end_migration(struct page *page);
-+mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr);
-+extern void mem_cgroup_end_migration(struct mem_cgroup *mem,
-+	struct page *oldpage, struct page *newpage);
- 
- /*
-  * For memory reclaim.
-@@ -94,12 +93,6 @@ static inline int mem_cgroup_cache_charg
++	if (test_opt(sb, DATA_ERR_ABORT))
++		seq_puts(seq, ",data_err=abort");
++
+ 	ext4_show_quota_options(seq, sb);
  	return 0;
  }
- 
--static inline int mem_cgroup_charge_migrate_fixup(struct page *page,
--					struct mm_struct *mm, gfp_t gfp_mask)
--{
--	return 0;
--}
--
- static int mem_cgroup_try_charge(struct mm_struct *mm,
- 				gfp_t gfp_mask, struct mem_cgroup **ptr)
- {
-@@ -143,12 +136,14 @@ static inline int task_in_mem_cgroup(str
- }
- 
- static inline int
--mem_cgroup_prepare_migration(struct page *page, struct page *newpage)
-+mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
- {
- 	return 0;
- }
- 
--static inline void mem_cgroup_end_migration(struct page *page)
-+static inline void mem_cgroup_end_migration(struct mem_cgroup *mem,
-+					struct page *oldpage,
-+					struct page *newpage)
- {
- }
- 
-Index: mmotm-2.6.27-rc8+/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.27-rc8+.orig/mm/memcontrol.c
-+++ mmotm-2.6.27-rc8+/mm/memcontrol.c
-@@ -623,34 +623,6 @@ int mem_cgroup_newpage_charge(struct pag
- 				MEM_CGROUP_CHARGE_TYPE_MAPPED, NULL);
- }
- 
--/*
-- * same as mem_cgroup_newpage_charge(), now.
-- * But what we assume is different from newpage, and this is special case.
-- * treat this in special function. easy for maintainance.
-- */
--
--int mem_cgroup_charge_migrate_fixup(struct page *page,
--				struct mm_struct *mm, gfp_t gfp_mask)
--{
--	if (mem_cgroup_subsys.disabled)
--		return 0;
--
--	if (PageCompound(page))
--		return 0;
--
--	if (page_mapped(page) || (page->mapping && !PageAnon(page)))
--		return 0;
--
--	if (unlikely(!mm))
--		mm = &init_mm;
--
--	return mem_cgroup_charge_common(page, mm, gfp_mask,
--				MEM_CGROUP_CHARGE_TYPE_MAPPED, NULL);
--}
--
--
--
--
- int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask)
- {
-@@ -778,13 +750,13 @@ void mem_cgroup_uncharge_cache_page(stru
- }
- 
- /*
-- * Before starting migration, account against new page.
-+ * Before starting migration, account PAGE_SIZE to mem_cgroup that the old
-+ * page belongs to.
-  */
--int mem_cgroup_prepare_migration(struct page *page, struct page *newpage)
-+int mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
- {
- 	struct page_cgroup *pc;
- 	struct mem_cgroup *mem = NULL;
--	enum charge_type ctype = MEM_CGROUP_CHARGE_TYPE_MAPPED;
- 	int ret = 0;
- 
- 	if (mem_cgroup_subsys.disabled)
-@@ -795,43 +767,67 @@ int mem_cgroup_prepare_migration(struct 
- 	if (PageCgroupUsed(pc)) {
- 		mem = pc->mem_cgroup;
- 		css_get(&mem->css);
--		if (PageCgroupCache(pc)) {
--			if (page_is_file_cache(page))
--				ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
--			else
--				ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
--		}
- 	}
- 	unlock_page_cgroup(pc);
-+
- 	if (mem) {
--		ret = mem_cgroup_charge_common(newpage, NULL, GFP_KERNEL,
--			ctype, mem);
-+		ret = mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem);
- 		css_put(&mem->css);
-+		*ptr = mem;
- 	}
- 	return ret;
- }
- 
- /* remove redundant charge if migration failed*/
--void mem_cgroup_end_migration(struct page *newpage)
-+void mem_cgroup_end_migration(struct mem_cgroup *mem,
-+		struct page *oldpage, struct page *newpage)
- {
-+	struct page *target, *unused;
-+	struct page_cgroup *pc;
-+	enum charge_type ctype;
-+
-+	/* at migration success, oldpage->mapping is NULL. */
-+	if (oldpage->mapping) {
-+		target = oldpage;
-+		unused = NULL;
-+	} else {
-+		target = newpage;
-+		unused = oldpage;
-+	}
-+
-+	if (PageAnon(target))
-+		ctype = MEM_CGROUP_CHARGE_TYPE_MAPPED;
-+	else if (page_is_file_cache(target))
-+		ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+@@ -908,6 +911,7 @@ enum {
+ 	Opt_commit, Opt_journal_update, Opt_journal_inum, Opt_journal_dev,
+ 	Opt_journal_checksum, Opt_journal_async_commit,
+ 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
++	Opt_data_err_abort, Opt_data_err_ignore,
+ 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
+ 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
+ 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
+@@ -954,6 +958,8 @@ static match_table_t tokens = {
+ 	{Opt_data_journal, "data=journal"},
+ 	{Opt_data_ordered, "data=ordered"},
+ 	{Opt_data_writeback, "data=writeback"},
++	{Opt_data_err_abort, "data_err=abort"},
++	{Opt_data_err_ignore, "data_err=ignore"},
+ 	{Opt_offusrjquota, "usrjquota="},
+ 	{Opt_usrjquota, "usrjquota=%s"},
+ 	{Opt_offgrpjquota, "grpjquota="},
+@@ -1189,6 +1195,12 @@ static int parse_options(char *options, 
+ 				sbi->s_mount_opt |= data_opt;
+ 			}
+ 			break;
++		case Opt_data_err_abort:
++			set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
++		case Opt_data_err_ignore:
++			clear_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
+ #ifdef CONFIG_QUOTA
+ 		case Opt_usrjquota:
+ 			qtype = USRQUOTA;
+@@ -2544,6 +2556,10 @@ static void ext4_init_journal_params(str
+ 		journal->j_flags |= JBD2_LOCK_HACK;
+ 	else
+ 		journal->j_flags &= ~JBD2_LOCK_HACK;
++	if (test_opt(sb, DATA_ERR_ABORT))
++		journal->j_flags |= JBD2_ABORT_ON_SYNCDATA_ERR;
 +	else
-+		ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
-+
-+	/* unused page is not on radix-tree now. */
-+	if (unused && ctype != MEM_CGROUP_CHARGE_TYPE_MAPPED)
-+		__mem_cgroup_uncharge_common(unused, ctype);
-+
-+	pc = lookup_page_cgroup(target);
- 	/*
--	 * At success, page->mapping is not NULL.
--	 * special rollback care is necessary when
--	 * 1. at migration failure. (newpage->mapping is cleared in this case)
--	 * 2. the newpage was moved but not remapped again because the task
--	 *    exits and the newpage is obsolete. In this case, the new page
--	 *    may be a swapcache. So, we just call mem_cgroup_uncharge_page()
--	 *    always for avoiding mess. The  page_cgroup will be removed if
--	 *    unnecessary. File cache pages is still on radix-tree. Don't
--	 *    care it.
-+	 * __mem_cgroup_commit_charge() check PCG_USED bit of page_cgroup.
-+	 * So, double-counting is effectively avoided.
- 	 */
--	if (!newpage->mapping)
--		__mem_cgroup_uncharge_common(newpage,
--				MEM_CGROUP_CHARGE_TYPE_FORCE);
--	else if (PageAnon(newpage))
--		mem_cgroup_uncharge_page(newpage);
-+	__mem_cgroup_commit_charge(mem, pc, ctype);
-+
-+	/*
-+	 * Both of oldpage and newpage are still under lock_page().
-+	 * Then, we don't have to care about race in radix-tree.
-+	 * But we have to be careful that this page is unmapped or not.
-+	 *
-+	 * There is a case for !page_mapped(). At the start of
-+	 * migration, oldpage was mapped. But now, it's zapped.
-+	 * But we know *target* page is not freed/reused under us.
-+	 * mem_cgroup_uncharge_page() does all necessary checks.
-+	 */
-+	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
-+		mem_cgroup_uncharge_page(target);
++		journal->j_flags &= ~JBD2_ABORT_ON_SYNCDATA_ERR;
+ 	spin_unlock(&journal->j_state_lock);
  }
  
-+
+Index: linux-2.6.27-rc9-ex4-1/fs/jbd2/commit.c
+===================================================================
+--- linux-2.6.27-rc9-ex4-1.orig/fs/jbd2/commit.c
++++ linux-2.6.27-rc9-ex4-1/fs/jbd2/commit.c
+@@ -683,6 +683,8 @@ start_journal_io:
+ 		printk(KERN_WARNING
+ 			"JBD2: Detected IO errors while flushing file data "
+ 		       "on %s\n", journal->j_devname);
++		if (journal->j_flags & JBD2_ABORT_ON_SYNCDATA_ERR)
++			jbd2_journal_abort(journal, err);
+ 		err = 0;
+ 	}
+ 
+Index: linux-2.6.27-rc9-ex4-1/include/linux/jbd2.h
+===================================================================
+--- linux-2.6.27-rc9-ex4-1.orig/include/linux/jbd2.h
++++ linux-2.6.27-rc9-ex4-1/include/linux/jbd2.h
+@@ -968,6 +968,9 @@ struct journal_s
+ #define JBD2_LOADED	0x010	/* The journal superblock has been loaded */
+ #define JBD2_BARRIER	0x020	/* Use IDE barriers */
+ #define JBD2_LOCK_HACK	0x040	/* akpm's locking hack */
++#define JBD2_ABORT_ON_SYNCDATA_ERR	0x080	/* Abort the journal on file
++						 * data write error in ordered
++						 * mode */
+ 
  /*
-  * A call to try to shrink memory usage under specified resource controller.
-  * This is typically used for page reclaiming for shmem for reducing side
+  * Function declarations for the journaling transaction and buffer
+
+
 
