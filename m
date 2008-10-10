@@ -1,56 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbYJJWpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbYJJWqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbYJJWpd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 18:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYJJWpX
+	id S1758439AbYJJWqM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 18:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYJJWpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 18:45:23 -0400
-Received: from colo.lackof.org ([198.49.126.79]:49577 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751543AbYJJWpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 18:45:22 -0400
-Date: Fri, 10 Oct 2008 16:45:08 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: yinghai@kernel.org, grundler@parisc-linux.org, matthew@wil.cx,
-       jbarnes@virtuousgeek.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: print out DMA mask info
-Message-ID: <20081010224508.GB28369@colo.lackof.org>
-References: <86802c440810091451y4a3caceg1abaa75464c40a72@mail.gmail.com> <20081009225533.GB1914@colo.lackof.org> <48EE8E55.4000009@kernel.org> <20081010114003X.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010114003X.fujita.tomonori@lab.ntt.co.jp>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 10 Oct 2008 18:45:55 -0400
+Received: from kroah.org ([198.145.64.141]:39626 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752455AbYJJWpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 18:45:54 -0400
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       Jeff Mahoney <jeffm@suse.de>
+Subject: [PATCH 01/23] Staging: add TAINT_CRAP for all drivers/staging code
+Date: Fri, 10 Oct 2008 15:42:25 -0700
+Message-Id: <1223678567-30143-1-git-send-email-greg@kroah.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <20081010224130.GA30117@kroah.com>
+References: <20081010224130.GA30117@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 11:40:56AM +0900, FUJITA Tomonori wrote:
-> IIRC, except for one SGI architecture, coherent_dma_mask is
-> meaningless, dma_mask is always equal to coherent_dma_mask.
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Not correct. Several PCI-X devices can only do 32-bit DMA to control
-data but can do 64-bit DMA for payload data. I don't have the list off
-the top of my head but that is the origin of coherent DMA mask.
+We need to add a flag for all code that is in the drivers/staging/
+directory to prevent all other kernel developers from worrying about
+issues here, and to notify users that the drivers might not be as good
+as they are normally used to.
 
-> Lots of
-> IOMMU implementations ignore coherent_dma_mask and use dma_mask for
-> alloc_coherent().
+Based on code from Andreas Gruenbacher and Jeff Mahoney to provide a
+TAINT flag for the support level of a kernel module in the Novell
+enterprise kernel release.
 
-That sounds like a bug. And I don't think it's "lots".
+This is the kernel portion of this feature, the ability for the flag to
+be set needs to be done in the build process and will happen in a
+follow-up patch.
 
-> Some drivers don't set up coherent_dma_mask.
+Cc: Andreas Gruenbacher <agruen@suse.de>
+Cc: Jeff Mahoney <jeffm@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ Documentation/sysctl/kernel.txt |    1 +
+ include/linux/kernel.h          |    1 +
+ kernel/module.c                 |   11 +++++++++++
+ kernel/panic.c                  |    6 ++++--
+ 4 files changed, 17 insertions(+), 2 deletions(-)
 
-They probably should. Current default is 32-bits for PCI devices.
+diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
+index e1ff0d9..bde799e 100644
+--- a/Documentation/sysctl/kernel.txt
++++ b/Documentation/sysctl/kernel.txt
+@@ -369,4 +369,5 @@ can be ORed together:
+   2 - A module was force loaded by insmod -f.
+       Set by modutils >= 2.4.9 and module-init-tools.
+   4 - Unsafe SMP processors: SMP with CPUs not designed for SMP.
++ 64 - A module from drivers/staging was loaded.
+ 
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 2651f80..b36805c 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -260,6 +260,7 @@ extern enum system_states {
+ #define TAINT_DIE			(1<<7)
+ #define TAINT_OVERRIDDEN_ACPI_TABLE	(1<<8)
+ #define TAINT_WARN			(1<<9)
++#define TAINT_CRAP			(1<<10)
+ 
+ extern void dump_stack(void) __cold;
+ 
+diff --git a/kernel/module.c b/kernel/module.c
+index 9db1191..152b165 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1806,6 +1806,7 @@ static noinline struct module *load_module(void __user *umod,
+ 	Elf_Ehdr *hdr;
+ 	Elf_Shdr *sechdrs;
+ 	char *secstrings, *args, *modmagic, *strtab = NULL;
++	char *staging;
+ 	unsigned int i;
+ 	unsigned int symindex = 0;
+ 	unsigned int strindex = 0;
+@@ -1960,6 +1961,14 @@ static noinline struct module *load_module(void __user *umod,
+ 		goto free_hdr;
+ 	}
+ 
++	staging = get_modinfo(sechdrs, infoindex, "staging");
++	if (staging) {
++		add_taint_module(mod, TAINT_CRAP);
++		printk(KERN_WARNING "%s: module is from the staging directory,"
++		       " the quality is unknown, you have been warned.\n",
++		       mod->name);
++	}
++
+ 	/* Now copy in args */
+ 	args = strndup_user(uargs, ~0UL >> 1);
+ 	if (IS_ERR(args)) {
+@@ -2556,6 +2565,8 @@ static char *module_flags(struct module *mod, char *buf)
+ 			buf[bx++] = 'P';
+ 		if (mod->taints & TAINT_FORCED_MODULE)
+ 			buf[bx++] = 'F';
++		if (mod->taints & TAINT_CRAP)
++			buf[bx++] = 'C';
+ 		/*
+ 		 * TAINT_FORCED_RMMOD: could be added.
+ 		 * TAINT_UNSAFE_SMP, TAINT_MACHINE_CHECK, TAINT_BAD_PAGE don't
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 12c5a0a..98e2047 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -155,6 +155,7 @@ EXPORT_SYMBOL(panic);
+  *  'U' - Userspace-defined naughtiness.
+  *  'A' - ACPI table overridden.
+  *  'W' - Taint on warning.
++ *  'C' - modules from drivers/staging are loaded.
+  *
+  *	The string is overwritten by the next call to print_taint().
+  */
+@@ -163,7 +164,7 @@ const char *print_tainted(void)
+ {
+ 	static char buf[20];
+ 	if (tainted) {
+-		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c%c",
++		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c%c%c%c",
+ 			tainted & TAINT_PROPRIETARY_MODULE ? 'P' : 'G',
+ 			tainted & TAINT_FORCED_MODULE ? 'F' : ' ',
+ 			tainted & TAINT_UNSAFE_SMP ? 'S' : ' ',
+@@ -173,7 +174,8 @@ const char *print_tainted(void)
+ 			tainted & TAINT_USER ? 'U' : ' ',
+ 			tainted & TAINT_DIE ? 'D' : ' ',
+ 			tainted & TAINT_OVERRIDDEN_ACPI_TABLE ? 'A' : ' ',
+-			tainted & TAINT_WARN ? 'W' : ' ');
++			tainted & TAINT_WARN ? 'W' : ' ',
++			tainted & TAINT_CRAP ? 'C' : ' ');
+ 	}
+ 	else
+ 		snprintf(buf, sizeof(buf), "Not tainted");
+-- 
+1.6.0.2
 
-> Theoretically, we need to fix this but it doesn't cause any
-> problem. That's why nobody cares about it, I guess.
-
-Agreed - for the "supported" configurations, it works.
-
-hth,
-grant
