@@ -1,179 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYJJEiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYJJEpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbYJJEiq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 00:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYJJEif
+	id S1754129AbYJJEpL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 00:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYJJEo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 00:38:35 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:56362 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751340AbYJJEie (ORCPT
+	Fri, 10 Oct 2008 00:44:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57164 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbYJJEo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 00:38:34 -0400
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: New ext4 patchset: 2.6.27-ext4-1
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1Ko9ln-0004sS-UM@closure.thunk.org>
-Date: Fri, 10 Oct 2008 00:38:31 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 10 Oct 2008 00:44:57 -0400
+Message-ID: <48EEDD7E.5090002@jp.fujitsu.com>
+Date: Fri, 10 Oct 2008 13:43:42 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH v5 04/16] PCI: prevent duplicate slot names
+References: <20081009043140.8678.44164.stgit@bob.kio> <20081009044649.8678.30990.stgit@bob.kio> <48ED9716.3040301@jp.fujitsu.com> <20081009055654.GA30972@ldl.fc.hp.com> <48EDF9F5.9020802@jp.fujitsu.com> <20081010021034.GA13292@ldl.fc.hp.com>
+In-Reply-To: <20081010021034.GA13292@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> Alex Chiang wrote:
+>>> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>>>> Thank your new patches. Very quick!!!
+>>> I'm trying to get into 2.6.28. ;)
+>>>
+>>>> Though I have not reviewed/tested your patches yet (of course), I have
+>>>> one concern as I said in the e-mail soon before. Does the new one
+>>>> consider the following senario?
+>>>>
+>>>> 	Scenario C:
+>>>> 	hotplug driver(A)               	hotplug_driver(B)
+>>>> 	--------------                  	----------------
+>>>>        pci_create_slot(name=A, rename=1)
+>>>> 						pci_create_slot(name=B, rename=1)
+>>>>
+>>>> The hotplug driver (A) creates the slot with name "A". The the hotplug
+>>>> driver (B) tries to create the same slot, but wants the name "B" instead.
+>>>> In this case, hotplug driver fails to create the slot and the slot name
+>>>> should not be changed to "B" from "A".
+>>> Hm... I don't think this is a common scenario but...
+>>>
+>> It was a common scenario until recently because acpiphp and
+>> native hotplug drivers(pciehp, shpchp) had different naming
+>> rules. That is, acpiphp used _SUN number, while pciehp/shpchp
+>> used bus number and physical slot number pair. Although the
+>> pciehp/shpchp driver has been changed not to use bus_number
+>> for slot names and acpiphp and pciehp/shpchp has the same
+>> names on my system now, but I think the scenario is still
+>> possible because naming rule of each hotplug driver could be
+>> changed in the future again.
+>>
+>> By the way, acpiphp was changed to handle 64bit _SUN number
+>> recently for new ia64 HP servers, IIRC. Are hotplug slots
+>> on that server can also be handled through PCIe controller?
+>> If it is yes, I think _SUN doesn't match physical slot number
+>> because physical slot number (in Slot Capabilities Register)
+>> has only 13bit. In this case, the above scenario will happen.
+> 
+> Hm, ok, I agree.
+> 
+>>> int pci_hp_register(...)
+>>> {
+>>> 	...
+>>>
+>>>         pci_slot = pci_create_slot(bus, slot_nr, name, 1);
+>>>         if (IS_ERR(pci_slot))                    return 
+>>> PTR_ERR(pci_slot);
+>>>
+>>>         if (pci_slot->hotplug) {
+>>>                 dbg("%s: already claimed\n", __func__);
+>>>                 pci_destroy_slot(pci_slot);
+>>>                 return -EBUSY;
+>>>         }
+>>> 	...
+>>> }
+>>>
+>>> I could maybe move that check into pci_create_slot() instead.
+>>>
+>>> struct pci_slot *pci_create_slot(...)
+>>> {
+>>> 	...
+>>>
+>>>         /*
+>>>          * Get existing slot and rename if desired
+>>>          */
+>>>         slot = get_slot(parent, slot_nr);
+>>>         if (slot && rename) {
+>>> 		if ((err = slot->hotplug ? -EBUSY : 0)
+>>> 		     || (err = rename_slot(slot, name))) {
+>>>                         kobject_put(&slot->kobj);
+>>>                         slot = NULL;
+>>>                         goto err;
+>>>                 } else
+>>>                         goto out;
+>>>         } else if (slot)
+>>>                 goto out;
+>>> 	...
+>>> }
+>>>
+>>> Seems a little ugly to me, but maybe it's necessary?
+>>>
+>> I don't like this, and I think it's wrong because callers
+>> might get -EBUSY even though they are not related to hotplug.
+>>
+>> I thought of the following alternative ideas, when I was making
+>> sample patches. What do you think about those? My was concerned
+>> that both need to add hotplug related code into generic pci slot
+>> management code/API.
+>>
+>> - Add 'hotplug' arg to pci_create_slot(), instead of 'rename'
+>>  flag. The pci_create_slot() would be as follows:
+>>
+>> 	struct pci_slot *pci_create_slot(..., struct hotplug_slot *hotplug)
+>> 	{
+>> 		...
+>> 		/*
+>> 		 * Get existing slot and rename if desired
+>> 		 */
+>> 		slot = get_slot(parent, slot_nr);
+>> 		if (slot) {
+>> 			if (hotplug) {
+>> 				if ((err = slot->hotplug ? -EBUSY : 0)
+>> 				     || err = rename_slot(slot, name))) {
+>> 					Some cleanups;
+>> 					return err;
+>> 				}
+>> 			}
+>> 			goto out;
+>> 		}
+>> 		...
+>> 	out:
+>> 		if (hotplug)
+>> 			slot->hotplug = hotplug;
+>> 		...
+>> 	}
+> 
+> I like this approach a little better, since the flow of execution
+> is easier to understand (vs. pci_create_slot + pci_slot_hp_register).
+> 
+> I prototyped it, but didn't get a chance to test it (I did
+> compile it though).
+> 
+> I'll send 2 test patches shortly that should replace the earlier
+> 03/16 and 04/16 patches.
+> 
 
-This new patchset adds better documentation for ext4 mount options and
-/proc/fs/ext4 files, and corrects the git commit authorship for a new
-patches in preparation for pushing to Linus.
+I'm sorry, but I forgot to tell you one important thing. Now we are
+trying to change pci slot management API to setup pci_slot->hotplug.
+We must consider how to implement the counterpart to clean up
+pci_slot->hotplug at the same time. My current idea is adding hotplug
+arg to pci_destroy_slot(), but it seems a little ugly...
 
-As a git tree:
+Thanks,
+Kenji Kaneshige
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 2.6.27-ext4-1
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=shortlog;h=2.6.27-ext4-1
-
-As a patchset:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/2.6.27-ext4-1
-
-                                                        - Ted
-
-Akira Fujita (7):
-      ext4: online defrag: Add the EXT4_IOC_DEFRAG ioctl and defrag main function.
-      ext4: Fix compile error at defrag.c in the current ext4 patch
-      ext4: online defrag: Allocate new contiguous blocks with mballoc.
-      ext4: online defrag: Read and write file data with memory page.
-      ext4: online defrag: Exchange the blocks between two inodes.
-      ext4: online defrag: Add the EXT4_IOC_FIBMAP ioctl.
-      ext4: online defrag: Add the EXT4_IOC_GROUP_INFO ioctl.
-
-Alexey Dobriyan (1):
-      ext4: fix #11321: create /proc/ext4/*/stats more carefully
-
-Andi Kleen (1):
-      ext4: Avoid double dirtying of super block in ext4_put_super()
-
-Aneesh Kumar K.V (14):
-      ext4: invalidate pages if delalloc block allocation fails.
-      ext4: Make sure all the block allocation paths reserve blocks
-      ext4: Retry block reservation
-      ext4: Add percpu dirty block accounting.
-      ext4: Switch to non delalloc mode when we are low on free blocks count.
-      ext4: Signed arithmetic fix
-      ext4: Fix ext4 nomballoc allocator for ENOSPC
-      ext4: Don't add the inode to journal handle until after the block is allocated
-      ext4: Retry block allocation if we have free blocks left
-      ext4: truncate block allocated on a failed ext4_write_begin
-      ext4: Properly update i_disksize.
-      ext4: elevate write count for migrate ioctl
-      ext4: hook the ext3 migration interface to the EXT4_IOC_SETFLAGS ioctl
-      ext4: undo the stable boundary patch changes
-
-Duane Griffin (1):
-      jbd2: abort instead of waiting for nonexistent transaction
-
-Eric Sandeen (3):
-      ext4: Avoid printk floods in the face of directory corruption
-      ext4: use percpu data structures for lg_prealloc_list
-      Hook ext4 to the vfs fiemap interface.
-
-Frederic Bohe (2):
-      Update flex_bg free blocks and free inodes counters when resizing.
-      ext4: fix initialization of UNINIT bitmap blocks
-
-Josef Bacik (1):
-      generic block based fiemap implementation
-
-Kalpak Shah (1):
-      ext4: fix xattr deadlock
-
-Li Zefan (1):
-      ext4: add missing unlock in ext4_check_descriptors() on error path
-
-Mark Fasheh (2):
-      vfs: vfs-level fiemap interface
-      ocfs2: fiemap support
-
-Mingming Cao (1):
-      percpu counter: clean up percpu_counter_sum_and_set()
-
-Theodore Ts'o (19):
-      ext4: Add printk priority levels to clean up checkpatch warnings
-      ext4: Fix long long checkpatch warnings
-      ext4: Fix whitespace checkpatch warnings/errors
-      jbd2: clean up how the journal device name is printed
-      ext4: Renumber EXT4_IOC_MIGRATE
-      ext4/jbd2: Avoid WARN() messages when failing to write to the superblock
-      ext4: Don't use 'struct dentry' for internal lookups
-      ext4: move /proc setup and teardown out of mballoc.c
-      ext4: Combine proc file handling into a single set of functions
-      ext4: Improve the documentation for ext4's /proc tunables
-      ext4: Use readahead when reading an inode from the inode table
-      ext4: Remove old legacy block allocator
-      ext4: Add debugging markers that can be used by systemtap
-      jbd2: Fix buffer head leak when writing the commit block
-      Update ext4 MAINTAINERS file
-      ext4: Rename ext4dev to ext4
-      ext4: Stable/Unstable boundary
-      Add a ioctl which dumps out all of the in-use buffer heads for a block device
-      ext4: akpm's locking hack to fix locking delays
-
- Documentation/filesystems/ext4.txt   |    6 +
- Documentation/filesystems/fiemap.txt |  228 ++++++
- Documentation/filesystems/proc.txt   |   73 +-
- MAINTAINERS                          |    5 +-
- block/compat_ioctl.c                 |    1 +
- block/ioctl.c                        |    5 +
- fs/Kconfig                           |   74 +-
- fs/Makefile                          |    2 +-
- fs/buffer.c                          |   40 +
- fs/ext2/ext2.h                       |    2 +
- fs/ext2/file.c                       |    1 +
- fs/ext2/inode.c                      |    8 +
- fs/ext3/file.c                       |    1 +
- fs/ext3/inode.c                      |    8 +
- fs/ext4/Makefile                     |   12 +-
- fs/ext4/acl.h                        |   12 +-
- fs/ext4/balloc.c                     | 1457 ++-------------------------------
- fs/ext4/bitmap.c                     |    6 +-
- fs/ext4/defrag.c                     | 1495 ++++++++++++++++++++++++++++++++++
- fs/ext4/dir.c                        |   64 +-
- fs/ext4/ext4.h                       |  155 +++-
- fs/ext4/ext4_extents.h               |   20 +
- fs/ext4/ext4_i.h                     |   39 +-
- fs/ext4/ext4_sb.h                    |   25 +-
- fs/ext4/extents.c                    |  287 ++++++-
- fs/ext4/file.c                       |   10 +-
- fs/ext4/fsync.c                      |    7 +-
- fs/ext4/hash.c                       |    8 +-
- fs/ext4/ialloc.c                     |   71 +-
- fs/ext4/inode.c                      |  622 +++++++++------
- fs/ext4/ioctl.c                      |   89 +--
- fs/ext4/mballoc.c                    |  208 ++----
- fs/ext4/mballoc.h                    |    1 -
- fs/ext4/migrate.c                    |   10 +-
- fs/ext4/namei.c                      |  402 +++++-----
- fs/ext4/resize.c                     |   33 +-
- fs/ext4/super.c                      |  257 ++++--
- fs/ext4/symlink.c                    |    8 +-
- fs/ext4/xattr.c                      |   14 +-
- fs/ext4/xattr.h                      |   12 +-
- fs/ioctl.c                           |  273 +++++++
- fs/jbd2/checkpoint.c                 |   22 +-
- fs/jbd2/commit.c                     |   22 +-
- fs/jbd2/journal.c                    |   75 +-
- fs/jbd2/transaction.c                |   12 +-
- fs/ocfs2/alloc.c                     |    9 -
- fs/ocfs2/alloc.h                     |    9 +
- fs/ocfs2/extent_map.c                |  346 +++++++--
- fs/ocfs2/extent_map.h                |    3 +
- fs/ocfs2/file.c                      |    1 +
- include/linux/buffer_head.h          |    1 +
- include/linux/ext3_fs.h              |    2 +
- include/linux/fiemap.h               |   64 ++
- include/linux/fs.h                   |   22 +
- include/linux/jbd2.h                 |    4 +-
- include/linux/percpu_counter.h       |   12 +-
- lib/percpu_counter.c                 |    8 +-
- 57 files changed, 4127 insertions(+), 2536 deletions(-)
