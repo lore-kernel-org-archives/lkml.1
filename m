@@ -1,38 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761683AbYJJQGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761796AbYJJQHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761683AbYJJQGP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761286AbYJJQF4
+	id S1761796AbYJJQHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbYJJQHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:05:56 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47578 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761278AbYJJQFz (ORCPT
+	Fri, 10 Oct 2008 12:07:41 -0400
+Received: from outbound-mail-122.bluehost.com ([67.222.38.22]:58924 "HELO
+	outbound-mail-122.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753255AbYJJQHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:05:55 -0400
-To: greg@kroah.com
-CC: miklos@szeredi.hu, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, stable@kernel.org
-In-reply-to: <20081010154946.GB20231@kroah.com> (message from Greg KH on Fri,
-	10 Oct 2008 08:49:46 -0700)
-Subject: Re: [stable] splice vs O_APPEND
-References: <E1Knx26-0003ds-Ch@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org> <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091218300.3210@nehalem.linux-foundation.org> <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org> <E1KoEZM-0007Fb-5i@pomaz-ex.szeredi.hu> <20081010154946.GB20231@kroah.com>
-Message-Id: <E1KoKUu-0000JV-Rb@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 10 Oct 2008 18:05:48 +0200
+	Fri, 10 Oct 2008 12:07:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=N3JMnfbKe2p2iPTBm8oejM6yy8Fwus/I1e8G9OunHrX4mHXze6QoERc5ZFAXGH/8TgqP44pOZSPzltU/u0bAnTvaF45Tbd8kb9vhCLFuVxL5pM3a1H8Thp4+LJSpykOU;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Vincent Legoll" <vincent.legoll@gmail.com>
+Subject: Re: [PATCH] PCI probing debug message uniformization
+Date: Fri, 10 Oct 2008 09:07:35 -0700
+User-Agent: KMail/1.9.10
+Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <4727185d0809291403w38422338p3ffe2a1c27c39939@mail.gmail.com> <200810031257.42457.bjorn.helgaas@hp.com> <4727185d0810031550l32592f7ep2d1d37f93be12874@mail.gmail.com>
+In-Reply-To: <4727185d0810031550l32592f7ep2d1d37f93be12874@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810100907.35798.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008, Greg KH wrote:
-> On Fri, Oct 10, 2008 at 11:46:00AM +0200, Miklos Szeredi wrote:
-> > I suspect this qualifies for stable kernels too.  Stable team, can you
-> > please add this to your queue?
-> 
-> Queue for which kernel releases?  .25, .26, and/or .27?
+On Friday, October 3, 2008 3:50 pm Vincent Legoll wrote:
+> On Fri, Oct 3, 2008 at 8:57 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > It'll be easier for Jesse if you include the proper changelog again
+> > with just a 1-2 line sample of the changed messages.  BTW, the "--"
+> > before your sig confused my mailer into not quoting the patch itself,
+> > hence the screwed up formatting below.
+>
+> The "-- " line is the start-of-.sig marker have I been taught in my
+> school days, I think they then spoke about netiquette...
+>
+> > dev_info() is exactly equivalent to dev_printk(KERN_INFO).  I usually
+> > use dev_info(), though I'm a bit ambivalent because it's nice to be
+> > able to grep for "printk".
+>
+> I left dev_printk(KERN_INFO, ...) for grepability
+>
+> > Anyway, maybe you can correct the grammar
+> > of "enabled forcedly" to something like "you can enable with ..." when
+> > you re-post with the changelog.
+>
+> I've used "You can enable it back with", hoping the gramar is right
+>
+> > (Note that dev_dbg() is NOT exactly equivalent to dev_printk(KERN_DEBUG),
+> > so you can't change all of them.  dev_printk(KERN_DEBUG) is always
+> > compiled in, while dev_dbg() is only compiled in when "DEBUG" is
+> > defined.)
+>
+> Thanks for the hint, for I may have jumped the gun on those "other"
+> cleanups ;-)
+>
+> So here is the new version cut'n'pasted from git-format-patch
 
-25 and 26.  It's in .27.
+Can you respin against linux-next and send me a fresh copy?  This one seems to 
+have been corrupted somehow (sorry for the slow reply, it's been sitting in 
+my 'to apply' mbox for awhile now).
 
 Thanks,
-Miklos
+Jesse
