@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbYJJFmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYJJFof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbYJJFmW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 01:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYJJFmN
+	id S1756032AbYJJFof (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 01:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYJJFo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 01:42:13 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:42289 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752580AbYJJFmM (ORCPT
+	Fri, 10 Oct 2008 01:44:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47808 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbYJJFo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 01:42:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEAEOI7khMQWq+/2dsb2JhbACBcrwbgWo
-Date: Fri, 10 Oct 2008 01:42:10 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] markers: bit-field is not thread-safe nor smp-safe
-Message-ID: <20081010054210.GA19481@Krystal>
-References: <48EEC6AD.4010606@cn.fujitsu.com>
+	Fri, 10 Oct 2008 01:44:26 -0400
+Subject: Re: cgroup task groups appears sensitive to absolute magnitude of
+	shares
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <48EE8D06.9060503@nortel.com>
+References: <48EE8D06.9060503@nortel.com>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 07:44:21 +0200
+Message-Id: <1223617461.7382.57.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48EEC6AD.4010606@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:30:24 up 127 days, 10:10,  9 users,  load average: 0.33, 0.41,
-	0.35
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+On Thu, 2008-10-09 at 17:00 -0600, Chris Friesen wrote:
+> When using cgroups-based task groups, the amount of cpu time for each 
+> class should be based on the relative shares of the different groups.
 > 
-> bit-field is not thread-safe nor smp-safe.
+> However, my testing shows that the absolute value of the shares matters 
+> as well, with larger shares values giving more accurate results (to a 
+> point).  Consider the two testcases below, where the only difference is 
+> that in the second case all the shares are increased by a factor of 10. 
+>   Notice that the accuracy in group 4 is significantly improved.
 > 
-> struct marker_entry.rcu_pending is not protected by any lock
-> in rcu-callback free_old_closure().
-> so we must turn it into a safe type.
 > 
+> [root@localhost schedtest]#  ./fairtest  test5.dat
+> using settling delay of 1 sec, runtime of 2 sec
+> group hierarchy (name, weight, hogs, expected usage):
+> 1,    40,   2, 55.555553
+> 2,    20,   2, 27.777777
+> 3,    10,   2, 13.888888
+> 4,     2,   2, 2.777778
+> group       actual(%)    expected(%)   avg latency(ms)  max_latency(ms)
+>        1        54.90         55.56               5/5              6/57
+>        2        27.43         27.78               8/7              63/8
+>        3        13.71         13.89             12/13            18/379
+>        4         3.96          2.78               7/7             57/57
+> 
+> 
+> 
+> [root@localhost schedtest]# ./fairtest  test3.dat
+> using settling delay of 1 sec, runtime of 10 sec
+> group hierarchy (name, weight, hogs, expected usage):
+> 1,   400,   2, 55.555557
+> 2,   200,   2, 27.777779
+> 3,   100,   2, 13.888889
+> 4,    20,   2, 2.777778
+> group      actual(%)    expected(%)   avg latency(ms)  max_latency(ms)
+>        1        55.20         55.56               5/5             22/31
+>        2        28.02         27.78               7/8             23/21
+>        3        14.00         13.89             12/11             20/33
+>        4         2.78          2.78               9/9             24/20
+> 
+> 
+> I suspect that this is due to the following calculation in 
+> __update_group_shares_cpu():
+> 
+> shares = (sd_shares * rq_weight) / (sd_rq_weight + 1);
+> 
+> Because these are integers, the result will give greater rounding error 
+> when sd_shares is small.
+> 
+> Going to 4000/2000/1000/200 doesn't seem to give noticeable 
+> improvements, and going to 40000/20000/10000/2000 causes the test to 
+> behave unpredictably, either taking abnormally long to complete or else 
+> not completing at all.
+> 
+> Is it worth doing anything about this (automatic normalization of group 
+> shares?), or should we just document this behaviour somewhere and live 
+> with it?
 
-All struct marker_entry.rcu_pending accesses are done with the
-markers_mutex held, except the one done in free_old_closure(). Normally,
-there should be a 
-        if (entry->rcu_pending)
-           rcu_barrier_sched();
+I'm afraid this is one of the things we'll have to live with. Esp. the
+group scheduler runs into the limits of fixed point math, and I'm afraid
+I've not yet found a way around that :/
 
-At the beginning of each markers_mutex section (just after get_marker())
-to make sure any pending callback is executed at that point before any
-of rcu_pending or ptype are touched.
-
-I just noticed that the "markers: fix unchecked format" patch has a race
-with respect to this. I'll post a patch in a jiffy.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
