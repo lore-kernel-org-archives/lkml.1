@@ -1,122 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJJHbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYJJHdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYJJHbr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 03:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbYJJHbi
+	id S1754548AbYJJHdm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 03:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYJJHdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 03:31:38 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:32941 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751028AbYJJHbi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 03:31:38 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEAC6d7khMQWq+/2dsb2JhbACBcrtLgWo
-Date: Fri, 10 Oct 2008 03:31:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] markers: bit-field is not thread-safe nor smp-safe
-Message-ID: <20081010073136.GC23247@Krystal>
-References: <48EEF9AD.9040401@cn.fujitsu.com>
+	Fri, 10 Oct 2008 03:33:33 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50616 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbYJJHdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 03:33:32 -0400
+Date: Fri, 10 Oct 2008 16:32:07 +0900
+To: yinghai@kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp, grundler@parisc-linux.org, matthew@wil.cx,
+       jbarnes@virtuousgeek.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: print out DMA mask info
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <48EEF713.6050502@kernel.org>
+References: <86802c440810092156i18bb7699vb8e90d52accad781@mail.gmail.com>
+	<20081010150815B.fujita.tomonori@lab.ntt.co.jp>
+	<48EEF713.6050502@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <48EEF9AD.9040401@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 03:23:47 up 127 days, 12:04,  9 users,  load average: 0.36, 0.51,
-	0.42
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <20081010163145W.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+On Thu, 09 Oct 2008 23:32:51 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
+
+> in ehci_pci_setup() 
 > 
-> bit-field is not thread-safe nor smp-safe.
+>         switch (pdev->vendor) {
+>         case PCI_VENDOR_ID_NVIDIA:
+>                 /* NVidia reports that certain chips don't handle
+>                  * QH, ITD, or SITD addresses above 2GB.  (But TD,
+>                  * data buffer, and periodic schedule are normal.)
+>                  */
+>                 switch (pdev->device) {
+>                 case 0x003c:    /* MCP04 */
+>                 case 0x005b:    /* CK804 */
+>                 case 0x00d8:    /* CK8 */
+>                 case 0x00e8:    /* CK8S */
+>                         if (pci_set_consistent_dma_mask(pdev,
+>                                                 DMA_31BIT_MASK) < 0)
+>                                 ehci_warn(ehci, "can't enable NVidia "
+>                                         "workaround for >2GB RAM\n");
+>                         break;
+>                 }
+>                 break;
+>         }
 > 
-> struct marker_entry.rcu_pending is not protected by any lock
-> in rcu-callback free_old_closure().
-> so we must turn it into a safe type.
-> 
+> so that is strange silicon bug for old ck804 and before. dma_mask could be 32bit. but consistent_dma_mask is 31bit
+> mcp55 is ok.
+
+Hmm, looks broken hardware...
 
 
-hrm, yes, you are right. I first test for 
+> >> qlogic qla2xxx  and emulex lpfc dma mask and consistent_dma_mask is different...
+> >> could have some story for them
+> > 
+> > Check out qla2xxx again. I think that it uses dma_set_mask() to set
+> > dma_mask. qla2xxx uses the same value for both dma_mask and
+> > consistent_dma_mask.
+> > 
+> > lpfc had better set 64bit to consistent_dma_mask but as I said in the
+> > previous mail, not setting consistent_dma_mask doesn't cause any
+> > problem. It means that some IOMMUs (uses consistent_dma_mask properly)
+> > allocates an address < 4GB in alloc_coherent() and some IOMMUs alloc
+> > address > 4GB. lpfc can handle both anyway.
+> > 
+> > 
+> >> at least gart iommu is honoring the consistent dma mask.
+> >> by calling dma_alloc_coherent_mask(dev, flag)
+> > 
+> > Well, that's because I wrote gart's alloc_coherent and introduced
+> > dma_alloc_coherent_mask. ;)
+> 
+> oh. it is in tip
 
-        if (entry->rcu_pending)
-           rcu_barrier_sched();
+Yeah, it's in tip. But the current gart code uses coherent_dma_mask
+properly (GART in tip works in the same way as the current
+GART). IIRC, other X86 hardware IOMMUs (VT-d, Calgary, AMD) uses
+dma_mask in dma_alloc_coherent (AMD in tip uses coherent_dma_mask).
 
-To check if I must execute the rcu callback, and _this_ races against
-the entry->rcu_pending = 0; within the callback.
 
-Your fix is therefore needed.
 
-Thanks !
+> >> if device could use 64 bit coherent dma mask, that is driver problem...
+> > 
+> > Can you be more specific? As I wrote above, if 64bit-dma-capable
+> > devices don't set consistent_dma_mask, we don't have any problem.
+> 
+> then can we remove consistent_dma_mask? just use dma_mask instead for all.
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-> detail:
-> 
-> I suppose rcu_pending and ptype are store in struct marker_entry.tmp1
-> 
-> free_old_closure() side:           change ptype side:
-> 
->                                 |  load struct marker_entry.tmp1
-> --------------------------------|--------------------------------
->                                 |  change ptype bit in tmp1
-> load struct marker_entry.tmp1   |
-> change rcu_pending bit in tmp1  |
-> store tmp1                      |
-> --------------------------------|--------------------------------
->                                 |  store tmp1
-> 
-> now this result equals that free_old_closure() do not change rcu_pending
-> bit, bug! This bug will cause redundant rcu_barrier_sched() called.
-> not too harmful.
-> 
-> ----- corresponding:
-> 
-> free_old_closure() side:           change ptype side:
-> 
-> load struct marker_entry.tmp1   |
-> --------------------------------|--------------------------------
->                                 |  load struct marker_entry.tmp1
-> change rcu_pending bit in tmp1  |
->                                 |  change ptype bit in tmp1
->                                 |  store tmp1
-> --------------------------------|--------------------------------
-> store tmp1                      |
-> 
-> now this result equals that change ptype side do not change ptype
-> bit, bug! this bug cause marker_probe_cb() access to invalid memory.
-> oops!
-> 
-> see also: http://en.wikipedia.org/wiki/Bit_field
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/marker.c b/kernel/marker.c
-> index 7d1faec..95c62da 100644
-> --- a/kernel/marker.c
-> +++ b/kernel/marker.c
-> @@ -62,7 +62,7 @@ struct marker_entry {
->  	int refcount;	/* Number of times armed. 0 if disarmed. */
->  	struct rcu_head rcu;
->  	void *oldptr;
-> -	unsigned char rcu_pending:1;
-> +	int rcu_pending;
->  	unsigned char ptype:1;
->  	char name[0];	/* Contains name'\0'format'\0' */
->  };
-> 
-> 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I don't think we can. One architecture needs it. The above usb
+chip seems to need it.
