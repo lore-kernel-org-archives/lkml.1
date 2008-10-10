@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763615AbYJJUMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763917AbYJJUMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763615AbYJJUMU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbYJJUMM
+	id S1763917AbYJJUMw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761083AbYJJUMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:12:12 -0400
-Received: from iona.labri.fr ([147.210.8.143]:43238 "EHLO iona.labri.fr"
+	Fri, 10 Oct 2008 16:12:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41211 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761087AbYJJUML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:12:11 -0400
-Message-ID: <48EFB6E6.4080708@inria.fr>
-Date: Fri, 10 Oct 2008 22:11:18 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	id S1760744AbYJJUMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 16:12:43 -0400
+Message-ID: <48EFB704.9070308@kernel.org>
+Date: Fri, 10 Oct 2008 13:11:48 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, linux-mm@kvack.org,
-       nathalie.furmento@labri.fr
-Subject: Re: [PATCH] mm: use a radix-tree to make do_move_pages() complexity
- linear
-References: <48EDF9DA.7000508@inria.fr> <20081010125010.164bcbb8.akpm@linux-foundation.org>
-In-Reply-To: <20081010125010.164bcbb8.akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #9, sparse
+ IRQ support
+References: <20081010001727.GA14132@elte.hu> <20081010185912.GF21876@elte.hu> <48EFA8CA.1020600@kernel.org> <20081010194712.GA31926@elte.hu>
+In-Reply-To: <20081010194712.GA31926@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 09 Oct 2008 14:32:26 +0200
-> Brice Goglin <Brice.Goglin@inria.fr> wrote:
->
->   
->> Add a radix-tree in do_move_pages() to associate each page with
->> the struct page_to_node that describes its migration.
->> new_page_node() can now easily find out the page_to_node of the
->> given page instead of traversing the whole page_to_node array.
->> So the overall complexity is linear instead of quadratic.
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> Ingo Molnar wrote:
+>>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>>> Linus,
+>>>>
+>>>> Please pull the latest x86-v28-for-linus-phase9 git tree from:
+>>>>
+>>>> Sparse IRQ support - make NR_IRQS dynamic by turning it into nr_irqs, 
+>>>> an by creating irq descriptors in a sparse way.
+>>>>
+>>>> Includes a number of dependent x86 topics: timers/hpet-percpu, IO-APIC 
+>>>> and local APIC code unification, UV support updates.
+>>>>
+>>>> Has been cross-built on all architectures we could get crosscompilers 
+>>>> for:
+>>>>
+>>>>   http://www.tglx.de/autoqa/index
+>>>>
+>>>> It should be largely uneventful for sparse-irq unaware, non-x86 
+>>>> architectures.
+>>> please find updated pull request below. Relative to phase-N-1. Updates 
+>>> from today in this class of topics:
+>>>
+>>>   b570868: x86: apic - unify APIC_DIVISOR
+>>>
+>>> And i removed:
+>>>
+>>>   eada62c: acpi/x86: introduce __apci_map_table, v4
+>>>
+>>> [ Cc:-ed Yinghai for that - we can live without that patch (i.e. we at
+>>>   most get a leak warning) and can have that via acpi.git, correct? ]
+>> yes. we have several patches that even didn't pick up for a while.
 >>
->> We still need the page_to_node array since it is allocated by the
->> caller (sys_move_page()) and used by do_pages_stat() when no target
->> nodes are given by the application. And we need room to store all
->> these page_to_node entries for do_move_pages() as well anyway.
+>> also please ask Linus to pull pci tree from Jesse before sparseirq.
 >>
->> If a page is given twice by the application, the old code would
->> return -EBUSY (failure from the second isolate_lru_page()). Now,
->> radix_tree_insert() will return -EEXIST, and we convert it back
->> to -EBUSY to keep the user-space ABI.
+>> because we need
+>> 	PCI: change MSI-x vector to 32bit
 >>
->> The radix-tree is emptied at the end of do_move_pages() since
->> new_page_node() doesn't know when an entry is used for the last
->> time (unmap_and_move() could try another pass later).
->> Marking pp->page as ZERO_PAGE(0) was actually never used. We now
->> set it to NULL when pp is not in the radix-tree. It is faster
->> than doing a loop of radix_tree_lookup_gang()+delete().
->>     
->
-> Any O(n*n) code always catches up with us in the end.  But I do think
-> that to merge this code we'd need some description of the problem which
-> we fixed.
->
-> Please send a description of the situation under which the current code
-> performs unacceptably.  Some before-and-after quantitative measurements
-> would be good.
->
-> Because it could be (as far as I know) that the problem is purely
-> theoretical, in which case we might not want the patch at all.
->   
+>> in pci tree.
+> 
+> is it absolutely needed?
+> 
 
-Just try sys_move_pages() on a 10-100MB buffer, you'll get something
-like 50MB/s on a recent Opteron machine. This throughput decreases
-significantly with the number of pages. With this patch, we get about
-350MB/s and the throughput is stable when the migrated buffer gets
-larger. I don't have detailled numbers at hand, I'll send them by monday.
+qla2xxx with MSI-X will crash. only happend with the new card that support msi-x.
 
-Brice
+so it is not absolutely needed.
+
+YH
+
 
