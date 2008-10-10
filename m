@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbYJJXir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbYJJX6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbYJJXir (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 19:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYJJXij
+	id S1756365AbYJJX6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 19:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYJJX6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 19:38:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38246 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751295AbYJJXii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 19:38:38 -0400
-Date: Fri, 10 Oct 2008 16:32:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: garyhade@us.ibm.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       y-goto@jp.fujitsu.com, pbadari@us.ibm.com, mel@csn.ul.ie,
-       lcm@us.ibm.com, mingo@elte.hu, greg@kroah.com, dave@linux.vnet.ibm.com,
-       nish.aravamudan@gmail.com
-Subject: Re: [PATCH 1/2] [REPOST] mm: show node to memory section
- relationship with symlinks in sysfs
-Message-Id: <20081010163230.ae9d964d.akpm@linux-foundation.org>
-In-Reply-To: <20081010231844.GA1718@us.ibm.com>
-References: <20081009192115.GB8793@us.ibm.com>
-	<20081010124239.f92b5568.akpm@linux-foundation.org>
-	<20081010213357.GD7369@us.ibm.com>
-	<20081010145950.f51def29.akpm@linux-foundation.org>
-	<20081010231844.GA1718@us.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Oct 2008 19:58:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41404 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753713AbYJJX6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 19:58:04 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] MN10300: MEI are renaming themselves to Panasonic
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Sat, 11 Oct 2008 00:57:55 +0100
+Message-ID: <20081010235755.12643.43818.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008 16:18:44 -0700
-Gary Hade <garyhade@us.ibm.com> wrote:
+MEI are renaming themselves to Panasonic, so update the MAINTAINERS record for
+the MN10300 arch.
 
-> On Fri, Oct 10, 2008 at 02:59:50PM -0700, Andrew Morton wrote:
-> > On Fri, 10 Oct 2008 14:33:57 -0700
-> > Gary Hade <garyhade@us.ibm.com> wrote:
-> > 
-> > > On Fri, Oct 10, 2008 at 12:42:39PM -0700, Andrew Morton wrote:
-> > > > On Thu, 9 Oct 2008 12:21:15 -0700
-> > > > Gary Hade <garyhade@us.ibm.com> wrote:
-> > > > 
-> > > > > Show node to memory section relationship with symlinks in sysfs
-> > > > > 
-> > > > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
-> > > > > the memory sections located on nodeX.  For example:
-> > > > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
-> > > > > indicates that memory section 135 resides on node1.
-> > > > 
-> > > > I'm not seeing here a description of why the kernel needs this feature.
-> > > > Why is it useful?  How will it be used?  What value does it have to
-> > > > our users?
-> > > 
-> > > Sorry, I should have included that.  In our case, it is another
-> > > small step towards eventual total node removal.  We will need to
-> > > know which memory sections to offline for whatever node is targeted
-> > > for removal.  However, I suspect that exposing the node to section
-> > > information to user-level could be useful for other purposes.
-> > > For example, I have been thinking that using memory hotremove
-> > > functionality to modify the amount of available memory on specific
-> > > nodes without having to physically add/remove DIMMs might be useful
-> > > to those that test application or benchmark performance on a
-> > > multi-node system in various memory configurations.
-> > > 
-> > 
-> > hm, OK, thanks.  It does sound a bit thin, and if we merge this then
-> > not only do we get a porkier kernel,
-> 
-> Would you feel the same about the size increase if patch 2/2 (include
-> memory section subtree in sysfs with only sparsemem enabled) was
-> withdrawn?
-> 
-> Without patch 2/2 the size increase for non-Sparsemem or Sparsemem
-> wo/memory hotplug kernels is extremely small.  Even for memory hotplug
-> enabled kernels there is only a little extra code in ./drivers/base/node.o
-> which only gets linked into NUMA enabled kernels.  I can gather some numbers
-> if necessary.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Size is probably a minor issue on memory-hotpluggable machines.
+ MAINTAINERS |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > we also get a new userspace interface which we're then locked into.
-> 
-> True.
 
-That's a bigger issue.  The later we leave this sort of thing, the more
-information we have.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3596d17..c4164c6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2756,7 +2756,7 @@ L:	linux-mm@kvack.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
+-MEI MN10300/AM33 PORT
++PANASONIC MN10300/AM33 PORT
+ P:	David Howells
+ M:	dhowells@redhat.com
+ P:	Koichi Yasutake
 
