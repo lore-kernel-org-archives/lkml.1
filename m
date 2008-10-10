@@ -1,100 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbYJJQM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761975AbYJJQNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761927AbYJJQM0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761019AbYJJQMN
+	id S1761975AbYJJQNT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758844AbYJJQNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:12:13 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11840 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761014AbYJJQMM convert rfc822-to-8bit (ORCPT
+	Fri, 10 Oct 2008 12:13:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37751 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754872AbYJJQNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:12:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,390,1220252400"; 
-   d="scan'208";a="346437485"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Date: Fri, 10 Oct 2008 09:11:06 -0700
-Subject: RE: [PATCH] x86: apic - unify APIC_DIVISOR
-Thread-Topic: [PATCH] x86: apic - unify APIC_DIVISOR
-Thread-Index: Ackq6S209DKmemvUR/e2FM9PSv8UkAACGYNQ
-Message-ID: <7E82351C108FA840AB1866AC776AEC46378236B8@orsmsx505.amr.corp.intel.com>
-References: <20081010150017.GD7328@localhost>
-In-Reply-To: <20081010150017.GD7328@localhost>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 10 Oct 2008 12:13:08 -0400
+Message-ID: <48EF7EE7.6040409@zytor.com>
+Date: Fri, 10 Oct 2008 09:12:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, Anders Kaseorg <andersk@MIT.EDU>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: Make ftrace_test_p6nop disassembler-friendly
+References: <alpine.DEB.2.00.0810092209460.21569@vinegar-pot.mit.edu> <20081010085429.GB319@elte.hu> <alpine.DEB.1.10.0810100927110.26408@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0810100927110.26408@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+> On Fri, 10 Oct 2008, Ingo Molnar wrote:
+> 
+>> * Anders Kaseorg <andersk@MIT.EDU> wrote:
+>>
+>>> Commit 4c3dc21b136f8cb4b72afee16c3ba7e961656c0b in tip introduced the
+>>> 5-byte NOP ftrace_test_p6nop:
+>>>   jmp . + 5
+>>>   .byte 0x00, 0x00, 0x00
+>>> This is not friendly to disassemblers because an odd number of 0x00s
+>>> ends in the middle of an instruction boundary.  This changes the 0x00s
+>>> to 1-byte NOPs (0x90).
+>>>
+>>> Signed-off-by: Anders Kaseorg <andersk@mit.edu>
+>> applied to tip/tracing/ftrace, good spotting Anders!
+>>
+>> Steve, any objections?
+> 
+> Nope, it's fine with me.
+> 
+> Acked-by: Steven Rostedt <srostedt@redhat.com>
+> 
 
+The (semi-)amusing thing is that it should never, ever, get there.
+66 66 66 66 90 is used over this, which should always work.
 
->-----Original Message-----
->From: Cyrill Gorcunov [mailto:gorcunov@gmail.com]
->Sent: Friday, October 10, 2008 8:00 AM
->To: Ingo Molnar; Maciej W. Rozycki
->Cc: LKML; Pallipadi, Venkatesh
->Subject: [PATCH] x86: apic - unify APIC_DIVISOR
->
->Use APIC_DIVISOR being set to 16 for both 32/64bit
->mode. To escape APIC timer underflow during calibration
->set it to the maximum possible value.
->
->Also typo error (CONFG instead of proper CONFIG) fixed.
->The error was catched by Venkatesh Pallipadi, thanks a lot Venkatesh!
->See details on http://lkml.org/lkml/2008/10/9/425
->
->Reported-by: Venkatesh Pallipad <venkatesh.pallipadi@intel.com>
->Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->---
->
->Index: linux-2.6.git/arch/x86/kernel/apic.c
->===================================================================
->--- linux-2.6.git.orig/arch/x86/kernel/apic.c   2008-09-26
->20:43:47.000000000 +0400
->+++ linux-2.6.git/arch/x86/kernel/apic.c        2008-10-10
->16:37:26.000000000 +0400
->@@ -332,11 +332,7 @@ int lapic_get_maxlvt(void)
->  */
->
-> /* Clock divisor */
->-#ifdef CONFG_X86_64
->-#define APIC_DIVISOR 1
->-#else
-> #define APIC_DIVISOR 16
->-#endif
->
-> /*
->  * This function sets up the local APIC timer, with a timeout of
->@@ -592,10 +588,10 @@ static int __init calibrate_APIC_clock(v
->        global_clock_event->event_handler = lapic_cal_handler;
->
->        /*
->-        * Setup the APIC counter to 1e9. There is no way the lapic
->+        * Setup the APIC counter to maximum. There is no way the lapic
->         * can underflow in the 100ms detection time frame
->         */
->-       __setup_APIC_LVTT(1000000000, 0, 0);
->+       __setup_APIC_LVTT(0xffffffff, 0, 0);
->
->        /* Let the interrupts run */
->        local_irq_enable();
->
-
-Agree with the APIC_DIVISOR part.
-
-But, not sure why/how the second change is related to this APIC_DIVISOR being 16.
-Also, another nit. Technically we are not setting the "APIC counter to maximum"
-as we do divide by 16 before programming initial count register in __setup_APIC_LVTT().
-
-Thanks,
-Venki
+	-hpa
