@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763456AbYJJTrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763595AbYJJTsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763456AbYJJTrd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbYJJTrZ
+	id S1763595AbYJJTsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761579AbYJJTsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:47:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46815 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Oct 2008 15:48:16 -0400
+Received: from mail.ukfsn.org ([77.75.108.10]:43942 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758490AbYJJTrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:47:24 -0400
-Date: Fri, 10 Oct 2008 21:47:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #9, sparse
-	IRQ support
-Message-ID: <20081010194712.GA31926@elte.hu>
-References: <20081010001727.GA14132@elte.hu> <20081010185912.GF21876@elte.hu> <48EFA8CA.1020600@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48EFA8CA.1020600@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	id S1760916AbYJJTsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:48:15 -0400
+Date: Fri, 10 Oct 2008 20:48:12 +0100
+From: Nick Warne <nick@ukfsn.org>
+To: FD Cami <francois.cami@free.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Alex Howells <alex@bytemark.co.uk>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] Remove Andrew Morton's old email accounts
+Message-ID: <20081010204812.5ef36353@sauron.linicks.net>
+In-Reply-To: <20081010212553.4c80d595@moria>
+References: <20081010151539.6a2ff040@sauron.linicks.net>
+	<48EF6B47.1080800@bytemark.co.uk>
+	<20081010093427.31ddb955.randy.dunlap@oracle.com>
+	<20081010192600.547eedcc@moria>
+	<20081010111031.9518a142.akpm@linux-foundation.org>
+	<20081010212553.4c80d595@moria>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 10 Oct 2008 21:25:53 +0200
+FD Cami <francois.cami@free.fr> wrote:
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+> On Fri, 10 Oct 2008 11:10:31 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Fri, 10 Oct 2008 19:26:00 +0200 FD Cami <francois.cami@free.fr>
+> > wrote:
+> > 
+> > > Also, should we change all instances of your old email addresses
+> > > to the current one ?
+> > 
+> > If they're there, please just delete any email address.  People can
+> > use the real name an an index into MAINTAINERS to find the current
+> > email address.
+> 
+> Remove Andrew Morton's email addresses.
+> There is still one akpm@osdl.org living in
+> linux-2.6.27/Documentation/zh_CN/SubmittingDrivers but I am not sure
+> how not to break this file. Li Yang CC'ed for this reason.
+> 
+> Should we think about systematically removing maintainers' email
+> addresses from the code and documentation ?
 
-> Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> >> Linus,
-> >>
-> >> Please pull the latest x86-v28-for-linus-phase9 git tree from:
-> >>
-> >> Sparse IRQ support - make NR_IRQS dynamic by turning it into nr_irqs, 
-> >> an by creating irq descriptors in a sparse way.
-> >>
-> >> Includes a number of dependent x86 topics: timers/hpet-percpu, IO-APIC 
-> >> and local APIC code unification, UV support updates.
-> >>
-> >> Has been cross-built on all architectures we could get crosscompilers 
-> >> for:
-> >>
-> >>   http://www.tglx.de/autoqa/index
-> >>
-> >> It should be largely uneventful for sparse-irq unaware, non-x86 
-> >> architectures.
-> > 
-> > please find updated pull request below. Relative to phase-N-1. Updates 
-> > from today in this class of topics:
-> > 
-> >   b570868: x86: apic - unify APIC_DIVISOR
-> > 
-> > And i removed:
-> > 
-> >   eada62c: acpi/x86: introduce __apci_map_table, v4
-> > 
-> > [ Cc:-ed Yinghai for that - we can live without that patch (i.e. we at
-> >   most get a leak warning) and can have that via acpi.git, correct? ]
-> 
-> yes. we have several patches that even didn't pick up for a while.
-> 
-> also please ask Linus to pull pci tree from Jesse before sparseirq.
-> 
-> because we need
-> 	PCI: change MSI-x vector to 32bit
-> 
-> in pci tree.
+I guess the easiest thing to do is have a Documents/mail_addresses file
+that gets referred to (and updated) as and when.
 
-is it absolutely needed?
-
-	Ingo
+Nick
+-- 
+Free Software Foundation Associate Member 5508
