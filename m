@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763749AbYJJVzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbYJJV4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763749AbYJJVzN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 17:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759469AbYJJVy7
+	id S1764175AbYJJV4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 17:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760363AbYJJV4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 17:54:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42396 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759321AbYJJVy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 17:54:59 -0400
-Date: Fri, 10 Oct 2008 14:54:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: apw@shadowen.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kniht@linux.vnet.ibm.com, mel@csn.ul.ie
-Subject: Re: [PATCH 1/1] hugetlb: pull gigantic page initialisation out of
- the default path
-Message-Id: <20081010145418.4d0236ba.akpm@linux-foundation.org>
-In-Reply-To: <200810082331.45359.nickpiggin@yahoo.com.au>
-References: <1223458499-12752-1-git-send-email-apw@shadowen.org>
-	<200810082331.45359.nickpiggin@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 17:56:01 -0400
+Received: from kroah.org ([198.145.64.141]:53124 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759469AbYJJV4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 17:56:00 -0400
+Date: Fri, 10 Oct 2008 14:52:42 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Hannes Reinecke <hare@suse.de>
+Subject: Re: [PATCH -next] PM: Simplify the new suspend/hibernation
+	framework for devices
+Message-ID: <20081010215242.GB21890@kroah.com>
+References: <200810060055.07601.rjw@sisk.pl> <200810062246.06654.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810062246.06654.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Oct 2008 23:31:45 +1100
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> On Wednesday 08 October 2008 20:34, Andy Whitcroft wrote:
-> > As we can determine exactly when a gigantic page is in use we can optimise
-> > the common regular page cases by pulling out gigantic page initialisation
-> > into its own function.  As gigantic pages are never released to buddy we
-> > do not need a destructor.  This effectivly reverts the previous change
-> > to the main buddy allocator.  It also adds a paranoid check to ensure we
-> > never release gigantic pages from hugetlbfs to the main buddy.
+On Mon, Oct 06, 2008 at 10:46:05PM +0200, Rafael J. Wysocki wrote:
+> On Monday, 6 of October 2008, Rafael J. Wysocki wrote:
+> > Hi Greg,
+> > 
+> > I promised at the KS that I would simplify the new suspend/hibernation
+> > framework for devices to avoid the confusion with two types of PM
+> > operations and pointers to PM operations from too many places.
+> > 
+> > The appended patch is intended for this purpose.  Unfortunately, I can't
+> > split it into subsystem-related patches, because compilation would be broken
+> > between them.
+> > 
+> > The patch applies to linux-next, but it's trivial to make it apply to the
+> > mainline.  It's been compiled on x86 (both 32-bit and 64-bit) and tested
+> > on hp nx6325, doesn't appear to break anything.
 > 
-> Thanks for doing this. Can prep_compound_gigantic_page be #ifdef HUGETLB?
+> This one had a checkpatch.pl problem, sorry for that.  Updated patch is
+> appended.
 
-Yup.
+I've added this to my tree (Jesse, is this ok, as it does have a PCI
+portion?)
 
---- a/mm/page_alloc.c~hugetlb-pull-gigantic-page-initialisation-out-of-the-default-path-fix
-+++ a/mm/page_alloc.c
-@@ -280,6 +280,7 @@ void prep_compound_page(struct page *pag
- 	}
- }
- 
-+#ifdef CONFIG_HUGETLBFS
- void prep_compound_gigantic_page(struct page *page, unsigned long order)
- {
- 	int i;
-@@ -294,6 +295,7 @@ void prep_compound_gigantic_page(struct 
- 		p->first_page = page;
- 	}
- }
-+#endif
- 
- static void destroy_compound_page(struct page *page, unsigned long order)
- {
-_
+But it's too late for .28, especially due to the -next tree not up and
+running right now.  I'll let it bake in -mm and -next and it should go
+into .29.
 
+Is that ok?
+
+thanks,
+
+greg k-h
