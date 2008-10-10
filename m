@@ -1,40 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758405AbYJJLYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbYJJLbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758405AbYJJLYv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 07:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbYJJLYk
+	id S1757560AbYJJLbV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 07:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbYJJLbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 07:24:40 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:59186 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757464AbYJJLYj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 07:24:39 -0400
-Date: Fri, 10 Oct 2008 12:24:35 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
-In-Reply-To: <aa79d98a0810100416q72ec10d5q7d841e02dc4d4f81@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0810101221580.19747@ftp.linux-mips.org>
-References: <20081010002203.GA23238@linux-os.sc.intel.com>  <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com>  <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com>  <aa79d98a0810092239p32153776qd0cda47e54929545@mail.gmail.com>
-  <20081010090100.GC319@elte.hu> <aa79d98a0810100416q72ec10d5q7d841e02dc4d4f81@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 10 Oct 2008 07:31:06 -0400
+Received: from corega.com.ru ([195.178.208.66]:49224 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752857AbYJJLbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 07:31:04 -0400
+Date: Fri, 10 Oct 2008 15:31:00 +0400
+From: Evgeniy Polyakov <s0mbre@tservice.net.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+Message-ID: <20081010113100.GA1030@tservice.net.ru>
+References: <20081009231759.GA8664@tservice.net.ru> <20081010080910.GA31723@tservice.net.ru> <20081010091511.GC5116@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081010091511.GC5116@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008, Cyrill Gorcunov wrote:
+Hi Ingo.
 
-> Btw I don't remember but hope it was not me who made this typo --
+On Fri, Oct 10, 2008 at 11:15:11AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
 
- What would be the difference so that you hope it wasn't you?  All the 
-people make mistakes, this one has been caught and that's what really 
-matters.
+> > 
+> > I use tsc clocksource, also available acpi_pm and jiffies,
+> > with acpi_pm performance is even lower (I stopped test after it dropped
+> > below 340 MB/s mark), jiffies do not work at all, looks like sockets
+> > stuck in time_wait state when this clock source is used, although that
+> > may be some different issue.
+> > 
+> > So I think hrticks are guilty, but still not as good as .25 tree without
+> > mentioned changes (455 MB/s) and .24 (475 MB/s).
+> 
+> i'm glad that you are looking into this! That is an SMP box, right? If 
+> yes then could you try this sched-domains tuning utility i have written 
+> yesterday (incidentally):
+> 
+>   http://redhat.com/~mingo/cfs-scheduler/tune-sched-domains
 
-  Maciej
+I've removed SD_BALANCE_NEWIDLE:
+# ./tune-sched-domains $[191-2]
+changed /proc/sys/kernel/sched_domain/cpu0/domain0/flags: 191 => 189
+SD flag: 189
++   1: SD_LOAD_BALANCE:          Do load balancing on this domain
+-   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
++   4: SD_BALANCE_EXEC:          Balance on exec
++   8: SD_BALANCE_FORK:          Balance on fork, clone
++  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
++  32: SD_WAKE_AFFINE:           Wake task to waking CPU
+-  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
++ 128: SD_SHARE_CPUPOWER:        Domain members share cpu power
+changed /proc/sys/kernel/sched_domain/cpu0/domain1/flags: 47 => 189
+SD flag: 189
++   1: SD_LOAD_BALANCE:          Do load balancing on this domain
+-   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
++   4: SD_BALANCE_EXEC:          Balance on exec
++   8: SD_BALANCE_FORK:          Balance on fork, clone
++  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
++  32: SD_WAKE_AFFINE:           Wake task to waking CPU
+-  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
++ 128: SD_SHARE_CPUPOWER:        Domain members share cpu power
+
+And got noticeble improvement (each new line has fixes from previous):
+
+vanilla 27: 347.222
+no TSO/GSO: 357.331
+no hrticks: 382.983
+no balance: 389.802
+
+> and please, when tuning such scheduler bits, could you run latest 
+> tip/master:
+> 
+>    http://people.redhat.com/mingo/tip.git/README
+> 
+> and you need to have CONFIG_SCHED_DEBUG=y enabled for the tuning knobs.
+> 
+> so that it's all in sync with upcoming scheduler changes/tunings/fixes.
+
+Ok, I've started to pull it down, I will reply back when things are
+ready.
+
+-- 
+	Evgeniy Polyakov
