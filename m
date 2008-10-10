@@ -1,421 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbYJJCNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYJJCNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbYJJCNP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 22:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYJJCM7
+	id S1753870AbYJJCNb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 22:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbYJJCNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 22:12:59 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:15718 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753549AbYJJCM6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 22:12:58 -0400
-Date: Thu, 9 Oct 2008 20:12:30 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
-Subject: Re: [PATCH v5 04/16] PCI: prevent duplicate slot names
-Message-ID: <20081010021230.GC13292@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-	matthew@wil.cx
-References: <20081009043140.8678.44164.stgit@bob.kio> <20081009044649.8678.30990.stgit@bob.kio> <48ED9716.3040301@jp.fujitsu.com> <20081009055654.GA30972@ldl.fc.hp.com> <48EDF9F5.9020802@jp.fujitsu.com> <20081010021034.GA13292@ldl.fc.hp.com>
+	Thu, 9 Oct 2008 22:13:12 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:55658 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754198AbYJJCNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 22:13:10 -0400
+Date: Thu, 9 Oct 2008 19:13:02 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org
+Subject: Re: kernel BUG at kernel/sched_rt.c:322!
+Message-ID: <20081010021302.GD7101@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081009011456.GB10188@linux.vnet.ibm.com> <1223528798.7382.27.camel@lappy.programming.kicks-ass.net> <20081009123132.GF6628@linux.vnet.ibm.com> <1223603651.1685.27.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="X1bOJ3K7DJ5YkBrT"
 Content-Disposition: inline
-In-Reply-To: <20081010021034.GA13292@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1223603651.1685.27.camel@ymzhang>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note, the comments might be a bit stale...
 
-Also note the change in rename_slot() so we don't try and rename
-something with the same name.
+--X1bOJ3K7DJ5YkBrT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-/ac
+On Fri, Oct 10, 2008 at 09:54:11AM +0800, Zhang, Yanmin wrote:
+> 
+> On Thu, 2008-10-09 at 05:31 -0700, Paul E. McKenney wrote:
+> > On Thu, Oct 09, 2008 at 07:06:38AM +0200, Peter Zijlstra wrote:
+> > > On Wed, 2008-10-08 at 18:14 -0700, Paul E. McKenney wrote:
+> > > > When I enable:
+> > > > 
+> > > > 	CONFIG_GROUP_SCHED=y
+> > > > 	CONFIG_FAIR_GROUP_SCHED=y
+> > > > 	CONFIG_USER_SCHED=y
+> > > > 
+> > > > and run a bash script onlining and offlining CPUs in an infinite loop
+> > > > on x86 using 2.6.27-rc9, after about 1.5 hours I get the following.
+> Paul,
+> 
+> Wuld you like to share your scipt? I tested cpu hotplug on my 8-core machine by
+> unplug cpu 2~5 and plug them in a loop for one night and didn't trigger the issue.
 
-commit eb00679613b5e5b7d7b4ebd82d4a229fff1ecefa
-Author: Alex Chiang <achiang@hp.com>
-Date:   Thu Oct 9 20:06:49 2008 -0600
+See attached!  I hand-edit the loop for the machine at hand, so on an
+8-CPU x86 machine I would use "for ((i = 1; i < 8; i++))", given that
+x86 machines tend not to allow you to offline CPU 0.
 
-    PCI: prevent duplicate slot names
-    
-    Prevent callers of pci_create_slot() from registering slots with
-    duplicate names. This condition occurs most often when PCI hotplug
-    drivers are loaded on platforms with broken firmware that assigns
-    identical names to multiple slots.
-    
-    We now rename these duplicate slots on behalf of the user.
-    
-    If firmware assigns the name N to multiple slots, then:
-    
-    	The first registered slot is assigned N
-    	The second registered slot is assigned N-1
-    	The third registered slot is assigned N-2
-    	etc.
-    
-    A side effect of this patch is that the error condition for when
-    multiple drivers attempt to claim the same slot becomes much more
-    prominent. The -EBUSY was getting masked previously by -EEXIST in
-    the event of duplicate slot names; this is no longer so.
-    
-    This is the permanent fix mentioned in earlier commits d6a9e9b4 and
-    167e782e (shpchp/pciehp: Rename duplicate slot name...).
-    
-    Finally, we take advantage of the new 'rename' parameter in
-    pci_create_slot() to prevent a slot create/rename race between hotplug
-    drivers and detection drivers.
-    
-    	Scenario A:
-    	hotplug driver                  detection_driver
-    	--------------                  ----------------
-    	pci_create_slot(rename=1)
-    					pci_create_slot(rename=0)
-    
-    The hotplug driver creates the slot with its desired name, and then
-    releases the semaphore. Now, the detection driver tries to create
-    the same slot, but it already exists. We don't care about renaming,
-    so return the existing slot.
-    
-    	Scenario B:
-    	hotplug driver                  detection_driver
-    	--------------                  ----------------
-    					pci_create_slot(rename=0)
-    	pci_create_slot(rename=1)
-    
-    The detection driver creates the slot with name "X". Then the hotplug
-    driver tries to create the same slot, but wants the name "Y" instead.
-    We detect that we're trying to create the same slot and that we also
-    want a rename, so rename the slot to "Y" and return.
-    
-    Cc: jbarnes@virtuousgeek.org
-    Cc: kristen.c.accardi@intel.com
-    Cc: matthew@wil.cx
-    Cc: kaneshige.kenji@jp.fujitsu.com
-    Signed-off-by: Alex Chiang <achiang@hp.com>
+> Did you set CONFIG_RT_GROUP_SCHED=y?
 
-diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-index 191b58e..b4e3a43 100644
---- a/drivers/pci/hotplug/pci_hotplug_core.c
-+++ b/drivers/pci/hotplug/pci_hotplug_core.c
-@@ -570,10 +570,6 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
- 		return -EINVAL;
- 	}
- 
--	/* Check if we have already registered a slot with the same name. */
--	if (get_slot_from_name(name))
--		return -EEXIST;
--
- 	/*
- 	 * No problems if we call this interface from both ACPI_PCI_SLOT
- 	 * driver and call it here again. If we've already created the
-@@ -583,25 +579,7 @@ int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
- 	if (IS_ERR(pci_slot))
- 		return PTR_ERR(pci_slot);
- 
--	if (pci_slot->hotplug) {
--		dbg("%s: already claimed\n", __func__);
--		pci_destroy_slot(pci_slot);
--		return -EBUSY;
--	}
--
- 	slot->pci_slot = pci_slot;
--	pci_slot->hotplug = slot;
--
--	/*
--	 * Allow pcihp drivers to override the ACPI_PCI_SLOT name.
--	 */
--	if (strcmp(kobject_name(&pci_slot->kobj), name)) {
--		result = kobject_rename(&pci_slot->kobj, name);
--		if (result) {
--			pci_destroy_slot(pci_slot);
--			return result;
--		}
--	}
- 
- 	spin_lock(&pci_hotplug_slot_list_lock);
- 	list_add(&slot->slot_list, &pci_hotplug_slot_list);
-diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
-index 3ace5e0..af89d7b 100644
---- a/drivers/pci/hotplug/pciehp_core.c
-+++ b/drivers/pci/hotplug/pciehp_core.c
-@@ -196,7 +196,6 @@ static int init_slots(struct controller *ctrl)
- 	struct slot *slot;
- 	struct hotplug_slot *hotplug_slot;
- 	struct hotplug_slot_info *info;
--	int len, dup = 1;
- 	int retval = -ENOMEM;
- 
- 	list_for_each_entry(slot, &ctrl->slot_list, slot_list) {
-@@ -223,25 +222,11 @@ static int init_slots(struct controller *ctrl)
- 		ctrl_dbg(ctrl, "Registering bus=%x dev=%x hp_slot=%x sun=%x "
- 			 "slot_device_offset=%x\n", slot->bus, slot->device,
- 			 slot->hp_slot, slot->number, ctrl->slot_device_offset);
--duplicate_name:
- 		retval = pci_hp_register(hotplug_slot,
- 					 ctrl->pci_dev->subordinate,
- 					 slot->device,
- 					 slot->name);
- 		if (retval) {
--			/*
--			 * If slot N already exists, we'll try to create
--			 * slot N-1, N-2 ... N-M, until we overflow.
--			 */
--			if (retval == -EEXIST) {
--				len = snprintf(slot->name, SLOT_NAME_SIZE,
--					       "%d-%d", slot->number, dup++);
--				if (len < SLOT_NAME_SIZE)
--					goto duplicate_name;
--				else
--					ctrl_err(ctrl, "duplicate slot name "
--						 "overflow\n");
--			}
- 			ctrl_err(ctrl, "pci_hp_register failed with error %d\n",
- 				 retval);
- 			goto error_info;
-diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
-index bf50966..cfdd079 100644
---- a/drivers/pci/hotplug/shpchp_core.c
-+++ b/drivers/pci/hotplug/shpchp_core.c
-@@ -102,7 +102,7 @@ static int init_slots(struct controller *ctrl)
- 	struct hotplug_slot *hotplug_slot;
- 	struct hotplug_slot_info *info;
- 	int retval = -ENOMEM;
--	int i, len, dup = 1;
-+	int i;
- 
- 	for (i = 0; i < ctrl->num_slots; i++) {
- 		slot = kzalloc(sizeof(*slot), GFP_KERNEL);
-@@ -144,23 +144,10 @@ static int init_slots(struct controller *ctrl)
- 		dbg("Registering bus=%x dev=%x hp_slot=%x sun=%x "
- 		    "slot_device_offset=%x\n", slot->bus, slot->device,
- 		    slot->hp_slot, slot->number, ctrl->slot_device_offset);
--duplicate_name:
- 		retval = pci_hp_register(slot->hotplug_slot,
- 				ctrl->pci_dev->subordinate, slot->device,
- 				hotplug_slot->name);
- 		if (retval) {
--			/*
--			 * If slot N already exists, we'll try to create
--			 * slot N-1, N-2 ... N-M, until we overflow.
--			 */
--			if (retval == -EEXIST) {
--				len = snprintf(slot->name, SLOT_NAME_SIZE,
--					       "%d-%d", slot->number, dup++);
--				if (len < SLOT_NAME_SIZE)
--					goto duplicate_name;
--				else
--					err("duplicate slot name overflow\n");
--			}
- 			err("pci_hp_register failed with error %d\n", retval);
- 			goto error_info;
- 		}
-diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
-index 0e009c3..0b0a79f 100644
---- a/drivers/pci/slot.c
-+++ b/drivers/pci/slot.c
-@@ -78,6 +78,77 @@ static struct kobj_type pci_slot_ktype = {
- 	.default_attrs = pci_slot_default_attrs,
- };
- 
-+static char *make_slot_name(const char *name)
-+{
-+	char *new_name;
-+	int len, max, dup;
-+
-+	new_name = kstrdup(name, GFP_KERNEL);
-+	if (!new_name)
-+		return NULL;
-+
-+	/*
-+	 * Make sure we hit the realloc case the first time through the
-+	 * loop.  'len' will be strlen(name) + 3 at that point which is
-+	 * enough space for "name-X" and the trailing NUL.
-+	 */
-+	len = strlen(name) + 2;
-+	max = 1;
-+	dup = 1;
-+
-+	for (;;) {
-+		struct kobject *dup_slot;
-+		dup_slot = kset_find_obj(pci_slots_kset, new_name);
-+		if (!dup_slot)
-+			break;
-+		kobject_put(dup_slot);
-+		if (dup == max) {
-+			len++;
-+			max *= 10;
-+			kfree(new_name);
-+			new_name = kmalloc(len, GFP_KERNEL);
-+			if (!new_name)
-+				break;
-+		}
-+		sprintf(new_name, "%s-%d", name, dup++);
-+	}
-+
-+	return new_name;
-+}
-+
-+static int rename_slot(struct pci_slot *slot, const char *name)
-+{
-+	int result;
-+	char *slot_name;
-+
-+	if (strcmp(kobject_name(&slot->kobj), name) == 0)
-+		return;
-+
-+	slot_name = make_slot_name(name);
-+	if (!slot_name)
-+		return -ENOMEM;
-+
-+	result = kobject_rename(&slot->kobj, slot_name);
-+	kfree(slot_name);
-+
-+	return result;
-+}
-+
-+static struct pci_slot *get_slot(struct pci_bus *parent, int slot_nr)
-+{
-+	struct pci_slot *slot;
-+	/*
-+	 * We already hold pci_bus_sem so don't worry
-+	 */
-+	list_for_each_entry(slot, &parent->slots, list)
-+		if (slot->number == slot_nr) {
-+			kobject_get(&slot->kobj);
-+			return slot;
-+		}
-+
-+	return NULL;
-+}
-+
- /**
-  * pci_create_slot - create or increment refcount for physical PCI slot
-  * @parent: struct pci_bus of parent bridge
-@@ -90,7 +161,17 @@ static struct kobj_type pci_slot_ktype = {
-  * either return a new &struct pci_slot to the caller, or if the pci_slot
-  * already exists, its refcount will be incremented.
-  *
-- * Slots are uniquely identified by a @pci_bus, @slot_nr, @name tuple.
-+ * Slots are uniquely identified by a @pci_bus, @slot_nr tuple.
-+ *
-+ * There are known platforms with broken firmware that assign the same
-+ * name to multiple slots. Workaround these broken platforms by renaming
-+ * the slots on behalf of the caller. If firmware assigns name N to
-+ * multiple slots:
-+ *
-+ * The first slot is assigned N
-+ * The second slot is assigned N-1
-+ * The third slot is assigned N-2
-+ * etc.
-  *
-  * Placeholder slots:
-  * In most cases, @pci_bus, @slot_nr will be sufficient to uniquely identify
-@@ -99,43 +180,43 @@ static struct kobj_type pci_slot_ktype = {
-  * the slot. In this scenario, the caller may pass -1 for @slot_nr.
-  *
-  * The following semantics are imposed when the caller passes @slot_nr ==
-- * -1. First, the check for existing %struct pci_slot is skipped, as the
-- * caller may know about several unpopulated slots on a given %struct
-- * pci_bus, and each slot would have a @slot_nr of -1.  Uniqueness for
-- * these slots is then determined by the @name parameter. We expect
-- * kobject_init_and_add() to warn us if the caller attempts to create
-- * multiple slots with the same name. The other change in semantics is
-+ * -1. First, we no longer check for an existing %struct pci_slot, as there
-+ * may be many slots with @slot_nr of -1.  The other change in semantics is
-  * user-visible, which is the 'address' parameter presented in sysfs will
-  * consist solely of a dddd:bb tuple, where dddd is the PCI domain of the
-  * %struct pci_bus and bb is the bus number. In other words, the devfn of
-  * the 'placeholder' slot will not be displayed.
-  */
--
- struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
- 				 const char *name,
- 				 struct hotplug_slot *hotplug)
- {
- 	struct pci_dev *dev;
- 	struct pci_slot *slot;
--	int err;
-+	int err = 0;
-+	char *slot_name = NULL;
- 
- 	down_write(&pci_bus_sem);
- 
- 	if (slot_nr == -1)
- 		goto placeholder;
- 
--	/* If we've already created this slot, bump refcount and return. */
--	list_for_each_entry(slot, &parent->slots, list) {
--		if (slot->number == slot_nr) {
--			kobject_get(&slot->kobj);
--			pr_debug("%s: inc refcount to %d on %04x:%02x:%02x\n",
--				 __func__,
--				 atomic_read(&slot->kobj.kref.refcount),
--				 pci_domain_nr(parent), parent->number,
--				 slot_nr);
-+	/*
-+	 * Get existing slot and add hotplug callback if necessary.
-+	 */
-+	slot = get_slot(parent, slot_nr);
-+	if (slot && hotplug) {
-+		if ((err = slot->hotplug ? -EBUSY : 0)
-+		     || (err = rename_slot(slot,name))) {
-+			kobject_put(&slot->kobj);
-+			slot = NULL;
-+			goto err;
-+		} else {
-+			slot->hotplug = hotplug;
- 			goto out;
- 		}
--	}
-+	} else if (slot)
-+		goto out;
- 
- placeholder:
- 	slot = kzalloc(sizeof(*slot), GFP_KERNEL);
-@@ -148,10 +229,17 @@ placeholder:
- 	slot->number = slot_nr;
- 
- 	slot->kobj.kset = pci_slots_kset;
-+
-+	slot_name = make_slot_name(name);
-+	if (!slot_name) {
-+		err = -ENOMEM;
-+		goto err;
-+	}
-+
- 	err = kobject_init_and_add(&slot->kobj, &pci_slot_ktype, NULL,
--				   "%s", name);
-+				   "%s", slot_name);
- 	if (err) {
--		printk(KERN_ERR "Unable to register kobject %s\n", name);
-+		printk(KERN_ERR "Unable to register kobject %s\n", slot_name);
- 		goto err;
- 	}
- 
-@@ -166,10 +254,10 @@ placeholder:
- 	pr_debug("%s: created pci_slot on %04x:%02x:%02x\n",
- 		 __func__, pci_domain_nr(parent), parent->number, slot_nr);
- 
-- out:
-+out:
- 	up_write(&pci_bus_sem);
- 	return slot;
-- err:
-+err:
- 	kfree(slot);
- 	slot = ERR_PTR(err);
- 	goto out;
-@@ -210,7 +298,6 @@ EXPORT_SYMBOL_GPL(pci_renumber_slot);
-  * just call kobject_put on its kobj and let our release methods do the
-  * rest.
-  */
--
- void pci_destroy_slot(struct pci_slot *slot)
- {
- 	pr_debug("%s: dec refcount to %d on %04x:%02x:%02x\n", __func__,
+No, I did not.
+
+							Thanx, Paul
+
+> > > > On the off-chance that this is new news...
+> > > 
+> > > Hmm, yes. I thought I had all those fixed :-(
+> > 
+> > I know that feeling!!!  ;-)
+> > 
+> > > > 	[ 5538.091011] kernel BUG at kernel/sched_rt.c:322!
+> > > > 	[ 5538.091011] invalid opcode: 0000 [#1] SMP 
+> > > > 	[ 5538.091011] Modules linked in:
+> > > > 	[ 5538.091011] 
+> > > > 	[ 5538.091011] Pid: 2819, comm: sh Not tainted (2.6.27-rc9-autokern1 #1)
+> > > > 	[ 5538.091011] EIP: 0060:[<c011c287>] EFLAGS: 00010002 CPU: 7
+> > > > 	[ 5538.091011] EIP is at __disable_runtime+0x1c7/0x1d0
+> > > > 	[ 5538.091011] EAX: c9056eec EBX: 00000001 ECX: 00000008 EDX: 00006060
+> > > > 	[ 5538.091011] ESI: 02faf080 EDI: 00000000 EBP: f6df7cd0 ESP: f6df7ca8
+> > > > 	[ 5538.091011]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > > > 	[ 5538.091011] Process sh (pid: 2819, ti=f6df6000 task=f6cbdc00 task.ti=f6df6000)
+> > > > 	[ 5538.091011] Stack: f68c8004 c9056eec f68c8000 c9056b98 00000008 5d353631 c04d0020 c9056b00 
+> > > > 	[ 5538.091011]        c9056b00 c9056b00 f6df7cdc c011d151 c037dfc0 f6df7cec c011aedb f68c8000 
+> > > > 	[ 5538.091011]        c04d2200 f6df7d04 c011f967 00000282 00000000 00000000 00000000 f6df7e48 
+> > > > 	[ 5538.091011] Call Trace:
+> > > > 	[ 5538.091011]  [<c011d151>] ? rq_offline_rt+0x21/0x60
+> > > > 	[ 5538.091011]  [<c011aedb>] ? set_rq_offline+0x2b/0x50
+> > > > 	[ 5538.091011]  [<c011f967>] ? rq_attach_root+0xa7/0xb0
+> > > > 	[ 5538.091011]  [<c0120bbf>] ? cpu_attach_domain+0x30f/0x490
+> > > 
+> > > At the very least we're doing part of the offline process twice it
+> > > seems, once through set_rq_offline()/set_rq_online() and once through
+> > > disable_runtime()/enabled_runtime().
+> > > 
+> > > But seeing as we set an offlined cpu's runtime to RUNTIME_INF and skip
+> > > cpus with RUNTIME_INF runtime that should be harmless.
+> > 
+> > Would double-processing a non-offlined CPU cause trouble, perhaps
+> > setting the runtime to a nonsensical value?
+> > 
+> > > Modifications to rt_rq->rt_runtime are all done while holding
+> > > rt_b->rt_runtime_lock and rt_rq->rt_runtime_lock (do_balance_runtime()
+> > > and __disable_runtime() and __enable_runtime()). Which means its enough
+> > > to hold either of those locks in order to get a stable reading of the
+> > > value.
+> These locks, especially ﻿rt_b->rt_runtime_lock, prevent the simultaneous
+> changing of ﻿rt_runtime. It looks codes are ok.
+> 
+> Anything related to RCU?
+> 
+> > > 
+> > > Which leaves me puzzled for the moment...
+> > 
+> > I know that feeling as well...
+> > 
+> > > tip/master has the following commit to clarify the code somewhat:
+> > > 
+> > > 
+> > > commit 78333cdd0e472180743d35988e576d6ecc6f6ddb
+> > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > Date:   Tue Sep 23 15:33:43 2008 +0200
+> > > 
+> > >     sched: add some comments to the bandwidth code
+> > >     
+> > >     Hopefully clarify some of this code a little.
+> > >     
+> > >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > > diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> > > index 2e228bd..d570a8c 100644
+> > > --- a/kernel/sched_rt.c
+> > > +++ b/kernel/sched_rt.c
+> > > @@ -231,6 +231,9 @@ static inline struct rt_bandwidth *sched_rt_bandwidth(struct rt_rq *rt_rq)
+> > >  #endif /* CONFIG_RT_GROUP_SCHED */
+> > > 
+> > >  #ifdef CONFIG_SMP
+> > > +/*
+> > > + * We ran out of runtime, see if we can borrow some from our neighbours.
+> > > + */
+> > 
+> > Suppose that all CPUs nearby have run out of runtime.  Or is that
+> > possible?
+> > 
+> > 							Thanx, Paul
+> > 
+> > >  static int do_balance_runtime(struct rt_rq *rt_rq)
+> > >  {
+> > >  	struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
+> > > @@ -250,9 +253,18 @@ static int do_balance_runtime(struct rt_rq *rt_rq)
+> > >  			continue;
+> > > 
+> > >  		spin_lock(&iter->rt_runtime_lock);
+> > > +		/*
+> > > +		 * Either all rqs have inf runtime and there's nothing to steal
+> > > +		 * or __disable_runtime() below sets a specific rq to inf to
+> > > +		 * indicate its been disabled and disalow stealing.
+> > > +		 */
+> > >  		if (iter->rt_runtime == RUNTIME_INF)
+> > >  			goto next;
+> > > 
+> > > +		/*
+> > > +		 * From runqueues with spare time, take 1/n part of their
+> > > +		 * spare time, but no more than our period.
+> > > +		 */
+> > >  		diff = iter->rt_runtime - iter->rt_time;
+> > >  		if (diff > 0) {
+> > >  			diff = div_u64((u64)diff, weight);
+> > > @@ -274,6 +286,9 @@ next:
+> > >  	return more;
+> > >  }
+> > > 
+> > > +/*
+> > > + * Ensure this RQ takes back all the runtime it lend to its neighbours.
+> > > + */
+> > >  static void __disable_runtime(struct rq *rq)
+> > >  {
+> > >  	struct root_domain *rd = rq->rd;
+> > > @@ -289,17 +304,33 @@ static void __disable_runtime(struct rq *rq)
+> > > 
+> > >  		spin_lock(&rt_b->rt_runtime_lock);
+> > >  		spin_lock(&rt_rq->rt_runtime_lock);
+> > > +		/*
+> > > +		 * Either we're all inf and nobody needs to borrow, or we're
+> > > +		 * already disabled and thus have nothing to do, or we have
+> > > +		 * exactly the right amount of runtime to take out.
+> > > +		 */
+> > >  		if (rt_rq->rt_runtime == RUNTIME_INF ||
+> > >  				rt_rq->rt_runtime == rt_b->rt_runtime)
+> > >  			goto balanced;
+> > >  		spin_unlock(&rt_rq->rt_runtime_lock);
+> > > 
+> > > +		/*
+> > > +		 * Calculate the difference between what we started out with
+> > > +		 * and what we current have, that's the amount of runtime
+> > > +		 * we lend and now have to reclaim.
+> > > +		 */
+> > >  		want = rt_b->rt_runtime - rt_rq->rt_runtime;
+> > > 
+> > > +		/*
+> > > +		 * Greedy reclaim, take back as much as we can.
+> > > +		 */
+> > >  		for_each_cpu_mask(i, rd->span) {
+> > >  			struct rt_rq *iter = sched_rt_period_rt_rq(rt_b, i);
+> > >  			s64 diff;
+> > > 
+> > > +			/*
+> > > +			 * Can't reclaim from ourselves or disabled runqueues.
+> > > +			 */
+> > >  			if (iter == rt_rq || iter->rt_runtime == RUNTIME_INF)
+> > >  				continue;
+> > > 
+> > > @@ -319,8 +350,16 @@ static void __disable_runtime(struct rq *rq)
+> > >  		}
+> > > 
+> > >  		spin_lock(&rt_rq->rt_runtime_lock);
+> > > +		/*
+> > > +		 * We cannot be left wanting - that would mean some runtime
+> > > +		 * leaked out of the system.
+> > > +		 */
+> > >  		BUG_ON(want);
+> > >  balanced:
+> > > +		/*
+> > > +		 * Disable all the borrow logic by pretending we have inf
+> > > +		 * runtime - in which case borrowing doesn't make sense.
+> > > +		 */
+> > >  		rt_rq->rt_runtime = RUNTIME_INF;
+> > >  		spin_unlock(&rt_rq->rt_runtime_lock);
+> > >  		spin_unlock(&rt_b->rt_runtime_lock);
+> > > @@ -343,6 +382,9 @@ static void __enable_runtime(struct rq *rq)
+> > >  	if (unlikely(!scheduler_running))
+> > >  		return;
+> > > 
+> > > +	/*
+> > > +	 * Reset each runqueue's bandwidth settings
+> > > +	 */
+> > >  	for_each_leaf_rt_rq(rt_rq, rq) {
+> > >  		struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
+> 
+> 
+
+--X1bOJ3K7DJ5YkBrT
+Content-Type: application/x-sh
+Content-Description: onofftorture128.sh
+Content-Disposition: attachment; filename="onofftorture128.sh"
+Content-Transfer-Encoding: quoted-printable
+
+#!/bin/bash=0A=0Awhile :=0Ado=0A	for ((i =3D 0; i < 128; i++))=0A	do=0A		ca=
+t debug/rcu/rcugp=0A		echo "offlining $i" `date`=0A		echo 0 > /sys/devices/=
+system/cpu/cpu$i/online=0A		echo "done offlining $i" `date`=0A		cat debug/r=
+cu/rcugp=0A		sleep 3=0A		cat debug/rcu/rcugp=0A		echo "onlining $i" `date`=
+=0A		if echo 1 > /sys/devices/system/cpu/cpu$i/online=0A		then=0A			echo "d=
+one onlining $i" `date`=0A		else=0A			sleep 3=0A			echo "retrying onlining =
+$i" `date`=0A			if echo 1 > /sys/devices/system/cpu/cpu$i/online=0A			then=
+=0A				echo "done onlining $i after retry" `date`=0A			else=0A				echo "fai=
+led to online $i, giving up" `date`=0A			fi=0A		fi=0A		cat debug/rcu/rcugp=
+=0A		sleep 3=0A	done=0Adone=0A
+--X1bOJ3K7DJ5YkBrT--
