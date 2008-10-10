@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761884AbYJJQza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762293AbYJJQ5C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761884AbYJJQza (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759130AbYJJQzR
+	id S1762293AbYJJQ5C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:57:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbYJJQ4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:55:17 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46132 "EHLO
+	Fri, 10 Oct 2008 12:56:49 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38437 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756053AbYJJQzQ (ORCPT
+	with ESMTP id S1759171AbYJJQ4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:55:16 -0400
-Date: Fri, 10 Oct 2008 12:55:14 -0400 (EDT)
+	Fri, 10 Oct 2008 12:56:48 -0400
+Date: Fri, 10 Oct 2008 12:56:47 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/6] tracepoint: Check if the probe has been registered
-In-Reply-To: <alpine.DEB.1.10.0810101252320.21101@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0810101254360.21101@gandalf.stny.rr.com>
-References: <20081010111631.78545D1BDA2@perso1.free.fr> <20081010140023.GA13137@elte.hu> <alpine.DEB.1.10.0810101252320.21101@gandalf.stny.rr.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, Anders Kaseorg <andersk@MIT.EDU>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: Make ftrace_test_p6nop disassembler-friendly
+In-Reply-To: <48EF7EE7.6040409@zytor.com>
+Message-ID: <alpine.DEB.1.10.0810101256000.21101@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0810092209460.21569@vinegar-pot.mit.edu> <20081010085429.GB319@elte.hu> <alpine.DEB.1.10.0810100927110.26408@gandalf.stny.rr.com> <48EF7EE7.6040409@zytor.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,20 +28,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 10 Oct 2008, Steven Rostedt wrote:
-> > 
-> > Mathieu, Steve, any objections/observations?
+On Fri, 10 Oct 2008, H. Peter Anvin wrote:
 > 
-> Hmm, my email was on the fritz for this one. I'll have to search for it on 
-> a mailing list web site to see the patch.
+> The (semi-)amusing thing is that it should never, ever, get there.
+> 66 66 66 66 90 is used over this, which should always work.
 
-
-OK, found it at 
-http://groups.google.com/group/linux.kernel/browse_thread/thread/9519141803211fee/70a273bb6a1ea602?lnk=raot
-
-Looks good for me too.
-
-Acked-by: Steven Rostedt <srostedt@redhat.com>
+Yeah, that was me being overly paranoid ;-) Which is not always a bad 
+thing.
 
 -- Steve
 
