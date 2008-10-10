@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYJJM4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbYJJM5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbYJJM4K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 08:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYJJMz4
+	id S1759528AbYJJM5j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 08:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbYJJM53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 08:55:56 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:20406 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755543AbYJJMzz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 08:55:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TG9fZkECda7idYbwXyyQSiaH6jdjR+Kl2zDjNFbUB/qPTAPCQhSHqwmPZ0WvBtF80i
-         JVfnSDTRGfqVQIg/06I+5Ek87FyuaPoixOuFybM+CVusmWRgKHLfleUF4vzaClyqn3i3
-         hFaZ71QCyDtI6N2c1+PSBIsRvFq5a5DL9Uj6s=
-Date: Fri, 10 Oct 2008 08:54:34 -0400
-From: Josh Boyer <jwboyer@gmail.com>
-To: Alan Cox <alan@redhat.com>
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH 22/27] serial: Make uart_port's ioport "unsigned long".
-Message-ID: <20081010125434.GB8590@yoda.jdub.homelinux.org>
-References: <20081010103447.31597.42992.stgit@localhost.localdomain> <20081010105052.31597.41476.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010105052.31597.41476.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 10 Oct 2008 08:57:29 -0400
+Received: from sh.osrg.net ([192.16.179.4]:47976 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755506AbYJJM52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 08:57:28 -0400
+Date: Fri, 10 Oct 2008 21:49:12 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
+       knikanth@suse.de, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] BUG: nr_phys_segments cannot be less than
+ nr_hw_segments
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081010123719.GE19428@kernel.dk>
+References: <20081010120344.GC19428@kernel.dk>
+	<20081010213226J.fujita.tomonori@lab.ntt.co.jp>
+	<20081010123719.GE19428@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081010214852Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 11:50:56AM +0100, Alan Cox wrote:
->From: David Miller <davem@davemloft.net>
->
->Otherwise the top 32-bits of the resource value get chopped
->off on 64-bit systems, and the resulting I/O accesses go to
->random places.
->
->Thanks to testing and debugging by Josip Rodin, which helped
->track this down.
->
->Signed-off-by: David S. Miller <davem@davemloft.net>
->Signed-off-by: Alan Cox <alan@redhat.com>
+On Fri, 10 Oct 2008 14:37:19 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-I emailed on an earlier posting of this about using resource_size_t
-instead as we have 32-bit CPUs with 64-bit address spaces.  If I'm
-totally wrong, that's fine but I'm still wondering if that would be
-a better general solution.
+> On Fri, Oct 10 2008, FUJITA Tomonori wrote:
+> > On Fri, 10 Oct 2008 14:03:44 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Tue, Oct 07 2008, FUJITA Tomonori wrote:
+> > > > On Thu, 2 Oct 2008 19:13:57 +0200
+> > > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > 
+> > > > > On Thu, Oct 02 2008, James Bottomley wrote:
+> > > > > > On Thu, 2008-10-02 at 18:58 +0200, Jens Axboe wrote:
+> > > > > > > On Thu, Oct 02 2008, James Bottomley wrote:
+> > > > > > > > The bug would appear to be that we sometimes only look at q->max_sectors
+> > > > > > > > when deciding on mergability.  Either we have to insist on max_sectors
+> > > > > > > > <= hw_max_sectors, or we have to start using min(q->max_sectors,
+> > > > > > > > q->max_hw_sectors) for this.
+> > > > > > > 
+> > > > > > > q->max_sectors MUST always be <= q->max_hw_sectors, otherwise we could
+> > > > > > > be sending down requests that are too large for the device to handle. So
+> > > > > > > that condition would be a big bug. The sysfs interface checks for this,
+> > > > > > > and blk_queue_max_sectors() makes sure that is true as well.
+> > > > > > 
+> > > > > > Yes, that seems always to be enforced.  Perhaps there are other ways of
+> > > > > > tripping this problem ... I'm still sure if it occurs it's because we do
+> > > > > > a physical merge where a virtual merge is forbidden.
+> > > > > > 
+> > > > > > > The fixes proposed still look weird. There is no phys vs hw segment
+> > > > > > > constraints, the request must adhere to the limits set by both. It's
+> > > > > > > mostly a moot point anyway, as 2.6.28 will get rid of the hw accounting
+> > > > > > > anyway.
+> > > > > > 
+> > > > > > Agree all three proposed fixes look wrong.  However, if it's what I
+> > > > > > think, just getting rid of hw accounting won't fix the problem because
+> > > > > > we'll still have the case where a physical merge is forbidden by iommu
+> > > > > > constraints ... this still needs to be accounted for.
+> > > > > > 
+> > > > > > What we really need is a demonstration of what actually is going
+> > > > > > wrong ...
+> > > > > 
+> > > > > Yep, IIRC we both asked for that the last time as well... Nikanth?
+> > > > 
+> > > > Possibly, blk_phys_contig_segment might miscalculate
+> > > > q->max_segment_size?
+> > > > 
+> > > > blk_phys_contig_segment does:
+> > > > 
+> > > > req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size;
+> > > > 
+> > > > But it's possible that req->biotail and the previous bio are supposed
+> > > > be merged into one segment? Then we could create too large segment
+> > > > here.
+> > > 
+> > > Hmm yes, that looks like it could indeed be a problem!
+> > 
+> > I think so.
+> > 
+> > 
+> > > We could fix this
+> > > with similar logic to what we used to do for the hw merging, keep track
+> > > of the current segment size that this bio belongs to, so it would end up
+> > > ala
+> > 
+> > Yeah, exactly.
+> > 
+> > You want a fix for this 2.6.28? Or disable this feature for 2.6.28?
+> 
+> Lets fix it. It wont be part of the initial merge, since it'll need some
+> dedicated testing, but we can get it there for 2.6.28. Shall I interpret
+> your message as willingness to write up the fix? :)
 
-josh
+Yeah, it's on this weekend todo list. :) I want to look at the code
+again and make sure I correctly understand the problem.
