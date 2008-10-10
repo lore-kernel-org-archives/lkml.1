@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761753AbYJJPDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbYJJPDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761753AbYJJPDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 11:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761356AbYJJPAZ
+	id S1761759AbYJJPDy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 11:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbYJJPBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 11:00:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:22391 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756514AbYJJPAX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 11:00:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=C8fWyNoQjkeDPjXUuXCU8sf2VTSjIQBZVW6c5yeCuX4paTQ+USxS6L8hQsSXMjwSxw
-         e9f50SFPqOmOYHCsX2w8glpGRkqc1gj003IszSjyXm4r4o/AUnFJL9pcKhXup0W/QcE7
-         4OspoZtyB61ciWhlnFAWzox5OHM+7aXVAfRQk=
-Date: Fri, 10 Oct 2008 19:00:17 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipad <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] x86: apic - unify APIC_DIVISOR
-Message-ID: <20081010150017.GD7328@localhost>
+	Fri, 10 Oct 2008 11:01:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53721 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761420AbYJJPBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 11:01:04 -0400
+Date: Fri, 10 Oct 2008 16:59:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+Cc: Greg Kurz <gkurz@fr.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/2] Track in-kernel when we expect
+	checkpoint/restart to work
+Message-ID: <20081010145934.GF11695@elte.hu>
+References: <20081009190405.13A253CB@kernel> <1223626834.8787.8.camel@localhost.localdomain> <48EF144D.1050906@fr.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <48EF144D.1050906@fr.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use APIC_DIVISOR being set to 16 for both 32/64bit
-mode. To escape APIC timer underflow during calibration
-set it to the maximum possible value.
 
-Also typo error (CONFG instead of proper CONFIG) fixed.
-The error was catched by Venkatesh Pallipadi, thanks a lot Venkatesh!
-See details on http://lkml.org/lkml/2008/10/9/425
+* Daniel Lezcano <dlezcano@fr.ibm.com> wrote:
 
-Reported-by: Venkatesh Pallipad <venkatesh.pallipadi@intel.com>
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+>> By the way, why don't you introduce the reverse operation ?
+>
+> I think implementing the reverse operation will be a nightmare, IMHO 
+> it is safe to say we deny checkpointing for the process life-cycle 
+> either if the created resource was destroyed before we initiate the 
+> checkpoint.
 
-Index: linux-2.6.git/arch/x86/kernel/apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic.c	2008-09-26 20:43:47.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/apic.c	2008-10-10 16:37:26.000000000 +0400
-@@ -332,11 +332,7 @@ int lapic_get_maxlvt(void)
-  */
- 
- /* Clock divisor */
--#ifdef CONFG_X86_64
--#define APIC_DIVISOR 1
--#else
- #define APIC_DIVISOR 16
--#endif
- 
- /*
-  * This function sets up the local APIC timer, with a timeout of
-@@ -592,10 +588,10 @@ static int __init calibrate_APIC_clock(v
- 	global_clock_event->event_handler = lapic_cal_handler;
- 
- 	/*
--	 * Setup the APIC counter to 1e9. There is no way the lapic
-+	 * Setup the APIC counter to maximum. There is no way the lapic
- 	 * can underflow in the 100ms detection time frame
- 	 */
--	__setup_APIC_LVTT(1000000000, 0, 0);
-+	__setup_APIC_LVTT(0xffffffff, 0, 0);
- 
- 	/* Let the interrupts run */
- 	local_irq_enable();
+it's also a not too interesting case. The end goal is to just be able to 
+checkpoint everything that matters - in the long run there simply wont 
+be many places that are marked 'cannot checkpoint'.
+
+So the ability to deny a checkpoint is a transitional feature - a 
+flexible CR todo list in essence - but also needed for 
+applications/users that want to rely on CR being a dependable facility.
+
+It would be bad for most of the practical usecases of checkpointing to 
+allow the checkpointing of an app, just to see it break on restore due 
+to lost context.
+
+	Ingo
