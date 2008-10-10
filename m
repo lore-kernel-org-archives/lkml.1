@@ -1,99 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYJJIMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYJJIVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872AbYJJIMs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 04:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYJJIMc
+	id S1753946AbYJJIVF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 04:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYJJIUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 04:12:32 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57245 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbYJJIMb (ORCPT
+	Fri, 10 Oct 2008 04:20:50 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:63777 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbYJJIUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 04:12:31 -0400
-Message-ID: <48EF0E21.5000500@jp.fujitsu.com>
-Date: Fri, 10 Oct 2008 17:11:13 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
-Subject: Re: [PATCH v5 04/16] PCI: prevent duplicate slot names
-References: <20081009043140.8678.44164.stgit@bob.kio> <20081009044649.8678.30990.stgit@bob.kio> <48ED9716.3040301@jp.fujitsu.com> <20081009055654.GA30972@ldl.fc.hp.com> <48EDF9F5.9020802@jp.fujitsu.com> <20081010021034.GA13292@ldl.fc.hp.com> <48EEDD7E.5090002@jp.fujitsu.com> <20081010052757.GA26341@ldl.fc.hp.com>
-In-Reply-To: <20081010052757.GA26341@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 10 Oct 2008 04:20:48 -0400
+Subject: Re: [RFC][PATCH 1/2] Track in-kernel when we expect
+	checkpoint/restart to work
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       arnd@arndb.de
+In-Reply-To: <20081009190405.13A253CB@kernel>
+References: <20081009190405.13A253CB@kernel>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 10:20:34 +0200
+Message-Id: <1223626834.8787.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> I'm sorry, but I forgot to tell you one important thing. Now we
->> are trying to change pci slot management API to setup
->> pci_slot->hotplug.  We must consider how to implement the
->> counterpart to clean up pci_slot->hotplug at the same time. My
->> current idea is adding hotplug arg to pci_destroy_slot(), but
->> it seems a little ugly...
+On Thu, 2008-10-09 at 12:04 -0700, Dave Hansen wrote:
+> Suggested by Ingo.
 > 
-> Ugh, I'm not sure which is worse, an unbalanced API vs passing a
-> hotplug_slot to pci_destroy_slot.
+> Checkpoint/restart is going to be a long effort to get things working.
+> We're going to have a lot of things that we know just don't work for
+> a long time.  That doesn't mean that it will be useless, it just means
+> that there's some complicated features that we are going to have to
+> work incrementally to fix.
 > 
-> pci_destroy_slot should never touch the pci_slot->hotplug
-> argument, I think, because it is possible for non-hotplug callers
-> to call pci_create_slot.
+> This patch introduces a new mechanism to help the checkpoint/restart
+> developers.  A new function pair: task/process_deny_checkpoint() is
+> created.  When called, these tell the kernel that we *know* that the
+> process has performed some activity that will keep it from being
+> properly checkpointed.
 > 
-> I think the rule should just be:
+> The 'flag' is an atomic_t for now so that we can have some level
+> of atomicity and make sure to only warn once.
 > 
-> 	- all hotplug drivers must use pci_hp_register/deregister
-> 	- hotplug drivers must pass a valid hotplug_slot argument
-> 
-> 	- all detection drivers must use pci_create/destroy_slot
-> 	- detection drivers must pass NULL for hotplug_slot
->
-
-I'm still concerned about one thing. Now that we added hotplug
-arg to pci_create_slot(), pci_bus_sem could be used for changing
-pci_slot->hotplug. But if there is no generic API to clean up
-pci_slot->hotplug, we can't use pci_bus_sem because pci hotplug
-core cannot hold pci_bus_sem. As a result, we need to add the
-following rule in addition to the above rules.
-
-	- hotplug core driver must hold some mutex/semaphore when
-	  calling pci_create_slot()
-	- hotplug core driver must hold the same mutex/semaphore
-	  when cleaning up pci_slot->hotplug.
-
-That is, even though pci_create_slot provides the interface to
-setup pci_slot->hotplug, caller needs to pay attention to race
-condition about pci_slot->hotplug. I think it's a little strange.
-
-But I might be overcareful...
-
-Thanks,
-Kenji Kaneshige
-
-
- 
-> If you prefer, we could wrap pci_create_slot for detection
-> drivers:
-> 
-> struct pci_slot *pci_slot_register(struct pci_bus *parent, int slot_nr,
-> 				   const char *name)
-> 
-> {
-> 	return pci_create_slot(parent, slot_nr, name, NULL);
-> }
-> EXPORT_SYMBOL_GPL(pci_slot_register);
-> 
-> And then do not export pci_create_slot().
-> 
-> Hm?
-> 
-> /ac
-> 
-> 
+> For now, this is a one-way trip.  Once a process is no longer
+> 'may_checkpoint' capable, neither it nor its children ever will be.
+> This can, of course, be fixed up in the future.  We might want to
+> reset the flag when a new pid namespace is created, for instance.
 > 
 
+Then this patch should be described as:
+
+Track in-kernel when we expect checkpoint/restart to fail.
+
+By the way, why don't you introduce the reverse operation ?
+
+> 
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> ---
+> 
+>  linux-2.6.git-dave/include/linux/checkpoint.h |   31 +++++++++++++++++++++++++-
+>  linux-2.6.git-dave/include/linux/sched.h      |    3 ++
+>  linux-2.6.git-dave/kernel/fork.c              |   10 ++++++++
+>  3 files changed, 43 insertions(+), 1 deletion(-)
+> 
+> diff -puN include/linux/checkpoint.h~flag include/linux/checkpoint.h
+> --- linux-2.6.git/include/linux/checkpoint.h~flag	2008-10-09 11:56:57.000000000 -0700
+> +++ linux-2.6.git-dave/include/linux/checkpoint.h	2008-10-09 11:56:57.000000000 -0700
+> @@ -10,8 +10,11 @@
+>   *  distribution for more details.
+>   */
+> 
+> -#include <linux/path.h>
+>  #include <linux/fs.h>
+> +#include <linux/path.h>
+> +#include <linux/sched.h>
+> +
+> +#ifdef CONFIG_CHECKPOINT_RESTART
+> 
+>  #define CR_VERSION  2
+> 
+> @@ -94,4 +97,30 @@ extern void file_pos_write(struct file *
+>  #define cr_debug(fmt, args...)  \
+>  	pr_debug("[CR:%s] " fmt, __func__, ## args)
+> 
+> +static inline void __task_deny_checkpointing(struct task_struct *task,
+> +		char *file, int line)
+> +{
+> +	if(!atomic_dec_and_test(&task->may_checkpoint))
+> +		return;
+> +	printk(KERN_INFO "process performed an action that can not be "
+> +			"checkpointed at: %s:%d\n", file, line);
+> +	WARN_ON(1);
+> +}
+> +#define process_deny_checkpointing(p) __task_deny_checkpointing(p, __FILE__, __LINE__)
+> +
+> +/*
+> + * For now, we're not going to have a distinction between
+> + * tasks and processes for the purpose of c/r.  But, allow
+> + * these two calls anyway to make new users at least think
+> + * about it.
+> + */
+> +#define task_deny_checkpointing(p) __task_deny_checkpointing(p, __FILE__, __LINE__)
+> +
+> +#else
+> +
+> +static inline void task_deny_checkpointing(struct task_struct *task) {}
+> +static inline void process_deny_checkpointing(struct task_struct *task) {}
+> +
+> +#endif
+> +
+>  #endif /* _CHECKPOINT_CKPT_H_ */
+> diff -puN include/linux/sched.h~flag include/linux/sched.h
+> --- linux-2.6.git/include/linux/sched.h~flag	2008-10-09 11:56:57.000000000 -0700
+> +++ linux-2.6.git-dave/include/linux/sched.h	2008-10-09 11:56:57.000000000 -0700
+> @@ -1301,6 +1301,9 @@ struct task_struct {
+>  	int latency_record_count;
+>  	struct latency_record latency_record[LT_SAVECOUNT];
+>  #endif
+> +#ifdef CONFIG_CHECKPOINT_RESTART
+> +	atomic_t may_checkpoint;
+> +#endif
+>  };
+> 
+>  /*
+> diff -puN kernel/fork.c~flag kernel/fork.c
+> --- linux-2.6.git/kernel/fork.c~flag	2008-10-09 11:56:57.000000000 -0700
+> +++ linux-2.6.git-dave/kernel/fork.c	2008-10-09 11:56:57.000000000 -0700
+> @@ -194,6 +194,13 @@ void __init fork_init(unsigned long memp
+>  	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
+>  	init_task.signal->rlim[RLIMIT_SIGPENDING] =
+>  		init_task.signal->rlim[RLIMIT_NPROC];
+> +
+> +#ifdef CONFIG_CHECKPOINT_RESTART
+> +	/*
+> +	 * This probably won't stay set for long...
+> +	 */
+> +	atomic_set(&init_task.may_checkpoint, 1);
+> +#endif
+>  }
+> 
+>  int __attribute__((weak)) arch_dup_task_struct(struct task_struct *dst,
+> @@ -244,6 +251,9 @@ static struct task_struct *dup_task_stru
+>  	tsk->btrace_seq = 0;
+>  #endif
+>  	tsk->splice_pipe = NULL;
+> +#ifdef CONFIG_CHECKPOINT_RESTART
+> +	atomic_set(&tsk->may_checkpoint, atomic_read(&orig->may_checkpoint));
+> +#endif
+>  	return tsk;
+> 
+>  out:
+> _
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+-- 
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
 
