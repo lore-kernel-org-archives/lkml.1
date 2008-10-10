@@ -1,178 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbYJJKTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYJJKUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757183AbYJJKTg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 06:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJJKT2
+	id S1753647AbYJJKUB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 06:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYJJKTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 06:19:28 -0400
-Received: from rn-out-0910.google.com ([64.233.170.188]:36025 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbYJJKT1 (ORCPT
+	Fri, 10 Oct 2008 06:19:51 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:53962 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752303AbYJJKTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 06:19:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:references;
-        b=So6egPGz6gNlY4RjAbNMKoYIOVKfa67Pc1Xe/Vanw9SAyFumHPNGyJ5Mvf1Dd7LcRp
-         kh2GjbnLzZjS1bjKPNYRMij9HdfYAcKjjgYL9eBJCgJp4LlvSmX97SVWSnXQFcglzzqo
-         TncTea5bLBib5OaDw8ATuJ1GXA/emBG+XDt0k=
-Message-ID: <5787cf470810100319x5f52be24w1dba5b3c91231945@mail.gmail.com>
-Date: Fri, 10 Oct 2008 12:19:24 +0200
-From: "Uros Bizjak" <ubizjak@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH, arm] CompactFlash card driver for AT91SAM9260
-In-Reply-To: <5787cf470810100057m1e841103hf183c0e5462579b4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_104408_28799412.1223633964633"
-References: <5787cf470810100057m1e841103hf183c0e5462579b4@mail.gmail.com>
+	Fri, 10 Oct 2008 06:19:50 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Add WM8350 subdevice registration helper
+Date: Fri, 10 Oct 2008 11:19:46 +0100
+Message-Id: <1223633986-14171-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_104408_28799412.1223633964633
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Most of the subdevices for the WM8350 code are registered in the same
+fashion so factor out the code to do the initial registration.
 
-Hello!
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+This patch applies on top of the previously posted WM8350 patch series
+so needs to be merged via the regulator tree too.
 
-Attached patch implements driver for CF card on AT91SAM9260.The patch
-supportsMemory & IO mode hardware configuration, as shown in section
-20.7.6.1 of AT91SAM9260 hardware manual. CF timings are based on
-Common Memory Read/Write Timing Specification of "CF+ and CompactFlash
-Specification Revision 2.0", the implementation includes TDF
-optimization of SMC.
+ drivers/mfd/wm8350-core.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
-The patch was tested together witn pata_pcmcia driver, resulting in:
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index c7ae776..d925eb8 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -1130,6 +1130,32 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(wm8350_create_cache);
+ 
++/*
++ * Register a client device.  This is non-fatal since there is no need to
++ * fail the entire device init due to a single platform device failing.
++ */
++static void wm8350_client_dev_register(struct wm8350 *wm8350,
++				       const char *name,
++				       struct platform_device **pdev)
++{
++	int ret;
++
++	*pdev = platform_device_alloc(name, -1);
++	if (pdev == NULL) {
++		dev_err(wm8350->dev, "Failed to allocate %s\n", name);
++		return;
++	}
++
++	(*pdev)->dev.parent = wm8350->dev;
++	platform_set_drvdata(*pdev, wm8350);
++	ret = platform_device_add(*pdev);
++	if (ret != 0) {
++		dev_err(wm8350->dev, "Failed to register %s: %d\n", name, ret);
++		platform_device_put(*pdev);
++		*pdev = NULL;
++	}
++}
++
+ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 		       struct wm8350_platform_data *pdata)
+ {
+-- 
+1.5.6.5
 
-kernel: scsi0 : pata_pcmcia
-kernel: ata1: PATA max PIO0 cmd 0xc480c000 ctl 0xc480c00e irq 110
-kernel: ata1.00: CFA: TOSHIBA THNCF064MBA, 2.20, max PIO2
-kernel: ata1.00: 125184 sectors, multi 1
-kernel: ata1.00: configured for PIO0
-kernel: ata1.00: configured for PIO0
-kernel: ata1: EH complete
-kernel: isa bounce pool size: 16 pages
-kernel: scsi 0:0:0:0: Direct-Access     ATA    TOSHIBA THNCF064
-2.20PQ: 0 ANSI: 5
-...
-
-Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
-
-Uros.
-
-------=_Part_104408_28799412.1223633964633
-Content-Type: text/x-patch; name=at91_cf.diff
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fm4iy8yi0
-Content-Disposition: attachment; filename=at91_cf.diff
-
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtYXQ5MS9hdDkxc2FtOTI2MF9kZXZpY2VzLmMgYi9h
-cmNoL2FybS9tYWNoLWF0OTEvYXQ5MXNhbTkyNjBfZGV2aWNlcy5jCmluZGV4IDc3NzRkMTcuLmE3
-NTkwNmYgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL21hY2gtYXQ5MS9hdDkxc2FtOTI2MF9kZXZpY2Vz
-LmMKKysrIGIvYXJjaC9hcm0vbWFjaC1hdDkxL2F0OTFzYW05MjYwX2RldmljZXMuYwpAQCAtMTk1
-LDYgKzE5NSwxMDMgQEAgdm9pZCBfX2luaXQgYXQ5MV9hZGRfZGV2aWNlX2V0aChzdHJ1Y3QgYXQ5
-MV9ldGhfZGF0YSAqZGF0YSkKIHZvaWQgX19pbml0IGF0OTFfYWRkX2RldmljZV9ldGgoc3RydWN0
-IGF0OTFfZXRoX2RhdGEgKmRhdGEpIHt9CiAjZW5kaWYKIAorLyogLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KKyAqICBD
-b21wYWN0IEZsYXNoIC8gUENNQ0lBCisgKiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSAqLworCisjaWYgZGVmaW5lZChD
-T05GSUdfQVQ5MV9DRikgfHwgZGVmaW5lZChDT05GSUdfQVQ5MV9DRl9NT0RVTEUpCitzdGF0aWMg
-c3RydWN0IGF0OTFfY2ZfZGF0YSBjZl9kYXRhOworCisjZGVmaW5lIENGX0JBU0UJCUFUOTFfQ0hJ
-UFNFTEVDVF80CisKK3N0YXRpYyBzdHJ1Y3QgcmVzb3VyY2UgY2ZfcmVzb3VyY2VzW10gPSB7CisJ
-WzBdID0geworCQkuc3RhcnQJPSBDRl9CQVNFLAorCQkvKiB0aWVzIHVwIENTNCBhbmQgQ1M1ICov
-CisJCS5lbmQJPSBDRl9CQVNFICsgU1pfNTEyTSAtIDEsCisJCS5mbGFncwk9IElPUkVTT1VSQ0Vf
-TUVNIHwgSU9SRVNPVVJDRV9NRU1fOEFORDE2QklULAorCX0sCit9OworCitzdGF0aWMgc3RydWN0
-IHBsYXRmb3JtX2RldmljZSBhdDkxc2FtOTI2MF9jZl9kZXZpY2UgPSB7CisJLm5hbWUJCT0gImF0
-OTFfY2YiLAorCS5pZAkJPSAtMSwKKwkuZGV2CQk9IHsKKwkJCQkucGxhdGZvcm1fZGF0YQkJPSAm
-Y2ZfZGF0YSwKKwl9LAorCS5yZXNvdXJjZQk9IGNmX3Jlc291cmNlcywKKwkubnVtX3Jlc291cmNl
-cwk9IEFSUkFZX1NJWkUoY2ZfcmVzb3VyY2VzKSwKK307CisKK3ZvaWQgX19pbml0IGF0OTFfYWRk
-X2RldmljZV9jZihzdHJ1Y3QgYXQ5MV9jZl9kYXRhICpkYXRhKQoreworCXVuc2lnbmVkIGludCBj
-c2E7CisJaW50IGNzOworCisJaWYgKCFkYXRhKQorCQlyZXR1cm47CisKKwljcyA9IGRhdGEtPmNo
-aXBzZWxlY3Q7CisKKwljc2EgPSBhdDkxX3N5c19yZWFkKEFUOTFfTUFUUklYX0VCSUNTQSk7CisJ
-aWYgKGNzID09IDQpCisJCWNzYSB8PSBBVDkxX01BVFJJWF9DUzRBX1NNQ19DRjE7CisJZWxzZSBp
-ZiAoY3MgPT0gNSkKKwkJY3NhIHw9IEFUOTFfTUFUUklYX0NTNUFfU01DX0NGMjsKKwllbHNlCisJ
-CUJVRygpOworCisJYXQ5MV9zeXNfd3JpdGUoQVQ5MV9NQVRSSVhfRUJJQ1NBLCBjc2EpOworCisJ
-LyogVGltaW5nIGZvciBzYW05MjYwICovCisJLyogc2V0IHRoZSBidXMgaW50ZXJmYWNlIGNoYXJh
-Y3RlcmlzdGljcyAqLworCWF0OTFfc3lzX3dyaXRlKEFUOTFfU01DX1NFVFVQKGNzKSwKKwkJICAg
-ICAgIEFUOTFfU01DX05XRVNFVFVQXygzKSB8IEFUOTFfU01DX05DU19XUlNFVFVQXygzKQorCQkg
-ICAgICAgfCBBVDkxX1NNQ19OUkRTRVRVUF8oMykgfCBBVDkxX1NNQ19OQ1NfUkRTRVRVUF8oMykp
-OworCisJYXQ5MV9zeXNfd3JpdGUoQVQ5MV9TTUNfUFVMU0UoY3MpLAorCQkgICAgICAgQVQ5MV9T
-TUNfTldFUFVMU0VfKDE1KSB8IEFUOTFfU01DX05DU19XUlBVTFNFXygxNykKKwkJICAgICAgIHwg
-QVQ5MV9TTUNfTlJEUFVMU0VfKDEzKSB8IEFUOTFfU01DX05DU19SRFBVTFNFXygxNSkpOworCisJ
-YXQ5MV9zeXNfd3JpdGUoQVQ5MV9TTUNfQ1lDTEUoY3MpLAorCQkgICAgICAgQVQ5MV9TTUNfTldF
-Q1lDTEVfKDIxKSB8IEFUOTFfU01DX05SRENZQ0xFXygxOCkpOworCisJYXQ5MV9zeXNfd3JpdGUo
-QVQ5MV9TTUNfTU9ERShjcyksCisJCSAgICAgICBBVDkxX1NNQ19SRUFETU9ERSB8IEFUOTFfU01D
-X1dSSVRFTU9ERQorCQkgICAgICAgfCBBVDkxX1NNQ19FWE5XTU9ERV9SRUFEWQorCQkgICAgICAg
-fCBBVDkxX1NNQ19CQVRfU0VMRUNUIHwgQVQ5MV9TTUNfREJXXzE2CisJCSAgICAgICB8IEFUOTFf
-U01DX1RERl8oMTApIHwgQVQ5MV9TTUNfVERGTU9ERSk7CisKKwkvKiBpbnB1dC9pcnEgKi8KKwlp
-ZiAoZGF0YS0+aXJxX3BpbikgeworCQlhdDkxX3NldF9ncGlvX2lucHV0KGRhdGEtPmlycV9waW4s
-IDEpOworCQlhdDkxX3NldF9kZWdsaXRjaChkYXRhLT5pcnFfcGluLCAxKTsKKwl9CisJYXQ5MV9z
-ZXRfZ3Bpb19pbnB1dChkYXRhLT5kZXRfcGluLCAxKTsKKwlhdDkxX3NldF9kZWdsaXRjaChkYXRh
-LT5kZXRfcGluLCAxKTsKKworCS8qIG91dHB1dHMsIGluaXRpYWxseSBvZmYgKi8KKwlpZiAoZGF0
-YS0+dmNjX3BpbikKKwkJYXQ5MV9zZXRfZ3Bpb19vdXRwdXQoZGF0YS0+dmNjX3BpbiwgMCk7CisJ
-YXQ5MV9zZXRfZ3Bpb19vdXRwdXQoZGF0YS0+cnN0X3BpbiwgMCk7CisKKwkvKiBmb3JjZSBwb3dl
-cm9uIGRlZmF1bHRzIGZvciB0aGlzIHBpbiAuLi4gKi8KKwlhdDkxX3NldF9BX3BlcmlwaChBVDkx
-X1BJTl9QQzEwLCAwKTsJLyogQTI1L0NGUk5XICovCisKKwlpZiAoY3MgPT0gNCkKKwkJYXQ5MV9z
-ZXRfQV9wZXJpcGgoQVQ5MV9QSU5fUEM4LCAwKTsJLyogTkNTNC9DRkNTMCAqLworCWVsc2UKKwkJ
-YXQ5MV9zZXRfQV9wZXJpcGgoQVQ5MV9QSU5fUEM5LCAwKTsJLyogTkNTNS9DRkNTMSAqLworCWF0
-OTFfc2V0X0FfcGVyaXBoKEFUOTFfUElOX1BDMTUsIDEpOwkvKiBuV0FJVCAqLworCWF0OTFfc2V0
-X0JfcGVyaXBoKEFUOTFfUElOX1BDNiwgMCk7CS8qIENGQ0UxICovCisJYXQ5MV9zZXRfQl9wZXJp
-cGgoQVQ5MV9QSU5fUEM3LCAwKTsJLyogQ0ZDRTIgKi8KKworCWNmX2RhdGEgPSAqZGF0YTsKKwlw
-bGF0Zm9ybV9kZXZpY2VfcmVnaXN0ZXIoJmF0OTFzYW05MjYwX2NmX2RldmljZSk7Cit9CisjZWxz
-ZQordm9pZCBfX2luaXQgYXQ5MV9hZGRfZGV2aWNlX2NmKHN0cnVjdCBhdDkxX2NmX2RhdGEgKmRh
-dGEpIHt9CisjZW5kaWYKIAogLyogLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAqICBNTUMgLyBTRApkaWZmIC0tZ2l0
-IGEvYXJjaC9hcm0vbWFjaC1hdDkxL2JvYXJkLXNhbTkyNjBlay5jIGIvYXJjaC9hcm0vbWFjaC1h
-dDkxL2JvYXJkLXNhbTkyNjBlay5jCmluZGV4IGNiMjBlNzAuLmQxOGY4MGQgMTAwNjQ0Ci0tLSBh
-L2FyY2gvYXJtL21hY2gtYXQ5MS9ib2FyZC1zYW05MjYwZWsuYworKysgYi9hcmNoL2FybS9tYWNo
-LWF0OTEvYm9hcmQtc2FtOTI2MGVrLmMKQEAgLTg0LDYgKzg0LDE2IEBAIHN0YXRpYyBzdHJ1Y3Qg
-YXQ5MV91ZGNfZGF0YSBfX2luaXRkYXRhIGVrX3VkY19kYXRhID0gewogCS5wdWxsdXBfcGluCT0g
-MCwJCS8qIHB1bGwtdXAgZHJpdmVuIGJ5IFVEQyAqLwogfTsKIAorLyoKKyAqIENvbXBhY3QgRmxh
-c2gKKyAqLworc3RhdGljIHN0cnVjdCBhdDkxX2NmX2RhdGEgX19pbml0ZGF0YSBla19jZl9kYXRh
-ID0geworCS5pcnFfcGluCT0gQVQ5MV9QSU5fUEMxNCwKKwkuZGV0X3Bpbgk9IEFUOTFfUElOX1BD
-OSwKKwkvLyAudmNjX3Bpbgk9IC4uLiBhbHdheXMgcG93ZXJlZAorCS5yc3RfcGluCT0gQVQ5MV9Q
-SU5fUEMxMSwKKwkuY2hpcHNlbGVjdAk9IDQsCit9OwogCiAvKgogICogQXVkaW8KQEAgLTI0MCw2
-ICsyNTAsOCBAQCBzdGF0aWMgdm9pZCBfX2luaXQgZWtfYm9hcmRfaW5pdCh2b2lkKQogCWF0OTFf
-YWRkX2RldmljZV9tbWMoMCwgJmVrX21tY19kYXRhKTsKIAkvKiBJMkMgKi8KIAlhdDkxX2FkZF9k
-ZXZpY2VfaTJjKE5VTEwsIDApOworCS8qIENvbXBhY3QgRmxhc2ggKi8KKwlhdDkxX2FkZF9kZXZp
-Y2VfY2YoJmVrX2NmX2RhdGEpOwogCS8qIFNTQyAodG8gQVQ3M0MyMTMpICovCiAJYXQ3M2MyMTNf
-c2V0X2NsaygmYXQ3M2MyMTNfZGF0YSk7CiAJYXQ5MV9hZGRfZGV2aWNlX3NzYyhBVDkxU0FNOTI2
-MF9JRF9TU0MsIEFUTUVMX1NTQ19UWCk7CmRpZmYgLS1naXQgYS9kcml2ZXJzL3BjbWNpYS9LY29u
-ZmlnIGIvZHJpdmVycy9wY21jaWEvS2NvbmZpZwppbmRleCBlMGY4ODQwLi40OGJmYjNlIDEwMDY0
-NAotLS0gYS9kcml2ZXJzL3BjbWNpYS9LY29uZmlnCisrKyBiL2RyaXZlcnMvcGNtY2lhL0tjb25m
-aWcKQEAgLTI3Myw3ICsyNzMsNyBAQCBjb25maWcgQkZJTl9DRlBDTUNJQQogCiBjb25maWcgQVQ5
-MV9DRgogCXRyaXN0YXRlICJBVDkxIENvbXBhY3RGbGFzaCBDb250cm9sbGVyIgotCWRlcGVuZHMg
-b24gUENNQ0lBICYmIEFSQ0hfQVQ5MVJNOTIwMAorCWRlcGVuZHMgb24gUENNQ0lBICYmIChBUkNI
-X0FUOTFSTTkyMDAgfHwgQVJDSF9BVDkxU0FNOTI2MCkKIAloZWxwCiAJICBTYXkgWSBoZXJlIHRv
-IHN1cHBvcnQgdGhlIENvbXBhY3RGbGFzaCBjb250cm9sbGVyIG9uIEFUOTEgY2hpcHMuCiAJICBP
-ciBjaG9vc2UgTSB0byBjb21waWxlIHRoZSBkcml2ZXIgYXMgYSBtb2R1bGUgbmFtZWQgImF0OTFf
-Y2YiLgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY21jaWEvYXQ5MV9jZi5jIGIvZHJpdmVycy9wY21j
-aWEvYXQ5MV9jZi5jCmluZGV4IGEwZmZiOGUuLmZhNDAxNzQgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMv
-cGNtY2lhL2F0OTFfY2YuYworKysgYi9kcml2ZXJzL3BjbWNpYS9hdDkxX2NmLmMKQEAgLTI0LDgg
-KzI0LDE0IEBACiAjaW5jbHVkZSA8YXNtL2dwaW8uaD4KIAogI2luY2x1ZGUgPG1hY2gvYm9hcmQu
-aD4KLSNpbmNsdWRlIDxtYWNoL2F0OTFybTkyMDBfbWMuaD4KIAorI2lmIGRlZmluZWQoQ09ORklH
-X0FSQ0hfQVQ5MVJNOTIwMCkKKyNpbmNsdWRlIDxtYWNoL2F0OTFybTkyMDBfbWMuaD4KKyNlbGlm
-IGRlZmluZWQoQ09ORklHX0FSQ0hfQVQ5MVNBTTkyNjApCisjaW5jbHVkZSA8bWFjaC9hdDkxc2Ft
-OV9zbWMuaD4KKyNlbHNlCisjZXJyb3IgIlVuc3VwcG9ydGVkIEFUOTEgcHJvY2Vzc29yIgorI2Vu
-ZGlmCiAKIC8qCiAgKiBBMC4uQTEwIHdvcmsgaW4gZWFjaCByYW5nZTsgQTIzIGluZGljYXRlcyBJ
-L08gc3BhY2U7ICBBMjUgaXMgQ0ZSTlc7CkBAIC0xNTcsNyArMTYzLDExIEBAIHN0YXRpYyBpbnQg
-YXQ5MV9jZl9zZXRfaW9fbWFwKHN0cnVjdCBwY21jaWFfc29ja2V0ICpzLCBzdHJ1Y3QgcGNjYXJk
-X2lvX21hcCAqaW8pCiAJLyoKIAkgKiBVc2UgMTYgYml0IGFjY2Vzc2VzIHVubGVzcy91bnRpbCB3
-ZSBuZWVkIDgtYml0IGkvbyBzcGFjZS4KIAkgKi8KKyNpZiBkZWZpbmVkKENPTkZJR19BUkNIX0FU
-OTFSTTkyMDApCiAJY3NyID0gYXQ5MV9zeXNfcmVhZChBVDkxX1NNQ19DU1IoY2YtPmJvYXJkLT5j
-aGlwc2VsZWN0KSkgJiB+QVQ5MV9TTUNfREJXOworI2Vsc2UKKwljc3IgPSBhdDkxX3N5c19yZWFk
-KEFUOTFfU01DX01PREUoY2YtPmJvYXJkLT5jaGlwc2VsZWN0KSkgJiB+QVQ5MV9TTUNfREJXOwor
-I2VuZGlmCiAKIAkvKgogCSAqIE5PVEU6IHRoaXMgQ0YgY29udHJvbGxlciBpZ25vcmVzIElPSVMx
-Niwgc28gd2UgY2FuJ3QgcmVhbGx5IGRvCkBAIC0xNzYsNyArMTg2LDExIEBAIHN0YXRpYyBpbnQg
-YXQ5MV9jZl9zZXRfaW9fbWFwKHN0cnVjdCBwY21jaWFfc29ja2V0ICpzLCBzdHJ1Y3QgcGNjYXJk
-X2lvX21hcCAqaW8pCiAJCWNzciB8PSBBVDkxX1NNQ19EQldfMTY7CiAJCXByX2RlYnVnKCIlczog
-MTZiaXQgaS9vIGJ1c1xuIiwgZHJpdmVyX25hbWUpOwogCX0KKyNpZiBkZWZpbmVkKENPTkZJR19B
-UkNIX0FUOTFSTTkyMDApCiAJYXQ5MV9zeXNfd3JpdGUoQVQ5MV9TTUNfQ1NSKGNmLT5ib2FyZC0+
-Y2hpcHNlbGVjdCksIGNzcik7CisjZWxzZQorCWF0OTFfc3lzX3dyaXRlKEFUOTFfU01DX01PREUo
-Y2YtPmJvYXJkLT5jaGlwc2VsZWN0KSwgY3NyKTsKKyNlbmRpZgogCiAJaW8tPnN0YXJ0ID0gY2Yt
-PnNvY2tldC5pb19vZmZzZXQ7CiAJaW8tPnN0b3AgPSBpby0+c3RhcnQgKyBTWl8ySyAtIDE7Cg==
-
-------=_Part_104408_28799412.1223633964633--
