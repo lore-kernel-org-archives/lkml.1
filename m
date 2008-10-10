@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbYJJObp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbYJJOcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbYJJObp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 10:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbYJJObg
+	id S1760703AbYJJOcJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 10:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbYJJOby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 10:31:36 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51607 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755105AbYJJObg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 10:31:36 -0400
-Date: Fri, 10 Oct 2008 10:31:35 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] WARNING: at kernel/power/main.c:176
- suspend_test_finish+0x70/0x80()
-In-Reply-To: <200810101452.27929.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0810101028260.2459-100000@iolanthe.rowland.org>
+	Fri, 10 Oct 2008 10:31:54 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:39762 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760207AbYJJObx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 10:31:53 -0400
+Date: Fri, 10 Oct 2008 16:31:49 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Liam Girdwood <lrg@kernel.org>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/13] WM8350 support
+Message-ID: <20081010143148.GB4823@localdomain>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20081006123254.GA9664@rakim.wolfsonmicro.main> <1223648664.6814.323.camel@dell-desktop.example.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223648664.6814.323.camel@dell-desktop.example.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008, Rafael J. Wysocki wrote:
-
-> On Friday, 10 of October 2008, Parag Warudkar wrote:
-> > 2.6.27 seems to be taking long time to resume, it hits this WARN_ON in
-> > kernel/power/main.c:176 suspend_test_finish -
-> > Never seen earlier.
+On Fri, Oct 10, 2008 at 03:24:24PM +0100, Liam Girdwood wrote:
+> On Mon, 2008-10-06 at 13:32 +0100, Mark Brown wrote:
+> > These patches against the regulator tree add initial support for the
+> > WM8350, a multi-function device with several subsystems targetted at
+> > embedded systems.  This series adds a core driver providing device acess
+> > under drivers/mfd and support for the PMIC functionality of the device
+> > via the regulator API.  Due to their use in the core some definitions
+> > for other parts of the device are also included - drivers for these will
+> > follow.
+> > 
+> > All the WM8350 drivers submitted here were originally written by Liam
+> > Girdwood with some updates from me for submission to mainline.
+> > 
+> > Samuel, as with the WM8400 are you OK with merging this via the
+> > regulator tree?
 > 
-> Resuming devices takes too much time (more than 5 sec. actually)
-> and the stack trace indicates USB.
+> Samuel, are fine to Ack the MFD parts ?
+Sorry guys, but I havent had time to look at those patches yet.
+Liam, when would be the last moment for me to ACK/NACK them ?
+I expect to be able to do so during this weekend.
+
+Cheers,
+Samuel.
+
+ 
+> Liam
 > 
-> Can you test with the USB modules unloaded?
 
-There's a bug that affects USB power management: commmit 
-f9dd45ce10a014bdfd5432828c44630ea7fefedd needs to be reverted.  Greg KH
-has been asked to do this a few times but he hasn't gotten around to it 
-yet.
-
-Alan Stern
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
