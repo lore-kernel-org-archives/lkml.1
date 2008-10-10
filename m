@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762936AbYJJTJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbYJJTLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762936AbYJJTJD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762883AbYJJTIr
+	id S1763341AbYJJTLq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762782AbYJJTLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:08:47 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53784
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1762813AbYJJTIp (ORCPT
+	Fri, 10 Oct 2008 15:11:37 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:61539 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762331AbYJJTLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:08:45 -0400
-Date: Fri, 10 Oct 2008 12:08:21 -0700 (PDT)
-Message-Id: <20081010.120821.239091053.davem@davemloft.net>
-To: lrodriguez@atheros.com
-Cc: jirislaby@gmail.com, linville@tuxdriver.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jmalinen@atheros.com
-Subject: Re: [PATCH 1/1] Ath9k: fix uninitialized value in ath9k_hw_reset
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <43e72e890810101207h767353bem3a080aab27b7eb09@mail.gmail.com>
-References: <43e72e890810101200g3f50b204t20ea782878217369@mail.gmail.com>
-	<20081010.120050.161276431.davem@davemloft.net>
-	<43e72e890810101207h767353bem3a080aab27b7eb09@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 15:11:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KiykR4kvL+576kgmvUDBIYTQQsTXvj/OYTIm1CJn68YObJbGxrw2QPG4XaYKu93ayN
+         tXO7g47032gZkGjYesODeZ2se4/OGLljc6tZNJ6+pwac3+drtAoUM3rd/zJGAm9vhcMw
+         XqlScSVI1vxWBG+Pt5+RJwD+BP3H9lWmmi3Zg=
+Date: Fri, 10 Oct 2008 23:11:27 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: apic - unify APIC_DIVISOR
+Message-ID: <20081010191127.GA31036@localhost>
+References: <20081010150017.GD7328@localhost> <7E82351C108FA840AB1866AC776AEC46378236B8@orsmsx505.amr.corp.intel.com> <20081010163101.GG7328@localhost> <7E82351C108FA840AB1866AC776AEC46378238AE@orsmsx505.amr.corp.intel.com> <20081010171645.GI7328@localhost> <20081010190350.GA25931@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081010190350.GA25931@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Date: Fri, 10 Oct 2008 12:07:47 -0700
+[Venki Pallipadi - Fri, Oct 10, 2008 at 12:03:50PM -0700]
+...
+| 
+| If there is no pressing reason to change the initial calibration value, how
+| about the simple patch below.
+| 
+| The 10^9 value that is used for 100 mS calibration time is pretty big as
+| tglx's comment points out. We will only underflow it if there is a
+| bus clock running at 10 GHz * 16 = 160 Ghz.
+| 
+| This way we will not fix something that is not really broken today and will not
+| break in foreseeable future.
+| 
+| Thanks,
+| Venki
 
-> On Fri, Oct 10, 2008 at 12:00 PM, David Miller <davem@davemloft.net> wrote:
-> > From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-> > Date: Fri, 10 Oct 2008 12:00:17 -0700
-> >
-> >> Agreed, patches welcomed.
-> >
-> > Translation: "Fix it yourself if you care so much." :-/
-> 
-> Not really, I want to fix it, just want to fix aggregation too.
-
-Ok, as long as your intentions are clear :-)
-
-> OK fine, I'll send a patch now.
-
-Thank you.
+I personally have no objection. Thanks Venki.
+Btw since Ingo already picked the patch from me
+maybe you could make a patch with numbers you mentoined
+(ie changelog) and fix 0xffffffff to 10^9?
+ 
+		- Cyrill -
