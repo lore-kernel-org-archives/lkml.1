@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbYJJAEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbYJJAGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbYJJAEi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 20:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYJJAE3
+	id S1758210AbYJJAGP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 20:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYJJAF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 20:04:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35222 "EHLO mx2.mail.elte.hu"
+	Thu, 9 Oct 2008 20:05:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35873 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbYJJAE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 20:04:27 -0400
-Date: Fri, 10 Oct 2008 02:04:08 +0200
+	id S1751991AbYJJAF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 20:05:58 -0400
+Date: Fri, 10 Oct 2008 02:05:33 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 updates for v2.6.28, phase #4, x2apic,
-	unify-cpu-detect
-Message-ID: <20081010000408.GA5970@elte.hu>
+Subject: [git pull] x86 updates for v2.6.28, phase #5, signal code
+Message-ID: <20081010000533.GA7814@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -37,466 +36,1158 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-v28-for-linus-phase4 git tree from:
+Please pull the latest x86-v28-for-linus-phase5 git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase4
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase5
 
-x86/x2apic and x86/unify-cpu-detect topics.
+tip/x86/signal and tip/core/signal topics.
 
-out-of-topic modifications in x86-v28-for-linus-phase4:
+out-of-topic modifications in x86-v28-for-linus-phase5:
 -------------------------------------------------------
-arch/um/sys-x86_64/syscall_table.c # b76d69e: x86_64: uml: fix rename header gu
-drivers/pci/Makefile               # ad3ad3f: x64, x2apic/intr-remap: parse ioa
-drivers/pci/dma_remapping.h        # 2ae2101: x64, x2apic/intr-remap: Interrupt
-                                   # e61d98d: x64, x2apic/intr-remap: Intel vt-
-drivers/pci/dmar.c                 # 1cb1158: x64, x2apic/intr-remap: disable D
-                                   # 2ae2101: x64, x2apic/intr-remap: Interrupt
-                                   # fe962e9: x64, x2apic/intr-remap: Queued in
-                                   # ad3ad3f: x64, x2apic/intr-remap: parse ioa
-                                   # 2d6b5f8: x64, x2apic/intr-remap: Fix the n
-                                   # aaa9d1d: x64, x2apic/intr-remap: use CONFI
-                                   # 1886e8a: x64, x2apic/intr-remap: code re-s
-                                   # c42d9f3: x64, x2apic/intr-remap: fix the n
-                                   # e61d98d: x64, x2apic/intr-remap: Intel vt-
-drivers/pci/intel-iommu.h          # b6fcb33: x64, x2apic/intr-remap: routines 
-                                   # 2ae2101: x64, x2apic/intr-remap: Interrupt
-                                   # fe962e9: x64, x2apic/intr-remap: Queued in
-                                   # cf1337f: x64, x2apic/intr-remap: move IOMM
-                                   # ad3ad3f: x64, x2apic/intr-remap: parse ioa
-                                   # 1886e8a: x64, x2apic/intr-remap: code re-s
-                                   # c42d9f3: x64, x2apic/intr-remap: fix the n
-                                   # e61d98d: x64, x2apic/intr-remap: Intel vt-
-drivers/pci/intr_remapping.c       # 75c46fa: x64, x2apic/intr-remap: MSI and M
-                                   # 89027d3: x64, x2apic/intr-remap: IO-APIC s
-                                   # b6fcb33: x64, x2apic/intr-remap: routines 
-                                   # 2ae2101: x64, x2apic/intr-remap: Interrupt
-                                   # ad3ad3f: x64, x2apic/intr-remap: parse ioa
-drivers/pci/intr_remapping.h       # 2ae2101: x64, x2apic/intr-remap: Interrupt
-                                   # ad3ad3f: x64, x2apic/intr-remap: parse ioa
-include/asm-generic/vmlinux.lds.h  # 63cc8c7: percpu: introduce DEFINE_PER_CPU_
-include/linux/dmar.h               # 75c46fa: x64, x2apic/intr-remap: MSI and M
-                                   # 89027d3: x64, x2apic/intr-remap: IO-APIC s
-                                   # b6fcb33: x64, x2apic/intr-remap: routines 
-                                   # 2ae2101: x64, x2apic/intr-remap: Interrupt
-                                   # ad3ad3f: x64, x2apic/intr-remap: parse ioa
-                                   # 1886e8a: x64, x2apic/intr-remap: code re-s
-include/linux/ioport.h             # 268364a: IO resources: add reserve_region_
-include/linux/irq.h                # 72b1e22: x64, x2apic/intr-remap: generic i
-include/linux/percpu.h             # 63cc8c7: percpu: introduce DEFINE_PER_CPU_
-kernel/irq/manage.c                # 72b1e22: x64, x2apic/intr-remap: generic i
-kernel/resource.c                  # 268364a: IO resources: add reserve_region_
-
-Special mention for the kernel/resource.c change.
+arch/ia64/include/asm/siginfo.h    # da654b7: signals: demultiplexing SIGTRAP s
+arch/powerpc/include/asm/siginfo.h # da654b7: signals: demultiplexing SIGTRAP s
+include/asm-generic/siginfo.h      # da654b7: signals: demultiplexing SIGTRAP s
+include/asm-parisc/siginfo.h       # da654b7: signals: demultiplexing SIGTRAP s
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Andi Kleen (1):
-      x86: drop -funroll-loops for csum_partial_64.c
+Hiroshi Shimamoto (22):
+      x86_32: signal: use syscall_get_nr and error
+      x86_32: signal: introduce signal_fault()
+      x86: signal: make NR_restart_syscall
+      x86: signal: split out frame setups
+      x86_32: signal: move signal number conversion to upper layer
+      x86: signal_64.c: clean up signal_fault()
+      x86: signal_64.c: arg for restore_i387_xstate() is void __user *
+      x86: signal_64.c: make handle_signal() similar
+      x86: signal: put give_sigsegv of setup frames together
+      x86: signal: remove unneeded err handling
+      x86: signal: introduce do_rt_sigreturn()
+      x86: signal: cosmetic unification of do_signal()
+      x86: signal: cosmetic unification of do_notify_resume()
+      x86: signal: cosmetic unification of handle_signal()
+      x86: signal_32.c: introduce signr_convert()
+      x86: signal_64.c: introduce helper function signr_convert()
+      x86: signal: introduce helper macro is_ia32
+      x86: signal_32.c: introduce macro ia32_setup_frame and ia32_setup_rt_frame
+      x86: ia32_signal.c: remove unnecessary cast to u32
+      x86: ia32_signal.c remove unnecessary function calls
+      x86: signal: move macros out from restore_sigcontext()
+      x86: signal: remove indent in restore_sigcontext()
 
-Andreas Herrmann (2):
-      x86: pda_init(): fix memory leak when using CPU hotplug
-      x86: cpu_init(): fix memory leak when using CPU hotplug
-
-Cihula, Joseph (1):
-      x86, e820: add support for AddressRangeUnusuable ACPI memory type
-
-Cyrill Gorcunov (34):
-      x86: apic unification - merge down lapic_get_maxlvt
-      x86: apic unification - merge down enable_NMI_through_LVT0
-      x86: apic interrupts - move assignments to irqinit_32.c, v2
-      x86: apic - use SET_APIC_DEST_FIELD instead of hardcoded shift
-      x86: apic - unify disable_apic_timer
-      x86: apic - unify __setup_APIC_LVTT
-      x86: apic - do not clear APIC twice in lapic_shutdown
-      x86: apic - get rid of local_apic_timer_verify_ok
-      x86: apic - unify verify_local_APIC
-      x86: apic - unify sync_Arb_IDs
-      x86: apic - sync_Arb_IDs style fixup
-      x86: apic - unify init_bsp_APIC
-      x86: apic - unify clear_local_APIC
-      x86: apic - unify lapic_resume
-      x86: apic - unify lapic_suspend
-      x86: apic - rearrange functions and comments
-      x86: apic - unify lapic_is_integrated
-      x86: apic - unify xapic_icr_read
-      x86: apic - rearrange maxcpu definition
-      x86: apic - unify setup_boot_APIC_clock
-      x86: apic - unify disable_local_APIC
-      x86: apic - unify lapic_shutdown
-      x86: apic - unify connect_bsp_APIC
-      x86: apic - unify lapic_setup_esr
-      x86: apic - unify __setup_APIC_LVTT
-      x86: apic - unify disconnect_bsp_APIC
-      x86: apic - generic_processor_info
-      x86: apic - unify end_local_APIC_setup
-      x86: apic - unify local_apic_timer_interrupt
-      x86: apic - unify apic_set_verbosity
-      x86: apic - unify disableapic and nolapic setup handlers
-      x86: apic - rearrange parse_lapic_timer_c2_ok
-      x86: apic - lapic_resume 32bit - unification fix
-      x86: apic - compilation warnings fix
-
-Eric Dumazet (1):
-      percpu: introduce DEFINE_PER_CPU_PAGE_ALIGNED() macro
-
-H. Peter Anvin (10):
-      x86, xsave: add <asm/xcr.h> header file for XCR registers
-      x86, xsave: keep the XSAVE feature mask as an u64
-      x86: boot: stub out unimplemented CPU feature words
-      x86: add NOPL as a synthetic CPU feature bit
-      x86: use X86_FEATURE_NOPL in alternatives
-      x86: generate names for /proc/cpuinfo from <asm/cpufeature.h>
-      x86: cpufeature: add Intel features from CPUID and AVX specs
-      x86: <asm/cpufeature.h>: clean up overlong lines, whitespace
-      x86: cpufeature: fix SMX flag
-      x86 setup: handle more than 8 CPU flag words
-
-Hiroshi Shimamoto (2):
-      x86_32: use apic_ops at print_local_APIC()
-      x86_64: uml: fix rename header guard
-
-Huang Weiyi (1):
-      arch/x86/kernel/genx2apic_uv_x.c: Removed duplicated include
-
-Ingo Molnar (11):
-      x86, xen: fix apic_ops build on UP
-      x86, lguest: fix apic_ops build on UP
-      x86, cyrix: debug
-      x86: L3 cache index disable for 2.6.26, cleanups
-      x86 l3 cache index disable for 2 6 26 fix
-      x86: L3 cache index disable for 2.6.26, fix #2
-      x86: fix xsave build error
-      x86: split e820 reserved entries record to late v4
-      x86: cpu/common*.c, merge whitespaces
-      x86, init_64.c: cleanup
-      x86: cpuid, fix typo
-
-Jan Beulich (1):
-      x86-64: add two __cpuinit annotations
-
-Krzysztof Helt (1):
-      x86: delay early cpu initialization until cpuid is done
-
-Maciej W. Rozycki (1):
-      x86: PIC, L-APIC and I/O APIC debug information
-
-Mark Langsdorf (2):
-      x86: L3 cache index disable for 2.6.26
-      x86: L3 cache index disable for 2.6.26
-
-Sheng Yang (2):
-      x86: move VMX MSRs to msr-index.h
-      x86: extended "flags" to show virtualization HW feature in /proc/cpuinfo
-
-Suresh Siddha (51):
-      x64, x2apic/intr-remap: Intel vt-d, IOMMU code reorganization
-      x64, x2apic/intr-remap: fix the need for sequential array allocation of iommus
-      x64, x2apic/intr-remap: code re-structuring, to be used by both DMA and Interrupt remapping
-      x64, x2apic/intr-remap: use CONFIG_DMAR for DMA-remapping specific code
-      x64, x2apic/intr-remap: Fix the need for RMRR in the DMA-remapping detection
-      x64, x2apic/intr-remap: parse ioapic scope under vt-d structures
-      x64, x2apic/intr-remap: move IOMMU_WAIT_OP() macro to intel-iommu.h
-      x64, x2apic/intr-remap: Queued invalidation infrastructure (part of VT-d)
-      x64, x2apic/intr-remap: Interrupt remapping infrastructure
-      x64, x2apic/intr-remap: routines managing Interrupt remapping table entries.
-      x64, x2apic/intr-remap: generic irq migration support from process context
-      x64, x2apic/intr-remap: 8259 specific mask/unmask routines
-      x64, x2apic/intr-remap: ioapic routines which deal with initial io-apic RTE setup
-      x64, x2apic/intr-remap: introduce read_apic_id() to genapic routines
-      x64, x2apic/intr-remap: Interrupt-remapping and x2apic support, fix
-      x64, x2apic/intr-remap: basic apic ops support
-      x64, x2apic/intr-remap: cpuid bits for x2apic feature
-      x64, x2apic/intr-remap: disable DMA-remapping if Interrupt-remapping is detected (temporary quirk)
-      x64, x2apic/intr-remap: x2apic ops for x2apic mode support
-      x64, x2apic/intr-remap: introcude self IPI to genapic routines
-      x64, x2apic/intr-remap: x2apic cluster mode support
-      x64, x2apic/intr-remap: setup init_apic_ldr for UV
-      x64, x2apic/intr-remap: IO-APIC support for interrupt-remapping
-      x64, x2apic/intr-remap: MSI and MSI-X support for interrupt remapping infrastructure
-      x64, x2apic/intr-remap: add x2apic support, including enabling interrupt-remapping
-      x64, x2apic/intr-remap: support for x2apic physical mode support
-      x64, x2apic/intr-remap: introduce CONFIG_INTR_REMAP
-      x64, x2apic/intr-remap: Interrupt-remapping and x2apic support
-      x2apic: uninline uv_init_apic_ldr()
-      x2apic: xen64 paravirt basic apic ops
-      x2apic: kernel-parameter documentation for "x2apic_phys"
-      x86: let 32bit use apic_ops too - fix
-      x86: apic_ops for lguest
-      x86: APIC: Remove apic_write_around(); use alternatives, merge fix
-      x64, apic: use generic apic_write() for ack_APIC_irq()
-      x86, xsave: xsave cpuid feature bits
-      x86, xsave: enable xsave/xrstor on cpus with xsave support
-      x86, xsave: context switch support using xsave/xrstor
-      x86, xsave: dynamically allocate sigframes fpstate instead of static allocation
-      x86, xsave: reorganization of signal save/restore fpstate code layout
-      x86, xsave: xsave/xrstor specific routines
-      x86, xsave: struct _fpstate extensions to include extended state information
-      x86, xsave: save/restore the extended state context in sigframe
-      x86, xsave: update xsave header bits during ptrace fpregs set
-      x86, xsave: remove the redundant access_ok() in setup_rt_frame()
-      x86, xsave: clear the user buffer before doing fxsave/xsave
-      x86, xsave: use BUG_ON() instead of BUILD_BUG_ON()
-      x86: use cpuid vector 0xb when available for detecting cpu topology
-      x86: use x2apic id reported by cpuid during topology discovery
-      x86: use x2apic id reported by cpuid during topology discovery, fix
-      x86: xsave: restore xcr0 during resume
-
-Thomas Petazzoni (3):
-      x86: make movsl_mask definition non-CPU specific
-      x86: move cmpxchg fallbacks to a generic place
-      x86: configuration options to compile out x86 CPU support code
-
-Yinghai Lu (61):
-      x86: let 32bit use apic_ops too
-      x86: mach_apicdef.h need to include before smp.h
-      x86: make read_apic_id return final apicid
-      x86: make 64bit have get_apic_id
-      x86: let 32bit use apic_ops too - fix
-      x86: add apic probe for genapic 64bit, v2
-      x86: move declaring x2apic_extra_bits
-      x86: add setup_ioapic_ids for numaq in x86_quirks
-      x86: mach-bigsmp to bigsmp
-      x86: mach_es7000 to es7000
-      x86: mach_summit to summit
-      x86: mach-numaq to numaq
-      x86: add apic probe for genapic 64bit - fix
-      x86: apic - unify lapic_resume - fix
-      x86: fix apic version warning
-      x86: move dir es7000 to es7000_32.c
-      x86: split e820 reserved entries record to late v2
-      IO resources: add reserve_region_with_split()
-      x86: split e820 reserved entries record to late, v7
-      x86: unify using pci_mmcfg_insert_resource
-      x86: move mtrr cpu cap setting early in early_init_xxxx
-      x86: make (early)_identify_cpu more the same between 32bit and 64 bit
-      x86: order functions in cpu/common.c and cpu/common_64.c v2
-      x86: remove cpu_vendor_dev
-      x86: make 32bit support show_msr like 64 bit
-      x86: make get_mode_name of 64bit the same as 32bit
-      x86: move 32bit related functions together
-      x86: make detect_ht depend on CONFIG_X86_HT
-      x86: make header file the same in arch/x86/kernel/cpu/common_xx.c
-      x86: same gdt_page with macro
-      x86: cpu/common.c, let 64-bit code have 32-bit only functions
-      x86: cpu/common*.c, make 32-bit have 64-bit only functions
-      x86: cpu/common*.c have same cpu_init(), with copying and #ifdef
-      x86: cpu/common*.c, merge switch_to_new_gdt()
-      x86: cpu/common.c, merge default_init()
-      x86: cpu/common*.c, merge display_cacheinfo()
-      x86: cpu/common*.c, merge detect_ht()
-      x86: cpu/common.c: merge get_cpu_cap()
-      x86: cpu/common*.c, merge early_identify_cpu()
-      x86: cpu/common*.c: merge print_cpu_info()
-      x86: cpu/common*.c, merge generic_identify()
-      x86: cpu/common*.c, merge identify_cpu()
-      x86: use cpu/common.c on 64 bit
-      x86: move nonx_setup etc from common.c to init_64.c
-      x86: remove duplicated get_model_name() calling
-      x86, cpu init: call early_init_xxx in init_xxx
-      x86: cpu make amd.c more like amd_64.c v2
-      x86: remove duplicated force_mwait
-      x86: add srat_detect_node for amd64
-      x86: merge header in amd_64.c
-      x86: make amd.c have 64bit support code
-      x86: make amd_64 have 32 bit code
-      x86: make 64 bit to use amd.c
-      x86: little clean up of intel.c/intel_64.c
-      x86: make intel.c have 64-bit support code
-      x86: make intel_64.c the same as intel.c
-      x86: let intel 64-bit use intel.c
-      x86: intel.c put workaround for old cpus together
-      x86: centaur_64.c remove duplicated setting of CONSTANT_TSC
-      x86: identify_cpu_without_cpuid v2
-      x86: move transmeta cap read to early_init_transmeta()
+Srinivasa Ds (2):
+      signals: demultiplexing SIGTRAP signal
+      signals: demultiplexing SIGTRAP signal, fix
 
 
- Documentation/kernel-parameters.txt                |    6 +
- arch/um/sys-x86_64/syscall_table.c                 |    4 +-
- arch/x86/Kconfig                                   |    8 +
- arch/x86/Kconfig.cpu                               |   54 ++
- arch/x86/boot/cpu.c                                |   17 +-
- arch/x86/boot/mkcpustr.c                           |   40 +-
- arch/x86/ia32/ia32_signal.c                        |   51 +-
- arch/x86/kernel/Makefile                           |    5 +-
- arch/x86/kernel/acpi/boot.c                        |    8 +-
- arch/x86/kernel/apic_32.c                          |  437 +++++----
- arch/x86/kernel/apic_64.c                          |  626 +++++++++++--
- arch/x86/kernel/cpu/Makefile                       |   34 +-
- arch/x86/kernel/cpu/addon_cpuid_features.c         |   88 ++
- arch/x86/kernel/cpu/amd.c                          |  548 ++++++++----
- arch/x86/kernel/cpu/amd_64.c                       |  224 -----
- arch/x86/kernel/cpu/centaur.c                      |    4 +-
- arch/x86/kernel/cpu/centaur_64.c                   |    6 +-
- arch/x86/kernel/cpu/cmpxchg.c                      |   72 ++
- arch/x86/kernel/cpu/common.c                       |  971 ++++++++++++++------
- arch/x86/kernel/cpu/common_64.c                    |  763 ---------------
- arch/x86/kernel/cpu/cpu.h                          |   19 +-
- arch/x86/kernel/cpu/cyrix.c                        |   23 +-
- arch/x86/kernel/cpu/feature_names.c                |   84 --
- arch/x86/kernel/cpu/intel.c                        |  364 ++++----
- arch/x86/kernel/cpu/intel_64.c                     |   95 --
- arch/x86/kernel/cpu/intel_cacheinfo.c              |  169 +++-
- arch/x86/kernel/cpu/mcheck/mce_64.c                |    2 +-
- arch/x86/kernel/cpu/mkcapflags.pl                  |   32 +
- arch/x86/kernel/cpu/powerflags.c                   |   20 +
- arch/x86/kernel/cpu/transmeta.c                    |   32 +-
- arch/x86/kernel/cpu/umc.c                          |    3 +-
- arch/x86/kernel/e820.c                             |   28 +-
- .../es7000plat.c => kernel/es7000_32.c}            |   87 ++-
- arch/x86/kernel/genapic_64.c                       |   88 +--
- arch/x86/kernel/genapic_flat_64.c                  |   62 ++-
- arch/x86/kernel/genx2apic_cluster.c                |  159 ++++
- arch/x86/kernel/genx2apic_phys.c                   |  154 +++
- arch/x86/kernel/genx2apic_uv_x.c                   |   70 ++-
- arch/x86/kernel/i387.c                             |  154 +++-
- arch/x86/kernel/i8259.c                            |   24 +
- arch/x86/kernel/io_apic_32.c                       |   47 +-
- arch/x86/kernel/io_apic_64.c                       |  639 ++++++++++++-
- arch/x86/kernel/irqinit_32.c                       |   49 +
- arch/x86/kernel/mpparse.c                          |    2 +
- arch/x86/kernel/numaq_32.c                         |    7 +
- arch/x86/kernel/paravirt.c                         |    2 -
- arch/x86/kernel/process.c                          |    1 -
- arch/x86/kernel/setup.c                            |    2 +
- arch/x86/kernel/sigframe.h                         |   14 +-
- arch/x86/kernel/signal_32.c                        |   45 +-
- arch/x86/kernel/signal_64.c                        |   95 +--
- arch/x86/kernel/smpboot.c                          |   38 +-
- arch/x86/kernel/summit_32.c                        |    2 +-
- arch/x86/kernel/traps_32.c                         |    1 -
- arch/x86/kernel/traps_64.c                         |    6 +-
- arch/x86/kernel/vmi_32.c                           |    4 +-
- arch/x86/kernel/vmlinux_32.lds.S                   |    9 +-
- arch/x86/kernel/vmlinux_64.lds.S                   |    9 +-
- arch/x86/kernel/xsave.c                            |  316 +++++++
- arch/x86/kvm/vmx.h                                 |   15 -
- arch/x86/lguest/boot.c                             |   38 +-
- arch/x86/lib/Makefile                              |    3 -
- arch/x86/lib/usercopy_32.c                         |    7 +
- arch/x86/mach-default/setup.c                      |   15 -
- arch/x86/mach-es7000/Makefile                      |    5 -
- arch/x86/mach-es7000/es7000.h                      |  114 ---
- arch/x86/mach-generic/Makefile                     |    1 -
- arch/x86/mach-generic/bigsmp.c                     |    9 +-
- arch/x86/mach-generic/es7000.c                     |   13 +-
- arch/x86/mach-generic/numaq.c                      |   12 +-
- arch/x86/mach-generic/summit.c                     |   11 +-
- arch/x86/mm/init_64.c                              |   56 ++
- arch/x86/pci/acpi.c                                |    5 -
- arch/x86/pci/i386.c                                |    3 +
- arch/x86/pci/mmconfig-shared.c                     |   12 +-
- arch/x86/power/cpu_32.c                            |    7 +
- arch/x86/power/cpu_64.c                            |    7 +
- arch/x86/xen/enlighten.c                           |   45 +-
- drivers/pci/Makefile                               |    2 +
- drivers/pci/dma_remapping.h                        |  157 ++++
- drivers/pci/dmar.c                                 |  397 ++++++++-
- drivers/pci/intel-iommu.c                          |  185 +----
- drivers/pci/intel-iommu.h                          |  233 ++---
- drivers/pci/intr_remapping.c                       |  471 ++++++++++
- drivers/pci/intr_remapping.h                       |    8 +
- include/asm-generic/vmlinux.lds.h                  |    1 +
- include/asm-x86/apic.h                             |   65 ++-
- include/asm-x86/apicdef.h                          |    3 +
- include/asm-x86/arch_hooks.h                       |    2 -
- .../{mach-bigsmp/mach_apic.h => bigsmp/apic.h}     |   10 +-
- include/asm-x86/bigsmp/apicdef.h                   |   13 +
- .../{mach-bigsmp/mach_ipi.h => bigsmp/ipi.h}       |    6 +-
- include/asm-x86/bugs.h                             |    5 +
- include/asm-x86/cpufeature.h                       |  118 ++-
- include/asm-x86/e820.h                             |    2 +
- .../{mach-es7000/mach_apic.h => es7000/apic.h}     |   32 +-
- include/asm-x86/es7000/apicdef.h                   |   13 +
- .../{mach-es7000/mach_ipi.h => es7000/ipi.h}       |    6 +-
- .../mach_mpparse.h => es7000/mpparse.h}            |    6 +-
- .../mach_wakecpu.h => es7000/wakecpu.h}            |    8 +-
- include/asm-x86/genapic_64.h                       |    8 +
- include/asm-x86/hw_irq.h                           |    3 +-
- include/asm-x86/i387.h                             |   84 ++-
- include/asm-x86/i8259.h                            |    3 +
- include/asm-x86/io_apic.h                          |   20 +
- include/asm-x86/ipi.h                              |   16 +-
- include/asm-x86/irq_remapping.h                    |    8 +
- include/asm-x86/mach-bigsmp/mach_apicdef.h         |   13 -
- include/asm-x86/mach-default/mach_apic.h           |    4 +-
- include/asm-x86/mach-default/mach_apicdef.h        |    6 +-
- include/asm-x86/mach-es7000/mach_apicdef.h         |   13 -
- include/asm-x86/mach-numaq/mach_mpparse.h          |    7 -
- include/asm-x86/mach-summit/mach_apicdef.h         |   13 -
- include/asm-x86/mpspec.h                           |    3 +-
- include/asm-x86/msidef.h                           |    4 +
- include/asm-x86/msr-index.h                        |   16 +
- .../{mach-numaq/mach_apic.h => numaq/apic.h}       |    6 +-
- .../{mach-numaq/mach_apicdef.h => numaq/apicdef.h} |    6 +-
- .../asm-x86/{mach-numaq/mach_ipi.h => numaq/ipi.h} |    6 +-
- include/asm-x86/numaq/mpparse.h                    |    7 +
- .../{mach-numaq/mach_wakecpu.h => numaq/wakecpu.h} |    6 +-
- include/asm-x86/paravirt.h                         |   19 -
- include/asm-x86/processor-cyrix.h                  |    8 +
- include/asm-x86/processor-flags.h                  |    1 +
- include/asm-x86/processor.h                        |   27 +-
- include/asm-x86/setup.h                            |    1 +
- include/asm-x86/sigcontext.h                       |   87 ++-
- include/asm-x86/sigcontext32.h                     |    6 +-
- include/asm-x86/smp.h                              |   17 +-
- .../{mach-summit/mach_apic.h => summit/apic.h}     |   24 +-
- include/asm-x86/summit/apicdef.h                   |   13 +
- .../{mach-summit/mach_ipi.h => summit/ipi.h}       |    6 +-
- .../{mach-summit => summit}/irq_vectors_limits.h   |    6 +-
- .../mach_mpparse.h => summit/mpparse.h}            |   13 +-
- include/asm-x86/thread_info.h                      |    1 +
- include/asm-x86/ucontext.h                         |    6 +
- include/asm-x86/xcr.h                              |   49 +
- include/asm-x86/xsave.h                            |  118 +++
- include/linux/dmar.h                               |  127 ++-
- include/linux/ioport.h                             |    3 +
- include/linux/irq.h                                |    1 +
- include/linux/percpu.h                             |    7 +
- kernel/irq/manage.c                                |    9 +-
- kernel/resource.c                                  |   68 ++
- 144 files changed, 6627 insertions(+), 3286 deletions(-)
- delete mode 100644 arch/x86/kernel/cpu/amd_64.c
- create mode 100644 arch/x86/kernel/cpu/cmpxchg.c
- delete mode 100644 arch/x86/kernel/cpu/common_64.c
- delete mode 100644 arch/x86/kernel/cpu/feature_names.c
- delete mode 100644 arch/x86/kernel/cpu/intel_64.c
- create mode 100644 arch/x86/kernel/cpu/mkcapflags.pl
- create mode 100644 arch/x86/kernel/cpu/powerflags.c
- rename arch/x86/{mach-es7000/es7000plat.c => kernel/es7000_32.c} (78%)
- create mode 100644 arch/x86/kernel/genx2apic_cluster.c
- create mode 100644 arch/x86/kernel/genx2apic_phys.c
- create mode 100644 arch/x86/kernel/xsave.c
- delete mode 100644 arch/x86/mach-es7000/Makefile
- delete mode 100644 arch/x86/mach-es7000/es7000.h
- create mode 100644 drivers/pci/dma_remapping.h
- create mode 100644 drivers/pci/intr_remapping.c
- create mode 100644 drivers/pci/intr_remapping.h
- rename include/asm-x86/{mach-bigsmp/mach_apic.h => bigsmp/apic.h} (94%)
- create mode 100644 include/asm-x86/bigsmp/apicdef.h
- rename include/asm-x86/{mach-bigsmp/mach_ipi.h => bigsmp/ipi.h} (77%)
- rename include/asm-x86/{mach-es7000/mach_apic.h => es7000/apic.h} (91%)
- create mode 100644 include/asm-x86/es7000/apicdef.h
- rename include/asm-x86/{mach-es7000/mach_ipi.h => es7000/ipi.h} (77%)
- rename include/asm-x86/{mach-es7000/mach_mpparse.h => es7000/mpparse.h} (81%)
- rename include/asm-x86/{mach-es7000/mach_wakecpu.h => es7000/wakecpu.h} (89%)
- create mode 100644 include/asm-x86/irq_remapping.h
- delete mode 100644 include/asm-x86/mach-bigsmp/mach_apicdef.h
- delete mode 100644 include/asm-x86/mach-es7000/mach_apicdef.h
- delete mode 100644 include/asm-x86/mach-numaq/mach_mpparse.h
- delete mode 100644 include/asm-x86/mach-summit/mach_apicdef.h
- rename include/asm-x86/{mach-numaq/mach_apic.h => numaq/apic.h} (96%)
- rename include/asm-x86/{mach-numaq/mach_apicdef.h => numaq/apicdef.h} (55%)
- rename include/asm-x86/{mach-numaq/mach_ipi.h => numaq/ipi.h} (77%)
- create mode 100644 include/asm-x86/numaq/mpparse.h
- rename include/asm-x86/{mach-numaq/mach_wakecpu.h => numaq/wakecpu.h} (88%)
- rename include/asm-x86/{mach-summit/mach_apic.h => summit/apic.h} (93%)
- create mode 100644 include/asm-x86/summit/apicdef.h
- rename include/asm-x86/{mach-summit/mach_ipi.h => summit/ipi.h} (77%)
- rename include/asm-x86/{mach-summit => summit}/irq_vectors_limits.h (65%)
- rename include/asm-x86/{mach-summit/mach_mpparse.h => summit/mpparse.h} (95%)
- create mode 100644 include/asm-x86/xcr.h
- create mode 100644 include/asm-x86/xsave.h
+ arch/ia64/include/asm/siginfo.h    |    5 -
+ arch/powerpc/include/asm/siginfo.h |    5 -
+ arch/x86/ia32/ia32_signal.c        |   68 +++++-------
+ arch/x86/kernel/ptrace.c           |    7 +-
+ arch/x86/kernel/signal_32.c        |  222 ++++++++++++++++++++++--------------
+ arch/x86/kernel/signal_64.c        |  207 ++++++++++++++++++++-------------
+ arch/x86/kernel/traps_32.c         |    4 +-
+ arch/x86/kernel/traps_64.c         |    2 +-
+ include/asm-generic/siginfo.h      |    2 +
+ include/asm-parisc/siginfo.h       |    5 -
+ include/asm-x86/ptrace.h           |    6 +-
+ include/asm-x86/traps.h            |   12 ++
+ 12 files changed, 310 insertions(+), 235 deletions(-)
 
+diff --git a/arch/ia64/include/asm/siginfo.h b/arch/ia64/include/asm/siginfo.h
+index 9294e4b..118d429 100644
+--- a/arch/ia64/include/asm/siginfo.h
++++ b/arch/ia64/include/asm/siginfo.h
+@@ -113,11 +113,6 @@ typedef struct siginfo {
+ #undef NSIGSEGV
+ #define NSIGSEGV	3
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+diff --git a/arch/powerpc/include/asm/siginfo.h b/arch/powerpc/include/asm/siginfo.h
+index 12f1bce..49495b0 100644
+--- a/arch/powerpc/include/asm/siginfo.h
++++ b/arch/powerpc/include/asm/siginfo.h
+@@ -15,11 +15,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index 8d64c1b..4bc02b2 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -351,31 +351,28 @@ static int ia32_setup_sigcontext(struct sigcontext_ia32 __user *sc,
+ 	savesegment(es, tmp);
+ 	err |= __put_user(tmp, (unsigned int __user *)&sc->es);
+ 
+-	err |= __put_user((u32)regs->di, &sc->di);
+-	err |= __put_user((u32)regs->si, &sc->si);
+-	err |= __put_user((u32)regs->bp, &sc->bp);
+-	err |= __put_user((u32)regs->sp, &sc->sp);
+-	err |= __put_user((u32)regs->bx, &sc->bx);
+-	err |= __put_user((u32)regs->dx, &sc->dx);
+-	err |= __put_user((u32)regs->cx, &sc->cx);
+-	err |= __put_user((u32)regs->ax, &sc->ax);
+-	err |= __put_user((u32)regs->cs, &sc->cs);
+-	err |= __put_user((u32)regs->ss, &sc->ss);
++	err |= __put_user(regs->di, &sc->di);
++	err |= __put_user(regs->si, &sc->si);
++	err |= __put_user(regs->bp, &sc->bp);
++	err |= __put_user(regs->sp, &sc->sp);
++	err |= __put_user(regs->bx, &sc->bx);
++	err |= __put_user(regs->dx, &sc->dx);
++	err |= __put_user(regs->cx, &sc->cx);
++	err |= __put_user(regs->ax, &sc->ax);
++	err |= __put_user(regs->cs, &sc->cs);
++	err |= __put_user(regs->ss, &sc->ss);
+ 	err |= __put_user(current->thread.trap_no, &sc->trapno);
+ 	err |= __put_user(current->thread.error_code, &sc->err);
+-	err |= __put_user((u32)regs->ip, &sc->ip);
+-	err |= __put_user((u32)regs->flags, &sc->flags);
+-	err |= __put_user((u32)regs->sp, &sc->sp_at_signal);
++	err |= __put_user(regs->ip, &sc->ip);
++	err |= __put_user(regs->flags, &sc->flags);
++	err |= __put_user(regs->sp, &sc->sp_at_signal);
+ 
+ 	tmp = save_i387_xstate_ia32(fpstate);
+ 	if (tmp < 0)
+ 		err = -EFAULT;
+-	else {
+-		clear_used_math();
+-		stts();
++	else
+ 		err |= __put_user(ptr_to_compat(tmp ? fpstate : NULL),
+ 					&sc->fpstate);
+-	}
+ 
+ 	/* non-iBCS2 extensions.. */
+ 	err |= __put_user(mask, &sc->oldmask);
+@@ -444,21 +441,18 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+-	err |= __put_user(sig, &frame->sig);
+-	if (err)
+-		goto give_sigsegv;
++	if (__put_user(sig, &frame->sig))
++		return -EFAULT;
+ 
+-	err |= ia32_setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]);
+-	if (err)
+-		goto give_sigsegv;
++	if (ia32_setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]))
++		return -EFAULT;
+ 
+ 	if (_COMPAT_NSIG_WORDS > 1) {
+-		err |= __copy_to_user(frame->extramask, &set->sig[1],
+-				      sizeof(frame->extramask));
+-		if (err)
+-			goto give_sigsegv;
++		if (__copy_to_user(frame->extramask, &set->sig[1],
++				   sizeof(frame->extramask)))
++			return -EFAULT;
+ 	}
+ 
+ 	if (ka->sa.sa_flags & SA_RESTORER) {
+@@ -479,7 +473,7 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	 */
+ 	err |= __copy_to_user(frame->retcode, &code, 8);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long) frame;
+@@ -502,10 +496,6 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ #endif
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+@@ -533,14 +523,14 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	err |= __put_user(sig, &frame->sig);
+ 	err |= __put_user(ptr_to_compat(&frame->info), &frame->pinfo);
+ 	err |= __put_user(ptr_to_compat(&frame->uc), &frame->puc);
+ 	err |= copy_siginfo_to_user32(&frame->info, info);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Create the ucontext.  */
+ 	if (cpu_has_xsave)
+@@ -556,7 +546,7 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 				     regs, set->sig[0]);
+ 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	if (ka->sa.sa_flags & SA_RESTORER)
+ 		restorer = ka->sa.sa_restorer;
+@@ -571,7 +561,7 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	 */
+ 	err |= __copy_to_user(frame->retcode, &code, 8);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long) frame;
+@@ -599,8 +589,4 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ #endif
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index e375b65..42ec442 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1452,7 +1452,8 @@ const struct user_regset_view *task_user_regset_view(struct task_struct *task)
+ #endif
+ }
+ 
+-void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
++void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
++					 int error_code, int si_code)
+ {
+ 	struct siginfo info;
+ 
+@@ -1461,7 +1462,7 @@ void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
+ 
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = SIGTRAP;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = si_code;
+ 
+ 	/* User-mode ip? */
+ 	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->ip : NULL;
+@@ -1548,5 +1549,5 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
+ 	 */
+ 	if (test_thread_flag(TIF_SINGLESTEP) &&
+ 	    tracehook_consider_fatal_signal(current, SIGTRAP, SIG_DFL))
+-		send_sigtrap(current, regs, 0);
++		send_sigtrap(current, regs, 0, TRAP_BRKPT);
+ }
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index b21070e..d6dd057 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -27,6 +27,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/i387.h>
+ #include <asm/vdso.h>
++#include <asm/syscall.h>
+ #include <asm/syscalls.h>
+ 
+ #include "sigframe.h"
+@@ -112,6 +113,27 @@ asmlinkage int sys_sigaltstack(unsigned long bx)
+ 	return do_sigaltstack(uss, uoss, regs->sp);
+ }
+ 
++#define COPY(x)			{		\
++	err |= __get_user(regs->x, &sc->x);	\
++}
++
++#define COPY_SEG(seg)		{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		regs->seg = tmp;			\
++}
++
++#define COPY_SEG_STRICT(seg)	{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		regs->seg = tmp | 3;			\
++}
++
++#define GET_SEG(seg)		{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		loadsegment(seg, tmp);			\
++}
+ 
+ /*
+  * Do a signal return; undo the signal stack.
+@@ -120,28 +142,13 @@ static int
+ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 		   unsigned long *pax)
+ {
++	void __user *buf;
++	unsigned int tmpflags;
+ 	unsigned int err = 0;
+ 
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+-#define COPY(x)		err |= __get_user(regs->x, &sc->x)
+-
+-#define COPY_SEG(seg)							\
+-	{ unsigned short tmp;						\
+-	  err |= __get_user(tmp, &sc->seg);				\
+-	  regs->seg = tmp; }
+-
+-#define COPY_SEG_STRICT(seg)						\
+-	{ unsigned short tmp;						\
+-	  err |= __get_user(tmp, &sc->seg);				\
+-	  regs->seg = tmp|3; }
+-
+-#define GET_SEG(seg)							\
+-	{ unsigned short tmp;						\
+-	  err |= __get_user(tmp, &sc->seg);				\
+-	  loadsegment(seg, tmp); }
+-
+ 	GET_SEG(gs);
+ 	COPY_SEG(fs);
+ 	COPY_SEG(es);
+@@ -151,21 +158,12 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	COPY_SEG_STRICT(cs);
+ 	COPY_SEG_STRICT(ss);
+ 
+-	{
+-		unsigned int tmpflags;
+-
+-		err |= __get_user(tmpflags, &sc->flags);
+-		regs->flags = (regs->flags & ~FIX_EFLAGS) |
+-						(tmpflags & FIX_EFLAGS);
+-		regs->orig_ax = -1;		/* disable syscall checks */
+-	}
+-
+-	{
+-		void __user *buf;
++	err |= __get_user(tmpflags, &sc->flags);
++	regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
++	regs->orig_ax = -1;		/* disable syscall checks */
+ 
+-		err |= __get_user(buf, &sc->fpstate);
+-		err |= restore_i387_xstate(buf);
+-	}
++	err |= __get_user(buf, &sc->fpstate);
++	err |= restore_i387_xstate(buf);
+ 
+ 	err |= __get_user(*pax, &sc->ax);
+ 	return err;
+@@ -214,9 +212,8 @@ badframe:
+ 	return 0;
+ }
+ 
+-asmlinkage int sys_rt_sigreturn(unsigned long __unused)
++static long do_rt_sigreturn(struct pt_regs *regs)
+ {
+-	struct pt_regs *regs = (struct pt_regs *)&__unused;
+ 	struct rt_sigframe __user *frame;
+ 	unsigned long ax;
+ 	sigset_t set;
+@@ -242,10 +239,17 @@ asmlinkage int sys_rt_sigreturn(unsigned long __unused)
+ 	return ax;
+ 
+ badframe:
+-	force_sig(SIGSEGV, current);
++	signal_fault(regs, frame, "rt_sigreturn");
+ 	return 0;
+ }
+ 
++asmlinkage int sys_rt_sigreturn(unsigned long __unused)
++{
++	struct pt_regs *regs = (struct pt_regs *)&__unused;
++
++	return do_rt_sigreturn(regs);
++}
++
+ /*
+  * Set up a signal frame.
+  */
+@@ -337,39 +341,29 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
+ }
+ 
+ static int
+-setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+-	    struct pt_regs *regs)
++__setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
++	      struct pt_regs *regs)
+ {
+ 	struct sigframe __user *frame;
+ 	void __user *restorer;
+ 	int err = 0;
+-	int usig;
+ 	void __user *fpstate = NULL;
+ 
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+-	usig = current_thread_info()->exec_domain
+-		&& current_thread_info()->exec_domain->signal_invmap
+-		&& sig < 32
+-		? current_thread_info()->exec_domain->signal_invmap[sig]
+-		: sig;
++	if (__put_user(sig, &frame->sig))
++		return -EFAULT;
+ 
+-	err = __put_user(usig, &frame->sig);
+-	if (err)
+-		goto give_sigsegv;
+-
+-	err = setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]);
+-	if (err)
+-		goto give_sigsegv;
++	if (setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]))
++		return -EFAULT;
+ 
+ 	if (_NSIG_WORDS > 1) {
+-		err = __copy_to_user(&frame->extramask, &set->sig[1],
+-				      sizeof(frame->extramask));
+-		if (err)
+-			goto give_sigsegv;
++		if (__copy_to_user(&frame->extramask, &set->sig[1],
++				   sizeof(frame->extramask)))
++			return -EFAULT;
+ 	}
+ 
+ 	if (current->mm->context.vdso)
+@@ -394,7 +388,7 @@ setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+ 	err |= __put_user(0x80cd, (short __user *)(frame->retcode+6));
+ 
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long)frame;
+@@ -409,38 +403,27 @@ setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+ 	regs->cs = __USER_CS;
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+-static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+-			  sigset_t *set, struct pt_regs *regs)
++static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
++			    sigset_t *set, struct pt_regs *regs)
+ {
+ 	struct rt_sigframe __user *frame;
+ 	void __user *restorer;
+ 	int err = 0;
+-	int usig;
+ 	void __user *fpstate = NULL;
+ 
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
+-
+-	usig = current_thread_info()->exec_domain
+-		&& current_thread_info()->exec_domain->signal_invmap
+-		&& sig < 32
+-		? current_thread_info()->exec_domain->signal_invmap[sig]
+-		: sig;
++		return -EFAULT;
+ 
+-	err |= __put_user(usig, &frame->sig);
++	err |= __put_user(sig, &frame->sig);
+ 	err |= __put_user(&frame->info, &frame->pinfo);
+ 	err |= __put_user(&frame->uc, &frame->puc);
+ 	err |= copy_siginfo_to_user(&frame->info, info);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Create the ucontext.  */
+ 	if (cpu_has_xsave)
+@@ -456,7 +439,7 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 				regs, set->sig[0]);
+ 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up to return from userspace.  */
+ 	restorer = VDSO32_SYMBOL(current->mm->context.vdso, rt_sigreturn);
+@@ -476,12 +459,12 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	err |= __put_user(0x80cd, (short __user *)(frame->retcode+5));
+ 
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long)frame;
+ 	regs->ip = (unsigned long)ka->sa.sa_handler;
+-	regs->ax = (unsigned long)usig;
++	regs->ax = (unsigned long)sig;
+ 	regs->dx = (unsigned long)&frame->info;
+ 	regs->cx = (unsigned long)&frame->uc;
+ 
+@@ -491,15 +474,48 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	regs->cs = __USER_CS;
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+ /*
+  * OK, we're invoking a handler:
+  */
++static int signr_convert(int sig)
++{
++	struct thread_info *info = current_thread_info();
++
++	if (info->exec_domain && info->exec_domain->signal_invmap && sig < 32)
++		return info->exec_domain->signal_invmap[sig];
++	return sig;
++}
++
++#define is_ia32	1
++#define ia32_setup_frame	__setup_frame
++#define ia32_setup_rt_frame	__setup_rt_frame
++
++static int
++setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
++	       sigset_t *set, struct pt_regs *regs)
++{
++	int usig = signr_convert(sig);
++	int ret;
++
++	/* Set up the stack frame */
++	if (is_ia32) {
++		if (ka->sa.sa_flags & SA_SIGINFO)
++			ret = ia32_setup_rt_frame(usig, ka, info, set, regs);
++		else
++			ret = ia32_setup_frame(usig, ka, set, regs);
++	} else
++		ret = __setup_rt_frame(sig, ka, info, set, regs);
++
++	if (ret) {
++		force_sigsegv(sig, current);
++		return -EFAULT;
++	}
++
++	return ret;
++}
++
+ static int
+ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
+ 	      sigset_t *oldset, struct pt_regs *regs)
+@@ -507,9 +523,9 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
+ 	int ret;
+ 
+ 	/* Are we from a system call? */
+-	if ((long)regs->orig_ax >= 0) {
++	if (syscall_get_nr(current, regs) >= 0) {
+ 		/* If so, check system call restarting.. */
+-		switch (regs->ax) {
++		switch (syscall_get_error(current, regs)) {
+ 		case -ERESTART_RESTARTBLOCK:
+ 		case -ERESTARTNOHAND:
+ 			regs->ax = -EINTR;
+@@ -536,15 +552,20 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
+ 	    likely(test_and_clear_thread_flag(TIF_FORCED_TF)))
+ 		regs->flags &= ~X86_EFLAGS_TF;
+ 
+-	/* Set up the stack frame */
+-	if (ka->sa.sa_flags & SA_SIGINFO)
+-		ret = setup_rt_frame(sig, ka, info, oldset, regs);
+-	else
+-		ret = setup_frame(sig, ka, oldset, regs);
++	ret = setup_rt_frame(sig, ka, info, oldset, regs);
+ 
+ 	if (ret)
+ 		return ret;
+ 
++#ifdef CONFIG_X86_64
++	/*
++	 * This has nothing to do with segment registers,
++	 * despite the name.  This magic affects uaccess.h
++	 * macros' behavior.  Reset it to the normal setting.
++	 */
++	set_fs(USER_DS);
++#endif
++
+ 	/*
+ 	 * Clear the direction flag as per the ABI for function entry.
+ 	 */
+@@ -571,6 +592,7 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
+ 	return 0;
+ }
+ 
++#define NR_restart_syscall	__NR_restart_syscall
+ /*
+  * Note that 'init' is a special process: it doesn't get signals it doesn't
+  * want to handle. Thus you cannot kill init even with a SIGKILL even by
+@@ -623,9 +645,9 @@ static void do_signal(struct pt_regs *regs)
+ 	}
+ 
+ 	/* Did we come from a system call? */
+-	if ((long)regs->orig_ax >= 0) {
++	if (syscall_get_nr(current, regs) >= 0) {
+ 		/* Restart the system call - no handlers present */
+-		switch (regs->ax) {
++		switch (syscall_get_error(current, regs)) {
+ 		case -ERESTARTNOHAND:
+ 		case -ERESTARTSYS:
+ 		case -ERESTARTNOINTR:
+@@ -634,7 +656,7 @@ static void do_signal(struct pt_regs *regs)
+ 			break;
+ 
+ 		case -ERESTART_RESTARTBLOCK:
+-			regs->ax = __NR_restart_syscall;
++			regs->ax = NR_restart_syscall;
+ 			regs->ip -= 2;
+ 			break;
+ 		}
+@@ -657,6 +679,12 @@ static void do_signal(struct pt_regs *regs)
+ void
+ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
+ {
++#if defined(CONFIG_X86_64) && defined(CONFIG_X86_MCE)
++	/* notify userspace of pending MCEs */
++	if (thread_info_flags & _TIF_MCE_NOTIFY)
++		mce_notify_user();
++#endif /* CONFIG_X86_64 && CONFIG_X86_MCE */
++
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & _TIF_SIGPENDING)
+ 		do_signal(regs);
+@@ -666,5 +694,23 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
+ 		tracehook_notify_resume(regs);
+ 	}
+ 
++#ifdef CONFIG_X86_32
+ 	clear_thread_flag(TIF_IRET);
++#endif /* CONFIG_X86_32 */
++}
++
++void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
++{
++	struct task_struct *me = current;
++
++	if (show_unhandled_signals && printk_ratelimit()) {
++		printk(KERN_INFO
++		       "%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
++		       me->comm, me->pid, where, frame,
++		       regs->ip, regs->sp, regs->orig_ax);
++		print_vma_addr(" in ", regs->ip);
++		printk(KERN_CONT "\n");
++	}
++
++	force_sig(SIGSEGV, me);
+ }
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index 823a55b..a5c9627 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -52,6 +52,16 @@ sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
+ 	return do_sigaltstack(uss, uoss, regs->sp);
+ }
+ 
++#define COPY(x)			{		\
++	err |= __get_user(regs->x, &sc->x);	\
++}
++
++#define COPY_SEG_STRICT(seg)	{			\
++		unsigned short tmp;			\
++		err |= __get_user(tmp, &sc->seg);	\
++		regs->seg = tmp | 3;			\
++}
++
+ /*
+  * Do a signal return; undo the signal stack.
+  */
+@@ -59,13 +69,13 @@ static int
+ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 		   unsigned long *pax)
+ {
++	void __user *buf;
++	unsigned int tmpflags;
+ 	unsigned int err = 0;
+ 
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+-#define COPY(x)		(err |= __get_user(regs->x, &sc->x))
+-
+ 	COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
+ 	COPY(dx); COPY(cx); COPY(ip);
+ 	COPY(r8);
+@@ -80,34 +90,24 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	/* Kernel saves and restores only the CS segment register on signals,
+ 	 * which is the bare minimum needed to allow mixed 32/64-bit code.
+ 	 * App's signal handler can save/restore other segments if needed. */
+-	{
+-		unsigned cs;
+-		err |= __get_user(cs, &sc->cs);
+-		regs->cs = cs | 3;	/* Force into user mode */
+-	}
++	COPY_SEG_STRICT(cs);
+ 
+-	{
+-		unsigned int tmpflags;
+-		err |= __get_user(tmpflags, &sc->flags);
+-		regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
+-		regs->orig_ax = -1;		/* disable syscall checks */
+-	}
++	err |= __get_user(tmpflags, &sc->flags);
++	regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
++	regs->orig_ax = -1;		/* disable syscall checks */
+ 
+-	{
+-		struct _fpstate __user *buf;
+-		err |= __get_user(buf, &sc->fpstate);
+-		err |= restore_i387_xstate(buf);
+-	}
++	err |= __get_user(buf, &sc->fpstate);
++	err |= restore_i387_xstate(buf);
+ 
+ 	err |= __get_user(*pax, &sc->ax);
+ 	return err;
+ }
+ 
+-asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
++static long do_rt_sigreturn(struct pt_regs *regs)
+ {
+ 	struct rt_sigframe __user *frame;
+-	sigset_t set;
+ 	unsigned long ax;
++	sigset_t set;
+ 
+ 	frame = (struct rt_sigframe __user *)(regs->sp - sizeof(long));
+ 	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
+@@ -130,10 +130,15 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
+ 	return ax;
+ 
+ badframe:
+-	signal_fault(regs, frame, "sigreturn");
++	signal_fault(regs, frame, "rt_sigreturn");
+ 	return 0;
+ }
+ 
++asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
++{
++	return do_rt_sigreturn(regs);
++}
++
+ /*
+  * Set up a signal frame.
+  */
+@@ -195,8 +200,8 @@ get_stack(struct k_sigaction *ka, struct pt_regs *regs, unsigned long size)
+ 	return (void __user *)round_down(sp - size, 64);
+ }
+ 
+-static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+-			   sigset_t *set, struct pt_regs *regs)
++static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
++			    sigset_t *set, struct pt_regs *regs)
+ {
+ 	struct rt_sigframe __user *frame;
+ 	void __user *fp = NULL;
+@@ -209,17 +214,16 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 			(unsigned long)fp - sizeof(struct rt_sigframe), 16) - 8;
+ 
+ 		if (save_i387_xstate(fp) < 0)
+-			err |= -1;
++			return -EFAULT;
+ 	} else
+ 		frame = get_stack(ka, regs, sizeof(struct rt_sigframe)) - 8;
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	if (ka->sa.sa_flags & SA_SIGINFO) {
+-		err |= copy_siginfo_to_user(&frame->info, info);
+-		if (err)
+-			goto give_sigsegv;
++		if (copy_siginfo_to_user(&frame->info, info))
++			return -EFAULT;
+ 	}
+ 
+ 	/* Create the ucontext.  */
+@@ -247,11 +251,11 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 		err |= __put_user(ka->sa.sa_restorer, &frame->pretcode);
+ 	} else {
+ 		/* could use a vstub here */
+-		goto give_sigsegv;
++		return -EFAULT;
+ 	}
+ 
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->di = sig;
+@@ -271,15 +275,45 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	regs->cs = __USER_CS;
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+ /*
+  * OK, we're invoking a handler
+  */
++static int signr_convert(int sig)
++{
++	return sig;
++}
++
++#ifdef CONFIG_IA32_EMULATION
++#define is_ia32	test_thread_flag(TIF_IA32)
++#else
++#define is_ia32	0
++#endif
++
++static int
++setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
++	       sigset_t *set, struct pt_regs *regs)
++{
++	int usig = signr_convert(sig);
++	int ret;
++
++	/* Set up the stack frame */
++	if (is_ia32) {
++		if (ka->sa.sa_flags & SA_SIGINFO)
++			ret = ia32_setup_rt_frame(usig, ka, info, set, regs);
++		else
++			ret = ia32_setup_frame(usig, ka, set, regs);
++	} else
++		ret = __setup_rt_frame(sig, ka, info, set, regs);
++
++	if (ret) {
++		force_sigsegv(sig, current);
++		return -EFAULT;
++	}
++
++	return ret;
++}
+ 
+ static int
+ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
+@@ -317,51 +351,48 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
+ 	    likely(test_and_clear_thread_flag(TIF_FORCED_TF)))
+ 		regs->flags &= ~X86_EFLAGS_TF;
+ 
+-#ifdef CONFIG_IA32_EMULATION
+-	if (test_thread_flag(TIF_IA32)) {
+-		if (ka->sa.sa_flags & SA_SIGINFO)
+-			ret = ia32_setup_rt_frame(sig, ka, info, oldset, regs);
+-		else
+-			ret = ia32_setup_frame(sig, ka, oldset, regs);
+-	} else
+-#endif
+ 	ret = setup_rt_frame(sig, ka, info, oldset, regs);
+ 
+-	if (ret == 0) {
+-		/*
+-		 * This has nothing to do with segment registers,
+-		 * despite the name.  This magic affects uaccess.h
+-		 * macros' behavior.  Reset it to the normal setting.
+-		 */
+-		set_fs(USER_DS);
++	if (ret)
++		return ret;
+ 
+-		/*
+-		 * Clear the direction flag as per the ABI for function entry.
+-		 */
+-		regs->flags &= ~X86_EFLAGS_DF;
++#ifdef CONFIG_X86_64
++	/*
++	 * This has nothing to do with segment registers,
++	 * despite the name.  This magic affects uaccess.h
++	 * macros' behavior.  Reset it to the normal setting.
++	 */
++	set_fs(USER_DS);
++#endif
+ 
+-		/*
+-		 * Clear TF when entering the signal handler, but
+-		 * notify any tracer that was single-stepping it.
+-		 * The tracer may want to single-step inside the
+-		 * handler too.
+-		 */
+-		regs->flags &= ~X86_EFLAGS_TF;
++	/*
++	 * Clear the direction flag as per the ABI for function entry.
++	 */
++	regs->flags &= ~X86_EFLAGS_DF;
+ 
+-		spin_lock_irq(&current->sighand->siglock);
+-		sigorsets(&current->blocked, &current->blocked, &ka->sa.sa_mask);
+-		if (!(ka->sa.sa_flags & SA_NODEFER))
+-			sigaddset(&current->blocked, sig);
+-		recalc_sigpending();
+-		spin_unlock_irq(&current->sighand->siglock);
++	/*
++	 * Clear TF when entering the signal handler, but
++	 * notify any tracer that was single-stepping it.
++	 * The tracer may want to single-step inside the
++	 * handler too.
++	 */
++	regs->flags &= ~X86_EFLAGS_TF;
+ 
+-		tracehook_signal_handler(sig, info, ka, regs,
+-					 test_thread_flag(TIF_SINGLESTEP));
+-	}
++	spin_lock_irq(&current->sighand->siglock);
++	sigorsets(&current->blocked, &current->blocked, &ka->sa.sa_mask);
++	if (!(ka->sa.sa_flags & SA_NODEFER))
++		sigaddset(&current->blocked, sig);
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
+ 
+-	return ret;
++	tracehook_signal_handler(sig, info, ka, regs,
++				 test_thread_flag(TIF_SINGLESTEP));
++
++	return 0;
+ }
+ 
++#define NR_restart_syscall	\
++	test_thread_flag(TIF_IA32) ? __NR_ia32_restart_syscall : __NR_restart_syscall
+ /*
+  * Note that 'init' is a special process: it doesn't get signals it doesn't
+  * want to handle. Thus you cannot kill init even with a SIGKILL even by
+@@ -391,7 +422,8 @@ static void do_signal(struct pt_regs *regs)
+ 
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+ 	if (signr > 0) {
+-		/* Re-enable any watchpoints before delivering the
++		/*
++		 * Re-enable any watchpoints before delivering the
+ 		 * signal to user space. The processor register will
+ 		 * have been cleared if the watchpoint triggered
+ 		 * inside the kernel.
+@@ -399,7 +431,7 @@ static void do_signal(struct pt_regs *regs)
+ 		if (current->thread.debugreg7)
+ 			set_debugreg(current->thread.debugreg7, 7);
+ 
+-		/* Whee!  Actually deliver the signal.  */
++		/* Whee! Actually deliver the signal.  */
+ 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
+ 			/*
+ 			 * A signal was successfully delivered; the saved
+@@ -422,10 +454,9 @@ static void do_signal(struct pt_regs *regs)
+ 			regs->ax = regs->orig_ax;
+ 			regs->ip -= 2;
+ 			break;
++
+ 		case -ERESTART_RESTARTBLOCK:
+-			regs->ax = test_thread_flag(TIF_IA32) ?
+-					__NR_ia32_restart_syscall :
+-					__NR_restart_syscall;
++			regs->ax = NR_restart_syscall;
+ 			regs->ip -= 2;
+ 			break;
+ 		}
+@@ -441,14 +472,18 @@ static void do_signal(struct pt_regs *regs)
+ 	}
+ }
+ 
+-void do_notify_resume(struct pt_regs *regs, void *unused,
+-		      __u32 thread_info_flags)
++/*
++ * notification of userspace execution resumption
++ * - triggered by the TIF_WORK_MASK flags
++ */
++void
++do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
+ {
+-#ifdef CONFIG_X86_MCE
++#if defined(CONFIG_X86_64) && defined(CONFIG_X86_MCE)
+ 	/* notify userspace of pending MCEs */
+ 	if (thread_info_flags & _TIF_MCE_NOTIFY)
+ 		mce_notify_user();
+-#endif /* CONFIG_X86_MCE */
++#endif /* CONFIG_X86_64 && CONFIG_X86_MCE */
+ 
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & _TIF_SIGPENDING)
+@@ -458,17 +493,23 @@ void do_notify_resume(struct pt_regs *regs, void *unused,
+ 		clear_thread_flag(TIF_NOTIFY_RESUME);
+ 		tracehook_notify_resume(regs);
+ 	}
++
++#ifdef CONFIG_X86_32
++	clear_thread_flag(TIF_IRET);
++#endif /* CONFIG_X86_32 */
+ }
+ 
+ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
+ {
+ 	struct task_struct *me = current;
++
+ 	if (show_unhandled_signals && printk_ratelimit()) {
+-		printk("%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
+-	       me->comm, me->pid, where, frame, regs->ip,
+-		   regs->sp, regs->orig_ax);
++		printk(KERN_INFO
++		       "%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
++		       me->comm, me->pid, where, frame,
++		       regs->ip, regs->sp, regs->orig_ax);
+ 		print_vma_addr(" in ", regs->ip);
+-		printk("\n");
++		printk(KERN_CONT "\n");
+ 	}
+ 
+ 	force_sig(SIGSEGV, me);
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index da5a596..0429c5d 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -891,6 +891,7 @@ void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ {
+ 	struct task_struct *tsk = current;
+ 	unsigned int condition;
++	int si_code;
+ 
+ 	trace_hardirqs_fixup();
+ 
+@@ -935,8 +936,9 @@ void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ 			goto clear_TF_reenable;
+ 	}
+ 
++	si_code = get_si_code((unsigned long)condition);
+ 	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code);
++	send_sigtrap(tsk, regs, error_code, si_code);
+ 
+ 	/*
+ 	 * Disable additional traps. They'll be re-enabled when
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 2887a78..9c0ac0c 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -940,7 +940,7 @@ asmlinkage void __kprobes do_debug(struct pt_regs *regs,
+ 	tsk->thread.error_code = error_code;
+ 	info.si_signo = SIGTRAP;
+ 	info.si_errno = 0;
+-	info.si_code = TRAP_BRKPT;
++	info.si_code = get_si_code(condition);
+ 	info.si_addr = user_mode(regs) ? (void __user *)regs->ip : NULL;
+ 	force_sig_info(SIGTRAP, &info, tsk);
+ 
+diff --git a/include/asm-generic/siginfo.h b/include/asm-generic/siginfo.h
+index 8786e01..9695701 100644
+--- a/include/asm-generic/siginfo.h
++++ b/include/asm-generic/siginfo.h
+@@ -199,6 +199,8 @@ typedef struct siginfo {
+  */
+ #define TRAP_BRKPT	(__SI_FAULT|1)	/* process breakpoint */
+ #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
++#define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
++#define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint/watchpoint */
+ #define NSIGTRAP	2
+ 
+ /*
+diff --git a/include/asm-parisc/siginfo.h b/include/asm-parisc/siginfo.h
+index d4909f5..d703472 100644
+--- a/include/asm-parisc/siginfo.h
++++ b/include/asm-parisc/siginfo.h
+@@ -3,11 +3,6 @@
+ 
+ #include <asm-generic/siginfo.h>
+ 
+-/*
+- * SIGTRAP si_codes
+- */
+-#define TRAP_BRANCH	(__SI_FAULT|3)	/* process taken branch trap */
+-#define TRAP_HWBKPT	(__SI_FAULT|4)	/* hardware breakpoint or watchpoint */
+ #undef NSIGTRAP
+ #define NSIGTRAP	4
+ 
+diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
+index d64a610..ac578f1 100644
+--- a/include/asm-x86/ptrace.h
++++ b/include/asm-x86/ptrace.h
+@@ -177,11 +177,11 @@ convert_ip_to_linear(struct task_struct *child, struct pt_regs *regs);
+ 
+ #ifdef CONFIG_X86_32
+ extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
+-			 int error_code);
+-#else
+-void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
++			 int error_code, int si_code);
+ #endif
+ 
++void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
++
+ extern long syscall_trace_enter(struct pt_regs *);
+ extern void syscall_trace_leave(struct pt_regs *);
+ 
+diff --git a/include/asm-x86/traps.h b/include/asm-x86/traps.h
+index 2ccebc6..7a692ba 100644
+--- a/include/asm-x86/traps.h
++++ b/include/asm-x86/traps.h
+@@ -1,6 +1,8 @@
+ #ifndef ASM_X86__TRAPS_H
+ #define ASM_X86__TRAPS_H
+ 
++#include <asm/debugreg.h>
++
+ /* Common in X86_32 and X86_64 */
+ asmlinkage void divide_error(void);
+ asmlinkage void debug(void);
+@@ -36,6 +38,16 @@ void do_invalid_op(struct pt_regs *, long);
+ void do_general_protection(struct pt_regs *, long);
+ void do_nmi(struct pt_regs *, long);
+ 
++static inline int get_si_code(unsigned long condition)
++{
++	if (condition & DR_STEP)
++		return TRAP_TRACE;
++	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		return TRAP_HWBKPT;
++	else
++		return TRAP_BRKPT;
++}
++
+ extern int panic_on_unrecovered_nmi;
+ extern int kstack_depth_to_print;
+ 
