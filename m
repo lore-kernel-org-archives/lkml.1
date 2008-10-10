@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761676AbYJJSqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762410AbYJJSs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761676AbYJJSqK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 14:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYJJSp4
+	id S1762410AbYJJSs1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 14:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbYJJSsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 14:45:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54115 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Oct 2008 14:48:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47246 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755501AbYJJSpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 14:45:53 -0400
-Date: Fri, 10 Oct 2008 20:45:37 +0200
+	id S1758159AbYJJSsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 14:48:18 -0400
+Date: Fri, 10 Oct 2008 20:48:03 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Robert Richter <robert.richter@amd.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull, take 2] x86 updates for v2.6.28, phase #7, Oprofile
-Message-ID: <20081010184537.GD21876@elte.hu>
-References: <20081010001016.GA10837@elte.hu>
+Subject: [git pull, take 2] x86 updates for v2.6.28, phase #8, hpet
+Message-ID: <20081010184803.GE21876@elte.hu>
+References: <20081010001131.GA12529@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081010001016.GA10837@elte.hu>
+In-Reply-To: <20081010001131.GA12529@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -43,1601 +41,618 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 > Linus,
 > 
-> Please pull the latest x86-v28-for-linus-phase7 git tree from:
+> Please pull the latest x86-v28-for-linus-phase8 git tree from:
 > 
-> Oprofile updates. (Embedded in later topics due to apic unification 
-> impact and other ordering constraints.)
+> HPET updates part 1. (part two will be the per-CPU MSI HPET feature)
 
-please find updated pull request below. Relative to phase-N-1. No 
-changes beyond the first pull request, other than what came in via 
-phase-N-1.
+please find updated pull request below. Relative to phase-N-1. Updates 
+from today in this topic:
+
+  f26ed11: HPET: Remove spurious HPET busy warning message.
 
 	Ingo
 
------------>
+------------->
 Linus,
 
-Please pull the latest x86-v28-for-linus-phase7-B git tree from:
+Please pull the latest x86-v28-for-linus-phase8-B git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase7-B
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase8-B
 
 
-out-of-topic modifications in x86-v28-for-linus-phase7-B:
+out-of-topic modifications in x86-v28-for-linus-phase8-B:
 ---------------------------------------------------------
-arch/Kconfig                       # 852402c: x86/oprofile: add CONFIG_OPROFILE
-drivers/oprofile/buffer_sync.c     # 852402c: x86/oprofile: add CONFIG_OPROFILE
-                                   # 345c257: x86/oprofile: add IBS support for
-                                   # 5e11f98: OProfile: moving increment_tail()
-                                   # 73185e0: drivers/oprofile: coding style fi
-drivers/oprofile/cpu_buffer.c      # bd17b62: oprofile: fix printk in cpu_buffe
-                                   # 852402c: x86/oprofile: add CONFIG_OPROFILE
-                                   # 345c257: x86/oprofile: add IBS support for
-drivers/oprofile/cpu_buffer.h      # 345c257: x86/oprofile: add IBS support for
-include/linux/oprofile.h           # 4c168ea: Revert "Oprofile Multiplexing Pat
-                                   # 1a960b4: Oprofile Multiplexing Patch
-                                   # ee648bc: OProfile: add IBS code macros
+drivers/char/hpet.c                # f26ed11: HPET: Remove spurious HPET busy w
+                                   # f92a789: hpet: /dev/hpet - fixes and clean
+                                   # 64a76f6: hpet: /dev/hpet - fixes and clean
+                                   # 70ef6d5: x86: get irq for hpet timer
+include/linux/hpet.h               # 64a76f6: hpet: /dev/hpet - fixes and clean
+                                   # 70ef6d5: x86: get irq for hpet timer
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Andrea Righi (1):
-      x86, oprofile: BUG: using smp_processor_id() in preemptible code
+Andreas Herrmann (1):
+      x86: hpet: modify IXP400 quirk to enable interrupts
 
-Barry Kasindorf (3):
-      oprofile: Add support for AMD Family 11h
-      x86/oprofile: add IBS support for AMD CPUs, IBS buffer handling routines
-      x86/oprofile: add IBS support for AMD CPUs, model specific code
+David Brownell (2):
+      hpet: /dev/hpet - fixes and cleanup
+      hpet: /dev/hpet - fixes and cleanup, fix
 
-Jason Yeh (1):
-      Oprofile Multiplexing Patch
+David John (1):
+      HPET: Remove spurious HPET busy warning message.
 
-Robert Richter (24):
-      x86: add PCI IDs for AMD Barcelona PCI devices
-      x86: apic_*.c: add description to AMD's extended LVT functions
-      x86/oprofile: introduce model specific init/exit functions
-      x86/oprofile: Minor changes in op_model_athlon.c
-      x86/oprofile: renaming athlon_*() into op_amd_*()
-      drivers/oprofile: coding style fixes in buffer_sync.c
-      OProfile: moving increment_tail() in buffer_sync.c
-      OProfile: add IBS code macros
-      x86/oprofile: separating the IBS handler
-      OProfile: change IBS interrupt initialization
-      OProfile: Fix build error in op_model_athlon.c
-      OProfile: on_each_cpu(): kill unused retry parameter
-      OProfile: fix setup_ibs_files() function interface
-      OProfile: enable IBS for AMD CPUs
-      OProfile: fix IBS build error for UP
-      x86/oprofile: macro definition cleanup in op_model_athlon.c
-      x86/oprofile: op_model_athlon.c: fix counter reset when reenabling IBS OP
-      x86: apic: export symbols for extended interrupt LVT functions
-      x86: apic: changing export symbols to *_GPL
-      x86/oprofile: add CONFIG_OPROFILE_IBS option
-      oprofile: fix printk in cpu_buffer.c
-      x86/oprofile: reanaming op_model_athlon.c to op_model_amd.c
-      x86/oprofile: fix on_each_cpu build error
-      Revert "Oprofile Multiplexing Patch"
+Joe Buehler (1):
+      x86: add PCI ID for 6300ESB force hpet
+
+Jordan Crouse (1):
+      x86, hpet: SB600 - remove HPET resources from PCI device
+
+Kevin Hao (1):
+      x86: get irq for hpet timer
+
+Krzysztof Oledzki (1):
+      x86: add another PCI ID for ICH6 force-hpet
+
+Randy Dunlap (1):
+      documentation: move hpet.txt to timers/ subdirectory
 
 
- arch/Kconfig                        |   14 +
- arch/x86/kernel/apic_32.c           |    4 +
- arch/x86/kernel/apic_64.c           |    4 +
- arch/x86/oprofile/Makefile          |    2 +-
- arch/x86/oprofile/nmi_int.c         |   27 ++-
- arch/x86/oprofile/op_model_amd.c    |  543 +++++++++++++++++++++++++++++++++++
- arch/x86/oprofile/op_model_athlon.c |  190 ------------
- arch/x86/oprofile/op_x86_model.h    |    4 +-
- drivers/oprofile/buffer_sync.c      |  209 +++++++++-----
- drivers/oprofile/cpu_buffer.c       |   74 +++++-
- drivers/oprofile/cpu_buffer.h       |    2 +
- include/linux/oprofile.h            |    2 +
- 12 files changed, 809 insertions(+), 266 deletions(-)
- create mode 100644 arch/x86/oprofile/op_model_amd.c
- delete mode 100644 arch/x86/oprofile/op_model_athlon.c
+ Documentation/00-INDEX              |    2 -
+ Documentation/timers/00-INDEX       |   10 ++
+ Documentation/{ => timers}/hpet.txt |   43 +++++-----
+ arch/x86/kernel/hpet.c              |    6 +-
+ arch/x86/kernel/quirks.c            |   41 +++++++++-
+ arch/x86/pci/fixup.c                |   28 ++++++
+ drivers/char/hpet.c                 |  159 +++++++++++++++++++---------------
+ include/linux/hpet.h                |   14 +---
+ 8 files changed, 195 insertions(+), 108 deletions(-)
+ create mode 100644 Documentation/timers/00-INDEX
+ rename Documentation/{ => timers}/hpet.txt (81%)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 364c6da..0267bab 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -13,6 +13,20 @@ config OPROFILE
- 
- 	  If unsure, say N.
- 
-+config OPROFILE_IBS
-+	bool "OProfile AMD IBS support (EXPERIMENTAL)"
-+	default n
-+	depends on OPROFILE && SMP && X86
-+	help
-+          Instruction-Based Sampling (IBS) is a new profiling
-+          technique that provides rich, precise program performance
-+          information. IBS is introduced by AMD Family10h processors
-+          (AMD Opteron Quad-Core processor “Barcelona”) to overcome
-+          the limitations of conventional performance counter
-+          sampling.
-+
-+	  If unsure, say N.
-+
- config HAVE_OPROFILE
- 	def_bool n
- 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index a91c57c..21c831d 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -295,6 +295,9 @@ static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
-  *
-  * Vector mappings are hard coded. On K8 only offset 0 (APIC500) and
-  * MCE interrupts are supported. Thus MCE offset must be set to 0.
-+ *
-+ * If mask=1, the LVT entry does not generate interrupts while mask=0
-+ * enables the vector. See also the BKDGs.
-  */
- 
- #define APIC_EILVT_LVTOFF_MCE 0
-@@ -319,6 +322,7 @@ u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask)
- 	setup_APIC_eilvt(APIC_EILVT_LVTOFF_IBS, vector, msg_type, mask);
- 	return APIC_EILVT_LVTOFF_IBS;
- }
-+EXPORT_SYMBOL_GPL(setup_APIC_eilvt_ibs);
- 
- /*
-  * Program the next event, relative to now
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 53898b6..94ddb69 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -307,6 +307,9 @@ static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
-  *
-  * Vector mappings are hard coded. On K8 only offset 0 (APIC500) and
-  * MCE interrupts are supported. Thus MCE offset must be set to 0.
-+ *
-+ * If mask=1, the LVT entry does not generate interrupts while mask=0
-+ * enables the vector. See also the BKDGs.
-  */
- 
- #define APIC_EILVT_LVTOFF_MCE 0
-@@ -331,6 +334,7 @@ u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask)
- 	setup_APIC_eilvt(APIC_EILVT_LVTOFF_IBS, vector, msg_type, mask);
- 	return APIC_EILVT_LVTOFF_IBS;
- }
-+EXPORT_SYMBOL_GPL(setup_APIC_eilvt_ibs);
- 
- /*
-  * Program the next event, relative to now
-diff --git a/arch/x86/oprofile/Makefile b/arch/x86/oprofile/Makefile
-index 30f3eb3..446902b 100644
---- a/arch/x86/oprofile/Makefile
-+++ b/arch/x86/oprofile/Makefile
-@@ -7,6 +7,6 @@ DRIVER_OBJS = $(addprefix ../../../drivers/oprofile/, \
- 		timer_int.o )
- 
- oprofile-y				:= $(DRIVER_OBJS) init.o backtrace.o
--oprofile-$(CONFIG_X86_LOCAL_APIC) 	+= nmi_int.o op_model_athlon.o \
-+oprofile-$(CONFIG_X86_LOCAL_APIC) 	+= nmi_int.o op_model_amd.o \
- 					   op_model_ppro.o op_model_p4.o
- oprofile-$(CONFIG_X86_IO_APIC)		+= nmi_timer_int.o
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 8a5f161..57f6c90 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -1,10 +1,11 @@
- /**
-  * @file nmi_int.c
-  *
-- * @remark Copyright 2002 OProfile authors
-+ * @remark Copyright 2002-2008 OProfile authors
-  * @remark Read the file COPYING
-  *
-  * @author John Levon <levon@movementarian.org>
-+ * @author Robert Richter <robert.richter@amd.com>
-  */
- 
- #include <linux/init.h>
-@@ -439,6 +440,7 @@ int __init op_nmi_init(struct oprofile_operations *ops)
- 	__u8 vendor = boot_cpu_data.x86_vendor;
- 	__u8 family = boot_cpu_data.x86;
- 	char *cpu_type;
-+	int ret = 0;
- 
- 	if (!cpu_has_apic)
- 		return -ENODEV;
-@@ -451,19 +453,23 @@ int __init op_nmi_init(struct oprofile_operations *ops)
- 		default:
- 			return -ENODEV;
- 		case 6:
--			model = &op_athlon_spec;
-+			model = &op_amd_spec;
- 			cpu_type = "i386/athlon";
- 			break;
- 		case 0xf:
--			model = &op_athlon_spec;
-+			model = &op_amd_spec;
- 			/* Actually it could be i386/hammer too, but give
- 			 user space an consistent name. */
- 			cpu_type = "x86-64/hammer";
- 			break;
- 		case 0x10:
--			model = &op_athlon_spec;
-+			model = &op_amd_spec;
- 			cpu_type = "x86-64/family10";
- 			break;
-+		case 0x11:
-+			model = &op_amd_spec;
-+			cpu_type = "x86-64/family11h";
-+			break;
- 		}
- 		break;
- 
-@@ -490,17 +496,24 @@ int __init op_nmi_init(struct oprofile_operations *ops)
- 		return -ENODEV;
- 	}
- 
--	init_sysfs();
- #ifdef CONFIG_SMP
- 	register_cpu_notifier(&oprofile_cpu_nb);
- #endif
--	using_nmi = 1;
-+	/* default values, can be overwritten by model */
- 	ops->create_files = nmi_create_files;
- 	ops->setup = nmi_setup;
- 	ops->shutdown = nmi_shutdown;
- 	ops->start = nmi_start;
- 	ops->stop = nmi_stop;
- 	ops->cpu_type = cpu_type;
-+
-+	if (model->init)
-+		ret = model->init(ops);
-+	if (ret)
-+		return ret;
-+
-+	init_sysfs();
-+	using_nmi = 1;
- 	printk(KERN_INFO "oprofile: using NMI interrupt.\n");
- 	return 0;
- }
-@@ -513,4 +526,6 @@ void op_nmi_exit(void)
- 		unregister_cpu_notifier(&oprofile_cpu_nb);
- #endif
- 	}
-+	if (model->exit)
-+		model->exit();
- }
-diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
+diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+index 7306081..4382778 100644
+--- a/Documentation/00-INDEX
++++ b/Documentation/00-INDEX
+@@ -159,8 +159,6 @@ hayes-esp.txt
+ 	- info on using the Hayes ESP serial driver.
+ highuid.txt
+ 	- notes on the change from 16 bit to 32 bit user/group IDs.
+-hpet.txt
+-	- High Precision Event Timer Driver for Linux.
+ timers/
+ 	- info on the timer related topics
+ hw_random.txt
+diff --git a/Documentation/timers/00-INDEX b/Documentation/timers/00-INDEX
 new file mode 100644
-index 0000000..d9faf60
+index 0000000..397dc35
 --- /dev/null
-+++ b/arch/x86/oprofile/op_model_amd.c
-@@ -0,0 +1,543 @@
-+/*
-+ * @file op_model_amd.c
-+ * athlon / K7 / K8 / Family 10h model-specific MSR operations
-+ *
-+ * @remark Copyright 2002-2008 OProfile authors
-+ * @remark Read the file COPYING
-+ *
-+ * @author John Levon
-+ * @author Philippe Elie
-+ * @author Graydon Hoare
-+ * @author Robert Richter <robert.richter@amd.com>
-+ * @author Barry Kasindorf
-+*/
-+
-+#include <linux/oprofile.h>
-+#include <linux/device.h>
-+#include <linux/pci.h>
-+
-+#include <asm/ptrace.h>
-+#include <asm/msr.h>
-+#include <asm/nmi.h>
-+
-+#include "op_x86_model.h"
-+#include "op_counter.h"
-+
-+#define NUM_COUNTERS 4
-+#define NUM_CONTROLS 4
-+
-+#define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
-+#define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
-+#define CTR_WRITE(l, msrs, c) do {wrmsr(msrs->counters[(c)].addr, -(unsigned int)(l), -1); } while (0)
-+#define CTR_OVERFLOWED(n) (!((n) & (1U<<31)))
-+
-+#define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
-+#define CTRL_READ(l, h, msrs, c) do {rdmsr(msrs->controls[(c)].addr, (l), (h)); } while (0)
-+#define CTRL_WRITE(l, h, msrs, c) do {wrmsr(msrs->controls[(c)].addr, (l), (h)); } while (0)
-+#define CTRL_SET_ACTIVE(n) (n |= (1<<22))
-+#define CTRL_SET_INACTIVE(n) (n &= ~(1<<22))
-+#define CTRL_CLEAR_LO(x) (x &= (1<<21))
-+#define CTRL_CLEAR_HI(x) (x &= 0xfffffcf0)
-+#define CTRL_SET_ENABLE(val) (val |= 1<<20)
-+#define CTRL_SET_USR(val, u) (val |= ((u & 1) << 16))
-+#define CTRL_SET_KERN(val, k) (val |= ((k & 1) << 17))
-+#define CTRL_SET_UM(val, m) (val |= (m << 8))
-+#define CTRL_SET_EVENT_LOW(val, e) (val |= (e & 0xff))
-+#define CTRL_SET_EVENT_HIGH(val, e) (val |= ((e >> 8) & 0xf))
-+#define CTRL_SET_HOST_ONLY(val, h) (val |= ((h & 1) << 9))
-+#define CTRL_SET_GUEST_ONLY(val, h) (val |= ((h & 1) << 8))
-+
-+static unsigned long reset_value[NUM_COUNTERS];
-+
-+#ifdef CONFIG_OPROFILE_IBS
-+
-+/* IbsFetchCtl bits/masks */
-+#define IBS_FETCH_HIGH_VALID_BIT	(1UL << 17)	/* bit 49 */
-+#define IBS_FETCH_HIGH_ENABLE		(1UL << 16)	/* bit 48 */
-+#define IBS_FETCH_LOW_MAX_CNT_MASK	0x0000FFFFUL	/* MaxCnt mask */
-+
-+/*IbsOpCtl bits */
-+#define IBS_OP_LOW_VALID_BIT		(1ULL<<18)	/* bit 18 */
-+#define IBS_OP_LOW_ENABLE		(1ULL<<17)	/* bit 17 */
-+
-+/* Codes used in cpu_buffer.c */
-+/* This produces duplicate code, need to be fixed */
-+#define IBS_FETCH_BEGIN 3
-+#define IBS_OP_BEGIN    4
-+
-+/* The function interface needs to be fixed, something like add
-+   data. Should then be added to linux/oprofile.h. */
-+extern void oprofile_add_ibs_sample(struct pt_regs *const regs,
-+				    unsigned int * const ibs_sample, u8 code);
-+
-+struct ibs_fetch_sample {
-+	/* MSRC001_1031 IBS Fetch Linear Address Register */
-+	unsigned int ibs_fetch_lin_addr_low;
-+	unsigned int ibs_fetch_lin_addr_high;
-+	/* MSRC001_1030 IBS Fetch Control Register */
-+	unsigned int ibs_fetch_ctl_low;
-+	unsigned int ibs_fetch_ctl_high;
-+	/* MSRC001_1032 IBS Fetch Physical Address Register */
-+	unsigned int ibs_fetch_phys_addr_low;
-+	unsigned int ibs_fetch_phys_addr_high;
-+};
-+
-+struct ibs_op_sample {
-+	/* MSRC001_1034 IBS Op Logical Address Register (IbsRIP) */
-+	unsigned int ibs_op_rip_low;
-+	unsigned int ibs_op_rip_high;
-+	/* MSRC001_1035 IBS Op Data Register */
-+	unsigned int ibs_op_data1_low;
-+	unsigned int ibs_op_data1_high;
-+	/* MSRC001_1036 IBS Op Data 2 Register */
-+	unsigned int ibs_op_data2_low;
-+	unsigned int ibs_op_data2_high;
-+	/* MSRC001_1037 IBS Op Data 3 Register */
-+	unsigned int ibs_op_data3_low;
-+	unsigned int ibs_op_data3_high;
-+	/* MSRC001_1038 IBS DC Linear Address Register (IbsDcLinAd) */
-+	unsigned int ibs_dc_linear_low;
-+	unsigned int ibs_dc_linear_high;
-+	/* MSRC001_1039 IBS DC Physical Address Register (IbsDcPhysAd) */
-+	unsigned int ibs_dc_phys_low;
-+	unsigned int ibs_dc_phys_high;
-+};
-+
-+/*
-+ * unitialize the APIC for the IBS interrupts if needed on AMD Family10h+
-+*/
-+static void clear_ibs_nmi(void);
-+
-+static int ibs_allowed;	/* AMD Family10h and later */
-+
-+struct op_ibs_config {
-+	unsigned long op_enabled;
-+	unsigned long fetch_enabled;
-+	unsigned long max_cnt_fetch;
-+	unsigned long max_cnt_op;
-+	unsigned long rand_en;
-+	unsigned long dispatched_ops;
-+};
-+
-+static struct op_ibs_config ibs_config;
-+
-+#endif
-+
-+/* functions for op_amd_spec */
-+
-+static void op_amd_fill_in_addresses(struct op_msrs * const msrs)
-+{
-+	int i;
-+
-+	for (i = 0; i < NUM_COUNTERS; i++) {
-+		if (reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i))
-+			msrs->counters[i].addr = MSR_K7_PERFCTR0 + i;
-+		else
-+			msrs->counters[i].addr = 0;
-+	}
-+
-+	for (i = 0; i < NUM_CONTROLS; i++) {
-+		if (reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i))
-+			msrs->controls[i].addr = MSR_K7_EVNTSEL0 + i;
-+		else
-+			msrs->controls[i].addr = 0;
-+	}
-+}
-+
-+
-+static void op_amd_setup_ctrs(struct op_msrs const * const msrs)
-+{
-+	unsigned int low, high;
-+	int i;
-+
-+	/* clear all counters */
-+	for (i = 0 ; i < NUM_CONTROLS; ++i) {
-+		if (unlikely(!CTRL_IS_RESERVED(msrs, i)))
-+			continue;
-+		CTRL_READ(low, high, msrs, i);
-+		CTRL_CLEAR_LO(low);
-+		CTRL_CLEAR_HI(high);
-+		CTRL_WRITE(low, high, msrs, i);
-+	}
-+
-+	/* avoid a false detection of ctr overflows in NMI handler */
-+	for (i = 0; i < NUM_COUNTERS; ++i) {
-+		if (unlikely(!CTR_IS_RESERVED(msrs, i)))
-+			continue;
-+		CTR_WRITE(1, msrs, i);
-+	}
-+
-+	/* enable active counters */
-+	for (i = 0; i < NUM_COUNTERS; ++i) {
-+		if ((counter_config[i].enabled) && (CTR_IS_RESERVED(msrs, i))) {
-+			reset_value[i] = counter_config[i].count;
-+
-+			CTR_WRITE(counter_config[i].count, msrs, i);
-+
-+			CTRL_READ(low, high, msrs, i);
-+			CTRL_CLEAR_LO(low);
-+			CTRL_CLEAR_HI(high);
-+			CTRL_SET_ENABLE(low);
-+			CTRL_SET_USR(low, counter_config[i].user);
-+			CTRL_SET_KERN(low, counter_config[i].kernel);
-+			CTRL_SET_UM(low, counter_config[i].unit_mask);
-+			CTRL_SET_EVENT_LOW(low, counter_config[i].event);
-+			CTRL_SET_EVENT_HIGH(high, counter_config[i].event);
-+			CTRL_SET_HOST_ONLY(high, 0);
-+			CTRL_SET_GUEST_ONLY(high, 0);
-+
-+			CTRL_WRITE(low, high, msrs, i);
-+		} else {
-+			reset_value[i] = 0;
-+		}
-+	}
-+}
-+
-+#ifdef CONFIG_OPROFILE_IBS
-+
-+static inline int
-+op_amd_handle_ibs(struct pt_regs * const regs,
-+		  struct op_msrs const * const msrs)
-+{
-+	unsigned int low, high;
-+	struct ibs_fetch_sample ibs_fetch;
-+	struct ibs_op_sample ibs_op;
-+
-+	if (!ibs_allowed)
-+		return 1;
-+
-+	if (ibs_config.fetch_enabled) {
-+		rdmsr(MSR_AMD64_IBSFETCHCTL, low, high);
-+		if (high & IBS_FETCH_HIGH_VALID_BIT) {
-+			ibs_fetch.ibs_fetch_ctl_high = high;
-+			ibs_fetch.ibs_fetch_ctl_low = low;
-+			rdmsr(MSR_AMD64_IBSFETCHLINAD, low, high);
-+			ibs_fetch.ibs_fetch_lin_addr_high = high;
-+			ibs_fetch.ibs_fetch_lin_addr_low = low;
-+			rdmsr(MSR_AMD64_IBSFETCHPHYSAD, low, high);
-+			ibs_fetch.ibs_fetch_phys_addr_high = high;
-+			ibs_fetch.ibs_fetch_phys_addr_low = low;
-+
-+			oprofile_add_ibs_sample(regs,
-+						(unsigned int *)&ibs_fetch,
-+						IBS_FETCH_BEGIN);
-+
-+			/*reenable the IRQ */
-+			rdmsr(MSR_AMD64_IBSFETCHCTL, low, high);
-+			high &= ~IBS_FETCH_HIGH_VALID_BIT;
-+			high |= IBS_FETCH_HIGH_ENABLE;
-+			low &= IBS_FETCH_LOW_MAX_CNT_MASK;
-+			wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
-+		}
-+	}
-+
-+	if (ibs_config.op_enabled) {
-+		rdmsr(MSR_AMD64_IBSOPCTL, low, high);
-+		if (low & IBS_OP_LOW_VALID_BIT) {
-+			rdmsr(MSR_AMD64_IBSOPRIP, low, high);
-+			ibs_op.ibs_op_rip_low = low;
-+			ibs_op.ibs_op_rip_high = high;
-+			rdmsr(MSR_AMD64_IBSOPDATA, low, high);
-+			ibs_op.ibs_op_data1_low = low;
-+			ibs_op.ibs_op_data1_high = high;
-+			rdmsr(MSR_AMD64_IBSOPDATA2, low, high);
-+			ibs_op.ibs_op_data2_low = low;
-+			ibs_op.ibs_op_data2_high = high;
-+			rdmsr(MSR_AMD64_IBSOPDATA3, low, high);
-+			ibs_op.ibs_op_data3_low = low;
-+			ibs_op.ibs_op_data3_high = high;
-+			rdmsr(MSR_AMD64_IBSDCLINAD, low, high);
-+			ibs_op.ibs_dc_linear_low = low;
-+			ibs_op.ibs_dc_linear_high = high;
-+			rdmsr(MSR_AMD64_IBSDCPHYSAD, low, high);
-+			ibs_op.ibs_dc_phys_low = low;
-+			ibs_op.ibs_dc_phys_high = high;
-+
-+			/* reenable the IRQ */
-+			oprofile_add_ibs_sample(regs,
-+						(unsigned int *)&ibs_op,
-+						IBS_OP_BEGIN);
-+			rdmsr(MSR_AMD64_IBSOPCTL, low, high);
-+			high = 0;
-+			low &= ~IBS_OP_LOW_VALID_BIT;
-+			low |= IBS_OP_LOW_ENABLE;
-+			wrmsr(MSR_AMD64_IBSOPCTL, low, high);
-+		}
-+	}
-+
-+	return 1;
-+}
-+
-+#endif
-+
-+static int op_amd_check_ctrs(struct pt_regs * const regs,
-+			     struct op_msrs const * const msrs)
-+{
-+	unsigned int low, high;
-+	int i;
-+
-+	for (i = 0 ; i < NUM_COUNTERS; ++i) {
-+		if (!reset_value[i])
-+			continue;
-+		CTR_READ(low, high, msrs, i);
-+		if (CTR_OVERFLOWED(low)) {
-+			oprofile_add_sample(regs, i);
-+			CTR_WRITE(reset_value[i], msrs, i);
-+		}
-+	}
-+
-+#ifdef CONFIG_OPROFILE_IBS
-+	op_amd_handle_ibs(regs, msrs);
-+#endif
-+
-+	/* See op_model_ppro.c */
-+	return 1;
-+}
-+
-+static void op_amd_start(struct op_msrs const * const msrs)
-+{
-+	unsigned int low, high;
-+	int i;
-+	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
-+		if (reset_value[i]) {
-+			CTRL_READ(low, high, msrs, i);
-+			CTRL_SET_ACTIVE(low);
-+			CTRL_WRITE(low, high, msrs, i);
-+		}
-+	}
-+
-+#ifdef CONFIG_OPROFILE_IBS
-+	if (ibs_allowed && ibs_config.fetch_enabled) {
-+		low = (ibs_config.max_cnt_fetch >> 4) & 0xFFFF;
-+		high = IBS_FETCH_HIGH_ENABLE;
-+		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
-+	}
-+
-+	if (ibs_allowed && ibs_config.op_enabled) {
-+		low = ((ibs_config.max_cnt_op >> 4) & 0xFFFF) + IBS_OP_LOW_ENABLE;
-+		high = 0;
-+		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
-+	}
-+#endif
-+}
-+
-+
-+static void op_amd_stop(struct op_msrs const * const msrs)
-+{
-+	unsigned int low, high;
-+	int i;
-+
-+	/* Subtle: stop on all counters to avoid race with
-+	 * setting our pm callback */
-+	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
-+		if (!reset_value[i])
-+			continue;
-+		CTRL_READ(low, high, msrs, i);
-+		CTRL_SET_INACTIVE(low);
-+		CTRL_WRITE(low, high, msrs, i);
-+	}
-+
-+#ifdef CONFIG_OPROFILE_IBS
-+	if (ibs_allowed && ibs_config.fetch_enabled) {
-+		low = 0;		/* clear max count and enable */
-+		high = 0;
-+		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
-+	}
-+
-+	if (ibs_allowed && ibs_config.op_enabled) {
-+		low = 0;		/* clear max count and enable */
-+		high = 0;
-+		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
-+	}
-+#endif
-+}
-+
-+static void op_amd_shutdown(struct op_msrs const * const msrs)
-+{
-+	int i;
-+
-+	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
-+		if (CTR_IS_RESERVED(msrs, i))
-+			release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
-+	}
-+	for (i = 0 ; i < NUM_CONTROLS ; ++i) {
-+		if (CTRL_IS_RESERVED(msrs, i))
-+			release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
-+	}
-+}
-+
-+#ifndef CONFIG_OPROFILE_IBS
-+
-+/* no IBS support */
-+
-+static int op_amd_init(struct oprofile_operations *ops)
-+{
-+	return 0;
-+}
-+
-+static void op_amd_exit(void) {}
-+
-+#else
-+
-+static u8 ibs_eilvt_off;
-+
-+static inline void apic_init_ibs_nmi_per_cpu(void *arg)
-+{
-+	ibs_eilvt_off = setup_APIC_eilvt_ibs(0, APIC_EILVT_MSG_NMI, 0);
-+}
-+
-+static inline void apic_clear_ibs_nmi_per_cpu(void *arg)
-+{
-+	setup_APIC_eilvt_ibs(0, APIC_EILVT_MSG_FIX, 1);
-+}
-+
-+static int pfm_amd64_setup_eilvt(void)
-+{
-+#define IBSCTL_LVTOFFSETVAL		(1 << 8)
-+#define IBSCTL				0x1cc
-+	struct pci_dev *cpu_cfg;
-+	int nodes;
-+	u32 value = 0;
-+
-+	/* per CPU setup */
-+	on_each_cpu(apic_init_ibs_nmi_per_cpu, NULL, 1);
-+
-+	nodes = 0;
-+	cpu_cfg = NULL;
-+	do {
-+		cpu_cfg = pci_get_device(PCI_VENDOR_ID_AMD,
-+					 PCI_DEVICE_ID_AMD_10H_NB_MISC,
-+					 cpu_cfg);
-+		if (!cpu_cfg)
-+			break;
-+		++nodes;
-+		pci_write_config_dword(cpu_cfg, IBSCTL, ibs_eilvt_off
-+				       | IBSCTL_LVTOFFSETVAL);
-+		pci_read_config_dword(cpu_cfg, IBSCTL, &value);
-+		if (value != (ibs_eilvt_off | IBSCTL_LVTOFFSETVAL)) {
-+			printk(KERN_DEBUG "Failed to setup IBS LVT offset, "
-+				"IBSCTL = 0x%08x", value);
-+			return 1;
-+		}
-+	} while (1);
-+
-+	if (!nodes) {
-+		printk(KERN_DEBUG "No CPU node configured for IBS");
-+		return 1;
-+	}
-+
-+#ifdef CONFIG_NUMA
-+	/* Sanity check */
-+	/* Works only for 64bit with proper numa implementation. */
-+	if (nodes != num_possible_nodes()) {
-+		printk(KERN_DEBUG "Failed to setup CPU node(s) for IBS, "
-+			"found: %d, expected %d",
-+			nodes, num_possible_nodes());
-+		return 1;
-+	}
-+#endif
-+	return 0;
-+}
-+
-+/*
-+ * initialize the APIC for the IBS interrupts
-+ * if available (AMD Family10h rev B0 and later)
-+ */
-+static void setup_ibs(void)
-+{
-+	ibs_allowed = boot_cpu_has(X86_FEATURE_IBS);
-+
-+	if (!ibs_allowed)
-+		return;
-+
-+	if (pfm_amd64_setup_eilvt()) {
-+		ibs_allowed = 0;
-+		return;
-+	}
-+
-+	printk(KERN_INFO "oprofile: AMD IBS detected\n");
-+}
-+
-+
-+/*
-+ * unitialize the APIC for the IBS interrupts if needed on AMD Family10h
-+ * rev B0 and later */
-+static void clear_ibs_nmi(void)
-+{
-+	if (ibs_allowed)
-+		on_each_cpu(apic_clear_ibs_nmi_per_cpu, NULL, 1);
-+}
-+
-+static int (*create_arch_files)(struct super_block * sb, struct dentry * root);
-+
-+static int setup_ibs_files(struct super_block * sb, struct dentry * root)
-+{
-+	char buf[12];
-+	struct dentry *dir;
-+	int ret = 0;
-+
-+	/* architecture specific files */
-+	if (create_arch_files)
-+		ret = create_arch_files(sb, root);
-+
-+	if (ret)
-+		return ret;
-+
-+	if (!ibs_allowed)
-+		return ret;
-+
-+	/* model specific files */
-+
-+	/* setup some reasonable defaults */
-+	ibs_config.max_cnt_fetch = 250000;
-+	ibs_config.fetch_enabled = 0;
-+	ibs_config.max_cnt_op = 250000;
-+	ibs_config.op_enabled = 0;
-+	ibs_config.dispatched_ops = 1;
-+	snprintf(buf,  sizeof(buf), "ibs_fetch");
-+	dir = oprofilefs_mkdir(sb, root, buf);
-+	oprofilefs_create_ulong(sb, dir, "rand_enable",
-+				&ibs_config.rand_en);
-+	oprofilefs_create_ulong(sb, dir, "enable",
-+		&ibs_config.fetch_enabled);
-+	oprofilefs_create_ulong(sb, dir, "max_count",
-+		&ibs_config.max_cnt_fetch);
-+	snprintf(buf,  sizeof(buf), "ibs_uops");
-+	dir = oprofilefs_mkdir(sb, root, buf);
-+	oprofilefs_create_ulong(sb, dir, "enable",
-+		&ibs_config.op_enabled);
-+	oprofilefs_create_ulong(sb, dir, "max_count",
-+		&ibs_config.max_cnt_op);
-+	oprofilefs_create_ulong(sb, dir, "dispatched_ops",
-+		&ibs_config.dispatched_ops);
-+
-+	return 0;
-+}
-+
-+static int op_amd_init(struct oprofile_operations *ops)
-+{
-+	setup_ibs();
-+	create_arch_files = ops->create_files;
-+	ops->create_files = setup_ibs_files;
-+	return 0;
-+}
-+
-+static void op_amd_exit(void)
-+{
-+	clear_ibs_nmi();
-+}
-+
-+#endif
-+
-+struct op_x86_model_spec const op_amd_spec = {
-+	.init = op_amd_init,
-+	.exit = op_amd_exit,
-+	.num_counters = NUM_COUNTERS,
-+	.num_controls = NUM_CONTROLS,
-+	.fill_in_addresses = &op_amd_fill_in_addresses,
-+	.setup_ctrs = &op_amd_setup_ctrs,
-+	.check_ctrs = &op_amd_check_ctrs,
-+	.start = &op_amd_start,
-+	.stop = &op_amd_stop,
-+	.shutdown = &op_amd_shutdown
-+};
-diff --git a/arch/x86/oprofile/op_model_athlon.c b/arch/x86/oprofile/op_model_athlon.c
-deleted file mode 100644
-index 3d53487..0000000
---- a/arch/x86/oprofile/op_model_athlon.c
-+++ /dev/null
-@@ -1,190 +0,0 @@
--/*
-- * @file op_model_athlon.h
-- * athlon / K7 / K8 / Family 10h model-specific MSR operations
-- *
-- * @remark Copyright 2002 OProfile authors
-- * @remark Read the file COPYING
-- *
-- * @author John Levon
-- * @author Philippe Elie
-- * @author Graydon Hoare
-- */
--
--#include <linux/oprofile.h>
--#include <asm/ptrace.h>
--#include <asm/msr.h>
--#include <asm/nmi.h>
--
--#include "op_x86_model.h"
--#include "op_counter.h"
--
--#define NUM_COUNTERS 4
--#define NUM_CONTROLS 4
--
--#define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
--#define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
--#define CTR_WRITE(l, msrs, c) do {wrmsr(msrs->counters[(c)].addr, -(unsigned int)(l), -1); } while (0)
--#define CTR_OVERFLOWED(n) (!((n) & (1U<<31)))
--
--#define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
--#define CTRL_READ(l, h, msrs, c) do {rdmsr(msrs->controls[(c)].addr, (l), (h)); } while (0)
--#define CTRL_WRITE(l, h, msrs, c) do {wrmsr(msrs->controls[(c)].addr, (l), (h)); } while (0)
--#define CTRL_SET_ACTIVE(n) (n |= (1<<22))
--#define CTRL_SET_INACTIVE(n) (n &= ~(1<<22))
--#define CTRL_CLEAR_LO(x) (x &= (1<<21))
--#define CTRL_CLEAR_HI(x) (x &= 0xfffffcf0)
--#define CTRL_SET_ENABLE(val) (val |= 1<<20)
--#define CTRL_SET_USR(val, u) (val |= ((u & 1) << 16))
--#define CTRL_SET_KERN(val, k) (val |= ((k & 1) << 17))
--#define CTRL_SET_UM(val, m) (val |= (m << 8))
--#define CTRL_SET_EVENT_LOW(val, e) (val |= (e & 0xff))
--#define CTRL_SET_EVENT_HIGH(val, e) (val |= ((e >> 8) & 0xf))
--#define CTRL_SET_HOST_ONLY(val, h) (val |= ((h & 1) << 9))
--#define CTRL_SET_GUEST_ONLY(val, h) (val |= ((h & 1) << 8))
--
--static unsigned long reset_value[NUM_COUNTERS];
--
--static void athlon_fill_in_addresses(struct op_msrs * const msrs)
--{
--	int i;
--
--	for (i = 0; i < NUM_COUNTERS; i++) {
--		if (reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i))
--			msrs->counters[i].addr = MSR_K7_PERFCTR0 + i;
--		else
--			msrs->counters[i].addr = 0;
--	}
--
--	for (i = 0; i < NUM_CONTROLS; i++) {
--		if (reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i))
--			msrs->controls[i].addr = MSR_K7_EVNTSEL0 + i;
--		else
--			msrs->controls[i].addr = 0;
--	}
--}
--
--
--static void athlon_setup_ctrs(struct op_msrs const * const msrs)
--{
--	unsigned int low, high;
--	int i;
--
--	/* clear all counters */
--	for (i = 0 ; i < NUM_CONTROLS; ++i) {
--		if (unlikely(!CTRL_IS_RESERVED(msrs, i)))
--			continue;
--		CTRL_READ(low, high, msrs, i);
--		CTRL_CLEAR_LO(low);
--		CTRL_CLEAR_HI(high);
--		CTRL_WRITE(low, high, msrs, i);
--	}
--
--	/* avoid a false detection of ctr overflows in NMI handler */
--	for (i = 0; i < NUM_COUNTERS; ++i) {
--		if (unlikely(!CTR_IS_RESERVED(msrs, i)))
--			continue;
--		CTR_WRITE(1, msrs, i);
--	}
--
--	/* enable active counters */
--	for (i = 0; i < NUM_COUNTERS; ++i) {
--		if ((counter_config[i].enabled) && (CTR_IS_RESERVED(msrs, i))) {
--			reset_value[i] = counter_config[i].count;
--
--			CTR_WRITE(counter_config[i].count, msrs, i);
--
--			CTRL_READ(low, high, msrs, i);
--			CTRL_CLEAR_LO(low);
--			CTRL_CLEAR_HI(high);
--			CTRL_SET_ENABLE(low);
--			CTRL_SET_USR(low, counter_config[i].user);
--			CTRL_SET_KERN(low, counter_config[i].kernel);
--			CTRL_SET_UM(low, counter_config[i].unit_mask);
--			CTRL_SET_EVENT_LOW(low, counter_config[i].event);
--			CTRL_SET_EVENT_HIGH(high, counter_config[i].event);
--			CTRL_SET_HOST_ONLY(high, 0);
--			CTRL_SET_GUEST_ONLY(high, 0);
--
--			CTRL_WRITE(low, high, msrs, i);
--		} else {
--			reset_value[i] = 0;
--		}
--	}
--}
--
--
--static int athlon_check_ctrs(struct pt_regs * const regs,
--			     struct op_msrs const * const msrs)
--{
--	unsigned int low, high;
--	int i;
--
--	for (i = 0 ; i < NUM_COUNTERS; ++i) {
--		if (!reset_value[i])
--			continue;
--		CTR_READ(low, high, msrs, i);
--		if (CTR_OVERFLOWED(low)) {
--			oprofile_add_sample(regs, i);
--			CTR_WRITE(reset_value[i], msrs, i);
--		}
--	}
--
--	/* See op_model_ppro.c */
--	return 1;
--}
--
--
--static void athlon_start(struct op_msrs const * const msrs)
--{
--	unsigned int low, high;
--	int i;
--	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
--		if (reset_value[i]) {
--			CTRL_READ(low, high, msrs, i);
--			CTRL_SET_ACTIVE(low);
--			CTRL_WRITE(low, high, msrs, i);
--		}
--	}
--}
--
--
--static void athlon_stop(struct op_msrs const * const msrs)
--{
--	unsigned int low, high;
--	int i;
--
--	/* Subtle: stop on all counters to avoid race with
--	 * setting our pm callback */
--	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
--		if (!reset_value[i])
--			continue;
--		CTRL_READ(low, high, msrs, i);
--		CTRL_SET_INACTIVE(low);
--		CTRL_WRITE(low, high, msrs, i);
--	}
--}
--
--static void athlon_shutdown(struct op_msrs const * const msrs)
--{
--	int i;
--
--	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
--		if (CTR_IS_RESERVED(msrs, i))
--			release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
--	}
--	for (i = 0 ; i < NUM_CONTROLS ; ++i) {
--		if (CTRL_IS_RESERVED(msrs, i))
--			release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
--	}
--}
--
--struct op_x86_model_spec const op_athlon_spec = {
--	.num_counters = NUM_COUNTERS,
--	.num_controls = NUM_CONTROLS,
--	.fill_in_addresses = &athlon_fill_in_addresses,
--	.setup_ctrs = &athlon_setup_ctrs,
--	.check_ctrs = &athlon_check_ctrs,
--	.start = &athlon_start,
--	.stop = &athlon_stop,
--	.shutdown = &athlon_shutdown
--};
-diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
-index 45b605f..05a0261 100644
---- a/arch/x86/oprofile/op_x86_model.h
-+++ b/arch/x86/oprofile/op_x86_model.h
-@@ -32,6 +32,8 @@ struct pt_regs;
-  * various x86 CPU models' perfctr support.
-  */
- struct op_x86_model_spec {
-+	int (*init)(struct oprofile_operations *ops);
-+	void (*exit)(void);
- 	unsigned int const num_counters;
- 	unsigned int const num_controls;
- 	void (*fill_in_addresses)(struct op_msrs * const msrs);
-@@ -46,6 +48,6 @@ struct op_x86_model_spec {
- extern struct op_x86_model_spec const op_ppro_spec;
- extern struct op_x86_model_spec const op_p4_spec;
- extern struct op_x86_model_spec const op_p4_ht2_spec;
--extern struct op_x86_model_spec const op_athlon_spec;
-+extern struct op_x86_model_spec const op_amd_spec;
++++ b/Documentation/timers/00-INDEX
+@@ -0,0 +1,10 @@
++00-INDEX
++	- this file
++highres.txt
++	- High resolution timers and dynamic ticks design notes
++hpet.txt
++	- High Precision Event Timer Driver for Linux
++hrtimers.txt
++	- subsystem for high-resolution kernel timers
++timer_stats.txt
++	- timer usage statistics
+diff --git a/Documentation/hpet.txt b/Documentation/timers/hpet.txt
+similarity index 81%
+rename from Documentation/hpet.txt
+rename to Documentation/timers/hpet.txt
+index 6ad52d9..e7c09ab 100644
+--- a/Documentation/hpet.txt
++++ b/Documentation/timers/hpet.txt
+@@ -1,21 +1,32 @@
+ 		High Precision Event Timer Driver for Linux
  
- #endif /* OP_X86_MODEL_H */
-diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-index 9304c45..ed98227 100644
---- a/drivers/oprofile/buffer_sync.c
-+++ b/drivers/oprofile/buffer_sync.c
-@@ -5,6 +5,7 @@
-  * @remark Read the file COPYING
-  *
-  * @author John Levon <levon@movementarian.org>
-+ * @author Barry Kasindorf
-  *
-  * This is the core of the buffer management. Each
-  * CPU buffer is processed and entered into the
-@@ -33,7 +34,7 @@
- #include "event_buffer.h"
- #include "cpu_buffer.h"
- #include "buffer_sync.h"
-- 
+-The High Precision Event Timer (HPET) hardware is the future replacement
+-for the 8254 and Real Time Clock (RTC) periodic timer functionality.
+-Each HPET can have up to 32 timers.  It is possible to configure the
+-first two timers as legacy replacements for 8254 and RTC periodic timers.
+-A specification done by Intel and Microsoft can be found at
+-<http://www.intel.com/technology/architecture/hpetspec.htm>.
++The High Precision Event Timer (HPET) hardware follows a specification
++by Intel and Microsoft which can be found at
 +
- static LIST_HEAD(dying_tasks);
- static LIST_HEAD(dead_tasks);
- static cpumask_t marked_cpus = CPU_MASK_NONE;
-@@ -48,10 +49,11 @@ static void process_task_mortuary(void);
-  * Can be invoked from softirq via RCU callback due to
-  * call_rcu() of the task struct, hence the _irqsave.
-  */
--static int task_free_notify(struct notifier_block * self, unsigned long val, void * data)
-+static int
-+task_free_notify(struct notifier_block *self, unsigned long val, void *data)
- {
- 	unsigned long flags;
--	struct task_struct * task = data;
-+	struct task_struct *task = data;
- 	spin_lock_irqsave(&task_mortuary, flags);
- 	list_add(&task->tasks, &dying_tasks);
- 	spin_unlock_irqrestore(&task_mortuary, flags);
-@@ -62,13 +64,14 @@ static int task_free_notify(struct notifier_block * self, unsigned long val, voi
- /* The task is on its way out. A sync of the buffer means we can catch
-  * any remaining samples for this task.
-  */
--static int task_exit_notify(struct notifier_block * self, unsigned long val, void * data)
-+static int
-+task_exit_notify(struct notifier_block *self, unsigned long val, void *data)
- {
- 	/* To avoid latency problems, we only process the current CPU,
- 	 * hoping that most samples for the task are on this CPU
- 	 */
- 	sync_buffer(raw_smp_processor_id());
--  	return 0;
-+	return 0;
++	http://www.intel.com/technology/architecture/hpetspec.htm
++
++Each HPET has one fixed-rate counter (at 10+ MHz, hence "High Precision")
++and up to 32 comparators.  Normally three or more comparators are provided,
++each of which can generate oneshot interupts and at least one of which has
++additional hardware to support periodic interrupts.  The comparators are
++also called "timers", which can be misleading since usually timers are
++independent of each other ... these share a counter, complicating resets.
++
++HPET devices can support two interrupt routing modes.  In one mode, the
++comparators are additional interrupt sources with no particular system
++role.  Many x86 BIOS writers don't route HPET interrupts at all, which
++prevents use of that mode.  They support the other "legacy replacement"
++mode where the first two comparators block interrupts from 8254 timers
++and from the RTC.
+ 
+ The driver supports detection of HPET driver allocation and initialization
+ of the HPET before the driver module_init routine is called.  This enables
+ platform code which uses timer 0 or 1 as the main timer to intercept HPET
+ initialization.  An example of this initialization can be found in
+-arch/i386/kernel/time_hpet.c.
++arch/x86/kernel/hpet.c.
+ 
+-The driver provides two APIs which are very similar to the API found in
+-the rtc.c driver.  There is a user space API and a kernel space API.
+-An example user space program is provided below.
++The driver provides a userspace API which resembles the API found in the
++RTC driver framework.  An example user space program is provided below.
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -286,15 +297,3 @@ out:
+ 
+ 	return;
+ }
+-
+-The kernel API has three interfaces exported from the driver:
+-
+-	hpet_register(struct hpet_task *tp, int periodic)
+-	hpet_unregister(struct hpet_task *tp)
+-	hpet_control(struct hpet_task *tp, unsigned int cmd, unsigned long arg)
+-
+-The kernel module using this interface fills in the ht_func and ht_data
+-members of the hpet_task structure before calling hpet_register.
+-hpet_control simply vectors to the hpet_ioctl routine and has the same
+-commands and respective arguments as the user API.  hpet_unregister
+-is used to terminate usage of the HPET timer reserved by hpet_register.
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 73deaff..acf62fc 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -115,13 +115,17 @@ static void hpet_reserve_platform_timers(unsigned long id)
+ 	hd.hd_phys_address = hpet_address;
+ 	hd.hd_address = hpet;
+ 	hd.hd_nirqs = nrtimers;
+-	hd.hd_flags = HPET_DATA_PLATFORM;
+ 	hpet_reserve_timer(&hd, 0);
+ 
+ #ifdef CONFIG_HPET_EMULATE_RTC
+ 	hpet_reserve_timer(&hd, 1);
+ #endif
+ 
++	/*
++	 * NOTE that hd_irq[] reflects IOAPIC input pins (LEGACY_8254
++	 * is wrong for i8259!) not the output IRQ.  Many BIOS writers
++	 * don't bother configuring *any* comparator interrupts.
++	 */
+ 	hd.hd_irq[0] = HPET_LEGACY_8254;
+ 	hd.hd_irq[1] = HPET_LEGACY_RTC;
+ 
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index d138588..f6a11b9 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -354,9 +354,27 @@ static void ati_force_hpet_resume(void)
+ 	printk(KERN_DEBUG "Force enabled HPET at resume\n");
  }
  
- 
-@@ -77,11 +80,12 @@ static int task_exit_notify(struct notifier_block * self, unsigned long val, voi
-  * we don't lose any. This does not have to be exact, it's a QoI issue
-  * only.
-  */
--static int munmap_notify(struct notifier_block * self, unsigned long val, void * data)
-+static int
-+munmap_notify(struct notifier_block *self, unsigned long val, void *data)
- {
- 	unsigned long addr = (unsigned long)data;
--	struct mm_struct * mm = current->mm;
--	struct vm_area_struct * mpnt;
-+	struct mm_struct *mm = current->mm;
-+	struct vm_area_struct *mpnt;
- 
- 	down_read(&mm->mmap_sem);
- 
-@@ -99,11 +103,12 @@ static int munmap_notify(struct notifier_block * self, unsigned long val, void *
- 	return 0;
- }
- 
-- 
-+
- /* We need to be told about new modules so we don't attribute to a previously
-  * loaded module, or drop the samples on the floor.
-  */
--static int module_load_notify(struct notifier_block * self, unsigned long val, void * data)
-+static int
-+module_load_notify(struct notifier_block *self, unsigned long val, void *data)
- {
- #ifdef CONFIG_MODULES
- 	if (val != MODULE_STATE_COMING)
-@@ -118,7 +123,7 @@ static int module_load_notify(struct notifier_block * self, unsigned long val, v
- 	return 0;
- }
- 
-- 
-+
- static struct notifier_block task_free_nb = {
- 	.notifier_call	= task_free_notify,
- };
-@@ -135,7 +140,7 @@ static struct notifier_block module_load_nb = {
- 	.notifier_call = module_load_notify,
- };
- 
-- 
-+
- static void end_sync(void)
- {
- 	end_cpu_work();
-@@ -208,14 +213,14 @@ static inline unsigned long fast_get_dcookie(struct path *path)
-  * not strictly necessary but allows oprofile to associate
-  * shared-library samples with particular applications
-  */
--static unsigned long get_exec_dcookie(struct mm_struct * mm)
-+static unsigned long get_exec_dcookie(struct mm_struct *mm)
- {
- 	unsigned long cookie = NO_COOKIE;
--	struct vm_area_struct * vma;
-- 
-+	struct vm_area_struct *vma;
-+
- 	if (!mm)
- 		goto out;
-- 
-+
- 	for (vma = mm->mmap; vma; vma = vma->vm_next) {
- 		if (!vma->vm_file)
- 			continue;
-@@ -235,13 +240,14 @@ out:
-  * sure to do this lookup before a mm->mmap modification happens so
-  * we don't lose track.
-  */
--static unsigned long lookup_dcookie(struct mm_struct * mm, unsigned long addr, off_t * offset)
-+static unsigned long
-+lookup_dcookie(struct mm_struct *mm, unsigned long addr, off_t *offset)
- {
- 	unsigned long cookie = NO_COOKIE;
--	struct vm_area_struct * vma;
-+	struct vm_area_struct *vma;
- 
- 	for (vma = find_vma(mm, addr); vma; vma = vma->vm_next) {
-- 
-+
- 		if (addr < vma->vm_start || addr >= vma->vm_end)
- 			continue;
- 
-@@ -263,9 +269,20 @@ static unsigned long lookup_dcookie(struct mm_struct * mm, unsigned long addr, o
- 	return cookie;
- }
- 
-+static void increment_tail(struct oprofile_cpu_buffer *b)
++static u32 ati_ixp4x0_rev(struct pci_dev *dev)
 +{
-+	unsigned long new_tail = b->tail_pos + 1;
++	u32 d;
++	u8  b;
 +
-+	rmb();	/* be sure fifo pointers are synchromized */
-+
-+	if (new_tail < b->buffer_size)
-+		b->tail_pos = new_tail;
-+	else
-+		b->tail_pos = 0;
-+}
- 
- static unsigned long last_cookie = INVALID_COOKIE;
-- 
-+
- static void add_cpu_switch(int i)
- {
- 	add_event_entry(ESCAPE_CODE);
-@@ -278,16 +295,16 @@ static void add_kernel_ctx_switch(unsigned int in_kernel)
- {
- 	add_event_entry(ESCAPE_CODE);
- 	if (in_kernel)
--		add_event_entry(KERNEL_ENTER_SWITCH_CODE); 
-+		add_event_entry(KERNEL_ENTER_SWITCH_CODE);
- 	else
--		add_event_entry(KERNEL_EXIT_SWITCH_CODE); 
-+		add_event_entry(KERNEL_EXIT_SWITCH_CODE);
- }
-- 
-+
- static void
--add_user_ctx_switch(struct task_struct const * task, unsigned long cookie)
-+add_user_ctx_switch(struct task_struct const *task, unsigned long cookie)
- {
- 	add_event_entry(ESCAPE_CODE);
--	add_event_entry(CTX_SWITCH_CODE); 
-+	add_event_entry(CTX_SWITCH_CODE);
- 	add_event_entry(task->pid);
- 	add_event_entry(cookie);
- 	/* Another code for daemon back-compat */
-@@ -296,7 +313,7 @@ add_user_ctx_switch(struct task_struct const * task, unsigned long cookie)
- 	add_event_entry(task->tgid);
- }
- 
-- 
-+
- static void add_cookie_switch(unsigned long cookie)
- {
- 	add_event_entry(ESCAPE_CODE);
-@@ -304,13 +321,78 @@ static void add_cookie_switch(unsigned long cookie)
- 	add_event_entry(cookie);
- }
- 
-- 
-+
- static void add_trace_begin(void)
- {
- 	add_event_entry(ESCAPE_CODE);
- 	add_event_entry(TRACE_BEGIN_CODE);
- }
- 
-+#ifdef CONFIG_OPROFILE_IBS
-+
-+#define IBS_FETCH_CODE_SIZE	2
-+#define IBS_OP_CODE_SIZE	5
-+#define IBS_EIP(offset)				\
-+	(((struct op_sample *)&cpu_buf->buffer[(offset)])->eip)
-+#define IBS_EVENT(offset)				\
-+	(((struct op_sample *)&cpu_buf->buffer[(offset)])->event)
-+
-+/*
-+ * Add IBS fetch and op entries to event buffer
-+ */
-+static void add_ibs_begin(struct oprofile_cpu_buffer *cpu_buf, int code,
-+	int in_kernel, struct mm_struct *mm)
-+{
-+	unsigned long rip;
-+	int i, count;
-+	unsigned long ibs_cookie = 0;
-+	off_t offset;
-+
-+	increment_tail(cpu_buf);	/* move to RIP entry */
-+
-+	rip = IBS_EIP(cpu_buf->tail_pos);
-+
-+#ifdef __LP64__
-+	rip += IBS_EVENT(cpu_buf->tail_pos) << 32;
-+#endif
-+
-+	if (mm) {
-+		ibs_cookie = lookup_dcookie(mm, rip, &offset);
-+
-+		if (ibs_cookie == NO_COOKIE)
-+			offset = rip;
-+		if (ibs_cookie == INVALID_COOKIE) {
-+			atomic_inc(&oprofile_stats.sample_lost_no_mapping);
-+			offset = rip;
-+		}
-+		if (ibs_cookie != last_cookie) {
-+			add_cookie_switch(ibs_cookie);
-+			last_cookie = ibs_cookie;
-+		}
-+	} else
-+		offset = rip;
-+
-+	add_event_entry(ESCAPE_CODE);
-+	add_event_entry(code);
-+	add_event_entry(offset);	/* Offset from Dcookie */
-+
-+	/* we send the Dcookie offset, but send the raw Linear Add also*/
-+	add_event_entry(IBS_EIP(cpu_buf->tail_pos));
-+	add_event_entry(IBS_EVENT(cpu_buf->tail_pos));
-+
-+	if (code == IBS_FETCH_CODE)
-+		count = IBS_FETCH_CODE_SIZE;	/*IBS FETCH is 2 int64s*/
-+	else
-+		count = IBS_OP_CODE_SIZE;	/*IBS OP is 5 int64s*/
-+
-+	for (i = 0; i < count; i++) {
-+		increment_tail(cpu_buf);
-+		add_event_entry(IBS_EIP(cpu_buf->tail_pos));
-+		add_event_entry(IBS_EVENT(cpu_buf->tail_pos));
-+	}
++	pci_read_config_byte(dev, 0xac, &b);
++	b &= ~(1<<5);
++	pci_write_config_byte(dev, 0xac, b);
++	pci_read_config_dword(dev, 0x70, &d);
++	d |= 1<<8;
++	pci_write_config_dword(dev, 0x70, d);
++	pci_read_config_dword(dev, 0x8, &d);
++	d &= 0xff;
++	dev_printk(KERN_DEBUG, &dev->dev, "SB4X0 revision 0x%x\n", d);
++	return d;
 +}
 +
-+#endif
- 
- static void add_sample_entry(unsigned long offset, unsigned long event)
+ static void ati_force_enable_hpet(struct pci_dev *dev)
  {
-@@ -319,13 +401,13 @@ static void add_sample_entry(unsigned long offset, unsigned long event)
- }
+-	u32 uninitialized_var(val);
++	u32 d, val;
++	u8  b;
  
- 
--static int add_us_sample(struct mm_struct * mm, struct op_sample * s)
-+static int add_us_sample(struct mm_struct *mm, struct op_sample *s)
- {
- 	unsigned long cookie;
- 	off_t offset;
-- 
-- 	cookie = lookup_dcookie(mm, s->eip, &offset);
-- 
-+
-+	cookie = lookup_dcookie(mm, s->eip, &offset);
-+
- 	if (cookie == INVALID_COOKIE) {
- 		atomic_inc(&oprofile_stats.sample_lost_no_mapping);
- 		return 0;
-@@ -341,13 +423,13 @@ static int add_us_sample(struct mm_struct * mm, struct op_sample * s)
- 	return 1;
- }
- 
-- 
-+
- /* Add a sample to the global event buffer. If possible the
-  * sample is converted into a persistent dentry/offset pair
-  * for later lookup from userspace.
-  */
- static int
--add_sample(struct mm_struct * mm, struct op_sample * s, int in_kernel)
-+add_sample(struct mm_struct *mm, struct op_sample *s, int in_kernel)
- {
- 	if (in_kernel) {
- 		add_sample_entry(s->eip, s->event);
-@@ -359,9 +441,9 @@ add_sample(struct mm_struct * mm, struct op_sample * s, int in_kernel)
- 	}
- 	return 0;
- }
-- 
- 
--static void release_mm(struct mm_struct * mm)
-+
-+static void release_mm(struct mm_struct *mm)
- {
- 	if (!mm)
+ 	if (hpet_address || force_hpet_address)
  		return;
-@@ -370,9 +452,9 @@ static void release_mm(struct mm_struct * mm)
- }
+@@ -366,14 +384,33 @@ static void ati_force_enable_hpet(struct pci_dev *dev)
+ 		return;
+ 	}
  
- 
--static struct mm_struct * take_tasks_mm(struct task_struct * task)
-+static struct mm_struct *take_tasks_mm(struct task_struct *task)
- {
--	struct mm_struct * mm = get_task_mm(task);
-+	struct mm_struct *mm = get_task_mm(task);
- 	if (mm)
- 		down_read(&mm->mmap_sem);
- 	return mm;
-@@ -383,10 +465,10 @@ static inline int is_code(unsigned long val)
- {
- 	return val == ESCAPE_CODE;
- }
-- 
++	d = ati_ixp4x0_rev(dev);
++	if (d  < 0x82)
++		return;
 +
- 
- /* "acquire" as many cpu buffer slots as we can */
--static unsigned long get_slots(struct oprofile_cpu_buffer * b)
-+static unsigned long get_slots(struct oprofile_cpu_buffer *b)
- {
- 	unsigned long head = b->head_pos;
- 	unsigned long tail = b->tail_pos;
-@@ -412,19 +494,6 @@ static unsigned long get_slots(struct oprofile_cpu_buffer * b)
- }
- 
- 
--static void increment_tail(struct oprofile_cpu_buffer * b)
--{
--	unsigned long new_tail = b->tail_pos + 1;
--
--	rmb();
--
--	if (new_tail < b->buffer_size)
--		b->tail_pos = new_tail;
--	else
--		b->tail_pos = 0;
--}
--
--
- /* Move tasks along towards death. Any tasks on dead_tasks
-  * will definitely have no remaining references in any
-  * CPU buffers at this point, because we use two lists,
-@@ -435,8 +504,8 @@ static void process_task_mortuary(void)
- {
- 	unsigned long flags;
- 	LIST_HEAD(local_dead_tasks);
--	struct task_struct * task;
--	struct task_struct * ttask;
-+	struct task_struct *task;
-+	struct task_struct *ttask;
- 
- 	spin_lock_irqsave(&task_mortuary, flags);
- 
-@@ -493,7 +562,7 @@ void sync_buffer(int cpu)
- {
- 	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
- 	struct mm_struct *mm = NULL;
--	struct task_struct * new;
-+	struct task_struct *new;
- 	unsigned long cookie = 0;
- 	int in_kernel = 1;
- 	unsigned int i;
-@@ -501,7 +570,7 @@ void sync_buffer(int cpu)
- 	unsigned long available;
- 
- 	mutex_lock(&buffer_mutex);
-- 
++	/* base address */
+ 	pci_write_config_dword(dev, 0x14, 0xfed00000);
+ 	pci_read_config_dword(dev, 0x14, &val);
 +
- 	add_cpu_switch(cpu);
- 
- 	/* Remember, only we can modify tail_pos */
-@@ -509,8 +578,8 @@ void sync_buffer(int cpu)
- 	available = get_slots(cpu_buf);
- 
- 	for (i = 0; i < available; ++i) {
--		struct op_sample * s = &cpu_buf->buffer[cpu_buf->tail_pos];
-- 
-+		struct op_sample *s = &cpu_buf->buffer[cpu_buf->tail_pos];
++	/* enable interrupt */
++	outb(0x72, 0xcd6); b = inb(0xcd7);
++	b |= 0x1;
++	outb(0x72, 0xcd6); outb(b, 0xcd7);
++	outb(0x72, 0xcd6); b = inb(0xcd7);
++	if (!(b & 0x1))
++		return;
++	pci_read_config_dword(dev, 0x64, &d);
++	d |= (1<<10);
++	pci_write_config_dword(dev, 0x64, d);
++	pci_read_config_dword(dev, 0x64, &d);
++	if (!(d & (1<<10)))
++		return;
 +
- 		if (is_code(s->eip)) {
- 			if (s->event <= CPU_IS_KERNEL) {
- 				/* kernel/userspace switch */
-@@ -521,8 +590,18 @@ void sync_buffer(int cpu)
- 			} else if (s->event == CPU_TRACE_BEGIN) {
- 				state = sb_bt_start;
- 				add_trace_begin();
-+#ifdef CONFIG_OPROFILE_IBS
-+			} else if (s->event == IBS_FETCH_BEGIN) {
-+				state = sb_bt_start;
-+				add_ibs_begin(cpu_buf,
-+					IBS_FETCH_CODE, in_kernel, mm);
-+			} else if (s->event == IBS_OP_BEGIN) {
-+				state = sb_bt_start;
-+				add_ibs_begin(cpu_buf,
-+					IBS_OP_CODE, in_kernel, mm);
-+#endif
- 			} else {
--				struct mm_struct * oldmm = mm;
-+				struct mm_struct *oldmm = mm;
- 
- 				/* userspace context switch */
- 				new = (struct task_struct *)s->event;
-@@ -533,13 +612,11 @@ void sync_buffer(int cpu)
- 					cookie = get_exec_dcookie(mm);
- 				add_user_ctx_switch(new, cookie);
- 			}
--		} else {
--			if (state >= sb_bt_start &&
--			    !add_sample(mm, s, in_kernel)) {
--				if (state == sb_bt_start) {
--					state = sb_bt_ignore;
--					atomic_inc(&oprofile_stats.bt_lost_no_mapping);
--				}
-+		} else if (state >= sb_bt_start &&
-+			   !add_sample(mm, s, in_kernel)) {
-+			if (state == sb_bt_start) {
-+				state = sb_bt_ignore;
-+				atomic_inc(&oprofile_stats.bt_lost_no_mapping);
- 			}
- 		}
- 
-diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
-index 7ba78e6..e1bd5a9 100644
---- a/drivers/oprofile/cpu_buffer.c
-+++ b/drivers/oprofile/cpu_buffer.c
-@@ -5,6 +5,7 @@
-  * @remark Read the file COPYING
-  *
-  * @author John Levon <levon@movementarian.org>
-+ * @author Barry Kasindorf <barry.kasindorf@amd.com>
-  *
-  * Each CPU has a local buffer that stores PC value/event
-  * pairs. We also log context switches when we notice them.
-@@ -209,7 +210,7 @@ static int log_sample(struct oprofile_cpu_buffer * cpu_buf, unsigned long pc,
- 	return 1;
+ 	force_hpet_address = val;
+ 	force_hpet_resume_type = ATI_FORCE_HPET_RESUME;
+ 	dev_printk(KERN_DEBUG, &dev->dev, "Force enabled HPET at 0x%lx\n",
+ 		   force_hpet_address);
+ 	cached_dev = dev;
+-	return;
  }
- 
--static int oprofile_begin_trace(struct oprofile_cpu_buffer * cpu_buf)
-+static int oprofile_begin_trace(struct oprofile_cpu_buffer *cpu_buf)
- {
- 	if (nr_available_slots(cpu_buf) < 4) {
- 		cpu_buf->sample_lost_overflow++;
-@@ -254,6 +255,75 @@ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
- 	oprofile_add_ext_sample(pc, regs, event, is_kernel);
- }
- 
-+#ifdef CONFIG_OPROFILE_IBS
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
+ 			 ati_force_enable_hpet);
+diff --git a/arch/x86/pci/fixup.c b/arch/x86/pci/fixup.c
+index 4bdaa59..3c27a80 100644
+--- a/arch/x86/pci/fixup.c
++++ b/arch/x86/pci/fixup.c
+@@ -511,3 +511,31 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, fam10h_pci_cfg_space_size);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, fam10h_pci_cfg_space_size);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, fam10h_pci_cfg_space_size);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, fam10h_pci_cfg_space_size);
 +
-+#define MAX_IBS_SAMPLE_SIZE	14
-+static int log_ibs_sample(struct oprofile_cpu_buffer *cpu_buf,
-+	unsigned long pc, int is_kernel, unsigned  int *ibs, int ibs_code)
++/*
++ * SB600: Disable BAR1 on device 14.0 to avoid HPET resources from
++ * confusing the PCI engine:
++ */
++static void sb600_disable_hpet_bar(struct pci_dev *dev)
 +{
-+	struct task_struct *task;
++	u8 val;
 +
-+	cpu_buf->sample_received++;
++	/*
++	 * The SB600 and SB700 both share the same device
++	 * ID, but the PM register 0x55 does something different
++	 * for the SB700, so make sure we are dealing with the
++	 * SB600 before touching the bit:
++	 */
 +
-+	if (nr_available_slots(cpu_buf) < MAX_IBS_SAMPLE_SIZE) {
-+		cpu_buf->sample_lost_overflow++;
-+		return 0;
++	pci_read_config_byte(dev, 0x08, &val);
++
++	if (val < 0x2F) {
++		outb(0x55, 0xCD6);
++		val = inb(0xCD7);
++
++		/* Set bit 7 in PM register 0x55 */
++		outb(0x55, 0xCD6);
++		outb(val | 0x80, 0xCD7);
 +	}
-+
-+	is_kernel = !!is_kernel;
-+
-+	/* notice a switch from user->kernel or vice versa */
-+	if (cpu_buf->last_is_kernel != is_kernel) {
-+		cpu_buf->last_is_kernel = is_kernel;
-+		add_code(cpu_buf, is_kernel);
-+	}
-+
-+	/* notice a task switch */
-+	if (!is_kernel) {
-+		task = current;
-+
-+		if (cpu_buf->last_task != task) {
-+			cpu_buf->last_task = task;
-+			add_code(cpu_buf, (unsigned long)task);
-+		}
-+	}
-+
-+	add_code(cpu_buf, ibs_code);
-+	add_sample(cpu_buf, ibs[0], ibs[1]);
-+	add_sample(cpu_buf, ibs[2], ibs[3]);
-+	add_sample(cpu_buf, ibs[4], ibs[5]);
-+
-+	if (ibs_code == IBS_OP_BEGIN) {
-+	add_sample(cpu_buf, ibs[6], ibs[7]);
-+	add_sample(cpu_buf, ibs[8], ibs[9]);
-+	add_sample(cpu_buf, ibs[10], ibs[11]);
-+	}
-+
-+	return 1;
 +}
++DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_ATI, 0x4385, sb600_disable_hpet_bar);
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index b3f5dbc..f3cfb4c 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -53,6 +53,11 @@
+ 
+ #define HPET_RANGE_SIZE		1024	/* from HPET spec */
+ 
 +
-+void oprofile_add_ibs_sample(struct pt_regs *const regs,
-+				unsigned int * const ibs_sample, u8 code)
++/* WARNING -- don't get confused.  These macros are never used
++ * to write the (single) counter, and rarely to read it.
++ * They're badly named; to fix, someday.
++ */
+ #if BITS_PER_LONG == 64
+ #define	write_counter(V, MC)	writeq(V, MC)
+ #define	read_counter(MC)	readq(MC)
+@@ -77,7 +82,7 @@ static struct clocksource clocksource_hpet = {
+         .rating         = 250,
+         .read           = read_hpet,
+         .mask           = CLOCKSOURCE_MASK(64),
+-        .mult           = 0, /*to be caluclated*/
++	.mult		= 0, /* to be calculated */
+         .shift          = 10,
+         .flags          = CLOCK_SOURCE_IS_CONTINUOUS,
+ };
+@@ -86,8 +91,6 @@ static struct clocksource *hpet_clocksource;
+ 
+ /* A lock for concurrent access by app and isr hpet activity. */
+ static DEFINE_SPINLOCK(hpet_lock);
+-/* A lock for concurrent intermodule access to hpet and isr hpet activity. */
+-static DEFINE_SPINLOCK(hpet_task_lock);
+ 
+ #define	HPET_DEV_NAME	(7)
+ 
+@@ -99,7 +102,6 @@ struct hpet_dev {
+ 	unsigned long hd_irqdata;
+ 	wait_queue_head_t hd_waitqueue;
+ 	struct fasync_struct *hd_async_queue;
+-	struct hpet_task *hd_task;
+ 	unsigned int hd_flags;
+ 	unsigned int hd_irq;
+ 	unsigned int hd_hdwirq;
+@@ -173,11 +175,6 @@ static irqreturn_t hpet_interrupt(int irq, void *data)
+ 		writel(isr, &devp->hd_hpet->hpet_isr);
+ 	spin_unlock(&hpet_lock);
+ 
+-	spin_lock(&hpet_task_lock);
+-	if (devp->hd_task)
+-		devp->hd_task->ht_func(devp->hd_task->ht_data);
+-	spin_unlock(&hpet_task_lock);
+-
+ 	wake_up_interruptible(&devp->hd_waitqueue);
+ 
+ 	kill_fasync(&devp->hd_async_queue, SIGIO, POLL_IN);
+@@ -185,6 +182,67 @@ static irqreturn_t hpet_interrupt(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void hpet_timer_set_irq(struct hpet_dev *devp)
 +{
-+	int is_kernel = !user_mode(regs);
-+	unsigned long pc = profile_pc(regs);
++	unsigned long v;
++	int irq, gsi;
++	struct hpet_timer __iomem *timer;
 +
-+	struct oprofile_cpu_buffer *cpu_buf =
-+			 &per_cpu(cpu_buffer, smp_processor_id());
-+
-+	if (!backtrace_depth) {
-+		log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code);
++	spin_lock_irq(&hpet_lock);
++	if (devp->hd_hdwirq) {
++		spin_unlock_irq(&hpet_lock);
 +		return;
 +	}
 +
-+	/* if log_sample() fails we can't backtrace since we lost the source
-+	* of this event */
-+	if (log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code))
-+		oprofile_ops.backtrace(regs, backtrace_depth);
++	timer = devp->hd_timer;
++
++	/* we prefer level triggered mode */
++	v = readl(&timer->hpet_config);
++	if (!(v & Tn_INT_TYPE_CNF_MASK)) {
++		v |= Tn_INT_TYPE_CNF_MASK;
++		writel(v, &timer->hpet_config);
++	}
++	spin_unlock_irq(&hpet_lock);
++
++	v = (readq(&timer->hpet_config) & Tn_INT_ROUTE_CAP_MASK) >>
++				 Tn_INT_ROUTE_CAP_SHIFT;
++
++	/*
++	 * In PIC mode, skip IRQ0-4, IRQ6-9, IRQ12-15 which is always used by
++	 * legacy device. In IO APIC mode, we skip all the legacy IRQS.
++	 */
++	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC)
++		v &= ~0xf3df;
++	else
++		v &= ~0xffff;
++
++	for (irq = find_first_bit(&v, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
++		irq = find_next_bit(&v, HPET_MAX_IRQ, 1 + irq)) {
++
++		if (irq >= NR_IRQS) {
++			irq = HPET_MAX_IRQ;
++			break;
++		}
++
++		gsi = acpi_register_gsi(irq, ACPI_LEVEL_SENSITIVE,
++					ACPI_ACTIVE_LOW);
++		if (gsi > 0)
++			break;
++
++		/* FIXME: Setup interrupt source table */
++	}
++
++	if (irq < HPET_MAX_IRQ) {
++		spin_lock_irq(&hpet_lock);
++		v = readl(&timer->hpet_config);
++		v |= irq << Tn_INT_ROUTE_CNF_SHIFT;
++		writel(v, &timer->hpet_config);
++		devp->hd_hdwirq = gsi;
++		spin_unlock_irq(&hpet_lock);
++	}
++	return;
 +}
 +
-+#endif
-+
- void oprofile_add_pc(unsigned long pc, int is_kernel, unsigned long event)
+ static int hpet_open(struct inode *inode, struct file *file)
  {
- 	struct oprofile_cpu_buffer *cpu_buf = &__get_cpu_var(cpu_buffer);
-@@ -296,7 +366,7 @@ static void wq_sync_buffer(struct work_struct *work)
- 	struct oprofile_cpu_buffer * b =
- 		container_of(work, struct oprofile_cpu_buffer, work.work);
- 	if (b->cpu != smp_processor_id()) {
--		printk("WQ on CPU%d, prefer CPU%d\n",
-+		printk(KERN_DEBUG "WQ on CPU%d, prefer CPU%d\n",
- 		       smp_processor_id(), b->cpu);
- 	}
- 	sync_buffer(b->cpu);
-diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
-index c3e366b..9c44d00 100644
---- a/drivers/oprofile/cpu_buffer.h
-+++ b/drivers/oprofile/cpu_buffer.h
-@@ -55,5 +55,7 @@ void cpu_buffer_reset(struct oprofile_cpu_buffer * cpu_buf);
- /* transient events for the CPU buffer -> event buffer */
- #define CPU_IS_KERNEL 1
- #define CPU_TRACE_BEGIN 2
-+#define IBS_FETCH_BEGIN 3
-+#define IBS_OP_BEGIN    4
+ 	struct hpet_dev *devp;
+@@ -199,8 +257,7 @@ static int hpet_open(struct inode *inode, struct file *file)
  
- #endif /* OPROFILE_CPU_BUFFER_H */
-diff --git a/include/linux/oprofile.h b/include/linux/oprofile.h
-index 041bb31..bcb8f72 100644
---- a/include/linux/oprofile.h
-+++ b/include/linux/oprofile.h
-@@ -36,6 +36,8 @@
- #define XEN_ENTER_SWITCH_CODE		10
- #define SPU_PROFILING_CODE		11
- #define SPU_CTX_SWITCH_CODE		12
-+#define IBS_FETCH_CODE			13
-+#define IBS_OP_CODE			14
+ 	for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
+ 		for (i = 0; i < hpetp->hp_ntimer; i++)
+-			if (hpetp->hp_dev[i].hd_flags & HPET_OPEN
+-			    || hpetp->hp_dev[i].hd_task)
++			if (hpetp->hp_dev[i].hd_flags & HPET_OPEN)
+ 				continue;
+ 			else {
+ 				devp = &hpetp->hp_dev[i];
+@@ -219,6 +276,8 @@ static int hpet_open(struct inode *inode, struct file *file)
+ 	spin_unlock_irq(&hpet_lock);
+ 	unlock_kernel();
  
- struct super_block;
- struct dentry;
++	hpet_timer_set_irq(devp);
++
+ 	return 0;
+ }
+ 
+@@ -441,7 +500,11 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ 	devp->hd_irq = irq;
+ 	t = devp->hd_ireqfreq;
+ 	v = readq(&timer->hpet_config);
+-	g = v | Tn_INT_ENB_CNF_MASK;
++
++	/* 64-bit comparators are not yet supported through the ioctls,
++	 * so force this into 32-bit mode if it supports both modes
++	 */
++	g = v | Tn_32MODE_CNF_MASK | Tn_INT_ENB_CNF_MASK;
+ 
+ 	if (devp->hd_flags & HPET_PERIODIC) {
+ 		write_counter(t, &timer->hpet_compare);
+@@ -451,6 +514,12 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ 		v |= Tn_VAL_SET_CNF_MASK;
+ 		writeq(v, &timer->hpet_config);
+ 		local_irq_save(flags);
++
++		/* NOTE:  what we modify here is a hidden accumulator
++		 * register supported by periodic-capable comparators.
++		 * We never want to modify the (single) counter; that
++		 * would affect all the comparators.
++		 */
+ 		m = read_counter(&hpet->hpet_mc);
+ 		write_counter(t + m + hpetp->hp_delta, &timer->hpet_compare);
+ 	} else {
+@@ -604,57 +673,6 @@ static int hpet_is_known(struct hpet_data *hdp)
+ 	return 0;
+ }
+ 
+-static inline int hpet_tpcheck(struct hpet_task *tp)
+-{
+-	struct hpet_dev *devp;
+-	struct hpets *hpetp;
+-
+-	devp = tp->ht_opaque;
+-
+-	if (!devp)
+-		return -ENXIO;
+-
+-	for (hpetp = hpets; hpetp; hpetp = hpetp->hp_next)
+-		if (devp >= hpetp->hp_dev
+-		    && devp < (hpetp->hp_dev + hpetp->hp_ntimer)
+-		    && devp->hd_hpet == hpetp->hp_hpet)
+-			return 0;
+-
+-	return -ENXIO;
+-}
+-
+-#if 0
+-int hpet_unregister(struct hpet_task *tp)
+-{
+-	struct hpet_dev *devp;
+-	struct hpet_timer __iomem *timer;
+-	int err;
+-
+-	if ((err = hpet_tpcheck(tp)))
+-		return err;
+-
+-	spin_lock_irq(&hpet_task_lock);
+-	spin_lock(&hpet_lock);
+-
+-	devp = tp->ht_opaque;
+-	if (devp->hd_task != tp) {
+-		spin_unlock(&hpet_lock);
+-		spin_unlock_irq(&hpet_task_lock);
+-		return -ENXIO;
+-	}
+-
+-	timer = devp->hd_timer;
+-	writeq((readq(&timer->hpet_config) & ~Tn_INT_ENB_CNF_MASK),
+-	       &timer->hpet_config);
+-	devp->hd_flags &= ~(HPET_IE | HPET_PERIODIC);
+-	devp->hd_task = NULL;
+-	spin_unlock(&hpet_lock);
+-	spin_unlock_irq(&hpet_task_lock);
+-
+-	return 0;
+-}
+-#endif  /*  0  */
+-
+ static ctl_table hpet_table[] = {
+ 	{
+ 	 .ctl_name = CTL_UNNUMBERED,
+@@ -746,6 +764,7 @@ int hpet_alloc(struct hpet_data *hdp)
+ 	static struct hpets *last = NULL;
+ 	unsigned long period;
+ 	unsigned long long temp;
++	u32 remainder;
+ 
+ 	/*
+ 	 * hpet_alloc can be called by platform dependent code.
+@@ -809,9 +828,13 @@ int hpet_alloc(struct hpet_data *hdp)
+ 		printk("%s %d", i > 0 ? "," : "", hdp->hd_irq[i]);
+ 	printk("\n");
+ 
+-	printk(KERN_INFO "hpet%u: %u %d-bit timers, %Lu Hz\n",
+-	       hpetp->hp_which, hpetp->hp_ntimer,
+-	       cap & HPET_COUNTER_SIZE_MASK ? 64 : 32, hpetp->hp_tick_freq);
++	temp = hpetp->hp_tick_freq;
++	remainder = do_div(temp, 1000000);
++	printk(KERN_INFO
++		"hpet%u: %u comparators, %d-bit %u.%06u MHz counter\n",
++		hpetp->hp_which, hpetp->hp_ntimer,
++		cap & HPET_COUNTER_SIZE_MASK ? 64 : 32,
++		(unsigned) temp, remainder);
+ 
+ 	mcfg = readq(&hpet->hpet_config);
+ 	if ((mcfg & HPET_ENABLE_CNF_MASK) == 0) {
+@@ -874,8 +897,6 @@ static acpi_status hpet_resources(struct acpi_resource *res, void *data)
+ 		hdp->hd_address = ioremap(addr.minimum, addr.address_length);
+ 
+ 		if (hpet_is_known(hdp)) {
+-			printk(KERN_DEBUG "%s: 0x%lx is busy\n",
+-				__func__, hdp->hd_phys_address);
+ 			iounmap(hdp->hd_address);
+ 			return AE_ALREADY_EXISTS;
+ 		}
+@@ -891,8 +912,6 @@ static acpi_status hpet_resources(struct acpi_resource *res, void *data)
+ 						HPET_RANGE_SIZE);
+ 
+ 		if (hpet_is_known(hdp)) {
+-			printk(KERN_DEBUG "%s: 0x%lx is busy\n",
+-				__func__, hdp->hd_phys_address);
+ 			iounmap(hdp->hd_address);
+ 			return AE_ALREADY_EXISTS;
+ 		}
+diff --git a/include/linux/hpet.h b/include/linux/hpet.h
+index 2dc29ce..79f63a2 100644
+--- a/include/linux/hpet.h
++++ b/include/linux/hpet.h
+@@ -37,6 +37,7 @@ struct hpet {
+ #define	hpet_compare	_u1._hpet_compare
+ 
+ #define	HPET_MAX_TIMERS	(32)
++#define	HPET_MAX_IRQ	(32)
+ 
+ /*
+  * HPET general capabilities register
+@@ -64,7 +65,7 @@ struct hpet {
+  */
+ 
+ #define	Tn_INT_ROUTE_CAP_MASK		(0xffffffff00000000ULL)
+-#define	Tn_INI_ROUTE_CAP_SHIFT		(32UL)
++#define	Tn_INT_ROUTE_CAP_SHIFT		(32UL)
+ #define	Tn_FSB_INT_DELCAP_MASK		(0x8000UL)
+ #define	Tn_FSB_INT_DELCAP_SHIFT		(15)
+ #define	Tn_FSB_EN_CNF_MASK		(0x4000UL)
+@@ -91,23 +92,14 @@ struct hpet {
+  * exported interfaces
+  */
+ 
+-struct hpet_task {
+-	void (*ht_func) (void *);
+-	void *ht_data;
+-	void *ht_opaque;
+-};
+-
+ struct hpet_data {
+ 	unsigned long hd_phys_address;
+ 	void __iomem *hd_address;
+ 	unsigned short hd_nirqs;
+-	unsigned short hd_flags;
+ 	unsigned int hd_state;	/* timer allocated */
+ 	unsigned int hd_irq[HPET_MAX_TIMERS];
+ };
+ 
+-#define	HPET_DATA_PLATFORM	0x0001	/* platform call to hpet_alloc */
+-
+ static inline void hpet_reserve_timer(struct hpet_data *hd, int timer)
+ {
+ 	hd->hd_state |= (1 << timer);
+@@ -125,7 +117,7 @@ struct hpet_info {
+ 	unsigned short hi_timer;
+ };
+ 
+-#define	HPET_INFO_PERIODIC	0x0001	/* timer is periodic */
++#define HPET_INFO_PERIODIC	0x0010	/* periodic-capable comparator */
+ 
+ #define	HPET_IE_ON	_IO('h', 0x01)	/* interrupt on */
+ #define	HPET_IE_OFF	_IO('h', 0x02)	/* interrupt off */
