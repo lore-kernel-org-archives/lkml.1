@@ -1,104 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbYJJHJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYJJHVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbYJJHJf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 03:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJJHJZ
+	id S1753684AbYJJHVW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 03:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJJHVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 03:09:25 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:35843 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750831AbYJJHJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 03:09:24 -0400
-Date: Fri, 10 Oct 2008 15:09:18 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Crypto Update for 2.6.28
-Message-ID: <20081010070918.GA28057@gondor.apana.org.au>
-References: <20080421024306.GA6813@gondor.apana.org.au> <20080714121403.GA28523@gondor.apana.org.au>
+	Fri, 10 Oct 2008 03:21:13 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:42712 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751304AbYJJHVN (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 03:21:13 -0400
+Message-ID: <48EEF60D.4020602@sgi.com>
+Date: Fri, 10 Oct 2008 17:28:29 +1100
+From: Timothy Shimmin <tes@sgi.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080714121403.GA28523@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: lkml@vger.kernel.org, xfs-oss <xfs@oss.sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       toei.rei@stargazer.at
+Subject: [PATCH] fix barrier fail detection in XFS
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+Hi Linus,
 
-Here is the crypto update for 2.6.28:
+Please include the following patch.
 
-The highlight of this batch is the new run-time self-test framework
-for algorithms.  This reorganises the same tests that we've always
-had such that they're run at algorithm registration time so that
-only algorithms passing the tests of their type are made available
-to users.  Hopefully that means people won't be sending me any
-more algorithm updates that fail these tests :)
+This is an important fix posted by Christoph Hellwig today.
+Without this fix, XFS can turn off barriers when we wrap our ondisk log.
+Which could lead to corruption after unclean unmounts/shutdowns
+on machines without a persistent write cache etc.
 
-Apart from that a new algorithm type for random number generators.
-The only two algorithms in that type are the existing kernel RNG
-plus a PRNG based on AES.  This is used by IPsec for IV generation.
+--Tim
 
-We also have a new implementation of CRC32c that uses the Intel
-instruction for CRC32c.
+---------------
+Fix barrier fail detection in XFS
 
-Adrian Bunk (1):
-      crypto: Kconfig - Replace leading spaces with tabs
+Currently we disable barriers as soon as we get a buffer in xlog_iodone
+that has the XBF_ORDERED flag cleared.  But this can be the case not only
+for buffers where the barrier failed, but also the first buffer of a
+split log write in case of a log wraparound.  Due to the disabled
+barriers we can easily get directory corruption on unclean shutdowns.
+So instead of using this check add a new buffer flag for failed barrier
+writes.
 
-Austin Zhang (1):
-      crypto: crc32c - Use Intel CRC32 instruction
+This is a regression vs 2.6.26 caused by patch to use the right macro
+to check for the ORDERED flag, as we previously got true returned for
+every buffer.
 
-Herbert Xu (10):
-      crypto: api - Export crypto_alg_lookup instead of __crypto_alg_lookup
-      crypto: api - Display larval objects properly
-      crypto: tcrypt - Avoid using contiguous pages
-      crypto: tcrypt - Abort and only log if there is an error
-      crypto: tcrypt - Add alg_test interface
-      crypto: cryptomgr - Add test infrastructure
-      crypto: api - Use test infrastructure
-      crypto: cryptomgr - Test ciphers using ECB
-      crypto: skcipher - Move IV generators into their own modules
-      crypto: skcipher - Use RNG interface instead of get_random_bytes
+Thanks to Toei Rei for reporting the bug.
 
-Neil Horman (2):
-      crypto: api - Add fips_enable flag
-      crypto: rng - RNG interface and implementation
 
- arch/x86/crypto/Makefile           |    2 
- arch/x86/crypto/crc32c-intel.c     |  197 
- crypto/Kconfig                     |  127 
- crypto/Makefile                    |   12 
- crypto/algapi.c                    |  147 
- crypto/algboss.c                   |  300 +
- crypto/ansi_cprng.c                |  417 +
- crypto/api.c                       |   81 
- crypto/blkcipher.c                 |   29 
- crypto/chainiv.c                   |   44 
- crypto/cryptomgr.c                 |  222 
- crypto/eseqiv.c                    |   35 
- crypto/fips.c                      |   27 
- crypto/internal.h                  |   18 
- crypto/krng.c                      |   66 
- crypto/proc.c                      |   57 
- crypto/rng.c                       |  126 
- crypto/seqiv.c                     |   27 
- crypto/tcrypt.c                    | 1347 -----
- crypto/tcrypt.h                    | 8709 ------------------------------------
- crypto/testmgr.c                   | 1868 +++++++
- crypto/testmgr.h                   | 8738 +++++++++++++++++++++++++++++++++++++
- include/crypto/internal/rng.h      |   26 
- include/crypto/internal/skcipher.h |    6 
- include/crypto/rng.h               |   75 
- include/linux/crypto.h             |   35 
- 26 files changed, 12464 insertions(+), 10274 deletions(-)
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
+Reviewed-by: David Chinner <david@fromorbit.com>
+Signed-off-by: Tim Shimmin <tes@sgi.com>
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Index: 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.c
+===================================================================
+--- 2.6.x-xfs-quilt.orig/fs/xfs/linux-2.6/xfs_buf.c	2008-09-19 13:47:36.000000000 +1000
++++ 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.c	2008-10-10 15:07:51.316145158 +1100
+@@ -1001,12 +1001,13 @@ xfs_buf_iodone_work(
+ 	 * We can get an EOPNOTSUPP to ordered writes.  Here we clear the
+ 	 * ordered flag and reissue them.  Because we can't tell the higher
+ 	 * layers directly that they should not issue ordered I/O anymore, they
+-	 * need to check if the ordered flag was cleared during I/O completion.
++	 * need to check if the _XFS_BARRIER_FAILED flag was set during I/O completion.
+ 	 */
+ 	if ((bp->b_error == EOPNOTSUPP) &&
+ 	    (bp->b_flags & (XBF_ORDERED|XBF_ASYNC)) == (XBF_ORDERED|XBF_ASYNC)) {
+ 		XB_TRACE(bp, "ordered_retry", bp->b_iodone);
+ 		bp->b_flags &= ~XBF_ORDERED;
++		bp->b_flags |= _XFS_BARRIER_FAILED;
+ 		xfs_buf_iorequest(bp);
+ 	} else if (bp->b_iodone)
+ 		(*(bp->b_iodone))(bp);
+Index: 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.h
+===================================================================
+--- 2.6.x-xfs-quilt.orig/fs/xfs/linux-2.6/xfs_buf.h	2008-09-19 13:47:36.000000000 +1000
++++ 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.h	2008-10-10 11:54:23.269373217 +1100
+@@ -85,6 +85,14 @@ typedef enum {
+ 	 * modifications being lost.
+ 	 */
+ 	_XBF_PAGE_LOCKED = (1 << 22),
++
++	/*
++	 * If we try a barrier write, but it fails we have to communicate
++	 * this to the upper layers.  Unfortunately b_error gets overwritten
++	 * when the buffer is re-issued so we have to add another flag to
++	 * keep this information.
++	 */
++	_XFS_BARRIER_FAILED = (1 << 23),
+ } xfs_buf_flags_t;
+ 
+ typedef enum {
+Index: 2.6.x-xfs-quilt/fs/xfs/xfs_log.c
+===================================================================
+--- 2.6.x-xfs-quilt.orig/fs/xfs/xfs_log.c	2008-09-22 11:54:19.000000000 +1000
++++ 2.6.x-xfs-quilt/fs/xfs/xfs_log.c	2008-10-10 15:09:56.967725107 +1100
+@@ -1033,11 +1033,12 @@ xlog_iodone(xfs_buf_t *bp)
+ 	l = iclog->ic_log;
+ 
+ 	/*
+-	 * If the ordered flag has been removed by a lower
+-	 * layer, it means the underlyin device no longer supports
++	 * If the _XFS_BARRIER_FAILED flag was set by a lower
++	 * layer, it means the underlying device no longer supports
+ 	 * barrier I/O. Warn loudly and turn off barriers.
+ 	 */
+-	if ((l->l_mp->m_flags & XFS_MOUNT_BARRIER) && !XFS_BUF_ISORDERED(bp)) {
++	if (bp->b_flags & _XFS_BARRIER_FAILED) {
++		bp->b_flags &= ~_XFS_BARRIER_FAILED;
+ 		l->l_mp->m_flags &= ~XFS_MOUNT_BARRIER;
+ 		xfs_fs_cmn_err(CE_WARN, l->l_mp,
+ 				"xlog_iodone: Barriers are no longer supported"
+
