@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbYJJXPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbYJJXTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbYJJXPb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 19:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJJXPT
+	id S1757051AbYJJXTA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 19:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYJJXSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 19:15:19 -0400
-Received: from kroah.org ([198.145.64.141]:59912 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752492AbYJJXPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 19:15:18 -0400
-Date: Fri, 10 Oct 2008 16:12:08 -0700
-From: Greg KH <greg@kroah.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: David Rowe <david@rowetel.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Tzafrir Cohen <tzafrir.cohen@xorcom.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 16/23] Staging: add echo cancelation module
-Message-ID: <20081010231208.GA30393@kroah.com>
-References: <20081010224130.GA30117@kroah.com> <1223678567-30143-16-git-send-email-greg@kroah.com> <8bd0f97a0810101608r65fff53bi916510e47eda2a12@mail.gmail.com>
+	Fri, 10 Oct 2008 19:18:52 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:43549 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752492AbYJJXSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 19:18:51 -0400
+Date: Fri, 10 Oct 2008 16:18:44 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, pbadari@us.ibm.com,
+       mel@csn.ul.ie, lcm@us.ibm.com, mingo@elte.hu, greg@kroah.com,
+       dave@linux.vnet.ibm.com, nish.aravamudan@gmail.com
+Subject: Re: [PATCH 1/2] [REPOST] mm: show node to memory section
+	relationship with symlinks in sysfs
+Message-ID: <20081010231844.GA1718@us.ibm.com>
+References: <20081009192115.GB8793@us.ibm.com> <20081010124239.f92b5568.akpm@linux-foundation.org> <20081010213357.GD7369@us.ibm.com> <20081010145950.f51def29.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0810101608r65fff53bi916510e47eda2a12@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081010145950.f51def29.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 07:08:27PM -0400, Mike Frysinger wrote:
-> On Fri, Oct 10, 2008 at 18:42, Greg KH wrote:
-> > +#ifdef __BLACKFIN_ASM__
+On Fri, Oct 10, 2008 at 02:59:50PM -0700, Andrew Morton wrote:
+> On Fri, 10 Oct 2008 14:33:57 -0700
+> Gary Hade <garyhade@us.ibm.com> wrote:
 > 
-> shouldnt this be CONFIG_BLACKFIN or just __bfin__ ?  unless i missed
-> some magic, that define doesnt get defined anywhere ...
+> > On Fri, Oct 10, 2008 at 12:42:39PM -0700, Andrew Morton wrote:
+> > > On Thu, 9 Oct 2008 12:21:15 -0700
+> > > Gary Hade <garyhade@us.ibm.com> wrote:
+> > > 
+> > > > Show node to memory section relationship with symlinks in sysfs
+> > > > 
+> > > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> > > > the memory sections located on nodeX.  For example:
+> > > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> > > > indicates that memory section 135 resides on node1.
+> > > 
+> > > I'm not seeing here a description of why the kernel needs this feature.
+> > > Why is it useful?  How will it be used?  What value does it have to
+> > > our users?
+> > 
+> > Sorry, I should have included that.  In our case, it is another
+> > small step towards eventual total node removal.  We will need to
+> > know which memory sections to offline for whatever node is targeted
+> > for removal.  However, I suspect that exposing the node to section
+> > information to user-level could be useful for other purposes.
+> > For example, I have been thinking that using memory hotremove
+> > functionality to modify the amount of available memory on specific
+> > nodes without having to physically add/remove DIMMs might be useful
+> > to those that test application or benchmark performance on a
+> > multi-node system in various memory configurations.
+> > 
+> 
+> hm, OK, thanks.  It does sound a bit thin, and if we merge this then
+> not only do we get a porkier kernel,
 
-Probably, this code still needs to be cleaned up, hence the placement in
-the staging tree :)
+Would you feel the same about the size increase if patch 2/2 (include
+memory section subtree in sysfs with only sparsemem enabled) was
+withdrawn?
 
-Patches gladly accepted to fix stuff like this, and anything else people
-want to help out with, are always greatly appreciated.
+Without patch 2/2 the size increase for non-Sparsemem or Sparsemem
+wo/memory hotplug kernels is extremely small.  Even for memory hotplug
+enabled kernels there is only a little extra code in ./drivers/base/node.o
+which only gets linked into NUMA enabled kernels.  I can gather some numbers
+if necessary.
 
-thanks,
+> we also get a new userspace interface which we're then locked into.
 
-greg k-h
+True.
+
+> 
+> So I'm inclined to skip this change until we have a stronger need?
+
+Of course, I'm not. :)
+
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
