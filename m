@@ -1,172 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762463AbYJJUpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbYJJUpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762463AbYJJUpA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758978AbYJJUou
+	id S1764284AbYJJUpY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764163AbYJJUo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:44:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46204 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758970AbYJJUot (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:44:49 -0400
-Date: Fri, 10 Oct 2008 13:40:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Gadiyar, Anand" <gadiyar@ti.com>
-Cc: johnpol@2ka.mipt.ru, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, madhu.cr@ti.com
-Subject: Re: [PATCH 2/5] HDQ: BQ27000 HDQ Slave Interface Driver
-Message-Id: <20081010134051.93be2ae9.akpm@linux-foundation.org>
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF2@dbde02.ent.ti.com>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF2@dbde02.ent.ti.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 16:44:56 -0400
+Received: from kroah.org ([198.145.64.141]:55115 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764157AbYJJUoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 16:44:55 -0400
+Date: Fri, 10 Oct 2008 13:41:12 -0700
+From: Greg KH <greg@kroah.com>
+To: Stefan Bader <stefan.bader@canonical.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [stable] [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in
+	used_vectors bitmap
+Message-ID: <20081010204112.GA32357@kroah.com>
+References: <48EFB4B2.2020508@canonical.com> <20081010201610.GA32164@kroah.com> <20081010202350.GA11090@elte.hu> <20081010202915.GA32318@kroah.com> <48EFBCBB.6050104@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48EFBCBB.6050104@canonical.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Oct 2008 12:49:19 +0530
-"Gadiyar, Anand" <gadiyar@ti.com> wrote:
-
-> From: Madhusudhan Chikkature <madhu.cr@ti.com>
+On Fri, Oct 10, 2008 at 04:36:11PM -0400, Stefan Bader wrote:
+> Greg KH wrote:
+> > On Fri, Oct 10, 2008 at 10:23:50PM +0200, Ingo Molnar wrote:
+> >> * Greg KH <greg@kroah.com> wrote:
+> >>
+> >>> On Fri, Oct 10, 2008 at 04:01:54PM -0400, Stefan Bader wrote:
+> >>>> Affected: 2.6.24-2.6.27
+> >>>>
+> >>>> Someone from the community found out, that after repeatedly unloading and
+> >>>> loading a device driver that uses MSI IRQs, the system eventually assigned
+> >>>> the vector initially reserved for IRQ0 to the device driver.
+> >>>>
+> >>>> The reason for this is, that although IRQ0 is tied to the FIRST_DEVICE_VECTOR
+> >>>> when declaring the irq_vector table, the corresponding bit in the used_vectors
+> >>>> map is not set. So, if vectors are released and assigned often enough, the
+> >>>> vector will get assigned to another interrupt. This happens more often with
+> >>>> MSI interrupts as those are exclusively using a vector.
+> >>>>
+> >>>> Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
+> >>>>
+> >>>> Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+> >>> Hint, if you want patches to go into the -stable tree, just add:
+> >>> 	cc: Stable <stable@kernel.org>
+> >>> to the patch when you submit it in the signed-off-by area, and it will
+> >>> be automatically sent to us when it goes into the main kernel tree.
+> >> yes. Note that this is a special case, as there will be no upstream 
+> >> commit to tag with Cc: <stable@kernel.org>, because this bug got 
+> >> eliminated via not backportable means: APIC code unification.
+> >>
+> >> Acked-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > So this is a -stable release only patch?  .28 will never get/need this?
+> > 
+> > thanks,
+> > 
+> > greg k-h
 > 
-> This patch provides the BQ27000 slave interface driver.
-> 
-> ...
->
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6/drivers/w1/slaves/w1_bq27000.c	2008-09-26 14:43:42.000000000 +0530
-> @@ -0,0 +1,120 @@
-> +/*
-> + * drivers/w1/slaves/w1_bq27000.c
-> + *
-> + * Copyright (C) 2007 Texas Instruments, Inc.
-> + *
-> + * This file is licensed under the terms of the GNU General Public License
-> + * version 2. This program is licensed "as is" without any warranty of any
-> + * kind, whether express or implied.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/device.h>
-> +#include <linux/types.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/mutex.h>
-> +
-> +#include "../w1.h"
-> +#include "../w1_int.h"
-> +#include "../w1_family.h"
-> +
-> +#define HDQ_CMD_READ	(0)
-> +#define HDQ_CMD_WRITE	(1<<7)
-> +
-> +int F_ID;
-> +int family_id;
+> Correct. Tried to hint this by the Affected line but should have been more verbose.
 
-No, we don't want to add kernel-wide symbols with names like this. 
-Please either rename them to something which clearly identifies the
-subsystem to which they belong, or make them static.
+Great, thanks for letting me know, I'll queue it up for -stable.
 
-> +void w1_bq27000_write(struct device *dev, u8 buf, u8 reg)
-> +{
-> +	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
-> +	if (!dev) {
-> +		pr_info("Could not obtain slave dev ptr\n");
-> +		return;
-> +	}
-> +
-> +	w1_write_8(sl->master, HDQ_CMD_WRITE | reg);
-> +	w1_write_8(sl->master, buf);
-> +}
-> +EXPORT_SYMBOL(w1_bq27000_write);
-> +
-> +int w1_bq27000_read(struct device *dev, u8 reg)
-> +{
-> +	u8 val;
-> +	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
-> +	if (!dev)
-> +		return 0;
-> +
-> +	w1_write_8(sl->master, HDQ_CMD_READ | reg);
-> +	val = w1_read_8(sl->master);
-> +
-> +	return val;
-> +}
-> +EXPORT_SYMBOL(w1_bq27000_read);
+Oh, next time, please don't attach patches in base64 format, that's a
+pain in the ass...
 
-It's conventional to put a blank line between end-of-locals and
-start-of-code.
+thanks,
 
-> +static int w1_bq27000_add_slave(struct w1_slave *sl)
-> +{
-> +	int ret;
-> +	int id = 1;
-> +	struct platform_device *pdev;
-> +
-> +	pdev = platform_device_alloc("bq27000-battery", id);
-
-Like that.
-
-> +	if (!pdev) {
-> +		ret = -ENOMEM;
-> +		return ret;
-> +	}
-> +	pdev->dev.parent = &sl->dev;
-> +
-> +	ret = platform_device_add(pdev);
-> +	if (ret)
-> +		goto pdev_add_failed;
-> +
-> +	dev_set_drvdata(&sl->dev, pdev);
-> +
-> +	goto success;
-> +
-> +pdev_add_failed:
-> +	platform_device_unregister(pdev);
-> +success:
-> +	return ret;
-> +}
-> +
-> +static void w1_bq27000_remove_slave(struct w1_slave *sl)
-> +{
-> +	struct platform_device *pdev = dev_get_drvdata(&sl->dev);
-> +	platform_device_unregister(pdev);
-> +}
-> +
-> +static struct w1_family_ops w1_bq27000_fops = {
-> +	.add_slave	= w1_bq27000_add_slave,
-> +	.remove_slave	= w1_bq27000_remove_slave,
-> +};
-> +
-> +static struct w1_family w1_bq27000_family = {
-> +	.fid = 1,
-> +	.fops = &w1_bq27000_fops,
-> +};
-> +
-> +static int __init w1_bq27000_init(void)
-> +{
-> +	if (F_ID)
-> +		w1_bq27000_family.fid = F_ID;
-> +
-> +	return w1_register_family(&w1_bq27000_family);
-> +}
-> +
-> +static void __exit w1_bq27000_exit(void)
-> +{
-> +	w1_unregister_family(&w1_bq27000_family);
-> +}
-> +
-> +
-> +module_init(w1_bq27000_init);
-> +module_exit(w1_bq27000_exit);
-> +
-> +module_param(F_ID, int, S_IRUSR);
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_AUTHOR("Texas Instruments Ltd");
-> +MODULE_DESCRIPTION("HDQ/1-wire slave driver bq27000 battery monitor chip");--
-
+greg k-h
