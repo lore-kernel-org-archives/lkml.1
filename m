@@ -1,55 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbYJJUoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762463AbYJJUpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764069AbYJJUoT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbYJJUoL
+	id S1762463AbYJJUpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758978AbYJJUou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:44:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55404 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758460AbYJJUoK (ORCPT
+	Fri, 10 Oct 2008 16:44:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46204 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758970AbYJJUot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:44:10 -0400
-Message-ID: <48EFBE65.60505@zytor.com>
-Date: Fri, 10 Oct 2008 13:43:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] x86 updates for v2.6.28, phase #1
-References: <20081009234705.GA20540@elte.hu>	 <alpine.LFD.2.00.0810100808540.3524@nehalem.linux-foundation.org>	 <20081010152631.GB26231@elte.hu> <20081010155830.GA4767@elte.hu> <19f34abd0810101339x66afc6d3mb6efa1a52e186816@mail.gmail.com>
-In-Reply-To: <19f34abd0810101339x66afc6d3mb6efa1a52e186816@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Fri, 10 Oct 2008 16:44:49 -0400
+Date: Fri, 10 Oct 2008 13:40:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Gadiyar, Anand" <gadiyar@ti.com>
+Cc: johnpol@2ka.mipt.ru, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, madhu.cr@ti.com
+Subject: Re: [PATCH 2/5] HDQ: BQ27000 HDQ Slave Interface Driver
+Message-Id: <20081010134051.93be2ae9.akpm@linux-foundation.org>
+In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF2@dbde02.ent.ti.com>
+References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF2@dbde02.ent.ti.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> 
-> Note: If you don't want the double underscores anywhere, this patch is
-> not enough.
-> 
-> For example:
-> 
->> -#endif /* ASM_X86__MACH_DEFAULT__MACH_TIMER_H */
->> +#endif /* _ASM_X86_MACH_DEFAULT__MACH_TIMER_H */
-> 
-> There are also a few non-trivial changes, which could break with a
-> naïve sed script. So I suggest to simply revert it, it's a lot safer
-> than trying to patch it up in the last minute.
-> 
-> I'm obviously also sorry for causing this problem in the first place... *blush*
-> 
+On Wed, 8 Oct 2008 12:49:19 +0530
+"Gadiyar, Anand" <gadiyar@ti.com> wrote:
 
-Double underscores aren't the problem per se, the problem is having 
-changes _ASM_X86_ to ASM_X86__ and therefore violating the namespace.
+> From: Madhusudhan Chikkature <madhu.cr@ti.com>
+> 
+> This patch provides the BQ27000 slave interface driver.
+> 
+> ...
+>
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/drivers/w1/slaves/w1_bq27000.c	2008-09-26 14:43:42.000000000 +0530
+> @@ -0,0 +1,120 @@
+> +/*
+> + * drivers/w1/slaves/w1_bq27000.c
+> + *
+> + * Copyright (C) 2007 Texas Instruments, Inc.
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/device.h>
+> +#include <linux/types.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/mutex.h>
+> +
+> +#include "../w1.h"
+> +#include "../w1_int.h"
+> +#include "../w1_family.h"
+> +
+> +#define HDQ_CMD_READ	(0)
+> +#define HDQ_CMD_WRITE	(1<<7)
+> +
+> +int F_ID;
+> +int family_id;
 
-That being said, I don't personally like the double underscores.
+No, we don't want to add kernel-wide symbols with names like this. 
+Please either rename them to something which clearly identifies the
+subsystem to which they belong, or make them static.
 
-	-hpa
+> +void w1_bq27000_write(struct device *dev, u8 buf, u8 reg)
+> +{
+> +	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
+> +	if (!dev) {
+> +		pr_info("Could not obtain slave dev ptr\n");
+> +		return;
+> +	}
+> +
+> +	w1_write_8(sl->master, HDQ_CMD_WRITE | reg);
+> +	w1_write_8(sl->master, buf);
+> +}
+> +EXPORT_SYMBOL(w1_bq27000_write);
+> +
+> +int w1_bq27000_read(struct device *dev, u8 reg)
+> +{
+> +	u8 val;
+> +	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
+> +	if (!dev)
+> +		return 0;
+> +
+> +	w1_write_8(sl->master, HDQ_CMD_READ | reg);
+> +	val = w1_read_8(sl->master);
+> +
+> +	return val;
+> +}
+> +EXPORT_SYMBOL(w1_bq27000_read);
+
+It's conventional to put a blank line between end-of-locals and
+start-of-code.
+
+> +static int w1_bq27000_add_slave(struct w1_slave *sl)
+> +{
+> +	int ret;
+> +	int id = 1;
+> +	struct platform_device *pdev;
+> +
+> +	pdev = platform_device_alloc("bq27000-battery", id);
+
+Like that.
+
+> +	if (!pdev) {
+> +		ret = -ENOMEM;
+> +		return ret;
+> +	}
+> +	pdev->dev.parent = &sl->dev;
+> +
+> +	ret = platform_device_add(pdev);
+> +	if (ret)
+> +		goto pdev_add_failed;
+> +
+> +	dev_set_drvdata(&sl->dev, pdev);
+> +
+> +	goto success;
+> +
+> +pdev_add_failed:
+> +	platform_device_unregister(pdev);
+> +success:
+> +	return ret;
+> +}
+> +
+> +static void w1_bq27000_remove_slave(struct w1_slave *sl)
+> +{
+> +	struct platform_device *pdev = dev_get_drvdata(&sl->dev);
+> +	platform_device_unregister(pdev);
+> +}
+> +
+> +static struct w1_family_ops w1_bq27000_fops = {
+> +	.add_slave	= w1_bq27000_add_slave,
+> +	.remove_slave	= w1_bq27000_remove_slave,
+> +};
+> +
+> +static struct w1_family w1_bq27000_family = {
+> +	.fid = 1,
+> +	.fops = &w1_bq27000_fops,
+> +};
+> +
+> +static int __init w1_bq27000_init(void)
+> +{
+> +	if (F_ID)
+> +		w1_bq27000_family.fid = F_ID;
+> +
+> +	return w1_register_family(&w1_bq27000_family);
+> +}
+> +
+> +static void __exit w1_bq27000_exit(void)
+> +{
+> +	w1_unregister_family(&w1_bq27000_family);
+> +}
+> +
+> +
+> +module_init(w1_bq27000_init);
+> +module_exit(w1_bq27000_exit);
+> +
+> +module_param(F_ID, int, S_IRUSR);
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Texas Instruments Ltd");
+> +MODULE_DESCRIPTION("HDQ/1-wire slave driver bq27000 battery monitor chip");--
+
