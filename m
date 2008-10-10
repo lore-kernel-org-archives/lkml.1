@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764815AbYJJV4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762820AbYJJWCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764815AbYJJV4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 17:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764161AbYJJV4S
+	id S1762820AbYJJWCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 18:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbYJJWCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 17:56:18 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:52564 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763756AbYJJV4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 17:56:17 -0400
-Date: Fri, 10 Oct 2008 23:56:14 +0200
-From: FD Cami <francois.cami@free.fr>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Alex Howells <alex@bytemark.co.uk>,
-       Nick Warne <nick@ukfsn.org>, trivial@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove Andrew Morton's andrewm@uow.edu.au
-Message-ID: <20081010235614.35e29794@moria>
-In-Reply-To: <20081010111031.9518a142.akpm@linux-foundation.org>
-References: <20081010151539.6a2ff040@sauron.linicks.net>
-	<48EF6B47.1080800@bytemark.co.uk>
-	<20081010093427.31ddb955.randy.dunlap@oracle.com>
-	<20081010192600.547eedcc@moria>
-	<20081010111031.9518a142.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Fri, 10 Oct 2008 18:02:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35052 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756058AbYJJWCX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 18:02:23 -0400
+Date: Fri, 10 Oct 2008 14:59:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: garyhade@us.ibm.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       y-goto@jp.fujitsu.com, pbadari@us.ibm.com, mel@csn.ul.ie,
+       lcm@us.ibm.com, mingo@elte.hu, greg@kroah.com, dave@linux.vnet.ibm.com,
+       nish.aravamudan@gmail.com
+Subject: Re: [PATCH 1/2] [REPOST] mm: show node to memory section
+ relationship with symlinks in sysfs
+Message-Id: <20081010145950.f51def29.akpm@linux-foundation.org>
+In-Reply-To: <20081010213357.GD7369@us.ibm.com>
+References: <20081009192115.GB8793@us.ibm.com>
+	<20081010124239.f92b5568.akpm@linux-foundation.org>
+	<20081010213357.GD7369@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,158 +32,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008 11:10:31 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, 10 Oct 2008 14:33:57 -0700
+Gary Hade <garyhade@us.ibm.com> wrote:
 
-> On Fri, 10 Oct 2008 19:26:00 +0200 FD Cami <francois.cami@free.fr> wrote:
+> On Fri, Oct 10, 2008 at 12:42:39PM -0700, Andrew Morton wrote:
+> > On Thu, 9 Oct 2008 12:21:15 -0700
+> > Gary Hade <garyhade@us.ibm.com> wrote:
+> > 
+> > > Show node to memory section relationship with symlinks in sysfs
+> > > 
+> > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> > > the memory sections located on nodeX.  For example:
+> > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> > > indicates that memory section 135 resides on node1.
+> > 
+> > I'm not seeing here a description of why the kernel needs this feature.
+> > Why is it useful?  How will it be used?  What value does it have to
+> > our users?
 > 
-> > Also, should we change all instances of your old email addresses to the current one ?
+> Sorry, I should have included that.  In our case, it is another
+> small step towards eventual total node removal.  We will need to
+> know which memory sections to offline for whatever node is targeted
+> for removal.  However, I suspect that exposing the node to section
+> information to user-level could be useful for other purposes.
+> For example, I have been thinking that using memory hotremove
+> functionality to modify the amount of available memory on specific
+> nodes without having to physically add/remove DIMMs might be useful
+> to those that test application or benchmark performance on a
+> multi-node system in various memory configurations.
 > 
-> If they're there, please just delete any email address.  People can use
-> the real name an an index into MAINTAINERS to find the current email
-> address.
 
-Remove Andrew Morton's andrewm@uow.edu.au email address.
-I totally missed that one on my first pass.
+hm, OK, thanks.  It does sound a bit thin, and if we merge this then
+not only do we get a porkier kernel, we also get a new userspace
+interface which we're then locked into.
 
-Andrew, if you'd rather have a single patch for this, please ping me.
-
-Signed-off-by: Francois Cami <francois.cami@free.fr>
-
-
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/Documentation/networking/cs89x0.txt linux-2.6.27-mine-akpm-email-v2/Documentation/networking/cs89x0.txt
---- linux-2.6.27-mine-akpm-email-v1/Documentation/networking/cs89x0.txt	2008-10-10 23:38:31.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/Documentation/networking/cs89x0.txt	2008-10-10 23:28:00.000000000 +0200
-@@ -3,7 +3,7 @@ NOTE
- ----
- 
- This document was contributed by Cirrus Logic for kernel 2.2.5.  This version
--has been updated for 2.3.48 by Andrew Morton <andrewm@uow.edu.au>
-+has been updated for 2.3.48 by Andrew Morton.
- 
- Cirrus make a copy of this driver available at their website, as
- described below.  In general, you should use the driver version which
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/Documentation/networking/vortex.txt linux-2.6.27-mine-akpm-email-v2/Documentation/networking/vortex.txt
---- linux-2.6.27-mine-akpm-email-v1/Documentation/networking/vortex.txt	2008-10-10 23:38:31.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/Documentation/networking/vortex.txt	2008-10-10 23:27:45.000000000 +0200
-@@ -1,5 +1,5 @@
- Documentation/networking/vortex.txt
--Andrew Morton <andrewm@uow.edu.au>
-+Andrew Morton
- 30 April 2000
- 
- 
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/drivers/char/vt.c linux-2.6.27-mine-akpm-email-v2/drivers/char/vt.c
---- linux-2.6.27-mine-akpm-email-v1/drivers/char/vt.c	2008-10-10 23:38:03.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/drivers/char/vt.c	2008-10-10 23:31:14.000000000 +0200
-@@ -59,7 +59,7 @@
-  * by Martin Mares <mj@atrey.karlin.mff.cuni.cz>, July 1998
-  *
-  * Removed old-style timers, introduced console_timer, made timer
-- * deletion SMP-safe.  17Jun00, Andrew Morton <andrewm@uow.edu.au>
-+ * deletion SMP-safe.  17Jun00, Andrew Morton 
-  *
-  * Removed console_lock, enabled interrupts across all console operations
-  * 13 March 2001, Andrew Morton
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/drivers/net/3c509.c linux-2.6.27-mine-akpm-email-v2/drivers/net/3c509.c
---- linux-2.6.27-mine-akpm-email-v1/drivers/net/3c509.c	2008-10-10 23:37:54.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/drivers/net/3c509.c	2008-10-10 23:28:49.000000000 +0200
-@@ -40,7 +40,7 @@
- 		v1.14 10/15/97 Avoided waiting..discard message for fast machines -djb
- 		v1.15 1/31/98 Faster recovery for Tx errors. -djb
- 		v1.16 2/3/98 Different ID port handling to avoid sound cards. -djb
--		v1.18 12Mar2001 Andrew Morton <andrewm@uow.edu.au>
-+		v1.18 12Mar2001 Andrew Morton
- 			- Avoid bogus detect of 3c590's (Andrzej Krzysztofowicz)
- 			- Reviewed against 1.18 from scyld.com
- 		v1.18a 17Nov2001 Jeff Garzik <jgarzik@pobox.com>
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/drivers/net/cs89x0.c linux-2.6.27-mine-akpm-email-v2/drivers/net/cs89x0.c
---- linux-2.6.27-mine-akpm-email-v1/drivers/net/cs89x0.c	2008-10-10 23:37:54.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/drivers/net/cs89x0.c	2008-10-10 23:30:30.000000000 +0200
-@@ -36,8 +36,7 @@
- 
-   Alan Cox          : Removed 1.2 support, added 2.1 extra counters.
- 
--  Andrew Morton     : andrewm@uow.edu.au
--                    : Kernel 2.3.48
-+  Andrew Morton     : Kernel 2.3.48
-                     : Handle kmalloc() failures
-                     : Other resource allocation fixes
-                     : Add SMP locks
-@@ -49,7 +48,7 @@
-                     : Fixed an out-of-mem bug in dma_rx()
-                     : Updated Documentation/networking/cs89x0.txt
- 
--  Andrew Morton     : andrewm@uow.edu.au / Kernel 2.3.99-pre1
-+  Andrew Morton     : Kernel 2.3.99-pre1
-                     : Use skb_reserve to longword align IP header (two places)
-                     : Remove a delay loop from dma_rx()
-                     : Replace '100' with HZ
-@@ -57,11 +56,11 @@
-                     : Added 'cs89x0_dma=N' kernel boot option
-                     : Correctly initialise lp->lock in non-module compile
- 
--  Andrew Morton     : andrewm@uow.edu.au / Kernel 2.3.99-pre4-1
-+  Andrew Morton     : Kernel 2.3.99-pre4-1
-                     : MOD_INC/DEC race fix (see
-                     : http://www.uwsg.indiana.edu/hypermail/linux/kernel/0003.3/1532.html)
- 
--  Andrew Morton     : andrewm@uow.edu.au / Kernel 2.4.0-test7-pre2
-+  Andrew Morton     : Kernel 2.4.0-test7-pre2
-                     : Enhanced EEPROM support to cover more devices,
-                     :   abstracted IRQ mapping to support CONFIG_ARCH_CLPS7500 arch
-                     :   (Jason Gunthorpe <jgg@ualberta.ca>)
-@@ -156,7 +155,7 @@
- #include "cs89x0.h"
- 
- static char version[] __initdata =
--"cs89x0.c: v2.4.3-pre1 Russell Nelson <nelson@crynwr.com>, Andrew Morton <andrewm@uow.edu.au>\n";
-+"cs89x0.c: v2.4.3-pre1 Russell Nelson <nelson@crynwr.com>, Andrew Morton\n";
- 
- #define DRV_NAME "cs89x0"
- 
-@@ -1871,7 +1870,7 @@ MODULE_PARM_DESC(dmasize , "(ignored)");
- MODULE_PARM_DESC(use_dma , "(ignored)");
- #endif
- 
--MODULE_AUTHOR("Mike Cruse, Russwll Nelson <nelson@crynwr.com>, Andrew Morton <andrewm@uow.edu.au>");
-+MODULE_AUTHOR("Mike Cruse, Russwll Nelson <nelson@crynwr.com>, Andrew Morton");
- MODULE_LICENSE("GPL");
- 
- 
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/drivers/parport/ChangeLog linux-2.6.27-mine-akpm-email-v2/drivers/parport/ChangeLog
---- linux-2.6.27-mine-akpm-email-v1/drivers/parport/ChangeLog	2008-10-10 23:38:01.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/drivers/parport/ChangeLog	2008-10-10 23:30:48.000000000 +0200
-@@ -311,7 +311,7 @@
- 	* ieee1284_ops.c (parport_ieee1284_read_nibble): Reset nAutoFd
- 	on timeout.  Matches 2.2.x behaviour.
- 
--2001-03-02  Andrew Morton <andrewm@uow.edu.au>
-+2001-03-02  Andrew Morton
- 
- 	* parport_pc.c (registered_parport): New static variable.
- 	(parport_pc_find_ports): Set it when we register PCI driver.
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/kernel/printk.c linux-2.6.27-mine-akpm-email-v2/kernel/printk.c
---- linux-2.6.27-mine-akpm-email-v1/kernel/printk.c	2008-10-10 23:37:41.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/kernel/printk.c	2008-10-10 23:28:32.000000000 +0200
-@@ -13,7 +13,7 @@
-  * Fixed SMP synchronization, 08/08/99, Manfred Spraul
-  *     manfred@colorfullife.com
-  * Rewrote bits to get rid of console_lock
-- *	01Mar01 Andrew Morton <andrewm@uow.edu.au>
-+ *	01Mar01 Andrew Morton
-  */
- 
- #include <linux/kernel.h>
-diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27-mine-akpm-email-v1/kernel/workqueue.c linux-2.6.27-mine-akpm-email-v2/kernel/workqueue.c
---- linux-2.6.27-mine-akpm-email-v1/kernel/workqueue.c	2008-10-10 23:37:41.000000000 +0200
-+++ linux-2.6.27-mine-akpm-email-v2/kernel/workqueue.c	2008-10-10 23:28:18.000000000 +0200
-@@ -9,7 +9,7 @@
-  * Derived from the taskqueue/keventd code by:
-  *
-  *   David Woodhouse <dwmw2@infradead.org>
-- *   Andrew Morton <andrewm@uow.edu.au>
-+ *   Andrew Morton
-  *   Kai Petzke <wpp@marie.physik.tu-berlin.de>
-  *   Theodore Ts'o <tytso@mit.edu>
-  *
+So I'm inclined to skip this change until we have a stronger need?
