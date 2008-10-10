@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbYJJLvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbYJJLvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758399AbYJJLvO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 07:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYJJLu6
+	id S1757022AbYJJLvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 07:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYJJLvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 07:50:58 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:26509 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753690AbYJJLu5 (ORCPT
+	Fri, 10 Oct 2008 07:51:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:20499 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753690AbYJJLvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 07:50:57 -0400
+	Fri, 10 Oct 2008 07:51:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ixCLSCTmah2oG68J9cLRSC4DxI9dNiOU3G43xLBTj+2qhZb7DKpQEW3RoiXq1DLZz6
-         ZT62YbGdeo+AsHmjb/b9dFtkH1l8VmrZbN1U4Ka2AI9VshdpOX2KThmntlWm5qh0yuCl
-         ddb9ff4zaAQLZRa5fIeIERr1sm4df7AVALeLE=
-Date: Fri, 10 Oct 2008 15:53:42 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Yudha Harimantoro T <yudha.ht@gmail.com>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Error : Linux-2.6.27
-Message-ID: <20081010115342.GB25982@x200.localdomain>
-References: <264b990a0810100126l1029f734x7204f8c42ae21609@mail.gmail.com>
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=vRrncVfDrqS/aWGHjLYTUHAAMWK9l7beFQfEvW8sKeaNodZQESB0aYQjzflNToS1K2
+         lEUVmuablVAFP189f7QyjpDCyU1uJBE8BzuA46gtOb3GnB3AqobyacwDraWe500CPhcn
+         nDjLSl453CFyX3KWiGX5rcNrQXAqYR51hm4DQ=
+Date: Fri, 10 Oct 2008 14:51:44 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: zanussi@comcast.net, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
+Message-ID: <20081010115144.GB5221@localhost>
+References: <20080923212914.GB5237@localhost> <1223386477.28348.42.camel@penberg-laptop> <1223623191.8959.26.camel@penberg-laptop> <1223628687.8959.37.camel@penberg-laptop> <1223629803.8959.40.camel@penberg-laptop> <1223631723.8959.46.camel@penberg-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <264b990a0810100126l1029f734x7204f8c42ae21609@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1223631723.8959.46.camel@penberg-laptop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 03:26:44PM +0700, Yudha Harimantoro T wrote:
-> Yesterday I build kernel 2.6.26.6 and it's run well. Today I got
-> 2.6.27 patch and try to build it.
+On Fri, Oct 10, 2008 at 12:42:03PM +0300, Pekka Enberg wrote:
+> (I'm cc'ing Tom, Jens, and LKML.)
 > 
-> I build with `make oldconfig` and answer any question with default
-> answer, I just press [enter].
-
-Not wise.
-
-> I build with `make`. No error and all compiled.
-> Then I install with `make modules_install` and `make install`.
+> On Fri, 2008-10-10 at 12:10 +0300, Pekka Enberg wrote:
+> > > I'm seeing a hard lock on my machine when I run kmemtraced with the
+> > > following patch applied:
+> > > 
+> > > http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=17ca1d5506b1db433f0b7167a627bfd55d319dd3
+> > > 
+> > > I can enable/disable kmemtrace via the debugfs files fine and can also
+> > > read the relay files with cat.
+> > > 
+> > > Any idea where this is coming from?
+> > 
+> > OK, it's the first splice() call in reader_thread() that causes the
+> > hang. Hmm.
 > 
-> After reboot the system I got 'kernel panic'.
-> This is the error picture :
-> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101358.jpg
-> Is it a bugs?
+> To recap, with a CONFIG_KMEMTRACE enabled kernel from the
+> "topic/kmemtrace" branch of:
 > 
-> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101353.jpg
-> [2.6.26.6 run well]
+>   git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git topic/kmemtrace
+> 
+> running the "kmemtraced" program from
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/penberg/kmemtrace-user.git
+> 
+> results to a hard lock on my machine. I am unable to find anything
+> obviously wrong with it and as I can read/write the relay files just
+> fine, I'm beginning to think it's problem in relayfs splice
+> implementation.
+> 
+> Tom, thoughts?
+> 
+> 		Pekka
+>
 
-Post diff -U0 between old and new config.
+Hmm, I've seen kmemtraced not stopping, but no hard locks. It seems not
+even SIGKILL can stop it. As far as I know, SIGKILL should stop even a
+blocking splice() (in case this is the problem). This is what I did:
+# ./kmemtraced &
+# killall -KILL kmemtraced
+... kmemtraced still running and using CPU.
+
+
+	Eduard
+
