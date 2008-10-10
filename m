@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764067AbYJJXAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbYJJXBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764067AbYJJXAo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 19:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760699AbYJJW6j
+	id S1752111AbYJJXBK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 19:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760940AbYJJW6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 18:58:39 -0400
-Received: from kroah.org ([198.145.64.141]:54702 "EHLO coco.kroah.org"
+	Fri, 10 Oct 2008 18:58:40 -0400
+Received: from kroah.org ([198.145.64.141]:54704 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752688AbYJJW6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 18:58:02 -0400
+	id S1752975AbYJJW6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 18:58:04 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Lior Dotan <liodot@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 21/23] Staging: SLICOSS: Fix remaining type names
-Date: Fri, 10 Oct 2008 15:42:45 -0700
-Message-Id: <1223678567-30143-21-git-send-email-greg@kroah.com>
+Subject: [PATCH 22/23] Staging: SLICOSS: Call pci_release_regions at driver exit
+Date: Fri, 10 Oct 2008 15:42:46 -0700
+Message-Id: <1223678567-30143-22-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081010224130.GA30117@kroah.com>
 References: <20081010224130.GA30117@kroah.com>
@@ -24,220 +24,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Lior Dotan <liodot@gmail.com>
 
-Fix the remaining variables that still had '_t' as a postfix and also
-a couple of checkpatch warnings.
+slic_entry_probe() calls pci_request_regions() but there's no matching
+pci_release_regions() at driver's exit or if slic_entry_probe() fails.
 
 Signed-off-by: Lior Dotan <liodot@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/slicoss/slic_os.h  |    6 ++++--
- drivers/staging/slicoss/slicdump.h |    2 +-
- drivers/staging/slicoss/slichw.h   |    6 +++---
- drivers/staging/slicoss/slicoss.c  |   30 +++++++++++++++---------------
- 4 files changed, 23 insertions(+), 21 deletions(-)
+ drivers/staging/slicoss/slicoss.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/staging/slicoss/slic_os.h b/drivers/staging/slicoss/slic_os.h
-index b0d2883..46c6784 100644
---- a/drivers/staging/slicoss/slic_os.h
-+++ b/drivers/staging/slicoss/slic_os.h
-@@ -53,7 +53,8 @@
- 	{                                                           \
- 		adapter->card->reg_type[adapter->card->debug_ix] = 0;   \
- 		adapter->card->reg_offset[adapter->card->debug_ix] = \
--			((unsigned char *)(&reg)) - ((unsigned char *)adapter->slic_regs); \
-+		((unsigned char *)(&reg)) - \
-+		((unsigned char *)adapter->slic_regs); \
- 		adapter->card->reg_value[adapter->card->debug_ix++] = value;  \
- 		if (adapter->card->debug_ix == 32) \
- 			adapter->card->debug_ix = 0;                      \
-@@ -63,7 +64,8 @@
- 	{                                                           \
- 		adapter->card->reg_type[adapter->card->debug_ix] = 1;        \
- 		adapter->card->reg_offset[adapter->card->debug_ix] = \
--			((unsigned char *)(&reg)) - ((unsigned char *)adapter->slic_regs); \
-+		((unsigned char *)(&reg)) - \
-+		((unsigned char *)adapter->slic_regs); \
- 		adapter->card->reg_value[adapter->card->debug_ix] = value;   \
- 		adapter->card->reg_valueh[adapter->card->debug_ix++] = valh;  \
- 		if (adapter->card->debug_ix == 32) \
-diff --git a/drivers/staging/slicoss/slicdump.h b/drivers/staging/slicoss/slicdump.h
-index ca0a221..92a9b44 100644
---- a/drivers/staging/slicoss/slicdump.h
-+++ b/drivers/staging/slicoss/slicdump.h
-@@ -228,7 +228,7 @@ struct CORE_Q {
- #define DRIVER_NAME_SIZE    32
- 
- struct sliccore_hdr {
--    unsigned char   driver_version[DRIVER_NAME_SIZE];    /* Driver version string */
-+    unsigned char driver_version[DRIVER_NAME_SIZE]; /* Driver version string */
-     u32   RcvRegOff;          /* Offset of receive registers */
-     u32   RcvRegsize;         /* size of receive registers */
-     u32   XmtRegOff;          /* Offset of transmit registers */
-diff --git a/drivers/staging/slicoss/slichw.h b/drivers/staging/slicoss/slichw.h
-index 4c5c15d..d03e90b 100644
---- a/drivers/staging/slicoss/slichw.h
-+++ b/drivers/staging/slicoss/slichw.h
-@@ -702,7 +702,7 @@ struct vendor4_fru {
-     unsigned char        pad[3];
- };
- 
--union oemfru_t {
-+union oemfru {
-     struct vendor1_fru   vendor1_fru;
-     struct vendor2_fru   vendor2_fru;
-     struct vendor3_fru   vendor3_fru;
-@@ -764,7 +764,7 @@ struct slic_eeprom {
- 	unsigned char	FruFormat;	/* Alacritech FRU format type */
- 	struct atk_fru   AtkFru;	/* Alacritech FRU information */
- 	unsigned char	OemFruFormat;	/* optional OEM FRU format type */
--	union oemfru_t    OemFru;         /* optional OEM FRU information */
-+	union oemfru    OemFru;         /* optional OEM FRU information */
- 	unsigned char	Pad[4];	/* Pad to 128 bytes - includes 2 cksum bytes
- 				 *(if OEM FRU info exists) and two unusable
- 				 * bytes at the end */
-@@ -809,7 +809,7 @@ struct oslic_eeprom {
- 	unsigned char	FruFormat;	/* 35 Alacritech FRU format type */
- 	struct atk_fru	AtkFru;	/* Alacritech FRU information */
- 	unsigned char	OemFruFormat;	/* optional OEM FRU format type */
--	union oemfru_t    OemFru;         /* optional OEM FRU information */
-+	union oemfru    OemFru;         /* optional OEM FRU information */
- 	unsigned char	Pad[4];	/* Pad to 128 bytes - includes 2 checksum bytes
- 				 * (if OEM FRU info exists) and two unusable
- 				 * bytes at the end
 diff --git a/drivers/staging/slicoss/slicoss.c b/drivers/staging/slicoss/slicoss.c
-index f242477..c129e83 100644
+index c129e83..b61ac4b 100644
 --- a/drivers/staging/slicoss/slicoss.c
 +++ b/drivers/staging/slicoss/slicoss.c
-@@ -1015,7 +1015,7 @@ static int slic_xmit_start(struct sk_buff *skb, struct net_device *dev)
+@@ -520,6 +520,7 @@ err_out_free_mmio_region:
+ 	release_mem_region(mmio_start, mmio_len);
  
- #ifdef DEBUG_DUMP
- 	if (adapter->kill_card) {
--		p_slic_host64_cmd_t ihcmd;
-+		struct slic_host64_cmd ihcmd;
+ err_out_exit_slic_probe:
++	pci_release_regions(pcidev);
+ 	DBG_ERROR("%s EXIT jiffies[%lx] cpu %d\n", __func__, jiffies,
+ 		  smp_processor_id());
  
- 		ihcmd = &hcmd->cmd64;
- 
-@@ -2455,7 +2455,7 @@ static int slic_card_init(struct sliccard *card, struct adapter *adapter)
- 	unsigned char fruformat;
- 	unsigned char oemfruformat;
- 	struct atk_fru *patkfru;
--	union oemfru_t *poemfru;
-+	union oemfru *poemfru;
- 
- 	DBG_MSG
- 	    ("slicoss: %s ENTER card[%p] adapter[%p] card->state[%x] \
-@@ -2692,7 +2692,7 @@ static int slic_card_init(struct sliccard *card, struct adapter *adapter)
- 	 *  Allocate COMMAND BUFFER
- 	 */
- 	if (!card->cmdbuffer) {
--		card->cmdbuffer = kmalloc(sizeof(dump_cmd_t), GFP_ATOMIC);
-+		card->cmdbuffer = kmalloc(sizeof(struct dump_cmd), GFP_ATOMIC);
- 
- 		ASSERT(card->cmdbuffer);
- 		if (card->cmdbuffer == NULL)
-@@ -2702,7 +2702,7 @@ static int slic_card_init(struct sliccard *card, struct adapter *adapter)
- 	 *  Smear the shared memory structure and then obtain
- 	 *  the PHYSICAL address of this structure
- 	 */
--	memset(card->cmdbuffer, 0, sizeof(dump_cmd_t));
-+	memset(card->cmdbuffer, 0, sizeof(struct dump_cmd));
- 	card->cmdbuffer_phys = virt_to_bus(card->cmdbuffer);
- 	card->cmdbuffer_physh = SLIC_GET_ADDR_HIGH(card->cmdbuffer_phys);
- 	card->cmdbuffer_physl = SLIC_GET_ADDR_LOW(card->cmdbuffer_phys);
-@@ -4417,7 +4417,7 @@ static int slic_debug_card_show(struct seq_file *seq, void *v)
- #ifdef MOOKTODO
- 	int i;
- 	struct sliccard *card = seq->private;
--	pslic_config_t config = &card->config;
-+	struct slic_config *config = &card->config;
- 	unsigned char *fru = (unsigned char *)(&card->config.atk_fru);
- 	unsigned char *oemfru = (unsigned char *)(&card->config.OemFru);
- #endif
-@@ -5311,7 +5311,7 @@ static u32 slic_dump_card(struct sliccard *card, bool resume)
- 	u32 queue;
- 	u32 len, offset;
- 	u32 sram_size, dram_size, regs;
--	sliccore_hdr_t corehdr;
-+	struct sliccore_hdr corehdr;
- 	u32 file_offset;
- 	char *namestr;
- 	u32 i;
-@@ -5344,7 +5344,7 @@ static u32 slic_dump_card(struct sliccard *card, bool resume)
+@@ -649,6 +650,7 @@ static void __devexit slic_entry_remove(struct pci_dev *pcidev)
  	}
- 	corehdr.driver_version[i] = 0;
+ 	DBG_MSG("slicoss: %s deallocate device\n", __func__);
+ 	kfree(dev);
++	pci_release_regions(pcidev);
+ 	DBG_MSG("slicoss: %s EXIT\n", __func__);
+ }
  
--	file_offset = sizeof(sliccore_hdr_t);
-+	file_offset = sizeof(struct sliccore_hdr);
- 
- 	/*
- 	 * Issue the following debug commands to the SLIC:
-@@ -5651,10 +5651,10 @@ done:
- 	 */
- 	file_offset = 0;
- 	DBG_MSG("[slicmon] Write CoreHeader len[%x] offset[%x]\n",
--		(uint) sizeof(sliccore_hdr_t), file_offset);
-+		(uint) sizeof(struct sliccore_hdr), file_offset);
- 
- 	result =
--	    slic_dump_write(card, &corehdr, sizeof(sliccore_hdr_t),
-+	    slic_dump_write(card, &corehdr, sizeof(struct sliccore_hdr),
- 			    file_offset);
- 	DBG_MSG("[slicmon] corehdr  xoff[%x] xsz[%x]\n"
- 		"    roff[%x] rsz[%x] fileoff[%x] filesz[%x]\n"
-@@ -5663,7 +5663,7 @@ done:
- 		corehdr.XmtRegsize, corehdr.RcvRegOff, corehdr.RcvRegsize,
- 		corehdr.FileRegOff, corehdr.FileRegsize, corehdr.SramOff,
- 		corehdr.Sramsize, corehdr.DramOff, corehdr.Dramsize,
--		(uint) sizeof(sliccore_hdr_t));
-+		(uint) sizeof(struct sliccore_hdr));
- 	for (i = 0; i < max_queues; i++) {
- 		DBG_MSG("[slicmon]  QUEUE 0x%x  offset[%x] size[%x]\n",
- 			(uint) i, corehdr.queues[i].queueOff,
-@@ -5706,7 +5706,7 @@ static u32 slic_dump_resume(struct sliccard *card, unsigned char proc)
- 
- static u32 slic_dump_reg(struct sliccard *card, unsigned char proc)
- {
--	pdump_cmd_t dump = (pdump_cmd_t) card->cmdbuffer;
-+	struct dump_cmd *dump = (struct dump_cmd *)card->cmdbuffer;
- 
- 	dump->cmd = COMMAND_BYTE(CMD_DUMP, 0, proc);
- 	dump->desc = DESC_REG;
-@@ -5723,7 +5723,7 @@ static u32 slic_dump_reg(struct sliccard *card, unsigned char proc)
- static u32 slic_dump_data(struct sliccard *card,
- 		       u32 addr, ushort count, unsigned char desc)
- {
--	pdump_cmd_t dump = (pdump_cmd_t) card->cmdbuffer;
-+	struct dump_cmd *dump = (struct dump_cmd *)card->cmdbuffer;
- 
- 	dump->cmd = COMMAND_BYTE(CMD_DUMP, 0, PROC_RECEIVE);
- 	dump->desc = desc;
-@@ -5740,7 +5740,7 @@ static u32 slic_dump_data(struct sliccard *card,
- static u32 slic_dump_queue(struct sliccard *card,
- 			u32 addr, u32 buf_physh, u32 queue)
- {
--	pdump_cmd_t dump = (pdump_cmd_t) card->cmdbuffer;
-+	struct dump_cmd *dump = (struct dump_cmd *)card->cmdbuffer;
- 
- 	dump->cmd = COMMAND_BYTE(CMD_DUMP, 0, PROC_RECEIVE);
- 	dump->desc = DESC_QUEUE;
-@@ -5756,7 +5756,7 @@ static u32 slic_dump_queue(struct sliccard *card,
- static u32 slic_dump_load_queue(struct sliccard *card, u32 data,
- 				u32 queue)
- {
--	pdump_cmd_t load = (pdump_cmd_t) card->cmdbuffer;
-+	struct dump_cmd *load = (struct dump_cmd *) card->cmdbuffer;
- 
- 	load->cmd = COMMAND_BYTE(CMD_LOAD, 0, PROC_RECEIVE);
- 	load->desc = DESC_QUEUE;
-@@ -5771,7 +5771,7 @@ static u32 slic_dump_load_queue(struct sliccard *card, u32 data,
- static u32 slic_dump_cam(struct sliccard *card,
- 		      u32 addr, u32 count, unsigned char desc)
- {
--	pdump_cmd_t dump = (pdump_cmd_t) card->cmdbuffer;
-+	struct dump_cmd *dump = (struct dump_cmd *)card->cmdbuffer;
- 
- 	dump->cmd = COMMAND_BYTE(CMD_CAM_OPS, 0, PROC_NONE);
- 	dump->desc = desc;
 -- 
 1.6.0.2
 
