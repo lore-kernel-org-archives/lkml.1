@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbYJJLbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYJJLbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757560AbYJJLbV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 07:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbYJJLbG
+	id S1758570AbYJJLbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 07:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbYJJLbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 07:31:06 -0400
-Received: from corega.com.ru ([195.178.208.66]:49224 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYJJLbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 07:31:04 -0400
-Date: Fri, 10 Oct 2008 15:31:00 +0400
-From: Evgeniy Polyakov <s0mbre@tservice.net.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081010113100.GA1030@tservice.net.ru>
-References: <20081009231759.GA8664@tservice.net.ru> <20081010080910.GA31723@tservice.net.ru> <20081010091511.GC5116@elte.hu>
+	Fri, 10 Oct 2008 07:31:24 -0400
+Received: from mail-in-07.arcor-online.net ([151.189.21.47]:37620 "EHLO
+	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757892AbYJJLbX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 07:31:23 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: dup2() vs dup3() inconsistency when
+To: mtk.manpages@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       Ulrich Drepper <drepper@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Reply-To: 7eggert@gmx.de
+Date: Fri, 10 Oct 2008 13:42:11 +0200
+References: <bl2EV-7G2-9@gated-at.bofh.it> <bl7v3-5sk-17@gated-at.bofh.it> <blasN-OS-9@gated-at.bofh.it> <blaCu-Z0-11@gated-at.bofh.it> <blaMj-18o-23@gated-at.bofh.it> <blaMj-18o-21@gated-at.bofh.it> <bliqg-2DH-1@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010091511.GC5116@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1KoGNo-0001bu-C2@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo.
+Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
 
-On Fri, Oct 10, 2008 at 11:15:11AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
-
-> > 
-> > I use tsc clocksource, also available acpi_pm and jiffies,
-> > with acpi_pm performance is even lower (I stopped test after it dropped
-> > below 340 MB/s mark), jiffies do not work at all, looks like sockets
-> > stuck in time_wait state when this clock source is used, although that
-> > may be some different issue.
-> > 
-> > So I think hrticks are guilty, but still not as good as .25 tree without
-> > mentioned changes (455 MB/s) and .24 (475 MB/s).
+> Well, as long as we are fixing the dup3() interface in the way that Al
+> and Ulrich have suggested, what about another fix:
 > 
-> i'm glad that you are looking into this! That is an SMP box, right? If 
-> yes then could you try this sched-domains tuning utility i have written 
-> yesterday (incidentally):
+> give an error if newfd is already open, thus forcing the user to do an
+> explicit close
 > 
->   http://redhat.com/~mingo/cfs-scheduler/tune-sched-domains
-
-I've removed SD_BALANCE_NEWIDLE:
-# ./tune-sched-domains $[191-2]
-changed /proc/sys/kernel/sched_domain/cpu0/domain0/flags: 191 => 189
-SD flag: 189
-+   1: SD_LOAD_BALANCE:          Do load balancing on this domain
--   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
-+   4: SD_BALANCE_EXEC:          Balance on exec
-+   8: SD_BALANCE_FORK:          Balance on fork, clone
-+  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
-+  32: SD_WAKE_AFFINE:           Wake task to waking CPU
--  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
-+ 128: SD_SHARE_CPUPOWER:        Domain members share cpu power
-changed /proc/sys/kernel/sched_domain/cpu0/domain1/flags: 47 => 189
-SD flag: 189
-+   1: SD_LOAD_BALANCE:          Do load balancing on this domain
--   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
-+   4: SD_BALANCE_EXEC:          Balance on exec
-+   8: SD_BALANCE_FORK:          Balance on fork, clone
-+  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
-+  32: SD_WAKE_AFFINE:           Wake task to waking CPU
--  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
-+ 128: SD_SHARE_CPUPOWER:        Domain members share cpu power
-
-And got noticeble improvement (each new line has fixes from previous):
-
-vanilla 27: 347.222
-no TSO/GSO: 357.331
-no hrticks: 382.983
-no balance: 389.802
-
-> and please, when tuning such scheduler bits, could you run latest 
-> tip/master:
+> ?
 > 
->    http://people.redhat.com/mingo/tip.git/README
-> 
-> and you need to have CONFIG_SCHED_DEBUG=y enabled for the tuning knobs.
-> 
-> so that it's all in sync with upcoming scheduler changes/tunings/fixes.
+> This silent close in dup2() is an implementation blemish.  Why not eliminate
+> it?
 
-Ok, I've started to pull it down, I will reply back when things are
-ready.
+I think it might be usefull:
+Thread B does some logging to fd 42
+Thread A switches the logfile by creating a new file, writing a header and
+then does dup3(fd, 42, O_WRONLY|O_APPEND|O_CLOEXEC); close(fd);
 
--- 
-	Evgeniy Polyakov
+(Off cause this is not yet implemented, O_RDONLY would give some problems,
+ O_CLOEXEC alone might be better done while open()ing the file, ... but you
+ get the idea.)
+
+
+BTW: I think dup3(fd, -1, flags) should use the file descriptor dup() would
+return. Or should there be a dupf(fd, flags) syscall instead?
+
+
