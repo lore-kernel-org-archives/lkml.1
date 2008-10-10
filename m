@@ -1,100 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYJJFdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYJJFjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYJJFdO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 01:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbYJJFc6
+	id S1755343AbYJJFjZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 01:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYJJFjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 01:32:58 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59652 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750870AbYJJFc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 01:32:58 -0400
-Message-ID: <48EEE86B.6090509@cn.fujitsu.com>
-Date: Fri, 10 Oct 2008 13:30:19 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 10 Oct 2008 01:39:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:53326 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbYJJFjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 01:39:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=n86/0CyEeeNgnXVkeMDtOrh4dGtgaJeA5l3bo0M1KKfqlqdCZxToFypsepXSuD3ZxA
+         JlKC++ZrXspY+KpBIQ5KniXG/1Yq4gnv1nfjTDUBHZCmIKBO13c0cgLOnjdXDxxzNRHh
+         N5tESEBEiJi8LSKMnbOayv8H9rLaqIYnme2mY=
+Message-ID: <aa79d98a0810092239p32153776qd0cda47e54929545@mail.gmail.com>
+Date: Fri, 10 Oct 2008 09:39:15 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] markers: bit-field is not thread-safe nor smp-safe
-References: <48EEC6AD.4010606@cn.fujitsu.com> <20081010132354.B35F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20081010132354.B35F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081010002203.GA23238@linux-os.sc.intel.com>
+	 <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com>
+	 <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Hi Lai-san,
-> 
->> bit-field is not thread-safe nor smp-safe.
+On Fri, Oct 10, 2008 at 9:10 AM, Pallipadi, Venkatesh
+<venkatesh.pallipadi@intel.com> wrote:
+>
+>
+>>-----Original Message-----
+>>From: Cyrill Gorcunov [mailto:gorcunov@gmail.com]
+>>Sent: Thursday, October 09, 2008 9:38 PM
+>>To: Pallipadi, Venkatesh
+>>Cc: Ingo Molnar; Thomas Gleixner; H. Peter Anvin; linux-kernel
+>>Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
 >>
->> struct marker_entry.rcu_pending is not protected by any lock
->> in rcu-callback free_old_closure().
->> so we must turn it into a safe type.
-> 
-> hmmm
-> however, char also doesn't smp-safe because some architecture doesn't have
-> any byte load/store instruction.
-> 
-> It seems bogus solution to me ;)
-
-Hi, KOSAKI-san,
-
-	Thank you very much!
-
-	char also doesn't smp-safe if the architecture doesn't have
-any byte load/store instruction.
-
-	We must use int, is it right?
-
-Lai
-
-> 
-> 
->> detail:
+>>On Fri, Oct 10, 2008 at 4:22 AM, Venki Pallipadi
+>><venkatesh.pallipadi@intel.com> wrote:
+>>>
+>>> Fix a typo in x86 apic.c CONFG_X86_64 -> CONFIG_X86_64.
+>>> The intention looks like was to have divisor of 1 on x86_64 kernel.
+>>>
+>>> Also, for DIVISOR value of 1 to work, APIC_TDR_DIV should also change
+>>> depending on divide by 1 or divide by 16 is used.
+>>>
+>>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>>>
+>>> ---
+>>>  arch/x86/kernel/apic.c |    6 ++++--
+>>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>>
+>>> Index: tip/arch/x86/kernel/apic.c
+>>> ===================================================================
+>>> --- tip.orig/arch/x86/kernel/apic.c     2008-10-09
+>>17:12:39.000000000 -0700
+>>> +++ tip/arch/x86/kernel/apic.c  2008-10-09 17:13:29.000000000 -0700
+>>> @@ -332,10 +332,12 @@ int lapic_get_maxlvt(void)
+>>>  */
+>>>
+>>>  /* Clock divisor */
+>>> -#ifdef CONFG_X86_64
+>>> +#ifdef CONFIG_X86_64
+>>>  #define APIC_DIVISOR 1
+>>> +#define APIC_TDR_DIV APIC_TDR_DIV_1
+>>>  #else
+>>>  #define APIC_DIVISOR 16
+>>> +#define APIC_TDR_DIV APIC_TDR_DIV_16
+>>>  #endif
+>>>
+>>>  /*
+>>> @@ -369,7 +371,7 @@ static void __setup_APIC_LVTT(unsigned i
+>>>        tmp_value = apic_read(APIC_TDCR);
+>>>        apic_write(APIC_TDCR,
+>>>                (tmp_value & ~(APIC_TDR_DIV_1 |
+>>APIC_TDR_DIV_TMBASE)) |
+>>> -               APIC_TDR_DIV_16);
+>>> +               APIC_TDR_DIV);
+>>>
+>>>        if (!oneshot)
+>>>                apic_write(APIC_TMICT, clocks / APIC_DIVISOR);
+>>>
 >>
->> I suppose rcu_pending and ptype are store in struct marker_entry.tmp1
+>>Hi Venki,
 >>
->> free_old_closure() side:           change ptype side:
+>>you know I don't have code under my hands now to take a look on
+>>(i'm in office now) -- but if I recall correctly it's not a typo :) By
+>>writting (1) instead of (16) you make counter decrease faster by
+>>16 times (if to compare with what we have now). So we could get
+>>counter underflow before we've finish calibration. That is was the
+>>original intension of this 16 divisor being used. Did you test this
+>>patch?
 >>
->>                                 |  load struct marker_entry.tmp1
->> --------------------------------|--------------------------------
->>                                 |  change ptype bit in tmp1
->> load struct marker_entry.tmp1   |
->> change rcu_pending bit in tmp1  |
->> store tmp1                      |
->> --------------------------------|--------------------------------
->>                                 |  store tmp1
->>
->> now this result equals that free_old_closure() do not change rcu_pending bit, bug.
->>
->> see also: http://en.wikipedia.org/wiki/Bit_field
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/kernel/marker.c b/kernel/marker.c
->> index 7d1faec..4777218 100644
->> --- a/kernel/marker.c
->> +++ b/kernel/marker.c
->> @@ -62,7 +62,7 @@ struct marker_entry {
->>  	int refcount;	/* Number of times armed. 0 if disarmed. */
->>  	struct rcu_head rcu;
->>  	void *oldptr;
->> -	unsigned char rcu_pending:1;
->> +	unsigned char rcu_pending;
->>  	unsigned char ptype:1;
->>  	char name[0];	/* Contains name'\0'format'\0' */
->>  };
-> 
-> 
-> 
-> 
-> 
-> 
+>
+> Typo part I mentioned was this
+>
+>>> -#ifdef CONFG_X86_64
+>>> +#ifdef CONFIG_X86_64
+>
+> Looks like intention was to use DIVISOR of 1 for x86_64 and divisor of
+> 16 for 32 bit kernel. Once I changed that, there was still one place in
+> 64 bit code that was assuming divisor of 16. The rest of the patch
+> changes that part.
+>
+> Yes. Tested this patch on couple of systems here and worked fine.
+>
+> Thanks,
+> Venki
 
+Ah, it was CONFG who is guilty :) This is true indeed, thanks!
 
+But here is not the same
+
+       apic_write(APIC_TDCR,
+               (tmp_value & ~(APIC_TDR_DIV_1 | APIC_TDR_DIV_TMBASE)) |
+-               APIC_TDR_DIV_16);
++               APIC_TDR_DIV);
+
+On x86_64 it will be 1 now but we've used 16 for a long time in purpose
+to slowdown processor's bus CLKs from APIC point of view. So I don't think
+it's good idea to change it now. If we start using divisor 1 today -- it would
+work for some time 'till processor bus raised to the some speed when
+we'll get counter underflow before calibration finished.
+
+So could you please split the patch into two:
+1) Plain CONFG typo fix (which is completely Ack'ed)
+2) APIC divisor patch (which I'm not sure if we've to touch)
+
+Thanks,
+Cyrill
