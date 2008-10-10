@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbYJJROP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762289AbYJJRP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759873AbYJJROP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 13:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762041AbYJJRNx
+	id S1762289AbYJJRP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 13:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760116AbYJJRPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 13:13:53 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38381 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761883AbYJJRNw (ORCPT
+	Fri, 10 Oct 2008 13:15:14 -0400
+Received: from flock1.newmail.ru ([82.204.219.207]:34238 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759921AbYJJRPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 13:13:52 -0400
-Date: Fri, 10 Oct 2008 12:13:50 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg Kurz <gkurz@fr.ibm.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       arnd@arndb.de, Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-Message-ID: <20081010171350.GA28112@us.ibm.com>
-References: <20081009190405.13A253CB@kernel> <20081009190406.1B257119@kernel> <48EF2BAB.1010009@fr.ibm.com> <20081010140430.GA14640@us.ibm.com> <1223657132.10017.42.camel@localhost.localdomain>
+	Fri, 10 Oct 2008 13:15:13 -0400
+From: Andrey Borzenkov <arvidjaar@newmail.ru>
+To: Dave <kilroyd@googlemail.com>
+Subject: Re: rc9 + orinoco WPA patchset: BUG: scheduling while atomic loading firmware with PCMCIA adapter
+Date: Fri, 10 Oct 2008 21:14:54 +0400
+User-Agent: KMail/1.9.10
+Cc: orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200810091722.56812.arvidjaar@newmail.ru> <200810101141.38929.arvidjaar@newmail.ru> <48EF8AF4.1040900@gmail.com>
+In-Reply-To: <48EF8AF4.1040900@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223657132.10017.42.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: multipart/signed;
+  boundary="nextPart1481268.soIThUeM6u";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200810102114.55663.arvidjaar@newmail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg Kurz (gkurz@fr.ibm.com):
-> On Fri, 2008-10-10 at 09:04 -0500, Serge E. Hallyn wrote:
-> > Remember a part of Ingo's motivation is to push c/r developers to
-> > address the lacking features that users use most, earlier.  So the
-> > warnings and subsequent email complaints are what we're after.  Hence a
-> > single 'checkpointable or not' flag.
-> > 
-> > Given the single flag, how do you know at sys_mq_unlink() whether the
-> > process also has an opensocket?
-> > 
-> > Rather than make this tracking facility more complicated and intrusive,
-> > if people complain that they couldn't checkpoint bc of a warning about
-> > aio, then we implement aio c/r!  We don't just try and reduce the amount
-> > of time that you can't checkpoint bc of lack of aio c/r support  :)
-> > 
-> > -serge
-> 
-> Serge,
-> 
-> It's exactly what I meant before, the tracking facility would be awfully
-> complicated. It cannot be done that way.
-> But there's also something awkward with the flag thing : can you provide
-> right now an exhaustive list of all the places where you must raise it ?
-> 
-> I'd rather do some heavy checking at checkpoint time.
+--nextPart1481268.soIThUeM6u
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Noone is saying that we are not going to do that.
+On Friday 10 October 2008, Dave wrote:
+>=20
+> You're right. pda_size is supposed to be the maximum size of the PDA (in =
+bytes) that we expect with the firmware. It should be set to 0x200.
+>=20
 
--serge
+Do you want me to send a patch?
+
+--nextPart1481268.soIThUeM6u
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjvjY8ACgkQR6LMutpd94x5MwCgtxGdCw6fRAOPtyap9zjxoY8K
+sGIAn2dtmGcT5aiwT5nP//EDVqUgmrKg
+=xT+R
+-----END PGP SIGNATURE-----
+
+--nextPart1481268.soIThUeM6u--
