@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYJJQpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbYJJQqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761284AbYJJQpp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758900AbYJJQph
+	id S1762148AbYJJQqF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760435AbYJJQpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:45:37 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:56160 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758423AbYJJQpg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:45:36 -0400
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       arnd@arndb.de, Dave Hansen <dave@linux.vnet.ibm.com>
-In-Reply-To: <20081010140430.GA14640@us.ibm.com>
-References: <20081009190405.13A253CB@kernel>
-	 <20081009190406.1B257119@kernel> <48EF2BAB.1010009@fr.ibm.com>
-	 <20081010140430.GA14640@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 18:45:32 +0200
-Message-Id: <1223657132.10017.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 12:45:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57239 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758900AbYJJQpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 12:45:51 -0400
+Date: Fri, 10 Oct 2008 18:45:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 updates for v2.6.28, phase #2 - PAT updates
+Message-ID: <20081010164537.GA23664@elte.hu>
+References: <20081009234951.GA24349@elte.hu> <alpine.LFD.2.00.0810100920370.3503@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810100920370.3503@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-10 at 09:04 -0500, Serge E. Hallyn wrote:
-> Remember a part of Ingo's motivation is to push c/r developers to
-> address the lacking features that users use most, earlier.  So the
-> warnings and subsequent email complaints are what we're after.  Hence a
-> single 'checkpointable or not' flag.
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Fri, 10 Oct 2008, Ingo Molnar wrote:
+> > 
+> > Ingo Molnar (12):
+> >       Revert "reduce tlb/cache flush times of agpgart memory allocation"
+> >       Revert "introduce two APIs for page attribute"
+> >       Revert "x86: handle error returns in set_memory_*()"
+> >       Revert "x86: track memtype for RAM in page struct"
+> >       Revert "x86, cpa: global flush tlb after splitting large page and before doing cpa"
+> >       Revert "x86, cpa: remove cpa pool code"
+> >       Revert "x86, cpa: fix taking the pgd_lock with interrupts off"
+> >       Revert "x86, cpa: dont use large pages for kernel identity mapping with DEBUG_PAGEALLOC"
+> >       Revert "x86, cpa: make the kernel physical mapping initialization a two pass sequence"
+> >       Revert "x86, cpa: remove USER permission from the very early identity mapping attribute"
+> >       Revert "x86, cpa: rename PTE attribute macros for kernel direct mapping in early boot"
+> >       x86, pat: cleanups
 > 
-> Given the single flag, how do you know at sys_mq_unlink() whether the
-> process also has an opensocket?
+> So half of the commits by Suresh were reverted.
 > 
-> Rather than make this tracking facility more complicated and intrusive,
-> if people complain that they couldn't checkpoint bc of a warning about
-> aio, then we implement aio c/r!  We don't just try and reduce the amount
-> of time that you can't checkpoint bc of lack of aio c/r support  :)
+> Not only that, they were reverted WITH ABSOLUTELY NO EXPLANATIONS OF 
+> WHY THEY WERE CLEARLY BUGGY PILES OF CRUD. The revert messages are 
+> just things like
 > 
-> -serge
+> 	This reverts commit <sha1>.
+> 
+> which makes both the original commit _and_ the revert just totally 
+> pointless, because we didn't learn anything.
 
-Serge,
+hm, those reverts werent supposed to survive. Again, my bad. I'll clean 
+it out.
 
-It's exactly what I meant before, the tracking facility would be awfully
-complicated. It cannot be done that way.
-But there's also something awkward with the flag thing : can you provide
-right now an exhaustive list of all the places where you must raise it ?
+Here is how the screwup happened: a series was sent, i applied it, found 
+a test failure with it and reported it:
 
-I'd rather do some heavy checking at checkpoint time.
+  http://www.uwsg.iu.edu/hypermail/linux/kernel/0809.1/2388.html
 
-Greg.
+but to be able to continue testing i temporarily reverted those bits 
+manually in reverse order, because it took some down to pin down the 
+breakage and these bits got intermixed with other commits - and i did 
+not want to rebase commits that came after the broken series.
 
+Then the corrected v2 series arrived (not a delta fix) and i applied 
+those. The idea was to create a delta patch against the first series so 
+that i can see the changes.
 
+v2 worked well in testing:
+
+  http://www.uwsg.iu.edu/hypermail/linux/kernel/0809.1/2375.html
+
+So it's basically a v1 -> v2 sequence, with artificial reverts surviving 
+unintentionally. That's why there were no revert messages either: i 
+never intended them to become public. I even rember having taken a good 
+look at "git diff 6b5b551..6e3e492", which the v1->v2 delta was.
+
+What i havent done was to squash all these artificial commits together 
+and create the delta commit - this is one of the few cases where 
+rebasing of that temporary tail would have been the right thing to do, 
+before pushing it out.
+
+And i should also have noticed this weird sequence of commit logs when 
+doing the pull request.
+
+Sorry :-(
+
+	Ingo
