@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763785AbYJJTtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763545AbYJJTu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763785AbYJJTtj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761898AbYJJTt3
+	id S1763545AbYJJTu5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758490AbYJJTut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:49:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53951 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761600AbYJJTt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:49:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-Date: Fri, 10 Oct 2008 21:53:44 +0200
-User-Agent: KMail/1.9.9
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <20081009190405.13A253CB@kernel> <200810101517.17809.rjw@sisk.pl> <20081010145422.GE11695@elte.hu>
-In-Reply-To: <20081010145422.GE11695@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 10 Oct 2008 15:50:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39167 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757889AbYJJTus (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:50:48 -0400
+Date: Fri, 10 Oct 2008 12:50:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, linux-mm@kvack.org,
+       nathalie.furmento@labri.fr
+Subject: Re: [PATCH] mm: use a radix-tree to make do_move_pages() complexity
+ linear
+Message-Id: <20081010125010.164bcbb8.akpm@linux-foundation.org>
+In-Reply-To: <48EDF9DA.7000508@inria.fr>
+References: <48EDF9DA.7000508@inria.fr>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810102153.45174.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 of October 2008, Ingo Molnar wrote:
+On Thu, 09 Oct 2008 14:32:26 +0200
+Brice Goglin <Brice.Goglin@inria.fr> wrote:
+
+> Add a radix-tree in do_move_pages() to associate each page with
+> the struct page_to_node that describes its migration.
+> new_page_node() can now easily find out the page_to_node of the
+> given page instead of traversing the whole page_to_node array.
+> So the overall complexity is linear instead of quadratic.
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> We still need the page_to_node array since it is allocated by the
+> caller (sys_move_page()) and used by do_pages_stat() when no target
+> nodes are given by the application. And we need room to store all
+> these page_to_node entries for do_move_pages() as well anyway.
 > 
-> > > In the long run, could we expect a (experimental) version of 
-> > > hibernation that would just use this checkpointing facility to 
-> > > hibernate?
-> > 
-> > Surely not ACPI-compliant.
+> If a page is given twice by the application, the old code would
+> return -EBUSY (failure from the second isolate_lru_page()). Now,
+> radix_tree_insert() will return -EEXIST, and we convert it back
+> to -EBUSY to keep the user-space ABI.
 > 
-> what do you mean?
+> The radix-tree is emptied at the end of do_move_pages() since
+> new_page_node() doesn't know when an entry is used for the last
+> time (unmap_and_move() could try another pass later).
+> Marking pp->page as ZERO_PAGE(0) was actually never used. We now
+> set it to NULL when pp is not in the radix-tree. It is faster
+> than doing a loop of radix_tree_lookup_gang()+delete().
 
-The ACPI spec says quite specifically what should be done while entering
-hibernation and during resume from hibernation.  We're not following that
-in the current code, but we can (gradually) update the code to become
-ACPI-compilant in that respect.  However, if we go the checkpointing route, I
-don't think that will be possible any more. 
+Any O(n*n) code always catches up with us in the end.  But I do think
+that to merge this code we'd need some description of the problem which
+we fixed.
 
-[In short, the problem is that ACPI regards the S4 state corresponding to
-hibernation as a sleep state of the system which is therefore fundamentally
-different from the soft power-off state and requires special handling.]
+Please send a description of the situation under which the current code
+performs unacceptably.  Some before-and-after quantitative measurements
+would be good.
 
-This may be a theory etc. (I don't want to start the entire discussion about
-that once again), but clearly there's a choice to be made here.  I'd prefer
-hibernation to be ACPI-compliant, but if people don't want that, I won't fight
-for it.
+Because it could be (as far as I know) that the problem is purely
+theoretical, in which case we might not want the patch at all.
 
-Thanks,
-Rafael
+Thanks.
