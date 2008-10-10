@@ -1,53 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbYJJM1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbYJJM2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758310AbYJJM1A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 08:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYJJM0w
+	id S1758754AbYJJM2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 08:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYJJM2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 08:26:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:9875 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753860AbYJJM0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 08:26:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oM6Utk7kGUXmTHxYcTLqCTF0TjO3yT9V1/SvTbnH0uxS+guUPphimMesLXkDf+0RTu
-         10dbNabeOrAo9Np9lQ//LMabnmmbik7ua881lv3D+5hAJnSCX22VCW+cpnn9cew+Hxdx
-         rCR4Fseh1tNb56cu9+nUbUDO8aL5P6mPMSmP0=
-Date: Fri, 10 Oct 2008 16:26:39 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
-Message-ID: <20081010122639.GA7328@localhost>
-References: <20081010002203.GA23238@linux-os.sc.intel.com> <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com> <aa79d98a0810092239p32153776qd0cda47e54929545@mail.gmail.com> <20081010090100.GC319@elte.hu> <aa79d98a0810100416q72ec10d5q7d841e02dc4d4f81@mail.gmail.com> <alpine.LFD.1.10.0810101221580.19747@ftp.linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0810101221580.19747@ftp.linux-mips.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 10 Oct 2008 08:28:33 -0400
+Received: from perso1.free.fr ([212.27.63.203]:49817 "EHLO perso1.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640AbYJJM2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 08:28:32 -0400
+XPARM: thesermon.free.fr
+XPARAM2: 193.50.29.42
+Subject: [PATCH 5/6] tracing/fastboot: Use sched switch tracer from boot tracer
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Date: Fri, 10 Oct 2008 14:28:39
+To: Ingo Molnar <mingo@elte.hu>
+Message-Id: <20081010122839.97746D1BA32@perso1.free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Fri, Oct 10, 2008 at 12:24:35PM +0100]
-| On Fri, 10 Oct 2008, Cyrill Gorcunov wrote:
-| 
-| > Btw I don't remember but hope it was not me who made this typo --
-| 
-|  What would be the difference so that you hope it wasn't you?  All the 
-| people make mistakes, this one has been caught and that's what really 
-| matters.
-| 
-|   Maciej
-| 
 
-Well this CONFG typo just remind me one I brought once :)
+Use the sched_switch tracer from the boot tracer.
+We also can trace schedule events inside the initcalls.
+Sched tracing is disabled after the initcall has finished and then reenabled
+before the next one is started.
 
-		- Cyrill -
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>
+CC: Arjan van de Ven <arjan@infradead.org>
+---
+ kernel/trace/trace.c              |    2 ++
+ kernel/trace/trace.h              |    1 +
+ kernel/trace/trace_boot.c         |    6 ++++++
+ kernel/trace/trace_sched_switch.c |    6 +++---
+ 4 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 78d5661..acc21bb 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3192,6 +3192,8 @@ __init static int tracer_alloc_buffers(void)
+ 
+ 	register_tracer(&nop_trace);
+ #ifdef CONFIG_BOOT_TRACER
++	/* We don't want to launch sched_switch tracer yet */
++	global_trace.ctrl = 0;
+ 	register_tracer(&boot_tracer);
+ 	current_trace = &boot_tracer;
+ 	current_trace->init(&global_trace);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index f1f9957..d45a3cd 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -49,6 +49,7 @@ struct ftrace_entry {
+ 	unsigned long		parent_ip;
+ };
+ extern struct tracer boot_tracer;
++extern struct tracer sched_switch_trace; /* Used by the boot tracer */
+ 
+ /*
+  * Context switch trace entry - which task (and prio) we switched from/to:
+diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
+index d104d5b..6bbc879 100644
+--- a/kernel/trace/trace_boot.c
++++ b/kernel/trace/trace_boot.c
+@@ -27,10 +27,14 @@ void start_boot_trace(void)
+ 
+ void enable_boot_trace(void)
+ {
++	if (pre_initcalls_finished)
++		tracing_start_cmdline_record();
+ }
+ 
+ void disable_boot_trace(void)
+ {
++	if (pre_initcalls_finished)
++		tracing_stop_cmdline_record();
+ }
+ 
+ void reset_boot_trace(struct trace_array *tr)
+@@ -45,6 +49,8 @@ static void boot_trace_init(struct trace_array *tr)
+ 
+ 	for_each_cpu_mask(cpu, cpu_possible_map)
+ 		tracing_reset(tr, cpu);
++
++	sched_switch_trace.init(tr);
+ }
+ 
+ static void boot_trace_ctrl_update(struct trace_array *tr)
+diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
+index 96620c7..9d7bdac 100644
+--- a/kernel/trace/trace_sched_switch.c
++++ b/kernel/trace/trace_sched_switch.c
+@@ -127,6 +127,7 @@ static void tracing_start_sched_switch(void)
+ 	long ref;
+ 
+ 	mutex_lock(&tracepoint_mutex);
++	tracer_enabled = 1;
+ 	ref = atomic_inc_return(&sched_ref);
+ 	if (ref == 1)
+ 		tracing_sched_register();
+@@ -138,6 +139,7 @@ static void tracing_stop_sched_switch(void)
+ 	long ref;
+ 
+ 	mutex_lock(&tracepoint_mutex);
++	tracer_enabled = 0;
+ 	ref = atomic_dec_and_test(&sched_ref);
+ 	if (ref)
+ 		tracing_sched_unregister();
+@@ -158,12 +160,10 @@ static void start_sched_trace(struct trace_array *tr)
+ {
+ 	sched_switch_reset(tr);
+ 	tracing_start_cmdline_record();
+-	tracer_enabled = 1;
+ }
+ 
+ static void stop_sched_trace(struct trace_array *tr)
+ {
+-	tracer_enabled = 0;
+ 	tracing_stop_cmdline_record();
+ }
+ 
+@@ -190,7 +190,7 @@ static void sched_switch_trace_ctrl_update(struct trace_array *tr)
+ 		stop_sched_trace(tr);
+ }
+ 
+-static struct tracer sched_switch_trace __read_mostly =
++struct tracer sched_switch_trace __read_mostly =
+ {
+ 	.name		= "sched_switch",
+ 	.init		= sched_switch_trace_init,
+
