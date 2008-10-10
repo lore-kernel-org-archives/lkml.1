@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbYJJI07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYJJIbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755733AbYJJI07 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 04:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYJJI0r
+	id S1754319AbYJJIbl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 04:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYJJIb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 04:26:47 -0400
-Received: from hs-out-0708.google.com ([64.233.178.240]:62167 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754466AbYJJI0q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 04:26:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=TWCKswU4fzpPPdQDdqGTYIDdhvr6D6HQwy5CMuUY/1QWLC2fkoVmNkvFoPyDIN/Vni
-         GeXw8+aNsDtRobGMpWtPxFG3E2EzNs9j0/a9Kxiad7XjIXuzY5QRryek9DSps6x30o9x
-         NyP1907hOfWrzKFWccdsvOEmhJ85f99glTjNg=
-Message-ID: <264b990a0810100126l1029f734x7204f8c42ae21609@mail.gmail.com>
-Date: Fri, 10 Oct 2008 15:26:44 +0700
-From: "Yudha Harimantoro T" <yudha.ht@gmail.com>
-To: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Error : Linux-2.6.27
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 10 Oct 2008 04:31:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56570 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751266AbYJJIb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 04:31:28 -0400
+Subject: Re: [PATCH 2/2] virtio_net: Improve the recv buffer allocation  
+	scheme
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, netdev@vger.kernel.org
+In-Reply-To: <48EE5AE1.5030002@codemonkey.ws>
+References: <1223494499-18732-1-git-send-email-markmc@redhat.com>
+	 <1223494499-18732-2-git-send-email-markmc@redhat.com>
+	 <200810091155.59731.rusty@rustcorp.com.au>
+	 <20081009153035.GA21542@gondor.apana.org.au>
+	 <1223574013.13792.23.camel@blaa>  <48EE5AE1.5030002@codemonkey.ws>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 09:30:31 +0100
+Message-Id: <1223627431.3618.41.camel@blaa>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, 2008-10-09 at 14:26 -0500, Anthony Liguori wrote:
+> Mark McLoughlin wrote:
+> > 
+> > Also, including virtio_net_hdr in the data buffer would need another
+> > feature flag. Rightly or wrongly, KVM's implementation requires
+> > virtio_net_hdr to be the first buffer:
+> > 
+> >     if (elem.in_num < 1 || elem.in_sg[0].iov_len != sizeof(*hdr)) {
+> >         fprintf(stderr, "virtio-net header not in first element\n");
+> >         exit(1);
+> >     }
+> > 
+> > i.e. it's part of the ABI ... at least as KVM sees it :-)
+> 
+> This is actually something that's broken in a nasty way.  Having the 
+> header in the first element is not supposed to be part of the ABI but it 
+> sort of has to be ATM.
+> 
+> If an older version of QEMU were to use a newer kernel, and the newer 
+> kernel had a larger header size, then if we just made the header be the 
+> first X bytes, QEMU has no way of knowing how many bytes that should be. 
+>   Instead, the guest actually has to allocate the virtio-net header in 
+> such a way that it only presents the size depending on the features that 
+> the host supports.  We don't use a simple versioning scheme, so you'd 
+> have to check for a combination of features advertised by the host but 
+> that's not good enough because the host may disable certain features.
+> 
+> Perhaps the header size is whatever the longest element that has been 
+> commonly negotiated?
+> 
+> So that's why this aggressive check is here.  Not to necessarily cement 
+> this into the ABI but as a way to make someone figure out how to 
+> sanitize this all.
 
-Yesterday I build kernel 2.6.26.6 and it's run well. Today I got
-2.6.27 patch and try to build it.
+Well, features may be orthogonal but they are still added sequentially
+to the ABI. So, you would have a kind of implicit ABI versioning, while
+still allowing individual selection of features.
 
-I build with `make oldconfig` and answer any question with default
-answer, I just press [enter].
-I build with `make`. No error and all compiled.
-Then I install with `make modules_install` and `make install`.
+e.g. if NET_F_FOO adds "int foo" to the header and then NET_F_BAR adds
+"int bar" to the header then if NET_F_FOO is negotiated, the guest
+should only send a header with "foo" and if NET_F_FOO|NET_F_BAR or
+NET_F_BAR is negotiated, then the guest sends a header with both "foo"
+and "bar".
 
-After reboot the system I got 'kernel panic'.
-This is the error picture :
-http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101358.jpg
-Is it a bugs?
+Or put it another way, a host or guest may not implement NET_F_FOO but
+knowledge of the "foo" header field is part of the ABI of NET_F_BAR.
+That knowledge would be as simple as knowing that the field exists and
+that it should be ignored if the feature isn't used.
 
-http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101353.jpg
-[2.6.26.6 run well]
+Cheers,
+Mark.
 
-
-
-Best regards,
-Yudha_HT
