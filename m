@@ -1,84 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYJJLg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbYJJLlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758531AbYJJLg0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 07:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYJJLgR
+	id S1758443AbYJJLlJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 07:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbYJJLky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 07:36:17 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55519 "EHLO pasmtpA.tele.dk"
+	Fri, 10 Oct 2008 07:40:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40596 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753708AbYJJLgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 07:36:16 -0400
-Date: Fri, 10 Oct 2008 13:35:41 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Elias Oltmanns <eo@nebensachen.de>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] ide: use queue lock instead of ide_lock when possible
-Message-ID: <20081010113541.GB19428@kernel.dk>
-References: <20081008202930.19112.90371.sendpatchset@localhost.localdomain> <20081008203027.19112.20883.sendpatchset@localhost.localdomain> <87zllcet7k.fsf@denkblock.local> <20081010085249.GW19428@kernel.dk>
+	id S1753121AbYJJLkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 07:40:53 -0400
+Date: Fri, 10 Oct 2008 13:40:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <s0mbre@tservice.net.ru>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mike Galbraith <efault@gmx.de>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+Message-ID: <20081010114042.GA19487@elte.hu>
+References: <20081009231759.GA8664@tservice.net.ru> <20081010080910.GA31723@tservice.net.ru> <20081010091511.GC5116@elte.hu> <20081010113100.GA1030@tservice.net.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081010085249.GW19428@kernel.dk>
+In-Reply-To: <20081010113100.GA1030@tservice.net.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10 2008, Jens Axboe wrote:
-> On Fri, Oct 10 2008, Elias Oltmanns wrote:
-> > Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > Subject: [PATCH] ide: use queue lock instead of ide_lock when possible
-> > >
-> > > This is just a preparation for future changes and there should be no
-> > > functional changes caused by this patch since ide_lock is currently
-> > > also used as queue lock.
-> > >
-> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > ---
-> > [...]
-> > > Index: b/drivers/ide/ide-io.c
-> > > ===================================================================
-> > > --- a/drivers/ide/ide-io.c
-> > > +++ b/drivers/ide/ide-io.c
-> > [...]
-> > > @@ -1469,16 +1470,16 @@ out:
-> > >  void ide_do_drive_cmd(ide_drive_t *drive, struct request *rq)
-> > >  {
-> > >  	ide_hwgroup_t *hwgroup = drive->hwif->hwgroup;
-> > > +	struct request_queue *q = drive->queue;
-> > >  	unsigned long flags;
-> > >  
-> > >  	hwgroup->rq = NULL;
-> > >  
-> > > -	spin_lock_irqsave(&ide_lock, flags);
-> > > -	__elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 1);
-> > > -	__generic_unplug_device(drive->queue);
-> > > -	spin_unlock_irqrestore(&ide_lock, flags);
-> > > +	spin_lock_irqsave(q->queue_lock, flags);
-> > > +	__elv_add_request(q, rq, ELEVATOR_INSERT_FRONT, 1);
-> > > +	__generic_unplug_device(q);
-> > 
-> > By the way, wouldn't blk_run_queue() be more appropriate here? It looks
-> > to me as if blk_run_queue() was the thing intended for general usage by
-> > low level drivers who don't know and care about schedulers, whereas the
-> > usage of __generic_unplug_device() should mostly be restricted to the
-> > block layer. On the other hand, there are other drivers in
-> > drivers/block/ that use __generic_unplug_device(), so I may well be
-> > wrong. Jens?
+
+* Evgeniy Polyakov <s0mbre@tservice.net.ru> wrote:
+
+> Hi Ingo.
 > 
-> Yes, that is correct. But it's ok for now, there are too many variants
-> of this around as it is already. I'm about to do a run and clean them up
-> and make sure we have a single sane way of doing it that is exported.
+> On Fri, Oct 10, 2008 at 11:15:11AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> > > 
+> > > I use tsc clocksource, also available acpi_pm and jiffies,
+> > > with acpi_pm performance is even lower (I stopped test after it dropped
+> > > below 340 MB/s mark), jiffies do not work at all, looks like sockets
+> > > stuck in time_wait state when this clock source is used, although that
+> > > may be some different issue.
+> > > 
+> > > So I think hrticks are guilty, but still not as good as .25 tree without
+> > > mentioned changes (455 MB/s) and .24 (475 MB/s).
+> > 
+> > i'm glad that you are looking into this! That is an SMP box, right? If 
+> > yes then could you try this sched-domains tuning utility i have written 
+> > yesterday (incidentally):
+> > 
+> >   http://redhat.com/~mingo/cfs-scheduler/tune-sched-domains
+> 
+> I've removed SD_BALANCE_NEWIDLE:
+> # ./tune-sched-domains $[191-2]
+> changed /proc/sys/kernel/sched_domain/cpu0/domain0/flags: 191 => 189
+> SD flag: 189
+> +   1: SD_LOAD_BALANCE:          Do load balancing on this domain
+> -   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
+> +   4: SD_BALANCE_EXEC:          Balance on exec
+> +   8: SD_BALANCE_FORK:          Balance on fork, clone
+> +  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
+> +  32: SD_WAKE_AFFINE:           Wake task to waking CPU
+> -  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
+> + 128: SD_SHARE_CPUPOWER:        Domain members share cpu power
+> changed /proc/sys/kernel/sched_domain/cpu0/domain1/flags: 47 => 189
+> SD flag: 189
+> +   1: SD_LOAD_BALANCE:          Do load balancing on this domain
+> -   2: SD_BALANCE_NEWIDLE:       Balance when about to become idle
+> +   4: SD_BALANCE_EXEC:          Balance on exec
+> +   8: SD_BALANCE_FORK:          Balance on fork, clone
+> +  16: SD_WAKE_IDLE:             Wake to idle CPU on task wakeup
+> +  32: SD_WAKE_AFFINE:           Wake task to waking CPU
+> -  64: SD_WAKE_BALANCE:          Perform balancing at task wakeup
+> + 128: SD_SHARE_CPUPOWER:        Domain members share cpu power
+> 
+> And got noticeble improvement (each new line has fixes from previous):
+> 
+> vanilla 27: 347.222
+> no TSO/GSO: 357.331
+> no hrticks: 382.983
+> no balance: 389.802
+> 
+> > and please, when tuning such scheduler bits, could you run latest 
+> > tip/master:
+> > 
+> >    http://people.redhat.com/mingo/tip.git/README
+> > 
+> > and you need to have CONFIG_SCHED_DEBUG=y enabled for the tuning knobs.
+> > 
+> > so that it's all in sync with upcoming scheduler changes/tunings/fixes.
+> 
+> Ok, I've started to pull it down, I will reply back when things are
+> ready.
 
-So the right thing to do here is:
+make sure you have this fix in tip/master already:
 
-        __elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
-        blk_start_queueing(drive->queue);
+  5b7dba4: sched_clock: prevent scd->clock from moving backwards
 
-since you don't need to do any plugging.
+Note: Mike is 100% correct in suggesting that a very good cpu_clock() is 
+needed for precise scheduling.
 
--- 
-Jens Axboe
+i've also Cc:-ed Nick.
 
+	Ingo
