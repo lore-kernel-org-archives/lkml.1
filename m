@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbYJJTLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763433AbYJJTMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763341AbYJJTLq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762782AbYJJTLh
+	id S1763433AbYJJTMt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759625AbYJJTMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:11:37 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:61539 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762331AbYJJTLg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:11:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KiykR4kvL+576kgmvUDBIYTQQsTXvj/OYTIm1CJn68YObJbGxrw2QPG4XaYKu93ayN
-         tXO7g47032gZkGjYesODeZ2se4/OGLljc6tZNJ6+pwac3+drtAoUM3rd/zJGAm9vhcMw
-         XqlScSVI1vxWBG+Pt5+RJwD+BP3H9lWmmi3Zg=
-Date: Fri, 10 Oct 2008 23:11:27 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: apic - unify APIC_DIVISOR
-Message-ID: <20081010191127.GA31036@localhost>
-References: <20081010150017.GD7328@localhost> <7E82351C108FA840AB1866AC776AEC46378236B8@orsmsx505.amr.corp.intel.com> <20081010163101.GG7328@localhost> <7E82351C108FA840AB1866AC776AEC46378238AE@orsmsx505.amr.corp.intel.com> <20081010171645.GI7328@localhost> <20081010190350.GA25931@linux-os.sc.intel.com>
+	Fri, 10 Oct 2008 15:12:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51946 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759057AbYJJTMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:12:40 -0400
+Message-ID: <48EFA8CA.1020600@kernel.org>
+Date: Fri, 10 Oct 2008 12:11:06 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010190350.GA25931@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #9, sparse
+ IRQ	support
+References: <20081010001727.GA14132@elte.hu> <20081010185912.GF21876@elte.hu>
+In-Reply-To: <20081010185912.GF21876@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Venki Pallipadi - Fri, Oct 10, 2008 at 12:03:50PM -0700]
-...
-| 
-| If there is no pressing reason to change the initial calibration value, how
-| about the simple patch below.
-| 
-| The 10^9 value that is used for 100 mS calibration time is pretty big as
-| tglx's comment points out. We will only underflow it if there is a
-| bus clock running at 10 GHz * 16 = 160 Ghz.
-| 
-| This way we will not fix something that is not really broken today and will not
-| break in foreseeable future.
-| 
-| Thanks,
-| Venki
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> Linus,
+>>
+>> Please pull the latest x86-v28-for-linus-phase9 git tree from:
+>>
+>> Sparse IRQ support - make NR_IRQS dynamic by turning it into nr_irqs, 
+>> an by creating irq descriptors in a sparse way.
+>>
+>> Includes a number of dependent x86 topics: timers/hpet-percpu, IO-APIC 
+>> and local APIC code unification, UV support updates.
+>>
+>> Has been cross-built on all architectures we could get crosscompilers 
+>> for:
+>>
+>>   http://www.tglx.de/autoqa/index
+>>
+>> It should be largely uneventful for sparse-irq unaware, non-x86 
+>> architectures.
+> 
+> please find updated pull request below. Relative to phase-N-1. Updates 
+> from today in this class of topics:
+> 
+>   b570868: x86: apic - unify APIC_DIVISOR
+> 
+> And i removed:
+> 
+>   eada62c: acpi/x86: introduce __apci_map_table, v4
+> 
+> [ Cc:-ed Yinghai for that - we can live without that patch (i.e. we at
+>   most get a leak warning) and can have that via acpi.git, correct? ]
 
-I personally have no objection. Thanks Venki.
-Btw since Ingo already picked the patch from me
-maybe you could make a patch with numbers you mentoined
-(ie changelog) and fix 0xffffffff to 10^9?
- 
-		- Cyrill -
+yes. we have several patches that even didn't pick up for a while.
+
+also please ask Linus to pull pci tree from Jesse before sparseirq.
+
+because we need
+	PCI: change MSI-x vector to 32bit
+
+in pci tree.
+
+YH
+
+
+
