@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763199AbYJJUcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763518AbYJJUeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763199AbYJJUcf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbYJJUc0
+	id S1763518AbYJJUeK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbYJJUd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:32:26 -0400
-Received: from kroah.org ([198.145.64.141]:32975 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758690AbYJJUcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:32:25 -0400
-Date: Fri, 10 Oct 2008 13:29:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Stefan Bader <stefan.bader@canonical.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org
-Subject: Re: [stable] [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in
-	used_vectors bitmap
-Message-ID: <20081010202915.GA32318@kroah.com>
-References: <48EFB4B2.2020508@canonical.com> <20081010201610.GA32164@kroah.com> <20081010202350.GA11090@elte.hu>
+	Fri, 10 Oct 2008 16:33:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53639 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758977AbYJJUd4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 16:33:56 -0400
+Message-ID: <48EFBBE9.5000703@linux-foundation.org>
+Date: Fri, 10 Oct 2008 15:32:41 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010202350.GA11090@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Brice Goglin <Brice.Goglin@inria.fr>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, nathalie.furmento@labri.fr
+Subject: Re: [PATCH] mm: use a radix-tree to make do_move_pages() complexity
+ linear
+References: <48EDF9DA.7000508@inria.fr> <20081010125010.164bcbb8.akpm@linux-foundation.org> <48EFB6E6.4080708@inria.fr>
+In-Reply-To: <48EFB6E6.4080708@inria.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 10:23:50PM +0200, Ingo Molnar wrote:
-> 
-> * Greg KH <greg@kroah.com> wrote:
-> 
-> > On Fri, Oct 10, 2008 at 04:01:54PM -0400, Stefan Bader wrote:
-> > > Affected: 2.6.24-2.6.27
-> > > 
-> > > Someone from the community found out, that after repeatedly unloading and
-> > > loading a device driver that uses MSI IRQs, the system eventually assigned
-> > > the vector initially reserved for IRQ0 to the device driver.
-> > > 
-> > > The reason for this is, that although IRQ0 is tied to the FIRST_DEVICE_VECTOR
-> > > when declaring the irq_vector table, the corresponding bit in the used_vectors
-> > > map is not set. So, if vectors are released and assigned often enough, the
-> > > vector will get assigned to another interrupt. This happens more often with
-> > > MSI interrupts as those are exclusively using a vector.
-> > > 
-> > > Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
-> > > 
-> > > Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-> > 
-> > Hint, if you want patches to go into the -stable tree, just add:
-> > 	cc: Stable <stable@kernel.org>
-> > to the patch when you submit it in the signed-off-by area, and it will
-> > be automatically sent to us when it goes into the main kernel tree.
-> 
-> yes. Note that this is a special case, as there will be no upstream 
-> commit to tag with Cc: <stable@kernel.org>, because this bug got 
-> eliminated via not backportable means: APIC code unification.
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+Brice Goglin wrote:
 
-So this is a -stable release only patch?  .28 will never get/need this?
+> Just try sys_move_pages() on a 10-100MB buffer, you'll get something
+> like 50MB/s on a recent Opteron machine. This throughput decreases
+> significantly with the number of pages. With this patch, we get about
+> 350MB/s and the throughput is stable when the migrated buffer gets
+> larger. I don't have detailled numbers at hand, I'll send them by monday.
 
-thanks,
+Migration throughput is optimal for sys_move_pages() and the cpuset migration.
+Some comparison would be useful.
 
-greg k-h
+With 100MB you have ~250k pages which will require a vmalloc of 4MB for the
+struct pm struct array to control the migration of each individual page.
+
+Would it be possible to restructure this in such a way that we work in chunks
+of 100 or so pages each so that we can avoid the vmalloc?
+
+We also could do a kmalloc for each individual struct pm_struct with the radix
+tree which would also avoid the vmalloc but still keep the need to allocate
+4MB for temporary struct pm_structs.
+
+Or get rid of the pm_struct altogether by storing the address of the node
+vector somewhere and retrieve the node as needed from the array. This would
+allow storing the struct page * pointers in the radix tree.
