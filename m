@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbYJJVbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763630AbYJJVdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763471AbYJJVbb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 17:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759960AbYJJVbV
+	id S1763630AbYJJVdG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 17:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761238AbYJJVcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 17:31:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45006 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759310AbYJJVbU (ORCPT
+	Fri, 10 Oct 2008 17:32:53 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56091 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761063AbYJJVcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 17:31:20 -0400
-Message-ID: <48EFC9A0.5070907@zytor.com>
-Date: Fri, 10 Oct 2008 14:31:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 10 Oct 2008 17:32:50 -0400
+Date: Fri, 10 Oct 2008 23:34:27 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: jikos@suse.cz, kernel list <linux-kernel@vger.kernel.org>,
+       linux-acpi@ucw.cz, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: 2.6.27-rc8: throttling broken
+Message-ID: <20081010213427.GA15285@elf.ucw.cz>
+References: <20081009171238.GB1370@ucw.cz> <200810092327.26301.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Alain Knaff <alain@knaff.lu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
- initrds
-References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu> <48EE4302.2010404@zytor.com> <48EEC7D1.80404@knaff.lu>
-In-Reply-To: <48EEC7D1.80404@knaff.lu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810092327.26301.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alain Knaff wrote:
-> H. Peter Anvin wrote:
->> Hi Alain,
->>
->> Are you planning to submit an updated patch any time soon?  If so,
->> please separate the ARM, x86, library and generic portions into separate
->> patches.  It looks like at least some of them already went into ARM,
->> which makes it impractical to include this as a monolithic patch, which
->> it really shouldn't have to be, anyway.
->>
->>     -hpa
+On Thu 2008-10-09 23:27:25, Rafael J. Wysocki wrote:
+> On Thursday, 9 of October 2008, Pavel Machek wrote:
+> > Hi!
+> > 
+> > On 2.6.27-rc8 on via/fic subnotebook, throttling seems to be broken. I
+> > can do echo 15 > /proc/acpi/processor/*/throttling, and proc file
+> > reflects new value, but cpu still runs at same speed.
+> > 
+> > It worked on opensuse11/sled10 kernels at least...
 > 
-> I'll look into it (the split) this weekend, if I'll find the time.
-> Should each part be compilable on its own? If so, it might be difficult
-> to do the split along the lines outlined above.
-> 
+> Any chance to check 2.6.26.x on that?
 
-Not individually, but part 1 should compile, as should parts 1+2, etc.
-
-This pretty much means the order should be:
-
-1. add library functions
-2. generic functionality
-3. x86 functionality
-4. ARM functionality
-
-Soem of these may be obsolete; I noticed collisions with the ARM tree.
-
-	-hpa
+2.6.26 seems to be okay, and my thinkpad seems to be okay, too...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
