@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763974AbYJJW7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764158AbYJJW70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763974AbYJJW7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 18:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbYJJW6W
+	id S1764158AbYJJW70 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 18:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbYJJW6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 18:58:22 -0400
-Received: from kroah.org ([198.145.64.141]:54692 "EHLO coco.kroah.org"
+	Fri, 10 Oct 2008 18:58:24 -0400
+Received: from kroah.org ([198.145.64.141]:54695 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752110AbYJJW5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 18:57:33 -0400
+	id S1752257AbYJJW5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 18:57:36 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Cc: "J.R. Mauro" <jrm8005@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 17/23] Staging: Fix gcc warnings in sxg
-Date: Fri, 10 Oct 2008 15:42:41 -0700
-Message-Id: <1223678567-30143-17-git-send-email-greg@kroah.com>
+Cc: Ross Cohen <rcohen@snurgle.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 18/23] Staging: go7007 v4l fixes
+Date: Fri, 10 Oct 2008 15:42:42 -0700
+Message-Id: <1223678567-30143-18-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081010224130.GA30117@kroah.com>
 References: <20081010224130.GA30117@kroah.com>
@@ -22,59 +22,412 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: J.R. Mauro <jrm8005@gmail.com>
+From: Ross Cohen <rcohen@snurgle.org>
 
-Fix for compiler warning about format specifier in prints in
-drivers/staging/sxg/sxg.c
-Prints were using %x to print unsigned long data.
+Fix up some of the v4l issues that were recently changed to make the
+go7007 driver a bit cleaner.
 
 
-Signed-off-by: J.R. Mauro <jrm8005@gmail.com>
+From: Ross Cohen <rcohen@snurgle.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/sxg/sxg.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/staging/go7007/go7007-driver.c  |    2 +-
+ drivers/staging/go7007/go7007-v4l2.c    |   12 ++++--------
+ drivers/staging/go7007/snd-go7007.c     |    4 ++--
+ drivers/staging/go7007/wis-ov7640.c     |    3 +--
+ drivers/staging/go7007/wis-saa7113.c    |   25 ++++++++++---------------
+ drivers/staging/go7007/wis-saa7115.c    |   29 ++++++++++++++---------------
+ drivers/staging/go7007/wis-sony-tuner.c |    3 ++-
+ drivers/staging/go7007/wis-tw2804.c     |   29 ++++++++++++++---------------
+ drivers/staging/go7007/wis-tw9903.c     |   21 ++++++++++-----------
+ drivers/staging/go7007/wis-uda1342.c    |    2 +-
+ 10 files changed, 59 insertions(+), 71 deletions(-)
 
-diff --git a/drivers/staging/sxg/sxg.c b/drivers/staging/sxg/sxg.c
-index a91c9f3..0117d51 100644
---- a/drivers/staging/sxg/sxg.c
-+++ b/drivers/staging/sxg/sxg.c
-@@ -453,7 +453,7 @@ static int sxg_allocate_resources(p_adapter_t adapter)
- 	// fails.  If we hit a minimum, fail.
+diff --git a/drivers/staging/go7007/go7007-driver.c b/drivers/staging/go7007/go7007-driver.c
+index 5a336ff..81ae4b0 100644
+--- a/drivers/staging/go7007/go7007-driver.c
++++ b/drivers/staging/go7007/go7007-driver.c
+@@ -31,7 +31,7 @@
+ #include <linux/semaphore.h>
+ #include <linux/uaccess.h>
+ #include <asm/system.h>
+-#include <linux/videodev.h>
++#include <linux/videodev2.h>
+ #include <media/tuner.h>
+ #include <media/v4l2-common.h>
  
- 	for (;;) {
--		DBG_ERROR("%s Allocate XmtRings size[%x]\n", __FUNCTION__,
-+		DBG_ERROR("%s Allocate XmtRings size[%lx]\n", __FUNCTION__,
- 			  (sizeof(SXG_XMT_RING) * 1));
+diff --git a/drivers/staging/go7007/go7007-v4l2.c b/drivers/staging/go7007/go7007-v4l2.c
+index d54d019..94e1141 100644
+--- a/drivers/staging/go7007/go7007-v4l2.c
++++ b/drivers/staging/go7007/go7007-v4l2.c
+@@ -26,8 +26,7 @@
+ #include <linux/time.h>
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+-#include <linux/videodev.h>
+-#include <linux/video_decoder.h>
++#include <linux/videodev2.h>
+ #include <media/v4l2-common.h>
+ #include <media/v4l2-ioctl.h>
+ #include <linux/i2c.h>
+@@ -835,7 +834,6 @@ static int go7007_do_ioctl(struct inode *inode, struct file *file,
+ 	case VIDIOC_S_STD:
+ 	{
+ 		v4l2_std_id *std = arg;
+-		int norm;
  
- 		// Start with big items first - receive and transmit rings.  At the moment
-@@ -470,7 +470,7 @@ static int sxg_allocate_resources(p_adapter_t adapter)
+ 		if (go->streaming)
+ 			return -EBUSY;
+@@ -856,20 +854,17 @@ static int go7007_do_ioctl(struct inode *inode, struct file *file,
+ 		if (*std & V4L2_STD_NTSC) {
+ 			go->standard = GO7007_STD_NTSC;
+ 			go->sensor_framerate = 30000;
+-			norm = VIDEO_MODE_NTSC;
+ 		} else if (*std & V4L2_STD_PAL) {
+ 			go->standard = GO7007_STD_PAL;
+ 			go->sensor_framerate = 25025;
+-			norm = VIDEO_MODE_PAL;
+ 		} else if (*std & V4L2_STD_SECAM) {
+ 			go->standard = GO7007_STD_PAL;
+ 			go->sensor_framerate = 25025;
+-			norm = VIDEO_MODE_SECAM;
+ 		} else
+ 			return -EINVAL;
+ 		if (go->i2c_adapter_online)
+ 			i2c_clients_command(&go->i2c_adapter,
+-						DECODER_SET_NORM, &norm);
++					    VIDIOC_S_STD, std);
+ 		set_capture_size(go, NULL, 0);
+ 		return 0;
+ 	}
+@@ -933,7 +928,7 @@ static int go7007_do_ioctl(struct inode *inode, struct file *file,
+ 			return -EBUSY;
+ 		go->input = *input;
+ 		if (go->i2c_adapter_online) {
+-			i2c_clients_command(&go->i2c_adapter, DECODER_SET_INPUT,
++			i2c_clients_command(&go->i2c_adapter, VIDIOC_S_INPUT,
+ 				&go->board_info->inputs[*input].video_input);
+ 			i2c_clients_command(&go->i2c_adapter, VIDIOC_S_AUDIO,
+ 				&go->board_info->inputs[*input].audio_input);
+@@ -1459,6 +1454,7 @@ static struct file_operations go7007_fops = {
+ 
+ static struct video_device go7007_template = {
+ 	.name		= "go7007",
++	.vfl_type	= VID_TYPE_CAPTURE,
+ 	.fops		= &go7007_fops,
+ 	.minor		= -1,
+ 	.release	= go7007_vfl_release,
+diff --git a/drivers/staging/go7007/snd-go7007.c b/drivers/staging/go7007/snd-go7007.c
+index f5cac08..382740c 100644
+--- a/drivers/staging/go7007/snd-go7007.c
++++ b/drivers/staging/go7007/snd-go7007.c
+@@ -44,8 +44,8 @@ module_param_array(index, int, NULL, 0444);
+ module_param_array(id, charp, NULL, 0444);
+ module_param_array(enable, bool, NULL, 0444);
+ MODULE_PARM_DESC(index, "Index value for the go7007 audio driver");
+-MODULE_PARM_DESC(index, "ID string for the go7007 audio driver");
+-MODULE_PARM_DESC(index, "Enable for the go7007 audio driver");
++MODULE_PARM_DESC(id, "ID string for the go7007 audio driver");
++MODULE_PARM_DESC(enable, "Enable for the go7007 audio driver");
+ 
+ struct go7007_snd {
+ 	struct snd_card *card;
+diff --git a/drivers/staging/go7007/wis-ov7640.c b/drivers/staging/go7007/wis-ov7640.c
+index 815615a..f5f11e9 100644
+--- a/drivers/staging/go7007/wis-ov7640.c
++++ b/drivers/staging/go7007/wis-ov7640.c
+@@ -19,8 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/version.h>
+ #include <linux/i2c.h>
+-#include <linux/videodev.h>
+-#include <linux/video_decoder.h>
++#include <linux/videodev2.h>
+ 
+ #include "wis-i2c.h"
+ 
+diff --git a/drivers/staging/go7007/wis-saa7113.c b/drivers/staging/go7007/wis-saa7113.c
+index 4b14ca8..c1aff1b 100644
+--- a/drivers/staging/go7007/wis-saa7113.c
++++ b/drivers/staging/go7007/wis-saa7113.c
+@@ -19,8 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/version.h>
+ #include <linux/i2c.h>
+-#include <linux/videodev.h>
+-#include <linux/video_decoder.h>
++#include <linux/videodev2.h>
+ #include <linux/ioctl.h>
+ 
+ #include "wis-i2c.h"
+@@ -124,7 +123,7 @@ static int wis_saa7113_command(struct i2c_client *client,
+ 	struct wis_saa7113 *dec = i2c_get_clientdata(client);
+ 
+ 	switch (cmd) {
+-	case DECODER_SET_INPUT:
++	case VIDIOC_S_INPUT:
+ 	{
+ 		int *input = arg;
+ 
+@@ -133,23 +132,19 @@ static int wis_saa7113_command(struct i2c_client *client,
+ 				*input < 6 ? 0x40 : 0x80);
+ 		break;
+ 	}
+-	case DECODER_SET_NORM:
++	case VIDIOC_S_STD:
+ 	{
+-		int *input = arg;
++		v4l2_std_id *input = arg;
+ 		dec->norm = *input;
+-		switch (dec->norm) {
+-		case VIDEO_MODE_PAL:
+-			write_reg(client, 0x0e, 0x01);
+-			write_reg(client, 0x10, 0x48);
+-			break;
+-		case VIDEO_MODE_NTSC:
++		if (dec->norm & V4L2_STD_NTSC) {
+ 			write_reg(client, 0x0e, 0x01);
+ 			write_reg(client, 0x10, 0x40);
+-			break;
+-		case VIDEO_MODE_SECAM:
++		} else if (dec->norm & V4L2_STD_PAL) {
++			write_reg(client, 0x0e, 0x01);
++			write_reg(client, 0x10, 0x48);
++		} else if (dec->norm * V4L2_STD_SECAM) {
+ 			write_reg(client, 0x0e, 0x50);
+ 			write_reg(client, 0x10, 0x48);
+-			break;
  		}
- 		memset(adapter->XmtRings, 0, sizeof(SXG_XMT_RING) * 1);
+ 		break;
+ 	}
+@@ -295,7 +290,7 @@ static int wis_saa7113_detect(struct i2c_adapter *adapter, int addr, int kind)
+ 		kfree(client);
+ 		return -ENOMEM;
+ 	}
+-	dec->norm = VIDEO_MODE_NTSC;
++	dec->norm = V4L2_STD_NTSC;
+ 	dec->brightness = 128;
+ 	dec->contrast = 71;
+ 	dec->saturation = 64;
+diff --git a/drivers/staging/go7007/wis-saa7115.c b/drivers/staging/go7007/wis-saa7115.c
+index bd40bf4..5c94c88 100644
+--- a/drivers/staging/go7007/wis-saa7115.c
++++ b/drivers/staging/go7007/wis-saa7115.c
+@@ -19,8 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/version.h>
+ #include <linux/i2c.h>
+-#include <linux/videodev.h>
+-#include <linux/video_decoder.h>
++#include <linux/videodev2.h>
+ #include <linux/ioctl.h>
  
--		DBG_ERROR("%s Allocate RcvRings size[%x]\n", __FUNCTION__,
-+		DBG_ERROR("%s Allocate RcvRings size[%lx]\n", __FUNCTION__,
- 			  (sizeof(SXG_RCV_RING) * 1));
- 		adapter->RcvRings =
- 		    pci_alloc_consistent(adapter->pcidev,
-@@ -531,7 +531,7 @@ static int sxg_allocate_resources(p_adapter_t adapter)
- 		return (STATUS_RESOURCES);
+ #include "wis-i2c.h"
+@@ -204,7 +203,7 @@ static int wis_saa7115_command(struct i2c_client *client,
+ 	struct wis_saa7115 *dec = i2c_get_clientdata(client);
+ 
+ 	switch (cmd) {
+-	case DECODER_SET_INPUT:
++	case VIDIOC_S_INPUT:
+ 	{
+ 		int *input = arg;
+ 
+@@ -222,7 +221,7 @@ static int wis_saa7115_command(struct i2c_client *client,
+ 		int h_scaling_increment = (704 / h_integer_scaler) *
+ 					1024 / res->width;
+ 		/* Fine-grained scaler only */
+-		int v_scaling_increment = (dec->norm == VIDEO_MODE_NTSC ?
++		int v_scaling_increment = (dec->norm & V4L2_STD_NTSC ?
+ 				240 : 288) * 1024 / res->height;
+ 		u8 regs[] = {
+ 			0x88,	0xc0,
+@@ -262,20 +261,20 @@ static int wis_saa7115_command(struct i2c_client *client,
+ 		write_regs(client, regs);
+ 		break;
+ 	}
+-	case DECODER_SET_NORM:
++	case VIDIOC_S_STD:
+ 	{
+-		int *input = arg;
++		v4l2_std_id *input = arg;
+ 		u8 regs[] = {
+ 			0x88,	0xc0,
+-			0x98,	*input == VIDEO_MODE_NTSC ? 0x12 : 0x16,
+-			0x9a,	*input == VIDEO_MODE_NTSC ? 0xf2 : 0x20,
+-			0x9b,	*input == VIDEO_MODE_NTSC ? 0x00 : 0x01,
+-			0xc8,	*input == VIDEO_MODE_NTSC ? 0x12 : 0x16,
+-			0xca,	*input == VIDEO_MODE_NTSC ? 0xf2 : 0x20,
+-			0xcb,	*input == VIDEO_MODE_NTSC ? 0x00 : 0x01,
++			0x98,	*input & V4L2_STD_NTSC ? 0x12 : 0x16,
++			0x9a,	*input & V4L2_STD_NTSC ? 0xf2 : 0x20,
++			0x9b,	*input & V4L2_STD_NTSC ? 0x00 : 0x01,
++			0xc8,	*input & V4L2_STD_NTSC ? 0x12 : 0x16,
++			0xca,	*input & V4L2_STD_NTSC ? 0xf2 : 0x20,
++			0xcb,	*input & V4L2_STD_NTSC ? 0x00 : 0x01,
+ 			0x88,	0xf0,
+-			0x30,	*input == VIDEO_MODE_NTSC ? 0x66 : 0x00,
+-			0x31,	*input == VIDEO_MODE_NTSC ? 0x90 : 0xe0,
++			0x30,	*input & V4L2_STD_NTSC ? 0x66 : 0x00,
++			0x31,	*input & V4L2_STD_NTSC ? 0x90 : 0xe0,
+ 			0,	0,
+ 		};
+ 		write_regs(client, regs);
+@@ -424,7 +423,7 @@ static int wis_saa7115_detect(struct i2c_adapter *adapter, int addr, int kind)
+ 		kfree(client);
+ 		return -ENOMEM;
+ 	}
+-	dec->norm = VIDEO_MODE_NTSC;
++	dec->norm = V4L2_STD_NTSC;
+ 	dec->brightness = 128;
+ 	dec->contrast = 64;
+ 	dec->saturation = 64;
+diff --git a/drivers/staging/go7007/wis-sony-tuner.c b/drivers/staging/go7007/wis-sony-tuner.c
+index 82e66d6..5997fb4 100644
+--- a/drivers/staging/go7007/wis-sony-tuner.c
++++ b/drivers/staging/go7007/wis-sony-tuner.c
+@@ -19,9 +19,10 @@
+ #include <linux/init.h>
+ #include <linux/version.h>
+ #include <linux/i2c.h>
+-#include <linux/videodev.h>
++#include <linux/videodev2.h>
+ #include <media/tuner.h>
+ #include <media/v4l2-common.h>
++#include <media/v4l2-ioctl.h>
+ 
+ #include "wis-i2c.h"
+ 
+diff --git a/drivers/staging/go7007/wis-tw2804.c b/drivers/staging/go7007/wis-tw2804.c
+index 69ed7bf..27fe4d0 100644
+--- a/drivers/staging/go7007/wis-tw2804.c
++++ b/drivers/staging/go7007/wis-tw2804.c
+@@ -19,8 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/version.h>
+ #include <linux/i2c.h>
+-#include <linux/videodev.h>
+-#include <linux/video_decoder.h>
++#include <linux/videodev2.h>
+ #include <linux/ioctl.h>
+ 
+ #include "wis-i2c.h"
+@@ -159,20 +158,20 @@ static int wis_tw2804_command(struct i2c_client *client,
  	}
  
--	DBG_ERROR("%s Allocate EventRings size[%x]\n", __FUNCTION__,
-+	DBG_ERROR("%s Allocate EventRings size[%lx]\n", __FUNCTION__,
- 		  (sizeof(SXG_EVENT_RING) * RssIds));
- 
- 	// Allocate event queues.
-@@ -562,7 +562,7 @@ static int sxg_allocate_resources(p_adapter_t adapter)
+ 	switch (cmd) {
+-	case DECODER_SET_NORM:
++	case VIDIOC_S_STD:
+ 	{
+-		int *input = arg;
++		v4l2_std_id *input = arg;
+ 		u8 regs[] = {
+-			0x01, *input == VIDEO_MODE_NTSC ? 0xc4 : 0x84,
+-			0x09, *input == VIDEO_MODE_NTSC ? 0x07 : 0x04,
+-			0x0a, *input == VIDEO_MODE_NTSC ? 0xf0 : 0x20,
+-			0x0b, *input == VIDEO_MODE_NTSC ? 0x07 : 0x04,
+-			0x0c, *input == VIDEO_MODE_NTSC ? 0xf0 : 0x20,
+-			0x0d, *input == VIDEO_MODE_NTSC ? 0x40 : 0x4a,
+-			0x16, *input == VIDEO_MODE_NTSC ? 0x00 : 0x40,
+-			0x17, *input == VIDEO_MODE_NTSC ? 0x00 : 0x40,
+-			0x20, *input == VIDEO_MODE_NTSC ? 0x07 : 0x0f,
+-			0x21, *input == VIDEO_MODE_NTSC ? 0x07 : 0x0f,
++			0x01, *input & V4L2_STD_NTSC ? 0xc4 : 0x84,
++			0x09, *input & V4L2_STD_NTSC ? 0x07 : 0x04,
++			0x0a, *input & V4L2_STD_NTSC ? 0xf0 : 0x20,
++			0x0b, *input & V4L2_STD_NTSC ? 0x07 : 0x04,
++			0x0c, *input & V4L2_STD_NTSC ? 0xf0 : 0x20,
++			0x0d, *input & V4L2_STD_NTSC ? 0x40 : 0x4a,
++			0x16, *input & V4L2_STD_NTSC ? 0x00 : 0x40,
++			0x17, *input & V4L2_STD_NTSC ? 0x00 : 0x40,
++			0x20, *input & V4L2_STD_NTSC ? 0x07 : 0x0f,
++			0x21, *input & V4L2_STD_NTSC ? 0x07 : 0x0f,
+ 			0xff,	0xff,
+ 		};
+ 		write_regs(client, regs, dec->channel);
+@@ -322,7 +321,7 @@ static int wis_tw2804_detect(struct i2c_adapter *adapter, int addr, int kind)
+ 		return -ENOMEM;
  	}
- 	memset(adapter->Isr, 0, sizeof(u32) * IsrCount);
+ 	dec->channel = -1;
+-	dec->norm = VIDEO_MODE_NTSC;
++	dec->norm = V4L2_STD_NTSC;
+ 	dec->brightness = 128;
+ 	dec->contrast = 128;
+ 	dec->saturation = 128;
+diff --git a/drivers/staging/go7007/wis-tw9903.c b/drivers/staging/go7007/wis-tw9903.c
+index 1cdf01a..d8e4196 100644
+--- a/drivers/staging/go7007/wis-tw9903.c
++++ b/drivers/staging/go7007/wis-tw9903.c
+@@ -19,8 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/version.h>
+ #include <linux/i2c.h>
+-#include <linux/videodev.h>
+-#include <linux/video_decoder.h>
++#include <linux/videodev2.h>
+ #include <linux/ioctl.h>
  
--	DBG_ERROR("%s Allocate shared XMT ring zero index location size[%x]\n",
-+	DBG_ERROR("%s Allocate shared XMT ring zero index location size[%lx]\n",
- 		  __FUNCTION__, sizeof(u32));
+ #include "wis-i2c.h"
+@@ -106,7 +105,7 @@ static int wis_tw9903_command(struct i2c_client *client,
+ 	struct wis_tw9903 *dec = i2c_get_clientdata(client);
  
- 	// Allocate shared XMT ring zero index location
+ 	switch (cmd) {
+-	case DECODER_SET_INPUT:
++	case VIDIOC_S_INPUT:
+ 	{
+ 		int *input = arg;
+ 
+@@ -119,7 +118,7 @@ static int wis_tw9903_command(struct i2c_client *client,
+ 		struct video_decoder_resolution *res = arg;
+ 		/*int hscale = 256 * 720 / res->width;*/
+ 		int hscale = 256 * 720 / (res->width - (res->width > 704 ? 0 : 8));
+-		int vscale = 256 * (dec->norm == VIDEO_MODE_NTSC ?  240 : 288)
++		int vscale = 256 * (dec->norm & V4L2_STD_NTSC ?  240 : 288)
+ 				/ res->height;
+ 		u8 regs[] = {
+ 			0x0d, vscale & 0xff,
+@@ -134,14 +133,14 @@ static int wis_tw9903_command(struct i2c_client *client,
+ 		break;
+ 	}
+ #endif
+-	case DECODER_SET_NORM:
++	case VIDIOC_S_STD:
+ 	{
+-		int *input = arg;
++		v4l2_std_id *input = arg;
+ 		u8 regs[] = {
+-			0x05, *input == VIDEO_MODE_NTSC ? 0x80 : 0x00,
+-			0x07, *input == VIDEO_MODE_NTSC ? 0x02 : 0x12,
+-			0x08, *input == VIDEO_MODE_NTSC ? 0x14 : 0x18,
+-			0x09, *input == VIDEO_MODE_NTSC ? 0xf0 : 0x20,
++			0x05, *input & V4L2_STD_NTSC ? 0x80 : 0x00,
++			0x07, *input & V4L2_STD_NTSC ? 0x02 : 0x12,
++			0x08, *input & V4L2_STD_NTSC ? 0x14 : 0x18,
++			0x09, *input & V4L2_STD_NTSC ? 0xf0 : 0x20,
+ 			0,	0,
+ 		};
+ 		write_regs(client, regs);
+@@ -297,7 +296,7 @@ static int wis_tw9903_detect(struct i2c_adapter *adapter, int addr, int kind)
+ 		kfree(client);
+ 		return -ENOMEM;
+ 	}
+-	dec->norm = VIDEO_MODE_NTSC;
++	dec->norm = V4L2_STD_NTSC;
+ 	dec->brightness = 0;
+ 	dec->contrast = 0x60;
+ 	dec->hue = 0;
+diff --git a/drivers/staging/go7007/wis-uda1342.c b/drivers/staging/go7007/wis-uda1342.c
+index 28c10bf..a0894e3 100644
+--- a/drivers/staging/go7007/wis-uda1342.c
++++ b/drivers/staging/go7007/wis-uda1342.c
+@@ -19,7 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/version.h>
+ #include <linux/i2c.h>
+-#include <linux/videodev.h>
++#include <linux/videodev2.h>
+ #include <media/tvaudio.h>
+ #include <media/v4l2-common.h>
+ 
 -- 
 1.6.0.2
 
