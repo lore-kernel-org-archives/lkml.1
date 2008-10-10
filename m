@@ -1,130 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761984AbYJJQW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbYJJQXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761984AbYJJQW7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759177AbYJJQWv
+	id S1761354AbYJJQXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756315AbYJJQXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:22:51 -0400
-Received: from mx6.mail.ru ([194.67.23.26]:30947 "EHLO mx6.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753255AbYJJQWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:22:50 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org
-Subject: [PATCH] orinoco: fix unsafe locking in orinoco_cs_resume
-Date: Fri, 10 Oct 2008 20:22:38 +0400
+	Fri, 10 Oct 2008 12:23:06 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:9867 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762018AbYJJQXD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 12:23:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=LYlU7t5d+hhj9i97/SP23+kuUxFMjFIr4VRTSmoSWnmENx3L78gdYdwTP8pCu5J0/L
+         +gNAb73PE+8XDdnLCQC/GhW7+P+u/EPlti00+5Pvf+d17106JsiUka/t38oSSD0gb9ph
+         Mae2glIkcXjaOD05a1AwSBQYF0NUvu2zHBHmc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Elias Oltmanns <eo@nebensachen.de>
+Subject: Re: [PATCH 4/7] ide: ide_hwgroup_t.rq doesn't need an ide_lock held
+Date: Fri, 10 Oct 2008 18:20:18 +0200
 User-Agent: KMail/1.9.10
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20081008202930.19112.90371.sendpatchset@localhost.localdomain> <20081008203002.19112.519.sendpatchset@localhost.localdomain> <87abdcg86j.fsf@denkblock.local>
+In-Reply-To: <87abdcg86j.fsf@denkblock.local>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1268004.vNcsZMcn5o";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Disposition: inline
+Message-Id: <200810101820.18641.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810102022.40027.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1268004.vNcsZMcn5o
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_PF47IvCmp1+bR/4"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Friday 10 October 2008, Elias Oltmanns wrote:
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] ide: ide_hwgroup_t.rq doesn't need an ide_lock held
+> >
+> > While at it:
+> > - no need to check for hwgroup presence in ide_dump_opcode()
+> >
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> [...]
+> > Index: b/drivers/ide/ide-io.c
+> > ===================================================================
+> > --- a/drivers/ide/ide-io.c
+> > +++ b/drivers/ide/ide-io.c
+> [...]
+> > @@ -274,7 +269,11 @@ static void ide_complete_pm_request (ide
+> >  		drive->dev_flags &= ~IDE_DFLAG_BLOCKED;
+> >  		blk_start_queue(drive->queue);
+> >  	}
+> > -	HWGROUP(drive)->rq = NULL;
+> > +	spin_unlock_irqrestore(&ide_lock, flags);
+> > +
+> > +	drive->hwif->hwgroup->rq = NULL;
+> > +
+> > +	spin_lock_irqsave(&ide_lock, flags);
+> >  	if (__blk_end_request(rq, 0, 0))
+> >  		BUG();
+> >  	spin_unlock_irqrestore(&ide_lock, flags);
+> 
+> Is it really an improvement to release the lock here?
 
---Boundary-01=_PF47IvCmp1+bR/4
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Yes since it is a preparation for using the right lock here
+(drive->queue->queue_lock instead of ide_lock) which is done
+in patch #6/7:
 
-Attached patch should fixe lockdep warning. Unfortunately it is rather
-hard to trigger on purpose.
+@@ -263,10 +260,8 @@ static void ide_complete_pm_request (ide
+ 
+ 	drive->hwif->hwgroup->rq = NULL;
+ 
+-	spin_lock_irqsave(&ide_lock, flags);
+-	if (__blk_end_request(rq, 0, 0))
++	if (blk_end_request(rq, 0, 0))
+ 		BUG();
+-	spin_unlock_irqrestore(&ide_lock, flags);
+ }
 
---Boundary-01=_PF47IvCmp1+bR/4
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="orinoco-fix-unafe-locking-in-orinoco_cs_resume"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
-	filename="orinoco-fix-unafe-locking-in-orinoco_cs_resume"
+[ ide_lock and drive->queue->queue_lock are the same lock at the moment
+  (which is wrong since they are meant to protect completely different
+  things) but after this patchset it should be quite easy to address  ]
 
-Subject: [PATCH] orinoco: fix unsafe locking in orinoco_cs_resume
-=46rom: Andrey Borzenkov <arvidjaar@mail.ru>
+Also ide_complete_pm_request() above is used only for completion of
+PM suspend/resume requests and is not really performance critical.
 
-[ 6972.562035] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-[ 6972.562040] [ INFO: inconsistent lock state ]
-[ 6972.562048] 2.6.27-1avb #17
-[ 6972.562053] ---------------------------------
-[ 6972.562060] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-[ 6972.562068] pm-suspend/17062 [HC0[0]:SC0[0]:HE1:SE1] takes:
-[ 6972.562076]  (&priv->lock){++..}, at: [<dfd4f05b>] orinoco_cs_resume+0x5=
-b/0xd0 [orinoco_cs]
-[ 6972.562122] {in-hardirq-W} state was registered at:
-[ 6972.562128]   [<c013ea6b>] __lock_acquire+0x6cb/0x1640
-[ 6972.562171]   [<c013fa3c>] lock_acquire+0x5c/0x80
-[ 6972.562181]   [<c02f6e39>] _spin_lock_irqsave+0x49/0x80
-[ 6972.562210]   [<dfd6425d>] orinoco_interrupt+0x4d/0x16d0 [orinoco]
-[ 6972.562257]   [<c015a2b1>] handle_IRQ_event+0x31/0x60
-[ 6972.562278]   [<c015b73e>] handle_level_irq+0x6e/0xe0
-[ 6972.562291]   [<c0104b20>] do_IRQ+0xb0/0x130
-[ 6972.562313]   [<ffffffff>] 0xffffffff
-
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
-=2D--
-
- drivers/net/wireless/orinoco_cs.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/net/wireless/orinoco_cs.c b/drivers/net/wireless/orino=
-co_cs.c
-index 1ccf5a4..6fc2209 100644
-=2D-- a/drivers/net/wireless/orinoco_cs.c
-+++ b/drivers/net/wireless/orinoco_cs.c
-@@ -403,6 +403,7 @@ static int orinoco_cs_resume(struct pcmcia_device *link)
- 	struct orinoco_private *priv =3D netdev_priv(dev);
- 	struct orinoco_pccard *card =3D priv->card;
- 	int err =3D 0;
-+	unsigned long flags;
-=20
- 	if (! test_bit(0, &card->hard_reset_in_progress)) {
- 		err =3D orinoco_reinit_firmware(dev);
-@@ -412,7 +413,7 @@ static int orinoco_cs_resume(struct pcmcia_device *link)
- 			return -EIO;
- 		}
-=20
-=2D		spin_lock(&priv->lock);
-+		spin_lock_irqsave(&priv->lock, flags);
-=20
- 		netif_device_attach(dev);
- 		priv->hw_unavailable--;
-@@ -424,7 +425,7 @@ static int orinoco_cs_resume(struct pcmcia_device *link)
- 				       dev->name, err);
- 		}
-=20
-=2D		spin_unlock(&priv->lock);
-+		spin_unlock_irqrestore(&priv->lock, flags);
- 	}
-=20
- 	return err;
-
---Boundary-01=_PF47IvCmp1+bR/4--
-
---nextPart1268004.vNcsZMcn5o
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjvgU8ACgkQR6LMutpd94z5PgCgyfvbpQGNoL38PX26uOOstfhj
-UQ0An1q2z2nSjbb59EGPuViuHPOR8h4A
-=Iett
------END PGP SIGNATURE-----
-
---nextPart1268004.vNcsZMcn5o--
+Thanks,
+Bart
