@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbYJJMza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYJJM4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbYJJMza (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 08:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbYJJMzV
+	id S1759449AbYJJM4K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 08:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYJJMz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 08:55:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:7631 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755506AbYJJMzT (ORCPT
+	Fri, 10 Oct 2008 08:55:56 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:20406 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755543AbYJJMzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 08:55:19 -0400
+	Fri, 10 Oct 2008 08:55:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references
-         :in-reply-to:content-type:content-transfer-encoding:from:sender;
-        b=Wv1zycIGVaYkuJvxh0HlCrDMte3KFPGNHHfONDrY1zBMznyymdP7199i3+NbMO3zXH
-         2pAPdFdNnfxGdpgOlodPxl/sbSzBV4OZ1xiaoSrQX67j97TiTPhE2mdltrMez4jniMWV
-         zPy8X3g5ZS/yJNl69b+MlXl/6gZG1ZVz+eyOE=
-Message-ID: <48EF50B1.8070705@tuffmail.co.uk>
-Date: Fri, 10 Oct 2008 13:55:13 +0100
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TG9fZkECda7idYbwXyyQSiaH6jdjR+Kl2zDjNFbUB/qPTAPCQhSHqwmPZ0WvBtF80i
+         JVfnSDTRGfqVQIg/06I+5Ek87FyuaPoixOuFybM+CVusmWRgKHLfleUF4vzaClyqn3i3
+         hFaZ71QCyDtI6N2c1+PSBIsRvFq5a5DL9Uj6s=
+Date: Fri, 10 Oct 2008 08:54:34 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: Alan Cox <alan@redhat.com>
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Subject: Re: [PATCH 22/27] serial: Make uart_port's ioport "unsigned long".
+Message-ID: <20081010125434.GB8590@yoda.jdub.homelinux.org>
+References: <20081010103447.31597.42992.stgit@localhost.localdomain> <20081010105052.31597.41476.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] Tracing/fastboot: Enable boot tracing only during
-   initcalls
-References: <20081010103615.EFB18D1BB8F@perso1.free.fr> <20081010105819.GA4699@elte.hu> <c62985530810100402of7e1b48n4aac01d69433c1f5@mail.gmail.com> <20081010110445.GA12519@elte.hu>
-In-Reply-To: <20081010110445.GA12519@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-From: Alan Jenkins <aj504@student.cs.york.ac.uk>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081010105052.31597.41476.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-> 
->> 2008/10/10 Ingo Molnar <mingo@elte.hu>:
->>> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
->>>
->>>> We used to disable the initcall tracing at a specified time (IE: end
->>>> of builtin initcalls). But we don\'t need it anymore. It will be
->>>> stopped when initcalls are finished. However we want two things:
->>>>
->>>> _Start this tracing only after pre-smp initcalls are finished. _Since
->>>> we are planning to trace sched_switches at the same time, we want to
->>>> enable them only during the initcall execution. For this purpose, this
->>>> patch introduce two functions to enable/disable the sched_switch
->>>> tracing during boot.
->>>>
->>>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->>> applied to tip/tracing/fastboot, thanks Frederic!
->>>
->>>        Ingo
->>>
->> Oops, sorry Ingo there are some backslashes that taint this patch.
->> I will resend a V2....
-> 
-> dont worry, i fixed them already when i applied your patch (and that's 
-> all in latest tip/master).
-> 
-> See the commit below - i sanitize most commit entries to make subject 
-> lines more consistent (note the capitalization difference between your 
-> submission and the end result), to improve paragraphing and general 
-> structure.
+On Fri, Oct 10, 2008 at 11:50:56AM +0100, Alan Cox wrote:
+>From: David Miller <davem@davemloft.net>
+>
+>Otherwise the top 32-bits of the resource value get chopped
+>off on 64-bit systems, and the resulting I/O accesses go to
+>random places.
+>
+>Thanks to testing and debugging by Josip Rodin, which helped
+>track this down.
+>
+>Signed-off-by: David S. Miller <davem@davemloft.net>
+>Signed-off-by: Alan Cox <alan@redhat.com>
 
-You missed the one backslash though...
+I emailed on an earlier posting of this about using resource_size_t
+instead as we have 32-bit CPUs with 64-bit address spaces.  If I'm
+totally wrong, that's fine but I'm still wondering if that would be
+a better general solution.
 
-> -/* Should be started after do_pre_smp_initcalls() in init/main.c */
-> +/* Tells the boot tracer that the pre_smp_initcalls are finished.
-> + * So we are ready .
-> + * It doesn\'t enable sched events tracing however.
-> + * You have to call enable_boot_trace to do so.
-> + */
-
-Alan
+josh
