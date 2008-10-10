@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761545AbYJJQXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbYJJQYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761545AbYJJQXu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759472AbYJJQXj
+	id S1762099AbYJJQYl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759472AbYJJQYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:23:39 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:63474 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756034AbYJJQXi (ORCPT
+	Fri, 10 Oct 2008 12:24:32 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:56240 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754859AbYJJQYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:23:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Cdg3DTyIDHLHnBhVr0WZk7B74vxb/w8B9FhCjyXIot2BxkP1A/v2/X1EUag3to0z4Q
-         KZXx6Izo2aoYkkI0Hv/WSBl4cuPIALtlTKbXlKLH25WIJdnWYWOPxCgm2sybJglUa3+l
-         zr2FV5g8RN6exztcrqddgvy+aThLfcyaUXuNM=
-Message-ID: <f7848160810100923j12c03769x1a05ed7091e67a1b@mail.gmail.com>
-Date: Fri, 10 Oct 2008 12:23:36 -0400
-From: "Parag Warudkar" <parag.lkml@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] WARNING: at kernel/power/main.c:176 suspend_test_finish+0x70/0x80()
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "pm list" <linux-pm@lists.linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0810101028260.2459-100000@iolanthe.rowland.org>
+	Fri, 10 Oct 2008 12:24:31 -0400
+Message-ID: <48EF81AB.4040905@zytor.com>
+Date: Fri, 10 Oct 2008 09:24:11 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Hans Schou <linux@schou.dk>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] More informative about unknown CPU
+References: <Pine.LNX.4.64.0810092014190.7473@sko.w0.dk>	 <20081010150458.GG11695@elte.hu> <86802c440810100920s5ce8e1acm54afc0e257b15235@mail.gmail.com>
+In-Reply-To: <86802c440810100920s5ce8e1acm54afc0e257b15235@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200810101452.27929.rjw@sisk.pl>
-	 <Pine.LNX.4.44L0.0810101028260.2459-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 10:31 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+Yinghai Lu wrote:
+> 
+> What is unknown cpus?
+> 
+> From Sis or Nvidia?
+> 
 
-> There's a bug that affects USB power management: commmit
-> f9dd45ce10a014bdfd5432828c44630ea7fefedd needs to be reverted.  Greg KH
-> has been asked to do this a few times but he hasn't gotten around to it
-> yet.
+Virtual CPUs, vendors who suddenly pop up, ...
 
-Hi Alan,
-
-Thanks for the info.
-
-I can't seem to find that commit in mainline. If you have pointer to
-the patch I will submit a revert.
-
-Parag
+	-hpa
