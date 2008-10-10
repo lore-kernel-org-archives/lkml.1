@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYJJFj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYJJFke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbYJJFj7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 01:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYJJFju
+	id S1753933AbYJJFke (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 01:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYJJFkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 01:39:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:38605 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752668AbYJJFju (ORCPT
+	Fri, 10 Oct 2008 01:40:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38211 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbYJJFkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 01:39:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=u/74pa8FXQPeFt/9ZIKcmcq2eJW0yfSfE5wTAJiyGuN2juZ7c0mz4irkk2bnQb3fr7
-         GN+W/u76qGQrmZyl5jNkHl4RQ83xUJhLqSThQMwiZfd3Rwg3ktCIjNuOq48sS4JYQh9O
-         aTfvCKGumtE3nzXL8QnFWFJJa0RdsBUj/aMf4=
-Subject: Re: [PATCH 3/4] xtensa: Change unaligned access to use packed
- struct implementation
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Chris Zankel <chris@zankel.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Bob Wilson <bwilson@tensilica.com>
-In-Reply-To: <48EEE546.9070405@zankel.net>
-References: <1223447904.8195.67.camel@brick>  <48EEE546.9070405@zankel.net>
+	Fri, 10 Oct 2008 01:40:22 -0400
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Evgeniy Polyakov <s0mbre@tservice.net.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
+In-Reply-To: <20081009231759.GA8664@tservice.net.ru>
+References: <20081009231759.GA8664@tservice.net.ru>
 Content-Type: text/plain
-Date: Thu, 09 Oct 2008 22:39:47 -0700
-Message-Id: <1223617187.8991.1.camel@brick>
+Date: Fri, 10 Oct 2008 07:40:05 +0200
+Message-Id: <1223617206.7382.54.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 22:16 -0700, Chris Zankel wrote:
-> Hi Harvey,
-> 
-> Please allow me a couple of days to look into it. I don't know the 
-> historic reasons why the memmove variant was chosen.
-> 
-> Thanks,
-> -Chris
-> 
+On Fri, 2008-10-10 at 03:17 +0400, Evgeniy Polyakov wrote:
 
-Sure, from the comments in the original version, it looks like it was done
-this way to avoid __builtin_memcpy from being generated.  But maybe there was another
-reason?
+> I was so lucky to 'guess' (just after couple of hundreds of compilations),
+> that it corresponds to 8f4d37ec073c17e2d4aa8851df5837d798606d6f commit about
+> high-resolution timers, attached patch against 2.6.25 brings tbench
+> performance for the 2.6.25 kernel tree to 455 MB/s.
 
-Harvey
+can you try
 
+echo NO_HRTICK > /debug/sched_features
 
+on .27 like kernels?
+
+Also, what clocksource do those machines use?
+
+cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+
+As to, a7be37ac8e1565e00880531f4e2aff421a21c803, could you try
+tip/master? I reworked some of the wakeup preemption code in there.
+
+Thanks for looking into this issue!
 
