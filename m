@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYJJMgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbYJJMiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbYJJMgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 08:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbYJJMgm
+	id S1759162AbYJJMiN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 08:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbYJJMh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 08:36:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:5705 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754334AbYJJMgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 08:36:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=JRyUIL1OT6us8UBDv/MJwQOYP7D8YvvsjHoErDdo4f3vTBflbYmUtGxEA4wPVKnP2R
-         kq9h9LtYHA7yj2aznilB6HkozBB0Kp7rPyUcaB0KTYvF9rRsX/pHVSYPCKmYItG/iSc+
-         XvW8ocwHKz/GI/Lhvg/FE1ivcE9sAd1mdMTjM=
-Message-ID: <48EF4C52.4070802@tuffmail.co.uk>
-Date: Fri, 10 Oct 2008 13:36:34 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 10 Oct 2008 08:37:56 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50375 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754459AbYJJMhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 08:37:55 -0400
+Date: Fri, 10 Oct 2008 14:37:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: James.Bottomley@HansenPartnership.com, knikanth@suse.de,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] BUG: nr_phys_segments cannot be less than nr_hw_segments
+Message-ID: <20081010123719.GE19428@kernel.dk>
+References: <20081002171356.GO19428@kernel.dk> <20081007022358N.fujita.tomonori@lab.ntt.co.jp> <20081010120344.GC19428@kernel.dk> <20081010213226J.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Yudha Harimantoro T <yudha.ht@gmail.com>, kernel-testers@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Error : Linux-2.6.27
-References: <264b990a0810100126l1029f734x7204f8c42ae21609@mail.gmail.com> <20081010115342.GB25982@x200.localdomain>
-In-Reply-To: <20081010115342.GB25982@x200.localdomain>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081010213226J.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Fri, Oct 10, 2008 at 03:26:44PM +0700, Yudha Harimantoro T wrote:
->   
->> Yesterday I build kernel 2.6.26.6 and it's run well. Today I got
->> 2.6.27 patch and try to build it.
->>
->> I build with `make oldconfig` and answer any question with default
->> answer, I just press [enter].
->>     
->
-> Not wise.
->
->   
->> I build with `make`. No error and all compiled.
->> Then I install with `make modules_install` and `make install`.
->>
->> After reboot the system I got 'kernel panic'.
->> This is the error picture :
->> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101358.jpg
->> Is it a bugs?
->>
->> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101353.jpg
->> [2.6.26.6 run well]
->>     
->
-> Post diff -U0 between old and new config.
->   
+On Fri, Oct 10 2008, FUJITA Tomonori wrote:
+> On Fri, 10 Oct 2008 14:03:44 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Tue, Oct 07 2008, FUJITA Tomonori wrote:
+> > > On Thu, 2 Oct 2008 19:13:57 +0200
+> > > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > On Thu, Oct 02 2008, James Bottomley wrote:
+> > > > > On Thu, 2008-10-02 at 18:58 +0200, Jens Axboe wrote:
+> > > > > > On Thu, Oct 02 2008, James Bottomley wrote:
+> > > > > > > The bug would appear to be that we sometimes only look at q->max_sectors
+> > > > > > > when deciding on mergability.  Either we have to insist on max_sectors
+> > > > > > > <= hw_max_sectors, or we have to start using min(q->max_sectors,
+> > > > > > > q->max_hw_sectors) for this.
+> > > > > > 
+> > > > > > q->max_sectors MUST always be <= q->max_hw_sectors, otherwise we could
+> > > > > > be sending down requests that are too large for the device to handle. So
+> > > > > > that condition would be a big bug. The sysfs interface checks for this,
+> > > > > > and blk_queue_max_sectors() makes sure that is true as well.
+> > > > > 
+> > > > > Yes, that seems always to be enforced.  Perhaps there are other ways of
+> > > > > tripping this problem ... I'm still sure if it occurs it's because we do
+> > > > > a physical merge where a virtual merge is forbidden.
+> > > > > 
+> > > > > > The fixes proposed still look weird. There is no phys vs hw segment
+> > > > > > constraints, the request must adhere to the limits set by both. It's
+> > > > > > mostly a moot point anyway, as 2.6.28 will get rid of the hw accounting
+> > > > > > anyway.
+> > > > > 
+> > > > > Agree all three proposed fixes look wrong.  However, if it's what I
+> > > > > think, just getting rid of hw accounting won't fix the problem because
+> > > > > we'll still have the case where a physical merge is forbidden by iommu
+> > > > > constraints ... this still needs to be accounted for.
+> > > > > 
+> > > > > What we really need is a demonstration of what actually is going
+> > > > > wrong ...
+> > > > 
+> > > > Yep, IIRC we both asked for that the last time as well... Nikanth?
+> > > 
+> > > Possibly, blk_phys_contig_segment might miscalculate
+> > > q->max_segment_size?
+> > > 
+> > > blk_phys_contig_segment does:
+> > > 
+> > > req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size;
+> > > 
+> > > But it's possible that req->biotail and the previous bio are supposed
+> > > be merged into one segment? Then we could create too large segment
+> > > here.
+> > 
+> > Hmm yes, that looks like it could indeed be a problem!
+> 
+> I think so.
+> 
+> 
+> > We could fix this
+> > with similar logic to what we used to do for the hw merging, keep track
+> > of the current segment size that this bio belongs to, so it would end up
+> > ala
+> 
+> Yeah, exactly.
+> 
+> You want a fix for this 2.6.28? Or disable this feature for 2.6.28?
 
-There is scripts/diffconfig in the 2.6.27 tree, which you should
-probably use. "Using standard diff to compare .config files often
-includes extraneous and distracting information".
+Lets fix it. It wont be part of the initial merge, since it'll need some
+dedicated testing, but we can get it there for 2.6.28. Shall I interpret
+your message as willingness to write up the fix? :)
+
+-- 
+Jens Axboe
 
