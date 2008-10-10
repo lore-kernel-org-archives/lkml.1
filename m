@@ -1,144 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbYJJInu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYJJIpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753774AbYJJInu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 04:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYJJInm
+	id S1754584AbYJJIpt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 04:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYJJIpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 04:43:42 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:56025 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbYJJInl (ORCPT
+	Fri, 10 Oct 2008 04:45:41 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:29774 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751040AbYJJIpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 04:43:41 -0400
-Message-ID: <48EF154D.6000600@fr.ibm.com>
-Date: Fri, 10 Oct 2008 10:41:49 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 10 Oct 2008 04:45:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=FhNgmfYMR2tXYwq7dhdX3Qn9YlCbSLyz9rowVuqMMS1nBoIjizu03+p2MtJEhYIzE8coqhDVfmyonVBcaAK/Mlgl2ptdOs3M0UaswKNPA06Dkr3J/di1NQGEwouXIKvWD73D6+rvCBbllGc2xKqEF2lrT8tMY7/MS/pD0QrZTqo=  ;
+X-YMail-OSG: 1J6m7V8VM1mQ9fUZh10TjEGmHVVtjzOSfDY6ba2bYqNggCA4SAbcYrqr8wv6MdttYm25dbHT1i_pc5BjHR.XDyORxDzQKSrxhKXBb_.nLDZqpEoVpmIFtBXZjPJRzC8I5E7UByavWSoixU1JSfjUJo9cPzXE7n0hRwEWtLN5zuJ0eRRTvwyXi0l27vR9
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Update cacheline size on X86_GENERIC
+Date: Fri, 10 Oct 2008 19:45:31 +1100
+User-Agent: KMail/1.9.5
+Cc: Dave Jones <davej@redhat.com>, x86@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20081009171453.GA15321@redhat.com> <200810101428.23662.nickpiggin@yahoo.com.au> <87tzbksxja.fsf@basil.nowhere.org>
+In-Reply-To: <87tzbksxja.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       arnd@arndb.de
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-References: <20081009190405.13A253CB@kernel> <20081009190406.1B257119@kernel>
-In-Reply-To: <20081009190406.1B257119@kernel>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810101945.32111.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> These are just a few simple examples of things we know we can't
-> checkpoint now.  There are plenty more, but this should give
-> everyone an idea how this will look in practice.
-> 
-> 
-> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-> ---
-> 
->  linux-2.6.git-dave/fs/aio.c     |    7 +++++++
->  linux-2.6.git-dave/ipc/mqueue.c |    3 +++
->  linux-2.6.git-dave/net/socket.c |    5 +++++
->  3 files changed, 15 insertions(+)
-> 
-> diff -puN fs/aio.c~no-checkpointing-for-sockets fs/aio.c
-> --- linux-2.6.git/fs/aio.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
-> +++ linux-2.6.git-dave/fs/aio.c	2008-10-09 11:56:58.000000000 -0700
-> @@ -19,6 +19,7 @@
-> 
->  #define DEBUG 0
-> 
-> +#include <linux/checkpoint.h>
->  #include <linux/sched.h>
->  #include <linux/fs.h>
->  #include <linux/file.h>
-> @@ -1663,6 +1664,8 @@ asmlinkage long sys_io_submit(aio_contex
->  	if (unlikely(!access_ok(VERIFY_READ, iocbpp, (nr*sizeof(*iocbpp)))))
->  		return -EFAULT;
-> 
-> +	process_deny_checkpointing(current);
-> +
->  	ctx = lookup_ioctx(ctx_id);
->  	if (unlikely(!ctx)) {
->  		pr_debug("EINVAL: io_submit: invalid context id\n");
-> @@ -1742,6 +1745,8 @@ asmlinkage long sys_io_cancel(aio_contex
->  	if (unlikely(!ctx))
->  		return -EINVAL;
-> 
-> +	process_deny_checkpointing(current);
-> +
->  	spin_lock_irq(&ctx->ctx_lock);
->  	ret = -EAGAIN;
->  	kiocb = lookup_kiocb(ctx, iocb, key);
-> @@ -1796,6 +1801,8 @@ asmlinkage long sys_io_getevents(aio_con
->  	struct kioctx *ioctx = lookup_ioctx(ctx_id);
->  	long ret = -EINVAL;
-> 
-> +	process_deny_checkpointing(current);
-> +
->  	if (likely(ioctx)) {
->  		if (likely(min_nr <= nr && min_nr >= 0 && nr >= 0))
->  			ret = read_events(ioctx, min_nr, nr, events, timeout);
-> diff -puN ipc/mqueue.c~no-checkpointing-for-sockets ipc/mqueue.c
-> --- linux-2.6.git/ipc/mqueue.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
-> +++ linux-2.6.git-dave/ipc/mqueue.c	2008-10-09 11:56:58.000000000 -0700
-> @@ -14,6 +14,7 @@
->   */
-> 
->  #include <linux/capability.h>
-> +#include <linux/checkpoint.h>
->  #include <linux/init.h>
->  #include <linux/pagemap.h>
->  #include <linux/file.h>
-> @@ -655,6 +656,8 @@ asmlinkage long sys_mq_open(const char _
->  	char *name;
->  	int fd, error;
-> 
-> +	process_deny_checkpointing(current);
-> +
->  	error = audit_mq_open(oflag, mode, u_attr);
->  	if (error != 0)
->  		return error;
-> diff -puN net/socket.c~no-checkpointing-for-sockets net/socket.c
-> --- linux-2.6.git/net/socket.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
-> +++ linux-2.6.git-dave/net/socket.c	2008-10-09 11:56:58.000000000 -0700
-> @@ -87,6 +87,7 @@
->  #include <linux/audit.h>
->  #include <linux/wireless.h>
->  #include <linux/nsproxy.h>
-> +#include <linux/checkpoint.h>
-> 
->  #include <asm/uaccess.h>
->  #include <asm/unistd.h>
-> @@ -1236,6 +1237,8 @@ asmlinkage long sys_socket(int family, i
->  	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
->  		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
-> 
-> +	process_deny_checkpointing(current);
-> +
->  	retval = sock_create(family, type, protocol, &sock);
->  	if (retval < 0)
->  		goto out;
-> @@ -2130,6 +2133,8 @@ asmlinkage long sys_socketcall(int call,
->  	a0 = a[0];
->  	a1 = a[1];
-> 
-> +	process_deny_checkpointing(current);
-> +
->  	switch (call) {
->  	case SYS_SOCKET:
->  		err = sys_socket(a0, a1, a[2]);
+On Friday 10 October 2008 18:46, Andi Kleen wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> > On Friday 10 October 2008 04:14, Dave Jones wrote:
+> >> I just noticed that configuring a kernel to use CONFIG_X86_GENERIC
+> >> (as is typical for a distro kernel) configures it to use a 128 byte
+> >> cacheline size. This made sense when that was commonplace (P4 era) but
+> >> current
+> >> Intel, AMD and VIA cpus use 64 byte cachelines.
+> >
+> > I think P4 technically did have 64 byte cachelines, but had some adjacent
+> > line prefetching.
+>
+> The "coherency unit" on P4, which is what matters for SMP alignment
+> purposes to avoid false sharing, is 128 bytes.
+>
+> > And AFAIK core2 CPUs can do similar prefetching (but
+> > maybe it's smarter and doesn't cause so much bouncing?).
+>
+> On Core2 the coherency unit is 64bytes.
 
-That seems to be a good idea.
-
-There isn't a risk of a big propagation of this function all around the 
-kernel code ? Especially if there are partial support for a specific 
-resource ? I mean we are able to checkpoint ipv4/tcp sockets, (yeah I 
-like socket examples :) ) , but not other protocols so we have to remove 
-from sys_socket the process_deny_checkpoint and add it to all others 
-protocols.
+OK.
 
 
+> > Anyway, GENERIC kernel should run well on all architectures, and while
+> > going too big causes slightly increased structures sometimes, going too
+> > small could result in horrible bouncing.
+>
+> Exactly.
+>
+> That is it costs one percent or so on TPC, but I think the fix
+> for that is just to analyze where the problem is and size those
+> data structures based on the runtime cache size. Some subsystems
+> like slab do this already.
+
+Costs 1% on TPC? Is that 128 byte aligning data structures on
+Core2, or 64 byte aligning them on P4 that costs the performance?
 
 
+> TPC is a bit of a extreme case because it is so extremly cache bound.
+
+Still, it is a good canary.
+
+
+> Overall the memory impact of the cache padding is getting less over
+> time because more and more data is moving into the per CPU data areas.
+
+Right.
