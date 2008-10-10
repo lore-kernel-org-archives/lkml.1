@@ -1,90 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYJJGqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbYJJHJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYJJGqa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 02:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYJJGqV
+	id S1753762AbYJJHJf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 03:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJJHJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 02:46:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52576 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbYJJGqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 02:46:21 -0400
-Message-ID: <48EEF9AD.9040401@cn.fujitsu.com>
-Date: Fri, 10 Oct 2008 14:43:57 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 10 Oct 2008 03:09:25 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:35843 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750831AbYJJHJY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 03:09:24 -0400
+Date: Fri, 10 Oct 2008 15:09:18 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Crypto Update for 2.6.28
+Message-ID: <20081010070918.GA28057@gondor.apana.org.au>
+References: <20080421024306.GA6813@gondor.apana.org.au> <20080714121403.GA28523@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] markers: bit-field is not thread-safe nor smp-safe
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080714121403.GA28523@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus:
 
-bit-field is not thread-safe nor smp-safe.
+Here is the crypto update for 2.6.28:
 
-struct marker_entry.rcu_pending is not protected by any lock
-in rcu-callback free_old_closure().
-so we must turn it into a safe type.
+The highlight of this batch is the new run-time self-test framework
+for algorithms.  This reorganises the same tests that we've always
+had such that they're run at algorithm registration time so that
+only algorithms passing the tests of their type are made available
+to users.  Hopefully that means people won't be sending me any
+more algorithm updates that fail these tests :)
 
-detail:
+Apart from that a new algorithm type for random number generators.
+The only two algorithms in that type are the existing kernel RNG
+plus a PRNG based on AES.  This is used by IPsec for IV generation.
 
-I suppose rcu_pending and ptype are store in struct marker_entry.tmp1
+We also have a new implementation of CRC32c that uses the Intel
+instruction for CRC32c.
 
-free_old_closure() side:           change ptype side:
+Adrian Bunk (1):
+      crypto: Kconfig - Replace leading spaces with tabs
 
-                                |  load struct marker_entry.tmp1
---------------------------------|--------------------------------
-                                |  change ptype bit in tmp1
-load struct marker_entry.tmp1   |
-change rcu_pending bit in tmp1  |
-store tmp1                      |
---------------------------------|--------------------------------
-                                |  store tmp1
+Austin Zhang (1):
+      crypto: crc32c - Use Intel CRC32 instruction
 
-now this result equals that free_old_closure() do not change rcu_pending
-bit, bug! This bug will cause redundant rcu_barrier_sched() called.
-not too harmful.
+Herbert Xu (10):
+      crypto: api - Export crypto_alg_lookup instead of __crypto_alg_lookup
+      crypto: api - Display larval objects properly
+      crypto: tcrypt - Avoid using contiguous pages
+      crypto: tcrypt - Abort and only log if there is an error
+      crypto: tcrypt - Add alg_test interface
+      crypto: cryptomgr - Add test infrastructure
+      crypto: api - Use test infrastructure
+      crypto: cryptomgr - Test ciphers using ECB
+      crypto: skcipher - Move IV generators into their own modules
+      crypto: skcipher - Use RNG interface instead of get_random_bytes
 
------ corresponding:
+Neil Horman (2):
+      crypto: api - Add fips_enable flag
+      crypto: rng - RNG interface and implementation
 
-free_old_closure() side:           change ptype side:
+ arch/x86/crypto/Makefile           |    2 
+ arch/x86/crypto/crc32c-intel.c     |  197 
+ crypto/Kconfig                     |  127 
+ crypto/Makefile                    |   12 
+ crypto/algapi.c                    |  147 
+ crypto/algboss.c                   |  300 +
+ crypto/ansi_cprng.c                |  417 +
+ crypto/api.c                       |   81 
+ crypto/blkcipher.c                 |   29 
+ crypto/chainiv.c                   |   44 
+ crypto/cryptomgr.c                 |  222 
+ crypto/eseqiv.c                    |   35 
+ crypto/fips.c                      |   27 
+ crypto/internal.h                  |   18 
+ crypto/krng.c                      |   66 
+ crypto/proc.c                      |   57 
+ crypto/rng.c                       |  126 
+ crypto/seqiv.c                     |   27 
+ crypto/tcrypt.c                    | 1347 -----
+ crypto/tcrypt.h                    | 8709 ------------------------------------
+ crypto/testmgr.c                   | 1868 +++++++
+ crypto/testmgr.h                   | 8738 +++++++++++++++++++++++++++++++++++++
+ include/crypto/internal/rng.h      |   26 
+ include/crypto/internal/skcipher.h |    6 
+ include/crypto/rng.h               |   75 
+ include/linux/crypto.h             |   35 
+ 26 files changed, 12464 insertions(+), 10274 deletions(-)
 
-load struct marker_entry.tmp1   |
---------------------------------|--------------------------------
-                                |  load struct marker_entry.tmp1
-change rcu_pending bit in tmp1  |
-                                |  change ptype bit in tmp1
-                                |  store tmp1
---------------------------------|--------------------------------
-store tmp1                      |
-
-now this result equals that change ptype side do not change ptype
-bit, bug! this bug cause marker_probe_cb() access to invalid memory.
-oops!
-
-see also: http://en.wikipedia.org/wiki/Bit_field
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/marker.c b/kernel/marker.c
-index 7d1faec..95c62da 100644
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -62,7 +62,7 @@ struct marker_entry {
- 	int refcount;	/* Number of times armed. 0 if disarmed. */
- 	struct rcu_head rcu;
- 	void *oldptr;
--	unsigned char rcu_pending:1;
-+	int rcu_pending;
- 	unsigned char ptype:1;
- 	char name[0];	/* Contains name'\0'format'\0' */
- };
-
-
-
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
