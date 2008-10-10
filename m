@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYJJO7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYJJPAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbYJJO7d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 10:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760357AbYJJO6Y
+	id S1760155AbYJJPAO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 11:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbYJJO61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 10:58:24 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42838 "EHLO
+	Fri, 10 Oct 2008 10:58:27 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42853 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760759AbYJJO6U (ORCPT
+	by vger.kernel.org with ESMTP id S1760804AbYJJO6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 10:58:20 -0400
+	Fri, 10 Oct 2008 10:58:22 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 02/14] mfd: Add WM8350 GPIO register definitions
-Date: Fri, 10 Oct 2008 15:58:04 +0100
-Message-Id: <1223650696-15552-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 05/14] mfd: Add WM8350 comparator register definitions
+Date: Fri, 10 Oct 2008 15:58:07 +0100
+Message-Id: <1223650696-15552-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223650696-15552-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1223650696-15552-4-git-send-email-broonie@opensource.wolfsonmicro.com>
 References: <1223649928.6814.333.camel@dell-desktop.example.com>
  <1223650696-15552-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223650696-15552-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223650696-15552-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1223650696-15552-4-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/mfd/wm8350/gpio.h |  326 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 326 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/mfd/wm8350/gpio.h
+ include/linux/mfd/wm8350/comparator.h |  167 +++++++++++++++++++++++++++++++++
+ 1 files changed, 167 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/mfd/wm8350/comparator.h
 
-diff --git a/include/linux/mfd/wm8350/gpio.h b/include/linux/mfd/wm8350/gpio.h
+diff --git a/include/linux/mfd/wm8350/comparator.h b/include/linux/mfd/wm8350/comparator.h
 new file mode 100644
-index 0000000..928aa6e
+index 0000000..0537886
 --- /dev/null
-+++ b/include/linux/mfd/wm8350/gpio.h
-@@ -0,0 +1,326 @@
++++ b/include/linux/mfd/wm8350/comparator.h
+@@ -0,0 +1,167 @@
 +/*
-+ * gpio.h  --  GPIO Driver for Wolfson WM8350 PMIC
++ * comparator.h  --  Comparator Aux ADC for Wolfson WM8350 PMIC
 + *
 + * Copyright 2007 Wolfson Microelectronics PLC
 + *
@@ -46,321 +49,162 @@ index 0000000..928aa6e
 + *  under  the terms of  the GNU General  Public License as published by the
 + *  Free Software Foundation;  either version 2 of the  License, or (at your
 + *  option) any later version.
-+ *
 + */
 +
-+#ifndef __LINUX_MFD_WM8350_GPIO_H_
-+#define __LINUX_MFD_WM8350_GPIO_H_
++#ifndef __LINUX_MFD_WM8350_COMPARATOR_H_
++#define __LINUX_MFD_WM8350_COMPARATOR_H_
 +
 +/*
-+ * GPIO Registers.
++ * Registers
 + */
-+#define WM8350_GPIO_DEBOUNCE                    0x80
-+#define WM8350_GPIO_PIN_PULL_UP_CONTROL         0x81
-+#define WM8350_GPIO_PULL_DOWN_CONTROL           0x82
-+#define WM8350_GPIO_INT_MODE                    0x83
-+#define WM8350_GPIO_CONTROL                     0x85
-+#define WM8350_GPIO_CONFIGURATION_I_O           0x86
-+#define WM8350_GPIO_PIN_POLARITY_TYPE           0x87
-+#define WM8350_GPIO_FUNCTION_SELECT_1           0x8C
-+#define WM8350_GPIO_FUNCTION_SELECT_2           0x8D
-+#define WM8350_GPIO_FUNCTION_SELECT_3           0x8E
-+#define WM8350_GPIO_FUNCTION_SELECT_4           0x8F
++
++#define WM8350_DIGITISER_CONTROL_1              0x90
++#define WM8350_DIGITISER_CONTROL_2              0x91
++#define WM8350_AUX1_READBACK                    0x98
++#define WM8350_AUX2_READBACK                    0x99
++#define WM8350_AUX3_READBACK                    0x9A
++#define WM8350_AUX4_READBACK                    0x9B
++#define WM8350_CHIP_TEMP_READBACK               0x9F
++#define WM8350_GENERIC_COMPARATOR_CONTROL       0xA3
++#define WM8350_GENERIC_COMPARATOR_1             0xA4
++#define WM8350_GENERIC_COMPARATOR_2             0xA5
++#define WM8350_GENERIC_COMPARATOR_3             0xA6
++#define WM8350_GENERIC_COMPARATOR_4             0xA7
 +
 +/*
-+ * GPIO Functions
++ * R144 (0x90) - Digitiser Control (1)
 + */
-+#define WM8350_GPIO0_GPIO_IN			0x0
-+#define WM8350_GPIO0_GPIO_OUT			0x0
-+#define WM8350_GPIO0_PWR_ON_IN			0x1
-+#define WM8350_GPIO0_PWR_ON_OUT			0x1
-+#define WM8350_GPIO0_LDO_EN_IN			0x2
-+#define WM8350_GPIO0_VRTC_OUT			0x2
-+#define WM8350_GPIO0_LPWR1_IN			0x3
-+#define WM8350_GPIO0_POR_B_OUT			0x3
-+
-+#define WM8350_GPIO1_GPIO_IN			0x0
-+#define WM8350_GPIO1_GPIO_OUT			0x0
-+#define WM8350_GPIO1_PWR_ON_IN			0x1
-+#define WM8350_GPIO1_DO_CONF_OUT		0x1
-+#define WM8350_GPIO1_LDO_EN_IN			0x2
-+#define WM8350_GPIO1_RESET_OUT			0x2
-+#define WM8350_GPIO1_LPWR2_IN			0x3
-+#define WM8350_GPIO1_MEMRST_OUT			0x3
-+
-+#define WM8350_GPIO2_GPIO_IN			0x0
-+#define WM8350_GPIO2_GPIO_OUT			0x0
-+#define WM8350_GPIO2_PWR_ON_IN			0x1
-+#define WM8350_GPIO2_PWR_ON_OUT			0x1
-+#define WM8350_GPIO2_WAKE_UP_IN			0x2
-+#define WM8350_GPIO2_VRTC_OUT			0x2
-+#define WM8350_GPIO2_32KHZ_IN			0x3
-+#define WM8350_GPIO2_32KHZ_OUT			0x3
-+
-+#define WM8350_GPIO3_GPIO_IN			0x0
-+#define WM8350_GPIO3_GPIO_OUT			0x0
-+#define WM8350_GPIO3_PWR_ON_IN			0x1
-+#define WM8350_GPIO3_P_CLK_OUT			0x1
-+#define WM8350_GPIO3_LDO_EN_IN			0x2
-+#define WM8350_GPIO3_VRTC_OUT			0x2
-+#define WM8350_GPIO3_PWR_OFF_IN			0x3
-+#define WM8350_GPIO3_32KHZ_OUT			0x3
-+
-+#define WM8350_GPIO4_GPIO_IN			0x0
-+#define WM8350_GPIO4_GPIO_OUT			0x0
-+#define WM8350_GPIO4_MR_IN			0x1
-+#define WM8350_GPIO4_MEM_RST_OUT		0x1
-+#define WM8350_GPIO4_FLASH_IN			0x2
-+#define WM8350_GPIO4_ADA_OUT			0x2
-+#define WM8350_GPIO4_HIBERNATE_IN		0x3
-+#define WM8350_GPIO4_FLASH_OUT			0x3
-+#define WM8350_GPIO4_MICDET_OUT			0x4
-+#define WM8350_GPIO4_MICSHT_OUT			0x5
-+
-+#define WM8350_GPIO5_GPIO_IN			0x0
-+#define WM8350_GPIO5_GPIO_OUT			0x0
-+#define WM8350_GPIO5_LPWR1_IN			0x1
-+#define WM8350_GPIO5_P_CLK_OUT			0x1
-+#define WM8350_GPIO5_ADCLRCLK_IN		0x2
-+#define WM8350_GPIO5_ADCLRCLK_OUT		0x2
-+#define WM8350_GPIO5_HIBERNATE_IN		0x3
-+#define WM8350_GPIO5_32KHZ_OUT			0x3
-+#define WM8350_GPIO5_MICDET_OUT			0x4
-+#define WM8350_GPIO5_MICSHT_OUT			0x5
-+#define WM8350_GPIO5_ADA_OUT			0x6
-+#define WM8350_GPIO5_OPCLK_OUT			0x7
-+
-+#define WM8350_GPIO6_GPIO_IN			0x0
-+#define WM8350_GPIO6_GPIO_OUT			0x0
-+#define WM8350_GPIO6_LPWR2_IN			0x1
-+#define WM8350_GPIO6_MEMRST_OUT			0x1
-+#define WM8350_GPIO6_FLASH_IN			0x2
-+#define WM8350_GPIO6_ADA_OUT			0x2
-+#define WM8350_GPIO6_HIBERNATE_IN		0x3
-+#define WM8350_GPIO6_RTC_OUT			0x3
-+#define WM8350_GPIO6_MICDET_OUT			0x4
-+#define WM8350_GPIO6_MICSHT_OUT			0x5
-+#define WM8350_GPIO6_ADCLRCLKB_OUT		0x6
-+#define WM8350_GPIO6_SDOUT_OUT			0x7
-+
-+#define WM8350_GPIO7_GPIO_IN			0x0
-+#define WM8350_GPIO7_GPIO_OUT			0x0
-+#define WM8350_GPIO7_LPWR3_IN			0x1
-+#define WM8350_GPIO7_P_CLK_OUT			0x1
-+#define WM8350_GPIO7_MASK_IN			0x2
-+#define WM8350_GPIO7_VCC_FAULT_OUT		0x2
-+#define WM8350_GPIO7_HIBERNATE_IN		0x3
-+#define WM8350_GPIO7_BATT_FAULT_OUT		0x3
-+#define WM8350_GPIO7_MICDET_OUT			0x4
-+#define WM8350_GPIO7_MICSHT_OUT			0x5
-+#define WM8350_GPIO7_ADA_OUT			0x6
-+#define WM8350_GPIO7_CSB_IN			0x7
-+
-+#define WM8350_GPIO8_GPIO_IN			0x0
-+#define WM8350_GPIO8_GPIO_OUT			0x0
-+#define WM8350_GPIO8_MR_IN			0x1
-+#define WM8350_GPIO8_VCC_FAULT_OUT		0x1
-+#define WM8350_GPIO8_ADCBCLK_IN			0x2
-+#define WM8350_GPIO8_ADCBCLK_OUT		0x2
-+#define WM8350_GPIO8_PWR_OFF_IN			0x3
-+#define WM8350_GPIO8_BATT_FAULT_OUT		0x3
-+#define WM8350_GPIO8_ALTSCL_IN			0xf
-+
-+#define WM8350_GPIO9_GPIO_IN			0x0
-+#define WM8350_GPIO9_GPIO_OUT			0x0
-+#define WM8350_GPIO9_HEARTBEAT_IN		0x1
-+#define WM8350_GPIO9_VCC_FAULT_OUT		0x1
-+#define WM8350_GPIO9_MASK_IN			0x2
-+#define WM8350_GPIO9_LINE_GT_BATT_OUT		0x2
-+#define WM8350_GPIO9_PWR_OFF_IN			0x3
-+#define WM8350_GPIO9_BATT_FAULT_OUT		0x3
-+#define WM8350_GPIO9_ALTSDA_OUT			0xf
-+
-+#define WM8350_GPIO10_GPIO_IN			0x0
-+#define WM8350_GPIO10_GPIO_OUT			0x0
-+#define WM8350_GPIO10_ISINKC_OUT		0x1
-+#define WM8350_GPIO10_PWR_OFF_IN		0x2
-+#define WM8350_GPIO10_LINE_GT_BATT_OUT		0x2
-+#define WM8350_GPIO10_CHD_IND_IN		0x3
-+
-+#define WM8350_GPIO11_GPIO_IN			0x0
-+#define WM8350_GPIO11_GPIO_OUT			0x0
-+#define WM8350_GPIO11_ISINKD_OUT		0x1
-+#define WM8350_GPIO11_WAKEUP_IN			0x2
-+#define WM8350_GPIO11_LINE_GT_BATT_OUT		0x2
-+#define WM8350_GPIO11_CHD_IND_IN		0x3
-+
-+#define WM8350_GPIO12_GPIO_IN			0x0
-+#define WM8350_GPIO12_GPIO_OUT			0x0
-+#define WM8350_GPIO12_ISINKE_OUT		0x1
-+#define WM8350_GPIO12_LINE_GT_BATT_OUT		0x2
-+#define WM8350_GPIO12_LINE_EN_OUT		0x3
-+#define WM8350_GPIO12_32KHZ_OUT			0x4
-+
-+#define WM8350_GPIO_DIR_IN			0
-+#define WM8350_GPIO_DIR_OUT			1
-+#define WM8350_GPIO_ACTIVE_LOW			0
-+#define WM8350_GPIO_ACTIVE_HIGH			1
-+#define WM8350_GPIO_PULL_NONE			0
-+#define WM8350_GPIO_PULL_UP			1
-+#define WM8350_GPIO_PULL_DOWN			2
-+#define WM8350_GPIO_INVERT_OFF			0
-+#define WM8350_GPIO_INVERT_ON			1
-+#define WM8350_GPIO_DEBOUNCE_OFF		0
-+#define WM8350_GPIO_DEBOUNCE_ON			1
++#define WM8350_AUXADC_CTC                       0x4000
++#define WM8350_AUXADC_POLL                      0x2000
++#define WM8350_AUXADC_HIB_MODE                  0x1000
++#define WM8350_AUXADC_SEL8                      0x0080
++#define WM8350_AUXADC_SEL7                      0x0040
++#define WM8350_AUXADC_SEL6                      0x0020
++#define WM8350_AUXADC_SEL5                      0x0010
++#define WM8350_AUXADC_SEL4                      0x0008
++#define WM8350_AUXADC_SEL3                      0x0004
++#define WM8350_AUXADC_SEL2                      0x0002
++#define WM8350_AUXADC_SEL1                      0x0001
 +
 +/*
-+ * R128 (0x80) - GPIO Debounce
++ * R145 (0x91) - Digitiser Control (2)
 + */
-+#define WM8350_GP12_DB                          0x1000
-+#define WM8350_GP11_DB                          0x0800
-+#define WM8350_GP10_DB                          0x0400
-+#define WM8350_GP9_DB                           0x0200
-+#define WM8350_GP8_DB                           0x0100
-+#define WM8350_GP7_DB                           0x0080
-+#define WM8350_GP6_DB                           0x0040
-+#define WM8350_GP5_DB                           0x0020
-+#define WM8350_GP4_DB                           0x0010
-+#define WM8350_GP3_DB                           0x0008
-+#define WM8350_GP2_DB                           0x0004
-+#define WM8350_GP1_DB                           0x0002
-+#define WM8350_GP0_DB                           0x0001
++#define WM8350_AUXADC_MASKMODE_MASK             0x3000
++#define WM8350_AUXADC_CRATE_MASK                0x0700
++#define WM8350_AUXADC_CAL                       0x0004
++#define WM8350_AUX_RBMODE                       0x0002
++#define WM8350_AUXADC_WAIT                      0x0001
 +
 +/*
-+ * R129 (0x81) - GPIO Pin pull up Control
++ * R152 (0x98) - AUX1 Readback
 + */
-+#define WM8350_GP12_PU                          0x1000
-+#define WM8350_GP11_PU                          0x0800
-+#define WM8350_GP10_PU                          0x0400
-+#define WM8350_GP9_PU                           0x0200
-+#define WM8350_GP8_PU                           0x0100
-+#define WM8350_GP7_PU                           0x0080
-+#define WM8350_GP6_PU                           0x0040
-+#define WM8350_GP5_PU                           0x0020
-+#define WM8350_GP4_PU                           0x0010
-+#define WM8350_GP3_PU                           0x0008
-+#define WM8350_GP2_PU                           0x0004
-+#define WM8350_GP1_PU                           0x0002
-+#define WM8350_GP0_PU                           0x0001
++#define WM8350_AUXADC_SCALE1_MASK               0x6000
++#define WM8350_AUXADC_REF1                      0x1000
++#define WM8350_AUXADC_DATA1_MASK                0x0FFF
 +
 +/*
-+ * R130 (0x82) - GPIO Pull down Control
++ * R153 (0x99) - AUX2 Readback
 + */
-+#define WM8350_GP12_PD                          0x1000
-+#define WM8350_GP11_PD                          0x0800
-+#define WM8350_GP10_PD                          0x0400
-+#define WM8350_GP9_PD                           0x0200
-+#define WM8350_GP8_PD                           0x0100
-+#define WM8350_GP7_PD                           0x0080
-+#define WM8350_GP6_PD                           0x0040
-+#define WM8350_GP5_PD                           0x0020
-+#define WM8350_GP4_PD                           0x0010
-+#define WM8350_GP3_PD                           0x0008
-+#define WM8350_GP2_PD                           0x0004
-+#define WM8350_GP1_PD                           0x0002
-+#define WM8350_GP0_PD                           0x0001
++#define WM8350_AUXADC_SCALE2_MASK               0x6000
++#define WM8350_AUXADC_REF2                      0x1000
++#define WM8350_AUXADC_DATA2_MASK                0x0FFF
 +
 +/*
-+ * R131 (0x83) - GPIO Interrupt Mode
++ * R154 (0x9A) - AUX3 Readback
 + */
-+#define WM8350_GP12_INTMODE                     0x1000
-+#define WM8350_GP11_INTMODE                     0x0800
-+#define WM8350_GP10_INTMODE                     0x0400
-+#define WM8350_GP9_INTMODE                      0x0200
-+#define WM8350_GP8_INTMODE                      0x0100
-+#define WM8350_GP7_INTMODE                      0x0080
-+#define WM8350_GP6_INTMODE                      0x0040
-+#define WM8350_GP5_INTMODE                      0x0020
-+#define WM8350_GP4_INTMODE                      0x0010
-+#define WM8350_GP3_INTMODE                      0x0008
-+#define WM8350_GP2_INTMODE                      0x0004
-+#define WM8350_GP1_INTMODE                      0x0002
-+#define WM8350_GP0_INTMODE                      0x0001
++#define WM8350_AUXADC_SCALE3_MASK               0x6000
++#define WM8350_AUXADC_REF3                      0x1000
++#define WM8350_AUXADC_DATA3_MASK                0x0FFF
 +
 +/*
-+ * R133 (0x85) - GPIO Control
++ * R155 (0x9B) - AUX4 Readback
 + */
-+#define WM8350_GP_DBTIME_MASK                   0x00C0
++#define WM8350_AUXADC_SCALE4_MASK               0x6000
++#define WM8350_AUXADC_REF4                      0x1000
++#define WM8350_AUXADC_DATA4_MASK                0x0FFF
 +
 +/*
-+ * R134 (0x86) - GPIO Configuration (i/o)
++ * R156 (0x9C) - USB Voltage Readback
 + */
-+#define WM8350_GP12_DIR                         0x1000
-+#define WM8350_GP11_DIR                         0x0800
-+#define WM8350_GP10_DIR                         0x0400
-+#define WM8350_GP9_DIR                          0x0200
-+#define WM8350_GP8_DIR                          0x0100
-+#define WM8350_GP7_DIR                          0x0080
-+#define WM8350_GP6_DIR                          0x0040
-+#define WM8350_GP5_DIR                          0x0020
-+#define WM8350_GP4_DIR                          0x0010
-+#define WM8350_GP3_DIR                          0x0008
-+#define WM8350_GP2_DIR                          0x0004
-+#define WM8350_GP1_DIR                          0x0002
-+#define WM8350_GP0_DIR                          0x0001
++#define WM8350_AUXADC_DATA_USB_MASK             0x0FFF
 +
 +/*
-+ * R135 (0x87) - GPIO Pin Polarity / Type
++ * R157 (0x9D) - LINE Voltage Readback
 + */
-+#define WM8350_GP12_CFG                         0x1000
-+#define WM8350_GP11_CFG                         0x0800
-+#define WM8350_GP10_CFG                         0x0400
-+#define WM8350_GP9_CFG                          0x0200
-+#define WM8350_GP8_CFG                          0x0100
-+#define WM8350_GP7_CFG                          0x0080
-+#define WM8350_GP6_CFG                          0x0040
-+#define WM8350_GP5_CFG                          0x0020
-+#define WM8350_GP4_CFG                          0x0010
-+#define WM8350_GP3_CFG                          0x0008
-+#define WM8350_GP2_CFG                          0x0004
-+#define WM8350_GP1_CFG                          0x0002
-+#define WM8350_GP0_CFG                          0x0001
++#define WM8350_AUXADC_DATA_LINE_MASK            0x0FFF
 +
 +/*
-+ * R140 (0x8C) - GPIO Function Select 1
++ * R158 (0x9E) - BATT Voltage Readback
 + */
-+#define WM8350_GP3_FN_MASK                      0xF000
-+#define WM8350_GP2_FN_MASK                      0x0F00
-+#define WM8350_GP1_FN_MASK                      0x00F0
-+#define WM8350_GP0_FN_MASK                      0x000F
++#define WM8350_AUXADC_DATA_BATT_MASK            0x0FFF
 +
 +/*
-+ * R141 (0x8D) - GPIO Function Select 2
++ * R159 (0x9F) - Chip Temp Readback
 + */
-+#define WM8350_GP7_FN_MASK                      0xF000
-+#define WM8350_GP6_FN_MASK                      0x0F00
-+#define WM8350_GP5_FN_MASK                      0x00F0
-+#define WM8350_GP4_FN_MASK                      0x000F
++#define WM8350_AUXADC_DATA_CHIPTEMP_MASK        0x0FFF
 +
 +/*
-+ * R142 (0x8E) - GPIO Function Select 3
++ * R163 (0xA3) - Generic Comparator Control
 + */
-+#define WM8350_GP11_FN_MASK                     0xF000
-+#define WM8350_GP10_FN_MASK                     0x0F00
-+#define WM8350_GP9_FN_MASK                      0x00F0
-+#define WM8350_GP8_FN_MASK                      0x000F
++#define WM8350_DCMP4_ENA                        0x0008
++#define WM8350_DCMP3_ENA                        0x0004
++#define WM8350_DCMP2_ENA                        0x0002
++#define WM8350_DCMP1_ENA                        0x0001
 +
 +/*
-+ * R143 (0x8F) - GPIO Function Select 4
++ * R164 (0xA4) - Generic comparator 1
 + */
-+#define WM8350_GP12_FN_MASK                     0x000F
++#define WM8350_DCMP1_SRCSEL_MASK                0xE000
++#define WM8350_DCMP1_GT                         0x1000
++#define WM8350_DCMP1_THR_MASK                   0x0FFF
 +
 +/*
-+ * R230 (0xE6) - GPIO Pin Status
++ * R165 (0xA5) - Generic comparator 2
 + */
-+#define WM8350_GP12_LVL                         0x1000
-+#define WM8350_GP11_LVL                         0x0800
-+#define WM8350_GP10_LVL                         0x0400
-+#define WM8350_GP9_LVL                          0x0200
-+#define WM8350_GP8_LVL                          0x0100
-+#define WM8350_GP7_LVL                          0x0080
-+#define WM8350_GP6_LVL                          0x0040
-+#define WM8350_GP5_LVL                          0x0020
-+#define WM8350_GP4_LVL                          0x0010
-+#define WM8350_GP3_LVL                          0x0008
-+#define WM8350_GP2_LVL                          0x0004
-+#define WM8350_GP1_LVL                          0x0002
-+#define WM8350_GP0_LVL                          0x0001
++#define WM8350_DCMP2_SRCSEL_MASK                0xE000
++#define WM8350_DCMP2_GT                         0x1000
++#define WM8350_DCMP2_THR_MASK                   0x0FFF
++
++/*
++ * R166 (0xA6) - Generic comparator 3
++ */
++#define WM8350_DCMP3_SRCSEL_MASK                0xE000
++#define WM8350_DCMP3_GT                         0x1000
++#define WM8350_DCMP3_THR_MASK                   0x0FFF
++
++/*
++ * R167 (0xA7) - Generic comparator 4
++ */
++#define WM8350_DCMP4_SRCSEL_MASK                0xE000
++#define WM8350_DCMP4_GT                         0x1000
++#define WM8350_DCMP4_THR_MASK                   0x0FFF
++
++/*
++ * Interrupts.
++ */
++#define WM8350_IRQ_AUXADC_DATARDY		16
++#define WM8350_IRQ_AUXADC_DCOMP4		17
++#define WM8350_IRQ_AUXADC_DCOMP3		18
++#define WM8350_IRQ_AUXADC_DCOMP2		19
++#define WM8350_IRQ_AUXADC_DCOMP1		20
++#define WM8350_IRQ_SYS_HYST_COMP_FAIL		21
++#define WM8350_IRQ_SYS_CHIP_GT115		22
++#define WM8350_IRQ_SYS_CHIP_GT140		23
++
++/*
++ * USB/2, LINE & BATT = ((VRTC * 2) / 4095)) * 10e6 uV
++ * Where VRTC = 2.7 V
++ */
++#define WM8350_AUX_COEFF			1319
++
++#define WM8350_AUXADC_AUX1			0
++#define WM8350_AUXADC_AUX2			1
++#define WM8350_AUXADC_AUX3			2
++#define WM8350_AUXADC_AUX4			3
++#define WM8350_AUXADC_USB			4
++#define WM8350_AUXADC_LINE			5
++#define WM8350_AUXADC_BATT			6
++#define WM8350_AUXADC_TEMP			7
 +
 +#endif
 -- 
