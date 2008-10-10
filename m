@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbYJJJkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYJJJl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757203AbYJJJkr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 05:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYJJJkj
+	id S1756889AbYJJJl7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 05:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYJJJlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 05:40:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37552 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbYJJJki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 05:40:38 -0400
-Date: Fri, 10 Oct 2008 11:39:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <greg@kroah.com>, stable@kernel.org
-Cc: Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Smith <dsmith@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Wenji Huang <wenji.huang@oracle.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-Subject: Re: [PATCH] Marker depmod fix core kernel list
-Message-ID: <20081010093942.GA15086@elte.hu>
-References: <E1Klq8Z-0003Vd-L6@closure.thunk.org> <20081003195436.GA13506@Krystal> <20081004152456.GB23398@mit.edu> <20081006040820.GB26148@kroah.com> <20081010093901.GC13996@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010093901.GC13996@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0180]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Fri, 10 Oct 2008 05:41:51 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33532 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbYJJJlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 05:41:50 -0400
+Subject: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: zanussi@comcast.net, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+In-Reply-To: <1223629803.8959.40.camel@penberg-laptop>
+References: <20080923212914.GB5237@localhost>
+	 <1223386477.28348.42.camel@penberg-laptop>
+	 <1223623191.8959.26.camel@penberg-laptop>
+	 <1223628687.8959.37.camel@penberg-laptop>
+	 <1223629803.8959.40.camel@penberg-laptop>
+Date: Fri, 10 Oct 2008 12:42:03 +0300
+Message-Id: <1223631723.8959.46.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(I'm cc'ing Tom, Jens, and LKML.)
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 2008-10-10 at 12:10 +0300, Pekka Enberg wrote:
+> > I'm seeing a hard lock on my machine when I run kmemtraced with the
+> > following patch applied:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=17ca1d5506b1db433f0b7167a627bfd55d319dd3
+> > 
+> > I can enable/disable kmemtrace via the debugfs files fine and can also
+> > read the relay files with cat.
+> > 
+> > Any idea where this is coming from?
+> 
+> OK, it's the first splice() call in reader_thread() that causes the
+> hang. Hmm.
 
-> the patch went upstream without a Cc: <stable@kernel.org> tag, so i'm 
-> sending it here as a backport request. The upstream commit is below.
+To recap, with a CONFIG_KMEMTRACE enabled kernel from the
+"topic/kmemtrace" branch of:
 
-ah, ignore me - we broke it in .27-rc1 so .26 and earlier is not 
-affected.
+  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git topic/kmemtrace
 
-	Ingo
+running the "kmemtraced" program from
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/kmemtrace-user.git
+
+results to a hard lock on my machine. I am unable to find anything
+obviously wrong with it and as I can read/write the relay files just
+fine, I'm beginning to think it's problem in relayfs splice
+implementation.
+
+Tom, thoughts?
+
+		Pekka
+
+
