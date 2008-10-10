@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYJJJl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYJJJmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYJJJl7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 05:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYJJJlv
+	id S1757430AbYJJJmr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 05:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYJJJmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 05:41:51 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33532 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbYJJJlu (ORCPT
+	Fri, 10 Oct 2008 05:42:38 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:53895 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751765AbYJJJmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 05:41:50 -0400
-Subject: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: zanussi@comcast.net, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1223629803.8959.40.camel@penberg-laptop>
-References: <20080923212914.GB5237@localhost>
-	 <1223386477.28348.42.camel@penberg-laptop>
-	 <1223623191.8959.26.camel@penberg-laptop>
-	 <1223628687.8959.37.camel@penberg-laptop>
-	 <1223629803.8959.40.camel@penberg-laptop>
-Date: Fri, 10 Oct 2008 12:42:03 +0300
-Message-Id: <1223631723.8959.46.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 10 Oct 2008 05:42:37 -0400
+Date: Fri, 10 Oct 2008 11:42:35 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Tim Bird <tim.bird@am.sony.com>
+cc: Adrian Bunk <bunk@kernel.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RFC - size tool for kernel build system
+In-Reply-To: <48EE9A1C.8040301@am.sony.com>
+Message-ID: <Pine.LNX.4.64.0810101141340.12257@vixen.sonytel.be>
+References: <48EBD268.50208@am.sony.com> <20081009152151.GB17013@cs181140183.pp.htv.fi>
+ <48EE9A1C.8040301@am.sony.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-231544204-1223631755=:12257"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I'm cc'ing Tom, Jens, and LKML.)
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Fri, 2008-10-10 at 12:10 +0300, Pekka Enberg wrote:
-> > I'm seeing a hard lock on my machine when I run kmemtraced with the
-> > following patch applied:
+---584349381-231544204-1223631755=:12257
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Thu, 9 Oct 2008, Tim Bird wrote:
+> Adrian Bunk wrote:
+> > The building blocks that would be useful are IMHO:
+> > - a make target that generates a report for one kernel
+> >   (like the checkstack or export_report targets)
+> > - a script that compares two such reports and outputs the
+> >   size differences
 > > 
-> > http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=17ca1d5506b1db433f0b7167a627bfd55d319dd3
-> > 
-> > I can enable/disable kmemtrace via the debugfs files fine and can also
-> > read the relay files with cat.
-> > 
-> > Any idea where this is coming from?
+> > That's also easy to do, and if that's what's wanted I can send a patch 
+> > that does it.
 > 
-> OK, it's the first splice() call in reader_thread() that causes the
-> hang. Hmm.
+> I took a stab at this with the attached two scripts.  These are
+> not quite ready for prime time, but show the basic idea.
+> I only have a partial list of subsystems, and am skipping the
+> runtime data collection, for now.
+> 
+> I have only made the scripts, not any make targets for them.
 
-To recap, with a CONFIG_KMEMTRACE enabled kernel from the
-"topic/kmemtrace" branch of:
+Seems to work fine, after I hacked my $CROSS_COMPILE prefix into the hardcoded
+nm launch.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git topic/kmemtrace
+Thanks!
 
-running the "kmemtraced" program from
+With kind regards,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/kmemtrace-user.git
+Geert Uytterhoeven
+Software Architect
 
-results to a hard lock on my machine. I am unable to find anything
-obviously wrong with it and as I can read/write the relay files just
-fine, I'm beginning to think it's problem in relayfs splice
-implementation.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Tom, thoughts?
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-		Pekka
-
-
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-231544204-1223631755=:12257--
