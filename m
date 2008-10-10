@@ -1,75 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYJJIjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbYJJInu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbYJJIjk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 04:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYJJIjb
+	id S1753774AbYJJInu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 04:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYJJInm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 04:39:31 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:61361 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394AbYJJIja (ORCPT
+	Fri, 10 Oct 2008 04:43:42 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:56025 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbYJJInl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 04:39:30 -0400
-Message-ID: <48EF144D.1050906@fr.ibm.com>
-Date: Fri, 10 Oct 2008 10:37:33 +0200
+	Fri, 10 Oct 2008 04:43:41 -0400
+Message-ID: <48EF154D.6000600@fr.ibm.com>
+Date: Fri, 10 Oct 2008 10:41:49 +0200
 From: Daniel Lezcano <dlezcano@fr.ibm.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Greg Kurz <gkurz@fr.ibm.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       arnd@arndb.de, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/2] Track in-kernel when we expect checkpoint/restart
- to work
-References: <20081009190405.13A253CB@kernel> <1223626834.8787.8.camel@localhost.localdomain>
-In-Reply-To: <1223626834.8787.8.camel@localhost.localdomain>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       arnd@arndb.de
+Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
+References: <20081009190405.13A253CB@kernel> <20081009190406.1B257119@kernel>
+In-Reply-To: <20081009190406.1B257119@kernel>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Kurz wrote:
-> On Thu, 2008-10-09 at 12:04 -0700, Dave Hansen wrote:
->> Suggested by Ingo.
->>
->> Checkpoint/restart is going to be a long effort to get things working.
->> We're going to have a lot of things that we know just don't work for
->> a long time.  That doesn't mean that it will be useless, it just means
->> that there's some complicated features that we are going to have to
->> work incrementally to fix.
->>
->> This patch introduces a new mechanism to help the checkpoint/restart
->> developers.  A new function pair: task/process_deny_checkpoint() is
->> created.  When called, these tell the kernel that we *know* that the
->> process has performed some activity that will keep it from being
->> properly checkpointed.
->>
->> The 'flag' is an atomic_t for now so that we can have some level
->> of atomicity and make sure to only warn once.
->>
->> For now, this is a one-way trip.  Once a process is no longer
->> 'may_checkpoint' capable, neither it nor its children ever will be.
->> This can, of course, be fixed up in the future.  We might want to
->> reset the flag when a new pid namespace is created, for instance.
->>
+Dave Hansen wrote:
+> These are just a few simple examples of things we know we can't
+> checkpoint now.  There are plenty more, but this should give
+> everyone an idea how this will look in practice.
 > 
-> Then this patch should be described as:
 > 
-> Track in-kernel when we expect checkpoint/restart to fail.
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> ---
 > 
-> By the way, why don't you introduce the reverse operation ?
+>  linux-2.6.git-dave/fs/aio.c     |    7 +++++++
+>  linux-2.6.git-dave/ipc/mqueue.c |    3 +++
+>  linux-2.6.git-dave/net/socket.c |    5 +++++
+>  3 files changed, 15 insertions(+)
+> 
+> diff -puN fs/aio.c~no-checkpointing-for-sockets fs/aio.c
+> --- linux-2.6.git/fs/aio.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
+> +++ linux-2.6.git-dave/fs/aio.c	2008-10-09 11:56:58.000000000 -0700
+> @@ -19,6 +19,7 @@
+> 
+>  #define DEBUG 0
+> 
+> +#include <linux/checkpoint.h>
+>  #include <linux/sched.h>
+>  #include <linux/fs.h>
+>  #include <linux/file.h>
+> @@ -1663,6 +1664,8 @@ asmlinkage long sys_io_submit(aio_contex
+>  	if (unlikely(!access_ok(VERIFY_READ, iocbpp, (nr*sizeof(*iocbpp)))))
+>  		return -EFAULT;
+> 
+> +	process_deny_checkpointing(current);
+> +
+>  	ctx = lookup_ioctx(ctx_id);
+>  	if (unlikely(!ctx)) {
+>  		pr_debug("EINVAL: io_submit: invalid context id\n");
+> @@ -1742,6 +1745,8 @@ asmlinkage long sys_io_cancel(aio_contex
+>  	if (unlikely(!ctx))
+>  		return -EINVAL;
+> 
+> +	process_deny_checkpointing(current);
+> +
+>  	spin_lock_irq(&ctx->ctx_lock);
+>  	ret = -EAGAIN;
+>  	kiocb = lookup_kiocb(ctx, iocb, key);
+> @@ -1796,6 +1801,8 @@ asmlinkage long sys_io_getevents(aio_con
+>  	struct kioctx *ioctx = lookup_ioctx(ctx_id);
+>  	long ret = -EINVAL;
+> 
+> +	process_deny_checkpointing(current);
+> +
+>  	if (likely(ioctx)) {
+>  		if (likely(min_nr <= nr && min_nr >= 0 && nr >= 0))
+>  			ret = read_events(ioctx, min_nr, nr, events, timeout);
+> diff -puN ipc/mqueue.c~no-checkpointing-for-sockets ipc/mqueue.c
+> --- linux-2.6.git/ipc/mqueue.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
+> +++ linux-2.6.git-dave/ipc/mqueue.c	2008-10-09 11:56:58.000000000 -0700
+> @@ -14,6 +14,7 @@
+>   */
+> 
+>  #include <linux/capability.h>
+> +#include <linux/checkpoint.h>
+>  #include <linux/init.h>
+>  #include <linux/pagemap.h>
+>  #include <linux/file.h>
+> @@ -655,6 +656,8 @@ asmlinkage long sys_mq_open(const char _
+>  	char *name;
+>  	int fd, error;
+> 
+> +	process_deny_checkpointing(current);
+> +
+>  	error = audit_mq_open(oflag, mode, u_attr);
+>  	if (error != 0)
+>  		return error;
+> diff -puN net/socket.c~no-checkpointing-for-sockets net/socket.c
+> --- linux-2.6.git/net/socket.c~no-checkpointing-for-sockets	2008-10-09 11:56:58.000000000 -0700
+> +++ linux-2.6.git-dave/net/socket.c	2008-10-09 11:56:58.000000000 -0700
+> @@ -87,6 +87,7 @@
+>  #include <linux/audit.h>
+>  #include <linux/wireless.h>
+>  #include <linux/nsproxy.h>
+> +#include <linux/checkpoint.h>
+> 
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+> @@ -1236,6 +1237,8 @@ asmlinkage long sys_socket(int family, i
+>  	if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK))
+>  		flags = (flags & ~SOCK_NONBLOCK) | O_NONBLOCK;
+> 
+> +	process_deny_checkpointing(current);
+> +
+>  	retval = sock_create(family, type, protocol, &sock);
+>  	if (retval < 0)
+>  		goto out;
+> @@ -2130,6 +2133,8 @@ asmlinkage long sys_socketcall(int call,
+>  	a0 = a[0];
+>  	a1 = a[1];
+> 
+> +	process_deny_checkpointing(current);
+> +
+>  	switch (call) {
+>  	case SYS_SOCKET:
+>  		err = sys_socket(a0, a1, a[2]);
 
-I think implementing the reverse operation will be a nightmare, IMHO it 
-is safe to say we deny checkpointing for the process life-cycle either 
-if the created resource was destroyed before we initiate the checkpoint.
+That seems to be a good idea.
 
-For example, you create a socket, the process becomes uncheckpointable, 
-you close (via sys_close) the socket, you have to track this close to be 
-related to the socket which made the process uncheckpointable in order 
-to make the operation reversible.
+There isn't a risk of a big propagation of this function all around the 
+kernel code ? Especially if there are partial support for a specific 
+resource ? I mean we are able to checkpoint ipv4/tcp sockets, (yeah I 
+like socket examples :) ) , but not other protocols so we have to remove 
+from sys_socket the process_deny_checkpoint and add it to all others 
+protocols.
 
-Let's imagine you implement this reverse operation anyway, you have a 
-process which creates a TCP connection, writes data and close the socket 
-(so you are again checkpointable), but in the namespace there is the 
-orphan socket which is not checkpointable yet and you missed this case.
+
+
+
