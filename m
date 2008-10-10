@@ -1,235 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYJJHm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYJJHqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbYJJHm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 03:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYJJHmO
+	id S1754830AbYJJHqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 03:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYJJHqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 03:42:14 -0400
-Received: from flock1.newmail.ru ([82.204.219.207]:42259 "HELO
-	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752110AbYJJHmN (ORCPT
+	Fri, 10 Oct 2008 03:46:04 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56188 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751331AbYJJHqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 03:42:13 -0400
-From: Andrey Borzenkov <arvidjaar@newmail.ru>
-To: Dave <kilroyd@googlemail.com>
-Subject: Re: rc9 + orinoco WPA patchset: BUG: scheduling while atomic loading firmware with PCMCIA adapter
-Date: Fri, 10 Oct 2008 11:41:37 +0400
-User-Agent: KMail/1.9.10
-Cc: orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200810091722.56812.arvidjaar@newmail.ru> <200810092321.55033.arvidjaar@newmail.ru> <48EE89ED.3050309@gmail.com>
-In-Reply-To: <48EE89ED.3050309@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1858793.2UlJZDQuiS";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 10 Oct 2008 03:46:01 -0400
+Subject: [GIT PULL] first round of SCSI updates for the 2.6.28 merge window
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 09:45:54 +0200
+Message-Id: <1223624754.4962.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810101141.38929.arvidjaar@newmail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1858793.2UlJZDQuiS
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_ycw7Io7cC/CHOhG"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This is actually a very thin set.  Most of our changes are backed up
+behind the block tree which contains a lot of timer and error handler
+changes.
 
---Boundary-01=_ycw7Io7cC/CHOhG
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The tree is available here:
 
-On Friday 10 October 2008, Dave wrote:
-> Thanks for identifying the problem. The Agere case looks good - a few sug=
-gestions for the Symbol case though:
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-Updated patch attached
+The short changelog is:
 
-> =20
-> But you absolutely have to kfree(pda) here.
+Adrian Bunk (1):
+      qla2xxx: remove the unused SCSI_QLOGIC_FC_FIRMWARE option
 
-Yes, I forgot; sorry.
+Alexander Beregalov (1):
+      qla2xxx: fix printk format warnings
 
-> Dan Williams wrote:
-> > maybe you should not use priv->pda_size but
-> > #define SYMBOL_PDA_SIZE 256 and use that for the hermes_read_pda()
-> > length just to ensure the patched code is functionally the same as
-> > before the patch.
->=20
-> Using fw->pda_size should be fine. The value comes from a const static, s=
-et to 0x100 for Symbol.
->=20
+Andrew Vasquez (6):
+      qla2xxx: Update version number to 8.02.01-k8.
+      qla2xxx: Additional residual-count corrections during UNDERRUN handling.
+      qla2xxx: Add NPIV-Config Table support.
+      qla2xxx: Add Flash Layout Table support.
+      qla2xxx: Change GFP_ATOMIC to GFP_KERNEL for non-atomic allocations.
+      fc_transport: Add an API to allow an LLD to create vports
 
-Actually it allocated 512 byte before. Should it probably be set to 0x200?
+Bjorn Helgaas (1):
+      qla2xxx: Fix "occured" spelling errors.
 
---Boundary-01=_ycw7Io7cC/CHOhG
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="orinoco-reduce-stack-usage"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
-	filename="orinoco-reduce-stack-usage"
+Christof Schmitt (2):
+      zfcp: Simplify zfcp data structures
+      zfcp: Update message with input from review
 
-Subject: [PATCH] orinoco: reduce stack usage in firmware download path
-=46rom: Andrey Borzenkov <arvidjaar@mail.ru>
+FUJITA Tomonori (1):
+      scsi_dh: no need to initialize rq->cmd with blk_get_request
 
-orinoco_dl_firmware and symbol_dl_mage allocate large local
-variables (1K); at least orinoco fails with panic or hung
-kernel if 4K stacks is enabled.
+Harish Zunjarrao (1):
+      qla2xxx: Add input/output byte-count statistics.
 
-Allocate large buffers dynamically at run time.
+James Bottomley (5):
+      scsi_dh: suppress comparison warning
+      sd: use generic helper to print capacities in both binary and SI
+      lib: add generic helper to print sizes rounded to the correct SI range
+      Update the SCSI state model to allow blocking in the created state
+      add inline functions for recognising created and blocked states
 
-Tested-By: Andrey Borzenkov <arvidjaar@mail.ru> for Agere case
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+James Smart (2):
+      scsi_netlink: Add transport and LLD recieve and event support
+      scsi_host_lookup: error returns and NULL pointers
 
-=2D--
+Matthew Wilcox (1):
+      qla2xxx: Remove semaphore.h
 
- drivers/net/wireless/orinoco.c |   40 ++++++++++++++++++++++++++++--------=
-=2D---
- 1 files changed, 28 insertions(+), 12 deletions(-)
+Mike Christie (1):
+      libiscsi: return error passed in during iscsi recovery
+
+Nick Warne (1):
+      tmscsim: Fixup KERN_INFO in printk
+
+Pierre Ossman (1):
+      mmc_block: use generic helper to print capacities
+
+Ravi Anand (1):
+      qla2xxx: Ignore payload reserved-bits during RSCN processing.
+
+Stefan Raspl (1):
+      zfcp: add queue_full sysfs attribute
+
+Swen Schillig (10):
+      zfcp: fix double dbf id usage
+      zfcp: wait on SCSI work to be finished before proceeding with init dev
+      zfcp: fix erp list usage without using locks
+      zfcp: prevent fc_remote_port_delete calls for unregistered rport
+      zfcp: fix deadlock caused by shared work queue tasks
+      zfcp: put threshold data in hba trace
+      zfcp: Simplify get_adapter_by_busid
+      zfcp: remove all typedefs and replace them with standards
+      zfcp: attach and release SAN nameserver port on demand
+      zfcp: remove unused references, declarations and flags
+
+Yanqing_Liu@Dell.com (1):
+      scsi_dh: add Dell product information into rdac device handler
 
 
-diff --git a/drivers/net/wireless/orinoco.c b/drivers/net/wireless/orinoco.c
-index 9a2fcc0..e225fec 100644
-=2D-- a/drivers/net/wireless/orinoco.c
-+++ b/drivers/net/wireless/orinoco.c
-@@ -458,7 +458,7 @@ orinoco_dl_firmware(struct orinoco_private *priv,
- 		    int ap)
- {
- 	/* Plug Data Area (PDA) */
-=2D	__le16 pda[512] =3D { 0 };
-+	__le16 *pda;
-=20
- 	hermes_t *hw =3D &priv->hw;
- 	const struct firmware *fw_entry;
-@@ -467,7 +467,11 @@ orinoco_dl_firmware(struct orinoco_private *priv,
- 	const unsigned char *end;
- 	const char *firmware;
- 	struct net_device *dev =3D priv->ndev;
-=2D	int err;
-+	int err =3D 0;
-+
-+	pda =3D kzalloc(fw->pda_size, GFP_KERNEL);
-+	if (!pda)
-+		return -ENOMEM;
-=20
- 	if (ap)
- 		firmware =3D fw->ap_fw;
-@@ -478,17 +482,17 @@ orinoco_dl_firmware(struct orinoco_private *priv,
- 	       dev->name, firmware);
-=20
- 	/* Read current plug data */
-=2D	err =3D hermes_read_pda(hw, pda, fw->pda_addr,
-=2D			      min_t(u16, fw->pda_size, sizeof(pda)), 0);
-+	err =3D hermes_read_pda(hw, pda, fw->pda_addr, fw->pda_size, 0);
- 	printk(KERN_DEBUG "%s: Read PDA returned %d\n", dev->name, err);
- 	if (err)
-=2D		return err;
-+		goto free;
-=20
- 	err =3D request_firmware(&fw_entry, firmware, priv->dev);
- 	if (err) {
- 		printk(KERN_ERR "%s: Cannot find firmware %s\n",
- 		       dev->name, firmware);
-=2D		return -ENOENT;
-+		err =3D -ENOENT;
-+		goto free;
- 	}
-=20
- 	hdr =3D (const struct orinoco_fw_header *) fw_entry->data;
-@@ -532,6 +536,9 @@ orinoco_dl_firmware(struct orinoco_private *priv,
-=20
- abort:
- 	release_firmware(fw_entry);
-+
-+free:
-+	kfree(pda);
- 	return err;
- }
-=20
-@@ -549,12 +556,12 @@ symbol_dl_image(struct orinoco_private *priv, const s=
-truct fw_info *fw,
- 		int secondary)
- {
- 	hermes_t *hw =3D &priv->hw;
-=2D	int ret;
-+	int ret =3D 0;
- 	const unsigned char *ptr;
- 	const unsigned char *first_block;
-=20
- 	/* Plug Data Area (PDA) */
-=2D	__le16 pda[256];
-+	__le16 *pda =3D NULL;
-=20
- 	/* Binary block begins after the 0x1A marker */
- 	ptr =3D image;
-@@ -563,28 +570,33 @@ symbol_dl_image(struct orinoco_private *priv, const s=
-truct fw_info *fw,
-=20
- 	/* Read the PDA from EEPROM */
- 	if (secondary) {
-=2D		ret =3D hermes_read_pda(hw, pda, fw->pda_addr, sizeof(pda), 1);
-+		pda =3D kzalloc(fw->pda_size, GFP_KERNEL);
-+		if (!pda)
-+			return -ENOMEM;
-+
-+		ret =3D hermes_read_pda(hw, pda, fw->pda_addr, fw->pda_size, 1);
- 		if (ret)
-=2D			return ret;
-+			goto free;
- 	}
-=20
- 	/* Stop the firmware, so that it can be safely rewritten */
- 	if (priv->stop_fw) {
- 		ret =3D priv->stop_fw(priv, 1);
- 		if (ret)
-=2D			return ret;
-+			goto free;
- 	}
-=20
- 	/* Program the adapter with new firmware */
- 	ret =3D hermes_program(hw, first_block, end);
- 	if (ret)
-=2D		return ret;
-+		goto free;
-=20
- 	/* Write the PDA to the adapter */
- 	if (secondary) {
- 		size_t len =3D hermes_blocks_length(first_block);
- 		ptr =3D first_block + len;
- 		ret =3D hermes_apply_pda(hw, ptr, pda);
-+		kfree(pda);
- 		if (ret)
- 			return ret;
- 	}
-@@ -608,6 +620,10 @@ symbol_dl_image(struct orinoco_private *priv, const st=
-ruct fw_info *fw,
- 		return -ENODEV;
-=20
- 	return 0;
-+
-+free:
-+	kfree(pda);
-+	return ret;
- }
-=20
-=20
+And the diffstat:
 
---Boundary-01=_ycw7Io7cC/CHOhG--
+ Documentation/scsi/scsi_fc_transport.txt    |   36 +
+ drivers/mmc/card/block.c                    |   10 
+ drivers/s390/scsi/zfcp_aux.c                |  150 +------
+ drivers/s390/scsi/zfcp_ccw.c                |   45 +-
+ drivers/s390/scsi/zfcp_dbf.c                |   75 ++-
+ drivers/s390/scsi/zfcp_dbf.h                |    1 
+ drivers/s390/scsi/zfcp_def.h                |  179 ++------
+ drivers/s390/scsi/zfcp_erp.c                |  229 +++-------
+ drivers/s390/scsi/zfcp_ext.h                |   27 -
+ drivers/s390/scsi/zfcp_fc.c                 |  227 +++++++---
+ drivers/s390/scsi/zfcp_fsf.c                |  584 +++++++++++++++-------------
+ drivers/s390/scsi/zfcp_fsf.h                |   75 ---
+ drivers/s390/scsi/zfcp_qdio.c               |   67 +--
+ drivers/s390/scsi/zfcp_scsi.c               |   28 -
+ drivers/s390/scsi/zfcp_sysfs.c              |   60 +-
+ drivers/scsi/Kconfig                        |    8 
+ drivers/scsi/device_handler/scsi_dh_emc.c   |    5 
+ drivers/scsi/device_handler/scsi_dh_hp_sw.c |    2 
+ drivers/scsi/device_handler/scsi_dh_rdac.c  |    4 
+ drivers/scsi/hosts.c                        |    2 
+ drivers/scsi/libiscsi.c                     |    2 
+ drivers/scsi/qla2xxx/qla_attr.c             |    9 
+ drivers/scsi/qla2xxx/qla_def.h              |   13 
+ drivers/scsi/qla2xxx/qla_fw.h               |   71 +++
+ drivers/scsi/qla2xxx/qla_gbl.h              |    4 
+ drivers/scsi/qla2xxx/qla_init.c             |   14 
+ drivers/scsi/qla2xxx/qla_inline.h           |    2 
+ drivers/scsi/qla2xxx/qla_iocb.c             |   30 -
+ drivers/scsi/qla2xxx/qla_isr.c              |   17 
+ drivers/scsi/qla2xxx/qla_mbx.c              |    6 
+ drivers/scsi/qla2xxx/qla_os.c               |    9 
+ drivers/scsi/qla2xxx/qla_sup.c              |  338 ++++++++++++++--
+ drivers/scsi/qla2xxx/qla_version.h          |    2 
+ drivers/scsi/scsi.c                         |   13 
+ drivers/scsi/scsi_lib.c                     |   39 +
+ drivers/scsi/scsi_netlink.c                 |  523 ++++++++++++++++++++++++-
+ drivers/scsi/scsi_proc.c                    |    8 
+ drivers/scsi/scsi_scan.c                    |   20 
+ drivers/scsi/scsi_sysfs.c                   |    1 
+ drivers/scsi/scsi_tgt_lib.c                 |    6 
+ drivers/scsi/scsi_transport_fc.c            |   54 +-
+ drivers/scsi/scsi_transport_iscsi.c         |    4 
+ drivers/scsi/sd.c                           |   27 -
+ drivers/scsi/tmscsim.c                      |    4 
+ include/linux/string_helpers.h              |   16 
+ include/scsi/scsi_device.h                  |   21 -
+ include/scsi/scsi_netlink.h                 |   62 ++
+ include/scsi/scsi_transport_fc.h            |   23 +
+ lib/Makefile                                |    3 
+ lib/string_helpers.c                        |   64 +++
+ 50 files changed, 2107 insertions(+), 1112 deletions(-)
 
---nextPart1858793.2UlJZDQuiS
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+James
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkjvBzIACgkQR6LMutpd94zw9ACguVeROiv9a39E3HrE0N88DkPP
-/osAn0O/9FXZ9fxS/9Z1JuBaUA58h3ZL
-=nTQc
------END PGP SIGNATURE-----
-
---nextPart1858793.2UlJZDQuiS--
