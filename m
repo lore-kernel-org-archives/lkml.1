@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbYJJWq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYJJWqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbYJJWq1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 18:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJJWp5
+	id S1756237AbYJJWqm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 18:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYJJWp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 18:45:57 -0400
-Received: from kroah.org ([198.145.64.141]:39628 "EHLO coco.kroah.org"
+	Fri, 10 Oct 2008 18:45:58 -0400
+Received: from kroah.org ([198.145.64.141]:39630 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753127AbYJJWp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 18:45:56 -0400
+	id S1753464AbYJJWp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 18:45:57 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       Jeff Mahoney <jeffm@suse.de>
-Subject: [PATCH 02/23] Staging: add TAINT_CRAP flag to drivers/staging modules
-Date: Fri, 10 Oct 2008 15:42:26 -0700
-Message-Id: <1223678567-30143-2-git-send-email-greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 03/23] Staging: add Kconfig entries and Makefile infrastructure
+Date: Fri, 10 Oct 2008 15:42:27 -0700
+Message-Id: <1223678567-30143-3-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081010224130.GA30117@kroah.com>
 References: <20081010224130.GA30117@kroah.com>
@@ -25,52 +24,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Greg Kroah-Hartman <gregkh@suse.de>
 
-We need to add a flag for all code that is in the drivers/staging/
-directory to prevent all other kernel developers from worrying about
-issues here, and to notify users that the drivers might not be as good
-as they are normally used to.
+This hooks up the drivers/staging directory to the build system
 
-Based on code from Andreas Gruenbacher and Jeff Mahoney to provide a
-TAINT flag for the support level of a kernel module in the Novell
-enterprise kernel release.
-
-This is the code that actually modifies the modules, adding the flag to
-any files in the drivers/staging directory.
-
-Cc: Andreas Gruenbacher <agruen@suse.de>
-Cc: Jeff Mahoney <jeffm@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- scripts/mod/modpost.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ drivers/Kconfig          |    2 ++
+ drivers/Makefile         |    1 +
+ drivers/staging/Kconfig  |   27 +++++++++++++++++++++++++++
+ drivers/staging/Makefile |    2 ++
+ 4 files changed, 32 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/staging/Kconfig
+ create mode 100644 drivers/staging/Makefile
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 8e0de6a..8892161 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1726,6 +1726,14 @@ static void add_header(struct buffer *b, struct module *mod)
- 	buf_printf(b, "};\n");
- }
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 59f33fa..d19b6f5 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -101,4 +101,6 @@ source "drivers/auxdisplay/Kconfig"
+ source "drivers/uio/Kconfig"
  
-+void add_staging_flag(struct buffer *b, const char *name)
-+{
-+	static const char *staging_dir = "drivers/staging";
+ source "drivers/xen/Kconfig"
 +
-+	if (strncmp(staging_dir, name, strlen(staging_dir)) == 0)
-+		buf_printf(b, "\nMODULE_INFO(staging, \"Y\");\n");
-+}
++source "drivers/staging/Kconfig"
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 2735bde..46c8681 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -99,3 +99,4 @@ obj-$(CONFIG_OF)		+= of/
+ obj-$(CONFIG_SSB)		+= ssb/
+ obj-$(CONFIG_VIRTIO)		+= virtio/
+ obj-$(CONFIG_REGULATOR)		+= regulator/
++obj-$(CONFIG_STAGING)		+= staging/
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+new file mode 100644
+index 0000000..84832fe
+--- /dev/null
++++ b/drivers/staging/Kconfig
+@@ -0,0 +1,27 @@
++menuconfig STAGING
++	bool "Staging drivers"
++	default n
++	---help---
++	  This option allows you to select a number of drivers that are
++	  not of the "normal" Linux kernel quality level.  These drivers
++	  are placed here in order to get a wider audience for use of
++	  them.  Please note that these drivers are under heavy
++	  development, may or may not work, and may contain userspace
++	  interfaces that most likely will be changed in the near
++	  future.
 +
- /**
-  * Record CRCs for unresolved symbols
-  **/
-@@ -2135,6 +2143,7 @@ int main(int argc, char **argv)
- 		buf.pos = 0;
- 
- 		add_header(&buf, mod);
-+		add_staging_flag(&buf, mod->name);
- 		err |= add_versions(&buf, mod);
- 		add_depends(&buf, mod, modules);
- 		add_moddevtable(&buf, mod);
++	  Using any of these drivers will taint your kernel which might
++	  affect support options from both the community, and various
++	  commercial support orginizations.
++
++	  If you wish to work on these drivers, to help improve them, or
++	  to report problems you have with them, please see the
++	  driver_name.README file in the drivers/staging/ directory to
++	  see what needs to be worked on, and who to contact.
++
++	  If in doubt, say N here.
++
++if STAGING
++
++
++endif # STAGING
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+new file mode 100644
+index 0000000..ceb0328
+--- /dev/null
++++ b/drivers/staging/Makefile
+@@ -0,0 +1,2 @@
++# Makefile for staging directory
++
 -- 
 1.6.0.2
 
