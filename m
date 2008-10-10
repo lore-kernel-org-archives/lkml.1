@@ -1,121 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYJJHVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbYJJHXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbYJJHVW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 03:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJJHVN
+	id S1754042AbYJJHXU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 03:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYJJHXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 03:21:13 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42712 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751304AbYJJHVN (ORCPT
-	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 03:21:13 -0400
-Message-ID: <48EEF60D.4020602@sgi.com>
-Date: Fri, 10 Oct 2008 17:28:29 +1100
-From: Timothy Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: lkml@vger.kernel.org, xfs-oss <xfs@oss.sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       toei.rei@stargazer.at
-Subject: [PATCH] fix barrier fail detection in XFS
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 10 Oct 2008 03:23:04 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:35690 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750981AbYJJHXD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 03:23:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAEAPab7khMQWq+/2dsb2JhbACBcrtXgWo
+Date: Fri, 10 Oct 2008 03:23:00 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Markers : fix check format with rcu callback race
+Message-ID: <20081010072300.GB23247@Krystal>
+References: <20081010054444.GB19481@Krystal> <48EEF3A6.3050205@cn.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <48EEF3A6.3050205@cn.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 03:21:30 up 127 days, 12:01,  9 users,  load average: 0.88, 0.64,
+	0.45
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> Mathieu Desnoyers wrote:
+> > The fix "markers: fix unchecked format" introduced an RCU callback race. This
+> > patch takes care of calling any pending RCU callback before set_format is
+> > called.
+> > 
+> 
+> marker_set_format() has this statement:
+> 
+> 	if ((*entry)->rcu_pending)
+> 		rcu_barrier_sched();
+> 
 
-Please include the following patch.
+True, therefore my fix is not needed.
 
-This is an important fix posted by Christoph Hellwig today.
-Without this fix, XFS can turn off barriers when we wrap our ondisk log.
-Which could lead to corruption after unclean unmounts/shutdowns
-on machines without a persistent write cache etc.
+Mathieu
 
---Tim
+> > 
+> > * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> >> bit-field is not thread-safe nor smp-safe.
+> >>
+> >> struct marker_entry.rcu_pending is not protected by any lock
+> >> in rcu-callback free_old_closure().
+> >> so we must turn it into a safe type.
+> >>
+> > 
+> > All struct marker_entry.rcu_pending accesses are done with the
+> > markers_mutex held, except the one done in free_old_closure(). Normally,
+> > there should be a
+> >         if (entry->rcu_pending)
+> >            rcu_barrier_sched();
+> > 
+> > At the beginning of each markers_mutex section (just after get_marker())
+> > to make sure any pending callback is executed at that point before any
+> > of rcu_pending or ptype are touched. 
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > CC: Ingo Molnar <mingo@elte.hu>
+> > CC: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > ---
+> >  kernel/marker.c |   24 +++++++++++++-----------
+> >  1 file changed, 13 insertions(+), 11 deletions(-)
+> > 
+> > Index: linux-2.6-lttng/kernel/marker.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/kernel/marker.c	2008-10-10 01:35:32.000000000 -0400
+> > +++ linux-2.6-lttng/kernel/marker.c	2008-10-10 01:35:32.000000000 -0400
+> > @@ -657,21 +657,23 @@ int marker_probe_register(const char *na
+> >  		entry = add_marker(name, format);
+> >  		if (IS_ERR(entry))
+> >  			ret = PTR_ERR(entry);
+> > -	} else if (format) {
+> > -		if (!entry->format)
+> > -			ret = marker_set_format(&entry, format);
+> > -		else if (strcmp(entry->format, format))
+> > -			ret = -EPERM;
+> > +	} else {
+> > +		/*
+> > +		 * If we detect that a call_rcu is pending for this marker,
+> > +		 * make sure it's executed now.
+> > +		 */
+> > +		if (entry->rcu_pending)
+> > +			rcu_barrier_sched();
+> > +		if (format) {
+> > +			if (!entry->format)
+> > +				ret = marker_set_format(&entry, format);
+> > +			else if (strcmp(entry->format, format))
+> > +				ret = -EPERM;
+> > +		}
+> >  	}
+> >  	if (ret)
+> >  		goto end;
+> >  
+> > -	/*
+> > -	 * If we detect that a call_rcu is pending for this marker,
+> > -	 * make sure it's executed now.
+> > -	 */
+> > -	if (entry->rcu_pending)
+> > -		rcu_barrier_sched();
+> >  	old = marker_entry_add_probe(entry, probe, probe_private);
+> >  	if (IS_ERR(old)) {
+> >  		ret = PTR_ERR(old);
+> 
+> 
 
----------------
-Fix barrier fail detection in XFS
-
-Currently we disable barriers as soon as we get a buffer in xlog_iodone
-that has the XBF_ORDERED flag cleared.  But this can be the case not only
-for buffers where the barrier failed, but also the first buffer of a
-split log write in case of a log wraparound.  Due to the disabled
-barriers we can easily get directory corruption on unclean shutdowns.
-So instead of using this check add a new buffer flag for failed barrier
-writes.
-
-This is a regression vs 2.6.26 caused by patch to use the right macro
-to check for the ORDERED flag, as we previously got true returned for
-every buffer.
-
-Thanks to Toei Rei for reporting the bug.
-
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
-Reviewed-by: David Chinner <david@fromorbit.com>
-Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-Index: 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.c
-===================================================================
---- 2.6.x-xfs-quilt.orig/fs/xfs/linux-2.6/xfs_buf.c	2008-09-19 13:47:36.000000000 +1000
-+++ 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.c	2008-10-10 15:07:51.316145158 +1100
-@@ -1001,12 +1001,13 @@ xfs_buf_iodone_work(
- 	 * We can get an EOPNOTSUPP to ordered writes.  Here we clear the
- 	 * ordered flag and reissue them.  Because we can't tell the higher
- 	 * layers directly that they should not issue ordered I/O anymore, they
--	 * need to check if the ordered flag was cleared during I/O completion.
-+	 * need to check if the _XFS_BARRIER_FAILED flag was set during I/O completion.
- 	 */
- 	if ((bp->b_error == EOPNOTSUPP) &&
- 	    (bp->b_flags & (XBF_ORDERED|XBF_ASYNC)) == (XBF_ORDERED|XBF_ASYNC)) {
- 		XB_TRACE(bp, "ordered_retry", bp->b_iodone);
- 		bp->b_flags &= ~XBF_ORDERED;
-+		bp->b_flags |= _XFS_BARRIER_FAILED;
- 		xfs_buf_iorequest(bp);
- 	} else if (bp->b_iodone)
- 		(*(bp->b_iodone))(bp);
-Index: 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.h
-===================================================================
---- 2.6.x-xfs-quilt.orig/fs/xfs/linux-2.6/xfs_buf.h	2008-09-19 13:47:36.000000000 +1000
-+++ 2.6.x-xfs-quilt/fs/xfs/linux-2.6/xfs_buf.h	2008-10-10 11:54:23.269373217 +1100
-@@ -85,6 +85,14 @@ typedef enum {
- 	 * modifications being lost.
- 	 */
- 	_XBF_PAGE_LOCKED = (1 << 22),
-+
-+	/*
-+	 * If we try a barrier write, but it fails we have to communicate
-+	 * this to the upper layers.  Unfortunately b_error gets overwritten
-+	 * when the buffer is re-issued so we have to add another flag to
-+	 * keep this information.
-+	 */
-+	_XFS_BARRIER_FAILED = (1 << 23),
- } xfs_buf_flags_t;
- 
- typedef enum {
-Index: 2.6.x-xfs-quilt/fs/xfs/xfs_log.c
-===================================================================
---- 2.6.x-xfs-quilt.orig/fs/xfs/xfs_log.c	2008-09-22 11:54:19.000000000 +1000
-+++ 2.6.x-xfs-quilt/fs/xfs/xfs_log.c	2008-10-10 15:09:56.967725107 +1100
-@@ -1033,11 +1033,12 @@ xlog_iodone(xfs_buf_t *bp)
- 	l = iclog->ic_log;
- 
- 	/*
--	 * If the ordered flag has been removed by a lower
--	 * layer, it means the underlyin device no longer supports
-+	 * If the _XFS_BARRIER_FAILED flag was set by a lower
-+	 * layer, it means the underlying device no longer supports
- 	 * barrier I/O. Warn loudly and turn off barriers.
- 	 */
--	if ((l->l_mp->m_flags & XFS_MOUNT_BARRIER) && !XFS_BUF_ISORDERED(bp)) {
-+	if (bp->b_flags & _XFS_BARRIER_FAILED) {
-+		bp->b_flags &= ~_XFS_BARRIER_FAILED;
- 		l->l_mp->m_flags &= ~XFS_MOUNT_BARRIER;
- 		xfs_fs_cmn_err(CE_WARN, l->l_mp,
- 				"xlog_iodone: Barriers are no longer supported"
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
