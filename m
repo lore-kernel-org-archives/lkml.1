@@ -1,51 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbYJJRIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbYJJRIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761332AbYJJRIX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 13:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758926AbYJJRIP
+	id S1762303AbYJJRIm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 13:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760793AbYJJRIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 13:08:15 -0400
-Received: from star.netis.ru ([213.187.127.146]:56044 "EHLO star.netis.ru"
+	Fri, 10 Oct 2008 13:08:30 -0400
+Received: from mga01.intel.com ([192.55.52.88]:17601 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758400AbYJJRIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 13:08:14 -0400
-X-Greylist: delayed 1055 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Oct 2008 13:08:14 EDT
-Date: Fri, 10 Oct 2008 20:49:53 +0400
-From: "Alexander V. Lukyanov" <lav@netis.ru>
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Ncurses Developers <ncurses-dev@gnu.org>
-Subject: Re: linux 2.6.26 vt back_color_erase
-Message-ID: <20081010164953.GA27092@night.netis.ru>
-References: <20081003081147.GA16414@night.netis.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081003081147.GA16414@night.netis.ru>
-User-Agent: Mutt/1.5.11
-X-NETIS-MailScanner-Information: Please contact NETIS Telecom for more information <info@netis.ru> (+7 4852 797797)
-X-NETIS-MailScanner-ID: m9AGnaHj011015
-X-NETIS-MailScanner: Found to be clean
-X-NETIS-MailScanner-SpamCheck: not spam, SpamAssassin (not cached, score=0,
-	required 6, autolearn=disabled)
-X-NETIS-MailScanner-From: lav@netis.ru
-X-NETIS-MailScanner-To: jengelh@computergmbh.de,
-	linux-kernel@vger.kernel.org, ncurses-dev@gnu.org
+	id S1758926AbYJJRIa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 13:08:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,390,1220252400"; 
+   d="scan'208";a="625626296"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Fri, 10 Oct 2008 10:07:38 -0700
+Subject: RE: [PATCH] x86: apic - unify APIC_DIVISOR
+Thread-Topic: [PATCH] x86: apic - unify APIC_DIVISOR
+Thread-Index: Ackq9ZpBMSU1S4d7S1WiXBFZW8mJbQAASjdw
+Message-ID: <7E82351C108FA840AB1866AC776AEC46378238AE@orsmsx505.amr.corp.intel.com>
+References: <20081010150017.GD7328@localhost>
+ <7E82351C108FA840AB1866AC776AEC46378236B8@orsmsx505.amr.corp.intel.com>
+ <20081010163101.GG7328@localhost>
+In-Reply-To: <20081010163101.GG7328@localhost>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 12:11:47PM +0400, Alexander V. Lukyanov wrote:
-> Current linux kernel has broken bce semantics. Now insert_line and
-> delete_line clear the new lines with default color and not with the current
-> background as they should, and what is expected by ncurses.
-> 
-> vc->vc_scrl_erase_char was introduced in 2.6.26 for some reason. I beleave
-> this change should be backed out.
 
-I think that the test cases Jan provided could be fixed by temporary
-changing erase char when doing cr/lf when vc->vc_need_wrap is true.
-There is no need to change erase character for all scrolling operations.
 
---
-   Alexander.
+>-----Original Message-----
+>From: Cyrill Gorcunov [mailto:gorcunov@gmail.com]
+>Sent: Friday, October 10, 2008 9:31 AM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Maciej W. Rozycki; LKML
+>Subject: Re: [PATCH] x86: apic - unify APIC_DIVISOR
+>
+>[Pallipadi, Venkatesh - Fri, Oct 10, 2008 at 09:11:06AM -0700]
+>|
+>|
+>| >-----Original Message-----
+>| >From: Cyrill Gorcunov [mailto:gorcunov@gmail.com]
+>| >Sent: Friday, October 10, 2008 8:00 AM
+>| >To: Ingo Molnar; Maciej W. Rozycki
+>| >Cc: LKML; Pallipadi, Venkatesh
+>| >Subject: [PATCH] x86: apic - unify APIC_DIVISOR
+>| >
+>| >Use APIC_DIVISOR being set to 16 for both 32/64bit
+>| >mode. To escape APIC timer underflow during calibration
+>| >set it to the maximum possible value.
+>| >
+>| >Also typo error (CONFG instead of proper CONFIG) fixed.
+>| >The error was catched by Venkatesh Pallipadi, thanks a lot
+>Venkatesh!
+>| >See details on http://lkml.org/lkml/2008/10/9/425
+>| >
+>| >Reported-by: Venkatesh Pallipad <venkatesh.pallipadi@intel.com>
+>| >Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>| >---
+>| >
+>| >Index: linux-2.6.git/arch/x86/kernel/apic.c
+>| >===================================================================
+>| >--- linux-2.6.git.orig/arch/x86/kernel/apic.c   2008-09-26
+>| >20:43:47.000000000 +0400
+>| >+++ linux-2.6.git/arch/x86/kernel/apic.c        2008-10-10
+>| >16:37:26.000000000 +0400
+>| >@@ -332,11 +332,7 @@ int lapic_get_maxlvt(void)
+>| >  */
+>| >
+>| > /* Clock divisor */
+>| >-#ifdef CONFG_X86_64
+>| >-#define APIC_DIVISOR 1
+>| >-#else
+>| > #define APIC_DIVISOR 16
+>| >-#endif
+>| >
+>| > /*
+>| >  * This function sets up the local APIC timer, with a timeout of
+>| >@@ -592,10 +588,10 @@ static int __init calibrate_APIC_clock(v
+>| >        global_clock_event->event_handler = lapic_cal_handler;
+>| >
+>| >        /*
+>| >-        * Setup the APIC counter to 1e9. There is no way the lapic
+>| >+        * Setup the APIC counter to maximum. There is no
+>way the lapic
+>| >         * can underflow in the 100ms detection time frame
+>| >         */
+>| >-       __setup_APIC_LVTT(1000000000, 0, 0);
+>| >+       __setup_APIC_LVTT(0xffffffff, 0, 0);
+>| >
+>| >        /* Let the interrupts run */
+>| >        local_irq_enable();
+>| >
+>|
+>| Agree with the APIC_DIVISOR part.
+>|
+>| But, not sure why/how the second change is related to this
+>APIC_DIVISOR being 16.
+>| Also, another nit. Technically we are not setting the "APIC
+>counter to maximum"
+>| as we do divide by 16 before programming initial count
+>register in __setup_APIC_LVTT().
+>|
+>| Thanks,
+>| Venki
+>|
+>
+>From __setup_APIC_LVTT(0xffffffff, 0, 0) caller point of view we do
+>set maximum possible value. How you could make it bigger?
+>(without additional changes _inside_ __setup_APIC_LVTT itself).
+
+
+The basic question is why are we making this change now? Is the old value
+breaking some system today? Or Is it not to break some future system with
+very high bus clock freq? If we are doing it to future proof things,
+we should be making more changes inside __setup_APIC_LVTT and make
+this maximum possible value..
+
+>Actually I wouldn't mind if you fix the comment if you don't like
+>this 'correlation' btw CLKs divisor and APIC_DIVISOR. No problem :)
+
+No problem. I can send a separate patch to change this calibration
+count to maximum once I understand why exactly we are doing it now :).
+
+Thanks,
+Venki
