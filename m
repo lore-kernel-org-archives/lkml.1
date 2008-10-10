@@ -1,112 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbYJJQxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbYJJQy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762051AbYJJQxo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbYJJQxc
+	id S1762257AbYJJQy2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbYJJQyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:53:32 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:13421 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757864AbYJJQxb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:53:31 -0400
-Message-ID: <b2cdc9f30810100953i680c2d02s8352bb109d494bf1@mail.gmail.com>
-Date: Fri, 10 Oct 2008 17:53:29 +0100
-From: "Alex Bennee" <kernel-hacker@bennee.com>
-To: linux-kernel@vger.kernel.org
-Subject: rtl8169_get_stats seems to be adding random crap to rx_missed_errors count
-In-Reply-To: <b2cdc9f30810100947s699dbc76ia72023b08e064816@mail.gmail.com>
+	Fri, 10 Oct 2008 12:54:11 -0400
+Received: from kroah.org ([198.145.64.141]:48907 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758120AbYJJQyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 12:54:10 -0400
+Date: Fri, 10 Oct 2008 09:20:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com, stable@kernel.org
+Subject: Re: [stable] splice vs O_APPEND
+Message-ID: <20081010162033.GB26779@kroah.com>
+References: <alpine.LFD.2.00.0810090830170.3210@nehalem.linux-foundation.org> <E1Knxzm-0003y2-Jy@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810090908200.3210@nehalem.linux-foundation.org> <E1KnyOw-00044y-K4@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091218300.3210@nehalem.linux-foundation.org> <E1Ko1Xu-0004vP-EX@pomaz-ex.szeredi.hu> <alpine.LFD.2.00.0810091411520.3210@nehalem.linux-foundation.org> <E1KoEZM-0007Fb-5i@pomaz-ex.szeredi.hu> <20081010154946.GB20231@kroah.com> <E1KoKUu-0000JV-Rb@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <b2cdc9f30810100947s699dbc76ia72023b08e064816@mail.gmail.com>
-X-Google-Sender-Auth: dbccc743b9eff407
+In-Reply-To: <E1KoKUu-0000JV-Rb@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Oct 10, 2008 at 06:05:48PM +0200, Miklos Szeredi wrote:
+> On Fri, 10 Oct 2008, Greg KH wrote:
+> > On Fri, Oct 10, 2008 at 11:46:00AM +0200, Miklos Szeredi wrote:
+> > > I suspect this qualifies for stable kernels too.  Stable team, can you
+> > > please add this to your queue?
+> > 
+> > Queue for which kernel releases?  .25, .26, and/or .27?
+> 
+> 25 and 26.  It's in .27.
 
-I've been seeing odd behaviour in the ifconfig output for my rtl8169
-based network device. The ifconfig output had a very high number of
-dropped packets in the display which changed massively every time I
-checked. I tracked it down to /proc/net/dev and the a few test patches
-it seems the rc_missed field is the culprit. I did a test patch of the
-form:
+Ah, thanks, will queue it up.
 
-+++ b/drivers/net/r8169.c
-@@ -3062,10 +3062,16 @@ static struct net_device_stats
-*rtl8169_get_stats(struct net_device *dev)
-       unsigned long flags;
-
-       if (netif_running(dev)) {
-+               u32 missed;
-               spin_lock_irqsave(&tp->lock, flags);
--               dev->stats.rx_missed_errors += RTL_R32(RxMissed);
-+               missed = RTL_R32(RxMissed);
-               RTL_W32(RxMissed, 0);
-               spin_unlock_irqrestore(&tp->lock, flags);
-+
-+               dev->stats.rx_missed_errors += missed;
-+               if (missed)
-+                       printk(KERN_INFO "rtl8169_get_stats added %d
-to missed count\n", missed);
-+
-       }
-
-       return &dev->stats;
-
-And low and behold I see this behaviour:
-
-[  946.160188] rtl8169_get_stats added 250834943 to missed count
-[  946.160354] rtl8169_get_stats added 20768 to missed count
-[  946.160411] rtl8169_get_stats added 7032 to missed count
-[  946.160425] rtl8169_get_stats added 1677 to missed count
-[  946.160439] rtl8169_get_stats added 1577 to missed count
-[  946.160452] rtl8169_get_stats added 1543 to missed count
-[  946.160465] rtl8169_get_stats added 1517 to missed count
-[  946.160479] rtl8169_get_stats added 1572 to missed count
-[  946.160492] rtl8169_get_stats added 1586 to missed count
-[  946.160504] rtl8169_get_stats added 1284 to missed count
-[  948.164206] rtl8169_get_stats added 250864594 to missed count
-[  948.164374] rtl8169_get_stats added 21004 to missed count
-[  948.164434] rtl8169_get_stats added 7385 to missed count
-[  948.164447] rtl8169_get_stats added 1631 to missed count
-[  948.164461] rtl8169_get_stats added 1574 to missed count
-[  948.164475] rtl8169_get_stats added 1645 to missed count
-[  948.164489] rtl8169_get_stats added 1583 to missed count
-[  948.164503] rtl8169_get_stats added 1561 to missed count
-[  948.164523] rtl8169_get_stats added 2314 to missed count
-[  948.164534] rtl8169_get_stats added 1300 to missed count
-[  950.168182] rtl8169_get_stats added 250857857 to missed count
-[  950.168345] rtl8169_get_stats added 20465 to missed count
-[  950.168401] rtl8169_get_stats added 6903 to missed count
-[  950.168416] rtl8169_get_stats added 1711 to missed count
-[  950.168430] rtl8169_get_stats added 1585 to missed count
-[  950.168443] rtl8169_get_stats added 1532 to missed count
-[  950.168456] rtl8169_get_stats added 1520 to missed count
-[  950.168469] rtl8169_get_stats added 1539 to missed count
-[  950.168483] rtl8169_get_stats added 1588 to missed count
-[  950.168494] rtl8169_get_stats added 1282 to missed count
-
-It looks very much like the number being read is a decreasing counter
-rather than anything else.
-
-Has anyone got a copy of the data sheet and can confirm that:
-
-       RxMissed        = 0x4c,
-
-is the correct offset for the register and it doesn't need any special
-handling to be read?
-
-
-
-
---
-Alex, homepage: http://www.bennee.com/~alex/
-
-
-
--- 
-Alex, homepage: http://www.bennee.com/~alex/
+greg k-h
