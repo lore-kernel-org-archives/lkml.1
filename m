@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763346AbYJJTRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763517AbYJJTSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763346AbYJJTRW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 15:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbYJJTRJ
+	id S1763517AbYJJTSA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 15:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbYJJTRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 15:17:09 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:58678 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758848AbYJJTRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 15:17:08 -0400
-Date: Fri, 10 Oct 2008 21:17:00 +0200
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Nicolas Cannasse <ncannasse@motion-twin.com>
-Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: recv() hangs until SIGCHLD ?
-Message-ID: <20081010211700.58e953a2@speedy>
-In-Reply-To: <48EF58D9.6060401@motion-twin.com>
-References: <48EF58D9.6060401@motion-twin.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 15:17:52 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:45154 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758856AbYJJTRv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 15:17:51 -0400
+Date: Fri, 10 Oct 2008 20:17:49 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: apic - unify APIC_DIVISOR
+In-Reply-To: <20081010190350.GA25931@linux-os.sc.intel.com>
+Message-ID: <alpine.LFD.1.10.0810102011260.19747@ftp.linux-mips.org>
+References: <20081010150017.GD7328@localhost> <7E82351C108FA840AB1866AC776AEC46378236B8@orsmsx505.amr.corp.intel.com> <20081010163101.GG7328@localhost> <7E82351C108FA840AB1866AC776AEC46378238AE@orsmsx505.amr.corp.intel.com> <20081010171645.GI7328@localhost>
+ <20081010190350.GA25931@linux-os.sc.intel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008 15:30:01 +0200
-Nicolas Cannasse <ncannasse@motion-twin.com> wrote:
+On Fri, 10 Oct 2008, Venki Pallipadi wrote:
 
-> Hi,
+> If there is no pressing reason to change the initial calibration value, how
+> about the simple patch below.
 > 
-> We've been tracking a bug in our server application for some time now, 
-> and now that we could isolate it we're stuck without a meaningful 
-> explanation. Hope somehow would be able to give use some answers.
+> The 10^9 value that is used for 100 mS calibration time is pretty big as
+> tglx's comment points out. We will only underflow it if there is a
+> bus clock running at 10 GHz * 16 = 160 Ghz.
 > 
-> We run a multithread application which is using pthreads and sockets. A 
-> thread uses accept() then dispatch the socket to one of the workers 
-> threads that process it. Sockets are then not used simultaneously by 
-> several threads.
-> 
-> In some rare cases, one (or several) threads are hanging in recv(). Both 
-> lsof and ls /proc/<pid>/fd show that the socket used is in ESTABLISHED 
-> mode but when checking on the host on which it's connected (a mysql DB) 
-> we can't find the corresponding client socket (as it's been closed 
-> already on the other side).
-> 
-> We are using the Boehm GC which uses the signals SIGXCPU and SIGPWR to 
-> pause+restart the threads when running a GC cycle. We are correctly 
-> handling EINTR in send() and recv() by restarting the call in case they 
-> get interrupted this way.
-> 
-> However, when attaching GDB to our locked thread it seems that even when 
-> the GC runs, recv() does not exit (the breakpoint after it is not 
-> reached). If we send SIGCHLD to the hanging thread with GDB, recv() does 
-> exit and the thread is correctly unlocked. If we don't, it will hang 
-> forever.
-> 
-> Additional details : recv() is using MSG_NOSIGNAL and we have enabled 
-> TCP_NODELAY on the socket by using setsockopt. Some other 
-> not-multithreaded apps are using the same Databases and this behavior 
-> does not occur for them.
-> 
-> Any idea how we can stop this from happening or what additional things 
-> we can check to get more informations on what's occurring ?
-> 
-> Thanks a lot,
-> Nicolas
+> This way we will not fix something that is not really broken today and will not
+> break in foreseeable future.
 
-Look at Receive queue length with ss or netstat for the hung thread. It will
-show if there is anything that thread could read.
+ I am fine with this version too.  The initial count value used for 
+calibration is really arbitrary -- for all the systems I have seen the 
+APIC clock was in the sub-MHz range.  And 64-bit hardware runs both code 
+variations so the choice of what the 32-bit code version does is 
+appropriate as it is also known to work with 32-bit equipment.
 
-If there is data and the thread didn't wake up then that is a libc or kernel problem;
-but if there is no data, then look for cases where earlier interrupted io actually
-consumed the data already or blame the sending process not the receiver.
-Also are the sockets blocking or non-blocking?
+  Maciej
