@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760847AbYJJWNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbYJJWQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760847AbYJJWNP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 18:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbYJJWM7
+	id S1761413AbYJJWQP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 18:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYJJWP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 18:12:59 -0400
-Received: from kroah.org ([198.145.64.141]:42849 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754504AbYJJWM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 18:12:59 -0400
-Date: Fri, 10 Oct 2008 15:09:38 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Stefan Bader <stefan.bader@canonical.com>,
-       stable@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [stable] [PATCH] x86: Reserve FIRST_DEVICE_VECTOR in
-	used_vectors bitmap
-Message-ID: <20081010220938.GB12671@kroah.com>
-References: <48EFB4B2.2020508@canonical.com> <20081010201805.GC32164@kroah.com> <48EFBCA4.6020008@zytor.com> <20081010204133.GB32357@kroah.com> <20081010215038.13be501e@lxorguk.ukuu.org.uk> <20081010211225.GA17695@kroah.com> <20081010224907.480a9aa2@lxorguk.ukuu.org.uk>
+	Fri, 10 Oct 2008 18:15:59 -0400
+Received: from tundra.namei.org ([65.99.196.166]:50505 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754644AbYJJWP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 18:15:58 -0400
+Date: Sat, 11 Oct 2008 09:15:08 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, srajiv@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/4] integrity
+In-Reply-To: <1223648163.3596.6.camel@localhost.localdomain>
+Message-ID: <alpine.LRH.1.10.0810110910070.3055@tundra.namei.org>
+References: <cover.1223401603.git.zohar@linux.vnet.ibm.com>  <alpine.LRH.1.10.0810081553090.13169@tundra.namei.org>  <1223475584.3103.8.camel@localhost.localdomain>  <alpine.LRH.1.10.0810090905570.18606@tundra.namei.org>
+ <1223648163.3596.6.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010224907.480a9aa2@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 10:49:07PM +0100, Alan Cox wrote:
-> > > And more importantly dev->irq == 0 or IRQ == 0 to anything but arch
-> > > internal code means "no interrupt line".
+On Fri, 10 Oct 2008, Mimi Zohar wrote:
+
+> > > These TPM patches are base TPM changes, not really related to the
+> > > integrity patches and certainly not dependent them.  However the reverse
+> > > is not true.  The integrity-tpm-internal-kernel-interface patch is
+> > > dependent on, at least, the TPM-rcu-locking patch.
 > > 
-> > I thought we had changed that a while ago, as some arches had 0 as a
-> > valid irq line.
+> > Please repost the TPM patches, then.
 > 
-> No .. Linus decreed (and I think sensibly myself that IRQ = 0 meant no
-> IRQ assigned).. the argument being that in C you naturally write stuff
-> like
-> 
-> 		if (!dev->irq)
+> The TPM patches were just added to the -mm tree (10/8 18:45 EDT),
+> available from http://userweb.kernel.org/~akpm/mmotm/.
 
-Ok, I was confused, thanks.
+I've added the prereq patches to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
-> I can dig up the reference URLS to the list mails if you want
+Please test it, and base your next version of the integrity patches on 
+that branch.  Generally, if your patches depend on some other patches, you 
+need to coordinate to ensure the prerequisite patches are either in the 
+tree you're aiming for, or post them as part of the patchset.
 
-Nah, I trust you :)
+Note that there are some interesting sparse warnings for the TPM code 
+(not arising from the above):
 
-thanks,
+drivers/char/tpm/tpm.c:493:10: error: bad constant expression
+drivers/char/tpm/tpm.c:500:32: error: cannot size expression
+drivers/char/tpm/tpm.c:507:10: error: bad constant expression
+drivers/char/tpm/tpm.c:515:32: error: cannot size expression
+drivers/char/tpm/tpm.c:547:32: error: cannot size expression
+  CHECK   drivers/char/tpm/tpm_atmel.c
+  CHECK   drivers/char/tpm/tpm_infineon.c
+drivers/char/tpm/tpm_bios.c:412:7: warning: incorrect type in assignment (different address spaces)
+drivers/char/tpm/tpm_bios.c:412:7:    expected struct acpi_table_header *virt
+drivers/char/tpm/tpm_bios.c:412:7:    got void [noderef] <asn:2>*
+drivers/char/tpm/tpm_bios.c:416:23: warning: incorrect type in argument 1 (different address spaces)
+drivers/char/tpm/tpm_bios.c:416:23:    expected void [noderef] <asn:2>*logical_address
+drivers/char/tpm/tpm_bios.c:416:23:    got struct acpi_table_header *virt
 
-greg k-h
+
+-- 
+James Morris
+<jmorris@namei.org>
