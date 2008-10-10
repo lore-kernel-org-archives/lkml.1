@@ -1,111 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764241AbYJJUr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764134AbYJJUvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764241AbYJJUr1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 16:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbYJJUrS
+	id S1764134AbYJJUvE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 16:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760103AbYJJUuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 16:47:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55727 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757975AbYJJUrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 16:47:17 -0400
-Date: Fri, 10 Oct 2008 22:47:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates for v2.6.28, phase #1
-Message-ID: <20081010204704.GA16362@elte.hu>
-References: <20081009234705.GA20540@elte.hu> <alpine.LFD.2.00.0810100808540.3524@nehalem.linux-foundation.org> <20081010152631.GB26231@elte.hu> <20081010155830.GA4767@elte.hu> <19f34abd0810101339x66afc6d3mb6efa1a52e186816@mail.gmail.com>
+	Fri, 10 Oct 2008 16:50:50 -0400
+Received: from el-out-1112.google.com ([209.85.162.179]:1865 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759382AbYJJUus (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 16:50:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FZ581YktfS3qY0nrLDgzNfo30ypzgvzhqAIYmV71vLsu8K1oytViNhCCDYF03m1eIE
+         ThQ3Gj1EiMQUGN0YOnmtc6HvK1mMId9BUewi42IRW6hSf1p1AUrJq8lbQMluXowTlPfb
+         l1w+FYtOvqIyYD2RHZktjKD/uAHHhG/ZsRm2I=
+Message-ID: <9b2db90b0810101350o52d79ecka27409bfd3eaf1f8@mail.gmail.com>
+Date: Fri, 10 Oct 2008 22:50:47 +0200
+From: "Nir Tzachar" <nir.tzachar@gmail.com>
+To: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
+In-Reply-To: <9b2db90b0810101349y7e357ef7g9c53f2ecf19fe3eb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <19f34abd0810101339x66afc6d3mb6efa1a52e186816@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <9b2db90b0810101349y7e357ef7g9c53f2ecf19fe3eb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 10, 2008 at 10:49 PM, Nir Tzachar <nir.tzachar@gmail.com> wrote:
+> Patrick McHardy wrote:
+>> Patrick McHardy wrote:
+>>> Nir Tzachar wrote:
+>>>> Hello.
+>>>>
+>>>> The following warning is reproducible with the code below on 2.6.25.6,
+>>>> which uses sendmsg on a udp socket using two iovecs:
+>>>>
+>>>> ....
+>>>> And I always get  the following warning twice:
+>>>>
+>>>> [ 6658.338116] ------------[ cut here ]------------
+>>>> [ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89
+>>>> nf_nat_fn+0x33/0x155()
+>>>
+>>> Thanks for the report. Does this patch fix it?
+>>
+>> Actually, this can't be it. Let me look again.
+>
+>>Found it - we lost an ifdef during the transition to nf_conntrack
+>>guarding an exception from defragmentation on loopback input.
+>
+>>This patch should fix the warning.
+>
+>
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+Yes, the patch below fixes the problem.
+10x.
 
-> On Fri, Oct 10, 2008 at 5:58 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >> > Ok, so I pulled phase 1, but quite frankly, I think this was utter
-> >> > crap. Why the hell did this go in?
-> >>
-> >> we'll fix that up. We'll move all header files to
-> >> arch/x86/include/asm/ anyway later in the merge window, once the dust
-> >> settles, and can do a separate commit for this as well.
-> >
-> > we'll do the commit below once we've moved the header files to
-> > arch/x86/include/asm/. (doing it right now would conflict with various
-> > existing branches so it would be nice to wait with this.)
-> >
-> >        Ingo
-> >
-> > ---------------->
-> > From 5f3a8db0d4b091521541153580454099618fec2c Mon Sep 17 00:00:00 2001
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Fri, 10 Oct 2008 17:51:28 +0200
-> > Subject: [PATCH] x86: fix header guard naming ugliness
-> >
-> > as Linus has noticed, the underscore aspect of these changes in
-> > 77ef50a ("x86: consolidate header guards") are bogus:
-> >
-> > -#ifndef _ASM_BOOT_H
-> > -#define _ASM_BOOT_H
-> > +#ifndef ASM_X86__BOOT_H
-> > +#define ASM_X86__BOOT_H
-> >
-> > as Linus pointed out:
-> >
-> > 1) header guard symbols are internal symbols in a reserved namespace,
-> >   so a leading underscore is perfectly justified
-> >
-> > 2) user-space might accidentally stumble into the new symbols:
-> >
-> >        #include <sys/types.h>
-> >
-> >        int ASM_X86__TYPES_H = 1;
-> >
-> > plus this deviates from all the standard header guard naming we
-> > use elsewhere in the kernel.
-> 
-> Note: If you don't want the double underscores anywhere, this patch is
-> not enough.
-
-yeah - it was just a simple sed job.
-
-> For example:
-> 
-> > -#endif /* ASM_X86__MACH_DEFAULT__MACH_TIMER_H */
-> > +#endif /* _ASM_X86_MACH_DEFAULT__MACH_TIMER_H */
-> 
-> There are also a few non-trivial changes, which could break with a 
-> naïve sed script. So I suggest to simply revert it, it's a lot safer 
-> than trying to patch it up in the last minute.
-> 
-> I'm obviously also sorry for causing this problem in the first 
-> place... *blush*
-
-it's not your fault really, you clearly suggested multiple variants and 
-asked our opinion and we accepted that approach. So the buck stops here 
-:)
-
-	Ingo
+> ["x" (text/plain)]
+>
+> diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c \
+> b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c index 5a955c4..7eb0b61 100644
+> --- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+> +++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+> @@ -150,10 +150,12 @@ static unsigned int
+> ipv4_conntrack_defrag(unsigned int hooknum,
+>                                          const struct net_device *out,
+>                                          int (*okfn)(struct sk_buff *))
+>  {
+> +#if !defined(CONFIG_NF_NAT) && !defined(CONFIG_NF_NAT_MODULE)
+>        /* Previously seen (loopback)?  Ignore.  Do this before
+>           fragment check. */
+>        if (skb->nfct)
+>                return NF_ACCEPT;
+> +#endif
+>
+>        /* Gather fragments. */
+>        if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
+>
