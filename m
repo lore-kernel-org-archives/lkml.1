@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYJJLfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYJJLg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYJJLfS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 07:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbYJJLfF
+	id S1758531AbYJJLg0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 07:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYJJLgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 07:35:05 -0400
-Received: from perso1.free.fr ([212.27.63.203]:33565 "EHLO perso1.free.fr"
+	Fri, 10 Oct 2008 07:36:17 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55519 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753708AbYJJLfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 07:35:04 -0400
-XPARM: thesermon.free.fr
-XPARAM2: 193.50.29.42
-Subject: [PATCH 3/6] tracing/ftrace: Fix a race condition in sched_switch tracer
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Date: Fri, 10 Oct 2008 13:35:10
-To: Ingo Molnar <mingo@elte.hu>
-Message-Id: <20081010113510.A07A9D1BD59@perso1.free.fr>
+	id S1753708AbYJJLgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 07:36:16 -0400
+Date: Fri, 10 Oct 2008 13:35:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] ide: use queue lock instead of ide_lock when possible
+Message-ID: <20081010113541.GB19428@kernel.dk>
+References: <20081008202930.19112.90371.sendpatchset@localhost.localdomain> <20081008203027.19112.20883.sendpatchset@localhost.localdomain> <87zllcet7k.fsf@denkblock.local> <20081010085249.GW19428@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081010085249.GW19428@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 10 2008, Jens Axboe wrote:
+> On Fri, Oct 10 2008, Elias Oltmanns wrote:
+> > Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> > > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > Subject: [PATCH] ide: use queue lock instead of ide_lock when possible
+> > >
+> > > This is just a preparation for future changes and there should be no
+> > > functional changes caused by this patch since ide_lock is currently
+> > > also used as queue lock.
+> > >
+> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > ---
+> > [...]
+> > > Index: b/drivers/ide/ide-io.c
+> > > ===================================================================
+> > > --- a/drivers/ide/ide-io.c
+> > > +++ b/drivers/ide/ide-io.c
+> > [...]
+> > > @@ -1469,16 +1470,16 @@ out:
+> > >  void ide_do_drive_cmd(ide_drive_t *drive, struct request *rq)
+> > >  {
+> > >  	ide_hwgroup_t *hwgroup = drive->hwif->hwgroup;
+> > > +	struct request_queue *q = drive->queue;
+> > >  	unsigned long flags;
+> > >  
+> > >  	hwgroup->rq = NULL;
+> > >  
+> > > -	spin_lock_irqsave(&ide_lock, flags);
+> > > -	__elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 1);
+> > > -	__generic_unplug_device(drive->queue);
+> > > -	spin_unlock_irqrestore(&ide_lock, flags);
+> > > +	spin_lock_irqsave(q->queue_lock, flags);
+> > > +	__elv_add_request(q, rq, ELEVATOR_INSERT_FRONT, 1);
+> > > +	__generic_unplug_device(q);
+> > 
+> > By the way, wouldn't blk_run_queue() be more appropriate here? It looks
+> > to me as if blk_run_queue() was the thing intended for general usage by
+> > low level drivers who don't know and care about schedulers, whereas the
+> > usage of __generic_unplug_device() should mostly be restricted to the
+> > block layer. On the other hand, there are other drivers in
+> > drivers/block/ that use __generic_unplug_device(), so I may well be
+> > wrong. Jens?
+> 
+> Yes, that is correct. But it's ok for now, there are too many variants
+> of this around as it is already. I'm about to do a run and clean them up
+> and make sure we have a single sane way of doing it that is exported.
 
-This patch fixes a race condition in the sched_switch tracer.
-If several tasks (IE: concurrent initcalls) are playing with 
-tracing_start_cmdline_record() and tracing_stop_cmdline_record(),
-the following situation could happen:
+So the right thing to do here is:
 
+        __elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
+        blk_start_queueing(drive->queue);
 
-_ Task A and B are using the same tracepoint probe. Task A holds it. Task B is
-sleeping and doesn't hold it.
-_ Task A frees the sched tracer, then sched_ref is decremented to 0.
-_ Task A is preempted and hadn't yet unregistered its tracepoint probe,
-then B runs.
-_ B increments sched_ref, sees it's 1 and then guess it has to register its probe. But it has not been freed by task A.
-_ A lot of bad things can happen after that... 
+since you don't need to do any plugging.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_sched_switch.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index b8f56be..59de514 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -17,6 +17,7 @@
- static struct trace_array	*ctx_trace;
- static int __read_mostly	tracer_enabled;
- static atomic_t			sched_ref;
-+static DEFINE_MUTEX(tracepoint_mutex);
- 
- static void
- probe_sched_switch(struct rq *__rq, struct task_struct *prev,
-@@ -125,18 +126,22 @@ static void tracing_start_sched_switch(void)
- {
- 	long ref;
- 
-+	mutex_lock(&tracepoint_mutex);
- 	ref = atomic_inc_return(&sched_ref);
- 	if (ref == 1)
- 		tracing_sched_register();
-+	mutex_unlock(&tracepoint_mutex);
- }
- 
- static void tracing_stop_sched_switch(void)
- {
- 	long ref;
- 
-+	mutex_lock(&tracepoint_mutex);
- 	ref = atomic_dec_and_test(&sched_ref);
- 	if (ref)
- 		tracing_sched_unregister();
-+	mutex_unlock(&tracepoint_mutex);
- }
- 
- void tracing_start_cmdline_record(void)
+-- 
+Jens Axboe
 
