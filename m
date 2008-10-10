@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbYJJQ50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762602AbYJJQ6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762605AbYJJQ50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762103AbYJJQ5A
+	id S1762602AbYJJQ6o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759869AbYJJQ6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:57:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37529 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761830AbYJJQ47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:56:59 -0400
-Date: Fri, 10 Oct 2008 18:56:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates for v2.6.28, phase #2 - PAT updates
-Message-ID: <20081010165647.GA4363@elte.hu>
-References: <20081009234951.GA24349@elte.hu> <alpine.LFD.2.00.0810100920370.3503@nehalem.linux-foundation.org> <20081010164537.GA23664@elte.hu>
+	Fri, 10 Oct 2008 12:58:34 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:51021 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758926AbYJJQ6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 12:58:33 -0400
+Date: Fri, 10 Oct 2008 12:58:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Parag Warudkar <parag.lkml@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] WARNING: at kernel/power/main.c:176
+ suspend_test_finish+0x70/0x80()
+In-Reply-To: <f7848160810100923j12c03769x1a05ed7091e67a1b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0810101257030.2185-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010164537.GA23664@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 10 Oct 2008, Parag Warudkar wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > which makes both the original commit _and_ the revert just totally 
-> > pointless, because we didn't learn anything.
+> On Fri, Oct 10, 2008 at 10:31 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
 > 
-> hm, those reverts werent supposed to survive. Again, my bad. I'll 
-> clean it out.
+> > There's a bug that affects USB power management: commmit
+> > f9dd45ce10a014bdfd5432828c44630ea7fefedd needs to be reverted.  Greg KH
+> > has been asked to do this a few times but he hasn't gotten around to it
+> > yet.
 > 
-> Here is how the screwup happened: a series was sent, i applied it, 
-> found a test failure with it and reported it:
+> Hi Alan,
 > 
->   http://www.uwsg.iu.edu/hypermail/linux/kernel/0809.1/2388.html
+> Thanks for the info.
 > 
-> but to be able to continue testing i temporarily reverted those bits 
-> manually in reverse order, because it took some down to pin down the 
-> breakage and these bits got intermixed with other commits - and i did 
-> not want to rebase commits that came after the broken series.
+> I can't seem to find that commit in mainline. If you have pointer to
+> the patch I will submit a revert.
 
-Correction: i did the reverts shortly before applying the v2 series - so 
-it was fully technical. I wanted to do a line by line review of the fix 
-(and did it), because the lockup took quite some time to pin down. To 
-avoid this mistake i could also have hard-reset the full v1 series and 
-could have redone the whole topic.
+It isn't in mainline; it's in linux-next.  Sorry, I wasn't sure which 
+kernel you were using.
 
-What's the best Git way to avoid such mishaps? I try to avoid resets and 
-rebases of already pushed out bits as much as possible, because that is 
-both risky because information can be lost and asocial because ongoing 
-work of contributors can be disturbed.
+Alan Stern
 
-	Ingo
