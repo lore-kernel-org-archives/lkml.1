@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761655AbYJJVeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763846AbYJJVe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761655AbYJJVeA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 17:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764104AbYJJVdm
+	id S1763846AbYJJVe2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 17:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762611AbYJJVeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 17:33:42 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56097 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764004AbYJJVdk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 17:33:40 -0400
-Date: Fri, 10 Oct 2008 23:35:18 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Zhao Yakui <yakui.zhao@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, jikos@suse.cz,
-       kernel list <linux-kernel@vger.kernel.org>, linux-acpi@ucw.cz,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.27-rc8: throttling broken
-Message-ID: <20081010213518.GB15285@elf.ucw.cz>
-References: <20081009171238.GB1370@ucw.cz> <200810092327.26301.rjw@sisk.pl> <1223601125.3990.4.camel@yakui_zhao.sh.intel.com>
+	Fri, 10 Oct 2008 17:34:07 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53864 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764245AbYJJVeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 17:34:04 -0400
+Date: Fri, 10 Oct 2008 14:33:57 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, pbadari@us.ibm.com,
+       mel@csn.ul.ie, lcm@us.ibm.com, mingo@elte.hu, greg@kroah.com,
+       dave@linux.vnet.ibm.com, nish.aravamudan@gmail.com
+Subject: Re: [PATCH 1/2] [REPOST] mm: show node to memory section
+	relationship with symlinks in sysfs
+Message-ID: <20081010213357.GD7369@us.ibm.com>
+References: <20081009192115.GB8793@us.ibm.com> <20081010124239.f92b5568.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1223601125.3990.4.camel@yakui_zhao.sh.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081010124239.f92b5568.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-10-10 09:12:05, Zhao Yakui wrote:
-> On Thu, 2008-10-09 at 23:27 +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 9 of October 2008, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > On 2.6.27-rc8 on via/fic subnotebook, throttling seems to be broken. I
-> > > can do echo 15 > /proc/acpi/processor/*/throttling, and proc file
-> > > reflects new value, but cpu still runs at same speed.
-> > > 
-> > > It worked on opensuse11/sled10 kernels at least...
-> After echo 15 > /proc/acpi/processor/*/throttling, what T-state is
-> displayed by cat /proc/acpi/processor/*/throttling?
+On Fri, Oct 10, 2008 at 12:42:39PM -0700, Andrew Morton wrote:
+> On Thu, 9 Oct 2008 12:21:15 -0700
+> Gary Hade <garyhade@us.ibm.com> wrote:
+> 
+> > Show node to memory section relationship with symlinks in sysfs
+> > 
+> > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> > the memory sections located on nodeX.  For example:
+> > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> > indicates that memory section 135 resides on node1.
+> 
+> I'm not seeing here a description of why the kernel needs this feature.
+> Why is it useful?  How will it be used?  What value does it have to
+> our users?
 
-IIRC that worked correctly. I.e. "*" moved to T15.
+Sorry, I should have included that.  In our case, it is another
+small step towards eventual total node removal.  We will need to
+know which memory sections to offline for whatever node is targeted
+for removal.  However, I suspect that exposing the node to section
+information to user-level could be useful for other purposes.
+For example, I have been thinking that using memory hotremove
+functionality to modify the amount of available memory on specific
+nodes without having to physically add/remove DIMMs might be useful
+to those that test application or benchmark performance on a
+multi-node system in various memory configurations.
 
-> If you do the above test on the 2.6.26.x kernel, what T-state is
-> displayed ?
-
-Throttling seems to work there and T15 is correctly marked by "*".
+Gary
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
