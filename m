@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYJJIbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYJJIjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754319AbYJJIbl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 04:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYJJIb3
+	id S1753647AbYJJIjk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 04:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYJJIjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 04:31:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56570 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbYJJIb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 04:31:28 -0400
-Subject: Re: [PATCH 2/2] virtio_net: Improve the recv buffer allocation  
-	scheme
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, netdev@vger.kernel.org
-In-Reply-To: <48EE5AE1.5030002@codemonkey.ws>
-References: <1223494499-18732-1-git-send-email-markmc@redhat.com>
-	 <1223494499-18732-2-git-send-email-markmc@redhat.com>
-	 <200810091155.59731.rusty@rustcorp.com.au>
-	 <20081009153035.GA21542@gondor.apana.org.au>
-	 <1223574013.13792.23.camel@blaa>  <48EE5AE1.5030002@codemonkey.ws>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 09:30:31 +0100
-Message-Id: <1223627431.3618.41.camel@blaa>
-Mime-Version: 1.0
+	Fri, 10 Oct 2008 04:39:31 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:61361 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbYJJIja (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 04:39:30 -0400
+Message-ID: <48EF144D.1050906@fr.ibm.com>
+Date: Fri, 10 Oct 2008 10:37:33 +0200
+From: Daniel Lezcano <dlezcano@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Greg Kurz <gkurz@fr.ibm.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/2] Track in-kernel when we expect checkpoint/restart
+ to work
+References: <20081009190405.13A253CB@kernel> <1223626834.8787.8.camel@localhost.localdomain>
+In-Reply-To: <1223626834.8787.8.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-09 at 14:26 -0500, Anthony Liguori wrote:
-> Mark McLoughlin wrote:
-> > 
-> > Also, including virtio_net_hdr in the data buffer would need another
-> > feature flag. Rightly or wrongly, KVM's implementation requires
-> > virtio_net_hdr to be the first buffer:
-> > 
-> >     if (elem.in_num < 1 || elem.in_sg[0].iov_len != sizeof(*hdr)) {
-> >         fprintf(stderr, "virtio-net header not in first element\n");
-> >         exit(1);
-> >     }
-> > 
-> > i.e. it's part of the ABI ... at least as KVM sees it :-)
+Greg Kurz wrote:
+> On Thu, 2008-10-09 at 12:04 -0700, Dave Hansen wrote:
+>> Suggested by Ingo.
+>>
+>> Checkpoint/restart is going to be a long effort to get things working.
+>> We're going to have a lot of things that we know just don't work for
+>> a long time.  That doesn't mean that it will be useless, it just means
+>> that there's some complicated features that we are going to have to
+>> work incrementally to fix.
+>>
+>> This patch introduces a new mechanism to help the checkpoint/restart
+>> developers.  A new function pair: task/process_deny_checkpoint() is
+>> created.  When called, these tell the kernel that we *know* that the
+>> process has performed some activity that will keep it from being
+>> properly checkpointed.
+>>
+>> The 'flag' is an atomic_t for now so that we can have some level
+>> of atomicity and make sure to only warn once.
+>>
+>> For now, this is a one-way trip.  Once a process is no longer
+>> 'may_checkpoint' capable, neither it nor its children ever will be.
+>> This can, of course, be fixed up in the future.  We might want to
+>> reset the flag when a new pid namespace is created, for instance.
+>>
 > 
-> This is actually something that's broken in a nasty way.  Having the 
-> header in the first element is not supposed to be part of the ABI but it 
-> sort of has to be ATM.
+> Then this patch should be described as:
 > 
-> If an older version of QEMU were to use a newer kernel, and the newer 
-> kernel had a larger header size, then if we just made the header be the 
-> first X bytes, QEMU has no way of knowing how many bytes that should be. 
->   Instead, the guest actually has to allocate the virtio-net header in 
-> such a way that it only presents the size depending on the features that 
-> the host supports.  We don't use a simple versioning scheme, so you'd 
-> have to check for a combination of features advertised by the host but 
-> that's not good enough because the host may disable certain features.
+> Track in-kernel when we expect checkpoint/restart to fail.
 > 
-> Perhaps the header size is whatever the longest element that has been 
-> commonly negotiated?
-> 
-> So that's why this aggressive check is here.  Not to necessarily cement 
-> this into the ABI but as a way to make someone figure out how to 
-> sanitize this all.
+> By the way, why don't you introduce the reverse operation ?
 
-Well, features may be orthogonal but they are still added sequentially
-to the ABI. So, you would have a kind of implicit ABI versioning, while
-still allowing individual selection of features.
+I think implementing the reverse operation will be a nightmare, IMHO it 
+is safe to say we deny checkpointing for the process life-cycle either 
+if the created resource was destroyed before we initiate the checkpoint.
 
-e.g. if NET_F_FOO adds "int foo" to the header and then NET_F_BAR adds
-"int bar" to the header then if NET_F_FOO is negotiated, the guest
-should only send a header with "foo" and if NET_F_FOO|NET_F_BAR or
-NET_F_BAR is negotiated, then the guest sends a header with both "foo"
-and "bar".
+For example, you create a socket, the process becomes uncheckpointable, 
+you close (via sys_close) the socket, you have to track this close to be 
+related to the socket which made the process uncheckpointable in order 
+to make the operation reversible.
 
-Or put it another way, a host or guest may not implement NET_F_FOO but
-knowledge of the "foo" header field is part of the ABI of NET_F_BAR.
-That knowledge would be as simple as knowing that the field exists and
-that it should be ignored if the feature isn't used.
-
-Cheers,
-Mark.
-
+Let's imagine you implement this reverse operation anyway, you have a 
+process which creates a TCP connection, writes data and close the socket 
+(so you are again checkpointable), but in the namespace there is the 
+orphan socket which is not checkpointable yet and you missed this case.
