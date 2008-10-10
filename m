@@ -1,70 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbYJJNNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbYJJNNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759326AbYJJNNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 09:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYJJNNK
+	id S1759870AbYJJNNj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 09:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759435AbYJJNN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 09:13:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52102 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755825AbYJJNNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 09:13:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-Date: Fri, 10 Oct 2008 15:17:16 +0200
-User-Agent: KMail/1.9.9
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <20081009190405.13A253CB@kernel> <1223585671.11830.40.camel@nimitz> <20081010084614.GA319@elte.hu>
-In-Reply-To: <20081010084614.GA319@elte.hu>
+	Fri, 10 Oct 2008 09:13:27 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:19730 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756043AbYJJNN0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 09:13:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=TMtbioDDOLM02rX+FL9JqYg4MFR/ud2cSkg0fkyn2yXl+rPHxc6xtO66OXeQDicofN
+         Znps7ICrmdIqoSoqpOzfQ9/J/o2CjjX8wSyImLXUjN8NIkb2n0MgXND+uT+qhMnqc9Lv
+         7vlO4oDscaTJIeVOI1S4QmTxeSYSKpcJiMG5o=
+Message-ID: <48EF54EF.6040002@gmail.com>
+Date: Fri, 10 Oct 2008 15:13:19 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: balbir@linux.vnet.ibm.com, Michael Rubin <mrubin@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       dave@linux.vnet.ibm.com, chlunde@ping.uio.no, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, agk@sourceware.org,
+       m.innocenti@cineca.it, s-uchida@ap.jp.nec.com, ryov@valinux.co.jp,
+       matt@bluehost.com, dradford@bluehost.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm] page-writeback: fine-grained dirty_ratio and dirty_background_ratio
+References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com>	<20080912131816.e0cfac7a.akpm@linux-foundation.org>	<532480950809221641y3471267esff82a14be8056586@mail.gmail.com>	<48EB4236.1060100@linux.vnet.ibm.com>	<48EB851D.2030300@gmail.com>	<20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>	<48ECB215.4040409@linux.vnet.ibm.com>	<48EE236A.90007@gmail.com> <20081010094139.e7f8653d.kamezawa.hiroyu@jp.fujitsu.com> <48EF2138.9050307@gmail.com>
+In-Reply-To: <48EF2138.9050307@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810101517.17809.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 of October 2008, Ingo Molnar wrote:
+Andrea Righi wrote:
+> KAMEZAWA Hiroyuki wrote:
+>> <snip>
+>>
+>>> -int dirty_background_ratio = 5;
+>>> +int dirty_background_ratio = 5 * PERCENT_PCM;
+>>>  
+>>>  /*
+>>>   * free highmem will not be subtracted from the total free memory
+>>> @@ -77,7 +77,7 @@ int vm_highmem_is_dirtyable;
+>>>  /*
+>>>   * The generator of dirty data starts writeback at this percentage
+>>>   */
+>>> -int vm_dirty_ratio = 10;
+>>> +int vm_dirty_ratio = 10 * PERCENT_PCM;
+>>>  
+>>>  /*
+>>>   * The interval between `kupdate'-style writebacks, in jiffies
+>>> @@ -135,7 +135,8 @@ static int calc_period_shift(void)
+>>>  {
+>>>  	unsigned long dirty_total;
+>>>  
+>>> -	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) / 100;
+>>> +	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory())
+>>> +			/ ONE_HUNDRED_PCM;
+>>>  	return 2 + ilog2(dirty_total - 1);
+>>>  }
+>>>  
+>> I wonder...isn't this overflow in 32bit system ?
 > 
-> * Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+> Correct! the worst case is (in pages):
 > 
-> > On Thu, 2008-10-09 at 14:43 -0500, Serge E. Hallyn wrote:
-> > > Hmm, I don't know too much about aio, but is it possible to succeed with
-> > > io_getevents if we didn't first do a submit?  It looks like the contexts
-> > > are looked up out of current->mm, so I don't think we need this call
-> > > here.
-> > > 
-> > > Otherwise, this is neat.
-> > 
-> > Good question.  I know nothing, either. :)
-> > 
-> > My thought was that any process *trying* to do aio stuff of any kind 
-> > is going to be really confused if it gets checkpointed.  Or, it might 
-> > try to submit an aio right after it checks the list of them.  I 
-> > thought it best to be cautious and say, if you screw with aio, no 
-> > checkpointing for you!
+> 4GB = 100,000 * determine_dirtyable_memory()
 > 
-> as long as there's total transparency and the transition from CR-capable 
-> to CR-disabled state is absolutely safe and race-free, that should be 
-> fine.
+> that means 42950 pages (~168MB) of dirtyable memory is enough to overflow :(.
+> Using an u64 for dirty_total should resolve.
 > 
-> I expect users to quickly cause enough pressure to reduce the NOCR areas 
-> of the kernel significantly ;-)
+> Delta patch is below.
 > 
-> In the long run, could we expect a (experimental) version of hibernation 
-> that would just use this checkpointing facility to hibernate?
+> Unfortunately I have all 64-bit machines right now. Maybe tomorrow I'll
+> be able to get a 32-bit box, if someone doesn't test this before.
+> 
+> Thanks!
+> -Andrea
 
-Surely not ACPI-compliant.
+I've been able to quickly resolve creating a 1GB mem i386 VM with kvm. :)
 
-Apart from this I don't see why not, but OTOH I'm not particularly interested
-in implementing that.
+Everything seems to work fine and with the following fix it doesn't overflow.
 
-Thanks,
-Rafael
+-Andrea
+
+
+> 
+> ---
+> Subject: fix overflow in 32-bit systems using fine-grained dirty_ratio
+> 
+> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/page-writeback.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 6bc8c9b..29913e5 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -133,7 +133,7 @@ static struct prop_descriptor vm_dirties;
+>   */
+>  static int calc_period_shift(void)
+>  {
+> -	unsigned long dirty_total;
+> +	u64 dirty_total;
+>  
+>  	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory())
+>  			/ ONE_HUNDRED_PCM;
