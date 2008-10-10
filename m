@@ -1,108 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbYJJKS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbYJJKTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbYJJKS2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 06:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYJJKSO
+	id S1757183AbYJJKTg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 06:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJJKT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 06:18:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60141 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751991AbYJJKSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 06:18:12 -0400
-Date: Fri, 10 Oct 2008 12:17:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegardno@ifi.uio.no>
-Cc: Dave Airlie <airlied@redhat.com>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm: fix leak of uninitialized data to userspace
-Message-ID: <20081010101753.GE15139@elte.hu>
-References: <20081010100200.GA752@thuin.ifi.uio.no>
+	Fri, 10 Oct 2008 06:19:28 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:36025 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbYJJKT1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 06:19:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:references;
+        b=So6egPGz6gNlY4RjAbNMKoYIOVKfa67Pc1Xe/Vanw9SAyFumHPNGyJ5Mvf1Dd7LcRp
+         kh2GjbnLzZjS1bjKPNYRMij9HdfYAcKjjgYL9eBJCgJp4LlvSmX97SVWSnXQFcglzzqo
+         TncTea5bLBib5OaDw8ATuJ1GXA/emBG+XDt0k=
+Message-ID: <5787cf470810100319x5f52be24w1dba5b3c91231945@mail.gmail.com>
+Date: Fri, 10 Oct 2008 12:19:24 +0200
+From: "Uros Bizjak" <ubizjak@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH, arm] CompactFlash card driver for AT91SAM9260
+In-Reply-To: <5787cf470810100057m1e841103hf183c0e5462579b4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010100200.GA752@thuin.ifi.uio.no>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_104408_28799412.1223633964633"
+References: <5787cf470810100057m1e841103hf183c0e5462579b4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_104408_28799412.1223633964633
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-* Vegard Nossum <vegardno@ifi.uio.no> wrote:
+Hello!
 
-> >From f2e1569413900fa3ce5dad571e1a24d31307ab75 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegardno@thuin.ifi.uio.no>
-> Date: Fri, 10 Oct 2008 11:50:57 +0200
-> Subject: [PATCH] drm: fix leak of uninitialized data to userspace
-> 
-> On Fri, Oct 10, 2008 at 10:54 AM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> >
-> > [  175.375036] WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f65d2294)
-> > [  175.375049] 7063693a303030303a30303a30322e3000a76c080800000000a76c080e000000
-> > [  175.375096]  i i i i i i i i i i i i i i i i i u u u u u u u u u u u u u u u
-> > [  175.375137]                                          ^
-> > [  175.375142]
-> > [  175.375148] Pid: 2288, comm: Xorg Not tainted (2.6.27-tipskw-00069-g37cb0b7-dirty #81) 900
-> > [  175.375155] EIP: 0060:[<c020d283>] EFLAGS: 00003246 CPU: 0
-> > [  175.375169] EIP is at __copy_to_user_ll+0x43/0x60
-> > [  175.375174] EAX: 00000000 EBX: 00000028 ECX: 00000005 EDX: f65d2280
-> > [  175.375180] ESI: f65d2294 EDI: 086cb6b4 EBP: f631bef4 ESP: c055bd68
-> > [  175.375186]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-> > [  175.375191] CR0: 8005003b CR2: f67c1c44 CR3: 36368000 CR4: 000006c0
-> > [  175.375197] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> > [  175.375202] DR6: ffff4ff0 DR7: 00000400
-> > [  175.375206]  [<c020d6f3>] copy_to_user+0x43/0x60
-> > [  175.375214]  [<c028df28>] drm_getunique+0x38/0x50
-> > [  175.375224]  [<c028d329>] drm_ioctl+0x1b9/0x2f0
-> > [  175.375231]  [<c0188a07>] vfs_ioctl+0x67/0x70
-> > [  175.375239]  [<c0188a6c>] do_vfs_ioctl+0x5c/0x270
-> > [  175.375246]  [<c0188cbe>] sys_ioctl+0x3e/0x60
-> > [  175.375253]  [<c010336d>] sysenter_do_call+0x12/0x35
-> > [  175.375261]  [<ffffffff>] 0xffffffff
-> 
-> The hexdump decodes to:
-> 
-> vegardno@thuin ~ $ ./a.out 7063693a303030303a30303a30322e3000a76c080800000000a76c080e000000
-> pci:0000:00:02.0<0><167>l<8><8><0><0><0><0><167>l<8><14><0><0><0>
-> 
-> ...so drm_getunique() is trying to copy some uninitialized data to
-> userspace. The ECX register contains the number of words that are
-> left to copy -- so there are 5 * 4 = 20 bytes left. The offset of the
-> first uninitialized byte (counting from the start of the string) is
-> also 20 (i.e. 0xf65d2294&((1 << 5)-1) == 20). So somebody tried to
-> copy 40 bytes when the string was only 19 long.
-> 
-> In drm_set_busid() we have this code:
-> 
->         dev->unique_len = 40;
->         dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
-> 	...
->         len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
-> 
-> ...so it seems that dev->unique is never updated to reflect the
-> actual length of the string. The remaining bytes (20 in this case)
-> are random uninitialized bytes that are copied into userspace.
-> 
-> This patch fixes the problem by setting dev->unique_len after the
-> snprintf().
-> 
-> Completely untested.
-> 
-> Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
-> Signed-off-by: Vegard Nossum <vegardno@thuin.ifi.uio.no>
+Attached patch implements driver for CF card on AT91SAM9260.The patch
+supportsMemory & IO mode hardware configuration, as shown in section
+20.7.6.1 of AT91SAM9260 hardware manual. CF timings are based on
+Common Memory Read/Write Timing Specification of "CF+ and CompactFlash
+Specification Revision 2.0", the implementation includes TDF
+optimization of SMC.
 
-i've stuck it into the tip/out-of-tree quick-fixes branch.
+The patch was tested together witn pata_pcmcia driver, resulting in:
 
-Sitsofe, could you please check very latest tip/master with 
-CONFIG_KMEMCHECK=y, does it find any other uninitialized memory access?
+kernel: scsi0 : pata_pcmcia
+kernel: ata1: PATA max PIO0 cmd 0xc480c000 ctl 0xc480c00e irq 110
+kernel: ata1.00: CFA: TOSHIBA THNCF064MBA, 2.20, max PIO2
+kernel: ata1.00: 125184 sectors, multi 1
+kernel: ata1.00: configured for PIO0
+kernel: ata1.00: configured for PIO0
+kernel: ata1: EH complete
+kernel: isa bounce pool size: 16 pages
+kernel: scsi 0:0:0:0: Direct-Access     ATA    TOSHIBA THNCF064
+2.20PQ: 0 ANSI: 5
+...
 
-	Ingo
+Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
+
+Uros.
+
+------=_Part_104408_28799412.1223633964633
+Content-Type: text/x-patch; name=at91_cf.diff
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fm4iy8yi0
+Content-Disposition: attachment; filename=at91_cf.diff
+
+ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtYXQ5MS9hdDkxc2FtOTI2MF9kZXZpY2VzLmMgYi9h
+cmNoL2FybS9tYWNoLWF0OTEvYXQ5MXNhbTkyNjBfZGV2aWNlcy5jCmluZGV4IDc3NzRkMTcuLmE3
+NTkwNmYgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL21hY2gtYXQ5MS9hdDkxc2FtOTI2MF9kZXZpY2Vz
+LmMKKysrIGIvYXJjaC9hcm0vbWFjaC1hdDkxL2F0OTFzYW05MjYwX2RldmljZXMuYwpAQCAtMTk1
+LDYgKzE5NSwxMDMgQEAgdm9pZCBfX2luaXQgYXQ5MV9hZGRfZGV2aWNlX2V0aChzdHJ1Y3QgYXQ5
+MV9ldGhfZGF0YSAqZGF0YSkKIHZvaWQgX19pbml0IGF0OTFfYWRkX2RldmljZV9ldGgoc3RydWN0
+IGF0OTFfZXRoX2RhdGEgKmRhdGEpIHt9CiAjZW5kaWYKIAorLyogLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KKyAqICBD
+b21wYWN0IEZsYXNoIC8gUENNQ0lBCisgKiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSAqLworCisjaWYgZGVmaW5lZChD
+T05GSUdfQVQ5MV9DRikgfHwgZGVmaW5lZChDT05GSUdfQVQ5MV9DRl9NT0RVTEUpCitzdGF0aWMg
+c3RydWN0IGF0OTFfY2ZfZGF0YSBjZl9kYXRhOworCisjZGVmaW5lIENGX0JBU0UJCUFUOTFfQ0hJ
+UFNFTEVDVF80CisKK3N0YXRpYyBzdHJ1Y3QgcmVzb3VyY2UgY2ZfcmVzb3VyY2VzW10gPSB7CisJ
+WzBdID0geworCQkuc3RhcnQJPSBDRl9CQVNFLAorCQkvKiB0aWVzIHVwIENTNCBhbmQgQ1M1ICov
+CisJCS5lbmQJPSBDRl9CQVNFICsgU1pfNTEyTSAtIDEsCisJCS5mbGFncwk9IElPUkVTT1VSQ0Vf
+TUVNIHwgSU9SRVNPVVJDRV9NRU1fOEFORDE2QklULAorCX0sCit9OworCitzdGF0aWMgc3RydWN0
+IHBsYXRmb3JtX2RldmljZSBhdDkxc2FtOTI2MF9jZl9kZXZpY2UgPSB7CisJLm5hbWUJCT0gImF0
+OTFfY2YiLAorCS5pZAkJPSAtMSwKKwkuZGV2CQk9IHsKKwkJCQkucGxhdGZvcm1fZGF0YQkJPSAm
+Y2ZfZGF0YSwKKwl9LAorCS5yZXNvdXJjZQk9IGNmX3Jlc291cmNlcywKKwkubnVtX3Jlc291cmNl
+cwk9IEFSUkFZX1NJWkUoY2ZfcmVzb3VyY2VzKSwKK307CisKK3ZvaWQgX19pbml0IGF0OTFfYWRk
+X2RldmljZV9jZihzdHJ1Y3QgYXQ5MV9jZl9kYXRhICpkYXRhKQoreworCXVuc2lnbmVkIGludCBj
+c2E7CisJaW50IGNzOworCisJaWYgKCFkYXRhKQorCQlyZXR1cm47CisKKwljcyA9IGRhdGEtPmNo
+aXBzZWxlY3Q7CisKKwljc2EgPSBhdDkxX3N5c19yZWFkKEFUOTFfTUFUUklYX0VCSUNTQSk7CisJ
+aWYgKGNzID09IDQpCisJCWNzYSB8PSBBVDkxX01BVFJJWF9DUzRBX1NNQ19DRjE7CisJZWxzZSBp
+ZiAoY3MgPT0gNSkKKwkJY3NhIHw9IEFUOTFfTUFUUklYX0NTNUFfU01DX0NGMjsKKwllbHNlCisJ
+CUJVRygpOworCisJYXQ5MV9zeXNfd3JpdGUoQVQ5MV9NQVRSSVhfRUJJQ1NBLCBjc2EpOworCisJ
+LyogVGltaW5nIGZvciBzYW05MjYwICovCisJLyogc2V0IHRoZSBidXMgaW50ZXJmYWNlIGNoYXJh
+Y3RlcmlzdGljcyAqLworCWF0OTFfc3lzX3dyaXRlKEFUOTFfU01DX1NFVFVQKGNzKSwKKwkJICAg
+ICAgIEFUOTFfU01DX05XRVNFVFVQXygzKSB8IEFUOTFfU01DX05DU19XUlNFVFVQXygzKQorCQkg
+ICAgICAgfCBBVDkxX1NNQ19OUkRTRVRVUF8oMykgfCBBVDkxX1NNQ19OQ1NfUkRTRVRVUF8oMykp
+OworCisJYXQ5MV9zeXNfd3JpdGUoQVQ5MV9TTUNfUFVMU0UoY3MpLAorCQkgICAgICAgQVQ5MV9T
+TUNfTldFUFVMU0VfKDE1KSB8IEFUOTFfU01DX05DU19XUlBVTFNFXygxNykKKwkJICAgICAgIHwg
+QVQ5MV9TTUNfTlJEUFVMU0VfKDEzKSB8IEFUOTFfU01DX05DU19SRFBVTFNFXygxNSkpOworCisJ
+YXQ5MV9zeXNfd3JpdGUoQVQ5MV9TTUNfQ1lDTEUoY3MpLAorCQkgICAgICAgQVQ5MV9TTUNfTldF
+Q1lDTEVfKDIxKSB8IEFUOTFfU01DX05SRENZQ0xFXygxOCkpOworCisJYXQ5MV9zeXNfd3JpdGUo
+QVQ5MV9TTUNfTU9ERShjcyksCisJCSAgICAgICBBVDkxX1NNQ19SRUFETU9ERSB8IEFUOTFfU01D
+X1dSSVRFTU9ERQorCQkgICAgICAgfCBBVDkxX1NNQ19FWE5XTU9ERV9SRUFEWQorCQkgICAgICAg
+fCBBVDkxX1NNQ19CQVRfU0VMRUNUIHwgQVQ5MV9TTUNfREJXXzE2CisJCSAgICAgICB8IEFUOTFf
+U01DX1RERl8oMTApIHwgQVQ5MV9TTUNfVERGTU9ERSk7CisKKwkvKiBpbnB1dC9pcnEgKi8KKwlp
+ZiAoZGF0YS0+aXJxX3BpbikgeworCQlhdDkxX3NldF9ncGlvX2lucHV0KGRhdGEtPmlycV9waW4s
+IDEpOworCQlhdDkxX3NldF9kZWdsaXRjaChkYXRhLT5pcnFfcGluLCAxKTsKKwl9CisJYXQ5MV9z
+ZXRfZ3Bpb19pbnB1dChkYXRhLT5kZXRfcGluLCAxKTsKKwlhdDkxX3NldF9kZWdsaXRjaChkYXRh
+LT5kZXRfcGluLCAxKTsKKworCS8qIG91dHB1dHMsIGluaXRpYWxseSBvZmYgKi8KKwlpZiAoZGF0
+YS0+dmNjX3BpbikKKwkJYXQ5MV9zZXRfZ3Bpb19vdXRwdXQoZGF0YS0+dmNjX3BpbiwgMCk7CisJ
+YXQ5MV9zZXRfZ3Bpb19vdXRwdXQoZGF0YS0+cnN0X3BpbiwgMCk7CisKKwkvKiBmb3JjZSBwb3dl
+cm9uIGRlZmF1bHRzIGZvciB0aGlzIHBpbiAuLi4gKi8KKwlhdDkxX3NldF9BX3BlcmlwaChBVDkx
+X1BJTl9QQzEwLCAwKTsJLyogQTI1L0NGUk5XICovCisKKwlpZiAoY3MgPT0gNCkKKwkJYXQ5MV9z
+ZXRfQV9wZXJpcGgoQVQ5MV9QSU5fUEM4LCAwKTsJLyogTkNTNC9DRkNTMCAqLworCWVsc2UKKwkJ
+YXQ5MV9zZXRfQV9wZXJpcGgoQVQ5MV9QSU5fUEM5LCAwKTsJLyogTkNTNS9DRkNTMSAqLworCWF0
+OTFfc2V0X0FfcGVyaXBoKEFUOTFfUElOX1BDMTUsIDEpOwkvKiBuV0FJVCAqLworCWF0OTFfc2V0
+X0JfcGVyaXBoKEFUOTFfUElOX1BDNiwgMCk7CS8qIENGQ0UxICovCisJYXQ5MV9zZXRfQl9wZXJp
+cGgoQVQ5MV9QSU5fUEM3LCAwKTsJLyogQ0ZDRTIgKi8KKworCWNmX2RhdGEgPSAqZGF0YTsKKwlw
+bGF0Zm9ybV9kZXZpY2VfcmVnaXN0ZXIoJmF0OTFzYW05MjYwX2NmX2RldmljZSk7Cit9CisjZWxz
+ZQordm9pZCBfX2luaXQgYXQ5MV9hZGRfZGV2aWNlX2NmKHN0cnVjdCBhdDkxX2NmX2RhdGEgKmRh
+dGEpIHt9CisjZW5kaWYKIAogLyogLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAqICBNTUMgLyBTRApkaWZmIC0tZ2l0
+IGEvYXJjaC9hcm0vbWFjaC1hdDkxL2JvYXJkLXNhbTkyNjBlay5jIGIvYXJjaC9hcm0vbWFjaC1h
+dDkxL2JvYXJkLXNhbTkyNjBlay5jCmluZGV4IGNiMjBlNzAuLmQxOGY4MGQgMTAwNjQ0Ci0tLSBh
+L2FyY2gvYXJtL21hY2gtYXQ5MS9ib2FyZC1zYW05MjYwZWsuYworKysgYi9hcmNoL2FybS9tYWNo
+LWF0OTEvYm9hcmQtc2FtOTI2MGVrLmMKQEAgLTg0LDYgKzg0LDE2IEBAIHN0YXRpYyBzdHJ1Y3Qg
+YXQ5MV91ZGNfZGF0YSBfX2luaXRkYXRhIGVrX3VkY19kYXRhID0gewogCS5wdWxsdXBfcGluCT0g
+MCwJCS8qIHB1bGwtdXAgZHJpdmVuIGJ5IFVEQyAqLwogfTsKIAorLyoKKyAqIENvbXBhY3QgRmxh
+c2gKKyAqLworc3RhdGljIHN0cnVjdCBhdDkxX2NmX2RhdGEgX19pbml0ZGF0YSBla19jZl9kYXRh
+ID0geworCS5pcnFfcGluCT0gQVQ5MV9QSU5fUEMxNCwKKwkuZGV0X3Bpbgk9IEFUOTFfUElOX1BD
+OSwKKwkvLyAudmNjX3Bpbgk9IC4uLiBhbHdheXMgcG93ZXJlZAorCS5yc3RfcGluCT0gQVQ5MV9Q
+SU5fUEMxMSwKKwkuY2hpcHNlbGVjdAk9IDQsCit9OwogCiAvKgogICogQXVkaW8KQEAgLTI0MCw2
+ICsyNTAsOCBAQCBzdGF0aWMgdm9pZCBfX2luaXQgZWtfYm9hcmRfaW5pdCh2b2lkKQogCWF0OTFf
+YWRkX2RldmljZV9tbWMoMCwgJmVrX21tY19kYXRhKTsKIAkvKiBJMkMgKi8KIAlhdDkxX2FkZF9k
+ZXZpY2VfaTJjKE5VTEwsIDApOworCS8qIENvbXBhY3QgRmxhc2ggKi8KKwlhdDkxX2FkZF9kZXZp
+Y2VfY2YoJmVrX2NmX2RhdGEpOwogCS8qIFNTQyAodG8gQVQ3M0MyMTMpICovCiAJYXQ3M2MyMTNf
+c2V0X2NsaygmYXQ3M2MyMTNfZGF0YSk7CiAJYXQ5MV9hZGRfZGV2aWNlX3NzYyhBVDkxU0FNOTI2
+MF9JRF9TU0MsIEFUTUVMX1NTQ19UWCk7CmRpZmYgLS1naXQgYS9kcml2ZXJzL3BjbWNpYS9LY29u
+ZmlnIGIvZHJpdmVycy9wY21jaWEvS2NvbmZpZwppbmRleCBlMGY4ODQwLi40OGJmYjNlIDEwMDY0
+NAotLS0gYS9kcml2ZXJzL3BjbWNpYS9LY29uZmlnCisrKyBiL2RyaXZlcnMvcGNtY2lhL0tjb25m
+aWcKQEAgLTI3Myw3ICsyNzMsNyBAQCBjb25maWcgQkZJTl9DRlBDTUNJQQogCiBjb25maWcgQVQ5
+MV9DRgogCXRyaXN0YXRlICJBVDkxIENvbXBhY3RGbGFzaCBDb250cm9sbGVyIgotCWRlcGVuZHMg
+b24gUENNQ0lBICYmIEFSQ0hfQVQ5MVJNOTIwMAorCWRlcGVuZHMgb24gUENNQ0lBICYmIChBUkNI
+X0FUOTFSTTkyMDAgfHwgQVJDSF9BVDkxU0FNOTI2MCkKIAloZWxwCiAJICBTYXkgWSBoZXJlIHRv
+IHN1cHBvcnQgdGhlIENvbXBhY3RGbGFzaCBjb250cm9sbGVyIG9uIEFUOTEgY2hpcHMuCiAJICBP
+ciBjaG9vc2UgTSB0byBjb21waWxlIHRoZSBkcml2ZXIgYXMgYSBtb2R1bGUgbmFtZWQgImF0OTFf
+Y2YiLgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY21jaWEvYXQ5MV9jZi5jIGIvZHJpdmVycy9wY21j
+aWEvYXQ5MV9jZi5jCmluZGV4IGEwZmZiOGUuLmZhNDAxNzQgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMv
+cGNtY2lhL2F0OTFfY2YuYworKysgYi9kcml2ZXJzL3BjbWNpYS9hdDkxX2NmLmMKQEAgLTI0LDgg
+KzI0LDE0IEBACiAjaW5jbHVkZSA8YXNtL2dwaW8uaD4KIAogI2luY2x1ZGUgPG1hY2gvYm9hcmQu
+aD4KLSNpbmNsdWRlIDxtYWNoL2F0OTFybTkyMDBfbWMuaD4KIAorI2lmIGRlZmluZWQoQ09ORklH
+X0FSQ0hfQVQ5MVJNOTIwMCkKKyNpbmNsdWRlIDxtYWNoL2F0OTFybTkyMDBfbWMuaD4KKyNlbGlm
+IGRlZmluZWQoQ09ORklHX0FSQ0hfQVQ5MVNBTTkyNjApCisjaW5jbHVkZSA8bWFjaC9hdDkxc2Ft
+OV9zbWMuaD4KKyNlbHNlCisjZXJyb3IgIlVuc3VwcG9ydGVkIEFUOTEgcHJvY2Vzc29yIgorI2Vu
+ZGlmCiAKIC8qCiAgKiBBMC4uQTEwIHdvcmsgaW4gZWFjaCByYW5nZTsgQTIzIGluZGljYXRlcyBJ
+L08gc3BhY2U7ICBBMjUgaXMgQ0ZSTlc7CkBAIC0xNTcsNyArMTYzLDExIEBAIHN0YXRpYyBpbnQg
+YXQ5MV9jZl9zZXRfaW9fbWFwKHN0cnVjdCBwY21jaWFfc29ja2V0ICpzLCBzdHJ1Y3QgcGNjYXJk
+X2lvX21hcCAqaW8pCiAJLyoKIAkgKiBVc2UgMTYgYml0IGFjY2Vzc2VzIHVubGVzcy91bnRpbCB3
+ZSBuZWVkIDgtYml0IGkvbyBzcGFjZS4KIAkgKi8KKyNpZiBkZWZpbmVkKENPTkZJR19BUkNIX0FU
+OTFSTTkyMDApCiAJY3NyID0gYXQ5MV9zeXNfcmVhZChBVDkxX1NNQ19DU1IoY2YtPmJvYXJkLT5j
+aGlwc2VsZWN0KSkgJiB+QVQ5MV9TTUNfREJXOworI2Vsc2UKKwljc3IgPSBhdDkxX3N5c19yZWFk
+KEFUOTFfU01DX01PREUoY2YtPmJvYXJkLT5jaGlwc2VsZWN0KSkgJiB+QVQ5MV9TTUNfREJXOwor
+I2VuZGlmCiAKIAkvKgogCSAqIE5PVEU6IHRoaXMgQ0YgY29udHJvbGxlciBpZ25vcmVzIElPSVMx
+Niwgc28gd2UgY2FuJ3QgcmVhbGx5IGRvCkBAIC0xNzYsNyArMTg2LDExIEBAIHN0YXRpYyBpbnQg
+YXQ5MV9jZl9zZXRfaW9fbWFwKHN0cnVjdCBwY21jaWFfc29ja2V0ICpzLCBzdHJ1Y3QgcGNjYXJk
+X2lvX21hcCAqaW8pCiAJCWNzciB8PSBBVDkxX1NNQ19EQldfMTY7CiAJCXByX2RlYnVnKCIlczog
+MTZiaXQgaS9vIGJ1c1xuIiwgZHJpdmVyX25hbWUpOwogCX0KKyNpZiBkZWZpbmVkKENPTkZJR19B
+UkNIX0FUOTFSTTkyMDApCiAJYXQ5MV9zeXNfd3JpdGUoQVQ5MV9TTUNfQ1NSKGNmLT5ib2FyZC0+
+Y2hpcHNlbGVjdCksIGNzcik7CisjZWxzZQorCWF0OTFfc3lzX3dyaXRlKEFUOTFfU01DX01PREUo
+Y2YtPmJvYXJkLT5jaGlwc2VsZWN0KSwgY3NyKTsKKyNlbmRpZgogCiAJaW8tPnN0YXJ0ID0gY2Yt
+PnNvY2tldC5pb19vZmZzZXQ7CiAJaW8tPnN0b3AgPSBpby0+c3RhcnQgKyBTWl8ySyAtIDE7Cg==
+
+------=_Part_104408_28799412.1223633964633--
