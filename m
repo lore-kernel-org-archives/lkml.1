@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762520AbYJJQbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbYJJQeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762520AbYJJQbf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760473AbYJJQbL
+	id S1761939AbYJJQeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759212AbYJJQeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:31:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54714
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759869AbYJJQbJ (ORCPT
+	Fri, 10 Oct 2008 12:34:09 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53571 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757561AbYJJQeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:31:09 -0400
-Date: Fri, 10 Oct 2008 09:30:45 -0700 (PDT)
-Message-Id: <20081010.093045.245353603.davem@davemloft.net>
-To: tobias.brunner@strongswan.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc9] af_key: fix SADB_X_SPDDELETE response
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48EF1108.5030008@strongswan.org>
-References: <48EDF4AD.50907@strongswan.org>
-	<20081009.144409.170605081.davem@davemloft.net>
-	<48EF1108.5030008@strongswan.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Oct 2008 12:34:08 -0400
+Date: Fri, 10 Oct 2008 10:33:51 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: print out DMA mask info
+Message-ID: <20081010163350.GF25780@parisc-linux.org>
+References: <1223506943-6543-1-git-send-email-yinghai@kernel.org> <20081009211837.GC18444@colo.lackof.org> <20081010114002D.fujita.tomonori@lab.ntt.co.jp> <200810100848.09557.jbarnes@virtuousgeek.org> <86802c440810100919xf79f406x403988da7988edc9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440810100919xf79f406x403988da7988edc9@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tobias Brunner <tobias.brunner@strongswan.org>
-Date: Fri, 10 Oct 2008 10:23:36 +0200
+On Fri, Oct 10, 2008 at 09:19:08AM -0700, Yinghai Lu wrote:
+> anyway looking at dma_mask print out is interesting..., some uses 39,
+> and some use 44bits...
 
-> David Miller wrote:
-> > This patch does not apply cleanly to net-next-2.6, a lot has
-> > changed in this area over the past several weeks.
-> > Please respin this so that I can add it, thanks.
-> 
-> Please find the patch for net-next-2.6 below.
+Yes, that reflects the limitations of the device.  You can see many of
+the common ones in include/linux/dma-mapping.h.
 
-Please resubmit:
+By the way, commit 8f286c33f1e838d631f4a3260b33efce4bc5973c is a really
+bad idea.  It is very helpful to see which bitmasks are used by real
+devices, and which ones aren't.  It should be reverted, IMO.
 
-1) At least CC:'d to the correct mailing list, netdev@vger.kernel.org
-
-   This is important so that the patch gets tracked at:
-
-	http://patchwork.ozlabs.org/project/netdev/list/
-
-2) With full commit log message and signoffs presented again.
-
-Thanks.
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
