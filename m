@@ -1,111 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbYJJL4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbYJJL5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758958AbYJJL4i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 07:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYJJL4a
+	id S1759198AbYJJL5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 07:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYJJL5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 07:56:30 -0400
-Received: from sunrise.pg.gda.pl ([153.19.40.230]:51951 "EHLO
-	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753774AbYJJL43 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 07:56:29 -0400
-Date: Fri, 10 Oct 2008 13:56:02 +0200
-From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-To: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: Re: [PATCH 0/1] SIGWINCH problem with terminal apps still alive
-Message-ID: <20081010135602.70ed7aaa@merlin.oi.pg.gda.pl>
-In-Reply-To: <20081010123517.7441a481@merlin.oi.pg.gda.pl>
-References: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
-	<20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
-	<20081006202834.5b6c5092@merlin.oi.pg.gda.pl>
-	<20081006231434.7aaa41ee@lxorguk.ukuu.org.uk>
-	<20081007222857.11f92ca0@merlin.oi.pg.gda.pl>
-	<20081010031234.4030b176@merlin.oi.pg.gda.pl>
-	<20081010102906.7fb17d4a@lxorguk.ukuu.org.uk>
-	<20081010123517.7441a481@merlin.oi.pg.gda.pl>
-Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 10 Oct 2008 07:57:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39340 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754150AbYJJL5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 07:57:12 -0400
+Date: Fri, 10 Oct 2008 13:56:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Typo in x86 apic.c with DIVISOR setup
+Message-ID: <20081010115655.GC19487@elte.hu>
+References: <20081010002203.GA23238@linux-os.sc.intel.com> <aa79d98a0810092138q1f27a94bhd544ca3637c02c4f@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC463782339F@orsmsx505.amr.corp.intel.com> <aa79d98a0810092239p32153776qd0cda47e54929545@mail.gmail.com> <20081010090100.GC319@elte.hu> <aa79d98a0810100416q72ec10d5q7d841e02dc4d4f81@mail.gmail.com> <alpine.LFD.1.10.0810101221580.19747@ftp.linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0810101221580.19747@ftp.linux-mips.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0012]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fri, 10 Oct 2008 12:35:17 +0200 - Adam Tlałka <atlka@pg.gda.pl>:
 
-> Fri, 10 Oct 2008 10:29:06 +0100 - Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> > 
-> > NAK again
-> > 
-> > Moving the copies around simply moves the race, it might be that it
-> > fixes your box and unfixes other peoples.
-> > 
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+
+> On Fri, 10 Oct 2008, Cyrill Gorcunov wrote:
 > 
-> I don't think so. Race appears because of kill_pgrp() call which
-> generates SIGWINCH so it leads to reschedule and ioctl() which reads
-> termios sizes before they are updated - from time to time. So if we
-> update variables before signal generation there will be no race.
-> Moving the point of variables update eliminates
-> possibility of reading old values. So even if after kill_pgrp() the
-> other process will not lock here on this mutex values obtained will be
-> sane.
+> > Btw I don't remember but hope it was not me who made this typo --
 > 
-> Whats more we could protect by mutex variable only test and change
-> operations and it stil will work correctly.
-> 
-> Because now we have 2.6.27 I tested this kind of code in
-> tty_io.c(tty_do_resize):
-> 
-> ...
-> 
-> So it works, and change of tty->winsize and real_tty->winsize are
-> protected . Why another process should wait more if winsize is
-> already properly set?
+>  What would be the difference so that you hope it wasn't you?  All the 
+> people make mistakes, this one has been caught and that's what really 
+> matters.
 
-Next if we want to speed up our code in case of resize we could remove
-one of two comparizons so values always be updated in tty_io.c(tty_do_resize):
+yeah, like most kernel newbies Cyrill is worrying way too much about 
+mistakes. In 10 years time he too will have his healthy collection of 
+embarrassing brown paperbag incidents and will be a lot more relaxed 
+about it, just like the rest of us ;-)
 
-	struct pid *pgrp, *rpgrp;
-        unsigned long flags;
+what matters is to fix them quickly and to learn from those mistakes 
+that are avoidable.
 
-	/* For a PTY we need to lock the tty side */                                                                 
-        mutex_lock(&real_tty->termios_mutex);                                                                        
-        flags = memcmp(ws, &tty->winsize, sizeof(*ws));
-        tty->winsize = *ws;
-        real_tty->winsize = *ws;
-        mutex_unlock(&real_tty->termios_mutex);                                                                      
-        if (flags){                                                                                                  
-                /* Get the PID values and reference them so we can                                                   
-                   avoid holding the tty ctrl lock while sending signals */                                          
-                spin_lock_irqsave(&tty->ctrl_lock, flags);                                                           
-                pgrp = get_pid(tty->pgrp);                                                                           
-                rpgrp = get_pid(real_tty->pgrp);                                                                     
-                spin_unlock_irqrestore(&tty->ctrl_lock, flags);                                                      
-                                                                                                                     
-                if (pgrp)                                                                                            
-                        kill_pgrp(pgrp, SIGWINCH, 1);                                                                
-                if (rpgrp != pgrp && rpgrp)                                                                          
-                        kill_pgrp(rpgrp, SIGWINCH, 1);                                                               
-                                                                                                                     
-                put_pid(pgrp);                                                                                       
-                put_pid(rpgrp);                                                                                      
-        }                                                                                                            
-                                                                                                                     
-        return 0;
-
-We could assume that ioctl which sets the same values is rather rare
-so we want faster code in case of changes. Presented above code for 
-kernel 2.6.27 works quit nicely and I can't observe any bad effect of it.
-Anyway we can prove on paper by time diagrams that there will be no races
-according to update and reading winsize variables.
-
-Regards
-
--- 
-Adam Tlałka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
-System  & Network Administration Group       - - - ~~~~~~
-Computer Center, Gdańsk University of Technology, Poland
+	Ingo
