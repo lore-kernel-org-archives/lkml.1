@@ -1,159 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbYJJSuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762973AbYJJSvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762932AbYJJSuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 14:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760343AbYJJSuO
+	id S1762973AbYJJSvl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 14:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759217AbYJJSvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 14:50:14 -0400
-Received: from igw3.br.ibm.com ([32.104.18.26]:44922 "EHLO igw3.br.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760147AbYJJSuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 14:50:12 -0400
-Subject: Re: [PATCH 4/5] TPM: addition of pnp_remove()
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, zohar@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, jmorris@namei.org, tpm@selhorst.net
-In-Reply-To: <20081003200509.GA7577@us.ibm.com>
-References: <cover.1223042186.git.srajiv@linux.vnet.ibm.com>
-	 <8e75ba3e9a38cba61b8627c92a5164903e255b17.1223042186.git.srajiv@linux.vnet.ibm.com>
-	 <20081003200509.GA7577@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 16:50:02 -0300
-Message-Id: <1223668202.2586.21.camel@Blackbox.br.ibm.com>
+	Fri, 10 Oct 2008 14:51:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43774
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758970AbYJJSvc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 14:51:32 -0400
+Date: Fri, 10 Oct 2008 11:51:08 -0700 (PDT)
+Message-Id: <20081010.115108.199149570.davem@davemloft.net>
+To: jens.axboe@oracle.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com
+Subject: Re: [GIT PULL] block changes for 2.6.28
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081010174931.GG19428@kernel.dk>
+References: <20081010080916.GV19428@kernel.dk>
+	<20081010.092914.162463888.davem@davemloft.net>
+	<20081010174931.GG19428@kernel.dk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unfortunately we don't have an old 1.1 infineon tpm chip in order to
-test this legacy driver, but probably we'd need to add a call to
-tpm_dev_vendor_release() in tpm_infineon.c
+From: Jens Axboe <jens.axboe@oracle.com>
+Date: Fri, 10 Oct 2008 19:49:31 +0200
 
-Marcel, do you have any clue?
-
-On Fri, 2008-10-03 at 15:05 -0500, Serge E. Hallyn wrote:
-> Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
-> > The tpm_dev_release function is only called for platform devices, not pnp devices, so we
-> > implemented the .remove function for pnp ones.
-> > Since it's code is very similar to the one inside tpm_dev_release, we've created a helper
-> > function tpm_dev_vendor_release, which is called by both.
+> On Fri, Oct 10 2008, David Miller wrote:
+> > From: Jens Axboe <jens.axboe@oracle.com>
+> > Date: Fri, 10 Oct 2008 10:09:16 +0200
+> > 
+> > > This is the bulk of the block layer changes for 2.6.28. As other git
+> > > trees are based on this (like SCSI), it would be good if you could merge
+> > > it sooner rather than later.
+> > > 
+> > > Please pull from:
+> > > 
+> > >         git://git.kernel.dk/linux-2.6-block.git for-2.6.28
+> > 
+> > Did you merge in my generic remote softirq bits or are you going
+> > to do that later?
 > 
-> Should tpm_infineon also be switched over to this?
-> 
-> > Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-> > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-> > ---
-> >  drivers/char/tpm/tpm.c     |   22 ++++++++++++++++------
-> >  drivers/char/tpm/tpm.h     |    1 +
-> >  drivers/char/tpm/tpm_tis.c |   14 +++++++++++++-
-> >  3 files changed, 30 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-> > index 24fb7ab..ab03b4d 100644
-> > --- a/drivers/char/tpm/tpm.c
-> > +++ b/drivers/char/tpm/tpm.c
-> > @@ -1133,23 +1133,33 @@ int tpm_pm_resume(struct device *dev)
-> >  }
-> >  EXPORT_SYMBOL_GPL(tpm_pm_resume);
-> > 
-> > +/* In case vendor provided release function, call it too.*/
-> > +
-> > +void tpm_dev_vendor_release(struct tpm_chip *chip)
-> > +{
-> > +	if (chip->vendor.release)
-> > +	 	chip->vendor.release(chip->dev);
-> > +	
-> > +	clear_bit(chip->dev_num, dev_mask);
-> > +	kfree(chip->vendor.miscdev.name);
-> > +}
-> > +EXPORT_SYMBOL_GPL(tpm_dev_vendor_release);
-> > +
-> > +
-> >  /*
-> >   * Once all references to platform device are down to 0,
-> >   * release all allocated structures.
-> > - * In case vendor provided release function, call it too.
-> >   */
-> >  static void tpm_dev_release(struct device *dev)
-> >  {
-> >  	struct tpm_chip *chip = dev_get_drvdata(dev);
-> > 
-> > -	if (chip->vendor.release)
-> > -		chip->vendor.release(dev);
-> > -	chip->release(dev);
-> > +	tpm_dev_vendor_release(chip);
-> > 
-> > -	clear_bit(chip->dev_num, dev_mask);
-> > -	kfree(chip->vendor.miscdev.name);
-> > +	chip->release(dev);
-> >  	kfree(chip);
-> >  }
-> > +EXPORT_SYMBOL_GPL(tpm_dev_release);
-> > 
-> >  /*
-> >   * Called from tpm_<specific>.c probe function only for devices 
-> > diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-> > index 2756cab..8e30df4 100644
-> > --- a/drivers/char/tpm/tpm.h
-> > +++ b/drivers/char/tpm/tpm.h
-> > @@ -132,6 +132,7 @@ extern struct tpm_chip* tpm_register_hardware(struct device *,
-> >  				 const struct tpm_vendor_specific *);
-> >  extern int tpm_open(struct inode *, struct file *);
-> >  extern int tpm_release(struct inode *, struct file *);
-> > +extern void tpm_dev_vendor_release(struct tpm_chip *);
-> >  extern ssize_t tpm_write(struct file *, const char __user *, size_t,
-> >  			 loff_t *);
-> >  extern ssize_t tpm_read(struct file *, char __user *, size_t, loff_t *);
-> > diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-> > index ed1879c..3491d70 100644
-> > --- a/drivers/char/tpm/tpm_tis.c
-> > +++ b/drivers/char/tpm/tpm_tis.c
-> > @@ -630,12 +630,23 @@ static struct pnp_device_id tpm_pnp_tbl[] __devinitdata = {
-> >  	{"", 0}			/* Terminator */
-> >  };
-> > 
-> > +static __devexit void tpm_tis_pnp_remove(struct pnp_dev *dev)
-> > +{
-> > +	struct tpm_chip *chip = pnp_get_drvdata(dev);
-> > +	
-> > +	tpm_dev_vendor_release(chip);
-> > +
-> > +	kfree(chip);
-> > +}
-> > +
-> > +
-> >  static struct pnp_driver tis_pnp_driver = {
-> >  	.name = "tpm_tis",
-> >  	.id_table = tpm_pnp_tbl,
-> >  	.probe = tpm_tis_pnp_init,
-> >  	.suspend = tpm_tis_pnp_suspend,
-> >  	.resume = tpm_tis_pnp_resume,
-> > +	.remove = tpm_tis_pnp_remove,
-> >  };
-> > 
-> >  #define TIS_HID_USR_IDX sizeof(tpm_pnp_tbl)/sizeof(struct pnp_device_id) -2
-> > @@ -683,6 +694,7 @@ static void __exit cleanup_tis(void)
-> >  	spin_lock(&tis_lock);
-> >  	list_for_each_entry_safe(i, j, &tis_chips, list) {
-> >  		chip = to_tpm_chip(i);
-> > +		tpm_remove_hardware(chip->dev);
-> >  		iowrite32(~TPM_GLOBAL_INT_ENABLE &
-> >  			  ioread32(chip->vendor.iobase +
-> >  				   TPM_INT_ENABLE(chip->vendor.
-> > @@ -694,9 +706,9 @@ static void __exit cleanup_tis(void)
-> >  			free_irq(chip->vendor.irq, chip);
-> >  		iounmap(i->iobase);
-> >  		list_del(&i->list);
-> > -		tpm_remove_hardware(chip->dev);
-> >  	}
-> >  	spin_unlock(&tis_lock);
-> > +	
-> >  	if (force) {
-> >  		platform_device_unregister(pdev);
-> >  		driver_unregister(&tis_drv);
-> > -- 
-> > 1.5.6.3
+> I did not, I thought you would merge them youself (I acked the patchset,
+> iirc). So either do that, or I can take it through the second (and
+> smaller) merge of block bits. Either way, I'm fine with it for 2.6.28
+> :-)
 
+Please take it in.
+
+In my final posting of those changes I made it clear that the way
+to do this is to have any users of the infrastructure pull my GIT
+tree in:
+
+	master.kernel.org:/pub/scm/linux/kernel/git/davem/softirq-2.6.git
+
+and whoever went first into Linus's tree would get it there.
+
+I'm not at the point where I can use this in the networking and likely
+won't have such work ready for 2.6.28 so it's imperative that you do
+this at this point :-)
