@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbYJJDL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbYJJD2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbYJJDL0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 23:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYJJDLS
+	id S1754656AbYJJD2j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 23:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYJJD2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 23:11:18 -0400
-Received: from crmm.lgl.lu ([158.64.72.228]:38880 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751706AbYJJDLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 23:11:17 -0400
-Message-ID: <48EEC7D1.80404@knaff.lu>
-Date: Fri, 10 Oct 2008 05:11:13 +0200
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 9 Oct 2008 23:28:31 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:47447 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751539AbYJJD2b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Oct 2008 23:28:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=iEFx9mrau2rDknFyL0/981wqNSxdX1fdb/LcKVZuvvQI9AtcxSvjNTHCPiFUjMw866CBEvliMe0UdW/ITq7BufboyzWuYm/M2SY8M4g86dPYgpJ5nGwl7ze5uWDe96H20T0qu5/NppkAX7Al1TYHcr3lW4hLtbBhm71JGEkmano=  ;
+X-YMail-OSG: QhvqiYIVM1kQPoR3rMMjzXeFfwsMlDmifsQGnYszSr_QjFSM9GfpgMUcrqF.SdOy8WFfKtl0FL0fCmhhYTwOIuW__h.Qq5vMROw_xIoecE9nPZvBMENst5KiaAB0oG.zp4w1SL7wehrc4HgIor5wVipN9MdI1yywMOtijojzF.XA9NrjSs972byWLzOj
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: Update cacheline size on X86_GENERIC
+Date: Fri, 10 Oct 2008 14:28:23 +1100
+User-Agent: KMail/1.9.5
+Cc: x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20081009171453.GA15321@redhat.com>
+In-Reply-To: <20081009171453.GA15321@redhat.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
- initrds
-References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu> <48EE4302.2010404@zytor.com>
-In-Reply-To: <48EE4302.2010404@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810101428.23662.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Hi Alain,
-> 
-> Are you planning to submit an updated patch any time soon?  If so,
-> please separate the ARM, x86, library and generic portions into separate
-> patches.  It looks like at least some of them already went into ARM,
-> which makes it impractical to include this as a monolithic patch, which
-> it really shouldn't have to be, anyway.
-> 
->     -hpa
+On Friday 10 October 2008 04:14, Dave Jones wrote:
+> I just noticed that configuring a kernel to use CONFIG_X86_GENERIC
+> (as is typical for a distro kernel) configures it to use a 128 byte
+> cacheline size. This made sense when that was commonplace (P4 era) but
+> current
+> Intel, AMD and VIA cpus use 64 byte cachelines.
 
-I'll look into it (the split) this weekend, if I'll find the time.
-Should each part be compilable on its own? If so, it might be difficult
-to do the split along the lines outlined above.
+I think P4 technically did have 64 byte cachelines, but had some adjacent
+line prefetching. And AFAIK core2 CPUs can do similar prefetching (but
+maybe it's smarter and doesn't cause so much bouncing?).
 
-Alain
+Anyway, GENERIC kernel should run well on all architectures, and while
+going too big causes slightly increased structures sometimes, going too
+small could result in horrible bouncing.
 
+Lastly, I think x86 will go to 128 byte lines in the next year or two, so
+maybe at this point we can just keep 128 byte alignment?
+
+/random thoughts
+
+>
+> Signed-off-by: Dave Jones <davej@redhat.com>
+>
+> --- linux-2.6.26.noarch/arch/x86/Kconfig.cpu~	2008-10-09 12:59:56.000000000
+> -0400 +++ linux-2.6.26.noarch/arch/x86/Kconfig.cpu	2008-10-09
+> 13:11:32.000000000 -0400 @@ -301,8 +301,8 @@ config X86_CPU
+>  # Define implied options from the CPU selection here
+>  config X86_L1_CACHE_BYTES
+>  	int
+> -	default "128" if GENERIC_CPU || MPSC
+> -	default "64" if MK8 || MCORE2
+> +	default "128" if MPENTIUM4 || MPSC
+> +	default "64" if MK8 || MCORE2 || GENERIC_CPU
+>  	depends on X86_64
+>
+>  config X86_INTERNODE_CACHE_BYTES
+> @@ -316,10 +316,10 @@ config X86_CMPXCHG
+>
+>  config X86_L1_CACHE_SHIFT
+>  	int
+> -	default "7" if MPENTIUM4 || X86_GENERIC || GENERIC_CPU || MPSC
+> +	default "7" if MPENTIUM4 || MPSC
+>  	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
+>  	default "5" if MWINCHIP3D || MWINCHIP2 || MWINCHIPC6 || MCRUSOE ||
+> MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 ||
+> M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX -	default "6" if MK7 ||
+> MK8 || MPENTIUMM || MCORE2 || MVIAC7
+> +	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7 || X86_GENERIC
+> || GENERIC_CPU
+>
+>  config X86_XADD
+>  	def_bool y
