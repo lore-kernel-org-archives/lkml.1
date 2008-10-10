@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbYJJWQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbYJJWnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761413AbYJJWQP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 18:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYJJWP7
+	id S1754432AbYJJWnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 18:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYJJWni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 18:15:59 -0400
-Received: from tundra.namei.org ([65.99.196.166]:50505 "EHLO tundra.namei.org"
+	Fri, 10 Oct 2008 18:43:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54666 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbYJJWP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 18:15:58 -0400
-Date: Sat, 11 Oct 2008 09:15:08 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, srajiv@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/4] integrity
-In-Reply-To: <1223648163.3596.6.camel@localhost.localdomain>
-Message-ID: <alpine.LRH.1.10.0810110910070.3055@tundra.namei.org>
-References: <cover.1223401603.git.zohar@linux.vnet.ibm.com>  <alpine.LRH.1.10.0810081553090.13169@tundra.namei.org>  <1223475584.3103.8.camel@localhost.localdomain>  <alpine.LRH.1.10.0810090905570.18606@tundra.namei.org>
- <1223648163.3596.6.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1751155AbYJJWnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 18:43:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH -next] PM: Simplify the new suspend/hibernation framework for devices
+Date: Sat, 11 Oct 2008 00:47:34 +0200
+User-Agent: KMail/1.9.9
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Hannes Reinecke <hare@suse.de>
+References: <200810060055.07601.rjw@sisk.pl> <200810062246.06654.rjw@sisk.pl> <20081010215242.GB21890@kroah.com>
+In-Reply-To: <20081010215242.GB21890@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810110047.35993.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008, Mimi Zohar wrote:
-
-> > > These TPM patches are base TPM changes, not really related to the
-> > > integrity patches and certainly not dependent them.  However the reverse
-> > > is not true.  The integrity-tpm-internal-kernel-interface patch is
-> > > dependent on, at least, the TPM-rcu-locking patch.
+On Friday, 10 of October 2008, Greg KH wrote:
+> On Mon, Oct 06, 2008 at 10:46:05PM +0200, Rafael J. Wysocki wrote:
+> > On Monday, 6 of October 2008, Rafael J. Wysocki wrote:
+> > > Hi Greg,
+> > > 
+> > > I promised at the KS that I would simplify the new suspend/hibernation
+> > > framework for devices to avoid the confusion with two types of PM
+> > > operations and pointers to PM operations from too many places.
+> > > 
+> > > The appended patch is intended for this purpose.  Unfortunately, I can't
+> > > split it into subsystem-related patches, because compilation would be broken
+> > > between them.
+> > > 
+> > > The patch applies to linux-next, but it's trivial to make it apply to the
+> > > mainline.  It's been compiled on x86 (both 32-bit and 64-bit) and tested
+> > > on hp nx6325, doesn't appear to break anything.
 > > 
-> > Please repost the TPM patches, then.
+> > This one had a checkpatch.pl problem, sorry for that.  Updated patch is
+> > appended.
 > 
-> The TPM patches were just added to the -mm tree (10/8 18:45 EDT),
-> available from http://userweb.kernel.org/~akpm/mmotm/.
+> I've added this to my tree (Jesse, is this ok, as it does have a PCI
+> portion?)
+> 
+> But it's too late for .28, especially due to the -next tree not up and
+> running right now.  I'll let it bake in -mm and -next and it should go
+> into .29.
+> 
+> Is that ok?
 
-I've added the prereq patches to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+Well, if anyone pushes anything depending on this framework for .27, that will
+become a !@#$%^&* mess (we've had this problem once already).
 
-Please test it, and base your next version of the integrity patches on 
-that branch.  Generally, if your patches depend on some other patches, you 
-need to coordinate to ensure the prerequisite patches are either in the 
-tree you're aiming for, or post them as part of the patchset.
+Other than that, fine by me.
 
-Note that there are some interesting sparse warnings for the TPM code 
-(not arising from the above):
-
-drivers/char/tpm/tpm.c:493:10: error: bad constant expression
-drivers/char/tpm/tpm.c:500:32: error: cannot size expression
-drivers/char/tpm/tpm.c:507:10: error: bad constant expression
-drivers/char/tpm/tpm.c:515:32: error: cannot size expression
-drivers/char/tpm/tpm.c:547:32: error: cannot size expression
-  CHECK   drivers/char/tpm/tpm_atmel.c
-  CHECK   drivers/char/tpm/tpm_infineon.c
-drivers/char/tpm/tpm_bios.c:412:7: warning: incorrect type in assignment (different address spaces)
-drivers/char/tpm/tpm_bios.c:412:7:    expected struct acpi_table_header *virt
-drivers/char/tpm/tpm_bios.c:412:7:    got void [noderef] <asn:2>*
-drivers/char/tpm/tpm_bios.c:416:23: warning: incorrect type in argument 1 (different address spaces)
-drivers/char/tpm/tpm_bios.c:416:23:    expected void [noderef] <asn:2>*logical_address
-drivers/char/tpm/tpm_bios.c:416:23:    got struct acpi_table_header *virt
-
-
--- 
-James Morris
-<jmorris@namei.org>
+Thanks,
+Rafael
