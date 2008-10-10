@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYJJK14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbYJJK2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757867AbYJJK14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 06:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYJJK1r
+	id S1758276AbYJJK2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 06:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758090AbYJJK2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 06:27:47 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:3135 "EHLO SMTP02.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYJJK1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 06:27:46 -0400
-X-IronPort-AV: E=Sophos;i="4.33,389,1220241600"; 
-   d="scan'208";a="23311677"
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ian Campbell <Ian.Campbell@citrix.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Signed-off-by: Ingo Molnar" <mingo@elte.hu>
-Subject: [PATCH] xen: do not reserve 2 pages of padding between hypervisor and fixmap.
-Date: Fri, 10 Oct 2008 11:27:38 +0100
-Message-Id: <1223634458-25820-1-git-send-email-Ian.Campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.3
-X-OriginalArrivalTime: 10 Oct 2008 10:27:44.0029 (UTC) FILETIME=[D4E0BCD0:01C92AC2]
+	Fri, 10 Oct 2008 06:28:05 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:65136 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbYJJK2D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 06:28:03 -0400
+Message-ID: <48EF2E26.3020200@fr.ibm.com>
+Date: Fri, 10 Oct 2008 12:27:50 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
+References: <20081009190405.13A253CB@kernel>	<20081009190406.1B257119@kernel>  <20081009194350.GA31214@us.ibm.com> <1223585671.11830.40.camel@nimitz>
+In-Reply-To: <1223585671.11830.40.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When reserving space for the hypervisor the Xen paravirt backend adds
-an extra two pages (this was carried forward from the 2.6.18-xen tree
-which had them "for safety"). Depending on various CONFIG options this
-can cause the boot time fixmaps to span multiple PMDs which is not
-supported and triggers a WARN in early_ioremap_init().
+Dave Hansen wrote:
+> On Thu, 2008-10-09 at 14:43 -0500, Serge E. Hallyn wrote:
+>> Hmm, I don't know too much about aio, but is it possible to succeed with
+>> io_getevents if we didn't first do a submit?  It looks like the contexts
+>> are looked up out of current->mm, so I don't think we need this call
+>> here.
+>>
+>> Otherwise, this is neat.
+> 
+> Good question.  I know nothing, either. :)
+> 
+> My thought was that any process *trying* to do aio stuff of any kind is
+> going to be really confused if it gets checkpointed.  Or, it might try
+> to submit an aio right after it checks the list of them.  I thought it
+> best to be cautious and say, if you screw with aio, no checkpointing for
+> you!
 
-This was exposed by 2216d199b1430d1c0affb1498a9ebdbd9c0de439 which
-moved the dmi table parsing earlier.
-    x86: fix CONFIG_X86_RESERVE_LOW_64K=y
+IMO, the right path would be to deny checkpoint if you have aio requests
+pending but if you have not, aio's are not an issue for checkpoint anymore.
 
-    The bad_bios_dmi_table() quirk never triggered because we do DMI setup
-    too late. Move it a bit earlier.
+but that's one easy one to track ...
 
-There is no real reason to reserve these two extra pages and the
-fixmap already incorporates FIX_HOLE which serves the same
-purpose. None of the other callers of reserve_top_address do this.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/xen/enlighten.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index bd6b50a..e8df41a 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1401,7 +1401,7 @@ static void __init xen_reserve_top(void)
- 	if (HYPERVISOR_xen_version(XENVER_platform_parameters, &pp) == 0)
- 		top = pp.virt_start;
- 
--	reserve_top_address(-top + 2 * PAGE_SIZE);
-+	reserve_top_address(-top);
- #endif	/* CONFIG_X86_32 */
- }
- 
--- 
-1.5.6.3
-
+C.
