@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYJJFke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbYJJFmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbYJJFke (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 01:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYJJFkX
+	id S1755997AbYJJFmW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 01:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYJJFmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 01:40:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38211 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbYJJFkW (ORCPT
+	Fri, 10 Oct 2008 01:42:13 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:42289 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752580AbYJJFmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 01:40:22 -0400
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Evgeniy Polyakov <s0mbre@tservice.net.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
-In-Reply-To: <20081009231759.GA8664@tservice.net.ru>
-References: <20081009231759.GA8664@tservice.net.ru>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 07:40:05 +0200
-Message-Id: <1223617206.7382.54.camel@lappy.programming.kicks-ass.net>
+	Fri, 10 Oct 2008 01:42:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAEAEOI7khMQWq+/2dsb2JhbACBcrwbgWo
+Date: Fri, 10 Oct 2008 01:42:10 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] markers: bit-field is not thread-safe nor smp-safe
+Message-ID: <20081010054210.GA19481@Krystal>
+References: <48EEC6AD.4010606@cn.fujitsu.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <48EEC6AD.4010606@cn.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 01:30:24 up 127 days, 10:10,  9 users,  load average: 0.33, 0.41,
+	0.35
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-10 at 03:17 +0400, Evgeniy Polyakov wrote:
+* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> 
+> bit-field is not thread-safe nor smp-safe.
+> 
+> struct marker_entry.rcu_pending is not protected by any lock
+> in rcu-callback free_old_closure().
+> so we must turn it into a safe type.
+> 
 
-> I was so lucky to 'guess' (just after couple of hundreds of compilations),
-> that it corresponds to 8f4d37ec073c17e2d4aa8851df5837d798606d6f commit about
-> high-resolution timers, attached patch against 2.6.25 brings tbench
-> performance for the 2.6.25 kernel tree to 455 MB/s.
+All struct marker_entry.rcu_pending accesses are done with the
+markers_mutex held, except the one done in free_old_closure(). Normally,
+there should be a 
+        if (entry->rcu_pending)
+           rcu_barrier_sched();
 
-can you try
+At the beginning of each markers_mutex section (just after get_marker())
+to make sure any pending callback is executed at that point before any
+of rcu_pending or ptype are touched.
 
-echo NO_HRTICK > /debug/sched_features
+I just noticed that the "markers: fix unchecked format" patch has a race
+with respect to this. I'll post a patch in a jiffy.
 
-on .27 like kernels?
+Mathieu
 
-Also, what clocksource do those machines use?
-
-cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-
-As to, a7be37ac8e1565e00880531f4e2aff421a21c803, could you try
-tip/master? I reworked some of the wakeup preemption code in there.
-
-Thanks for looking into this issue!
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
