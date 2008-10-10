@@ -1,112 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYJJDdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYJJDoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYJJDdk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Oct 2008 23:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYJJDdc
+	id S1754799AbYJJDoI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Oct 2008 23:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYJJDn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Oct 2008 23:33:32 -0400
-Received: from sunrise.pg.gda.pl ([153.19.40.230]:53129 "EHLO
-	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbYJJDdb convert rfc822-to-8bit (ORCPT
+	Thu, 9 Oct 2008 23:43:56 -0400
+Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:31357 "HELO
+	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751457AbYJJDnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Oct 2008 23:33:31 -0400
-Date: Fri, 10 Oct 2008 05:32:38 +0200
-From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-To: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: Re: [PATCH 0/1] SIGWINCH problem with terminal apps still alive
-Message-ID: <20081010053238.5ad56876@merlin.oi.pg.gda.pl>
-In-Reply-To: <20081010031234.4030b176@merlin.oi.pg.gda.pl>
-References: <20081006140708.7911f101@merlin.oi.pg.gda.pl>
-	<20081006141306.6a1f0a15@lxorguk.ukuu.org.uk>
-	<20081006202834.5b6c5092@merlin.oi.pg.gda.pl>
-	<20081006231434.7aaa41ee@lxorguk.ukuu.org.uk>
-	<20081007222857.11f92ca0@merlin.oi.pg.gda.pl>
-	<20081010031234.4030b176@merlin.oi.pg.gda.pl>
-Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Oct 2008 23:43:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=XmC4qwysG9YWxunXGM3Qd+aInvkF3HE7uXfAP2DQlPGqI2ay2OPw0OUx9qKZe+qsJGXO9TOPUHjpAh1Y3SObX3a0infc1Z9VWB/grkGWSs4RftVMFPtP9R8V/xdJLMUsilVetbqyFmhJOH+PUeeNnbynKRn0w357ZdxTysZ9HHU=  ;
+X-YMail-OSG: fcRL.CsVM1lqpRUc6qAAZtCNCeN6XZzfwwLiHN2UBNp8sobjxCDntr5MFKmmlrjyJcKpW_Z2aeSFHkLjQ9GbhWdopD65ZL9qj7VvAS7N7LdN4Q3Caqoj1vH0IWW2dA9Hj2fOlHfDatFWJu1aZaIPoWNegrYXCZYHj2qrBG23
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull] x86 updates for v2.6.28, phase #6, misc
+Date: Fri, 10 Oct 2008 14:43:47 +1100
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <20081010000817.GA9266@elte.hu>
+In-Reply-To: <20081010000817.GA9266@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810101443.48237.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Welcome,
+On Friday 10 October 2008 11:08, Ingo Molnar wrote:
 
-Fri, 10 Oct 2008 03:12:34 +0200 - Adam Tlałka <atlka@pg.gda.pl>:
-> now we have 2.6.26.6 kernel and still terminal resize leads to
-> undesired effects. It is very inconvenient to wait for 2.6.27 for
-> corrections.
+> out-of-topic modifications in x86-v28-for-linus-phase6:
+> -------------------------------------------------------
+> include/linux/kernel.h             # d974ae3: generic, memparse(): constify
+> arg include/linux/mm.h                 # f7d0b92: mm: define
+> USE_SPLIT_PTLOCKS rath # 59ea746: MM: virtual address debug
+> include/linux/mm_types.h           # f7d0b92: mm: define USE_SPLIT_PTLOCKS
+> rath include/linux/mmdebug.h            # 7aa413d: x86, MM: virtual address
+> debug, c # 59ea746: MM: virtual address debug lib/cmdline.c                
+>      # d974ae3: generic, memparse(): constify arg mm/vmalloc.c             
+>          # 7aa413d: x86, MM: virtual address debug, c # 59ea746: MM:
+> virtual address debug
 
-Very funny, I've posted my patch just before 2.6.27 appeared so now it
-seems obsolete. Only argument for it now is the cleaner and more
-optimized code. Why?
-Now we have two distant places where we use ws and tty->winsize
-variables:
 
-(from drivers/char/tty_io.c:tty_do_resize())
+How come these kinds of things go into the x86 tree? Can't they
+be sent to other maintainer first (probably Andrew, in the case
+of random -mm stuff).
 
-	mutex_lock(&real_tty->termios_mutex);
-=>      if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
-                goto done;
-        /* Get the PID values and reference them so we can
-           avoid holding the tty ctrl lock while sending signals */
-        spin_lock_irqsave(&tty->ctrl_lock, flags);
-        pgrp = get_pid(tty->pgrp);
-        rpgrp = get_pid(real_tty->pgrp);
-        spin_unlock_irqrestore(&tty->ctrl_lock, flags);
-
-        if (pgrp)
-                kill_pgrp(pgrp, SIGWINCH, 1);
-        if (rpgrp != pgrp && rpgrp)
-                kill_pgrp(rpgrp, SIGWINCH, 1);
-
-        put_pid(pgrp);
-        put_pid(rpgrp);
-
-=>      tty->winsize = *ws;
-=>      real_tty->winsize = *ws;
-done:
-	mutex_unlock(&real_tty->termios_mutex);
- 
-Rearanged code
-
-	mutex_lock(&real_tty->termios_mutex);
-=>      if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
-                goto done;
-=>	tty->winsize = *ws;
-=>	real_tty->winsize = *ws;
-
-        /* Get the PID values and reference them so we can
-           avoid holding the tty ctrl lock while sending signals */
-        spin_lock_irqsave(&tty->ctrl_lock, flags);
-        pgrp = get_pid(tty->pgrp);
-        rpgrp = get_pid(real_tty->pgrp);
-        spin_unlock_irqrestore(&tty->ctrl_lock, flags);
-
-        if (pgrp)
-                kill_pgrp(pgrp, SIGWINCH, 1);
-        if (rpgrp != pgrp && rpgrp)
-                kill_pgrp(rpgrp, SIGWINCH, 1);
-
-        put_pid(pgrp);
-        put_pid(rpgrp);
-
-done:
-	mutex_unlock(&real_tty->termios_mutex);
-
-is more logical and grouping acces to the same variable in one place
-mean that gcc can better optimize outputed machine code. So it should
-be a bit faster.
-If some app gets SIGWINCH and will be waiting on this mutex so in case
-of rearanged code it will be waiting shorter because variables setting
-is done before signal generation.
-
-Regards
-
--- 
-Adam Tlałka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
-System  & Network Administration Group       - - - ~~~~~~
-Computer Center, Gdańsk University of Technology, Poland
+OK, it's pretty trivial stuff, but just on principle I can't see
+an advantage, and only disadvantages to doing this (and also I
+see the vmalloc change clashed with the vmalloc rewrite in -mm).
