@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbYJJJHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbYJJJHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757352AbYJJJHf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 05:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJJJH0
+	id S1758103AbYJJJHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 05:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbYJJJHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 05:07:26 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:20284 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbYJJJHY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 05:07:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KYlKHOhA54YngZRXvmIlsEsZpG4SmDCB5fWkBDRE+eBIGUWs4P9D2B4gxQVYcW+FCj
-         JKQuMXfV5w53hG5yb8UdHdBWQRhxlng6KjZaZatjsogJBZNu7+c4OksoMB467njai7Nr
-         5DsZj9UwoXPs7Ng+aHuWnvQK+fvfMMpVjdHGo=
-Message-ID: <64630f150810100207g312088ep67c00ca15929091d@mail.gmail.com>
-Date: Fri, 10 Oct 2008 10:07:23 +0100
-From: gettinther <gettinther@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: sata dvdroms fails to be recognized by MCP55 controller with the 2.6.26.5 kernel
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <48EAB71B.1050002@gmail.com>
+	Fri, 10 Oct 2008 05:07:31 -0400
+Received: from nebensachen.de ([195.34.83.29]:43267 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756347AbYJJJHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 05:07:31 -0400
+X-Hashcash: 1:20:081010:jens.axboe@oracle.com::+kDbjIeVlF3XMKAW:00000000000000000000000000000000000000000/u2
+X-Hashcash: 1:20:081010:linux-kernel@vger.kernel.org::r16Gg9w4IyLkt31y:0000000000000000000000000000000000xDH
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Block: Fix handling of stopped queues and a plugging issue
+References: <87zllnound.fsf@denkblock.local>
+Date: Fri, 10 Oct 2008 11:07:25 +0200
+In-Reply-To: <87zllnound.fsf@denkblock.local> (Elias Oltmanns's message of
+	"Thu, 02 Oct 2008 17:59:18 +0200")
+Message-ID: <871vyoes36.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <64630f150809291601w3511febdyc769b8871db75602@mail.gmail.com>
-	 <20080930170849.52c00228.akpm@linux-foundation.org>
-	 <48E2E8A1.8090204@gmail.com>
-	 <64630f150810010131g18c1a00m91b3f68ea29a1067@mail.gmail.com>
-	 <64630f150810011601y4e729decq24c614f0b7994f3f@mail.gmail.com>
-	 <48E71ACE.4000505@gmail.com> <48E71AEC.8020701@gmail.com>
-	 <64630f150810060208q22b61900xd7487500eac4e145@mail.gmail.com>
-	 <48EAB71B.1050002@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 7, 2008 at 2:10 AM, Tejun Heo <htejun@gmail.com> wrote:
-> gettinther wrote:
->> I have tested the patch you sent me and it solves the issue with the
->> sata dvdrom detection with the 2.6.27.rc8.  The issue is still present
->> on the 2.6.26.5 kernel.  Are you backporting the solution to that
->> kernel?
+Elias Oltmanns <eo@nebensachen.de> wrote:
+> Make sure that ->request_fn() really isn't called on queues that are
+> supposed to be stopped. While at it, don't remove the plug in
+> __blk_run_queue() unconditionally since this might lead to system hangs.
 >
-> It seems nf2/3 still have issues.  Once nf2/3 are cleared, I'll
-> forward the patch to -stable.
->
-> Thanks.
->
-> --
-> tejun
->
+> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+> ---
+> Applies to your devel tree.
 
-Tejun,
+Ping. Have you had a chance to look at this yet?
 
-I applied your patch to the 2.6.26 tree (slightly modified to suit)
-and it also fixes the issue there.
-I can post the patch this evening if you want to.
+Regards,
 
-Thank you again,
-
-Cyrille
+Elias
