@@ -1,247 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbYJJKem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbYJJKez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758878AbYJJKem (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 06:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYJJKdT
+	id S1759059AbYJJKez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 06:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbYJJKdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 06:33:19 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:47556 "EHLO
+	Fri, 10 Oct 2008 06:33:20 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:47559 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753097AbYJJKdQ (ORCPT
+	with ESMTP id S1753398AbYJJKdQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 10 Oct 2008 06:33:16 -0400
-Message-Id: <20081010103314.789418940@fluff.org.uk>
+Message-Id: <20081010103315.352013790@fluff.org.uk>
 References: <20081010103221.551485781@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Fri, 10 Oct 2008 11:32:24 +0100
+Date: Fri, 10 Oct 2008 11:32:26 +0100
 From: Ben Dooks <ben-linux@fluff.org>
 To: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org,
        linux-arm-kernel@vger.kernel.org
-Cc: Christer Weinigel <christer@weinigel.se>, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 3/5] s3cmci: Support transfers which are not multiple of 32 bits.
-Content-Disposition: inline; filename=thirdparty/christer-mmc-byte-alignment.patch
+Cc: Ben Dooks <ben-linux@fluff.org>
+Subject: [patch 5/5] s3cmci: Add Ben Dooks/Simtec Electronics to header & copyright
+Content-Disposition: inline; filename=simtec/drivers-s3c24xx-mmc-add-us-to-copyright-header.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christer Weinigel <christer@weinigel.se>
+Since the original authour (Thomas Kleffel) has been too busy to
+merge the s3cmci driver and keep it up to date, I (mostly as part
+of my role with Simtec Electronics) got the driver to a mergable
+state and have been maintaining it since I think that I should
+be added to the header. Also add a copyright statement for the
+new work. 
 
-To be able to do SDIO the s3cmci driver has to support non-word-sized
-transfers.  Change pio_words into pio_bytes and fix up all the places
-where it is used.  
-
-This variant of the patch will not overrun the buffer when reading an
-odd number of bytes.  When writing, this variant will still read past
-the end of the buffer, but since the driver can't support non-word-
-aligned transfers anyway, this should not be a problem, since a
-word-aligned transfer will never cross a page boundary.
-
-This has been tested with a CSR SDIO Bluetooth Type A device on a
-Samsung S3C24A0 processor.
-
-Signed-off-by: Christer Weinigel <christer@weinigel.se>
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.c
+Index: linux-2.6.27-rc6-quilt3/drivers/mmc/host/s3cmci.c
 ===================================================================
---- linux-2.6.27-rc5-quilt1.orig/drivers/mmc/host/s3cmci.c	2008-09-04 11:35:38.000000000 +0100
-+++ linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.c	2008-09-08 16:23:58.000000000 +0100
-@@ -190,7 +190,7 @@ static inline void clear_imask(struct s3
- }
+--- linux-2.6.27-rc6-quilt3.orig/drivers/mmc/host/s3cmci.c	2008-09-21 21:06:47.000000000 +0100
++++ linux-2.6.27-rc6-quilt3/drivers/mmc/host/s3cmci.c	2008-09-21 21:10:24.000000000 +0100
+@@ -3,6 +3,9 @@
+  *
+  *  Copyright (C) 2004-2006 maintech GmbH, Thomas Kleffel <tk@maintech.de>
+  *
++ * Current driver maintained by Ben Dooks and Simtec Electronics
++ *  Copyright (C) 2008 Simtec Electronics <ben-linux@fluff.org>
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+@@ -1560,7 +1563,7 @@ module_exit(s3cmci_exit);
  
- static inline int get_data_buffer(struct s3cmci_host *host,
--				  u32 *words, u32 **pointer)
-+				  u32 *bytes, u32 **pointer)
- {
- 	struct scatterlist *sg;
- 
-@@ -207,7 +207,7 @@ static inline int get_data_buffer(struct
- 	}
- 	sg = &host->mrq->data->sg[host->pio_sgptr];
- 
--	*words = sg->length >> 2;
-+	*bytes = sg->length;
- 	*pointer = sg_virt(sg);
- 
- 	host->pio_sgptr++;
-@@ -223,7 +223,7 @@ static inline u32 fifo_count(struct s3cm
- 	u32 fifostat = readl(host->base + S3C2410_SDIFSTA);
- 
- 	fifostat &= S3C2410_SDIFSTA_COUNTMASK;
--	return fifostat >> 2;
-+	return fifostat;
- }
- 
- static inline u32 fifo_free(struct s3cmci_host *host)
-@@ -231,13 +231,14 @@ static inline u32 fifo_free(struct s3cmc
- 	u32 fifostat = readl(host->base + S3C2410_SDIFSTA);
- 
- 	fifostat &= S3C2410_SDIFSTA_COUNTMASK;
--	return (63 - fifostat) >> 2;
-+	return 63 - fifostat;
- }
- 
- static void do_pio_read(struct s3cmci_host *host)
- {
- 	int res;
- 	u32 fifo;
-+	u32 fifo_words;
- 	void __iomem *from_ptr;
- 
- 	/* write real prescaler to host, it might be set slow to fix */
-@@ -246,8 +247,8 @@ static void do_pio_read(struct s3cmci_ho
- 	from_ptr = host->base + host->sdidata;
- 
- 	while ((fifo = fifo_count(host))) {
--		if (!host->pio_words) {
--			res = get_data_buffer(host, &host->pio_words,
-+		if (!host->pio_bytes) {
-+			res = get_data_buffer(host, &host->pio_bytes,
- 					      &host->pio_ptr);
- 			if (res) {
- 				host->pio_active = XFER_NONE;
-@@ -260,26 +261,45 @@ static void do_pio_read(struct s3cmci_ho
- 
- 			dbg(host, dbg_pio,
- 			    "pio_read(): new target: [%i]@[%p]\n",
--			    host->pio_words, host->pio_ptr);
-+			    host->pio_bytes, host->pio_ptr);
- 		}
- 
- 		dbg(host, dbg_pio,
- 		    "pio_read(): fifo:[%02i] buffer:[%03i] dcnt:[%08X]\n",
--		    fifo, host->pio_words,
-+		    fifo, host->pio_bytes,
- 		    readl(host->base + S3C2410_SDIDCNT));
- 
--		if (fifo > host->pio_words)
--			fifo = host->pio_words;
-+		/* If we have reached the end of the block, we can
-+		 * read a word and get 1 to 3 bytes.  If we in the
-+		 * middle of the block, we have to read full words,
-+		 * otherwise we will write garbage, so round down to
-+		 * an even multiple of 4. */
-+		if (fifo >= host->pio_bytes)
-+			fifo = host->pio_bytes;
-+		else
-+			fifo -= fifo & 3;
- 
--		host->pio_words -= fifo;
-+		host->pio_bytes -= fifo;
- 		host->pio_count += fifo;
- 
--		while (fifo--)
-+		fifo_words = fifo >> 2;
-+		while (fifo_words--)
- 			*(host->pio_ptr++) = readl(from_ptr);
-+
-+		if (fifo & 3) {
-+			u32 n = fifo & 3;
-+			u32 data = readl(from_ptr);
-+			u8 *p = (u8 *)host->pio_ptr;
-+
-+			while (n--) {
-+				*p++ = data;
-+				data >>= 8;
-+			}
-+		}
- 	}
- 
--	if (!host->pio_words) {
--		res = get_data_buffer(host, &host->pio_words, &host->pio_ptr);
-+	if (!host->pio_bytes) {
-+		res = get_data_buffer(host, &host->pio_bytes, &host->pio_ptr);
- 		if (res) {
- 			dbg(host, dbg_pio,
- 			    "pio_read(): complete (no more buffers).\n");
-@@ -303,8 +323,8 @@ static void do_pio_write(struct s3cmci_h
- 	to_ptr = host->base + host->sdidata;
- 
- 	while ((fifo = fifo_free(host))) {
--		if (!host->pio_words) {
--			res = get_data_buffer(host, &host->pio_words,
-+		if (!host->pio_bytes) {
-+			res = get_data_buffer(host, &host->pio_bytes,
- 							&host->pio_ptr);
- 			if (res) {
- 				dbg(host, dbg_pio,
-@@ -316,16 +336,23 @@ static void do_pio_write(struct s3cmci_h
- 
- 			dbg(host, dbg_pio,
- 			    "pio_write(): new source: [%i]@[%p]\n",
--			    host->pio_words, host->pio_ptr);
-+			    host->pio_bytes, host->pio_ptr);
- 
- 		}
- 
--		if (fifo > host->pio_words)
--			fifo = host->pio_words;
-+		/* If we have reached the end of the block, we have to
-+		 * write exactly the remaining number of bytes.  If we
-+		 * in the middle of the block, we have to write full
-+		 * words, so round down to an even multiple of 4. */
-+		if (fifo >= host->pio_bytes)
-+			fifo = host->pio_bytes;
-+		else
-+			fifo -= fifo & 3;
- 
--		host->pio_words -= fifo;
-+		host->pio_bytes -= fifo;
- 		host->pio_count += fifo;
- 
-+		fifo = (fifo + 3) >> 2;
- 		while (fifo--)
- 			writel(*(host->pio_ptr++), to_ptr);
- 	}
-@@ -350,9 +377,9 @@ static void pio_tasklet(unsigned long da
- 		clear_imask(host);
- 		if (host->pio_active != XFER_NONE) {
- 			dbg(host, dbg_err, "unfinished %s "
--			    "- pio_count:[%u] pio_words:[%u]\n",
-+			    "- pio_count:[%u] pio_bytes:[%u]\n",
- 			    (host->pio_active == XFER_READ) ? "read" : "write",
--			    host->pio_count, host->pio_words);
-+			    host->pio_count, host->pio_bytes);
- 
- 			if (host->mrq->data)
- 				host->mrq->data->error = -EINVAL;
-@@ -813,11 +840,10 @@ static int s3cmci_setup_data(struct s3cm
- 		/* We cannot deal with unaligned blocks with more than
- 		 * one block being transfered. */
- 
--		if (data->blocks > 1)
-+		if (data->blocks > 1) {
-+			pr_warning("%s: can't do non-word sized block transfers (blksz %d)\n", __func__, data->blksz);
- 			return -EINVAL;
--
--		/* No support yet for non-word block transfers. */
--		return -EINVAL;
-+		}
- 	}
- 
- 	while (readl(host->base + S3C2410_SDIDSTA) &
-@@ -897,7 +923,7 @@ static int s3cmci_prepare_pio(struct s3c
- 	BUG_ON((data->flags & BOTH_DIR) == BOTH_DIR);
- 
- 	host->pio_sgptr = 0;
--	host->pio_words = 0;
-+	host->pio_bytes = 0;
- 	host->pio_count = 0;
- 	host->pio_active = rw ? XFER_WRITE : XFER_READ;
- 
-Index: linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.h
-===================================================================
---- linux-2.6.27-rc5-quilt1.orig/drivers/mmc/host/s3cmci.h	2008-09-04 11:35:38.000000000 +0100
-+++ linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.h	2008-09-08 16:23:58.000000000 +0100
-@@ -51,7 +51,7 @@ struct s3cmci_host {
- 	int			dma_complete;
- 
- 	u32			pio_sgptr;
--	u32			pio_words;
-+	u32			pio_bytes;
- 	u32			pio_count;
- 	u32			*pio_ptr;
- #define XFER_NONE 0
+ MODULE_DESCRIPTION("Samsung S3C MMC/SD Card Interface driver");
+ MODULE_LICENSE("GPL v2");
+-MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>");
++MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>, Ben Dooks <ben-linux@fluff.org>");
+ MODULE_ALIAS("platform:s3c2410-sdi");
+ MODULE_ALIAS("platform:s3c2412-sdi");
+ MODULE_ALIAS("platform:s3c2440-sdi");
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
