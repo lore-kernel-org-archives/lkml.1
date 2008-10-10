@@ -1,75 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761675AbYJJVN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761947AbYJJVUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761675AbYJJVN3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 17:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYJJVNV
+	id S1761947AbYJJVUM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 17:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbYJJVT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 17:13:21 -0400
-Received: from vms172071pub.verizon.net ([206.46.172.71]:38460 "EHLO
-	vms172071pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757993AbYJJVNV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 17:13:21 -0400
-X-Greylist: delayed 1967 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Oct 2008 17:13:21 EDT
-Date: Fri, 10 Oct 2008 16:40:25 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-In-reply-to: <20081010195339.GA509@elte.hu>
-X-X-Sender: lenb@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Message-id: <alpine.LFD.1.10.0810101637050.7059@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20081009190405.13A253CB@kernel> <200810101517.17809.rjw@sisk.pl>
- <20081010145422.GE11695@elte.hu> <200810102153.45174.rjw@sisk.pl>
- <20081010195339.GA509@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 10 Oct 2008 17:19:58 -0400
+Received: from smtp6-g19.free.fr ([212.27.42.36]:41478 "EHLO smtp6-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759539AbYJJVT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 17:19:57 -0400
+Date: Fri, 10 Oct 2008 23:19:48 +0200
+From: FD Cami <francois.cami@free.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Alex Howells <alex@bytemark.co.uk>,
+       Nick Warne <nick@ukfsn.org>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Li Yang <leoli@freescale.com>,
+       minchan Kim <minchan.kim@gmail.com>,
+       Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+Subject: [PATCH] Remove Andrew Morton's http://www.zip.com.au/~akpm/
+Message-ID: <20081010231948.0ed198d5@moria>
+In-Reply-To: <20081010111031.9518a142.akpm@linux-foundation.org>
+References: <20081010151539.6a2ff040@sauron.linicks.net>
+	<48EF6B47.1080800@bytemark.co.uk>
+	<20081010093427.31ddb955.randy.dunlap@oracle.com>
+	<20081010192600.547eedcc@moria>
+	<20081010111031.9518a142.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 10 Oct 2008 11:10:31 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-
-On Fri, 10 Oct 2008, Ingo Molnar wrote:
-
+> On Fri, 10 Oct 2008 19:26:00 +0200 FD Cami <francois.cami@free.fr> wrote:
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > > > Surely not ACPI-compliant.
-> > > 
-> > > what do you mean?
+> > On Fri, 10 Oct 2008 09:34:27 -0700
+> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > > 
-> > The ACPI spec says quite specifically what should be done while 
-> > entering hibernation and during resume from hibernation.  We're not 
-> > following that in the current code, but we can (gradually) update the 
-> > code to become ACPI-compilant in that respect.  However, if we go the 
-> > checkpointing route, I don't think that will be possible any more.
+> > > On Fri, 10 Oct 2008 15:48:39 +0100 Alex Howells wrote:
+> > > 
+> > > > Nick Warne wrote:
+> > > > > Andrews' URL seems to be AWOL
+> > > > > 
+> > > > Perhaps time to update the URLs generally?
+> > > 
+> > > Would one of you send a patch, please?
 > 
-> ah, i see. I did not mean to utilize any ACPI paths but simple powerdown 
-> or reboot.
+> My zip account died for some reason.
 
-If we don't enter ACPI S4, and instead poweroff,
-then we'll lose the capability to wake the system from
-devices that are capable of waking S4, but incapable of waking S5.
+Remove Andrew Morton's http://www.zip.com.au/~akpm/ urls, update to new
+ones when necessary, delete references otherwise.
 
-ie. The power button will still work, but others may not.
+There are still instances of that living in :
+Documentation/zh_CN/HOWTO
+Documentation/zh_CN/SubmittingPatches
+Documentation/ko_KR/HOWTO
+Documentation/ja_JP/SubmittingPatches
+Relevant maintainers CC'ed.
 
-cheers,
--Len
+Signed-off-by: Francois Cami <francois.cami@free.fr>
 
-> If we checkpoint all apps to persistent disk areas (which the checkpoint 
-> patches in this thread are about), then we can just reboot the kernel 
-> and forget all its state.
-> 
-> That capability can be used to build a really robust hibernation 
-> implementation IMO: we could "hibernate/kexec" over between different 
-> kernel versions transparently. (only a small delay will be noticed by 
-> the user - if we do it smartly with in-kernel modesetting then not even 
-> the screen contents will be changed over this.)
 
+diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27/Documentation/filesystems/ext3.txt linux-2.6.27-mine/Documentation/filesystems/ext3.txt
+--- linux-2.6.27/Documentation/filesystems/ext3.txt	2008-10-10 00:13:53.000000000 +0200
++++ linux-2.6.27-mine/Documentation/filesystems/ext3.txt	2008-10-10 23:07:39.000000000 +0200
+@@ -193,6 +193,5 @@ kernel source:	<file:fs/ext3/>
+ programs: 	http://e2fsprogs.sourceforge.net/
+ 		http://ext2resize.sourceforge.net
+ 
+-useful links:	http://www.zip.com.au/~akpm/linux/ext3/ext3-usage.html
+-		http://www-106.ibm.com/developerworks/linux/library/l-fs7/
++useful links:	http://www-106.ibm.com/developerworks/linux/library/l-fs7/
+ 		http://www-106.ibm.com/developerworks/linux/library/l-fs8/
+diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27/Documentation/HOWTO linux-2.6.27-mine/Documentation/HOWTO
+--- linux-2.6.27/Documentation/HOWTO	2008-10-10 00:13:53.000000000 +0200
++++ linux-2.6.27-mine/Documentation/HOWTO	2008-10-10 23:03:30.000000000 +0200
+@@ -112,7 +112,7 @@ required reading:
+ 
+     Other excellent descriptions of how to create patches properly are:
+ 	"The Perfect Patch"
+-		http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
++		http://userweb.kernel.org/~akpm/stuff/tpp.txt
+ 	"Linux kernel patch submission format"
+ 		http://linux.yyz.us/patch-format.html
+ 
+@@ -620,7 +620,7 @@ all time.  It should describe the patch 
+ For more details on what this should all look like, please see the
+ ChangeLog section of the document:
+   "The Perfect Patch"
+-      http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
++      http://userweb.kernel.org/~akpm/stuff/tpp.txt
+ 
+ 
+ 
+diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27/Documentation/networking/vortex.txt linux-2.6.27-mine/Documentation/networking/vortex.txt
+--- linux-2.6.27/Documentation/networking/vortex.txt	2008-10-10 00:13:53.000000000 +0200
++++ linux-2.6.27-mine/Documentation/networking/vortex.txt	2008-10-10 23:11:08.000000000 +0200
+@@ -305,11 +305,6 @@ Donald's wake-on-LAN page:
+ 
+ 	ftp://ftp.3com.com/pub/nic/3c90x/3c90xx2.exe
+ 
+-Driver updates and a detailed changelog for the modifications which
+-were made for the 2.3/2,4 series kernel is available at
+-
+-     http://www.zip.com.au/~akpm/linux/#3c59x-bc
+-
+ 
+ Autonegotiation notes
+ ---------------------
+diff -uprN -X linux-2.6.27/Documentation/dontdiff linux-2.6.27/Documentation/SubmittingPatches linux-2.6.27-mine/Documentation/SubmittingPatches
+--- linux-2.6.27/Documentation/SubmittingPatches	2008-10-10 00:13:53.000000000 +0200
++++ linux-2.6.27-mine/Documentation/SubmittingPatches	2008-10-10 23:06:20.000000000 +0200
+@@ -77,7 +77,7 @@ Quilt:
+ http://savannah.nongnu.org/projects/quilt
+ 
+ Andrew Morton's patch scripts:
+-http://www.zip.com.au/~akpm/linux/patches/
++http://userweb.kernel.org/~akpm/stuff/patch-scripts.tar.gz
+ Instead of these scripts, quilt is the recommended patch management
+ tool (see above).
+ 
+@@ -653,7 +653,7 @@ SECTION 3 - REFERENCES
+ ----------------------
+ 
+ Andrew Morton, "The perfect patch" (tpp).
+-  <http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt>
++  <http://userweb.kernel.org/~akpm/stuff/tpp.txt>
+ 
+ Jeff Garzik, "Linux kernel patch submission format".
+   <http://linux.yyz.us/patch-format.html>
