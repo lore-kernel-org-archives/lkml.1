@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbYJJPDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbYJJPFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761759AbYJJPDy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 11:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbYJJPBF
+	id S1761702AbYJJPFe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 11:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYJJPFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 11:01:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53721 "EHLO mx3.mail.elte.hu"
+	Fri, 10 Oct 2008 11:05:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51086 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761420AbYJJPBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 11:01:04 -0400
-Date: Fri, 10 Oct 2008 16:59:34 +0200
+	id S1756540AbYJJPFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 11:05:23 -0400
+Date: Fri, 10 Oct 2008 17:04:58 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Lezcano <dlezcano@fr.ibm.com>
-Cc: Greg Kurz <gkurz@fr.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/2] Track in-kernel when we expect
-	checkpoint/restart to work
-Message-ID: <20081010145934.GF11695@elte.hu>
-References: <20081009190405.13A253CB@kernel> <1223626834.8787.8.camel@localhost.localdomain> <48EF144D.1050906@fr.ibm.com>
+To: Hans Schou <linux@schou.dk>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] More informative about unknown CPU
+Message-ID: <20081010150458.GG11695@elte.hu>
+References: <Pine.LNX.4.64.0810092014190.7473@sko.w0.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48EF144D.1050906@fr.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0810092014190.7473@sko.w0.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,25 +37,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Daniel Lezcano <dlezcano@fr.ibm.com> wrote:
+* Hans Schou <linux@schou.dk> wrote:
 
->> By the way, why don't you introduce the reverse operation ?
+> Hi
 >
-> I think implementing the reverse operation will be a nightmare, IMHO 
-> it is safe to say we deny checkpointing for the process life-cycle 
-> either if the created resource was destroyed before we initiate the 
-> checkpoint.
+> Write the name of the unknown vendor_id to output instead of just 
+> "file not found".
+>
+> Tag changed to 'vendor_id' as used in /proc/cpuinfo
+>
+> Signed-off-by: Hans Schou <linux@schou.dk>
 
-it's also a not too interesting case. The end goal is to just be able to 
-checkpoint everything that matters - in the long run there simply wont 
-be many places that are marked 'cannot checkpoint'.
+applied to tip/x86/unify-cpu-detect, thanks Hans!
 
-So the ability to deny a checkpoint is a transitional feature - a 
-flexible CR todo list in essence - but also needed for 
-applications/users that want to rely on CR being a dependable facility.
+> --- linux.trees.git/arch/x86/kernel/cpu/common.c.orig   2008-10-09 17:33:29.000000000 +0200
+> +++ linux.trees.git/arch/x86/kernel/cpu/common.c        2008-10-09 17:33:59.000000000 +0200
+> @@ -413,7 +413,7 @@ static void __cpuinit get_cpu_vendor(str
+>
+>         if (!printed) {
+>                 printed++;
+> -               printk(KERN_ERR "CPU: Vendor unknown, using generic init.\n");
+> +               printk(KERN_ERR "CPU: vendor_id '%s' unknown, using generic init.\n", v);
+>                 printk(KERN_ERR "CPU: Your system may be unstable.\n");
 
-It would be bad for most of the practical usecases of checkpointing to 
-allow the checkpointing of an app, just to see it break on restore due 
-to lost context.
+btw., this was whitespace damaged (i fixed that up by hand). See 
+Documentation/email-clients.txt about how to set up the email client. 
+(or, when you send x86 patches, you can attach the patch as a MIME 
+attachment)
 
 	Ingo
