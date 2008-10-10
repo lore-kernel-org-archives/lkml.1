@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYJJQsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760798AbYJJQxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbYJJQsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 12:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759202AbYJJQsZ
+	id S1760798AbYJJQxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 12:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbYJJQxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 12:48:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53411 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756585AbYJJQsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 12:48:24 -0400
-Message-ID: <48EF86E9.8030408@kernel.org>
-Date: Fri, 10 Oct 2008 09:46:33 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Fri, 10 Oct 2008 12:53:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44819 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755842AbYJJQxL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 12:53:11 -0400
+Date: Fri, 10 Oct 2008 12:53:08 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/6] tracepoint: Check if the probe has been registered
+In-Reply-To: <20081010140023.GA13137@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810101252320.21101@gandalf.stny.rr.com>
+References: <20081010111631.78545D1BDA2@perso1.free.fr> <20081010140023.GA13137@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       grundler@parisc-linux.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: print out DMA mask info
-References: <1223506943-6543-1-git-send-email-yinghai@kernel.org> <20081009211837.GC18444@colo.lackof.org> <20081010114002D.fujita.tomonori@lab.ntt.co.jp> <200810100848.09557.jbarnes@virtuousgeek.org> <86802c440810100919xf79f406x403988da7988edc9@mail.gmail.com> <20081010163350.GF25780@parisc-linux.org>
-In-Reply-To: <20081010163350.GF25780@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
+
+On Fri, 10 Oct 2008, Ingo Molnar wrote:
+
 > 
-> By the way, commit 8f286c33f1e838d631f4a3260b33efce4bc5973c is a really
-> bad idea.  It is very helpful to see which bitmasks are used by real
-> devices, and which ones aren't.  It should be reverted, IMO.
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
+> > If we try to remove a probe that has not been already registered, the 
+> > tracepoint_entry_remove_probe() function will dereference a NULL 
+> > pointer. Check the probe before removing it to avoid crashes.
+> > 
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > ---
+> >  kernel/tracepoint.c |    8 ++++++++
+> >  1 files changed, 8 insertions(+), 0 deletions(-)
+> 
+> applied to tip/tracing/tracepoints, thanks Frederic!
+> 
+> Mathieu, Steve, any objections/observations?
 
-why? did you point to wrong commit?
+Hmm, my email was on the fritz for this one. I'll have to search for it on 
+a mailing list web site to see the patch.
 
-commit 8f286c33f1e838d631f4a3260b33efce4bc5973c
-Author: Andrew Morton <akpm@linux-foundation.org>
-Date:   Thu Oct 18 03:05:07 2007 -0700
+-- Steve
 
-    stop using DMA_xxBIT_MASK
-    
-    Now that we have DMA_BIT_MASK(), these macros are pointless.
-    
-    Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 29b0285..101a2d4 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -13,9 +13,15 @@ enum dma_data_direction {
- 	DMA_NONE = 3,
- };
- 
--#define DMA_BIT_MASK(n)	((1ULL<<(n))-1)
-+#define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
- 
--#define DMA_64BIT_MASK	(~0ULL)
-+/*
-+ * NOTE: do not use the below macros in new code and do not add new definitions
-+ * here.
-+ *
-+ * Instead, just open-code DMA_BIT_MASK(n) within your driver
-+ */
-+#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
- #define DMA_48BIT_MASK	DMA_BIT_MASK(48)
- #define DMA_47BIT_MASK	DMA_BIT_MASK(47)
- #define DMA_40BIT_MASK	DMA_BIT_MASK(40)
