@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764873AbYJJVuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763749AbYJJVzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764873AbYJJVuq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 17:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762908AbYJJVuL
+	id S1763749AbYJJVzN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 17:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759469AbYJJVy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 17:50:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33613 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763630AbYJJVuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 17:50:09 -0400
-Date: Fri, 10 Oct 2008 23:49:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, tglx@linutronix.de
-Subject: Re: [PATCH -mm -v5] Separate atomic_t declaration from
-	asm/atomic.h into asm/atomic_def.h
-Message-ID: <20081010214958.GA7708@elte.hu>
-References: <1223459070.5872.167.camel@yhuang-dev.sh.intel.com> <20081010144335.65d8153b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010144335.65d8153b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Fri, 10 Oct 2008 17:54:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42396 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759321AbYJJVy7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 17:54:59 -0400
+Date: Fri, 10 Oct 2008 14:54:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: apw@shadowen.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kniht@linux.vnet.ibm.com, mel@csn.ul.ie
+Subject: Re: [PATCH 1/1] hugetlb: pull gigantic page initialisation out of
+ the default path
+Message-Id: <20081010145418.4d0236ba.akpm@linux-foundation.org>
+In-Reply-To: <200810082331.45359.nickpiggin@yahoo.com.au>
+References: <1223458499-12752-1-git-send-email-apw@shadowen.org>
+	<200810082331.45359.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 8 Oct 2008 23:31:45 +1100
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 08 Oct 2008 17:44:30 +0800
-> Huang Ying <ying.huang@intel.com> wrote:
+> On Wednesday 08 October 2008 20:34, Andy Whitcroft wrote:
+> > As we can determine exactly when a gigantic page is in use we can optimise
+> > the common regular page cases by pulling out gigantic page initialisation
+> > into its own function.  As gigantic pages are never released to buddy we
+> > do not need a destructor.  This effectivly reverts the previous change
+> > to the main buddy allocator.  It also adds a paranoid check to ensure we
+> > never release gigantic pages from hugetlbfs to the main buddy.
 > 
-> > From: Huang Ying <ying.huang@intel.com>
-> > 
-> > asm/atomic.h contains both declaration and implementation of atomic_t.  So
-> > there are some implementation related files included in asm/atomic.h.  And
-> > atomic_t is a typedef.  Combination of above makes it impossible to use
-> > atomic_t in files included by atomic.h.  Such as atomic_t can not be used
-> > in linux/kernel.h on i386, because it is included by asm/atomic.h.
-> > 
-> > It is reasonable to separate declaration from implementation.  So a new
-> > file atomic_types.h is added for every architecture to accommodate the
-> > declaration of atomic_t.
-> > 
-> > Includes fixes from Andrew Moton.
-> > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > Reviewed-by: Ingo Molnar <mingo@elte.hu>
-> 
-> The difference between what-i-currently-have and what-you-just-sent is
-> below.  It's quite large.
-> 
-> Can you explain this update please?
+> Thanks for doing this. Can prep_compound_gigantic_page be #ifdef HUGETLB?
 
-i've been giving review feedback to make it all fit into existing 
-namespace concepts better. Should have no change in functionality. (But 
-i have not tested it)
+Yup.
 
-	Ingo
+--- a/mm/page_alloc.c~hugetlb-pull-gigantic-page-initialisation-out-of-the-default-path-fix
++++ a/mm/page_alloc.c
+@@ -280,6 +280,7 @@ void prep_compound_page(struct page *pag
+ 	}
+ }
+ 
++#ifdef CONFIG_HUGETLBFS
+ void prep_compound_gigantic_page(struct page *page, unsigned long order)
+ {
+ 	int i;
+@@ -294,6 +295,7 @@ void prep_compound_gigantic_page(struct 
+ 		p->first_page = page;
+ 	}
+ }
++#endif
+ 
+ static void destroy_compound_page(struct page *page, unsigned long order)
+ {
+_
+
