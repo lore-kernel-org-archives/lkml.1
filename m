@@ -1,117 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761310AbYJKRa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761629AbYJKRhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761310AbYJKRa0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 13:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761012AbYJKRaJ
+	id S1761629AbYJKRhn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 13:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761485AbYJKRhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 13:30:09 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:38643 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761003AbYJKRaH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 13:30:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAON58EhMQWq+/2dsb2JhbACBcrhVgWw
-Date: Sat, 11 Oct 2008 13:25:02 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: Michael Rubin <mrubin@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Michael Davidson <md@google.com>, Martin Bligh <mbligh@google.com>,
-       Ingo Molnar <mingo@elte.hu>, Jan Blunck <jblunck@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [ltt-dev] LTTng new trace format, cleanup, kernel 2.6.27
-	support
-Message-ID: <20081011172502.GA12718@Krystal>
-References: <20081010233428.GA7035@Krystal>
-Mime-Version: 1.0
+	Sat, 11 Oct 2008 13:37:32 -0400
+Received: from nebensachen.de ([195.34.83.29]:53678 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761483AbYJKRhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 13:37:31 -0400
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Block: Fix handling of stopped queues and a plugging issue
+Date: Sat, 11 Oct 2008 19:36:15 +0200
+Message-ID: <87tzbjhw4w.fsf@denkblock.local>
+References: <87zllnound.fsf@denkblock.local>
+	<20081010091708.GY19428@kernel.dk>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
+X-Hashcash: 1:20:081011:jens.axboe@oracle.com::dULHNhtBlUkxWQJl:000000000000000000000000000000000000000063r8
+X-Hashcash: 1:20:081011:linux-kernel@vger.kernel.org::0O6ya/cV2LBhtj5i:00000000000000000000000000000000008pc
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20081010233428.GA7035@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:21:02 up 128 days, 22:01,  6 users,  load average: 0.36, 0.47,
-	0.51
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just released LTTng 0.39 and lttv 0.11.1, trace format 2.1, which
-fixes the subbuffer header 32-64 bits portability.
+Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, Oct 02 2008, Elias Oltmanns wrote:
+>> Make sure that ->request_fn() really isn't called on queues that are
+>> supposed to be stopped. While at it, don't remove the plug in
+>> __blk_run_queue() unconditionally since this might lead to system hangs.
+>
+> What system hangs, can you detail it?
 
-I do not use packed structures anymore since trace format 2.0 because
-gcc generates inefficient code (at least on mips and powerpc). However,
-I make sure the fields fall on their natural alignment within the
-structure so the compiler does not have to add ABI-specific padding. I
-also added a header_end[0] field at the end of the header to be able to
-easily compute the header size without including any supplementary
-padding the compiler would add at the end of the structure.
+Good question. As it turns out, I got hold of the wrong end of the stick
+entirely. Originally, I thought that requests might get enqueued later
+and not processed in a timely manner because the queue wasn't plugged.
+However, the olny way to do that is through __elv_add_request() and
+there it's probably the responsibility of the caller to make sure that
+the queue either is plugged or processed straight away. I, for one, have
+fallen into that trap and didn't take that into account in my shock
+protection code.
 
-Mathieu
+>
+>> 
+>> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+>> ---
+>> Applies to your devel tree.
+>> 
+>>  block/blk-core.c |    6 +++---
+>>  block/elevator.c |   12 +++++++-----
+>>  2 files changed, 10 insertions(+), 8 deletions(-)
+>> 
+>> diff --git a/block/blk-core.c b/block/blk-core.c
+>> index 2d053b5..ecc5443 100644
+>> --- a/block/blk-core.c
+>> +++ b/block/blk-core.c
+>> @@ -404,14 +404,14 @@ EXPORT_SYMBOL(blk_sync_queue);
+>>   */
+>>  void __blk_run_queue(struct request_queue *q)
+>>  {
+>> -	blk_remove_plug(q);
+>> -
+>>  	/*
+>>  	 * Only recurse once to avoid overrunning the stack, let the unplug
+>>  	 * handling reinvoke the handler shortly if we already got there.
+>>  	 */
+>> -	if (!elv_queue_empty(q))
+>> +	if (!elv_queue_empty(q) && likely(!blk_queue_stopped(q))) {
+>> +		blk_remove_plug(q);
+>>  		blk_invoke_request_fn(q);
+>> +	}
+>
+> Doing
+>
+>         if (foo && likely(bar))
+>
+> doesn't make a lot of sense, you need to move the entire block or just
+> don't do it. Just don't add it :-)
 
-* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> Hi everyone,
-> 
-> I just cleaned up the LTTng trace format heavily, got rid of the
-> heartbeat timer (by checking for overflow at the tracing site), got rid
-> of the "special" compact channel; it removed about 5 FIXMEs in LTTng
-> (cpu hotplug and compact channel related). Everything is compact now :
-> 
-> Event header is :
-> 
-> (32-bits alignment)
-> 27-bits TSC
-> 5-bits event ID
->  ID #31 reserved to specify extended event ID
->  ID #30 reserved to specify both ext. event ID and event size
->  ID #29 reserved to specify ext. event ID, event size and ext. TSC
-> <ext.>
-> 16-bits event ID (opt)
-> 16-bits event size (opt) size = 65535 to specify large event size
-> 32-bits large event size (opt)
-> 64-bits TSC (opt) (aligned on sizeof (void *))
-> (event payload aligned on the maximum alignment required within the
->  payload)
-> 
-> This is much more compact than the previous format, and permits a
-> "tracer debug mode" in menuconfig which enables the "event size" field,
-> which helps cross-checking the size expected by the userspace tool and
-> the size written by the kernel.
-> 
-> Note that this "event size" field can eventually be enabled on a
-> per-event or per-channel basis. This will probably be useful to encode
-> "binary blobs"...
-> 
-> I also cleanup up the subbuffer header to make is much smaller than the
-> previous one by removing unneeded information.
-> 
-> I renamed the "facilities" channel to a better name : "metadata".  It
-> contains marker descriptions.
-> 
-> The trace major number is bumped to "2" and is completely incompatible
-> with old LTTV. New version are LTTng 0.38 (for Linux 2.6.27) and LTTV
-> 0.11.0.
-> 
-> Testing especially taking traces and reading them across different
-> architectures is welcome (e.g. trace taken on powerpc 32, lttv running
-> on x86_64).
-> 
-> Mathieu
-> 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
+Right. So the change in this function will just be
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-	if (!elv_queue_empty(q))
++	if (!elv_queue_empty(q) && !blk_queue_stopped(q))
+
+since there is no harm in removing the plug unconditionally after all.
+
+>
+>>  }
+>>  EXPORT_SYMBOL(__blk_run_queue);
+>>  
+>> diff --git a/block/elevator.c b/block/elevator.c
+>> index 0451892..43a4257 100644
+>> --- a/block/elevator.c
+>> +++ b/block/elevator.c
+>> @@ -611,8 +611,10 @@ void elv_insert(struct request_queue *q, struct request *rq, int where)
+>>  		 *   with anything.  There's no point in delaying queue
+>>  		 *   processing.
+>>  		 */
+>> -		blk_remove_plug(q);
+>> -		q->request_fn(q);
+>> +		if (likely(!blk_queue_stopped(q))) {
+>> +			blk_remove_plug(q);
+>> +			q->request_fn(q);
+>> +		}
+>>  		break;
+>>  
+>>  	case ELEVATOR_INSERT_SORT:
+>> @@ -950,7 +952,8 @@ void elv_completed_request(struct request_queue *q, struct request *rq)
+>>  		    blk_ordered_cur_seq(q) == QUEUE_ORDSEQ_DRAIN &&
+>>  		    blk_ordered_req_seq(first_rq) > QUEUE_ORDSEQ_DRAIN) {
+>>  			blk_ordered_complete_seq(q, QUEUE_ORDSEQ_DRAIN, 0);
+>> -			q->request_fn(q);
+>> +			if (likely(!blk_queue_stopped(q)))
+>> +				q->request_fn(q);
+>>  		}
+>>  	}
+>>  }
+>
+> I wonder if most of these should not just be blk_start_queueing(), would
+> clean things up.
+
+Yes, I wondered about that too. Especially in the case of elv_insert()
+though, I wasn't quite sure whether you'd prefer to inline the check
+there since this seems to be a fast path. If you don't think it worth
+the extra code, I'll just use blk_start_queueing() in these cases too.
+
+Regards,
+
+Elias
