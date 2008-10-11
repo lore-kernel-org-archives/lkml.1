@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbYJKHmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYJKHm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbYJKHmH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYJKHhm
+	id S1760006AbYJKHm1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbYJKHhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:37:42 -0400
+	Sat, 11 Oct 2008 03:37:43 -0400
 Received: from vms172073pub.verizon.net ([206.46.172.73]:32846 "EHLO
 	vms172073pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758466AbYJKHhh (ORCPT
+	with ESMTP id S1756281AbYJKHhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:37:37 -0400
-Date: Sat, 11 Oct 2008 02:36:30 -0400
+	Sat, 11 Oct 2008 03:37:38 -0400
+Date: Sat, 11 Oct 2008 02:36:37 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 70/85] ACPI: remove unused have_arch_parse_srat
+Subject: [PATCH 77/85] ACPI scan: Debug interface used for error message cleanup
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: Thomas Renninger <trenn@suse.de>, Andi Kleen <ak@linux.intel.com>,
        Len Brown <len.brown@intel.com>
-Message-id: <fa89b6089b5f4c7a5244b642caaca3e72b06ebe4.1223706853.git.len.brown@intel.com>
+Message-id: <e46ba07096d1c71cca5ca1256e61064a2bb60287.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -28,42 +27,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yinghai Lu <yhlu.kernel@gmail.com>
+From: Thomas Renninger <trenn@suse.de>
 
-This was a workaround for 32bit numa SRAT processing, and we removed those
-workarounds, making 32 bit more like 64 bit.  HAVE_ARCH_PARSE_SRAT is no
-longer defined anywhere.
-
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/linux/acpi.h |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+ drivers/acpi/scan.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 702f79d..fd6a452 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -94,18 +94,10 @@ int acpi_parse_mcfg (struct acpi_table_header *header);
- void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index f6f52c1..0d46347 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -113,16 +113,16 @@ static int acpi_bus_hot_remove_device(void *context)
  
- /* the following four functions are architecture-dependent */
--#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
--#define NR_NODE_MEMBLKS MAX_NUMNODES
--#define acpi_numa_slit_init(slit) do {} while (0)
--#define acpi_numa_processor_affinity_init(pa) do {} while (0)
--#define acpi_numa_memory_affinity_init(ma) do {} while (0)
--#define acpi_numa_arch_fixup() do {} while (0)
--#else
- void acpi_numa_slit_init (struct acpi_table_slit *slit);
- void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
- void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
- void acpi_numa_arch_fixup(void);
--#endif
  
- #ifdef CONFIG_ACPI_HOTPLUG_CPU
- /* Arch dependent functions for cpu hotplug support */
+ 	if (acpi_bus_trim(device, 1)) {
+-		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
+-				"Removing device failed\n"));
++		printk(KERN_ERR "Removing device [%s] failed\n",
++		       acpi_device_bid(device));
+ 		return -1;
+ 	}
+ 
+ 	/* power off device */
+ 	status = acpi_evaluate_object(handle, "_PS3", NULL, NULL);
+ 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND)
+-		ACPI_DEBUG_PRINT((ACPI_DB_WARN,
+-				"Power-off device failed\n"));
++		ACPI_EXCEPTION((AE_INFO, status,
++				"Power-off device failed"));
+ 
+ 	if (device->flags.lockable) {
+ 		arg_list.count = 1;
+@@ -477,7 +477,8 @@ static int acpi_device_register(struct acpi_device *device,
+ 
+ 	result = acpi_device_setup_files(device);
+ 	if(result)
+-		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error creating sysfs interface for device %s\n", device->dev.bus_id));
++		printk(KERN_ERR "Error creating sysfs interface for device"
++		       " %s [%d]\n", device->dev.bus_id, result);
+ 
+ 	device->removal_type = ACPI_BUS_REMOVAL_NORMAL;
+ 	return 0;
 -- 
 1.5.5.1
 
