@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYJKG5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763325AbYJKG5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbYJKG5c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbYJKGkS
+	id S1763325AbYJKG5q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYJKGkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:40:18 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:40791 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbYJKGhA (ORCPT
+	Sat, 11 Oct 2008 02:40:20 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:39146 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbYJKGg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:00 -0400
-Date: Sat, 11 Oct 2008 02:35:27 -0400
+	Sat, 11 Oct 2008 02:36:59 -0400
+Date: Sat, 11 Oct 2008 02:35:53 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 07/85] ACPI : Load device driver according to the status of
- acpi device
+Subject: [PATCH 33/85] ACPI: fix hotplug race
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
-       Zhang Rui <rui.zhang@intel.com>, Andi Kleen <ak@linux.intel.com>
-Message-id: <32a455702586f735ead7e9ef0c935d0765865aca.1223706853.git.len.brown@intel.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Shaohua Li <shaohua.li@intel.com>,
+       Len Brown <len.brown@intel.com>
+Message-id: <19cd847ab24fefe9e50101ec94479e0400a08650.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -28,145 +27,169 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
 
-According to ACPI spec when the status of some device is not present
-but functional, the device is valid and the children of this device
-should be enumerated. It means that the device should be added to
-linux acpi device tree. But the device driver for this device should not
-be loaded.
-    The detailed info can be found in the section 6.3.7 of ACPI 3.0b spec.
-    _STA may return bit 0 clear (not present) with bit 3 set (device is
-functional). This case is used to indicate a valid device for which no
-device driver should be loaded (for example, a bridge device.).
-Children of this device may be present and valid. OS should continue
-enumeration below a device whose _STA returns this bit combination
+The hotplug notification handler and drivers' notification handler all
+run in one workqueue.  Before hotplug removes an acpi device, the
+device driver's notification handler is already be recorded to run just
+after global notification handler.  After hotplug notification handler
+runs, acpica will notice a NULL notification handler and crash.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=3358
+So now we run run hotplug in another workqueue and wait
+for all acpi notication handlers finish.
+This was found in battery hotplug, but actually all
+hotplug can be affected.
 
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Li Shaohua <shaohua.li@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/bus.c         |   16 ++++++++--------
- drivers/acpi/scan.c        |   35 +++++++++++++++++++++++++----------
- drivers/pnp/pnpacpi/core.c |    6 +++++-
- 3 files changed, 38 insertions(+), 19 deletions(-)
+ drivers/acpi/dock.c     |   25 ++++++++++++++++++++++++-
+ drivers/acpi/osl.c      |   46 +++++++++++++++++++++++++++++++++++++++++-----
+ include/acpi/acpiosxf.h |    3 +++
+ 3 files changed, 68 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 945cd2f..e9b116d 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -112,21 +112,21 @@ int acpi_bus_get_status(struct acpi_device *device)
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index 2563bc6..4b395b1 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -748,6 +748,20 @@ static void dock_notify(acpi_handle handle, u32 event, void *data)
  	}
+ }
  
- 	/*
--	 * Otherwise we assume the status of our parent (unless we don't
--	 * have one, in which case status is implied).
-+	 * According to ACPI spec some device can be present and functional
-+	 * even if the parent is not present but functional.
-+	 * In such conditions the child device should not inherit the status
-+	 * from the parent.
- 	 */
--	else if (device->parent)
--		device->status = device->parent->status;
- 	else
- 		STRUCT_TO_INT(device->status) =
- 		    ACPI_STA_DEVICE_PRESENT | ACPI_STA_DEVICE_ENABLED |
- 		    ACPI_STA_DEVICE_UI      | ACPI_STA_DEVICE_FUNCTIONING;
- 
- 	if (device->status.functional && !device->status.present) {
--		printk(KERN_WARNING PREFIX "Device [%s] status [%08x]: "
--		       "functional but not present; setting present\n",
--		       device->pnp.bus_id, (u32) STRUCT_TO_INT(device->status));
--		device->status.present = 1;
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] status [%08x]: "
-+		       "functional but not present;\n",
-+			device->pnp.bus_id,
-+			(u32) STRUCT_TO_INT(device->status)));
- 	}
- 
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] status [%08x]\n",
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index ad06798..89c112e 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -276,6 +276,13 @@ int acpi_match_device_ids(struct acpi_device *device,
- {
- 	const struct acpi_device_id *id;
- 
-+	/*
-+	 * If the device is not present, it is unnecessary to load device
-+	 * driver for it.
-+	 */
-+	if (!device->status.present)
-+		return -ENODEV;
++struct dock_data {
++	acpi_handle handle;
++	unsigned long event;
++	struct dock_station *ds;
++};
 +
- 	if (device->flags.hardware_id) {
- 		for (id = ids; id->id[0]; id++) {
- 			if (!strcmp((char*)id->id, device->pnp.hardware_id))
-@@ -1222,15 +1229,18 @@ acpi_add_single_object(struct acpi_device **child,
- 			result = -ENODEV;
- 			goto end;
- 		}
--		if (!device->status.present) {
--			/* Bay and dock should be handled even if absent */
--			if (!ACPI_SUCCESS(
--			     acpi_is_child_device(device, acpi_bay_match)) &&
--			    !ACPI_SUCCESS(
--			     acpi_is_child_device(device, acpi_dock_match))) {
--					result = -ENODEV;
--					goto end;
--			}
-+		/*
-+		 * When the device is neither present nor functional, the
-+		 * device should not be added to Linux ACPI device tree.
-+		 * When the status of the device is not present but functinal,
-+		 * it should be added to Linux ACPI tree. For example : bay
-+		 * device , dock device.
-+		 * In such conditions it is unncessary to check whether it is
-+		 * bay device or dock device.
-+		 */
-+		if (!device->status.present && !device->status.functional) {
-+			result = -ENODEV;
-+			goto end;
- 		}
- 		break;
- 	default:
-@@ -1411,7 +1421,12 @@ static int acpi_bus_scan(struct acpi_device *start, struct acpi_bus_ops *ops)
- 		 * TBD: Need notifications and other detection mechanisms
- 		 *      in place before we can fully implement this.
- 		 */
--		if (child->status.present) {
-+		 /*
-+		 * When the device is not present but functional, it is also
-+		 * necessary to scan the children of this device.
-+		 */
-+		if (child->status.present || (!child->status.present &&
-+					child->status.functional)) {
- 			status = acpi_get_next_object(ACPI_TYPE_ANY, chandle,
- 						      NULL, NULL);
- 			if (ACPI_SUCCESS(status)) {
-diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
-index c1b9ea3..98b9df7 100644
---- a/drivers/pnp/pnpacpi/core.c
-+++ b/drivers/pnp/pnpacpi/core.c
-@@ -148,9 +148,13 @@ static int __init pnpacpi_add_device(struct acpi_device *device)
- 	acpi_status status;
- 	struct pnp_dev *dev;
- 
-+	/*
-+	 * If a PnPacpi device is not present , the device
-+	 * driver should not be loaded.
-+	 */
- 	status = acpi_get_handle(device->handle, "_CRS", &temp);
- 	if (ACPI_FAILURE(status) || !ispnpidacpi(acpi_device_hid(device)) ||
--	    is_exclusive_device(device))
-+	    is_exclusive_device(device) || (!device->status.present))
++static void acpi_dock_deferred_cb(void *context)
++{
++	struct dock_data *data = (struct dock_data *)context;
++
++	dock_notify(data->handle, data->event, data->ds);
++	kfree(data);
++}
++
+ static int acpi_dock_notifier_call(struct notifier_block *this,
+ 	unsigned long event, void *data)
+ {
+@@ -759,7 +773,16 @@ static int acpi_dock_notifier_call(struct notifier_block *this,
  		return 0;
+ 	list_for_each_entry(dock_station, &dock_stations, sibiling) {
+ 		if (dock_station->handle == handle) {
+-			dock_notify(handle, event, dock_station);
++			struct dock_data *dock_data;
++
++			dock_data = kmalloc(sizeof(*dock_data), GFP_KERNEL);
++			if (!dock_data)
++				return 0;
++			dock_data->handle = handle;
++			dock_data->event = event;
++			dock_data->ds = dock_station;
++			acpi_os_hotplug_execute(acpi_dock_deferred_cb,
++				dock_data);
+ 			return 0 ;
+ 		}
+ 	}
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 235a138..750e0df 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -682,6 +682,22 @@ static void acpi_os_execute_deferred(struct work_struct *work)
+ 	return;
+ }
  
- 	dev = pnp_alloc_dev(&pnpacpi_protocol, num, acpi_device_hid(device));
++static void acpi_os_execute_hp_deferred(struct work_struct *work)
++{
++	struct acpi_os_dpc *dpc = container_of(work, struct acpi_os_dpc, work);
++	if (!dpc) {
++		printk(KERN_ERR PREFIX "Invalid (NULL) context\n");
++		return;
++	}
++
++	acpi_os_wait_events_complete(NULL);
++
++	dpc->function(dpc->context);
++	kfree(dpc);
++
++	return;
++}
++
+ /*******************************************************************************
+  *
+  * FUNCTION:    acpi_os_execute
+@@ -697,12 +713,13 @@ static void acpi_os_execute_deferred(struct work_struct *work)
+  *
+  ******************************************************************************/
+ 
+-acpi_status acpi_os_execute(acpi_execute_type type,
+-			    acpi_osd_exec_callback function, void *context)
++static acpi_status __acpi_os_execute(acpi_execute_type type,
++	acpi_osd_exec_callback function, void *context, int hp)
+ {
+ 	acpi_status status = AE_OK;
+ 	struct acpi_os_dpc *dpc;
+ 	struct workqueue_struct *queue;
++	int ret;
+ 	ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
+ 			  "Scheduling function [%p(%p)] for deferred execution.\n",
+ 			  function, context));
+@@ -726,9 +743,17 @@ acpi_status acpi_os_execute(acpi_execute_type type,
+ 	dpc->function = function;
+ 	dpc->context = context;
+ 
+-	INIT_WORK(&dpc->work, acpi_os_execute_deferred);
+-	queue = (type == OSL_NOTIFY_HANDLER) ? kacpi_notify_wq : kacpid_wq;
+-	if (!queue_work(queue, &dpc->work)) {
++	if (!hp) {
++		INIT_WORK(&dpc->work, acpi_os_execute_deferred);
++		queue = (type == OSL_NOTIFY_HANDLER) ?
++			kacpi_notify_wq : kacpid_wq;
++		ret = queue_work(queue, &dpc->work);
++	} else {
++		INIT_WORK(&dpc->work, acpi_os_execute_hp_deferred);
++		ret = schedule_work(&dpc->work);
++	}
++
++	if (!ret) {
+ 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
+ 			  "Call to queue_work() failed.\n"));
+ 		status = AE_ERROR;
+@@ -737,8 +762,19 @@ acpi_status acpi_os_execute(acpi_execute_type type,
+ 	return_ACPI_STATUS(status);
+ }
+ 
++acpi_status acpi_os_execute(acpi_execute_type type,
++			    acpi_osd_exec_callback function, void *context)
++{
++	return __acpi_os_execute(type, function, context, 0);
++}
+ EXPORT_SYMBOL(acpi_os_execute);
+ 
++acpi_status acpi_os_hotplug_execute(acpi_osd_exec_callback function,
++	void *context)
++{
++	return __acpi_os_execute(0, function, context, 1);
++}
++
+ void acpi_os_wait_events_complete(void *context)
+ {
+ 	flush_workqueue(kacpid_wq);
+diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
+index 3f93a6b..b91440a 100644
+--- a/include/acpi/acpiosxf.h
++++ b/include/acpi/acpiosxf.h
+@@ -193,6 +193,9 @@ acpi_status
+ acpi_os_execute(acpi_execute_type type,
+ 		acpi_osd_exec_callback function, void *context);
+ 
++acpi_status
++acpi_os_hotplug_execute(acpi_osd_exec_callback function, void *context);
++
+ void acpi_os_wait_events_complete(void *context);
+ 
+ void acpi_os_sleep(acpi_integer milliseconds);
 -- 
 1.5.5.1
 
