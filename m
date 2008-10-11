@@ -1,134 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYJKE7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbYJKGce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754850AbYJKE7Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 00:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYJKE7A
+	id S1751971AbYJKGce (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYJKGcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 00:59:00 -0400
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:36176
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750869AbYJKE7A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 00:59:00 -0400
-X-Authority-Analysis: v=1.0 c=1 a=AE1oZuSjHPYA:10 a=4XX46gVHXKYA:10
- a=VwQbUJbxAAAA:8 a=tC0oqZoBfkweKGONl7gA:9 a=a2rwYzTo0j1OiSShSIgA:7
- a=Z84D4FfFpf8D30FLlGHSMCAEBaUA:4 a=WuK_CZDBSqoA:10
-Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
-From: Tom Zanussi <zanussi@comcast.net>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1223631723.8959.46.camel@penberg-laptop>
-References: <20080923212914.GB5237@localhost>
-	 <1223386477.28348.42.camel@penberg-laptop>
-	 <1223623191.8959.26.camel@penberg-laptop>
-	 <1223628687.8959.37.camel@penberg-laptop>
-	 <1223629803.8959.40.camel@penberg-laptop>
-	 <1223631723.8959.46.camel@penberg-laptop>
-Content-Type: text/plain
-Date: Fri, 10 Oct 2008 23:58:51 -0500
-Message-Id: <1223701131.7489.25.camel@charm-linux>
+	Sat, 11 Oct 2008 02:32:24 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46509 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbYJKGcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 02:32:23 -0400
+Date: Sat, 11 Oct 2008 15:31:36 +0900
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, knikanth@suse.de
+Subject: [PATCH] block: fix nr_phys_segments miscalculation bug
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081011153048E.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is against the latest git (b922df7383749a1c0b7ea64c50fa839263d3816b).
 
-On Fri, 2008-10-10 at 12:42 +0300, Pekka Enberg wrote:
-> (I'm cc'ing Tom, Jens, and LKML.)
-> 
-> On Fri, 2008-10-10 at 12:10 +0300, Pekka Enberg wrote:
-> > > I'm seeing a hard lock on my machine when I run kmemtraced with the
-> > > following patch applied:
-> > > 
-> > > http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=17ca1d5506b1db433f0b7167a627bfd55d319dd3
-> > > 
-> > > I can enable/disable kmemtrace via the debugfs files fine and can also
-> > > read the relay files with cat.
-> > > 
-> > > Any idea where this is coming from?
-> > 
-> > OK, it's the first splice() call in reader_thread() that causes the
-> > hang. Hmm.
-> 
-> To recap, with a CONFIG_KMEMTRACE enabled kernel from the
-> "topic/kmemtrace" branch of:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git topic/kmemtrace
-> 
-> running the "kmemtraced" program from
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/penberg/kmemtrace-user.git
-> 
-> results to a hard lock on my machine. I am unable to find anything
-> obviously wrong with it and as I can read/write the relay files just
-> fine, I'm beginning to think it's problem in relayfs splice
-> implementation.
-> 
-> Tom, thoughts?
-> 
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] block: fix nr_phys_segments miscalculation bug
 
-It looks like you hit the same problem as described here:
+This fixes the bug reported by Nikanth Karthikesan <knikanth@suse.de>:
 
-commit 8191ecd1d14c6914c660dfa007154860a7908857
+http://lkml.org/lkml/2008/10/2/203
 
-    splice: fix infinite loop in generic_file_splice_read()
+The root cause of the bug is that blk_phys_contig_segment
+miscalculates q->max_segment_size.
 
-relay uses the same loop but it never got noticed or fixed.  Can you try
-the following patch:
+blk_phys_contig_segment checks:
 
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 8d13a78..6a4d439 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -1318,12 +1318,9 @@ static ssize_t relay_file_splice_read(struct file *in,
- 		if (ret < 0)
- 			break;
- 		else if (!ret) {
--			if (spliced)
--				break;
--			if (flags & SPLICE_F_NONBLOCK) {
-+			if (flags & SPLICE_F_NONBLOCK)
- 				ret = -EAGAIN;
--				break;
--			}
-+			break;
+req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size
+
+But blk_recalc_rq_segments might expect that req->biotail and the
+previous bio in the req are supposed be merged into one
+segment. blk_recalc_rq_segments might also expect that next_req->bio
+and the next bio in the next_req are supposed be merged into one
+segment. In such case, we merge two requests that can't be merged
+here. Later, blk_rq_map_sg gives more segments than it should.
+
+We need to keep track of segment size in blk_recalc_rq_segments and
+use it to see if two requests can be merged. This patch implements it
+in the similar way that we used to do for hw merging (virtual
+merging).
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ block/blk-merge.c   |   20 ++++++++++++++++++--
+ include/linux/bio.h |    7 +++++++
+ 2 files changed, 25 insertions(+), 2 deletions(-)
+
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index 908d3e1..8681cd6 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -77,12 +77,20 @@ void blk_recalc_rq_segments(struct request *rq)
+ 			continue;
  		}
+ new_segment:
++		if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
++			rq->bio->bi_seg_front_size = seg_size;
++
+ 		nr_phys_segs++;
+ 		bvprv = bv;
+ 		seg_size = bv->bv_len;
+ 		highprv = high;
+ 	}
  
- 		*ppos += ret;
-
-
-It worked for me, but I also had to apply the following patch to
-kmemtraced:
-
-diff --git a/kmemtraced.c b/kmemtraced.c
-index 217478d..324ced9 100644
---- a/kmemtraced.c
-+++ b/kmemtraced.c
-@@ -109,6 +109,8 @@ static void *reader_thread(void *data)
- 		if (retval < 0)
- 			panic("splice() (from) failed: %s\n",
- 			      strerror(errno));
-+		if (!retval)
-+			continue;
- 		retval = splice(pipe_fd[0], NULL, log_fd, NULL,
- 				128, SPLICE_F_MOVE);
- 		if (retval < 0)
-
-
-Otherwise it would end up hanging kmemtraced in the second splice (pipe
-to log_fd) if the return from the first splice was 0 (i.e. there's no
-data available (and we can never know if there will ever be any
-more)).
-
-I'm not sure why kmemtraced is only splicing 128 bytes at a time - it
-seems to defeat the purpose - or why it wouldn't be using poll to know
-when there's at least a whole sub-buffer to splice, but to each his own.
-Hopefully the kernel patch at least fixes the loop. 
-
-Tom
-
-
++	if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
++		rq->bio->bi_seg_front_size = seg_size;
++	if (seg_size > rq->biotail->bi_seg_back_size)
++		rq->biotail->bi_seg_back_size = seg_size;
++
+ 	rq->nr_phys_segments = nr_phys_segs;
+ }
+ 
+@@ -106,7 +114,8 @@ static int blk_phys_contig_segment(struct request_queue *q, struct bio *bio,
+ 	if (!test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags))
+ 		return 0;
+ 
+-	if (bio->bi_size + nxt->bi_size > q->max_segment_size)
++	if (bio->bi_seg_back_size + nxt->bi_seg_front_size >
++	    q->max_segment_size)
+ 		return 0;
+ 
+ 	if (!bio_has_data(bio))
+@@ -309,6 +318,8 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
+ 				struct request *next)
+ {
+ 	int total_phys_segments;
++	unsigned int seg_size =
++		req->biotail->bi_seg_back_size + next->bio->bi_seg_front_size;
+ 
+ 	/*
+ 	 * First check if the either of the requests are re-queued
+@@ -324,8 +335,13 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
+ 		return 0;
+ 
+ 	total_phys_segments = req->nr_phys_segments + next->nr_phys_segments;
+-	if (blk_phys_contig_segment(q, req->biotail, next->bio))
++	if (blk_phys_contig_segment(q, req->biotail, next->bio)) {
++		if (req->nr_phys_segments == 1)
++			req->bio->bi_seg_front_size = seg_size;
++		if (next->nr_phys_segments == 1)
++			next->biotail->bi_seg_back_size = seg_size;
+ 		total_phys_segments--;
++	}
+ 
+ 	if (total_phys_segments > q->max_phys_segments)
+ 		return 0;
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index ff5b4cf..dc3cec3 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -79,6 +79,13 @@ struct bio {
+ 
+ 	unsigned int		bi_size;	/* residual I/O count */
+ 
++	/*
++	 * To keep track of the max segment size, we account for the
++	 * sizes of the first and last mergeable segments in this bio.
++	 */
++	unsigned int		bi_seg_front_size;
++	unsigned int		bi_seg_back_size;
++
+ 	unsigned int		bi_max_vecs;	/* max bvl_vecs we can hold */
+ 
+ 	unsigned int		bi_comp_cpu;	/* completion CPU */
+-- 
+1.5.5.GIT
 
