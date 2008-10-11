@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761095AbYJKWFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbYJKWK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761095AbYJKWFd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 18:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYJKWFW
+	id S1760947AbYJKWK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 18:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbYJKWKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 18:05:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45921
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755390AbYJKWFV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 18:05:21 -0400
-Date: Sat, 11 Oct 2008 15:04:56 -0700 (PDT)
-Message-Id: <20081011.150456.193701531.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, philipl@overt.org, hmh@hmh.eng.br,
-       linville@tuxdriver.com
-Subject: Re: [GIT]: Networking for 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0810111303510.3402@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0810111057020.3402@nehalem.linux-foundation.org>
-	<20081011.121930.193700319.davem@davemloft.net>
-	<alpine.LFD.2.00.0810111303510.3402@nehalem.linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 11 Oct 2008 18:10:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33218 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755467AbYJKWKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 18:10:16 -0400
+Message-ID: <48F12427.5090801@redhat.com>
+Date: Sat, 11 Oct 2008 17:09:43 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 42/42] ext4: Rename ext4dev to ext4
+References: <1223525160-9887-1-git-send-email-tytso@mit.edu> <1223525160-9887-26-git-send-email-tytso@mit.edu> <1223525160-9887-27-git-send-email-tytso@mit.edu> <1223525160-9887-28-git-send-email-tytso@mit.edu> <1223525160-9887-29-git-send-email-tytso@mit.edu> <1223525160-9887-30-git-send-email-tytso@mit.edu> <1223525160-9887-31-git-send-email-tytso@mit.edu> <1223525160-9887-32-git-send-email-tytso@mit.edu> <1223525160-9887-33-git-send-email-tytso@mit.edu> <1223525160-9887-34-git-send-email-tytso@mit.edu> <1223525160-9887-35-git-send-email-tytso@mit.edu> <1223525160-9887-36-git-send-email-tytso@mit.edu> <1223525160-9887-37-git-send-email-tytso@mit.edu> <1223525160-9887-38-git-send-email-tytso@mit.edu> <1223525160-9887-39-git-send-email-tytso@mit.edu> <1223525160-9887-40-git-send-email-tytso@mit.edu> <1223525160-9887-41-git-send-email-tytso@mit.edu> <1223525160-9887-42-git-send-email-tytso@mit.edu> <1223525160-9887-43-git-send-email-tytso@mit.edu> <48F122FC.6040107@goop.org>
+In-Reply-To: <48F122FC.6040107@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 11 Oct 2008 13:10:52 -0700 (PDT)
-
-> On Sat, 11 Oct 2008, David Miller wrote:
-> > This patch should fix that case, let me know if it works:
+Jeremy Fitzhardinge wrote:
+> Theodore Ts'o wrote:
+>> The ext4 filesystem is getting stable enough that it's time to drop
+>> the "dev" prefix.  Also remove the requirement for the TEST_FILESYS
+>> flag.
+>>   
 > 
-> How about you test it? 
+> Shouldn't you still register "ext4dev" as a filesystem type, so that old 
+> setups won't suddenly break?  I just had this happen to me; I had to 
+> work out why /home didn't mount.
 
-Yep, indeed I did give it a try.
+Yep, we've discussed that and I think it'll get added.
 
-> It wasn't my bug-report, I just reported another 
-> report from somebody who _does_ run randconfig.
+It should probably go away at some point, but it'd be good at least for
+a transition period.
 
-Where did you see this?  I wouldn't have asked all of these idiotic
-questions if I had a link to the report.  Then I could go grab the
-config used to produce the problem and then ping the reporter with
-a test patch. :-)
+Jeremy, btw the latest fedora kernels should fix your xattr hang :)
 
-> Here's another one:
+-Eric
+
+>> +obj-$(CONFIG_EXT4_FS)		+= ext4/ # Before ext2 so root fs can be ext4dev
+>>   
 > 
-> 	drivers/built-in.o: In function `bt_poll_rfkill':
-> 	toshiba_acpi.c:(.text+0x37346): undefined reference to `input_event'
+> s/ext4dev/ext4/
 > 
-> where the cause seems to be a totally broken Kconfig entry ACPI_TOSHIBA.
-
-Where are these reports coming from?  Some automated randconfig thing
-that gets posted somewhere?  I'd really like to look at this stuff, it
-seems very useful.
-
-> You can't just do
-> 
-> 	select INPUT_POLLDEV
-> 
-> since that in turn needs all the _other_ input stuff. Yes, yes, things 
-> like various keyboard drivers do exactly that, but they are already inside 
-> "if INPUT_KEYBOARD/INPUT_MISC" or similar.
-> 
-> So at the very least, you'd now have to have it do a "depends on INPUT" or 
-> something like that.
-> 
-> Or perhaps just make that particular _feature_ depend on it, rather than 
-> make the whole driver depend on or select it. 
-
-Do you want me to fix this ACPI build failure in the networking tree?
-I'm more than happy to :-)
+>     J
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
