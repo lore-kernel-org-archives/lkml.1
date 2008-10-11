@@ -1,82 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbYJKPz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYJKP6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbYJKPz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 11:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYJKPzU
+	id S1756864AbYJKP6v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 11:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYJKP6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 11:55:20 -0400
-Received: from mx40.mail.ru ([194.67.23.36]:61861 "EHLO mx40.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753565AbYJKPzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 11:55:20 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: when spin_lock_irq (as opposed to spin_lock_irqsave) is appropriate?
-Date: Sat, 11 Oct 2008 19:55:13 +0400
+	Sat, 11 Oct 2008 11:58:42 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:34210 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753565AbYJKP6l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 11:58:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=L4vFEem89grlevemjB14S+PmMTKhsqd/x05+lhqljhOp0OIiCXuTENxPgFvy4FPiUf
+         rgtttMh0yV+u8AL/mLnZA3ZkI3cQP5hqgq1BwtnUU6RY7I3flzvLC8P+y6JMq7bE6w02
+         K1+CmdGwLtvAvfsy0zSSnejwy94TE6pHA3DYQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/7] ide: locking improvements
+Date: Sat, 11 Oct 2008 17:56:37 +0200
 User-Agent: KMail/1.9.10
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200810111929.01927.arvidjaar@mail.ru> <200810111741.53404.oliver@neukum.org>
-In-Reply-To: <200810111741.53404.oliver@neukum.org>
+Cc: petkovbb@gmail.com, Robert Hancock <hancockr@shaw.ca>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <200810111645.27847.bzolnier@gmail.com> <20081011150532.GU19428@kernel.dk>
+In-Reply-To: <20081011150532.GU19428@kernel.dk>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2100474.0vlevzlEYP";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Disposition: inline
+Message-Id: <200810111756.37278.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810111955.14667.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2100474.0vlevzlEYP
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Saturday 11 October 2008, Jens Axboe wrote:
+> On Sat, Oct 11 2008, Bartlomiej Zolnierkiewicz wrote:
+> > On Saturday 11 October 2008, Jens Axboe wrote:
+> > > On Sat, Oct 11 2008, Borislav Petkov wrote:
+> > > > > >From my perspective the main gain of these patches is the increased
+> > > > > maintainability and sanity of the code, scalability improvements are
+> > > > > just an added bonus.
+> > > > 
+> > > > and better code/improved scalability is a bad thing because... ?!
+> > > 
+> > > It's a bad thing because nobody on earth cares about IDE scalability,
+> > 
+> > JFYI: just yesterday I got mail proving otherwise. ;)
+> 
+> Well, there are lots of crazy people in the world, a request from
+> someone doesn't necessarily make it a good idea :-)
+> 
+> > > from a performance POV a modern SATA controller is just better on
+> > > several levels. I don't think anybody cares about IDE scaling on 8-16
+> > > cores or more, simply because NOBODY is using IDE on such systems.
+> > > 
+> > > As such, trying to improve locking is a pointless exercise. And that is
+> > > a bad thing, because code change invariably brings in code bugs. Then
+> > > see previous mail on lack of coverage testing, and it can naturally be
+> > > harmful.
+> > 
+> > Your concerns were already addressed in my reply but I worry that having
+> > a discussion based on technical arguments is not your goal.
+> 
+> You make it sound like I have an alterior motive, which I definitely do
+> not. I just wondered what all the IDE churn was supposed to be good
+> for...
+> 
+> > Just to repeat: these patches are not hardware specific and obviously
+> > they are not going to be merged today, tomorrow or in a week (they are
+> > 2.6.29 material after months of time in pata tree / linux-next).
+> 
+> It's less about this specific patchset than in general. The specific one
+> looked fine by itself, it's just the path to to 'IDE lock scaling' that
+> is a bit crazy to me. Moving IDE to the softirq completion like SCSI
+> would be a better start, imho. IDE still does most of the processing
 
-On Saturday 11 October 2008, Oliver Neukum wrote:
-> Am Samstag, 11. Oktober 2008 17:29:01 schrieb Andrey Borzenkov:
-> > Logically, one piece of kernel code has no way to know whether another
-> > piece of kernel code (or may be hard-/firmware) has disabled some
-> > interrupt line. So it looks like spin_lock_irq should not even exist,
-> > except may be for very specific cases (where we are sure no other piece
-> > of kernel code may run concurrently)?
-> >=20
-> > Sorry for stupid question, I an not actually a HW type of person ...
-> >=20
->=20
-> This has no connection with individual irq lines. It's about being able
-> to sleep. Kernel code usually knows whether it can sleep.
-> If it knows to be able to sleep it can use spin_lock_irq() which is
-> more efficient than spin_lock_irqsave()
->=20
+We are getting there but this can't be done without fixing some other
+stuff (like the patch posted today to not process the next request from
+hard-IRQ context).  Any help would be much appreciated.
 
-Sorry? I can't sleep under spinlock ... *any* spinlock? Or has this changed?
+> under its ide_lock, which isn't even necessary. Making the locking more
 
-May I be I was not clear with question. spin_lock_irq implies spin_unlock_i=
-rq,
-which unconditionally enables interrupts. But I have no idea which interrup=
-ts
-were disabled before spin_lock_irq; so I may accidentally enable too much?
+Well, actually it doesn't do most work under ide_lock (never has been)
+as the main means of protection is hwgroup->busy (which is protected by
+ide_lock).
 
-Or what exactly "irq" in spin_(un-)lock_irq means?
+[ OTOH some changes in this patchset were inspired by _your_ comments about
+  "room for locking improvements" in ide-io.c (IIRC) so kudos to you! ]
 
-TIA
+> finely grained is what I think is pretty crazy.
 
-=2Dandrey
+The more fine grained locking changes that were posted in separate patch
+were first done 3 years ago by Scalex86 guys and they were extensively
+tested on Intel hardware (however since other host drivers and things
+like IDE settings were abusing ide_lock applying this change back than
+was impossible - all of these stuff is fixed in the current Linus' tree).
 
---nextPart2100474.0vlevzlEYP
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Sorry for not explaining this clearly in the changelog.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> > > > > > rather like putting makeup on a corpse to me..
+> > > > 
+> > > > so _NOT_ true.
+> > > 
+> > > Depends on what you think is the corpse. Since IDE is essentially dead
+> > > and frozen, it IS a corpse and the phrase is then very appropriate. This
+> > > is not a personal jab at the IDE guys and does not reflect on the
+> > > (mostly) good work they do, just a reflection on the state of IDE in
+> > > general.
+> > 
+> > Interesting statement given that i.e. diffstat-wise pata tree has more
+> > than twice as much stuff queued up for 2.6.28 than "some other" trees
+> > (and we have history of being a _very_ conservative w.r.t. to needlessly
+> > moving code around in drivers/ide/).
+> > 
+> > Please stop being silly and pushing your view/idea on what other people
+> > should be doing (not to mention ignoring real facts).
+> 
+> Please start by actually _reading_ what I write. Your reply is based on
+> the code base, my statement pertains to IDE on the hardware side
+> (devices, controllers, etc). On the scalability front, what new hardware
+> do you envision shipping with IDE controllers that are actually used for
+> pushing large amounts of data? People would have to be borderline insane
+> to make such new hw today.
 
-iEYEABECAAYFAkjwzGIACgkQR6LMutpd94xSCACfX2uBdFb7BsowUI1Ih57dtvdd
-kO4AmwRKwl5sCILNA3Ei6sSjyGoxNsVd
-=7XCh
------END PGP SIGNATURE-----
+Please understand that we are not doing new-hardware-driven-development
+here but rather a big maintainance project.  Like I said in reply to Robert
+the scalability improvements are an added bonus from my POV -> the main
+goal is making the code simpler, harder to abuse and easier to maintain.
 
---nextPart2100474.0vlevzlEYP--
+> I'm not pushing my views on anyone, but I am free to share what I
+> actually think. I actually care about old code stability, hence my
+> concern with the amount of IDE changes.
+
+The actual users' feedback about amount of IDE changes have been mostly
+positive (some ask for even more changes :) so I don't think that it
+should be a reason of a great worries.  I hope that all other concerns
+have been also cleared now.
+
+Thanks,
+Bart
