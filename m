@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbYJKGyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYJKGz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759395AbYJKGyj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756926AbYJKGj2
+	id S1755427AbYJKGz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757300AbYJKGjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:39:28 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:52476 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbYJKGhH (ORCPT
+	Sat, 11 Oct 2008 02:39:47 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:40791 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753327AbYJKGhG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:07 -0400
-Date: Sat, 11 Oct 2008 02:36:12 -0400
+	Sat, 11 Oct 2008 02:37:06 -0400
+Date: Sat, 11 Oct 2008 02:35:28 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 52/85] fujitsu-laptop: better handling of P8010 hotkey
+Subject: [PATCH 08/85] ACPICA: Copy dynamically loaded tables to local buffer
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       Peter Gruber <nokos@gmx.net>, Len Brown <len.brown@intel.com>
-Message-id: <0e6a66e9cf231140d2e49064d48162728edb7746.1223706853.git.len.brown@intel.com>
+Cc: Dennis Noordsij <dennis.noordsij@helsinki.fi>,
+       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       Andi Kleen <ak@linux.intel.com>, Len Brown <len.brown@intel.com>
+Message-id: <a4377db47f9b0586f32ed7beddb53c86d5ef422d.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,290 +28,205 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+From: Dennis Noordsij <dennis.noordsij@helsinki.fi>
 
-This patch (mostly from Peter Gruber) improves the handling of the hotkeys
-for P8010 laptops by passing more accurate input events back to userspace.
-This is needed because the P8010 labels these buttons quite differently to
-earlier laptops.  As part of this, a P8010-specific DMI callback check has
-been implemented.  Finally there's some minor whitespace cleanups from
-running the source through Lindent.
+Previously, dynamically loaded tables were simply mapped, but on some machines
+this memory is corrupted after suspend. Now copy the table to a local buffer.
+For OpRegion case, added checksum verify. Use the table length from the table header,
+not the region length. For Buffer case, use the table length also.
 
-Signed-off-by: Peter Gruber <nokos@gmx.net>
-Signed-off-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+http://bugzilla.kernel.org/show_bug.cgi?id=10734
+
+Signed-off-by: Dennis Noordsij <dennis.noordsij@helsinki.fi>
+Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/misc/fujitsu-laptop.c |  123 +++++++++++++++++++++++-----------------
- 1 files changed, 71 insertions(+), 52 deletions(-)
+ drivers/acpi/executer/exconfig.c |  113 +++++++++++++++++++++++++++----------
+ 1 files changed, 82 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/misc/fujitsu-laptop.c b/drivers/misc/fujitsu-laptop.c
-index 3e56203..f861db0 100644
---- a/drivers/misc/fujitsu-laptop.c
-+++ b/drivers/misc/fujitsu-laptop.c
-@@ -44,8 +44,9 @@
-  * Hotkeys present on certain Fujitsu laptops (eg: the S6xxx series) are
-  * also supported by this driver.
-  *
-- * This driver has been tested on a Fujitsu Lifebook S6410 and S7020.  It
-- * should work on most P-series and S-series Lifebooks, but YMMV.
-+ * This driver has been tested on a Fujitsu Lifebook S6410, S7020 and
-+ * P8010.  It should work on most P-series and S-series Lifebooks, but
-+ * YMMV.
-  *
-  * The module parameter use_alt_lcd_levels switches between different ACPI
-  * brightness controls which are used by different Fujitsu laptops.  In most
-@@ -65,7 +66,7 @@
- #include <linux/video_output.h>
- #include <linux/platform_device.h>
- 
--#define FUJITSU_DRIVER_VERSION "0.4.2"
-+#define FUJITSU_DRIVER_VERSION "0.4.3"
- 
- #define FUJITSU_LCD_N_LEVELS 8
- 
-@@ -83,10 +84,10 @@
- #define ACPI_VIDEO_NOTIFY_DEC_BRIGHTNESS     0x87
- 
- /* Hotkey details */
--#define LOCK_KEY	0x410	/* codes for the keys in the GIRB register */
--#define DISPLAY_KEY	0x411	/* keys are mapped to KEY_SCREENLOCK (the key with the key symbol) */
--#define ENERGY_KEY	0x412	/* KEY_MEDIA (the key with the laptop symbol, KEY_EMAIL (E key)) */
--#define REST_KEY	0x413	/* KEY_SUSPEND (R key) */
-+#define KEY1_CODE	0x410	/* codes for the keys in the GIRB register */
-+#define KEY2_CODE	0x411
-+#define KEY3_CODE	0x412
-+#define KEY4_CODE	0x413
- 
- #define MAX_HOTKEY_RINGBUFFER_SIZE 100
- #define RINGBUFFERSIZE 40
-@@ -123,6 +124,7 @@ struct fujitsu_t {
- 	char phys[32];
- 	struct backlight_device *bl_device;
- 	struct platform_device *pf_device;
-+	int keycode1, keycode2, keycode3, keycode4;
- 
- 	unsigned int max_brightness;
- 	unsigned int brightness_changed;
-@@ -430,7 +432,7 @@ static struct platform_driver fujitsupf_driver = {
- 		   }
- };
- 
--static int dmi_check_cb_s6410(const struct dmi_system_id *id)
-+static void dmi_check_cb_common(const struct dmi_system_id *id)
+diff --git a/drivers/acpi/executer/exconfig.c b/drivers/acpi/executer/exconfig.c
+index 8892b98..331a114 100644
+--- a/drivers/acpi/executer/exconfig.c
++++ b/drivers/acpi/executer/exconfig.c
+@@ -280,6 +280,7 @@ acpi_ex_load_op(union acpi_operand_object *obj_desc,
+ 		struct acpi_walk_state *walk_state)
  {
- 	acpi_handle handle;
- 	int have_blnf;
-@@ -452,24 +454,40 @@ static int dmi_check_cb_s6410(const struct dmi_system_id *id)
- 			    "auto-detecting disable_adjust\n");
- 		disable_brightness_adjust = have_blnf ? 0 : 1;
- 	}
-+}
-+
-+static int dmi_check_cb_s6410(const struct dmi_system_id *id)
-+{
-+	dmi_check_cb_common(id);
-+	fujitsu->keycode1 = KEY_SCREENLOCK;	/* "Lock" */
-+	fujitsu->keycode2 = KEY_HELP;	/* "Mobility Center" */
-+	return 0;
-+}
-+
-+static int dmi_check_cb_p8010(const struct dmi_system_id *id)
-+{
-+	dmi_check_cb_common(id);
-+	fujitsu->keycode1 = KEY_HELP;	/* "Support" */
-+	fujitsu->keycode3 = KEY_SWITCHVIDEOMODE;	/* "Presentation" */
-+	fujitsu->keycode4 = KEY_WWW;	/* "Internet" */
- 	return 0;
- }
+ 	union acpi_operand_object *ddb_handle;
++	struct acpi_table_header *table;
+ 	struct acpi_table_desc table_desc;
+ 	u32 table_index;
+ 	acpi_status status;
+@@ -294,9 +295,8 @@ acpi_ex_load_op(union acpi_operand_object *obj_desc,
+ 	switch (ACPI_GET_OBJECT_TYPE(obj_desc)) {
+ 	case ACPI_TYPE_REGION:
  
- static struct dmi_system_id __initdata fujitsu_dmi_table[] = {
- 	{
--	 .ident = "Fujitsu Siemens",
-+	 .ident = "Fujitsu Siemens S6410",
- 	 .matches = {
- 		     DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
- 		     DMI_MATCH(DMI_PRODUCT_NAME, "LIFEBOOK S6410"),
- 		     },
- 	 .callback = dmi_check_cb_s6410},
- 	{
--	 .ident = "FUJITSU LifeBook P8010",
-+	 .ident = "Fujitsu LifeBook P8010",
- 	 .matches = {
- 		     DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU"),
- 		     DMI_MATCH(DMI_PRODUCT_NAME, "LifeBook P8010"),
--		    },
--	 .callback = dmi_check_cb_s6410},
-+		     },
-+	 .callback = dmi_check_cb_p8010},
- 	{}
- };
+-		ACPI_DEBUG_PRINT((ACPI_DB_EXEC, "Load from Region %p %s\n",
+-				  obj_desc,
+-				  acpi_ut_get_object_type_name(obj_desc)));
++		ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
++				  "Load table from Region %p\n", obj_desc));
  
-@@ -547,7 +565,6 @@ static int acpi_fujitsu_add(struct acpi_device *device)
- 	}
+ 		/* Region must be system_memory (from ACPI spec) */
  
- 	/* do config (detect defaults) */
--	dmi_check_system(fujitsu_dmi_table);
- 	use_alt_lcd_levels = use_alt_lcd_levels == 1 ? 1 : 0;
- 	disable_brightness_keys = disable_brightness_keys == 1 ? 1 : 0;
- 	disable_brightness_adjust = disable_brightness_adjust == 1 ? 1 : 0;
-@@ -623,17 +640,17 @@ static void acpi_fujitsu_notify(acpi_handle handle, u32 event, void *data)
- 			keycode = 0;
- 			if (disable_brightness_keys != 1) {
- 				if (oldb == 0) {
--					acpi_bus_generate_proc_event(fujitsu->
--						dev,
--						ACPI_VIDEO_NOTIFY_DEC_BRIGHTNESS,
--						0);
-+					acpi_bus_generate_proc_event
-+					    (fujitsu->dev,
-+					     ACPI_VIDEO_NOTIFY_DEC_BRIGHTNESS,
-+					     0);
- 					keycode = KEY_BRIGHTNESSDOWN;
- 				} else if (oldb ==
- 					   (fujitsu->max_brightness) - 1) {
--					acpi_bus_generate_proc_event(fujitsu->
--						dev,
--						ACPI_VIDEO_NOTIFY_INC_BRIGHTNESS,
--						0);
-+					acpi_bus_generate_proc_event
-+					    (fujitsu->dev,
-+					     ACPI_VIDEO_NOTIFY_INC_BRIGHTNESS,
-+					     0);
- 					keycode = KEY_BRIGHTNESSUP;
- 				}
- 			}
-@@ -646,8 +663,7 @@ static void acpi_fujitsu_notify(acpi_handle handle, u32 event, void *data)
- 			}
- 			if (disable_brightness_keys != 1) {
- 				acpi_bus_generate_proc_event(fujitsu->dev,
--					ACPI_VIDEO_NOTIFY_INC_BRIGHTNESS,
--					0);
-+					ACPI_VIDEO_NOTIFY_INC_BRIGHTNESS, 0);
- 				keycode = KEY_BRIGHTNESSUP;
- 			}
- 		} else if (oldb > newb) {
-@@ -659,8 +675,7 @@ static void acpi_fujitsu_notify(acpi_handle handle, u32 event, void *data)
- 			}
- 			if (disable_brightness_keys != 1) {
- 				acpi_bus_generate_proc_event(fujitsu->dev,
--					ACPI_VIDEO_NOTIFY_DEC_BRIGHTNESS,
--					0);
-+					ACPI_VIDEO_NOTIFY_DEC_BRIGHTNESS, 0);
- 				keycode = KEY_BRIGHTNESSDOWN;
- 			}
- 		} else {
-@@ -742,10 +757,10 @@ static int acpi_fujitsu_hotkey_add(struct acpi_device *device)
- 	input->id.product = 0x06;
- 	input->dev.parent = &device->dev;
- 	input->evbit[0] = BIT(EV_KEY);
--	set_bit(KEY_SCREENLOCK, input->keybit);
--	set_bit(KEY_MEDIA, input->keybit);
--	set_bit(KEY_EMAIL, input->keybit);
--	set_bit(KEY_SUSPEND, input->keybit);
-+	set_bit(fujitsu->keycode1, input->keybit);
-+	set_bit(fujitsu->keycode2, input->keybit);
-+	set_bit(fujitsu->keycode3, input->keybit);
-+	set_bit(fujitsu->keycode4, input->keybit);
- 	set_bit(KEY_UNKNOWN, input->keybit);
- 
- 	error = input_register_device(input);
-@@ -833,24 +848,24 @@ static void acpi_fujitsu_hotkey_notify(acpi_handle handle, u32 event,
- 				    irb);
- 
- 			switch (irb & 0x4ff) {
--			case LOCK_KEY:
--				keycode = KEY_SCREENLOCK;
-+			case KEY1_CODE:
-+				keycode = fujitsu->keycode1;
- 				break;
--			case DISPLAY_KEY:
--				keycode = KEY_MEDIA;
-+			case KEY2_CODE:
-+				keycode = fujitsu->keycode2;
- 				break;
--			case ENERGY_KEY:
--				keycode = KEY_EMAIL;
-+			case KEY3_CODE:
-+				keycode = fujitsu->keycode3;
- 				break;
--			case REST_KEY:
--				keycode = KEY_SUSPEND;
-+			case KEY4_CODE:
-+				keycode = fujitsu->keycode4;
- 				break;
- 			case 0:
- 				keycode = 0;
- 				break;
- 			default:
- 				vdbg_printk(FUJLAPTOP_DBG_WARN,
--					"Unknown GIRB result [%x]\n", irb);
-+					    "Unknown GIRB result [%x]\n", irb);
- 				keycode = -1;
- 				break;
- 			}
-@@ -859,12 +874,12 @@ static void acpi_fujitsu_hotkey_notify(acpi_handle handle, u32 event,
- 					"Push keycode into ringbuffer [%d]\n",
- 					keycode);
- 				status = kfifo_put(fujitsu_hotkey->fifo,
--						(unsigned char *)&keycode,
--						sizeof(keycode));
-+						   (unsigned char *)&keycode,
-+						   sizeof(keycode));
- 				if (status != sizeof(keycode)) {
- 					vdbg_printk(FUJLAPTOP_DBG_WARN,
--						"Could not push keycode [0x%x]\n",
--						keycode);
-+					    "Could not push keycode [0x%x]\n",
-+					    keycode);
- 				} else {
- 					input_report_key(input, keycode, 1);
- 					input_sync(input);
-@@ -879,8 +894,8 @@ static void acpi_fujitsu_hotkey_notify(acpi_handle handle, u32 event,
- 					input_report_key(input, keycode_r, 0);
- 					input_sync(input);
- 					vdbg_printk(FUJLAPTOP_DBG_TRACE,
--						    "Pop keycode from ringbuffer [%d]\n",
--						    keycode_r);
-+					  "Pop keycode from ringbuffer [%d]\n",
-+					  keycode_r);
- 				}
- 			}
+@@ -316,61 +316,112 @@ acpi_ex_load_op(union acpi_operand_object *obj_desc,
  		}
-@@ -943,6 +958,11 @@ static int __init fujitsu_init(void)
- 	if (!fujitsu)
- 		return -ENOMEM;
- 	memset(fujitsu, 0, sizeof(struct fujitsu_t));
-+	fujitsu->keycode1 = KEY_PROG1;
-+	fujitsu->keycode2 = KEY_PROG2;
-+	fujitsu->keycode3 = KEY_PROG3;
-+	fujitsu->keycode4 = KEY_PROG4;
-+	dmi_check_system(fujitsu_dmi_table);
  
- 	result = acpi_bus_register_driver(&acpi_fujitsu_driver);
- 	if (result < 0) {
-@@ -1076,15 +1096,14 @@ MODULE_DESCRIPTION("Fujitsu laptop extras support");
- MODULE_VERSION(FUJITSU_DRIVER_VERSION);
- MODULE_LICENSE("GPL");
- 
--MODULE_ALIAS
--    ("dmi:*:svnFUJITSUSIEMENS:*:pvr:rvnFUJITSU:rnFJNB1D3:*:cvrS6410:*");
--MODULE_ALIAS
--    ("dmi:*:svnFUJITSU:*:pvr:rvnFUJITSU:rnFJNB19C:*:cvrS7020:*");
-+MODULE_ALIAS("dmi:*:svnFUJITSUSIEMENS:*:pvr:rvnFUJITSU:rnFJNB1D3:*:cvrS6410:*");
-+MODULE_ALIAS("dmi:*:svnFUJITSU:*:pvr:rvnFUJITSU:rnFJNB19C:*:cvrS7020:*");
- 
- static struct pnp_device_id pnp_ids[] = {
--	{ .id = "FUJ02bf" },
--	{ .id = "FUJ02B1" },
--	{ .id = "FUJ02E3" },
--	{ .id = "" }
-+	{.id = "FUJ02bf"},
-+	{.id = "FUJ02B1"},
-+	{.id = "FUJ02E3"},
-+	{.id = ""}
- };
+ 		/*
+-		 * We will simply map the memory region for the table. However, the
+-		 * memory region is technically not guaranteed to remain stable and
+-		 * we may eventually have to copy the table to a local buffer.
++		 * Map the table header and get the actual table length. The region
++		 * length is not guaranteed to be the same as the table length.
++		 */
++		table = acpi_os_map_memory(obj_desc->region.address,
++					   sizeof(struct acpi_table_header));
++		if (!table) {
++			return_ACPI_STATUS(AE_NO_MEMORY);
++		}
 +
- MODULE_DEVICE_TABLE(pnp, pnp_ids);
++		length = table->length;
++		acpi_os_unmap_memory(table, sizeof(struct acpi_table_header));
++
++		/* Must have at least an ACPI table header */
++
++		if (length < sizeof(struct acpi_table_header)) {
++			return_ACPI_STATUS(AE_INVALID_TABLE_LENGTH);
++		}
++
++		/*
++		 * The memory region is not guaranteed to remain stable and we must
++		 * copy the table to a local buffer. For example, the memory region
++		 * is corrupted after suspend on some machines. Dynamically loaded
++		 * tables are usually small, so this overhead is minimal.
+ 		 */
++
++		/* Allocate a buffer for the table */
++
++		table_desc.pointer = ACPI_ALLOCATE(length);
++		if (!table_desc.pointer) {
++			return_ACPI_STATUS(AE_NO_MEMORY);
++		}
++
++		/* Map the entire table and copy it */
++
++		table = acpi_os_map_memory(obj_desc->region.address, length);
++		if (!table) {
++			ACPI_FREE(table_desc.pointer);
++			return_ACPI_STATUS(AE_NO_MEMORY);
++		}
++
++		ACPI_MEMCPY(table_desc.pointer, table, length);
++		acpi_os_unmap_memory(table, length);
++
+ 		table_desc.address = obj_desc->region.address;
+-		table_desc.length = obj_desc->region.length;
+-		table_desc.flags = ACPI_TABLE_ORIGIN_MAPPED;
+ 		break;
+ 
+ 	case ACPI_TYPE_BUFFER:	/* Buffer or resolved region_field */
+ 
+ 		ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
+-				  "Load from Buffer or Field %p %s\n", obj_desc,
+-				  acpi_ut_get_object_type_name(obj_desc)));
+-
+-		length = obj_desc->buffer.length;
++				  "Load table from Buffer or Field %p\n",
++				  obj_desc));
+ 
+ 		/* Must have at least an ACPI table header */
+ 
+-		if (length < sizeof(struct acpi_table_header)) {
++		if (obj_desc->buffer.length < sizeof(struct acpi_table_header)) {
+ 			return_ACPI_STATUS(AE_INVALID_TABLE_LENGTH);
+ 		}
+ 
+-		/* Validate checksum here. It won't get validated in tb_add_table */
++		/* Get the actual table length from the table header */
+ 
+-		status =
+-		    acpi_tb_verify_checksum(ACPI_CAST_PTR
+-					    (struct acpi_table_header,
+-					     obj_desc->buffer.pointer), length);
+-		if (ACPI_FAILURE(status)) {
+-			return_ACPI_STATUS(status);
++		table =
++		    ACPI_CAST_PTR(struct acpi_table_header,
++				  obj_desc->buffer.pointer);
++		length = table->length;
++
++		/* Table cannot extend beyond the buffer */
++
++		if (length > obj_desc->buffer.length) {
++			return_ACPI_STATUS(AE_AML_BUFFER_LIMIT);
++		}
++		if (length < sizeof(struct acpi_table_header)) {
++			return_ACPI_STATUS(AE_INVALID_TABLE_LENGTH);
+ 		}
+ 
+ 		/*
+-		 * We need to copy the buffer since the original buffer could be
+-		 * changed or deleted in the future
++		 * Copy the table from the buffer because the buffer could be modified
++		 * or even deleted in the future
+ 		 */
+ 		table_desc.pointer = ACPI_ALLOCATE(length);
+ 		if (!table_desc.pointer) {
+ 			return_ACPI_STATUS(AE_NO_MEMORY);
+ 		}
+ 
+-		ACPI_MEMCPY(table_desc.pointer, obj_desc->buffer.pointer,
+-			    length);
+-		table_desc.length = length;
+-		table_desc.flags = ACPI_TABLE_ORIGIN_ALLOCATED;
++		ACPI_MEMCPY(table_desc.pointer, table, length);
++		table_desc.address = ACPI_TO_INTEGER(table_desc.pointer);
+ 		break;
+ 
+ 	default:
+ 		return_ACPI_STATUS(AE_AML_OPERAND_TYPE);
+ 	}
+ 
+-	/*
+-	 * Install the new table into the local data structures
+-	 */
++	/* Validate table checksum (will not get validated in tb_add_table) */
++
++	status = acpi_tb_verify_checksum(table_desc.pointer, length);
++	if (ACPI_FAILURE(status)) {
++		ACPI_FREE(table_desc.pointer);
++		return_ACPI_STATUS(status);
++	}
++
++	/* Complete the table descriptor */
++
++	table_desc.length = length;
++	table_desc.flags = ACPI_TABLE_ORIGIN_ALLOCATED;
++
++	/* Install the new table into the local data structures */
++
+ 	status = acpi_tb_add_table(&table_desc, &table_index);
+ 	if (ACPI_FAILURE(status)) {
+ 		goto cleanup;
+@@ -379,7 +430,7 @@ acpi_ex_load_op(union acpi_operand_object *obj_desc,
+ 	/*
+ 	 * Add the table to the namespace.
+ 	 *
+-	 * Note: We load the table objects relative to the root of the namespace.
++	 * Note: Load the table objects relative to the root of the namespace.
+ 	 * This appears to go against the ACPI specification, but we do it for
+ 	 * compatibility with other ACPI implementations.
+ 	 */
+@@ -415,7 +466,7 @@ acpi_ex_load_op(union acpi_operand_object *obj_desc,
+       cleanup:
+ 	if (ACPI_FAILURE(status)) {
+ 
+-		/* Delete allocated buffer or mapping */
++		/* Delete allocated table buffer */
+ 
+ 		acpi_tb_delete_table(&table_desc);
+ 	}
 -- 
 1.5.5.1
 
