@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbYJKHip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbYJKHjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759017AbYJKHip (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbYJKHg6
+	id S1759004AbYJKHjE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYJKHhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:36:58 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:48087 "EHLO
+	Sat, 11 Oct 2008 03:37:10 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:48105 "EHLO
 	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756405AbYJKHg5 (ORCPT
+	with ESMTP id S1758020AbYJKHhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:36:57 -0400
-Date: Sat, 11 Oct 2008 02:35:44 -0400
+	Sat, 11 Oct 2008 03:37:08 -0400
+Date: Sat, 11 Oct 2008 02:35:55 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 24/85] ACPI : Add the support for _TTS object
+Subject: [PATCH 35/85] dock: introduce .uevent for devices in dock, eg libata
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
-       Andi Kleen <ak@linux.intel.com>, Len Brown <len.brown@intel.com>
-Message-id: <e77e07063b3cf084218dfa81b095519ce1a6c4b6.1223706853.git.len.brown@intel.com>
+Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+Message-id: <1253f7aabfebc51446dbec5c8895c5c8846dfe06.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,140 +26,223 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Shaohua Li <shaohua.li@intel.com>
 
-    The _TTS object is defined in the section 7.3 of acpi 3.0b spec.
-    The _TTS control method is executed by the OSPM at the beginning of
-the sleep transition process for S1,S2, S3, S4, and orderly S5 shutdown.
-OS will invoke _TTS before it has notified any native mode device drivers
-of the sleep state transition. The target sleeping state value is passed to
-the _TTS control method.
+dock's uevent reported itself, not ata. It might be difficult to find an
+ata device just according to a dock. This patch introduces docking ops
+for each device in a dock. when docking, dock driver can send device
+specific uevent. This should help dock station too (not just bay)
 
-    The _TTS control method is also executed by the OSPM at the end of
-any sleep transition process when the system transitions to S0 from
-S1, S2, S3, or S4. The _TTS object should be evaluated after it has
-notified any native mode device drivers of the end of the sleep state
-transition. The working state value (0) is passed to the _TTS control method.
-
-    So it is necessary to add the support for _TTS object. The _TTS object
-will be evaluated if it exists.
-    At the same time a block notifier is added to the reboot notifier list so
-that the _TTS object will also be evaluated when the system shutdown.
-
-lenb: note that as of Sep 2008, I've not yet seen _TTS in any shipping BIOS.
-So this patch is to future-proof Linux, rather than fix the installed base.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11132
-
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Li Shaohua <shaohua.li@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Acked-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/sleep/main.c |   49 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 48 insertions(+), 1 deletions(-)
+ drivers/acpi/dock.c                |   22 ++++++++++++-----
+ drivers/ata/libata-acpi.c          |   44 ++++++++++++++++++++++++++++++++++-
+ drivers/pci/hotplug/acpiphp_glue.c |    6 +++-
+ include/acpi/acpi_drivers.h        |    9 +++++-
+ 4 files changed, 68 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
-index d13194a..c7f0c9c 100644
---- a/drivers/acpi/sleep/main.c
-+++ b/drivers/acpi/sleep/main.c
-@@ -15,6 +15,7 @@
- #include <linux/dmi.h>
- #include <linux/device.h>
- #include <linux/suspend.h>
-+#include <linux/reboot.h>
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index f19f643..ac7dfef 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -75,7 +75,7 @@ struct dock_dependent_device {
+ 	struct list_head list;
+ 	struct list_head hotplug_list;
+ 	acpi_handle handle;
+-	acpi_notify_handler handler;
++	struct acpi_dock_ops *ops;
+ 	void *context;
+ };
  
- #include <asm/io.h>
+@@ -385,8 +385,8 @@ static void hotplug_dock_devices(struct dock_station *ds, u32 event)
+ 	 * First call driver specific hotplug functions
+ 	 */
+ 	list_for_each_entry(dd, &ds->hotplug_devices, hotplug_list) {
+-		if (dd->handler)
+-			dd->handler(dd->handle, event, dd->context);
++		if (dd->ops && dd->ops->handler)
++			dd->ops->handler(dd->handle, event, dd->context);
+ 	}
  
-@@ -24,6 +25,36 @@
+ 	/*
+@@ -409,6 +409,7 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
+ 	struct device *dev = &ds->dock_device->dev;
+ 	char event_string[13];
+ 	char *envp[] = { event_string, NULL };
++	struct dock_dependent_device *dd;
  
- u8 sleep_states[ACPI_S_STATE_COUNT];
- 
-+static void acpi_sleep_tts_switch(u32 acpi_state)
-+{
-+	union acpi_object in_arg = { ACPI_TYPE_INTEGER };
-+	struct acpi_object_list arg_list = { 1, &in_arg };
-+	acpi_status status = AE_OK;
+ 	if (num == UNDOCK_EVENT)
+ 		sprintf(event_string, "EVENT=undock");
+@@ -419,7 +420,14 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
+ 	 * Indicate that the status of the dock station has
+ 	 * changed.
+ 	 */
+-	kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
++	if (num == DOCK_EVENT)
++		kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
 +
-+	in_arg.integer.value = acpi_state;
-+	status = acpi_evaluate_object(NULL, "\\_TTS", &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		/*
-+		 * OS can't evaluate the _TTS object correctly. Some warning
-+		 * message will be printed. But it won't break anything.
-+		 */
-+		printk(KERN_NOTICE "Failure in evaluating _TTS object\n");
++	list_for_each_entry(dd, &ds->hotplug_devices, hotplug_list)
++		if (dd->ops && dd->ops->uevent)
++			dd->ops->uevent(dd->handle, event, dd->context);
++	if (num != DOCK_EVENT)
++		kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
+ }
+ 
+ /**
+@@ -588,7 +596,7 @@ EXPORT_SYMBOL_GPL(unregister_dock_notifier);
+ /**
+  * register_hotplug_dock_device - register a hotplug function
+  * @handle: the handle of the device
+- * @handler: the acpi_notifier_handler to call after docking
++ * @ops: handlers to call after docking
+  * @context: device specific data
+  *
+  * If a driver would like to perform a hotplug operation after a dock
+@@ -596,7 +604,7 @@ EXPORT_SYMBOL_GPL(unregister_dock_notifier);
+  * the dock driver after _DCK is executed.
+  */
+ int
+-register_hotplug_dock_device(acpi_handle handle, acpi_notify_handler handler,
++register_hotplug_dock_device(acpi_handle handle, struct acpi_dock_ops *ops,
+ 			     void *context)
+ {
+ 	struct dock_dependent_device *dd;
+@@ -612,7 +620,7 @@ register_hotplug_dock_device(acpi_handle handle, acpi_notify_handler handler,
+ 	list_for_each_entry(dock_station, &dock_stations, sibiling) {
+ 		dd = find_dock_dependent_device(dock_station, handle);
+ 		if (dd) {
+-			dd->handler = handler;
++			dd->ops = ops;
+ 			dd->context = context;
+ 			dock_add_hotplug_device(dock_station, dd);
+ 			return 0;
+diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+index 97727be..c012307 100644
+--- a/drivers/ata/libata-acpi.c
++++ b/drivers/ata/libata-acpi.c
+@@ -209,6 +209,46 @@ static void ata_acpi_ap_notify_dock(acpi_handle handle, u32 event, void *data)
+ 	ata_acpi_handle_hotplug(ap, NULL, event);
+ }
+ 
++static void ata_acpi_uevent(struct ata_port *ap, struct ata_device *dev,
++	u32 event)
++{
++	struct kobject *kobj = NULL;
++	char event_string[20];
++	char *envp[] = { event_string, NULL };
++
++	if (dev) {
++		if (dev->sdev)
++			kobj = &dev->sdev->sdev_gendev.kobj;
++	} else
++		kobj = &ap->dev->kobj;
++
++	if (kobj) {
++		snprintf(event_string, 20, "BAY_EVENT=%d", event);
++		kobject_uevent_env(kobj, KOBJ_CHANGE, envp);
 +	}
 +}
 +
-+static int tts_notify_reboot(struct notifier_block *this,
-+			unsigned long code, void *x)
++static void ata_acpi_ap_uevent(acpi_handle handle, u32 event, void *data)
 +{
-+	acpi_sleep_tts_switch(ACPI_STATE_S5);
-+	return NOTIFY_DONE;
++	ata_acpi_uevent(data, NULL, event);
 +}
 +
-+static struct notifier_block tts_notifier = {
-+	.notifier_call	= tts_notify_reboot,
-+	.next		= NULL,
-+	.priority	= 0,
++static void ata_acpi_dev_uevent(acpi_handle handle, u32 event, void *data)
++{
++	struct ata_device *dev = data;
++	ata_acpi_uevent(dev->link->ap, dev, event);
++}
++
++static struct acpi_dock_ops ata_acpi_dev_dock_ops = {
++	.handler = ata_acpi_dev_notify_dock,
++	.uevent = ata_acpi_dev_uevent,
 +};
 +
- static int acpi_sleep_prepare(u32 acpi_state)
- {
- #ifdef CONFIG_ACPI_SLEEP
-@@ -131,6 +162,7 @@ static void acpi_pm_end(void)
- 	 * failing transition to a sleep state.
- 	 */
- 	acpi_target_sleep_state = ACPI_STATE_S0;
-+	acpi_sleep_tts_switch(acpi_target_sleep_state);
- }
- #endif /* CONFIG_PM_SLEEP */
- 
-@@ -155,6 +187,7 @@ static int acpi_suspend_begin(suspend_state_t pm_state)
- 
- 	if (sleep_states[acpi_state]) {
- 		acpi_target_sleep_state = acpi_state;
-+		acpi_sleep_tts_switch(acpi_target_sleep_state);
- 	} else {
- 		printk(KERN_ERR "ACPI does not support this state: %d\n",
- 			pm_state);
-@@ -313,6 +346,7 @@ void __init acpi_no_s4_hw_signature(void)
- static int acpi_hibernation_begin(void)
- {
- 	acpi_target_sleep_state = ACPI_STATE_S4;
-+	acpi_sleep_tts_switch(acpi_target_sleep_state);
- 	return 0;
- }
- 
-@@ -376,7 +410,15 @@ static struct platform_hibernation_ops acpi_hibernation_ops = {
-  */
- static int acpi_hibernation_begin_old(void)
- {
--	int error = acpi_sleep_prepare(ACPI_STATE_S4);
-+	int error;
-+	/*
-+	 * The _TTS object should always be evaluated before the _PTS object.
-+	 * When the old_suspended_ordering is true, the _PTS object is
-+	 * evaluated in the acpi_sleep_prepare.
-+	 */
-+	acpi_sleep_tts_switch(ACPI_STATE_S4);
++static struct acpi_dock_ops ata_acpi_ap_dock_ops = {
++	.handler = ata_acpi_ap_notify_dock,
++	.uevent = ata_acpi_ap_uevent,
++};
 +
-+	error = acpi_sleep_prepare(ACPI_STATE_S4);
+ /**
+  * ata_acpi_associate - associate ATA host with ACPI objects
+  * @host: target ATA host
+@@ -244,7 +284,7 @@ void ata_acpi_associate(struct ata_host *host)
+ 		if (ap->acpi_handle) {
+ 			/* we might be on a docking station */
+ 			register_hotplug_dock_device(ap->acpi_handle,
+-					     ata_acpi_ap_notify_dock, ap);
++					     &ata_acpi_ap_dock_ops, ap);
+ 		}
  
- 	if (!error)
- 		acpi_target_sleep_state = ACPI_STATE_S4;
-@@ -596,5 +638,10 @@ int __init acpi_sleep_init(void)
- 		pm_power_off = acpi_power_off;
+ 		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
+@@ -253,7 +293,7 @@ void ata_acpi_associate(struct ata_host *host)
+ 			if (dev->acpi_handle) {
+ 				/* we might be on a docking station */
+ 				register_hotplug_dock_device(dev->acpi_handle,
+-					     ata_acpi_dev_notify_dock, dev);
++					     &ata_acpi_dev_dock_ops, dev);
+ 			}
+ 		}
  	}
- 	printk(")\n");
-+	/*
-+	 * Register the tts_notifier to reboot notifier list so that the _TTS
-+	 * object can also be evaluated when the system enters S5.
-+	 */
-+	register_reboot_notifier(&tts_notifier);
- 	return 0;
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index a3e4705..db54c5e 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -169,7 +169,9 @@ static int post_dock_fixups(struct notifier_block *nb, unsigned long val,
  }
+ 
+ 
+-
++static struct acpi_dock_ops acpiphp_dock_ops = {
++	.handler = handle_hotplug_event_func,
++};
+ 
+ /* callback routine to register each ACPI PCI slot object */
+ static acpi_status
+@@ -285,7 +287,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 		 */
+ 		newfunc->flags &= ~FUNC_HAS_EJ0;
+ 		if (register_hotplug_dock_device(handle,
+-			handle_hotplug_event_func, newfunc))
++			&acpiphp_dock_ops, newfunc))
+ 			dbg("failed to register dock device\n");
+ 
+ 		/* we need to be notified when dock events happen
+diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index e5f38e5..4f5042a 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -115,12 +115,17 @@ int acpi_processor_set_thermal_limit(acpi_handle handle, int type);
+ /*--------------------------------------------------------------------------
+                                   Dock Station
+   -------------------------------------------------------------------------- */
++struct acpi_dock_ops {
++	acpi_notify_handler handler;
++	acpi_notify_handler uevent;
++};
++
+ #if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
+ extern int is_dock_device(acpi_handle handle);
+ extern int register_dock_notifier(struct notifier_block *nb);
+ extern void unregister_dock_notifier(struct notifier_block *nb);
+ extern int register_hotplug_dock_device(acpi_handle handle,
+-					acpi_notify_handler handler,
++					struct acpi_dock_ops *ops,
+ 					void *context);
+ extern void unregister_hotplug_dock_device(acpi_handle handle);
+ #else
+@@ -136,7 +141,7 @@ static inline void unregister_dock_notifier(struct notifier_block *nb)
+ {
+ }
+ static inline int register_hotplug_dock_device(acpi_handle handle,
+-					       acpi_notify_handler handler,
++					       struct acpi_dock_ops *ops,
+ 					       void *context)
+ {
+ 	return -ENODEV;
 -- 
 1.5.5.1
 
