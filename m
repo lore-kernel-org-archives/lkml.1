@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbYJKGvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763285AbYJKGvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763424AbYJKGvq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbYJKGjM
+	id S1763285AbYJKGvb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbYJKGjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:39:12 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:39166 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753813AbYJKGhQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:16 -0400
-Date: Sat, 11 Oct 2008 02:36:33 -0400
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 73/85] ACPI cm_sbs: Debug interface used for error message
- cleanup
-In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
-In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Thomas Renninger <trenn@suse.de>, Andi Kleen <ak@linux.intel.com>,
-       Len Brown <len.brown@intel.com>
-Message-id: <d66064cea3b00545964811a1f3d9772d1a11cae0.1223706853.git.len.brown@intel.com>
-Organization: Intel Open Source Technology Center
-X-Mailer: git-send-email 1.6.0.2.307.gc427
-References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
-References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
+	Sat, 11 Oct 2008 02:39:10 -0400
+Received: from sh.osrg.net ([192.16.179.4]:56204 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756264AbYJKGjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 02:39:07 -0400
+Date: Sat, 11 Oct 2008 15:38:08 +0900
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] block: remove unused ll_new_mergeable()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081011153521M.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
+This is against the latest git (b922df7383749a1c0b7ea64c50fa839263d3816b).
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] block: remove unused ll_new_mergeable()
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- drivers/acpi/cm_sbs.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ block/blk-merge.c |   21 ---------------------
+ 1 files changed, 0 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/acpi/cm_sbs.c b/drivers/acpi/cm_sbs.c
-index f9db4f4..58dc367 100644
---- a/drivers/acpi/cm_sbs.c
-+++ b/drivers/acpi/cm_sbs.c
-@@ -52,8 +52,7 @@ struct proc_dir_entry *acpi_lock_ac_dir(void)
- 	if (acpi_ac_dir) {
- 		lock_ac_dir_cnt++;
- 	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
--				  "Cannot create %s\n", ACPI_AC_CLASS));
-+		printk(KERN_ERR "Cannot create %s\n", ACPI_AC_CLASS);
- 	}
- 	mutex_unlock(&cm_sbs_mutex);
- 	return acpi_ac_dir;
-@@ -83,8 +82,7 @@ struct proc_dir_entry *acpi_lock_battery_dir(void)
- 	if (acpi_battery_dir) {
- 		lock_battery_dir_cnt++;
- 	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
--				  "Cannot create %s\n", ACPI_BATTERY_CLASS));
-+		printk(KERN_ERR "Cannot create %s\n", ACPI_BATTERY_CLASS);
- 	}
- 	mutex_unlock(&cm_sbs_mutex);
- 	return acpi_battery_dir;
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index 68b0f1e..37bcfc9 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -218,27 +218,6 @@ new_segment:
+ }
+ EXPORT_SYMBOL(blk_rq_map_sg);
+ 
+-static inline int ll_new_mergeable(struct request_queue *q,
+-				   struct request *req,
+-				   struct bio *bio)
+-{
+-	int nr_phys_segs = bio_phys_segments(q, bio);
+-
+-	if (req->nr_phys_segments + nr_phys_segs > q->max_phys_segments) {
+-		req->cmd_flags |= REQ_NOMERGE;
+-		if (req == q->last_merge)
+-			q->last_merge = NULL;
+-		return 0;
+-	}
+-
+-	/*
+-	 * A hw segment is just getting larger, bump just the phys
+-	 * counter.
+-	 */
+-	req->nr_phys_segments += nr_phys_segs;
+-	return 1;
+-}
+-
+ static inline int ll_new_hw_segment(struct request_queue *q,
+ 				    struct request *req,
+ 				    struct bio *bio)
 -- 
-1.5.5.1
+1.5.5.GIT
 
