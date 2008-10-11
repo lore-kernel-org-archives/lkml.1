@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbYJKOhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbYJKOjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbYJKOhR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 10:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYJKOhF
+	id S1757621AbYJKOjU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 10:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYJKOjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 10:37:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48000 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753396AbYJKOhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 10:37:04 -0400
-Date: Sat, 11 Oct 2008 16:36:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Help text for config OPTIMIZE_INLINING
-Message-ID: <20081011143653.GB6274@elte.hu>
-References: <537458.72510.qm@web38204.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <537458.72510.qm@web38204.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0626]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Sat, 11 Oct 2008 10:39:04 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:38104 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753304AbYJKOjD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 10:39:03 -0400
+X-SourceIP: 213.46.9.244
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Evgeniy Polyakov <s0mbre@tservice.net.ru>
+Cc: Mike Galbraith <efault@gmx.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <20081011131352.GA16908@tservice.net.ru>
+References: <20081009231759.GA8664@tservice.net.ru>
+	 <1223633623.4138.86.camel@marge.simson.net>
+	 <20081011131352.GA16908@tservice.net.ru>
+Content-Type: text/plain
+Date: Sat, 11 Oct 2008 16:39:07 +0200
+Message-Id: <1223735947.8485.33.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-
-> The main help text for the OPTIMIZE_INLINING kconfig option says: "The 
-> gcc 4.x series have a rewritten inlining algorithm and disabling this 
-> option will generate a smaller kernel there."
+On Sat, 2008-10-11 at 17:13 +0400, Evgeniy Polyakov wrote:
+> Hi Mike.
 > 
-> That suggests that to generate a smaller kernel one should set the 
-> option to n. However the short text says: "Allow gcc to uninline 
-> functions marked 'inline'"
+> On Fri, Oct 10, 2008 at 12:13:43PM +0200, Mike Galbraith (efault@gmx.de) wrote:
+> > a7be37a adds some math overhead, calls to calc_delta_mine() per
+> > wakeup/context switch for all weight tasks, whereas previously these
+> > calls were only made for tasks which were not nice 0.  It also shifts
+> > performance a bit in favor of loads which dislike wakeup preemption,
 > 
-> While suggests that one should set it to y to generate smaller 
-> kernels. My own experience says that setting it to y DOES generate a 
-> smaller kernel so perhaps the main text should be changed to reflect 
-> this?
+> I believe anyone dislikes this :)
+> 
+> > this effect lessens as task count increases.  Per testing, overhead is
+> > not the primary factor in throughput loss.  I believe clock accuracy to
+> > be a more important factor than overhead by a very large margin.
+> 
+> In my tests it was not just overhead, it was a disaster.
+> And stopping just before this commit gained 20 MB/s out of 30 MB/s lose
+> for 26-27 window. No matter what accuracy it brings, this is just wrong
+> to assume that such performance drop in some workloads is justified.
+> What this accuracy is needed for?
 
-sure, could you send a patch (with lkml Cc:-ed) that does this?
+a7be37a 's purpose is for group scheduling where it provides means to
+calculate things in a unform metric.
 
-Also, would be nice if you sent with/without vmlinux size numbers for 
-the config you are using. Btw., do you have 
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y enabled as well? That too shrinks the 
-kernel (which speeds it up as well on moder CPUs), quite visibly.
+If you take the following scenario:
 
-	Ingo
+    R
+   /|\
+  A 1 B
+ /|\  |
+2 3 4 5
+
+Where letters denote supertasks/groups and digits are tasks.
+
+We used to look at a single level only, so if you want to compute a
+task's ideal runtime, you'd take:
+
+  runtime_i = period w_i / \Sum_i w_i
+
+So, in the above example, assuming all entries have an equal weight,
+we'd want to run A for p/3. But then we'd also want to run 2 for p/3.
+IOW. all of A's tasks would run in p time.
+
+Which in contrairy to the expectation that all tasks in the scenario
+would run in p.
+
+So what the patch does is change the calculation to:
+
+  period \Prod_l w_l,i / \Sum_i w_l,i
+
+Which would, for 2 end up being: p 1/3 1/3 = p/9.
+
+Now the thing that causes the extra math in the !group case is that for
+the single level case, we can avoid doing that division by the sum,
+because that is equal for all tasks (we then compensate for it at some
+other place).
+
+However, for the nested case, we cannot do that.
+
+That said, we can probably still avoid the division for the top level
+stuff, because the sum of the top level weights is still invariant
+between all tasks.
+
+I'll have a stab at doing so... I initially didn't do this because my
+first try gave some real ugly code, but we'll see - these numbers are a
+very convincing reason to try again.
+
