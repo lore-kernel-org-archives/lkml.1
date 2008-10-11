@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbYJKBnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbYJKByA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbYJKBnq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 21:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbYJKBnh
+	id S1757727AbYJKByA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 21:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbYJKBxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 21:43:37 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38112 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754471AbYJKBnh (ORCPT
+	Fri, 10 Oct 2008 21:53:52 -0400
+Received: from coliposte.enst-bretagne.fr ([192.108.115.12]:43357 "EHLO
+	coliposte.enst-bretagne.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754116AbYJKBxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 21:43:37 -0400
-Message-ID: <48F00476.6030108@zytor.com>
-Date: Fri, 10 Oct 2008 18:42:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 10 Oct 2008 21:53:52 -0400
+X-Greylist: delayed 3761 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Oct 2008 21:53:51 EDT
+Message-ID: <48EFF858.2050007@enst-bretagne.fr>
+Date: Sat, 11 Oct 2008 02:50:32 +0200
+From: Florent Fourcot <florent.fourcot@enst-bretagne.fr>
+Reply-To: florent.fourcot@enst-bretagne.fr
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [bug] latest -git boot hang
-References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org> <48EFF84B.5060108@kernel.org>
-In-Reply-To: <48EFF84B.5060108@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: larry.finger@lwfinger.net, linville@tuxdriver.com
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] rtl8187 : support of Belkin "F5D7050rev5000de"
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> 
-> Yeap, if fedora didn't work, I think it should be hidden.  Do we already
-> have place to hide things like this?
-> 
+Hi,
+this Belkin product (id 050d:705e) use Realtek’s RTL8187B and work fine
+with new 2.6.27 driver. Please consider to add support of this card.
 
-By the way, I don't see anything in this patchset that lets userspace 
-discover the parent device.  Since the old rule of
 
-	partition device = parent device + partition number
+--- linux-2.6.27/drivers/net/wireless/rtl8187_dev.c
++++ linux-2.6.27-modif/drivers/net/wireless/rtl8187_dev.c
+@@ -33,6 +33,8 @@
+ static struct usb_device_id rtl8187_table[] __devinitdata = {
+        /* Asus */
+        {USB_DEVICE(0x0b05, 0x171d), .driver_info = DEVICE_RTL8187},
++       /* Belkin */
++       {USB_DEVICE(0x050d, 0x705e), .driver_info = DEVICE_RTL8187B},
+        /* Realtek */
+        {USB_DEVICE(0x0bda, 0x8187), .driver_info = DEVICE_RTL8187},
+        {USB_DEVICE(0x0bda, 0x8189), .driver_info = DEVICE_RTL8187B},
 
-... no longer holds, this is a serious omission for something that is in 
-mainstream (and therefore *requires* that a new interface is deployed 
-for anything that cares.)
 
-This will have to be addressed before 2.6.28 final.
-
-	-hpa
+-- 
+Florent Fourcot.
