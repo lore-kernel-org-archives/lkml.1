@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbYJKNxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYJKNzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbYJKNxs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 09:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYJKNxi
+	id S1756032AbYJKNzA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 09:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYJKNyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 09:53:38 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47844 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752805AbYJKNxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 09:53:37 -0400
-Date: Sat, 11 Oct 2008 15:53:00 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: petkovbb@gmail.com
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] ide: locking improvements
-Message-ID: <20081011135300.GP19428@kernel.dk>
-References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <fa.8TkQ+xA96EhlNKL9gIbVTxVrcUE@ifi.uio.no> <48F010AB.7010009@shaw.ca> <200810111339.44998.bzolnier@gmail.com> <20081011120137.GA26835@gollum.tnic>
-MIME-Version: 1.0
+	Sat, 11 Oct 2008 09:54:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57466 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbYJKNyw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 09:54:52 -0400
+Date: Sat, 11 Oct 2008 16:01:19 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, Dave Jones <davej@redhat.com>,
+       x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Update cacheline size on X86_GENERIC
+Message-ID: <20081011140119.GC12131@one.firstfloor.org>
+References: <20081009171453.GA15321@redhat.com> <200810112242.28229.nickpiggin@yahoo.com.au> <20081011131115.GB12131@one.firstfloor.org> <200810120048.31141.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081011120137.GA26835@gollum.tnic>
+In-Reply-To: <200810120048.31141.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 11 2008, Borislav Petkov wrote:
-> > >From my perspective the main gain of these patches is the increased
-> > maintainability and sanity of the code, scalability improvements are
-> > just an added bonus.
-> 
-> and better code/improved scalability is a bad thing because... ?!
+> No immediate ideas. Jens probably is a good person to cc. With direct IO
+> workloads, hd_struct should mostly only be touched in partition remapping
+> and IO accounting.
 
-It's a bad thing because nobody on earth cares about IDE scalability,
-from a performance POV a modern SATA controller is just better on
-several levels. I don't think anybody cares about IDE scaling on 8-16
-cores or more, simply because NOBODY is using IDE on such systems.
+I found it doubtful if grouping the rw and ro members together was a good
+idea.
 
-As such, trying to improve locking is a pointless exercise. And that is
-a bad thing, because code change invariably brings in code bugs. Then
-see previous mail on lack of coverage testing, and it can naturally be
-harmful.
+> At this point, you would want to cacheline align hd_struct. So if you
 
-> > > rather like putting makeup on a corpse to me..
-> 
-> so _NOT_ true.
+The problem is probably not false sharing, but simply cache misses because it's
+so big. I think.
 
-Depends on what you think is the corpse. Since IDE is essentially dead
-and frozen, it IS a corpse and the phrase is then very appropriate. This
-is not a personal jab at the IDE guys and does not reflect on the
-(mostly) good work they do, just a reflection on the state of IDE in
-general.
-
+-Andi
 -- 
-Jens Axboe
-
+ak@linux.intel.com
