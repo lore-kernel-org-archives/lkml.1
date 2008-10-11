@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbYJKGtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762566AbYJKGtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752975AbYJKGtF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbYJKGik
+	id S1762566AbYJKGtZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYJKGhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:38:40 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:45163 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751588AbYJKGhZ (ORCPT
+	Sat, 11 Oct 2008 02:37:21 -0400
+Received: from vms172069pub.verizon.net ([206.46.172.69]:32774 "EHLO
+	vms172069pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753693AbYJKGhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:25 -0400
-Date: Sat, 11 Oct 2008 02:36:14 -0400
+	Sat, 11 Oct 2008 02:37:12 -0400
+Date: Sat, 11 Oct 2008 02:36:02 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 54/85] eeepc-laptop: Use standard interfaces
+Subject: [PATCH 42/85] ACPI: EC: do transaction from interrupt context
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Matthew Garrett <mjg@redhat.com>,
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
        Len Brown <len.brown@intel.com>
-Message-id: <a195dcdcff33b8ef01a23cbc489fdfcdfa28c88e.1223706853.git.len.brown@intel.com>
+Message-id: <7c6db4e050601f359081fde418ca6dc4fc2d0011.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,340 +27,532 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-eeepc-laptop currently only sends key events via ACPI and has
-non-standard rfkill control. Add an input device and use the rfkill
-infrastructure.
-
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+It is easier and faster to do transaction directly from interrupt context
+rather than waking control thread.
+Also, cleaner GPE storm avoidance is implemented.
+References: 	http://bugzilla.kernel.org/show_bug.cgi?id=9998
+		http://bugzilla.kernel.org/show_bug.cgi?id=10724
+		http://bugzilla.kernel.org/show_bug.cgi?id=10919
+		http://bugzilla.kernel.org/show_bug.cgi?id=11309
+		http://bugzilla.kernel.org/show_bug.cgi?id=11549
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/misc/eeepc-laptop.c |  228 +++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 209 insertions(+), 19 deletions(-)
+ drivers/acpi/ec.c |  309 +++++++++++++++++++++++++---------------------------
+ 1 files changed, 149 insertions(+), 160 deletions(-)
 
-diff --git a/drivers/misc/eeepc-laptop.c b/drivers/misc/eeepc-laptop.c
-index 1ee8501..5baa10b 100644
---- a/drivers/misc/eeepc-laptop.c
-+++ b/drivers/misc/eeepc-laptop.c
-@@ -28,6 +28,8 @@
- #include <acpi/acpi_drivers.h>
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index 13593f9..7f0d81c 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -1,7 +1,7 @@
+ /*
+- *  ec.c - ACPI Embedded Controller Driver (v2.0)
++ *  ec.c - ACPI Embedded Controller Driver (v2.1)
+  *
+- *  Copyright (C) 2006, 2007 Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
++ *  Copyright (C) 2006-2008 Alexey Starikovskiy <astarikovskiy@suse.de>
+  *  Copyright (C) 2006 Denis Sadykov <denis.m.sadykov@intel.com>
+  *  Copyright (C) 2004 Luming Yu <luming.yu@intel.com>
+  *  Copyright (C) 2001, 2002 Andy Grover <andrew.grover@intel.com>
+@@ -26,7 +26,7 @@
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ 
+-/* Uncomment next line to get verbose print outs*/
++/* Uncomment next line to get verbose printout */
+ /* #define DEBUG */
+ 
+ #include <linux/kernel.h>
+@@ -38,6 +38,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/interrupt.h>
+ #include <linux/list.h>
++#include <linux/spinlock.h>
+ #include <asm/io.h>
  #include <acpi/acpi_bus.h>
- #include <linux/uaccess.h>
-+#include <linux/input.h>
-+#include <linux/rfkill.h>
- 
- #define EEEPC_LAPTOP_VERSION	"0.1"
- 
-@@ -125,6 +127,10 @@ struct eeepc_hotk {
- 					   by this BIOS */
- 	uint init_flag;			/* Init flags */
- 	u16 event_count[128];		/* count for each event */
-+	struct input_dev *inputdev;
-+	u16 *keycode_map;
-+	struct rfkill *eeepc_wlan_rfkill;
-+	struct rfkill *eeepc_bluetooth_rfkill;
+ #include <acpi/acpi_drivers.h>
+@@ -65,22 +66,21 @@ enum ec_command {
+ 	ACPI_EC_COMMAND_QUERY = 0x84,
  };
  
- /* The actual device the driver binds to */
-@@ -140,6 +146,27 @@ static struct platform_driver platform_driver = {
+-/* EC events */
+-enum ec_event {
+-	ACPI_EC_EVENT_OBF_1 = 1,	/* Output buffer full */
+-	ACPI_EC_EVENT_IBF_0,		/* Input buffer empty */
+-};
+-
+ #define ACPI_EC_DELAY		500	/* Wait 500ms max. during EC ops */
+ #define ACPI_EC_UDELAY_GLK	1000	/* Wait 1ms max. to get global lock */
+ #define ACPI_EC_UDELAY		100	/* Wait 100us before polling EC again */
  
- static struct platform_device *platform_device;
++#define ACPI_EC_STORM_THRESHOLD 20	/* number of false interrupts
++					   per one transaction */
++
+ enum {
+-	EC_FLAGS_WAIT_GPE = 0,		/* Don't check status until GPE arrives */
+ 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
+-	EC_FLAGS_GPE_MODE,		/* Expect GPE to be sent for status change */
++	EC_FLAGS_GPE_MODE,		/* Expect GPE to be sent
++					 * for status change */
+ 	EC_FLAGS_NO_GPE,		/* Don't use GPE mode */
+-	EC_FLAGS_RESCHEDULE_POLL	/* Re-schedule poll */
++	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
++	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
++					 * OpReg are installed */
+ };
  
-+struct key_entry {
-+	char type;
-+	u8 code;
-+	u16 keycode;
+ /* If we find an EC via the ECDT, we need to keep a ptr to its context */
+@@ -95,6 +95,14 @@ struct acpi_ec_query_handler {
+ 	u8 query_bit;
+ };
+ 
++struct transaction_data {
++	const u8 *wdata;
++	u8 *rdata;
++	unsigned short irq_count;
++	u8 wlen;
++	u8 rlen;
 +};
 +
-+enum { KE_KEY, KE_END };
-+
-+static struct key_entry eeepc_keymap[] = {
-+	/* Sleep already handled via generic ACPI code */
-+	{KE_KEY, 0x10, KEY_WLAN },
-+	{KE_KEY, 0x12, KEY_PROG1 },
-+	{KE_KEY, 0x13, KEY_MUTE },
-+	{KE_KEY, 0x14, KEY_VOLUMEDOWN },
-+	{KE_KEY, 0x15, KEY_VOLUMEUP },
-+	{KE_KEY, 0x30, KEY_SWITCHVIDEOMODE },
-+	{KE_KEY, 0x31, KEY_SWITCHVIDEOMODE },
-+	{KE_KEY, 0x32, KEY_SWITCHVIDEOMODE },
-+	{KE_END, 0},
-+};
-+
- /*
-  * The hotkey driver declaration
-  */
-@@ -261,6 +288,44 @@ static int update_bl_status(struct backlight_device *bd)
+ static struct acpi_ec {
+ 	acpi_handle handle;
+ 	unsigned long gpe;
+@@ -105,9 +113,8 @@ static struct acpi_ec {
+ 	struct mutex lock;
+ 	wait_queue_head_t wait;
+ 	struct list_head list;
+-	struct delayed_work work;
+-	atomic_t irq_count;
+-	u8 handlers_installed;
++	struct transaction_data *t;
++	spinlock_t t_lock;
+ } *boot_ec, *first_ec;
+ 
+ /* 
+@@ -150,7 +157,7 @@ static inline u8 acpi_ec_read_data(struct acpi_ec *ec)
+ {
+ 	u8 x = inb(ec->data_addr);
+ 	pr_debug(PREFIX "---> data = 0x%2.2x\n", x);
+-	return inb(ec->data_addr);
++	return x;
  }
  
- /*
-+ * Rfkill helpers
-+ */
-+
-+static int eeepc_wlan_rfkill_set(void *data, enum rfkill_state state)
-+{
-+	if (state == RFKILL_STATE_SOFT_BLOCKED)
-+		return set_acpi(CM_ASL_WLAN, 0);
-+	else
-+		return set_acpi(CM_ASL_WLAN, 1);
-+}
-+
-+static int eeepc_wlan_rfkill_state(void *data, enum rfkill_state *state)
-+{
-+	if (get_acpi(CM_ASL_WLAN) == 1)
-+		*state = RFKILL_STATE_UNBLOCKED;
-+	else
-+		*state = RFKILL_STATE_SOFT_BLOCKED;
-+	return 0;
-+}
-+
-+static int eeepc_bluetooth_rfkill_set(void *data, enum rfkill_state state)
-+{
-+	if (state == RFKILL_STATE_SOFT_BLOCKED)
-+		return set_acpi(CM_ASL_BLUETOOTH, 0);
-+	else
-+		return set_acpi(CM_ASL_BLUETOOTH, 1);
-+}
-+
-+static int eeepc_bluetooth_rfkill_state(void *data, enum rfkill_state *state)
-+{
-+	if (get_acpi(CM_ASL_BLUETOOTH) == 1)
-+		*state = RFKILL_STATE_UNBLOCKED;
-+	else
-+		*state = RFKILL_STATE_SOFT_BLOCKED;
-+	return 0;
-+}
-+
-+/*
-  * Sys helpers
-  */
- static int parse_arg(const char *buf, unsigned long count, int *val)
-@@ -311,13 +376,11 @@ static ssize_t show_sys_acpi(int cm, char *buf)
- EEEPC_CREATE_DEVICE_ATTR(camera, CM_ASL_CAMERA);
- EEEPC_CREATE_DEVICE_ATTR(cardr, CM_ASL_CARDREADER);
- EEEPC_CREATE_DEVICE_ATTR(disp, CM_ASL_DISPLAYSWITCH);
--EEEPC_CREATE_DEVICE_ATTR(wlan, CM_ASL_WLAN);
+ static inline void acpi_ec_write_cmd(struct acpi_ec *ec, u8 command)
+@@ -165,68 +172,79 @@ static inline void acpi_ec_write_data(struct acpi_ec *ec, u8 data)
+ 	outb(data, ec->data_addr);
+ }
  
- static struct attribute *platform_attributes[] = {
- 	&dev_attr_camera.attr,
- 	&dev_attr_cardr.attr,
- 	&dev_attr_disp.attr,
--	&dev_attr_wlan.attr,
- 	NULL
- };
- 
-@@ -328,8 +391,64 @@ static struct attribute_group platform_attribute_group = {
- /*
-  * Hotkey functions
-  */
-+static struct key_entry *eepc_get_entry_by_scancode(int code)
-+{
-+	struct key_entry *key;
-+
-+	for (key = eeepc_keymap; key->type != KE_END; key++)
-+		if (code == key->code)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static struct key_entry *eepc_get_entry_by_keycode(int code)
-+{
-+	struct key_entry *key;
-+
-+	for (key = eeepc_keymap; key->type != KE_END; key++)
-+		if (code == key->keycode && key->type == KE_KEY)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static int eeepc_getkeycode(struct input_dev *dev, int scancode, int *keycode)
-+{
-+	struct key_entry *key = eepc_get_entry_by_scancode(scancode);
-+
-+	if (key && key->type == KE_KEY) {
-+		*keycode = key->keycode;
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int eeepc_setkeycode(struct input_dev *dev, int scancode, int keycode)
-+{
-+	struct key_entry *key;
-+	int old_keycode;
-+
-+	if (keycode < 0 || keycode > KEY_MAX)
-+		return -EINVAL;
-+
-+	key = eepc_get_entry_by_scancode(scancode);
-+	if (key && key->type == KE_KEY) {
-+		old_keycode = key->keycode;
-+		key->keycode = keycode;
-+		set_bit(keycode, dev->keybit);
-+		if (!eepc_get_entry_by_keycode(old_keycode))
-+			clear_bit(old_keycode, dev->keybit);
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
- static int eeepc_hotk_check(void)
+-static inline int acpi_ec_check_status(struct acpi_ec *ec, enum ec_event event)
++static int ec_transaction_done(struct acpi_ec *ec)
  {
-+	const struct key_entry *key;
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
- 	int result;
+-	if (test_bit(EC_FLAGS_WAIT_GPE, &ec->flags))
+-		return 0;
+-	if (event == ACPI_EC_EVENT_OBF_1) {
+-		if (acpi_ec_read_status(ec) & ACPI_EC_FLAG_OBF)
+-			return 1;
+-	} else if (event == ACPI_EC_EVENT_IBF_0) {
+-		if (!(acpi_ec_read_status(ec) & ACPI_EC_FLAG_IBF))
+-			return 1;
+-	}
+-
+-	return 0;
++	unsigned long flags;
++	int ret = 0;
++	spin_lock_irqsave(&ec->t_lock, flags);
++	if (!ec->t || (!ec->t->wlen && !ec->t->rlen))
++		ret = 1;
++	spin_unlock_irqrestore(&ec->t_lock, flags);
++	return ret;
+ }
  
-@@ -356,6 +475,31 @@ static int eeepc_hotk_check(void)
- 			       "Get control methods supported: 0x%x\n",
- 			       ehotk->cm_supported);
- 		}
-+		ehotk->inputdev = input_allocate_device();
-+		if (!ehotk->inputdev) {
-+			printk(EEEPC_INFO "Unable to allocate input device\n");
-+			return 0;
-+		}
-+		ehotk->inputdev->name = "Asus EeePC extra buttons";
-+		ehotk->inputdev->phys = EEEPC_HOTK_FILE "/input0";
-+		ehotk->inputdev->id.bustype = BUS_HOST;
-+		ehotk->inputdev->getkeycode = eeepc_getkeycode;
-+		ehotk->inputdev->setkeycode = eeepc_setkeycode;
+-static void ec_schedule_ec_poll(struct acpi_ec *ec)
++static void gpe_transaction(struct acpi_ec *ec, u8 status)
+ {
+-	if (test_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags))
+-		schedule_delayed_work(&ec->work,
+-				      msecs_to_jiffies(ACPI_EC_DELAY));
++	unsigned long flags;
++	spin_lock_irqsave(&ec->t_lock, flags);
++	if (!ec->t)
++		goto unlock;
++	if (ec->t->wlen > 0) {
++		if ((status & ACPI_EC_FLAG_IBF) == 0) {
++			acpi_ec_write_data(ec, *(ec->t->wdata++));
++			--ec->t->wlen;
++		} else
++			/* false interrupt, state didn't change */
++			++ec->t->irq_count;
 +
-+		for (key = eeepc_keymap; key->type != KE_END; key++) {
-+			switch (key->type) {
-+			case KE_KEY:
-+				set_bit(EV_KEY, ehotk->inputdev->evbit);
-+				set_bit(key->keycode, ehotk->inputdev->keybit);
-+				break;
-+			}
-+		}
-+		result = input_register_device(ehotk->inputdev);
-+		if (result) {
-+			printk(EEEPC_INFO "Unable to register input device\n");
-+			input_free_device(ehotk->inputdev);
-+			return 0;
-+		}
- 	} else {
- 		printk(EEEPC_ERR "Hotkey device not present, aborting\n");
++	} else if (ec->t->rlen > 0) {
++		if ((status & ACPI_EC_FLAG_OBF) == 1) {
++			*(ec->t->rdata++) = acpi_ec_read_data(ec);
++			--ec->t->rlen;
++		} else
++			/* false interrupt, state didn't change */
++			++ec->t->irq_count;
++	}
++unlock:
++	spin_unlock_irqrestore(&ec->t_lock, flags);
+ }
+ 
+-static void ec_switch_to_poll_mode(struct acpi_ec *ec)
++static int acpi_ec_wait(struct acpi_ec *ec)
+ {
++	if (wait_event_timeout(ec->wait, ec_transaction_done(ec),
++			       msecs_to_jiffies(ACPI_EC_DELAY)))
++		return 0;
++	/* missing GPEs, switch back to poll mode */
++	if (printk_ratelimit())
++		pr_info(PREFIX "missing confirmations, "
++				"switch off interrupt mode.\n");
+ 	set_bit(EC_FLAGS_NO_GPE, &ec->flags);
+ 	clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
+-	acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+-	set_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
++	return 1;
+ }
+ 
+-static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, int force_poll)
++static void acpi_ec_gpe_query(void *ec_cxt);
++
++static int ec_check_sci(struct acpi_ec *ec, u8 state)
+ {
+-	atomic_set(&ec->irq_count, 0);
+-	if (likely(test_bit(EC_FLAGS_GPE_MODE, &ec->flags)) &&
+-	    likely(!force_poll)) {
+-		if (wait_event_timeout(ec->wait, acpi_ec_check_status(ec, event),
+-				       msecs_to_jiffies(ACPI_EC_DELAY)))
+-			return 0;
+-		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		if (acpi_ec_check_status(ec, event)) {
+-			/* missing GPEs, switch back to poll mode */
+-			if (printk_ratelimit())
+-				pr_info(PREFIX "missing confirmations, "
+-						"switch off interrupt mode.\n");
+-			ec_switch_to_poll_mode(ec);
+-			ec_schedule_ec_poll(ec);
+-			return 0;
+-		}
+-	} else {
+-		unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
+-		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		while (time_before(jiffies, delay)) {
+-			if (acpi_ec_check_status(ec, event))
+-				return 0;
+-			msleep(1);
+-		}
+-		if (acpi_ec_check_status(ec,event))
++	if (state & ACPI_EC_FLAG_SCI) {
++		if (!test_and_set_bit(EC_FLAGS_QUERY_PENDING, &ec->flags))
++			return acpi_os_execute(OSL_EC_BURST_HANDLER,
++				acpi_ec_gpe_query, ec);
++	}
++	return 0;
++}
++
++static int ec_poll(struct acpi_ec *ec)
++{
++	unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
++	msleep(1);
++	while (time_before(jiffies, delay)) {
++		gpe_transaction(ec, acpi_ec_read_status(ec));
++		msleep(1);
++		if (ec_transaction_done(ec))
+ 			return 0;
+ 	}
+-	pr_err(PREFIX "acpi_ec_wait timeout, status = 0x%2.2x, event = %s\n",
+-		acpi_ec_read_status(ec),
+-		(event == ACPI_EC_EVENT_OBF_1) ? "\"b0=1\"" : "\"b1=0\"");
+ 	return -ETIME;
+ }
+ 
+@@ -235,45 +253,51 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+ 					u8 * rdata, unsigned rdata_len,
+ 					int force_poll)
+ {
+-	int result = 0;
+-	set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
++	unsigned long tmp;
++	struct transaction_data t = {.wdata = wdata, .rdata = rdata,
++				     .wlen = wdata_len, .rlen = rdata_len,
++				     .irq_count = 0};
++	int ret = 0;
+ 	pr_debug(PREFIX "transaction start\n");
+-	acpi_ec_write_cmd(ec, command);
+-	for (; wdata_len > 0; --wdata_len) {
+-		result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, force_poll);
+-		if (result) {
+-			pr_err(PREFIX
+-			       "write_cmd timeout, command = %d\n", command);
+-			goto end;
+-		}
+-		set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		acpi_ec_write_data(ec, *(wdata++));
++	/* disable GPE during transaction if storm is detected */
++	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
++		clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
++		acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+ 	}
+-
+-	if (!rdata_len) {
+-		result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, force_poll);
+-		if (result) {
+-			pr_err(PREFIX
+-			       "finish-write timeout, command = %d\n", command);
+-			goto end;
+-		}
+-	} else if (command == ACPI_EC_COMMAND_QUERY)
++	/* start transaction */
++	spin_lock_irqsave(&ec->t_lock, tmp);
++	/* following two actions should be kept atomic */
++	ec->t = &t;
++	acpi_ec_write_cmd(ec, command);
++	if (command == ACPI_EC_COMMAND_QUERY)
+ 		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
+-
+-	for (; rdata_len > 0; --rdata_len) {
+-		result = acpi_ec_wait(ec, ACPI_EC_EVENT_OBF_1, force_poll);
+-		if (result) {
+-			pr_err(PREFIX "read timeout, command = %d\n", command);
+-			goto end;
+-		}
+-		/* Don't expect GPE after last read */
+-		if (rdata_len > 1)
+-			set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		*(rdata++) = acpi_ec_read_data(ec);
+-	}
+-      end:
++	spin_unlock_irqrestore(&ec->t_lock, tmp);
++	/* if we selected poll mode or failed in GPE-mode do a poll loop */
++	if (force_poll ||
++	    !test_bit(EC_FLAGS_GPE_MODE, &ec->flags) ||
++	    acpi_ec_wait(ec))
++		ret = ec_poll(ec);
+ 	pr_debug(PREFIX "transaction end\n");
+-	return result;
++	spin_lock_irqsave(&ec->t_lock, tmp);
++	ec->t = NULL;
++	spin_unlock_irqrestore(&ec->t_lock, tmp);
++	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
++		/* check if we received SCI during transaction */
++		ec_check_sci(ec, acpi_ec_read_status(ec));
++		/* it is safe to enable GPE outside of transaction */
++		acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
++	} else if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
++		   t.irq_count > ACPI_EC_STORM_THRESHOLD) {
++		pr_debug(PREFIX "GPE storm detected\n");
++		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
++	}
++	return ret;
++}
++
++static int ec_check_ibf0(struct acpi_ec *ec)
++{
++	u8 status = acpi_ec_read_status(ec);
++	return (status & ACPI_EC_FLAG_IBF) == 0;
+ }
+ 
+ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+@@ -283,40 +307,34 @@ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+ {
+ 	int status;
+ 	u32 glk;
+-
+ 	if (!ec || (wdata_len && !wdata) || (rdata_len && !rdata))
  		return -EINVAL;
-@@ -363,21 +507,6 @@ static int eeepc_hotk_check(void)
+-
+ 	if (rdata)
+ 		memset(rdata, 0, rdata_len);
+-
+ 	mutex_lock(&ec->lock);
+ 	if (ec->global_lock) {
+ 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
+ 		if (ACPI_FAILURE(status)) {
+-			mutex_unlock(&ec->lock);
+-			return -ENODEV;
++			status = -ENODEV;
++			goto unlock;
+ 		}
+ 	}
+-
+-	status = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, 0);
+-	if (status) {
++	if (!wait_event_timeout(ec->wait, ec_check_ibf0(ec),
++				msecs_to_jiffies(ACPI_EC_DELAY))) {
+ 		pr_err(PREFIX "input buffer is not empty, "
+ 				"aborting transaction\n");
++		status = -ETIME;
+ 		goto end;
+ 	}
+-
+ 	status = acpi_ec_transaction_unlocked(ec, command,
+ 					      wdata, wdata_len,
+ 					      rdata, rdata_len,
+ 					      force_poll);
+-
+-      end:
+-
++end:
+ 	if (ec->global_lock)
+ 		acpi_release_global_lock(glk);
++unlock:
+ 	mutex_unlock(&ec->lock);
+-
+ 	return status;
+ }
+ 
+@@ -332,7 +350,9 @@ int acpi_ec_burst_enable(struct acpi_ec *ec)
+ 
+ int acpi_ec_burst_disable(struct acpi_ec *ec)
+ {
+-	return acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE, NULL, 0, NULL, 0, 0);
++	return (acpi_ec_read_status(ec) & ACPI_EC_FLAG_BURST) ?
++		acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE,
++			NULL, 0, NULL, 0, 0) : 0;
+ }
+ 
+ static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
+@@ -513,46 +533,26 @@ static void acpi_ec_gpe_query(void *ec_cxt)
+ 
+ static u32 acpi_ec_gpe_handler(void *data)
+ {
+-	acpi_status status = AE_OK;
+ 	struct acpi_ec *ec = data;
+-	u8 state = acpi_ec_read_status(ec);
++	u8 status;
+ 
+ 	pr_debug(PREFIX "~~~> interrupt\n");
+-	atomic_inc(&ec->irq_count);
+-	if (atomic_read(&ec->irq_count) > 5) {
+-		pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
+-		ec_switch_to_poll_mode(ec);
+-		goto end;
+-	}
+-	clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-	if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags))
++	status = acpi_ec_read_status(ec);
++
++	gpe_transaction(ec, status);
++	if (ec_transaction_done(ec) && (status & ACPI_EC_FLAG_IBF) == 0)
+ 		wake_up(&ec->wait);
+ 
+-	if (state & ACPI_EC_FLAG_SCI) {
+-		if (!test_and_set_bit(EC_FLAGS_QUERY_PENDING, &ec->flags))
+-			status = acpi_os_execute(OSL_EC_BURST_HANDLER,
+-				acpi_ec_gpe_query, ec);
+-	} else if (!test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
+-		   !test_bit(EC_FLAGS_NO_GPE, &ec->flags) &&
+-		   in_interrupt()) {
++	ec_check_sci(ec, status);
++	if (!test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
++	    !test_bit(EC_FLAGS_NO_GPE, &ec->flags)) {
+ 		/* this is non-query, must be confirmation */
+ 		if (printk_ratelimit())
+ 			pr_info(PREFIX "non-query interrupt received,"
+ 				" switching to interrupt mode\n");
+ 		set_bit(EC_FLAGS_GPE_MODE, &ec->flags);
+-		clear_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+ 	}
+-end:
+-	ec_schedule_ec_poll(ec);
+-	return ACPI_SUCCESS(status) ?
+-	    ACPI_INTERRUPT_HANDLED : ACPI_INTERRUPT_NOT_HANDLED;
+-}
+-
+-static void do_ec_poll(struct work_struct *work)
+-{
+-	struct acpi_ec *ec = container_of(work, struct acpi_ec, work.work);
+-	atomic_set(&ec->irq_count, 0);
+-	(void)acpi_ec_gpe_handler(ec);
++	return ACPI_INTERRUPT_HANDLED;
+ }
+ 
+ /* --------------------------------------------------------------------------
+@@ -696,8 +696,7 @@ static struct acpi_ec *make_acpi_ec(void)
+ 	mutex_init(&ec->lock);
+ 	init_waitqueue_head(&ec->wait);
+ 	INIT_LIST_HEAD(&ec->list);
+-	INIT_DELAYED_WORK_DEFERRABLE(&ec->work, do_ec_poll);
+-	atomic_set(&ec->irq_count, 0);
++	spin_lock_init(&ec->t_lock);
+ 	return ec;
+ }
+ 
+@@ -736,22 +735,15 @@ ec_parse_device(acpi_handle handle, u32 Level, void *context, void **retval)
+ 	return AE_CTRL_TERMINATE;
+ }
+ 
+-static void ec_poll_stop(struct acpi_ec *ec)
+-{
+-	clear_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+-	cancel_delayed_work(&ec->work);
+-}
+-
+ static void ec_remove_handlers(struct acpi_ec *ec)
+ {
+-	ec_poll_stop(ec);
+ 	if (ACPI_FAILURE(acpi_remove_address_space_handler(ec->handle,
+ 				ACPI_ADR_SPACE_EC, &acpi_ec_space_handler)))
+ 		pr_err(PREFIX "failed to remove space handler\n");
+ 	if (ACPI_FAILURE(acpi_remove_gpe_handler(NULL, ec->gpe,
+ 				&acpi_ec_gpe_handler)))
+ 		pr_err(PREFIX "failed to remove gpe handler\n");
+-	ec->handlers_installed = 0;
++	clear_bit(EC_FLAGS_HANDLERS_INSTALLED, &ec->flags);
+ }
+ 
+ static int acpi_ec_add(struct acpi_device *device)
+@@ -846,17 +838,15 @@ ec_parse_io_ports(struct acpi_resource *resource, void *context)
+ static int ec_install_handlers(struct acpi_ec *ec)
+ {
+ 	acpi_status status;
+-	if (ec->handlers_installed)
++	if (test_bit(EC_FLAGS_HANDLERS_INSTALLED, &ec->flags))
+ 		return 0;
+ 	status = acpi_install_gpe_handler(NULL, ec->gpe,
+-					  ACPI_GPE_EDGE_TRIGGERED,
+-					  &acpi_ec_gpe_handler, ec);
++				  ACPI_GPE_EDGE_TRIGGERED,
++				  &acpi_ec_gpe_handler, ec);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+-
+ 	acpi_set_gpe_type(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+ 	acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+-
+ 	status = acpi_install_address_space_handler(ec->handle,
+ 						    ACPI_ADR_SPACE_EC,
+ 						    &acpi_ec_space_handler,
+@@ -866,7 +856,7 @@ static int ec_install_handlers(struct acpi_ec *ec)
+ 		return -ENODEV;
+ 	}
+ 
+-	ec->handlers_installed = 1;
++	set_bit(EC_FLAGS_HANDLERS_INSTALLED, &ec->flags);
  	return 0;
  }
  
--static void notify_wlan(u32 *event)
--{
--	/* if DISABLE_ASL_WLAN is set, the notify code for fn+f2
--	   will always be 0x10 */
--	if (ehotk->cm_supported & (0x1 << CM_ASL_WLAN)) {
--		const char *method = cm_getv[CM_ASL_WLAN];
--		int value;
--		if (read_acpi_int(ehotk->handle, method, &value))
--			printk(EEEPC_WARNING "Error reading %s\n",
--			       method);
--		else if (value == 1)
--			*event = 0x11;
--	}
--}
--
- static void notify_brn(void)
- {
- 	struct backlight_device *bd = eeepc_backlight_device;
-@@ -386,14 +515,28 @@ static void notify_brn(void)
+@@ -887,7 +877,6 @@ static int acpi_ec_start(struct acpi_device *device)
  
- static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
- {
-+	static struct key_entry *key;
- 	if (!ehotk)
- 		return;
--	if (event == NOTIFY_WLAN_ON && (DISABLE_ASL_WLAN & ehotk->init_flag))
--		notify_wlan(&event);
- 	if (event >= NOTIFY_BRN_MIN && event <= NOTIFY_BRN_MAX)
- 		notify_brn();
- 	acpi_bus_generate_proc_event(ehotk->device, event,
- 				     ehotk->event_count[event % 128]++);
-+	if (ehotk->inputdev) {
-+		key = eepc_get_entry_by_scancode(event);
-+		if (key) {
-+			switch (key->type) {
-+			case KE_KEY:
-+				input_report_key(ehotk->inputdev, key->keycode,
-+						 1);
-+				input_sync(ehotk->inputdev);
-+				input_report_key(ehotk->inputdev, key->keycode,
-+						 0);
-+				input_sync(ehotk->inputdev);
-+				break;
-+			}
-+		}
-+	}
+ 	/* EC is fully operational, allow queries */
+ 	clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
+-	ec_schedule_ec_poll(ec);
+ 	return ret;
  }
  
- static int eeepc_hotk_add(struct acpi_device *device)
-@@ -420,6 +563,47 @@ static int eeepc_hotk_add(struct acpi_device *device)
- 					     eeepc_hotk_notify, ehotk);
- 	if (ACPI_FAILURE(status))
- 		printk(EEEPC_ERR "Error installing notify handler\n");
-+
-+	if (get_acpi(CM_ASL_WLAN) != -1) {
-+		ehotk->eeepc_wlan_rfkill = rfkill_allocate(&device->dev,
-+							   RFKILL_TYPE_WLAN);
-+
-+		if (!ehotk->eeepc_wlan_rfkill)
-+			goto end;
-+
-+		ehotk->eeepc_wlan_rfkill->name = "eeepc-wlan";
-+		ehotk->eeepc_wlan_rfkill->toggle_radio = eeepc_wlan_rfkill_set;
-+		ehotk->eeepc_wlan_rfkill->get_state = eeepc_wlan_rfkill_state;
-+		if (get_acpi(CM_ASL_WLAN) == 1)
-+			ehotk->eeepc_wlan_rfkill->state =
-+				RFKILL_STATE_UNBLOCKED;
-+		else
-+			ehotk->eeepc_wlan_rfkill->state =
-+				RFKILL_STATE_SOFT_BLOCKED;
-+		rfkill_register(ehotk->eeepc_wlan_rfkill);
-+	}
-+
-+	if (get_acpi(CM_ASL_BLUETOOTH) != -1) {
-+		ehotk->eeepc_bluetooth_rfkill =
-+			rfkill_allocate(&device->dev, RFKILL_TYPE_BLUETOOTH);
-+
-+		if (!ehotk->eeepc_bluetooth_rfkill)
-+			goto end;
-+
-+		ehotk->eeepc_bluetooth_rfkill->name = "eeepc-bluetooth";
-+		ehotk->eeepc_bluetooth_rfkill->toggle_radio =
-+			eeepc_bluetooth_rfkill_set;
-+		ehotk->eeepc_bluetooth_rfkill->get_state =
-+			eeepc_bluetooth_rfkill_state;
-+		if (get_acpi(CM_ASL_BLUETOOTH) == 1)
-+			ehotk->eeepc_bluetooth_rfkill->state =
-+				RFKILL_STATE_UNBLOCKED;
-+		else
-+			ehotk->eeepc_bluetooth_rfkill->state =
-+				RFKILL_STATE_SOFT_BLOCKED;
-+		rfkill_register(ehotk->eeepc_bluetooth_rfkill);
-+	}
-+
-  end:
- 	if (result) {
- 		kfree(ehotk);
-@@ -553,6 +737,12 @@ static void eeepc_backlight_exit(void)
- {
- 	if (eeepc_backlight_device)
- 		backlight_device_unregister(eeepc_backlight_device);
-+	if (ehotk->inputdev)
-+		input_unregister_device(ehotk->inputdev);
-+	if (ehotk->eeepc_wlan_rfkill)
-+		rfkill_unregister(ehotk->eeepc_wlan_rfkill);
-+	if (ehotk->eeepc_bluetooth_rfkill)
-+		rfkill_unregister(ehotk->eeepc_bluetooth_rfkill);
- 	eeepc_backlight_device = NULL;
- }
+@@ -906,7 +895,7 @@ static int acpi_ec_stop(struct acpi_device *device, int type)
  
+ int __init acpi_boot_ec_enable(void)
+ {
+-	if (!boot_ec || boot_ec->handlers_installed)
++	if (!boot_ec || test_bit(EC_FLAGS_HANDLERS_INSTALLED, &boot_ec->flags))
+ 		return 0;
+ 	if (!ec_install_handlers(boot_ec)) {
+ 		first_ec = boot_ec;
 -- 
 1.5.5.1
 
