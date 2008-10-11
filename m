@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbYJKGlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbYJKGmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758614AbYJKGlj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYJKGhX
+	id S1759213AbYJKGmV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbYJKGhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:37:23 -0400
-Received: from vms172071pub.verizon.net ([206.46.172.71]:52181 "EHLO
-	vms172071pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbYJKGhO (ORCPT
+	Sat, 11 Oct 2008 02:37:32 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:50828 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753803AbYJKGhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Oct 2008 02:37:14 -0400
-Date: Sat, 11 Oct 2008 02:36:28 -0400
+Date: Sat, 11 Oct 2008 02:36:31 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 68/85] PNP: remove old CONFIG_PNP_DEBUG option
+Subject: [PATCH 71/85] acer-wmi: Remove private workqueue
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Andi Kleen <ak@linux.intel.com>,
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
        Len Brown <len.brown@intel.com>
-Message-id: <ac88a8f3f7df04774b386ddaf586040adb819b58.1223706853.git.len.brown@intel.com>
+Message-id: <ae3a1b46099aa87f1662621580c985432ca1c9d9.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,93 +28,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
 
-CONFIG_PNP_DEBUG is no longer used to turn on dev_dbg() in PNP,
-since we have pnp_dbg() which can be enabled at boot-time, so
-this patch removes the config option.
+As per Dmitry Torokhov's suggestion, acer-wmi doesn't need a private
+workqueue, so remove it.
 
-Note that pnp_dock_event() checks "#ifdef DEBUG".  But there's
-never been a clear path for enabling that via configgery.  It
-happened that CONFIG_PNP_DEBUG enabled it after 1bd17e63a068db6,
-but that was accidental and only in 2.6.26.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/pnp/Kconfig          |    6 ------
- drivers/pnp/Makefile         |    4 ----
- drivers/pnp/isapnp/Makefile  |    4 ----
- drivers/pnp/pnpacpi/Makefile |    4 ----
- drivers/pnp/pnpbios/Makefile |    4 ----
- 5 files changed, 0 insertions(+), 22 deletions(-)
+ drivers/misc/acer-wmi.c |   18 ++----------------
+ 1 files changed, 2 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/pnp/Kconfig b/drivers/pnp/Kconfig
-index 8a3237f..2a37b3f 100644
---- a/drivers/pnp/Kconfig
-+++ b/drivers/pnp/Kconfig
-@@ -36,12 +36,6 @@ config PNP_DEBUG_MESSAGES
- 
- if PNP
- 
--config PNP_DEBUG
--	bool "PnP Debug Messages"
--	help
--	  Say Y if you want the Plug and Play Layer to print debug messages.
--	  This is useful if you are developing a PnP driver or troubleshooting.
+diff --git a/drivers/misc/acer-wmi.c b/drivers/misc/acer-wmi.c
+index 8708d31..cf4c39f 100644
+--- a/drivers/misc/acer-wmi.c
++++ b/drivers/misc/acer-wmi.c
+@@ -930,8 +930,6 @@ static void acer_backlight_exit(void)
+ /*
+  * Rfkill devices
+  */
+-static struct workqueue_struct *rfkill_workqueue;
 -
- comment "Protocols"
+ static void acer_rfkill_update(struct work_struct *ignored);
+ static DECLARE_DELAYED_WORK(acer_rfkill_work, acer_rfkill_update);
+ static void acer_rfkill_update(struct work_struct *ignored)
+@@ -952,8 +950,7 @@ static void acer_rfkill_update(struct work_struct *ignored)
+ 				RFKILL_STATE_SOFT_BLOCKED);
+ 	}
  
- source "drivers/pnp/isapnp/Kconfig"
-diff --git a/drivers/pnp/Makefile b/drivers/pnp/Makefile
-index 26f5abc..a381a92 100644
---- a/drivers/pnp/Makefile
-+++ b/drivers/pnp/Makefile
-@@ -7,7 +7,3 @@ obj-y		:= core.o card.o driver.o resource.o manager.o support.o interface.o quir
- obj-$(CONFIG_PNPACPI)		+= pnpacpi/
- obj-$(CONFIG_PNPBIOS)		+= pnpbios/
- obj-$(CONFIG_ISAPNP)		+= isapnp/
--
--ifeq ($(CONFIG_PNP_DEBUG),y)
--EXTRA_CFLAGS += -DDEBUG
--endif
-diff --git a/drivers/pnp/isapnp/Makefile b/drivers/pnp/isapnp/Makefile
-index 3e38f06..cac18bb 100644
---- a/drivers/pnp/isapnp/Makefile
-+++ b/drivers/pnp/isapnp/Makefile
-@@ -5,7 +5,3 @@
- isapnp-proc-$(CONFIG_PROC_FS) = proc.o
+-	queue_delayed_work(rfkill_workqueue, &acer_rfkill_work,
+-		round_jiffies_relative(HZ));
++	schedule_delayed_work(&acer_rfkill_work, round_jiffies_relative(HZ));
+ }
  
- obj-y := core.o compat.o $(isapnp-proc-y)
--
--ifeq ($(CONFIG_PNP_DEBUG),y)
--EXTRA_CFLAGS += -DDEBUG
--endif
-diff --git a/drivers/pnp/pnpacpi/Makefile b/drivers/pnp/pnpacpi/Makefile
-index 2d7a1e6..905326f 100644
---- a/drivers/pnp/pnpacpi/Makefile
-+++ b/drivers/pnp/pnpacpi/Makefile
-@@ -3,7 +3,3 @@
- #
+ static int acer_rfkill_set(void *data, enum rfkill_state state)
+@@ -1018,17 +1015,7 @@ static int acer_rfkill_init(struct device *dev)
+ 		}
+ 	}
  
- obj-y := core.o rsparser.o
--
--ifeq ($(CONFIG_PNP_DEBUG),y)
--EXTRA_CFLAGS += -DDEBUG
--endif
-diff --git a/drivers/pnp/pnpbios/Makefile b/drivers/pnp/pnpbios/Makefile
-index 310e2b3..3cd3ed7 100644
---- a/drivers/pnp/pnpbios/Makefile
-+++ b/drivers/pnp/pnpbios/Makefile
-@@ -5,7 +5,3 @@
- pnpbios-proc-$(CONFIG_PNPBIOS_PROC_FS) = proc.o
+-	rfkill_workqueue = create_singlethread_workqueue("rfkill_workqueue");
+-	if (!rfkill_workqueue) {
+-		if (has_cap(ACER_CAP_BLUETOOTH)) {
+-			kfree(bluetooth_rfkill->data);
+-			rfkill_unregister(bluetooth_rfkill);
+-		}
+-		kfree(wireless_rfkill->data);
+-		rfkill_unregister(wireless_rfkill);
+-		return -ENOMEM;
+-	}
+-	queue_delayed_work(rfkill_workqueue, &acer_rfkill_work, HZ);
++	schedule_delayed_work(&acer_rfkill_work, round_jiffies_relative(HZ));
  
- obj-y := core.o bioscalls.o rsparser.o $(pnpbios-proc-y)
--
--ifeq ($(CONFIG_PNP_DEBUG),y)
--EXTRA_CFLAGS += -DDEBUG
--endif
+ 	return 0;
+ }
+@@ -1036,7 +1023,6 @@ static int acer_rfkill_init(struct device *dev)
+ static void acer_rfkill_exit(void)
+ {
+ 	cancel_delayed_work_sync(&acer_rfkill_work);
+-	destroy_workqueue(rfkill_workqueue);
+ 	kfree(wireless_rfkill->data);
+ 	rfkill_unregister(wireless_rfkill);
+ 	if (has_cap(ACER_CAP_BLUETOOTH)) {
 -- 
 1.5.5.1
 
