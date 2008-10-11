@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbYJKNsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYJKNx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbYJKNsw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 09:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYJKNso
+	id S1756045AbYJKNx1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 09:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYJKNxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 09:48:44 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:24912 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753043AbYJKNso (ORCPT
+	Sat, 11 Oct 2008 09:53:19 -0400
+Received: from mail-in-10.arcor-online.net ([151.189.21.50]:57640 "EHLO
+	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753045AbYJKNxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 09:48:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=kId03pznl30hJEvqURCCdcege/HbGH7kU/h0zRphRWqSZeyrICGJvl8iPcN5rEhtIcTJ0MfGMuHj0dn7oSwS/9lYQ3nH+mYSyGUiXVaCjpkN8oXmPAUyuP+81nMpaD2z2reGtvl1IW1NVEqGhCkf20dCUhhhwgnQdTDspSQVBoU=  ;
-X-YMail-OSG: sXuuaZMVM1lONdo3f1ZB7B54nZGtr2YYgqpjiS37ZVlDuQmNbKop0jUVM_yNkC7V8qnuiSOXfbkZQXD7HdQmgroXyOXKB6xo21yvCRxcjW_sv0ylxya.0_yje0tze.UC2VzGCd8DdyDm2MtMj6tTwnyLVdbmTRVHuXQtoAKm
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Update cacheline size on X86_GENERIC
-Date: Sun, 12 Oct 2008 00:48:30 +1100
-User-Agent: KMail/1.9.5
-Cc: Dave Jones <davej@redhat.com>, x86@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20081009171453.GA15321@redhat.com> <200810112242.28229.nickpiggin@yahoo.com.au> <20081011131115.GB12131@one.firstfloor.org>
-In-Reply-To: <20081011131115.GB12131@one.firstfloor.org>
+	Sat, 11 Oct 2008 09:53:18 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH 0/1] SIGWINCH problem with terminal apps still alive
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adam Tla?ka <atlka@pg.gda.pl>,
+       linux-kernel@vger.kernel.org, torvalds@osdl.org
+Reply-To: 7eggert@gmx.de
+Date: Sat, 11 Oct 2008 16:04:07 +0200
+References: <bjXel-4CU-17@gated-at.bofh.it> <bjYap-5Q0-25@gated-at.bofh.it> <bk30i-3Gx-1@gated-at.bofh.it> <bk6AV-8ms-7@gated-at.bofh.it> <bkrvO-1HF-49@gated-at.bofh.it> <blePJ-6rI-3@gated-at.bofh.it> <blmDC-7ZU-7@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810120048.31141.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 October 2008 00:11, Andi Kleen wrote:
-> > > > That would be nice. It would be interesting to know what is causing
-> > > > the slowdown.
-> > >
-> > > At least that test is extremly cache footprint sensitive. A lot of the
-> > > cache misses are surprisingly in hd_struct, because it runs
-> > > with hundred of disks and each needs hd_struct references in the fast
-> > > path. The recent introduction of fine grained per partition statistics
-> > > caused a large slowdown. But I don't think kernel workloads
-> > > are normally that extremly cache sensitive.
-> >
-> > That's interesting. struct device is pretty big. I wonder if fields
->
-> Yes it is (it actually can be easily shrunk -- see willy's recent
-> patch to remove the struct completion from knodes), but that won't help
-> because it will always
-> be larger than a cache line and it's in the middle, so the
-> accesses to first part of it and last part of it will be separate.
->
-> > couldn't be rearranged to minimise the fastpath cacheline footprint?
-> > I guess that's already been looked at?
->
-> Yes, but not very intensively. So far I was looking for more
-> detailed profiling data to see the exact accesses.
->
-> Of course if you have any immediate ideas that could be tried too.
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> Adam Tla?ka <atlka@pg.gda.pl> wrote:
 
-No immediate ideas. Jens probably is a good person to cc. With direct IO
-workloads, hd_struct should mostly only be touched in partition remapping
-and IO accounting.
+>> now we have 2.6.26.6 kernel and still terminal resize leads to
+>> undesired effects. It is very inconvenient to wait for 2.6.27 for
+>> corrections.
 
-start_sect, nr_sects would be read for partition remapping.
+You'll have to wait some longer, since it still has this bug.
 
-*dkstats will be read to do accounting (dkstats for UP is written, but
-false sharing doesn't matter on UP), as does partno.
+>> As Alan Cox previously said mutexes generally work but as we can
+>> observe in case of kill_pgrp() call inside mutex lock we got
+>> race because of rescheduling so lock is not working here.
+>> Rearanging code so the variable change is placed before kill_pgrp()
+>> call removes mentioned race situaction.
 
-These could all go together at the top of the struct perhaps.
+> NAK again
+> 
+> Moving the copies around simply moves the race, it might be that it fixes
+> your box and unfixes other peoples.
 
-struct device->parent gets read as well. This might go at the top of
-struct device, which could come next.
+This patch does not move around any race, but it works around a locking issue
+by making sure you are the hedgehog racing the rabbit.
 
-stamp and in_flight are tricky, as they get both read and written often
-:(
+However, you are right in spotting that there must be something wrong with
+the resulting code. It does (still) modify both tty and the real_tty while
+only holding one lock. Besides that, it depends on tty->mutex to prevent
+reading the old values because real_tty->mutex is held.
 
-Still, you might just be able to fit them into the same 64-byte cacheline
-as well as all the above fields.
+Adam, since you are working on this issue, I'd suggest you modify the source
+to take both locks, one at a time, while setting the new values (lock
+tty->mutex, compare tty->ws, possibly set ws, unlock, lock real_tty, ...).
 
-At this point, you would want to cacheline align hd_struct. So if you
-want to do that dynamically, you would need to change the disk_part_tbl
-scheme (but at least you could test with static annotations first).
+Alan, do you agree? Or is it required to take both locks at the same time?
+If it is, in which order?
 
-The other thing I notice is the block layer has some functions which
-have error paths that have BDEVNAME_SIZE size arrays for error cases,
-which gcc may not do well at. Probably they should go out to noinline
-functions.
