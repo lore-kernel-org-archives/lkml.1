@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbYJKHAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763759AbYJKHAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761057AbYJKHAn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbYJKGkz
+	id S1763759AbYJKHAL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757878AbYJKGkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:40:55 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:52440 "EHLO
+	Sat, 11 Oct 2008 02:40:43 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:52462 "EHLO
 	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYJKGgy (ORCPT
+	with ESMTP id S1751912AbYJKGg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:36:54 -0400
-Date: Sat, 11 Oct 2008 02:35:42 -0400
+	Sat, 11 Oct 2008 02:36:58 -0400
+Date: Sat, 11 Oct 2008 02:35:48 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 22/85] ACPICA: Update version to 20080729
+Subject: [PATCH 28/85] ACPI: dock: avoid check _STA method
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>,
-       Andi Kleen <ak@linux.intel.com>, Len Brown <len.brown@intel.com>
-Message-id: <2c61e64815b39bdeb52e4877e5f8a56572c28890.1223706853.git.len.brown@intel.com>
+Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+Message-id: <8b59560a3baf2e7c24e0fb92ea5d09eca92805db.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,29 +26,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: Shaohua Li <shaohua.li@intel.com>
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+In some BIOSes, every _STA method call will send a notification again,
+this cause freeze. And in some BIOSes, it appears _STA should be called
+after _DCK. This tries to avoid calls _STA, and still keep the device
+present check.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10431
+
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/acpi/acconfig.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/acpi/dock.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/include/acpi/acconfig.h b/include/acpi/acconfig.h
-index 328caee..4da88b1 100644
---- a/include/acpi/acconfig.h
-+++ b/include/acpi/acconfig.h
-@@ -63,7 +63,7 @@
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index 7d2edf1..25d2161 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -604,14 +604,17 @@ static int handle_eject_request(struct dock_station *ds, u32 event)
+ static void dock_notify(acpi_handle handle, u32 event, void *data)
+ {
+ 	struct dock_station *ds = data;
++	struct acpi_device *tmp;
  
- /* Current ACPICA subsystem version in YYYYMMDD format */
- 
--#define ACPI_CA_VERSION 		0x20080701
-+#define ACPI_CA_VERSION 		0x20080729
- 
- /*
-  * OS name, used for the _OS object.  The _OS object is essentially obsolete,
+ 	switch (event) {
+ 	case ACPI_NOTIFY_BUS_CHECK:
+-		if (!dock_in_progress(ds) && dock_present(ds)) {
++		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
++		   &tmp)) {
+ 			begin_dock(ds);
+ 			dock(ds);
+ 			if (!dock_present(ds)) {
+ 				printk(KERN_ERR PREFIX "Unable to dock!\n");
++				complete_dock(ds);
+ 				break;
+ 			}
+ 			atomic_notifier_call_chain(&dock_notifier_list,
 -- 
 1.5.5.1
 
