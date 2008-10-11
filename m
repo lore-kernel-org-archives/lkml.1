@@ -1,187 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbYJKSO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932870AbYJKSPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932695AbYJKSO2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 14:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762257AbYJKSOF
+	id S932870AbYJKSPn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 14:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762351AbYJKSP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 14:14:05 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38253 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1762314AbYJKSOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 14:14:03 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX182E+xqIOw2T8ypGSo+f4Z7OfKWCXkdkeNurJi+xi
-	TxEf4ZjY92t1IN
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Evgeniy Polyakov <s0mbre@tservice.net.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <1223735947.8485.33.camel@twins>
-References: <20081009231759.GA8664@tservice.net.ru>
-	 <1223633623.4138.86.camel@marge.simson.net>
-	 <20081011131352.GA16908@tservice.net.ru>  <1223735947.8485.33.camel@twins>
-Content-Type: text/plain
-Date: Sat, 11 Oct 2008 20:13:50 +0200
-Message-Id: <1223748830.4598.16.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Sat, 11 Oct 2008 14:15:29 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:22090 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762257AbYJKSP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 14:15:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=aK+OcDU1AtCKTB9oLkp7khsGVrDOm7ZrPdgyn8UaUV4tQO9AJNVMjbhGhToKmx8gMx
+         LhYqU67w2/Qruj512auDdE90RiAa5nVIwJdv8w5DZZigg64Bflz9dfR3II22ZNOyoI81
+         OoS9h6WiuyyTlPLimmbfNrChJHB07Cmp7dgoo=
+Message-ID: <48F0ED3A.9010001@tuffmail.co.uk>
+Date: Sat, 11 Oct 2008 19:15:22 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: acpi-test tree on eeepc: EC error message on second resume
+References: <48F0DB0C.7060201@tuffmail.co.uk> <200810111909.48897.rjw@sisk.pl> <48F0DE8C.6040309@tuffmail.co.uk> <200810111953.04610.rjw@sisk.pl>
+In-Reply-To: <200810111953.04610.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-11 at 16:39 +0200, Peter Zijlstra wrote:
+Rafael J. Wysocki wrote:
+> On Saturday, 11 of October 2008, Alan Jenkins wrote:
+>   
+>> Rafael J. Wysocki wrote:
+>>     
+>>> On Saturday, 11 of October 2008, Alan Jenkins wrote:
+>>>   
+>>>       
+>>>> I've just run an acpi-test kernel on my EeePC and noticed a new issue. 
+>>>> It seems to be caused (or revealed) by the EC interrupt transaction patch.
+>>>>
+>>>> On the second suspend/resume cycle, I see a kernel error message.
+>>>>
+>>>> [   78.747707] ACPI: Waking up from system sleep state S3
+>>>> [   79.330001] ACPI: EC: input buffer not empty, aborting transaction
+>>>> [   79.423327] ACPI: EC: non-query interrupt received, switching to
+>>>> interrupt mode
+>>>>
+>>>> I still don't see any issues in the code.  I'll try getting a DEBUG
+>>>> trace to see the EC interrupts.  Any other suggestions?
+>>>>     
+>>>>         
+>>> Not really, but is this reproducible?  I mean, does it happen always on the
+>>> second resume and does it happen on every next resume after the first one?
+>>>
+>>> Thanks,
+>>> Rafael
+>>>   
+>>>       
+>> Ah.  No, I spoke to soon.  It happened on the second resume the first
+>> two times I tried it.  But this third time with DEBUG enabled, it
+>> happened on the first suspend/resume.
+>>
+>> And it doesn't happen on all subsequent resumes either.  I've had one
+>> suspend/resume without the error, just after a suspend/resume with the
+>> error.
+>>
+>> So it's not deterministic, but it is easy to reproduce.
+>>     
+>
+> I can't reproduce this on any hardware available to me, so far.
+>
+> Is this related to any other problem, like things not working etc.?
+>   
 
-> That said, we can probably still avoid the division for the top level
-> stuff, because the sum of the top level weights is still invariant
-> between all tasks.
+Nope, just an error message.  Though I do worry that "random EC
+transaction aborts during resume" could hit something important
+somewhere, sometime.
 
-Less math would be nice of course...
+I think I found the problem.  The "input buffer empty" wait depends on
+"interrupt mode" to work properly, and we don't immediately enable the
+interrupt on resume.  The wait should have a polling fallback anyway, to
+be consistent with the other transaction waits.
 
-> I'll have a stab at doing so... I initially didn't do this because my
-> first try gave some real ugly code, but we'll see - these numbers are a
-> very convincing reason to try again.
-
-...but the numbers I get on Q6600 don't pin the tail on the math donkey.
-
-Update to UP test log.
-
-2.6.27-final-up
-ring-test   - 1.193 us/cycle  = 838 KHz  (gcc-4.3)
-tbench      - 337.377 MB/sec           tso/gso on
-tbench      - 340.362 MB/sec           tso/gso off
-netperf     - 120751.30 rr/s           tso/gso on
-netperf     - 121293.48 rr/s           tso/gso off
-
-2.6.27-final-up
-patches/revert_weight_and_asym_stuff.diff
-ring-test   - 1.133 us/cycle  = 882 KHz  (gcc-4.3)
-tbench      - 340.481 MB/sec           tso/gso on
-tbench      - 343.472 MB/sec           tso/gso off
-netperf     - 119486.14 rr/s           tso/gso on
-netperf     - 121035.56 rr/s           tso/gso off
-
-2.6.28-up
-ring-test   - 1.149 us/cycle  = 870 KHz  (gcc-4.3)
-tbench      - 343.681 MB/sec           tso/gso off
-netperf     - 122812.54 rr/s           tso/gso off
-
-My SMP log, updated to account for TSO/GSO monkey-wrench.
-
-(<bleep> truckload of time <bleep> wasted chasing unbisectable
-<bleepity-bleep> tso gizmo. <bleep!>)
-
-SMP config, same as UP kernels tested, except SMP.
-
-tbench -t 60 4 localhost followed by four 60 sec netperf
-TCP_RR pairs, each pair on it's own core of my Q6600.
-
-2.6.22.19
-
-Throughput 1250.73 MB/sec 4 procs                  1.00
-
-16384  87380  1        1       60.01    111272.55  1.00
-16384  87380  1        1       60.00    104689.58
-16384  87380  1        1       60.00    110733.05
-16384  87380  1        1       60.00    110748.88
-
-2.6.22.19-cfs-v24.1
-
-Throughput 1213.21 MB/sec 4 procs                  .970
-
-16384  87380  1        1       60.01    108569.27  .992
-16384  87380  1        1       60.01    108541.04
-16384  87380  1        1       60.00    108579.63
-16384  87380  1        1       60.01    108519.09
-
-2.6.23.17
-
-Throughput 1200.46 MB/sec 4 procs                  .959
-
-16384  87380  1        1       60.01    95987.66   .866
-16384  87380  1        1       60.01    92819.98
-16384  87380  1        1       60.01    95454.00
-16384  87380  1        1       60.01    94834.84
-
-2.6.23.17-cfs-v24.1
-
-Throughput 1238.68 MB/sec 4 procs                  .990
-
-16384  87380  1        1       60.01    105871.52  .969
-16384  87380  1        1       60.01    105813.11
-16384  87380  1        1       60.01    106106.31
-16384  87380  1        1       60.01    106310.20
-
-2.6.24.7
-
-Throughput 1204 MB/sec 4 procs                     .962
-
-16384  87380  1        1       60.00    99599.27   .910
-16384  87380  1        1       60.00    99439.95
-16384  87380  1        1       60.00    99556.38
-16384  87380  1        1       60.00    99500.45
-
-2.6.25.17
-
-Throughput 1223.16 MB/sec 4 procs                  .977
-16384  87380  1        1       60.00    101768.95  .930
-16384  87380  1        1       60.00    101888.46
-16384  87380  1        1       60.01    101608.21
-16384  87380  1        1       60.01    101833.05
-
-2.6.26.5
-
-Throughput 1183.47 MB/sec 4 procs                  .945
-
-16384  87380  1        1       60.00    100837.12  .922
-16384  87380  1        1       60.00    101230.12
-16384  87380  1        1       60.00    100868.45
-16384  87380  1        1       60.00    100491.41
-
-numbers above here are gcc-4.1, below gcc-4.3
-
-2.6.26.6
-
-Throughput 1177.18 MB/sec 4 procs
-
-16384  87380  1        1       60.00    100896.10
-16384  87380  1        1       60.00    100028.16
-16384  87380  1        1       60.00    101729.44
-16384  87380  1        1       60.01    100341.26
-
-TSO/GSO off
-
-2.6.27-final
-
-Throughput 1177.39 MB/sec 4 procs
-
-16384  87380  1        1       60.00    98830.65
-16384  87380  1        1       60.00    98722.47
-16384  87380  1        1       60.00    98565.17
-16384  87380  1        1       60.00    98633.03
-
-2.6.27-final
-patches/revert_weight_and_asym_stuff.diff
-
-Throughput 1167.67 MB/sec 4 procs
-
-16384  87380  1        1       60.00    97003.05
-16384  87380  1        1       60.00    96758.42
-16384  87380  1        1       60.00    96432.01
-16384  87380  1        1       60.00    97060.98
-
-2.6.28.git
-
-Throughput 1173.14 MB/sec 4 procs
-
-16384  87380  1        1       60.00    98449.33
-16384  87380  1        1       60.00    98484.92
-16384  87380  1        1       60.00    98657.98
-16384  87380  1        1       60.00    98467.39
-
-
-
+Alan
