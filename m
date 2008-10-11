@@ -1,49 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbYJKByA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYJKCOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757727AbYJKByA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 21:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbYJKBxw
+	id S1757601AbYJKCOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 22:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYJKCOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 21:53:52 -0400
-Received: from coliposte.enst-bretagne.fr ([192.108.115.12]:43357 "EHLO
-	coliposte.enst-bretagne.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754116AbYJKBxw (ORCPT
+	Fri, 10 Oct 2008 22:14:08 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:35783 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753248AbYJKCOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 21:53:52 -0400
-X-Greylist: delayed 3761 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Oct 2008 21:53:51 EDT
-Message-ID: <48EFF858.2050007@enst-bretagne.fr>
-Date: Sat, 11 Oct 2008 02:50:32 +0200
-From: Florent Fourcot <florent.fourcot@enst-bretagne.fr>
-Reply-To: florent.fourcot@enst-bretagne.fr
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 10 Oct 2008 22:14:07 -0400
+Date: Sat, 11 Oct 2008 10:13:57 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Crypto Update for 2.6.28
+Message-ID: <20081011021357.GB3685@gondor.apana.org.au>
+References: <20080421024306.GA6813@gondor.apana.org.au> <20080714121403.GA28523@gondor.apana.org.au> <20081010070918.GA28057@gondor.apana.org.au> <alpine.LFD.2.00.0810101118050.3503@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: larry.finger@lwfinger.net, linville@tuxdriver.com
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] rtl8187 : support of Belkin "F5D7050rev5000de"
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810101118050.3503@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-this Belkin product (id 050d:705e) use Realtek’s RTL8187B and work fine
-with new 2.6.27 driver. Please consider to add support of this card.
+On Fri, Oct 10, 2008 at 11:22:44AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 10 Oct 2008, Herbert Xu wrote:
+> > 
+> > Here is the crypto update for 2.6.28:
+> 
+> Umm. "Here" was empty.
+
+Sorry, I somehow deleted that bit while adding the changelog :)
+
+> Also, please us
+> 
+> 	git diff -M --stat --summary
+> 
+> for the diffstat. That way I would have seen the
+
+Thanks, I'll run that from now on.
+
+Here it is again:
+
+The highlight of this batch is the new run-time self-test framework
+for algorithms.  This reorganises the same tests that we've always
+had such that they're run at algorithm registration time so that
+only algorithms passing the tests of their type are made available
+to users.  Hopefully that means people won't be sending me any
+more algorithm updates that fail these tests :)
+
+Apart from that a new algorithm type for random number generators.
+The only two algorithms in that type are the existing kernel RNG
+plus a PRNG based on AES.  This is used by IPsec for IV generation.
+
+We also have a new implementation of CRC32c that uses the Intel
+instruction for CRC32c.
+
+Please pull from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+or
+
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
 
---- linux-2.6.27/drivers/net/wireless/rtl8187_dev.c
-+++ linux-2.6.27-modif/drivers/net/wireless/rtl8187_dev.c
-@@ -33,6 +33,8 @@
- static struct usb_device_id rtl8187_table[] __devinitdata = {
-        /* Asus */
-        {USB_DEVICE(0x0b05, 0x171d), .driver_info = DEVICE_RTL8187},
-+       /* Belkin */
-+       {USB_DEVICE(0x050d, 0x705e), .driver_info = DEVICE_RTL8187B},
-        /* Realtek */
-        {USB_DEVICE(0x0bda, 0x8187), .driver_info = DEVICE_RTL8187},
-        {USB_DEVICE(0x0bda, 0x8189), .driver_info = DEVICE_RTL8187B},
+Adrian Bunk (1):
+      crypto: Kconfig - Replace leading spaces with tabs
 
+Austin Zhang (1):
+      crypto: crc32c - Use Intel CRC32 instruction
 
+Herbert Xu (10):
+      crypto: api - Export crypto_alg_lookup instead of __crypto_alg_lookup
+      crypto: api - Display larval objects properly
+      crypto: tcrypt - Avoid using contiguous pages
+      crypto: tcrypt - Abort and only log if there is an error
+      crypto: tcrypt - Add alg_test interface
+      crypto: cryptomgr - Add test infrastructure
+      crypto: api - Use test infrastructure
+      crypto: cryptomgr - Test ciphers using ECB
+      crypto: skcipher - Move IV generators into their own modules
+      crypto: skcipher - Use RNG interface instead of get_random_bytes
+
+Neil Horman (2):
+      crypto: api - Add fips_enable flag
+      crypto: rng - RNG interface and implementation
+
+ arch/x86/crypto/Makefile           |    2 +
+ arch/x86/crypto/crc32c-intel.c     |  197 +
+ crypto/Kconfig                     |  127 +-
+ crypto/Makefile                    |   12 +-
+ crypto/algapi.c                    |  147 +-
+ crypto/{cryptomgr.c => algboss.c}  |   92 +-
+ crypto/ansi_cprng.c                |  417 ++
+ crypto/api.c                       |   81 +-
+ crypto/blkcipher.c                 |   29 -
+ crypto/chainiv.c                   |   44 +-
+ crypto/eseqiv.c                    |   35 +-
+ crypto/fips.c                      |   27 +
+ crypto/internal.h                  |   18 +-
+ crypto/krng.c                      |   66 +
+ crypto/proc.c                      |   57 +-
+ crypto/rng.c                       |  126 +
+ crypto/seqiv.c                     |   27 +-
+ crypto/tcrypt.c                    | 1347 +-----
+ crypto/tcrypt.h                    | 8709 +-----------------------------------
+ crypto/testmgr.c                   | 1868 ++++++++
+ crypto/{tcrypt.h => testmgr.h}     |   85 +-
+ include/crypto/internal/rng.h      |   26 +
+ include/crypto/internal/skcipher.h |    6 -
+ include/crypto/rng.h               |   75 +
+ include/linux/crypto.h             |   35 +
+ 25 files changed, 3531 insertions(+), 10124 deletions(-)
+ create mode 100644 arch/x86/crypto/crc32c-intel.c
+ rename crypto/{cryptomgr.c => algboss.c} (69%)
+ create mode 100644 crypto/ansi_cprng.c
+ create mode 100644 crypto/fips.c
+ create mode 100644 crypto/krng.c
+ create mode 100644 crypto/rng.c
+ create mode 100644 crypto/testmgr.c
+ copy crypto/{tcrypt.h => testmgr.h} (99%)
+ create mode 100644 include/crypto/internal/rng.h
+ create mode 100644 include/crypto/rng.h
+
+Thanks,
 -- 
-Florent Fourcot.
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
