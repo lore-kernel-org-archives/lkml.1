@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYJKMCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbYJKME5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbYJKMCS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 08:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYJKMCB
+	id S1754533AbYJKME5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 08:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYJKMEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 08:02:01 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:36182 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbYJKMCA (ORCPT
+	Sat, 11 Oct 2008 08:04:49 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.160]:31694 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbYJKMEs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 08:02:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=tQCQop7Pb2fYatSIzZKi44T6SLD/2CWjDOgfByU6QgbEaoOxnZdBuBXj0QXQ0/Mwdv
-         QH0Z7d1urof+XEGddITkU1Ro4zJlcbeRwXL7QdY2Lo8FpgawqC1JB3ocoNdKV41SGONh
-         1RVKgT+BZaVWnbxXHTEdMSqmSezfb+d5SvfC0=
-Date: Sat, 11 Oct 2008 14:01:37 +0200
-To: Robert Hancock <hancockr@shaw.ca>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] ide: locking improvements
-Message-ID: <20081011120137.GA26835@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Robert Hancock <hancockr@shaw.ca>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <fa.8TkQ+xA96EhlNKL9gIbVTxVrcUE@ifi.uio.no> <48F010AB.7010009@shaw.ca> <200810111339.44998.bzolnier@gmail.com>
+	Sat, 11 Oct 2008 08:04:48 -0400
+X-RZG-CLASS-ID: mo00
+X-RZG-AUTH: :PmMGcFK8W/5pU+Ks2M0NQC5NPKGZSjWcOhfQxYOYw6MBSrjHNDROaqGynQ==
+Message-ID: <48F09658.8060502@au-79.de>
+Date: Sat, 11 Oct 2008 14:04:40 +0200
+From: Robert Goldner <robert@au-79.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810111339.44998.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Patch needed for ASUS EEEPC 701 2.6.27 (perhaps a regession)
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-On Sat, Oct 11, 2008 at 01:39:44PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Saturday 11 October 2008, Robert Hancock wrote:
-> > Bartlomiej Zolnierkiewicz wrote:
-> > >> Sorry, but I just have to ask 'why'? IDE is seeing a whole lot of churn
-> > >> for something that should essentially be a stable code base in
-> > >> maintenance mode, and now scalability improvements?
-> > > 
-> > > It is the stable code but being in "maintenance only mode" has never
-> > > been true and as long as there are active users & developers there is
-> > > really no reason to change it.
-> > 
-> > Are there really many active users at this point? I'm not aware of any 
-> > new distributions that are using it. The only people I can see that 
-> > might still want to be using it would be people with old setups or old 
-> > embedded devices.. many of those wouldn't be using newer kernels anyway.
-> 
-> Like I said before: as long as there are any active users/developers
-> there is no real reason to stop IDE improvements (especially since there
-> is no complete replacement available).
+I am a happy user of an asus eeepc 701 with an self-made kernel 2.6.27. 
+Its working quite good, but there is one patch needed to avoid problems 
+related to ACPI and Hotkeys.
+After using a few hotkeys there comes a message in syslog like:
+ACPI: EC: GPE storm detected, disabling EC GPE
+and no hotkey event is recognized any more. This is quite bad on a nettop.
 
-... and to be completely clear on things, what Bart and other guys are doing
-_is_ maintenance - simply keeping the codebase from becoming a big stinking pile
-of sh*t which noone can maintain with time. If you do the effort and count what
-percentage of the patches have "There should be no functional change resulting
-from this patch" in them you'll see that this is the majority and they rather
-clean up/simplify/fix code than add anything new, not even mentioning new
-features. So yes, this _is_ maintenance on a larger scale and this is a good(tm)
-thing.
+The needed patch and the bug description is available at:
+http://bugzilla.kernel.org/show_bug.cgi?id=10919
+The patch is called 'patch vs 2.6.27-rc7'
 
-> I also wouldn't worry that much about what some distros are doing.  They
-> are free to make their own decisions based on whatever criteria they like.
-> 
-> > These kinds of changes only will really help scalability on multi-core 
-> > machines which are unlikely to be using this code anyway.. They seem 
-> 
-> >From my perspective the main gain of these patches is the increased
-> maintainability and sanity of the code, scalability improvements are
-> just an added bonus.
+The patch fits also to 2.6.27 without any problems and works very fine. 
+Thanks to everyone who was involved.
 
-and better code/improved scalability is a bad thing because... ?!
+I would suggest to include this patch in the mainline kernel very soon 
+(e.g. 2.6.28 or if possible in 2.6.27.1).
 
-> > rather like putting makeup on a corpse to me..
+Best regards
 
-so _NOT_ true.
+Robert
 
--- 
-Regards/Gruss,
-    Boris.
+P.S. To avoid me to adorn myself with borrowed plumes: I did not wrote 
+these patch, I don't understand the patch, I only use the patch.
