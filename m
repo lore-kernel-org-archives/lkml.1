@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbYJKST0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762837AbYJKSTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762662AbYJKST0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 14:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbYJKSTT
+	id S1762837AbYJKSTl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 14:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbYJKSTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 14:19:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46424 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758844AbYJKSTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 14:19:18 -0400
-Date: Sat, 11 Oct 2008 20:18:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #4, x2apic,
-	unify-cpu-detect
-Message-ID: <20081011181857.GA20554@elte.hu>
-References: <20081010000408.GA5970@elte.hu> <20081010175613.GA20112@elte.hu> <alpine.LFD.2.00.0810111108060.3402@nehalem.linux-foundation.org>
+	Sat, 11 Oct 2008 14:19:33 -0400
+Received: from fb2.tech.numericable.fr ([82.216.111.50]:55333 "EHLO
+	fb2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762704AbYJKSTc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 14:19:32 -0400
+Message-ID: <48F0EFC7.3000204@numericable.fr>
+Date: Sat, 11 Oct 2008 20:26:15 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008092811)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810111108060.3402@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [2.6.27-git1] compilation warning with mtrr_cleanup
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello all,
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> 
-> 
-> On Fri, 10 Oct 2008, Ingo Molnar wrote:
-> > 
-> > Please pull the latest x86-v28-for-linus-phase4-B git tree from:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase4-B
-> 
-> This is broken.
-> 
-> I get an absolute metric shitload of:
-> 
-> 	include/asm/dma-mapping.h:309:2: error: #endif without #if
-> 
-> errors, and I suspect it's because of some broken merge resolution 
-> that you didn't even test and then fixed in some later branch.
+I have this compilation warning with fresh 2.6.27-git1 kernel :
 
-possible - i tested the first series at all 10 merge points for 3 days.
+arch/x86/kernel/cpu/mtrr/main.c: In function ‘mtrr_cleanup’:
+arch/x86/kernel/cpu/mtrr/main.c:1363: attention : ‘gran_factor’ may be 
+used uninitialized in this function
+arch/x86/kernel/cpu/mtrr/main.c:1364: attention : ‘gran_base’ may be 
+used uninitialized in this function
 
-and indeed the problem is not there in the old, x86-v28-for-linus-phase4 
-branch.
+WARNING: kernel/built-in.o(.text+0x10690): Section mismatch in reference 
+from the function notify_cpu_starting() to the variable 
+.cpuinit.data:cpu_chain
+The function notify_cpu_starting() references
+the variable __cpuinitdata cpu_chain.
+This is often because notify_cpu_starting lacks a __cpuinitdata
+annotation or the annotation of cpu_chain is wrong.
 
-> I double-checked: it's already broken in your tree, it's not from my 
-> merge (ie commit 0d4ab8b5aa74f6be4d022dcf5e27845b7c290294 is already 
-> showing that bug).
-> 
-> Not pulled.
+Regards.
 
-indeed:
-
- #endif
- #endif /* ASM_X86__DMA_MAPPING_H */
-
-that goes away in x86-v28-for-linus-phase6-B.
-
-	Ingo
