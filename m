@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYJKNx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbYJKNxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbYJKNx1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 09:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYJKNxT
+	id S1756894AbYJKNxs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 09:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYJKNxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 09:53:19 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:57640 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753045AbYJKNxS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 09:53:18 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH 0/1] SIGWINCH problem with terminal apps still alive
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adam Tla?ka <atlka@pg.gda.pl>,
-       linux-kernel@vger.kernel.org, torvalds@osdl.org
-Reply-To: 7eggert@gmx.de
-Date: Sat, 11 Oct 2008 16:04:07 +0200
-References: <bjXel-4CU-17@gated-at.bofh.it> <bjYap-5Q0-25@gated-at.bofh.it> <bk30i-3Gx-1@gated-at.bofh.it> <bk6AV-8ms-7@gated-at.bofh.it> <bkrvO-1HF-49@gated-at.bofh.it> <blePJ-6rI-3@gated-at.bofh.it> <blmDC-7ZU-7@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Sat, 11 Oct 2008 09:53:38 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47844 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752805AbYJKNxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 09:53:37 -0400
+Date: Sat, 11 Oct 2008 15:53:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: petkovbb@gmail.com
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] ide: locking improvements
+Message-ID: <20081011135300.GP19428@kernel.dk>
+References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <fa.8TkQ+xA96EhlNKL9gIbVTxVrcUE@ifi.uio.no> <48F010AB.7010009@shaw.ca> <200810111339.44998.bzolnier@gmail.com> <20081011120137.GA26835@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081011120137.GA26835@gollum.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> Adam Tla?ka <atlka@pg.gda.pl> wrote:
-
->> now we have 2.6.26.6 kernel and still terminal resize leads to
->> undesired effects. It is very inconvenient to wait for 2.6.27 for
->> corrections.
-
-You'll have to wait some longer, since it still has this bug.
-
->> As Alan Cox previously said mutexes generally work but as we can
->> observe in case of kill_pgrp() call inside mutex lock we got
->> race because of rescheduling so lock is not working here.
->> Rearanging code so the variable change is placed before kill_pgrp()
->> call removes mentioned race situaction.
-
-> NAK again
+On Sat, Oct 11 2008, Borislav Petkov wrote:
+> > >From my perspective the main gain of these patches is the increased
+> > maintainability and sanity of the code, scalability improvements are
+> > just an added bonus.
 > 
-> Moving the copies around simply moves the race, it might be that it fixes
-> your box and unfixes other peoples.
+> and better code/improved scalability is a bad thing because... ?!
 
-This patch does not move around any race, but it works around a locking issue
-by making sure you are the hedgehog racing the rabbit.
+It's a bad thing because nobody on earth cares about IDE scalability,
+from a performance POV a modern SATA controller is just better on
+several levels. I don't think anybody cares about IDE scaling on 8-16
+cores or more, simply because NOBODY is using IDE on such systems.
 
-However, you are right in spotting that there must be something wrong with
-the resulting code. It does (still) modify both tty and the real_tty while
-only holding one lock. Besides that, it depends on tty->mutex to prevent
-reading the old values because real_tty->mutex is held.
+As such, trying to improve locking is a pointless exercise. And that is
+a bad thing, because code change invariably brings in code bugs. Then
+see previous mail on lack of coverage testing, and it can naturally be
+harmful.
 
-Adam, since you are working on this issue, I'd suggest you modify the source
-to take both locks, one at a time, while setting the new values (lock
-tty->mutex, compare tty->ws, possibly set ws, unlock, lock real_tty, ...).
+> > > rather like putting makeup on a corpse to me..
+> 
+> so _NOT_ true.
 
-Alan, do you agree? Or is it required to take both locks at the same time?
-If it is, in which order?
+Depends on what you think is the corpse. Since IDE is essentially dead
+and frozen, it IS a corpse and the phrase is then very appropriate. This
+is not a personal jab at the IDE guys and does not reflect on the
+(mostly) good work they do, just a reflection on the state of IDE in
+general.
+
+-- 
+Jens Axboe
 
