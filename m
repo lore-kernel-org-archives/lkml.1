@@ -1,161 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762015AbYJKR5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932427AbYJKR6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762015AbYJKR5l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 13:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbYJKR44
+	id S932427AbYJKR6J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 13:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932559AbYJKR5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 13:56:56 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:43226 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932419AbYJKR4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 13:56:54 -0400
-Date: Sat, 11 Oct 2008 19:56:17 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: petkovbb@gmail.com, Robert Hancock <hancockr@shaw.ca>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] ide: locking improvements
-Message-ID: <20081011175617.GX19428@kernel.dk>
-References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <200810111645.27847.bzolnier@gmail.com> <20081011150532.GU19428@kernel.dk> <200810111756.37278.bzolnier@gmail.com>
+	Sat, 11 Oct 2008 13:57:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49883 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932552AbYJKR5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 13:57:32 -0400
+Date: Sat, 11 Oct 2008 10:57:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking for 2.6.28
+In-Reply-To: <alpine.LFD.2.00.0810110941330.3402@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0810111057020.3402@nehalem.linux-foundation.org>
+References: <20081010.144921.115563930.davem@davemloft.net> <alpine.LFD.2.00.0810110941330.3402@nehalem.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810111756.37278.bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 11 2008, Bartlomiej Zolnierkiewicz wrote:
-> On Saturday 11 October 2008, Jens Axboe wrote:
-> > On Sat, Oct 11 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > On Saturday 11 October 2008, Jens Axboe wrote:
-> > > > On Sat, Oct 11 2008, Borislav Petkov wrote:
-> > > > > > >From my perspective the main gain of these patches is the increased
-> > > > > > maintainability and sanity of the code, scalability improvements are
-> > > > > > just an added bonus.
-> > > > > 
-> > > > > and better code/improved scalability is a bad thing because... ?!
-> > > > 
-> > > > It's a bad thing because nobody on earth cares about IDE scalability,
-> > > 
-> > > JFYI: just yesterday I got mail proving otherwise. ;)
+
+
+On Sat, 11 Oct 2008, Linus Torvalds wrote:
+> 
+> On Fri, 10 Oct 2008, David Miller wrote:
 > > 
-> > Well, there are lots of crazy people in the world, a request from
-> > someone doesn't necessarily make it a good idea :-)
-> > 
-> > > > from a performance POV a modern SATA controller is just better on
-> > > > several levels. I don't think anybody cares about IDE scaling on 8-16
-> > > > cores or more, simply because NOBODY is using IDE on such systems.
-> > > > 
-> > > > As such, trying to improve locking is a pointless exercise. And that is
-> > > > a bad thing, because code change invariably brings in code bugs. Then
-> > > > see previous mail on lack of coverage testing, and it can naturally be
-> > > > harmful.
-> > > 
-> > > Your concerns were already addressed in my reply but I worry that having
-> > > a discussion based on technical arguments is not your goal.
-> > 
-> > You make it sound like I have an alterior motive, which I definitely do
-> > not. I just wondered what all the IDE churn was supposed to be good
-> > for...
-> > 
-> > > Just to repeat: these patches are not hardware specific and obviously
-> > > they are not going to be merged today, tomorrow or in a week (they are
-> > > 2.6.29 material after months of time in pata tree / linux-next).
-> > 
-> > It's less about this specific patchset than in general. The specific one
-> > looked fine by itself, it's just the path to to 'IDE lock scaling' that
-> > is a bit crazy to me. Moving IDE to the softirq completion like SCSI
-> > would be a better start, imho. IDE still does most of the processing
+> > Here are the queued up networking changes for the 2.6.28 merge window.
 > 
-> We are getting there but this can't be done without fixing some other
-> stuff (like the patch posted today to not process the next request from
-> hard-IRQ context).  Any help would be much appreciated.
-> 
-> > under its ide_lock, which isn't even necessary. Making the locking more
-> 
-> Well, actually it doesn't do most work under ide_lock (never has been)
-> as the main means of protection is hwgroup->busy (which is protected by
-> ide_lock).
+> This generates _tons_ of new warnings for me:
 
-Yes it does, it does all of IO processing under the ide_lock, where you
-only really need the lock for actually putting the last reference to the
-request.
+And apparently errors for others:
 
-> [ OTOH some changes in this patchset were inspired by _your_ comments about
->   "room for locking improvements" in ide-io.c (IIRC) so kudos to you! ]
+ net/netfilter/ipvs/ip_vs_xmit.c: In function 'ip_vs_tunnel_xmit':
+ net/netfilter/ipvs/ip_vs_xmit.c:616: error: implicit declaration of function 'ip_select_ident'
 
-And that is indeed what that comment was about :-)
-There's certainly a way to make that behave a lot more nicely without
-splitting the lock. It's more about latency than lock contention.
+some other config-dependent breakage.
 
-> > finely grained is what I think is pretty crazy.
-> 
-> The more fine grained locking changes that were posted in separate patch
-> were first done 3 years ago by Scalex86 guys and they were extensively
-> tested on Intel hardware (however since other host drivers and things
-> like IDE settings were abusing ide_lock applying this change back than
-> was impossible - all of these stuff is fixed in the current Linus' tree).
-> 
-> Sorry for not explaining this clearly in the changelog.
-
-Yeah I did get that reference, I am still questioning the point of
-actually doing that.
-
-> > > > > > > rather like putting makeup on a corpse to me..
-> > > > > 
-> > > > > so _NOT_ true.
-> > > > 
-> > > > Depends on what you think is the corpse. Since IDE is essentially dead
-> > > > and frozen, it IS a corpse and the phrase is then very appropriate. This
-> > > > is not a personal jab at the IDE guys and does not reflect on the
-> > > > (mostly) good work they do, just a reflection on the state of IDE in
-> > > > general.
-> > > 
-> > > Interesting statement given that i.e. diffstat-wise pata tree has more
-> > > than twice as much stuff queued up for 2.6.28 than "some other" trees
-> > > (and we have history of being a _very_ conservative w.r.t. to needlessly
-> > > moving code around in drivers/ide/).
-> > > 
-> > > Please stop being silly and pushing your view/idea on what other people
-> > > should be doing (not to mention ignoring real facts).
-> > 
-> > Please start by actually _reading_ what I write. Your reply is based on
-> > the code base, my statement pertains to IDE on the hardware side
-> > (devices, controllers, etc). On the scalability front, what new hardware
-> > do you envision shipping with IDE controllers that are actually used for
-> > pushing large amounts of data? People would have to be borderline insane
-> > to make such new hw today.
-> 
-> Please understand that we are not doing new-hardware-driven-development
-> here but rather a big maintainance project.  Like I said in reply to Robert
-> the scalability improvements are an added bonus from my POV -> the main
-> goal is making the code simpler, harder to abuse and easier to maintain.
-
-I do understand that, as I've said all along I'm more concerned with
-coverage of testing since a lot of the supported hardware (not just low
-level drivers, things like ide-tape) just isn't used a whole lot these
-days. Or the last 5 years, even.
-
-> > I'm not pushing my views on anyone, but I am free to share what I
-> > actually think. I actually care about old code stability, hence my
-> > concern with the amount of IDE changes.
-> 
-> The actual users' feedback about amount of IDE changes have been mostly
-> positive (some ask for even more changes :) so I don't think that it
-> should be a reason of a great worries.  I hope that all other concerns
-> have been also cleared now.
-
-Heck that's good, I do hope that I'm mostly over-concerned! I'm not
-trying to create a problem where there isn't one, mainly looking for
-clarity into the situation.
-
-I noticed one ide-tape tested complaining something broke, and it seems
-like he was the only one out there actually using current kernels and
-testing it. I worry mostly about the changes breaking somebodys distro 3
-years down the line, by which point people may have moved on (and the
-old code would have worked).
-
--- 
-Jens Axboe
-
+			Linus
