@@ -1,139 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYJKCOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbYJKCed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbYJKCOT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 22:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYJKCOI
+	id S1758034AbYJKCed (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 22:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbYJKCeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 22:14:08 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:35783 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753248AbYJKCOH (ORCPT
+	Fri, 10 Oct 2008 22:34:24 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:5247 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753549AbYJKCeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 22:14:07 -0400
-Date: Sat, 11 Oct 2008 10:13:57 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Update for 2.6.28
-Message-ID: <20081011021357.GB3685@gondor.apana.org.au>
-References: <20080421024306.GA6813@gondor.apana.org.au> <20080714121403.GA28523@gondor.apana.org.au> <20081010070918.GA28057@gondor.apana.org.au> <alpine.LFD.2.00.0810101118050.3503@nehalem.linux-foundation.org>
+	Fri, 10 Oct 2008 22:34:23 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=SmKHnM6mZOTrap3UHxYA:9 a=W0Ij-1B8dzOlidYk8aTd-MY6QXQA:4
+Message-ID: <48F010AB.7010009@shaw.ca>
+Date: Fri, 10 Oct 2008 20:34:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810101118050.3503@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] ide: locking improvements
+References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <fa.5sGSpBgVBoMAsIwwLABWnjDzM38@ifi.uio.no> <fa.8TkQ+xA96EhlNKL9gIbVTxVrcUE@ifi.uio.no>
+In-Reply-To: <fa.8TkQ+xA96EhlNKL9gIbVTxVrcUE@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 11:22:44AM -0700, Linus Torvalds wrote:
+Bartlomiej Zolnierkiewicz wrote:
+>> Sorry, but I just have to ask 'why'? IDE is seeing a whole lot of churn
+>> for something that should essentially be a stable code base in
+>> maintenance mode, and now scalability improvements?
 > 
-> 
-> On Fri, 10 Oct 2008, Herbert Xu wrote:
-> > 
-> > Here is the crypto update for 2.6.28:
-> 
-> Umm. "Here" was empty.
+> It is the stable code but being in "maintenance only mode" has never
+> been true and as long as there are active users & developers there is
+> really no reason to change it.
 
-Sorry, I somehow deleted that bit while adding the changelog :)
+Are there really many active users at this point? I'm not aware of any 
+new distributions that are using it. The only people I can see that 
+might still want to be using it would be people with old setups or old 
+embedded devices.. many of those wouldn't be using newer kernels anyway.
 
-> Also, please us
-> 
-> 	git diff -M --stat --summary
-> 
-> for the diffstat. That way I would have seen the
-
-Thanks, I'll run that from now on.
-
-Here it is again:
-
-The highlight of this batch is the new run-time self-test framework
-for algorithms.  This reorganises the same tests that we've always
-had such that they're run at algorithm registration time so that
-only algorithms passing the tests of their type are made available
-to users.  Hopefully that means people won't be sending me any
-more algorithm updates that fail these tests :)
-
-Apart from that a new algorithm type for random number generators.
-The only two algorithms in that type are the existing kernel RNG
-plus a PRNG based on AES.  This is used by IPsec for IV generation.
-
-We also have a new implementation of CRC32c that uses the Intel
-instruction for CRC32c.
-
-Please pull from
-
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Adrian Bunk (1):
-      crypto: Kconfig - Replace leading spaces with tabs
-
-Austin Zhang (1):
-      crypto: crc32c - Use Intel CRC32 instruction
-
-Herbert Xu (10):
-      crypto: api - Export crypto_alg_lookup instead of __crypto_alg_lookup
-      crypto: api - Display larval objects properly
-      crypto: tcrypt - Avoid using contiguous pages
-      crypto: tcrypt - Abort and only log if there is an error
-      crypto: tcrypt - Add alg_test interface
-      crypto: cryptomgr - Add test infrastructure
-      crypto: api - Use test infrastructure
-      crypto: cryptomgr - Test ciphers using ECB
-      crypto: skcipher - Move IV generators into their own modules
-      crypto: skcipher - Use RNG interface instead of get_random_bytes
-
-Neil Horman (2):
-      crypto: api - Add fips_enable flag
-      crypto: rng - RNG interface and implementation
-
- arch/x86/crypto/Makefile           |    2 +
- arch/x86/crypto/crc32c-intel.c     |  197 +
- crypto/Kconfig                     |  127 +-
- crypto/Makefile                    |   12 +-
- crypto/algapi.c                    |  147 +-
- crypto/{cryptomgr.c => algboss.c}  |   92 +-
- crypto/ansi_cprng.c                |  417 ++
- crypto/api.c                       |   81 +-
- crypto/blkcipher.c                 |   29 -
- crypto/chainiv.c                   |   44 +-
- crypto/eseqiv.c                    |   35 +-
- crypto/fips.c                      |   27 +
- crypto/internal.h                  |   18 +-
- crypto/krng.c                      |   66 +
- crypto/proc.c                      |   57 +-
- crypto/rng.c                       |  126 +
- crypto/seqiv.c                     |   27 +-
- crypto/tcrypt.c                    | 1347 +-----
- crypto/tcrypt.h                    | 8709 +-----------------------------------
- crypto/testmgr.c                   | 1868 ++++++++
- crypto/{tcrypt.h => testmgr.h}     |   85 +-
- include/crypto/internal/rng.h      |   26 +
- include/crypto/internal/skcipher.h |    6 -
- include/crypto/rng.h               |   75 +
- include/linux/crypto.h             |   35 +
- 25 files changed, 3531 insertions(+), 10124 deletions(-)
- create mode 100644 arch/x86/crypto/crc32c-intel.c
- rename crypto/{cryptomgr.c => algboss.c} (69%)
- create mode 100644 crypto/ansi_cprng.c
- create mode 100644 crypto/fips.c
- create mode 100644 crypto/krng.c
- create mode 100644 crypto/rng.c
- create mode 100644 crypto/testmgr.c
- copy crypto/{tcrypt.h => testmgr.h} (99%)
- create mode 100644 include/crypto/internal/rng.h
- create mode 100644 include/crypto/rng.h
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+These kinds of changes only will really help scalability on multi-core 
+machines which are unlikely to be using this code anyway.. They seem 
+rather like putting makeup on a corpse to me..
