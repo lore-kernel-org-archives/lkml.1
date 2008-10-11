@@ -1,150 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbYJKURi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760671AbYJKUU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760530AbYJKURi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 16:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYJKURb
+	id S1760671AbYJKUU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 16:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYJKUUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 16:17:31 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:52186 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753924AbYJKURa (ORCPT
+	Sat, 11 Oct 2008 16:20:51 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:41767 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754142AbYJKUUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 16:17:30 -0400
+	Sat, 11 Oct 2008 16:20:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=dVQ1jSIT6AkDeIGt2bWRnQLSKSkP4WczfaN8Oa0S0GKF8L7huYkWHxj3CnGVNLPh6g
-         90khOHDmebg7HwfFumaQtX0PHrPA+H5vsh0yYhMdBg8v+wV7w0ysvktJ7cPfwXChKzvA
-         MOrPc4Pa7QLHr/TgOPUHZAOqY5ObHvAMxaQdw=
-Message-ID: <48F109D5.9030703@gmail.com>
-Date: Sat, 11 Oct 2008 22:17:25 +0200
+        b=L+LRLlGgKyiYlrkAvuhXEspIQCb0joWaqtXG9qOeiCTBAo+65ECqBBY7eJosyK2/pE
+         q5DjPpUP74lxoXAEN1/SBOiffQfbCEMcSwG68quMjnFwNpgTEFXyHZfXek/dJ0jZCD2c
+         i0JTbskBmiF7u4Ie5eUVuDXWTaXjfdtejTwwE=
+Message-ID: <48F10A9D.3030705@gmail.com>
+Date: Sat, 11 Oct 2008 22:20:45 +0200
 From: Frederic Weisbecker <fweisbec@gmail.com>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] tracing/fastboot: Make the boot tracer use the cpu_clock
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH 4/5] tracing/fastboot: Add a time field on the sched_switch
+ entry
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the boot tracer use the cpu_clock() rather than the ktime
-API. This way we will be able to unify the time capture with 
-the sched_switch tracer.
-Also delete the duration attribute which is not needed and can be
-retrieved at print time.
+Add a time field on the sched_switch entry to have a better
+view of the sched events during initcalls.
+Also make the boot tracer able to handle the sched_switches
+events.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace.h    |    5 ++---
- init/main.c               |   25 ++++++++++++++++++-------
- kernel/trace/trace_boot.c |   18 ++++++++++--------
- 3 files changed, 30 insertions(+), 18 deletions(-)
+ kernel/trace/trace.c      |    4 +-
+ kernel/trace/trace.h      |    2 +
+ kernel/trace/trace_boot.c |  101 +++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 85 insertions(+), 22 deletions(-)
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 135a33f..36b570b 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -222,9 +222,8 @@ struct boot_trace {
- 	pid_t			caller;
- 	char 			func[KSYM_NAME_LEN];
- 	int			result;
--	unsigned long long	duration;
--	ktime_t			calltime;
--	ktime_t			rettime;
-+	unsigned long long	calltime;
-+	unsigned long long	rettime;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index acc21bb..e7d659a 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -622,7 +622,7 @@ static void trace_save_cmdline(struct task_struct *tsk)
+ 	spin_unlock(&trace_cmdline_lock);
+ }
+ 
+-static char *trace_find_cmdline(int pid)
++char *trace_find_cmdline(int pid)
+ {
+ 	char *cmdline = "<...>";
+ 	unsigned map;
+@@ -799,6 +799,7 @@ tracing_sched_switch_trace(struct trace_array *tr,
+ 	entry->next_prio		= next->prio;
+ 	entry->next_state		= next->state;
+ 	entry->next_cpu	= task_cpu(next);
++	entry->time			= cpu_clock(raw_smp_processor_id());
+ 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+ 	ftrace_trace_stack(tr, data, flags, 5, pc);
+ }
+@@ -828,6 +829,7 @@ tracing_sched_wakeup_trace(struct trace_array *tr,
+ 	entry->next_prio		= wakee->prio;
+ 	entry->next_state		= wakee->state;
+ 	entry->next_cpu			= task_cpu(wakee);
++	entry->time			= cpu_clock(raw_smp_processor_id());
+ 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+ 	ftrace_trace_stack(tr, data, flags, 6, pc);
+ 
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index d45a3cd..707620c 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -63,6 +63,7 @@ struct ctx_switch_entry {
+ 	unsigned char		next_prio;
+ 	unsigned char		next_state;
+ 	unsigned int		next_cpu;
++	unsigned long long	time;
  };
  
- #ifdef CONFIG_BOOT_TRACER
-diff --git a/init/main.c b/init/main.c
-index 98c05aa..bf13013 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -721,27 +721,38 @@ __setup("initcall_debug", initcall_debug_setup);
- int do_one_initcall(initcall_t fn)
- {
- 	int count = preempt_count();
--	ktime_t delta;
-+	ktime_t delta, t0, t1;
- 	char msgbuf[64];
-+	unsigned long long duration;
- 	struct boot_trace it;
+ /*
+@@ -392,6 +393,7 @@ extern ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
+ 				 size_t cnt);
+ extern long ns2usecs(cycle_t nsec);
+ extern int trace_vprintk(unsigned long ip, const char *fmt, va_list args);
++extern char *trace_find_cmdline(int pid);
  
- 	if (initcall_debug) {
-+		long cpu;
- 		it.caller = task_pid_nr(current);
- 		printk("calling  %pF @ %i\n", fn, it.caller);
--		it.calltime = ktime_get();
-+		t0 = ktime_get();
-+		preempt_disable();
-+		cpu = raw_smp_processor_id();
-+		it.calltime = cpu_clock(cpu);
-+		preempt_enable();
- 		enable_boot_trace();
- 	}
+ extern unsigned long trace_flags;
  
- 	it.result = fn();
- 
- 	if (initcall_debug) {
--		it.rettime = ktime_get();
--		delta = ktime_sub(it.rettime, it.calltime);
--		it.duration = (unsigned long long) delta.tv64 >> 20;
-+		long cpu;
-+		disable_boot_trace();
-+		t1 = ktime_get();
-+		preempt_disable();
-+		cpu = raw_smp_processor_id();
-+		it.rettime = cpu_clock(cpu);
-+		preempt_enable();
-+		delta = ktime_sub(t1, t0);
-+		duration = (unsigned long long) delta.tv64 >> 20;
- 		printk("initcall %pF returned %d after %Ld msecs\n", fn,
--			it.result, it.duration);
-+			it.result, duration);
- 		trace_boot(&it, fn);
--		disable_boot_trace();
- 	}
- 
- 	msgbuf[0] = 0;
 diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
-index bd5046c..20d326b 100644
+index 20d326b..316085e 100644
 --- a/kernel/trace/trace_boot.c
 +++ b/kernel/trace/trace_boot.c
-@@ -68,22 +68,24 @@ static enum print_line_t initcall_print_line(struct trace_iterator *iter)
- 	struct trace_boot *field = (struct trace_boot *)entry;
- 	struct boot_trace *it = &field->initcall;
- 	struct trace_seq *s = &iter->seq;
--	struct timespec calltime = ktime_to_timespec(it->calltime);
--	struct timespec rettime = ktime_to_timespec(it->rettime);
+@@ -3,6 +3,8 @@
+  *
+  * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
+  *
++ * Some parts of code (IE: sched_switch_print_line function)
++ * have been borrowed from trace.c
+  */
+ 
+ #include <linux/init.h>
+@@ -14,6 +16,7 @@
+ 
+ static struct trace_array *boot_trace;
+ static bool pre_initcalls_finished;
++static const char state_to_char[] = TASK_STATE_TO_CHAR_STR;
+ 
+ /* Tells the boot tracer that the pre_smp_initcalls are finished.
+  * So we are ready .
+@@ -71,26 +74,82 @@ static enum print_line_t initcall_print_line(struct trace_iterator *iter)
+ 	unsigned long sec, nsec_rem;
+ 	unsigned long long duration = it->rettime - it->calltime;
+ 
+-	if (entry->type == TRACE_BOOT) {
+-		nsec_rem = do_div(it->calltime, 1000000000);
+-		sec = (unsigned long) it->calltime;
+-		ret = trace_seq_printf(s, "[%5lu.%09lu] calling  %s @ %i\n",
+-					  sec, nsec_rem, it->func, it->caller);
+-		if (!ret)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-
+-		nsec_rem = do_div(it->rettime, 1000000000);
+-		sec = (unsigned long) it->rettime;
+-		do_div(duration, 1000);
+-		ret = trace_seq_printf(s, "[%5lu.%09lu] initcall %s "
+-					  "returned %d after %lld msecs\n",
+-					  sec, nsec_rem, it->func, it->result,
+-					  duration);
+-
+-		if (!ret)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-		return TRACE_TYPE_HANDLED;
+-	}
++	nsec_rem = do_div(it->calltime, 1000000000);
++	sec = (unsigned long) it->calltime;
++	ret = trace_seq_printf(s, "[%5lu.%09lu] calling  %s @ %i\n",
++				  sec, nsec_rem, it->func, it->caller);
++	if (!ret)
++		return TRACE_TYPE_PARTIAL_LINE;
++
++	nsec_rem = do_div(it->rettime, 1000000000);
++	sec = (unsigned long) it->rettime;
++	do_div(duration, 1000);
++	ret = trace_seq_printf(s, "[%5lu.%09lu] initcall %s "
++				  "returned %d after %llu msecs\n",
++				  sec, nsec_rem, it->func, it->result,
++				  duration);
++
++	if (!ret)
++		return TRACE_TYPE_PARTIAL_LINE;
++
++	return TRACE_TYPE_HANDLED;
++}
++
++static enum print_line_t sched_switch_print_line(struct trace_iterator *iter)
++{
++	int ret;
++	struct trace_entry *entry = iter->ent;
++	struct ctx_switch_entry *field;
++	struct trace_seq *s = &iter->seq;
++	int S, T;
++	char *comm;
 +	unsigned long sec, nsec_rem;
-+	unsigned long long duration = it->rettime - it->calltime;
++
++	trace_assign_type(field, entry);
++	nsec_rem = do_div(field->time, 1000000000);
++	sec = (unsigned long) field->time;
++
++	comm = trace_find_cmdline(iter->ent->pid);
++
++	ret = trace_seq_printf(s, "[%5lu.%09lu] ",
++				  sec, nsec_rem);
++
++	ret = trace_seq_printf(s, "%16s-%-5d ", comm, entry->pid);
++	if (!ret)
++		return TRACE_TYPE_PARTIAL_LINE;
++	ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
++	if (!ret)
++		return TRACE_TYPE_PARTIAL_LINE;
++
++	if (!ret)
++		return TRACE_TYPE_PARTIAL_LINE;
++
++	S = field->prev_state < sizeof(state_to_char) ?
++		state_to_char[field->prev_state] : 'X';
++	T = field->next_state < sizeof(state_to_char) ?
++		state_to_char[field->next_state] : 'X';
++	ret = trace_seq_printf(s, " %5d:%3d:%c %s [%03d] %5d:%3d:%c\n",
++			       field->prev_pid,
++			       field->prev_prio,
++			       S,
++			       entry->type == TRACE_CTX ? "==>" : "  +",
++			       field->next_cpu,
++			       field->next_pid,
++			       field->next_prio,
++			       T);
++	if (!ret)
++		return TRACE_TYPE_PARTIAL_LINE;
++	return TRACE_TYPE_HANDLED;
++}
++
++static enum print_line_t boot_trace_print_line(struct trace_iterator *iter)
++{
++	struct trace_entry *entry = iter->ent;
++
++	if (entry->type == TRACE_BOOT)
++		return initcall_print_line(iter);
++	if (entry->type == TRACE_CTX || entry->type == TRACE_WAKE)
++		return sched_switch_print_line(iter);
+ 	return TRACE_TYPE_UNHANDLED;
+ }
  
- 	if (entry->type == TRACE_BOOT) {
-+		nsec_rem = do_div(it->calltime, 1000000000);
-+		sec = (unsigned long) it->calltime;
- 		ret = trace_seq_printf(s, "[%5ld.%09ld] calling  %s @ %i\n",
--					  calltime.tv_sec,
--					  calltime.tv_nsec,
--					  it->func, it->caller);
-+					  sec, nsec_rem, it->func, it->caller);
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
+@@ -100,7 +159,7 @@ struct tracer boot_tracer __read_mostly =
+ 	.init		= boot_trace_init,
+ 	.reset		= reset_boot_trace,
+ 	.ctrl_update	= boot_trace_ctrl_update,
+-	.print_line	= initcall_print_line,
++	.print_line	= boot_trace_print_line,
+ };
  
-+		nsec_rem = do_div(it->rettime, 1000000000);
-+		sec = (unsigned long) it->rettime;
-+		do_div(duration, 1000);
- 		ret = trace_seq_printf(s, "[%5ld.%09ld] initcall %s "
- 					  "returned %d after %lld msecs\n",
--					  rettime.tv_sec,
--					  rettime.tv_nsec,
--					  it->func, it->result, it->duration);
-+					  sec, nsec_rem, it->func, it->result,
-+					  duration);
- 
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
+ void trace_boot(struct boot_trace *it, initcall_t fn)
