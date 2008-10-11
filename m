@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761649AbYJKHlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbYJKHmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761649AbYJKHlp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbYJKHhl
+	id S1759000AbYJKHmH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYJKHhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:37:41 -0400
+	Sat, 11 Oct 2008 03:37:42 -0400
 Received: from vms172073pub.verizon.net ([206.46.172.73]:32846 "EHLO
 	vms172073pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755835AbYJKHhh (ORCPT
+	with ESMTP id S1758466AbYJKHhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Oct 2008 03:37:37 -0400
-Date: Sat, 11 Oct 2008 02:36:26 -0400
+Date: Sat, 11 Oct 2008 02:36:30 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 66/85] PNP: add CONFIG_PNP_DEBUG_MESSAGES and pnp_dbg()
+Subject: [PATCH 70/85] ACPI: remove unused have_arch_parse_srat
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Andi Kleen <ak@linux.intel.com>,
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Len Brown <len.brown@intel.com>
-Message-id: <97ef062bbe08f46903f29ecdf432be302c977f3b.1223706853.git.len.brown@intel.com>
+Message-id: <fa89b6089b5f4c7a5244b642caaca3e72b06ebe4.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,101 +28,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+From: Yinghai Lu <yhlu.kernel@gmail.com>
 
-This adds the core function pnp_dbg() and a new config option to
-enable it.
+This was a workaround for 32bit numa SRAT processing, and we removed those
+workarounds, making 32 bit more like 64 bit.  HAVE_ARCH_PARSE_SRAT is no
+longer defined anywhere.
 
-The PNP core debugging messages can be enabled at boot-time with the
-"pnp.debug" kernel parameter.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/kernel-parameters.txt |    4 ++++
- drivers/pnp/Kconfig                 |   14 ++++++++++++++
- drivers/pnp/base.h                  |   10 ++++++++++
- drivers/pnp/core.c                  |   11 +++++++++++
- 4 files changed, 39 insertions(+), 0 deletions(-)
+ include/linux/acpi.h |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 1150444..7164d4e 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1660,6 +1660,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Override pmtimer IOPort with a hex value.
- 			e.g. pmtmr=0x508
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 702f79d..fd6a452 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -94,18 +94,10 @@ int acpi_parse_mcfg (struct acpi_table_header *header);
+ void acpi_table_print_madt_entry (struct acpi_subtable_header *madt);
  
-+	pnp.debug	[PNP]
-+			Enable PNP debug messages.  This depends on the
-+			CONFIG_PNP_DEBUG_MESSAGES option.
-+
- 	pnpacpi=	[ACPI]
- 			{ off }
+ /* the following four functions are architecture-dependent */
+-#ifdef CONFIG_HAVE_ARCH_PARSE_SRAT
+-#define NR_NODE_MEMBLKS MAX_NUMNODES
+-#define acpi_numa_slit_init(slit) do {} while (0)
+-#define acpi_numa_processor_affinity_init(pa) do {} while (0)
+-#define acpi_numa_memory_affinity_init(ma) do {} while (0)
+-#define acpi_numa_arch_fixup() do {} while (0)
+-#else
+ void acpi_numa_slit_init (struct acpi_table_slit *slit);
+ void acpi_numa_processor_affinity_init (struct acpi_srat_cpu_affinity *pa);
+ void acpi_numa_memory_affinity_init (struct acpi_srat_mem_affinity *ma);
+ void acpi_numa_arch_fixup(void);
+-#endif
  
-diff --git a/drivers/pnp/Kconfig b/drivers/pnp/Kconfig
-index 821933f..8a3237f 100644
---- a/drivers/pnp/Kconfig
-+++ b/drivers/pnp/Kconfig
-@@ -20,6 +20,20 @@ menuconfig PNP
- 
- 	  If unsure, say Y.
- 
-+config PNP_DEBUG_MESSAGES
-+	default y
-+	bool "PNP debugging messages"
-+	depends on PNP
-+	help
-+	  Say Y here if you want the PNP layer to be able to produce debugging
-+	  messages if needed.  The messages can be enabled at boot-time with
-+	  the pnp.debug kernel parameter.
-+
-+	  This option allows you to save a bit of space if you do not want
-+	  the messages to even be built into the kernel.
-+
-+	  If you have any doubts about this, say Y here.
-+
- if PNP
- 
- config PNP_DEBUG
-diff --git a/drivers/pnp/base.h b/drivers/pnp/base.h
-index 9fd7bb9..5e4e82c 100644
---- a/drivers/pnp/base.h
-+++ b/drivers/pnp/base.h
-@@ -166,3 +166,13 @@ struct pnp_resource *pnp_add_io_resource(struct pnp_dev *dev,
- struct pnp_resource *pnp_add_mem_resource(struct pnp_dev *dev,
- 					  resource_size_t start,
- 					  resource_size_t end, int flags);
-+
-+extern int pnp_debug;
-+
-+#if defined(CONFIG_PNP_DEBUG_MESSAGES)
-+#define pnp_dbg(dev, format, arg...)					\
-+	({ if (pnp_debug) dev_printk(KERN_DEBUG, dev, format, ## arg); 0; })
-+#else
-+#define pnp_dbg(dev, format, arg...)					\
-+	({ if (0) dev_printk(KERN_DEBUG, dev, format, ## arg); 0; })
-+#endif
-diff --git a/drivers/pnp/core.c b/drivers/pnp/core.c
-index 7cb1ffc..61291b5 100644
---- a/drivers/pnp/core.c
-+++ b/drivers/pnp/core.c
-@@ -221,3 +221,14 @@ static int __init pnp_init(void)
- }
- 
- subsys_initcall(pnp_init);
-+
-+int pnp_debug;
-+
-+#if defined(CONFIG_PNP_DEBUG_MESSAGES)
-+static int __init pnp_debug_setup(char *__unused)
-+{
-+	pnp_debug = 1;
-+	return 1;
-+}
-+__setup("pnp.debug", pnp_debug_setup);
-+#endif
+ #ifdef CONFIG_ACPI_HOTPLUG_CPU
+ /* Arch dependent functions for cpu hotplug support */
 -- 
 1.5.5.1
 
