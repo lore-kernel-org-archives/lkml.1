@@ -1,89 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYJKH2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbYJKHac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbYJKH2m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYJKH2e
+	id S1756676AbYJKHac (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYJKHaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:28:34 -0400
-Received: from crmm.lgl.lu ([158.64.72.228]:33162 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbYJKH2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:28:33 -0400
-Message-ID: <48F0559C.1040705@knaff.lu>
-Date: Sat, 11 Oct 2008 09:28:28 +0200
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sat, 11 Oct 2008 03:30:25 -0400
+Received: from el-out-1112.google.com ([209.85.162.179]:40344 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbYJKHaY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 03:30:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=gUhZHk1mCZ9hG1H97/nph9n4ciaY2MCsmtF80sJq1MzzEKTkckZV+eCU8UKDhyamKZ
+         nyQXS/uddZ/DyQgezujdX5R3JE3FguORpbcos/zadDxVw9g9i+R55o5H5FaMfxXQRcgC
+         j1xzEHF2mONA7GW5GJpGthQ3phSS6HNeGZcjk=
+Message-ID: <264b990a0810110030r307829afmc8c2e1dfe6713faa@mail.gmail.com>
+Date: Sat, 11 Oct 2008 14:30:21 +0700
+From: "Yudha Harimantoro T" <yudha.ht@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 
+Cc: davidsen@tmr.com
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
- initrds
-References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu> <48EE4302.2010404@zytor.com> <48EEC7D1.80404@knaff.lu> <48EFC9A0.5070907@zytor.com>
-In-Reply-To: <48EFC9A0.5070907@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Alain Knaff wrote:
->> H. Peter Anvin wrote:
->>> Hi Alain,
->>>
->>> Are you planning to submit an updated patch any time soon?  If so,
->>> please separate the ARM, x86, library and generic portions into separate
->>> patches.  It looks like at least some of them already went into ARM,
->>> which makes it impractical to include this as a monolithic patch, which
->>> it really shouldn't have to be, anyway.
->>>
->>>     -hpa
+Date:	Fri, 10 Oct 2008 16:41:36 -0400
+From:	Bill Davidsen
+
+
+>Yudha Harimantoro T wrote:
+>> Hi all,
+>> Yesterday I build kernel 2.6.26.6 and it's run well. Today I got
+>> 2.6.27 patch and try to build it.
 >>
->> I'll look into it (the split) this weekend, if I'll find the time.
->> Should each part be compilable on its own? If so, it might be difficult
->> to do the split along the lines outlined above.
+>> I build with `make oldconfig` and answer any question with default answer, I just press [enter].
+>> I build with `make`. No error and all compiled.
+>> Then I install with `make modules_install` and `make install`.
 >>
-> 
-> Not individually, but part 1 should compile, as should parts 1+2, etc.
-> 
-> This pretty much means the order should be:
-> 
-> 1. add library functions
-> 2. generic functionality
-> 3. x86 functionality
-> 4. ARM functionality
 
-Unfortunately, due to the nature of the patch, it will be hard to
-separate out "x86 functionality" from changes in lib/inflate.c . Indeed,
-a large part of the patch consists in moving some gzip-specific headers
-and internal variable declarations from the callers:
-arch/x86/boot/compressed/misc.c on one hand, and init/do_mounts_rd.c and
-init/initramfs.c on the other hand into lib/inflate.c
+> I realize that this is a low-probability thought, but did you:
+> - apply the patch against 2.6.26 NOT 2.6.26.6
+Yup, I've did it.
+> - run make clean before applying the patch
+I still need this for a pure 2.6.26? I'll try this.
 
-So, leaving out the x86-specific change
-(arch/x86/boot/compressed/misc.c) in the first change, would force to
-leave that change out of lib/inflate.c as well (or else, the
-above-listed items would be doubly defined). But, if I left out these
-changes of lib/inflate.c, I'd need to leave them out of and
-init/do_mounts_rd.c and init/initramfs.c too (or else the above-listed
-items would not be defined at all in that situation). Can you suggest a
-solution? I could theoretically break that dependency chain using an
-#ifdef (as was the case until patch 3), but apparently #ifdef's are
-highly frowned upon. Or was it just the name of the ifdef ("NEW_CODE")
-that you objected to? Another option would be to (temporarily) keep 2
-copies of lib/inflate.c around, but somehow that doesn't feel right.
+>> After reboot the system I got 'kernel panic'.
+>> This is the error picture :
+>> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101358.jpg
+>> Is it a bugs?
+>>
+>> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101353.jpg [2.6.26.6 run well]
 
-So can you suggest some way out of the situation?
+> I keep configs in a separate place. I would first copy a 2.6.26 tree to a new directory (cp -rl linux-2.6.26 linux2.6.27) then be sure I had a clean copy with "make distclean" (or "make mrproper") and then apply the 2.6.27 patch. Then I would copy the 2.6.26 (or maybe 2.6.26.6) config to .config, and make the oldconfig.
+> None of that is magic, it just keeps me from making common mistakes, lets me start with a clean 2.6.27, etc, etc.
+> You mentioned oldconfig, but not starting back with a clean 2.6.26, which made me think of this.
+Hm, I `cp /boot/config .config` in new kernel tree [2.6.27] for the
+config. Do I make mistakes?
 
-> 
-> Soem of these may be obsolete; I noticed collisions with the ARM tree.
-> 
->     -hpa
+> --
+> Bill Davidsen <davidsen@tmr.com>
 
-Great! Could you tell me where to download the ARM tree from, so that I
-can have a look?
 
-Thanks,
-
-Alain
-
+Yudha_HT
