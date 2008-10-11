@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbYJKVx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbYJKWE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbYJKVx7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 17:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbYJKVxw
+	id S1760862AbYJKWE4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 18:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbYJKWEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 17:53:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:47957 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754620AbYJKVxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 17:53:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=VKcpwq57yid3ykF0fnzyQjwy+qUo/b6BT+eQ+sKG8STWhFPt82WnOa8NDGCEwrID68
-         RbcE0/j9/4evgnv12n6AGPc+KFIPZg3Wyz5aSpr4QbCz+hVVYcGZgvPdl4ZGYYtPw5AD
-         T5UoCXMSzTC1oaCQUP8gtmEslEqdpoLH/Pv60=
-Message-ID: <86802c440810111453r7af9637br277710a5e5def8d2@mail.gmail.com>
-Date: Sat, 11 Oct 2008 14:53:48 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Alexander Beregalov" <a.beregalov@gmail.com>
-Subject: Re: [PATCH] kernel/resource: fix printk format warning
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <20081011205822.GA25563@orion>
+	Sat, 11 Oct 2008 18:04:48 -0400
+Received: from gw.goop.org ([64.81.55.164]:40712 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755338AbYJKWEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 18:04:47 -0400
+Message-ID: <48F122FC.6040107@goop.org>
+Date: Sat, 11 Oct 2008 15:04:44 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Theodore Ts'o" <tytso@mit.edu>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 42/42] ext4: Rename ext4dev to ext4
+References: <1223525160-9887-1-git-send-email-tytso@mit.edu> <1223525160-9887-26-git-send-email-tytso@mit.edu> <1223525160-9887-27-git-send-email-tytso@mit.edu> <1223525160-9887-28-git-send-email-tytso@mit.edu> <1223525160-9887-29-git-send-email-tytso@mit.edu> <1223525160-9887-30-git-send-email-tytso@mit.edu> <1223525160-9887-31-git-send-email-tytso@mit.edu> <1223525160-9887-32-git-send-email-tytso@mit.edu> <1223525160-9887-33-git-send-email-tytso@mit.edu> <1223525160-9887-34-git-send-email-tytso@mit.edu> <1223525160-9887-35-git-send-email-tytso@mit.edu> <1223525160-9887-36-git-send-email-tytso@mit.edu> <1223525160-9887-37-git-send-email-tytso@mit.edu> <1223525160-9887-38-git-send-email-tytso@mit.edu> <1223525160-9887-39-git-send-email-tytso@mit.edu> <1223525160-9887-40-git-send-email-tytso@mit.edu> <1223525160-9887-41-git-send-email-tytso@mit.edu> <1223525160-9887-42-git-send-email-tytso@mit.edu> <1223525160-9887-43-git-send-email-tytso@mit.edu>
+In-Reply-To: <1223525160-9887-43-git-send-email-tytso@mit.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081011205822.GA25563@orion>
-X-Google-Sender-Auth: f1469784ce02f6f5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 11, 2008 at 1:58 PM, Alexander Beregalov
-<a.beregalov@gmail.com> wrote:
->
->
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
->
->  kernel/resource.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/kernel/resource.c b/kernel/resource.c
-> index 414d6fc..cfe0933 100644
-> --- a/kernel/resource.c
-> +++ b/kernel/resource.c
-> @@ -550,8 +550,8 @@ static void __init __reserve_region_with_split(struct resource *root,
->
->        if (!res) {
->                printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
-> -                        conflict->name, conflict->start, conflict->end,
-> -                        name, start, end);
-> +                        conflict->name, (unsigned long long)conflict->start, (unsigned long long)conflict->end,
-> +                        name, (unsigned long long)start, (unsigned long long)end);
->
->                /* failed, split and try again */
+Theodore Ts'o wrote:
+> The ext4 filesystem is getting stable enough that it's time to drop
+> the "dev" prefix.  Also remove the requirement for the TEST_FILESYS
+> flag.
+>   
 
-Ingo should already have one patch in tip to remove that print out.
+Shouldn't you still register "ext4dev" as a filesystem type, so that old 
+setups won't suddenly break?  I just had this happen to me; I had to 
+work out why /home didn't mount.
 
-YH
+> +obj-$(CONFIG_EXT4_FS)		+= ext4/ # Before ext2 so root fs can be ext4dev
+>   
+
+s/ext4dev/ext4/
+
+    J
