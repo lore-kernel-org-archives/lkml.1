@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbYJKRt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbYJKRw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932178AbYJKRt4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 13:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbYJKRtj
+	id S932389AbYJKRw3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 13:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761916AbYJKRwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 13:49:39 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56846 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932177AbYJKRti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 13:49:38 -0400
-Date: Sat, 11 Oct 2008 19:48:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, torvalds@osdl.org
-Subject: Re: libata: set queue SSD flag for SSD devices
-Message-ID: <20081011174859.GV19428@kernel.dk>
-References: <200810101904.m9AJ42Gq018897@hera.kernel.org> <20081010202515.446857cc@lxorguk.ukuu.org.uk> <20081010200528.GJ19428@kernel.dk> <20081010175508.3d1ed2a4@infradead.org> <1223710417.4159.11.camel@localhost.localdomain> <20081011140600.GR19428@kernel.dk> <1223739853.4159.17.camel@localhost.localdomain> <20081011090407.6de9b8b4@infradead.org> <1223743124.4159.27.camel@localhost.localdomain> <20081011094930.3cf55ea5@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081011094930.3cf55ea5@infradead.org>
+	Sat, 11 Oct 2008 13:52:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58780 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758211AbYJKRwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 13:52:15 -0400
+Date: Sat, 11 Oct 2008 18:51:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Chris Snook <csnook@redhat.com>, Stefan Monnier <monnier@iro.umontreal.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Filesystem for block devices using flash storage?
+Message-ID: <20081011185157.478ea357@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081011143552.GA1556@ucw.cz>
+References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org>
+	<48ED1D62.8080100@redhat.com>
+	<20081011143552.GA1556@ucw.cz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 11 2008, Arjan van de Ven wrote:
-> On Sat, 11 Oct 2008 18:38:44 +0200
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > On Sat, 2008-10-11 at 09:04 -0700, Arjan van de Ven wrote:
-> > > On Sat, 11 Oct 2008 17:44:13 +0200
-> > > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > > 
-> > > > 
-> > > > > So we need something a bit more involved, but not too complex. A
-> > > > > fine line...
-> > > > 
-> > > > It's a policy ... just let userspace do it so the user can tune
-> > > > it. That's what EMC does now (except I think they key of inquiry
-> > > > strings rather than cache size).
-> > > 
-> > > 
-> > > while the chosen elevator obviously is policy, the kernel really
-> > > should pick a sensible default based on what it knows.
-> > > Lets put it this way: if userland needs to do a tuning to the kernel
-> > > based on data only provided by the kernel, and will always do it the
-> > > same way, we should have made that choice the default policy in the
-> > > kernel in the first place.
-> > 
-> > Well, this is a bit of a nasty layering problem.  We certainly don't
-> > want the Block layer to know how to poke at SATA, SCSI and other
-> > esoteric media to see what elevator should be the default, so we'd
-> > have to craft a new block API that the lower subsystems would
-> > implement for this.  I'm really not sure it's worth the trouble when
-> > the boot system can do it simply from userspace, but I'll defer to
-> > Jens.
-> > 
-> 
-> these devices already give the elevator layer information about the
-> device, like optimal/max io size etc.
-> having the elevator take a "don't bother optimizing for seeks" flag
-> is very much along the same lines, it's a device property that the
-> elevator needs to learn about in order to send the right kinds of IO
-> down.
+> > Writes to magnetic disks are functionally atomic at the sector level.
 
-Completely agree. And this is very different from the 'choose elevator
-based on device properties', a way of thinking that I don't agree with.
-This 'non rotational' flag does just that, passes down more information
-to the IO scheduler so it can make more informed choices.
+No they are not.
 
--- 
-Jens Axboe
+> I don't think ext3 is safe w.r.t. whole eraseblocks disappearing. So
+> if you write data 'nearby' root directory and power fails, bye bye
+> filesystem, and journal will not help.
 
+You have similar problems on rotating media. A write to a block can
+corrupt other blocks adjacent to the block you write, and on the latest
+disks the physical block size can be greater than the logical one so
+unless you laid your partitions out right you have read-modify-write
+cycles goin on.
+
+Alan
