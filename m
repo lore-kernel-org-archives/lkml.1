@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbYJKSRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbYJKST0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762609AbYJKSRh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 14:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762353AbYJKSR2
+	id S1762662AbYJKST0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 14:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbYJKSTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 14:17:28 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:33063 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758851AbYJKSR1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 14:17:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=cn1rwXmiW6nlO1O+Aw/+7ePuZKmBzTQBVR5kqeyNcxpfD/Xwb7SH2GqO2/gGnFEhJg
-         TG3mOIA9ZOqPj167lRvjprCVHqBzOiL+NZdEdx483TBhqDTP6kXX2YZT8qYZ8rYBCtWT
-         yl3sE9SYTG7KNlnIKMK2rP6apvCitC2xX/GzA=
-Date: Sat, 11 Oct 2008 21:17:29 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
-Message-ID: <20081011181728.GA5309@localhost>
-References: <20080923212914.GB5237@localhost> <1223386477.28348.42.camel@penberg-laptop> <1223623191.8959.26.camel@penberg-laptop> <1223628687.8959.37.camel@penberg-laptop> <1223629803.8959.40.camel@penberg-laptop> <1223631723.8959.46.camel@penberg-laptop> <1223701131.7489.25.camel@charm-linux>
+	Sat, 11 Oct 2008 14:19:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46424 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758844AbYJKSTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 14:19:18 -0400
+Date: Sat, 11 Oct 2008 20:18:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #4, x2apic,
+	unify-cpu-detect
+Message-ID: <20081011181857.GA20554@elte.hu>
+References: <20081010000408.GA5970@elte.hu> <20081010175613.GA20112@elte.hu> <alpine.LFD.2.00.0810111108060.3402@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1223701131.7489.25.camel@charm-linux>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.2.00.0810111108060.3402@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 11:58:51PM -0500, Tom Zanussi wrote:
-> It worked for me, but I also had to apply the following patch to
-> kmemtraced:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
-> diff --git a/kmemtraced.c b/kmemtraced.c
-> index 217478d..324ced9 100644
-> --- a/kmemtraced.c
-> +++ b/kmemtraced.c
-> @@ -109,6 +109,8 @@ static void *reader_thread(void *data)
->  		if (retval < 0)
->  			panic("splice() (from) failed: %s\n",
->  			      strerror(errno));
-> +		if (!retval)
-> +			continue;
->  		retval = splice(pipe_fd[0], NULL, log_fd, NULL,
->  				128, SPLICE_F_MOVE);
->  		if (retval < 0)
 > 
-> Otherwise it would end up hanging kmemtraced in the second splice (pipe
-> to log_fd) if the return from the first splice was 0 (i.e. there's no
-> data available (and we can never know if there will ever be any
-> more)).
+> On Fri, 10 Oct 2008, Ingo Molnar wrote:
+> > 
+> > Please pull the latest x86-v28-for-linus-phase4-B git tree from:
+> > 
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase4-B
+> 
+> This is broken.
+> 
+> I get an absolute metric shitload of:
+> 
+> 	include/asm/dma-mapping.h:309:2: error: #endif without #if
+> 
+> errors, and I suspect it's because of some broken merge resolution 
+> that you didn't even test and then fixed in some later branch.
 
-Thanks, I'll apply it.
+possible - i tested the first series at all 10 merge points for 3 days.
 
-> I'm not sure why kmemtraced is only splicing 128 bytes at a time - it
-> seems to defeat the purpose - or why it wouldn't be using poll to know
-> when there's at least a whole sub-buffer to splice, but to each his own.
-> Hopefully the kernel patch at least fixes the loop. 
+and indeed the problem is not there in the old, x86-v28-for-linus-phase4 
+branch.
 
-Yeah, it was a misguided attempt to fix the strange behavior.
+> I double-checked: it's already broken in your tree, it's not from my 
+> merge (ie commit 0d4ab8b5aa74f6be4d022dcf5e27845b7c290294 is already 
+> showing that bug).
+> 
+> Not pulled.
 
-> Tom
+indeed:
 
+ #endif
+ #endif /* ASM_X86__DMA_MAPPING_H */
 
-	Cheers,
-	Eduard
+that goes away in x86-v28-for-linus-phase6-B.
 
+	Ingo
