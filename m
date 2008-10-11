@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbYJKMGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYJKMU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755286AbYJKMGi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 08:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYJKMGb
+	id S1754105AbYJKMU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 08:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJKMUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 08:06:31 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:26739 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752302AbYJKMGa (ORCPT
+	Sat, 11 Oct 2008 08:20:52 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3721 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752282AbYJKMUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 08:06:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gtNeMYFibl8hXB0AEru59rd3kFkWD8r/+WANmN1M1PwitMqjz78wTiCJ+Gz536hWocJ1LTI+MqXcmKvDb8CjGxTvEsx8pF8u2FWLmpKKQCTFmYmOrVjwTyEshv85RlRqisMQ35a+DOfK6xS3DSasJLw2ceVl1yno8f7VamJ6SOk=  ;
-X-YMail-OSG: a5aoHiQVM1kGoPMlXwzrFxPyobfB5Z1nSUTxtPUSbKs_X9s0HtmFt8bQSrP8BCwnL7ex6PzD.DBK7uy7PTERPWNefj2Gn8YmhCXZYA_HJpcP0e0zCc3VOTjE.VHU9uC_1XuE3JFOHimDBoTwWgU7Y2JTlXMkBQGKyNW8nx3V
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: RFC: one-bit mutexes (was: Re: [PATCH 2/3] Memory management livelock)
-Date: Sat, 11 Oct 2008 23:06:17 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       agk@redhat.com, mbroz@redhat.com, chris@arachsys.com
-References: <20080911101616.GA24064@agk.fab.redhat.com> <20081001225404.4e973465.akpm@linux-foundation.org> <Pine.LNX.4.64.0810051804040.23248@hs20-bc2-1.build.redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0810051804040.23248@hs20-bc2-1.build.redhat.com>
+	Sat, 11 Oct 2008 08:20:51 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Stephen Hemminger" <shemminger@vyatta.com>
+Cc: <linux-net@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: RE: recv() hangs until SIGCHLD ?
+Date: Sat, 11 Oct 2008 05:20:37 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEFHAFAD.davids@webmaster.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810112306.18118.nickpiggin@yahoo.com.au>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+In-Reply-To: <48F063C5.3000707@motion-twin.com>
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sat, 11 Oct 2008 05:22:37 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sat, 11 Oct 2008 05:22:37 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 October 2008 09:11, Mikulas Patocka wrote:
-> Hi
+
+Nicolas Cannasse wrote:
+
+> The sockets are non-blocking.
+
+Ouch, that's a serious bug. Non-blocking operations shouldn't block!
+
+> Checking with netstat and ss I can confirm that both Send and Recv
+> queues are empty, which makes the recv() behavior consistent.
 >
-> I removed the repeated code and create a new bit mutexes. They are
-> space-efficient mutexes that consume only one bit. See the next 3 patches.
+> However since this problem does not occur without threads, we can be
+> sure that the blame is still on the receiver.
+>
+> In a practical case, we have a thread blocked in recv() for more than 12
+> hours, which is way beyond the timeout of the sender connection. The
+> socket has already been closed by the sender so recv() should at least
+> be noticed and returns 0.
 
-Pretty reasonable to have.
+Can you clarify what you mean by "the socket has already been closed by the
+sender"? You mean the other end of the TCP connection shut it down? By "the
+socket", you don't mean the socket you called 'recv' on, right? You mean the
+socket on the other end that's connected to it?
 
+> Is it safe to assume that when either send() or recv() get interrupted
+> by a signal and returns EINTR, no actual data has been either sent or
+> consumed ? And if it's not, is there any other way around this ?
 
-> If you are concerned about the size of an inode, I can convert other
-> mutexes to bit mutexes: i_mutex and inotify_mutex.
+EINTR can only be return if 'send' or 'recv' have not sent or received
+anything. Otherwise the connection would be left in an indeterminate state.
 
-I wouldn't worry for now. mutexes can be unlocked much faster than bit
-mutexes, especially in the fastpath. And due to slab, it would be
-unlikely to actually save any space.
-
-
-> I could also create 
-> bit_spinlock (one-bit spinlock that uses test_and_set_bit) and save space
-> for address_space->tree_lock, address_space->i_mmap_lock,
-> address_space->private_lock, inode->i_lock.
-
-We have that already. It is much much faster to unlock spinlocks than
-bit spinlocks in general (if you own the word exclusively, then it's
-not, but then you would be less likely to save space), and we can also
-do proper FIFO ticket locks with a larger word.
+DS
 
 
-> Look at it and say what you think about the idea of condensing mutexes
-> into single bits.
-
-Looks pretty good to me.
