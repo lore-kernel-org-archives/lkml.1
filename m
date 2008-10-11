@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbYJKPfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbYJKPjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbYJKPfn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 11:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbYJKPfg
+	id S1758124AbYJKPjI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 11:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbYJKPi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 11:35:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:49803 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbYJKPff (ORCPT
+	Sat, 11 Oct 2008 11:38:56 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:49032 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753519AbYJKPiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 11:35:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=W5x9WuYEsw5N4T8LdWYVnihsMVzS6bRgZ3QZRfve26USnKMrHrZNOkIlZ67dwuWv9O
-         tWd+TivHUkR53ox0S/MCsXsZnz0sVS9NBu/LVs6Q6NaufhmLszVHSS6haXyr+tMr+7cl
-         X9pKPUbgw9yGYDzAWQ59WKdS/tXCnLh0GIIJE=
-Message-ID: <c6740f810810110835i170291c0p6fedc7d65351892e@mail.gmail.com>
-Date: Sat, 11 Oct 2008 17:35:33 +0200
-From: "Philip Stark" <heller.barde@gmail.com>
-To: "Grant Coady" <gcoady.lk@gmail.com>
-Subject: Re: 2.6.27 seems to break something with DSL
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <b6g1f4dkve11bscth3mon86fagchkqb76m@4ax.com>
+	Sat, 11 Oct 2008 11:38:55 -0400
+Date: Sat, 11 Oct 2008 16:38:53 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: Liam Girdwood <lrg@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 14/14] mfd: Add WM8350 subdevice registration helper
+Message-ID: <20081011153853.GB4633@opensource.wolfsonmicro.com>
+References: <1223650696-15552-6-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-7-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-8-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-9-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-10-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-11-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-12-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-13-git-send-email-broonie@opensource.wolfsonmicro.com> <1223650696-15552-14-git-send-email-broonie@opensource.wolfsonmicro.com> <20081011141820.GC2712@sortiz.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c6740f810810110553q75478033ub984651d5509199b@mail.gmail.com>
-	 <b6g1f4dkve11bscth3mon86fagchkqb76m@4ax.com>
+In-Reply-To: <20081011141820.GC2712@sortiz.org>
+X-Cookie: Give him an evasive answer.
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/11 Grant Coady <grant_lkml@dodo.com.au>:
-> On Sat, 11 Oct 2008 14:53:16 +0200, "Philip Stark" <heller.barde@gmail.com> wrote:
->>first off, my network infrastructure:
->>
->>"internet" --(magic*)-- DSL Modem --(DHCP)-- Router --(DHCP)-- Computer
->>* PPPsomething i guess...
->
-> Well I connect via rp-pppoe to a bridged ADSL modem.
+On Sat, Oct 11, 2008 at 04:18:20PM +0200, Samuel Ortiz wrote:
+> On Fri, Oct 10, 2008 at 03:58:16PM +0100, Mark Brown wrote:
 
-My modem deals with all the ppp stuff and just gives out plain
-LAN/ethernet/however it is called.
+> > Most of the subdevices for the WM8350 code are registered in the same
+> > fashion so factor out the code to do the initial registration.
 
-One recent gotcha
-> is that iptables userspace has to be updated to match the latest kernel,
-> how old is your distro?  What version iptables?  Last I checked 1.4.1.1
-> was latest available from netfilter.org.
+> Out of curiosity (and also because I would like to start working on improving
+> mfd-core), why didnt you consider using the mfd-core API ?
 
-iptables: 1.4.0
-distro: archlinux (rolling release) with testing repo enabled
+I did actually consider that - if it hadn't been so near the merge
+window it'd have got a bit more attention but I'd been going for a
+minimally invasive approach.
 
-by the way, i forgot to mention that internet works fine anywhere else
-and also i can connect to a http server _inside_ my network :)
+Originally the major issue was that the MFD API only worked for platform
+devices but that has now been resolved.  Now the main issue for the
+WM8350 is that the MFD core API uses platform_device_add_resources()
+unconditionally but that fails if the device has no resources as will be
+the case for anything on the WM8350, at least until I integrate the
+interrupt controller with the standard interrupt interface.   The MFD
+core does ignore the result of the call currently but it probably
+shouldn't and I didn't want to rely on it continuing to do so.  The
+patch below ought to address that, though it's tested with my "Hey,
+look!  It compiles!" test plan - if it looks sane to you I'll give it a
+test and repost with a proper changelog.
 
->>but i can't browse. that is when i 'wget kernel.org' it resolves the
->>address into the correct IP and then goes on to 'connecting' just to
->>grind to a complete halt. after some time of course it times out.
->
-> This could be due to your firewall rules?  More people would have
-> noticed if their networking died ;)  (Unless you're running a e1000, all
-> bets off).
+It's not an issue for the WM8350 but some devices with interrupt
+controllers may have issues since currently the MFD API wants to put all
+the interrupts within a per-device range but for some devices there will
+be interrupts exposed via separate IRQ lines (so you don't have to take
+the hit of working with an I2C/SPI interrupt controller) meaning that
+some of the interrupts for subdevices may be in different ranges.  For
+the WM8350 this isn't such a problem since everything *can* go via the
+main interrupt controller and overrides can be provided via platform
+data (as they are at present, though the main interrupt controller
+doesn't use the standard API) but if use of a separate interrupt line
+were non-optional it'd be a problem.
 
-actually one laptop is running a e1000e... but as said, its also with
-wireless...
+There's also the issue of passing over the pointer to the shared device
+data for arbitration - you can use platform data but the MFD API wants
+to copy it so it's a bit fiddly.  I'm thinking that the sensible thing
+may just be to have the child devices use the parent link in the device
+tree for this which is already fine with the MFD core.
 
-Philip Stark
+diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+index 9c9c126..9384206 100644
+--- a/drivers/mfd/mfd-core.c
++++ b/drivers/mfd/mfd-core.c
+@@ -60,7 +60,12 @@ static int mfd_add_device(struct device *parent, int id,
+ 		}
+ 	}
+ 
+-	platform_device_add_resources(pdev, res, cell->num_resources);
++	if (cell->num_resources) {
++		ret = platform_device_add_resources(pdev, res,
++						    cell->num_resources);
++		if (ret)
++			goto fail_device;
++	}
+ 
+ 	ret = platform_device_add(pdev);
+ 	if (ret)
