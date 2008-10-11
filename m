@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbYJKU7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762423AbYJKVEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762734AbYJKU7e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 16:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYJKU7O
+	id S1762423AbYJKVEo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 17:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760220AbYJKVEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 16:59:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58741 "EHLO mx2.mail.elte.hu"
+	Sat, 11 Oct 2008 17:04:35 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:54040 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032AbYJKU7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 16:59:13 -0400
-Date: Sat, 11 Oct 2008 22:58:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org
-Subject: Re: Looks broken to me: x86, cyrix: debug
-Message-ID: <20081011205858.GA21965@elte.hu>
-References: <200810112003.m9BK3Wwu025556@hera.kernel.org> <20081011214043.283a3330@lxorguk.ukuu.org.uk> <alpine.LFD.1.10.0810112146400.1984@ftp.linux-mips.org>
+	id S1760160AbYJKVEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 17:04:34 -0400
+Date: Sun, 12 Oct 2008 00:03:40 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Linux 2.6.27 will be a longtime supported kernel
+Message-ID: <20081011210340.GA11198@cs181140183.pp.htv.fi>
+References: <alpine.LFD.2.00.0810091651220.3210@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0810112146400.1984@ftp.linux-mips.org>
+In-Reply-To: <alpine.LFD.2.00.0810091651220.3210@nehalem.linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0022]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.16 has become a bit dated, and I'll maintain 2.6.27 for a few years 
+as a replacement.
 
-* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+As with 2.6.16, I'll pickup maintainance when the normal -stable 
+maintainance ends (at some point after 2.6.28 gets released in January).
 
-> On Sat, 11 Oct 2008, Alan Cox wrote:
-> 
-> > > +#define getCx86_old(reg) ({ outb((reg), 0x22); inb(0x23); })
-> > 
-> > Doesn't expand to any kind of returned value.
-> 
->  Well, actually it returns the value of the inb() expression -- cf the 
-> semantics of compound statements.  The rest looks suspicious indeed.
+It is intended to fill the niche for users who are not using 
+distribution kernels but want to use a regression-free kernel for a 
+longer time. It might be a small part of the userbase, but after the 
+experiences with 2.6.16 I can say that there are quite a few users
+who appreciate such an offering.
 
-indeed it's broken - will sort it out. It's all about breakage that has 
-been in this code since v2.6.20, see c6744955d0. Will likely revert the 
-whole thing.
+As people might have noted I wasn't able to do much kernel stuff 
+recently, and 2.6.16 also suffered from this. I'll bring 2.6.16 back 
+into shape and keep it maintained until at least mid-2009.
 
-	Ingo
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
