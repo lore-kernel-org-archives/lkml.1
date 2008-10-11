@@ -1,49 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbYJKGrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761806AbYJKGrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758310AbYJKGrD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbYJKGi3
+	id S1761806AbYJKGrr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJKGid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:38:29 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41482 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754061AbYJKGh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:28 -0400
-Date: Sat, 11 Oct 2008 08:36:51 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, torvalds@osdl.org
-Subject: Re: libata: set queue SSD flag for SSD devices
-Message-ID: <20081011063650.GL19428@kernel.dk>
-References: <200810101904.m9AJ42Gq018897@hera.kernel.org> <20081010202515.446857cc@lxorguk.ukuu.org.uk> <20081010200528.GJ19428@kernel.dk> <20081010175508.3d1ed2a4@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010175508.3d1ed2a4@infradead.org>
+	Sat, 11 Oct 2008 02:38:33 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:40791 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbYJKGh1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 02:37:27 -0400
+Date: Sat, 11 Oct 2008 02:35:57 -0400
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 37/85] dock: fix for ATA bay in a dock station
+In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
+In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+Message-id: <61b836958371c717d1e6d4fea1d2c512969ad20b.1223706853.git.len.brown@intel.com>
+Organization: Intel Open Source Technology Center
+X-Mailer: git-send-email 1.6.0.2.307.gc427
+References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10 2008, Arjan van de Ven wrote:
-> On Fri, 10 Oct 2008 22:05:28 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > In this specific patch, it'll do no harm at least since I very much
-> > doubt we'll see a false positive. And even if, the consequences wont
-> > be dire. But it does want the version check, of course.
-> > 
-> 
-> also, is "is an ssd" the right question or is "doesn't have seek
-> latency" the right one?
-> (difference is.. well EMC boxes with lots of ram etc)
+From: Shaohua Li <shaohua.li@intel.com>
 
-The block layer uses the 'non rotational' nomenclature for this, but
-that's not perfect either. And neither is 'no seek', a single
-"parameter" is not enough to describe the device. But it's good enough I
-think, it'll be expanded later with a (bit) fuller profile.
+an ATA bay can be in a dock and itself can be ejected separately.
+This patch handles such eject bay. Found by Holger.
 
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/acpi/dock.c |   14 ++++++++++----
+ 1 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index ac7dfef..c877cc5 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -609,6 +609,7 @@ register_hotplug_dock_device(acpi_handle handle, struct acpi_dock_ops *ops,
+ {
+ 	struct dock_dependent_device *dd;
+ 	struct dock_station *dock_station;
++	int ret = -EINVAL;
+ 
+ 	if (!dock_station_count)
+ 		return -ENODEV;
+@@ -618,16 +619,21 @@ register_hotplug_dock_device(acpi_handle handle, struct acpi_dock_ops *ops,
+ 	 * this would include the dock station itself
+ 	 */
+ 	list_for_each_entry(dock_station, &dock_stations, sibiling) {
++		/*
++		 * An ATA bay can be in a dock and itself can be ejected
++		 * seperately, so there are two 'dock stations' which need the
++		 * ops
++		 */
+ 		dd = find_dock_dependent_device(dock_station, handle);
+ 		if (dd) {
+ 			dd->ops = ops;
+ 			dd->context = context;
+ 			dock_add_hotplug_device(dock_station, dd);
+-			return 0;
++			ret = 0;
+ 		}
+ 	}
+ 
+-	return -EINVAL;
++	return ret;
+ }
+ 
+ EXPORT_SYMBOL_GPL(register_hotplug_dock_device);
+@@ -1078,8 +1084,8 @@ find_dock(acpi_handle handle, u32 lvl, void *context, void **rv)
+ static acpi_status
+ find_bay(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+-	/* If bay is in a dock, it's already handled */
+-	if (is_ejectable_bay(handle) && !is_dock_device(handle))
++	/* If bay is a dock, it's already handled */
++	if (is_ejectable_bay(handle) && !is_dock(handle))
+ 		dock_add(handle);
+ 	return AE_OK;
+ }
 -- 
-Jens Axboe
+1.5.5.1
 
