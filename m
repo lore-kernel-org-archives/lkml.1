@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932254AbYJKRtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbYJKRt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932254AbYJKRtL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 13:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbYJKRs4
+	id S932178AbYJKRt4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 13:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbYJKRtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 13:48:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58849 "EHLO ogre.sisk.pl"
+	Sat, 11 Oct 2008 13:49:39 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56846 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932161AbYJKRs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 13:48:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: acpi-test tree on eeepc: EC error message on second resume
-Date: Sat, 11 Oct 2008 19:53:04 +0200
-User-Agent: KMail/1.9.9
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <48F0DB0C.7060201@tuffmail.co.uk> <200810111909.48897.rjw@sisk.pl> <48F0DE8C.6040309@tuffmail.co.uk>
-In-Reply-To: <48F0DE8C.6040309@tuffmail.co.uk>
+	id S932177AbYJKRti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 13:49:38 -0400
+Date: Sat, 11 Oct 2008 19:48:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, torvalds@osdl.org
+Subject: Re: libata: set queue SSD flag for SSD devices
+Message-ID: <20081011174859.GV19428@kernel.dk>
+References: <200810101904.m9AJ42Gq018897@hera.kernel.org> <20081010202515.446857cc@lxorguk.ukuu.org.uk> <20081010200528.GJ19428@kernel.dk> <20081010175508.3d1ed2a4@infradead.org> <1223710417.4159.11.camel@localhost.localdomain> <20081011140600.GR19428@kernel.dk> <1223739853.4159.17.camel@localhost.localdomain> <20081011090407.6de9b8b4@infradead.org> <1223743124.4159.27.camel@localhost.localdomain> <20081011094930.3cf55ea5@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810111953.04610.rjw@sisk.pl>
+In-Reply-To: <20081011094930.3cf55ea5@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 11 of October 2008, Alan Jenkins wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 11 of October 2008, Alan Jenkins wrote:
-> >   
-> >> I've just run an acpi-test kernel on my EeePC and noticed a new issue. 
-> >> It seems to be caused (or revealed) by the EC interrupt transaction patch.
-> >>
-> >> On the second suspend/resume cycle, I see a kernel error message.
-> >>
-> >> [   78.747707] ACPI: Waking up from system sleep state S3
-> >> [   79.330001] ACPI: EC: input buffer not empty, aborting transaction
-> >> [   79.423327] ACPI: EC: non-query interrupt received, switching to
-> >> interrupt mode
-> >>
-> >> I still don't see any issues in the code.  I'll try getting a DEBUG
-> >> trace to see the EC interrupts.  Any other suggestions?
-> >>     
-> >
-> > Not really, but is this reproducible?  I mean, does it happen always on the
-> > second resume and does it happen on every next resume after the first one?
-> >
-> > Thanks,
-> > Rafael
-> >   
+On Sat, Oct 11 2008, Arjan van de Ven wrote:
+> On Sat, 11 Oct 2008 18:38:44 +0200
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> Ah.  No, I spoke to soon.  It happened on the second resume the first
-> two times I tried it.  But this third time with DEBUG enabled, it
-> happened on the first suspend/resume.
+> > On Sat, 2008-10-11 at 09:04 -0700, Arjan van de Ven wrote:
+> > > On Sat, 11 Oct 2008 17:44:13 +0200
+> > > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > 
+> > > > 
+> > > > > So we need something a bit more involved, but not too complex. A
+> > > > > fine line...
+> > > > 
+> > > > It's a policy ... just let userspace do it so the user can tune
+> > > > it. That's what EMC does now (except I think they key of inquiry
+> > > > strings rather than cache size).
+> > > 
+> > > 
+> > > while the chosen elevator obviously is policy, the kernel really
+> > > should pick a sensible default based on what it knows.
+> > > Lets put it this way: if userland needs to do a tuning to the kernel
+> > > based on data only provided by the kernel, and will always do it the
+> > > same way, we should have made that choice the default policy in the
+> > > kernel in the first place.
+> > 
+> > Well, this is a bit of a nasty layering problem.  We certainly don't
+> > want the Block layer to know how to poke at SATA, SCSI and other
+> > esoteric media to see what elevator should be the default, so we'd
+> > have to craft a new block API that the lower subsystems would
+> > implement for this.  I'm really not sure it's worth the trouble when
+> > the boot system can do it simply from userspace, but I'll defer to
+> > Jens.
+> > 
 > 
-> And it doesn't happen on all subsequent resumes either.  I've had one
-> suspend/resume without the error, just after a suspend/resume with the
-> error.
-> 
-> So it's not deterministic, but it is easy to reproduce.
+> these devices already give the elevator layer information about the
+> device, like optimal/max io size etc.
+> having the elevator take a "don't bother optimizing for seeks" flag
+> is very much along the same lines, it's a device property that the
+> elevator needs to learn about in order to send the right kinds of IO
+> down.
 
-I can't reproduce this on any hardware available to me, so far.
+Completely agree. And this is very different from the 'choose elevator
+based on device properties', a way of thinking that I don't agree with.
+This 'non rotational' flag does just that, passes down more information
+to the IO scheduler so it can make more informed choices.
 
-Is this related to any other problem, like things not working etc.?
+-- 
+Jens Axboe
 
-Rafael
