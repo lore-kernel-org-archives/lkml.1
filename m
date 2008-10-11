@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYJKMU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbYJKMx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYJKMU7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 08:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJKMUw
+	id S1754430AbYJKMx2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 08:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYJKMxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 08:20:52 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:3721 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282AbYJKMUv (ORCPT
+	Sat, 11 Oct 2008 08:53:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:51744 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbYJKMxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 08:20:51 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Stephen Hemminger" <shemminger@vyatta.com>
-Cc: <linux-net@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: RE: recv() hangs until SIGCHLD ?
-Date: Sat, 11 Oct 2008 05:20:37 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEFHAFAD.davids@webmaster.com>
+	Sat, 11 Oct 2008 08:53:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=n2sipJ/hecJ2TTY6teupI+Weprjvo46IQnrR3NtFMbwn/Wp1OK3IsBH27dNMaM5uql
+         q/HDGFduRDtxYV487C3zLQkpSDlglwqghbGPZGKVKnXmyD0sahq7MTe/QaogJPmCj8MU
+         9YmdJa+iIv7JbsL5jpl6woFRQyuBLlvVfoeIc=
+Message-ID: <c6740f810810110553q75478033ub984651d5509199b@mail.gmail.com>
+Date: Sat, 11 Oct 2008 14:53:16 +0200
+From: "Philip Stark" <heller.barde@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.27 seems to break something with DSL
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
-In-Reply-To: <48F063C5.3000707@motion-twin.com>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sat, 11 Oct 2008 05:22:37 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sat, 11 Oct 2008 05:22:37 -0700
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Nicolas Cannasse wrote:
+I'm sorry, I didn't lurk before making my first posting to this list,
+but it seemed to me that this might be an important problem/bug (if it
+is one).
 
-> The sockets are non-blocking.
+first off, my network infrastructure:
 
-Ouch, that's a serious bug. Non-blocking operations shouldn't block!
+"internet" --(magic*)-- DSL Modem --(DHCP)-- Router --(DHCP)-- Computer
+* PPPsomething i guess...
 
-> Checking with netstat and ss I can confirm that both Send and Recv
-> queues are empty, which makes the recv() behavior consistent.
->
-> However since this problem does not occur without threads, we can be
-> sure that the blame is still on the receiver.
->
-> In a practical case, we have a thread blocked in recv() for more than 12
-> hours, which is way beyond the timeout of the sender connection. The
-> socket has already been closed by the sender so recv() should at least
-> be noticed and returns 0.
+My observations so far:
 
-Can you clarify what you mean by "the socket has already been closed by the
-sender"? You mean the other end of the TCP connection shut it down? By "the
-socket", you don't mean the socket you called 'recv' on, right? You mean the
-socket on the other end that's connected to it?
+with kernel =< 2.6.26 i can connect to the rest of the world perfectly
+(ping works and i can browse "the internet")
 
-> Is it safe to assume that when either send() or recv() get interrupted
-> by a signal and returns EINTR, no actual data has been either sent or
-> consumed ? And if it's not, is there any other way around this ?
+now with kernel 2.6.27, i.e with all the release candidates and also
+with the final version from yesterday i can ping anything just fine,
+but i can't browse. that is when i 'wget kernel.org' it resolves the
+address into the correct IP and then goes on to 'connecting' just to
+grind to a complete halt. after some time of course it times out.
+it seems to  be related to the packet  size because ping only seems to
+work because it uses small packets. if i increase the ping size up to
+1000 bytes, it fails as well. (while it does work on 2.6.26)
 
-EINTR can only be return if 'send' or 'recv' have not sent or received
-anything. Otherwise the connection would be left in an indeterminate state.
+oh and it is the same problem on the wireless and the wired interface.
+on 2 different laptops and on my desktop (which have different
+networking chips, two intel and one realtek)
 
-DS
+best Regards
+Philip Stark
 
-
+PS: if i horribly misposted, please slap me across the face and ignore me :)
