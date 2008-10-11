@@ -1,125 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbYJKOJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYJKOKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbYJKOJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 10:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJKOJG
+	id S1757597AbYJKOKm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 10:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYJKOKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 10:09:06 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35080 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753149AbYJKOJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 10:09:05 -0400
-Date: Sat, 11 Oct 2008 16:08:27 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [bug] latest -git boot hang
-Message-ID: <20081011140826.GS19428@kernel.dk>
-References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org> <48EFF84B.5060108@kernel.org> <20081011071939.GA26465@elte.hu>
+	Sat, 11 Oct 2008 10:10:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51417 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753532AbYJKOKc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 10:10:32 -0400
+Message-ID: <48F0B3CD.2010705@zytor.com>
+Date: Sat, 11 Oct 2008 07:10:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081011071939.GA26465@elte.hu>
+To: Alain Knaff <alain@knaff.lu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu> <48EE4302.2010404@zytor.com> <48EEC7D1.80404@knaff.lu> <48EFC9A0.5070907@zytor.com> <48F0559C.1040705@knaff.lu>
+In-Reply-To: <48F0559C.1040705@knaff.lu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 11 2008, Ingo Molnar wrote:
+Alain Knaff wrote:
 > 
-> * Tejun Heo <tj@kernel.org> wrote:
+> So, leaving out the x86-specific change
+> (arch/x86/boot/compressed/misc.c) in the first change, would force to
+> leave that change out of lib/inflate.c as well (or else, the
+> above-listed items would be doubly defined). But, if I left out these
+> changes of lib/inflate.c, I'd need to leave them out of and
+> init/do_mounts_rd.c and init/initramfs.c too (or else the above-listed
+> items would not be defined at all in that situation). Can you suggest a
+> solution? I could theoretically break that dependency chain using an
+> #ifdef (as was the case until patch 3), but apparently #ifdef's are
+> highly frowned upon. Or was it just the name of the ifdef ("NEW_CODE")
+> that you objected to? Another option would be to (temporarily) keep 2
+> copies of lib/inflate.c around, but somehow that doesn't feel right.
 > 
-> > > It does sound like perhaps the option should be hidden more, if it's 
-> > > really only reasonably enabled for some very specialized distro 
-> > > debuggers, not normal kernel people.
-> > 
-> > Yeap, if fedora didn't work, I think it should be hidden.  Do we 
-> > already have place to hide things like this?
+> So can you suggest some way out of the situation?
 > 
-> in my local testing i'm using simple annotations like the one attached 
-> further below. Any objections against sending my BROKEN_BOOT_ALLOWED kit 
-> upstream, and merge my annotations for various kernel features that 
-> break a generic distro bootup?
-> 
-> Right now i have about 40 such annotations for -tip testing:
-> 
->   fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   security/selinux/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   security/smack/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   security/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/net/appletalk/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/net/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/media/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/scsi/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/watchdog/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/watchdog/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/ide/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/i2c/busses/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/block/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/console/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/video/console/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/mtd/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   drivers/isdn/icn/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   lib/Kconfig.kgdb:	depends on BROKEN_BOOT_ALLOWED
->   lib/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
->   lib/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	# depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
->   arch/x86/Kconfig.cpu:	depends on BROKEN_BOOT_ALLOWED
-> 
-> and note the stark contrast to CONFIG_BROKEN - sometimes a given 
-> functionality is really not meant to be enabled on a generic system.
-> 
-> 	Ingo
-> 
-> ---------------->
-> Subject: qa: no ext devt
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri Oct 10 22:54:57 CEST 2008
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  lib/Kconfig.debug |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: linux/lib/Kconfig.debug
-> ===================================================================
-> --- linux.orig/lib/Kconfig.debug
-> +++ linux/lib/Kconfig.debug
-> @@ -670,6 +670,8 @@ config DEBUG_BLOCK_EXT_DEVT
->          bool "Force extended block device numbers and spread them"
->  	depends on DEBUG_KERNEL
->  	depends on BLOCK
-> +	depends on BROKEN_BOOT_ALLOWED
-> +	select BROKEN_BOOT
->  	default n
->  	help
->  	  Conventionally, block device numbers are allocated from
 
-What is BROKEN_BOOT_ALLOWED? Honestly, I'd prefer to just put an extra
-2-3 line paragraph in the help entry, saying that it's quite possible
-that current distros wont boot with this testing code enabled. Since it
-default to 'n', people should read the entry before turning it on
-anyway.
+Temporarily leaving two copies would work, as would be leaving in an 
+#ifdef as long as it is gone by the end of the patch series.
 
--- 
-Jens Axboe
-
+	-hpa
