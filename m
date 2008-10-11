@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYJKUFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbYJKUL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760271AbYJKUFX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 16:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbYJKUFD
+	id S1760647AbYJKUL1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 16:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbYJKULR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 16:05:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:2935 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758014AbYJKUFB convert rfc822-to-8bit (ORCPT
+	Sat, 11 Oct 2008 16:11:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49751 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754142AbYJKULQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 16:05:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PuuaZFMCCISfiYgKiF44EfY4CS+UV7NN0+DqKH+Xgb5ncWl+JIZIQZnbGyXO9J0YvD
-         QacY3CMXqQgFkaKiO3hfc7GPXyYWjBCmlDZxOF4SfM+LCc1cqGRywRi73dLm1BSu6KiY
-         5DaHWEJ+uT2r4VrjrnxrdMoGopjTvlSJDUjpc=
-Message-ID: <c62985530810111304jfb4fb65q2d8a55f3cb71ca87@mail.gmail.com>
-Date: Sat, 11 Oct 2008 22:04:59 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 6/6] tracing/fastboot: Print ktime of sched events when boot tracing
-Cc: "Arjan van de Ven" <arjan@infradead.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <c62985530810111303h2ac6e02ewf54765717895c949@mail.gmail.com>
+	Sat, 11 Oct 2008 16:11:16 -0400
+Date: Sat, 11 Oct 2008 13:10:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Philip Langdale <philipl@overt.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [GIT]: Networking for 2.6.28
+In-Reply-To: <20081011.121930.193700319.davem@davemloft.net>
+Message-ID: <alpine.LFD.2.00.0810111303510.3402@nehalem.linux-foundation.org>
+References: <20081010.144921.115563930.davem@davemloft.net> <alpine.LFD.2.00.0810110941330.3402@nehalem.linux-foundation.org> <alpine.LFD.2.00.0810111057020.3402@nehalem.linux-foundation.org> <20081011.121930.193700319.davem@davemloft.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20081010123450.8D3E6D1BCF0@perso1.free.fr>
-	 <20081010140534.GB13137@elte.hu> <20081010194530.GA31401@elte.hu>
-	 <c62985530810111303h2ac6e02ewf54765717895c949@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/11 Frédéric Weisbecker <fweisbec@gmail.com>:
->
-> ....I guess that could happen when the boot tracer is configured
-> whithout the sched_switch tracer.
-> I will send a patch to add this dependance on the Kconfig...
->
-> Thanks.
->
 
-Oh I didn't see that you attached the config.
-Seems that it's what I thought:
 
-# CONFIG_SCHED_TRACER is not set
+On Sat, 11 Oct 2008, David Miller wrote:
+> 
+> So the proper include (of net/ip.h) is there in ip_vs_xmit.c, but this
+> failure can also happen if CONFIG_INET is not enabled.
+> 
+> Are you doing that kind of test build?
+
+No, but somebody is.
+
+> This patch should fix that case, let me know if it works:
+
+How about you test it? It wasn't my bug-report, I just reported another 
+report from somebody who _does_ run randconfig.
+
+Here's another one:
+
+	drivers/built-in.o: In function `bt_poll_rfkill':
+	toshiba_acpi.c:(.text+0x37346): undefined reference to `input_event'
+
+where the cause seems to be a totally broken Kconfig entry ACPI_TOSHIBA.
+
+You can't just do
+
+	select INPUT_POLLDEV
+
+since that in turn needs all the _other_ input stuff. Yes, yes, things 
+like various keyboard drivers do exactly that, but they are already inside 
+"if INPUT_KEYBOARD/INPUT_MISC" or similar.
+
+So at the very least, you'd now have to have it do a "depends on INPUT" or 
+something like that.
+
+Or perhaps just make that particular _feature_ depend on it, rather than 
+make the whole driver depend on or select it. 
+
+		Linus
