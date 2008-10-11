@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYJKHm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbYJKHtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbYJKHm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbYJKHhn
+	id S1754257AbYJKHtS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYJKHtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:37:43 -0400
-Received: from vms172073pub.verizon.net ([206.46.172.73]:32846 "EHLO
-	vms172073pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756281AbYJKHhi (ORCPT
+	Sat, 11 Oct 2008 03:49:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45738 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750774AbYJKHtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:37:38 -0400
-Date: Sat, 11 Oct 2008 02:36:37 -0400
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 77/85] ACPI scan: Debug interface used for error message cleanup
-In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
-In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Thomas Renninger <trenn@suse.de>, Andi Kleen <ak@linux.intel.com>,
-       Len Brown <len.brown@intel.com>
-Message-id: <e46ba07096d1c71cca5ca1256e61064a2bb60287.1223706853.git.len.brown@intel.com>
-Organization: Intel Open Source Technology Center
-X-Mailer: git-send-email 1.6.0.2.307.gc427
-References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
-References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
+	Sat, 11 Oct 2008 03:49:08 -0400
+Date: Sat, 11 Oct 2008 00:48:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] fastboot tree for v2.6.28
+Message-Id: <20081011004840.5ad62ce0.akpm@linux-foundation.org>
+In-Reply-To: <20081011064712.GA25451@elte.hu>
+References: <20081010003241.GA23940@elte.hu>
+	<alpine.LFD.2.00.0810101254240.3503@nehalem.linux-foundation.org>
+	<20081010154929.6ec201fe@infradead.org>
+	<20081011064712.GA25451@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
+On Sat, 11 Oct 2008 08:47:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/acpi/scan.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+> When i saw your patches then initially my impression was "oh my, this 
+> will break a ton of stuff", so i asked you to: make it default-off 
+> (against Andrew's suggestion to just remove the config and make it a 
+> compulsory feature)
 
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index f6f52c1..0d46347 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -113,16 +113,16 @@ static int acpi_bus_hot_remove_device(void *context)
- 
- 
- 	if (acpi_bus_trim(device, 1)) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
--				"Removing device failed\n"));
-+		printk(KERN_ERR "Removing device [%s] failed\n",
-+		       acpi_device_bid(device));
- 		return -1;
- 	}
- 
- 	/* power off device */
- 	status = acpi_evaluate_object(handle, "_PS3", NULL, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND)
--		ACPI_DEBUG_PRINT((ACPI_DB_WARN,
--				"Power-off device failed\n"));
-+		ACPI_EXCEPTION((AE_INFO, status,
-+				"Power-off device failed"));
- 
- 	if (device->flags.lockable) {
- 		arg_list.count = 1;
-@@ -477,7 +477,8 @@ static int acpi_device_register(struct acpi_device *device,
- 
- 	result = acpi_device_setup_files(device);
- 	if(result)
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error creating sysfs interface for device %s\n", device->dev.bus_id));
-+		printk(KERN_ERR "Error creating sysfs interface for device"
-+		       " %s [%d]\n", device->dev.bus_id, result);
- 
- 	device->removal_type = ACPI_BUS_REMOVAL_NORMAL;
- 	return 0;
--- 
-1.5.5.1
+hm, that must have been the other Andrew.
+
+A feature like this I think should not have a config option but should
+be enabled by a boot option.
+
+We can waffle about the default setting of that option.  Maybe turn it
+on for a few weeks and see what happens.
 
