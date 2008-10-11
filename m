@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYJKAz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYJKBRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYJKAz0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 20:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYJKAzR
+	id S1756663AbYJKBRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 21:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYJKBRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 20:55:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44748 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbYJKAzP (ORCPT
+	Fri, 10 Oct 2008 21:17:33 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:31177 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754060AbYJKBRd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 20:55:15 -0400
-Date: Fri, 10 Oct 2008 17:55:08 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, torvalds@osdl.org
-Subject: Re: libata: set queue SSD flag for SSD devices
-Message-ID: <20081010175508.3d1ed2a4@infradead.org>
-In-Reply-To: <20081010200528.GJ19428@kernel.dk>
-References: <200810101904.m9AJ42Gq018897@hera.kernel.org>
-	<20081010202515.446857cc@lxorguk.ukuu.org.uk>
-	<20081010200528.GJ19428@kernel.dk>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 10 Oct 2008 21:17:33 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Prevent modpost from looking for a .cmd file for a static library linked into a module
+Date: Fri, 10 Oct 2008 18:15:01 -0700
+Message-ID: <8A71B368A89016469F72CD08050AD3340397130C@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Prevent modpost from looking for a .cmd file for a static library linked into a module
+Thread-Index: AckrLDcbucN7lcEtQUerZ9ZFN91cyAAEJpeA
+References: <8A71B368A89016469F72CD08050AD334038D52CF@maui.asicdesigners.com> <20081010160129.1159a2ef.akpm@linux-foundation.org>
+From: "Ashutosh Naik" <ashutosh@chelsio.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <stable@kernel.org>,
+       <rusty@rustcorp.com.au>, "Karen Xie" <kxie@chelsio.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008 22:05:28 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> In this specific patch, it'll do no harm at least since I very much
-> doubt we'll see a false positive. And even if, the consequences wont
-> be dire. But it does want the version check, of course.
-> 
 
-also, is "is an ssd" the right question or is "doesn't have seek
-latency" the right one?
-(difference is.. well EMC boxes with lots of ram etc)
+On Tue, 7 Oct 2008 11:26:15 -0700
+"Ashutosh Naik" <ashutosh@chelsio.com> wrote:
+
+>> 
+>> This patch prevents modpost to look for a .cmd file when a module is
+>> linked with a static library
+>> 
+>> Signed-off-by: Ashutosh Naik <ashutosh.naik@gmail.com>
+
+>What is the reason for this change?
+
+>Presumably there is some user-observeable behaviour which it corrects? 
+>What is it, and under what circumstances does it occur?
+
+This fixes a Compile time Warning, whenever a static library is linked
+into a kernel module. MODPOST tries to look for a ".<modulename>.cmd"
+file to look for its dependencies, but that file doesn't exist or get
+generated for static libraries. 
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+<snip>
+
+>The patch was wordwrapped.  I fixed that and queued it for sending to
+>Sam.  Please send me an updated, complete changelog, thanks.
+
+Thanks for fixing the wordwrap.
+
+Here is the changelog:
+This fixes a Compile time Warning, whenever a static library is linked
+into a kernel module. MODPOST tries to look for a ".<modulename>.cmd"
+file to look for its dependencies, but that file doesn't  exist or get
+generated for static libraries.
+
+Many Thanks,
+Ashutosh
