@@ -1,38 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762553AbYJKUwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760617AbYJKU6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762553AbYJKUwe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 16:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760565AbYJKUwY
+	id S1760617AbYJKU6h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 16:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYJKU63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 16:52:24 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:41432 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635AbYJKUwX (ORCPT
+	Sat, 11 Oct 2008 16:58:29 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:19971 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752329AbYJKU62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 16:52:23 -0400
-Date: Sat, 11 Oct 2008 21:52:18 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       torvalds@linux-foundation.org
-Subject: Re: Looks broken to me: x86, cyrix: debug
-In-Reply-To: <20081011214043.283a3330@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.1.10.0810112146400.1984@ftp.linux-mips.org>
-References: <200810112003.m9BK3Wwu025556@hera.kernel.org> <20081011214043.283a3330@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 11 Oct 2008 16:58:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=iN/91p19an0d0wB34zPIIbrKZrB8vT2CIwwRxoSshWa8l0218YyF3+CYu54bf0GZDg
+         xunsSrgfCHsb4HAbQ+nrQWQkcxLqAqSAGdpoz3RhiRHdAyVKoDAYm5UCflDErlS6d2hc
+         IulVrZg6aeatGL+QsFCluObftzsmRzhJDvYQE=
+Date: Sun, 12 Oct 2008 00:58:22 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: yhlu.kernel@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] kernel/resource: fix printk format warning
+Message-ID: <20081011205822.GA25563@orion>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Oct 2008, Alan Cox wrote:
 
-> > +#define getCx86_old(reg) ({ outb((reg), 0x22); inb(0x23); })
-> 
-> Doesn't expand to any kind of returned value.
 
- Well, actually it returns the value of the inb() expression -- cf the 
-semantics of compound statements.  The rest looks suspicious indeed.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-  Maciej
+ kernel/resource.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 414d6fc..cfe0933 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -550,8 +550,8 @@ static void __init __reserve_region_with_split(struct resource *root,
+ 
+ 	if (!res) {
+ 		printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
+-			 conflict->name, conflict->start, conflict->end,
+-			 name, start, end);
++			 conflict->name, (unsigned long long)conflict->start, (unsigned long long)conflict->end,
++			 name, (unsigned long long)start, (unsigned long long)end);
+ 
+ 		/* failed, split and try again */
+ 
