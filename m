@@ -1,54 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYJKHdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbYJKHg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbYJKHdz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYJKHdq
+	id S1757171AbYJKHg7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYJKHgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:33:46 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:55552 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750816AbYJKHdp (ORCPT
+	Sat, 11 Oct 2008 03:36:50 -0400
+Received: from vms172073pub.verizon.net ([206.46.172.73]:65534 "EHLO
+	vms172073pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbYJKHgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:33:45 -0400
-Subject: Re: libata: set queue SSD flag for SSD devices
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, torvalds@osdl.org
-In-Reply-To: <20081010175508.3d1ed2a4@infradead.org>
-References: <200810101904.m9AJ42Gq018897@hera.kernel.org>
-	 <20081010202515.446857cc@lxorguk.ukuu.org.uk>
-	 <20081010200528.GJ19428@kernel.dk>  <20081010175508.3d1ed2a4@infradead.org>
-Content-Type: text/plain
-Date: Sat, 11 Oct 2008 09:33:37 +0200
-Message-Id: <1223710417.4159.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Oct 2008 03:36:49 -0400
+X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Sat, 11 Oct 2008 03:36:49 EDT
+Date: Sat, 11 Oct 2008 02:35:22 -0400
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 02/85] acpi: replace AE_BAD_ADDRESS exception code with AE_ERROR
+In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
+In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Lin Ming <ming.m.lin@intel.com>, Andi Kleen <ak@linux.intel.com>
+Message-id: <a7be432189eb771907fb52b3f28f3e9c9309683d.1223706853.git.len.brown@intel.com>
+Organization: Intel Open Source Technology Center
+X-Mailer: git-send-email 1.6.0.2.307.gc427
+References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-10 at 17:55 -0700, Arjan van de Ven wrote:
-> On Fri, 10 Oct 2008 22:05:28 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > In this specific patch, it'll do no harm at least since I very much
-> > doubt we'll see a false positive. And even if, the consequences wont
-> > be dire. But it does want the version check, of course.
-> > 
-> 
-> also, is "is an ssd" the right question or is "doesn't have seek
-> latency" the right one?
-> (difference is.. well EMC boxes with lots of ram etc)
+From: Lin Ming <ming.m.lin@intel.com>
 
-For libata, the is ssd is the right test.
+The AE_BAD_ADDRESS exception code is now unused in ACPICA.
+For linux, it's only used at wmi.c and acer-wmi.c.
+I checked both wmi.c and acer-wmi.c, the AE_BAD_ADDRESS exception code
+has no special meaning. The parent functions just call AE_SUCCESS() or
+AE_FAILURE() to check the return status.
+So it's safe to replace AE_BAD_ADDRESS with AE_ERROR.
 
-For things like the symmetrix we probably need to look at the caching
-mode page and treat it like ssd if the cache is say > 1GB or whatever
-heuristic is needed.
+Signed-off-by Lin Ming <ming.m.lin@intel.com>
 
-James
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+---
+ drivers/acpi/wmi.c      |   10 +++++-----
+ drivers/misc/acer-wmi.c |   10 +++++-----
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
+index cfe2c83..5b94be3 100644
+--- a/drivers/acpi/wmi.c
++++ b/drivers/acpi/wmi.c
+@@ -242,7 +242,7 @@ u32 method_id, const struct acpi_buffer *in, struct acpi_buffer *out)
+ 	char method[4] = "WM";
+ 
+ 	if (!find_guid(guid_string, &wblock))
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 
+ 	block = &wblock->gblock;
+ 	handle = wblock->handle;
+@@ -304,7 +304,7 @@ struct acpi_buffer *out)
+ 		return AE_BAD_PARAMETER;
+ 
+ 	if (!find_guid(guid_string, &wblock))
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 
+ 	block = &wblock->gblock;
+ 	handle = wblock->handle;
+@@ -314,7 +314,7 @@ struct acpi_buffer *out)
+ 
+ 	/* Check GUID is a data block */
+ 	if (block->flags & (ACPI_WMI_EVENT | ACPI_WMI_METHOD))
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 
+ 	input.count = 1;
+ 	input.pointer = wq_params;
+@@ -385,7 +385,7 @@ const struct acpi_buffer *in)
+ 		return AE_BAD_DATA;
+ 
+ 	if (!find_guid(guid_string, &wblock))
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 
+ 	block = &wblock->gblock;
+ 	handle = wblock->handle;
+@@ -395,7 +395,7 @@ const struct acpi_buffer *in)
+ 
+ 	/* Check GUID is a data block */
+ 	if (block->flags & (ACPI_WMI_EVENT | ACPI_WMI_METHOD))
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 
+ 	input.count = 2;
+ 	input.pointer = params;
+diff --git a/drivers/misc/acer-wmi.c b/drivers/misc/acer-wmi.c
+index d8b0d32..a67aef5 100644
+--- a/drivers/misc/acer-wmi.c
++++ b/drivers/misc/acer-wmi.c
+@@ -476,7 +476,7 @@ struct wmi_interface *iface)
+ 		}
+ 		break;
+ 	default:
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 	}
+ 	return AE_OK;
+ }
+@@ -514,7 +514,7 @@ static acpi_status AMW0_set_u32(u32 value, u32 cap, struct wmi_interface *iface)
+ 			break;
+ 		}
+ 	default:
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 	}
+ 
+ 	/* Actually do the set */
+@@ -689,7 +689,7 @@ struct wmi_interface *iface)
+ 			return 0;
+ 		}
+ 	default:
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 	}
+ 	status = WMI_execute_u32(method_id, 0, &result);
+ 
+@@ -735,7 +735,7 @@ static acpi_status WMID_set_u32(u32 value, u32 cap, struct wmi_interface *iface)
+ 		}
+ 		break;
+ 	default:
+-		return AE_BAD_ADDRESS;
++		return AE_ERROR;
+ 	}
+ 	return WMI_execute_u32(method_id, (u32)value, NULL);
+ }
+@@ -785,7 +785,7 @@ static struct wmi_interface wmid_interface = {
+ 
+ static acpi_status get_u32(u32 *value, u32 cap)
+ {
+-	acpi_status status = AE_BAD_ADDRESS;
++	acpi_status status = AE_ERROR;
+ 
+ 	switch (interface->type) {
+ 	case ACER_AMW0:
+-- 
+1.5.5.1
 
