@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYJKLmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbYJKLmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbYJKLmP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 07:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYJKLl6
+	id S1754959AbYJKLmu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 07:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYJKLmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 07:41:58 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:32559 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbYJKLl4 convert rfc822-to-8bit (ORCPT
+	Sat, 11 Oct 2008 07:42:42 -0400
+Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:35904 "HELO
+	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751271AbYJKLmm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 07:41:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=n4e2KTBt/qAzTkRR7cP5ZtOkpO2GzjB45FjDTkUasHMCtP7HHEROmMijPZ5hl1699K
-         uKLj+dzLVYomSLeHhg7/2hgpYFTG9XdQ13yB6kYuGYc/jv32rKQ3xYw8ElNf89lpWV4M
-         x9uObvP5HBfDTo4xouWlKhLwMGf+vy9NPbPVo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH 0/7] ide: locking improvements
-Date: Sat, 11 Oct 2008 13:39:44 +0200
-User-Agent: KMail/1.9.10
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <fa.8TkQ+xA96EhlNKL9gIbVTxVrcUE@ifi.uio.no> <48F010AB.7010009@shaw.ca>
-In-Reply-To: <48F010AB.7010009@shaw.ca>
+	Sat, 11 Oct 2008 07:42:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5Qea8jL+toeRfZ46LNjonAlHYL0P1gZ/PZXz7ZGAEZdiV1XaIO+U4eiCSyxGeR2u97xHUKq7Yc4Y0BNYDDyeARsTiEaYUVV/pNdXauGTdq/k7ofLSkcCQOjlhha/JNp+SnGQA/PjScXvpssujTKq0FcmjJErQRk9AMWAbfWAsek=  ;
+X-YMail-OSG: Uxdp10AVM1kvpUY5vZg2jdKAXV6hQsEh1i4dPglY6Ua5lZiwDjyJ0Dxeh4oknyHBtKPHKcLb7T_QS80rutTigdPrhCJs20MorUqkJkfZAG4XlEkh9_88Zj2G3DKIKQ3.fwNLe5t9XtTQFaHafHPh_vzrzKpe2zO_yEf1BBch
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Update cacheline size on X86_GENERIC
+Date: Sat, 11 Oct 2008 22:42:27 +1100
+User-Agent: KMail/1.9.5
+Cc: Dave Jones <davej@redhat.com>, x86@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20081009171453.GA15321@redhat.com> <200810111929.19891.nickpiggin@yahoo.com.au> <20081011112218.GA12131@one.firstfloor.org>
+In-Reply-To: <20081011112218.GA12131@one.firstfloor.org>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810111339.44998.bzolnier@gmail.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Message-Id: <200810112242.28229.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 October 2008, Robert Hancock wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> >> Sorry, but I just have to ask 'why'? IDE is seeing a whole lot of churn
-> >> for something that should essentially be a stable code base in
-> >> maintenance mode, and now scalability improvements?
-> > 
-> > It is the stable code but being in "maintenance only mode" has never
-> > been true and as long as there are active users & developers there is
-> > really no reason to change it.
-> 
-> Are there really many active users at this point? I'm not aware of any 
-> new distributions that are using it. The only people I can see that 
-> might still want to be using it would be people with old setups or old 
-> embedded devices.. many of those wouldn't be using newer kernels anyway.
+On Saturday 11 October 2008 22:22, Andi Kleen wrote:
+> On Sat, Oct 11, 2008 at 07:29:19PM +1100, Nick Piggin wrote:
+> > I also think there are reasonable arguments the other way, and I
+> > personally also think it might be better to leave it 128 (even
+> > if it is unlikely, introducing a regression is not good).
+>
+> The issue is also that the regression will be likely large.
 
-Like I said before: as long as there are any active users/developers
-there is no real reason to stop IDE improvements (especially since there
-is no complete replacement available).
+Yeah, that is what I'm worried about. If it was a simple case of
+1% loss on P4 for 1% gain on Core2, it would be a good change.
+But it might be huge losses on P4s.
 
-I also wouldn't worry that much about what some distros are doing.  They
-are free to make their own decisions based on whatever criteria they like.
 
-> These kinds of changes only will really help scalability on multi-core 
-> machines which are unlikely to be using this code anyway.. They seem 
+> False sharing can really hurt when it hits as you know, because
+> the penalties are so large.
+>
+> > > There are millions and millions of P4s around.
+> > > And they're not that old, they're still shipping in fact.
+> >
+> > Still shipping in anything aside from 1s systems?
+>
+> Remember the first Core2 based 4S (Tigerton) Xeon was only introduced last
+> year and that market is quite conservative. For 2S it's a bit longer, but
+> it wouldn't surprise me there if new systems are still shipping.
+>
+> Also to be honest I doubt the theory that older systems
+> are never upgraded to newer OS.
 
->From my perspective the main gain of these patches is the increased
-maintainability and sanity of the code, scalability improvements are
-just an added bonus.
+Yeah, fair enough.
 
-> rather like putting makeup on a corpse to me..
 
-Please refrain from such comments.  Not only the metaphor is completely
-bogus but it may sound disrespectful to some IDE developers.
+> > That would be nice. It would be interesting to know what is causing
+> > the slowdown.
+>
+> At least that test is extremly cache footprint sensitive. A lot of the
+> cache misses are surprisingly in hd_struct, because it runs
+> with hundred of disks and each needs hd_struct references in the fast path.
+> The recent introduction of fine grained per partition statistics
+> caused a large slowdown. But I don't think kernel workloads
+> are normally that extremly cache sensitive.
 
-Thanks,
-Bart
+That's interesting. struct device is pretty big. I wonder if fields
+couldn't be rearranged to minimise the fastpath cacheline footprint?
+I guess that's already been looked at?
