@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYJKODY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbYJKOGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbYJKODY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 10:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYJKODN
+	id S1757263AbYJKOGr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 10:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJKOGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 10:03:13 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:14738 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752434AbYJKODM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 10:03:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Hzk0PcjM4LWYz9QbGUxV92DoKB3fDQRfBi7lJDR+pD5F64zzCRInjQFg0gzJ4BFMTG
-         mbgi9QLvKnVzg+j8edUGJh2opSyXspltj8pCBXe5x0T6ysiTOllnHaBRV3MzPgu28A/7
-         5BDyKLJb2R7JpMP0/WtdB/AIwEAcZL6ACYkrs=
-Date: Sat, 11 Oct 2008 16:02:45 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Philip Stark <heller.barde@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.27 seems to break something with DSL
-Message-ID: <20081011140240.GA5985@joi>
-References: <c6740f810810110553q75478033ub984651d5509199b@mail.gmail.com>
+	Sat, 11 Oct 2008 10:06:38 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38495 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753059AbYJKOGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 10:06:37 -0400
+Date: Sat, 11 Oct 2008 16:06:01 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, torvalds@osdl.org
+Subject: Re: libata: set queue SSD flag for SSD devices
+Message-ID: <20081011140600.GR19428@kernel.dk>
+References: <200810101904.m9AJ42Gq018897@hera.kernel.org> <20081010202515.446857cc@lxorguk.ukuu.org.uk> <20081010200528.GJ19428@kernel.dk> <20081010175508.3d1ed2a4@infradead.org> <1223710417.4159.11.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c6740f810810110553q75478033ub984651d5509199b@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1223710417.4159.11.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 11, 2008 at 02:53:16PM +0200, Philip Stark wrote:
-> Hi,
+On Sat, Oct 11 2008, James Bottomley wrote:
+> On Fri, 2008-10-10 at 17:55 -0700, Arjan van de Ven wrote:
+> > On Fri, 10 Oct 2008 22:05:28 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > In this specific patch, it'll do no harm at least since I very much
+> > > doubt we'll see a false positive. And even if, the consequences wont
+> > > be dire. But it does want the version check, of course.
+> > > 
+> > 
+> > also, is "is an ssd" the right question or is "doesn't have seek
+> > latency" the right one?
+> > (difference is.. well EMC boxes with lots of ram etc)
 > 
-> I'm sorry, I didn't lurk before making my first posting to this list,
-> but it seemed to me that this might be an important problem/bug (if it
-> is one).
+> For libata, the is ssd is the right test.
 > 
-> first off, my network infrastructure:
-> 
-> "internet" --(magic*)-- DSL Modem --(DHCP)-- Router --(DHCP)-- Computer
-> * PPPsomething i guess...
-> 
-> My observations so far:
-> 
-> with kernel =< 2.6.26 i can connect to the rest of the world perfectly
-> (ping works and i can browse "the internet")
-> 
-> now with kernel 2.6.27, i.e with all the release candidates and also
-> with the final version from yesterday i can ping anything just fine,
-> but i can't browse. that is when i 'wget kernel.org' it resolves the
-> address into the correct IP and then goes on to 'connecting' just to
-> grind to a complete halt. after some time of course it times out.
-> it seems to  be related to the packet  size because ping only seems to
-> work because it uses small packets. if i increase the ping size up to
-> 1000 bytes, it fails as well. (while it does work on 2.6.26)
-> 
-> oh and it is the same problem on the wireless and the wired interface.
-> on 2 different laptops and on my desktop (which have different
-> networking chips, two intel and one realtek)
-> 
-> best Regards
-> Philip Stark
-> 
-> PS: if i horribly misposted, please slap me across the face and ignore me :)
+> For things like the symmetrix we probably need to look at the caching
+> mode page and treat it like ssd if the cache is say > 1GB or whatever
+> heuristic is needed.
 
-CC'ing netdev
+Still wont quite work, you're still going to have occasional seek
+latencies no matter how large the cache is (unless it's == device size
+:-)
+
+So we need something a bit more involved, but not too complex. A fine
+line...
+
+-- 
+Jens Axboe
+
