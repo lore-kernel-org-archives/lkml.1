@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbYJKRw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbYJKR5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932389AbYJKRw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 13:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761916AbYJKRwQ
+	id S932506AbYJKR5M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 13:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbYJKR4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 13:52:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58780 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758211AbYJKRwP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 13:52:15 -0400
-Date: Sat, 11 Oct 2008 18:51:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Chris Snook <csnook@redhat.com>, Stefan Monnier <monnier@iro.umontreal.ca>,
+	Sat, 11 Oct 2008 13:56:53 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:43215 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932402AbYJKR4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 13:56:52 -0400
+Date: Sat, 11 Oct 2008 19:56:16 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: petkovbb@gmail.com
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Robert Hancock <hancockr@shaw.ca>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: Filesystem for block devices using flash storage?
-Message-ID: <20081011185157.478ea357@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081011143552.GA1556@ucw.cz>
-References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org>
-	<48ED1D62.8080100@redhat.com>
-	<20081011143552.GA1556@ucw.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 0/7] ide: locking improvements
+Message-ID: <20081011175615.GW19428@kernel.dk>
+References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <200810111645.27847.bzolnier@gmail.com> <20081011150532.GU19428@kernel.dk> <200810111756.37278.bzolnier@gmail.com> <20081011170610.GA7574@gollum.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081011170610.GA7574@gollum.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Writes to magnetic disks are functionally atomic at the sector level.
+On Sat, Oct 11 2008, Borislav Petkov wrote:
+> On Sat, Oct 11, 2008 at 05:56:37PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Saturday 11 October 2008, Jens Axboe wrote:
+> > > On Sat, Oct 11 2008, Bartlomiej Zolnierkiewicz wrote:
+> > > > On Saturday 11 October 2008, Jens Axboe wrote:
+> > > > > On Sat, Oct 11 2008, Borislav Petkov wrote:
+> 
+> [... ]
+> 
+> Don't you just love it when all gets resolved peacefully and
+> everything is fine and dandy afterwards. I'm so happy we've
+> straightened that one out. Just a final quick note which by no means
+> is targetting to resparkle the discussion: I have another bug report,
+> hm, well :), but still, the machine is a 8-core AMD Dell box (with the
+> option of upgrading to 16 cores) which _is_ using ide-cd so, there are
+> some people using that code, after all :). I'm sure those people will
+> be happier when it scales to that many cores.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=11498.
 
-No they are not.
+Not to throw a monkey wrench, but I did add 'pushing data' to that IDE
+statement. There is of course lots of systems still with a parallel
+channel for things like atapi drives. But that is completely parallel to
+the initial argument, those don't care a rats ass about scalability.
+They care about it working, that is all.
 
-> I don't think ext3 is safe w.r.t. whole eraseblocks disappearing. So
-> if you write data 'nearby' root directory and power fails, bye bye
-> filesystem, and journal will not help.
+-- 
+Jens Axboe
 
-You have similar problems on rotating media. A write to a block can
-corrupt other blocks adjacent to the block you write, and on the latest
-disks the physical block size can be greater than the logical one so
-unless you laid your partitions out right you have read-modify-write
-cycles goin on.
-
-Alan
