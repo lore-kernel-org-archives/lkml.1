@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763325AbYJKG5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbYJKG6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763325AbYJKG5q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYJKGkU
+	id S1759689AbYJKG6K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:58:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbYJKGkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:40:20 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:39146 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbYJKGg7 (ORCPT
+	Sat, 11 Oct 2008 02:40:23 -0400
+Received: from vms172069pub.verizon.net ([206.46.172.69]:32774 "EHLO
+	vms172069pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbYJKGg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Oct 2008 02:36:59 -0400
-Date: Sat, 11 Oct 2008 02:35:53 -0400
+Date: Sat, 11 Oct 2008 02:35:52 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 33/85] ACPI: fix hotplug race
+Subject: [PATCH 32/85] ACPI: introduce notifier change to avoid duplicates
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Shaohua Li <shaohua.li@intel.com>,
-       Len Brown <len.brown@intel.com>
-Message-id: <19cd847ab24fefe9e50101ec94479e0400a08650.1223706853.git.len.brown@intel.com>
+Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+Message-id: <6bd00a61ab63d4ceb635ae0316353c11c900b8d8.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,169 +26,171 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Shaohua Li <shaohua.li@intel.com>
 
-The hotplug notification handler and drivers' notification handler all
-run in one workqueue.  Before hotplug removes an acpi device, the
-device driver's notification handler is already be recorded to run just
-after global notification handler.  After hotplug notification handler
-runs, acpica will notice a NULL notification handler and crash.
+The battery driver already registers notification handler.
+To avoid registering notification handler again,
+introduce a notifier chain in global system notifier handler
+and use it in dock driver.
 
-So now we run run hotplug in another workqueue and wait
-for all acpi notication handlers finish.
-This was found in battery hotplug, but actually all
-hotplug can be affected.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/dock.c     |   25 ++++++++++++++++++++++++-
- drivers/acpi/osl.c      |   46 +++++++++++++++++++++++++++++++++++++++++-----
- include/acpi/acpiosxf.h |    3 +++
- 3 files changed, 68 insertions(+), 6 deletions(-)
+ drivers/acpi/bus.c      |   15 +++++++++++++++
+ drivers/acpi/dock.c     |   46 ++++++++++++++++++++++++----------------------
+ include/acpi/acpi_bus.h |    3 +++
+ 3 files changed, 42 insertions(+), 22 deletions(-)
 
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index ccae305..0dc4494 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -496,6 +496,19 @@ static int acpi_bus_check_scope(struct acpi_device *device)
+ 	return 0;
+ }
+ 
++static BLOCKING_NOTIFIER_HEAD(acpi_bus_notify_list);
++int register_acpi_bus_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&acpi_bus_notify_list, nb);
++}
++EXPORT_SYMBOL_GPL(register_acpi_bus_notifier);
++
++void unregister_acpi_bus_notifier(struct notifier_block *nb)
++{
++	blocking_notifier_chain_unregister(&acpi_bus_notify_list, nb);
++}
++EXPORT_SYMBOL_GPL(unregister_acpi_bus_notifier);
++
+ /**
+  * acpi_bus_notify
+  * ---------------
+@@ -506,6 +519,8 @@ static void acpi_bus_notify(acpi_handle handle, u32 type, void *data)
+ 	int result = 0;
+ 	struct acpi_device *device = NULL;
+ 
++	blocking_notifier_call_chain(&acpi_bus_notify_list,
++		type, (void *)handle);
+ 
+ 	if (acpi_bus_get_device(handle, &device))
+ 		return;
 diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index 2563bc6..4b395b1 100644
+index 799a0fd..2563bc6 100644
 --- a/drivers/acpi/dock.c
 +++ b/drivers/acpi/dock.c
-@@ -748,6 +748,20 @@ static void dock_notify(acpi_handle handle, u32 event, void *data)
+@@ -748,6 +748,28 @@ static void dock_notify(acpi_handle handle, u32 event, void *data)
  	}
  }
  
-+struct dock_data {
-+	acpi_handle handle;
-+	unsigned long event;
-+	struct dock_station *ds;
++static int acpi_dock_notifier_call(struct notifier_block *this,
++	unsigned long event, void *data)
++{
++	struct dock_station *dock_station;
++	acpi_handle handle = (acpi_handle)data;
++
++	if (event != ACPI_NOTIFY_BUS_CHECK && event != ACPI_NOTIFY_DEVICE_CHECK
++	   && event != ACPI_NOTIFY_EJECT_REQUEST)
++		return 0;
++	list_for_each_entry(dock_station, &dock_stations, sibiling) {
++		if (dock_station->handle == handle) {
++			dock_notify(handle, event, dock_station);
++			return 0 ;
++		}
++	}
++	return 0;
++}
++
++static struct notifier_block dock_acpi_notifier = {
++	.notifier_call = acpi_dock_notifier_call,
 +};
 +
-+static void acpi_dock_deferred_cb(void *context)
-+{
-+	struct dock_data *data = (struct dock_data *)context;
-+
-+	dock_notify(data->handle, data->event, data->ds);
-+	kfree(data);
-+}
-+
- static int acpi_dock_notifier_call(struct notifier_block *this,
- 	unsigned long event, void *data)
+ /**
+  * find_dock_devices - find devices on the dock station
+  * @handle: the handle of the device we are examining
+@@ -861,7 +883,6 @@ static DEVICE_ATTR(uid, S_IRUGO, show_dock_uid, NULL);
+ static int dock_add(acpi_handle handle)
  {
-@@ -759,7 +773,16 @@ static int acpi_dock_notifier_call(struct notifier_block *this,
- 		return 0;
- 	list_for_each_entry(dock_station, &dock_stations, sibiling) {
- 		if (dock_station->handle == handle) {
--			dock_notify(handle, event, dock_station);
-+			struct dock_data *dock_data;
-+
-+			dock_data = kmalloc(sizeof(*dock_data), GFP_KERNEL);
-+			if (!dock_data)
-+				return 0;
-+			dock_data->handle = handle;
-+			dock_data->event = event;
-+			dock_data->ds = dock_station;
-+			acpi_os_hotplug_execute(acpi_dock_deferred_cb,
-+				dock_data);
- 			return 0 ;
- 		}
+ 	int ret;
+-	acpi_status status;
+ 	struct dock_dependent_device *dd;
+ 	struct dock_station *dock_station;
+ 	struct platform_device *dock_device;
+@@ -956,23 +977,10 @@ static int dock_add(acpi_handle handle)
  	}
-diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index 235a138..750e0df 100644
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -682,6 +682,22 @@ static void acpi_os_execute_deferred(struct work_struct *work)
- 	return;
- }
+ 	add_dock_dependent_device(dock_station, dd);
  
-+static void acpi_os_execute_hp_deferred(struct work_struct *work)
-+{
-+	struct acpi_os_dpc *dpc = container_of(work, struct acpi_os_dpc, work);
-+	if (!dpc) {
-+		printk(KERN_ERR PREFIX "Invalid (NULL) context\n");
-+		return;
-+	}
-+
-+	acpi_os_wait_events_complete(NULL);
-+
-+	dpc->function(dpc->context);
-+	kfree(dpc);
-+
-+	return;
-+}
-+
- /*******************************************************************************
-  *
-  * FUNCTION:    acpi_os_execute
-@@ -697,12 +713,13 @@ static void acpi_os_execute_deferred(struct work_struct *work)
-  *
-  ******************************************************************************/
+-	/* register for dock events */
+-	status = acpi_install_notify_handler(dock_station->handle,
+-					     ACPI_SYSTEM_NOTIFY,
+-					     dock_notify, dock_station);
+-
+-	if (ACPI_FAILURE(status)) {
+-		printk(KERN_ERR PREFIX "Error installing notify handler\n");
+-		ret = -ENODEV;
+-		goto dock_add_err;
+-	}
+-
+ 	dock_station_count++;
+ 	list_add(&dock_station->sibiling, &dock_stations);
+ 	return 0;
  
--acpi_status acpi_os_execute(acpi_execute_type type,
--			    acpi_osd_exec_callback function, void *context)
-+static acpi_status __acpi_os_execute(acpi_execute_type type,
-+	acpi_osd_exec_callback function, void *context, int hp)
+-dock_add_err:
+-	kfree(dd);
+ dock_add_err_unregister:
+ 	device_remove_file(&dock_device->dev, &dev_attr_docked);
+ 	device_remove_file(&dock_device->dev, &dev_attr_undock);
+@@ -990,7 +998,6 @@ dock_add_err_unregister:
+ static int dock_remove(struct dock_station *dock_station)
  {
- 	acpi_status status = AE_OK;
- 	struct acpi_os_dpc *dpc;
- 	struct workqueue_struct *queue;
-+	int ret;
- 	ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
- 			  "Scheduling function [%p(%p)] for deferred execution.\n",
- 			  function, context));
-@@ -726,9 +743,17 @@ acpi_status acpi_os_execute(acpi_execute_type type,
- 	dpc->function = function;
- 	dpc->context = context;
+ 	struct dock_dependent_device *dd, *tmp;
+-	acpi_status status;
+ 	struct platform_device *dock_device = dock_station->dock_device;
  
--	INIT_WORK(&dpc->work, acpi_os_execute_deferred);
--	queue = (type == OSL_NOTIFY_HANDLER) ? kacpi_notify_wq : kacpid_wq;
--	if (!queue_work(queue, &dpc->work)) {
-+	if (!hp) {
-+		INIT_WORK(&dpc->work, acpi_os_execute_deferred);
-+		queue = (type == OSL_NOTIFY_HANDLER) ?
-+			kacpi_notify_wq : kacpid_wq;
-+		ret = queue_work(queue, &dpc->work);
-+	} else {
-+		INIT_WORK(&dpc->work, acpi_os_execute_hp_deferred);
-+		ret = schedule_work(&dpc->work);
-+	}
-+
-+	if (!ret) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
- 			  "Call to queue_work() failed.\n"));
- 		status = AE_ERROR;
-@@ -737,8 +762,19 @@ acpi_status acpi_os_execute(acpi_execute_type type,
- 	return_ACPI_STATUS(status);
- }
+ 	if (!dock_station_count)
+@@ -1001,13 +1008,6 @@ static int dock_remove(struct dock_station *dock_station)
+ 				 list)
+ 	    kfree(dd);
  
-+acpi_status acpi_os_execute(acpi_execute_type type,
-+			    acpi_osd_exec_callback function, void *context)
-+{
-+	return __acpi_os_execute(type, function, context, 0);
-+}
- EXPORT_SYMBOL(acpi_os_execute);
+-	/* remove dock notify handler */
+-	status = acpi_remove_notify_handler(dock_station->handle,
+-					    ACPI_SYSTEM_NOTIFY,
+-					    dock_notify);
+-	if (ACPI_FAILURE(status))
+-		printk(KERN_ERR "Error removing notify handler\n");
+-
+ 	/* cleanup sysfs */
+ 	device_remove_file(&dock_device->dev, &dev_attr_docked);
+ 	device_remove_file(&dock_device->dev, &dev_attr_undock);
+@@ -1069,6 +1069,7 @@ static int __init dock_init(void)
+ 		return 0;
+ 	}
  
-+acpi_status acpi_os_hotplug_execute(acpi_osd_exec_callback function,
-+	void *context)
-+{
-+	return __acpi_os_execute(0, function, context, 1);
-+}
-+
- void acpi_os_wait_events_complete(void *context)
++	register_acpi_bus_notifier(&dock_acpi_notifier);
+ 	printk(KERN_INFO PREFIX "%s: %d docks/bays found\n",
+ 		ACPI_DOCK_DRIVER_DESCRIPTION, dock_station_count);
+ 	return 0;
+@@ -1078,6 +1079,7 @@ static void __exit dock_exit(void)
  {
- 	flush_workqueue(kacpid_wq);
-diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
-index 3f93a6b..b91440a 100644
---- a/include/acpi/acpiosxf.h
-+++ b/include/acpi/acpiosxf.h
-@@ -193,6 +193,9 @@ acpi_status
- acpi_os_execute(acpi_execute_type type,
- 		acpi_osd_exec_callback function, void *context);
+ 	struct dock_station *dock_station;
  
-+acpi_status
-+acpi_os_hotplug_execute(acpi_osd_exec_callback function, void *context);
++	unregister_acpi_bus_notifier(&dock_acpi_notifier);
+ 	list_for_each_entry(dock_station, &dock_stations, sibiling)
+ 		dock_remove(dock_station);
+ }
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index a5ac0bc..f74f882 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -327,6 +327,9 @@ int acpi_bus_get_private_data(acpi_handle, void **);
+ extern int acpi_notifier_call_chain(struct acpi_device *, u32, u32);
+ extern int register_acpi_notifier(struct notifier_block *);
+ extern int unregister_acpi_notifier(struct notifier_block *);
 +
- void acpi_os_wait_events_complete(void *context);
- 
- void acpi_os_sleep(acpi_integer milliseconds);
++extern int register_acpi_bus_notifier(struct notifier_block *nb);
++extern void unregister_acpi_bus_notifier(struct notifier_block *nb);
+ /*
+  * External Functions
+  */
 -- 
 1.5.5.1
 
