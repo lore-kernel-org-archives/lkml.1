@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbYJKHjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760435AbYJKHjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759004AbYJKHjE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYJKHhK
+	id S1760435AbYJKHjZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbYJKHhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:37:10 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:48105 "EHLO
+	Sat, 11 Oct 2008 03:37:11 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:48107 "EHLO
 	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758020AbYJKHhI (ORCPT
+	with ESMTP id S1758034AbYJKHhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:37:08 -0400
-Date: Sat, 11 Oct 2008 02:35:55 -0400
+	Sat, 11 Oct 2008 03:37:09 -0400
+Date: Sat, 11 Oct 2008 02:36:05 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 35/85] dock: introduce .uevent for devices in dock, eg libata
+Subject: [PATCH 45/85] ACPI Suspend: Enable ACPI during resume if SCI_EN is not
+ set
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
-Message-id: <1253f7aabfebc51446dbec5c8895c5c8846dfe06.1223706853.git.len.brown@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
+Message-id: <73ebf767b33707fcd050e3f37b7dbf4b1370b0c5.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -26,223 +27,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-dock's uevent reported itself, not ata. It might be difficult to find an
-ata device just according to a dock. This patch introduces docking ops
-for each device in a dock. when docking, dock driver can send device
-specific uevent. This should help dock station too (not just bay)
+ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Acked-by: Tejun Heo <htejun@gmail.com>
+On some machines, like for example MSI Wind U100, the BIOS doesn't
+enable ACPI before returning control to the OS, which sometimes
+causes resume to fail.  This is against the ACPI specification,
+which clearly states that "When the platform is waking from an S1, S2
+or S3 state, OSPM assumes the hardware is already in the ACPI mode
+and will not issue an ACPI_ENABLE", but it won't hurt to check the
+SCI_EN bit and enable ACPI during resume from S3 if this bit is not
+set.
+
+Fortunately, we already have acpi_enable() for that, so use it in the
+resume code path, before executing _BFS, in analogy with the
+resume-from-hibernation code path.
+
+NOTE: We aren't supposed to set SCI_EN directly, because it's owned
+by the hardware.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/dock.c                |   22 ++++++++++++-----
- drivers/ata/libata-acpi.c          |   44 ++++++++++++++++++++++++++++++++++-
- drivers/pci/hotplug/acpiphp_glue.c |    6 +++-
- include/acpi/acpi_drivers.h        |    9 +++++-
- 4 files changed, 68 insertions(+), 13 deletions(-)
+ drivers/acpi/sleep/main.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index f19f643..ac7dfef 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -75,7 +75,7 @@ struct dock_dependent_device {
- 	struct list_head list;
- 	struct list_head hotplug_list;
- 	acpi_handle handle;
--	acpi_notify_handler handler;
-+	struct acpi_dock_ops *ops;
- 	void *context;
- };
- 
-@@ -385,8 +385,8 @@ static void hotplug_dock_devices(struct dock_station *ds, u32 event)
- 	 * First call driver specific hotplug functions
- 	 */
- 	list_for_each_entry(dd, &ds->hotplug_devices, hotplug_list) {
--		if (dd->handler)
--			dd->handler(dd->handle, event, dd->context);
-+		if (dd->ops && dd->ops->handler)
-+			dd->ops->handler(dd->handle, event, dd->context);
+diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+index c7f0c9c..5419938 100644
+--- a/drivers/acpi/sleep/main.c
++++ b/drivers/acpi/sleep/main.c
+@@ -233,6 +233,8 @@ static int acpi_suspend_enter(suspend_state_t pm_state)
+ 		break;
  	}
  
- 	/*
-@@ -409,6 +409,7 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
- 	struct device *dev = &ds->dock_device->dev;
- 	char event_string[13];
- 	char *envp[] = { event_string, NULL };
-+	struct dock_dependent_device *dd;
++	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
++	acpi_enable();
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(acpi_state);
  
- 	if (num == UNDOCK_EVENT)
- 		sprintf(event_string, "EVENT=undock");
-@@ -419,7 +420,14 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
- 	 * Indicate that the status of the dock station has
- 	 * changed.
- 	 */
--	kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
-+	if (num == DOCK_EVENT)
-+		kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
-+
-+	list_for_each_entry(dd, &ds->hotplug_devices, hotplug_list)
-+		if (dd->ops && dd->ops->uevent)
-+			dd->ops->uevent(dd->handle, event, dd->context);
-+	if (num != DOCK_EVENT)
-+		kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
- }
- 
- /**
-@@ -588,7 +596,7 @@ EXPORT_SYMBOL_GPL(unregister_dock_notifier);
- /**
-  * register_hotplug_dock_device - register a hotplug function
-  * @handle: the handle of the device
-- * @handler: the acpi_notifier_handler to call after docking
-+ * @ops: handlers to call after docking
-  * @context: device specific data
-  *
-  * If a driver would like to perform a hotplug operation after a dock
-@@ -596,7 +604,7 @@ EXPORT_SYMBOL_GPL(unregister_dock_notifier);
-  * the dock driver after _DCK is executed.
-  */
- int
--register_hotplug_dock_device(acpi_handle handle, acpi_notify_handler handler,
-+register_hotplug_dock_device(acpi_handle handle, struct acpi_dock_ops *ops,
- 			     void *context)
- {
- 	struct dock_dependent_device *dd;
-@@ -612,7 +620,7 @@ register_hotplug_dock_device(acpi_handle handle, acpi_notify_handler handler,
- 	list_for_each_entry(dock_station, &dock_stations, sibiling) {
- 		dd = find_dock_dependent_device(dock_station, handle);
- 		if (dd) {
--			dd->handler = handler;
-+			dd->ops = ops;
- 			dd->context = context;
- 			dock_add_hotplug_device(dock_station, dd);
- 			return 0;
-diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index 97727be..c012307 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -209,6 +209,46 @@ static void ata_acpi_ap_notify_dock(acpi_handle handle, u32 event, void *data)
- 	ata_acpi_handle_hotplug(ap, NULL, event);
- }
- 
-+static void ata_acpi_uevent(struct ata_port *ap, struct ata_device *dev,
-+	u32 event)
-+{
-+	struct kobject *kobj = NULL;
-+	char event_string[20];
-+	char *envp[] = { event_string, NULL };
-+
-+	if (dev) {
-+		if (dev->sdev)
-+			kobj = &dev->sdev->sdev_gendev.kobj;
-+	} else
-+		kobj = &ap->dev->kobj;
-+
-+	if (kobj) {
-+		snprintf(event_string, 20, "BAY_EVENT=%d", event);
-+		kobject_uevent_env(kobj, KOBJ_CHANGE, envp);
-+	}
-+}
-+
-+static void ata_acpi_ap_uevent(acpi_handle handle, u32 event, void *data)
-+{
-+	ata_acpi_uevent(data, NULL, event);
-+}
-+
-+static void ata_acpi_dev_uevent(acpi_handle handle, u32 event, void *data)
-+{
-+	struct ata_device *dev = data;
-+	ata_acpi_uevent(dev->link->ap, dev, event);
-+}
-+
-+static struct acpi_dock_ops ata_acpi_dev_dock_ops = {
-+	.handler = ata_acpi_dev_notify_dock,
-+	.uevent = ata_acpi_dev_uevent,
-+};
-+
-+static struct acpi_dock_ops ata_acpi_ap_dock_ops = {
-+	.handler = ata_acpi_ap_notify_dock,
-+	.uevent = ata_acpi_ap_uevent,
-+};
-+
- /**
-  * ata_acpi_associate - associate ATA host with ACPI objects
-  * @host: target ATA host
-@@ -244,7 +284,7 @@ void ata_acpi_associate(struct ata_host *host)
- 		if (ap->acpi_handle) {
- 			/* we might be on a docking station */
- 			register_hotplug_dock_device(ap->acpi_handle,
--					     ata_acpi_ap_notify_dock, ap);
-+					     &ata_acpi_ap_dock_ops, ap);
- 		}
- 
- 		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
-@@ -253,7 +293,7 @@ void ata_acpi_associate(struct ata_host *host)
- 			if (dev->acpi_handle) {
- 				/* we might be on a docking station */
- 				register_hotplug_dock_device(dev->acpi_handle,
--					     ata_acpi_dev_notify_dock, dev);
-+					     &ata_acpi_dev_dock_ops, dev);
- 			}
- 		}
- 	}
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index a3e4705..db54c5e 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -169,7 +169,9 @@ static int post_dock_fixups(struct notifier_block *nb, unsigned long val,
- }
- 
- 
--
-+static struct acpi_dock_ops acpiphp_dock_ops = {
-+	.handler = handle_hotplug_event_func,
-+};
- 
- /* callback routine to register each ACPI PCI slot object */
- static acpi_status
-@@ -285,7 +287,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- 		 */
- 		newfunc->flags &= ~FUNC_HAS_EJ0;
- 		if (register_hotplug_dock_device(handle,
--			handle_hotplug_event_func, newfunc))
-+			&acpiphp_dock_ops, newfunc))
- 			dbg("failed to register dock device\n");
- 
- 		/* we need to be notified when dock events happen
-diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-index e5f38e5..4f5042a 100644
---- a/include/acpi/acpi_drivers.h
-+++ b/include/acpi/acpi_drivers.h
-@@ -115,12 +115,17 @@ int acpi_processor_set_thermal_limit(acpi_handle handle, int type);
- /*--------------------------------------------------------------------------
-                                   Dock Station
-   -------------------------------------------------------------------------- */
-+struct acpi_dock_ops {
-+	acpi_notify_handler handler;
-+	acpi_notify_handler uevent;
-+};
-+
- #if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
- extern int is_dock_device(acpi_handle handle);
- extern int register_dock_notifier(struct notifier_block *nb);
- extern void unregister_dock_notifier(struct notifier_block *nb);
- extern int register_hotplug_dock_device(acpi_handle handle,
--					acpi_notify_handler handler,
-+					struct acpi_dock_ops *ops,
- 					void *context);
- extern void unregister_hotplug_dock_device(acpi_handle handle);
- #else
-@@ -136,7 +141,7 @@ static inline void unregister_dock_notifier(struct notifier_block *nb)
- {
- }
- static inline int register_hotplug_dock_device(acpi_handle handle,
--					       acpi_notify_handler handler,
-+					       struct acpi_dock_ops *ops,
- 					       void *context)
- {
- 	return -ENODEV;
 -- 
 1.5.5.1
 
