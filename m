@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbYJKG5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYJKG5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764853AbYJKG5Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYJKGkP
+	id S1754831AbYJKG5c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbYJKGkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:40:15 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:50806 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbYJKGhC (ORCPT
+	Sat, 11 Oct 2008 02:40:18 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:40791 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbYJKGhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:02 -0400
-Date: Sat, 11 Oct 2008 02:36:03 -0400
+	Sat, 11 Oct 2008 02:37:00 -0400
+Date: Sat, 11 Oct 2008 02:35:27 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 43/85] ACPI: EC: Rename some variables
+Subject: [PATCH 07/85] ACPI : Load device driver according to the status of
+ acpi device
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>
-Message-id: <8463200a00fe2aea938b40173198a0983f2929ef.1223706853.git.len.brown@intel.com>
+Cc: Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
+       Zhang Rui <rui.zhang@intel.com>, Andi Kleen <ak@linux.intel.com>
+Message-id: <32a455702586f735ead7e9ef0c935d0765865aca.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,287 +28,145 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-No functional changes.
+According to ACPI spec when the status of some device is not present
+but functional, the device is valid and the children of this device
+should be enumerated. It means that the device should be added to
+linux acpi device tree. But the device driver for this device should not
+be loaded.
+    The detailed info can be found in the section 6.3.7 of ACPI 3.0b spec.
+    _STA may return bit 0 clear (not present) with bit 3 set (device is
+functional). This case is used to indicate a valid device for which no
+device driver should be loaded (for example, a bridge device.).
+Children of this device may be present and valid. OS should continue
+enumeration below a device whose _STA returns this bit combination
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-Acked-by: Rafael J. Wysocki <rjw@suse.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+http://bugzilla.kernel.org/show_bug.cgi?id=3358
+
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Signed-off-by: Li Shaohua <shaohua.li@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 ---
- drivers/acpi/ec.c |  118 ++++++++++++++++++++++++++++-------------------------
- 1 files changed, 63 insertions(+), 55 deletions(-)
+ drivers/acpi/bus.c         |   16 ++++++++--------
+ drivers/acpi/scan.c        |   35 +++++++++++++++++++++++++----------
+ drivers/pnp/pnpacpi/core.c |    6 +++++-
+ 3 files changed, 38 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 7f0d81c..453ba1e 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -95,10 +95,11 @@ struct acpi_ec_query_handler {
- 	u8 query_bit;
- };
- 
--struct transaction_data {
-+struct transaction {
- 	const u8 *wdata;
- 	u8 *rdata;
- 	unsigned short irq_count;
-+	u8 command;
- 	u8 wlen;
- 	u8 rlen;
- };
-@@ -113,8 +114,8 @@ static struct acpi_ec {
- 	struct mutex lock;
- 	wait_queue_head_t wait;
- 	struct list_head list;
--	struct transaction_data *t;
--	spinlock_t t_lock;
-+	struct transaction *curr;
-+	spinlock_t curr_lock;
- } *boot_ec, *first_ec;
- 
- /* 
-@@ -176,37 +177,37 @@ static int ec_transaction_done(struct acpi_ec *ec)
- {
- 	unsigned long flags;
- 	int ret = 0;
--	spin_lock_irqsave(&ec->t_lock, flags);
--	if (!ec->t || (!ec->t->wlen && !ec->t->rlen))
-+	spin_lock_irqsave(&ec->curr_lock, flags);
-+	if (!ec->curr || (!ec->curr->wlen && !ec->curr->rlen))
- 		ret = 1;
--	spin_unlock_irqrestore(&ec->t_lock, flags);
-+	spin_unlock_irqrestore(&ec->curr_lock, flags);
- 	return ret;
- }
- 
- static void gpe_transaction(struct acpi_ec *ec, u8 status)
- {
- 	unsigned long flags;
--	spin_lock_irqsave(&ec->t_lock, flags);
--	if (!ec->t)
-+	spin_lock_irqsave(&ec->curr_lock, flags);
-+	if (!ec->curr)
- 		goto unlock;
--	if (ec->t->wlen > 0) {
-+	if (ec->curr->wlen > 0) {
- 		if ((status & ACPI_EC_FLAG_IBF) == 0) {
--			acpi_ec_write_data(ec, *(ec->t->wdata++));
--			--ec->t->wlen;
-+			acpi_ec_write_data(ec, *(ec->curr->wdata++));
-+			--ec->curr->wlen;
- 		} else
- 			/* false interrupt, state didn't change */
--			++ec->t->irq_count;
-+			++ec->curr->irq_count;
- 
--	} else if (ec->t->rlen > 0) {
-+	} else if (ec->curr->rlen > 0) {
- 		if ((status & ACPI_EC_FLAG_OBF) == 1) {
--			*(ec->t->rdata++) = acpi_ec_read_data(ec);
--			--ec->t->rlen;
-+			*(ec->curr->rdata++) = acpi_ec_read_data(ec);
-+			--ec->curr->rlen;
- 		} else
- 			/* false interrupt, state didn't change */
--			++ec->t->irq_count;
-+			++ec->curr->irq_count;
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 945cd2f..e9b116d 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -112,21 +112,21 @@ int acpi_bus_get_status(struct acpi_device *device)
  	}
- unlock:
--	spin_unlock_irqrestore(&ec->t_lock, flags);
-+	spin_unlock_irqrestore(&ec->curr_lock, flags);
- }
  
- static int acpi_ec_wait(struct acpi_ec *ec)
-@@ -248,15 +249,11 @@ static int ec_poll(struct acpi_ec *ec)
- 	return -ETIME;
- }
- 
--static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
--					const u8 * wdata, unsigned wdata_len,
--					u8 * rdata, unsigned rdata_len,
-+static int acpi_ec_transaction_unlocked(struct acpi_ec *ec,
-+					struct transaction *t,
- 					int force_poll)
- {
- 	unsigned long tmp;
--	struct transaction_data t = {.wdata = wdata, .rdata = rdata,
--				     .wlen = wdata_len, .rlen = rdata_len,
--				     .irq_count = 0};
- 	int ret = 0;
- 	pr_debug(PREFIX "transaction start\n");
- 	/* disable GPE during transaction if storm is detected */
-@@ -265,29 +262,30 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
- 		acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
- 	}
- 	/* start transaction */
--	spin_lock_irqsave(&ec->t_lock, tmp);
-+	spin_lock_irqsave(&ec->curr_lock, tmp);
- 	/* following two actions should be kept atomic */
--	ec->t = &t;
--	acpi_ec_write_cmd(ec, command);
--	if (command == ACPI_EC_COMMAND_QUERY)
-+	t->irq_count = 0;
-+	ec->curr = t;
-+	acpi_ec_write_cmd(ec, ec->curr->command);
-+	if (ec->curr->command == ACPI_EC_COMMAND_QUERY)
- 		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
--	spin_unlock_irqrestore(&ec->t_lock, tmp);
-+	spin_unlock_irqrestore(&ec->curr_lock, tmp);
- 	/* if we selected poll mode or failed in GPE-mode do a poll loop */
- 	if (force_poll ||
- 	    !test_bit(EC_FLAGS_GPE_MODE, &ec->flags) ||
- 	    acpi_ec_wait(ec))
- 		ret = ec_poll(ec);
- 	pr_debug(PREFIX "transaction end\n");
--	spin_lock_irqsave(&ec->t_lock, tmp);
--	ec->t = NULL;
--	spin_unlock_irqrestore(&ec->t_lock, tmp);
-+	spin_lock_irqsave(&ec->curr_lock, tmp);
-+	ec->curr = NULL;
-+	spin_unlock_irqrestore(&ec->curr_lock, tmp);
- 	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
- 		/* check if we received SCI during transaction */
- 		ec_check_sci(ec, acpi_ec_read_status(ec));
- 		/* it is safe to enable GPE outside of transaction */
- 		acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
- 	} else if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
--		   t.irq_count > ACPI_EC_STORM_THRESHOLD) {
-+		   t->irq_count > ACPI_EC_STORM_THRESHOLD) {
- 		pr_debug(PREFIX "GPE storm detected\n");
- 		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
- 	}
-@@ -300,17 +298,15 @@ static int ec_check_ibf0(struct acpi_ec *ec)
- 	return (status & ACPI_EC_FLAG_IBF) == 0;
- }
- 
--static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
--			       const u8 * wdata, unsigned wdata_len,
--			       u8 * rdata, unsigned rdata_len,
-+static int acpi_ec_transaction(struct acpi_ec *ec, struct transaction *t,
- 			       int force_poll)
- {
- 	int status;
- 	u32 glk;
--	if (!ec || (wdata_len && !wdata) || (rdata_len && !rdata))
-+	if (!ec || (!t) || (t->wlen && !t->wdata) || (t->rlen && !t->rdata))
- 		return -EINVAL;
--	if (rdata)
--		memset(rdata, 0, rdata_len);
-+	if (t->rdata)
-+		memset(t->rdata, 0, t->rlen);
- 	mutex_lock(&ec->lock);
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
-@@ -326,10 +322,7 @@ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
- 		status = -ETIME;
- 		goto end;
- 	}
--	status = acpi_ec_transaction_unlocked(ec, command,
--					      wdata, wdata_len,
--					      rdata, rdata_len,
--					      force_poll);
-+	status = acpi_ec_transaction_unlocked(ec, t, force_poll);
- end:
- 	if (ec->global_lock)
- 		acpi_release_global_lock(glk);
-@@ -345,23 +338,32 @@ unlock:
- int acpi_ec_burst_enable(struct acpi_ec *ec)
- {
- 	u8 d;
--	return acpi_ec_transaction(ec, ACPI_EC_BURST_ENABLE, NULL, 0, &d, 1, 0);
-+	struct transaction t = {.command = ACPI_EC_BURST_ENABLE,
-+				.wdata = NULL, .rdata = &d,
-+				.wlen = 0, .rlen = 1};
-+
-+	return acpi_ec_transaction(ec, &t, 0);
- }
- 
- int acpi_ec_burst_disable(struct acpi_ec *ec)
- {
-+	struct transaction t = {.command = ACPI_EC_BURST_DISABLE,
-+				.wdata = NULL, .rdata = NULL,
-+				.wlen = 0, .rlen = 0};
-+
- 	return (acpi_ec_read_status(ec) & ACPI_EC_FLAG_BURST) ?
--		acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE,
--			NULL, 0, NULL, 0, 0) : 0;
-+				acpi_ec_transaction(ec, &t, 0) : 0;
- }
- 
- static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
- {
- 	int result;
- 	u8 d;
-+	struct transaction t = {.command = ACPI_EC_COMMAND_READ,
-+				.wdata = &address, .rdata = &d,
-+				.wlen = 1, .rlen = 1};
- 
--	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_READ,
--				     &address, 1, &d, 1, 0);
-+	result = acpi_ec_transaction(ec, &t, 0);
- 	*data = d;
- 	return result;
- }
-@@ -369,8 +371,11 @@ static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
- static int acpi_ec_write(struct acpi_ec *ec, u8 address, u8 data)
- {
- 	u8 wdata[2] = { address, data };
--	return acpi_ec_transaction(ec, ACPI_EC_COMMAND_WRITE,
--				   wdata, 2, NULL, 0, 0);
-+	struct transaction t = {.command = ACPI_EC_COMMAND_WRITE,
-+				.wdata = wdata, .rdata = NULL,
-+				.wlen = 2, .rlen = 0};
-+
-+	return acpi_ec_transaction(ec, &t, 0);
- }
- 
- /*
-@@ -432,12 +437,13 @@ int ec_transaction(u8 command,
- 		   u8 * rdata, unsigned rdata_len,
- 		   int force_poll)
- {
-+	struct transaction t = {.command = command,
-+				.wdata = wdata, .rdata = rdata,
-+				.wlen = wdata_len, .rlen = rdata_len};
- 	if (!first_ec)
- 		return -ENODEV;
- 
--	return acpi_ec_transaction(first_ec, command, wdata,
--				   wdata_len, rdata, rdata_len,
--				   force_poll);
-+	return acpi_ec_transaction(first_ec, &t, force_poll);
- }
- 
- EXPORT_SYMBOL(ec_transaction);
-@@ -446,7 +452,9 @@ static int acpi_ec_query(struct acpi_ec *ec, u8 * data)
- {
- 	int result;
- 	u8 d;
--
-+	struct transaction t = {.command = ACPI_EC_COMMAND_QUERY,
-+				.wdata = NULL, .rdata = &d,
-+				.wlen = 0, .rlen = 1};
- 	if (!ec || !data)
- 		return -EINVAL;
- 
-@@ -456,7 +464,7 @@ static int acpi_ec_query(struct acpi_ec *ec, u8 * data)
- 	 * bit to be cleared (and thus clearing the interrupt source).
+ 	/*
+-	 * Otherwise we assume the status of our parent (unless we don't
+-	 * have one, in which case status is implied).
++	 * According to ACPI spec some device can be present and functional
++	 * even if the parent is not present but functional.
++	 * In such conditions the child device should not inherit the status
++	 * from the parent.
  	 */
+-	else if (device->parent)
+-		device->status = device->parent->status;
+ 	else
+ 		STRUCT_TO_INT(device->status) =
+ 		    ACPI_STA_DEVICE_PRESENT | ACPI_STA_DEVICE_ENABLED |
+ 		    ACPI_STA_DEVICE_UI      | ACPI_STA_DEVICE_FUNCTIONING;
  
--	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_QUERY, NULL, 0, &d, 1, 0);
-+	result = acpi_ec_transaction(ec, &t, 0);
- 	if (result)
- 		return result;
+ 	if (device->status.functional && !device->status.present) {
+-		printk(KERN_WARNING PREFIX "Device [%s] status [%08x]: "
+-		       "functional but not present; setting present\n",
+-		       device->pnp.bus_id, (u32) STRUCT_TO_INT(device->status));
+-		device->status.present = 1;
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] status [%08x]: "
++		       "functional but not present;\n",
++			device->pnp.bus_id,
++			(u32) STRUCT_TO_INT(device->status)));
+ 	}
  
-@@ -696,7 +704,7 @@ static struct acpi_ec *make_acpi_ec(void)
- 	mutex_init(&ec->lock);
- 	init_waitqueue_head(&ec->wait);
- 	INIT_LIST_HEAD(&ec->list);
--	spin_lock_init(&ec->t_lock);
-+	spin_lock_init(&ec->curr_lock);
- 	return ec;
- }
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] status [%08x]\n",
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index ad06798..89c112e 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -276,6 +276,13 @@ int acpi_match_device_ids(struct acpi_device *device,
+ {
+ 	const struct acpi_device_id *id;
  
++	/*
++	 * If the device is not present, it is unnecessary to load device
++	 * driver for it.
++	 */
++	if (!device->status.present)
++		return -ENODEV;
++
+ 	if (device->flags.hardware_id) {
+ 		for (id = ids; id->id[0]; id++) {
+ 			if (!strcmp((char*)id->id, device->pnp.hardware_id))
+@@ -1222,15 +1229,18 @@ acpi_add_single_object(struct acpi_device **child,
+ 			result = -ENODEV;
+ 			goto end;
+ 		}
+-		if (!device->status.present) {
+-			/* Bay and dock should be handled even if absent */
+-			if (!ACPI_SUCCESS(
+-			     acpi_is_child_device(device, acpi_bay_match)) &&
+-			    !ACPI_SUCCESS(
+-			     acpi_is_child_device(device, acpi_dock_match))) {
+-					result = -ENODEV;
+-					goto end;
+-			}
++		/*
++		 * When the device is neither present nor functional, the
++		 * device should not be added to Linux ACPI device tree.
++		 * When the status of the device is not present but functinal,
++		 * it should be added to Linux ACPI tree. For example : bay
++		 * device , dock device.
++		 * In such conditions it is unncessary to check whether it is
++		 * bay device or dock device.
++		 */
++		if (!device->status.present && !device->status.functional) {
++			result = -ENODEV;
++			goto end;
+ 		}
+ 		break;
+ 	default:
+@@ -1411,7 +1421,12 @@ static int acpi_bus_scan(struct acpi_device *start, struct acpi_bus_ops *ops)
+ 		 * TBD: Need notifications and other detection mechanisms
+ 		 *      in place before we can fully implement this.
+ 		 */
+-		if (child->status.present) {
++		 /*
++		 * When the device is not present but functional, it is also
++		 * necessary to scan the children of this device.
++		 */
++		if (child->status.present || (!child->status.present &&
++					child->status.functional)) {
+ 			status = acpi_get_next_object(ACPI_TYPE_ANY, chandle,
+ 						      NULL, NULL);
+ 			if (ACPI_SUCCESS(status)) {
+diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
+index c1b9ea3..98b9df7 100644
+--- a/drivers/pnp/pnpacpi/core.c
++++ b/drivers/pnp/pnpacpi/core.c
+@@ -148,9 +148,13 @@ static int __init pnpacpi_add_device(struct acpi_device *device)
+ 	acpi_status status;
+ 	struct pnp_dev *dev;
+ 
++	/*
++	 * If a PnPacpi device is not present , the device
++	 * driver should not be loaded.
++	 */
+ 	status = acpi_get_handle(device->handle, "_CRS", &temp);
+ 	if (ACPI_FAILURE(status) || !ispnpidacpi(acpi_device_hid(device)) ||
+-	    is_exclusive_device(device))
++	    is_exclusive_device(device) || (!device->status.present))
+ 		return 0;
+ 
+ 	dev = pnp_alloc_dev(&pnpacpi_protocol, num, acpi_device_hid(device));
 -- 
 1.5.5.1
 
