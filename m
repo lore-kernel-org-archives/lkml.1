@@ -1,76 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYJKEy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYJKE7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYJKEy2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 00:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYJKEyU
+	id S1754850AbYJKE7Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 00:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYJKE7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 00:54:20 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1680 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869AbYJKEyT (ORCPT
+	Sat, 11 Oct 2008 00:59:00 -0400
+Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:36176
+	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750869AbYJKE7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 00:54:19 -0400
-X-Greylist: delayed 329 seconds by postgrey-1.27 at vger.kernel.org; Sat, 11 Oct 2008 00:54:19 EDT
-From: "David Schwartz" <davids@webmaster.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: RE: recv() hangs until SIGCHLD ?
-Date: Fri, 10 Oct 2008 21:48:45 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEDNAFAD.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Sat, 11 Oct 2008 00:59:00 -0400
+X-Authority-Analysis: v=1.0 c=1 a=AE1oZuSjHPYA:10 a=4XX46gVHXKYA:10
+ a=VwQbUJbxAAAA:8 a=tC0oqZoBfkweKGONl7gA:9 a=a2rwYzTo0j1OiSShSIgA:7
+ a=Z84D4FfFpf8D30FLlGHSMCAEBaUA:4 a=WuK_CZDBSqoA:10
+Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
+From: Tom Zanussi <zanussi@comcast.net>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+In-Reply-To: <1223631723.8959.46.camel@penberg-laptop>
+References: <20080923212914.GB5237@localhost>
+	 <1223386477.28348.42.camel@penberg-laptop>
+	 <1223623191.8959.26.camel@penberg-laptop>
+	 <1223628687.8959.37.camel@penberg-laptop>
+	 <1223629803.8959.40.camel@penberg-laptop>
+	 <1223631723.8959.46.camel@penberg-laptop>
+Content-Type: text/plain
+Date: Fri, 10 Oct 2008 23:58:51 -0500
+Message-Id: <1223701131.7489.25.camel@charm-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
-In-Reply-To: <23165e010810100943ua84228cn2faa03a5eb59255@mail.gmail.com>
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Fri, 10 Oct 2008 21:50:47 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Fri, 10 Oct 2008 21:50:48 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Nicolas Cannasse wrote:
+On Fri, 2008-10-10 at 12:42 +0300, Pekka Enberg wrote:
+> (I'm cc'ing Tom, Jens, and LKML.)
+> 
+> On Fri, 2008-10-10 at 12:10 +0300, Pekka Enberg wrote:
+> > > I'm seeing a hard lock on my machine when I run kmemtraced with the
+> > > following patch applied:
+> > > 
+> > > http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=17ca1d5506b1db433f0b7167a627bfd55d319dd3
+> > > 
+> > > I can enable/disable kmemtrace via the debugfs files fine and can also
+> > > read the relay files with cat.
+> > > 
+> > > Any idea where this is coming from?
+> > 
+> > OK, it's the first splice() call in reader_thread() that causes the
+> > hang. Hmm.
+> 
+> To recap, with a CONFIG_KMEMTRACE enabled kernel from the
+> "topic/kmemtrace" branch of:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git topic/kmemtrace
+> 
+> running the "kmemtraced" program from
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/penberg/kmemtrace-user.git
+> 
+> results to a hard lock on my machine. I am unable to find anything
+> obviously wrong with it and as I can read/write the relay files just
+> fine, I'm beginning to think it's problem in relayfs splice
+> implementation.
+> 
+> Tom, thoughts?
+> 
 
-> In some rare cases, one (or several) threads are hanging in recv().
-> Both lsof and ls /proc/<pid>/fd show that the socket used is in
-> ESTABLISHED mode but when checking on the host on which it's connected
-> (a mysql DB) we can't find the corresponding client socket (as it's
-> been closed already on the other side).
+It looks like you hit the same problem as described here:
 
-Blocking sockets will block until data is received. If no other thread is
-sending data, this can block forever.
+commit 8191ecd1d14c6914c660dfa007154860a7908857
 
-> We are using the Boehm GC which uses the signals SIGXCPU and SIGPWR to
-> pause+restart the threads when running a GC cycle. We are correctly
-> handling EINTR in send() and recv() by restarting the call in case
-> they get interrupted this way.
->
-> However, when attaching GDB to our locked thread it seems that even
-> when the GC runs, recv() does not exit (the breakpoint after it is not
-> reached). If we send SIGCHLD to the hanging thread with GDB, recv()
-> does exit and the thread is correctly unlocked. If we don't, it will
-> hang forever.
+    splice: fix infinite loop in generic_file_splice_read()
 
-Why shouldn't it hang forever? What was supposed to wake it that's not?
+relay uses the same loop but it never got noticed or fixed.  Can you try
+the following patch:
 
-> Any idea how we can stop this from happening or what additional things
-> we can check to get more informations on what's occurring ?
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 8d13a78..6a4d439 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -1318,12 +1318,9 @@ static ssize_t relay_file_splice_read(struct file *in,
+ 		if (ret < 0)
+ 			break;
+ 		else if (!ret) {
+-			if (spliced)
+-				break;
+-			if (flags & SPLICE_F_NONBLOCK) {
++			if (flags & SPLICE_F_NONBLOCK)
+ 				ret = -EAGAIN;
+-				break;
+-			}
++			break;
+ 		}
+ 
+ 		*ppos += ret;
 
-You say a thread is hanging in receive and not returning. But you've yet to
-explain why it should return. Was it interrupted by a signal? Was data
-received? Is the socket non-blocking? Why isn't this expected behavior?
-Blocking sockets block, full stop.
 
-DS
+It worked for me, but I also had to apply the following patch to
+kmemtraced:
+
+diff --git a/kmemtraced.c b/kmemtraced.c
+index 217478d..324ced9 100644
+--- a/kmemtraced.c
++++ b/kmemtraced.c
+@@ -109,6 +109,8 @@ static void *reader_thread(void *data)
+ 		if (retval < 0)
+ 			panic("splice() (from) failed: %s\n",
+ 			      strerror(errno));
++		if (!retval)
++			continue;
+ 		retval = splice(pipe_fd[0], NULL, log_fd, NULL,
+ 				128, SPLICE_F_MOVE);
+ 		if (retval < 0)
+
+
+Otherwise it would end up hanging kmemtraced in the second splice (pipe
+to log_fd) if the return from the first splice was 0 (i.e. there's no
+data available (and we can never know if there will ever be any
+more)).
+
+I'm not sure why kmemtraced is only splicing 128 bytes at a time - it
+seems to defeat the purpose - or why it wouldn't be using poll to know
+when there's at least a whole sub-buffer to splice, but to each his own.
+Hopefully the kernel patch at least fixes the loop. 
+
+Tom
+
 
 
