@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765037AbYJKG6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765176AbYJKG65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765037AbYJKG6h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbYJKGk0
+	id S1765176AbYJKG65 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbYJKGk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:40:26 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:50794 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbYJKGg7 (ORCPT
+	Sat, 11 Oct 2008 02:40:29 -0400
+Received: from vms172071pub.verizon.net ([206.46.172.71]:52144 "EHLO
+	vms172071pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751357AbYJKGg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Oct 2008 02:36:59 -0400
-Date: Sat, 11 Oct 2008 02:35:51 -0400
+Date: Sat, 11 Oct 2008 02:35:47 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 31/85] dock: add bay and battery hotplug support
+Subject: [PATCH 27/85] CPUFREQ: powernow-k8: Try to detect old BIOS,
+ not supporting CPU freq on a recent AMD CPUs.
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
-Message-id: <db350b084dc2cf816288643861ce07b0562dd723.1223706853.git.len.brown@intel.com>
+Cc: Thomas Renninger <trenn@suse.de>, Andi Kleen <ak@linux.intel.com>,
+       Len Brown <len.brown@intel.com>
+Message-id: <2fd47094f92fa2bdbf99be33294a7b6b97785a70.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -26,463 +28,139 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Thomas Renninger <trenn@suse.de>
 
-Make the dock driver support bay and battery hotplug.
-They are all regarded as dock, so handling can be unified.
+Make use of FW_BUG interface to give vendors and users the ability to
+automatically check for powernow-k8 related BIOS bugs by:
+dmesg |grep "Firmware Bug"
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/dock.c |  223 ++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 175 insertions(+), 48 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   42 ++++++++++++++++------------
+ 1 files changed, 24 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index 7bdf93b..799a0fd 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -48,7 +48,6 @@ MODULE_PARM_DESC(immediate_undock, "1 (default) will cause the driver to "
- 	" before undocking");
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+index 84bb395..4e0c6ab 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -45,7 +45,6 @@
+ #endif
  
- static struct atomic_notifier_head dock_notifier_list;
--static struct platform_device *dock_device;
- static char dock_device_name[] = "dock";
+ #define PFX "powernow-k8: "
+-#define BFX PFX "BIOS error: "
+ #define VERSION "version 2.20.00"
+ #include "powernow-k8.h"
  
- static const struct acpi_device_id dock_device_ids[] = {
-@@ -65,7 +64,12 @@ struct dock_station {
- 	struct mutex hp_lock;
- 	struct list_head dependent_devices;
- 	struct list_head hotplug_devices;
-+
-+	struct list_head sibiling;
-+	struct platform_device *dock_device;
- };
-+static LIST_HEAD(dock_stations);
-+static int dock_station_count;
+@@ -536,35 +535,40 @@ static int check_pst_table(struct powernow_k8_data *data, struct pst_s *pst, u8
  
- struct dock_dependent_device {
- 	struct list_head list;
-@@ -77,11 +81,12 @@ struct dock_dependent_device {
- 
- #define DOCK_DOCKING	0x00000001
- #define DOCK_UNDOCKING  0x00000002
-+#define DOCK_IS_DOCK	0x00000010
-+#define DOCK_IS_ATA	0x00000020
-+#define DOCK_IS_BAT	0x00000040
- #define DOCK_EVENT	3
- #define UNDOCK_EVENT	2
- 
--static struct dock_station *dock_station;
--
- /*****************************************************************************
-  *                         Dock Dependent device functions                   *
-  *****************************************************************************/
-@@ -199,6 +204,60 @@ static int is_dock(acpi_handle handle)
- 	return 1;
- }
- 
-+static int is_ejectable(acpi_handle handle)
-+{
-+	acpi_status status;
-+	acpi_handle tmp;
-+
-+	status = acpi_get_handle(handle, "_EJ0", &tmp);
-+	if (ACPI_FAILURE(status))
-+		return 0;
-+	return 1;
-+}
-+
-+static int is_ata(acpi_handle handle)
-+{
-+	acpi_handle tmp;
-+
-+	if ((ACPI_SUCCESS(acpi_get_handle(handle, "_GTF", &tmp))) ||
-+	   (ACPI_SUCCESS(acpi_get_handle(handle, "_GTM", &tmp))) ||
-+	   (ACPI_SUCCESS(acpi_get_handle(handle, "_STM", &tmp))) ||
-+	   (ACPI_SUCCESS(acpi_get_handle(handle, "_SDD", &tmp))))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static int is_battery(acpi_handle handle)
-+{
-+	struct acpi_device_info *info;
-+	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
-+	int ret = 1;
-+
-+	if (!ACPI_SUCCESS(acpi_get_object_info(handle, &buffer)))
-+		return 0;
-+	info = buffer.pointer;
-+	if (!(info->valid & ACPI_VALID_HID))
-+		ret = 0;
-+	else
-+		ret = !strcmp("PNP0C0A", info->hardware_id.value);
-+
-+	kfree(buffer.pointer);
-+	return ret;
-+}
-+
-+static int is_ejectable_bay(acpi_handle handle)
-+{
-+	acpi_handle phandle;
-+	if (!is_ejectable(handle))
-+		return 0;
-+	if (is_battery(handle) || is_ata(handle))
-+		return 1;
-+	if (!acpi_get_parent(handle, &phandle) && is_ata(phandle))
-+		return 1;
-+	return 0;
-+}
-+
- /**
-  * is_dock_device - see if a device is on a dock station
-  * @handle: acpi handle of the device
-@@ -209,11 +268,17 @@ static int is_dock(acpi_handle handle)
-  */
- int is_dock_device(acpi_handle handle)
- {
--	if (!dock_station)
-+	struct dock_station *dock_station;
-+
-+	if (!dock_station_count)
- 		return 0;
- 
--	if (is_dock(handle) || find_dock_dependent_device(dock_station, handle))
-+	if (is_dock(handle))
- 		return 1;
-+	list_for_each_entry(dock_station, &dock_stations, sibiling) {
-+		if (find_dock_dependent_device(dock_station, handle))
-+			return 1;
-+	}
- 
- 	return 0;
- }
-@@ -341,7 +406,7 @@ static void hotplug_dock_devices(struct dock_station *ds, u32 event)
- 
- static void dock_event(struct dock_station *ds, u32 event, int num)
- {
--	struct device *dev = &dock_device->dev;
-+	struct device *dev = &ds->dock_device->dev;
- 	char event_string[13];
- 	char *envp[] = { event_string, NULL };
- 
-@@ -414,7 +479,7 @@ static void handle_dock(struct dock_station *ds, int dock)
- 	arg.type = ACPI_TYPE_INTEGER;
- 	arg.integer.value = dock;
- 	status = acpi_evaluate_object(ds->handle, "_DCK", &arg_list, &buffer);
--	if (ACPI_FAILURE(status))
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND)
- 		printk(KERN_ERR PREFIX "%s - failed to execute _DCK\n",
- 			 (char *)name_buffer.pointer);
- 	kfree(buffer.pointer);
-@@ -498,7 +563,7 @@ static int dock_in_progress(struct dock_station *ds)
-  */
- int register_dock_notifier(struct notifier_block *nb)
- {
--	if (!dock_station)
-+	if (!dock_station_count)
- 		return -ENODEV;
- 
- 	return atomic_notifier_chain_register(&dock_notifier_list, nb);
-@@ -512,7 +577,7 @@ EXPORT_SYMBOL_GPL(register_dock_notifier);
-  */
- void unregister_dock_notifier(struct notifier_block *nb)
- {
--	if (!dock_station)
-+	if (!dock_station_count)
- 		return;
- 
- 	atomic_notifier_chain_unregister(&dock_notifier_list, nb);
-@@ -535,20 +600,23 @@ register_hotplug_dock_device(acpi_handle handle, acpi_notify_handler handler,
- 			     void *context)
- {
- 	struct dock_dependent_device *dd;
-+	struct dock_station *dock_station;
- 
--	if (!dock_station)
-+	if (!dock_station_count)
- 		return -ENODEV;
- 
- 	/*
- 	 * make sure this handle is for a device dependent on the dock,
- 	 * this would include the dock station itself
- 	 */
--	dd = find_dock_dependent_device(dock_station, handle);
--	if (dd) {
--		dd->handler = handler;
--		dd->context = context;
--		dock_add_hotplug_device(dock_station, dd);
--		return 0;
-+	list_for_each_entry(dock_station, &dock_stations, sibiling) {
-+		dd = find_dock_dependent_device(dock_station, handle);
-+		if (dd) {
-+			dd->handler = handler;
-+			dd->context = context;
-+			dock_add_hotplug_device(dock_station, dd);
-+			return 0;
-+		}
- 	}
- 
- 	return -EINVAL;
-@@ -563,13 +631,16 @@ EXPORT_SYMBOL_GPL(register_hotplug_dock_device);
- void unregister_hotplug_dock_device(acpi_handle handle)
- {
- 	struct dock_dependent_device *dd;
-+	struct dock_station *dock_station;
- 
--	if (!dock_station)
-+	if (!dock_station_count)
- 		return;
- 
--	dd = find_dock_dependent_device(dock_station, handle);
--	if (dd)
--		dock_del_hotplug_device(dock_station, dd);
-+	list_for_each_entry(dock_station, &dock_stations, sibiling) {
-+		dd = find_dock_dependent_device(dock_station, handle);
-+		if (dd)
-+			dock_del_hotplug_device(dock_station, dd);
-+	}
- }
- 
- EXPORT_SYMBOL_GPL(unregister_hotplug_dock_device);
-@@ -620,9 +691,28 @@ static void dock_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct dock_station *ds = data;
- 	struct acpi_device *tmp;
-+	int surprise_removal = 0;
- 
-+	/*
-+	 * According to acpi spec 3.0a, if a DEVICE_CHECK notification
-+	 * is sent and _DCK is present, it is assumed to mean an undock
-+	 * request.
-+	 */
-+	if ((ds->flags & DOCK_IS_DOCK) && event == ACPI_NOTIFY_DEVICE_CHECK)
-+		event = ACPI_NOTIFY_EJECT_REQUEST;
-+
-+	/*
-+	 * dock station: BUS_CHECK - docked or surprise removal
-+	 *		 DEVICE_CHECK - undocked
-+	 * other device: BUS_CHECK/DEVICE_CHECK - added or surprise removal
-+	 *
-+	 * To simplify event handling, dock dependent device handler always
-+	 * get ACPI_NOTIFY_BUS_CHECK/ACPI_NOTIFY_DEVICE_CHECK for add and
-+	 * ACPI_NOTIFY_EJECT_REQUEST for removal
-+	 */
- 	switch (event) {
- 	case ACPI_NOTIFY_BUS_CHECK:
-+	case ACPI_NOTIFY_DEVICE_CHECK:
- 		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
- 		   &tmp)) {
- 			begin_dock(ds);
-@@ -638,20 +728,17 @@ static void dock_notify(acpi_handle handle, u32 event, void *data)
- 			complete_dock(ds);
- 			dock_event(ds, event, DOCK_EVENT);
- 			dock_lock(ds, 1);
-+			break;
+ 	for (j = 0; j < data->numps; j++) {
+ 		if (pst[j].vid > LEAST_VID) {
+-			printk(KERN_ERR PFX "vid %d invalid : 0x%x\n", j, pst[j].vid);
++			printk(KERN_ERR FW_BUG PFX "vid %d invalid : 0x%x\n",
++			       j, pst[j].vid);
+ 			return -EINVAL;
  		}
--		break;
--	case ACPI_NOTIFY_DEVICE_CHECK:
--	/*
--         * According to acpi spec 3.0a, if a DEVICE_CHECK notification
--         * is sent and _DCK is present, it is assumed to mean an
--         * undock request.  This notify routine will only be called
--         * for objects defining _DCK, so we will fall through to eject
--         * request here.  However, we will pass an eject request through
--	 * to the driver who wish to hotplug.
--         */
-+		if (dock_present(ds) || dock_in_progress(ds))
-+			break;
-+		/* This is a surprise removal */
-+		surprise_removal = 1;
-+		event = ACPI_NOTIFY_EJECT_REQUEST;
-+		/* Fall back */
- 	case ACPI_NOTIFY_EJECT_REQUEST:
- 		begin_undock(ds);
--		if (immediate_undock)
-+		if (immediate_undock || surprise_removal)
- 			handle_eject_request(ds, event);
- 		else
- 			dock_event(ds, event, UNDOCK_EVENT);
-@@ -707,6 +794,8 @@ fdd_out:
- static ssize_t show_docked(struct device *dev,
- 			   struct device_attribute *attr, char *buf)
- {
-+	struct dock_station *dock_station = *((struct dock_station **)
-+		dev->platform_data);
- 	return snprintf(buf, PAGE_SIZE, "%d\n", dock_present(dock_station));
- 
- }
-@@ -718,6 +807,8 @@ static DEVICE_ATTR(docked, S_IRUGO, show_docked, NULL);
- static ssize_t show_flags(struct device *dev,
- 			  struct device_attribute *attr, char *buf)
- {
-+	struct dock_station *dock_station = *((struct dock_station **)
-+		dev->platform_data);
- 	return snprintf(buf, PAGE_SIZE, "%d\n", dock_station->flags);
- 
- }
-@@ -730,6 +821,8 @@ static ssize_t write_undock(struct device *dev, struct device_attribute *attr,
- 			   const char *buf, size_t count)
- {
- 	int ret;
-+	struct dock_station *dock_station = *((struct dock_station **)
-+		dev->platform_data);
- 
- 	if (!count)
+ 		if (pst[j].vid < data->rvo) {	/* vid + rvo >= 0 */
+-			printk(KERN_ERR BFX "0 vid exceeded with pstate %d\n", j);
++			printk(KERN_ERR FW_BUG PFX "0 vid exceeded with pstate"
++			       " %d\n", j);
+ 			return -ENODEV;
+ 		}
+ 		if (pst[j].vid < maxvid + data->rvo) {	/* vid + rvo >= maxvid */
+-			printk(KERN_ERR BFX "maxvid exceeded with pstate %d\n", j);
++			printk(KERN_ERR FW_BUG PFX "maxvid exceeded with pstate"
++			       " %d\n", j);
+ 			return -ENODEV;
+ 		}
+ 		if (pst[j].fid > MAX_FID) {
+-			printk(KERN_ERR BFX "maxfid exceeded with pstate %d\n", j);
++			printk(KERN_ERR FW_BUG PFX "maxfid exceeded with pstate"
++			       " %d\n", j);
+ 			return -ENODEV;
+ 		}
+ 		if (j && (pst[j].fid < HI_FID_TABLE_BOTTOM)) {
+ 			/* Only first fid is allowed to be in "low" range */
+-			printk(KERN_ERR BFX "two low fids - %d : 0x%x\n", j, pst[j].fid);
++			printk(KERN_ERR FW_BUG PFX "two low fids - %d : "
++			       "0x%x\n", j, pst[j].fid);
+ 			return -EINVAL;
+ 		}
+ 		if (pst[j].fid < lastfid)
+ 			lastfid = pst[j].fid;
+ 	}
+ 	if (lastfid & 1) {
+-		printk(KERN_ERR BFX "lastfid invalid\n");
++		printk(KERN_ERR FW_BUG PFX "lastfid invalid\n");
  		return -EINVAL;
-@@ -747,6 +840,8 @@ static ssize_t show_dock_uid(struct device *dev,
- 			     struct device_attribute *attr, char *buf)
- {
- 	unsigned long lbuf;
-+	struct dock_station *dock_station = *((struct dock_station **)
-+		dev->platform_data);
- 	acpi_status status = acpi_evaluate_integer(dock_station->handle,
- 					"_UID", NULL, &lbuf);
- 	if (ACPI_FAILURE(status))
-@@ -768,6 +863,8 @@ static int dock_add(acpi_handle handle)
- 	int ret;
- 	acpi_status status;
- 	struct dock_dependent_device *dd;
-+	struct dock_station *dock_station;
-+	struct platform_device *dock_device;
- 
- 	/* allocate & initialize the dock_station private data */
- 	dock_station = kzalloc(sizeof(*dock_station), GFP_KERNEL);
-@@ -777,22 +874,34 @@ static int dock_add(acpi_handle handle)
- 	dock_station->last_dock_time = jiffies - HZ;
- 	INIT_LIST_HEAD(&dock_station->dependent_devices);
- 	INIT_LIST_HEAD(&dock_station->hotplug_devices);
-+	INIT_LIST_HEAD(&dock_station->sibiling);
- 	spin_lock_init(&dock_station->dd_lock);
- 	mutex_init(&dock_station->hp_lock);
- 	ATOMIC_INIT_NOTIFIER_HEAD(&dock_notifier_list);
- 
- 	/* initialize platform device stuff */
--	dock_device =
--		platform_device_register_simple(dock_device_name, 0, NULL, 0);
-+	dock_station->dock_device =
-+		platform_device_register_simple(dock_device_name,
-+			dock_station_count, NULL, 0);
-+	dock_device = dock_station->dock_device;
- 	if (IS_ERR(dock_device)) {
- 		kfree(dock_station);
- 		dock_station = NULL;
- 		return PTR_ERR(dock_device);
  	}
-+	platform_device_add_data(dock_device, &dock_station,
-+		sizeof(struct dock_station *));
+ 	if (lastfid > LO_FID_TABLE_TOP)
+-		printk(KERN_INFO BFX  "first fid not from lo freq table\n");
++		printk(KERN_INFO FW_BUG PFX  "first fid not from lo freq table\n");
  
- 	/* we want the dock device to send uevents */
- 	dock_device->dev.uevent_suppress = 0;
- 
-+	if (is_dock(handle))
-+		dock_station->flags |= DOCK_IS_DOCK;
-+	if (is_ata(handle))
-+		dock_station->flags |= DOCK_IS_ATA;
-+	if (is_battery(handle))
-+		dock_station->flags |= DOCK_IS_BAT;
-+
- 	ret = device_create_file(&dock_device->dev, &dev_attr_docked);
- 	if (ret) {
- 		printk("Error %d adding sysfs file\n", ret);
-@@ -858,8 +967,8 @@ static int dock_add(acpi_handle handle)
- 		goto dock_add_err;
- 	}
- 
--	printk(KERN_INFO PREFIX "%s\n", ACPI_DOCK_DRIVER_DESCRIPTION);
--
-+	dock_station_count++;
-+	list_add(&dock_station->sibiling, &dock_stations);
  	return 0;
+ }
+@@ -672,13 +676,13 @@ static int find_psb_table(struct powernow_k8_data *data)
  
- dock_add_err:
-@@ -878,12 +987,13 @@ dock_add_err_unregister:
- /**
-  * dock_remove - free up resources related to the dock station
-  */
--static int dock_remove(void)
-+static int dock_remove(struct dock_station *dock_station)
- {
- 	struct dock_dependent_device *dd, *tmp;
- 	acpi_status status;
-+	struct platform_device *dock_device = dock_station->dock_device;
- 
--	if (!dock_station)
-+	if (!dock_station_count)
- 		return 0;
- 
- 	/* remove dependent devices */
-@@ -923,41 +1033,58 @@ static int dock_remove(void)
- static acpi_status
- find_dock(acpi_handle handle, u32 lvl, void *context, void **rv)
- {
--	int *count = context;
- 	acpi_status status = AE_OK;
- 
- 	if (is_dock(handle)) {
- 		if (dock_add(handle) >= 0) {
--			(*count)++;
- 			status = AE_CTRL_TERMINATE;
+ 		dprintk("table vers: 0x%x\n", psb->tableversion);
+ 		if (psb->tableversion != PSB_VERSION_1_4) {
+-			printk(KERN_ERR BFX "PSB table is not v1.4\n");
++			printk(KERN_ERR FW_BUG PFX "PSB table is not v1.4\n");
+ 			return -ENODEV;
  		}
- 	}
- 	return status;
- }
  
--static int __init dock_init(void)
-+static acpi_status
-+find_bay(acpi_handle handle, u32 lvl, void *context, void **rv)
- {
--	int num = 0;
--
--	dock_station = NULL;
-+	/* If bay is in a dock, it's already handled */
-+	if (is_ejectable_bay(handle) && !is_dock_device(handle))
-+		dock_add(handle);
-+	return AE_OK;
-+}
+ 		dprintk("flags: 0x%x\n", psb->flags1);
+ 		if (psb->flags1) {
+-			printk(KERN_ERR BFX "unknown flags\n");
++			printk(KERN_ERR FW_BUG PFX "unknown flags\n");
+ 			return -ENODEV;
+ 		}
  
-+static int __init dock_init(void)
-+{
- 	if (acpi_disabled)
- 		return 0;
+@@ -705,7 +709,7 @@ static int find_psb_table(struct powernow_k8_data *data)
+ 			}
+ 		}
+ 		if (cpst != 1) {
+-			printk(KERN_ERR BFX "numpst must be 1\n");
++			printk(KERN_ERR FW_BUG PFX "numpst must be 1\n");
+ 			return -ENODEV;
+ 		}
  
- 	/* look for a dock station */
- 	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
--			    ACPI_UINT32_MAX, find_dock, &num, NULL);
-+			    ACPI_UINT32_MAX, find_dock, NULL, NULL);
+@@ -1130,17 +1134,19 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 			       "ACPI Processor module before starting this "
+ 			       "driver.\n");
+ #else
+-			printk(KERN_ERR PFX "Your BIOS does not provide ACPI "
+-			       "_PSS objects in a way that Linux understands. "
+-			       "Please report this to the Linux ACPI maintainers"
+-			       " and complain to your BIOS vendor.\n");
++			printk(KERN_ERR FW_BUG PFX "Your BIOS does not provide"
++			       " ACPI _PSS objects in a way that Linux "
++			       "understands. Please report this to the Linux "
++			       "ACPI maintainers and complain to your BIOS "
++			       "vendor.\n");
+ #endif
+ 			kfree(data);
+ 			return -ENODEV;
+ 		}
+ 		if (pol->cpu != 0) {
+-			printk(KERN_ERR PFX "No ACPI _PSS objects for CPU other than "
+-			       "CPU0. Complain to your BIOS vendor.\n");
++			printk(KERN_ERR FW_BUG PFX "No ACPI _PSS objects for "
++			       "CPU other than CPU0. Complain to your BIOS "
++			       "vendor.\n");
+ 			kfree(data);
+ 			return -ENODEV;
+ 		}
+@@ -1193,7 +1199,7 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
  
--	if (!num)
--		printk(KERN_INFO "No dock devices found.\n");
-+	/* look for bay */
-+	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
-+			ACPI_UINT32_MAX, find_bay, NULL, NULL);
-+	if (!dock_station_count) {
-+		printk(KERN_INFO PREFIX "No dock devices found.\n");
-+		return 0;
-+	}
- 
-+	printk(KERN_INFO PREFIX "%s: %d docks/bays found\n",
-+		ACPI_DOCK_DRIVER_DESCRIPTION, dock_station_count);
- 	return 0;
- }
- 
- static void __exit dock_exit(void)
- {
--	dock_remove();
-+	struct dock_station *dock_station;
-+
-+	list_for_each_entry(dock_station, &dock_stations, sibiling)
-+		dock_remove(dock_station);
- }
- 
--postcore_initcall(dock_init);
-+/*
-+ * Must be called before drivers of devices in dock, otherwise we can't know
-+ * which devices are in a dock
-+ */
-+subsys_initcall(dock_init);
- module_exit(dock_exit);
+ 	/* min/max the cpu is capable of */
+ 	if (cpufreq_frequency_table_cpuinfo(pol, data->powernow_table)) {
+-		printk(KERN_ERR PFX "invalid powernow_table\n");
++		printk(KERN_ERR FW_BUG PFX "invalid powernow_table\n");
+ 		powernow_k8_cpu_exit_acpi(data);
+ 		kfree(data->powernow_table);
+ 		kfree(data);
 -- 
 1.5.5.1
 
