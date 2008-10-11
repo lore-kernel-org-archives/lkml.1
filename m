@@ -1,99 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762729AbYJKTUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbYJKT0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762729AbYJKTUJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 15:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758706AbYJKTTz
+	id S1762692AbYJKT0u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 15:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759597AbYJKT0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 15:19:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42021
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755144AbYJKTTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 15:19:54 -0400
-Date: Sat, 11 Oct 2008 12:19:30 -0700 (PDT)
-Message-Id: <20081011.121930.193700319.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking for 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0810111057020.3402@nehalem.linux-foundation.org>
-References: <20081010.144921.115563930.davem@davemloft.net>
-	<alpine.LFD.2.00.0810110941330.3402@nehalem.linux-foundation.org>
-	<alpine.LFD.2.00.0810111057020.3402@nehalem.linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 11 Oct 2008 15:26:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59076 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759230AbYJKT0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 15:26:40 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: acpi-test tree on eeepc: EC error message on second resume
+Date: Sat, 11 Oct 2008 21:30:57 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <48F0DB0C.7060201@tuffmail.co.uk> <48F0ED3A.9010001@tuffmail.co.uk> <48F0F2C6.6030000@suse.de>
+In-Reply-To: <48F0F2C6.6030000@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810112130.57757.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 11 Oct 2008 10:57:29 -0700 (PDT)
-
-> 
-> 
-> On Sat, 11 Oct 2008, Linus Torvalds wrote:
+On Saturday, 11 of October 2008, Alexey Starikovskiy wrote:
+> Alan Jenkins wrote:
+> > I think I found the problem.  The "input buffer empty" wait depends on
+> > "interrupt mode" to work properly, and we don't immediately enable the
+> > interrupt on resume.  The wait should have a polling fallback anyway, to
+> > be consistent with the other transaction waits.
 > > 
-> > On Fri, 10 Oct 2008, David Miller wrote:
-> > > 
-> > > Here are the queued up networking changes for the 2.6.28 merge window.
-> > 
-> > This generates _tons_ of new warnings for me:
-> 
-> And apparently errors for others:
-> 
->  net/netfilter/ipvs/ip_vs_xmit.c: In function 'ip_vs_tunnel_xmit':
->  net/netfilter/ipvs/ip_vs_xmit.c:616: error: implicit declaration of function 'ip_select_ident'
-> 
-> some other config-dependent breakage.
+> > Alan
+> Yep, I think something like attached patch may help:
 
-So the proper include (of net/ip.h) is there in ip_vs_xmit.c, but this
-failure can also happen if CONFIG_INET is not enabled.
+[Can you please append patches instead of or apart from attaching them?
+That would make it easier to comment them.]
 
-Are you doing that kind of test build?
+if (!wait_event_timeout(ec->wait, ec_check_ibf0(ec),
+-                               msecs_to_jiffies(ACPI_EC_DELAY))) {
++                               msecs_to_jiffies(ACPI_EC_DELAY)) &&
++           !ec_check_ibf0(ec)) {
 
-This patch should fix that case, let me know if it works:
+Shouldn't this go under the spinlock?  Surely it can race with the GPE handler.
 
+                pr_err(PREFIX "input buffer is not empty, "
+                                "aborting transaction\n");
 
-ipvs: Add proper dependencies on IP_VS, and fix description header line.
-
-Linus noted a build failure case:
-
-net/netfilter/ipvs/ip_vs_xmit.c: In function 'ip_vs_tunnel_xmit':
-net/netfilter/ipvs/ip_vs_xmit.c:616: error: implicit declaration of function 'ip_select_ident'
-
-The proper include file (net/ip.h) is being included in ip_vs_xmit.c to get
-that declaration.  So the only possible case where this can happen is if
-CONFIG_INET is not enabled.
-
-This seems to be purely a missing dependency in the ipvs/Kconfig file IP_VS
-entry.
-
-Also, while we're here, remove the out of date "EXPERIMENTAL" string in the
-IP_VS config help header line.  IP_VS no longer depends upon CONFIG_EXPERIMENTAL
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- net/netfilter/ipvs/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/net/netfilter/ipvs/Kconfig b/net/netfilter/ipvs/Kconfig
-index de6004d..05048e4 100644
---- a/net/netfilter/ipvs/Kconfig
-+++ b/net/netfilter/ipvs/Kconfig
-@@ -2,8 +2,8 @@
- # IP Virtual Server configuration
- #
- menuconfig IP_VS
--	tristate "IP virtual server support (EXPERIMENTAL)"
--	depends on NETFILTER
-+	tristate "IP virtual server support"
-+	depends on NET && INET && NETFILTER
- 	---help---
- 	  IP Virtual Server support will let you build a high-performance
- 	  virtual server based on cluster of two or more real servers. This
--- 
-1.5.6.5
-
+Thanks,
+Rafael
