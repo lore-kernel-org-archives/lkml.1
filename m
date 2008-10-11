@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbYJKXlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYJKXun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbYJKXlv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 19:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYJKXll
+	id S1754242AbYJKXun (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 19:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYJKXuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 19:41:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:11664 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754242AbYJKXlk (ORCPT
+	Sat, 11 Oct 2008 19:50:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41750 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbYJKXug (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 19:41:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=GTG9YJX4/xgVdY70p6REgm8w5o9DpQZtPvpwIwr0sMH6j8r8aB2U9rlVG/VwFpvquY
-         vD1tpkU5t5ioFpeZQ7IW9CGK5ZHl8Y5JeEenqmRyScPXyCjd90Y2pvmMVa4AcKLWuMcu
-         /+/csfY+6ItWLRmIe9fjaP1ig9DnzqZ3oW+bA=
-Date: Sun, 12 Oct 2008 03:41:30 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: h-shimamoto@ct.jp.nec.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86/io_apic_32: fix printk format warning
-Message-ID: <20081011234130.GE25563@orion>
+	Sat, 11 Oct 2008 19:50:36 -0400
+Date: Sat, 11 Oct 2008 19:50:33 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 4/5] tracing/fastboot: Add a time field on the sched_switch
+ entry
+In-Reply-To: <c62985530810111358o10e33becw8ce9c83c46733f3b@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0810111947120.19507@gandalf.stny.rr.com>
+References: <48F10A9D.3030705@gmail.com>  <alpine.DEB.1.10.0810111644440.19507@gandalf.stny.rr.com> <c62985530810111358o10e33becw8ce9c83c46733f3b@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/x86/kernel/io_apic_32.c: In function 'print_local_APIC':
-arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
-arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
+On Sat, 11 Oct 2008, Fr?d?ric Weisbecker wrote:
 
- arch/x86/kernel/io_apic_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> 2008/10/11 Steven Rostedt <rostedt@goodmis.org>:
+> >> +
+> >> +static enum print_line_t boot_trace_print_line(struct trace_iterator *iter)
+> >> +{
+> >> +     struct trace_entry *entry = iter->ent;
+> >> +
+> >> +     if (entry->type == TRACE_BOOT)
+> >> +             return initcall_print_line(iter);
+> >> +     if (entry->type == TRACE_CTX || entry->type == TRACE_WAKE)
+> >> +             return sched_switch_print_line(iter);
+> >>       return TRACE_TYPE_UNHANDLED;
+> >>  }
+> >>
+> >> @@ -100,7 +159,7 @@ struct tracer boot_tracer __read_mostly =
+> >>       .init           = boot_trace_init,
+> >>       .reset          = reset_boot_trace,
+> >>       .ctrl_update    = boot_trace_ctrl_update,
+> >> -     .print_line     = initcall_print_line,
+> >> +     .print_line     = boot_trace_print_line,
+> >>  };
+> >>
+> >>  void trace_boot(struct boot_trace *it, initcall_t fn)
+> >>
+> >>
+> >
+> 
+> Yes but this one doesn't seem to start at zero at the boot time.
+> There is a big difference between those two ...
 
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index e710289..f678d12 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -1536,8 +1536,8 @@ __apicdebuginit(void) print_local_APIC(void *dummy)
- 	}
- 
- 	icr = apic_icr_read();
--	printk(KERN_DEBUG "... APIC ICR: %08x\n", icr);
--	printk(KERN_DEBUG "... APIC ICR2: %08x\n", icr >> 32);
-+	printk(KERN_DEBUG "... APIC ICR: %08x\n", (unsigned int)icr);
-+	printk(KERN_DEBUG "... APIC ICR2: %08x\n", (unsigned int)(icr >> 32));
- 
- 	v = apic_read(APIC_LVTT);
- 	printk(KERN_DEBUG "... APIC LVTT: %08x\n", v);
+Even so, I disagree having the context switch tracer hold another 8 byte 
+timestamp.  If you want to add something to the boot tracer, than fine. 
+But not to something that other tracers use.
+
+You can tap into the context switch trace_point too, and have that record 
+a special trace entry for you instead.
+
+-- Steve
+
