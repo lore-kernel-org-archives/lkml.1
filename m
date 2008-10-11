@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763284AbYJKG4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbYJKG5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763284AbYJKG4u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbYJKGkM
+	id S1764853AbYJKG5Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYJKGkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:40:12 -0400
-Received: from vms172071pub.verizon.net ([206.46.172.71]:52144 "EHLO
-	vms172071pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682AbYJKGhB (ORCPT
+	Sat, 11 Oct 2008 02:40:15 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:50806 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbYJKGhC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:01 -0400
-Date: Sat, 11 Oct 2008 02:35:58 -0400
+	Sat, 11 Oct 2008 02:37:02 -0400
+Date: Sat, 11 Oct 2008 02:36:03 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 38/85] dock: add 'type' sysfs file
+Subject: [PATCH 43/85] ACPI: EC: Rename some variables
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
-Message-id: <8652b00fd6416773f113dab3dfa0d4509def825b.1223706853.git.len.brown@intel.com>
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>
+Message-id: <8463200a00fe2aea938b40173198a0983f2929ef.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -26,73 +27,287 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-add a sysfs file to present dock type. Suggested by Holger.
+No functional changes.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Acked-by: Rafael J. Wysocki <rjw@suse.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/dock.c |   25 +++++++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
+ drivers/acpi/ec.c |  118 ++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 63 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index c877cc5..b7d1581 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -911,6 +911,26 @@ static ssize_t show_dock_uid(struct device *dev,
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index 7f0d81c..453ba1e 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -95,10 +95,11 @@ struct acpi_ec_query_handler {
+ 	u8 query_bit;
+ };
+ 
+-struct transaction_data {
++struct transaction {
+ 	const u8 *wdata;
+ 	u8 *rdata;
+ 	unsigned short irq_count;
++	u8 command;
+ 	u8 wlen;
+ 	u8 rlen;
+ };
+@@ -113,8 +114,8 @@ static struct acpi_ec {
+ 	struct mutex lock;
+ 	wait_queue_head_t wait;
+ 	struct list_head list;
+-	struct transaction_data *t;
+-	spinlock_t t_lock;
++	struct transaction *curr;
++	spinlock_t curr_lock;
+ } *boot_ec, *first_ec;
+ 
+ /* 
+@@ -176,37 +177,37 @@ static int ec_transaction_done(struct acpi_ec *ec)
+ {
+ 	unsigned long flags;
+ 	int ret = 0;
+-	spin_lock_irqsave(&ec->t_lock, flags);
+-	if (!ec->t || (!ec->t->wlen && !ec->t->rlen))
++	spin_lock_irqsave(&ec->curr_lock, flags);
++	if (!ec->curr || (!ec->curr->wlen && !ec->curr->rlen))
+ 		ret = 1;
+-	spin_unlock_irqrestore(&ec->t_lock, flags);
++	spin_unlock_irqrestore(&ec->curr_lock, flags);
+ 	return ret;
  }
- static DEVICE_ATTR(uid, S_IRUGO, show_dock_uid, NULL);
  
-+static ssize_t show_dock_type(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dock_station *dock_station = *((struct dock_station **)
-+		dev->platform_data);
-+	char *type;
-+
-+	if (dock_station->flags & DOCK_IS_DOCK)
-+		type = "dock_station";
-+	else if (dock_station->flags & DOCK_IS_ATA)
-+		type = "ata_bay";
-+	else if (dock_station->flags & DOCK_IS_BAT)
-+		type = "battery_bay";
-+	else
-+		type = "unknown";
-+
-+	return snprintf(buf, PAGE_SIZE, "%s\n", type);
-+}
-+static DEVICE_ATTR(type, S_IRUGO, show_dock_type, NULL);
-+
- /**
-  * dock_add - add a new dock station
-  * @handle: the dock station handle
-@@ -999,6 +1019,9 @@ static int dock_add(acpi_handle handle)
- 		dock_station = NULL;
- 		return ret;
+ static void gpe_transaction(struct acpi_ec *ec, u8 status)
+ {
+ 	unsigned long flags;
+-	spin_lock_irqsave(&ec->t_lock, flags);
+-	if (!ec->t)
++	spin_lock_irqsave(&ec->curr_lock, flags);
++	if (!ec->curr)
+ 		goto unlock;
+-	if (ec->t->wlen > 0) {
++	if (ec->curr->wlen > 0) {
+ 		if ((status & ACPI_EC_FLAG_IBF) == 0) {
+-			acpi_ec_write_data(ec, *(ec->t->wdata++));
+-			--ec->t->wlen;
++			acpi_ec_write_data(ec, *(ec->curr->wdata++));
++			--ec->curr->wlen;
+ 		} else
+ 			/* false interrupt, state didn't change */
+-			++ec->t->irq_count;
++			++ec->curr->irq_count;
+ 
+-	} else if (ec->t->rlen > 0) {
++	} else if (ec->curr->rlen > 0) {
+ 		if ((status & ACPI_EC_FLAG_OBF) == 1) {
+-			*(ec->t->rdata++) = acpi_ec_read_data(ec);
+-			--ec->t->rlen;
++			*(ec->curr->rdata++) = acpi_ec_read_data(ec);
++			--ec->curr->rlen;
+ 		} else
+ 			/* false interrupt, state didn't change */
+-			++ec->t->irq_count;
++			++ec->curr->irq_count;
  	}
-+	ret = device_create_file(&dock_device->dev, &dev_attr_type);
-+	if (ret)
-+		printk(KERN_ERR"Error %d adding sysfs file\n", ret);
+ unlock:
+-	spin_unlock_irqrestore(&ec->t_lock, flags);
++	spin_unlock_irqrestore(&ec->curr_lock, flags);
+ }
  
- 	/* Find dependent devices */
- 	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
-@@ -1020,6 +1043,7 @@ static int dock_add(acpi_handle handle)
- 	return 0;
+ static int acpi_ec_wait(struct acpi_ec *ec)
+@@ -248,15 +249,11 @@ static int ec_poll(struct acpi_ec *ec)
+ 	return -ETIME;
+ }
  
- dock_add_err_unregister:
-+	device_remove_file(&dock_device->dev, &dev_attr_type);
- 	device_remove_file(&dock_device->dev, &dev_attr_docked);
- 	device_remove_file(&dock_device->dev, &dev_attr_undock);
- 	device_remove_file(&dock_device->dev, &dev_attr_uid);
-@@ -1047,6 +1071,7 @@ static int dock_remove(struct dock_station *dock_station)
- 	    kfree(dd);
+-static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+-					const u8 * wdata, unsigned wdata_len,
+-					u8 * rdata, unsigned rdata_len,
++static int acpi_ec_transaction_unlocked(struct acpi_ec *ec,
++					struct transaction *t,
+ 					int force_poll)
+ {
+ 	unsigned long tmp;
+-	struct transaction_data t = {.wdata = wdata, .rdata = rdata,
+-				     .wlen = wdata_len, .rlen = rdata_len,
+-				     .irq_count = 0};
+ 	int ret = 0;
+ 	pr_debug(PREFIX "transaction start\n");
+ 	/* disable GPE during transaction if storm is detected */
+@@ -265,29 +262,30 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+ 		acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+ 	}
+ 	/* start transaction */
+-	spin_lock_irqsave(&ec->t_lock, tmp);
++	spin_lock_irqsave(&ec->curr_lock, tmp);
+ 	/* following two actions should be kept atomic */
+-	ec->t = &t;
+-	acpi_ec_write_cmd(ec, command);
+-	if (command == ACPI_EC_COMMAND_QUERY)
++	t->irq_count = 0;
++	ec->curr = t;
++	acpi_ec_write_cmd(ec, ec->curr->command);
++	if (ec->curr->command == ACPI_EC_COMMAND_QUERY)
+ 		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
+-	spin_unlock_irqrestore(&ec->t_lock, tmp);
++	spin_unlock_irqrestore(&ec->curr_lock, tmp);
+ 	/* if we selected poll mode or failed in GPE-mode do a poll loop */
+ 	if (force_poll ||
+ 	    !test_bit(EC_FLAGS_GPE_MODE, &ec->flags) ||
+ 	    acpi_ec_wait(ec))
+ 		ret = ec_poll(ec);
+ 	pr_debug(PREFIX "transaction end\n");
+-	spin_lock_irqsave(&ec->t_lock, tmp);
+-	ec->t = NULL;
+-	spin_unlock_irqrestore(&ec->t_lock, tmp);
++	spin_lock_irqsave(&ec->curr_lock, tmp);
++	ec->curr = NULL;
++	spin_unlock_irqrestore(&ec->curr_lock, tmp);
+ 	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
+ 		/* check if we received SCI during transaction */
+ 		ec_check_sci(ec, acpi_ec_read_status(ec));
+ 		/* it is safe to enable GPE outside of transaction */
+ 		acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+ 	} else if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
+-		   t.irq_count > ACPI_EC_STORM_THRESHOLD) {
++		   t->irq_count > ACPI_EC_STORM_THRESHOLD) {
+ 		pr_debug(PREFIX "GPE storm detected\n");
+ 		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
+ 	}
+@@ -300,17 +298,15 @@ static int ec_check_ibf0(struct acpi_ec *ec)
+ 	return (status & ACPI_EC_FLAG_IBF) == 0;
+ }
  
- 	/* cleanup sysfs */
-+	device_remove_file(&dock_device->dev, &dev_attr_type);
- 	device_remove_file(&dock_device->dev, &dev_attr_docked);
- 	device_remove_file(&dock_device->dev, &dev_attr_undock);
- 	device_remove_file(&dock_device->dev, &dev_attr_uid);
+-static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+-			       const u8 * wdata, unsigned wdata_len,
+-			       u8 * rdata, unsigned rdata_len,
++static int acpi_ec_transaction(struct acpi_ec *ec, struct transaction *t,
+ 			       int force_poll)
+ {
+ 	int status;
+ 	u32 glk;
+-	if (!ec || (wdata_len && !wdata) || (rdata_len && !rdata))
++	if (!ec || (!t) || (t->wlen && !t->wdata) || (t->rlen && !t->rdata))
+ 		return -EINVAL;
+-	if (rdata)
+-		memset(rdata, 0, rdata_len);
++	if (t->rdata)
++		memset(t->rdata, 0, t->rlen);
+ 	mutex_lock(&ec->lock);
+ 	if (ec->global_lock) {
+ 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
+@@ -326,10 +322,7 @@ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+ 		status = -ETIME;
+ 		goto end;
+ 	}
+-	status = acpi_ec_transaction_unlocked(ec, command,
+-					      wdata, wdata_len,
+-					      rdata, rdata_len,
+-					      force_poll);
++	status = acpi_ec_transaction_unlocked(ec, t, force_poll);
+ end:
+ 	if (ec->global_lock)
+ 		acpi_release_global_lock(glk);
+@@ -345,23 +338,32 @@ unlock:
+ int acpi_ec_burst_enable(struct acpi_ec *ec)
+ {
+ 	u8 d;
+-	return acpi_ec_transaction(ec, ACPI_EC_BURST_ENABLE, NULL, 0, &d, 1, 0);
++	struct transaction t = {.command = ACPI_EC_BURST_ENABLE,
++				.wdata = NULL, .rdata = &d,
++				.wlen = 0, .rlen = 1};
++
++	return acpi_ec_transaction(ec, &t, 0);
+ }
+ 
+ int acpi_ec_burst_disable(struct acpi_ec *ec)
+ {
++	struct transaction t = {.command = ACPI_EC_BURST_DISABLE,
++				.wdata = NULL, .rdata = NULL,
++				.wlen = 0, .rlen = 0};
++
+ 	return (acpi_ec_read_status(ec) & ACPI_EC_FLAG_BURST) ?
+-		acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE,
+-			NULL, 0, NULL, 0, 0) : 0;
++				acpi_ec_transaction(ec, &t, 0) : 0;
+ }
+ 
+ static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
+ {
+ 	int result;
+ 	u8 d;
++	struct transaction t = {.command = ACPI_EC_COMMAND_READ,
++				.wdata = &address, .rdata = &d,
++				.wlen = 1, .rlen = 1};
+ 
+-	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_READ,
+-				     &address, 1, &d, 1, 0);
++	result = acpi_ec_transaction(ec, &t, 0);
+ 	*data = d;
+ 	return result;
+ }
+@@ -369,8 +371,11 @@ static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
+ static int acpi_ec_write(struct acpi_ec *ec, u8 address, u8 data)
+ {
+ 	u8 wdata[2] = { address, data };
+-	return acpi_ec_transaction(ec, ACPI_EC_COMMAND_WRITE,
+-				   wdata, 2, NULL, 0, 0);
++	struct transaction t = {.command = ACPI_EC_COMMAND_WRITE,
++				.wdata = wdata, .rdata = NULL,
++				.wlen = 2, .rlen = 0};
++
++	return acpi_ec_transaction(ec, &t, 0);
+ }
+ 
+ /*
+@@ -432,12 +437,13 @@ int ec_transaction(u8 command,
+ 		   u8 * rdata, unsigned rdata_len,
+ 		   int force_poll)
+ {
++	struct transaction t = {.command = command,
++				.wdata = wdata, .rdata = rdata,
++				.wlen = wdata_len, .rlen = rdata_len};
+ 	if (!first_ec)
+ 		return -ENODEV;
+ 
+-	return acpi_ec_transaction(first_ec, command, wdata,
+-				   wdata_len, rdata, rdata_len,
+-				   force_poll);
++	return acpi_ec_transaction(first_ec, &t, force_poll);
+ }
+ 
+ EXPORT_SYMBOL(ec_transaction);
+@@ -446,7 +452,9 @@ static int acpi_ec_query(struct acpi_ec *ec, u8 * data)
+ {
+ 	int result;
+ 	u8 d;
+-
++	struct transaction t = {.command = ACPI_EC_COMMAND_QUERY,
++				.wdata = NULL, .rdata = &d,
++				.wlen = 0, .rlen = 1};
+ 	if (!ec || !data)
+ 		return -EINVAL;
+ 
+@@ -456,7 +464,7 @@ static int acpi_ec_query(struct acpi_ec *ec, u8 * data)
+ 	 * bit to be cleared (and thus clearing the interrupt source).
+ 	 */
+ 
+-	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_QUERY, NULL, 0, &d, 1, 0);
++	result = acpi_ec_transaction(ec, &t, 0);
+ 	if (result)
+ 		return result;
+ 
+@@ -696,7 +704,7 @@ static struct acpi_ec *make_acpi_ec(void)
+ 	mutex_init(&ec->lock);
+ 	init_waitqueue_head(&ec->wait);
+ 	INIT_LIST_HEAD(&ec->list);
+-	spin_lock_init(&ec->t_lock);
++	spin_lock_init(&ec->curr_lock);
+ 	return ec;
+ }
+ 
 -- 
 1.5.5.1
 
