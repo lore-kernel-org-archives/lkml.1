@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbYJKOsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbYJKOsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbYJKOsL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 10:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYJKOr5
+	id S1758719AbYJKOsc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 10:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYJKOsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 10:47:57 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:27182 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753514AbYJKOr4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 10:47:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=XgTkhm7lATA9LCvIf0mpxcS7CUxxKW45Vk9jlxpR+1MpBWzYYiyZB5wgYalasHFv7W
-         coNNGGbdZW46LU/5SyGVCR9bdRMMXSq6PoQ4AEeTexYGdPLgB73noUH8qgTCemIsxX47
-         NdygzDHfLxLOSSLcfZNSo9+H7ggaRekioZd+I=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/7] ide: locking improvements
-Date: Sat, 11 Oct 2008 16:45:27 +0200
-User-Agent: KMail/1.9.10
-Cc: petkovbb@gmail.com, Robert Hancock <hancockr@shaw.ca>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <20081011120137.GA26835@gollum.tnic> <20081011135300.GP19428@kernel.dk>
-In-Reply-To: <20081011135300.GP19428@kernel.dk>
+	Sat, 11 Oct 2008 10:48:21 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56177 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753785AbYJKOsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 10:48:20 -0400
+Date: Sat, 11 Oct 2008 16:36:00 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Victor <linux@maxim.org.za>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH/RFC] hardware irq debouncing support
+Message-ID: <20081011143600.GB1556@ucw.cz>
+References: <200809241251.32606.david-b@pacbell.net> <200810071114.03219.david-b@pacbell.net> <20081008094849.752a29c0@hskinnemo-gx745.norway.atmel.com> <200810090234.41243.david-b@pacbell.net> <20081009123030.4c9607c1@hskinnemo-gx745.norway.atmel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810111645.27847.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20081009123030.4c9607c1@hskinnemo-gx745.norway.atmel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 October 2008, Jens Axboe wrote:
-> On Sat, Oct 11 2008, Borislav Petkov wrote:
-> > > >From my perspective the main gain of these patches is the increased
-> > > maintainability and sanity of the code, scalability improvements are
-> > > just an added bonus.
+Hi!
+
+> > > Ok, so the limitations of various chips vary a lot...which means that
+> > > it's difficult to predict what IRQF_DEBOUNCED actually does.
 > > 
-> > and better code/improved scalability is a bad thing because... ?!
+> > The specific QOS achieved is system-specific; the term for
+> > that kind of mechanism is "hinting".  It's very clearly defined
+> > what the hint means .. but a given system might not use it.
 > 
-> It's a bad thing because nobody on earth cares about IDE scalability,
-
-JFYI: just yesterday I got mail proving otherwise. ;)
-
-> from a performance POV a modern SATA controller is just better on
-> several levels. I don't think anybody cares about IDE scaling on 8-16
-> cores or more, simply because NOBODY is using IDE on such systems.
+> I know that, but is "hinting" really what drivers need?
 > 
-> As such, trying to improve locking is a pointless exercise. And that is
-> a bad thing, because code change invariably brings in code bugs. Then
-> see previous mail on lack of coverage testing, and it can naturally be
-> harmful.
+> > The madvise(2) system call is a userspace example of hinting.
+> 
+> That's different. Ignoring madvise() hints might hurt performance
+> slightly, but it won't result in any fundamentally different behaviour.
+> 
+> On the other hand, lack of debouncing might cause the gpio_keys driver
+> to report 1000 keypresses instead of one when the user pushes a button.
+> That's much more harmful.
+> 
+> So if someone goes and replaces the debounce timer in gpio_keys with
+> this IRQF_DEBOUNCE flag, it might work very well on hardware which
+> happens to use a 30 ms debounce interval, but will break horribly on
+> hardware with shorter debounce intervals.
 
-Your concerns were already addressed in my reply but I worry that having
-a discussion based on technical arguments is not your goal.
+Right. So you don't _replace_ debounce timer, you just do both timer
+and IRQF_.
 
-Just to repeat: these patches are not hardware specific and obviously
-they are not going to be merged today, tomorrow or in a week (they are
-2.6.29 material after months of time in pata tree / linux-next).
-
-> > > > rather like putting makeup on a corpse to me..
+> > > > Why require "software debouncing" if perhaps the hardware could do
+> > > > it all for you?
+> > > 
+> > > Because of the "perhaps" part of your sentence.
 > > 
-> > so _NOT_ true.
+> > I'm not sure which sentence you refer too, but the first
+> > "perhaps" above is yours!  :)
 > 
-> Depends on what you think is the corpse. Since IDE is essentially dead
-> and frozen, it IS a corpse and the phrase is then very appropriate. This
-> is not a personal jab at the IDE guys and does not reflect on the
-> (mostly) good work they do, just a reflection on the state of IDE in
-> general.
+> I mean that it's difficult to rely on hardware that "perhaps" can do
+> debouncing for you. I think many drivers need to know for sure.
 
-Interesting statement given that i.e. diffstat-wise pata tree has more
-than twice as much stuff queued up for 2.6.28 than "some other" trees
-(and we have history of being a _very_ conservative w.r.t. to needlessly
-moving code around in drivers/ide/).
+Why? You write code as if no debouncing exist...
 
-Please stop being silly and pushing your view/idea on what other people
-should be doing (not to mention ignoring real facts).
 
-Thanks,
-Bart
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
