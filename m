@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbYJOCSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYJOCVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbYJOCSs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 22:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYJOCSj
+	id S1754289AbYJOCVU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 22:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYJOCVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 22:18:39 -0400
-Received: from argonath.las.ic.unicamp.br ([143.106.60.116]:36629 "EHLO
-	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbYJOCSi (ORCPT
+	Tue, 14 Oct 2008 22:21:06 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:55455 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbYJOCVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 22:18:38 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 22:18:38 EDT
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-To: linux-kernel@vger.kernel.org
-Cc: linux-serial@vger.kernel.org, gregkh@suse.de
-Subject: [PATCH] 8250: remove ununsed variable
-Date: Tue, 14 Oct 2008 23:12:18 -0300
-Message-Id: <1224036738-16613-1-git-send-email-gustavo@las.ic.unicamp.br>
-X-Mailer: git-send-email 1.5.6.4
+	Tue, 14 Oct 2008 22:21:05 -0400
+Date: Sat, 11 Oct 2008 02:36:45 -0400
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 85/85] panasonic-laptop: fix build
+In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
+In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>
+Message-id: <2f7398c9ee4c227ec9a68d547e24dfd196612093.1223706853.git.len.brown@intel.com>
+Organization: Intel Open Source Technology Center
+X-Mailer: git-send-email 1.6.0.2.307.gc427
+References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'i' isn't used in serial8250_init()
+From: Len Brown <len.brown@intel.com>
 
-Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+sync with acpi_driver_data(device)
+and acpi_evaluate_integer(..., long long)
+changes that happened since this driver
+was checked in.
+
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/serial/8250.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/misc/panasonic-laptop.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index d4104a3..625fc20 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2960,7 +2960,7 @@ EXPORT_SYMBOL(serial8250_unregister_port);
+diff --git a/drivers/misc/panasonic-laptop.c b/drivers/misc/panasonic-laptop.c
+index 9aecda5..a2cb598 100644
+--- a/drivers/misc/panasonic-laptop.c
++++ b/drivers/misc/panasonic-laptop.c
+@@ -252,7 +252,7 @@ static int acpi_pcc_write_sset(struct pcc_acpi *pcc, int func, int val)
  
- static int __init serial8250_init(void)
+ static inline int acpi_pcc_get_sqty(struct acpi_device *device)
  {
--	int ret, i;
-+	int ret;
+-	unsigned long s;
++	unsigned long long s;
+ 	acpi_status status;
  
- 	if (nr_uarts > UART_NR)
- 		nr_uarts = UART_NR;
+ 	ACPI_FUNCTION_TRACE("acpi_pcc_get_sqty");
+@@ -500,7 +500,7 @@ static void acpi_pcc_generate_keyinput(struct pcc_acpi *pcc)
+ 	struct input_dev *hotk_input_dev = pcc->input_dev;
+ 	int rc;
+ 	int key_code, hkey_num;
+-	unsigned long result;
++	unsigned long long result;
+ 
+ 	ACPI_FUNCTION_TRACE("acpi_pcc_generate_keyinput");
+ 
+@@ -645,7 +645,7 @@ static int acpi_pcc_hotkey_add(struct acpi_device *device)
+ 	pcc->device = device;
+ 	pcc->handle = device->handle;
+ 	pcc->num_sifr = num_sifr;
+-	acpi_driver_data(device) = pcc;
++	device->driver_data = pcc;
+ 	strcpy(acpi_device_name(device), ACPI_PCC_DEVICE_NAME);
+ 	strcpy(acpi_device_class(device), ACPI_PCC_CLASS);
+ 
 -- 
-1.5.6.4
+1.5.5.1
 
