@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbYJKQmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbYJKQnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758505AbYJKQmi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 12:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYJKQm3
+	id S1758799AbYJKQnw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 12:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYJKQnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 12:42:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58658 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753858AbYJKQm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 12:42:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Robert Goldner <robert@au-79.de>
-Subject: Re: Patch needed for ASUS EEEPC 701 2.6.27 (perhaps a regession)
-Date: Sat, 11 Oct 2008 18:46:36 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <48F09658.8060502@au-79.de>
-In-Reply-To: <48F09658.8060502@au-79.de>
+	Sat, 11 Oct 2008 12:43:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59472 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753733AbYJKQnl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 12:43:41 -0400
+Date: Sat, 11 Oct 2008 09:43:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking for 2.6.28
+In-Reply-To: <20081010.144921.115563930.davem@davemloft.net>
+Message-ID: <alpine.LFD.2.00.0810110941330.3402@nehalem.linux-foundation.org>
+References: <20081010.144921.115563930.davem@davemloft.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810111846.36862.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 11 of October 2008, Robert Goldner wrote:
-> Hi,
-> 
-> I am a happy user of an asus eeepc 701 with an self-made kernel 2.6.27. 
-> Its working quite good, but there is one patch needed to avoid problems 
-> related to ACPI and Hotkeys.
-> After using a few hotkeys there comes a message in syslog like:
-> ACPI: EC: GPE storm detected, disabling EC GPE
-> and no hotkey event is recognized any more. This is quite bad on a nettop.
-> 
-> The needed patch and the bug description is available at:
-> http://bugzilla.kernel.org/show_bug.cgi?id=10919
-> The patch is called 'patch vs 2.6.27-rc7'
-> 
-> The patch fits also to 2.6.27 without any problems and works very fine. 
-> Thanks to everyone who was involved.
-> 
-> I would suggest to include this patch in the mainline kernel very soon 
-> (e.g. 2.6.28 or if possible in 2.6.27.1).
 
-This patch is scheduled for 2.6.28 AFAICS and will be included into -stable if
-it doesn't break anything in the mainline.
 
-Thanks,
-Rafael
+On Fri, 10 Oct 2008, David Miller wrote:
+> 
+> Here are the queued up networking changes for the 2.6.28 merge window.
+
+This generates _tons_ of new warnings for me:
+
+  net/netfilter/nf_conntrack_ftp.c: In function ¡update_nl_seq¢:
+  net/netfilter/nf_conntrack_ftp.c:340: warning: passing argument 2 of ¡nf_conntrack_event_cache¢ from incompatible pointer type
+  net/netfilter/nf_conntrack_ftp.c:344: warning: passing argument 2 of ¡nf_conntrack_event_cache¢ from incompatible pointer type
+
+Please fix ASAP.
+
+Pulled, but unhappy about warnings in my limited configuration.
+
+		Linus
