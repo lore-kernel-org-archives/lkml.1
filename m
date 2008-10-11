@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbYJJX6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbYJKAww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbYJJX6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Oct 2008 19:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYJJX6F
+	id S1756462AbYJKAww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Oct 2008 20:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYJKAwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Oct 2008 19:58:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41404 "EHLO mx2.redhat.com"
+	Fri, 10 Oct 2008 20:52:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57439 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753713AbYJJX6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Oct 2008 19:58:04 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] MN10300: MEI are renaming themselves to Panasonic
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Date: Sat, 11 Oct 2008 00:57:55 +0100
-Message-ID: <20081010235755.12643.43818.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1754162AbYJKAwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Oct 2008 20:52:42 -0400
+Message-ID: <48EFF84B.5060108@kernel.org>
+Date: Sat, 11 Oct 2008 09:50:19 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [bug] latest -git boot hang
+References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 11 Oct 2008 00:52:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MEI are renaming themselves to Panasonic, so update the MAINTAINERS record for
-the MN10300 arch.
+Hello,
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Linus Torvalds wrote:
+> On Fri, 10 Oct 2008, Ingo Molnar wrote:
+>> | 870d6656126add8e383645732b03df2b7ccd4f94 is first bad commit
+>> | commit 870d6656126add8e383645732b03df2b7ccd4f94
+>> | Author: Tejun Heo <tj@kernel.org>
+>> | Date:   Mon Aug 25 19:47:25 2008 +0900
+>> |
+>> |     block: implement CONFIG_DEBUG_BLOCK_EXT_DEVT
+>>
+>> and meanwhile 2 other test-systems failed to boot as well - both have 
+>> CONFIG_DEBUG_BLOCK_EXT_DEVT=y.
+>>
+>> So i guess this debug feature is working as expected.
+> 
+> Ahh, yeah, sounds that way.
+> 
+>> I guess we should mark CONFIG_DEBUG_BLOCK_EXT_DEVT=y as really dangerous 
+>> to enable because contemporary distributions (i tried Fedora 9) fail 
+>> with it too?
+> 
+> Tejun - do you know whether _any_ distro will boot with 
+> CONFIG_DEBUG_BLOCK_EXT_DEVT=y?
 
- MAINTAINERS |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hmmm... openSUSE 11.0 didn't have any problem with it, which I was a bit
+pleasantly surprised about.  I haven't tested management tools but the
+base system worked just fine.
 
+> It does sound like perhaps the option should be hidden more, if it's 
+> really only reasonably enabled for some very specialized distro debuggers, 
+> not normal kernel people.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3596d17..c4164c6 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2756,7 +2756,7 @@ L:	linux-mm@kvack.org
- L:	linux-kernel@vger.kernel.org
- S:	Maintained
- 
--MEI MN10300/AM33 PORT
-+PANASONIC MN10300/AM33 PORT
- P:	David Howells
- M:	dhowells@redhat.com
- P:	Koichi Yasutake
+Yeap, if fedora didn't work, I think it should be hidden.  Do we already
+have place to hide things like this?
 
+Thanks.
+
+-- 
+tejun
