@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbYJKG4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761430AbYJKG4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761406AbYJKG4H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 02:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbYJKGkE
+	id S1761430AbYJKG4f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 02:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbYJKGkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 02:40:04 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:52476 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850AbYJKGhD (ORCPT
+	Sat, 11 Oct 2008 02:40:01 -0400
+Received: from vms172069pub.verizon.net ([206.46.172.69]:32774 "EHLO
+	vms172069pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752975AbYJKGhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 02:37:03 -0400
-Date: Sat, 11 Oct 2008 02:36:06 -0400
+	Sat, 11 Oct 2008 02:37:04 -0400
+Date: Sat, 11 Oct 2008 02:35:59 -0400
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 46/85] ACPI: don't enable control method power button as wakeup
- device when Fixed Power button is used
+Subject: [PATCH 39/85] dock: Shaohua Li is new maintainer
 In-reply-to: <1223707005-26864-1-git-send-email-lenb@kernel.org>
 In-reply-to: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>
-Message-id: <faee816b1502385dc9bc5abf2960d1cc645844d1.1223706853.git.len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Message-id: <c5d191b8e531e33b823242f3d2c6b81d765e96dd.1223706853.git.len.brown@intel.com>
 Organization: Intel Open Source Technology Center
 X-Mailer: git-send-email 1.6.0.2.307.gc427
 References: <1223707005-26864-1-git-send-email-lenb@kernel.org>
@@ -27,41 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Len Brown <len.brown@intel.com>
 
-don't enable control method power button as wakeup device
-when Fixed Power button is used.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=10503
-
-Tested-by: walken@zoy.org <walken@zoy.org>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/scan.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ MAINTAINERS |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index f6f52c1..5ce14ae 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -744,6 +744,16 @@ static int acpi_bus_get_wakeup_device_flags(struct acpi_device *device)
- 	if (!acpi_match_device_ids(device, button_device_ids))
- 		device->wakeup.flags.run_wake = 1;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cad81a2..7212af7 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1417,8 +1417,8 @@ M:	rdunlap@xenotime.net
+ S:	Maintained
  
-+	/*
-+	 * Don't set Power button GPE as run_wake
-+	 * if Fixed Power button is used
-+	 */
-+	if (!strcmp(device->pnp.hardware_id, "PNP0C0C") &&
-+		!(acpi_gbl_FADT.flags & ACPI_FADT_POWER_BUTTON)) {
-+		device->wakeup.flags.run_wake = 0;
-+		device->wakeup.flags.valid = 0;
-+	}
-+
-       end:
- 	if (ACPI_FAILURE(status))
- 		device->flags.wake_capable = 0;
+ DOCKING STATION DRIVER
+-P:	Kristen Carlson Accardi
+-M:	kristen.c.accardi@intel.com
++P:	Shaohua Li
++M:	shaohua.li@intel.com
+ L:	linux-acpi@vger.kernel.org
+ S:	Supported
+ 
 -- 
 1.5.5.1
 
