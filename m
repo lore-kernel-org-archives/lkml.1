@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932759AbYJKSNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932841AbYJKSNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932759AbYJKSNW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 14:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762248AbYJKSND
+	id S932841AbYJKSNw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 14:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932673AbYJKSNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 14:13:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41737
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1762249AbYJKSNC (ORCPT
+	Sat, 11 Oct 2008 14:13:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56260 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932678AbYJKSNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 14:13:02 -0400
-Date: Sat, 11 Oct 2008 11:12:38 -0700 (PDT)
-Message-Id: <20081011.111238.214770735.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking for 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0810111057020.3402@nehalem.linux-foundation.org>
-References: <20081010.144921.115563930.davem@davemloft.net>
-	<alpine.LFD.2.00.0810110941330.3402@nehalem.linux-foundation.org>
-	<alpine.LFD.2.00.0810111057020.3402@nehalem.linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Oct 2008 14:13:38 -0400
+Date: Sat, 11 Oct 2008 11:12:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #4, x2apic,
+ unify-cpu-detect
+In-Reply-To: <20081010175613.GA20112@elte.hu>
+Message-ID: <alpine.LFD.2.00.0810111108060.3402@nehalem.linux-foundation.org>
+References: <20081010000408.GA5970@elte.hu> <20081010175613.GA20112@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 11 Oct 2008 10:57:29 -0700 (PDT)
 
-> On Sat, 11 Oct 2008, Linus Torvalds wrote:
-> > 
-> > On Fri, 10 Oct 2008, David Miller wrote:
-> > > 
-> > > Here are the queued up networking changes for the 2.6.28 merge window.
-> > 
-> > This generates _tons_ of new warnings for me:
+
+On Fri, 10 Oct 2008, Ingo Molnar wrote:
 > 
-> And apparently errors for others:
+> Please pull the latest x86-v28-for-linus-phase4-B git tree from:
 > 
->  net/netfilter/ipvs/ip_vs_xmit.c: In function 'ip_vs_tunnel_xmit':
->  net/netfilter/ipvs/ip_vs_xmit.c:616: error: implicit declaration of function 'ip_select_ident'
-> 
-> some other config-dependent breakage.
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase4-B
 
-I'll fix this, seems to be just a missing include.
+This is broken.
 
-Thanks.
+I get an absolute metric shitload of:
 
+	include/asm/dma-mapping.h:309:2: error: #endif without #if
+
+errors, and I suspect it's because of some broken merge resolution that 
+you didn't even test and then fixed in some later branch.
+
+I double-checked: it's already broken in your tree, it's not from my 
+merge (ie commit 0d4ab8b5aa74f6be4d022dcf5e27845b7c290294 is already 
+showing that bug).
+
+Not pulled.
+
+		Linus
