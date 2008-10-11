@@ -1,132 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761629AbYJKRhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932254AbYJKRtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761629AbYJKRhn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 13:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761485AbYJKRhc
+	id S932254AbYJKRtL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 13:49:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbYJKRs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 13:37:32 -0400
-Received: from nebensachen.de ([195.34.83.29]:53678 "EHLO mail.nebensachen.de"
+	Sat, 11 Oct 2008 13:48:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58849 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761483AbYJKRhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 13:37:31 -0400
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Block: Fix handling of stopped queues and a plugging issue
-Date: Sat, 11 Oct 2008 19:36:15 +0200
-Message-ID: <87tzbjhw4w.fsf@denkblock.local>
-References: <87zllnound.fsf@denkblock.local>
-	<20081010091708.GY19428@kernel.dk>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
-X-Hashcash: 1:20:081011:jens.axboe@oracle.com::dULHNhtBlUkxWQJl:000000000000000000000000000000000000000063r8
-X-Hashcash: 1:20:081011:linux-kernel@vger.kernel.org::0O6ya/cV2LBhtj5i:00000000000000000000000000000000008pc
+	id S932161AbYJKRs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 13:48:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: acpi-test tree on eeepc: EC error message on second resume
+Date: Sat, 11 Oct 2008 19:53:04 +0200
+User-Agent: KMail/1.9.9
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <48F0DB0C.7060201@tuffmail.co.uk> <200810111909.48897.rjw@sisk.pl> <48F0DE8C.6040309@tuffmail.co.uk>
+In-Reply-To: <48F0DE8C.6040309@tuffmail.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810111953.04610.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Thu, Oct 02 2008, Elias Oltmanns wrote:
->> Make sure that ->request_fn() really isn't called on queues that are
->> supposed to be stopped. While at it, don't remove the plug in
->> __blk_run_queue() unconditionally since this might lead to system hangs.
->
-> What system hangs, can you detail it?
+On Saturday, 11 of October 2008, Alan Jenkins wrote:
+> Rafael J. Wysocki wrote:
+> > On Saturday, 11 of October 2008, Alan Jenkins wrote:
+> >   
+> >> I've just run an acpi-test kernel on my EeePC and noticed a new issue. 
+> >> It seems to be caused (or revealed) by the EC interrupt transaction patch.
+> >>
+> >> On the second suspend/resume cycle, I see a kernel error message.
+> >>
+> >> [   78.747707] ACPI: Waking up from system sleep state S3
+> >> [   79.330001] ACPI: EC: input buffer not empty, aborting transaction
+> >> [   79.423327] ACPI: EC: non-query interrupt received, switching to
+> >> interrupt mode
+> >>
+> >> I still don't see any issues in the code.  I'll try getting a DEBUG
+> >> trace to see the EC interrupts.  Any other suggestions?
+> >>     
+> >
+> > Not really, but is this reproducible?  I mean, does it happen always on the
+> > second resume and does it happen on every next resume after the first one?
+> >
+> > Thanks,
+> > Rafael
+> >   
+> 
+> Ah.  No, I spoke to soon.  It happened on the second resume the first
+> two times I tried it.  But this third time with DEBUG enabled, it
+> happened on the first suspend/resume.
+> 
+> And it doesn't happen on all subsequent resumes either.  I've had one
+> suspend/resume without the error, just after a suspend/resume with the
+> error.
+> 
+> So it's not deterministic, but it is easy to reproduce.
 
-Good question. As it turns out, I got hold of the wrong end of the stick
-entirely. Originally, I thought that requests might get enqueued later
-and not processed in a timely manner because the queue wasn't plugged.
-However, the olny way to do that is through __elv_add_request() and
-there it's probably the responsibility of the caller to make sure that
-the queue either is plugged or processed straight away. I, for one, have
-fallen into that trap and didn't take that into account in my shock
-protection code.
+I can't reproduce this on any hardware available to me, so far.
 
->
->> 
->> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
->> ---
->> Applies to your devel tree.
->> 
->>  block/blk-core.c |    6 +++---
->>  block/elevator.c |   12 +++++++-----
->>  2 files changed, 10 insertions(+), 8 deletions(-)
->> 
->> diff --git a/block/blk-core.c b/block/blk-core.c
->> index 2d053b5..ecc5443 100644
->> --- a/block/blk-core.c
->> +++ b/block/blk-core.c
->> @@ -404,14 +404,14 @@ EXPORT_SYMBOL(blk_sync_queue);
->>   */
->>  void __blk_run_queue(struct request_queue *q)
->>  {
->> -	blk_remove_plug(q);
->> -
->>  	/*
->>  	 * Only recurse once to avoid overrunning the stack, let the unplug
->>  	 * handling reinvoke the handler shortly if we already got there.
->>  	 */
->> -	if (!elv_queue_empty(q))
->> +	if (!elv_queue_empty(q) && likely(!blk_queue_stopped(q))) {
->> +		blk_remove_plug(q);
->>  		blk_invoke_request_fn(q);
->> +	}
->
-> Doing
->
->         if (foo && likely(bar))
->
-> doesn't make a lot of sense, you need to move the entire block or just
-> don't do it. Just don't add it :-)
+Is this related to any other problem, like things not working etc.?
 
-Right. So the change in this function will just be
-
--	if (!elv_queue_empty(q))
-+	if (!elv_queue_empty(q) && !blk_queue_stopped(q))
-
-since there is no harm in removing the plug unconditionally after all.
-
->
->>  }
->>  EXPORT_SYMBOL(__blk_run_queue);
->>  
->> diff --git a/block/elevator.c b/block/elevator.c
->> index 0451892..43a4257 100644
->> --- a/block/elevator.c
->> +++ b/block/elevator.c
->> @@ -611,8 +611,10 @@ void elv_insert(struct request_queue *q, struct request *rq, int where)
->>  		 *   with anything.  There's no point in delaying queue
->>  		 *   processing.
->>  		 */
->> -		blk_remove_plug(q);
->> -		q->request_fn(q);
->> +		if (likely(!blk_queue_stopped(q))) {
->> +			blk_remove_plug(q);
->> +			q->request_fn(q);
->> +		}
->>  		break;
->>  
->>  	case ELEVATOR_INSERT_SORT:
->> @@ -950,7 +952,8 @@ void elv_completed_request(struct request_queue *q, struct request *rq)
->>  		    blk_ordered_cur_seq(q) == QUEUE_ORDSEQ_DRAIN &&
->>  		    blk_ordered_req_seq(first_rq) > QUEUE_ORDSEQ_DRAIN) {
->>  			blk_ordered_complete_seq(q, QUEUE_ORDSEQ_DRAIN, 0);
->> -			q->request_fn(q);
->> +			if (likely(!blk_queue_stopped(q)))
->> +				q->request_fn(q);
->>  		}
->>  	}
->>  }
->
-> I wonder if most of these should not just be blk_start_queueing(), would
-> clean things up.
-
-Yes, I wondered about that too. Especially in the case of elv_insert()
-though, I wasn't quite sure whether you'd prefer to inline the check
-there since this seems to be a fast path. If you don't think it worth
-the extra code, I'll just use blk_start_queueing() in these cases too.
-
-Regards,
-
-Elias
+Rafael
