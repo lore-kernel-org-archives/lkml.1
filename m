@@ -1,85 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbYJKIDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbYJKI3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbYJKIDv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 04:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYJKIDe
+	id S1753952AbYJKI3F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 04:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYJKI2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 04:03:34 -0400
-Received: from sh.osrg.net ([192.16.179.4]:39193 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbYJKIDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 04:03:32 -0400
-Date: Sat, 11 Oct 2008 17:01:48 +0900
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       knikanth@suse.de
-Subject: Re: [PATCH] block: fix nr_phys_segments miscalculation bug
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081011070402.GN19428@kernel.dk>
-References: <20081011153048E.fujita.tomonori@lab.ntt.co.jp>
-	<20081011070402.GN19428@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 11 Oct 2008 04:28:53 -0400
+Received: from ns0.motion-twin.com ([213.186.50.39]:52823 "EHLO
+	mail.motion-twin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbYJKI2v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 04:28:51 -0400
+Message-ID: <48F063C5.3000707@motion-twin.com>
+Date: Sat, 11 Oct 2008 10:28:53 +0200
+From: Nicolas Cannasse <ncannasse@motion-twin.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: recv() hangs until SIGCHLD ?
+References: <48EF58D9.6060401@motion-twin.com> <20081010211700.58e953a2@speedy>
+In-Reply-To: <20081010211700.58e953a2@speedy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081011170124N.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Oct 2008 09:04:03 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Sat, Oct 11 2008, FUJITA Tomonori wrote:
-> > This is against the latest git (b922df7383749a1c0b7ea64c50fa839263d3816b).
-> > 
-> > =
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH] block: fix nr_phys_segments miscalculation bug
-> > 
-> > This fixes the bug reported by Nikanth Karthikesan <knikanth@suse.de>:
-> > 
-> > http://lkml.org/lkml/2008/10/2/203
-> > 
-> > The root cause of the bug is that blk_phys_contig_segment
-> > miscalculates q->max_segment_size.
-> > 
-> > blk_phys_contig_segment checks:
-> > 
-> > req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size
-> > 
-> > But blk_recalc_rq_segments might expect that req->biotail and the
-> > previous bio in the req are supposed be merged into one
-> > segment. blk_recalc_rq_segments might also expect that next_req->bio
-> > and the next bio in the next_req are supposed be merged into one
-> > segment. In such case, we merge two requests that can't be merged
-> > here. Later, blk_rq_map_sg gives more segments than it should.
-> > 
-> > We need to keep track of segment size in blk_recalc_rq_segments and
-> > use it to see if two requests can be merged. This patch implements it
-> > in the similar way that we used to do for hw merging (virtual
-> > merging).
+>> We run a multithread application which is using pthreads and sockets. A 
+>> thread uses accept() then dispatch the socket to one of the workers 
+>> threads that process it. Sockets are then not used simultaneously by 
+>> several threads.
+>>
+>> In some rare cases, one (or several) threads are hanging in recv(). Both 
+>> lsof and ls /proc/<pid>/fd show that the socket used is in ESTABLISHED 
+>> mode but when checking on the host on which it's connected (a mysql DB) 
+>> we can't find the corresponding client socket (as it's been closed 
+>> already on the other side).
+>>
+>> We are using the Boehm GC which uses the signals SIGXCPU and SIGPWR to 
+>> pause+restart the threads when running a GC cycle. We are correctly 
+>> handling EINTR in send() and recv() by restarting the call in case they 
+>> get interrupted this way.
+>>
+>> However, when attaching GDB to our locked thread it seems that even when 
+>> the GC runs, recv() does not exit (the breakpoint after it is not 
+>> reached). If we send SIGCHLD to the hanging thread with GDB, recv() does 
+>> exit and the thread is correctly unlocked. If we don't, it will hang 
+>> forever.
+>>
+>> Additional details : recv() is using MSG_NOSIGNAL and we have enabled 
+>> TCP_NODELAY on the socket by using setsockopt. Some other 
+>> not-multithreaded apps are using the same Databases and this behavior 
+>> does not occur for them.
+>>
+>> Any idea how we can stop this from happening or what additional things 
+>> we can check to get more informations on what's occurring ?
+>>
+>> Thanks a lot,
+>> Nicolas
 > 
-> This looks really good, just like I imagined. I'll give it a fuller
-> review later today and do a bit of targetted testing, if it goes as
-> planned it'll go in soonish. Thanks a lot!
+> Look at Receive queue length with ss or netstat for the hung thread. It will
+> show if there is anything that thread could read.
+> 
+> If there is data and the thread didn't wake up then that is a libc or kernel problem;
+> but if there is no data, then look for cases where earlier interrupted io actually
+> consumed the data already or blame the sending process not the receiver.
+> Also are the sockets blocking or non-blocking?
 
-Thanks,
+The sockets are non-blocking.
 
-One thing that I thought about fixing is that we could falsely
-increase bi_seg_front_size and bi_seg_back_size in
-ll_merge_requests_fn() though I chose the same way in which we did for
-hw merging.
+Checking with netstat and ss I can confirm that both Send and Recv 
+queues are empty, which makes the recv() behavior consistent.
 
-We might update bi_seg_front_size and bi_seg_back_size if
-blk_phys_contig_segment() succeeds. But if total_phys_segments check
-fails after blk_phys_contig_segment(), we could falsely increase
-bi_seg_front_size and bi_seg_back_size.
+However since this problem does not occur without threads, we can be 
+sure that the blame is still on the receiver.
 
-But falsely increasing bi_seg_front_size and bi_seg_back_size doesn't
-cause any bug. It just means we have less segments. So I let it
-alone.
+In a practical case, we have a thread blocked in recv() for more than 12 
+hours, which is way beyond the timeout of the sender connection. The 
+socket has already been closed by the sender so recv() should at least 
+be noticed and returns 0.
 
+Is it safe to assume that when either send() or recv() get interrupted 
+by a signal and returns EINTR, no actual data has been either sent or 
+consumed ? And if it's not, is there any other way around this ?
 
-Oh, I forgot to say, I was able to reproduce the bug easily and wow
-this patch seems to fix the bug for me.
+Best,
+Nicolas
+
