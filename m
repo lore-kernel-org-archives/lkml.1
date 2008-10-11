@@ -1,64 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751472AbYJKEAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbYJKEQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751472AbYJKEAU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 00:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYJKEAF
+	id S1751924AbYJKEQj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 00:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYJKEQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 00:00:05 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:47045 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753193AbYJKEAE (ORCPT
+	Sat, 11 Oct 2008 00:16:29 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:50414 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750807AbYJKEQ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 00:00:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=E7FHoWYy/UlTFd+TGh3OhhziT+jtsSWtYsVN4/MwxjN8T9ROV3BQiFc4+MFTS0XX3Jxu7Nx96bxUfwz2dkLmAeUe8AOxs6Lx3ITtgFekKPe6FqZ4nmEgt/OxkFuzVMHzTUv0fik49MPUkueeU5HMqvV5UaDpp7Vl2PuXseTdnBk=  ;
-X-YMail-OSG: SSK4OuQVM1lAEcfCRBAI5OhiW0hR0yExjVB7hGQPd5ixkf19e4LQAYall3wmMHF7khmdn9i8pe79xScj9L64iGIlhNJ3rWS4DbTuA8dEdZ84m.0n2Pcf__Gx87TqkvH2gRoDONGhC7bgz5ofgxUSTSI3GJDaBfTopChY1Tq2
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Update cacheline size on X86_GENERIC
-Date: Sat, 11 Oct 2008 14:59:53 +1100
-User-Agent: KMail/1.9.5
-Cc: Dave Jones <davej@redhat.com>, x86@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20081009171453.GA15321@redhat.com> <200810101945.32111.nickpiggin@yahoo.com.au> <48EF2CE0.3080109@firstfloor.org>
-In-Reply-To: <48EF2CE0.3080109@firstfloor.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200810111459.53306.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Oct 2008 00:16:28 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 updates for 2.6.28
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KoVtx-0002EB-46@closure.thunk.org>
+Date: Sat, 11 Oct 2008 00:16:25 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 October 2008 21:22, Andi Kleen wrote:
-> Nick Piggin wrote:
-> >>> Anyway, GENERIC kernel should run well on all architectures, and while
-> >>> going too big causes slightly increased structures sometimes, going too
-> >>> small could result in horrible bouncing.
-> >>
-> >> Exactly.
-> >>
-> >> That is it costs one percent or so on TPC, but I think the fix
-> >> for that is just to analyze where the problem is and size those
-> >> data structures based on the runtime cache size. Some subsystems
-> >> like slab do this already.
-> >
-> > Costs 1% on TPC? Is that 128 byte aligning data structures on
-> > Core2, or 64 byte aligning them on P4 that costs the performance?
->
-> The first. BTW it was a rough number from memory, in that ballpark.
-> Also the experiment was on older kernels, might be different now.
->
-> The second would undoubtedly be much worse.
+Hi Linus,
 
-OK. Well I don't have a really strong opinion on what to do...
+Please pull from:
 
-I guess there is a reasonable argument to not care about P4 so
-much in today's GENERIC kernel. If it is worth around 1% on tpc
-on a more modern architecture, that is a pretty big motivation
-to change it too...
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+
+In addition to many bug fixes and performance improvements for ext4,
+this patch set also contains the FIEMAP ioctl.  The changes to ocfs2 to
+support the generic FIEMAP interface were written and approved by Mark
+Fasheh from the OCFS2 community.  In addition, the percpu cleanup (which
+is in the ext4 tree because a number of follow-on ext4 patches depend on
+it) was signed-off or acked by Andrew Morton as well as Peter Zijlstra.
+
+Thanks!!
+
+                                                - Ted
+
+
+
+Alexey Dobriyan (1):
+      ext4: fix #11321: create /proc/ext4/*/stats more carefully
+
+Andi Kleen (1):
+      ext4: Avoid double dirtying of super block in ext4_put_super()
+
+Aneesh Kumar K.V (13):
+      ext4: invalidate pages if delalloc block allocation fails.
+      ext4: Make sure all the block allocation paths reserve blocks
+      ext4: Retry block reservation
+      ext4: Add percpu dirty block accounting.
+      ext4: Switch to non delalloc mode when we are low on free blocks count.
+      ext4: Signed arithmetic fix
+      ext4: Fix ext4 nomballoc allocator for ENOSPC
+      ext4: Don't add the inode to journal handle until after the block is allocated
+      ext4: Retry block allocation if we have free blocks left
+      ext4: truncate block allocated on a failed ext4_write_begin
+      ext4: Properly update i_disksize.
+      ext4: elevate write count for migrate ioctl
+      ext4: hook the ext3 migration interface to the EXT4_IOC_SETFLAGS ioctl
+
+Duane Griffin (1):
+      jbd2: abort instead of waiting for nonexistent transaction
+
+Eric Sandeen (3):
+      ext4: Avoid printk floods in the face of directory corruption
+      ext4: use percpu data structures for lg_prealloc_list
+      Hook ext4 to the vfs fiemap interface.
+
+Frederic Bohe (2):
+      Update flex_bg free blocks and free inodes counters when resizing.
+      ext4: fix initialization of UNINIT bitmap blocks
+
+Josef Bacik (1):
+      generic block based fiemap implementation
+
+Kalpak Shah (1):
+      ext4: fix xattr deadlock
+
+Li Zefan (1):
+      ext4: add missing unlock in ext4_check_descriptors() on error path
+
+Mark Fasheh (2):
+      vfs: vfs-level fiemap interface
+      ocfs2: fiemap support
+
+Mingming Cao (1):
+      percpu counter: clean up percpu_counter_sum_and_set()
+
+Theodore Ts'o (16):
+      ext4: Add printk priority levels to clean up checkpatch warnings
+      ext4: Fix long long checkpatch warnings
+      ext4: Fix whitespace checkpatch warnings/errors
+      jbd2: clean up how the journal device name is printed
+      ext4: Renumber EXT4_IOC_MIGRATE
+      ext4/jbd2: Avoid WARN() messages when failing to write to the superblock
+      ext4: Don't use 'struct dentry' for internal lookups
+      ext4: move /proc setup and teardown out of mballoc.c
+      ext4: Combine proc file handling into a single set of functions
+      ext4: Improve the documentation for ext4's /proc tunables
+      ext4: Use readahead when reading an inode from the inode table
+      ext4: Remove old legacy block allocator
+      ext4: Add debugging markers that can be used by systemtap
+      jbd2: Fix buffer head leak when writing the commit block
+      Update ext4 MAINTAINERS file
+      ext4: Rename ext4dev to ext4
+
+ Documentation/filesystems/ext4.txt   |   14 +-
+ Documentation/filesystems/fiemap.txt |  228 ++++++
+ Documentation/filesystems/proc.txt   |   73 +-
+ MAINTAINERS                          |    5 +-
+ fs/Kconfig                           |   88 ++-
+ fs/Makefile                          |    2 +-
+ fs/ext2/ext2.h                       |    2 +
+ fs/ext2/file.c                       |    1 +
+ fs/ext2/inode.c                      |    8 +
+ fs/ext3/file.c                       |    1 +
+ fs/ext3/inode.c                      |    8 +
+ fs/ext4/Makefile                     |   10 +-
+ fs/ext4/acl.h                        |   12 +-
+ fs/ext4/balloc.c                     | 1457 +++-------------------------------
+ fs/ext4/bitmap.c                     |    6 +-
+ fs/ext4/dir.c                        |   64 +-
+ fs/ext4/ext4.h                       |  131 ++--
+ fs/ext4/ext4_extents.h               |   15 +
+ fs/ext4/ext4_i.h                     |   39 +-
+ fs/ext4/ext4_sb.h                    |   25 +-
+ fs/ext4/extents.c                    |  281 ++++++-
+ fs/ext4/file.c                       |   10 +-
+ fs/ext4/fsync.c                      |    7 +-
+ fs/ext4/hash.c                       |    8 +-
+ fs/ext4/ialloc.c                     |   71 +-
+ fs/ext4/inode.c                      |  620 +++++++++------
+ fs/ext4/ioctl.c                      |   84 +--
+ fs/ext4/mballoc.c                    |  220 ++----
+ fs/ext4/mballoc.h                    |    1 -
+ fs/ext4/migrate.c                    |   10 +-
+ fs/ext4/namei.c                      |  402 +++++-----
+ fs/ext4/resize.c                     |   33 +-
+ fs/ext4/super.c                      |  274 +++++--
+ fs/ext4/symlink.c                    |    8 +-
+ fs/ext4/xattr.c                      |   14 +-
+ fs/ext4/xattr.h                      |   12 +-
+ fs/ioctl.c                           |  273 +++++++
+ fs/jbd2/checkpoint.c                 |   22 +-
+ fs/jbd2/commit.c                     |   22 +-
+ fs/jbd2/journal.c                    |   75 +-
+ fs/ocfs2/alloc.c                     |    9 -
+ fs/ocfs2/alloc.h                     |    9 +
+ fs/ocfs2/extent_map.c                |  346 +++++++--
+ fs/ocfs2/extent_map.h                |    3 +
+ fs/ocfs2/file.c                      |    1 +
+ include/linux/ext3_fs.h              |    2 +
+ include/linux/fiemap.h               |   64 ++
+ include/linux/fs.h                   |   21 +
+ include/linux/jbd2.h                 |    3 +-
+ include/linux/percpu_counter.h       |   12 +-
+ lib/percpu_counter.c                 |    8 +-
+ 51 files changed, 2581 insertions(+), 2533 deletions(-)
