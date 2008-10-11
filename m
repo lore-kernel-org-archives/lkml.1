@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbYJKMx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYJKNFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754430AbYJKMx2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 08:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYJKMxT
+	id S1754731AbYJKNFA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 09:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYJKNEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 08:53:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:51744 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbYJKMxS (ORCPT
+	Sat, 11 Oct 2008 09:04:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42131 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbYJKNEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 08:53:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=n2sipJ/hecJ2TTY6teupI+Weprjvo46IQnrR3NtFMbwn/Wp1OK3IsBH27dNMaM5uql
-         q/HDGFduRDtxYV487C3zLQkpSDlglwqghbGPZGKVKnXmyD0sahq7MTe/QaogJPmCj8MU
-         9YmdJa+iIv7JbsL5jpl6woFRQyuBLlvVfoeIc=
-Message-ID: <c6740f810810110553q75478033ub984651d5509199b@mail.gmail.com>
-Date: Sat, 11 Oct 2008 14:53:16 +0200
-From: "Philip Stark" <heller.barde@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.27 seems to break something with DSL
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Oct 2008 09:04:51 -0400
+Date: Sat, 11 Oct 2008 15:11:15 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, Dave Jones <davej@redhat.com>,
+       x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Update cacheline size on X86_GENERIC
+Message-ID: <20081011131115.GB12131@one.firstfloor.org>
+References: <20081009171453.GA15321@redhat.com> <200810111929.19891.nickpiggin@yahoo.com.au> <20081011112218.GA12131@one.firstfloor.org> <200810112242.28229.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200810112242.28229.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> > > That would be nice. It would be interesting to know what is causing
+> > > the slowdown.
+> >
+> > At least that test is extremly cache footprint sensitive. A lot of the
+> > cache misses are surprisingly in hd_struct, because it runs
+> > with hundred of disks and each needs hd_struct references in the fast path.
+> > The recent introduction of fine grained per partition statistics
+> > caused a large slowdown. But I don't think kernel workloads
+> > are normally that extremly cache sensitive.
+> 
+> That's interesting. struct device is pretty big. I wonder if fields
 
-I'm sorry, I didn't lurk before making my first posting to this list,
-but it seemed to me that this might be an important problem/bug (if it
-is one).
+Yes it is (it actually can be easily shrunk -- see willy's recent
+patch to remove the struct completion from knodes), but that won't help 
+because it will always
+be larger than a cache line and it's in the middle, so the 
+accesses to first part of it and last part of it will be separate.
 
-first off, my network infrastructure:
+> couldn't be rearranged to minimise the fastpath cacheline footprint?
+> I guess that's already been looked at?
 
-"internet" --(magic*)-- DSL Modem --(DHCP)-- Router --(DHCP)-- Computer
-* PPPsomething i guess...
+Yes, but not very intensively. So far I was looking for more 
+detailed profiling data to see the exact accesses.
 
-My observations so far:
+Of course if you have any immediate ideas that could be tried too.
 
-with kernel =< 2.6.26 i can connect to the rest of the world perfectly
-(ping works and i can browse "the internet")
+-Andi
 
-now with kernel 2.6.27, i.e with all the release candidates and also
-with the final version from yesterday i can ping anything just fine,
-but i can't browse. that is when i 'wget kernel.org' it resolves the
-address into the correct IP and then goes on to 'connecting' just to
-grind to a complete halt. after some time of course it times out.
-it seems to  be related to the packet  size because ping only seems to
-work because it uses small packets. if i increase the ping size up to
-1000 bytes, it fails as well. (while it does work on 2.6.26)
-
-oh and it is the same problem on the wireless and the wired interface.
-on 2 different laptops and on my desktop (which have different
-networking chips, two intel and one realtek)
-
-best Regards
-Philip Stark
-
-PS: if i horribly misposted, please slap me across the face and ignore me :)
+-- 
+ak@linux.intel.com
