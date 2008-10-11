@@ -1,53 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932841AbYJKSNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbYJKSO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932841AbYJKSNw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 14:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932673AbYJKSNi
+	id S932695AbYJKSO2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 14:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762257AbYJKSOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 14:13:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56260 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932678AbYJKSNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 14:13:38 -0400
-Date: Sat, 11 Oct 2008 11:12:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull, take 2] x86 updates for v2.6.28, phase #4, x2apic,
- unify-cpu-detect
-In-Reply-To: <20081010175613.GA20112@elte.hu>
-Message-ID: <alpine.LFD.2.00.0810111108060.3402@nehalem.linux-foundation.org>
-References: <20081010000408.GA5970@elte.hu> <20081010175613.GA20112@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 11 Oct 2008 14:14:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38253 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1762314AbYJKSOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 14:14:03 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX182E+xqIOw2T8ypGSo+f4Z7OfKWCXkdkeNurJi+xi
+	TxEf4ZjY92t1IN
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Evgeniy Polyakov <s0mbre@tservice.net.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <1223735947.8485.33.camel@twins>
+References: <20081009231759.GA8664@tservice.net.ru>
+	 <1223633623.4138.86.camel@marge.simson.net>
+	 <20081011131352.GA16908@tservice.net.ru>  <1223735947.8485.33.camel@twins>
+Content-Type: text/plain
+Date: Sat, 11 Oct 2008 20:13:50 +0200
+Message-Id: <1223748830.4598.16.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2008-10-11 at 16:39 +0200, Peter Zijlstra wrote:
+
+> That said, we can probably still avoid the division for the top level
+> stuff, because the sum of the top level weights is still invariant
+> between all tasks.
+
+Less math would be nice of course...
+
+> I'll have a stab at doing so... I initially didn't do this because my
+> first try gave some real ugly code, but we'll see - these numbers are a
+> very convincing reason to try again.
+
+...but the numbers I get on Q6600 don't pin the tail on the math donkey.
+
+Update to UP test log.
+
+2.6.27-final-up
+ring-test   - 1.193 us/cycle  = 838 KHz  (gcc-4.3)
+tbench      - 337.377 MB/sec           tso/gso on
+tbench      - 340.362 MB/sec           tso/gso off
+netperf     - 120751.30 rr/s           tso/gso on
+netperf     - 121293.48 rr/s           tso/gso off
+
+2.6.27-final-up
+patches/revert_weight_and_asym_stuff.diff
+ring-test   - 1.133 us/cycle  = 882 KHz  (gcc-4.3)
+tbench      - 340.481 MB/sec           tso/gso on
+tbench      - 343.472 MB/sec           tso/gso off
+netperf     - 119486.14 rr/s           tso/gso on
+netperf     - 121035.56 rr/s           tso/gso off
+
+2.6.28-up
+ring-test   - 1.149 us/cycle  = 870 KHz  (gcc-4.3)
+tbench      - 343.681 MB/sec           tso/gso off
+netperf     - 122812.54 rr/s           tso/gso off
+
+My SMP log, updated to account for TSO/GSO monkey-wrench.
+
+(<bleep> truckload of time <bleep> wasted chasing unbisectable
+<bleepity-bleep> tso gizmo. <bleep!>)
+
+SMP config, same as UP kernels tested, except SMP.
+
+tbench -t 60 4 localhost followed by four 60 sec netperf
+TCP_RR pairs, each pair on it's own core of my Q6600.
+
+2.6.22.19
+
+Throughput 1250.73 MB/sec 4 procs                  1.00
+
+16384  87380  1        1       60.01    111272.55  1.00
+16384  87380  1        1       60.00    104689.58
+16384  87380  1        1       60.00    110733.05
+16384  87380  1        1       60.00    110748.88
+
+2.6.22.19-cfs-v24.1
+
+Throughput 1213.21 MB/sec 4 procs                  .970
+
+16384  87380  1        1       60.01    108569.27  .992
+16384  87380  1        1       60.01    108541.04
+16384  87380  1        1       60.00    108579.63
+16384  87380  1        1       60.01    108519.09
+
+2.6.23.17
+
+Throughput 1200.46 MB/sec 4 procs                  .959
+
+16384  87380  1        1       60.01    95987.66   .866
+16384  87380  1        1       60.01    92819.98
+16384  87380  1        1       60.01    95454.00
+16384  87380  1        1       60.01    94834.84
+
+2.6.23.17-cfs-v24.1
+
+Throughput 1238.68 MB/sec 4 procs                  .990
+
+16384  87380  1        1       60.01    105871.52  .969
+16384  87380  1        1       60.01    105813.11
+16384  87380  1        1       60.01    106106.31
+16384  87380  1        1       60.01    106310.20
+
+2.6.24.7
+
+Throughput 1204 MB/sec 4 procs                     .962
+
+16384  87380  1        1       60.00    99599.27   .910
+16384  87380  1        1       60.00    99439.95
+16384  87380  1        1       60.00    99556.38
+16384  87380  1        1       60.00    99500.45
+
+2.6.25.17
+
+Throughput 1223.16 MB/sec 4 procs                  .977
+16384  87380  1        1       60.00    101768.95  .930
+16384  87380  1        1       60.00    101888.46
+16384  87380  1        1       60.01    101608.21
+16384  87380  1        1       60.01    101833.05
+
+2.6.26.5
+
+Throughput 1183.47 MB/sec 4 procs                  .945
+
+16384  87380  1        1       60.00    100837.12  .922
+16384  87380  1        1       60.00    101230.12
+16384  87380  1        1       60.00    100868.45
+16384  87380  1        1       60.00    100491.41
+
+numbers above here are gcc-4.1, below gcc-4.3
+
+2.6.26.6
+
+Throughput 1177.18 MB/sec 4 procs
+
+16384  87380  1        1       60.00    100896.10
+16384  87380  1        1       60.00    100028.16
+16384  87380  1        1       60.00    101729.44
+16384  87380  1        1       60.01    100341.26
+
+TSO/GSO off
+
+2.6.27-final
+
+Throughput 1177.39 MB/sec 4 procs
+
+16384  87380  1        1       60.00    98830.65
+16384  87380  1        1       60.00    98722.47
+16384  87380  1        1       60.00    98565.17
+16384  87380  1        1       60.00    98633.03
+
+2.6.27-final
+patches/revert_weight_and_asym_stuff.diff
+
+Throughput 1167.67 MB/sec 4 procs
+
+16384  87380  1        1       60.00    97003.05
+16384  87380  1        1       60.00    96758.42
+16384  87380  1        1       60.00    96432.01
+16384  87380  1        1       60.00    97060.98
+
+2.6.28.git
+
+Throughput 1173.14 MB/sec 4 procs
+
+16384  87380  1        1       60.00    98449.33
+16384  87380  1        1       60.00    98484.92
+16384  87380  1        1       60.00    98657.98
+16384  87380  1        1       60.00    98467.39
 
 
-On Fri, 10 Oct 2008, Ingo Molnar wrote:
-> 
-> Please pull the latest x86-v28-for-linus-phase4-B git tree from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-v28-for-linus-phase4-B
 
-This is broken.
-
-I get an absolute metric shitload of:
-
-	include/asm/dma-mapping.h:309:2: error: #endif without #if
-
-errors, and I suspect it's because of some broken merge resolution that 
-you didn't even test and then fixed in some later branch.
-
-I double-checked: it's already broken in your tree, it's not from my 
-merge (ie commit 0d4ab8b5aa74f6be4d022dcf5e27845b7c290294 is already 
-showing that bug).
-
-Not pulled.
-
-		Linus
