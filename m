@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYJKI3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbYJKI3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbYJKI3Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 04:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbYJKI26
+	id S1757173AbYJKI3m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 04:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbYJKI3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 04:28:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55909 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbYJKI2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 04:28:55 -0400
-Date: Sat, 11 Oct 2008 10:28:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] fastboot tree for v2.6.28
-Message-ID: <20081011082845.GA28715@elte.hu>
-References: <20081010003241.GA23940@elte.hu> <alpine.LFD.2.00.0810101254240.3503@nehalem.linux-foundation.org> <20081010154929.6ec201fe@infradead.org> <20081011064712.GA25451@elte.hu> <20081011004840.5ad62ce0.akpm@linux-foundation.org>
+	Sat, 11 Oct 2008 04:29:32 -0400
+Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:38499 "HELO
+	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752492AbYJKI3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 04:29:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KauxSADbKXfwYyYaRMZuZUho6z1pdhZQKqb2/egwrTRSal+zGOvWQ9BZyK9B8xyTNTFqhffCQTdgubuvqrwrGvocNMCYPlQSfXwadk6oMCR3ljjNX/KcXAcrksHiHAorSVQ7J9By7/aSWxL/FbiQUHMZGKeV9N/LmylF1oftoaw=  ;
+X-YMail-OSG: od3D0K0VM1l7U_f2bAtyrOFOTiWjke9t0KNgv0KoVs4MR22yNZKmOJ0z4lMaICGfrqIP5Exfwnv21F2x7S0QC.fGjLgrwnEUkbuwqJ5X4AoKwpT9.Up7DyIfzjCrFg5.6WWwRn5c6e1O6atQsywvDJJYJX3kZyJmY1YJDUJE
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Update cacheline size on X86_GENERIC
+Date: Sat, 11 Oct 2008 19:29:19 +1100
+User-Agent: KMail/1.9.5
+Cc: Dave Jones <davej@redhat.com>, x86@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20081009171453.GA15321@redhat.com> <200810111459.53306.nickpiggin@yahoo.com.au> <20081011080812.GA9880@one.firstfloor.org>
+In-Reply-To: <20081011080812.GA9880@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081011004840.5ad62ce0.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Message-Id: <200810111929.19891.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Sat, 11 Oct 2008 08:47:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > When i saw your patches then initially my impression was "oh my, 
-> > this will break a ton of stuff", so i asked you to: make it 
-> > default-off (against Andrew's suggestion to just remove the config 
-> > and make it a compulsory feature)
-> 
-> hm, that must have been the other Andrew.
-
-on 14th August you wrote:
-
-|| Making it a config options seems a bad idea - it'll split our 
-|| testing/debugging space yet again.  If this stuff works, then 
-|| everyone should be able to use it.  If it doesn't work, well....
-
-this i understood as: "if we take this stuff then it should be 
-always-on". [You didnt say whether we should take it though.]
-
-> A feature like this I think should not have a config option but should 
-> be enabled by a boot option.
+On Saturday 11 October 2008 19:08, Andi Kleen wrote:
+> > I guess there is a reasonable argument to not care about P4 so
 >
-> We can waffle about the default setting of that option.  Maybe turn it 
-> on for a few weeks and see what happens.
+> I don't think it is. Ignoring old systems would be a mistake
+> and the wrong signal. One of Linux's forte over the competition
+> was always to run reasonable on older systems too.
 
-a config option is definitely useful for users and distros. Having the 
-boot option is a good idea. Arjan, i thought we had a fastboot=0/1 boot 
-option but i cannot find it - could you please add it?
+I think there is a reasonable argument: and that is that most
+multiprocessor P4 systems in production and using a GENERIC (ie.
+probably not custom but probably vendor compiled) kernel is not
+likely to be upgraded to a 2.6.28+ based GENERIC kernel.
 
-	Ingo
+I also think there are reasonable arguments the other way, and I
+personally also think it might be better to leave it 128 (even
+if it is unlikely, introducing a regression is not good).
+
+
+> There are millions and millions of P4s around.
+> And they're not that old, they're still shipping in fact.
+
+Still shipping in anything aside from 1s systems?
+
+
+> And the point of GENERIC was to be a reasonable default on all
+> systems.
+>
+> If you want to optimize for a specific CPU you're always free
+> to compile the kernel for that. But GENERIC should be really
+> GENERIC.
+>
+> > much in today's GENERIC kernel. If it is worth around 1% on tpc
+> > on a more modern architecture, that is a pretty big motivation
+> > to change it too...
+>
+> TPC is a extreme case, it is extremly cache bound.
+
+Still, 1% there is a large increase.
+
+
+> Besides I suspect the TPC issue could be fixed with a minimal
+> tweaks without breaking other systems.
+
+That would be nice. It would be interesting to know what is causing
+the slowdown.
