@@ -1,127 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYJKHU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYJKH2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYJKHU0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYJKHUN
+	id S1754803AbYJKH2m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYJKH2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:20:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41614 "EHLO mx2.mail.elte.hu"
+	Sat, 11 Oct 2008 03:28:34 -0400
+Received: from crmm.lgl.lu ([158.64.72.228]:33162 "EHLO lll.lu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbYJKHUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:20:12 -0400
-Date: Sat, 11 Oct 2008 09:19:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [bug] latest -git boot hang
-Message-ID: <20081011071939.GA26465@elte.hu>
-References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org> <48EFF84B.5060108@kernel.org>
+	id S1751202AbYJKH2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 03:28:33 -0400
+Message-ID: <48F0559C.1040705@knaff.lu>
+Date: Sat, 11 Oct 2008 09:28:28 +0200
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48EFF84B.5060108@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu> <48EE4302.2010404@zytor.com> <48EEC7D1.80404@knaff.lu> <48EFC9A0.5070907@zytor.com>
+In-Reply-To: <48EFC9A0.5070907@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Tejun Heo <tj@kernel.org> wrote:
-
-> > It does sound like perhaps the option should be hidden more, if it's 
-> > really only reasonably enabled for some very specialized distro 
-> > debuggers, not normal kernel people.
+H. Peter Anvin wrote:
+> Alain Knaff wrote:
+>> H. Peter Anvin wrote:
+>>> Hi Alain,
+>>>
+>>> Are you planning to submit an updated patch any time soon?  If so,
+>>> please separate the ARM, x86, library and generic portions into separate
+>>> patches.  It looks like at least some of them already went into ARM,
+>>> which makes it impractical to include this as a monolithic patch, which
+>>> it really shouldn't have to be, anyway.
+>>>
+>>>     -hpa
+>>
+>> I'll look into it (the split) this weekend, if I'll find the time.
+>> Should each part be compilable on its own? If so, it might be difficult
+>> to do the split along the lines outlined above.
+>>
 > 
-> Yeap, if fedora didn't work, I think it should be hidden.  Do we 
-> already have place to hide things like this?
+> Not individually, but part 1 should compile, as should parts 1+2, etc.
+> 
+> This pretty much means the order should be:
+> 
+> 1. add library functions
+> 2. generic functionality
+> 3. x86 functionality
+> 4. ARM functionality
 
-in my local testing i'm using simple annotations like the one attached 
-further below. Any objections against sending my BROKEN_BOOT_ALLOWED kit 
-upstream, and merge my annotations for various kernel features that 
-break a generic distro bootup?
+Unfortunately, due to the nature of the patch, it will be hard to
+separate out "x86 functionality" from changes in lib/inflate.c . Indeed,
+a large part of the patch consists in moving some gzip-specific headers
+and internal variable declarations from the callers:
+arch/x86/boot/compressed/misc.c on one hand, and init/do_mounts_rd.c and
+init/initramfs.c on the other hand into lib/inflate.c
 
-Right now i have about 40 such annotations for -tip testing:
+So, leaving out the x86-specific change
+(arch/x86/boot/compressed/misc.c) in the first change, would force to
+leave that change out of lib/inflate.c as well (or else, the
+above-listed items would be doubly defined). But, if I left out these
+changes of lib/inflate.c, I'd need to leave them out of and
+init/do_mounts_rd.c and init/initramfs.c too (or else the above-listed
+items would not be defined at all in that situation). Can you suggest a
+solution? I could theoretically break that dependency chain using an
+#ifdef (as was the case until patch 3), but apparently #ifdef's are
+highly frowned upon. Or was it just the name of the ifdef ("NEW_CODE")
+that you objected to? Another option would be to (temporarily) keep 2
+copies of lib/inflate.c around, but somehow that doesn't feel right.
 
-  fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  security/selinux/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  security/smack/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  security/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/net/appletalk/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/net/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/media/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/scsi/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/watchdog/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/watchdog/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/ide/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/i2c/busses/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/block/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/console/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/video/console/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/mtd/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  drivers/isdn/icn/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  lib/Kconfig.kgdb:	depends on BROKEN_BOOT_ALLOWED
-  lib/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
-  lib/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	# depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-  arch/x86/Kconfig.cpu:	depends on BROKEN_BOOT_ALLOWED
+So can you suggest some way out of the situation?
 
-and note the stark contrast to CONFIG_BROKEN - sometimes a given 
-functionality is really not meant to be enabled on a generic system.
+> 
+> Soem of these may be obsolete; I noticed collisions with the ARM tree.
+> 
+>     -hpa
 
-	Ingo
+Great! Could you tell me where to download the ARM tree from, so that I
+can have a look?
 
----------------->
-Subject: qa: no ext devt
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri Oct 10 22:54:57 CEST 2008
+Thanks,
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- lib/Kconfig.debug |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux/lib/Kconfig.debug
-===================================================================
---- linux.orig/lib/Kconfig.debug
-+++ linux/lib/Kconfig.debug
-@@ -670,6 +670,8 @@ config DEBUG_BLOCK_EXT_DEVT
-         bool "Force extended block device numbers and spread them"
- 	depends on DEBUG_KERNEL
- 	depends on BLOCK
-+	depends on BROKEN_BOOT_ALLOWED
-+	select BROKEN_BOOT
- 	default n
- 	help
- 	  Conventionally, block device numbers are allocated from
+Alain
 
