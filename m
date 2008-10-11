@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbYJKUuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbYJKUwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760720AbYJKUuB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 16:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbYJKUtw
+	id S1760745AbYJKUwR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 16:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbYJKUwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 16:49:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59260 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754702AbYJKUtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 16:49:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: acpi-test tree on eeepc: EC error message on second resume
-Date: Sat, 11 Oct 2008 22:54:08 +0200
-User-Agent: KMail/1.9.9
-Cc: Alexey Starikovskiy <aystarik@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <48F0DB0C.7060201@tuffmail.co.uk> <200810112140.16662.rjw@sisk.pl> <48F100CA.2050600@suse.de>
-In-Reply-To: <48F100CA.2050600@suse.de>
+	Sat, 11 Oct 2008 16:52:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:8242 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754000AbYJKUwG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 16:52:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=qiGvn8zLiYOweMEiAinnMiEwbMcWEt/vwjtn0nqgtfSFlxUAjxQDRV9x5GlCYXv4MJ
+         gsKEhhGnJAkjw2SwffBgvsPK7gnkdPa+8K4Nc5LtGfCbiBvdy6FMTSO2114RnJzQ3wLp
+         DPl3kWhIeJUl4hei0N60+oo+zzzL5qnNGli7E=
+Message-ID: <48F111F0.3000704@gmail.com>
+Date: Sat, 11 Oct 2008 22:52:00 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] tracing/ftrace: Make boot tracer select the sched_switch
+ tracer
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810112254.09094.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 11 of October 2008, Alexey Starikovskiy wrote:
-> Rafael J. Wysocki wrote:
-> >> No, we discussed this before -- we are outside of the transaction, thus 
-> >> no GPE
-> >> activity could interfere with ec_check_ibf0.
-> > 
-> > Ok, this is in the process context and we don't really expect to get an
-> > interrupt at this point, but what happens if the EC generates an event that's
-> > not related to any transiaction.  Is that guaranteed to never happen?
-> Interrupt handler in this case can't cause a change to status register, thus our 
-> read of it will not be affected by interrupt.
+If the boot tracer is selected but not the sched_switch,
+there will be a build failure:
 
-Ok, thanks.
+kernel/built-in.o: In function `boot_trace_init':
+trace_boot.c:(.text+0x5ee38): undefined reference to `sched_switch_trace'
+kernel/built-in.o: In function `disable_boot_trace':
+(.text+0x5eee1): undefined reference to `tracing_stop_cmdline_record'
+kernel/built-in.o: In function `enable_boot_trace':
+(.text+0x5ef11): undefined reference to `tracing_start_cmdline_record'
 
-Alan, does the patch work for you?
+This patch fixes it.
 
-Rafael
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 396aea1..d09c693 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -125,6 +125,7 @@ config BOOT_TRACER
+ 	depends on HAVE_FTRACE
+ 	depends on DEBUG_KERNEL
+ 	select TRACING
++	select CONTEXT_SWITCH_TRACER
+ 	help
+ 	  This tracer helps developers to optimize boot times: it records
+ 	  the timings of the initcalls. Its aim is to be parsed by the
