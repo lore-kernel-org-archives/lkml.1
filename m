@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbYJKHtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYJKHzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257AbYJKHtS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 03:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYJKHtJ
+	id S1754032AbYJKHzV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 03:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbYJKHzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 03:49:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45738 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750774AbYJKHtI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 03:49:08 -0400
-Date: Sat, 11 Oct 2008 00:48:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] fastboot tree for v2.6.28
-Message-Id: <20081011004840.5ad62ce0.akpm@linux-foundation.org>
-In-Reply-To: <20081011064712.GA25451@elte.hu>
-References: <20081010003241.GA23940@elte.hu>
-	<alpine.LFD.2.00.0810101254240.3503@nehalem.linux-foundation.org>
-	<20081010154929.6ec201fe@infradead.org>
-	<20081011064712.GA25451@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Oct 2008 03:55:09 -0400
+Received: from web38207.mail.mud.yahoo.com ([209.191.124.150]:40128 "HELO
+	web38207.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750756AbYJKHzI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 03:55:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=0MAnNa0EEClfeBCqEhRFM++E1zSq7aErkZ5WaGwFBlZRwl62Z38HyqDq/rPiCMsFGKTqL2UIO/7qX6IsZPbh+fdfDjKiCS0eYlU/DAgKWFPbgRpqCdp5X8LSZQl2Hj/S9vcl30WlHPCMIaw6e1LUDb2/8BbBoALtJVzvDlqaQUc=;
+X-YMail-OSG: Y6LMx4EVM1lJaR92epElbsz4qG17..3gj8l5iIIITMW1BqdWqgyAAvdkSAUIS5xTbg--
+X-Mailer: YahooMailRC/1096.40 YahooMailWebService/0.7.218.2
+Date: Sat, 11 Oct 2008 00:55:05 -0700 (PDT)
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [PATCH] drm: fix leak of uninitialized data to userspace (acpi_system_read_event)
+To: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Vegard Nossum <vegardno@ifi.uio.no>, Dave Airlie <airlied@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <974167.43188.qm@web38207.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Oct 2008 08:47:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> From: Vegard Nossum <vegard.nossum@gmail.com>
 
-> When i saw your patches then initially my impression was "oh my, this 
-> will break a ton of stuff", so i asked you to: make it default-off 
-> (against Andrew's suggestion to just remove the config and make it a 
-> compulsory feature)
+> 
+> Does that also mean that the DRM patch fixed the first one? :-)
 
-hm, that must have been the other Andrew.
+Yes, that's "the original kmemcheck drm warning is no longer present with your patch".
 
-A feature like this I think should not have a config option but should
-be enabled by a boot option.
+Tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
 
-We can waffle about the default setting of that option.  Maybe turn it
-on for a few weeks and see what happens.
 
+
+      
