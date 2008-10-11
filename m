@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbYJKQ3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYJKQjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbYJKQ3q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 12:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbYJKQ3h
+	id S1757583AbYJKQjA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 12:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYJKQiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 12:29:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58101 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754190AbYJKQ3g (ORCPT
+	Sat, 11 Oct 2008 12:38:51 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46011 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753616AbYJKQiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 12:29:36 -0400
-Date: Sat, 11 Oct 2008 09:29:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Chris Snook <csnook@redhat.com>, Stefan Monnier <monnier@iro.umontreal.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Filesystem for block devices using flash storage?
-Message-ID: <20081011092932.31618741@infradead.org>
-In-Reply-To: <20081011143552.GA1556@ucw.cz>
-References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org>
-	<48ED1D62.8080100@redhat.com>
-	<20081011143552.GA1556@ucw.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Sat, 11 Oct 2008 12:38:50 -0400
+Subject: Re: libata: set queue SSD flag for SSD devices
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, torvalds@osdl.org
+In-Reply-To: <20081011090407.6de9b8b4@infradead.org>
+References: <200810101904.m9AJ42Gq018897@hera.kernel.org>
+	 <20081010202515.446857cc@lxorguk.ukuu.org.uk>
+	 <20081010200528.GJ19428@kernel.dk> <20081010175508.3d1ed2a4@infradead.org>
+	 <1223710417.4159.11.camel@localhost.localdomain>
+	 <20081011140600.GR19428@kernel.dk>
+	 <1223739853.4159.17.camel@localhost.localdomain>
+	 <20081011090407.6de9b8b4@infradead.org>
+Content-Type: text/plain
+Date: Sat, 11 Oct 2008 18:38:44 +0200
+Message-Id: <1223743124.4159.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > Writes to magnetic disks are functionally atomic at the sector
-> > level. With SSDs, writing requires an erase followed by rewriting
-> > the sectors that aren't changing.  This means that an ill-timed
-> > power loss can corrupt an entire erase block, which could be up to
-> > 256k on some MLC flash.  Unless you have a RAID card with a
-> > battery-backed write cache, your best bet is probably data
-> > journaling. On ext3, you can enable this with the data=journal
-> > mount option or the rootflags=data=journal kernel parameter for
-> > your root filesystem.  It's entirely possible that doing 
+On Sat, 2008-10-11 at 09:04 -0700, Arjan van de Ven wrote:
+> On Sat, 11 Oct 2008 17:44:13 +0200
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> I don't think ext3 is safe w.r.t. whole eraseblocks disappearing. So
-> if you write data 'nearby' root directory and power fails, bye bye
-> filesystem, and journal will not help.
+> > 
+> > > So we need something a bit more involved, but not too complex. A
+> > > fine line...
+> > 
+> > It's a policy ... just let userspace do it so the user can tune it.
+> > That's what EMC does now (except I think they key of inquiry strings
+> > rather than cache size).
 > 
-> Actually ext2 will at least detect damage...
+> 
+> while the chosen elevator obviously is policy, the kernel really should
+> pick a sensible default based on what it knows.
+> Lets put it this way: if userland needs to do a tuning to the kernel
+> based on data only provided by the kernel, and will always do it the
+> same way, we should have made that choice the default policy in the
+> kernel in the first place.
 
-SSDs generally (and ones that are even remotely worth their money for
-sure) erase blocks that have no data in them.
-They keep empty blocks around, and when they want to erase a block with
-"half data", they first move that data to an empty block before erasing
-the old block.
+Well, this is a bit of a nasty layering problem.  We certainly don't
+want the Block layer to know how to poke at SATA, SCSI and other
+esoteric media to see what elevator should be the default, so we'd have
+to craft a new block API that the lower subsystems would implement for
+this.  I'm really not sure it's worth the trouble when the boot system
+can do it simply from userspace, but I'll defer to Jens.
 
-This moving around is just a natural part of wear leveling..
+James
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
