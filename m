@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbYJKXld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbYJKXlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756999AbYJKXld (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 19:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYJKXlY
+	id S1755884AbYJKXlv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 19:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYJKXll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 19:41:24 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:34353 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754242AbYJKXlX (ORCPT
+	Sat, 11 Oct 2008 19:41:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:11664 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754242AbYJKXlk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 19:41:23 -0400
+	Sat, 11 Oct 2008 19:41:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=qtA6s9tt5M2LBw4zUugVckdxMnMn5X8yz20kI3X6S6e6aiLb22rOpyitOlvqbEXQzP
-         0dOL95ejpcfsaarEHmim17tkq8DV7DrQHwhWvmC3QUPqMMQ025fFeqzp+g6RQ8vA7MJq
-         yfnZtaOCfoZBlkGt5Ng7sOvtl6b1/zrbC/uEg=
-Message-ID: <64630f150810111641s764e454n43baf759b7848373@mail.gmail.com>
-Date: Sun, 12 Oct 2008 00:41:22 +0100
-From: gettinther <gettinther@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Marvell 88SE6141
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=GTG9YJX4/xgVdY70p6REgm8w5o9DpQZtPvpwIwr0sMH6j8r8aB2U9rlVG/VwFpvquY
+         vD1tpkU5t5ioFpeZQ7IW9CGK5ZHl8Y5JeEenqmRyScPXyCjd90Y2pvmMVa4AcKLWuMcu
+         /+/csfY+6ItWLRmIe9fjaP1ig9DnzqZ3oW+bA=
+Date: Sun, 12 Oct 2008 03:41:30 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: h-shimamoto@ct.jp.nec.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86/io_apic_32: fix printk format warning
+Message-ID: <20081011234130.GE25563@orion>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To the attention of Alan Cox,
+arch/x86/kernel/io_apic_32.c: In function 'print_local_APIC':
+arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
+arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
 
-Following an issue from one of our users,  I had to patch the 2.6.26
-kernel (and also the 2.6.27) for the marvell controller based on your
-patch dated 2006.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-http://www.nabble.com/kernel-support-for-Marvell-88SE614x-chipset-to7091227.html
+ arch/x86/kernel/io_apic_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I had to modify the patch to adjust it but the user reported proper
-recognition of the hardware.
-
-Just letting you know in case you just forgot to include it.  Or is
-there is another issue I should be aware of.
-
-Thanking you
-
-Cyrille
-
---- a/drivers/ata/ahci.c~ 2006-10-31 13:00:50.918919744 +0000
-+++ a/drivers/ata/ahci.c 2006-10-31 13:00:50.927918376 +0000
-@@ -540,6 +540,7 @@
-
-	/* Marvell */
-	{ PCI_VDEVICE(MARVELL, 0x6145), board_ahci_mv },	/* 6145 */
-+ 	{ PCI_VDEVICE(MARVELL, 0x6141), board_ahci_mv },	/* 6141 */
-	{ PCI_VDEVICE(MARVELL, 0x6121), board_ahci_mv },	/* 6121 */
-
-	/* Generic, PCI class code for AHCI */
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index e710289..f678d12 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -1536,8 +1536,8 @@ __apicdebuginit(void) print_local_APIC(void *dummy)
+ 	}
+ 
+ 	icr = apic_icr_read();
+-	printk(KERN_DEBUG "... APIC ICR: %08x\n", icr);
+-	printk(KERN_DEBUG "... APIC ICR2: %08x\n", icr >> 32);
++	printk(KERN_DEBUG "... APIC ICR: %08x\n", (unsigned int)icr);
++	printk(KERN_DEBUG "... APIC ICR2: %08x\n", (unsigned int)(icr >> 32));
+ 
+ 	v = apic_read(APIC_LVTT);
+ 	printk(KERN_DEBUG "... APIC LVTT: %08x\n", v);
