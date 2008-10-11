@@ -1,163 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760896AbYJKVZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbYJKVx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760896AbYJKVZJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 17:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbYJKVY6
+	id S1760752AbYJKVx7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 17:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbYJKVxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 17:24:58 -0400
-Received: from 0x55512ece.adsl.cybercity.dk ([85.81.46.206]:17462 "EHLO
-	sko.w0.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032AbYJKVY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 17:24:57 -0400
-Date: Sat, 11 Oct 2008 23:24:42 +0200 (CEST)
-From: Hans Schou <linux@schou.dk>
-X-X-Sender: linux@sko.w0.dk
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] SiS55x, another x86 CPU
-Message-ID: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk>
+	Sat, 11 Oct 2008 17:53:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:47957 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754620AbYJKVxw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 17:53:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=VKcpwq57yid3ykF0fnzyQjwy+qUo/b6BT+eQ+sKG8STWhFPt82WnOa8NDGCEwrID68
+         RbcE0/j9/4evgnv12n6AGPc+KFIPZg3Wyz5aSpr4QbCz+hVVYcGZgvPdl4ZGYYtPw5AD
+         T5UoCXMSzTC1oaCQUP8gtmEslEqdpoLH/Pv60=
+Message-ID: <86802c440810111453r7af9637br277710a5e5def8d2@mail.gmail.com>
+Date: Sat, 11 Oct 2008 14:53:48 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Alexander Beregalov" <a.beregalov@gmail.com>
+Subject: Re: [PATCH] kernel/resource: fix printk format warning
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20081011205822.GA25563@orion>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463810047-1496878419-1223759878=:25940"
-Content-ID: <Pine.LNX.4.64.0810112320120.25940@sko.w0.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081011205822.GA25563@orion>
+X-Google-Sender-Auth: f1469784ce02f6f5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, Oct 11, 2008 at 1:58 PM, Alexander Beregalov
+<a.beregalov@gmail.com> wrote:
+>
+>
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
+>
+>  kernel/resource.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/resource.c b/kernel/resource.c
+> index 414d6fc..cfe0933 100644
+> --- a/kernel/resource.c
+> +++ b/kernel/resource.c
+> @@ -550,8 +550,8 @@ static void __init __reserve_region_with_split(struct resource *root,
+>
+>        if (!res) {
+>                printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
+> -                        conflict->name, conflict->start, conflict->end,
+> -                        name, start, end);
+> +                        conflict->name, (unsigned long long)conflict->start, (unsigned long long)conflict->end,
+> +                        name, (unsigned long long)start, (unsigned long long)end);
+>
+>                /* failed, split and try again */
 
----1463810047-1496878419-1223759878=:25940
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; format=flowed
-Content-ID: <Pine.LNX.4.64.0810112320121.25940@sko.w0.dk>
+Ingo should already have one patch in tip to remove that print out.
 
-Hi
-
-Here is the unknown CPU mensioned earlier.
-
-It is a SiS55x CPU from Silicon Integrated Systems Corp.
-
-This is a Pentium 5 like CPU primary target embedded devices. It is a 
-System-On-Chip with several i/o devices like AC97, USB, IDE and net on 
-board. The same core is used in SiS550, SiS551 and SiS552 as the 
-difference is only which periferial devices which is added. Then the 
-CPU can not detect the model but the kernel should be able to detect 
-the other devices connected internally to SiS551 and SiS552. So, the 
-model_id would be '0' and then the text 'SiS55x' as model_name.
-
-Detected CPU flags in /proc/cpuinfo and in the datasheet:
-flags           : fpu tsc cx8 mmx
-
-Instruction and data cache is 8KB each it says in the datasheet. I'm 
-not sure but it does not look like it is written in dmesg.
-
-ACPI sleep supports S1 S2 S3 S4 S5.
-
-CPU power states supports C0 C1 C2 C3.
-
-See attachment. (I hope it gets here!)
-
-Signed-off-by: Hans Schou <linux@schou.dk>
----1463810047-1496878419-1223759878=:25940
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=patch-sis55x
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0810112317580.25940@sko.w0.dk>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=patch-sis55x
-
-ZGlmZiAtTmF1ciBhL2FyY2gveDg2L0tjb25maWcuY3B1IGIvYXJjaC94ODYv
-S2NvbmZpZy5jcHUNCi0tLSBhL2FyY2gveDg2L0tjb25maWcuY3B1CTIwMDgt
-MTAtMTEgMjM6MDM6NDcuMDAwMDAwMDAwICswMjAwDQorKysgYi9hcmNoL3g4
-Ni9LY29uZmlnLmNwdQkyMDA4LTEwLTEyIDAwOjMwOjA4LjAwMDAwMDAwMCAr
-MDIwMA0KQEAgLTI0Miw2ICsyNDIsMTMgQEANCiAJICBTZWxlY3QgdGhpcyBm
-b3IgYSBWSUEgQzcuICBTZWxlY3RpbmcgdGhpcyB1c2VzIHRoZSBjb3JyZWN0
-IGNhY2hlDQogCSAgc2hpZnQgYW5kIHRlbGxzIGdjYyB0byB0cmVhdCB0aGUg
-Q1BVIGFzIGEgNjg2Lg0KIA0KK2NvbmZpZyBNU0lTNTVYDQorCWJvb2wgIlNp
-UzU1eCINCisJZGVwZW5kcyBvbiBYODZfMzINCisJaGVscA0KKwkgIFNlbGVj
-dCB0aGlzIGZvciBhIFNpUzU1MC81NTEvNTUyIFNvQy4gU2VsZWN0aW5nIHRo
-aXMgdXNlcyB0aGUNCisJICBjb3JyZWN0IGNhY2hlIHNoaWZ0IGFuZCB0ZWxs
-cyBnY2MgdG8gdHJlYXQgdGhlIENQVSBhcyBhIDU4Ni4NCisNCiBjb25maWcg
-TVBTQw0KIAlib29sICJJbnRlbCBQNCAvIG9sZGVyIE5ldGJ1cnN0IGJhc2Vk
-IFhlb24iDQogCWRlcGVuZHMgb24gWDg2XzY0DQpAQCAtMzA5LDcgKzMxNiw3
-IEBADQogCWludA0KIAlkZWZhdWx0ICI3IiBpZiBNUEVOVElVTTQgfHwgWDg2
-X0dFTkVSSUMgfHwgR0VORVJJQ19DUFUgfHwgTVBTQw0KIAlkZWZhdWx0ICI0
-IiBpZiBYODZfRUxBTiB8fCBNNDg2IHx8IE0zODYgfHwgTUdFT0RFR1gxDQot
-CWRlZmF1bHQgIjUiIGlmIE1XSU5DSElQM0QgfHwgTVdJTkNISVBDNiB8fCBN
-Q1JVU09FIHx8IE1FRkZJQ0VPTiB8fCBNQ1lSSVhJSUkgfHwgTUs2IHx8IE1Q
-RU5USVVNSUlJIHx8IE1QRU5USVVNSUkgfHwgTTY4NiB8fCBNNTg2TU1YIHx8
-IE01ODZUU0MgfHwgTTU4NiB8fCBNVklBQzNfMiB8fCBNR0VPREVfTFgNCisJ
-ZGVmYXVsdCAiNSIgaWYgTVdJTkNISVAzRCB8fCBNV0lOQ0hJUEM2IHx8IE1D
-UlVTT0UgfHwgTUVGRklDRU9OIHx8IE1DWVJJWElJSSB8fCBNSzYgfHwgTVBF
-TlRJVU1JSUkgfHwgTVBFTlRJVU1JSSB8fCBNNjg2IHx8IE01ODZNTVggfHwg
-TTU4NlRTQyB8fCBNNTg2IHx8IE1WSUFDM18yIHx8IE1HRU9ERV9MWCB8fCBN
-U0lTNTVYDQogCWRlZmF1bHQgIjYiIGlmIE1LNyB8fCBNSzggfHwgTVBFTlRJ
-VU1NIHx8IE1DT1JFMiB8fCBNVklBQzcNCiANCiBjb25maWcgWDg2X1hBREQN
-CkBAIC0zNTEsNyArMzU4LDcgQEANCiANCiBjb25maWcgWDg2X0FMSUdOTUVO
-VF8xNg0KIAlkZWZfYm9vbCB5DQotCWRlcGVuZHMgb24gTVdJTkNISVAzRCB8
-fCBNV0lOQ0hJUEM2IHx8IE1DWVJJWElJSSB8fCBYODZfRUxBTiB8fCBNSzYg
-fHwgTTU4Nk1NWCB8fCBNNTg2VFNDIHx8IE01ODYgfHwgTTQ4NiB8fCBNVklB
-QzNfMiB8fCBNR0VPREVHWDENCisJZGVwZW5kcyBvbiBNV0lOQ0hJUDNEIHx8
-IE1XSU5DSElQQzYgfHwgTUNZUklYSUlJIHx8IFg4Nl9FTEFOIHx8IE1LNiB8
-fCBNNTg2TU1YIHx8IE01ODZUU0MgfHwgTTU4NiB8fCBNNDg2IHx8IE1WSUFD
-M18yIHx8IE1HRU9ERUdYMSB8fCBNU0lTNTVYDQogDQogY29uZmlnIFg4Nl9J
-TlRFTF9VU0VSQ09QWQ0KIAlkZWZfYm9vbCB5DQpAQCAtMzg3LDcgKzM5NCw3
-IEBADQogDQogY29uZmlnIFg4Nl9UU0MNCiAJZGVmX2Jvb2wgeQ0KLQlkZXBl
-bmRzIG9uICgoTVdJTkNISVAzRCB8fCBNQ1JVU09FIHx8IE1FRkZJQ0VPTiB8
-fCBNQ1lSSVhJSUkgfHwgTUs3IHx8IE1LNiB8fCBNUEVOVElVTTQgfHwgTVBF
-TlRJVU1NIHx8IE1QRU5USVVNSUlJIHx8IE1QRU5USVVNSUkgfHwgTTY4NiB8
-fCBNNTg2TU1YIHx8IE01ODZUU0MgfHwgTUs4IHx8IE1WSUFDM18yIHx8IE1W
-SUFDNyB8fCBNR0VPREVHWDEgfHwgTUdFT0RFX0xYIHx8IE1DT1JFMikgJiYg
-IVg4Nl9OVU1BUSkgfHwgWDg2XzY0DQorCWRlcGVuZHMgb24gKChNV0lOQ0hJ
-UDNEIHx8IE1DUlVTT0UgfHwgTUVGRklDRU9OIHx8IE1DWVJJWElJSSB8fCBN
-SzcgfHwgTUs2IHx8IE1QRU5USVVNNCB8fCBNUEVOVElVTU0gfHwgTVBFTlRJ
-VU1JSUkgfHwgTVBFTlRJVU1JSSB8fCBNNjg2IHx8IE01ODZNTVggfHwgTTU4
-NlRTQyB8fCBNSzggfHwgTVZJQUMzXzIgfHwgTVZJQUM3IHx8IE1TSVM1NVgg
-fHwgTUdFT0RFR1gxIHx8IE1HRU9ERV9MWCB8fCBNQ09SRTIpICYmICFYODZf
-TlVNQVEpIHx8IFg4Nl82NA0KIA0KIGNvbmZpZyBYODZfQ01QWENIRzY0DQog
-CWRlZl9ib29sIHkNCkBAIC00NjQsNiArNDcxLDEzIEBADQogCWhlbHANCiAJ
-ICBUaGlzIGVuYWJsZXMgZXh0ZW5kZWQgc3VwcG9ydCBmb3IgVU1DIHByb2Nl
-c3NvcnMNCiANCitjb25maWcgQ1BVX1NVUF9TSVNfMzINCisJZGVmYXVsdCB5
-DQorCWJvb2wgIlN1cHBvcnQgU2lTIHByb2Nlc3NvcnMiIGlmIFBST0NFU1NP
-Ul9TRUxFQ1QNCisJZGVwZW5kcyBvbiAhNjRCSVQNCisJaGVscA0KKwkgIFRo
-aXMgZW5hYmxlcyBleHRlbmRlZCBzdXBwb3J0IGZvciBTSVMgcHJvY2Vzc29y
-cw0KKw0KIGNvbmZpZyBYODZfRFMNCiAJYm9vbCAiRGVidWcgU3RvcmUgc3Vw
-cG9ydCINCiAJZGVmYXVsdCB5DQpkaWZmIC1OYXVyIGEvYXJjaC94ODYva2Vy
-bmVsL2NwdS9NYWtlZmlsZSBiL2FyY2gveDg2L2tlcm5lbC9jcHUvTWFrZWZp
-bGUNCi0tLSBhL2FyY2gveDg2L2tlcm5lbC9jcHUvTWFrZWZpbGUJMjAwOC0x
-MC0xMSAyMzowMzo0Ny4wMDAwMDAwMDAgKzAyMDANCisrKyBiL2FyY2gveDg2
-L2tlcm5lbC9jcHUvTWFrZWZpbGUJMjAwOC0xMC0wMyAyMzo1Njo1My4wMDAw
-MDAwMDAgKzAyMDANCkBAIC0xNSw2ICsxNSw3IEBADQogb2JqLSQoQ09ORklH
-X0NQVV9TVVBfQ0VOVEFVUl82NCkJKz0gY2VudGF1cl82NC5vDQogb2JqLSQo
-Q09ORklHX0NQVV9TVVBfVFJBTlNNRVRBXzMyKQkrPSB0cmFuc21ldGEubw0K
-IG9iai0kKENPTkZJR19DUFVfU1VQX1VNQ18zMikJCSs9IHVtYy5vDQorb2Jq
-LSQoQ09ORklHX0NQVV9TVVBfU0lTXzMyKQkJKz0gc2lzLm8NCiANCiBvYmot
-JChDT05GSUdfWDg2X01DRSkJKz0gbWNoZWNrLw0KIG9iai0kKENPTkZJR19N
-VFJSKQkrPSBtdHJyLw0KZGlmZiAtTmF1ciBhL2FyY2gveDg2L2tlcm5lbC9j
-cHUvc2lzLmMgYi9hcmNoL3g4Ni9rZXJuZWwvY3B1L3Npcy5jDQotLS0gYS9h
-cmNoL3g4Ni9rZXJuZWwvY3B1L3Npcy5jCTE5NzAtMDEtMDEgMDE6MDA6MDAu
-MDAwMDAwMDAwICswMTAwDQorKysgYi9hcmNoL3g4Ni9rZXJuZWwvY3B1L3Np
-cy5jCTIwMDgtMTAtMTEgMTE6MDQ6MjMuMDAwMDAwMDAwICswMjAwDQpAQCAt
-MCwwICsxLDI1IEBADQorI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPg0KKyNp
-bmNsdWRlIDxsaW51eC9pbml0Lmg+DQorI2luY2x1ZGUgPGFzbS9wcm9jZXNz
-b3IuaD4NCisjaW5jbHVkZSAiY3B1LmgiDQorDQorc3RhdGljIHVuc2lnbmVk
-IGludCBfX2NwdWluaXQgc2lzX3NpemVfY2FjaGUoc3RydWN0IGNwdWluZm9f
-eDg2ICpjLCB1bnNpZ25lZCBpbnQgc2l6ZSkNCit7DQorCXJldHVybiA4Ow0K
-K30NCisNCitzdGF0aWMgc3RydWN0IGNwdV9kZXYgc2lzX2NwdV9kZXYgX19j
-cHVpbml0ZGF0YSA9IHsNCisJLmNfdmVuZG9yCT0gIlNpUyIsDQorCS5jX2lk
-ZW50IAk9IHsgIlNpUyBTaVMgU2lTICIgfSwNCisJLmNfbW9kZWxzID0gew0K
-KwkJeyAudmVuZG9yID0gWDg2X1ZFTkRPUl9TSVMsIC5mYW1pbHkgPSA1LCAu
-bW9kZWxfbmFtZXMgPQ0KKwkJICB7IA0KKwkJCSAgWzBdID0gIlNpUzU1eCIs
-IA0KKwkJICB9DQorCQl9LA0KKwl9LA0KKwkuY19zaXplX2NhY2hlCT0gc2lz
-X3NpemVfY2FjaGUsDQorCS5jX3g4Nl92ZW5kb3IJPSBYODZfVkVORE9SX1NJ
-UywNCit9Ow0KKw0KK2NwdV9kZXZfcmVnaXN0ZXIoc2lzX2NwdV9kZXYpOw0K
-ZGlmZiAtTmF1ciBhL2luY2x1ZGUvYXNtLXg4Ni9wcm9jZXNzb3IuaCBiL2lu
-Y2x1ZGUvYXNtLXg4Ni9wcm9jZXNzb3IuaA0KLS0tIGEvaW5jbHVkZS9hc20t
-eDg2L3Byb2Nlc3Nvci5oCTIwMDgtMTAtMTEgMjM6MDM6NDcuMDAwMDAwMDAw
-ICswMjAwDQorKysgYi9pbmNsdWRlL2FzbS14ODYvcHJvY2Vzc29yLmgJMjAw
-OC0xMC0wMyAyMzo1MzowMC4wMDAwMDAwMDAgKzAyMDANCkBAIC0xMTksNyAr
-MTE5LDggQEANCiAjZGVmaW5lIFg4Nl9WRU5ET1JfQ0VOVEFVUgk1DQogI2Rl
-ZmluZSBYODZfVkVORE9SX1RSQU5TTUVUQQk3DQogI2RlZmluZSBYODZfVkVO
-RE9SX05TQwkJOA0KLSNkZWZpbmUgWDg2X1ZFTkRPUl9OVU0JCTkNCisjZGVm
-aW5lIFg4Nl9WRU5ET1JfU0lTCQk5DQorI2RlZmluZSBYODZfVkVORE9SX05V
-TQkJMTANCiANCiAjZGVmaW5lIFg4Nl9WRU5ET1JfVU5LTk9XTgkweGZmDQog
-DQo=
-
----1463810047-1496878419-1223759878=:25940--
+YH
