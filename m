@@ -1,174 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbYJLRr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYJLSA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760114AbYJLRr0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 13:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYJLRrR
+	id S1756197AbYJLSA3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 14:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYJLSAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 13:47:17 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:53222 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754356AbYJLRrQ (ORCPT
+	Sun, 12 Oct 2008 14:00:20 -0400
+Received: from sunrise.pg.gda.pl ([153.19.40.230]:55321 "EHLO
+	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754559AbYJLSAT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 13:47:16 -0400
-Date: Sun, 12 Oct 2008 18:47:10 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: dmitry.torokhov@gmail.com
-Subject: [PATCH] Add KD_X console mode to avoid keyboard passthrough
-Message-ID: <20081012174710.GA5206@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sun, 12 Oct 2008 14:00:19 -0400
+Date: Sun, 12 Oct 2008 19:59:57 +0200
+From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: 7eggert@gmx.de, linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH 0/2] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081012195957.50feada3@merlin.oi.pg.gda.pl>
+In-Reply-To: <20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
+References: <bjXel-4CU-17@gated-at.bofh.it>
+	<bjYap-5Q0-25@gated-at.bofh.it>
+	<bk30i-3Gx-1@gated-at.bofh.it>
+	<bk6AV-8ms-7@gated-at.bofh.it>
+	<bkrvO-1HF-49@gated-at.bofh.it>
+	<blePJ-6rI-3@gated-at.bofh.it>
+	<blmDC-7ZU-7@gated-at.bofh.it>
+	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
+	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
+	<20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
+	<20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
+Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using the evdev input driver, X currently claims the devices 
-exclusively in order to prevent characters leaking through to the 
-underlying VT. This has the downside that other consumers of input 
-events no longer receive the keys - rfkill and mouseemu no longer work 
-in the kernel, and hal is unable to pass through input events. Removing 
-the exclusive access results in events being passed through to the 
-underlying VT, which may result in leaking sensitive information.
+Sun, 12 Oct 2008 15:22:00 +0100 - Alan Cox <alan@lxorguk.ukuu.org.uk>:
 
-This patch adds an extra KD_X mode. It's semantically identical to 
-KD_GRAPHICS, except that keyboard events are no longer sent to the 
-console device. This allows X to avoid exclusive access without breaking 
-any applications which depend upon the existing KD_GRAPHICS semantics.
+> O> real_tty structures. TIOCSWINSZ and TIOCGWINSZ ioctls could be
+> > called on tty and real_tty at the same time. To avoid race condition
+> 
+> No they can't. Would you please bother to spend five minutes actually
+> reading the source code and following through your assumptions to see
+> if they make sense before posting.
+> 
+> tiocgwinsz is never called for the pty side of a pty pair.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+I've read the code. The race problem with xterm or other pty using
+program in 2.6.26 appeared because one app called ioctl(TIOCSWINSZ) on
+the master side while other read winsize (TIOCGWINSZ) using client side
+(slave). So in one ioctl() call tty == master and in other tty ==
+real_tty. Of course we can have the opposite situaction so terminal app
+is using ioctl(TIOCSWINSZ) on its side (slave) and xterm is using ioctl
+on its side to know to which size resize itself. Not working now as I
+tested but possible.
 
----
+Anyway I think that you miss the point. Why using
+real_tty->termios_mutex instead of tty->termios_mutex in tty_do_resize
+called from tiocswins() so from ioctl(TIOCSWINSZ) closes the race. If as
+you said tiocgwinsz is called on tty and not real_tty then
+tty->termios_mutex should be valid here.
+Mutexes work and it is not a scheduler problem as I wrongly assumed.
+The scheduler just exposed this problem doing an app switch.
+It's just wrong mutex used.
 
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index 7b3a212..b0b8285 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -1298,6 +1298,10 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
- static void kbd_event(struct input_handle *handle, unsigned int event_type,
- 		      unsigned int event_code, int value)
- {
-+	struct vc_data *vc = vc_cons[fg_console].d;
-+
-+	if (vc->vc_mode == KD_X)
-+		return;
- 	if (event_type == EV_MSC && event_code == MSC_RAW && HW_RAW(handle->dev))
- 		kbd_rawcode(value);
- 	if (event_type == EV_KEY)
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 60359c3..1f56eab 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -601,7 +601,8 @@ static void hide_cursor(struct vc_data *vc)
- static void set_cursor(struct vc_data *vc)
- {
- 	if (!IS_FG(vc) || console_blanked ||
--	    vc->vc_mode == KD_GRAPHICS)
-+	    vc->vc_mode == KD_GRAPHICS ||
-+	    vc->vc_mode == KD_X)
- 		return;
- 	if (vc->vc_deccm) {
- 		if (vc == sel_cons)
-@@ -696,7 +697,8 @@ void redraw_screen(struct vc_data *vc, int is_switch)
- 			update_attr(vc);
- 			clear_buffer_attributes(vc);
- 		}
--		if (update && vc->vc_mode != KD_GRAPHICS)
-+		if (update && vc->vc_mode != KD_GRAPHICS &&
-+			vc->vc_mode != KD_X)
- 			do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
- 	}
- 	set_cursor(vc);
-@@ -790,7 +792,8 @@ static inline int resize_screen(struct vc_data *vc, int width, int height,
- 	/* Resizes the resolution of the display adapater */
- 	int err = 0;
+Look at the  tty_ioctl(struct file *file, unsigned int cmd, unsigned
+long arg) in tty_io.c.
+
+	tty = (struct tty_struct *)file->private_data;
+
+so if you calling ioctl on master side we have tty = master
+and on client side tty = real_tty in ioctl entry;
+next
+
+	real_tty = tty;
+	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
+            tty->driver->subtype == PTY_TYPE_MASTER)
+                real_tty = tty->link;
+
+if tty is the master one we set real_tty but in case of client side
+tty == real_tty already so real_tty points to the same structure.
+
+So it seems that tty->termios_mutex could point to different
+location in different calls but real_tty->termios_mutex always points
+to the same location.
  
--	if (vc->vc_mode != KD_GRAPHICS && vc->vc_sw->con_resize)
-+	if (vc->vc_mode != KD_GRAPHICS && vc->vc_mode != KD_X &&
-+	    vc->vc_sw->con_resize)
- 		err = vc->vc_sw->con_resize(vc, width, height, user);
- 
- 	return err;
-@@ -2426,7 +2429,8 @@ int set_console(int nr)
- 	struct vc_data *vc = vc_cons[fg_console].d;
- 
- 	if (!vc_cons_allocated(nr) || vt_dont_switch ||
--		(vc->vt_mode.mode == VT_AUTO && vc->vc_mode == KD_GRAPHICS)) {
-+	    (vc->vt_mode.mode == VT_AUTO && (vc->vc_mode == KD_GRAPHICS ||
-+					     vc->vc_mode == KD_X))) {
- 
- 		/*
- 		 * Console switch will fail in console_callback() or
-@@ -3098,7 +3102,8 @@ static int con_is_graphics(const struct consw *csw, int first, int last)
- 	for (i = first; i <= last; i++) {
- 		struct vc_data *vc = vc_cons[i].d;
- 
--		if (vc && vc->vc_mode == KD_GRAPHICS) {
-+		if (vc && (vc->vc_mode == KD_GRAPHICS ||
-+			   vc->vc_mode == KD_X)) {
- 			retval = 1;
- 			break;
- 		}
-@@ -3759,7 +3764,9 @@ void poke_blanked_console(void)
- 	del_timer(&console_timer);
- 	blank_timer_expired = 0;
- 
--	if (ignore_poke || !vc_cons[fg_console].d || vc_cons[fg_console].d->vc_mode == KD_GRAPHICS)
-+	if (ignore_poke || !vc_cons[fg_console].d ||
-+	    vc_cons[fg_console].d->vc_mode == KD_GRAPHICS ||
-+	    vc_cons[fg_console].d->vc_mode == KD_X)
- 		return;
- 	if (console_blanked)
- 		unblank_screen();
-@@ -3777,7 +3784,7 @@ static void set_palette(struct vc_data *vc)
- {
- 	WARN_CONSOLE_UNLOCKED();
- 
--	if (vc->vc_mode != KD_GRAPHICS)
-+	if (vc->vc_mode != KD_GRAPHICS && vc->vc_mode != KD_X)
- 		vc->vc_sw->con_set_palette(vc, color_table);
- }
- 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index c904e9a..899d898 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -488,6 +488,8 @@ int vt_ioctl(struct tty_struct *tty, struct file * file,
- 		if (!perm)
- 			goto eperm;
- 		switch (arg) {
-+		case KD_X:
-+			break;
- 		case KD_GRAPHICS:
- 			break;
- 		case KD_TEXT0:
-@@ -1383,7 +1385,7 @@ void change_console(struct vc_data *new_vc)
- 	/*
- 	 * Ignore all switches in KD_GRAPHICS+VT_AUTO mode
- 	 */
--	if (vc->vc_mode == KD_GRAPHICS)
-+	if (vc->vc_mode == KD_GRAPHICS || vc->vc_mode == KD_X)
- 		return;
- 
- 	complete_change_console(new_vc);
-diff --git a/include/linux/kd.h b/include/linux/kd.h
-index 15f2853..36975a3 100644
---- a/include/linux/kd.h
-+++ b/include/linux/kd.h
-@@ -45,6 +45,9 @@ struct consolefontdesc {
- #define		KD_GRAPHICS	0x01
- #define		KD_TEXT0	0x02	/* obsolete */
- #define		KD_TEXT1	0x03	/* obsolete */
-+#define		KD_X            0x04	/* Like KD_GRAPHICS, but doesn't allow
-+					   input events to pass through to
-+					   /dev/console */
- #define KDGETMODE	0x4B3B	/* get current mode */
- 
- #define KDMAPDISP	0x4B3C	/* map display into address space */
+Regards
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Adam Tlałka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
+System  & Network Administration Group       - - - ~~~~~~
+Computer Center, Gdańsk University of Technology, Poland
