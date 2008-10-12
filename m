@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbYJLONW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbYJLOXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbYJLONW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 10:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYJLONJ
+	id S1759313AbYJLOXQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 10:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYJLOXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 10:13:09 -0400
-Received: from 220-133-139-86.HINET-IP.hinet.net ([220.133.139.86]:49508 "EHLO
-	cooldavid.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752122AbYJLONI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 10:13:08 -0400
-From: "Guo-Fu Tseng" <cooldavid@cooldavid.org>
-To: Jeff Layton <jlayton@redhat.com>, "Steve French" <smfrench@gmail.com>
-Cc: rjw@sisk.pl, "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
-       "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Reply-To: cooldavid@cooldavid.org
-Subject: Re: [linux-cifs-client] Fwd: [PATCH] Fix CIFS compilation with CONFIG_KEYS unset
-Date: Sun, 12 Oct 2008 22:12:26 +0800
-Message-Id: <20081012140936.M27503@cooldavid.org>
-In-Reply-To: <20081012095903.33427ee8@tleilax.poochiereds.net>
-References: <200810121315.37203.rjw@sisk.pl> <524f69650810120640v41778375wf0a7662e773da26f@mail.gmail.com> <20081012095903.33427ee8@tleilax.poochiereds.net>
-X-Mailer: Open WebMail 2.51 20050228
-X-OriginatingIP: 140.117.194.21 (cooldavid)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=utf-8
+	Sun, 12 Oct 2008 10:23:00 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46842 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751181AbYJLOW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 10:22:59 -0400
+Date: Sun, 12 Oct 2008 15:22:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+Cc: 7eggert@gmx.de, linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH 0/2] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
+References: <bjXel-4CU-17@gated-at.bofh.it>
+	<bjYap-5Q0-25@gated-at.bofh.it>
+	<bk30i-3Gx-1@gated-at.bofh.it>
+	<bk6AV-8ms-7@gated-at.bofh.it>
+	<bkrvO-1HF-49@gated-at.bofh.it>
+	<blePJ-6rI-3@gated-at.bofh.it>
+	<blmDC-7ZU-7@gated-at.bofh.it>
+	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
+	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
+	<20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Oct 2008 09:59:03 -0400, Jeff Layton wrote
-> On Sun, 12 Oct 2008 08:40:39 -0500
-> "Steve French" <smfrench@gmail.com> wrote:
-> 
-> > Rafael and Guo-Fu,
-> > The following change to address the compile error that you noted is
-> > slightly different than what you suggested but should fix what you
-> > found.
-> >
-> 
-> Actually, I like Adrian/Rafael's fix better. I think we should avoid
-> cluttering up the code with #ifdef's where possible. key_put() already
-> is a no-op when CONFIG_KEYS is disabled. We might as well do the same
-> thing with key_revoke().
-I found that my patch was not reasonable at all.
-And I agree with Jeff.
+O> real_tty structures. TIOCSWINSZ and TIOCGWINSZ ioctls could be
+> called on tty and real_tty at the same time. To avoid race condition
 
-Guo-Fu Tseng
+No they can't. Would you please bother to spend five minutes actually
+reading the source code and following through your assumptions to see if
+they make sense before posting.
+
+tiocgwinsz is never called for the pty side of a pty pair.
+
 
