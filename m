@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbYJLHVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbYJLHWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbYJLHVR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 03:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYJLHVC
+	id S1755681AbYJLHWh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 03:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYJLHWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 03:21:02 -0400
-Received: from colo.lackof.org ([198.49.126.79]:34834 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbYJLHVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 03:21:01 -0400
-Date: Sun, 12 Oct 2008 01:20:49 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, grundler@parisc-linux.org,
-       yinghai@kernel.org, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: print out DMA mask info
-Message-ID: <20081012072049.GC20056@colo.lackof.org>
-References: <1223506943-6543-1-git-send-email-yinghai@kernel.org> <20081009211837.GC18444@colo.lackof.org> <20081010114002D.fujita.tomonori@lab.ntt.co.jp> <200810100848.09557.jbarnes@virtuousgeek.org>
+	Sun, 12 Oct 2008 03:22:30 -0400
+Received: from smtp4.tech.numericable.fr ([82.216.111.40]:43518 "EHLO
+	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190AbYJLHW3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 03:22:29 -0400
+X-Greylist: delayed 47042 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Oct 2008 03:22:29 EDT
+Message-ID: <48F1A789.3060707@numericable.fr>
+Date: Sun, 12 Oct 2008 09:30:17 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008092811)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810100848.09557.jbarnes@virtuousgeek.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [2.6.27-git2] compilation warning for arch/x86/kernel/xsave.c
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 08:48:08AM -0700, Jesse Barnes wrote:
-...
-> Another option would be to add a 'warn_dma_mask=0xxxxxxxxx' boot option that 
-> would trigger in the actual DMA mask setting routines.  It would let you 
-> choose the mask you'd like to see warnings about.  Yinghai?
+Hi Suresh,
 
-No, please don't. We have too many command line options already.
 
-Dumping dma_mask and dma_consistent_mask from /sys is not hard.
-I'd prefer Yinghai get credit for doing this since he's raised the issue
-and took the time to submit a patch.
+Your commit ed405958057ca6a8c4c9178a7a3b1167fabb45f5 causes this 
+compilation warning on xsave.c :
 
-thanks,
-grant
+> arch/x86/kernel/xsave.c: In function ‘save_i387_xstate’:
+> arch/x86/kernel/xsave.c:98: attention : ignoring return value of 
+> ‘__clear_user’, declared with attribute warn_unused_result
+
+Regards.
+
