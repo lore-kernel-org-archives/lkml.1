@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYJLJIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbYJLJOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755885AbYJLJIX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 05:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYJLJIM
+	id S1755434AbYJLJOR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 05:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbYJLJN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 05:08:12 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:19000 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751532AbYJLJIK (ORCPT
+	Sun, 12 Oct 2008 05:13:59 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:23392 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452AbYJLJN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 05:08:10 -0400
+	Sun, 12 Oct 2008 05:13:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=s7Ys9OoEwp14cFW0KJaq/yvV/93RMkiNkWfn2bNvITng1qUvG1mDRv/mJOf/GAsGJS
-         L4eQXYlHZtUsfOXEXtDilQ9g6tyNQ15WNh+NNulVsP2/jllRGob9HlJ74who66uNuno0
-         MAMId1bTbzMC7d4StV/uCpDOYCSWWomEleeEM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH 0/7] ide: locking improvements
-Date: Sun, 12 Oct 2008 11:05:39 +0200
-User-Agent: KMail/1.9.10
-Cc: Jens Axboe <jens.axboe@oracle.com>, petkovbb@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <200810112046.23557.bzolnier@gmail.com> <48F1552F.7090600@shaw.ca>
-In-Reply-To: <48F1552F.7090600@shaw.ca>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=aCgIWlhsEXPFPfcToJPoXqLgGTLdvsYtbSDsX4gVnFwlzfgvqhA/vvPw3eoOFGzgO5
+         K9KdqaHSy0gfm12AH1MzvY+xYsaLpj43EvyPDtbc/wstYZwqlxA+oyyIFcyF9dPw7Iu+
+         2MuueRCDDpzPIH2MhUQTwyR4I49DISfgOEh1Y=
+Message-ID: <48F1BFD0.7040004@tuffmail.co.uk>
+Date: Sun, 12 Oct 2008 10:13:52 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200810121105.39318.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: acpi-test tree on eeepc: EC error message on second resume
+References: <48F0DB0C.7060201@tuffmail.co.uk> <200810112140.16662.rjw@sisk.pl> <48F100CA.2050600@suse.de> <200810112254.09094.rjw@sisk.pl>
+In-Reply-To: <200810112254.09094.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 October 2008, Robert Hancock wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > The work has already been done and it is a wortwhile work.  The risk is
-> > quite low (this is the statement based on rather deep understanding of
-> > IDE subsystem, the complete audit of all code-paths affected and all the
-> > testing experiences from Scalex86/me).
-> > 
-> > Moreover the patch won't be merged after few months of extra testing.
-> > 
-> > I feel that you still keep on questioning the point of improving IDE
-> > and insist on putting it into "bug-fixes only" mode.  If this is really
-> > the case I'm completely uninterested in discussing it any further.
-> 
-> What, exactly, is the point of making more than bug-fix-only changes to 
+Rafael J. Wysocki wrote:
+> On Saturday, 11 of October 2008, Alexey Starikovskiy wrote:
+>   
+>> Rafael J. Wysocki wrote:
+>>     
+>>>> No, we discussed this before -- we are outside of the transaction, thus 
+>>>> no GPE
+>>>> activity could interfere with ec_check_ibf0.
+>>>>         
+>>> Ok, this is in the process context and we don't really expect to get an
+>>> interrupt at this point, but what happens if the EC generates an event that's
+>>> not related to any transiaction.  Is that guaranteed to never happen?
+>>>       
+>> Interrupt handler in this case can't cause a change to status register, thus our 
+>> read of it will not be affected by interrupt.
+>>     
+>
+> Ok, thanks.
+>
+> Alan, does the patch work for you?
+>
+> Rafael
+>   
 
-Please stop this bug-fix-only nonsense already.
+Yes.  Two reboot cycles, three suspend/resume cycles each, and no error
+message.
 
-Take a look at the bug #11581.  I posted the link in my reply to Jens
-because it is a best example that bug-fix-only mode won't really guarantee
-a stable, bug-free code in the long-term.  Many of issues at such level
-as driver subsystems happen because of "collateral damage" caused by
-changes at the higher level.
+I hope we have a better fix in mind though :-P.  The patch doesn't solve
+the unnecessary 500ms delay when this thing happens.
 
-[ The fact that #11581 was bisected to Jens' commit is just an additional
-  spice.  It is likely that bisection went wrong but with git-bisect you
-  are guilty-until-proven-innocent so Jens please (finally) help us with
-  resolving it. ]
-
-Additionally with open-source projects you have to keep a certain level
-of developers' interests because otherwise everybody will be bored to
-death and go away work on some other things (unless of course they are
-paid to actually work on bugfixes).  Which in turn will result in less
-people reviewing changes or doing bugfixes.
-
-IOW in the long-term bug-fix-only code will result in less stable code.
-
-> the IDE code today, when we have libata around which is a much better 
-> code base to work from? I'm afraid it still escapes me. I don't mean to 
-
-Simply:
-
-* Not all hardware is supported by libata.
-
-* Today's IDE code is not so different from libata's.
-
-* I'm much more familiar with IDE's code than libata's. :)
-
-> denigrate the work that you and other people working on IDE are doing, 
-> but can't help but think there would be more productive outlets for it..
-
-I don't really care.  I work on IDE because it is _fun_.
-
-Thanks,
-Bart
+Thanks
+Alan
