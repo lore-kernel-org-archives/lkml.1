@@ -1,139 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYJLK0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYJLKx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbYJLK0X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 06:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYJLK0P
+	id S1755226AbYJLKx4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 06:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYJLKxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 06:26:15 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:29698 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbYJLK0O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 06:26:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=HdKBF3/6shwjtyYMzQ0Aq7+q4YV3jMWze9hwqFHA6jF8ceRdSC9wrfG95T/YQUpkYt
-         iSnnylJyRtHnphy1OwiKVpYxhWQBEqjbKpJJMT3NO1ZAPueW+/nxUyYzCXc3viPaBm+M
-         lD780c1v+LBLrPqTfbmgfIbhumWPPueMVjEKk=
-Message-ID: <4727185d0810120326k482a824ds7f8dbd6a4cd431f3@mail.gmail.com>
-Date: Sun, 12 Oct 2008 12:26:12 +0200
-From: "Vincent Legoll" <vincent.legoll@gmail.com>
-To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] PCI probing debug message uniformization
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200810100907.35798.jbarnes@virtuousgeek.org>
+	Sun, 12 Oct 2008 06:53:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46064 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751716AbYJLKxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 06:53:44 -0400
+Date: Sun, 12 Oct 2008 12:53:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Julius Volz <juliusv@google.com>, Simon Horman <horms@verge.net.au>
+Subject: [PATCH] net, ipvs: fix build on !CONFIG_INET
+Message-ID: <20081012105329.GA29306@elte.hu>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_25081_2922440.1223807172384"
-References: <4727185d0809291403w38422338p3ffe2a1c27c39939@mail.gmail.com>
-	 <200810031257.42457.bjorn.helgaas@hp.com>
-	 <4727185d0810031550l32592f7ep2d1d37f93be12874@mail.gmail.com>
-	 <200810100907.35798.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0007]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_25081_2922440.1223807172384
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Fri, Oct 10, 2008 at 6:07 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
->> So here is the new version cut'n'pasted from git-format-patch
->
-> Can you respin against linux-next and send me a fresh copy?  This one seems to
-> have been corrupted somehow (sorry for the slow reply, it's been sitting in
-> my 'to apply' mbox for awhile now).
+quick fixlet below - please double-check.
 
-Here it is, attached, rebased on top of -next
+---------------->
+>From 04f0c230107f2bdc9d0eaf7bdae9490eb3675791 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 12 Oct 2008 12:51:28 +0200
+Subject: [PATCH] net, ipvs: fix build on !CONFIG_INET
 
--- 
-Vincent Legoll
+fix:
 
-------=_Part_25081_2922440.1223807172384
-Content-Type: application/octet-stream;
- name=0001-PCI-probing-debug-message-uniformization.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fm7j6bgw0
-Content-Disposition: attachment;
- filename=0001-PCI-probing-debug-message-uniformization.patch
+  net/netfilter/ipvs/ip_vs_xmit.c: In function 'ip_vs_tunnel_xmit':
+  net/netfilter/ipvs/ip_vs_xmit.c:616: error: implicit declaration of function 'ip_select_ident'
 
-RnJvbSBkN2M0YzRlMGE4NTcxZmRlZDFmNDg0ODAxODRmYmRkOGI5MjQ3ZmIxIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWaW5jZW50IExlZ29sbCA8dmluY2VudC5sZWdvbGxAZ21haWwu
-Y29tPgpEYXRlOiBGcmksIDMgT2N0IDIwMDggMjM6NTY6MDIgKzAyMDAKU3ViamVjdDogW1BBVENI
-XSBQQ0kgcHJvYmluZyBkZWJ1ZyBtZXNzYWdlIHVuaWZvcm1pemF0aW9uCgpUaGlzIHBhdGNoIHVu
-aWZvcm1pemVzIFBDSSBwcm9iaW5nIGRlYnVnIGJvb3QgbWVzc2FnZXMKd2l0aCBkZXZfcHJpbnRr
-KCkgaW50ZWFkIG9mIG1hbnVhbCBwcmludGsoKQoKSXQgY2hhbmdlcyBhZHJlc3MgcmFuZ2Ugb3V0
-cHV0IGZyb20gWyVsbHgsICVsbHhdIHRvClslI2xseC0lI2xseF0sIGxpa2UgaW4gcGNpX3JlcXVl
-c3RfcmVnaW9uKCkuCgpGb3IgZXhhbXBsZSwgaXQgZ29lcyBmcm9tIHRoZSBtaXhlZC1zdHlsZToK
-ClBDSTogMDAwMDowMDoxYi4wIHJlZyAxMCA2NGJpdCBtbWlvOiBbZjQyODAwMDAsIGY0MjgzZmZm
-XQpwY2kgMDAwMDowMDoxYi4wOiBQTUUjIHN1cHBvcnRlZCBmcm9tIEQwIEQzaG90IEQzY29sZAoK
-dG8gdW5pZm9ybToKCnBjaSAwMDAwOjAwOjFiLjA6IHJlZyAxMCA2NGJpdCBtbWlvOiBbMHhmNDI4
-MDAwMC0weGY0MjgzZmZmXQpwY2kgMDAwMDowMDoxYi4wOiBQTUUjIHN1cHBvcnRlZCBmcm9tIEQw
-IEQzaG90IEQzY29sZAoKVGhpcyBwYXRjaCBoYXMgYmVlbiBydW50aW1lIHRlc3RlZCwgYm9vdCBs
-b2cgbWVzc2FnZXMgZGlmZmVkLApldmVyeXRoaW5nIGxvb2tzIE9LLgoKU2lnbmVkLW9mZi1ieTog
-VmluY2VudCBMZWdvbGwgPHZpbmNlbnQubGVnb2xsQGdtYWlsLmNvbT4KLS0tCiBkcml2ZXJzL3Bj
-aS9wY2llL2FzcG0uYyB8ICAgIDYgKysrLS0tCiBkcml2ZXJzL3BjaS9wcm9iZS5jICAgICB8ICAg
-MjEgKysrKysrKysrKystLS0tLS0tLS0tCiAyIGZpbGVzIGNoYW5nZWQsIDE0IGluc2VydGlvbnMo
-KyksIDEzIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL3BjaWUvYXNwbS5j
-IGIvZHJpdmVycy9wY2kvcGNpZS9hc3BtLmMKaW5kZXggODUxZjViOC4uZmEwZDFhNCAxMDA2NDQK
-LS0tIGEvZHJpdmVycy9wY2kvcGNpZS9hc3BtLmMKKysrIGIvZHJpdmVycy9wY2kvcGNpZS9hc3Bt
-LmMKQEAgLTUyOCw5ICs1MjgsOSBAQCBzdGF0aWMgaW50IHBjaWVfYXNwbV9zYW5pdHlfY2hlY2so
-c3RydWN0IHBjaV9kZXYgKnBkZXYpCiAJCXBjaV9yZWFkX2NvbmZpZ19kd29yZChjaGlsZF9kZXYs
-IGNoaWxkX3BvcyArIFBDSV9FWFBfREVWQ0FQLAogCQkJJnJlZzMyKTsKIAkJaWYgKCEocmVnMzIg
-JiBQQ0lfRVhQX0RFVkNBUF9SQkVSKSAmJiAhYXNwbV9mb3JjZSkgewotCQkJcHJpbnRrKCJQcmUt
-MS4xIFBDSWUgZGV2aWNlIGRldGVjdGVkLCAiCi0JCQkJImRpc2FibGUgQVNQTSBmb3IgJXMuIEl0
-IGNhbiBiZSBlbmFibGVkIGZvcmNlZGx5IgotCQkJCSIgd2l0aCAncGNpZV9hc3BtPWZvcmNlJ1xu
-IiwgcGNpX25hbWUocGRldikpOworCQkJZGV2X3ByaW50ayhLRVJOX0lORk8sICZjaGlsZF9kZXYt
-PmRldiwgImRpc2FibGluZyBBU1BNIgorCQkJCSIgb24gcHJlLTEuMSBQQ0llIGRldmljZS4gWW91
-IGNhbiBlbmFibGUgaXQiCisJCQkJIiBiYWNrIHdpdGggJ3BjaWVfYXNwbT1mb3JjZSdcbiIpOwog
-CQkJcmV0dXJuIC1FSU5WQUw7CiAJCX0KIAl9CmRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wcm9i
-ZS5jIGIvZHJpdmVycy9wY2kvcHJvYmUuYwppbmRleCA3ODc4YTE5Li5jMTQzZGQ2IDEwMDY0NAot
-LS0gYS9kcml2ZXJzL3BjaS9wcm9iZS5jCisrKyBiL2RyaXZlcnMvcGNpL3Byb2JlLmMKQEAgLTMw
-NCw4ICszMDQsOSBAQCBzdGF0aWMgaW50IF9fcGNpX3JlYWRfYmFzZShzdHJ1Y3QgcGNpX2RldiAq
-ZGV2LCBlbnVtIHBjaV9iYXJfdHlwZSB0eXBlLAogCQl9IGVsc2UgewogCQkJcmVzLT5zdGFydCA9
-IGw2NDsKIAkJCXJlcy0+ZW5kID0gbDY0ICsgc3o2NDsKLQkJCXByaW50ayhLRVJOX0RFQlVHICJQ
-Q0k6ICVzIHJlZyAleCA2NGJpdCBtbWlvOiBbJWxseCwgJWxseF1cbiIsCi0JCQkJcGNpX25hbWUo
-ZGV2KSwgcG9zLCAodW5zaWduZWQgbG9uZyBsb25nKXJlcy0+c3RhcnQsCisJCQlkZXZfcHJpbnRr
-KEtFUk5fREVCVUcsICZkZXYtPmRldiwKKwkJCQkicmVnICV4IDY0Yml0IG1taW86IFslI2xseC0l
-I2xseF1cbiIsIHBvcywKKwkJCQkodW5zaWduZWQgbG9uZyBsb25nKXJlcy0+c3RhcnQsCiAJCQkJ
-KHVuc2lnbmVkIGxvbmcgbG9uZylyZXMtPmVuZCk7CiAJCX0KIAl9IGVsc2UgewpAQCAtMzE2LDgg
-KzMxNyw4IEBAIHN0YXRpYyBpbnQgX19wY2lfcmVhZF9iYXNlKHN0cnVjdCBwY2lfZGV2ICpkZXYs
-IGVudW0gcGNpX2Jhcl90eXBlIHR5cGUsCiAKIAkJcmVzLT5zdGFydCA9IGw7CiAJCXJlcy0+ZW5k
-ID0gbCArIHN6OwotCQlwcmludGsoS0VSTl9ERUJVRyAiUENJOiAlcyByZWcgJXggJXM6IFslbGx4
-LCAlbGx4XVxuIiwgcGNpX25hbWUoZGV2KSwKLQkJCXBvcywgKHJlcy0+ZmxhZ3MgJiBJT1JFU09V
-UkNFX0lPKSA/ICJpbyBwb3J0IjoiMzJiaXQgbW1pbyIsCisJCWRldl9wcmludGsoS0VSTl9ERUJV
-RywgJmRldi0+ZGV2LCAicmVnICV4ICVzOiBbJSNsbHgtJSNsbHhdXG4iLCBwb3MsCisJCQkocmVz
-LT5mbGFncyAmIElPUkVTT1VSQ0VfSU8pID8gImlvIHBvcnQiIDogIjMyYml0IG1taW8iLAogCQkJ
-KHVuc2lnbmVkIGxvbmcgbG9uZylyZXMtPnN0YXJ0LCAodW5zaWduZWQgbG9uZyBsb25nKXJlcy0+
-ZW5kKTsKIAl9CiAKQEAgLTM4OSw4ICszOTAsOCBAQCB2b2lkIF9fZGV2aW5pdCBwY2lfcmVhZF9i
-cmlkZ2VfYmFzZXMoc3RydWN0IHBjaV9idXMgKmNoaWxkKQogCQkJcmVzLT5zdGFydCA9IGJhc2U7
-CiAJCWlmICghcmVzLT5lbmQpCiAJCQlyZXMtPmVuZCA9IGxpbWl0ICsgMHhmZmY7Ci0JCXByaW50
-ayhLRVJOX0RFQlVHICJQQ0k6IGJyaWRnZSAlcyBpbyBwb3J0OiBbJWxseCwgJWxseF1cbiIsCi0J
-CQlwY2lfbmFtZShkZXYpLCAodW5zaWduZWQgbG9uZyBsb25nKSByZXMtPnN0YXJ0LAorCQlkZXZf
-cHJpbnRrKEtFUk5fREVCVUcsICZkZXYtPmRldiwgImJyaWRnZSBpbyBwb3J0OiBbJSNsbHgtJSNs
-bHhdXG4iLAorCQkJKHVuc2lnbmVkIGxvbmcgbG9uZykgcmVzLT5zdGFydCwKIAkJCSh1bnNpZ25l
-ZCBsb25nIGxvbmcpIHJlcy0+ZW5kKTsKIAl9CiAKQEAgLTQwMyw4ICs0MDQsOCBAQCB2b2lkIF9f
-ZGV2aW5pdCBwY2lfcmVhZF9icmlkZ2VfYmFzZXMoc3RydWN0IHBjaV9idXMgKmNoaWxkKQogCQly
-ZXMtPmZsYWdzID0gKG1lbV9iYXNlX2xvICYgUENJX01FTU9SWV9SQU5HRV9UWVBFX01BU0spIHwg
-SU9SRVNPVVJDRV9NRU07CiAJCXJlcy0+c3RhcnQgPSBiYXNlOwogCQlyZXMtPmVuZCA9IGxpbWl0
-ICsgMHhmZmZmZjsKLQkJcHJpbnRrKEtFUk5fREVCVUcgIlBDSTogYnJpZGdlICVzIDMyYml0IG1t
-aW86IFslbGx4LCAlbGx4XVxuIiwKLQkJCXBjaV9uYW1lKGRldiksICh1bnNpZ25lZCBsb25nIGxv
-bmcpIHJlcy0+c3RhcnQsCisJCWRldl9wcmludGsoS0VSTl9ERUJVRywgJmRldi0+ZGV2LCAiYnJp
-ZGdlIDMyYml0IG1taW86IFslI2xseC0lI2xseF1cbiIsCisJCQkodW5zaWduZWQgbG9uZyBsb25n
-KSByZXMtPnN0YXJ0LAogCQkJKHVuc2lnbmVkIGxvbmcgbG9uZykgcmVzLT5lbmQpOwogCX0KIApA
-QCAtNDQxLDggKzQ0Miw4IEBAIHZvaWQgX19kZXZpbml0IHBjaV9yZWFkX2JyaWRnZV9iYXNlcyhz
-dHJ1Y3QgcGNpX2J1cyAqY2hpbGQpCiAJCXJlcy0+ZmxhZ3MgPSAobWVtX2Jhc2VfbG8gJiBQQ0lf
-TUVNT1JZX1JBTkdFX1RZUEVfTUFTSykgfCBJT1JFU09VUkNFX01FTSB8IElPUkVTT1VSQ0VfUFJF
-RkVUQ0g7CiAJCXJlcy0+c3RhcnQgPSBiYXNlOwogCQlyZXMtPmVuZCA9IGxpbWl0ICsgMHhmZmZm
-ZjsKLQkJcHJpbnRrKEtFUk5fREVCVUcgIlBDSTogYnJpZGdlICVzICVzYml0IG1taW8gcHJlZjog
-WyVsbHgsICVsbHhdXG4iLAotCQkJcGNpX25hbWUoZGV2KSwgKHJlcy0+ZmxhZ3MgJiBQQ0lfUFJF
-Rl9SQU5HRV9UWVBFXzY0KSA/ICI2NCIgOiAiMzIiLAorCQlkZXZfcHJpbnRrKEtFUk5fREVCVUcs
-ICZkZXYtPmRldiwgImJyaWRnZSAlc2JpdCBtbWlvIHByZWY6IFslI2xseC0lI2xseF1cbiIsCisJ
-CQkocmVzLT5mbGFncyAmIFBDSV9QUkVGX1JBTkdFX1RZUEVfNjQpID8gIjY0IiA6ICIzMiIsCiAJ
-CQkodW5zaWduZWQgbG9uZyBsb25nKSByZXMtPnN0YXJ0LCAodW5zaWduZWQgbG9uZyBsb25nKSBy
-ZXMtPmVuZCk7CiAJfQogfQotLSAKMS42LjAuMQoK
-------=_Part_25081_2922440.1223807172384--
+ip_vs_xmit depends on CONFIG_INET capabilities.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ net/netfilter/ipvs/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/net/netfilter/ipvs/Kconfig b/net/netfilter/ipvs/Kconfig
+index de6004d..a67a235 100644
+--- a/net/netfilter/ipvs/Kconfig
++++ b/net/netfilter/ipvs/Kconfig
+@@ -4,6 +4,7 @@
+ menuconfig IP_VS
+ 	tristate "IP virtual server support (EXPERIMENTAL)"
+ 	depends on NETFILTER
++	depends on INET
+ 	---help---
+ 	  IP Virtual Server support will let you build a high-performance
+ 	  virtual server based on cluster of two or more real servers. This
