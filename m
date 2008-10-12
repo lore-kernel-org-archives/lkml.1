@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYJLRFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYJLRiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbYJLRFz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 13:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbYJLRFo
+	id S1756072AbYJLRiq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 13:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbYJLRii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 13:05:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33722 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753925AbYJLRFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 13:05:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Steve French" <smfrench@gmail.com>
-Subject: Re: [linux-cifs-client] Fwd: [PATCH] Fix CIFS compilation with CONFIG_KEYS unset
-Date: Sun, 12 Oct 2008 19:09:52 +0200
-User-Agent: KMail/1.9.9
-Cc: "Jeff Layton" <jlayton@redhat.com>, "David Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org,
-       "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
-       "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>,
-       cooldavid@cooldavid.org, LKML <linux-kernel@vger.kernel.org>
-References: <200810121315.37203.rjw@sisk.pl> <524f69650810120953t2ec8100cpdddc3ddfce0406d9@mail.gmail.com> <524f69650810120957t1a81f23lf3fd75fee78e72c3@mail.gmail.com>
-In-Reply-To: <524f69650810120957t1a81f23lf3fd75fee78e72c3@mail.gmail.com>
+	Sun, 12 Oct 2008 13:38:38 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9894 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754486AbYJLRih (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 13:38:37 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=cp78K9YhJOWsGRApeamgqCXMoS7Y5K7HhqYy/YyXDbcEVVjSARZOoCn7gSwuo4BpK
+	ObM7ktS9THE0hjNrVblGg==
+Message-ID: <6599ad830810121038y12863028o81b7c8f35bca8138@mail.gmail.com>
+Date: Sun, 12 Oct 2008 10:38:28 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH 3/4] cpuset: use seq_*mask_* to print masks
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>, "Paul Jackson" <pj@sgi.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48F1C378.6020202@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810121909.53233.rjw@sisk.pl>
+References: <48F1C378.6020202@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 12 of October 2008, Steve French wrote:
-> On Sun, Oct 12, 2008 at 11:53 AM, Steve French <smfrench@gmail.com> wrote:
-> > On Sun, Oct 12, 2008 at 8:59 AM, Jeff Layton <jlayton@redhat.com> wrote:
-> >> On Sun, 12 Oct 2008 08:40:39 -0500
-> >> "Steve French" <smfrench@gmail.com> wrote:
-> >>
-> >> Actually, I like Adrian/Rafael's fix better. I think we should avoid
-> >> cluttering up the code with #ifdef's where possible. key_put() already
-> >> is a no-op when CONFIG_KEYS is disabled. We might as well do the same
-> >> thing with key_revoke().
-> > I don't think it matters much - but we probably shouldn't be
-> > overriding global functions.
-> 
-> To clarify, I like fixing it in keys.h better than overriding it in
-> cifs, but in the meantime we need an ifdef in cifs until keys.h
-> changes.
+On Sun, Oct 12, 2008 at 2:29 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>
+> 1) seq_file excepts that m->count == m->size when it's buf is full,
+>   so current code will causes bugs when buf is overflow.
+>
+> 2) There is not too good that cpuset accesses struct seq_file's
+>   fields directly.
+>
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Well, adding an empty definition for key_revoke() in the !CONFIG_KEYS case
-makes sense anyway IMO.
+Acked-by: Paul Menage <menage@google.com>
