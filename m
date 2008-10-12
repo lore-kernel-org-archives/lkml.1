@@ -1,95 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYJLSA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbYJLSCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYJLSA3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 14:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYJLSAU
+	id S1760406AbYJLSCX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 14:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYJLSCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 14:00:20 -0400
-Received: from sunrise.pg.gda.pl ([153.19.40.230]:55321 "EHLO
-	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754559AbYJLSAT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 14:00:19 -0400
-Date: Sun, 12 Oct 2008 19:59:57 +0200
-From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: 7eggert@gmx.de, linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH 0/2] SIGWINCH problem with terminal apps still alive
-Message-ID: <20081012195957.50feada3@merlin.oi.pg.gda.pl>
-In-Reply-To: <20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
-References: <bjXel-4CU-17@gated-at.bofh.it>
-	<bjYap-5Q0-25@gated-at.bofh.it>
-	<bk30i-3Gx-1@gated-at.bofh.it>
-	<bk6AV-8ms-7@gated-at.bofh.it>
-	<bkrvO-1HF-49@gated-at.bofh.it>
-	<blePJ-6rI-3@gated-at.bofh.it>
-	<blmDC-7ZU-7@gated-at.bofh.it>
-	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
-	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
-	<20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
-	<20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
-Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 12 Oct 2008 14:02:13 -0400
+Received: from nebensachen.de ([195.34.83.29]:57164 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754586AbYJLSCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 14:02:12 -0400
+X-Hashcash: 1:20:081012:bzolnier@gmail.com::+nnvXVfvNVvg8jdG:00000000000000000000000000000000000000000009xwh
+X-Hashcash: 1:20:081012:linux-ide@vger.kernel.org::ED1gVKUGycrYNsZk:0000000000000000000000000000000000002iBW
+X-Hashcash: 1:20:081012:linux-kernel@vger.kernel.org::oJjniy80eIzv6Diu:000000000000000000000000000000000Bxvh
+X-Hashcash: 1:20:081012:vaibhav.nivargi@gmail.com::OfMLOEokB0Micxu5:00000000000000000000000000000000000062FM
+X-Hashcash: 1:20:081012:alokk@calsoftinc.com::OJ2mpAx2THD7Wevl:000000000000000000000000000000000000000005dFX
+X-Hashcash: 1:20:081012:kiran@scalex86.org::7BacDdmyNyJODk2Z:00000000000000000000000000000000000000000002H3Z
+X-Hashcash: 1:20:081012:shai@scalex86.org::dD8K5TNs6sgg6+co:000000000000000000000000000000000000000000007QGC
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Vaibhav V. Nivargi" <vaibhav.nivargi@gmail.com>,
+       "Alok N. Kataria" <alokk@calsoftinc.com>,
+       Ravikiran Thirumalai <kiran@scalex86.org>,
+       Shai Fultheim <shai@scalex86.org>
+Subject: Re: [PATCH] ide: replace the global ide_lock spinlock by per-hwgroup spinlocks
+References: <200810102126.14475.bzolnier@gmail.com>
+Date: Sun, 12 Oct 2008 20:01:26 +0200
+Message-ID: <87ej2ld761.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sun, 12 Oct 2008 15:22:00 +0100 - Alan Cox <alan@lxorguk.ukuu.org.uk>:
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: replace the global ide_lock spinlock by per-hwgroup spinlocks
+>
+> Now that (almost) all host drivers have been fixed not to abuse ide_lock
+> and core code usage of ide_lock has been sanitized we may safely replace
+> ide_lock by per-hwgroup locks.
+>
+> This patch is partially based on earlier patch from Ravikiran G Thirumalai.
+>
+> While at it:
+> - don't use deprecated HWIF() and HWGROUP() macros
+> - update locking documentation in ide.h
+>
+> Cc: Vaibhav V. Nivargi <vaibhav.nivargi@gmail.com>
+> Cc: Alok N. Kataria <alokk@calsoftinc.com>
+> Cc: Ravikiran Thirumalai <kiran@scalex86.org>
+> Cc: Shai Fultheim <shai@scalex86.org>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> this is against 2.6.27 + pata tree + pre-patchset posted on Wednesday
+> (http://lkml.org/lkml/2008/10/8/221)
 
-> O> real_tty structures. TIOCSWINSZ and TIOCGWINSZ ioctls could be
-> > called on tty and real_tty at the same time. To avoid race condition
-> 
-> No they can't. Would you please bother to spend five minutes actually
-> reading the source code and following through your assumptions to see
-> if they make sense before posting.
-> 
-> tiocgwinsz is never called for the pty side of a pty pair.
+I've only had a casual look at this patch, but there is one thing:
 
-I've read the code. The race problem with xterm or other pty using
-program in 2.6.26 appeared because one app called ioctl(TIOCSWINSZ) on
-the master side while other read winsize (TIOCGWINSZ) using client side
-(slave). So in one ioctl() call tty == master and in other tty ==
-real_tty. Of course we can have the opposite situaction so terminal app
-is using ioctl(TIOCSWINSZ) on its side (slave) and xterm is using ioctl
-on its side to know to which size resize itself. Not working now as I
-tested but possible.
+[...]
+> Index: b/drivers/ide/ide-probe.c
+> ===================================================================
+> --- a/drivers/ide/ide-probe.c
+> +++ b/drivers/ide/ide-probe.c
+[...]
+> @@ -1091,11 +1092,11 @@ static int init_irq (ide_hwif_t *hwif)
+>  		 * linked list, the first entry is the hwif that owns
+>  		 * hwgroup->handler - do not change that.
+>  		 */
+> -		spin_lock_irq(&ide_lock);
+> +		spin_lock_irq(&hwgroup->lock);
+>  		hwif->next = hwgroup->hwif->next;
+>  		hwgroup->hwif->next = hwif;
+>  		BUG_ON(hwif->next == hwif);
+> -		spin_unlock_irq(&ide_lock);
+> +		spin_unlock_irq(&hwgroup->lock);
+>  	} else {
+>  		hwgroup = kmalloc_node(sizeof(*hwgroup), GFP_KERNEL|__GFP_ZERO,
+>  				       hwif_to_node(hwif));
 
-Anyway I think that you miss the point. Why using
-real_tty->termios_mutex instead of tty->termios_mutex in tty_do_resize
-called from tiocswins() so from ioctl(TIOCSWINSZ) closes the race. If as
-you said tiocgwinsz is called on tty and not real_tty then
-tty->termios_mutex should be valid here.
-Mutexes work and it is not a scheduler problem as I wrongly assumed.
-The scheduler just exposed this problem doing an app switch.
-It's just wrong mutex used.
+Something like
 
-Look at the  tty_ioctl(struct file *file, unsigned int cmd, unsigned
-long arg) in tty_io.c.
+	spin_lock_init(&hwgroup->lock);
 
-	tty = (struct tty_struct *)file->private_data;
+should go into this else clause too.
 
-so if you calling ioctl on master side we have tty = master
-and on client side tty = real_tty in ioctl entry;
-next
+Regards,
 
-	real_tty = tty;
-	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-            tty->driver->subtype == PTY_TYPE_MASTER)
-                real_tty = tty->link;
-
-if tty is the master one we set real_tty but in case of client side
-tty == real_tty already so real_tty points to the same structure.
-
-So it seems that tty->termios_mutex could point to different
-location in different calls but real_tty->termios_mutex always points
-to the same location.
- 
-Regards
-
--- 
-Adam Tlałka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
-System  & Network Administration Group       - - - ~~~~~~
-Computer Center, Gdańsk University of Technology, Poland
+Elias
