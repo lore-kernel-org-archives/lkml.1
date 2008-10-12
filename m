@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbYJLBjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbYJLEES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790AbYJLBjP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 21:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYJLBjF
+	id S1752057AbYJLEES (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 00:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbYJLEEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 21:39:05 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:59499 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbYJLBjE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 21:39:04 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=BoGAJat747ilacEGilwA:9 a=dnd2T5A7aT3u5p58tfXl0E4GFHYA:4
-Message-ID: <48F1552F.7090600@shaw.ca>
-Date: Sat, 11 Oct 2008 19:38:55 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sun, 12 Oct 2008 00:04:12 -0400
+Received: from kroah.org ([198.145.64.141]:60580 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750757AbYJLEEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 00:04:10 -0400
+Date: Sat, 11 Oct 2008 21:02:23 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.27 will be a longtime supported kernel
+Message-ID: <20081012040223.GC18221@kroah.com>
+References: <alpine.LFD.2.00.0810091651220.3210@nehalem.linux-foundation.org> <20081011210340.GA11198@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, petkovbb@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] ide: locking improvements
-References: <fa.Ke90oacfRjgiI4x5LejzjssRBEg@ifi.uio.no> <200810111756.37278.bzolnier@gmail.com> <20081011175617.GX19428@kernel.dk> <200810112046.23557.bzolnier@gmail.com>
-In-Reply-To: <200810112046.23557.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081011210340.GA11198@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> The work has already been done and it is a wortwhile work.  The risk is
-> quite low (this is the statement based on rather deep understanding of
-> IDE subsystem, the complete audit of all code-paths affected and all the
-> testing experiences from Scalex86/me).
-> 
-> Moreover the patch won't be merged after few months of extra testing.
-> 
-> I feel that you still keep on questioning the point of improving IDE
-> and insist on putting it into "bug-fixes only" mode.  If this is really
-> the case I'm completely uninterested in discussing it any further.
+On Sun, Oct 12, 2008 at 12:03:40AM +0300, Adrian Bunk wrote:
+> 2.6.16 has become a bit dated, and I'll maintain 2.6.27 for a few years 
+> as a replacement.
 
-What, exactly, is the point of making more than bug-fix-only changes to 
-the IDE code today, when we have libata around which is a much better 
-code base to work from? I'm afraid it still escapes me. I don't mean to 
-denigrate the work that you and other people working on IDE are doing, 
-but can't help but think there would be more productive outlets for it..
+Hm, you're not the only one going to be doing this, there are at least
+three distros basing their latest releases on this kernel :)
+
+> As with 2.6.16, I'll pickup maintainance when the normal -stable 
+> maintainance ends (at some point after 2.6.28 gets released in January).
+
+I was considering hanging on to .27 for a while longer than the .28
+release, much like .25 has been working out.  But probably some time
+after .29 I'll be glad to hand it off to you for you to maintain like
+.16 was.  Is that ok?
+
+> It is intended to fill the niche for users who are not using 
+> distribution kernels but want to use a regression-free kernel for a 
+> longer time. It might be a small part of the userbase, but after the 
+> experiences with 2.6.16 I can say that there are quite a few users
+> who appreciate such an offering.
+
+Hey, I personally liked it as it made maintaining SLES a lot easier,
+thanks a lot for your work there!
+
+thanks,
+
+greg k-h
