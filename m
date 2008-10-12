@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbYJLJct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYJLJjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759050AbYJLJct (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 05:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYJLJbr
+	id S1756589AbYJLJjW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 05:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYJLJjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 05:31:47 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56651 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751573AbYJLJbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 05:31:45 -0400
-Message-ID: <48F1C36D.6080301@cn.fujitsu.com>
-Date: Sun, 12 Oct 2008 17:29:17 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Alexey Dobriyan <adobriyan@gmail.com>, Paul Menage <menage@google.com>,
-       Paul Jackson <pj@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] seq_file: don't call bitmap_scnprintf_len()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Oct 2008 05:39:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:9454 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbYJLJjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 05:39:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=sh7ygVDPlCD8CJXYtOneU/ptH79Z0ub8f8HqgKjWEGBZglD2VynBfKsYDbmiFPJR3P
+         1mEW52Y3zHWeH5pd7XzBSjrB5p2yReN/cqeJnVl4LxGMRhzJxiIFaaL6wgVAbunrL0Wn
+         yeXtvS+wjQ7t4k0Lddgaom1tXTI/2tIxsAbfE=
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 0/7] post x86 merge section mismatch fixes
+Date: Sun, 12 Oct 2008 11:38:43 +0200
+Message-Id: <1223804330-10881-1-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: git-send-email 1.5.6.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH 1/7] x86, xsave: fix section mismatch warning - setup_xstate_init
+[PATCH 2/7] x86: fix section mismatch warning - reserve_region_with_split
+[PATCH 3/7] x86: fix section mismatch warning - apic_flat
+[PATCH 4/7] x86: fix section mismatch warning - apic_physflat
+[PATCH 5/7] x86: fix section mismatch warning - apic_x2apic_uv_x
+[PATCH 6/7] x86: fix section mismatch warning - apic_x2apic_cluster
+[PATCH 7/7] x86: fix section mismatch warning - apic_x2apic_phys
 
-"m->count + len < m->size" is true commonly, so bitmap_scnprintf()
-is commonly called. this fix saves a call to bitmap_scnprintf_len().
+ arch/x86/kernel/genapic_flat_64.c   |    4 ++--
+ arch/x86/kernel/genx2apic_cluster.c |    2 +-
+ arch/x86/kernel/genx2apic_phys.c    |    2 +-
+ arch/x86/kernel/genx2apic_uv_x.c    |    2 +-
+ arch/x86/kernel/xsave.c             |    2 +-
+ kernel/resource.c                   |    2 +-
+ 6 files changed, 7 insertions(+), 7 deletions(-)
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/fs/seq_file.c b/fs/seq_file.c
-index bd20f7f..11c85fe 100644
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -452,17 +452,18 @@ int seq_dentry(struct seq_file *m, struct dentry *dentry, char *esc)
- 
- int seq_bitmap(struct seq_file *m, unsigned long *bits, unsigned int nr_bits)
- {
--	size_t len = bitmap_scnprintf_len(nr_bits);
--
--	if (m->count + len < m->size) {
--		bitmap_scnprintf(m->buf + m->count, m->size - m->count,
--				 bits, nr_bits);
--		m->count += len;
--		return 0;
-+	if (m->count < m->size) {
-+		int len = bitmap_scnprintf(m->buf + m->count,
-+				m->size - m->count, bits, nr_bits);
-+		if (m->count + len < m->size) {
-+			m->count += len;
-+			return 0;
-+		}
- 	}
- 	m->count = m->size;
- 	return -1;
- }
-+EXPORT_SYMBOL(seq_bitmap);
- 
- static void *single_start(struct seq_file *p, loff_t *pos)
- {
+One warning left:
+
+WARNING: vmlinux.o(.cpuinit.text+0x4ad): Section mismatch in reference from the function fpu_init() to the function .init.text:init_thread_xstate()
+The function __cpuinit fpu_init() references
+a function __init init_thread_xstate().
+If init_thread_xstate is only used by fpu_init then
+annotate init_thread_xstate with a matching annotation.
+
+x86_64 cpu_init() (marked __cpu_init) calls fpu_init() (marked __cpu_init)
+and fpu_init calls init_thread_xstate (which is __init) if smp_processor_id() == 0.
+So it's probably OK, but it should be fixed properly (without ugly __ref)
 
 
-
+Marcin
