@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYJLIuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYJLIvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYJLIuj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 04:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYJLIua
+	id S1756209AbYJLIvS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 04:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYJLIvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 04:50:30 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:50836 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751421AbYJLIu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 04:50:29 -0400
-Date: Sun, 12 Oct 2008 10:50:21 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 0/7] atmel-mci: updates for 2.6.28
-Message-ID: <20081012105021.46450333@mjolnir.drzeus.cx>
-In-Reply-To: <20081005204617.14868dc4@hskinnemo-gx745.norway.atmel.com>
-References: <1223223690-2637-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<20081005204617.14868dc4@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-11809-1223801428-0001-2"
+	Sun, 12 Oct 2008 04:51:07 -0400
+Received: from vana.vc.cvut.cz ([147.32.240.58]:51669 "EHLO vana.vc.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751437AbYJLIvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 04:51:06 -0400
+Date: Sun, 12 Oct 2008 10:51:03 +0200
+From: Petr Vandrovec <petr@vandrovec.name>
+To: linux-kernel@vger.kernel.org
+Cc: thomas.petazzoni@free-electrons.com
+Subject: [PATCH] Fix early panic on amd64 due to typo in supported CPU section
+Message-ID: <20081012085103.GA30082@vana.vc.cvut.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+It seems that I forgot to CC LKML on that one...
+						Petr
 
---=_freyr.drzeus.cx-11809-1223801428-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+----- Forwarded message from Petr Vandrovec <petr@vandrovec.name> -----
 
-On Sun, 5 Oct 2008 20:46:17 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Date: Sun, 12 Oct 2008 10:01:26 +0200
+From: Petr Vandrovec <petr@vandrovec.name>
+To: thomas.petazzoni@free-electrons.com
+Cc: mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: [PATCH] Fix early panic on amd64 due to typo in supported CPU section
 
->=20
-> If you're happy with this patchset, could you please pull
->=20
+Do not crash when enumerating supported CPU architectures
 
-Fairly happy. There is the one thing to fix with the clock, but as no
-cards implement power control yet, you can send that patch later.
+SECURITY_INIT somehow ended up in x86_cpu_dev.init section.  That caused printk
+in code which prints supported architectures to hit #GP due to non-canonical
+address being used.
 
-There's also the open issue of bytes_xfered. Please send a patch for
-that ASAP (provided it just isn't a misunderstanding on my part :)).
+Signed-off-by: Petr Vandrovec <petr@vandrovec.name>
 
->   git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/atmel-mci-2.6=
-.28.git master
->=20
-> instead of applying the patches? If you do that, I can pull it into my
-> avr32 tree as well and fix up any conflicts. I won't do that before
-> you've pulled it, of course, and it's probably best if no one base any
-> further work on it until it's accepted because I might have to rebase
-> it if someone finds any issues during review.
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index 201e81a..46e0544 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -172,8 +172,8 @@ SECTIONS
+   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
+ 	*(.x86_cpu_dev.init)
+   }
+-  SECURITY_INIT
+   __x86_cpu_dev_end = .;
++  SECURITY_INIT
+ 
+   . = ALIGN(8);
+   .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
 
-Pulled and will be sent to Linus just as soon as I have everything else
-queued up.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-11809-1223801428-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkjxulEACgkQ7b8eESbyJLgO+wCfb2R//6WRLuOfyJN8uX8h/YbL
-cz8AoOuKH1rovwTm/akPxQuzZfV0xv7x
-=x5Zo
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-11809-1223801428-0001-2--
+----- End forwarded message -----
