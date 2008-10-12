@@ -1,137 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYJLUQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYJLUR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbYJLUQy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 16:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbYJLUQm
+	id S1756903AbYJLUR2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 16:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbYJLURH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 16:16:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40888 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756114AbYJLUQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 16:16:41 -0400
-Date: Sun, 12 Oct 2008 13:16:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Karel Zak <kzak@redhat.com>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
- "hwclock" program
-In-Reply-To: <20081012200004.GI10429@nb.net.home>
-Message-ID: <alpine.LFD.2.00.0810121308210.3402@nehalem.linux-foundation.org>
-References: <20081004174433.14a5e093@infradead.org> <20081004215225.2444d54b.akpm@linux-foundation.org> <20081005081145.30ba921b@infradead.org> <20081005102742.de8353b4.akpm@linux-foundation.org> <20081005103826.6771540a@infradead.org>
- <20081012200004.GI10429@nb.net.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 12 Oct 2008 16:17:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43480 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756681AbYJLURF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 16:17:05 -0400
+Date: Sun, 12 Oct 2008 16:16:34 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: "Steve French" <smfrench@gmail.com>
+Cc: rjw@sisk.pl,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>,
+       netdev@vger.kernel.org, cooldavid@cooldavid.org,
+       "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-cifs-client] Fwd: [PATCH] Fix CIFS compilation with
+ CONFIG_KEYS unset
+Message-ID: <20081012161634.5e410c24@tleilax.poochiereds.net>
+In-Reply-To: <524f69650810120957t1a81f23lf3fd75fee78e72c3@mail.gmail.com>
+References: <200810121315.37203.rjw@sisk.pl>
+	<524f69650810120640v41778375wf0a7662e773da26f@mail.gmail.com>
+	<20081012095903.33427ee8@tleilax.poochiereds.net>
+	<524f69650810120953t2ec8100cpdddc3ddfce0406d9@mail.gmail.com>
+	<524f69650810120957t1a81f23lf3fd75fee78e72c3@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 12 Oct 2008 11:57:47 -0500
+"Steve French" <smfrench@gmail.com> wrote:
 
+> On Sun, Oct 12, 2008 at 11:53 AM, Steve French <smfrench@gmail.com> wrote:
+> > On Sun, Oct 12, 2008 at 8:59 AM, Jeff Layton <jlayton@redhat.com> wrote:
+> >> On Sun, 12 Oct 2008 08:40:39 -0500
+> >> "Steve French" <smfrench@gmail.com> wrote:
+> >>
+> >> Actually, I like Adrian/Rafael's fix better. I think we should avoid
+> >> cluttering up the code with #ifdef's where possible. key_put() already
+> >> is a no-op when CONFIG_KEYS is disabled. We might as well do the same
+> >> thing with key_revoke().
+> > I don't think it matters much - but we probably shouldn't be
+> > overriding global functions.
+> 
+> To clarify, I like fixing it in keys.h better than overriding it in
+> cifs, but in the meantime we need an ifdef in cifs until keys.h
+> changes.
+> 
+> 
+> 
 
-On Sun, 12 Oct 2008, Karel Zak wrote:
->
->  Any suggestion how to nicely implement "don't schedule me out"?
-
-There's nothing you can do. If you take a page fault, you're done. Forget 
-about any "can't schedule" or "don't enable interrupts". The kernel _has_ 
-to handle the page fault, and that may involve IO and thus random pauses. 
-No ifs, buts or maybe's about it.
-
-This patch may or may not get rid of the warning, at least. It won't fix 
-hwclock, but that's apparently unfixable from the kernel - the thing is 
-just plain buggy.
-
-[ Ingo added to Cc just because this is obviously a x86 tree thing, and 
-  tries to unify some trivial parts of the VM paths at the same time. ]
-
-For hwclock, you may try to:
-
- - do
-
-	mlockall(MCL_CURRENT)
-
-   before you do the critical region
-
- - set yourself to some realtime scheduling thing
-
-	struct sched_param param = {
-		.sched_priority = 50,
-	};
-
-	sched_setscheduler(0, SCHED_FIFO, &param);
-
-   or similar.
-
-and that should mean that you stay on your CPU (by virtue of not being 
-scheduled away because you're more important than others) and don't take 
-page faults.
-
-But making yourself real-time also means that any bugs can essentially 
-kill the system (endless loop).
-
-		Linus
-
----
- arch/x86/mm/fault.c |   30 +++++++++++-------------------
- 1 files changed, 11 insertions(+), 19 deletions(-)
-
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index a742d75..ac2ad78 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -645,24 +645,23 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	}
- 
- 
--#ifdef CONFIG_X86_32
--	/* It's safe to allow irq's after cr2 has been saved and the vmalloc
--	   fault has been handled. */
--	if (regs->flags & (X86_EFLAGS_IF | X86_VM_MASK))
--		local_irq_enable();
--
- 	/*
--	 * If we're in an interrupt, have no user context or are running in an
--	 * atomic region then we must not take the fault.
-+	 * It's safe to allow irq's after cr2 has been saved and the
-+	 * vmalloc fault has been handled.
-+	 *
-+	 * User-mode registers count as a user access even for any
-+	 * potential system fault or CPU buglet.
- 	 */
--	if (in_atomic() || !mm)
--		goto bad_area_nosemaphore;
--#else /* CONFIG_X86_64 */
--	if (likely(regs->flags & X86_EFLAGS_IF))
-+	if (user_mode_vm(regs)) {
-+		local_irq_enable();
-+		error_code |= PF_USER;
-+	} else if (regs->flags & X86_EFLAGS_IF)
- 		local_irq_enable();
- 
-+#ifdef CONFIG_X86_64
- 	if (unlikely(error_code & PF_RSVD))
- 		pgtable_bad(address, regs, error_code);
-+#endif
- 
- 	/*
- 	 * If we're in an interrupt, have no user context or are running in an
-@@ -671,14 +670,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	if (unlikely(in_atomic() || !mm))
- 		goto bad_area_nosemaphore;
- 
--	/*
--	 * User-mode registers count as a user access even for any
--	 * potential system fault or CPU buglet.
--	 */
--	if (user_mode_vm(regs))
--		error_code |= PF_USER;
- again:
--#endif
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-
+It's your call, but if we're going to carry a temporary patch, then I'd
+prefer to just carry the one that adds the empty key_revoke definition.
+I don't think there's much benefit to changing the cifs code for this,
+but I don't feel very strongly about it either way...
+-- 
+Jeff Layton <jlayton@redhat.com>
