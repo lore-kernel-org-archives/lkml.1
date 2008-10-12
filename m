@@ -1,178 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYJLAJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYJLBHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbYJLAJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Oct 2008 20:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYJLAJt
+	id S1754453AbYJLBHd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Oct 2008 21:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYJLBH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Oct 2008 20:09:49 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:57225 "EHLO smtp.wine.ocn.ne.jp"
+	Sat, 11 Oct 2008 21:07:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37275 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbYJLAJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Oct 2008 20:09:48 -0400
-To: serue@us.ibm.com, paulmck@us.ibm.com
-Cc: sds@tycho.nsa.gov, jmorris@namei.org, chrisw@sous-sol.org,
-       dhowells@redhat.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, haradats@nttdata.co.jp,
-       akpm@linux-foundation.org, penguin-kernel@I-love.SAKURA.ne.jp
-Subject: Re: [TOMOYO #10 (linux-next) 7/8] File operation restriction part.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20081009042814.398846861@nttdata.co.jp>
-	<20081009042922.939610141@nttdata.co.jp>
-	<20081009164836.GA5480@us.ibm.com>
-In-Reply-To: <20081009164836.GA5480@us.ibm.com>
-Message-Id: <200810120909.GDF95392.SQOFFFHVtOMOJL@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Sun, 12 Oct 2008 09:09:40 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751261AbYJLBH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Oct 2008 21:07:26 -0400
+Message-ID: <48F14DAF.8060306@redhat.com>
+Date: Sat, 11 Oct 2008 20:06:55 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 42/42] ext4: Rename ext4dev to ext4
+References: <1223525160-9887-36-git-send-email-tytso@mit.edu> <1223525160-9887-37-git-send-email-tytso@mit.edu> <1223525160-9887-38-git-send-email-tytso@mit.edu> <1223525160-9887-39-git-send-email-tytso@mit.edu> <1223525160-9887-40-git-send-email-tytso@mit.edu> <1223525160-9887-41-git-send-email-tytso@mit.edu> <1223525160-9887-42-git-send-email-tytso@mit.edu> <1223525160-9887-43-git-send-email-tytso@mit.edu> <48F122FC.6040107@goop.org> <48F12427.5090801@redhat.com> <20081011225826.GD12662@mit.edu>
+In-Reply-To: <20081011225826.GD12662@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Theodore Tso wrote:
 
-Serge E. Hallyn wrote:
-> In a previous patch you mark funtions with 'begin/end critical section'.
-> Please instead put a comment on top listing precisely which locks
-> the fn expects to be held.
-> 
-> As for protecting your own data, please
-> 	1. explain at the var declaration what lock protects it
-> 	2. define the lock next to the list
+> The only other problem may arise on distro's that depend on vol_id for
+> mount/fsck, 
 
-OK. I added comments and simplified dependencies.
-http://svn.sourceforge.jp/cgi-bin/viewcvs.cgi/trunk/2.2.x/tomoyo-lsm/patches/?root=tomoyo
-Anything else we can do before reposting as #11?
+And hal (also used volume_id)...
 
-Summary of locking is listed below.
+And quota. (has "ext4dev" as a type but no ext4 atm)
 
-(1) tmy_real_domain() requires the caller to hold tasklist_lock spinlock.
-(2) list1_add_tail_mb() requires the caller to hold a lock for protecting the
-    list.
-(3) All other functions can manage necessary locking using local locks declared
-    inside each functions, for read operation requires no locks and write
-    operation is aggregated into single function.
-
-> For instance, I assume the intent below is for pattern_list to be
-> protected by the static 'lock' mutex defined in
-> update_file_pattern_entry.  But get_file_pattern() also walks the
-> list without any locking.
-> 
-> It looks like you only ever append to the list, with a memory barrier,
-> so *maybe* it's safe, but your rationale should be spelled out here.
-
-It *is* safe. Below is the introduce-write-once-read-many-linked-list.patch
-taken from above URL. Paul, please review the below patch.
-
-Regards.
---------------------
-Subject: Singly linked list implementation.
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- include/linux/list.h |   95 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
-
---- linux-next.orig/include/linux/list.h
-+++ linux-next/include/linux/list.h
-@@ -692,4 +692,99 @@ static inline void hlist_move_list(struc
- 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
- 	     pos = n)
- 
-+/*
-+ * Singly linked list implementation.
-+ *
-+ * This list supports only two operations.
-+ * (1) Append an entry to the tail of the list.
-+ * (2) Read all entries starting from the head of the list.
-+ *
-+ * This list is designed for holding "write once, read many" entries.
-+ * This list requires no locks for read operation.
-+ * This list doesn't support "remove an entry from the list" operation.
-+ * This list penalize "mb()" for write operation but penalize nothing for read
-+ * operation.
-+ */
-+
-+/* To keep the reader read lock free, this list doesn't have "prev" field. */
-+struct list1_head {
-+	struct list1_head *next;
-+};
-+
-+#define LIST1_HEAD_INIT(name) { &(name) }
-+#define LIST1_HEAD(name) struct list1_head name = LIST1_HEAD_INIT(name)
-+
-+static inline void INIT_LIST1_HEAD(struct list1_head *list)
-+{
-+	list->next = list;
-+}
-+
-+/**
-+ * list1_entry - get the struct for this entry
-+ * @ptr:        the &struct list1_head pointer.
-+ * @type:       the type of the struct this is embedded in.
-+ * @member:     the name of the list1_struct within the struct.
-+ */
-+#define list1_entry(ptr, type, member) container_of(ptr, type, member)
-+
-+/**
-+ * list1_for_each - iterate over a list
-+ * @pos:        the &struct list1_head to use as a loop cursor.
-+ * @head:       the head for your list.
-+ */
-+#define list1_for_each(pos, head)					\
-+	for (pos = (head)->next; prefetch(pos->next), pos != (head);	\
-+	     pos = pos->next)
-+
-+/**
-+ * list1_for_each_entry - iterate over list of given type
-+ * @pos:        the type * to use as a loop cursor.
-+ * @head:       the head for your list.
-+ * @member:     the name of the list1_struct within the struct.
-+ */
-+#define list1_for_each_entry(pos, head, member)				\
-+	for (pos = list1_entry((head)->next, typeof(*pos), member);	\
-+	     prefetch(pos->member.next), &pos->member != (head);        \
-+	     pos = list1_entry(pos->member.next, typeof(*pos), member))
-+
-+/**
-+ * list1_for_each_cookie - iterate over a list with cookie.
-+ * @pos:        the &struct list1_head to use as a loop cursor.
-+ * @cookie:     the &struct list1_head to use as a cookie.
-+ * @head:       the head for your list.
-+ *
-+ * Same with list_for_each except that this primitive uses cookie
-+ * so that we can continue iteration.
-+ * Since list elements are never removed, we don't need to get a lock
-+ * or a reference count.
-+ */
-+#define list1_for_each_cookie(pos, cookie, head)			\
-+	for (({ if (!cookie)						\
-+				     cookie = head; }), pos = (cookie)->next; \
-+	     prefetch(pos->next), pos != (head) || ((cookie) = NULL);	\
-+	     (cookie) = pos, pos = pos->next)
-+
-+/**
-+ * list_add_tail_mb - add a new entry with memory barrier.
-+ * @new: new entry to be added.
-+ * @head: list head to add it before.
-+ *
-+ * Same with list_add_tail_rcu() except that this primitive uses mb()
-+ * so that we can traverse forwards using list1_for_each() and
-+ * list1_for_each_cookie() without any locks.
-+ *
-+ * Caller must hold a lock for protecting @head.
-+ */
-+static inline void list1_add_tail_mb(struct list1_head *new,
-+				     struct list1_head *head)
-+{
-+	struct list1_head *pos = head;
-+
-+	new->next = head;
-+	mb(); /* Avoid out-of-order execution. */
-+	while (pos->next != head)
-+		pos = pos->next;
-+	pos->next = new;
-+}
-+
- #endif
+-Eric
