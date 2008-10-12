@@ -1,59 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYJLTq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbYJLTrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbYJLTq5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 15:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbYJLTqs
+	id S1755491AbYJLTrX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 15:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbYJLTq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 15:46:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49227 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753371AbYJLTqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 15:46:47 -0400
-Date: Sun, 12 Oct 2008 21:46:42 +0200
-From: Karel Zak <kzak@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
-	"hwclock" program
-Message-ID: <20081012194641.GH10429@nb.net.home>
-References: <20081004174433.14a5e093@infradead.org> <20081004215225.2444d54b.akpm@linux-foundation.org> <20081005081145.30ba921b@infradead.org> <20081005102742.de8353b4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081005102742.de8353b4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 12 Oct 2008 15:46:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44410
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755220AbYJLTq4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 15:46:56 -0400
+Date: Sun, 12 Oct 2008 12:46:32 -0700 (PDT)
+Message-Id: <20081012.124632.135563543.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, juliusv@google.com,
+       horms@verge.net.au
+Subject: Re: [PATCH] net, ipvs: fix build on !CONFIG_INET
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081012105329.GA29306@elte.hu>
+References: <20081012105329.GA29306@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 05, 2008 at 10:27:42AM -0700, Andrew Morton wrote:
-> On Sun, 5 Oct 2008 08:11:45 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
-> > 
-> > static unsigned long   
-> > atomic(const char *name, unsigned long (*op)(unsigned long),
-> >        unsigned long arg)
-> > {
-> >   unsigned long v;
-> >   __asm__ volatile ("cli");
-> >   v = (*op)(arg);
-> >   __asm__ volatile ("sti");
-> >   return v;
-> > } 
-> > 
-> > looks like it (but only on 32 bit x86, not on 64 bit x86)
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 12 Oct 2008 12:53:29 +0200
+
+> quick fixlet below - please double-check.
+
+See my posting yesterday to Linus, it's already in my net-2.6
+tree and I already asked Linus to pull it in.
+
+If you had submitted the build failure directly instead of privately
+via Linus you would have been CC:'d and therefore be able to see all
+of this. :-)
+
+--------------------
+Subject: Re: [GIT]: Networking for 2.6.28
+From: David Miller <davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Sat, 11 Oct 2008 12:19:30 -0700 (PDT)
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 11 Oct 2008 10:57:29 -0700 (PDT)
+
 > 
-> I suspect this is new in hwclock?
-
- since util-linux-2.9v, year 1999
-
-> > (and yes someone really ought to fix hwclock; it's rather broken)
 > 
-> well yeah. Recently broken?
+> On Sat, 11 Oct 2008, Linus Torvalds wrote:
+> > 
+> > On Fri, 10 Oct 2008, David Miller wrote:
+> > > 
+> > > Here are the queued up networking changes for the 2.6.28 merge window.
+> > 
+> > This generates _tons_ of new warnings for me:
+> 
+> And apparently errors for others:
+> 
+>  net/netfilter/ipvs/ip_vs_xmit.c: In function 'ip_vs_tunnel_xmit':
+>  net/netfilter/ipvs/ip_vs_xmit.c:616: error: implicit declaration of function 'ip_select_ident'
+> 
+> some other config-dependent breakage.
 
- 9 years ago
+So the proper include (of net/ip.h) is there in ip_vs_xmit.c, but this
+failure can also happen if CONFIG_INET is not enabled.
 
-    Karel
+Are you doing that kind of test build?
 
+This patch should fix that case, let me know if it works:
+
+
+ipvs: Add proper dependencies on IP_VS, and fix description header line.
+
+Linus noted a build failure case:
+
+net/netfilter/ipvs/ip_vs_xmit.c: In function 'ip_vs_tunnel_xmit':
+net/netfilter/ipvs/ip_vs_xmit.c:616: error: implicit declaration of function 'ip_select_ident'
+
+The proper include file (net/ip.h) is being included in ip_vs_xmit.c to get
+that declaration.  So the only possible case where this can happen is if
+CONFIG_INET is not enabled.
+
+This seems to be purely a missing dependency in the ipvs/Kconfig file IP_VS
+entry.
+
+Also, while we're here, remove the out of date "EXPERIMENTAL" string in the
+IP_VS config help header line.  IP_VS no longer depends upon CONFIG_EXPERIMENTAL
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ net/netfilter/ipvs/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/net/netfilter/ipvs/Kconfig b/net/netfilter/ipvs/Kconfig
+index de6004d..05048e4 100644
+--- a/net/netfilter/ipvs/Kconfig
++++ b/net/netfilter/ipvs/Kconfig
+@@ -2,8 +2,8 @@
+ # IP Virtual Server configuration
+ #
+ menuconfig IP_VS
+-	tristate "IP virtual server support (EXPERIMENTAL)"
+-	depends on NETFILTER
++	tristate "IP virtual server support"
++	depends on NET && INET && NETFILTER
+ 	---help---
+ 	  IP Virtual Server support will let you build a high-performance
+ 	  virtual server based on cluster of two or more real servers. This
 -- 
- Karel Zak  <kzak@redhat.com>
+1.5.6.5
+
+--------------------
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Sat, 11 Oct 2008 15:11:53 -0700 (PDT)
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+
+
+This includes:
+
+1) The bad IP_VS dependency randconfig build failure.
+
+2) GRE tunnel rtnl_link initialization (bad memset size),
+   from Herbert Xu.
+
+3) External PHY detection fix in smc911x from Guennadi Liakhovetski.
+
+4) E1000 VLAN feature flags should include TSO and CSUM offloads,
+   from Patrick McHardy and ACK'd by Intel folks.
+
+Please pull, thanks a lot!
+
+The following changes since commit bf6f51e3a46f6a602853d3cbacd05864bc6e2a37:
+  Linus Torvalds (1):
+        Merge phase #3 (IOMMU) of git://git.kernel.org/.../tip/linux-2.6-tip
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+David S. Miller (1):
+      ipvs: Add proper dependencies on IP_VS, and fix description header line.
+
+Guennadi Liakhovetski (1):
+      smc911x: Fix external PHY detection
+
+Herbert Xu (1):
+      gre: Initialise rtnl_link tunnel parameters properly
+
+Patrick McHardy (1):
+      e1000: allow VLAN devices to use TSO and CSUM offload
+
+ drivers/net/e1000/e1000_main.c |    5 +++++
+ drivers/net/smc911x.c          |    3 +++
+ net/ipv4/ip_gre.c              |    2 +-
+ net/netfilter/ipvs/Kconfig     |    4 ++--
+ 4 files changed, 11 insertions(+), 3 deletions(-)
