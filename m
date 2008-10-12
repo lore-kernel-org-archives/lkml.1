@@ -1,88 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbYJLO4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYJLPDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbYJLO4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 10:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbYJLO4I
+	id S1756548AbYJLPDf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 11:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYJLPD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 10:56:08 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:44502 "EHLO aun.it.uu.se"
+	Sun, 12 Oct 2008 11:03:27 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:56562 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753553AbYJLO4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 10:56:07 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18674.4081.839329.116533@harpo.it.uu.se>
-Date: Sun, 12 Oct 2008 16:55:45 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Christian Mueller <Christian.Mueller@wdc.com>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
- or sleep, PATA models did. (fwd)
-In-Reply-To: <48EBFE9B.9070503@gmail.com>
-References: <D73D40172004714D95D7A84AC3E68EC802282133@wdscexbe03.sc.wdc.com>
-	<48EBFE9B.9070503@gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+	id S1752717AbYJLPD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 11:03:26 -0400
+Date: Sun, 12 Oct 2008 17:02:40 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] avr32 update
+Message-ID: <20081012170240.55b3d030@hskinnemo-gx745.norway.atmel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 12 Oct 2008 15:02:29.0344 (UTC) FILETIME=[8BB7AE00:01C92C7B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo writes:
- > (cc'ing linux-ide and Mikael Pettersson)
- > 
- > Christian Mueller wrote:
- > > The messages I saw on the screen.
- > 
- > If the drive doesn't wake up and times out the smart command while
- > suspended (which probably is a bug in the firmware but it also can be
- > the controller's fault), then after the timeout, the driver should kick
- > in and reset the drive which will wake up the device and retry the
- > command.  It's not the prettiest picture but it's still gonna work.  In
- > Linda's case, it looks like the controller (sata_promise) went bonkers
- > on hardreset and requires power cycle to get back to working state.
- > That's why I asked Linda to try another controller.
- > 
- > Anyways, if you're seeing a similar problem, the driver or controller
- > probably can't do proper reset after timeout and I can't really help
- > with SAS driver on FreeBSD.  :-P
- > 
- > Mikael, the original thread is the following.
- > 
- >   http://article.gmane.org/gmane.linux.utilities.smartmontools/5842
- > 
- > Any ideas why hardreset doesn't work after SMART command timed out?
+Hi Linus,
 
-I've looked at the above posting and tried to reproduce the problem.
+Please pull
 
-Linda wrote that "smartctl -n standby -A <device>" sometimes wakes
-the device up, even though it shouldn't. On my Promise test box
-(FC6 user-space with kernel 2.6.27 and smartmontools-5.37-1.2.fc6,
-I put my test disks in standby with "hdparm -y /dev/sdb", and then
-ran numerous "smartctl -n standby -A /dev/sdb -d ata" commands.
-smartctl always noticed the standby state and never woke any disk.
+  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
 
-I then dropped the "-n standby" to observe the wakeup behaviour.
-On one disk (Seagate Barracuda 7200.9) the wakeups were completely
-reliable with no signs of timeouts or libata EH activity.
-On another disk (Hitachi Deskstar HDS722525VLSA80) the first one or
-two times I ran "smartctl -A /dev/sdb -d ata" when the disk was in
-standby it would wake up ok, but the next time it would suffer from
-timeouts, failed COMRESETs, and eventually libata would disable the port.
-When reloading sata_promise that port would fail detection but other
-ports would be ok.
+to receive the below updates. Note that I had to pull the mmc changes I
+sent to Pierre in order to resolve a few conflicts in the platform code.
+They are the same commits that Pierre pulled, so I believe git will
+sort it out nicely.
 
-So I suspect two issues:
-- smartctl -n standby waking Linda's disks from standby is probably
-  a disk firmware issue or a smartctl issue. I see no evidence that
-  sata_promise is to blame for that.
-- hardreset in sata_promise seems broken. I'll take a closer look
-  at that in about a week's time (I'll be busy with other work the
-  next couple of days).
+Other than that, this is fairly boring. There is support for a few more
+boards cooking, which I may be sending you in a second update if they
+get finished within the next week. There are also some tricky power
+management patches currently being reviewed.
 
-/Mikael
+I also have a large pile of patches for the not-yet-released AT32AP7200
+chip, which I intend to start pushing upstream for 2.6.29 after this
+merge window closes.
+
+On the bright side, the amount of contributions from people outside
+Atmel seems to be increasing steadily. Keep up the good work, everyone!
+
+Haavard
+
+Alex Raimondi (1):
+      avr32: Replace static clock list with dynamic linked list
+
+David Brownell (1):
+      ngw100: export J15 through sysfs
+
+Haavard Skinnemoen (13):
+      avr32: Provide a way to deselect pins in the portmux
+      atmel-mci: Initialize BLKR before sending data transfer command
+      atmel-mci: Implement tasklet as a state machine
+      atmel-mci: Don't stop the clock between transfers
+      atmel-mci: Platform code for supporting multiple mmc slots
+      atmel-mci: support multiple mmc slots
+      atmel-mci: Add experimental DMA support
+      atmel-mci: Don't overwrite error bits when NOTBUSY is set
+      atmel-mci: Add missing flush_dcache_page() in PIO transfer code
+      avr32: Implement {read,write}[bwl]_be
+      avr32: Minor pm_power_off cleanup
+      Merge branch 'master' of git://git.kernel.org/.../hskinnemoen/atmel-mci-2.6.28
+      avr32: Fix build failures in board code
+
+Harvey Harrison (1):
+      avr32: use the new byteorder headers
+
+Julien May (2):
+      avr32: Allow fine-grained control over LCDC pins
+      avr32: Allow selecting multiple pins at once
+
+Marco Stornelli (1):
+      avr32: added mem kernel command line option support
+
+Nikolaus Voss (1):
+      Add kernel support for oprofile callgraphs on AVR32
+
+Uwe Kleine-König (2):
+      avr32: Use platform_driver_probe for pio platform driver
+      avr32: Use platform_driver_probe for pdc platform driver
+
+ arch/avr32/boards/atngw100/setup.c               |   19 +-
+ arch/avr32/boards/atstk1000/atstk1002.c          |   23 +-
+ arch/avr32/boards/atstk1000/atstk1003.c          |   15 +-
+ arch/avr32/boards/atstk1000/atstk1004.c          |   18 +-
+ arch/avr32/include/asm/atmel-mci.h               |   32 +-
+ arch/avr32/include/asm/byteorder.h               |   22 +-
+ arch/avr32/include/asm/io.h                      |    8 +
+ arch/avr32/kernel/process.c                      |    3 +-
+ arch/avr32/kernel/setup.c                        |   19 +
+ arch/avr32/mach-at32ap/at32ap700x.c              |  460 +++++----
+ arch/avr32/mach-at32ap/clock.c                   |   52 +-
+ arch/avr32/mach-at32ap/clock.h                   |    8 +-
+ arch/avr32/mach-at32ap/include/mach/at32ap700x.h |  128 ++
+ arch/avr32/mach-at32ap/include/mach/board.h      |    2 +-
+ arch/avr32/mach-at32ap/include/mach/io.h         |    3 +-
+ arch/avr32/mach-at32ap/include/mach/portmux.h    |    5 +-
+ arch/avr32/mach-at32ap/pdc.c                     |    3 +-
+ arch/avr32/mach-at32ap/pio.c                     |   63 +-
+ arch/avr32/oprofile/Makefile                     |    2 +-
+ arch/avr32/oprofile/backtrace.c                  |   81 ++
+ arch/avr32/oprofile/op_model_avr32.c             |    4 +
+ drivers/mmc/host/Kconfig                         |   11 +
+ drivers/mmc/host/atmel-mci-regs.h                |    6 +-
+ drivers/mmc/host/atmel-mci.c                     | 1358 ++++++++++++++++------
+ 24 files changed, 1696 insertions(+), 649 deletions(-)
+ create mode 100644 arch/avr32/oprofile/backtrace.c
