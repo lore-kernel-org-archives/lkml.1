@@ -1,114 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbYJLUKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbYJLUKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbYJLUKV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 16:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbYJLUKD
+	id S1756193AbYJLUKw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 16:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbYJLUK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 16:10:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:5816 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755407AbYJLUKB (ORCPT
+	Sun, 12 Oct 2008 16:10:27 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:64712 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755954AbYJLUKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 16:10:01 -0400
+	Sun, 12 Oct 2008 16:10:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=e0dRBId7h0qUIjYfbAdPdM8ntDPNgcUP28Kv51AsdJbfAMaoficapyL4Y14HIb5Pkh
-         3dy9rJAfFj+pqYfstkFUNFcPrtsjzIysUy3sAZRQS7EwrVEKB30KocMr/9u5PtLROh5O
-         2v+hhr8MtTrhDSsZ1DlZAKkYZ80J4PHEPQexc=
-Message-ID: <5767b9100810121309w6e131161g327e9d11bfdd05c@mail.gmail.com>
-Date: Mon, 13 Oct 2008 04:09:58 +0800
-From: "Conke Hu" <conke.hu@gmail.com>
-To: "Ben Dooks" <ben-linux@fluff.org>
-Subject: s3c24xx nand: add command line partition table parsing support (resend)
-Cc: Linux-arm-kernel@lists.arm.linux.org.uk,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <5767b9100809180858r3bb9952el3bc76dab18930713@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=np63UNKOAFjQ2CyuwxFBH6QwqDWXSWWnLAyMTO+y/QbPGuf+q3Xavp/Gus9phC2NZQ
+         okhZ6KyU+nVwkpN8BjHxG8BAE5Bga+dTmCjl02sVcQC9vDVW9RNpBm8ML1qPZY/ZXJAx
+         tIm9Upi1G3gF0Fk0IoTg8IFxAHoJt29OkQFn8=
+Message-ID: <48F259A7.2030800@gmail.com>
+Date: Sun, 12 Oct 2008 23:10:15 +0300
+From: =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5767b9100809171813u7e26d516x12558a178b78f852@mail.gmail.com>
-	 <20080918112703.GA25491@flint.arm.linux.org.uk>
-	 <5767b9100809180855j58150b4ct4e2a4b9bb5ac7885@mail.gmail.com>
-	 <5767b9100809180858r3bb9952el3bc76dab18930713@mail.gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: mingo@elte.hu, sandmann@daimi.au.dk, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 4/4] Implement semaphore latency tracer
+References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>	 <1223817124-27239-6-git-send-email-edwintorok@gmail.com> <1223838786.8634.8.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1223838786.8634.8.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add mtd id and  command line partition table parsing support for
-s3c24xx nand driver.
+On 2008-10-12 22:13, Peter Zijlstra wrote:
+> On Sun, 2008-10-12 at 16:12 +0300, Török Edwin wrote:
+>   
+>> Each time a down_read or down_write fails, a unique latency id is generated.
+>> Later when someone releases the semaphore, it is blamed for the latency of all
+>> tasks on the wait_list of the semaphore.
+>> If you would group the output from latency_trace by the latency_id you get all those
+>> who were contending on a lock, and the tasks that were holding the lock.
+>> An entry in latency_trace has the format:
+>> (latency_id) [semaphore_id] read|write
+>> stacktrace <= stacktrace
+>>     
+>
+> What can this tracer do that latencytop cannot already do?
 
-Signed-off-by: Conke Hu <conke.hu@gmail.com>
-Signed-off-by: Linke Wang <linke.wang@gmail.com>
-------------------
-diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
+Latencytop can show latencies in down_read or down_write (and is very
+useful at doing that), but it cannot show who else was holding the
+semaphore,
+i.e. the true cause of the latency.
 
-index 556139e..db0d331 100644
+Consider:
+process A holds a semaphore for reading, process B tries to acquire it
+for writing and fails. Latencytop shows the latency in process B, but
+doesn't
+show anything about process A.
 
---- a/drivers/mtd/nand/s3c2410.c
-+++ b/drivers/mtd/nand/s3c2410.c
-@@ -48,6 +48,8 @@
- #include <asm/plat-s3c/regs-nand.h>
- #include <asm/plat-s3c/nand.h>
+The semlat tracer is doing something more similar to lockstat, but
+doesn't need lockdep, and it adds tracepoints on the slowpath only (lock
+failed, wakeup).
 
-+#define S3C_NAND_NAME_LEN 16
-+
- #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
- static int hardware_ecc = 1;
- #else
-@@ -60,6 +62,9 @@ static int clock_stop = 1;
- static const int clock_stop = 0;
- #endif
-
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
-+#endif
-
- /* new oob placement block for use with hardware ecc generation
- */
-
-@@ -80,6 +85,7 @@ struct s3c2410_nand_mtd {
-
-       struct s3c2410_nand_set         *set;
-       struct s3c2410_nand_info        *info;
-       int                             scan_res;
-+       char                    name[S3C_NAND_NAME_LEN];
- };
-
-
- enum s3c_cpu_type {
-@@ -649,6 +655,15 @@ static int s3c2410_nand_add_partition(struct
-
-s3c2410_nand_info *info,
-                                     struct s3c2410_nand_mtd *mtd,
-                                     struct s3c2410_nand_set *set)
- {
-+#ifdef CONFIG_MTD_CMDLINE_PARTS
-+       int nr_parts;
-+       struct mtd_partition *partitions;
-+
-+       nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes,
-&partitions, 0);
-+       if (nr_parts > 0 && partitions != NULL)
-+               return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
-+#endif
-+
-       if (set == NULL)
-               return add_mtd_device(&mtd->mtd);
-
-
-@@ -892,6 +907,9 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
-
-       for (setno = 0; setno < nr_sets; setno++, nmtd++) {
-               pr_debug("initialising set %d (%p, info %p)\n", setno,
-nmtd, info);
-
-+               snprintf(nmtd->name, sizeof(nmtd->name), "s3c_nand%d", setno);
-+               nmtd->mtd.name = nmtd->name;
-+
-               s3c2410_nand_init_chip(info, nmtd, sets);
-
-               nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
+Best regards,
+--Edwin
