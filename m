@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYJLNZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbYJLNcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbYJLNZV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 09:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYJLNZI
+	id S1757972AbYJLNcT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 09:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYJLNcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 09:25:08 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:60611 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbYJLNZG (ORCPT
+	Sun, 12 Oct 2008 09:32:03 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:10913 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbYJLNcB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 09:25:06 -0400
-X-Greylist: delayed 3514 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Oct 2008 09:25:05 EDT
-To: linux-kernel@vger.kernel.org
-Cc: Peter Osterlund <petero2@telia.com>
-Subject: pktcdvd -> sysfs warning with 2.6.27
-From: Nix <nix@esperi.org.uk>
-Emacs: a learning curve that you can use as a plumb line.
-Date: Sun, 12 Oct 2008 13:26:25 +0100
-Message-ID: <87vdvyngni.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Sun, 12 Oct 2008 09:32:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PdffN0AbvoCjzBEN1MAXPN5Yj9aPPmKcPd4IXwper+kg8E1Wq6TJuJCjqXdd7BcXAm
+         n9Tw2sizrzkpd/1WFzodl28aFi509qcD2VILuf1VGAUwC6V5Q5WaDO8dyv0Xz7TYrjIz
+         92yR/sHsrC1jR4qH/OJ/Sn+hLY7SEjJ1Z+7AQ=
+Message-ID: <c62985530810120631g3e464503i8958d160e6b1aa3e@mail.gmail.com>
+Date: Sun, 12 Oct 2008 15:31:59 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "=?ISO-8859-1?Q?T=F6r=F6k_Edwin?=" <edwintorok@gmail.com>
+Subject: Re: [PATCH 1/4] Add support for userspace stacktraces in tracing/iter_ctrl
+Cc: mingo@elte.hu, srostedt@redhat.com, a.p.zijlstra@chello.nl,
+       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
+In-Reply-To: <1223817124-27239-3-git-send-email-edwintorok@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=2 Fuz1=2 Fuz2=2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
+	 <1223817124-27239-3-git-send-email-edwintorok@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At the very end of my startup scripts, I say
+2008/10/12 Török Edwin <edwintorok@gmail.com>:
+> +static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
+> +{
+> +       int ret;
+> +
+> +       if (!access_ok(VERIFY_READ, fp, sizeof(*frame)))
+> +               return 0;
+> +
+> +       ret = 1;
+> +       pagefault_disable();
+> +       if (__copy_from_user_inatomic(frame, fp, sizeof(*frame)))
+> +               ret = 0;
+> +       pagefault_enable();
+> +
+> +       return ret;
+> +}
+> +
 
-pktsetup cdrw /dev/cdrw
+Hello Török,
 
-to get the stuff in /etc/pktcdvd set up right.
-
-As of 2.6.27 this has started complaining:
-
-pktcdvd: writer pktcdvd0 mapped to hde
-------------[ cut here ]------------
-WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x2f/0x3b()
-sysfs: duplicate filename '254:0' can not be created
-Modules linked in:
-Pid: 1306, comm: pktsetup Not tainted 2.6.27-dirty #1
- [<c011ac1c>] warn_slowpath+0x50/0x71
- [<c0245c17>] ? ida_get_new_above+0xdc/0x17d
- [<c0245a8a>] ? idr_get_empty_slot+0x142/0x1f3
- [<c0245c17>] ? ida_get_new_above+0xdc/0x17d
- [<c01a1738>] ? sysfs_ilookup_test+0x0/0x16
- [<c01a1919>] ? sysfs_find_dirent+0x1b/0x2c
- [<c01a1aba>] sysfs_add_one+0x2f/0x3b
- [<c01a26f6>] sysfs_do_create_link+0xb1/0x106
- [<c01a276b>] sysfs_create_link+0xf/0x14
- [<c02749d2>] device_add+0x134/0x455
- [<c0274d0a>] device_register+0x17/0x1a
- [<c0274d8d>] device_create_vargs+0x80/0xa3
- [<c0274dd0>] device_create+0x20/0x24
- [<c028208f>] pkt_setup_dev+0x2ed/0x429
- [<c0282251>] pkt_ctl_ioctl+0x86/0x18c
- [<c0170c09>] vfs_ioctl+0x55/0x6e
- [<c0185801>] ? block_truncate_page+0xa9/0x1e0
- [<c0170e58>] do_vfs_ioctl+0x236/0x249
- [<c0170e9c>] sys_ioctl+0x31/0x4d
- [<c0102c8d>] sysenter_do_call+0x12/0x25
- [<c0185801>] ? block_truncate_page+0xa9/0x1e0
- =======================
----[ end trace 1cdd10ab78ee5bc6 ]---
-
-For the life of me I can't see where pkt_sysfs_dev_new() is being called
-more than once: indeed, from the trace above GCC has inlined it into
-pkt_setup_dev() as a static function called from only one place...
+I don't understand why you are using this pagefault disabling and
+atomic copy here.
+Wouldn't a simple copy_from_user actually take of this? You don't seem
+to be in atomic
+context.
