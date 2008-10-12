@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbYJLNcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbYJLNkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757972AbYJLNcT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 09:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYJLNcD
+	id S1758851AbYJLNkS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 09:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYJLNkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 09:32:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:10913 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbYJLNcB convert rfc822-to-8bit (ORCPT
+	Sun, 12 Oct 2008 09:40:04 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56644 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753085AbYJLNkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 09:32:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PdffN0AbvoCjzBEN1MAXPN5Yj9aPPmKcPd4IXwper+kg8E1Wq6TJuJCjqXdd7BcXAm
-         n9Tw2sizrzkpd/1WFzodl28aFi509qcD2VILuf1VGAUwC6V5Q5WaDO8dyv0Xz7TYrjIz
-         92yR/sHsrC1jR4qH/OJ/Sn+hLY7SEjJ1Z+7AQ=
-Message-ID: <c62985530810120631g3e464503i8958d160e6b1aa3e@mail.gmail.com>
-Date: Sun, 12 Oct 2008 15:31:59 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "=?ISO-8859-1?Q?T=F6r=F6k_Edwin?=" <edwintorok@gmail.com>
-Subject: Re: [PATCH 1/4] Add support for userspace stacktraces in tracing/iter_ctrl
-Cc: mingo@elte.hu, srostedt@redhat.com, a.p.zijlstra@chello.nl,
-       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
-In-Reply-To: <1223817124-27239-3-git-send-email-edwintorok@gmail.com>
+	Sun, 12 Oct 2008 09:40:03 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [mmotm 10 Oct][PATCH 1/2] fix build error of git-tip
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>
+Message-Id: <20081012223808.1817.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
-	 <1223817124-27239-3-git-send-email-edwintorok@gmail.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Sun, 12 Oct 2008 22:39:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/12 Török Edwin <edwintorok@gmail.com>:
-> +static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
-> +{
-> +       int ret;
-> +
-> +       if (!access_ok(VERIFY_READ, fp, sizeof(*frame)))
-> +               return 0;
-> +
-> +       ret = 1;
-> +       pagefault_disable();
-> +       if (__copy_from_user_inatomic(frame, fp, sizeof(*frame)))
-> +               ret = 0;
-> +       pagefault_enable();
-> +
-> +       return ret;
-> +}
-> +
 
-Hello Török,
+Patch name: git-tip-fix.patch
+Patch against: mmotm 10 Oct
+Applied after: git-tip.patch
 
-I don't understand why you are using this pagefault disabling and
-atomic copy here.
-Wouldn't a simple copy_from_user actually take of this? You don't seem
-to be in atomic
-context.
+-----------
+git-tip can't build on ia64 because __acpi_unmap_table() function tyep is wrong.
+Then it cause following build error.
+
+
+  CC      arch/ia64/kernel/acpi.o
+arch/ia64/kernel/acpi.c:180: error: conflicting types for '__acpi_unmap_table'
+include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
+make[1]: *** [arch/ia64/kernel/acpi.o] Error 1
+make: *** [arch/ia64/kernel] Error 2
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>
+
+---
+ arch/ia64/kernel/acpi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: b/arch/ia64/kernel/acpi.c
+===================================================================
+--- a/arch/ia64/kernel/acpi.c
++++ b/arch/ia64/kernel/acpi.c
+@@ -176,7 +176,7 @@ char *__init __acpi_map_table(unsigned l
+ 	return __va(phys_addr);
+ }
+ 
+-char *__init __acpi_unmap_table(unsigned long virt_addr, unsigned long size)
++void __init __acpi_unmap_table(char *virt_addr, unsigned long size)
+ {
+ }
+ 
+
+
