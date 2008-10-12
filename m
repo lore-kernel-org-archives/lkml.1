@@ -1,165 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYJLM2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYJLMdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755712AbYJLM2T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 08:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYJLM2F
+	id S1755659AbYJLMdi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 08:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbYJLMd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 08:28:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52627 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbYJLM2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 08:28:04 -0400
-Subject: [PATCH] input: wm97xx - update email address for Liam Girdwood
-From: Liam Girdwood <lrg@kernel.org>
-To: dmitry.torokhov@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 12 Oct 2008 13:27:57 +0100
-Message-Id: <1223814477.6814.351.camel@dell-desktop.example.com>
+	Sun, 12 Oct 2008 08:33:29 -0400
+Received: from sunrise.pg.gda.pl ([153.19.40.230]:58305 "EHLO
+	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbYJLMd2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 08:33:28 -0400
+Date: Sun, 12 Oct 2008 14:32:31 +0200
+From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: 7eggert@gmx.de, linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH 0/2] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
+In-Reply-To: <20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
+References: <bjXel-4CU-17@gated-at.bofh.it>
+	<bjYap-5Q0-25@gated-at.bofh.it>
+	<bk30i-3Gx-1@gated-at.bofh.it>
+	<bk6AV-8ms-7@gated-at.bofh.it>
+	<bkrvO-1HF-49@gated-at.bofh.it>
+	<blePJ-6rI-3@gated-at.bofh.it>
+	<blmDC-7ZU-7@gated-at.bofh.it>
+	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
+	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
+Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary=MP_nuxd7J7BqqtnvLiWW+y+8Wl
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This updates the email address for Liam Girdwood as my old address is no
-longer valid.
+--MP_nuxd7J7BqqtnvLiWW+y+8Wl
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Liam Girdwood <lrg@slimlogic.co.uk>
----
- MAINTAINERS                                  |    2 +-
- drivers/input/touchscreen/mainstone-wm97xx.c |    5 ++---
- drivers/input/touchscreen/wm9705.c           |    5 ++---
- drivers/input/touchscreen/wm9712.c           |    5 ++---
- drivers/input/touchscreen/wm9713.c           |    5 ++---
- drivers/input/touchscreen/wm97xx-core.c      |    5 ++---
- 6 files changed, 11 insertions(+), 16 deletions(-)
+Welcome,
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 587f418..ca5f4f6 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4591,7 +4591,7 @@ WM97XX TOUCHSCREEN DRIVERS
- P:	Mark Brown
- M:	broonie@opensource.wolfsonmicro.com
- P:	Liam Girdwood
--M:	liam.girdwood@wolfsonmicro.com
-+M:	lrg@slimlogic.co.uk
- L:	linux-input@vger.kernel.org
- T:	git git://opensource.wolfsonmicro.com/linux-2.6-touch
- W:	http://opensource.wolfsonmicro.com/node/7
-diff --git a/drivers/input/touchscreen/mainstone-wm97xx.c b/drivers/input/touchscreen/mainstone-wm97xx.c
-index 37a555f..ba64875 100644
---- a/drivers/input/touchscreen/mainstone-wm97xx.c
-+++ b/drivers/input/touchscreen/mainstone-wm97xx.c
-@@ -3,8 +3,7 @@
-  *                         Wolfson WM97xx AC97 Codecs.
-  *
-  * Copyright 2004, 2007 Wolfson Microelectronics PLC.
-- * Author: Liam Girdwood
-- *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
-+ * Author: Liam Girdwood <lrg@slimlogic.co.uk>
-  * Parts Copyright : Ian Molton <spyro@f2s.com>
-  *                   Andrew Zabolotny <zap@homelink.ru>
-  *
-@@ -296,6 +295,6 @@ module_init(mainstone_wm97xx_init);
- module_exit(mainstone_wm97xx_exit);
- 
- /* Module information */
--MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
-+MODULE_AUTHOR("Liam Girdwood <lrg@slimlogic.co.uk>");
- MODULE_DESCRIPTION("wm97xx continuous touch driver for mainstone");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/input/touchscreen/wm9705.c b/drivers/input/touchscreen/wm9705.c
-index 372efbc..6b5be74 100644
---- a/drivers/input/touchscreen/wm9705.c
-+++ b/drivers/input/touchscreen/wm9705.c
-@@ -2,8 +2,7 @@
-  * wm9705.c  --  Codec driver for Wolfson WM9705 AC97 Codec.
-  *
-  * Copyright 2003, 2004, 2005, 2006, 2007 Wolfson Microelectronics PLC.
-- * Author: Liam Girdwood
-- *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
-+ * Author: Liam Girdwood <lrg@slimlogic.co.uk>
-  * Parts Copyright : Ian Molton <spyro@f2s.com>
-  *                   Andrew Zabolotny <zap@homelink.ru>
-  *                   Russell King <rmk@arm.linux.org.uk>
-@@ -347,6 +346,6 @@ struct wm97xx_codec_drv wm9705_codec = {
- EXPORT_SYMBOL_GPL(wm9705_codec);
- 
- /* Module information */
--MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
-+MODULE_AUTHOR("Liam Girdwood <lrg@slimlogic.co.uk>");
- MODULE_DESCRIPTION("WM9705 Touch Screen Driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/input/touchscreen/wm9712.c b/drivers/input/touchscreen/wm9712.c
-index c8bb1e7..7490b05 100644
---- a/drivers/input/touchscreen/wm9712.c
-+++ b/drivers/input/touchscreen/wm9712.c
-@@ -2,8 +2,7 @@
-  * wm9712.c  --  Codec driver for Wolfson WM9712 AC97 Codecs.
-  *
-  * Copyright 2003, 2004, 2005, 2006, 2007 Wolfson Microelectronics PLC.
-- * Author: Liam Girdwood
-- *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
-+ * Author: Liam Girdwood <lrg@slimlogic.co.uk>
-  * Parts Copyright : Ian Molton <spyro@f2s.com>
-  *                   Andrew Zabolotny <zap@homelink.ru>
-  *                   Russell King <rmk@arm.linux.org.uk>
-@@ -462,6 +461,6 @@ struct wm97xx_codec_drv wm9712_codec = {
- EXPORT_SYMBOL_GPL(wm9712_codec);
- 
- /* Module information */
--MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
-+MODULE_AUTHOR("Liam Girdwood <lrg@slimlogic.co.uk>");
- MODULE_DESCRIPTION("WM9712 Touch Screen Driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/input/touchscreen/wm9713.c b/drivers/input/touchscreen/wm9713.c
-index 781ee83..238b513 100644
---- a/drivers/input/touchscreen/wm9713.c
-+++ b/drivers/input/touchscreen/wm9713.c
-@@ -2,8 +2,7 @@
-  * wm9713.c  --  Codec touch driver for Wolfson WM9713 AC97 Codec.
-  *
-  * Copyright 2003, 2004, 2005, 2006, 2007, 2008 Wolfson Microelectronics PLC.
-- * Author: Liam Girdwood
-- *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
-+ * Author: Liam Girdwood <lrg@slimlogic.co.uk>
-  * Parts Copyright : Ian Molton <spyro@f2s.com>
-  *                   Andrew Zabolotny <zap@homelink.ru>
-  *                   Russell King <rmk@arm.linux.org.uk>
-@@ -476,6 +475,6 @@ struct wm97xx_codec_drv wm9713_codec = {
- EXPORT_SYMBOL_GPL(wm9713_codec);
- 
- /* Module information */
--MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
-+MODULE_AUTHOR("Liam Girdwood <lrg@slimlogic.co.uk>");
- MODULE_DESCRIPTION("WM9713 Touch Screen Driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
-index d589ab0..d15aa11 100644
---- a/drivers/input/touchscreen/wm97xx-core.c
-+++ b/drivers/input/touchscreen/wm97xx-core.c
-@@ -3,8 +3,7 @@
-  *                    and WM9713 AC97 Codecs.
-  *
-  * Copyright 2003, 2004, 2005, 2006, 2007, 2008 Wolfson Microelectronics PLC.
-- * Author: Liam Girdwood
-- *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
-+ * Author: Liam Girdwood <lrg@slimlogic.co.uk>
-  * Parts Copyright : Ian Molton <spyro@f2s.com>
-  *                   Andrew Zabolotny <zap@homelink.ru>
-  *                   Russell King <rmk@arm.linux.org.uk>
-@@ -824,6 +823,6 @@ module_init(wm97xx_init);
- module_exit(wm97xx_exit);
- 
- /* Module information */
--MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
-+MODULE_AUTHOR("Liam Girdwood <lrg@slimlogic.co.uk>");
- MODULE_DESCRIPTION("WM97xx Core - Touch Screen / AUX ADC / GPIO Driver");
- MODULE_LICENSE("GPL");
--- 
-1.5.4.3
+generally speaking terminal resize could be made from vc or other
+terminal device module code, from terminal ioctl on tty master
+or tty slave. As we read the code we will see that the problem is to
+use a proper mutex. Also we should use a one variable in which we set
+terminal sizes. So in case of tty master and slave we have tty and
+real_tty structures. TIOCSWINSZ and TIOCGWINSZ ioctls could be
+called on tty and real_tty at the same time. To avoid race condition
+we should use a mutex. But this must be the same mutex in all cases
+- tty or real_tty. For the best we should also use the same
+winsize variable. Proposed previously code change only simplifies
+the code and eliminates SIGWINCH signal race but an app could read
+terminal sizes at any time so this patch not closes all race
+possibilities. So I propose a patch in which we have some code
+movements and always use real_tty->termios_mutex and also
+real_tty->winsize. In no pty case tty =3D=3D real_tty so it works properly
+as before and in pty situaction we use the same mutex and variable so
+it removes all race conditions according to access to winsize now.
 
+Signed-off-by: Adam Tla/lka <atlka@pg.gda.pl>
 
+Regards
+
+--=20
+Adam Tla=C5=82ka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
+System  & Network Administration Group       - - - ~~~~~~
+Computer Center, Gda=C5=84sk University of Technology, Poland
+
+--MP_nuxd7J7BqqtnvLiWW+y+8Wl
+Content-Type: text/x-patch; name=2.6.27_tty_io_2.patch
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=2.6.27_tty_io_2.patch
+
+--- drivers/char/tty_io_orig.c	2008-10-10 05:37:30.000000000 +0200
++++ drivers/char/tty_io.c	2008-10-12 13:37:11.000000000 +0200
+@@ -2524,27 +2524,26 @@ int tty_do_resize(struct tty_struct *tty
+ 
+ 	/* For a PTY we need to lock the tty side */
+ 	mutex_lock(&real_tty->termios_mutex);
+-	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
+-		goto done;
+-	/* Get the PID values and reference them so we can
+-	   avoid holding the tty ctrl lock while sending signals */
+-	spin_lock_irqsave(&tty->ctrl_lock, flags);
+-	pgrp = get_pid(tty->pgrp);
+-	rpgrp = get_pid(real_tty->pgrp);
+-	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
++	flags = memcmp(ws, &real_tty->winsize, sizeof(*ws));
++	real_tty->winsize = *ws;
++	mutex_unlock(&real_tty->termios_mutex);
++	if (flags){
++		/* Get the PID values and reference them so we can
++		 avoid holding the tty ctrl lock while sending signals */
++		spin_lock_irqsave(&tty->ctrl_lock, flags);
++		pgrp = get_pid(tty->pgrp);
++		rpgrp = get_pid(real_tty->pgrp);
++		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+ 
+-	if (pgrp)
+-		kill_pgrp(pgrp, SIGWINCH, 1);
+-	if (rpgrp != pgrp && rpgrp)
+-		kill_pgrp(rpgrp, SIGWINCH, 1);
++		if (pgrp)
++			kill_pgrp(pgrp, SIGWINCH, 1);
++		if (rpgrp != pgrp && rpgrp)
++			kill_pgrp(rpgrp, SIGWINCH, 1);
+ 
+-	put_pid(pgrp);
+-	put_pid(rpgrp);
++		put_pid(pgrp);
++		put_pid(rpgrp);
++	}
+ 
+-	tty->winsize = *ws;
+-	real_tty->winsize = *ws;
+-done:
+-	mutex_unlock(&real_tty->termios_mutex);
+ 	return 0;
+ }
+ 
+@@ -2996,7 +2995,7 @@ long tty_ioctl(struct file *file, unsign
+ 	case TIOCSTI:
+ 		return tiocsti(tty, p);
+ 	case TIOCGWINSZ:
+-		return tiocgwinsz(tty, p);
++		return tiocgwinsz(real_tty, p);
+ 	case TIOCSWINSZ:
+ 		return tiocswinsz(tty, real_tty, p);
+ 	case TIOCCONS:
+
+--MP_nuxd7J7BqqtnvLiWW+y+8Wl--
