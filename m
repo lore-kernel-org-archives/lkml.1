@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYJLSr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYJLTCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbYJLSr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 14:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYJLSrP
+	id S1755269AbYJLTCO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 15:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYJLTB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 14:47:15 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:41343 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754070AbYJLSrO (ORCPT
+	Sun, 12 Oct 2008 15:01:59 -0400
+Received: from sunrise.pg.gda.pl ([153.19.40.230]:62122 "EHLO
+	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbYJLTB6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 14:47:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=cKvFel/gGFE/OERXdqOgLK9jdNxfB9tVQgHjmMfQ5eaS/R6A/s0dNKKnjR17DvRlgi
-         a8YDEnMG/bM/otI0GZ8hux+ATF0u5x8v4+cirwUQdN4hBFJAouHDKll/7ek9IrH2U3Ln
-         gHccGo8neL2Cfq4uVTHl4FYT168Xepsa6FNHs=
-Message-ID: <524f69650810121147j4ad79f77p348a3814b7f05d01@mail.gmail.com>
-Date: Sun, 12 Oct 2008 13:47:12 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-cifs-client] Fwd: [PATCH] Fix CIFS compilation with CONFIG_KEYS unset
-Cc: "Jeff Layton" <jlayton@redhat.com>, "David Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org,
-       "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
-       "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>,
-       cooldavid@cooldavid.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200810121909.53233.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200810121315.37203.rjw@sisk.pl>
-	 <524f69650810120953t2ec8100cpdddc3ddfce0406d9@mail.gmail.com>
-	 <524f69650810120957t1a81f23lf3fd75fee78e72c3@mail.gmail.com>
-	 <200810121909.53233.rjw@sisk.pl>
+	Sun, 12 Oct 2008 15:01:58 -0400
+Date: Sun, 12 Oct 2008 21:01:40 +0200
+From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: 7eggert@gmx.de, linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH 0/2] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081012210140.15cecf78@merlin.oi.pg.gda.pl>
+In-Reply-To: <20081012190312.0bd04ab8@lxorguk.ukuu.org.uk>
+References: <bjXel-4CU-17@gated-at.bofh.it>
+	<bjYap-5Q0-25@gated-at.bofh.it>
+	<bk30i-3Gx-1@gated-at.bofh.it>
+	<bk6AV-8ms-7@gated-at.bofh.it>
+	<bkrvO-1HF-49@gated-at.bofh.it>
+	<blePJ-6rI-3@gated-at.bofh.it>
+	<blmDC-7ZU-7@gated-at.bofh.it>
+	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
+	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
+	<20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
+	<20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
+	<20081012195957.50feada3@merlin.oi.pg.gda.pl>
+	<20081012190312.0bd04ab8@lxorguk.ukuu.org.uk>
+Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 12, 2008 at 12:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, 12 of October 2008, Steve French wrote:
->> On Sun, Oct 12, 2008 at 11:53 AM, Steve French <smfrench@gmail.com> wrote:
->> > On Sun, Oct 12, 2008 at 8:59 AM, Jeff Layton <jlayton@redhat.com> wrote:
->> >> On Sun, 12 Oct 2008 08:40:39 -0500
->> >> "Steve French" <smfrench@gmail.com> wrote:
->> >>
->> >> Actually, I like Adrian/Rafael's fix better. I think we should avoid
->> >> cluttering up the code with #ifdef's where possible. key_put() already
->> >> is a no-op when CONFIG_KEYS is disabled. We might as well do the same
->> >> thing with key_revoke().
->> > I don't think it matters much - but we probably shouldn't be
->> > overriding global functions.
->>
->> To clarify, I like fixing it in keys.h better than overriding it in
->> cifs, but in the meantime we need an ifdef in cifs until keys.h
->> changes.
->
-> Well, adding an empty definition for key_revoke() in the !CONFIG_KEYS case
-> makes sense anyway IMO.
+Sun, 12 Oct 2008 19:03:12 +0100 - Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> Then we end up with both using real_tty.
+> 
+> > Anyway I think that you miss the point. Why using
+> > real_tty->termios_mutex instead of tty->termios_mutex in
+> > tty_do_resize
+> 
+> To avoid deadlocks if you took both as you updated both structures.
 
-I agree.  ACKED
+Actually to avoid race and not valid winsize reading because
+ioctl(TIOCGWINSZ) is done with tty == real_tty so we have to use this
+mutex and not the other one.
+What is more because we are using real_tty we could safely use only
+real_tty->winsize and forget about master tty->winsize.
+ 
+> > So it seems that tty->termios_mutex could point to different
+> > location in different calls but real_tty->termios_mutex always
+> > points to the same location.
+> 
+> You've finally got there - we always work off real_tty. That is why we
+> can safely use the mutex on the real_tty side.
+
+typically ioctl(,TIOCSWINSZ,) is called on master side but
+ioctl(,TIOCGWINSZ,) is called on slave side so tty is not the same in
+both calls inside ioctl() in tty_io.c. Only real_tty variable has the
+same value for the same master/slave pair. So we must use real_tty
+mutex all the time because we not always work from the same side IMHO.
+
+That is why I propose usage of real_tty in ioctl() handling:
+
+case TIOCGWINSZ:
+                return tiocgwinsz(real_tty, p);
+
+
+Regards
 
 -- 
-Thanks,
-
-Steve
+Adam Tlałka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
+System  & Network Administration Group       - - - ~~~~~~
+Computer Center, Gdańsk University of Technology, Poland
