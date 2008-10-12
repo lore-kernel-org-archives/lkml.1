@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYJLTq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYJLTq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbYJLTq0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 15:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYJLTqS
+	id S1755255AbYJLTq5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 15:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbYJLTqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 15:46:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54122 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751096AbYJLTqR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 15:46:17 -0400
-Date: Sun, 12 Oct 2008 12:46:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-cc: akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MN10300: MEI are renaming themselves to Panasonic
-In-Reply-To: <20081010235755.12643.43818.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LFD.2.00.0810121245260.3402@nehalem.linux-foundation.org>
-References: <20081010235755.12643.43818.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 12 Oct 2008 15:46:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49227 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753371AbYJLTqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 15:46:47 -0400
+Date: Sun, 12 Oct 2008 21:46:42 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
+	"hwclock" program
+Message-ID: <20081012194641.GH10429@nb.net.home>
+References: <20081004174433.14a5e093@infradead.org> <20081004215225.2444d54b.akpm@linux-foundation.org> <20081005081145.30ba921b@infradead.org> <20081005102742.de8353b4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081005102742.de8353b4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Oct 05, 2008 at 10:27:42AM -0700, Andrew Morton wrote:
+> On Sun, 5 Oct 2008 08:11:45 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+> > 
+> > static unsigned long   
+> > atomic(const char *name, unsigned long (*op)(unsigned long),
+> >        unsigned long arg)
+> > {
+> >   unsigned long v;
+> >   __asm__ volatile ("cli");
+> >   v = (*op)(arg);
+> >   __asm__ volatile ("sti");
+> >   return v;
+> > } 
+> > 
+> > looks like it (but only on 32 bit x86, not on 64 bit x86)
+> 
+> I suspect this is new in hwclock?
 
+ since util-linux-2.9v, year 1999
 
-On Sat, 11 Oct 2008, David Howells wrote:
->
-> MEI are renaming themselves to Panasonic, so update the MAINTAINERS record for
-> the MN10300 arch.
+> > (and yes someone really ought to fix hwclock; it's rather broken)
+> 
+> well yeah. Recently broken?
 
-Hmm. Somehow I'd expect this to also move to late in the file to keep 
-things in alphabetical order. No?
+ 9 years ago
 
-> -MEI MN10300/AM33 PORT
-> +PANASONIC MN10300/AM33 PORT
+    Karel
 
-Hmm?
-
-		Linus
+-- 
+ Karel Zak  <kzak@redhat.com>
