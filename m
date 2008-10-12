@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYJLWRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYJLWVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712AbYJLWRP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 18:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYJLWQ7
+	id S1754889AbYJLWVS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 18:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbYJLWVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 18:16:59 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:39774 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753398AbYJLWQ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 18:16:58 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 updates for 2.6.27-git2
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1Kp9F7-0000Dd-RC@closure.thunk.org>
-Date: Sun, 12 Oct 2008 18:16:53 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sun, 12 Oct 2008 18:21:09 -0400
+Received: from kroah.org ([198.145.64.141]:47161 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753474AbYJLWVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 18:21:08 -0400
+Date: Sun, 12 Oct 2008 15:18:51 -0700
+From: Greg KH <greg@kroah.com>
+To: Nix <nix@esperi.org.uk>
+Cc: linux-kernel@vger.kernel.org, Peter Osterlund <petero2@telia.com>
+Subject: Re: pktcdvd -> sysfs warning with 2.6.27
+Message-ID: <20081012221851.GB22940@kroah.com>
+References: <87vdvyngni.fsf@hades.wkstn.nix> <20081012181700.GA21072@kroah.com> <87iqrxo924.fsf@hades.wkstn.nix>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87iqrxo924.fsf@hades.wkstn.nix>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sun, Oct 12, 2008 at 09:25:07PM +0100, Nix wrote:
+> On 12 Oct 2008, Greg KH stated:
+> > Perhaps some other kernel code is registering with that same major/minor
+> > number, making it already present in sysfs.  Where does that sysfs file
+> > link to before you load your driver?
+> 
+> It's not modular right now so it's sort of hard to tell. I'll rebuild it
+> as a module and have a look (be a while before I can reboot though,
+> other people are using this machine right now).
 
-Please pull:
+How about before you run that command on the machine?
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+thanks,
 
-This fixes a typo in fs/Kconfig, a build problem when CONFIG_PROC_FS is
-not defined, and some patches that address error handling for disk write
-failures that had been forward ported from ext3 by Hidehiro-san that I
-hadn't time to audit before my last pull.
-
-Thanks!!
-
-                                                - Ted
-
-Alexander Beregalov (1):
-      ext4: fix build failure without procfs
-
-Hidehiro Kawai (5):
-      jbd2: abort when failed to log metadata buffers
-      jbd2: fix error handling for checkpoint io
-      ext4: add checks for errors from jbd2
-      jbd2: don't dirty original metadata buffer on abort
-      ext4: add an option to control error handling on file data
-
-Jan Engelhardt (1):
-      ext4: fix kconfig typo and extra whitespace
-
- Documentation/filesystems/ext4.txt |    5 +++
- fs/Kconfig                         |    4 +-
- fs/ext4/ext4.h                     |    2 +
- fs/ext4/ioctl.c                    |   12 ++++++---
- fs/ext4/super.c                    |   41 +++++++++++++++++++++++++++---
- fs/jbd2/checkpoint.c               |   49 +++++++++++++++++++++++++++---------
- fs/jbd2/commit.c                   |   10 ++++++-
- fs/jbd2/journal.c                  |   28 ++++++++++++++++----
- fs/jbd2/recovery.c                 |    7 +++-
- include/linux/jbd2.h               |    5 +++-
- 10 files changed, 131 insertions(+), 32 deletions(-)
+greg k-h
