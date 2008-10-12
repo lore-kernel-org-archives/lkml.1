@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYJLEQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752102AbYJLEej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752471AbYJLEQW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 00:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbYJLEQO
+	id S1752102AbYJLEej (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 00:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbYJLEec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 00:16:14 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:58608 "EHLO smtp6.pp.htv.fi"
+	Sun, 12 Oct 2008 00:34:32 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:33352 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbYJLEQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 00:16:14 -0400
-Date: Sun, 12 Oct 2008 07:15:19 +0300
+	id S1750741AbYJLEeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 00:34:31 -0400
+Date: Sun, 12 Oct 2008 07:33:36 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Josef Bacik <jbacik@redhat.com>, Mark Fasheh <mfasheh@suse.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+To: Manfred Spraul <manfred@colorfullife.com>, takata@linux-m32r.org
+Cc: linux-m32r@ml.linux-m32r.org, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: [2.6 patch] provide generic_block_fiemap() only with BLOCK=y
-Message-ID: <20081012041519.GC31153@cs181140183.pp.htv.fi>
+Subject: [2.6 patch] m32r/kernel/smpboot.c must #include <linux/cpu.h>
+Message-ID: <20081012043335.GD31153@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,20 +24,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error with CONFIG_BLOCK=n caused 
-by commit 68c9d702bb72f367f3b148963ec6cf5e07ff7f65
-(generic block based fiemap implementation):
+This patch fixes the following compile error caused by
+commit e545a6140b698b2494daf0b32107bdcc5e90139
+(kernel/cpu.c: create a CPU_STARTING cpu_chain notifier):
 
 <--  snip  -->
 
 ...
-  CC      fs/ioctl.o
-fs/ioctl.c: In function 'generic_block_fiemap':
-fs/ioctl.c:249: error: storage size of 'tmp' isn't known
-fs/ioctl.c:272: error: invalid application of 'sizeof' to incomplete type 'struct buffer_head' 
-fs/ioctl.c:280: error: implicit declaration of function 'buffer_mapped'
-fs/ioctl.c:249: warning: unused variable 'tmp'
-make[2]: *** [fs/ioctl.o] Error 1
+  CC      arch/m32r/kernel/smpboot.o
+arch/m32r/kernel/smpboot.c: In function 'smp_online':
+arch/m32r/kernel/smpboot.c:501: error: implicit declaration of function 'notify_cpu_starting'
+make[2]: *** [arch/m32r/kernel/smpboot.o] Error 1
 
 <--  snip  -->
 
@@ -48,30 +43,16 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/ioctl.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-
-diff --git a/fs/ioctl.c b/fs/ioctl.c
-index 33a6b7e..d152856 100644
---- a/fs/ioctl.c
-+++ b/fs/ioctl.c
-@@ -226,6 +226,8 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
- 	return error;
- }
+diff --git a/arch/m32r/kernel/smpboot.c b/arch/m32r/kernel/smpboot.c
+index fc29948..938f65e 100644
+--- a/arch/m32r/kernel/smpboot.c
++++ b/arch/m32r/kernel/smpboot.c
+@@ -48,6 +48,7 @@
+ #include <linux/irq.h>
+ #include <linux/bootmem.h>
+ #include <linux/delay.h>
++#include <linux/cpu.h>
  
-+#ifdef CONFIG_BLOCK
-+
- #define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
- #define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
- 
-@@ -342,6 +344,8 @@ int generic_block_fiemap(struct inode *inode,
- }
- EXPORT_SYMBOL(generic_block_fiemap);
- 
-+#endif  /*  CONFIG_BLOCK  */
-+
- static int file_ioctl(struct file *filp, unsigned int cmd,
- 		unsigned long arg)
- {
+ #include <asm/io.h>
+ #include <asm/pgalloc.h>
 
