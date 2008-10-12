@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbYJLNMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758419AbYJLNNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbYJLNMz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 09:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbYJLNMQ
+	id S1758419AbYJLNNV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 09:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYJLNMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 09:12:16 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:46659 "EHLO
+	Sun, 12 Oct 2008 09:12:17 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:42852 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbYJLNMN (ORCPT
+	with ESMTP id S1753040AbYJLNMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 09:12:13 -0400
+	Sun, 12 Oct 2008 09:12:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=wD0hVkwTSQJrqAsK1u0rRp1ttaJRX03FvrL1tb1gxdoTzw9KKrMQOJcdK8MAm4ue7F
-         IUooUmgi6bRKTnVIgzJn+/dqRZ9i/ET39JLqaPLKZTiXLhngZEI6yXletsmNfge4Gr/7
-         JP4AFWtZVZO4l+nJ+RygrkZuL2LyO27VfAE4U=
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=REMXT3Lg6lgorv0PBK+CT34bduwyTwD3qD+K1pC/bfBH4xz+B+d44ctq0jj299YTY2
+         AFyqDKCSoRj/q594RqqhcUxg3getjKeWtE4anPITjir40Ct5WbGXV0sZLNV3Mp4/SYNS
+         VnpAVogZGnhDP08ZPHp5YI3qZQjqMp5h7Jvs4=
 From: =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
 To: mingo@elte.hu, srostedt@redhat.com
 Cc: a.p.zijlstra@chello.nl, sandmann@daimi.au.dk, linux-kernel@vger.kernel.org,
        =?utf-8?q?T=C3=B6r=C3=B6k=20Edwin?= <edwintorok@gmail.com>
 Subject: [PATCH 0/4] ftrace: add userspace stacktrace support and semaphore-latency tracer
-Date: Sun, 12 Oct 2008 16:12:00 +0300
-Message-Id: <1223817124-27239-2-git-send-email-edwintorok@gmail.com>
+Date: Sun, 12 Oct 2008 16:11:59 +0300
+Message-Id: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
-References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
