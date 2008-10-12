@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbYJLSXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYJLSZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbYJLSXU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 14:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYJLSXI
+	id S1755392AbYJLSZf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 14:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYJLSZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 14:23:08 -0400
-Received: from kroah.org ([198.145.64.141]:36576 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753482AbYJLSXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 14:23:07 -0400
-Date: Sun, 12 Oct 2008 11:21:03 -0700
-From: Greg KH <greg@kroah.com>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: WARNING on 2.6.27-rc9: sysfs: duplicate filename
-	'usbdev5.5_ep89' can not be created
-Message-ID: <20081012182103.GB21072@kroah.com>
-References: <E1KnKmy-0006EN-Ai@closure.thunk.org>
+	Sun, 12 Oct 2008 14:25:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34955 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753633AbYJLSZ1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 14:25:27 -0400
+Message-ID: <48F24105.70402@redhat.com>
+Date: Sun, 12 Oct 2008 14:25:09 -0400
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1KnKmy-0006EN-Ai@closure.thunk.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] ftrace: add userspace stacktrace support and semaphore-latency
+ tracer
+References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
+In-Reply-To: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 07, 2008 at 06:12:20PM -0400, Theodore Ts'o wrote:
-> 
-> I'm getting a whole series of warnings running 2.6.27-rc9.  I haven't
-> seen them before, but then again it's been a while since I've tried
-> charging my Blackberry via the USB port, which is apparently what
-> triggered this.  Seems to be mostly harmless, other than dirtying up my
-> logs.  :-)
-> 
-> Is this a known problem?
+Török Edwin wrote:
+> Hi,
+>
+> This patch series is a draft implementation of a semaphore-latency tracer.
+> I would appreciate feedback on these patches so that they can be merged into
+> mainline.
+>   
+Hi!
 
-It was in the past, but should have been fixed in .27-rc.
+You caught me at a bad time. I'm just about to leave for NYC for the 
+Linux End Users conference. I'll be back on Wednesday. Please send any 
+new emails to rostedt@goodmis.org. I will not be checking my Red Hat 
+account when I'm away.
 
-There should be a lot of usb disconnect/connect events happening at the
-same time, right?  Care to post the whole log?
+I'll try to look at the patches this week, but I can't promise anything. 
+I'll forward your patches to my goodmis account, and if I have time, 
+I'll look at them.
 
-Oh, and for USB stuff, try CC: linux-usb@vger.kernel.org, it works much
-better :)
+-- Steve
 
-thanks,
 
-greg k-h
