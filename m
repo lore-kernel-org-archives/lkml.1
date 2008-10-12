@@ -1,36 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYJLX2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYJLXhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbYJLX2S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 19:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYJLX2J
+	id S1755271AbYJLXhT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 19:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYJLXhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 19:28:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45761 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032AbYJLX2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 19:28:08 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0810121245260.3402@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0810121245260.3402@nehalem.linux-foundation.org> <20081010235755.12643.43818.stgit@warthog.procyon.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] MN10300: MEI are renaming themselves to Panasonic
-Date: Mon, 13 Oct 2008 00:27:50 +0100
-Message-ID: <21119.1223854070@redhat.com>
+	Sun, 12 Oct 2008 19:37:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42282 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754032AbYJLXhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 19:37:04 -0400
+Date: Sun, 12 Oct 2008 19:37:03 -0400
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: pull request for range-hrtimer updates
+Message-ID: <20081012193703.2b45319e@infradead.org>
+In-Reply-To: <20081010113749.GA21937@elte.hu>
+References: <20081008083320.41840108@infradead.org>
+	<20081009123345.GC2952@elte.hu>
+	<20081010113749.GA21937@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, 10 Oct 2008 13:37:49 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> Hmm. Somehow I'd expect this to also move to late in the file to keep 
-> things in alphabetical order. No?
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > pulled into tip/timers/range-hrtimers, thanks Arjan!
+> 
+> i have put these latest bits into tip/master today and -tip testing 
+> found a boot failure on a 32-bit testbox: a boot crash in 
+> hrtimer_interrupt():
+> note highres=0 and hpet=disable. You probably need to try these if
+> you want to trigger the same crash.
+> 
+> Reverting these updates from tip/master solves the crash.
 
-Good point.  Do you want me to redo my patch on top of Randy's?
+yeah there was an interesting race there.
+If you go idle the first time it's also the first time you decide to
+not do hrtimers anymore.. and my code didn't cope with that well.
 
-David
+please repull
+ssh://master.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-hrtimer.git
+to also get the fix
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
+
