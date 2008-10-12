@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYJLSZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYJLSr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbYJLSZf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 14:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYJLSZ1
+	id S1755253AbYJLSr1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 14:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYJLSrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 14:25:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34955 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753633AbYJLSZ1 convert rfc822-to-8bit (ORCPT
+	Sun, 12 Oct 2008 14:47:15 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:41343 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754070AbYJLSrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 14:25:27 -0400
-Message-ID: <48F24105.70402@redhat.com>
-Date: Sun, 12 Oct 2008 14:25:09 -0400
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Sun, 12 Oct 2008 14:47:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cKvFel/gGFE/OERXdqOgLK9jdNxfB9tVQgHjmMfQ5eaS/R6A/s0dNKKnjR17DvRlgi
+         a8YDEnMG/bM/otI0GZ8hux+ATF0u5x8v4+cirwUQdN4hBFJAouHDKll/7ek9IrH2U3Ln
+         gHccGo8neL2Cfq4uVTHl4FYT168Xepsa6FNHs=
+Message-ID: <524f69650810121147j4ad79f77p348a3814b7f05d01@mail.gmail.com>
+Date: Sun, 12 Oct 2008 13:47:12 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-cifs-client] Fwd: [PATCH] Fix CIFS compilation with CONFIG_KEYS unset
+Cc: "Jeff Layton" <jlayton@redhat.com>, "David Miller" <davem@davemloft.net>,
+       netdev@vger.kernel.org,
+       "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>,
+       cooldavid@cooldavid.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200810121909.53233.rjw@sisk.pl>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-CC: mingo@elte.hu, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] ftrace: add userspace stacktrace support and semaphore-latency
- tracer
-References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
-In-Reply-To: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200810121315.37203.rjw@sisk.pl>
+	 <524f69650810120953t2ec8100cpdddc3ddfce0406d9@mail.gmail.com>
+	 <524f69650810120957t1a81f23lf3fd75fee78e72c3@mail.gmail.com>
+	 <200810121909.53233.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Török Edwin wrote:
-> Hi,
+On Sun, Oct 12, 2008 at 12:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday, 12 of October 2008, Steve French wrote:
+>> On Sun, Oct 12, 2008 at 11:53 AM, Steve French <smfrench@gmail.com> wrote:
+>> > On Sun, Oct 12, 2008 at 8:59 AM, Jeff Layton <jlayton@redhat.com> wrote:
+>> >> On Sun, 12 Oct 2008 08:40:39 -0500
+>> >> "Steve French" <smfrench@gmail.com> wrote:
+>> >>
+>> >> Actually, I like Adrian/Rafael's fix better. I think we should avoid
+>> >> cluttering up the code with #ifdef's where possible. key_put() already
+>> >> is a no-op when CONFIG_KEYS is disabled. We might as well do the same
+>> >> thing with key_revoke().
+>> > I don't think it matters much - but we probably shouldn't be
+>> > overriding global functions.
+>>
+>> To clarify, I like fixing it in keys.h better than overriding it in
+>> cifs, but in the meantime we need an ifdef in cifs until keys.h
+>> changes.
 >
-> This patch series is a draft implementation of a semaphore-latency tracer.
-> I would appreciate feedback on these patches so that they can be merged into
-> mainline.
->   
-Hi!
+> Well, adding an empty definition for key_revoke() in the !CONFIG_KEYS case
+> makes sense anyway IMO.
 
-You caught me at a bad time. I'm just about to leave for NYC for the 
-Linux End Users conference. I'll be back on Wednesday. Please send any 
-new emails to rostedt@goodmis.org. I will not be checking my Red Hat 
-account when I'm away.
+I agree.  ACKED
 
-I'll try to look at the patches this week, but I can't promise anything. 
-I'll forward your patches to my goodmis account, and if I have time, 
-I'll look at them.
+-- 
+Thanks,
 
--- Steve
-
-
+Steve
