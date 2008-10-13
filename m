@@ -1,62 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbYJMUMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbYJMUNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760045AbYJMUMo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbYJMUFu
+	id S1760193AbYJMUNK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757867AbYJMUKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:05:50 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:53390 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbYJMUFk (ORCPT
+	Mon, 13 Oct 2008 16:10:37 -0400
+Received: from 1-1-4-20a.ras.sth.bostream.se ([82.182.72.90]:40122 "EHLO
+	amd.kenjo.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758645AbYJMUKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:05:40 -0400
-X-Greylist: delayed 47351 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Oct 2008 16:05:40 EDT
-Message-Id: <20081013195914.420949871@mail.of.borg>
-References: <20081013195846.674654386@mail.of.borg>
-User-Agent: quilt/0.46-1
-Date: Mon, 13 Oct 2008 21:58:50 +0200
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 04/18] m68k: Add NOTES to init data so its discarded at boot
-Content-Disposition: inline; filename=m68k-add-notes-to-init-data.diff
+	Mon, 13 Oct 2008 16:10:35 -0400
+X-Greylist: delayed 3002 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Oct 2008 16:10:34 EDT
+Subject: weird throughput on write to SATA disk
+From: kenneth johansson <ken@kenjo.org>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="=-a5jEonHpEAcXePTd3coj"
+Date: Mon, 13 Oct 2008 21:19:50 +0200
+Message-Id: <1223925629.3947.7.camel@duo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roman Zippel <zippel@linux-m68k.org>
 
-Add .note.gnu.build-id to init data so it's discarded at boot.
+--=-a5jEonHpEAcXePTd3coj
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-[Andreas Schwab] Use NOTES macro
+When writing data to /dev/sdb (that is the whole disk and no filesystem)
+it starts out ok around 100MB/sec but soon end up doing considerably
+worse. For prolonged times lasting several minutes it hovers in the
+20-30MB/sec. 
 
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/kernel/vmlinux-std.lds |    1 +
- 1 file changed, 1 insertion(+)
+This happens on two different SATA disk one samsung and one seagate and
+on both 2.6.26 and 2.6.27 kernel. The disk are connected to the external
+esata connector. Controller is 00:1f.2 SATA controller: Intel
+Corporation 82801HB (ICH8) 4 port SATA AHCI Controller (rev 02)
 
---- a/arch/m68k/kernel/vmlinux-std.lds
-+++ b/arch/m68k/kernel/vmlinux-std.lds
-@@ -74,6 +74,7 @@ SECTIONS
-   .init.ramfs : { *(.init.ramfs) }
-   __initramfs_end = .;
- #endif
-+  NOTES
-   . = ALIGN(8192);
-   __init_end = .;
- 
+What could be the reason for this ?? reading is no problem.
 
--- 
-Gr{oetje,eeting}s,
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--=-a5jEonHpEAcXePTd3coj
+Content-Disposition: attachment; filename="log.png"
+Content-Type: image/png; name="log.png"
+Content-Transfer-Encoding: base64
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+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
+RU5ErkJggg==
+
+
+--=-a5jEonHpEAcXePTd3coj--
 
