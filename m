@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbYJMKOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765875AbYJMKQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759606AbYJMKOc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765533AbYJMKCR
+	id S1765875AbYJMKQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932497AbYJMKHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 06:02:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47828
+	Mon, 13 Oct 2008 06:07:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43595
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1763436AbYJMKCO (ORCPT
+	by vger.kernel.org with ESMTP id S932494AbYJMKHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 06:02:14 -0400
-Date: Mon, 13 Oct 2008 03:01:50 -0700 (PDT)
-Message-Id: <20081013.030150.96524866.davem@davemloft.net>
-To: cooloney@kernel.org
-Cc: ben@simtec.co.uk, s.hauer@pengutronix.de, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jherrero@hvsistemas.es
-Subject: Re: [PATCH 1/1] netdev: DM9000: Added typecasting to supress some
- warnings on Blackfin
+	Mon, 13 Oct 2008 06:07:10 -0400
+Date: Mon, 13 Oct 2008 03:06:46 -0700 (PDT)
+Message-Id: <20081013.030646.123824121.davem@davemloft.net>
+To: alan@lxorguk.ukuu.org.uk
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] Rationalise email address: Network Specific Parts
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1223889009-31336-1-git-send-email-cooloney@kernel.org>
-References: <1223889009-31336-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <20081013105453.35eece02@lxorguk.ukuu.org.uk>
+References: <20081013105453.35eece02@lxorguk.ukuu.org.uk>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,18 +27,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bryan Wu <cooloney@kernel.org>
-Date: Mon, 13 Oct 2008 17:10:09 +0800
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Mon, 13 Oct 2008 10:54:53 +0100
 
-> From: Javier Herrero <jherrero@hvsistemas.es>
+> Clean up the various different email addresses of mine listed in the code
+> to a single current and valid address. As Dave says his network merges
+> for 2.6.28 are now done this seems a good point to send them in where
+> they won't risk disrupting real changes.
 > 
-> Signed-off-by: Javier Herrero <jherrero@hvsistemas.es>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-This is not only inelegant, it'll likely break things on
-64-bit MIPS or any other case where the upper 32-bit matter.
-
-I'd rather see Blackfin fix it's I/O accessor prototypes
-to take a proper __iomem pointer.
-
-This patch won't be applied.
+I'm happy to suck this in via my net-2.6 tree.
