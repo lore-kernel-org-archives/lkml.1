@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbYJMIOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbYJMIP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbYJMIOP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbYJMIN6
+	id S1756636AbYJMIP7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYJMIPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:13:58 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:43394 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754976AbYJMIN5 (ORCPT
+	Mon, 13 Oct 2008 04:15:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57814
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755134AbYJMIPt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:13:57 -0400
-Message-ID: <48F30315.1070909@fr.ibm.com>
-Date: Mon, 13 Oct 2008 10:13:09 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>, jeremy@goop.org, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Oren Laadan <orenl@cs.columbia.edu>, Andrey Mirkin <major@openvz.org>
-Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
-References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu> <1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu> <1223571036.11830.32.camel@nimitz> <20081010153951.GD28977@elte.hu>
-In-Reply-To: <20081010153951.GD28977@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Oct 2008 04:15:49 -0400
+Date: Mon, 13 Oct 2008 01:15:25 -0700 (PDT)
+Message-Id: <20081013.011525.31258522.davem@davemloft.net>
+To: mathieu.desnoyers@polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sparc64: Optimized immediate value implementation build error
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081003201007.GA16025@Krystal>
+References: <20081003201007.GA16025@Krystal>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Fri, 3 Oct 2008 16:10:07 -0400
+
+> I ran a cross-compiler on the -lttng tree
+> git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
 > 
->> On Thu, 2008-10-09 at 15:44 +0200, Ingo Molnar wrote:
->>> there might be races as well, especially with proxy state - and 
->>> current->flags updates are not serialized.
->>>
->>> So maybe it should be a completely separate flag after all? Stick it 
->>> into the end of task_struct perhaps.
->> What do you mean by proxy state?  nsproxy?
+> to build the sparc64 arch, and ran across this build error :
 > 
-> it's a concept: one task installing some state into another task (which 
-> state must be restored after a checkpoint event), while that other task 
-> is running. Such as a pi-futex state for example.
+> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h: In function `do_fork':
+> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: warning: asm operand 1 probably doesn't match constraints
+> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: error: impossible constraint in `asm'
+> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: warning: 'value' might be used uninitialized in this function
+> make[2]: *** [kernel/fork.o] Error 1
 > 
-> So a task can acquire state not just by its own doing, but via some 
-> other task too.
+> I think it's caused by :
+> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commit;h=c76bfa90a6eb02651368a152b3646aa672d9e625
 
-thinking aloud,
+It can't be "caused by" that commit because that's the initial
+immediate value sparc64 support I wrote and the tree very much compiled
+properly when I did test builds way back then.
 
-hmm, that's rather complex, because we have to take into account the 
-kernel stack, no ? This is what Andrey was trying to solve in his patchset 
-back in September :
-
-	http://lkml.org/lkml/2008/9/3/96
-
-the restart phase simulates a clone and switch_to to (not) restore the kernel 
-stack. right ? 
-
-the self checkpoint and self restore syscalls, like Oren is proposing, are 
-simpler but they require the process cooperation to be triggered. we could
-image doing that in a special signal handler which would allow us to jump
-in the right task context. 
-
-I don't have any preference but looking at the code of the different patchsets
-there are some tricky areas and I'm wondering which path is easier, safer, 
-and portable. 
-
-C.
-
+I don't have time to look further into this right now, sorry.
