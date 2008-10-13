@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYJMEvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbYJMFM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbYJMEvf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 00:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYJMEv1
+	id S1754521AbYJMFM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 01:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYJMFMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 00:51:27 -0400
-Received: from smtp.flash.net.br ([201.46.240.48]:50655 "EHLO
-	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbYJMEv1 (ORCPT
+	Mon, 13 Oct 2008 01:12:20 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:10913 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbYJMFMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 00:51:27 -0400
-Date: Mon, 13 Oct 2008 01:51:17 -0300
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, rbrito@ime.usp.br
-Subject: [PATCH] powerpc: enable heap randomization for linkstations
-Message-ID: <20081013045116.GA11637@ime.usp.br>
-References: <20081013040703.GA11059@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081013040703.GA11059@ime.usp.br>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 13 Oct 2008 01:12:20 -0400
+Date: Sun, 12 Oct 2008 22:12:12 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jianjun Kong <kongjianjun@gmail.com>
+Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATH] MAINTAINERS Move the sentence to right position
+Message-Id: <20081012221212.9eaaa63f.randy.dunlap@oracle.com>
+In-Reply-To: <20081013032041.GA7598@ubuntu>
+References: <20081013032041.GA7598@ubuntu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
-Randomization" option enabled.
+On Mon, 13 Oct 2008 11:20:41 +0800 Jianjun Kong wrote:
 
-Since some of these machines are facing the internet, it helps to have
-heap randomization enabled. This patch enables it.
+> From: Jianjun Kong <kongjianjun@gmail.com>
+> 
+> There is a list of status follow "S:...", so "F:..." must be move to end.
+> 
+> Signed-off-by: Jianjun Kong <kongjianjun@gmail.com>
 
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
+Thanks for catching that.
+
+> ---
+>  MAINTAINERS |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index fb1aad7..97c6387 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -73,7 +73,6 @@ L: Mailing list that is relevant to this area
+>  W: Web-page with status/info
+>  T: SCM tree type and location.  Type is one of: git, hg, quilt.
+>  S: Status, one of the following:
+> -F: Applicable files and/or directories
+>  
+>  	Supported:	Someone is actually paid to look after this.
+>  	Maintained:	Someone actually looks after it.
+> @@ -84,6 +83,7 @@ F: Applicable files and/or directories
+>  	Obsolete:	Old code. Something tagged obsolete generally means
+>  			it has been replaced by a better system and you
+>  			should be using that.
+> +F: Applicable files and/or directories
+>  
+>  3C505 NETWORK DRIVER
+>  P:	Philip Blundell
+
 
 ---
-
---- linux/arch/powerpc/configs/linkstation_defconfig.old	2008-10-13 00:33:00.000000000 -0300
-+++ linux/arch/powerpc/configs/linkstation_defconfig	2008-10-13 01:11:28.000000000 -0300
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.27-rc4
--# Thu Aug 21 00:52:05 2008
-+# Linux kernel version: 2.6.27
-+# Mon Oct 13 01:11:21 2008
- #
- # CONFIG_PPC64 is not set
- 
-@@ -101,7 +101,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--CONFIG_COMPAT_BRK=y
-+# CONFIG_COMPAT_BRK is not set
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
-@@ -1211,7 +1211,6 @@ CONFIG_USB_STORAGE=m
- # CONFIG_USB_STORAGE_ALAUDA is not set
- # CONFIG_USB_STORAGE_ONETOUCH is not set
- # CONFIG_USB_STORAGE_KARMA is not set
--# CONFIG_USB_STORAGE_SIERRA is not set
- # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
- # CONFIG_USB_LIBUSUAL is not set
- 
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+~Randy
