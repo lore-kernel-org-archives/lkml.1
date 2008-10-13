@@ -1,46 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbYJMJq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762198AbYJMJqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932113AbYJMJq1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760963AbYJMJhi
+	id S1762198AbYJMJqq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbYJMJhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:37:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:18006 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760966AbYJMJhg (ORCPT
+	Mon, 13 Oct 2008 05:37:42 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48649 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760981AbYJMJhk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:37:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ILMVvvqkQRYqjcdT4N3zBEXokede8kGr/ABBgHIgwAzp1x3kaU0LhS4bZmbwzJlN8b
-         u9tgxzADT4aW/wK+y+6+3acu5fk2Ydkpc/a85CsdpPReKjX5vrc0+9xPs2tZdpiywHF2
-         IuvmXX1A3fSTVRDOJT4DR/RAHAkUWOlEdo8qc=
-Message-ID: <c62985530810130237t44dc341s2806d106e6f83a7b@mail.gmail.com>
-Date: Mon, 13 Oct 2008 11:37:34 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC][PATCH] tty: remove the BKL in n_tty.c
-Cc: "Ingo Molnar" <mingo@elte.hu>, Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081013102458.3161441d@lxorguk.ukuu.org.uk>
+	Mon, 13 Oct 2008 05:37:40 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 36/80] tty: use krefs to protect driver module counts
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 13 Oct 2008 10:37:36 +0100
+Message-ID: <20081013093731.21645.21200.stgit@localhost.localdomain>
+In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
+References: <20081013092758.21645.2359.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081013084719.03972D1B9DE@perso1.free.fr>
-	 <20081013102458.3161441d@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/13 Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> There are patches pending for this already along with other n_tty
-> ordering fixes, they will enter the ttydev tree once the current ttydev
-> tree reaches Linus.
->
-> Alan
->
+From: Alan Cox <alan@redhat.com>
 
-Ok thanks.
+The tty layer keeps driver module counts that are used so the driver knows
+when it can be unloaded. For obvious reasons we want to tie that to the
+refcounting properly.
+
+At this point the driver side itself isn't refcounted nicely but we can do
+that later and kref the drivers.
+
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
+
+ drivers/char/tty_io.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
+
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 310e070..fa162c9 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1293,6 +1293,12 @@ static int init_dev(struct tty_driver *driver, int idx,
+ 		o_tty = alloc_tty_struct();
+ 		if (!o_tty)
+ 			goto free_mem_out;
++		if (!try_module_get(driver->other->owner)) {
++			/* This cannot in fact currently happen */
++			free_tty_struct(o_tty);
++			o_tty = NULL;
++			goto free_mem_out;
++		}
+ 		initialize_tty_struct(o_tty);
+ 		o_tty->driver = driver->other;
+ 		o_tty->ops = driver->ops;
+@@ -1411,8 +1417,10 @@ end_init:
+ 	/* Release locally allocated memory ... nothing placed in slots */
+ free_mem_out:
+ 	kfree(o_tp);
+-	if (o_tty)
++	if (o_tty) {
++		module_put(o_tty->driver->owner);
+ 		free_tty_struct(o_tty);
++	}
+ 	kfree(ltp);
+ 	kfree(tp);
+ 	free_tty_struct(tty);
+@@ -1447,6 +1455,7 @@ release_mem_out:
+ static void release_one_tty(struct kref *kref)
+ {
+ 	struct tty_struct *tty = container_of(kref, struct tty_struct, kref);
++	struct tty_driver *driver = tty->driver;
+ 	int devpts = tty->driver->flags & TTY_DRIVER_DEVPTS_MEM;
+ 	struct ktermios *tp;
+ 	int idx = tty->index;
+@@ -1471,6 +1480,7 @@ static void release_one_tty(struct kref *kref)
+ 	tty->magic = 0;
+ 	/* FIXME: locking on tty->driver->refcount */
+ 	tty->driver->refcount--;
++	module_put(driver->owner);
+ 
+ 	file_list_lock();
+ 	list_del_init(&tty->tty_files);
+@@ -1506,20 +1516,15 @@ EXPORT_SYMBOL(tty_kref_put);
+  *	of ttys that the driver keeps.
+  *		FIXME: should we require tty_mutex is held here ??
+  *
+- *	FIXME: We want to defer the module put of the driver to the
+- *	destructor.
+  */
+ static void release_tty(struct tty_struct *tty, int idx)
+ {
+-	struct tty_driver *driver = tty->driver;
+-
+ 	/* This should always be true but check for the moment */
+ 	WARN_ON(tty->index != idx);
+ 
+ 	if (tty->link)
+ 		tty_kref_put(tty->link);
+ 	tty_kref_put(tty);
+-	module_put(driver->owner);
+ }
+ 
+ /*
+
