@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbYJMODq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbYJMOEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbYJMODq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYJMODd
+	id S1755844AbYJMOEZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYJMOEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:03:33 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:36772 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752804AbYJMODc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:03:32 -0400
-Date: Mon, 13 Oct 2008 17:02:30 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Phil Endecott <phil_wueww_endecott@chezphil.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
-Message-ID: <20081013140228.GG29938@cs181140183.pp.htv.fi>
-References: <1223895506638@dmwebmail.dmwebmail.chezphil.org> <87zll8r86h.fsf@basil.nowhere.org> <20081013091848.7dcdaaac@infradead.org> <20081013133051.GL12131@one.firstfloor.org> <20081013093014.607c5925@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20081013093014.607c5925@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 13 Oct 2008 10:04:12 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40635 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753106AbYJMOEK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 10:04:10 -0400
+Date: Mon, 13 Oct 2008 15:02:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: I have returned!
+Message-ID: <20081013150231.294b38b6@lxorguk.ukuu.org.uk>
+In-Reply-To: <48F34CB9.3020000@pobox.com>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48F2F138.6020103@kernel.org>
+	<48F34CB9.3020000@pobox.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 09:30:14AM -0400, Arjan van de Ven wrote:
-> On Mon, 13 Oct 2008 15:30:51 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > Core2 instruction set with tune=generic is still the best to set.
-> > 
-> > Not sure that is true. These option are mostly for the compiler.
-> 
-> exactly, and our benchmarks show that tune=generic is best right now
-> for Atom. 
-> (586 scheduling sounds nice, but the pipelines are rather different.
-> And the benchmarks don't lie..  ;-)
+> I have returned!  muhahahahahaha....
 
-That sounds a bit dangerous since tune=generic is documented to change 
-the semantics between gcc versions to better fit more recent CPUs
-(there's even a small difference between gcc 4.2 and gcc 4.3):
+Oh good..
+--
 
-          As new processors are deployed in the marketplace, the
-          behavior of this option will change.  Therefore, if you
-          upgrade to a newer version of GCC, the code generated option
-          will change to reflect the processors that were most common
-          when that version of GCC was released.
+ibmtr: PCMCIA IBMTR is ok on 64bit
+
+From: Alan Cox <alan@redhat.com>
+
+For whatever value of 'OK' can be applied to the use of token ring. Seems
+the 32bit to 64bit cleanups missed re-enabling the pcmcia driver
+
+Closes #7133 and also reviewed the code in question
+
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
+
+ drivers/net/pcmcia/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff --git a/drivers/net/pcmcia/Kconfig b/drivers/net/pcmcia/Kconfig
+index e8f55d8..9b8f793 100644
+--- a/drivers/net/pcmcia/Kconfig
++++ b/drivers/net/pcmcia/Kconfig
+@@ -111,7 +111,7 @@ config ARCNET_COM20020_CS
+ 
+ config PCMCIA_IBMTR
+ 	tristate "IBM PCMCIA tokenring adapter support"
+-	depends on IBMTR!=y && TR && !64BIT
++	depends on IBMTR!=y && TR
+ 	help
+ 	  Say Y here if you intend to attach this type of Token Ring PCMCIA
+ 	  card to your computer. You then also need to say Y to "Token Ring
