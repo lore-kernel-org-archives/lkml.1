@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760070AbYJMSo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbYJMSvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760070AbYJMSo5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 14:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYJMSot
+	id S1760207AbYJMSvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 14:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbYJMSvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 14:44:49 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:44280 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbYJMSot (ORCPT
+	Mon, 13 Oct 2008 14:51:08 -0400
+Received: from smtp6.tech.numericable.fr ([82.216.111.42]:35603 "EHLO
+	smtp6.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754514AbYJMSvH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 14:44:49 -0400
-Date: Mon, 13 Oct 2008 13:44:43 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>,
-       linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: enable heap randomization for linkstations
-Message-ID: <20081013184443.GA20612@ld0162-tx32.am.freescale.net>
-References: <20081013040703.GA11059@ime.usp.br> <20081013045116.GA11637@ime.usp.br> <Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0810132003350.9041@axis700.grange>
-User-Agent: Mutt/1.4.1i
+	Mon, 13 Oct 2008 14:51:07 -0400
+Message-ID: <48F39A6C.3080809@numericable.fr>
+Date: Mon, 13 Oct 2008 20:58:52 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008092811)
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2.6.27-git2] compilation warning for arch/x86/kernel/xsave.c
+References: <48F1A789.3060707@numericable.fr> <20081013183940.GA7829@linux-os.sc.intel.com>
+In-Reply-To: <20081013183940.GA7829@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 08:05:09PM +0200, Guennadi Liakhovetski wrote:
-> On Mon, 13 Oct 2008, Rog�rio Brito wrote:
-> 
-> > The current defconfig for Linkstation/Kuroboxes has the "Disable Heap
-> > Randomization" option enabled.
-> > 
-> > Since some of these machines are facing the internet, it helps to have
-> > heap randomization enabled. This patch enables it.
-> 
-> Same as the previous patch - this is one of options, that users select 
-> according to their needs. If any specific distribution enables this option 
-> by default in their kernels, they can do this too, don't think this is 
-> critical enough to patch the defconfig.
+Suresh Siddha wrote:
+> On Sun, Oct 12, 2008 at 12:30:17AM -0700, Rufus&  Azrael wrote:
+>    
+>> Hi Suresh,
+>>
+>>
+>> Your commit ed405958057ca6a8c4c9178a7a3b1167fabb45f5 causes this
+>> compilation warning on xsave.c :
+>>
+>>      
+>>> arch/x86/kernel/xsave.c: In function ‘save_i387_xstate’:
+>>> arch/x86/kernel/xsave.c:98: attention : ignoring return value of
+>>> ‘__clear_user’, declared with attribute warn_unused_result
+>>>        
+>
+> Thanks Rufus for the report and thanks Ingo for pushing the fix.
+>
+> I wonder why CONFIG_ENABLE_MUST_CHECK is not turned on by default?
+> I turned this option on, in the list of configs I use.
+>
+> thanks,
+> suresh
+>
+>    
+Hi Suresh,
 
-Just because users/distros can change it doesn't mean it's pointless to
-discuss what default is sane, and make changes if the current default
-isn't.
 
-For security-related options it's usually best to default to the more
-secure state, especially since the option description talks about it
-being needed mainly for libc5 compatibility -- did libc5 ever even exist
-for powerpc?  
+This option is set to Y in my .config, but I don't remember if it was 
+volontary or by default.
 
-The only reason it was turned on in the first place was likely the
-"default y", which in turn is there to avoid breaking old x86 distros.
+Regards.
 
--Scott
