@@ -1,52 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbYJMK66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYJMLKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759936AbYJMK66 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbYJMK6t
+	id S1758066AbYJMLKc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 07:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbYJMLKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 06:58:49 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:54883 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755525AbYJMK6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 06:58:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=content-disposition:subject:from:date:mime-version:to:cc
-         :content-type:content-transfer-encoding:message-id;
-        b=ccshBU8N/ljwMlpTUcRUED19y8IMz4jdR+pZyTKxzSnp5MzofZlc8dFOLAyJOlTR8m
-         ICR8ND5lfY7CUtmI72RUFGYS/VCLt/zelgMyEhZtsZSzCzrzjj8D0BqCP1GB+waMBtK9
-         Kfd7mkS+zfqeKEDNyQdPq5ANPPtI88Odi0Vu8=
-Content-Disposition: inline
-Subject: [PATCH] led-calss.c: trivial fix on comment
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-Date: Mon, 13 Oct 2008 18:58:43 +0800
+	Mon, 13 Oct 2008 07:10:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50243 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756409AbYJMLKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 07:10:22 -0400
+Message-ID: <48F32BF6.8010109@kernel.org>
+Date: Mon, 13 Oct 2008 20:07:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: rpurdie@rpsys.net
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH] block: add partition attribute for partition number
+References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org> <48EFF84B.5060108@kernel.org> <48F00476.6030108@zytor.com> <48F3113F.7090905@kernel.org>
+In-Reply-To: <48F3113F.7090905@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810131858.43141.qhfeng.kernel@gmail.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Oct 2008 11:09:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Function led_classdev_unregister() has not a prefix "__",
-juset to remove it.
+With extended devt, finding out the partition number becomes a bit
+more challenging as subtracting the minor number from that of the
+parent device doesn't work anymore.  The only thing left is parsing
+the partition name which is brittle and not exactly universal (some
+have '-' between the device name and partition number while others
+don't).  This patch introduced partition attribute which contains the
+partition number of the device.  This should make finding partitions
+and its index easier.
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
+This problem and solution were suggested by H. Peter Anvin.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: H. Peter Anvin <hpa@zytor.com>
 ---
-diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-index 559a408..3c5215c 100644
---- a/drivers/leds/led-class.c
-+++ b/drivers/leds/led-class.c
-@@ -147,7 +147,7 @@ err_out:
- EXPORT_SYMBOL_GPL(led_classdev_register);
+ fs/partitions/check.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 7408227..4684a49 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -195,6 +195,14 @@ check_partition(struct gendisk *hd, struct block_device *bdev)
+ 	return ERR_PTR(res);
+ }
  
- /**
-- * __led_classdev_unregister - unregisters a object of led_properties class.
-+ * led_classdev_unregister - unregisters a object of led_properties class.
-  * @led_cdev: the led device to unregister
-  *
-  * Unregisters a previously registered via led_classdev_register object.
++static ssize_t part_partition_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	struct hd_struct *p = dev_to_part(dev);
++
++	return sprintf(buf, "%d\n", p->partno);
++}
++
+ static ssize_t part_start_show(struct device *dev,
+ 			       struct device_attribute *attr, char *buf)
+ {
+@@ -260,6 +268,7 @@ ssize_t part_fail_store(struct device *dev,
+ }
+ #endif
+ 
++static DEVICE_ATTR(partition, S_IRUGO, part_partition_show, NULL);
+ static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
+ static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+ static DEVICE_ATTR(stat, S_IRUGO, part_stat_show, NULL);
+@@ -269,6 +278,7 @@ static struct device_attribute dev_attr_fail =
+ #endif
+ 
+ static struct attribute *part_attrs[] = {
++	&dev_attr_partition.attr,
+ 	&dev_attr_start.attr,
+ 	&dev_attr_size.attr,
+ 	&dev_attr_stat.attr,
