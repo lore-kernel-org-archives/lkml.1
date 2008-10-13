@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762933AbYJMKNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932582AbYJMKOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762933AbYJMKNl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765020AbYJMJ72
+	id S932582AbYJMKOI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757556AbYJMKCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:59:28 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:42989 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763138AbYJMJ71 (ORCPT
+	Mon, 13 Oct 2008 06:02:15 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37271 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763703AbYJMKCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:59:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=QE0ITG2mqa7V84LuBuBRQ+1IRHuEAfXYM6JzkmX12QUq5toET6c787CjPPXGmqByWC
-         cKXaI2NpjKQC9VQ0MaV112WTxbKY7myzVMc+etJig+dnIQv0t099EP6MAHUm+f5TXrce
-         KRkVHjAKQrslZ1FgN1v8NULnZY0TbSKy5RKz8=
-Message-ID: <48F31BF9.6030109@gmail.com>
-Date: Mon, 13 Oct 2008 11:59:21 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Bryan Wu <cooloney@kernel.org>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Blackfin OTP Char Driver: add writing support of
- OTP
-References: <1223889199-31658-1-git-send-email-cooloney@kernel.org>	 <48F316C4.1070603@gmail.com> <8bd0f97a0810130243q39581ef5y704c500c8ac3ee1c@mail.gmail.com>
-In-Reply-To: <8bd0f97a0810130243q39581ef5y704c500c8ac3ee1c@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Oct 2008 06:02:12 -0400
+Date: Mon, 13 Oct 2008 11:01:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Adam =?us-ascii?B?VGxhX19rYQ==?= <atlka@pg.gda.pl>, 7eggert@gmx.de,
+       linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH 0/2] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081013110125.5e3e5fa6@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LSU.0.999.0810131155280.5750@be1.lrz>
+References: <bjXel-4CU-17@gated-at.bofh.it>
+	<bjYap-5Q0-25@gated-at.bofh.it>
+	<bk30i-3Gx-1@gated-at.bofh.it>
+	<bk6AV-8ms-7@gated-at.bofh.it>
+	<bkrvO-1HF-49@gated-at.bofh.it>
+	<blePJ-6rI-3@gated-at.bofh.it>
+	<blmDC-7ZU-7@gated-at.bofh.it>
+	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
+	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
+	<20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
+	<20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
+	<20081012195957.50feada3@merlin.oi.pg.gda.pl>
+	<20081012190312.0bd04ab8@lxorguk.ukuu.org.uk>
+	<20081012210140.15cecf78@merlin.oi.pg.gda.pl>
+	<20081012212244.117852e0@lxorguk.ukuu.org.uk>
+	<alpine.LSU.0.999.0810131155280.5750@be1.lrz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/13/2008 11:43 AM, Mike Frysinger wrote:
-> On Mon, Oct 13, 2008 at 05:37, Jiri Slaby wrote:
->> On 10/13/2008 11:13 AM, Bryan Wu wrote:
->>> @@ -123,18 +132,95 @@ static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t
->>>       if (mutex_lock_interruptible(&bfin_otp_lock))
->>>               return -ERESTARTSYS;
->>>
->>> -     /* need otp_init() documentation before this can be implemented */
->>> +     stampit();
->>> +
->>> +     timing = bfin_otp_init_timing();
->>> +     if (timing == 0) {
->>> +             mutex_unlock(&bfin_otp_lock);
->>> +             return -EIO;
->>> +     }
->>> +
->>> +     base_flags = OTP_CHECK_FOR_PREV_WRITE;
->>> +
->>> +     bytes_done = 0;
->>> +     page = *pos / (sizeof(u64) * 2);
->>> +     while (bytes_done < count) {
->>> +             flags = base_flags | (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
->>> +             stamp("processing page %i (0x%x:%s) from %p", page, flags,
->>> +                     (flags & OTP_UPPER_HALF ? "upper" : "lower"), buff + bytes_done);
->>> +             if (copy_from_user(&content, buff + bytes_done, sizeof(content))) {
->>> +                     bytes_done = -EFAULT;
->>> +                     break;
->>> +             }
->>> +             ret = bfrom_OtpWrite(page, flags, &content);
->>> +             if (ret & OTP_MASTER_ERROR) {
->>> +                     stamp("error from otp: 0x%x", ret);
->>> +                     bytes_done = -EIO;
->>> +                     break;
->>> +             }
->>> +             if (flags & OTP_UPPER_HALF)
->>> +                     ++page;
->>> +             bytes_done += sizeof(content);
->>> +             *pos += sizeof(content);
->> What happens to pos if it fails later?
+On Mon, 13 Oct 2008 11:59:52 +0200 (CEST)
+Bodo Eggert <7eggert@gmx.de> wrote:
+
+> On Sun, 12 Oct 2008, Alan Cox wrote:
 > 
-> there is no state maintained in the hardware.  the pos gets updated
-> only when a half-page actually gets processed.  so there is no
-> "later".
-
-Sure there is. Next iteration of the loop. I.e. what happens if bfrom_OtpWrite
-fails for the second time?
-
->> You should change (and check) allow_writes under the mutex anyway.
+> > > That is why I propose usage of real_tty in ioctl() handling:
+> > > 
+> > > case TIOCGWINSZ:
+> > >                 return tiocgwinsz(real_tty, p);
+> > 
+> > Congratulations we've finally got there - and that is exactly the code in
+> > the current tty tree.
 > 
-> not really.  the mutex is to restrict access to the OTP hardware, not
-> driver state.  because there is none.  access to allow_writes is
-> atomic in the hardware anyways.
+> These patches are missing from 2.6.27. There you have:
+> 
+>     case TIOCGWINSZ:
+>         return tiocgwinsz(tty, p);
 
-Yeah, the assignment/check is.
+Yes I know. The rules for the stable tree are that it has to go upstream
+first. It has not gone upstream so it cannot go into the stable tree yet.
+As and when Linus takes the relevant changes I will send a set to the
+stable tree.
 
-But is this OK to you:
-PROCESS 1			PROCESS 2
-lock
-  set allow_writes
-write
-   check allow_writes
-   be interrupted
-				whatever
-				unlock
-				    unset allow_writes
-				sleep
-   mutex lock
-   the processing...
+Alan
