@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbYJMWKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbYJMWT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbYJMWKf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 18:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbYJMWKY
+	id S932098AbYJMWT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 18:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759428AbYJMWTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 18:10:24 -0400
-Received: from ns2.suse.de ([195.135.220.15]:41744 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753883AbYJMWKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 18:10:24 -0400
-Date: Mon, 13 Oct 2008 15:06:45 -0700
-From: Greg KH <gregkh@suse.de>
-To: Pavel Roskin <proski@gnu.org>
-Cc: linux-kernel@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH 25/25] staging: at76_usb wireless driver
-Message-ID: <20081013220645.GA16162@suse.de>
-References: <20081013213651.GA8338@kroah.com> <1223933888-8368-2-git-send-email-greg@kroah.com> <1223934573.26245.8.camel@dv> <20081013215134.GA15880@suse.de> <1223935091.26614.0.camel@dv>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223935091.26614.0.camel@dv>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 13 Oct 2008 18:19:15 -0400
+Received: from 1-1-4-20a.ras.sth.bostream.se ([82.182.72.90]:35250 "EHLO
+	amd.kenjo.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759233AbYJMWTO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 18:19:14 -0400
+Subject: Re: weird throughput on write to SATA disk
+From: kenneth johansson <ken@kenjo.org>
+To: Grant Grundler <grundler@google.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>
+References: <1223925629.3947.7.camel@duo>
+	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
+	 <1223932956.3947.22.camel@duo>
+	 <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 14 Oct 2008 00:19:11 +0200
+Message-Id: <1223936351.3947.41.camel@duo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 05:58:11PM -0400, Pavel Roskin wrote:
-> On Mon, 2008-10-13 at 14:51 -0700, Greg KH wrote:
-> > On Mon, Oct 13, 2008 at 05:49:33PM -0400, Pavel Roskin wrote:
-> > > On Mon, 2008-10-13 at 14:38 -0700, Greg KH wrote:
-> > > > From: Pavel Roskin <proski@gnu.org>
-> > > > 
-> > > > Add the at76_usb wireless driver to the staging tree while the
-> > > > other kernel driver (out of tree) gets rewritten to use the internal
-> > > > wireless stack.
-> > > > 
-> > > > This patch comes directly from the Fedora kernel tree, with only the
-> > > > directory placement of the files changed.
-> > > > 
-> > > > Signed-off-by: Pavel Roskin <proski@gnu.org>
-> > > 
-> > > I'm not going to support this code in any way.  I disclaim any
-> > > responsibility for this code.
-> > 
-> > Heh, that's fine with me, but as you did write this code, I do want to
-> > give you the proper credit.  I'll maintain it while it is in the staging
-> > tree.
-> > 
-> > You might want to poke John, as his version of this patch adds your name
-> > to the MAINTAINERS file in the Fedora kernels, something I don't think
-> > you want to have done :)
+On Mon, 2008-10-13 at 14:34 -0700, Grant Grundler wrote:
+> On Mon, Oct 13, 2008 at 2:22 PM, kenneth johansson <ken@kenjo.org> wrote:
+> > On Mon, 2008-10-13 at 14:07 -0700, Grant Grundler wrote:
+> >> On Mon, Oct 13, 2008 at 12:19 PM, kenneth johansson <ken@kenjo.org> wrote:
+> >> > When writing data to /dev/sdb (that is the whole disk and no filesystem)
+> >> > it starts out ok around 100MB/sec but soon end up doing considerably
+> >> > worse. For prolonged times lasting several minutes it hovers in the
+> >> > 20-30MB/sec.
+> >>
+> >> Is the application using "O_DIRECT"?
+> >
+> > no just open then write no fancy stuff
+> >
+> >> If not, could be issue with how VM writeback is (not) working.
+> >
+> > the access pattern is the simplest possible. Is there any knobs I could
+> > try to adjust.
+> >
+> >> Can you reproduce this using fio or even "dd"?
+> >> (See git://git.kernel.dk/fio)
+> >
+> > dd is having the same effect.
 > 
-> OK, I don't care as long as I don't get any bug reports or support
-> requests.
+> Can you try "dd oflag=direct if=/dev/null of=/dev/sdb bs=64k"?
 
-If you do, point them directly to me.
+I changed to use O_DIRECT and it's much more consistent now. 69-75 with
+74 about 95% of the time. the disk is supposed to have 105 115 sustained
+data rate. 
 
-thanks,
 
-greg k-h
+
