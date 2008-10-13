@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764750AbYJMKJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764260AbYJMKI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764750AbYJMKJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932114AbYJMJq3
+	id S1764260AbYJMKI4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbYJMJqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:46:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32932 "EHLO
+	Mon, 13 Oct 2008 05:46:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32929 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761155AbYJMJq1 (ORCPT
+	with ESMTP id S932082AbYJMJqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:46:27 -0400
+	Mon, 13 Oct 2008 05:46:12 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 80/80] tty: rename the remaining oddly named n_tty functions
+Subject: [PATCH 79/80] fs3270: Correct error returns
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:46:24 +0100
-Message-ID: <20081013094614.21645.47732.stgit@localhost.localdomain>
+Date: Mon, 13 Oct 2008 10:46:09 +0100
+Message-ID: <20081013094557.21645.65340.stgit@localhost.localdomain>
 In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
 References: <20081013092758.21645.2359.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -27,123 +27,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Original idea for this from a patch by Rodolfo Giometti which merges various
-bits of PPS support
+Drop the kernel lock further and also correct cases where we set rc to an
+error code, and then return 0
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/n_tty.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/s390/char/fs3270.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
 
-diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
-index c0285b9..efbfe96 100644
---- a/drivers/char/n_tty.c
-+++ b/drivers/char/n_tty.c
-@@ -26,7 +26,7 @@
-  *
-  * 2002/03/18   Implemented n_tty_wakeup to send SIGIO POLL_OUTs to
-  *		waiting writing processes-Sapan Bhatia <sapan@corewars.org>.
-- *		Also fixed a bug in BLOCKING mode where write_chan returns
-+ *		Also fixed a bug in BLOCKING mode where n_tty_write returns
-  *		EAGAIN
-  */
- 
-@@ -358,7 +358,7 @@ static int opost(unsigned char c, struct tty_struct *tty)
-  *	the simple cases normally found and helps to generate blocks of
-  *	symbols for the console driver and thus improve performance.
-  *
-- *	Called from write_chan under the tty layer write lock. Relies
-+ *	Called from n_tty_write under the tty layer write lock. Relies
-  *	on lock_kernel for the tty->column state.
-  */
- 
-@@ -1183,7 +1183,7 @@ static inline int input_available_p(struct tty_struct *tty, int amt)
-  *	@b: user data
-  *	@nr: size of data
-  *
-- *	Helper function to speed up read_chan.  It is only called when
-+ *	Helper function to speed up n_tty_read.  It is only called when
-  *	ICANON is off; it copies characters straight from the tty queue to
-  *	user space directly.  It can be profitably called twice; once to
-  *	drain the space from the tail pointer to the (physical) end of the
-@@ -1250,7 +1250,7 @@ static int job_control(struct tty_struct *tty, struct file *file)
- 	if (file->f_op->write != redirected_tty_write &&
- 	    current->signal->tty == tty) {
- 		if (!tty->pgrp)
--			printk(KERN_ERR "read_chan: no tty->pgrp!\n");
-+			printk(KERN_ERR "n_tty_read: no tty->pgrp!\n");
- 		else if (task_pgrp(current) != tty->pgrp) {
- 			if (is_ignored(SIGTTIN) ||
- 			    is_current_pgrp_orphaned())
-@@ -1265,7 +1265,7 @@ static int job_control(struct tty_struct *tty, struct file *file)
- 
- 
- /**
-- *	read_chan		-	read function for tty
-+ *	n_tty_read		-	read function for tty
-  *	@tty: tty device
-  *	@file: file object
-  *	@buf: userspace buffer pointer
-@@ -1279,7 +1279,7 @@ static int job_control(struct tty_struct *tty, struct file *file)
-  *	This code must be sure never to sleep through a hangup.
-  */
- 
--static ssize_t read_chan(struct tty_struct *tty, struct file *file,
-+static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
- 			 unsigned char __user *buf, size_t nr)
+diff --git a/drivers/s390/char/fs3270.c b/drivers/s390/char/fs3270.c
+index 1227f45..40759c3 100644
+--- a/drivers/s390/char/fs3270.c
++++ b/drivers/s390/char/fs3270.c
+@@ -418,23 +418,22 @@ fs3270_open(struct inode *inode, struct file *filp)
  {
- 	unsigned char __user *b = buf;
-@@ -1481,7 +1481,7 @@ do_it_again:
+ 	struct fs3270 *fp;
+ 	struct idal_buffer *ib;
+-	int minor, rc;
++	int minor, rc = 0;
+ 
+ 	if (imajor(filp->f_path.dentry->d_inode) != IBM_FS3270_MAJOR)
+ 		return -ENODEV;
+-	lock_kernel();
+ 	minor = iminor(filp->f_path.dentry->d_inode);
+ 	/* Check for minor 0 multiplexer. */
+ 	if (minor == 0) {
+ 		struct tty_struct *tty = get_current_tty();
+ 		if (!tty || tty->driver->major != IBM_TTY3270_MAJOR) {
+ 			tty_kref_put(tty);
+-			rc = -ENODEV;
+-			goto out;
++			return -ENODEV;
+ 		}
+ 		minor = tty->index + RAW3270_FIRSTMINOR;
+ 		tty_kref_put(tty);
+ 	}
++	lock_kernel();
+ 	/* Check if some other program is already using fullscreen mode. */
+ 	fp = (struct fs3270 *) raw3270_find_view(&fs3270_fn, minor);
+ 	if (!IS_ERR(fp)) {
+@@ -476,7 +475,7 @@ fs3270_open(struct inode *inode, struct file *filp)
+ 	filp->private_data = fp;
+ out:
+ 	unlock_kernel();
+-	return 0;
++	return rc;
  }
  
- /**
-- *	write_chan		-	write function for tty
-+ *	n_tty_write		-	write function for tty
-  *	@tty: tty device
-  *	@file: file object
-  *	@buf: userspace buffer pointer
-@@ -1495,7 +1495,7 @@ do_it_again:
-  *	This code must be sure never to sleep through a hangup.
-  */
- 
--static ssize_t write_chan(struct tty_struct *tty, struct file *file,
-+static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
- 			  const unsigned char *buf, size_t nr)
- {
- 	const unsigned char *b = buf;
-@@ -1569,7 +1569,7 @@ break_out:
- }
- 
- /**
-- *	normal_poll		-	poll method for N_TTY
-+ *	n_tty_poll		-	poll method for N_TTY
-  *	@tty: terminal device
-  *	@file: file accessing it
-  *	@wait: poll table
-@@ -1582,7 +1582,7 @@ break_out:
-  *	Called without the kernel lock held - fine
-  */
- 
--static unsigned int normal_poll(struct tty_struct *tty, struct file *file,
-+static unsigned int n_tty_poll(struct tty_struct *tty, struct file *file,
- 							poll_table *wait)
- {
- 	unsigned int mask = 0;
-@@ -1655,11 +1655,11 @@ struct tty_ldisc_ops tty_ldisc_N_TTY = {
- 	.close           = n_tty_close,
- 	.flush_buffer    = n_tty_flush_buffer,
- 	.chars_in_buffer = n_tty_chars_in_buffer,
--	.read            = read_chan,
--	.write           = write_chan,
-+	.read            = n_tty_read,
-+	.write           = n_tty_write,
- 	.ioctl           = n_tty_ioctl,
- 	.set_termios     = n_tty_set_termios,
--	.poll            = normal_poll,
-+	.poll            = n_tty_poll,
- 	.receive_buf     = n_tty_receive_buf,
- 	.write_wakeup    = n_tty_write_wakeup
- };
+ /*
 
