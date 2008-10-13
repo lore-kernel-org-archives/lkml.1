@@ -1,95 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbYJMV2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbYJMV2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbYJMV2V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYJMV2M
+	id S1757486AbYJMV2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYJMV2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:28:12 -0400
-Received: from smtp.flash.net.br ([201.46.240.48]:39715 "EHLO
-	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbYJMV2L convert rfc822-to-8bit (ORCPT
+	Mon, 13 Oct 2008 17:28:32 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:59176 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753710AbYJMV2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:28:11 -0400
-In-Reply-To: <Pine.LNX.4.64.0810131959140.9041@axis700.grange>
-References: <20081013040703.GA11059@ime.usp.br> <Pine.LNX.4.64.0810131959140.9041@axis700.grange>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <BAFAB2E9-A9E1-443D-9774-459965AF52C1@ime.usp.br>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org
-Content-Transfer-Encoding: 8BIT
-From: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-Subject: Re: [PATCH] powerpc: compile kernel for linkstations optimized for size
-Date: Mon, 13 Oct 2008 19:28:02 -0200
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-X-Mailer: Apple Mail (2.753.1)
+	Mon, 13 Oct 2008 17:28:31 -0400
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Peter Osterlund <petero2@telia.com>,
+       a.zummo@towertech.it
+Subject: Re: pktcdvd -> sysfs warning with 2.6.27
+References: <87vdvyngni.fsf@hades.wkstn.nix>
+	<20081012181700.GA21072@kroah.com>
+From: Nix <nix@esperi.org.uk>
+Emacs: don't cry -- it won't help.
+Date: Mon, 13 Oct 2008 22:28:13 +0100
+In-Reply-To: <20081012181700.GA21072@kroah.com> (Greg KH's message of "Sun, 12 Oct 2008 11:17:00 -0700")
+Message-ID: <87prm4mbgy.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-DCC-Rhyolite-Metrics: hades 104; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Guennadi.
+On 12 Oct 2008, Greg KH uttered the following:
+> Perhaps some other kernel code is registering with that same major/minor
+> number, making it already present in sysfs.  Where does that sysfs file
+> link to before you load your driver?
 
-On 13/10/2008, at 16:03, Guennadi Liakhovetski wrote:
+Exactly so. This is probably *not* a regression after all: the only
+change I made to my 2.6.27 config (weeks before actually rebooting, so I
+forgot) was to build in the CMOS RTC driver, in a hopeless attempt to
+make hrtimers work on this old hardware (I knew it was hopeless but
+tried anyway). (Unsurprisingly it didn't work:
+<http://www.ussg.iu.edu/hypermail/linux/kernel/0810.1/1033.html> worked,
+thank *you* Jeff, I have glitch-free pulseaudio and microsecond sleeps
+and several of my programs are happier!)
 
-> On Mon, 13 Oct 2008, Rogério Brito wrote:
->
->> From: Rogério Brito <rbrito@ime.usp.br>
->>
->> Since Linkstations and Kuroboxes often have *very* little memory (as
->> they are embedded systems), it is desirable to get their kernels
->> compiled optimized for size.
->>
->> Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
->>
->> ---
->>
->> I have been using kernels optimized for size on my Kurobox (standard)
->> for many different releases and I have experienced no problem with  
->> this
->> option enabled. Thus, this patch.
->
-> The comment for this option says: "watch out for broken compilers," if
-> this doesn't hold any more, it should be remove, if it still holds, I
-> wouldn't turn this on by default, as I don't think we can test all
+And, looky here, a smoking gun:
 
-Pragmatically speaking, -O2 can be broken too (and see the amount of  
-ICEs that you can get with newer kernels even compiling with -O2).  
-Unless you prove that the compiler is correct and keeps all its  
-invariants, then you can rely on this. But, pragmatically speaking  
-again, gcc has bugs.
+hades:~# ls -l /sys/dev/char/254:0 /dev/rtc*
+lrwxrwxrwx 1 root root 0 2008-10-13 22:16 /sys/dev/char/254:0 -> ../../devices/platform/rtc_cmos/rtc/rtc0
+hades:~# ls -l 
+lrwxrwxrwx 1 root root      4 2008-10-13 21:57 /dev/rtc -> rtc0
+crw-r--r-- 1 root root 254, 0 2008-10-13 21:57 /dev/rtc0
 
-But leaving the mathematical situation aside (Dijkstra would have  
-spanked all of us here :)), as I mentioned below the signed off line,  
-I have been using -Os and it is working fine. It's serving me quite  
-well and with a decent uptime:
+hades:~# pktsetup cdrw /dev/cdrw
+hades:~# ls -l /dev/pktcdvd/
+total 0
+brw-r----- 1 root root  254,  0 2008-10-13 22:23 cdrw
+crw-r--r-- 1 root root   10, 63 2008-10-13 21:57 control
+brw-rw---- 1 root cdrom 254,  0 2008-10-13 22:23 pktcdvd0
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-- - -
-lutz:~# uptime
-  19:22:53 up 17 days,  5:56,  1 user,  load average: 0.00, 0.00, 0.00
-lutz:~# uname -a
-Linux lutz 2.6.27-rc6.try02 #8 Fri Sep 26 11:29:55 BRT 2008 ppc GNU/ 
-Linux
-lutz:~#
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-- - -
+Am I right in assuming that this sort of isn't going to work? :)
 
-And, despite the 0.00 load, I'm streaming music with it via mt-daapd  
-and serving cifs mounts.
+Major 254 is listed as LOCAL/EXPERIMENTAL USE in devices.txt. I don't
+consider either pktcdvd or the rtc drivers as LOCAL/EXPERIMENTAL: the
+former in particular has been in the kernel for years.
 
-> possible (cross- or native-) compilers users might want to use. In any
-> case this is one of options that users can select themselves, if it  
-> suits
-> them.
-
-And that is, not to mention, with a very home-brew and quick'n'dirty  
-cross-compiled kernel (with a vanilla gcc 4.2.0 taken straight from  
-gcc.gnu.org; the same with the kernel: no patches applied).
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
-
-
-
+They could do with proper device numbers. No matter what this is going
+to break some non-udev setups :(
