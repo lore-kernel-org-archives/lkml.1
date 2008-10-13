@@ -1,110 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762835AbYJMKIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764750AbYJMKJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762835AbYJMKIe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762060AbYJMJqE
+	id S1764750AbYJMKJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932114AbYJMJq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:46:04 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:3133 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763271AbYJMJpu (ORCPT
+	Mon, 13 Oct 2008 05:46:29 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32932 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761155AbYJMJq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:45:50 -0400
-X-IronPort-AV: E=Sophos;i="4.33,402,1220241600"; 
-   d="scan'208";a="61013701"
-From: Bryan Wu <cooloney@kernel.org>
-To: alan@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 2/6] Blackfin Serial Driver: Add a debug function to serial driver.
-Date: Mon, 13 Oct 2008 17:46:21 +0800
-Message-Id: <1223891185-13924-3-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1223891185-13924-1-git-send-email-cooloney@kernel.org>
-References: <1223891185-13924-1-git-send-email-cooloney@kernel.org>
+	Mon, 13 Oct 2008 05:46:27 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 80/80] tty: rename the remaining oddly named n_tty functions
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 13 Oct 2008 10:46:24 +0100
+Message-ID: <20081013094614.21645.47732.stgit@localhost.localdomain>
+In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
+References: <20081013092758.21645.2359.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Graf Yang <graf.yang@analog.com>
+From: Alan Cox <alan@redhat.com>
 
-Signed-off-by: Graf Yang <graf.yang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Original idea for this from a patch by Rodolfo Giometti which merges various
+bits of PPS support
+
+Signed-off-by: Alan Cox <alan@redhat.com>
 ---
- drivers/serial/bfin_5xx.c |   47 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 46 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index d63fad7..aea3a53 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -21,6 +21,7 @@
- #include <linux/tty.h>
- #include <linux/tty_flip.h>
- #include <linux/serial_core.h>
-+#include <stdarg.h>
+ drivers/char/n_tty.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
+
+
+diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
+index c0285b9..efbfe96 100644
+--- a/drivers/char/n_tty.c
++++ b/drivers/char/n_tty.c
+@@ -26,7 +26,7 @@
+  *
+  * 2002/03/18   Implemented n_tty_wakeup to send SIGIO POLL_OUTs to
+  *		waiting writing processes-Sapan Bhatia <sapan@corewars.org>.
+- *		Also fixed a bug in BLOCKING mode where write_chan returns
++ *		Also fixed a bug in BLOCKING mode where n_tty_write returns
+  *		EAGAIN
+  */
  
- #if defined(CONFIG_KGDB_SERIAL_CONSOLE) || \
- 	defined(CONFIG_KGDB_SERIAL_CONSOLE_MODULE)
-@@ -1106,7 +1107,8 @@ static __init void early_serial_putc(struct uart_port *port, int ch)
- 	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
+@@ -358,7 +358,7 @@ static int opost(unsigned char c, struct tty_struct *tty)
+  *	the simple cases normally found and helps to generate blocks of
+  *	symbols for the console driver and thus improve performance.
+  *
+- *	Called from write_chan under the tty layer write lock. Relies
++ *	Called from n_tty_write under the tty layer write lock. Relies
+  *	on lock_kernel for the tty->column state.
+  */
  
- 	while ((!(UART_GET_LSR(uart) & THRE)) && --timeout)
--		cpu_relax();
-+		barrier();
-+
- 	UART_PUT_CHAR(uart, ch);
+@@ -1183,7 +1183,7 @@ static inline int input_available_p(struct tty_struct *tty, int amt)
+  *	@b: user data
+  *	@nr: size of data
+  *
+- *	Helper function to speed up read_chan.  It is only called when
++ *	Helper function to speed up n_tty_read.  It is only called when
+  *	ICANON is off; it copies characters straight from the tty queue to
+  *	user space directly.  It can be profitably called twice; once to
+  *	drain the space from the tail pointer to the (physical) end of the
+@@ -1250,7 +1250,7 @@ static int job_control(struct tty_struct *tty, struct file *file)
+ 	if (file->f_op->write != redirected_tty_write &&
+ 	    current->signal->tty == tty) {
+ 		if (!tty->pgrp)
+-			printk(KERN_ERR "read_chan: no tty->pgrp!\n");
++			printk(KERN_ERR "n_tty_read: no tty->pgrp!\n");
+ 		else if (task_pgrp(current) != tty->pgrp) {
+ 			if (is_ignored(SIGTTIN) ||
+ 			    is_current_pgrp_orphaned())
+@@ -1265,7 +1265,7 @@ static int job_control(struct tty_struct *tty, struct file *file)
+ 
+ 
+ /**
+- *	read_chan		-	read function for tty
++ *	n_tty_read		-	read function for tty
+  *	@tty: tty device
+  *	@file: file object
+  *	@buf: userspace buffer pointer
+@@ -1279,7 +1279,7 @@ static int job_control(struct tty_struct *tty, struct file *file)
+  *	This code must be sure never to sleep through a hangup.
+  */
+ 
+-static ssize_t read_chan(struct tty_struct *tty, struct file *file,
++static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
+ 			 unsigned char __user *buf, size_t nr)
+ {
+ 	unsigned char __user *b = buf;
+@@ -1481,7 +1481,7 @@ do_it_again:
  }
  
-@@ -1155,6 +1157,49 @@ struct console __init *bfin_earlyserial_init(unsigned int port,
+ /**
+- *	write_chan		-	write function for tty
++ *	n_tty_write		-	write function for tty
+  *	@tty: tty device
+  *	@file: file object
+  *	@buf: userspace buffer pointer
+@@ -1495,7 +1495,7 @@ do_it_again:
+  *	This code must be sure never to sleep through a hangup.
+  */
  
- #endif /* CONFIG_SERIAL_BFIN_CONSOLE */
+-static ssize_t write_chan(struct tty_struct *tty, struct file *file,
++static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
+ 			  const unsigned char *buf, size_t nr)
+ {
+ 	const unsigned char *b = buf;
+@@ -1569,7 +1569,7 @@ break_out:
+ }
  
-+#ifdef CONFIG_DEBUG_KERNEL
-+void bfin_serial_debug(const char *fmt, ...)
-+{
-+	struct bfin_serial_port *uart = &bfin_serial_ports[0];
-+	unsigned short status, tmp;
-+	int flags, i, count;
-+	char buf[128];
-+	va_list ap;
-+
-+	if (bfin_serial_console.index < 0)
-+		return;		/* Too early. */
-+
-+	va_start(ap, fmt);
-+	vsprintf(buf, fmt, ap);
-+	va_end(ap);
-+	count = strlen(buf);
-+
-+	spin_lock_irqsave(&uart->port.lock, flags);
-+
-+	for (i = 0; i < count; i++) {
-+		do {
-+			status = UART_GET_LSR(uart);
-+		} while (!(status & THRE));
-+
-+#ifndef CONFIG_BF54x
-+		tmp = UART_GET_LCR(uart);
-+		tmp &= ~DLAB;
-+		UART_PUT_LCR(uart, tmp);
-+#endif
-+		UART_PUT_CHAR(uart, buf[i]);
-+		if (buf[i] == '\n') {
-+			do {
-+				status = UART_GET_LSR(uart);
-+			} while (!(status & THRE));
-+			UART_PUT_CHAR(uart, '\r');
-+		}
-+	}
-+
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
-+}
-+EXPORT_SYMBOL(bfin_serial_debug);
-+#endif
-+
- static struct uart_driver bfin_serial_reg = {
- 	.owner			= THIS_MODULE,
- 	.driver_name		= "bfin-uart",
--- 
-1.5.6
+ /**
+- *	normal_poll		-	poll method for N_TTY
++ *	n_tty_poll		-	poll method for N_TTY
+  *	@tty: terminal device
+  *	@file: file accessing it
+  *	@wait: poll table
+@@ -1582,7 +1582,7 @@ break_out:
+  *	Called without the kernel lock held - fine
+  */
+ 
+-static unsigned int normal_poll(struct tty_struct *tty, struct file *file,
++static unsigned int n_tty_poll(struct tty_struct *tty, struct file *file,
+ 							poll_table *wait)
+ {
+ 	unsigned int mask = 0;
+@@ -1655,11 +1655,11 @@ struct tty_ldisc_ops tty_ldisc_N_TTY = {
+ 	.close           = n_tty_close,
+ 	.flush_buffer    = n_tty_flush_buffer,
+ 	.chars_in_buffer = n_tty_chars_in_buffer,
+-	.read            = read_chan,
+-	.write           = write_chan,
++	.read            = n_tty_read,
++	.write           = n_tty_write,
+ 	.ioctl           = n_tty_ioctl,
+ 	.set_termios     = n_tty_set_termios,
+-	.poll            = normal_poll,
++	.poll            = n_tty_poll,
+ 	.receive_buf     = n_tty_receive_buf,
+ 	.write_wakeup    = n_tty_write_wakeup
+ };
+
