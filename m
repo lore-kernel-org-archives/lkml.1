@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbYJMPsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbYJMPuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758179AbYJMPsI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 11:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYJMPr4
+	id S1758535AbYJMPuF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 11:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYJMPtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 11:47:56 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49190 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751113AbYJMPrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 11:47:55 -0400
-Date: Mon, 13 Oct 2008 16:47:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: GIT head no longer boots on x86-64
-Message-ID: <20081013164717.7a21084a@lxorguk.ukuu.org.uk>
-In-Reply-To: <1223910693-28693-1-git-send-email-jirislaby@gmail.com>
-References: <alpine.LFD.2.00.0810130752020.3288@nehalem.linux-foundation.org>
-	<1223910693-28693-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Oct 2008 11:49:55 -0400
+Received: from styx.suse.cz ([82.119.242.94]:40632 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755011AbYJMPty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 11:49:54 -0400
+Date: Mon, 13 Oct 2008 17:49:52 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+cc: Dmitry Torokhov <dtor@mail.ru>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix Numlock led on two keyboards (Dell SK8115 and
+ Bright)
+In-Reply-To: <20081009170544.4e770dbb@pedra.chehab.org>
+Message-ID: <alpine.LNX.1.10.0810131747260.26779@jikos.suse.cz>
+References: <20081009170544.4e770dbb@pedra.chehab.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I guess SMP kernel running on UP? In such a case the module .text
+On Thu, 9 Oct 2008, Mauro Carvalho Chehab wrote:
 
-Yep
+> While testing two new USB keyboards, it was noticed that the NUM LOCK 
+> led were wrong after booting. The led was ON, but the device was working 
+> without numlock.
+> Adding those two devices to HID quirks table fixed the issue.
+> The keyboards are:
+> DELL SK8115 (USB ID 413c:2105); and
+> Bright keyboard (USB ID 1241:1503).
 
-> is patched to use UP locks before the module is added to the modules
-> list and it thinks there are no valid data at that place while
-> patching.
-> 
-> Could you test it? The bug disappeared here in qemu. I've checked
-> callers of the function, and it should not matter for them.
+Hi Mauro,
 
-Seems to do the job.
+the HID subsystem went through a refactoring, and all the quirks have been 
+separated into individual drivers, so that the code doens't become 
+unmaintainable mess by having quirks all over the place.
 
-Jiri 1 Linus 0
+The changes have been present in my git tree -next for quite some time, 
+and I am planning to send a push request to Linus probably tomorrow. Do 
+you think you could rebase your patch on top of my tree?
 
-;)
+For Dell changes this should be trivial, as there is already a driver 
+handling exactly this for other Dell keyboards.
 
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
