@@ -1,198 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbYJMNeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761855AbYJMNfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762056AbYJMNeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbYJMNeM
+	id S1761855AbYJMNfL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 09:35:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbYJMNe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:34:12 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:35675 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756797AbYJMNeL (ORCPT
+	Mon, 13 Oct 2008 09:34:56 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:19130 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757306AbYJMNez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:34:11 -0400
-Date: Mon, 13 Oct 2008 14:34:04 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
-Message-ID: <20081013133404.GC15657@brain>
-References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org> <48ECDD37.8050506@linux-foundation.org> <20081008185532.GA13304@brain> <48ED0B68.2060001@linux-foundation.org>
+	Mon, 13 Oct 2008 09:34:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:mime-version
+         :content-type:content-transfer-encoding:content-disposition;
+        b=yHeVpiDWRSTtGWO5konKYtG7Jc666evHNCAvlENeKea4BM9I0AV9QkowH54pkwNaeb
+         jB6Caoh5n2ouCj47YvyJBnQbvW9dkaMVUgpTKXOilmyg+lFYih/xxYSXSIObF/kxtupO
+         z8FfcAEgH69QNNheJbs+zW0Cjz6F0gpnlq24E=
+Message-ID: <7c86c4470810130634v28daf6e1u50f3e76fcc432e4c@mail.gmail.com>
+Date: Mon, 13 Oct 2008 15:34:52 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: 2.6.27 perfmon patch, new version of libpfm, pfmon available
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48ED0B68.2060001@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 08, 2008 at 02:35:04PM -0500, Christoph Lameter wrote:
-> Andy Whitcroft wrote:
-> 
-> > With SPARSEMEM turned on and VMEMMAP turned off a valid combination,
-> > we will end up scribbling all over memory which is pretty serious so for
-> > that reason we should handle this case.  There are cirtain combinations
-> > of features which require SPARSMEM but preclude VMEMMAP which trigger this.
-> 
-> Which configurations are we talking about? 64 bit configs may generally be
-> able to use VMEMMAP since they have lots of virtual address space.
+Hello,
 
-Currently memory hot remove is not supported with VMEMMAP.  Obviously
-that should be fixed overall and I am assuming it will.  But the fact
-remains that the buddy guarentee is that the mem_map is contigious out
-to MAX_ORDER-1 order pages only beyond that we may not assume
-contiguity.  This code is broken under the guarentees that are set out
-by buddy.  Yes it is true that we do only have one memory model combination
-currently where a greater guarentee of contigious within a node is
-violated, but right now this code violates the current guarentees.
+I have released the perfmon2 kernel patch for kernel v2.6.27. There is
+no major features. Interface version is not at v2.82 following a small
+addition to the sysfs admin interface.
 
-I assume the objection here is the injection of the additional branch
-into these loops.  The later rejig patch removes this for the non-giant
-cases for the non-huge use cases.  Are we worried about these same
-branches in the huge cases?  If so we could make this support dependant
-on a new configuration option, or perhaps only have two loop chosen
-based on the order of the page.
+Here are the new features for the kernel:
+  - Support for Intel Atom processors, including PEBS
+  - preliminary support for Intel E74xx (Dunnington), including PEBS
+  - /sys/kernel/perfmon/mode, new configuration option for the interface
+  - list of available pmc/pmd reported by context
 
-Something like the patch below?  This patch is not tested as yet, but if
-this form is acceptable we can get the pair of patches (this plus the
-prep compound update) tested together and I can repost them once that is
-done.  This against 2.6.27.
+There is also a new release for libpfm, now at version 3.6.
+The changes include:
+  - Support for Intel Atom processors
+  - preliminary support for Intel E74xx (Dunnington)
 
--apw
+Finally, a new version of pfmon, v3.5, with:
+  - Support for Intel Atom processors
+  - preliminary support for Intel E74xx (Dunnington)
+  - lots of code cleanups and bug fixes
 
-Author: Andy Whitcroft <apw@shadowen.org>
-Date:   Mon Oct 13 14:28:44 2008 +0100
+Concerning the merge, we have been making a lot of progress in the
+redesign of the syscall API to minimize the number of syscalls and
+make each one easier to extend, should this be needed. We are
+now down to 7 syscalls for the full interface, down from 12. The
+experimental kernel code is available in the GIT repository in
+the 'perfmon3' branch. Similarly, there is a matching perfmon3
+branch of libpfm, with all examples updated. This verison of
+the library also provides the glue layer so that each v2.82
+perfmon2 application can continue to work unmodified.
 
-    hugetlbfs: handle pages higher order than MAX_ORDER
-    
-    When working with hugepages, hugetlbfs assumes that those hugepages
-    are smaller than MAX_ORDER.  Specifically it assumes that the mem_map
-    is contigious and uses that to optimise access to the elements of the
-    mem_map that represent the hugepage.  Gigantic pages (such as 16GB pages
-    on powerpc) by definition are of greater order than MAX_ORDER (larger
-    than MAX_ORDER_NR_PAGES in size).  This means that we can no longer make
-    use of the buddy alloctor guarentees for the contiguity of the mem_map,
-    which ensures that the mem_map is at least contigious for maximmally
-    aligned areas of MAX_ORDER_NR_PAGES pages.
-    
-    This patch adds new mem_map accessors and iterator helpers which handle
-    any discontiguity at MAX_ORDER_NR_PAGES boundaries.  It then uses these
-    to implement gigantic page versions of copy_huge_page and clear_huge_page,
-    and to allow follow_hugetlb_page handle gigantic pages.
-    
-    Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+The minimal kernel patchset has also been updated to reflect the
+new syscalls API. It will be posted on LKML shortly. As a reminder,
+this quilt patchset provides only per-thread counting on Intel and
+AMD X86 processors. It is meant to serve as the base upon which the
+rest of the perfmon2 API can be gradually added.
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 67a7119..793f52e 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -353,11 +353,26 @@ static int vma_has_reserves(struct vm_area_struct *vma)
- 	return 0;
- }
- 
-+static void clear_gigantic_page(struct page *page,
-+			unsigned long addr, unsigned long sz)
-+{
-+	int i;
-+	struct page *p = page;
-+
-+	might_sleep();
-+	for (i = 0; i < sz/PAGE_SIZE; i++, p = mem_map_next(p, page, i)) {
-+		cond_resched();
-+		clear_user_highpage(p, addr + i * PAGE_SIZE);
-+	}
-+}
- static void clear_huge_page(struct page *page,
- 			unsigned long addr, unsigned long sz)
- {
- 	int i;
- 
-+	if (unlikely(sz > MAX_ORDER_NR_PAGES))
-+		return clear_gigantic_page(page, addr, sz);
-+
- 	might_sleep();
- 	for (i = 0; i < sz/PAGE_SIZE; i++) {
- 		cond_resched();
-@@ -365,12 +380,32 @@ static void clear_huge_page(struct page *page,
- 	}
- }
- 
-+static void copy_gigantic_page(struct page *dst, struct page *src,
-+			   unsigned long addr, struct vm_area_struct *vma)
-+{
-+	int i;
-+	struct hstate *h = hstate_vma(vma);
-+	struct page *dst_base = dst;
-+	struct page *src_base = src;
-+	might_sleep();
-+	for (i = 0; i < pages_per_huge_page(h); ) {
-+		cond_resched();
-+		copy_user_highpage(dst, src, addr + i*PAGE_SIZE, vma);
-+
-+		i++;
-+		dst = mem_map_next(dst, dst_base, i);
-+		src = mem_map_next(src, src_base, i);
-+	}
-+}
- static void copy_huge_page(struct page *dst, struct page *src,
- 			   unsigned long addr, struct vm_area_struct *vma)
- {
- 	int i;
- 	struct hstate *h = hstate_vma(vma);
- 
-+	if (unlikely(pages_per_huge_page(h) > MAX_ORDER_NR_PAGES))
-+		return copy_gigantic_page(dst, src, addr, vma);
-+
- 	might_sleep();
- 	for (i = 0; i < pages_per_huge_page(h); i++) {
- 		cond_resched();
-@@ -2103,7 +2138,7 @@ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
- same_page:
- 		if (pages) {
- 			get_page(page);
--			pages[i] = page + pfn_offset;
-+			pages[i] = mem_map_offset(page, pfn_offset);
- 		}
- 
- 		if (vmas)
-diff --git a/mm/internal.h b/mm/internal.h
-index 1f43f74..08b8dea 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -53,6 +53,34 @@ static inline unsigned long page_order(struct page *page)
- }
- 
- /*
-+ * Return the mem_map entry representing the 'offset' subpage within
-+ * the maximally aligned gigantic page 'base'.  Handle any discontiguity
-+ * in the mem_map at MAX_ORDER_NR_PAGES boundaries.
-+ */
-+static inline struct page *mem_map_offset(struct page *base, int offset)
-+{
-+	if (unlikely(offset >= MAX_ORDER_NR_PAGES))
-+		return pfn_to_page(page_to_pfn(base) + offset);
-+	return base + offset;
-+}
-+
-+/*
-+ * Iterator over all subpages withing the maximally aligned gigantic
-+ * page 'base'.  Handle any discontiguity in the mem_map.
-+ */
-+static inline struct page *mem_map_next(struct page *iter,
-+						struct page *base, int offset)
-+{
-+	if (unlikely((offset & (MAX_ORDER_NR_PAGES - 1)) == 0)) {
-+		unsigned long pfn = page_to_pfn(base) + offset;
-+		if (!pfn_valid(pfn))
-+			return NULL;
-+		return pfn_to_page(pfn);
-+	}
-+	return iter + 1;
-+}
-+
-+/*
-  * FLATMEM and DISCONTIGMEM configurations use alloc_bootmem_node,
-  * so all functions starting at paging_init should be marked __init
-  * in those cases. SPARSEMEM, however, allows for memory hotplug,
+As usual all files and more detailed changelogs can be downloaded from
+our website at:
+
+        http://perfmon2.sourceforge.net
+
+Enjoy,
