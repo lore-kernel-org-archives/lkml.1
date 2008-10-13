@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYJMIfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbYJMIiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbYJMIfY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYJMIfN
+	id S1757376AbYJMIiN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbYJMIh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:35:13 -0400
-Received: from smtpd4.aruba.it ([62.149.128.209]:40896 "HELO smtp6.aruba.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754627AbYJMIfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:35:12 -0400
-Date: Mon, 13 Oct 2008 10:34:12 +0200
-From: Daniele Calore <orkaan@orkaan.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27] x86: memtest fix use of reserve_early()
-Message-ID: <20081013103412.6fec375a@buddha>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 13 Oct 2008 04:37:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58771 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754833AbYJMIh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 04:37:58 -0400
+Message-ID: <48F3088C.9010002@kernel.org>
+Date: Mon, 13 Oct 2008 17:36:28 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com> <48E8947A.5020608@kernel.org> <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org> <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com> <20081008080848.GA20525@anita.doom>
+In-Reply-To: <20081008080848.GA20525@anita.doom>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Rating: smtp6.aruba.it 1.6.2 0/1000/N
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Oct 2008 08:37:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-    
-Wrong usage of 2nd parameter in reserve_early call.
-66/75: reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
-                                ^^^^^^^^^^^^^^^^^^^^
-    
-The correct way is to use 'end' address and not 'size'.
-As a bonus a fix to the printk format.
+Konstantin Kletschke wrote:
+> Am 2008-10-07 10:10 +0200 schrieb Benny Halevy:
+> 
+>>> Then I switched off and smoked a cigarette, booting then lasted a bit longer:
+>> See, cigarettes are bad for you(r computer) ;-)
+> 
+> Yes... But where does he know from? I have no /dev/eyes still ;-)
+> 
 
-Signed-off-by: Daniele Calore <orkaan@orkaan.org>
-    
----
-diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
-index 672e17f..9cab18b 100644
---- a/arch/x86/mm/memtest.c
-+++ b/arch/x86/mm/memtest.c
-@@ -61,9 +61,9 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
- 				last_bad += incr;
- 			} else {
- 				if (start_bad) {
--					printk(KERN_CONT "\n  %010lx bad mem addr %010lx - %010lx reserved",
-+					printk(KERN_CONT "\n  %016lx bad mem addr %010lx - %010lx reserved",
- 						val, start_bad, last_bad + incr);
--					reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
-+					reserve_early(start_bad, last_bad + incr, "BAD RAM");
- 				}
- 				start_bad = last_bad = start_phys_aligned;
- 			}
-@@ -72,9 +72,8 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
- 	if (start_bad) {
- 		printk(KERN_CONT "\n  %016lx bad mem addr %010lx - %010lx reserved",
- 			val, start_bad, last_bad + incr);
--		reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
-+		reserve_early(start_bad, last_bad + incr, "BAD RAM");
- 	}
--
- }
- 
- /* default is disabled */
+It has all the fans for a reason.  :-)
+
+Eh... Joke aside.  I still don't know what's going on here.  Before
+2.6.26, you always had clean boot, right?
+
+-- 
+tejun
