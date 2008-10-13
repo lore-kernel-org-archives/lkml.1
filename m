@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYJMLKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbYJMLMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbYJMLKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 07:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbYJMLKj
+	id S1759378AbYJMLMK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 07:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbYJMLL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 07:10:39 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:48527 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756409AbYJMLKh (ORCPT
+	Mon, 13 Oct 2008 07:11:56 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:61816 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756396AbYJMLLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 07:10:37 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: Roland Dreier <rolandd@cisco.com>, general@lists.openfabrics.org,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH]IB/ehca:reject dynamic memory add/remove
-Date: Mon, 13 Oct 2008 13:10:32 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: hnguyen@de.ibm.com
+	Mon, 13 Oct 2008 07:11:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UTq5WnhFcoGRFovTmFMir7OJI3sY56oELX25eTYsjM9UyJnbURPTBswj6WAAlmdJ48
+         P7RCFb1fJCqQKvMVJ43oLxYWGkkpnA99S5e5N+ean1LBJq76PD9Z+aJLreW3U5Tj3IJn
+         O5hHQfnfgNMkBZ6AQiFppt4hmUUSf10eT5X7w=
+Message-ID: <912ec82a0810130411v3846c0efve4fe59c2b598b60a@mail.gmail.com>
+Date: Mon, 13 Oct 2008 13:11:51 +0200
+From: "Neshama Parhoti" <pneshama@gmail.com>
+To: "Gilad Ben-Yossef" <gilad@codefidence.com>
+Subject: Re: section mismatch with a platform driver
+Cc: "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <48F3185F.9070700@codefidence.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810131310.34413.ossrosch@linux.vnet.ibm.com>
+References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
+	 <20081013085111.GB29938@cs181140183.pp.htv.fi>
+	 <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
+	 <48F3185F.9070700@codefidence.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the ehca device driver does not support dynamic memory add and remove
-operations, the driver must explicitly reject such requests in order to prevent
-unpredictable behaviors related to memory regions already occupied and being
-used by InfiniBand applications.
-The solution is to add a memory notifier to the ehca device driver and if a request
-for dynamic memory add or remove comes in, ehca will always reject it.
+On Mon, Oct 13, 2008 at 11:43 AM, Gilad Ben-Yossef
+<gilad@codefidence.com> wrote:
+> Can't be sure without seeing the whole picture, but the most probable
+> solution is to drop that __init from the probe function. It's seems wrong as
+> in theory the probe function can be called at any time in the life of the
+> kernel, not just in this module init, even if in practice this will never
+> happen, as I suspect is the case with such a platform driver.
 
-Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
----
+Yes, thanks, removing that macro did make the warning go away.
+That's weird because I was using other in-tree drivers as a template for this,
+and they don't have this section mismatch problem...
 
-diff -Nurp linux-2.6.27-rc6-7/drivers/infiniband/hw/ehca/ehca_main.c linux-2.6.27-rc6-7.new/drivers/infiniband/hw/ehca/ehca_main.c
---- linux-2.6.27-rc6-7/drivers/infiniband/hw/ehca/ehca_main.c	2008-09-16 18:19:27.000000000 +0200
-+++ linux-2.6.27-rc6-7.new/drivers/infiniband/hw/ehca/ehca_main.c	2008-10-03 13:52:50.000000000 +0200
-@@ -44,6 +44,8 @@
- #include <linux/slab.h>
- #endif
- 
-+#include <linux/notifier.h>
-+#include <linux/memory.h>
- #include "ehca_classes.h"
- #include "ehca_iverbs.h"
- #include "ehca_mrmw.h"
-@@ -964,6 +966,41 @@ void ehca_poll_eqs(unsigned long data)
- 	spin_unlock(&shca_list_lock);
- }
- 
-+static int ehca_mem_notifier(struct notifier_block *nb,
-+                             unsigned long action, void *data)
-+{
-+	static unsigned long ehca_dmem_warn_time;
-+
-+	switch (action) {
-+	case MEM_CANCEL_OFFLINE:
-+	case MEM_CANCEL_ONLINE:
-+	case MEM_ONLINE:
-+	case MEM_OFFLINE:
-+		return NOTIFY_OK;
-+	case MEM_GOING_ONLINE:
-+	case MEM_GOING_OFFLINE:
-+		/* only ok if no hca is attached to the lpar */
-+		spin_lock(&shca_list_lock);
-+		if (list_empty(&shca_list)) {
-+			spin_unlock(&shca_list_lock);
-+			return NOTIFY_OK;
-+		} else {
-+			spin_unlock(&shca_list_lock);
-+			if (printk_timed_ratelimit(&ehca_dmem_warn_time,
-+						   30 * 1000))
-+				ehca_gen_err("DMEM operations are not allowed"
-+					     "as long as an ehca adapter is"
-+					     "attached to the LPAR");
-+			return NOTIFY_BAD;
-+		}
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block ehca_mem_nb = {
-+	.notifier_call = ehca_mem_notifier,
-+};
-+
- static int __init ehca_module_init(void)
- {
- 	int ret;
-@@ -991,6 +1028,12 @@ static int __init ehca_module_init(void)
- 		goto module_init2;
- 	}
- 
-+	ret = register_memory_notifier(&ehca_mem_nb);
-+	if (ret) {
-+		ehca_gen_err("Failed registering memory add/remove notifier");
-+		goto module_init3;
-+	}
-+
- 	if (ehca_poll_all_eqs != 1) {
- 		ehca_gen_err("WARNING!!!");
- 		ehca_gen_err("It is possible to lose interrupts.");
-@@ -1003,6 +1046,9 @@ static int __init ehca_module_init(void)
- 
- 	return 0;
- 
-+module_init3:
-+	ibmebus_unregister_driver(&ehca_driver);
-+
- module_init2:
- 	ehca_destroy_slab_caches();
- 
-@@ -1018,6 +1064,8 @@ static void __exit ehca_module_exit(void
- 
- 	ibmebus_unregister_driver(&ehca_driver);
- 
-+	unregister_memory_notifier(&ehca_mem_nb);
-+
- 	ehca_destroy_slab_caches();
- 
- 	ehca_destroy_comp_pool();
+>
+> Gilad
+>
+>
+>
+> --
+> Gilad Ben-Yossef Chief Coffee Drinker
+>
+> Codefidence Ltd.
+> The code is free, your time isn't.(TM)
+>
+> Web:    http://codefidence.com
+> Email:  gilad@codefidence.com
+> Office: +972-8-9316883 ext. 201
+> Fax:    +972-8-9316885
+> Mobile: +972-52-8260388
+>
+>        The Doctor: Don't worry, Reinette, just a nightmare.        Everyone
+> has nightmares. Even monsters from under the        bed have nightmares,
+> don't you, monster?
+>        Reinette: What do monsters have nightmares about?
+>        The Doctor: Me!
+>
