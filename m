@@ -1,235 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYJMOq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbYJMOrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbYJMOq0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757646AbYJMOpa
+	id S1754948AbYJMOrO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYJMOqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:45:30 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:56199 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757398AbYJMOp0 (ORCPT
+	Mon, 13 Oct 2008 10:46:55 -0400
+Received: from sperry-02.control.lth.se ([130.235.83.189]:58907 "EHLO
+	sperry-02.control.lth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755065AbYJMOqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:45:26 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 1/2] mfd: Add placeholders for WM8350 client devices
-Date: Mon, 13 Oct 2008 15:45:22 +0100
-Message-Id: <1223909123-16376-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081013133707.GA4759@localdomain>
-References: <20081013133707.GA4759@localdomain>
+	Mon, 13 Oct 2008 10:46:54 -0400
+Message-ID: <48F35F50.3000704@control.lth.se>
+Date: Mon, 13 Oct 2008 16:46:40 +0200
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make ATNGW100 serial ports configurable
+References: <48EF6762.2080205@control.lth.se>	<20081010165814.1c62eabf@hskinnemo-gx745.norway.atmel.com>	<48EF7949.4010108@control.lth.se>	<20081013122727.7298bd4a@hskinnemo-gx745.norway.atmel.com>	<48F32899.5000006@control.lth.se>	<20081013143447.5e0519b3@hskinnemo-gx745.norway.atmel.com>	<48F3473E.6070305@control.lth.se> <20081013153318.7ed8e8d8@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20081013153318.7ed8e8d8@hskinnemo-gx745.norway.atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to avoid merge problems further down the line add placeholders
-for several of the WM8350 client devices and register them, otherwise
-the patches adding the client devices will all try to update the same
-code.
+Haavard Skinnemoen wrote:
+> Anders Blomdell <anders.blomdell@control.lth.se> wrote:
+>> Haavard Skinnemoen wrote:
+>>> Adding EXPORT_SYMBOLs purely for use by out-of-tree modules is
+>>> generally frowned upon. 
+>> If I'm not mistaken, you need EXPORT_SYMBOL for any loadable module, be it in-
+>> or out-of-tree.
+> 
+> Yes, but no in-kernel modules need those symbols exported.
+No, that's right.
 
-Also remove redundant checks for null regulator platform devices while
-we're at it.
+>>> And patching in an additional file to the build is just about the easiest
+>>> thing you can do.
+>> Next to config options and loadable modules out-of-tree :-)
+> 
+> Really? I personally think out-of-tree modules is a real hassle causing
+> extra work each time I need to update the kernel, whether it's on my
+> embedded target or my PC.
+Depends on if it's you or somebody else (who doesn't care about your code) that
+rebuilds the kernel. Since I plan to use some tens of atngw100's eventually,
+with at least 3 different expansions boards, a solution that doesn't need 3
+different kernels (i.e. loadable modules) is much preferred to a Kconfig (I know
+I started out with this, but one does change opinion :-) occasionally) or
+in-tree init code.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/mfd/wm8350-core.c         |   18 ++++++++++++++++--
- include/linux/mfd/wm8350/audio.h  |    6 ++++++
- include/linux/mfd/wm8350/core.h   |   10 ++++++++++
- include/linux/mfd/wm8350/gpio.h   |    6 ++++++
- include/linux/mfd/wm8350/rtc.h    |    6 ++++++
- include/linux/mfd/wm8350/supply.h |    6 ++++++
- include/linux/mfd/wm8350/wdt.h    |    8 +++++++-
- 7 files changed, 57 insertions(+), 3 deletions(-)
+> On the other hand, a trivial patch adding support for an expansion
+> board can just stay in your tree while you do a 'git pull' to grab the
+> most up-to-date kernel.
+> 
+> Even better, if you send your trivial patch upstream, it will just be
+> there the next time you update your kernel. No need to do anything
+> extra at all.
+> 
+> A Kconfig option is admittedly just as easy, but with the added
+> downside that it makes the board code less readable, and there will
+> never be enough of them to support every board mod that people make.
+> 
+>>>>> What _I_ think would be a nicer way to do it is to implement support
+>>>>> for flattened device trees and get rid of the board code entirely. Or
+>>>>> almost entirely; it depends on how complete we can make the device tree.
+>>>> I don't understand the above paragraph, could you please elaborate?
+>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/powerpc/booting-without-of.txt;h=de4063cb4fdc0ad6abea29d766cae78616837311;hb=HEAD
+>> OK, essentially compile all drivers into the kernel and let the boot-loader tell
+>> us what to activate. Gives a small kernel bloat (which I can live with), but
+>> what if two conflicting drivers (e.g. same I/O pin) are selected by the
+>> flattened tree?
+> 
+> That's how it works today, except that it's the board code which
+> specifies what to activate instead of the boot loader (or a device tree
+> blob in flash.) So there won't be any additional bloat unless you
+> go and select lots of drivers you don't need.
+> 
+> On the other hand, these functions are currently __init, so if we
+> export them for use by modules, it will definitely bloat the kernel.
+> 
+>> But I take your replies that you are adamantly against kernel options for the
+>> atngw100, so I'll drop the subject for now (letting everyone figure out their
+>> favorite way to configure modified boards).
+> 
+> I'm not fundamentally against kernel options for the atngw100. I just
+> don't like cluttering up the board code.
+> 
+> If you add support for an expansion board, you'll definitely need a
+> config option to select it as well. But that option is only used to
+> select the implementation file for that board; it won't add any
+> additional mess to the core NGW100 code.
+> 
+> Have a look at the EVKLCD10x code that was just applied for an example
+> of how to add support for an expansion board:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/hskinnemoen/avr32-2.6.git;a=commitdiff;h=a3bee42f058c2f9fe281df942eff397924630a12
+> 
+> Most of it is LCD-related, so if you only need to add a USART, you'll
+> only need a fraction of the code.
+I see a distinct clutter in setup.c (#ifndef CONFIG_BOARD_ATNGW100_EVKLCD10X)
+:-) (it clearly shows the need for conflict resolution, though)
 
-diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-index cd1f76e..382e38c 100644
---- a/drivers/mfd/wm8350-core.c
-+++ b/drivers/mfd/wm8350-core.c
-@@ -1234,6 +1234,15 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
- 
- 	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0x0);
- 
-+	wm8350_client_dev_register(wm8350, "wm8350-codec",
-+				   &(wm8350->codec.pdev));
-+	wm8350_client_dev_register(wm8350, "wm8350-gpio",
-+				   &(wm8350->gpio.pdev));
-+	wm8350_client_dev_register(wm8350, "wm8350-power",
-+				   &(wm8350->power.pdev));
-+	wm8350_client_dev_register(wm8350, "wm8350-rtc", &(wm8350->rtc.pdev));
-+	wm8350_client_dev_register(wm8350, "wm8350-wdt", &(wm8350->wdt.pdev));
-+
- 	return 0;
- 
- err:
-@@ -1247,8 +1256,13 @@ void wm8350_device_exit(struct wm8350 *wm8350)
- 	int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(wm8350->pmic.pdev); i++)
--		if (wm8350->pmic.pdev[i] != NULL)
--			platform_device_unregister(wm8350->pmic.pdev[i]);
-+		platform_device_unregister(wm8350->pmic.pdev[i]);
-+
-+	platform_device_unregister(wm8350->wdt.pdev);
-+	platform_device_unregister(wm8350->rtc.pdev);
-+	platform_device_unregister(wm8350->power.pdev);
-+	platform_device_unregister(wm8350->gpio.pdev);
-+	platform_device_unregister(wm8350->codec.pdev);
- 
- 	free_irq(wm8350->chip_irq, wm8350);
- 	flush_work(&wm8350->irq_work);
-diff --git a/include/linux/mfd/wm8350/audio.h b/include/linux/mfd/wm8350/audio.h
-index 43342f7..217bb22 100644
---- a/include/linux/mfd/wm8350/audio.h
-+++ b/include/linux/mfd/wm8350/audio.h
-@@ -13,6 +13,8 @@
- #ifndef __LINUX_MFD_WM8350_AUDIO_H_
- #define __LINUX_MFD_WM8350_AUDIO_H_
- 
-+#include <linux/platform_device.h>
-+
- #define WM8350_CLOCK_CONTROL_1                  0x28
- #define WM8350_CLOCK_CONTROL_2                  0x29
- #define WM8350_FLL_CONTROL_1                    0x2A
-@@ -589,4 +591,8 @@
- #define WM8350_IRQ_CODEC_MICSCD			41
- #define WM8350_IRQ_CODEC_MICD			42
- 
-+struct wm8350_codec {
-+	struct platform_device *pdev;
-+};
-+
- #endif
-diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
-index 348101c..6ebf97f 100644
---- a/include/linux/mfd/wm8350/core.h
-+++ b/include/linux/mfd/wm8350/core.h
-@@ -17,7 +17,12 @@
- #include <linux/mutex.h>
- #include <linux/workqueue.h>
- 
-+#include <linux/mfd/wm8350/audio.h>
-+#include <linux/mfd/wm8350/gpio.h>
- #include <linux/mfd/wm8350/pmic.h>
-+#include <linux/mfd/wm8350/rtc.h>
-+#include <linux/mfd/wm8350/supply.h>
-+#include <linux/mfd/wm8350/wdt.h>
- 
- /*
-  * Register values.
-@@ -574,7 +579,12 @@ struct wm8350 {
- 	int chip_irq;
- 
- 	/* Client devices */
-+	struct wm8350_codec codec;
-+	struct wm8350_gpio gpio;
- 	struct wm8350_pmic pmic;
-+	struct wm8350_power power;
-+	struct wm8350_rtc rtc;
-+	struct wm8350_wdt wdt;
- };
- 
- /**
-diff --git a/include/linux/mfd/wm8350/gpio.h b/include/linux/mfd/wm8350/gpio.h
-index c6cd2ca..ed91e8f 100644
---- a/include/linux/mfd/wm8350/gpio.h
-+++ b/include/linux/mfd/wm8350/gpio.h
-@@ -13,6 +13,8 @@
- #ifndef __LINUX_MFD_WM8350_GPIO_H_
- #define __LINUX_MFD_WM8350_GPIO_H_
- 
-+#include <linux/platform_device.h>
-+
- /*
-  * GPIO Registers.
-  */
-@@ -328,6 +330,10 @@ struct wm8350;
- int wm8350_gpio_config(struct wm8350 *wm8350, int gpio, int dir, int func,
- 		       int pol, int pull, int invert, int debounce);
- 
-+struct wm8350_gpio {
-+	struct platform_device *pdev;
-+};
-+
- /*
-  * GPIO Interrupts
-  */
-diff --git a/include/linux/mfd/wm8350/rtc.h b/include/linux/mfd/wm8350/rtc.h
-index cb337ea..dfda69e 100644
---- a/include/linux/mfd/wm8350/rtc.h
-+++ b/include/linux/mfd/wm8350/rtc.h
-@@ -12,6 +12,8 @@
- #ifndef __LINUX_MFD_WM8350_RTC_H
- #define __LINUX_MFD_WM8350_RTC_H
- 
-+#include <linux/platform_device.h>
-+
- /*
-  * Register values.
-  */
-@@ -257,4 +259,8 @@
- #define WM8350_IRQ_RTC_SEC			8
- #define WM8350_IRQ_RTC_ALM			9
- 
-+struct wm8350_rtc {
-+	struct platform_device *pdev;
-+};
-+
- #endif
-diff --git a/include/linux/mfd/wm8350/supply.h b/include/linux/mfd/wm8350/supply.h
-index f1d4317..1c8f3cd 100644
---- a/include/linux/mfd/wm8350/supply.h
-+++ b/include/linux/mfd/wm8350/supply.h
-@@ -13,6 +13,8 @@
- #ifndef __LINUX_MFD_WM8350_SUPPLY_H_
- #define __LINUX_MFD_WM8350_SUPPLY_H_
- 
-+#include <linux/platform_device.h>
-+
- /*
-  * Charger registers
-  */
-@@ -102,4 +104,8 @@
- #define WM8350_IRQ_EXT_WALL_FB			37
- #define WM8350_IRQ_EXT_BAT_FB			38
- 
-+struct wm8350_power {
-+	struct platform_device *pdev;
-+};
-+
- #endif
-diff --git a/include/linux/mfd/wm8350/wdt.h b/include/linux/mfd/wm8350/wdt.h
-index 72fc9f5..f6135b5 100644
---- a/include/linux/mfd/wm8350/wdt.h
-+++ b/include/linux/mfd/wm8350/wdt.h
-@@ -1,7 +1,7 @@
- /*
-  * wdt.h  --  Watchdog Driver for Wolfson WM8350 PMIC
-  *
-- * Copyright 2007 Wolfson Microelectronics PLC
-+ * Copyright 2007, 2008 Wolfson Microelectronics PLC
-  *
-  *  This program is free software; you can redistribute  it and/or modify it
-  *  under  the terms of  the GNU General  Public License as published by the
-@@ -12,6 +12,8 @@
- #ifndef __LINUX_MFD_WM8350_WDT_H_
- #define __LINUX_MFD_WM8350_WDT_H_
- 
-+#include <linux/platform_device.h>
-+
- #define WM8350_WDOG_HIB_MODE                    0x0080
- #define WM8350_WDOG_DEBUG                       0x0040
- #define WM8350_WDOG_MODE_MASK                   0x0030
-@@ -19,4 +21,8 @@
- 
- #define WM8350_IRQ_SYS_WDOG_TO			24
- 
-+struct wm8350_wdt {
-+	struct platform_device *pdev;
-+};
-+
- #endif
+> Also note that it shows a huge problem with the Kconfig approach: Most
+> devices need additional board-specific data. And even though the USART
+> doesn't currently need any of that, it may in the future when we add
+> support for RS485, hardware flow control, etc. How will you deal with
+> that through Kconfig?
+Honestly, I don't know :-(, but it would be nice to be able to select all these
+options wihout having to write the code myself :-)
+
+Question is if there is any way to come up with a solution that makes it
+possible to select software modules for what is present on a specific expansion
+board, my naive thought was that it should be selected by Kconfig (and in that
+vein, my 5 cents is that video for ngw100/stk100x should be selected as
+TCG057QVLAD/PH320240T/LTV350QV, and not as a by-product of selecting a specific
+expansion board, this way it would be easier to add video to a custom expansion
+board withou dragging in unrelated functions like USARTs). Perhaps it is
+possible to solve my problems as well as the stk100x clutter if it is done right?
+
+Regards
+
+Anders
+
 -- 
-1.5.6.5
-
+Anders Blomdell                  Email: anders.blomdell@control.lth.se
+Department of Automatic Control
+Lund University                  Phone:    +46 46 222 4625
+P.O. Box 118                     Fax:      +46 46 138118
+SE-221 00 Lund, Sweden
