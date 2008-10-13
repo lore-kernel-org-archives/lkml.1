@@ -1,106 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbYJMKQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbYJMKRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932687AbYJMKQr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764905AbYJMKH3
+	id S932344AbYJMKRs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765668AbYJMKNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 06:07:29 -0400
-Received: from xenbox.codefidence.com ([92.48.73.16]:40907 "EHLO
-	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764912AbYJMKH1 (ORCPT
+	Mon, 13 Oct 2008 06:13:32 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:24107 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762170AbYJMKNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 06:07:27 -0400
-X-Greylist: delayed 1414 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Oct 2008 06:07:27 EDT
-Message-ID: <48F3185F.9070700@codefidence.com>
-Date: Mon, 13 Oct 2008 11:43:59 +0200
-From: Gilad Ben-Yossef <gilad@codefidence.com>
-Organization: Codefidence Ltd.
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 13 Oct 2008 06:13:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=P/q1IPX0Xwh/IcjpXES9gsTUo1KQuOAinKI8tA7fHBIYuGQwWwhwTYZeMRs/SUX1Av
+         40HnORp0GoozkJy33obxEBJ9DeG9d7MW9ICV0oWcivdAo8ywsMq0Mfs2corzRHyDh0KK
+         a40XsIQl+7ugim7e5mI7/0B9VRTIy1O2cGPm8=
+Message-ID: <48F31F44.9090507@gmail.com>
+Date: Mon, 13 Oct 2008 12:13:24 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: Neshama Parhoti <pneshama@gmail.com>
-CC: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: section mismatch with a platform driver
-References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>	 <20081013085111.GB29938@cs181140183.pp.htv.fi> <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
-In-Reply-To: <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: GIT head no longer boots on x86-64
+References: <20081013102330.46066092@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081013102330.46066092@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neshama Parhoti wrote:
+On 10/13/2008 11:23 AM, Alan Cox wrote:
+> The boot ends on the first module load with a crash
+> 
+> 	BUG: mm/vmalloc.c 118
 
-> Hi Adrian and thank you for the help!
->
-> On Mon, Oct 13, 2008 at 10:51 AM, Adrian Bunk <bunk@kernel.org> wrote:
->   
->> On Mon, Oct 13, 2008 at 10:19:05AM +0200, Neshama Parhoti wrote:
->>     
->>> WARNING: vmlinux.o(.data+0x44bc4): Section mismatch: reference to
->>> .init.text:my_probe_func (between 'my_platform_struct' and
->>> 'debug_level_variable')
->>>
->>> If I understand correctly, it shouts about my probe function being
->>> referenced from the data section:
->>>
->>> static struct platform_driver my_platform_struct = {
->>>       .probe          = my_probe_func,
->>>       .remove         = my_remove,
->>>       .suspend        = my_suspend,
->>>       .resume         = my_resume,
->>>       .driver         = {
->>>               .name = DRIVER_NAME,
->>>       },
->>> };
->>>
->>>       
->> It complains about "my_probe_func", and that's not even in the code
->> you posted.
->>     
->
-> It happens even if I use an empty function like this:
->
-> static int __init my_probe_func(struct platform_device *pdev)
-> {
-> 	return 0;
-> }
->
->
-> any idea what's the problem ?
->   
-That __init macro marks the probe function as "throw after init" - it 
-tells the compiler to put this function in  a separate ELF section that 
-the kernel automatically frees when module init is done, but you are 
-referencing this function in a structure that is not marked as "throw 
-after init".
+Not 187? 118 is currently a line with `{'. Which git SHA? Is DEBUG_VIRTUAL=y?
 
-Can't be sure without seeing the whole picture, but the most probable 
-solution is to drop that __init from the probe function. It's seems 
-wrong as in theory the probe function can be called at any time in the 
-life of the kernel, not just in this module init, even if in practice 
-this will never happen, as I suspect is the case with such a platform 
-driver.
-
-Gilad
-
-
-
--- 
-Gilad Ben-Yossef 
-Chief Coffee Drinker
-
-Codefidence Ltd.
-The code is free, your time isn't.(TM)
-
-Web:    http://codefidence.com
-Email:  gilad@codefidence.com
-Office: +972-8-9316883 ext. 201
-Fax:    +972-8-9316885
-Mobile: +972-52-8260388
-
-	The Doctor: Don't worry, Reinette, just a nightmare. 
-	Everyone has nightmares. Even monsters from under the 
-	bed have nightmares, don't you, monster?
-	Reinette: What do monsters have nightmares about?
-	The Doctor: Me! 
-
+> From
+> 	text_poke
+> 	alternatives_smp_unlock
+> 	alternatives_smp_module_add
+> 	module_finalize
+> 	load_module
+> 
+> while loading the EHCI driver
