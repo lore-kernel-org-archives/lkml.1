@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbYJMJ4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbYJMJ50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763695AbYJMJ4y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760645AbYJMJmx
+	id S1757172AbYJMJ50 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762444AbYJMJmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:42:53 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51001 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762410AbYJMJmw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 05:42:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33244 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762427AbYJMJmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Oct 2008 05:42:52 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 61/80] Move tty lookup/reopen to caller
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:42:49 +0100
-Message-ID: <20081013094244.21645.57935.stgit@localhost.localdomain>
-In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
-References: <20081013092758.21645.2359.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] MN10300: MEI are renaming themselves to Panasonic [ver #2]
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Mon, 13 Oct 2008 10:42:44 +0100
+Message-ID: <20081013094244.26826.85060.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -25,79 +28,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+MEI are renaming themselves to Panasonic, so update the MAINTAINERS record for
+the MN10300 arch.
 
-Move tty_driver_lookup_tty() and tty_reopen() from tty_init_dev()
-into tty_open() (one of the two callers of tty_init_dev()).  These
-calls are not really required in ptmx_open(), the other caller,
-since ptmx_open() would be setting up a new tty.
-
-Changelog[v2]:
-	- remove the lookup and reopen calls from ptmx_open
-	- merge with recent changes to ttydev tree
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Signed-off-by: Alan Cox <alan@redhat.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- drivers/char/tty_io.c |   31 ++++++++++++++++---------------
- 1 files changed, 16 insertions(+), 15 deletions(-)
+ MAINTAINERS |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index e881e9e..36098ee 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1376,19 +1376,6 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx,
- 	struct tty_struct *tty;
- 	int retval;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6ba3ee8..74b8082 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2797,15 +2797,6 @@ L:	linux-mtd@lists.infradead.org
+ T:	git git://git.infradead.org/mtd-2.6.git
+ S:	Maintained
  
--	/* check whether we're reopening an existing tty */
--	tty = tty_driver_lookup_tty(driver, idx);
+-MEI MN10300/AM33 PORT
+-P:	David Howells
+-M:	dhowells@redhat.com
+-P:	Koichi Yasutake
+-M:	yasutake.koichi@jp.panasonic.com
+-L:	linux-am33-list@redhat.com (moderated for non-subscribers)
+-W:	ftp://ftp.redhat.com/pub/redhat/gnupro/AM33/
+-S:	Maintained
 -
--	if (IS_ERR(tty))
--		return tty;
--
--	if (tty) {
--		retval = tty_reopen(tty);
--		if (retval)
--			return ERR_PTR(retval);
--		return tty;
--	}
--
- 	/* Check if pty master is being opened multiple times */
- 	if (driver->subtype == PTY_TYPE_MASTER &&
- 		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok)
-@@ -1790,7 +1777,7 @@ void tty_release_dev(struct file *filp)
+ MICROTEK X6 SCANNER
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+@@ -3170,6 +3161,15 @@ M:	olof@lixom.net
+ L:	i2c@lm-sensors.org
+ S:	Maintained
  
- static int __tty_open(struct inode *inode, struct file *filp)
- {
--	struct tty_struct *tty;
-+	struct tty_struct *tty = NULL;
- 	int noctty, retval;
- 	struct tty_driver *driver;
- 	int index;
-@@ -1847,7 +1834,21 @@ retry_open:
- 		return -ENODEV;
- 	}
- got_driver:
--	tty = tty_init_dev(driver, index, 0);
-+	if (!tty) {
-+		/* check whether we're reopening an existing tty */
-+		tty = tty_driver_lookup_tty(driver, index);
++PANASONIC MN10300/AM33 PORT
++P:	David Howells
++M:	dhowells@redhat.com
++P:	Koichi Yasutake
++M:	yasutake.koichi@jp.panasonic.com
++L:	linux-am33-list@redhat.com (moderated for non-subscribers)
++W:	ftp://ftp.redhat.com/pub/redhat/gnupro/AM33/
++S:	Maintained
 +
-+		if (IS_ERR(tty))
-+			return PTR_ERR(tty);
-+	}
-+
-+	if (tty) {
-+		retval = tty_reopen(tty);
-+		if (retval)
-+			tty = ERR_PTR(retval);
-+	} else
-+		tty = tty_init_dev(driver, index, 0);
-+
- 	mutex_unlock(&tty_mutex);
- 	tty_driver_kref_put(driver);
- 	if (IS_ERR(tty))
+ PARALLEL PORT SUPPORT
+ L:	linux-parport@lists.infradead.org (subscribers-only)
+ S:	Orphan
 
