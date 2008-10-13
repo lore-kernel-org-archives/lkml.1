@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYJMVWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760164AbYJMVXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbYJMVWx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYJMVWk
+	id S1760164AbYJMVXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbYJMVWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:22:40 -0400
-Received: from 1-1-4-20a.ras.sth.bostream.se ([82.182.72.90]:45427 "EHLO
-	amd.kenjo.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756004AbYJMVWj (ORCPT
+	Mon, 13 Oct 2008 17:22:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46916 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759670AbYJMVWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:22:39 -0400
-Subject: Re: weird throughput on write to SATA disk
-From: kenneth johansson <ken@kenjo.org>
-To: Grant Grundler <grundler@google.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
-References: <1223925629.3947.7.camel@duo>
-	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 23:22:36 +0200
-Message-Id: <1223932956.3947.22.camel@duo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Oct 2008 17:22:47 -0400
+Date: Mon, 13 Oct 2008 14:22:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] intermediate SCSI updates
+In-Reply-To: <1223925606.5566.20.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
+References: <1223909115.5566.13.camel@localhost.localdomain>  <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org> <1223925606.5566.20.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 14:07 -0700, Grant Grundler wrote:
-> On Mon, Oct 13, 2008 at 12:19 PM, kenneth johansson <ken@kenjo.org> wrote:
-> > When writing data to /dev/sdb (that is the whole disk and no filesystem)
-> > it starts out ok around 100MB/sec but soon end up doing considerably
-> > worse. For prolonged times lasting several minutes it hovers in the
-> > 20-30MB/sec.
+
+
+On Mon, 13 Oct 2008, James Bottomley wrote:
 > 
-> Is the application using "O_DIRECT"?
+> Not exactly.  It has to be rebased to run as a postmerge tree, but it
+> does get tested by me (admittedly on my limited set of machines, which
+> don't include any actual devices that do block integrity) every time I
+> rebase.
 
-no just open then write no fancy stuff
+What I'm upset about is that this has apparently gotten not even some 
+trivial testing of the _default_ build. I'm not talking about any odd 
+config options here. I'm literally talking about the only _sane_ config 
+option case.
 
-> If not, could be issue with how VM writeback is (not) working.
+You yourself admit that even you don't have any actual devices that can 
+support the block integrity stuff, yet you have apparently only compile- 
+tested the insane case of still enabling that thing and apparently nobody 
+else has bothered either.
 
-the access pattern is the simplest possible. Is there any knobs I could
-try to adjust.
+Was this in linux-next?
 
-> Can you reproduce this using fio or even "dd"?
-> (See git://git.kernel.dk/fio)
+Is linux-next coverage REALLY so weak that it doesn't even test the 
+default config options, much less any random options? What's the point of 
+linux-next then?
 
-dd is having the same effect. 
+Again, the date on that thing is claimed to be September 19th, although it 
+was obviously committed later.
 
+> However, does this work for you?  It fixes the problem for me.
 
+I could trivially have fixed the compile issue. That's not what upsets me. 
+What upsets me is that this set of patches apparently had almost nobody 
+looking at them at all before they got sent to me.
+
+If it was some odd and unusual config option, I'd be less upset. hey, 
+stuff happens. But it sure as heck was nothing of the sort!
+
+			Linus
