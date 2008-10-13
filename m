@@ -1,121 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbYJMP1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYJMP3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758202AbYJMP1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 11:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbYJMP1f
+	id S1758283AbYJMP3B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 11:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYJMP2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 11:27:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:64873 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754959AbYJMP1e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 11:27:34 -0400
-Message-ID: <5555373.1223911646283.SLOX.WebMail.wwwrun@exchange.deltacomputer.de>
-Date: Mon, 13 Oct 2008 17:27:26 +0200 (CEST)
-From: Oliver Weihe <o.weihe@deltacomputer.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: NUMA allocator on Opteron systems does non-local allocation on node0
+	Mon, 13 Oct 2008 11:28:52 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:51881 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754961AbYJMP2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 11:28:51 -0400
+Date: Mon, 13 Oct 2008 17:28:52 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Anders Blomdell <anders.blomdell@control.lth.se>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081013104622.GK12131@one.firstfloor.org>
+Subject: Re: [PATCH] Make ATNGW100 serial ports configurable
+Message-ID: <20081013172852.393584be@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <48F35F50.3000704@control.lth.se>
+References: <48EF6762.2080205@control.lth.se>
+	<20081010165814.1c62eabf@hskinnemo-gx745.norway.atmel.com>
+	<48EF7949.4010108@control.lth.se>
+	<20081013122727.7298bd4a@hskinnemo-gx745.norway.atmel.com>
+	<48F32899.5000006@control.lth.se>
+	<20081013143447.5e0519b3@hskinnemo-gx745.norway.atmel.com>
+	<48F3473E.6070305@control.lth.se>
+	<20081013153318.7ed8e8d8@hskinnemo-gx745.norway.atmel.com>
+	<48F35F50.3000704@control.lth.se>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (normal)
-X-Mailer: SuSE Linux Openexchange Server 4 - WebMail (Build 2.4160)
-X-Operating-System: Linux 2.4.21-295-smp i386 (JVM 1.3.1_13)
-Organization: Delta Computer Products GmbH
-References: <20081013104622.GK12131@one.firstfloor.org>
-X-AVK-Virus-Check: AVF 19.98;12.10.2008
-X-AVK-Spam-Check: 1;str=0001.0A090204.48F368E1.0137,ss=1,fgs=0
-X-Provags-ID: V01U2FsdGVkX1+GCnemAKE4q/yR88zka8H8qTrb5IIlEid2dLF
- ItUC8eAtBKWrI7nLraCQ9J9HkMlDD/8SCv/bDLb9njKEhrda63
- iXkl0hU2BYtL46L9DJyww==
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 13 Oct 2008 15:28:36.0184 (UTC) FILETIME=[5C0A3D80:01C92D48]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Anders Blomdell <anders.blomdell@control.lth.se> wrote:
+> Haavard Skinnemoen wrote:
+> > Really? I personally think out-of-tree modules is a real hassle causing
+> > extra work each time I need to update the kernel, whether it's on my
+> > embedded target or my PC.
+> Depends on if it's you or somebody else (who doesn't care about your code) that
+> rebuilds the kernel. Since I plan to use some tens of atngw100's eventually,
+> with at least 3 different expansions boards, a solution that doesn't need 3
+> different kernels (i.e. loadable modules) is much preferred to a Kconfig (I know
+> I started out with this, but one does change opinion :-) occasionally) or
+> in-tree init code.
 
-it seems that my reproducer is not very good. :(
-It "works" much better when you start several processes at once.
+So what you really need is device tree support.
 
-for i in `seq 0 3`
-do
-  numactl --cpunodebind=${i} ./app &
-done
-wait
+I suppose modules would do the trick in your case, but it sounds like a
+very specialized setup, and I don't feel too good about bloating the
+kernel for everyone else just to support this kind of thing.
 
-"app" still allocates some memory (7GiB per process) and fills the array
-with data.
+Device tree support would probably make the kernel bigger too, but I
+think that would be mostly __init code, so it doesn't matter as much.
 
+> > Have a look at the EVKLCD10x code that was just applied for an example
+> > of how to add support for an expansion board:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/hskinnemoen/avr32-2.6.git;a=commitdiff;h=a3bee42f058c2f9fe281df942eff397924630a12
+> > 
+> > Most of it is LCD-related, so if you only need to add a USART, you'll
+> > only need a fraction of the code.
+> I see a distinct clutter in setup.c (#ifndef CONFIG_BOARD_ATNGW100_EVKLCD10X)
+> :-) (it clearly shows the need for conflict resolution, though)
 
-I've noticed this behaviour during some HPL (Linpack benchmark from/for
-top500.org) runs. For small data sets there's no difference in speed
-between the kernels while for big data sets (allmost the whole memory)
-2.6.23 and newer kernels are slower than 2.6.22.
-I'm using OpenMPI with the runtime option "--mca mpi_paffinity_alone 1"
-to pin each process on a specific CPU.
+Yes, but it's hard to avoid that, it's confined to the support code
+for that particular expansion board, and the clutter is there to
+support actual variations of the board. It could have been moved into
+separate files, but that would have led to more duplication.
 
-The bad news is: I can crash allmost every Quadcore Opteron system with
-kernels 2.6.21.x to 2.6.24.x with "parallel memory allocation and
-filling the memory with data" (parallel means: there is one process per
-core doing this). While it takes some time on dualsocket machines it
-takes often less than 1 minute on quadsocket quadcores until the system
-freezes.
-Yust for the case it is some vendor specific BIOS bug: we're using
-supermicro mainboards.
+It's all about finding the right balance, really.
 
-> [Another copy of the reply with linux-kernel added this time]
-> 
-> > In my setup I'm allocating an array of ~7GiB memory size in a
-> > singlethreaded application.
-> > Startup: numactl --cpunodebind=X ./app
-> > For X=1,2,3 it works as expected, all memory is allocated on the
-> > local
-> > node.
-> > For X=0 I can see the memory beeing allocated on node0 as long as
-> > ~3GiB
-> > are "free" on node0. At this point the kernel starts using memory
-> > from
-> > node1 for the app!
-> 
-> Hmm, that sounds like it doesn't want to use the 4GB DMA zone.
-> 
-> Normally there should be no protection on it, but perhaps something 
-> broke.
-> 
-> What does cat /proc/sys/owmem_reserve_ratio say?
+I didn't quite understand what you mean by "conflict resolution".
 
-2.6.22.x:
-# cat /proc/sys/vm/lowmem_reserve_ratio
-256     256
+> > Also note that it shows a huge problem with the Kconfig approach: Most
+> > devices need additional board-specific data. And even though the USART
+> > doesn't currently need any of that, it may in the future when we add
+> > support for RS485, hardware flow control, etc. How will you deal with
+> > that through Kconfig?
+> Honestly, I don't know :-(, but it would be nice to be able to select all these
+> options wihout having to write the code myself :-)
 
-2.6.23.8 (and above)
-# cat /proc/sys/vm/lowmem_reserve_ratio
-256     256     32
+But is wading through several dozen config options really that much
+easier than writing ten lines of code?
 
+> Question is if there is any way to come up with a solution that makes it
+> possible to select software modules for what is present on a specific expansion
+> board, my naive thought was that it should be selected by Kconfig (and in that
+> vein, my 5 cents is that video for ngw100/stk100x should be selected as
+> TCG057QVLAD/PH320240T/LTV350QV, and not as a by-product of selecting a specific
+> expansion board, this way it would be easier to add video to a custom expansion
+> board withou dragging in unrelated functions like USARTs). Perhaps it is
+> possible to solve my problems as well as the stk100x clutter if it is done right?
 
-> > For parallel realworld apps I've seen a performance penalty of 30%
-> > compared to older kernels!
-> 
-> Compared to what older kernels? When did it start?
+Possibly. But adding options for the USARTs is only solving a tiny part
+of the problem, and I'm worried that solving the rest in the same
+manner is going to end up as a spectacular mess. If you can prove me
+wrong, I'm all for it.
 
-I've tested some kernel Versions that I've laying around here...
-working fine: 2.6.22.18-0.2-default (openSUSE) / 2.6.22.9 (kernel.org) 
-showing the described behaviour: 2.6.23.8; 2.6.24.4; 2.6.25.4; 2.6.26.5;
-2.6.27
-
-
-> 
-> -Andi
-> 
-> -- 
-> ak@linux.intel.com
-> 
-
-
--- 
-
-Regards,
-Oliver Weihe
-
+Haavard
