@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758558AbYJMSM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYJMSMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758558AbYJMSM2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 14:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbYJMSMP
+	id S1758170AbYJMSMx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 14:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbYJMSMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 14:12:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42669 "EHLO
+	Mon, 13 Oct 2008 14:12:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42692 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757176AbYJMSML convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757888AbYJMSMV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 14:12:11 -0400
-Date: Mon, 13 Oct 2008 14:52:12 -0200
+	Mon, 13 Oct 2008 14:12:21 -0400
+Date: Mon, 13 Oct 2008 15:10:56 -0200
 From: Mauro Carvalho Chehab <mchehab@infradead.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
        linux-kernel@vger.kernel.org
 Subject: [GIT PATCHES for 2.6.28] V4L/DVB updates
-Message-ID: <20081013145212.7e366541@pedra.chehab.org>
+Message-ID: <20081013151056.3ac41739@pedra.chehab.org>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
