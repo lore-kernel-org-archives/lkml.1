@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932333AbYJMKEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765757AbYJMKE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932333AbYJMKEe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761003AbYJMJpc
+	id S1765757AbYJMKE4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762065AbYJMJpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:45:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51046 "EHLO
+	Mon, 13 Oct 2008 05:45:42 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51049 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762003AbYJMJpa (ORCPT
+	with ESMTP id S1762061AbYJMJpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:45:30 -0400
+	Mon, 13 Oct 2008 05:45:40 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 76/80] serial: fix device name reporting when minor space is
-	shared between drivers
+Subject: [PATCH 77/80] tty: tty_io.c shadows sparse fix
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:45:26 +0100
-Message-ID: <20081013094522.21645.91366.stgit@localhost.localdomain>
+Date: Mon, 13 Oct 2008 10:45:36 +0100
+Message-ID: <20081013094531.21645.34716.stgit@localhost.localdomain>
 In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
 References: <20081013092758.21645.2359.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -26,125 +25,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David S. Miller <davem@davemloft.net>
+From: Jason Wessel <jason.wessel@windriver.com>
 
-The multiple drivers share the minor space occupied by a particular major
-number, the actual index within the device name's space is indicated by
-the tty_driver->name_base + uart_port->line
+drivers/char/tty_io.c:1413:17: warning: symbol 'buf' shadows an earlier one
+drivers/char/tty_io.c:1379:20: originally declared here
 
-Another usable formula is (uart_driver->minor - MINOR_BASE) + port->line
-
-Use those to print the device names properly in such situations in
-serial_core.c and 8250.c
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/serial/8250.c        |   22 +++++++++++++++-------
- drivers/serial/serial_core.c |    7 +++++--
- 2 files changed, 20 insertions(+), 9 deletions(-)
+ drivers/char/tty_io.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index db2cdc1..d4104a3 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -57,6 +57,13 @@ static unsigned int share_irqs = SERIAL8250_SHARE_IRQS;
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 502cad6..7053d63 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1026,19 +1026,19 @@ static inline ssize_t do_tty_write(
  
- static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
+ 	/* write_buf/write_cnt is protected by the atomic_write_lock mutex */
+ 	if (tty->write_cnt < chunk) {
+-		unsigned char *buf;
++		unsigned char *buf_chunk;
  
-+static struct uart_driver serial8250_reg;
-+
-+static int serial_index(struct uart_port *port)
-+{
-+	return (serial8250_reg.minor - 64) + port->line;
-+}
-+
- /*
-  * Debugging.
-  */
-@@ -997,7 +1004,7 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
- 		return;
+ 		if (chunk < 1024)
+ 			chunk = 1024;
  
- 	DEBUG_AUTOCONF("ttyS%d: autoconf (0x%04x, 0x%p): ",
--			up->port.line, up->port.iobase, up->port.membase);
-+		       serial_index(&up->port), up->port.iobase, up->port.membase);
- 
- 	/*
- 	 * We really do need global IRQs disabled here - we're going to
-@@ -1132,8 +1139,8 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
- 	if (up->capabilities != uart_config[up->port.type].flags) {
- 		printk(KERN_WARNING
- 		       "ttyS%d: detected caps %08x should be %08x\n",
--			up->port.line, up->capabilities,
--			uart_config[up->port.type].flags);
-+		       serial_index(&up->port), up->capabilities,
-+		       uart_config[up->port.type].flags);
- 	}
- 
- 	up->port.fifosize = uart_config[up->port.type].fifo_size;
-@@ -1857,7 +1864,8 @@ static int serial8250_startup(struct uart_port *port)
- 	 */
- 	if (!(up->port.flags & UPF_BUGGY_UART) &&
- 	    (serial_inp(up, UART_LSR) == 0xff)) {
--		printk("ttyS%d: LSR safety check engaged!\n", up->port.line);
-+		printk(KERN_INFO "ttyS%d: LSR safety check engaged!\n",
-+		       serial_index(&up->port));
- 		return -ENODEV;
- 	}
- 
-@@ -1912,7 +1920,8 @@ static int serial8250_startup(struct uart_port *port)
- 		 */
- 		if (!(iir1 & UART_IIR_NO_INT) && (iir & UART_IIR_NO_INT)) {
- 			up->bugs |= UART_BUG_THRE;
--			pr_debug("ttyS%d - using backup timer\n", port->line);
-+			pr_debug("ttyS%d - using backup timer\n",
-+				 serial_index(port));
+-		buf = kmalloc(chunk, GFP_KERNEL);
+-		if (!buf) {
++		buf_chunk = kmalloc(chunk, GFP_KERNEL);
++		if (!buf_chunk) {
+ 			ret = -ENOMEM;
+ 			goto out;
  		}
+ 		kfree(tty->write_buf);
+ 		tty->write_cnt = chunk;
+-		tty->write_buf = buf;
++		tty->write_buf = buf_chunk;
  	}
  
-@@ -1972,7 +1981,7 @@ static int serial8250_startup(struct uart_port *port)
- 		if (!(up->bugs & UART_BUG_TXEN)) {
- 			up->bugs |= UART_BUG_TXEN;
- 			pr_debug("ttyS%d - enabling bad tx status workarounds\n",
--				 port->line);
-+				 serial_index(port));
- 		}
- 	} else {
- 		up->bugs &= ~UART_BUG_TXEN;
-@@ -2633,7 +2642,6 @@ static int serial8250_console_early_setup(void)
- 	return serial8250_find_port_for_earlycon();
- }
- 
--static struct uart_driver serial8250_reg;
- static struct console serial8250_console = {
- 	.name		= "ttyS",
- 	.write		= serial8250_console_write,
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 308588e..6bdf336 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2051,7 +2051,8 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
- 					"transmitter\n",
- 			       port->dev ? port->dev->bus_id : "",
- 			       port->dev ? ": " : "",
--			       drv->dev_name, port->line);
-+			       drv->dev_name,
-+			       drv->tty_driver->name_base + port->line);
- 
- 		ops->shutdown(port);
- 	}
-@@ -2176,7 +2177,9 @@ uart_report_port(struct uart_driver *drv, struct uart_port *port)
- 	printk(KERN_INFO "%s%s%s%d at %s (irq = %d) is a %s\n",
- 	       port->dev ? port->dev->bus_id : "",
- 	       port->dev ? ": " : "",
--	       drv->dev_name, port->line, address, port->irq, uart_type(port));
-+	       drv->dev_name,
-+	       drv->tty_driver->name_base + port->line,
-+	       address, port->irq, uart_type(port));
- }
- 
- static void
+ 	/* Do the write .. */
 
