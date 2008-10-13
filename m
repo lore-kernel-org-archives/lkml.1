@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbYJMNrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYJMN70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758660AbYJMNrE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYJMNqx
+	id S1754825AbYJMN70 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 09:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYJMN7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:46:53 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39645 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754144AbYJMNqw (ORCPT
+	Mon, 13 Oct 2008 09:59:16 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46884 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbYJMN7P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:46:52 -0400
-Date: Mon, 13 Oct 2008 15:53:29 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Phil Endecott <phil_wueww_endecott@chezphil.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
-Message-ID: <20081013135329.GM12131@one.firstfloor.org>
-References: <1223895506638@dmwebmail.dmwebmail.chezphil.org> <87zll8r86h.fsf@basil.nowhere.org> <20081013091848.7dcdaaac@infradead.org> <20081013133051.GL12131@one.firstfloor.org> <20081013093014.607c5925@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081013093014.607c5925@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 13 Oct 2008 09:59:15 -0400
+To: nickpiggin@yahoo.com.au
+CC: hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       cl@linux-foundation.org, akpm@linux-foundation.org
+In-reply-to: <200810132354.30789.nickpiggin@yahoo.com.au> (message from Nick
+	Piggin on Mon, 13 Oct 2008 23:54:30 +1100)
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au>
+Message-Id: <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 13 Oct 2008 15:59:00 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 09:30:14AM -0400, Arjan van de Ven wrote:
-> On Mon, 13 Oct 2008 15:30:51 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > Core2 instruction set with tune=generic is still the best to set.
-> > 
-> > Not sure that is true. These option are mostly for the compiler.
-> 
-> exactly, and our benchmarks show that tune=generic is best right now
+On Mon, 13 Oct 2008, Nick Piggin wrote:
+> In many cases, yes it seems to. And some of the approaches even if
+> they work now seem like they *might* cause problematic constraints
+> in the design... Have Al and Christoph reviewed the dentry and inode
+> patches?
 
-So it doesn't matter as long as you set X86_GENERIC (and 
-CONFIG_CC_OPTIMIZE_FOR_SIZE)
+This d_invalidate() looks suspicious to me:
 
-It would probably make sense to add a setting for those.
++/*
++ * Slab has dropped all the locks. Get rid of the refcount obtained
++ * earlier and also free the object.
++ */
++static void kick_dentries(struct kmem_cache *s,
++                               int nr, void **v, void *private)
++{
++       struct dentry *dentry;
++       int i;
++
++       /*
++        * First invalidate the dentries without holding the dcache lock
++        */
++       for (i = 0; i < nr; i++) {
++               dentry = v[i];
++
++               if (dentry)
++                       d_invalidate(dentry);
++       }
 
--Andi
+I think it's wrong to unhash dentries while they are possibly still
+being used.  You can do the shrink_dcache_parent() here, but should
+leave the unhashing to be done by prune_one_dentry(), after it's been
+checked that there are no other users of the dentry.
 
--- 
-ak@linux.intel.com
+Miklos
