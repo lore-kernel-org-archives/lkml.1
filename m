@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764804AbYJMJz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbYJMJzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764804AbYJMJz0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761387AbYJMJmZ
+	id S932383AbYJMJzw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761401AbYJMJme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:42:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50992 "EHLO
+	Mon, 13 Oct 2008 05:42:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50995 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761425AbYJMJmX (ORCPT
+	with ESMTP id S1762226AbYJMJmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:42:23 -0400
+	Mon, 13 Oct 2008 05:42:33 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 58/80] tty: More driver operations
+Subject: [PATCH 59/80] tty: Finish fixing up the init_dev interface to use
+	ERR_PTR
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:42:19 +0100
-Message-ID: <20081013094215.21645.81143.stgit@localhost.localdomain>
+Date: Mon, 13 Oct 2008 10:42:29 +0100
+Message-ID: <20081013094224.21645.17129.stgit@localhost.localdomain>
 In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
 References: <20081013092758.21645.2359.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -27,196 +28,174 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-We have the lookup operation abstracted which is nice for pty cleanup but
-we really want to abstract the add/remove entries as well so that we can
-pull the pty code out of the tty core and create a clear defined interface
-for the tty driver table.
+Original suggestion and proposal from Sukadev Bhattiprolu.
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/pty.c         |   16 ++++++++++++
- drivers/char/tty_io.c      |   57 ++++++++++++++++++++++++++++++++++++--------
- include/linux/tty_driver.h |   16 ++++++++++++
- 3 files changed, 79 insertions(+), 10 deletions(-)
+ drivers/char/pty.c    |    6 ++++--
+ drivers/char/tty_io.c |   52 ++++++++++++++++++++-----------------------------
+ include/linux/tty.h   |    4 ++--
+ 3 files changed, 27 insertions(+), 35 deletions(-)
 
 
 diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-index 0fdfa05..4e6490b 100644
+index 4e6490b..c984500 100644
 --- a/drivers/char/pty.c
 +++ b/drivers/char/pty.c
-@@ -433,8 +433,22 @@ static void pty_shutdown(struct tty_struct *tty)
- 	kfree(tty->termios_locked);
- }
+@@ -501,11 +501,13 @@ static int __ptmx_open(struct inode *inode, struct file *filp)
+ 		return index;
  
-+/* We have no need to install and remove our tty objects as devpts does all
-+   the work for us */
-+
-+static int pty_install(struct tty_driver *driver, struct tty_struct *tty)
-+{
-+	return 0;
-+}
-+
-+static void pty_remove(struct tty_driver *driver, struct tty_struct *tty)
-+{
-+}
-+
- static const struct tty_operations ptm_unix98_ops = {
- 	.lookup = ptm_unix98_lookup,
-+	.install = pty_install,
-+	.remove = pty_remove,
- 	.open = pty_open,
- 	.close = pty_close,
- 	.write = pty_write,
-@@ -449,6 +463,8 @@ static const struct tty_operations ptm_unix98_ops = {
+ 	mutex_lock(&tty_mutex);
+-	retval = tty_init_dev(ptm_driver, index, &tty, 1);
++	tty = tty_init_dev(ptm_driver, index, 1);
+ 	mutex_unlock(&tty_mutex);
  
- static const struct tty_operations pty_unix98_ops = {
- 	.lookup = pts_unix98_lookup,
-+	.install = pty_install,
-+	.remove = pty_remove,
- 	.open = pty_open,
- 	.close = pty_close,
- 	.write = pty_write,
+-	if (retval)
++	if (IS_ERR(tty)) {
++		retval = PTR_ERR(tty);
+ 		goto out;
++	}
+ 
+ 	set_bit(TTY_PTY_LOCK, &tty->flags); /* LOCK THE SLAVE */
+ 	filp->private_data = tty;
 diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 47aa437..888380f 100644
+index 888380f..b0ad488 100644
 --- a/drivers/char/tty_io.c
 +++ b/drivers/char/tty_io.c
-@@ -1189,7 +1189,7 @@ static void pty_line_name(struct tty_driver *driver, int index, char *p)
- }
+@@ -1324,35 +1324,32 @@ static int tty_reopen(struct tty_struct *tty)
+  * relaxed for the (most common) case of reopening a tty.
+  */
  
- /**
-- *	pty_line_name	-	generate name for a tty
-+ *	tty_line_name	-	generate name for a tty
-  *	@driver: the tty driver in use
-  *	@index: the minor number
-  *	@p: output buffer of at least 7 bytes
-@@ -1222,13 +1222,51 @@ struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver, int idx)
- 	if (driver->ops->lookup)
- 		return driver->ops->lookup(driver, idx);
+-int tty_init_dev(struct tty_driver *driver, int idx,
+-	struct tty_struct **ret_tty, int first_ok)
++struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx,
++								int first_ok)
+ {
+ 	struct tty_struct *tty, *o_tty;
+ 	struct ktermios *tp, **tp_loc, *o_tp, **o_tp_loc;
+ 	struct ktermios *ltp, **ltp_loc, *o_ltp, **o_ltp_loc;
+-	int retval = 0;
++	int retval;
  
--		tty = driver->ttys[idx];
-+	tty = driver->ttys[idx];
- 	return tty;
- }
- 
- /**
-- *	tty_reopen()	- fast re-open of an open tty
-- *	@tty	- the tty to open
-+ *	tty_driver_install_tty() - install a tty entry in the driver
-+ *	@driver: the driver for the tty
-+ *	@tty: the tty
-+ *
-+ *	Install a tty object into the driver tables. The tty->index field
-+ *	will be set by the time this is called.
-+ *
-+ *	Locking: tty_mutex for now
-+ */
-+static int tty_driver_install_tty(struct tty_driver *driver,
-+						struct tty_struct *tty)
-+{
-+	if (driver->ops->install)
-+		return driver->ops->install(driver, tty);
-+	driver->ttys[tty->index] = tty;
-+	return 0;
-+}
+ 	/* check whether we're reopening an existing tty */
+ 	tty = tty_driver_lookup_tty(driver, idx);
+-	if (IS_ERR(tty)) {
+-		retval = PTR_ERR(tty);
+-		goto end_init;
+-	}
 +
-+/**
-+ *	tty_driver_remove_tty() - remove a tty from the driver tables
-+ *	@driver: the driver for the tty
-+ *	@idx:	 the minor number
-+ *
-+ *	Remvoe a tty object from the driver tables. The tty->index field
-+ *	will be set by the time this is called.
-+ *
-+ *	Locking: tty_mutex for now
-+ */
-+static void tty_driver_remove_tty(struct tty_driver *driver,
-+						struct tty_struct *tty)
-+{
-+	if (driver->ops->remove)
-+		driver->ops->remove(driver, tty);
-+	else
-+		driver->ttys[tty->index] = NULL;
-+}
++	if (IS_ERR(tty))
++		return tty;
+ 
+ 	if (tty) {
+ 		retval = tty_reopen(tty);
+ 		if (retval)
+-			return retval;
+-		*ret_tty = tty;
+-		return 0;
++			return ERR_PTR(retval);
++		return tty;
+ 	}
+ 
+ 	/* Check if pty master is being opened multiple times */
+ 	if (driver->subtype == PTY_TYPE_MASTER &&
+-		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok) {
+-		retval = -EIO;
+-		goto end_init;
+-	}
++		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok)
++		return ERR_PTR(-EIO);
 +
-+/*
-+ * 	tty_reopen()	- fast re-open of an open tty
-+ * 	@tty	- the tty to open
-  *
-  *	Return 0 on success, -errno on error.
-  *
-@@ -1423,11 +1461,7 @@ int tty_init_dev(struct tty_driver *driver, int idx,
- 	 * All structures have been allocated, so now we install them.
- 	 * Failures after this point use release_tty to clean up, so
- 	 * there's no need to null out the local pointers.
--	 *
--	 * FIXME: We want a 'driver->install method ?
+ 	/*
+ 	 * First time open is complex, especially for PTY devices.
+ 	 * This code guarantees that either everything succeeds and the
+@@ -1361,10 +1358,8 @@ int tty_init_dev(struct tty_driver *driver, int idx,
+ 	 * and locked termios may be retained.)
  	 */
--	if (!(driver->flags & TTY_DRIVER_DEVPTS_MEM))
--		driver->ttys[idx] = tty;
  
- 	if (!*tp_loc)
- 		*tp_loc = tp;
-@@ -1441,6 +1475,9 @@ int tty_init_dev(struct tty_driver *driver, int idx,
+-	if (!try_module_get(driver->owner)) {
+-		retval = -ENODEV;
+-		goto end_init;
+-	}
++	if (!try_module_get(driver->owner))
++		return ERR_PTR(-ENODEV);
+ 
+ 	o_tty = NULL;
+ 	tp = o_tp = NULL;
+@@ -1475,7 +1470,8 @@ int tty_init_dev(struct tty_driver *driver, int idx,
  	tty_driver_kref_get(driver);
  	tty->count++;
  
-+	if (tty_driver_install_tty(driver, tty) < 0)
-+		goto release_mem_out;
-+
+-	if (tty_driver_install_tty(driver, tty) < 0)
++	retval = tty_driver_install_tty(driver, tty);
++	if (retval < 0)
+ 		goto release_mem_out;
+ 
  	/*
- 	 * Structures all installed ... call the ldisc open routines.
- 	 * If we fail here just call release_tty to clean up.  No need
-@@ -1502,7 +1539,7 @@ EXPORT_SYMBOL(tty_free_termios);
+@@ -1485,14 +1481,9 @@ int tty_init_dev(struct tty_driver *driver, int idx,
+ 	 */
  
- void tty_shutdown(struct tty_struct *tty)
- {
--	tty->driver->ttys[tty->index] = NULL;
-+	tty_driver_remove_tty(tty->driver, tty);
- 	tty_free_termios(tty);
+ 	retval = tty_ldisc_setup(tty, o_tty);
+-
+ 	if (retval)
+ 		goto release_mem_out;
+-
+-	*ret_tty = tty;
+-	/* All paths come through here to release the mutex */
+-end_init:
+-	return retval;
++	return tty;
+ 
+ 	/* Release locally allocated memory ... nothing placed in slots */
+ free_mem_out:
+@@ -1507,8 +1498,7 @@ free_mem_out:
+ 
+ fail_no_mem:
+ 	module_put(driver->owner);
+-	retval = -ENOMEM;
+-	goto end_init;
++	return ERR_PTR(-ENOMEM);
+ 
+ 	/* call the tty release_tty routine to clean out this slot */
+ release_mem_out:
+@@ -1516,7 +1506,7 @@ release_mem_out:
+ 		printk(KERN_INFO "tty_init_dev: ldisc open failed, "
+ 				 "clearing slot %d\n", idx);
+ 	release_tty(tty, idx);
+-	goto end_init;
++	return ERR_PTR(retval);
  }
- EXPORT_SYMBOL(tty_shutdown);
-@@ -1615,7 +1652,7 @@ void tty_release_dev(struct file *filp)
- 				  "free (%s)\n", tty->name);
- 		return;
- 	}
--	if (!(tty->driver->flags & TTY_DRIVER_DEVPTS_MEM)) {
-+	if (!devpts) {
- 		if (tty != tty->driver->ttys[idx]) {
- 			printk(KERN_DEBUG "tty_release_dev: driver.table[%d] not tty "
- 			       "for (%s)\n", idx, tty->name);
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index ba891dd..005d06a 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -15,6 +15,20 @@
-  *
-  *	Optional method. Default behaviour is to use the ttys array
-  *
-+ * int (*install)(struct tty_driver *self, struct tty_struct *tty)
-+ *
-+ *	Install a new tty into the tty driver internal tables. Used in
-+ *	conjunction with lookup and remove methods.
-+ *
-+ *	Optional method. Default behaviour is to use the ttys array
-+ *
-+ * void (*remove)(struct tty_driver *self, struct tty_struct *tty)
-+ *
-+ *	Remove a closed tty from the tty driver internal tables. Used in
-+ *	conjunction with lookup and remove methods.
-+ *
-+ *	Optional method. Default behaviour is to use the ttys array
-+ *
-  * int  (*open)(struct tty_struct * tty, struct file * filp);
-  *
-  * 	This routine is called when a particular tty device is opened.
-@@ -212,6 +226,8 @@ struct tty_driver;
  
- struct tty_operations {
- 	struct tty_struct * (*lookup)(struct tty_driver *driver, int idx);
-+	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
-+	void (*remove)(struct tty_driver *driver, struct tty_struct *tty);
- 	int  (*open)(struct tty_struct * tty, struct file * filp);
- 	void (*close)(struct tty_struct * tty, struct file * filp);
- 	void (*shutdown)(struct tty_struct *tty);
+ void tty_free_termios(struct tty_struct *tty)
+@@ -1925,11 +1915,11 @@ retry_open:
+ 		return -ENODEV;
+ 	}
+ got_driver:
+-	retval = tty_init_dev(driver, index, &tty, 0);
++	tty = tty_init_dev(driver, index, 0);
+ 	mutex_unlock(&tty_mutex);
+ 	tty_driver_kref_put(driver);
+-	if (retval)
+-		return retval;
++	if (IS_ERR(tty))
++		return PTR_ERR(tty);
+ 
+ 	filp->private_data = tty;
+ 	file_move(filp, &tty->tty_files);
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 6cc7ccc..54523a3 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -401,8 +401,8 @@ extern dev_t tty_devnum(struct tty_struct *tty);
+ extern void proc_clear_tty(struct task_struct *p);
+ extern struct tty_struct *get_current_tty(void);
+ extern void tty_default_fops(struct file_operations *fops);
+-extern int tty_init_dev(struct tty_driver *driver, int idx,
+-			struct tty_struct **ret_tty, int first_ok);
++extern struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx,
++								int first_ok);
+ extern void tty_release_dev(struct file *filp);
+ 
+ extern struct mutex tty_mutex;
 
