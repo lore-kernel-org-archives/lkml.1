@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbYJMXNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYJMXSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760594AbYJMXNB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 19:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbYJMXMx
+	id S1759916AbYJMXSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 19:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbYJMXRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 19:12:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53410
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756094AbYJMXMw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 19:12:52 -0400
-Date: Mon, 13 Oct 2008 16:12:28 -0700 (PDT)
-Message-Id: <20081013.161228.74135367.davem@davemloft.net>
-To: jamagallon@ono.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081014010202.71d13eaf@werewolf.home>
-References: <20081014010202.71d13eaf@werewolf.home>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 13 Oct 2008 19:17:54 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50641 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750979AbYJMXRx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 19:17:53 -0400
+Date: Tue, 14 Oct 2008 00:16:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Resend][2.6.27-git-a447c093244] BUG: spinlock bad magic on
+ CPU#0, setserial/3527
+Message-ID: <20081014001657.13e40477@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.0810131538210.3288@nehalem.linux-foundation.org>
+References: <200810140010.31141.rjw@sisk.pl>
+	<alpine.LFD.2.00.0810131538210.3288@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "J.A. Magallón" <jamagallon@ono.com>
-Date: Tue, 14 Oct 2008 01:02:02 +0200
+On Mon, 13 Oct 2008 16:10:14 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Booting .27-git3 on the Aspire One gave me a couple oopses.
+> 
+> If this started today, then the most likely culprit is Alan's series of 80 
+> serial patches.
+> 
+> Alan? I can only assume it's one of the
+> 
+> 	spin_lock_irq(&up->port.lock);
+> 
+> in serial8250_startup() (or quite likely in one of the functions it calls 
+> that get inlined by the compiler, like enable_rsa()).
+> 
+> And it sounds like it didn't get initialized.
 
-Fixed by:
+Yeah I know whats going on I think. When I dropped out the NR_IRQ changes
+I didn't drop back in the spin lock init. Will sort it tomorrow (actually
+'later today' as its midnight here)
 
-commit 738e1e694bf6d9e965ba0ce2667a1bec5780a172
-Author: Petr Vandrovec <petr@vandrovec.name>
-Date:   Sun Oct 12 20:58:29 2008 -0700
-
-    r8169: NULL pointer dereference on r8169 load
-    
-    mmio_addr in r8169 needs to be initialized before use
-    
-    Maybe that all tp-> initialization should be moved before rtl_init_mac_address call,
-    but this is enough to get rid of crash in rtl_rar_set due to mmio_addr being uninitialized.
-    
-    Signed-off-by: Petr Vandrovec <petr@vandrovec.name>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index bdae2c5..c821da2 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -2154,6 +2154,8 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	spin_lock_init(&tp->lock);
- 
-+	tp->mmio_addr = ioaddr;
-+
- 	rtl_init_mac_address(tp, ioaddr);
- 
- 	/* Get MAC address */
-@@ -2186,7 +2188,6 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- #endif
- 
- 	tp->intr_mask = 0xffff;
--	tp->mmio_addr = ioaddr;
- 	tp->align = cfg->align;
- 	tp->hw_start = cfg->hw_start;
- 	tp->intr_event = cfg->intr_event;
+Alan
