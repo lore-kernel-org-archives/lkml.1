@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYJMOpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYJMOpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbYJMOpZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYJMOpM
+	id S1757967AbYJMOpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbYJMOp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:45:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39257 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754349AbYJMOpL (ORCPT
+	Mon, 13 Oct 2008 10:45:26 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:56197 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757338AbYJMOpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:45:11 -0400
-Date: Mon, 13 Oct 2008 10:45:11 -0400
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] fastboot: Introduce an asynchronous function call
- mechanism
-Message-ID: <20081013104511.477b0614@infradead.org>
-In-Reply-To: <84144f020810130015j2905e568mb5819c4d4bf27279@mail.gmail.com>
-References: <20081012194427.2e21c22e@infradead.org>
-	<84144f020810130015j2905e568mb5819c4d4bf27279@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 13 Oct 2008 10:45:25 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2/2] mfd: Fix warning in WM8350
+Date: Mon, 13 Oct 2008 15:45:23 +0100
+Message-Id: <1223909123-16376-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1223909123-16376-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <20081013133707.GA4759@localdomain>
+ <1223909123-16376-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008 10:15:03 +0300
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Acked-by: Samuel Ortiz <sameo@openedhand.com>
+---
+ drivers/mfd/wm8350-core.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-> Hi Arjan,
-> 
-> On Mon, Oct 13, 2008 at 2:44 AM, Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> > +void call_async(int pool_number, int argc, ...)
-> > +{
-> > +       struct async_item *item;
-> > +       va_list ap;
-> > +
-> > +       if (argc > 4 || argc < 0) {
-> > +               WARN(1, KERN_ERR "Too many arguments to async
-> > function! Skipping...\n");
-> > +               return;
-> > +       }
-> > +
-> > +       item = kmalloc(sizeof(struct async_item), GFP_ATOMIC);
-> 
-> Why is there no check for NULL here?
-
-
-because at 35000 feet it won't return NULL ;-)
-
-but yeah thanks for spotting, I'll fix it.
-
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index 382e38c..25a7a5d 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -1161,7 +1161,6 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ {
+ 	int ret = -EINVAL;
+ 	u16 id1, id2, mask, mode;
+-	int i;
+ 
+ 	/* get WM8350 revision and config mode */
+ 	wm8350->read_dev(wm8350, WM8350_RESET_ID, sizeof(id1), &id1);
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.6.5
+
