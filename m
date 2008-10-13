@@ -1,200 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbYJMUTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbYJMUUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756221AbYJMUTy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYJMUTp
+	id S1757343AbYJMUUc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbYJMUUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:19:45 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:37211 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbYJMUTo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:19:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:organization:user-agent:mime-version
-         :to:subject:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=u16fBoK+Z4EbrnJjFlQ9jd/YhNyXCDvdLbFZdBaq00voNkLa5EXU3n6HPpe1QB1l6z
-         z8kO0qgFjWOF5Qb9nla6PqUtnR3PS2qPKGV/6DQypg6ofGE/918E71JN2VMJW7AHvnWr
-         vtm1QV3sGr3LdHmq2i5LFmwtW4SMDK6KzmfTw=
-Message-ID: <48F3AD5A.2080504@gmail.com>
-Date: Mon, 13 Oct 2008 22:19:38 +0200
-From: Patrizio Bassi <patrizio.bassi@gmail.com>
-Reply-To: patrizio.bassi@gmail.com
-Organization: patrizio.bassi@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080929)
+	Mon, 13 Oct 2008 16:20:20 -0400
+Received: from iona.labri.fr ([147.210.8.143]:48001 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754628AbYJMUUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 16:20:17 -0400
+Message-ID: <48F3AD47.1050301@inria.fr>
+Date: Mon, 13 Oct 2008 22:19:19 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: "Kernel, " <linux-kernel@vger.kernel.org>
-Subject: 2.6.27 gspca driver fails with Trust WB-1400T
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@osdl.org>,
+       Nathalie Furmento <nathalie.furmento@labri.fr>
+Subject: [PATCH 0/5] mm: rework sys_move_pages() to avoid vmalloc and reduce
+ the overhead
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hello,
 
-i have a Trust 1400T perfectly working on 2.6.26 using external module
-(media-video/gspcav1-20071224 is the gentoo version so it's that day
-snapshot.)
+Here's the first patchset reworking sys_move_pages() as discussed earlier.
+It removes the possibly large vmalloc by using multiple chunks when migrating
+large buffers. It also dramatically increases the throughput for large buffers
+since the lookup in new_page_node() is now limited to a single chunk, causing
+the quadratic complexity to have a much slower impact. There is no need to use
+any radix-tree-like structure to improve this lookup.
 
-Upgrading to 2.6.27 kernel, using integrated kernel driver
+sys_move_pages() duration on a 4-quadcore-opteron 2347HE (1.9Gz), migrating
+between nodes #2 and #3:
+	length		move_pages (us)		move_pages+patch (us)
+	4kB		126			98
+	40kB		198			168
+	400kB		963			937
+	4MB		12503			11930
+	40MB		246867			11848
 
-i get:
+Patches #1 and #4 are the important ones:
+1) stop returning -ENOENT from sys_move_pages() if nothing got migrated
+2) don't vmalloc a huge page_to_node array for do_pages_stat()
+3) extract do_pages_move() out of sys_move_pages()
+4) rework do_pages_move() to work on page_sized chunks
+5) move_pages: no need to set pp->page to ZERO_PAGE(0) by default
 
-gspca: main v2.2.0
-registered                                                                                           
-
-usbcore: registered new interface driver
-conex                                                                          
-
-conex:
-registered                                                                                                       
-
-usbcore: registered new interface driver
-etoms                                                                          
-
-etoms:
-registered                                                                                                       
-
-usbcore: registered new interface driver
-mars                                                                           
-
-mars:
-registered                                                                                                        
-
-usbcore: registered new interface driver
-ov519                                                                          
-
-ov519:
-registered                                                                                                       
-
-usbcore: registered new interface driver
-pac207                                                                         
-
-pac207:
-registered                                                                                                      
-
-usbcore: registered new interface driver
-pac7311                                                                        
-
-pac7311:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-sonixb                                                                         
-
-sonixb:
-registered                                                                                                      
-
-usbcore: registered new interface driver
-sonixj                                                                         
-
-sonixj:
-registered                                                                                                      
-
-usbcore: registered new interface driver
-spca500                                                                        
-
-spca500:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-spca501                                                                        
-
-spca501:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-spca505                                                                        
-
-spca505:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-spca506                                                                        
-
-spca506:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-spca508                                                                        
-
-spca508:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-spca561                                                                        
-
-spca561:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-sunplus                                                                        
-
-sunplus:
-registered                                                                                                     
-
-usbcore: registered new interface driver
-stk014                                                                         
-
-stk014:
-registered                                                                                                      
-
-usbcore: registered new interface driver
-t613                                                                           
-
-t613:
-registered                                                                                                        
-
-usbcore: registered new interface driver
-tv8532                                                                         
-
-tv8532:
-registered                                                                                                      
-
-usbcore: registered new interface driver
-vc032x                                                                         
-
-vc032x:
-registered                                                                                                      
-
-usbcore: registered new interface driver
-zc3xx                                                                          
-
-zc3xx: registered                                    
-
-gspca: probing
-093a:2468                                                                                                
-
-pac207: Pixart Sensor ID 0x27 Chips ID
-0x08                                                                             
-
-pac207: Pixart PAC207BCA Image Processor and Control Chip detected
-(vid/pid 0x093A:0x2468)                              
-gspca: probe ok     
-
-i have node device created, but picture is totally corrupted, with skype
-(sorry!) i have a green and black window,
-with mplayer or kopete i have a black one, while before with old driver
-it was working perfectly.
-Any hints?
-
-lsusb
-Bus 002 Device 002: ID 093a:2468 Pixart Imaging, Inc. Easy Snap Snake
-Eye WebCam
-
-Here i read my device works, but it's not my case.
-https://fedoraproject.org/wiki/Features/BetterWebcamSupport
-
-i'm running a core2 in 64bit mode.
-
-Please CC me i'm not subscribed
-
----
-Patrizio Bassi
-www.patriziobassi.it
+thanks,
+Brice
 
 
