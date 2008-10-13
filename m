@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759080AbYJMQW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbYJMQZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759080AbYJMQW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 12:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbYJMQWR
+	id S1759491AbYJMQZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 12:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYJMQZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 12:22:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43963 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756442AbYJMQWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 12:22:17 -0400
-Date: Mon, 13 Oct 2008 18:21:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Karel Zak <kzak@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
-	"hwclock" program
-Message-ID: <20081013162157.GA32355@elte.hu>
-References: <20081004215225.2444d54b.akpm@linux-foundation.org> <20081005081145.30ba921b@infradead.org> <20081005102742.de8353b4.akpm@linux-foundation.org> <20081005103826.6771540a@infradead.org> <20081012200004.GI10429@nb.net.home> <alpine.LFD.2.00.0810121308210.3402@nehalem.linux-foundation.org> <20081013152633.GA6523@elte.hu> <alpine.LFD.2.00.0810130841440.3288@nehalem.linux-foundation.org> <20081013160259.GA26866@elte.hu> <alpine.LFD.2.00.0810130908150.3288@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810130908150.3288@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 13 Oct 2008 12:25:16 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:10395 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755138AbYJMQZO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 12:25:14 -0400
+Date: Mon, 13 Oct 2008 09:24:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] MAINTAINERS: move F: line so that it does not break S: line
+ info
+Message-Id: <20081013092458.3b478242.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Move F: line so that it doesn't break the S: line and its
+explanations.
 
-> > It's probably not a real issue in practice because this is about PID 
-> > 1, so i doubt it really matters, but still.
-> > 
-> > So how about the patch below?
-> 
-> Ack. As long as we don't have two versions and the code is impossible 
-> to look at.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Reported-by: Jianjun Kong <kongjianjun@gmail.com>
+---
+ MAINTAINERS |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-thx, added your Acked-by and queued it up in x86/urgent.
-
-The many dumb #ifdefs were the result of the mechanic unification of 
-fault.c - we waited for the bugs to get shaken out - it went pretty 
-well, there was only one in the end IIRC.
-
-Now we can unify it semantically as well and create sane, maintainable 
-code with gradual patches. We used to have over 50 #ifdefs in fault.c 
-iirc, that's now down to 24. (still high but shrinking)
-
-	Ingo
+--- lin2627-g3-kdocfixes.orig/MAINTAINERS
++++ lin2627-g3-kdocfixes/MAINTAINERS
+@@ -72,8 +72,8 @@ M: Mail patches to
+ L: Mailing list that is relevant to this area
+ W: Web-page with status/info
+ T: SCM tree type and location.  Type is one of: git, hg, quilt.
+-S: Status, one of the following:
+ F: Applicable files and/or directories
++S: Status, one of the following:
+ 
+ 	Supported:	Someone is actually paid to look after this.
+ 	Maintained:	Someone actually looks after it.
