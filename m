@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbYJMVWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYJMVWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758994AbYJMVWU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbYJMVWM
+	id S1756614AbYJMVWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYJMVWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:22:12 -0400
-Received: from mga01.intel.com ([192.55.52.88]:16785 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752528AbYJMVWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:22:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,405,1220252400"; 
-   d="scan'208";a="626708103"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 13 Oct 2008 14:17:55 -0700
-Subject: RE: [PATCH] x86: split e820 reserved entries record to late v4 -
- fix v7
-Thread-Topic: [PATCH] x86: split e820 reserved entries record to late v4 -
- fix v7
-Thread-Index: AckteLXfB4zdF7kDTxSVsnmslZbfMgAAFpEg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA353274483@orsmsx505.amr.corp.intel.com>
-References: <1220254284-29532-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080904190457.GB24990@elte.hu>
-	 <20080904121627.bc182da7.akpm@linux-foundation.org>
-	 <86802c440809041222q244e1adaj16b80f1590053bcf@mail.gmail.com>
- <12c511ca0810131332h6e5468abk3dfc511f0b25cbe6@mail.gmail.com>
- <48F3BA28.2010605@zytor.com>
-In-Reply-To: <48F3BA28.2010605@zytor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+	Mon, 13 Oct 2008 17:22:40 -0400
+Received: from 1-1-4-20a.ras.sth.bostream.se ([82.182.72.90]:45427 "EHLO
+	amd.kenjo.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756004AbYJMVWj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 17:22:39 -0400
+Subject: Re: weird throughput on write to SATA disk
+From: kenneth johansson <ken@kenjo.org>
+To: Grant Grundler <grundler@google.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
+References: <1223925629.3947.7.camel@duo>
+	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 13 Oct 2008 23:22:36 +0200
+Message-Id: <1223932956.3947.22.camel@duo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9DLMOdq015919
 
-> Here is a fix... currently running standard tests on it.
+On Mon, 2008-10-13 at 14:07 -0700, Grant Grundler wrote:
+> On Mon, Oct 13, 2008 at 12:19 PM, kenneth johansson <ken@kenjo.org> wrote:
+> > When writing data to /dev/sdb (that is the whole disk and no filesystem)
+> > it starts out ok around 100MB/sec but soon end up doing considerably
+> > worse. For prolonged times lasting several minutes it hovers in the
+> > 20-30MB/sec.
+> 
+> Is the application using "O_DIRECT"?
 
-That shuts up the compiler for the ia64 build.
+no just open then write no fancy stuff
 
-Thanks
+> If not, could be issue with how VM writeback is (not) working.
 
--Tony
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+the access pattern is the simplest possible. Is there any knobs I could
+try to adjust.
+
+> Can you reproduce this using fio or even "dd"?
+> (See git://git.kernel.dk/fio)
+
+dd is having the same effect. 
+
+
