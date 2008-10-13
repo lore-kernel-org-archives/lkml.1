@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbYJMM0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbYJMM2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761077AbYJMM0f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 08:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbYJMM0Z
+	id S1761261AbYJMM2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 08:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbYJMM2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 08:26:25 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:4390 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754904AbYJMM0Y (ORCPT
+	Mon, 13 Oct 2008 08:28:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49838 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756841AbYJMM2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 08:26:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id:from
-         :sender;
-        b=bQq/gtR24mTN07i0rHI4Z+ADMoKX3WxFu0gJipsjGvTAGRcnwBumwbepiIWQNFO9hm
-         oQFicYF0tcPVX7Fmgtc0/1C+WuoZNvlMKzRxaRSsul2sZYXVUxNzaS5AFE+R1t5CNm7C
-         Ec3fR3HZeJTgUDjM9zc507FOPz9eTa3pm7lIE=
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [x86_64] Implementation differences compared to x86_32
-Date: Mon, 13 Oct 2008 14:26:19 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
+	Mon, 13 Oct 2008 08:28:11 -0400
+To: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
+From: Andi Kleen <andi@firstfloor.org>
+References: <1223895506638@dmwebmail.dmwebmail.chezphil.org>
+Date: Mon, 13 Oct 2008 14:28:06 +0200
+In-Reply-To: <1223895506638@dmwebmail.dmwebmail.chezphil.org> (Phil Endecott's message of "Mon, 13 Oct 2008 11:58:26 +0100")
+Message-ID: <87zll8r86h.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810131426.20075.goretux@gmail.com>
-From: Eric Lacombe <tuxiko@free.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+"Phil Endecott" <phil_wueww_endecott@chezphil.org> writes:
 
-Thanks again for all your answers.
-I have some new questions with regard to x86_64 specificities.
+> Am I right in thinking that CONFIG_MCORE2 is the correct choice for an
+> Intel Atom? 
 
-- In x86_32, the physical memory is mapped on kernel land by way of 4 MB 
-pages.
-But for x86_64, I read that the physical memory was mapped by way of 4 KB 
-pages. Is it true ? and in this case, why this choice ?
+No, Atom is completely different from a Core2.
 
-- Is the LDT used in x86_64 ?
-I saw that the GDT_ENTRY_LDT is defined to 10 but when I read in the GDT at 
-0x50 for the segment descriptor, there is nothing, the area is filled with 
-zeros.
+Right now 586 or 686 is a reasonable choice.
 
-- Where can I find some documentation about the specifities of x86_64 compared 
-to x86_32, particularly about memory management ?
-Perhaps you can (or someone on the list) depict those specificities ?
-
-Thanks in advance
-
-	Eric
+-Andi
