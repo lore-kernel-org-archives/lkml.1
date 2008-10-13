@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbYJMJsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763934AbYJMJsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763659AbYJMJsD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:48:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761429AbYJMJiv
+	id S1763934AbYJMJsn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760624AbYJMJjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:38:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48661 "EHLO
+	Mon, 13 Oct 2008 05:39:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48667 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759282AbYJMJiu (ORCPT
+	with ESMTP id S1760586AbYJMJjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:38:50 -0400
+	Mon, 13 Oct 2008 05:39:16 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 40/80] tty: Termios locking - sort out real_tty confusions and
-	lock reads
+Subject: [PATCH 42/80] tty: Make get_current_tty use a kref
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:38:46 +0100
-Message-ID: <20081013093823.21645.43347.stgit@localhost.localdomain>
+Date: Mon, 13 Oct 2008 10:39:13 +0100
+Message-ID: <20081013093906.21645.36569.stgit@localhost.localdomain>
 In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
 References: <20081013092758.21645.2359.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -28,144 +27,140 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-This moves us towards sanity and should mean our termios locking is now
-complete and comprehensive.
+We now return a kref covered tty reference. That ensures the tty structure
+doesn't go away when you have a return from get_current_tty. This is not
+enough to protect you from most of the resources being freed behind your
+back - yet.
+
+[Updated to include fixes for SELinux problems found by Andrew Morton and
+ an s390 leak found while debugging the former]
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_io.c    |    2 +-
- drivers/char/tty_ioctl.c |   58 ++++++++++++++++++++++++++++++----------------
- 2 files changed, 39 insertions(+), 21 deletions(-)
+ drivers/char/tty_io.c      |   10 ++++++----
+ drivers/s390/char/fs3270.c |    3 ++-
+ fs/dquot.c                 |    6 +++---
+ security/selinux/hooks.c   |    3 ++-
+ 4 files changed, 13 insertions(+), 9 deletions(-)
 
 
 diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index fa162c9..ac53d7f 100644
+index 9a76db3..4c0e4ed 100644
 --- a/drivers/char/tty_io.c
 +++ b/drivers/char/tty_io.c
-@@ -2605,7 +2605,7 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	case TIOCSTI:
- 		return tiocsti(tty, p);
- 	case TIOCGWINSZ:
--		return tiocgwinsz(tty, p);
-+		return tiocgwinsz(real_tty, p);
- 	case TIOCSWINSZ:
- 		return tiocswinsz(tty, real_tty, p);
- 	case TIOCCONS:
-diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-index 93bfa1d..3067085 100644
---- a/drivers/char/tty_ioctl.c
-+++ b/drivers/char/tty_ioctl.c
-@@ -893,6 +893,7 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
- {
- 	struct tty_struct *real_tty;
- 	void __user *p = (void __user *)arg;
-+	int ret = 0;
+@@ -786,12 +786,12 @@ void disassociate_ctty(int on_exit)
+ 	tty = get_current_tty();
+ 	if (tty) {
+ 		tty_pgrp = get_pid(tty->pgrp);
+-		lock_kernel();
+ 		mutex_unlock(&tty_mutex);
+-		/* XXX: here we race, there is nothing protecting tty */
++		lock_kernel();
+ 		if (on_exit && tty->driver->type != TTY_DRIVER_TYPE_PTY)
+ 			tty_vhangup(tty);
+ 		unlock_kernel();
++		tty_kref_put(tty);
+ 	} else if (on_exit) {
+ 		struct pid *old_pgrp;
+ 		spin_lock_irq(&current->sighand->siglock);
+@@ -819,7 +819,6 @@ void disassociate_ctty(int on_exit)
+ 	spin_unlock_irq(&current->sighand->siglock);
  
- 	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
- 	    tty->driver->subtype == PTY_TYPE_MASTER)
-@@ -928,18 +929,24 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
- 		return set_termios(real_tty, p, TERMIOS_OLD);
- #ifndef TCGETS2
- 	case TCGETS:
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (kernel_termios_to_user_termios((struct termios __user *)arg, real_tty->termios))
--			return -EFAULT;
--		return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- #else
- 	case TCGETS:
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (kernel_termios_to_user_termios_1((struct termios __user *)arg, real_tty->termios))
--			return -EFAULT;
--		return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- 	case TCGETS2:
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (kernel_termios_to_user_termios((struct termios2 __user *)arg, real_tty->termios))
--			return -EFAULT;
--		return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- 	case TCSETSF2:
- 		return set_termios(real_tty, p,  TERMIOS_FLUSH | TERMIOS_WAIT);
- 	case TCSETSW2:
-@@ -957,36 +964,46 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
- 		return set_termios(real_tty, p, TERMIOS_TERMIO);
- #ifndef TCGETS2
- 	case TIOCGLCKTRMIOS:
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (kernel_termios_to_user_termios((struct termios __user *)arg, real_tty->termios_locked))
--			return -EFAULT;
--		return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- 	case TIOCSLCKTRMIOS:
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EPERM;
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (user_termios_to_kernel_termios(real_tty->termios_locked,
- 					       (struct termios __user *) arg))
--			return -EFAULT;
--		return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- #else
- 	case TIOCGLCKTRMIOS:
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (kernel_termios_to_user_termios_1((struct termios __user *)arg, real_tty->termios_locked))
--			return -EFAULT;
--		return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- 	case TIOCSLCKTRMIOS:
- 		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
-+			ret = -EPERM;
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (user_termios_to_kernel_termios_1(real_tty->termios_locked,
- 					       (struct termios __user *) arg))
--			return -EFAULT;
--			return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
+ 	mutex_lock(&tty_mutex);
+-	/* It is possible that do_tty_hangup has free'd this tty */
+ 	tty = get_current_tty();
+ 	if (tty) {
+ 		unsigned long flags;
+@@ -829,6 +828,7 @@ void disassociate_ctty(int on_exit)
+ 		tty->session = NULL;
+ 		tty->pgrp = NULL;
+ 		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
++		tty_kref_put(tty);
+ 	} else {
+ #ifdef TTY_DEBUG_HANGUP
+ 		printk(KERN_DEBUG "error attempted to write to tty [0x%p]"
+@@ -1806,6 +1806,8 @@ retry_open:
+ 		index = tty->index;
+ 		filp->f_flags |= O_NONBLOCK; /* Don't let /dev/tty block */
+ 		/* noctty = 1; */
++		/* FIXME: Should we take a driver reference ? */
++		tty_kref_put(tty);
+ 		goto got_driver;
+ 	}
+ #ifdef CONFIG_VT
+@@ -3135,7 +3137,7 @@ struct tty_struct *get_current_tty(void)
+ {
+ 	struct tty_struct *tty;
+ 	WARN_ON_ONCE(!mutex_is_locked(&tty_mutex));
+-	tty = current->signal->tty;
++	tty = tty_kref_get(current->signal->tty);
+ 	/*
+ 	 * session->tty can be changed/cleared from under us, make sure we
+ 	 * issue the load. The obtained pointer, when not NULL, is valid as
+diff --git a/drivers/s390/char/fs3270.c b/drivers/s390/char/fs3270.c
+index d18e6d2..3ef5425 100644
+--- a/drivers/s390/char/fs3270.c
++++ b/drivers/s390/char/fs3270.c
+@@ -430,11 +430,12 @@ fs3270_open(struct inode *inode, struct file *filp)
+ 		mutex_lock(&tty_mutex);
+ 		tty = get_current_tty();
+ 		if (!tty || tty->driver->major != IBM_TTY3270_MAJOR) {
+-			mutex_unlock(&tty_mutex);
++			tty_kref_put(tty);
+ 			rc = -ENODEV;
+ 			goto out;
+ 		}
+ 		minor = tty->index + RAW3270_FIRSTMINOR;
++		tty_kref_put(tty);
+ 		mutex_unlock(&tty_mutex);
+ 	}
+ 	/* Check if some other program is already using fullscreen mode. */
+diff --git a/fs/dquot.c b/fs/dquot.c
+index 8ec4d6c..7417a6c 100644
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -897,8 +897,9 @@ static void print_warning(struct dquot *dquot, const int warntype)
+ 
+ 	mutex_lock(&tty_mutex);
+ 	tty = get_current_tty();
++	mutex_unlock(&tty_mutex);
+ 	if (!tty)
+-		goto out_lock;
++		return;
+ 	tty_write_message(tty, dquot->dq_sb->s_id);
+ 	if (warntype == QUOTA_NL_ISOFTWARN || warntype == QUOTA_NL_BSOFTWARN)
+ 		tty_write_message(tty, ": warning, ");
+@@ -926,8 +927,7 @@ static void print_warning(struct dquot *dquot, const int warntype)
+ 			break;
+ 	}
+ 	tty_write_message(tty, msg);
+-out_lock:
+-	mutex_unlock(&tty_mutex);
++	tty_kref_put(tty);
+ }
  #endif
- #ifdef TCGETX
- 	case TCGETX:
- 		if (real_tty->termiox == NULL)
- 			return -EINVAL;
-+		mutex_lock(&real_tty->termios_mutex);
- 		if (copy_to_user(p, real_tty->termiox, sizeof(struct termiox)))
--			return -EFAULT;
--		return 0;
-+			ret = -EFAULT;
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- 	case TCSETX:
- 		return set_termiox(real_tty, p, 0);
- 	case TCSETXW:
-@@ -995,10 +1012,11 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
- 		return set_termiox(real_tty, p, TERMIOS_FLUSH);
- #endif		
- 	case TIOCGSOFTCAR:
--		/* FIXME: for correctness we may need to take the termios
--		   lock here - review */
--		return put_user(C_CLOCAL(real_tty) ? 1 : 0,
-+		mutex_lock(&real_tty->termios_mutex);
-+		ret = put_user(C_CLOCAL(real_tty) ? 1 : 0,
- 						(int __user *)arg);
-+		mutex_unlock(&real_tty->termios_mutex);
-+		return ret;
- 	case TIOCSSOFTCAR:
- 		if (get_user(arg, (unsigned int __user *) arg))
- 			return -EFAULT;
+ 
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 4a7374c..089d61a 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2123,6 +2123,7 @@ static inline void flush_unauthorized_files(struct files_struct *files)
+ 
+ 	mutex_lock(&tty_mutex);
+ 	tty = get_current_tty();
++	mutex_unlock(&tty_mutex);
+ 	if (tty) {
+ 		file_list_lock();
+ 		file = list_entry(tty->tty_files.next, typeof(*file), f_u.fu_list);
+@@ -2139,8 +2140,8 @@ static inline void flush_unauthorized_files(struct files_struct *files)
+ 			}
+ 		}
+ 		file_list_unlock();
++		tty_kref_put(tty);
+ 	}
+-	mutex_unlock(&tty_mutex);
+ 	/* Reset controlling tty. */
+ 	if (drop_tty)
+ 		no_tty();
 
