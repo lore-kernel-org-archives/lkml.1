@@ -1,140 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbYJMJo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbYJMJpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761870AbYJMJo7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760890AbYJMJhR
+	id S1757571AbYJMJpv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757647AbYJMJhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:37:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:62902 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758186AbYJMJhO (ORCPT
+	Mon, 13 Oct 2008 05:37:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48646 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756844AbYJMJha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:37:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=NIgGTNiPmaQAUDz5oPLkv9C6i6hYtt3IJNPz6Gi7ywZX8YnvJpV6mZSqQgIRF/6Psy
-         J2U/hOSegTQaJf3pjpiSrDluoCesRjmDhMtaZdM6oQV+kXpL8zYeUhtprtHQ1q9Yj8PT
-         UGlGrar/wB8/AQSOk5IuQ3uM/zLPA5WL4r1qw=
-Message-ID: <48F316C4.1070603@gmail.com>
-Date: Mon, 13 Oct 2008 11:37:08 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 13 Oct 2008 05:37:30 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 35/80] tty: Add a kref count
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 13 Oct 2008 10:37:26 +0100
+Message-ID: <20081013093722.21645.42348.stgit@localhost.localdomain>
+In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
+References: <20081013092758.21645.2359.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: Bryan Wu <cooloney@kernel.org>
-CC: sam@ravnborg.org, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH 1/1] Blackfin OTP Char Driver: add writing support of
- OTP
-References: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/13/2008 11:13 AM, Bryan Wu wrote:
-> From: Mike Frysinger <vapier.adi@gmail.com>
+From: Alan Cox <alan@redhat.com>
 
-Some changelog please.
+Introduce a kref to the tty structure and use it to protect the tty->signal
+tty references. For now we don't introduce it for anything else.
 
-> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
-[...]
-> @@ -123,18 +132,95 @@ static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t
->  	if (mutex_lock_interruptible(&bfin_otp_lock))
->  		return -ERESTARTSYS;
->  
-> -	/* need otp_init() documentation before this can be implemented */
-> +	stampit();
-> +
-> +	timing = bfin_otp_init_timing();
-> +	if (timing == 0) {
-> +		mutex_unlock(&bfin_otp_lock);
-> +		return -EIO;
-> +	}
-> +
-> +	base_flags = OTP_CHECK_FOR_PREV_WRITE;
-> +
-> +	bytes_done = 0;
-> +	page = *pos / (sizeof(u64) * 2);
-> +	while (bytes_done < count) {
-> +		flags = base_flags | (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
-> +		stamp("processing page %i (0x%x:%s) from %p", page, flags,
-> +			(flags & OTP_UPPER_HALF ? "upper" : "lower"), buff + bytes_done);
-> +		if (copy_from_user(&content, buff + bytes_done, sizeof(content))) {
-> +			bytes_done = -EFAULT;
-> +			break;
-> +		}
-> +		ret = bfrom_OtpWrite(page, flags, &content);
-> +		if (ret & OTP_MASTER_ERROR) {
-> +			stamp("error from otp: 0x%x", ret);
-> +			bytes_done = -EIO;
-> +			break;
-> +		}
-> +		if (flags & OTP_UPPER_HALF)
-> +			++page;
-> +		bytes_done += sizeof(content);
-> +		*pos += sizeof(content);
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-What happens to pos if it fails later?
+ drivers/char/tty_io.c |   54 ++++++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/tty.h   |   18 ++++++++++++++++
+ kernel/fork.c         |    5 ++++-
+ kernel/sys.c          |    4 +---
+ 4 files changed, 71 insertions(+), 10 deletions(-)
 
-> +	}
-> +
-> +	bfin_otp_deinit_timing(timing);
->  
->  	mutex_unlock(&bfin_otp_lock);
->  
-> +	return bytes_done;
-> +}
-> +
-> +static int bfin_otp_ioctl(struct inode *inode, struct file *filp,
-> +                          unsigned cmd, unsigned long arg)
-> +{
-> +	stampit();
-> +
-> +	switch (cmd) {
-> +	case OTPLOCK: {
-> +		u32 timing;
-> +		int ret = -EIO;
-> +
-> +		if (!allow_writes)
-> +			return -EACCES;
-> +
-> +		if (mutex_lock_interruptible(&bfin_otp_lock))
-> +			return -ERESTARTSYS;
-> +
-> +		timing = bfin_otp_init_timing();
-> +		if (timing) {
-> +			u32 otp_result = bfrom_OtpWrite(arg, OTP_LOCK, NULL);
-> +			stamp("locking page %i resulted in 0x%x", arg, otp_result);
-> +			if (!(otp_result & OTP_MASTER_ERROR))
-> +				ret = 0;
-> +
-> +			bfin_otp_deinit_timing(timing);
-> +		}
-> +
-> +		mutex_unlock(&bfin_otp_lock);
-> +
-> +		return ret;
-> +	}
-> +
-> +	case MEMLOCK:
-> +		allow_writes = false;
-> +		return 0;
-> +
-> +	case MEMUNLOCK:
-> +		allow_writes = true;
-> +		return 0;
 
-Please switch to unlocked_ioctl. It should be pretty easy. You should change
-(and check) allow_writes under the mutex anyway.
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 7323168..310e070 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -559,6 +559,7 @@ static void do_tty_hangup(struct work_struct *work)
+ 	struct tty_ldisc *ld;
+ 	int    closecount = 0, n;
+ 	unsigned long flags;
++	int refs = 0;
+ 
+ 	if (!tty)
+ 		return;
+@@ -625,8 +626,12 @@ static void do_tty_hangup(struct work_struct *work)
+ 	if (tty->session) {
+ 		do_each_pid_task(tty->session, PIDTYPE_SID, p) {
+ 			spin_lock_irq(&p->sighand->siglock);
+-			if (p->signal->tty == tty)
++			if (p->signal->tty == tty) {
+ 				p->signal->tty = NULL;
++				/* We defer the dereferences outside fo
++				   the tasklist lock */
++				refs++;
++			}
+ 			if (!p->signal->leader) {
+ 				spin_unlock_irq(&p->sighand->siglock);
+ 				continue;
+@@ -652,6 +657,10 @@ static void do_tty_hangup(struct work_struct *work)
+ 	tty->ctrl_status = 0;
+ 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+ 
++	/* Account for the p->signal references we killed */
++	while (refs--)
++		tty_kref_put(tty);
++
+ 	/*
+ 	 * If one of the devices matches a console pointer, we
+ 	 * cannot just call hangup() because that will cause
+@@ -1424,6 +1433,7 @@ release_mem_out:
+ 
+ /**
+  *	release_one_tty		-	release tty structure memory
++ *	@kref: kref of tty we are obliterating
+  *
+  *	Releases memory associated with a tty structure, and clears out the
+  *	driver table slots. This function is called when a device is no longer
+@@ -1433,17 +1443,19 @@ release_mem_out:
+  *		tty_mutex - sometimes only
+  *		takes the file list lock internally when working on the list
+  *	of ttys that the driver keeps.
+- *		FIXME: should we require tty_mutex is held here ??
+  */
+-static void release_one_tty(struct tty_struct *tty, int idx)
++static void release_one_tty(struct kref *kref)
+ {
++	struct tty_struct *tty = container_of(kref, struct tty_struct, kref);
+ 	int devpts = tty->driver->flags & TTY_DRIVER_DEVPTS_MEM;
+ 	struct ktermios *tp;
++	int idx = tty->index;
+ 
+ 	if (!devpts)
+ 		tty->driver->ttys[idx] = NULL;
+ 
+ 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
++		/* FIXME: Locking on ->termios array */
+ 		tp = tty->termios;
+ 		if (!devpts)
+ 			tty->driver->termios[idx] = NULL;
+@@ -1457,6 +1469,7 @@ static void release_one_tty(struct tty_struct *tty, int idx)
+ 
+ 
+ 	tty->magic = 0;
++	/* FIXME: locking on tty->driver->refcount */
+ 	tty->driver->refcount--;
+ 
+ 	file_list_lock();
+@@ -1467,6 +1480,21 @@ static void release_one_tty(struct tty_struct *tty, int idx)
+ }
+ 
+ /**
++ *	tty_kref_put		-	release a tty kref
++ *	@tty: tty device
++ *
++ *	Release a reference to a tty device and if need be let the kref
++ *	layer destruct the object for us
++ */
++
++void tty_kref_put(struct tty_struct *tty)
++{
++	if (tty)
++		kref_put(&tty->kref, release_one_tty);
++}
++EXPORT_SYMBOL(tty_kref_put);
++
++/**
+  *	release_tty		-	release tty structure memory
+  *
+  *	Release both @tty and a possible linked partner (think pty pair),
+@@ -1477,14 +1505,20 @@ static void release_one_tty(struct tty_struct *tty, int idx)
+  *		takes the file list lock internally when working on the list
+  *	of ttys that the driver keeps.
+  *		FIXME: should we require tty_mutex is held here ??
++ *
++ *	FIXME: We want to defer the module put of the driver to the
++ *	destructor.
+  */
+ static void release_tty(struct tty_struct *tty, int idx)
+ {
+ 	struct tty_driver *driver = tty->driver;
+ 
++	/* This should always be true but check for the moment */
++	WARN_ON(tty->index != idx);
++
+ 	if (tty->link)
+-		release_one_tty(tty->link, idx);
+-	release_one_tty(tty, idx);
++		tty_kref_put(tty->link);
++	tty_kref_put(tty);
+ 	module_put(driver->owner);
+ }
+ 
+@@ -2798,6 +2832,7 @@ EXPORT_SYMBOL(do_SAK);
+ static void initialize_tty_struct(struct tty_struct *tty)
+ {
+ 	memset(tty, 0, sizeof(struct tty_struct));
++	kref_init(&tty->kref);
+ 	tty->magic = TTY_MAGIC;
+ 	tty_ldisc_init(tty);
+ 	tty->session = NULL;
+@@ -3053,9 +3088,12 @@ EXPORT_SYMBOL(tty_devnum);
+ 
+ void proc_clear_tty(struct task_struct *p)
+ {
++	struct tty_struct *tty;
+ 	spin_lock_irq(&p->sighand->siglock);
++	tty = p->signal->tty;
+ 	p->signal->tty = NULL;
+ 	spin_unlock_irq(&p->sighand->siglock);
++	tty_kref_put(tty);
+ }
+ 
+ /* Called under the sighand lock */
+@@ -3071,9 +3109,13 @@ static void __proc_set_tty(struct task_struct *tsk, struct tty_struct *tty)
+ 		tty->pgrp = get_pid(task_pgrp(tsk));
+ 		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+ 		tty->session = get_pid(task_session(tsk));
++		if (tsk->signal->tty) {
++			printk(KERN_DEBUG "tty not NULL!!\n");
++			tty_kref_put(tsk->signal->tty);
++		}
+ 	}
+ 	put_pid(tsk->signal->tty_old_pgrp);
+-	tsk->signal->tty = tty;
++	tsk->signal->tty = tty_kref_get(tty);
+ 	tsk->signal->tty_old_pgrp = NULL;
+ }
+ 
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index e3612c3..b6e6c26 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -209,6 +209,7 @@ struct tty_operations;
+ 
+ struct tty_struct {
+ 	int	magic;
++	struct kref kref;
+ 	struct tty_driver *driver;
+ 	const struct tty_operations *ops;
+ 	int index;
+@@ -311,6 +312,23 @@ extern int kmsg_redirect;
+ extern void console_init(void);
+ extern int vcs_init(void);
+ 
++/**
++ *	tty_kref_get		-	get a tty reference
++ *	@tty: tty device
++ *
++ *	Return a new reference to a tty object. The caller must hold
++ *	sufficient locks/counts to ensure that their existing reference cannot
++ *	go away
++ */
++
++extern inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
++{
++	if (tty)
++		kref_get(&tty->kref);
++	return tty;
++}
++extern void tty_kref_put(struct tty_struct *tty);
++
+ extern int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
+ 			      const char *routine);
+ extern char *tty_name(struct tty_struct *tty, char *buf);
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 7ce2ebe..30de644 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -802,6 +802,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 
+ 	sig->leader = 0;	/* session leadership doesn't inherit */
+ 	sig->tty_old_pgrp = NULL;
++	sig->tty = NULL;
+ 
+ 	sig->utime = sig->stime = sig->cutime = sig->cstime = cputime_zero;
+ 	sig->gtime = cputime_zero;
+@@ -838,6 +839,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ void __cleanup_signal(struct signal_struct *sig)
+ {
+ 	exit_thread_group_keys(sig);
++	tty_kref_put(sig->tty);
+ 	kmem_cache_free(signal_cachep, sig);
+ }
+ 
+@@ -1227,7 +1229,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 				p->nsproxy->pid_ns->child_reaper = p;
+ 
+ 			p->signal->leader_pid = pid;
+-			p->signal->tty = current->signal->tty;
++			tty_kref_put(p->signal->tty);
++			p->signal->tty = tty_kref_get(current->signal->tty);
+ 			set_task_pgrp(p, task_pgrp_nr(current));
+ 			set_task_session(p, task_session_nr(current));
+ 			attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 038a7bc..234d945 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1060,9 +1060,7 @@ asmlinkage long sys_setsid(void)
+ 	group_leader->signal->leader = 1;
+ 	__set_special_pids(sid);
+ 
+-	spin_lock(&group_leader->sighand->siglock);
+-	group_leader->signal->tty = NULL;
+-	spin_unlock(&group_leader->sighand->siglock);
++	proc_clear_tty(group_leader);
+ 
+ 	err = session;
+ out:
 
-> +	}
-> +
->  	return -EINVAL;
