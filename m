@@ -1,116 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYJMTU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760330AbYJMTWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbYJMTU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 15:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756387AbYJMTUN
+	id S1760330AbYJMTWd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 15:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbYJMTWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 15:20:13 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:59832 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755921AbYJMTUL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 15:20:11 -0400
-Subject: Re: [GIT PATCH] intermediate SCSI updates
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
-References: <1223909115.5566.13.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 13 Oct 2008 15:20:06 -0400
-Message-Id: <1223925606.5566.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 13 Oct 2008 15:22:25 -0400
+Received: from japan.chezphil.org ([77.240.5.4]:5808 "EHLO japan.chezphil.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756387AbYJMTWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 15:22:25 -0400
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Date: Mon, 13 Oct 2008 20:22:22 +0100
+Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
+Message-ID: <1223925742287@dmwebmail.dmwebmail.chezphil.org>
+In-Reply-To: <20081013101722.2a1b3afa@infradead.org>
+References: <1223895506638@dmwebmail.dmwebmail.chezphil.org>
+	<87zll8r86h.fsf@basil.nowhere.org> <20081013091848.7dcdaaac@infradead.org>
+	<20081013133051.GL12131@one.firstfloor.org>
+	<20081013093014.607c5925@infradead.org>
+	<20081013140228.GG29938@cs181140183.pp.htv.fi>
+	<20081013101722.2a1b3afa@infradead.org>
+X-Mailer: Decimail Webmail 3alpha16
+MIME-Version: 1.0
+Content-Type: text/plain; format="flowed"
+From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 10:22 -0700, Linus Torvalds wrote:
+Arjan van de Ven wrotes:
+> On Mon, 13 Oct 2008 17:02:30 +0300
+> Adrian Bunk <bunk <at> kernel.org> wrote:
 > 
-> On Mon, 13 Oct 2008, James Bottomley wrote:
-> >
-> > This represents all the pieces of SCSI which were depending on the
-> > already merged block tree.
+> > On Mon, Oct 13, 2008 at 09:30:14AM -0400, Arjan van de Ven wrote:
+> > > On Mon, 13 Oct 2008 15:30:51 +0200
+> > > Andi Kleen <andi <at> firstfloor.org> wrote:
+> > > > 
+> > > > > Core2 instruction set with tune=generic is still the best to
+> > > > > set.
+> > > > 
+> > > > Not sure that is true. These option are mostly for the compiler.
+> > > 
+> > > exactly, and our benchmarks show that tune=generic is best right now
+> > > for Atom. 
+> > > (586 scheduling sounds nice, but the pipelines are rather different.
+> > > And the benchmarks don't lie..  
+> > 
+> > That sounds a bit dangerous since tune=generic is documented to
+> > change the semantics between gcc versions to better fit more recent
+> > CPUs (there's even a small difference between gcc 4.2 and gcc 4.3):
+> > 
 > 
-> Grr. And it doesn't actually compile.
+> reality is that tune=generic avoids the things that are "really bad"
+> for a wide generation of cpus; the world of x86 is such that there
+> really are many common things that are good for the vast majority of
+> the cpus out there (or at least neutral). 
 > 
->   drivers/scsi/sd.c:579:27: error: macro "sd_dif_op" passed 4 arguments, but takes just 3
->   drivers/scsi/sd.c: In function ‘sd_prep_fn’:
->   drivers/scsi/sd.c:578: error: ‘sd_dif_op’ undeclared (first use in this function)
->   drivers/scsi/sd.c:578: error: (Each undeclared identifier is reported only once
->   drivers/scsi/sd.c:578: error: for each function it appears in.)
-> 
-> Hmm? Was this testedt AT ALL? It can never compile unless that idiotic 
-> CONFIG_BLK_DEV_INTEGRITY option is set that no sane person would set right 
-> now, and which is even documented to not be enabled by default:
-> 
->   If in doubt, say N.
-> 
-> yet it looks like it has not compiled since a commit that was put in in 
-> the middle of September!
-> 
-> What part of "This is total untested crap" are we missing here?
+> Future versions of GCC might have a specific ATOM model. Until they do,
+> tune=generic is the right thing based on tests over a few gcc versions.
+> Yes it's a bit fluid, but no gcc isn't going to suddenly go do stupid
+> things for currently mass-sold cpus.
 
-OK, you caught me; I'm relying on linux-next to test randomly built
-configs because I don't have a compile farm available to me where I can
-test every permutation of the options (and obviously, I usually compile
-with them all on to test the actual feature code).
+Well, if the Intel experts can't even agree, what hope do I have of 
+getting it right :-(   I chose Core2 because I read somewhere that Atom 
+was "feature compatible" with it, but of course that doesn't say 
+anything about the optimal optimisations.  I trust that someone will 
+update Kconfig.cpu with their idea of the right choice for Atom eventually.
 
-> Yeah, I'm grumpy. I expect to not be fed shit like this. It has apparently 
-> been rebased several times, and all apparently with no testing 
-> what-so-ever!
+(Maybe there should be a way to auto-suggest the right setting for a 
+native build based on /proc/cpuinfo?  I think the gcc build process can 
+do something like that.)
 
-Not exactly.  It has to be rebased to run as a postmerge tree, but it
-does get tested by me (admittedly on my limited set of machines, which
-don't include any actual devices that do block integrity) every time I
-rebase.
+Cheers,  Phil.
 
-However, does this work for you?  It fixes the problem for me.
 
-James
-
----
-
-diff --git a/drivers/scsi/sd.h b/drivers/scsi/sd.h
-index a92b991..75638e7 100644
---- a/drivers/scsi/sd.h
-+++ b/drivers/scsi/sd.h
-@@ -97,7 +97,7 @@ struct sd_dif_tuple {
-        __be32 ref_tag;		/* Target LBA or indirect LBA */
- };
- 
--#if defined(CONFIG_BLK_DEV_INTEGRITY)
-+#ifdef CONFIG_BLK_DEV_INTEGRITY
- 
- extern void sd_dif_op(struct scsi_cmnd *, unsigned int, unsigned int, unsigned int);
- extern void sd_dif_config_host(struct scsi_disk *);
-@@ -106,10 +106,19 @@ extern void sd_dif_complete(struct scsi_cmnd *, unsigned int);
- 
- #else /* CONFIG_BLK_DEV_INTEGRITY */
- 
--#define sd_dif_op(a, b, c)			do { } while (0)
--#define sd_dif_config_host(a)			do { } while (0)
--#define sd_dif_prepare(a, b, c)			(0)
--#define sd_dif_complete(a, b)			(0)
-+static inline void sd_dif_op(struct scsi_cmnd *cmd, unsigned int a, unsigned int b, unsigned int c)
-+{
-+}
-+static inline void sd_dif_config_host(struct scsi_disk *disk)
-+{
-+}
-+static inline int sd_dif_prepare(struct request *rq, sector_t s, unsigned int a)
-+{
-+	return 0;
-+}
-+static inline void sd_dif_complete(struct scsi_cmnd *cmd, unsigned int a)
-+{
-+}
- 
- #endif /* CONFIG_BLK_DEV_INTEGRITY */
- 
 
 
