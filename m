@@ -1,54 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbYJMUYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760052AbYJMUYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759706AbYJMUYJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbYJMUXv
+	id S1760052AbYJMUYd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759475AbYJMUXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:23:51 -0400
-Received: from www.tglx.de ([62.245.132.106]:58508 "EHLO www.tglx.de"
+	Mon, 13 Oct 2008 16:23:53 -0400
+Received: from iona.labri.fr ([147.210.8.143]:48082 "EHLO iona.labri.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757714AbYJMUXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:23:50 -0400
-Date: Mon, 13 Oct 2008 22:23:18 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: rt-users <linux-rt-users@vger.kernel.org>
-cc: Clark Williams <williams@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Carsten Emde <ce@ceag.ch>, LKML <linux-kernel@vger.kernel.org>
-Subject: New rt-tests maintainer
-Message-ID: <alpine.LFD.2.00.0810132138540.15664@apollo>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1755341AbYJMUXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 16:23:51 -0400
+Message-ID: <48F3AE1D.3060208@inria.fr>
+Date: Mon, 13 Oct 2008 22:22:53 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@osdl.org>,
+       Nathalie Furmento <nathalie.furmento@labri.fr>
+Subject: [PATCH 4/5] mm: rework do_pages_move() to work on page_sized chunks
+References: <48F3AD47.1050301@inria.fr>
+In-Reply-To: <48F3AD47.1050301@inria.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+Rework do_pages_move() to work by page-sized chunks of struct page_to_node
+that are passed to do_move_page_to_node_array(). We now only have to
+allocate a single page instead a possibly very large vmalloc area to store
+all page_to_node entries.
 
-I'm handing over the maintainership of rt-tests (cyclictest,
-signaltest, pi_stress) to Clark Williams.
+As a result, new_page_node() will now have a very small lookup, hidding
+much of the overall sys_move_pages() overhead.
 
-rt-tests started with cyclictest, a test program I wrote for
-validating the high resolution timers implementation. In hindsight I'm
-still surprised that cyclictest became a defacto standard for
-benchmarking preempt-rt, but on the technical side it's quite clear as
-it tests the whole chain: interrupt -> wakeup -> scheduler ->
-userspace.
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+Signed-off-by: Nathalie Furmento <Nathalie.Furmento@labri.fr>
+---
+ mm/migrate.c |   79 ++++++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 44 insertions(+), 35 deletions(-)
 
-I never expected that cyclictest might ship with distros and I'm very
-grateful to all the people who contributed and helped to bring it and
-the whole rt-tests package into shape. I know that I'm a lousy user
-space programmer :)
+diff --git a/mm/migrate.c b/mm/migrate.c
+index dffc98b..175e242 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -947,41 +947,43 @@ static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
+ 			 const int __user *nodes,
+ 			 int __user *status, int flags)
+ {
+-	struct page_to_node *pm = NULL;
++	struct page_to_node *pm;
+ 	nodemask_t task_nodes;
+-	int err = 0;
+-	int i;
++	unsigned long chunk_nr_pages;
++	unsigned long chunk_start;
++	int err;
+ 
+ 	task_nodes = cpuset_mems_allowed(task);
+ 
+-	/* Limit nr_pages so that the multiplication may not overflow */
+-	if (nr_pages >= ULONG_MAX / sizeof(struct page_to_node) - 1) {
+-		err = -E2BIG;
+-		goto out;
+-	}
+-
+-	pm = vmalloc((nr_pages + 1) * sizeof(struct page_to_node));
+-	if (!pm) {
+-		err = -ENOMEM;
++	err = -ENOMEM;
++	pm = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!pm)
+ 		goto out;
+-	}
+-
+ 	/*
+-	 * Get parameters from user space and initialize the pm
+-	 * array. Return various errors if the user did something wrong.
++	 * Store a chunk of page_to_node array in a page,
++	 * but keep the last one as a marker
+ 	 */
+-	for (i = 0; i < nr_pages; i++) {
+-		const void __user *p;
++	chunk_nr_pages = PAGE_SIZE/sizeof(struct page_to_node) - 1;
+ 
+-		err = -EFAULT;
+-		if (get_user(p, pages + i))
+-			goto out_pm;
++	for (chunk_start = 0;
++	     chunk_start < nr_pages;
++	     chunk_start += chunk_nr_pages) {
++		int j;
++
++		if (chunk_start + chunk_nr_pages > nr_pages)
++			chunk_nr_pages = nr_pages - chunk_start;
+ 
+-		pm[i].addr = (unsigned long)p;
+-		if (nodes) {
++		/* fill the chunk pm with addrs and nodes from user-space */
++		for (j = 0; j < chunk_nr_pages; j++) {
++			const void __user *p;
+ 			int node;
+ 
+-			if (get_user(node, nodes + i))
++			err = -EFAULT;
++			if (get_user(p, pages + j + chunk_start))
++				goto out_pm;
++			pm[j].addr = (unsigned long) p;
++
++			if (get_user(node, nodes + j + chunk_start))
+ 				goto out_pm;
+ 
+ 			err = -ENODEV;
+@@ -992,22 +994,29 @@ static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
+ 			if (!node_isset(node, task_nodes))
+ 				goto out_pm;
+ 
+-			pm[i].node = node;
+-		} else
+-			pm[i].node = 0;	/* anything to not match MAX_NUMNODES */
+-	}
+-	/* End marker */
+-	pm[nr_pages].node = MAX_NUMNODES;
++			pm[j].node = node;
++		}
++
++		/* End marker for this chunk */
++		pm[chunk_nr_pages].node = MAX_NUMNODES;
++
++		/* Migrate this chunk */
++		err = do_move_page_to_node_array(mm, pm,
++						 flags & MPOL_MF_MOVE_ALL);
++		if (err < 0)
++			goto out_pm;
+ 
+-	err = do_move_page_to_node_array(mm, pm, flags & MPOL_MF_MOVE_ALL);
+-	if (err >= 0)
+ 		/* Return status information */
+-		for (i = 0; i < nr_pages; i++)
+-			if (put_user(pm[i].status, status + i))
++		for (j = 0; j < chunk_nr_pages; j++)
++			if (put_user(pm[j].status, status + j + chunk_start)) {
+ 				err = -EFAULT;
++				goto out_pm;
++			}
++	}
++	err = 0;
+ 
+ out_pm:
+-	vfree(pm);
++	kfree(pm);
+ out:
+ 	return err;
+ }
+-- 
+1.5.6.5
 
-@Clark, thanks for taking over. It takes away my permanent guilty
-conscience of not caring about rt-tests enough.
 
-@all, please support Clark with his new project as you supported
-me. Thanks for all the support and help again !
 
-Thanks,
-
-	tglx
-
-P.S.: If you really need to add autocrap^H^H^H^Htools please do it in
-      a way so I still can hack on it :)
