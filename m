@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765690AbYJMKDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbYJMKDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765690AbYJMKDF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763070AbYJMJpG
+	id S932139AbYJMKDc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763119AbYJMJpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:45:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51037 "EHLO
+	Mon, 13 Oct 2008 05:45:12 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51040 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763051AbYJMJpB (ORCPT
+	with ESMTP id S1763101AbYJMJpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:45:01 -0400
+	Mon, 13 Oct 2008 05:45:10 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 73/80] tty: Remove lots of NULL checks
+Subject: [PATCH 74/80] tty: Minor tidyups and document fixes for n_tty
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:44:57 +0100
-Message-ID: <20081013094448.21645.54493.stgit@localhost.localdomain>
+Date: Mon, 13 Oct 2008 10:45:06 +0100
+Message-ID: <20081013094502.21645.47615.stgit@localhost.localdomain>
 In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
 References: <20081013092758.21645.2359.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -27,378 +27,180 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Many tty drivers contain 'can't happen' checks against NULL pointers passed
-in by the tty layer. These have never been possible to occur. Even more
-importantly if they ever do occur we want to know as it would be a serious
-bug.
+Remove/fix some bogus NULL checks, comment some locking etc
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/amiserial.c      |    6 ------
- drivers/char/generic_serial.c |   21 ---------------------
- drivers/char/istallion.c      |    6 ------
- drivers/char/mxser.c          |    5 -----
- drivers/char/n_r3964.c        |    8 +-------
- drivers/char/stallion.c       |   34 ----------------------------------
- 6 files changed, 1 insertions(+), 79 deletions(-)
+ drivers/char/n_tty.c |   48 +++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 37 insertions(+), 11 deletions(-)
 
 
-diff --git a/drivers/char/amiserial.c b/drivers/char/amiserial.c
-index 6e763e3..98821f9 100644
---- a/drivers/char/amiserial.c
-+++ b/drivers/char/amiserial.c
-@@ -837,9 +837,6 @@ static int rs_put_char(struct tty_struct *tty, unsigned char ch)
- 	struct async_struct *info;
- 	unsigned long flags;
+diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
+index b4f5dcc..c0285b9 100644
+--- a/drivers/char/n_tty.c
++++ b/drivers/char/n_tty.c
+@@ -99,6 +99,7 @@ static inline int tty_put_user(struct tty_struct *tty, unsigned char x,
  
--	if (!tty)
--		return 0;
--
- 	info = tty->driver_data;
- 
- 	if (serial_paranoia_check(info, tty->name, "rs_put_char"))
-@@ -892,9 +889,6 @@ static int rs_write(struct tty_struct * tty, const unsigned char *buf, int count
- 	struct async_struct *info;
- 	unsigned long flags;
- 
--	if (!tty)
--		return 0;
--
- 	info = tty->driver_data;
- 
- 	if (serial_paranoia_check(info, tty->name, "rs_write"))
-diff --git a/drivers/char/generic_serial.c b/drivers/char/generic_serial.c
-index 19d3afb..c6090f8 100644
---- a/drivers/char/generic_serial.c
-+++ b/drivers/char/generic_serial.c
-@@ -54,8 +54,6 @@ int gs_put_char(struct tty_struct * tty, unsigned char ch)
- 
- 	func_enter (); 
- 
--	if (!tty) return 0;
--
- 	port = tty->driver_data;
- 
- 	if (!port) return 0;
-@@ -97,8 +95,6 @@ int gs_write(struct tty_struct * tty,
- 
- 	func_enter ();
- 
--	if (!tty) return 0;
--
- 	port = tty->driver_data;
- 
- 	if (!port) return 0;
-@@ -185,7 +181,6 @@ static int gs_real_chars_in_buffer(struct tty_struct *tty)
- 	struct gs_port *port;
- 	func_enter ();
- 
--	if (!tty) return 0;
- 	port = tty->driver_data;
- 
- 	if (!port->rd) return 0;
-@@ -274,8 +269,6 @@ void gs_flush_buffer(struct tty_struct *tty)
- 
- 	func_enter ();
- 
--	if (!tty) return;
--
- 	port = tty->driver_data;
- 
- 	if (!port) return;
-@@ -296,8 +289,6 @@ void gs_flush_chars(struct tty_struct * tty)
- 
- 	func_enter ();
- 
--	if (!tty) return;
--
- 	port = tty->driver_data;
- 
- 	if (!port) return;
-@@ -321,8 +312,6 @@ void gs_stop(struct tty_struct * tty)
- 
- 	func_enter ();
- 
--	if (!tty) return;
--
- 	port = tty->driver_data;
- 
- 	if (!port) return;
-@@ -341,8 +330,6 @@ void gs_start(struct tty_struct * tty)
+ static void n_tty_set_room(struct tty_struct *tty)
  {
- 	struct gs_port *port;
++	/* tty->read_cnt is not read locked ? */
+ 	int	left = N_TTY_BUF_SIZE - tty->read_cnt - 1;
  
--	if (!tty) return;
--
- 	port = tty->driver_data;
- 
- 	if (!port) return;
-@@ -393,8 +380,6 @@ void gs_hangup(struct tty_struct *tty)
- 
- 	func_enter ();
- 
--	if (!tty) return;
--
- 	port = tty->driver_data;
- 	tty = port->port.tty;
- 	if (!tty) 
-@@ -426,8 +411,6 @@ int gs_block_til_ready(void *port_, struct file * filp)
- 
- 	tty = port->port.tty;
- 
--	if (!tty) return 0;
--
- 	gs_dprintk (GS_DEBUG_BTR, "Entering gs_block_till_ready.\n"); 
  	/*
- 	 * If the device is in the middle of being closed, then block
-@@ -523,8 +506,6 @@ void gs_close(struct tty_struct * tty, struct file * filp)
- 	
- 	func_enter ();
- 
--	if (!tty) return;
--
- 	port = (struct gs_port *) tty->driver_data;
- 
- 	if (!port) return;
-@@ -621,8 +602,6 @@ void gs_set_termios (struct tty_struct * tty,
- 
- 	func_enter();
- 
--	if (!tty) return;
--
- 	port = tty->driver_data;
- 
- 	if (!port) return;
-diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
-index 96ee112..505d7a1 100644
---- a/drivers/char/istallion.c
-+++ b/drivers/char/istallion.c
-@@ -1375,8 +1375,6 @@ static void stli_flushchars(struct tty_struct *tty)
- 	stli_txcookrealsize = 0;
- 	stli_txcooktty = NULL;
- 
--	if (tty == NULL)
--		return;
- 	if (cooktty == NULL)
- 		return;
- 	if (tty != cooktty)
-@@ -1732,8 +1730,6 @@ static void stli_settermios(struct tty_struct *tty, struct ktermios *old)
- 	struct ktermios *tiosp;
- 	asyport_t aport;
- 
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1938,8 +1934,6 @@ static void stli_waituntilsent(struct tty_struct *tty, int timeout)
- 	struct stliport *portp;
- 	unsigned long tend;
- 
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
-index 308cb60..8beef50 100644
---- a/drivers/char/mxser.c
-+++ b/drivers/char/mxser.c
-@@ -616,9 +616,6 @@ static int mxser_set_baud(struct tty_struct *tty, long newspd)
- 	int quot = 0, baud;
- 	unsigned char cval;
- 
--	if (!tty->termios)
--		return -1;
--
- 	if (!info->ioaddr)
- 		return -1;
- 
-@@ -688,8 +685,6 @@ static int mxser_change_speed(struct tty_struct *tty,
- 	int ret = 0;
- 	unsigned char status;
- 
--	if (!tty->termios)
--		return ret;
- 	cflag = tty->termios->c_cflag;
- 	if (!info->ioaddr)
- 		return ret;
-diff --git a/drivers/char/n_r3964.c b/drivers/char/n_r3964.c
-index ae377aa..4a8215a 100644
---- a/drivers/char/n_r3964.c
-+++ b/drivers/char/n_r3964.c
-@@ -372,14 +372,8 @@ static void remove_from_rx_queue(struct r3964_info *pInfo,
- static void put_char(struct r3964_info *pInfo, unsigned char ch)
- {
- 	struct tty_struct *tty = pInfo->tty;
--
--	if (tty == NULL)
--		return;
--
- 	/* FIXME: put_char should not be called from an IRQ */
--	if (tty->ops->put_char) {
--		tty->ops->put_char(tty, ch);
--	}
-+	tty_put_char(tty, ch);
- 	pInfo->bcc ^= ch;
+@@ -121,6 +122,16 @@ static void put_tty_queue_nolock(unsigned char c, struct tty_struct *tty)
+ 	}
  }
  
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index 81b3234..8b8f07a 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -849,8 +849,6 @@ static void stl_flushbuffer(struct tty_struct *tty)
- 
- 	pr_debug("stl_flushbuffer(tty=%p)\n", tty);
- 
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -868,8 +866,6 @@ static void stl_waituntilsent(struct tty_struct *tty, int timeout)
- 
- 	pr_debug("stl_waituntilsent(tty=%p,timeout=%d)\n", tty, timeout);
- 
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1036,8 +1032,6 @@ static int stl_putchar(struct tty_struct *tty, unsigned char ch)
- 
- 	pr_debug("stl_putchar(tty=%p,ch=%x)\n", tty, ch);
- 
--	if (tty == NULL)
--		return -EINVAL;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return -EINVAL;
-@@ -1073,8 +1067,6 @@ static void stl_flushchars(struct tty_struct *tty)
- 
- 	pr_debug("stl_flushchars(tty=%p)\n", tty);
- 
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1093,8 +1085,6 @@ static int stl_writeroom(struct tty_struct *tty)
- 
- 	pr_debug("stl_writeroom(tty=%p)\n", tty);
- 
--	if (tty == NULL)
--		return 0;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return 0;
-@@ -1125,8 +1115,6 @@ static int stl_charsinbuffer(struct tty_struct *tty)
- 
- 	pr_debug("stl_charsinbuffer(tty=%p)\n", tty);
- 
--	if (tty == NULL)
--		return 0;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return 0;
-@@ -1219,8 +1207,6 @@ static int stl_tiocmget(struct tty_struct *tty, struct file *file)
++/**
++ *	put_tty_queue		-	add character to tty
++ *	@c: character
++ *	@tty: tty device
++ *
++ *	Add a character to the tty read_buf queue. This is done under the
++ *	read_lock to serialize character addition and also to protect us
++ *	against parallel reads or flushes
++ */
++
+ static void put_tty_queue(unsigned char c, struct tty_struct *tty)
  {
- 	struct stlport	*portp;
+ 	unsigned long flags;
+@@ -137,14 +148,11 @@ static void put_tty_queue(unsigned char c, struct tty_struct *tty)
+  *	check_unthrottle	-	allow new receive data
+  *	@tty; tty device
+  *
+- *	Check whether to call the driver.unthrottle function.
+- *	We test the TTY_THROTTLED bit first so that it always
+- *	indicates the current state. The decision about whether
+- *	it is worth allowing more input has been taken by the caller.
++ *	Check whether to call the driver unthrottle functions
++ *
+  *	Can sleep, may be called under the atomic_read_lock mutex but
+  *	this is not guaranteed.
+  */
+-
+ static void check_unthrottle(struct tty_struct *tty)
+ {
+ 	if (tty->count)
+@@ -158,6 +166,8 @@ static void check_unthrottle(struct tty_struct *tty)
+  *	Reset the read buffer counters, clear the flags,
+  *	and make sure the driver is unthrottled. Called
+  *	from n_tty_open() and n_tty_flush_buffer().
++ *
++ *	Locking: tty_read_lock for read fields.
+  */
+ static void reset_buffer_flags(struct tty_struct *tty)
+ {
+@@ -181,7 +191,7 @@ static void reset_buffer_flags(struct tty_struct *tty)
+  *	at hangup) or when the N_TTY line discipline internally has to
+  *	clean the pending queue (for example some signals).
+  *
+- *	Locking: ctrl_lock
++ *	Locking: ctrl_lock, read_lock.
+  */
  
--	if (tty == NULL)
--		return -ENODEV;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return -ENODEV;
-@@ -1236,8 +1222,6 @@ static int stl_tiocmset(struct tty_struct *tty, struct file *file,
- 	struct stlport	*portp;
- 	int rts = -1, dtr = -1;
+ static void n_tty_flush_buffer(struct tty_struct *tty)
+@@ -207,6 +217,8 @@ static void n_tty_flush_buffer(struct tty_struct *tty)
+  *
+  *	Report the number of characters buffered to be delivered to user
+  *	at this instant in time.
++ *
++ *	Locking: read_lock
+  */
  
--	if (tty == NULL)
--		return -ENODEV;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return -ENODEV;
-@@ -1266,8 +1250,6 @@ static int stl_ioctl(struct tty_struct *tty, struct file *file, unsigned int cmd
- 	pr_debug("stl_ioctl(tty=%p,file=%p,cmd=%x,arg=%lx)\n", tty, file, cmd,
- 			arg);
+ static ssize_t n_tty_chars_in_buffer(struct tty_struct *tty)
+@@ -410,6 +422,8 @@ break_out:
+  *
+  *	Echo user input back onto the screen. This must be called only when
+  *	L_ECHO(tty) is true. Called from the driver receive_buf path.
++ *
++ *	Relies on BKL for tty column locking
+  */
  
--	if (tty == NULL)
--		return -ENODEV;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return -ENODEV;
-@@ -1321,8 +1303,6 @@ static void stl_start(struct tty_struct *tty)
+ static void echo_char(unsigned char c, struct tty_struct *tty)
+@@ -422,6 +436,12 @@ static void echo_char(unsigned char c, struct tty_struct *tty)
+ 		opost(c, tty);
+ }
  
- 	pr_debug("stl_start(tty=%p)\n", tty);
++/**
++ *	finsh_erasing		-	complete erase
++ *	@tty: tty doing the erase
++ *
++ *	Relies on BKL for tty column locking
++ */
+ static inline void finish_erasing(struct tty_struct *tty)
+ {
+ 	if (tty->erasing) {
+@@ -439,6 +459,8 @@ static inline void finish_erasing(struct tty_struct *tty)
+  *	Perform erase and necessary output when an erase character is
+  *	present in the stream from the driver layer. Handles the complexities
+  *	of UTF-8 multibyte symbols.
++ *
++ *	Locking: read_lock for tty buffers, BKL for column/erasing state
+  */
  
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
+ static void eraser(unsigned char c, struct tty_struct *tty)
+@@ -447,6 +469,7 @@ static void eraser(unsigned char c, struct tty_struct *tty)
+ 	int head, seen_alnums, cnt;
+ 	unsigned long flags;
+ 
++	/* FIXME: locking needed ? */
+ 	if (tty->read_head == tty->canon_head) {
+ 		/* opost('\a', tty); */		/* what do you think? */
  		return;
-@@ -1338,8 +1318,6 @@ static void stl_settermios(struct tty_struct *tty, struct ktermios *old)
+@@ -481,6 +504,7 @@ static void eraser(unsigned char c, struct tty_struct *tty)
+ 	}
  
- 	pr_debug("stl_settermios(tty=%p,old=%p)\n", tty, old);
+ 	seen_alnums = 0;
++	/* FIXME: Locking ?? */
+ 	while (tty->read_head != tty->canon_head) {
+ 		head = tty->read_head;
  
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1373,8 +1351,6 @@ static void stl_throttle(struct tty_struct *tty)
+@@ -583,6 +607,8 @@ static void eraser(unsigned char c, struct tty_struct *tty)
+  *	may caus terminal flushing to take place according to the termios
+  *	settings and character used. Called from the driver receive_buf
+  *	path so serialized.
++ *
++ *	Locking: ctrl_lock, read_lock (both via flush buffer)
+  */
  
- 	pr_debug("stl_throttle(tty=%p)\n", tty);
+ static inline void isig(int sig, struct tty_struct *tty, int flush)
+@@ -1007,6 +1033,8 @@ int is_ignored(int sig)
+  *	and is protected from re-entry by the tty layer. The user is
+  *	guaranteed that this function will not be re-entered or in progress
+  *	when the ldisc is closed.
++ *
++ *	Locking: Caller holds tty->termios_mutex
+  */
  
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1393,8 +1369,6 @@ static void stl_unthrottle(struct tty_struct *tty)
+ static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
+@@ -1266,10 +1294,7 @@ static ssize_t read_chan(struct tty_struct *tty, struct file *file,
  
- 	pr_debug("stl_unthrottle(tty=%p)\n", tty);
+ do_it_again:
  
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1414,8 +1388,6 @@ static void stl_stop(struct tty_struct *tty)
+-	if (!tty->read_buf) {
+-		printk(KERN_ERR "n_tty_read_chan: read_buf == NULL?!?\n");
+-		return -EIO;
+-	}
++	BUG_ON(!tty->read_buf);
  
- 	pr_debug("stl_stop(tty=%p)\n", tty);
+ 	c = job_control(tty, file);
+ 	if (c < 0)
+@@ -1589,7 +1614,7 @@ static unsigned long inq_canon(struct tty_struct *tty)
+ {
+ 	int nr, head, tail;
  
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1436,8 +1408,6 @@ static void stl_hangup(struct tty_struct *tty)
- 
- 	pr_debug("stl_hangup(tty=%p)\n", tty);
- 
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
-@@ -1470,8 +1440,6 @@ static int stl_breakctl(struct tty_struct *tty, int state)
- 
- 	pr_debug("stl_breakctl(tty=%p,state=%d)\n", tty, state);
- 
--	if (tty == NULL)
--		return -EINVAL;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return -EINVAL;
-@@ -1488,8 +1456,6 @@ static void stl_sendxchar(struct tty_struct *tty, char ch)
- 
- 	pr_debug("stl_sendxchar(tty=%p,ch=%x)\n", tty, ch);
- 
--	if (tty == NULL)
--		return;
- 	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
+-	if (!tty->canon_data || !tty->read_buf)
++	if (!tty->canon_data)
+ 		return 0;
+ 	head = tty->canon_head;
+ 	tail = tty->read_tail;
+@@ -1613,6 +1638,7 @@ static int n_tty_ioctl(struct tty_struct *tty, struct file *file,
+ 	case TIOCOUTQ:
+ 		return put_user(tty_chars_in_buffer(tty), (int __user *) arg);
+ 	case TIOCINQ:
++		/* FIXME: Locking */
+ 		retval = tty->read_cnt;
+ 		if (L_ICANON(tty))
+ 			retval = inq_canon(tty);
 
