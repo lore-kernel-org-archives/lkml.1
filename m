@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762549AbYJMJrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbYJMJsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762549AbYJMJrn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbYJMJiY
+	id S1763659AbYJMJsD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761429AbYJMJiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:38:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48658 "EHLO
+	Mon, 13 Oct 2008 05:38:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48661 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757502AbYJMJiV (ORCPT
+	with ESMTP id S1759282AbYJMJiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:38:21 -0400
+	Mon, 13 Oct 2008 05:38:50 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 39/80] tty: Add termiox
+Subject: [PATCH 40/80] tty: Termios locking - sort out real_tty confusions and
+	lock reads
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:38:18 +0100
-Message-ID: <20081013093812.21645.31072.stgit@localhost.localdomain>
+Date: Mon, 13 Oct 2008 10:38:46 +0100
+Message-ID: <20081013093823.21645.43347.stgit@localhost.localdomain>
 In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
 References: <20081013092758.21645.2359.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -27,178 +28,144 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-We need a way to describe the various additional modes and flow control
-features that random weird hardware shows up and software such as wine
-wants to emulate as Windows supports them.
-
-TCGETX/TCSETX and the termiox ioctl are a SYS5 extension that we might as
-well adopt. This patches adds the structures and the basic ioctl interfaces
-when the TCGETX etc defines are added for an architecture. Drivers wishing
-to use this stuff need to add new methods.
+This moves us towards sanity and should mean our termios locking is now
+complete and comprehensive.
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_ioctl.c   |   58 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/ioctls.h   |    4 +++
- include/linux/termios.h    |   15 +++++++++++
- include/linux/tty.h        |    1 +
- include/linux/tty_driver.h |    9 +++++++
- 5 files changed, 87 insertions(+), 0 deletions(-)
+ drivers/char/tty_io.c    |    2 +-
+ drivers/char/tty_ioctl.c |   58 ++++++++++++++++++++++++++++++----------------
+ 2 files changed, 39 insertions(+), 21 deletions(-)
 
 
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index fa162c9..ac53d7f 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2605,7 +2605,7 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	case TIOCSTI:
+ 		return tiocsti(tty, p);
+ 	case TIOCGWINSZ:
+-		return tiocgwinsz(tty, p);
++		return tiocgwinsz(real_tty, p);
+ 	case TIOCSWINSZ:
+ 		return tiocswinsz(tty, real_tty, p);
+ 	case TIOCCONS:
 diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-index bf34e45..93bfa1d 100644
+index 93bfa1d..3067085 100644
 --- a/drivers/char/tty_ioctl.c
 +++ b/drivers/char/tty_ioctl.c
-@@ -579,6 +579,50 @@ static int get_termio(struct tty_struct *tty, struct termio __user *termio)
- 	return 0;
- }
- 
-+
-+#ifdef TCGETX
-+
-+/**
-+ *	set_termiox	-	set termiox fields if possible
-+ *	@tty: terminal
-+ *	@arg: termiox structure from user
-+ *	@opt: option flags for ioctl type
-+ *
-+ *	Implement the device calling points for the SYS5 termiox ioctl
-+ *	interface in Linux
-+ */
-+
-+static int set_termiox(struct tty_struct *tty, void __user *arg, int opt)
-+{
-+	struct termiox tnew;
-+	struct tty_ldisc *ld;
-+
-+	if (tty->termiox == NULL)
-+		return -EINVAL;
-+	if (copy_from_user(&tnew, arg, sizeof(struct termiox)))
-+		return -EFAULT;
-+
-+	ld = tty_ldisc_ref(tty);
-+	if (ld != NULL) {
-+		if ((opt & TERMIOS_FLUSH) && ld->ops->flush_buffer)
-+			ld->ops->flush_buffer(tty);
-+		tty_ldisc_deref(ld);
-+	}
-+	if (opt & TERMIOS_WAIT) {
-+		tty_wait_until_sent(tty, 0);
-+		if (signal_pending(current))
-+			return -EINTR;
-+	}
-+
-+	mutex_lock(&tty->termios_mutex);
-+	if (tty->ops->set_termiox)
-+		tty->ops->set_termiox(tty, &tnew);
-+	mutex_unlock(&tty->termios_mutex);
-+	return 0;
-+}
-+
-+#endif
-+
- static unsigned long inq_canon(struct tty_struct *tty)
+@@ -893,6 +893,7 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
  {
- 	int nr, head, tail;
-@@ -936,6 +980,20 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
- 			return -EFAULT;
- 			return 0;
+ 	struct tty_struct *real_tty;
+ 	void __user *p = (void __user *)arg;
++	int ret = 0;
+ 
+ 	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
+ 	    tty->driver->subtype == PTY_TYPE_MASTER)
+@@ -928,18 +929,24 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
+ 		return set_termios(real_tty, p, TERMIOS_OLD);
+ #ifndef TCGETS2
+ 	case TCGETS:
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (kernel_termios_to_user_termios((struct termios __user *)arg, real_tty->termios))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ #else
+ 	case TCGETS:
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (kernel_termios_to_user_termios_1((struct termios __user *)arg, real_tty->termios))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ 	case TCGETS2:
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (kernel_termios_to_user_termios((struct termios2 __user *)arg, real_tty->termios))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ 	case TCSETSF2:
+ 		return set_termios(real_tty, p,  TERMIOS_FLUSH | TERMIOS_WAIT);
+ 	case TCSETSW2:
+@@ -957,36 +964,46 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
+ 		return set_termios(real_tty, p, TERMIOS_TERMIO);
+ #ifndef TCGETS2
+ 	case TIOCGLCKTRMIOS:
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (kernel_termios_to_user_termios((struct termios __user *)arg, real_tty->termios_locked))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ 	case TIOCSLCKTRMIOS:
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EPERM;
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (user_termios_to_kernel_termios(real_tty->termios_locked,
+ 					       (struct termios __user *) arg))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ #else
+ 	case TIOCGLCKTRMIOS:
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (kernel_termios_to_user_termios_1((struct termios __user *)arg, real_tty->termios_locked))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ 	case TIOCSLCKTRMIOS:
+ 		if (!capable(CAP_SYS_ADMIN))
+-			return -EPERM;
++			ret = -EPERM;
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (user_termios_to_kernel_termios_1(real_tty->termios_locked,
+ 					       (struct termios __user *) arg))
+-			return -EFAULT;
+-			return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
  #endif
-+#ifdef TCGETX
-+	case TCGETX:
-+		if (real_tty->termiox == NULL)
-+			return -EINVAL;
-+		if (copy_to_user(p, real_tty->termiox, sizeof(struct termiox)))
-+			return -EFAULT;
-+		return 0;
-+	case TCSETX:
-+		return set_termiox(real_tty, p, 0);
-+	case TCSETXW:
-+		return set_termiox(real_tty, p, TERMIOS_WAIT);
-+	case TCSETXF:
-+		return set_termiox(real_tty, p, TERMIOS_FLUSH);
-+#endif		
+ #ifdef TCGETX
+ 	case TCGETX:
+ 		if (real_tty->termiox == NULL)
+ 			return -EINVAL;
++		mutex_lock(&real_tty->termios_mutex);
+ 		if (copy_to_user(p, real_tty->termiox, sizeof(struct termiox)))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ 	case TCSETX:
+ 		return set_termiox(real_tty, p, 0);
+ 	case TCSETXW:
+@@ -995,10 +1012,11 @@ int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
+ 		return set_termiox(real_tty, p, TERMIOS_FLUSH);
+ #endif		
  	case TIOCGSOFTCAR:
- 		/* FIXME: for correctness we may need to take the termios
- 		   lock here - review */
-diff --git a/include/asm-x86/ioctls.h b/include/asm-x86/ioctls.h
-index 1a8ac45..06752a6 100644
---- a/include/asm-x86/ioctls.h
-+++ b/include/asm-x86/ioctls.h
-@@ -56,6 +56,10 @@
- #define TIOCGPTN	_IOR('T', 0x30, unsigned int)
- 				/* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T', 0x31, int)  /* Lock/unlock Pty */
-+#define TCGETX		0x5432 /* SYS5 TCGETX compatibility */
-+#define TCSETX		0x5433
-+#define TCSETXF		0x5434
-+#define TCSETXW		0x5435
- 
- #define FIONCLEX	0x5450
- #define FIOCLEX		0x5451
-diff --git a/include/linux/termios.h b/include/linux/termios.h
-index 4786628..2acd0c1 100644
---- a/include/linux/termios.h
-+++ b/include/linux/termios.h
-@@ -4,4 +4,19 @@
- #include <linux/types.h>
- #include <asm/termios.h>
- 
-+#define NFF	5
-+
-+struct termiox
-+{
-+	__u16	x_hflag;
-+	__u16	x_cflag;
-+	__u16	x_rflag[NFF];
-+	__u16	x_sflag;
-+};
-+
-+#define	RTSXOFF		0x0001		/* RTS flow control on input */
-+#define	CTSXON		0x0002		/* CTS flow control on output */
-+#define	DTRXOFF		0x0004		/* DTR flow control on input */
-+#define DSRXON		0x0008		/* DCD flow control on output */
-+
- #endif
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index b6e6c26..b64d10b 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -219,6 +219,7 @@ struct tty_struct {
- 	spinlock_t ctrl_lock;
- 	/* Termios values are protected by the termios mutex */
- 	struct ktermios *termios, *termios_locked;
-+	struct termiox *termiox;	/* May be NULL for unsupported */
- 	char name[64];
- 	struct pid *pgrp;		/* Protected by ctrl lock */
- 	struct pid *session;
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index 16d2794..ac6e58e 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -180,6 +180,14 @@
-  *	not force errors here if they are not resizable objects (eg a serial
-  *	line). See tty_do_resize() if you need to wrap the standard method
-  *	in your own logic - the usual case.
-+ *
-+ * void (*set_termiox)(struct tty_struct *tty, struct termiox *new);
-+ *
-+ *	Called when the device receives a termiox based ioctl. Passes down
-+ *	the requested data from user space. This method will not be invoked
-+ *	unless the tty also has a valid tty->termiox pointer.
-+ *
-+ *	Optional: Called under the termios lock
-  */
- 
- #include <linux/fs.h>
-@@ -220,6 +228,7 @@ struct tty_operations {
- 			unsigned int set, unsigned int clear);
- 	int (*resize)(struct tty_struct *tty, struct tty_struct *real_tty,
- 				struct winsize *ws);
-+	int (*set_termiox)(struct tty_struct *tty, struct termiox *tnew);
- #ifdef CONFIG_CONSOLE_POLL
- 	int (*poll_init)(struct tty_driver *driver, int line, char *options);
- 	int (*poll_get_char)(struct tty_driver *driver, int line);
+-		/* FIXME: for correctness we may need to take the termios
+-		   lock here - review */
+-		return put_user(C_CLOCAL(real_tty) ? 1 : 0,
++		mutex_lock(&real_tty->termios_mutex);
++		ret = put_user(C_CLOCAL(real_tty) ? 1 : 0,
+ 						(int __user *)arg);
++		mutex_unlock(&real_tty->termios_mutex);
++		return ret;
+ 	case TIOCSSOFTCAR:
+ 		if (get_user(arg, (unsigned int __user *) arg))
+ 			return -EFAULT;
 
