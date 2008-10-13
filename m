@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbYJMUJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbYJMUKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758274AbYJMUJq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYJMUF5
+	id S1758587AbYJMUKE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbYJMUF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:05:57 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:53445 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753858AbYJMUFn (ORCPT
+	Mon, 13 Oct 2008 16:05:58 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:34697 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbYJMUFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Oct 2008 16:05:43 -0400
-Message-Id: <20081013195921.813238693@mail.of.borg>
+Message-Id: <20081013195921.308778386@mail.of.borg>
 References: <20081013195846.674654386@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Mon, 13 Oct 2008 21:59:02 +0200
+Date: Mon, 13 Oct 2008 21:59:01 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: [patch 16/18] m68k: Atari SCSI needs NVRAM
-Content-Disposition: inline; filename=atari-scsi-needs-nvram.diff
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 15/18] m68k: init_irq_proc depends on CONFIG_PROC_FS
+Content-Disposition: inline; filename=m68k-init_irq_proc-depends-on-CONFIG_PROC_FS.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-ERROR: "nvram_read_byte" [drivers/scsi/atari_scsi.ko] undefined!
-ERROR: "nvram_check_checksum" [drivers/scsi/atari_scsi.ko] undefined!
+If CONFIG_PROC_FS is not set, I get:
+
+| arch/m68k/kernel/ints.c:433: error: redefinition of 'init_irq_proc'
+| include/linux/interrupt.h:438: error: previous definition of 'init_irq_proc' was here
+
+This was introduced by commit 6168a702ab0be181e5e57a0b2d0e7376f7a47f0b
+("Declare init_irq_proc before we use it."), which replaced the #ifdef
+protection of the init_irq_proc() call by a static inline dummy if
+CONFIG_PROC_FS is not set.
+
+Make init_irq_proc() depend on CONFIG_PROC_FS to fix this.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/scsi/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+ arch/m68k/kernel/ints.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -1640,6 +1640,7 @@ config ATARI_SCSI
- 	tristate "Atari native SCSI support"
- 	depends on ATARI && SCSI
- 	select SCSI_SPI_ATTRS
-+	select NVRAM
- 	---help---
- 	  If you have an Atari with built-in NCR5380 SCSI controller (TT,
- 	  Falcon, ...) say Y to get it supported. Of course also, if you have
+--- a/arch/m68k/kernel/ints.c
++++ b/arch/m68k/kernel/ints.c
+@@ -429,8 +429,9 @@ int show_interrupts(struct seq_file *p, 
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PROC_FS
+ void init_irq_proc(void)
+ {
+ 	/* Insert /proc/irq driver here */
+ }
+-
++#endif
 
 -- 
 Gr{oetje,eeting}s,
