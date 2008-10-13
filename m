@@ -1,130 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbYJMUW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYJMUXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758795AbYJMUW5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758410AbYJMUWk
+	id S1759208AbYJMUXV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758749AbYJMUWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:22:40 -0400
-Received: from iona.labri.fr ([147.210.8.143]:48043 "EHLO iona.labri.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755187AbYJMUWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:22:38 -0400
-Message-ID: <48F3ADD4.60307@inria.fr>
-Date: Mon, 13 Oct 2008 22:21:40 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 13 Oct 2008 16:22:55 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:21343 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758701AbYJMUWx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 16:22:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jk78i6i7sQo5PqMWQuOquY6XpaBpDWEdqTn5ewtg1rMCx0PA265ThL1TjIqYXbv+az
+         RGBHOF5EIH8cejMLS7v8glBBmP5Nyb37KspbvK6JDI0VPLSuOFGt7XBTLe8D0eT45zr7
+         1fCTP45BxtQXsAxqjFsUeGLydUD0XG9XMvkok=
+Message-ID: <9bd6b5360810131322k3d9a6f04h6abcfa6fcd8052f5@mail.gmail.com>
+Date: Tue, 14 Oct 2008 04:22:48 +0800
+From: sniper <s3c24xx@gmail.com>
+To: "Neshama Parhoti" <pneshama@gmail.com>
+Subject: Re: section mismatch with a platform driver
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, "Adrian Bunk" <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <912ec82a0810131158o316201a5o803cb46c67c1b065@mail.gmail.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Andrew Morton <akpm@osdl.org>,
-       Nathalie Furmento <nathalie.furmento@labri.fr>
-Subject: [PATCH 2/5] mm: don't vmalloc a huge page_to_node array for do_pages_stat()
-References: <48F3AD47.1050301@inria.fr>
-In-Reply-To: <48F3AD47.1050301@inria.fr>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
+	 <20081013085111.GB29938@cs181140183.pp.htv.fi>
+	 <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
+	 <20081013090133.a58116a2.randy.dunlap@oracle.com>
+	 <912ec82a0810130929h42574fav985e922ad019b8f5@mail.gmail.com>
+	 <48F377F4.7070502@oracle.com>
+	 <912ec82a0810131158o316201a5o803cb46c67c1b065@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_pages_stat() does not need any page_to_node entry for real.
-Just pass the pointers to the user-space page address array and to
-the user-space status array, and have do_pages_stat() traverse the
-former and fill the latter directly.
+There are some examples in kernel as following:
 
-Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
----
- mm/migrate.c |   40 +++++++++++++++++++++++++---------------
- 1 files changed, 25 insertions(+), 15 deletions(-)
-
-diff --git a/mm/migrate.c b/mm/migrate.c
-index e505b2f..e92e4f1 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -936,25 +936,33 @@ set_status:
- }
- 
- /*
-- * Determine the nodes of a list of pages. The addr in the pm array
-- * must have been set to the virtual address of which we want to determine
-- * the node number.
-+ * Determine the nodes of an array of pages and store it in an array of status.
-  */
--static int do_pages_stat(struct mm_struct *mm, struct page_to_node *pm)
-+static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
-+			 const void __user * __user *pages,
-+			 int __user *status)
- {
-+	unsigned long i;
-+	int err;
-+
- 	down_read(&mm->mmap_sem);
- 
--	for ( ; pm->node != MAX_NUMNODES; pm++) {
-+	for (i = 0; i < nr_pages; i++) {
-+		const void __user *p;
-+		unsigned long addr;
- 		struct vm_area_struct *vma;
- 		struct page *page;
--		int err;
- 
- 		err = -EFAULT;
--		vma = find_vma(mm, pm->addr);
-+		if (get_user(p, pages+i))
-+			goto out;
-+		addr = (unsigned long) p;
-+
-+		vma = find_vma(mm, addr);
- 		if (!vma)
- 			goto set_status;
- 
--		page = follow_page(vma, pm->addr, 0);
-+		page = follow_page(vma, addr, 0);
- 
- 		err = PTR_ERR(page);
- 		if (IS_ERR(page))
-@@ -967,11 +975,13 @@ static int do_pages_stat(struct mm_struct *mm, struct page_to_node *pm)
- 
- 		err = page_to_nid(page);
- set_status:
--		pm->status = err;
-+		put_user(err, status+i);
- 	}
-+	err = 0;
- 
-+out:
- 	up_read(&mm->mmap_sem);
--	return 0;
-+	return err;
- }
- 
- /*
-@@ -1027,6 +1037,10 @@ asmlinkage long sys_move_pages(pid_t pid, unsigned long nr_pages,
-  	if (err)
-  		goto out2;
- 
-+	if (!nodes) {
-+		err = do_pages_stat(mm, nr_pages, pages, status);
-+		goto out2;
-+	}
- 
- 	task_nodes = cpuset_mems_allowed(task);
- 
-@@ -1075,11 +1089,7 @@ asmlinkage long sys_move_pages(pid_t pid, unsigned long nr_pages,
- 	/* End marker */
- 	pm[nr_pages].node = MAX_NUMNODES;
- 
--	if (nodes)
--		err = do_move_pages(mm, pm, flags & MPOL_MF_MOVE_ALL);
--	else
--		err = do_pages_stat(mm, pm);
--
-+	err = do_move_pages(mm, pm, flags & MPOL_MF_MOVE_ALL);
- 	if (err >= 0)
- 		/* Return status information */
- 		for (i = 0; i < nr_pages; i++)
--- 
-1.5.6.5
+static struct platform_driver my_platform_driver = {
+       .probe          = my_probe_func,
+       .remove         = __devexit_p(my_remove),
+       .suspend        = my_suspend,
+       .resume         = my_resume,
+       .driver         = {
+               .name = DRIVER_NAME,
+       },
+};
 
 
+static int __devinit my_probe_func(struct platform_device *pdev)
+{
+       return 0;
+}
 
+note that my_platform_*driver*, it let this variable can refer to
+init/exit sections.
+You can find the explanation in /scripts/mod/modpost.c:
+
+/* symbols in .data that may refer to init/exit sections */
+static const char *symbol_white_list[] =
+{
+	"*driver",
+	"*_template", /* scsi uses *_template a lot */
+	"*_timer",    /* arm uses ops structures named _timer a lot */
+	"*_sht",      /* scsi also used *_sht to some extent */
+	"*_ops",
+	"*_probe",
+	"*_probe_one",
+	"*_console",
+	NULL
+};
+
+
+On Tue, Oct 14, 2008 at 2:58 AM, Neshama Parhoti <pneshama@gmail.com> wrote:
+> On Mon, Oct 13, 2008 at 6:31 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>>> Does that mean that all drivers with __init in their probe functions are bogus ?
+>>
+>> It depends.  If your platform doesn't support hotplug, then it's possible
+>> that the probe function is only called during system init, so it would be OK.
+>
+> Hmm any idea then why did it give me a section mismatch warning ?
+>
+> Thanks!!
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
