@@ -1,103 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYJMJRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbYJMJYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbYJMJRu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbYJMJRj
+	id S1756818AbYJMJYW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYJMJYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:17:39 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:49463 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755348AbYJMJRi (ORCPT
+	Mon, 13 Oct 2008 05:24:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49993 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754833AbYJMJYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:17:38 -0400
-Date: Mon, 13 Oct 2008 10:17:25 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: ben@simtec.co.uk, s.hauer@pengutronix.de, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Javier Herrero <jherrero@hvsistemas.es>
-Subject: Re: [PATCH 1/1] netdev: DM9000: Added typecasting to supress some warnings on Blackfin
-Message-ID: <20081013091725.GG31627@trinity.fluff.org>
-References: <1223889009-31336-1-git-send-email-cooloney@kernel.org>
+	Mon, 13 Oct 2008 05:24:07 -0400
+Date: Mon, 13 Oct 2008 10:23:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: GIT head no longer boots on x86-64
+Message-ID: <20081013102330.46066092@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223889009-31336-1-git-send-email-cooloney@kernel.org>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 05:10:09PM +0800, Bryan Wu wrote:
-> From: Javier Herrero <jherrero@hvsistemas.es>
+The boot ends on the first module load with a crash
 
-No, your arch definitions of writesb and co are wrong if they
-are not taking 'void __iomem *' arguments.
- 
-> Signed-off-by: Javier Herrero <jherrero@hvsistemas.es>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  drivers/net/dm9000.c |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
-> index f42c23f..c4737ca 100644
-> --- a/drivers/net/dm9000.c
-> +++ b/drivers/net/dm9000.c
-> @@ -188,35 +188,35 @@ iow(board_info_t * db, int reg, int value)
->  
->  static void dm9000_outblk_8bit(void __iomem *reg, void *data, int count)
->  {
-> -	writesb(reg, data, count);
-> +	writesb((int)reg, data, count);
->  }
->  
->  static void dm9000_outblk_16bit(void __iomem *reg, void *data, int count)
->  {
-> -	writesw(reg, data, (count+1) >> 1);
-> +	writesw((int)reg, data, (count+1) >> 1);
->  }
->  
->  static void dm9000_outblk_32bit(void __iomem *reg, void *data, int count)
->  {
-> -	writesl(reg, data, (count+3) >> 2);
-> +	writesl((int)reg, data, (count+3) >> 2);
->  }
->  
->  /* input block from chip to memory */
->  
->  static void dm9000_inblk_8bit(void __iomem *reg, void *data, int count)
->  {
-> -	readsb(reg, data, count);
-> +	readsb((int)reg, data, count);
->  }
->  
->  
->  static void dm9000_inblk_16bit(void __iomem *reg, void *data, int count)
->  {
-> -	readsw(reg, data, (count+1) >> 1);
-> +	readsw((int)reg, data, (count+1) >> 1);
->  }
->  
->  static void dm9000_inblk_32bit(void __iomem *reg, void *data, int count)
->  {
-> -	readsl(reg, data, (count+3) >> 2);
-> +	readsl((int)reg, data, (count+3) >> 2);
->  }
->  
->  /* dump block from chip to null */
-> -- 
-> 1.5.6
+	BUG: mm/vmalloc.c 118
 
--- 
--- 
-Ben
+From
+	text_poke
+	alternatives_smp_unlock
+	alternatives_smp_module_add
+	module_finalize
+	load_module
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+while loading the EHCI driver
 
