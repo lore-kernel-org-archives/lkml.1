@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761855AbYJMNfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbYJMNfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761855AbYJMNfL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbYJMNe4
+	id S1762311AbYJMNfo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 09:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759448AbYJMNfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:34:56 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:19130 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757306AbYJMNez (ORCPT
+	Mon, 13 Oct 2008 09:35:12 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40133 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762164AbYJMNfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:34:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition;
-        b=yHeVpiDWRSTtGWO5konKYtG7Jc666evHNCAvlENeKea4BM9I0AV9QkowH54pkwNaeb
-         jB6Caoh5n2ouCj47YvyJBnQbvW9dkaMVUgpTKXOilmyg+lFYih/xxYSXSIObF/kxtupO
-         z8FfcAEgH69QNNheJbs+zW0Cjz6F0gpnlq24E=
-Message-ID: <7c86c4470810130634v28daf6e1u50f3e76fcc432e4c@mail.gmail.com>
-Date: Mon, 13 Oct 2008 15:34:52 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: 2.6.27 perfmon patch, new version of libpfm, pfmon available
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 13 Oct 2008 09:35:10 -0400
+Date: Mon, 13 Oct 2008 14:35:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: GIT head no longer boots on x86-64
+Message-ID: <20081013143502.01f3f526@lxorguk.ukuu.org.uk>
+In-Reply-To: <1223895414-19793-1-git-send-email-jirislaby@gmail.com>
+References: <20081013112024.0183f982@lxorguk.ukuu.org.uk>
+	<1223895414-19793-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 13 Oct 2008 12:56:54 +0200
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-I have released the perfmon2 kernel patch for kernel v2.6.27. There is
-no major features. Interface version is not at v2.82 following a small
-addition to the sysfs admin interface.
+> Could you try the debug patch below to see what address is text_poke trying
+> to translate?
 
-Here are the new features for the kernel:
-  - Support for Intel Atom processors, including PEBS
-  - preliminary support for Intel E74xx (Dunnington), including PEBS
-  - /sys/kernel/perfmon/mode, new configuration option for the interface
-  - list of available pmc/pmd reported by context
 
-There is also a new release for libpfm, now at version 3.6.
-The changes include:
-  - Support for Intel Atom processors
-  - preliminary support for Intel E74xx (Dunnington)
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e40b1
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e50b1
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e40da
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e50da
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e41eb
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e51eb
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4446
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5446
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e458d
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e558d
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4621
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5621
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e49a3
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e59a3
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4a21
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5a21
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4a28
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5a28
+BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4a7a
+BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5a7a
 
-Finally, a new version of pfmon, v3.5, with:
-  - Support for Intel Atom processors
-  - preliminary support for Intel E74xx (Dunnington)
-  - lots of code cleanups and bug fixes
-
-Concerning the merge, we have been making a lot of progress in the
-redesign of the syscall API to minimize the number of syscalls and
-make each one easier to extend, should this be needed. We are
-now down to 7 syscalls for the full interface, down from 12. The
-experimental kernel code is available in the GIT repository in
-the 'perfmon3' branch. Similarly, there is a matching perfmon3
-branch of libpfm, with all examples updated. This verison of
-the library also provides the glue layer so that each v2.82
-perfmon2 application can continue to work unmodified.
-
-The minimal kernel patchset has also been updated to reflect the
-new syscalls API. It will be posted on LKML shortly. As a reminder,
-this quilt patchset provides only per-thread counting on Intel and
-AMD X86 processors. It is meant to serve as the base upon which the
-rest of the perfmon2 API can be gradually added.
-
-As usual all files and more detailed changelogs can be downloaded from
-our website at:
-
-        http://perfmon2.sourceforge.net
-
-Enjoy,
+and lots more
