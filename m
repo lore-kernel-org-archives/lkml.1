@@ -1,112 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYJMXK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbYJMXL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbYJMXK1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 19:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbYJMXKG
+	id S932122AbYJMXL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 19:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbYJMXLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 19:10:06 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:3454 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757653AbYJMXKF (ORCPT
+	Mon, 13 Oct 2008 19:11:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45872 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755229AbYJMXLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 19:10:05 -0400
-Date: Mon, 13 Oct 2008 16:09:57 -0700
-From: Ron Mercer <ron.mercer@qlogic.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, jgarzik@redhat.com, apw@shadowen.org,
-       scofeldm@cisco.com, cooldavid@cooldavid.org
-Subject: Re: [PATCH] 2.6.27-git2 - fix build error at csum_ipv6_magic()
-Message-ID: <20081013230957.GB26780@susedev.qlogic.org>
-References: <20081013121441.GB14372@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081013121441.GB14372@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
-X-OriginalArrivalTime: 13 Oct 2008 23:10:02.0050 (UTC) FILETIME=[D21A2220:01C92D88]
+	Mon, 13 Oct 2008 19:11:18 -0400
+Date: Mon, 13 Oct 2008 16:10:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Cox <alan@redhat.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Resend][2.6.27-git-a447c093244] BUG: spinlock bad magic on
+ CPU#0, setserial/3527
+In-Reply-To: <200810140010.31141.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0810131538210.3288@nehalem.linux-foundation.org>
+References: <200810140010.31141.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Ron Mercer <ron.mercer@qlogic.com>
 
-for qlge:
-Thanks Kamalesh
+If this started today, then the most likely culprit is Alan's series of 80 
+serial patches.
 
+Alan? I can only assume it's one of the
 
+	spin_lock_irq(&up->port.lock);
 
-On Mon, Oct 13, 2008 at 05:44:41PM +0530, Kamalesh Babulal wrote:
+in serial8250_startup() (or quite likely in one of the functions it calls 
+that get inlined by the compiler, like enable_rsa()).
+
+And it sounds like it didn't get initialized.
+
+		Linus
+
+On Tue, 14 Oct 2008, Rafael J. Wysocki wrote:
+>
+> [Sorry, I had a wrong address of Dmitry, resending.]
+> 
 > Hi,
->   2.6.27-git2 kernel build fails with allyesconfig on powerpc with 
-> build error 
 > 
-> <introduced by commit 01f2e4ead2c51226ed1283ef6a8388ca6f4cff8f> 
+> The Linus' tree from today on Asus L5D:
 > 
-> CC    drivers/net/enic/enic_main.o
-> drivers/net/enic/enic_main.c: In function ‘enic_queue_wq_skb_tso’:
-> drivers/net/enic/enic_main.c:576: error: implicit declaration of function ‘csum_ipv6_magic’
-> make[3]: *** [drivers/net/enic/enic_main.o] Error 1
+> BUG: spinlock bad magic on CPU#0, setserial/3527
+>  lock: ffffffff80dae020, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+> Pid: 3527, comm: setserial Not tainted 2.6.27-git #57
+> Call Trace:
+>  [<ffffffff80345aae>] spin_bug+0xde/0xf0
+>  [<ffffffff80345bd6>] _raw_spin_lock+0x86/0x140
+>  [<ffffffff804823ca>] _spin_lock_irq+0x3a/0x50
+>  [<ffffffff803ae89d>] ? serial8250_startup+0x13d/0x610
+>  [<ffffffff803ae89d>] serial8250_startup+0x13d/0x610
+>  [<ffffffff803abd9a>] uart_startup+0x6a/0x1a0
+>  [<ffffffff803acca5>] uart_open+0x115/0x4a0
+>  [<ffffffff80482286>] ? _spin_unlock+0x26/0x30
+>  [<ffffffff8038d271>] ? check_tty_count+0x21/0xc0
+>  [<ffffffff8039067a>] tty_open+0x1ea/0x440
+>  [<ffffffff802a8490>] chrdev_open+0xa0/0x1c0
+>  [<ffffffff802a385c>] __dentry_open+0xcc/0x2c0
+>  [<ffffffff802a83f0>] ? chrdev_open+0x0/0x1c0
+>  [<ffffffff802a3a94>] nameidata_to_filp+0x44/0x60
+>  [<ffffffff802b052d>] do_filp_open+0x1fd/0x8f0
+>  [<ffffffff802add86>] ? getname+0x36/0x210
+>  [<ffffffff802bda06>] ? alloc_fd+0x106/0x130
+>  [<ffffffff802a36ae>] do_sys_open+0x5e/0xf0
+>  [<ffffffff802a376b>] sys_open+0x1b/0x20
+>  [<ffffffff8020b66b>] system_call_fastpath+0x16/0x1b
 > 
-> <introduced by commit c4e84bde1d595d857d3c74b49b9c45cc770df792>
+> Do I have to bisect? :-)
 > 
-> drivers/net/qlge/qlge_main.c: In function ‘ql_tso’:
-> drivers/net/qlge/qlge_main.c:1862: error: implicit declaration of function ‘csum_ipv6_magic’
-> make[3]: *** [drivers/net/qlge/qlge_main.o] Error 1
->   
-> <introduced by commit 95252236e73e789dd186ce796a2abc60b3a61ebe>
+> Rafael
 > 
-> drivers/net/jme.c: In function ‘jme_tx_tso’:
-> drivers/net/jme.c:1784: error: implicit declaration of function ‘csum_ipv6_magic’
-> make[2]: *** [drivers/net/jme.o] Error 1
-> 
-> The patch is build tested only.
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> ---
->  drivers/net/enic/enic_main.c |    1 +
->  drivers/net/jme.c            |    1 +
->  drivers/net/qlge/qlge_main.c |    1 +
->  3 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/enic/enic_main.c b/drivers/net/enic/enic_main.c
-> index f3a47a8..180e968 100644
-> --- a/drivers/net/enic/enic_main.c
-> +++ b/drivers/net/enic/enic_main.c
-> @@ -34,6 +34,7 @@
->  #include <linux/ip.h>
->  #include <linux/ipv6.h>
->  #include <linux/tcp.h>
-> +#include <net/ip6_checksum.h>
->  
->  #include "cq_enet_desc.h"
->  #include "vnic_dev.h"
-> diff --git a/drivers/net/jme.c b/drivers/net/jme.c
-> index 5f9a131..d86e809 100644
-> --- a/drivers/net/jme.c
-> +++ b/drivers/net/jme.c
-> @@ -38,6 +38,7 @@
->  #include <linux/tcp.h>
->  #include <linux/udp.h>
->  #include <linux/if_vlan.h>
-> +#include <net/ip6_checksum.h>
->  #include "jme.h"
->  
->  static int force_pseudohp = -1;
-> diff --git a/drivers/net/qlge/qlge_main.c b/drivers/net/qlge/qlge_main.c
-> index 3af822b..6675723 100644
-> --- a/drivers/net/qlge/qlge_main.c
-> +++ b/drivers/net/qlge/qlge_main.c
-> @@ -40,6 +40,7 @@
->  #include <linux/delay.h>
->  #include <linux/mm.h>
->  #include <linux/vmalloc.h>
-> +#include <net/ip6_checksum.h>
->  
->  #include "qlge.h"
->  
-> -- 
-> Thanks & Regards,
-> Kamalesh Babulal,
-> Linux Technology Center,
-> IBM, ISTL.
