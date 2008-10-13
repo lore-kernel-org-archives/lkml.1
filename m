@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbYJMRyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbYJMSCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbYJMRyu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 13:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbYJMRym
+	id S1756461AbYJMSCU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 14:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYJMSCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 13:54:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:54142 "EHLO
+	Mon, 13 Oct 2008 14:02:07 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:60159 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753883AbYJMRyl (ORCPT
+	with ESMTP id S1755225AbYJMSCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 13:54:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=vRHQ7NXQheu5etrcg8GSiPd7ZX7+dvAMR7iCpgPejc7rX4Ubcqnc1hOjdURd8meXNv
-         h9IKb9ywr7UFIeFSBSJFvcVfI9OvjjLIZrtO3iLTOQdDwhRRfSaxu6XaLI3SoFBdOuln
-         RnpFIVWYs1q4Y71ety+cO8IrUJiokT83EZcxw=
-Date: Mon, 13 Oct 2008 21:57:33 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: lockdep vs rmmod loop
-Message-ID: <20081013175732.GA16390@x200.localdomain>
+	Mon, 13 Oct 2008 14:02:06 -0400
+Message-ID: <48F38D73.8040804@colorfullife.com>
+Date: Mon, 13 Oct 2008 20:03:31 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       andi@firstfloor.org, tglx@linutronix.de
+Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <48F21D58.3000404@colorfullife.com> <20081012224629.GA7353@linux.vnet.ibm.com>
+In-Reply-To: <20081012224629.GA7353@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This exists for quite some time, IIRC.
+Paul E. McKenney wrote:
+> Do you send a reschedule IPI to CPUs that are not in dyntick idle mode,
+> but who have failed to pass through a quiescent state?
+>   
+Actually, I never send reschedule IPIs.
 
-	# rmmod loop
+- For "usual" cpus, rcu_check_callbacks() checks for quiescent states.
+There should be a set_need_resched() if a cpu holds up a grace period 
+for too long. I just haven't implemented it yet.
+IMHO it doesn't make sense to perform a "for_each_cpu() 
+smd_send_reschedule()". rcu has a hook in each cpu, thus a 
+set_need_resched() by the per-cpu hook is faster/simpler.
 
-INFO: trying to register non-static key.
-the code is fine but needs lockdep annotation.
-turning off the locking correctness validator.
-Pid: 26915, comm: rmmod Not tainted 2.6.27-4480f15b3306f43bbb0310d461142b4e897ca45b #2
-Call Trace:
- [<ffffffff80253fcc>] ? static_obj+0x8c/0xa0
- [<ffffffff80258a3d>] __lock_acquire+0x55d/0x9a0
- [<ffffffff80258ed8>] lock_acquire+0x58/0x80
- [<ffffffff80244755>] ? __cancel_work_timer+0x55/0x210
- [<ffffffff80244789>] __cancel_work_timer+0x89/0x210
- [<ffffffff80244755>] ? __cancel_work_timer+0x55/0x210
- [<ffffffff80256dad>] ? trace_hardirqs_on+0xd/0x10
- [<ffffffff80256d19>] ? trace_hardirqs_on_caller+0xc9/0x150
- [<ffffffff80256dad>] ? trace_hardirqs_on+0xd/0x10
- [<ffffffff80422482>] ? _spin_unlock_irqrestore+0x42/0x80
- [<ffffffff8023ce04>] ? try_to_del_timer_sync+0x44/0x90
- [<ffffffff8024492b>] cancel_work_sync+0xb/0x10
- [<ffffffff802fadb9>] kblockd_flush_work+0x9/0x10
- [<ffffffff802fc6a7>] blk_sync_queue+0x27/0x30
- [<ffffffff802fc6d1>] blk_cleanup_queue+0x21/0x60
- [<ffffffffa00820c8>] loop_free+0x18/0x40 [loop]
- [<ffffffffa008429b>] loop_exit+0x7b/0xc1 [loop]
- [<ffffffff8025fd67>] sys_delete_module+0x147/0x220
- [<ffffffff80256d19>] ? trace_hardirqs_on_caller+0xc9/0x150
- [<ffffffff804219a7>] ? trace_hardirqs_on_thunk+0x3a/0x3f
- [<ffffffff8020b64b>] system_call_fastpath+0x16/0x1b
+- For nohz cpus, a poller function [schedule_work(), enabled interrupts] 
+peeks into the per-cpu data of the nohz cpu and checks if it is quiet or 
+if it passed through a quiescent state.
+If it didn't, then it sets a cpu_data->kick_poller flag and 
+rcu_irq_exit() reports the grace period.
+No need for an IPI either - rcu has a hook in the irq exit path.
+
+Right now, I cheat if a nohz cpu is in a long-running nmi 
+[while(other_cpu_is_in_nmi()) cpu_relax()], but I think I can fix that 
+with an set_need_resched() in the rcu_nmi_exit().
+
+--
+    Manfred
