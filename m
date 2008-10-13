@@ -1,61 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbYJMSyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbYJMSzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760639AbYJMSyp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 14:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbYJMSyg
+	id S1761254AbYJMSzQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 14:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbYJMSy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 14:54:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:10535 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755702AbYJMSyg (ORCPT
+	Mon, 13 Oct 2008 14:54:59 -0400
+Received: from mga09.intel.com ([134.134.136.24]:61238 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757876AbYJMSy6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 14:54:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=N7hhTllN3ENeX0pRoSKynMHHNYPoD/GazoeRBFleoG4i9Jej+XpG0H0zu0Fcxcu5o7
-         k/CYdngZPIK6v2ZMde+HAYuaPFzkyRUsZTAzbGSdwMiZW++O+oZxR/AbSKFLa2gSiiYL
-         VqJHkpjnlVbgSPhNrBMeRuoh4/klJHqQ+y05s=
-Date: Mon, 13 Oct 2008 20:53:53 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: dmi_low_memory_corruption is used only when
-	CONFIG_X86_RESERVE_LOW_64K is enabled
-Message-ID: <20081013185311.GB5676@joi>
+	Mon, 13 Oct 2008 14:54:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,404,1220252400"; 
+   d="scan'208";a="347554548"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: bibo mao <bibo.mao@gmail.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Date: Mon, 13 Oct 2008 11:49:21 -0700
+Subject: RE: [patch 0/1]pat: remove redundant condition check
+Thread-Topic: [patch 0/1]pat: remove redundant condition check
+Thread-Index: AckscVEw4aMs7yQ8QX2GCgg42Ar7zgA8qiSA
+Message-ID: <7E82351C108FA840AB1866AC776AEC463796A2BF@orsmsx505.amr.corp.intel.com>
+References: <fbd277f20810120645g7feb4b85g49211641829e153e@mail.gmail.com>
+In-Reply-To: <fbd277f20810120645g7feb4b85g49211641829e153e@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fixes following compilation warning:
 
-arch/x86/kernel/setup.c:736: warning: 'dmi_low_memory_corruption' defined but not used
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 21b8e0a..1b565b6 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -732,6 +732,7 @@ void start_periodic_check_for_corruption(void)
- }
- #endif
- 
-+#ifdef CONFIG_X86_RESERVE_LOW_64K
- static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
- {
- 	printk(KERN_NOTICE
-@@ -743,6 +744,7 @@ static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
- 
- 	return 0;
- }
-+#endif
- 
- /* List of systems that have known low memory corruption BIOS problems */
- static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of bibo mao
+>Sent: Sunday, October 12, 2008 6:45 AM
+>To: akpm@linux-foundation.org
+>Cc: linux-kernel@vger.kernel.org
+>Subject: [patch 0/1]pat: remove redundant condition check
+>
+>On file pat.c, if (start <= entry->start), it also means (start <
+>entry->end). This patch removes
+>redundant condition check.
+>
+
+No No.
+
+start <= entry->start does mean start < entry->end
+but
+start <= entry->end does NOT mean start < entry->start
+
+This 'else if' is to catch the cases where start < entry->end
+and start > entry->start. Removing it will break the whole
+logic of this function.
+
+Thanks,
+Venki
+
+>Signed-off-by: bibo.mao@gmail.com
+>thanks
+>bibo,mao
+>
+>------------------------------------------------------
+>diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+>index 2a50e0f..12cac5e 100644
+>--- a/arch/x86/mm/pat.c
+>+++ b/arch/x86/mm/pat.c
+>@@ -305,27 +305,6 @@ int reserve_memtype(u64 start, u64 end, unsigned
+>long req_type,
+>                                                        struct
+>memtype, nd);
+>                        }
+>                        break;
+>-               } else if (start < entry->end) { /* start >
+>entry->start */
+>-                       err = chk_conflict(new, entry, new_type);
+>-                       if (!err) {
+>-                               dprintk("Overlap at 0x%Lx-0x%Lx\n",
+>-                                       entry->start, entry->end);
+>-                               cached_entry =
+>list_entry(entry->nd.prev,
+>-                                                       struct
+>memtype, nd);
+>-
+>-                               /*
+>-                                * Move to right position in the linked
+>-                                * list to add this new entry
+>-                                */
+>-                               list_for_each_entry_continue(entry,
+>-
+>&memtype_list, nd) {
+>-                                       if (start <= entry->start) {
+>-                                               where = entry->nd.prev;
+>-                                               break;
+>-                                       }
+>-                               }
+>-                       }
+>-                       break;
+>                }
+>        }
+>--
+>To unsubscribe from this list: send the line "unsubscribe
+>linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
