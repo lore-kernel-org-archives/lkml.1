@@ -1,72 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYJMVgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbYJMViZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbYJMVgE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYJMVfx
+	id S1755785AbYJMViZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYJMViQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:35:53 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:37396 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbYJMVfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:35:52 -0400
-Date: Mon, 13 Oct 2008 23:35:39 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [git pull] CRIS update for 2.6.28
-Message-ID: <20081013213539.GT15259@axis.com>
+	Mon, 13 Oct 2008 17:38:16 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:50278 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751437AbYJMViP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 17:38:15 -0400
+Date: Mon, 13 Oct 2008 17:38:13 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>
+Subject: nfsd (and lock) patches for 2.6.28
+Message-ID: <20081013213813.GG31876@fieldses.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+The following changes are available in the git repository at:
 
-Just some file moves in this pull-request.
+  git://linux-nfs.org/~bfields/linux.git for-2.6.28
 
-The following changes since commit d17ffb4c9d86194bb74cbc30f4b65de59c27f6cd:
-  Jesper Nilsson (1):
-        Merge branch 'cris_debug_port_fix' into cris
+More preparation for ipv6 support, fast memory registration for the
+server rdma code, grace period fixes, and various bugfixes and cleanups.
 
-are available in the git repository at:
+Also one pure file-locking patch, to make vfs support for file-locking
+configurable.
 
-  /pub/scm/cris.git for-linus
+--b.
 
-Adrian Bunk (1):
-      CRIS: proper defconfig setup
+Benny Halevy (9):
+      nfsd: properly xdr-encode stateid4.seqid as uint32_t for cb_recall
+      nfsd: properly xdr-encode deleg stateid returned from open
+      nfsd: fix nfsd4_encode_open buffer space reservation
+      nfsd: nfs4xdr encode_stateid helper function
+      nfsd: don't declare p in ENCODE_SEQID_OP_HEAD
+      nfsd: properly xdr-decode NFS4_OPEN_CLAIM_DELEGATE_CUR stateid
+      nfsd: nfs4xdr decode_stateid helper function
+      nfsd: do_probe_callback should not clear rpc stats
+      nfsd: use nfs client rpc callback program
 
-Jesper Nilsson (1):
-      [CRIS] Rename boot-linkscripts and fix the path to them.
+Chuck Lever (32):
+      SUNRPC: Add address family field to svc_serv data structure
+      SUNRPC: Use proper INADDR_ANY when setting up RPC services on IPv6
+      SUNRPC: Set V6ONLY socket option for RPC listener sockets
+      SUNRPC: Simplify rpcb_register() API
+      SUNRPC: Split portmap unregister API into separate function
+      SUNRPC: Support IPv6 when registering kernel RPC services
+      NLM: Clean up before introducing new debugging messages
+      lockd: address-family independent printable addresses
+      lockd: Specify address family for source address
+      lockd: Add address family-agnostic helper for zeroing the port number
+      SUNRPC: Make svc_addr's argument a constant
+      lockd: Use sockaddr_storage + length for h_addr field
+      lockd: Use sockaddr_storage for h_saddr field
+      NSM: Use sockaddr_storage for sm_addr field
+      lockd: Teach nlm_cmp_addr() to support AF_INET6 addresses
+      lockd: Support AF_INET6 when hashing addresses in nlm_lookup_host
+      lockd: Combine __nsm_find() and nsm_find().
+      lockd: Update nsm_find() to support non-AF_INET addresses
+      SUNRPC: Register both netids for AF_INET6 servers
+      SUNRPC: Use short-hand IPv6 ANYADDR for RPCB_SET
+      SUNRPC: Fix up svc_unregister()
+      SUNRPC: Clean up debug messages in rpcb_clnt.c
+      NLM: Convert nlm_lookup_host() to use a single argument
+      lockd: Support non-AF_INET addresses in nlm_lookup_host()
+      lockd: Adjust nlmclnt_lookup_host() signature to accomodate non-AF_INET
+      lockd: Adjust nlmsvc_lookup_host() to accomodate AF_INET6 addresses
+      lockd: change nlmclnt_grant() to take a "struct sockaddr *"
+      lockd: Add helper to sanity check incoming NOTIFY requests
+      lockd: Remove unused fields in the nlm_reboot structure
+      NLM: Always start both UDP and TCP listeners
+      NLM: Remove "proto" argument from lockd_up()
+      NLM: Remove unused argument from svc_addsock() function
 
- arch/cris/Makefile                                 |    2 ++
- arch/cris/arch-v10/boot/compressed/Makefile        |    2 +-
- .../compressed/{decompress.ld => decompress.lds}   |    0
- arch/cris/arch-v10/boot/rescue/Makefile            |    2 +-
- .../arch-v10/boot/rescue/{rescue.ld => rescue.lds} |    0
- arch/cris/arch-v32/boot/compressed/Makefile        |    2 +-
- .../compressed/{decompress.ld => decompress.lds}   |    0
- arch/cris/arch-v32/boot/rescue/Makefile            |    2 +-
- .../arch-v32/boot/rescue/{rescue.ld => rescue.lds} |    0
- arch/cris/{ => configs}/artpec_3_defconfig         |    0
- .../defconfig => configs/etrax-100lx_defconfig}    |    0
- .../etrax-100lx_v2_defconfig}                      |    0
- arch/cris/{ => configs}/etraxfs_defconfig          |    0
- 13 files changed, 6 insertions(+), 4 deletions(-)
- rename arch/cris/arch-v10/boot/compressed/{decompress.ld => decompress.lds} (100%)
- rename arch/cris/arch-v10/boot/rescue/{rescue.ld => rescue.lds} (100%)
- rename arch/cris/arch-v32/boot/compressed/{decompress.ld => decompress.lds} (100%)
- rename arch/cris/arch-v32/boot/rescue/{rescue.ld => rescue.lds} (100%)
- rename arch/cris/{ => configs}/artpec_3_defconfig (100%)
- rename arch/cris/{arch-v10/defconfig => configs/etrax-100lx_defconfig} (100%)
- rename arch/cris/{defconfig => configs/etrax-100lx_v2_defconfig} (100%)
- rename arch/cris/{ => configs}/etraxfs_defconfig (100%)
+J. Bruce Fields (7):
+      nfsd: permit unauthenticated stat of export root
+      locks: allow lockd to process blocked locks during grace period
+      lockd: don't depend on lockd main loop to end grace
+      nfsd: common grace period control
+      lockd: move grace period checks to common code
+      lockd: reject reclaims outside the grace period
+      Merge branch 'from-tomtucker' into for-2.6.28
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Jeff Layton (1):
+      knfsd: allocate readahead cache in individual chunks
+
+Thomas Petazzoni (1):
+      Configure out file locking features
+
+Tom Tucker (10):
+      svcrdma: Add Fast Reg MR Data Types
+      svcrdma: Add FRMR get/put services
+      svcrdma: Query device for Fast Reg support during connection setup
+      svcrdma: Add a service to register a Fast Reg MR with the device
+      svcrdma: Modify post recv path to use local dma key
+      svcrdma: Add support to svc_rdma_send to handle chained WR
+      svcrdma: Modify the RPC recv path to use FRMR when available
+      svcrdma: Modify the RPC reply path to use FRMR when available
+      svcrdma: Update svc_rdma_send_error to use DMA LKEY
+      svcrdma: Fix IRD/ORD polarity
+
+ fs/Kconfig                               |   30 +++
+ fs/Makefile                              |    3 +-
+ fs/lockd/Makefile                        |    2 +-
+ fs/lockd/clntlock.c                      |   13 +-
+ fs/lockd/grace.c                         |   59 +++++
+ fs/lockd/host.c                          |  350 +++++++++++++++++++++--------
+ fs/lockd/mon.c                           |    2 +-
+ fs/lockd/svc.c                           |   88 +++----
+ fs/lockd/svc4proc.c                      |   31 +--
+ fs/lockd/svclock.c                       |   18 ++-
+ fs/lockd/svcproc.c                       |   31 +--
+ fs/lockd/svcsubs.c                       |    2 +-
+ fs/lockd/xdr.c                           |    2 -
+ fs/lockd/xdr4.c                          |    2 -
+ fs/nfs/callback.c                        |    3 +-
+ fs/nfsd/lockd.c                          |    1 -
+ fs/nfsd/nfs3proc.c                       |    8 +-
+ fs/nfsd/nfs4callback.c                   |    7 +-
+ fs/nfsd/nfs4proc.c                       |    8 +-
+ fs/nfsd/nfs4state.c                      |   34 ++--
+ fs/nfsd/nfs4xdr.c                        |  171 +++++++-------
+ fs/nfsd/nfsctl.c                         |    5 +-
+ fs/nfsd/nfsfh.c                          |   30 ++-
+ fs/nfsd/nfsproc.c                        |    6 +-
+ fs/nfsd/nfssvc.c                         |   20 +-
+ fs/nfsd/vfs.c                            |   63 +++--
+ fs/proc/proc_misc.c                      |    4 +
+ include/linux/fs.h                       |   65 +++++-
+ include/linux/lockd/bind.h               |   11 +-
+ include/linux/lockd/lockd.h              |  137 ++++++++++-
+ include/linux/lockd/xdr.h                |    2 -
+ include/linux/nfsd/nfsd.h                |    3 +-
+ include/linux/sunrpc/clnt.h              |    5 +-
+ include/linux/sunrpc/svc.h               |   19 +-
+ include/linux/sunrpc/svc_rdma.h          |   27 ++-
+ include/linux/sunrpc/svcsock.h           |    5 +-
+ kernel/sys_ni.c                          |    1 +
+ kernel/sysctl.c                          |    6 +-
+ net/sunrpc/clnt.c                        |    2 +-
+ net/sunrpc/rpcb_clnt.c                   |   81 +++----
+ net/sunrpc/svc.c                         |  251 ++++++++++++++++++---
+ net/sunrpc/svc_xprt.c                    |   39 +++-
+ net/sunrpc/svcsock.c                     |   17 ++-
+ net/sunrpc/xprtrdma/svc_rdma_recvfrom.c  |  187 ++++++++++++++--
+ net/sunrpc/xprtrdma/svc_rdma_sendto.c    |  255 ++++++++++++++++++----
+ net/sunrpc/xprtrdma/svc_rdma_transport.c |  364 +++++++++++++++++++++++++-----
+ 46 files changed, 1842 insertions(+), 628 deletions(-)
+ create mode 100644 fs/lockd/grace.c
