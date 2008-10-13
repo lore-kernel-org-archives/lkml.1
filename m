@@ -1,136 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbYJMQuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbYJMQ6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760201AbYJMQuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 12:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYJMQuJ
+	id S1758118AbYJMQ6l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 12:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbYJMQ6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 12:50:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39096 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755465AbYJMQuH (ORCPT
+	Mon, 13 Oct 2008 12:58:32 -0400
+Received: from mga01.intel.com ([192.55.52.88]:8444 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755755AbYJMQ6b convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 12:50:07 -0400
-Subject: [GIT *] Misc fixes (statfs, a.out, DMI)
-From: David Woodhouse <dwmw2@infradead.org>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 13 Oct 2008 16:50:05 +0000
-Message-Id: <1223916605.6770.646.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 13 Oct 2008 12:58:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,404,1220252400"; 
+   d="scan'208";a="390968087"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: bibo mao <bibo.mao@gmail.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Date: Mon, 13 Oct 2008 09:49:57 -0700
+Subject: RE: [patch 1/1]pat: fix type check error on chk_conflict function
+Thread-Topic: [patch 1/1]pat: fix type check error on chk_conflict function
+Thread-Index: Acksce6EWBteRj00ReO3DkRjHYgEqAA4V4lA
+Message-ID: <7E82351C108FA840AB1866AC776AEC463789D134@orsmsx505.amr.corp.intel.com>
+References: <fbd277f20810120652o607cddcbse398c9b40f0892aa@mail.gmail.com>
+In-Reply-To: <fbd277f20810120652o607cddcbse398c9b40f0892aa@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
-	git://git.infradead.org/users/dwmw2/random-2.6.git
 
-This has miscellaneous fixes which don't really live anywhere else, and
-which have all been posted to linux-kernel and/or linux-arch for review:
+No. This patch is not right. Inlined some comments below.
 
-  - Fixing the automatic MODULE_ALIAS stuff for DMI so that people don't
-    keep doing it manually and screwing it up.
+Thanks,
+Venki
 
-  - Tidying up statfs.h for 64-bit compatibility, to remove a lot of
-    duplication.
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of bibo mao
+>Sent: Sunday, October 12, 2008 6:52 AM
+>To: akpm@linux-foundation.org
+>Cc: linux-kernel@vger.kernel.org
+>Subject: [patch 1/1]pat: fix type check error on chk_conflict function
+>
+> On chk_conflict() function, if new->type does not match entry->type
+>  and type is not NULL, this does not go through conflict path. This
+>  patch fix this bug.
 
-  - The non-bugfix parts of the a.out tidyup which we did before 2.6.26,
-    but forgot to merge when the window for 2.6.27 opened.
+No. If the type is not NULL, then new->type != entry->type is not a conflict.
+In this case, the caller is looking to map some region with some type and
+willing to take a type as output of reserve_memtype in "type" parameter.
 
-  - Minor fix to EFS to avoid setting a bogus f_fsid in statfs()
+So, reserve should succeed with proper type returned to the caller.
 
-  - Use PCI ident #defines for various Marvell CAFÉ drivers, and drop
-    the support for the broken "everything has same PCI ident" case, 
-    which was only ever true on the early FPGA prototypes.
+But, if type parameter is NULL, then the caller of reserve cannot really
+take an output and strictly wants req_type mapping. In that case, if we have
+new->type != entry->type we have to return an error. That is what the current
+code is doing.
 
-This is the shortlog:
+The second list_for_each_entry loop below checks for conflicting requirements
+which cannot be satisfied and that will be an error in both type being NULL
+and not NULL cases.
 
-Adrian Bunk (1):
-      Remove asm/a.out.h files for all architectures without a.out support.
-
-David Woodhouse (17):
-      EFS: Don't set f_fsid in statfs().
-      Use PCI_DEVICE_ID_88ALP01 for CAFÉ chip, rather than PCI_DEVICE_ID_CAFE.
-      [MTD] [NAND] Define and use PCI_DEVICE_ID_MARVELL_88ALP01_NAND for CAFÉ
-      Define and use PCI_DEVICE_ID_MARVELL_88ALP01_CCIC for CAFÉ camera driver
-      Make <asm-generic/statfs.h> suitable for 64-bit platforms.
-      ARM: Use <asm-generic/statfs.h>
-      IA64: Use <asm-generic/statfs.h>
-      x86_64: Use <asm-generic/statfs.h>
-      PARISC: Use <asm-generic/statfs.h>
-      PowerPC: Use <asm-generic/statfs.h>
-      SPARC: Use <asm-generic/statfs.h>
-      S390: Update comments about why we don't use <asm-generic/statfs.h>
-      Remove redundant CONFIG_ARCH_SUPPORTS_AOUT
-      Introduce HAVE_AOUT symbol to remove hard-coded arch list for BINFMT_AOUT
-      Automatic MODULE_ALIAS() for DMI match tables.
-      Fix autoloading of MacBook Pro backlight driver.
-      Merge branch 'master' of git://git.kernel.org/.../torvalds/linux-2.6
-
- arch/alpha/Kconfig                      |    4 +-
- arch/alpha/include/asm/statfs.h         |    4 ++
- arch/arm/Kconfig                        |    4 +-
- arch/arm/include/asm/statfs.h           |   34 +---------------
- arch/avr32/include/asm/a.out.h          |   20 ---------
- arch/blackfin/include/asm/a.out.h       |   19 ---------
- arch/cris/arch-v10/boot/tools/build.c   |    1 -
- arch/h8300/Kconfig                      |    3 -
- arch/h8300/include/asm/a.out.h          |   20 ---------
- arch/h8300/kernel/process.c             |    1 -
- arch/ia64/include/asm/a.out.h           |   32 ---------------
- arch/ia64/include/asm/statfs.h          |   52 ++----------------------
- arch/ia64/mm/init.c                     |    1 -
- arch/m32r/Kconfig                       |    3 -
- arch/m68k/Kconfig                       |    4 +-
- arch/m68knommu/Kconfig                  |    3 -
- arch/m68knommu/include/asm/a.out.h      |    1 -
- arch/m68knommu/kernel/process.c         |    1 -
- arch/m68knommu/kernel/traps.c           |    1 -
- arch/mips/include/asm/a.out.h           |   35 ----------------
- arch/mips/kernel/process.c              |    1 -
- arch/mips/kernel/syscall.c              |    1 -
- arch/mn10300/Kconfig                    |    3 -
- arch/parisc/Kconfig                     |    3 -
- arch/powerpc/include/asm/a.out.h        |   20 ---------
- arch/powerpc/include/asm/statfs.h       |   54 -------------------------
- arch/powerpc/kernel/softemu8xx.c        |    1 -
- arch/powerpc/kernel/traps.c             |    1 -
- arch/powerpc/platforms/chrp/setup.c     |    1 -
- arch/powerpc/platforms/maple/setup.c    |    1 -
- arch/powerpc/platforms/powermac/setup.c |    1 -
- arch/powerpc/platforms/pseries/setup.c  |    1 -
- arch/s390/include/asm/statfs.h          |   11 ++---
- arch/sparc/include/asm/Kbuild           |    2 -
- arch/sparc/include/asm/statfs.h         |    8 +--
- arch/sparc/include/asm/statfs_32.h      |    6 ---
- arch/sparc/include/asm/statfs_64.h      |   54 -------------------------
- arch/um/Kconfig.i386                    |    8 +--
- arch/um/Kconfig.x86_64                  |    3 -
- arch/x86/Kconfig                        |    6 +--
- drivers/media/video/cafe_ccic.c         |   13 +-----
- drivers/mmc/host/sdhci-pci.c            |    2 +-
- drivers/mtd/nand/cafe_nand.c            |    6 ++-
- drivers/video/backlight/mbp_nvidia_bl.c |    4 +-
- fs/Kconfig.binfmt                       |    6 ++-
- fs/efs/super.c                          |    2 -
- include/asm-cris/a.out.h                |   26 ------------
- include/asm-generic/statfs.h            |   65 +++++++++++++++++++++++--------
- include/asm-m32r/a.out.h                |   20 ---------
- include/asm-parisc/a.out.h              |   20 ---------
- include/asm-parisc/statfs.h             |   55 +-------------------------
- include/asm-x86/statfs.h                |   61 ++--------------------------
- include/asm-xtensa/a.out.h              |   29 --------------
- include/linux/dmi.h                     |   41 +------------------
- include/linux/mod_devicetable.h         |   47 ++++++++++++++++++++++
- include/linux/pci_ids.h                 |    4 +-
- scripts/mod/file2alias.c                |   57 +++++++++++++++++++++++++++
- 57 files changed, 204 insertions(+), 683 deletions(-)
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+>
+> Signed-off-by:  bibo.mao@gmail.com
+>
+>----------------------------------------------------------------------
+>diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+>index 12cac5e..0632308 100644
+>--- a/arch/x86/mm/pat.c
+>+++ b/arch/x86/mm/pat.c
+>@@ -183,28 +183,29 @@ static unsigned long pat_x_mtrr_type(u64 start,
+>u64 end, unsigned long req_type)
+> static int chk_conflict(struct memtype *new, struct memtype *entry,
+>                        unsigned long *type)
+> {
+>-       if (new->type != entry->type) {
+>-               if (type) {
+>-                       new->type = entry->type;
+>-                       *type = entry->type;
+>-               } else
+>-                       goto conflict;
+>-       }
+>+       int err = -EBUSY;
+>+
+>+       if (new->type != entry->type)
+>+               goto conflict;
+>
+>         /* check overlaps with more than one entry in the list */
+>        list_for_each_entry_continue(entry, &memtype_list, nd) {
+>                if (new->end <= entry->start)
+>                        break;
+>-               else if (new->type != entry->type)
+>+               else if (new->type != entry->type) {
+>+                       err = -EINVAL;
+>                        goto conflict;
+>+               }
+>        }
+>        return 0;
+>
+>  conflict:
+>+       if (type)
+>+               *type = entry->type;
+>        printk(KERN_INFO "%s:%d conflicting memory types "
+>               "%Lx-%Lx %s<->%s\n", current->comm,
+>current->pid, new->start,
+>               new->end, cattr_name(new->type),
+>cattr_name(entry->type));
+>-       return -EBUSY;
+>+       return err;
+> }
+>
+> static struct memtype *cached_entry;
+>@@ -278,9 +279,6 @@ int reserve_memtype(u64 start, u64 end, unsigned
+>long req_type,
+>        new->end = end;
+>        new->type = actual_type;
+>
+>-       if (new_type)
+>-               *new_type = actual_type;
+>-
+>        spin_lock(&memtype_lock);
+>
+>        if (cached_entry && start >= cached_start)
+>@@ -326,6 +324,9 @@ int reserve_memtype(u64 start, u64 end, unsigned
+>long req_type,
+>
+>        spin_unlock(&memtype_lock);
+>
+>+       if (new_type)
+>+               *new_type = actual_type;
+>+
+>        dprintk("reserve_memtype added 0x%Lx-0x%Lx, track %s,
+>req %s, ret %s\n",
+>                start, end, cattr_name(new->type),
+>cattr_name(req_type),
+>                new_type ? cattr_name(*new_type) : "-");
+>@@ -474,15 +475,22 @@ void map_devmem(unsigned long pfn, unsigned long
+>size, pgprot_t vma_prot)
+>        u64 addr = (u64)pfn << PAGE_SHIFT;
+>        unsigned long flags;
+>        unsigned long want_flags = (pgprot_val(vma_prot) &
+>_PAGE_CACHE_MASK);
+>+       int err;
+>
+>-       reserve_memtype(addr, addr + size, want_flags, &flags);
+>-       if (flags != want_flags) {
+>+       err = reserve_memtype(addr, addr + size, want_flags, &flags);
+>+       if (err == -EBUSY) {
+>                printk(KERN_INFO
+>                "%s:%d /dev/mem expected mapping type %s for
+>%Lx-%Lx, got %s\n",
+>                        current->comm, current->pid,
+>                        cattr_name(want_flags),
+>                        addr, (unsigned long long)(addr + size),
+>                        cattr_name(flags));
+>+       } else if (err == -EINVAL) {
+>+               printk(KERN_INFO
+>+               "%s:%d /dev/mem has both mapping type %s and
+>%s for %Lx-%Lx \n",
+>+                       current->comm, current->pid,
+>+                       cattr_name(want_flags), cattr_name(flags),
+>+                       addr, (unsigned long long)(addr + size));
+>        }
+> }
+>--
+>To unsubscribe from this list: send the line "unsubscribe
+>linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
