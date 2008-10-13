@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759965AbYJMWXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759331AbYJMWjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759965AbYJMWXY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 18:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbYJMWXF
+	id S1759331AbYJMWjy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 18:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbYJMWjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 18:23:05 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:42079 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757461AbYJMWXD (ORCPT
+	Mon, 13 Oct 2008 18:39:44 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40659 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755587AbYJMWjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 18:23:03 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] intermediate SCSI updates
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <1223909115.5566.13.camel@localhost.localdomain>
-	<alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
-	<1223925606.5566.20.camel@localhost.localdomain>
-	<alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
-Date: Mon, 13 Oct 2008 18:22:05 -0400
-In-Reply-To: <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org> (Linus Torvalds's message of "Mon\, 13 Oct 2008 14\:22\:13 -0700 \(PDT\)")
-Message-ID: <yq163nwcf02.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 13 Oct 2008 18:39:43 -0400
+Date: Mon, 13 Oct 2008 23:39:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Grant Grundler" <grundler@google.com>
+Cc: "kenneth johansson" <ken@kenjo.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: weird throughput on write to SATA disk
+Message-ID: <20081013233933.2ee5a011@lxorguk.ukuu.org.uk>
+In-Reply-To: <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
+References: <1223925629.3947.7.camel@duo>
+	<da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Linus" == Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Mon, 13 Oct 2008 14:07:15 -0700
+"Grant Grundler" <grundler@google.com> wrote:
 
-Linus> What I'm upset about is that this has apparently gotten not
-Linus> even some trivial testing of the _default_ build. I'm not
-Linus> talking about any odd config options here. I'm literally
-Linus> talking about the only _sane_ config option case.
+> On Mon, Oct 13, 2008 at 12:19 PM, kenneth johansson <ken@kenjo.org> wrote:
+> > When writing data to /dev/sdb (that is the whole disk and no filesystem)
+> > it starts out ok around 100MB/sec but soon end up doing considerably
+> > worse. For prolonged times lasting several minutes it hovers in the
+> > 20-30MB/sec.
+> 
+> Is the application using "O_DIRECT"?
+> If not, could be issue with how VM writeback is (not) working.
 
-This one initially slipped through my testing, sorry about that.  I
-always compile with the integrity both on and off in my devel tree but
-I messed up while rebasing the patches against James' tree.  These
-mutually dependent block and SCSI merges are always tricky to deal
-with.
+Or just mashing up the I/O horribly. Would also be worth turning the CFQ
+scheduler off or applying Arjan van de Ven's patches to fix the ioprio of
+the kernel writeout threads. That last patch makes a huge difference here.
 
-However, I wonder why the obvious build fix wasn't merged?  Mike
-Anderson sent out a patch for this right after my patch appeared in
-the SCSI tree...
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Alan
