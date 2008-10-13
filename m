@@ -1,189 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYJMOJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYJMOKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbYJMOJv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYJMOJm
+	id S1755913AbYJMOKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYJMOKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:09:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38387 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753341AbYJMOJk (ORCPT
+	Mon, 13 Oct 2008 10:10:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54397 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753341AbYJMOKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:09:40 -0400
-Date: Mon, 13 Oct 2008 15:04:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fusion: remove dead mpt lan code
-Message-ID: <20081013150402.0141a218@lxorguk.ukuu.org.uk>
-In-Reply-To: <48F34CB9.3020000@pobox.com>
-References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
-	<48F2F138.6020103@kernel.org>
-	<48F34CB9.3020000@pobox.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 13 Oct 2008 10:10:21 -0400
+Message-ID: <48F372BA.7020505@linux-foundation.org>
+Date: Mon, 13 Oct 2008 09:09:30 -0700
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Brice Goglin <Brice.Goglin@inria.fr>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, nathalie.furmento@labri.fr
+Subject: Re: [PATCH] mm: use a radix-tree to make do_move_pages() complexity
+ linear
+References: <48EDF9DA.7000508@inria.fr> <20081010125010.164bcbb8.akpm@linux-foundation.org> <48EFB6E6.4080708@inria.fr> <48EFBBE9.5000703@linux-foundation.org> <48F069B8.6050709@inria.fr>
+In-Reply-To: <48F069B8.6050709@inria.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mptlan: Kill unused NAA workaround code
+Brice Goglin wrote:
+> * One thing that bothers me is move_pages() returning -ENOENT when no
+> page are given to migrate_pages(). I don't see why having 100/100 pages
+> not migrated would return a different error than having only 99/100
+> pages not migrated. We have the status array to place -ENOENT for all
+> these pages. If the user doesn't know where his pages are allocated, he
+> shouldn't get a different return value depending on how many pages were
+> already on the right node. And actually, this convention makes
+> user-space application harder to write since you need to treat -ENOENT
+> as a success unless you already knew for sure where your pages were
+> allocated. And the big thing is that this convention makes the chunking
+> painfully/uselessly more complex. Breaking user-ABI is bad, but fixing
+> crazy ABI...
+>   
+I do not think that move_pages() is used that frequently. Changing the 
+API slightly as you suggest would not be that big of a deal.
 
-From: Alan Cox <alan@redhat.com>
-
-This triggers false bug reports as it does a bogus kmalloc with locks held
-but is never really compiled
-
-Closes #8329
-
-Signed-off-by: Alan Cox <alan@redhat.com>
----
-
- drivers/message/fusion/mptlan.c |  108 ---------------------------------------
- 1 files changed, 0 insertions(+), 108 deletions(-)
-
-
-diff --git a/drivers/message/fusion/mptlan.c b/drivers/message/fusion/mptlan.c
-index a1abf95..603ffd0 100644
---- a/drivers/message/fusion/mptlan.c
-+++ b/drivers/message/fusion/mptlan.c
-@@ -77,12 +77,6 @@ MODULE_VERSION(my_VERSION);
-  *  Fusion MPT LAN private structures
-  */
- 
--struct NAA_Hosed {
--	u16 NAA;
--	u8 ieee[FC_ALEN];
--	struct NAA_Hosed *next;
--};
--
- struct BufferControl {
- 	struct sk_buff	*skb;
- 	dma_addr_t	dma;
-@@ -159,11 +153,6 @@ static u8 LanCtx = MPT_MAX_PROTOCOL_DRIVERS;
- static u32 max_buckets_out = 127;
- static u32 tx_max_out_p = 127 - 16;
- 
--#ifdef QLOGIC_NAA_WORKAROUND
--static struct NAA_Hosed *mpt_bad_naa = NULL;
--DEFINE_RWLOCK(bad_naa_lock);
--#endif
--
- /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
- /**
-  *	lan_reply - Handle all data sent from the hardware.
-@@ -780,30 +769,6 @@ mpt_lan_sdu_send (struct sk_buff *skb, struct net_device *dev)
- //			ctx, skb, skb->data));
- 
- 	mac = skb_mac_header(skb);
--#ifdef QLOGIC_NAA_WORKAROUND
--{
--	struct NAA_Hosed *nh;
--
--	/* Munge the NAA for Tx packets to QLogic boards, which don't follow
--	   RFC 2625. The longer I look at this, the more my opinion of Qlogic
--	   drops. */
--	read_lock_irq(&bad_naa_lock);
--	for (nh = mpt_bad_naa; nh != NULL; nh=nh->next) {
--		if ((nh->ieee[0] == mac[0]) &&
--		    (nh->ieee[1] == mac[1]) &&
--		    (nh->ieee[2] == mac[2]) &&
--		    (nh->ieee[3] == mac[3]) &&
--		    (nh->ieee[4] == mac[4]) &&
--		    (nh->ieee[5] == mac[5])) {
--			cur_naa = nh->NAA;
--			dlprintk ((KERN_INFO "mptlan/sdu_send: using NAA value "
--				  "= %04x.\n", cur_naa));
--			break;
--		}
--	}
--	read_unlock_irq(&bad_naa_lock);
--}
--#endif
- 
- 	pTrans->TransactionDetails[0] = cpu_to_le32((cur_naa         << 16) |
- 						    (mac[0] <<  8) |
-@@ -1572,79 +1537,6 @@ mpt_lan_type_trans(struct sk_buff *skb, struct net_device *dev)
- 
- 	fcllc = (struct fcllc *)skb->data;
- 
--#ifdef QLOGIC_NAA_WORKAROUND
--{
--	u16 source_naa = fch->stype, found = 0;
--
--	/* Workaround for QLogic not following RFC 2625 in regards to the NAA
--	   value. */
--
--	if ((source_naa & 0xF000) == 0)
--		source_naa = swab16(source_naa);
--
--	if (fcllc->ethertype == htons(ETH_P_ARP))
--	    dlprintk ((KERN_INFO "mptlan/type_trans: got arp req/rep w/ naa of "
--		      "%04x.\n", source_naa));
--
--	if ((fcllc->ethertype == htons(ETH_P_ARP)) &&
--	   ((source_naa >> 12) !=  MPT_LAN_NAA_RFC2625)){
--		struct NAA_Hosed *nh, *prevnh;
--		int i;
--
--		dlprintk ((KERN_INFO "mptlan/type_trans: ARP Req/Rep from "
--			  "system with non-RFC 2625 NAA value (%04x).\n",
--			  source_naa));
--
--		write_lock_irq(&bad_naa_lock);
--		for (prevnh = nh = mpt_bad_naa; nh != NULL;
--		     prevnh=nh, nh=nh->next) {
--			if ((nh->ieee[0] == fch->saddr[0]) &&
--			    (nh->ieee[1] == fch->saddr[1]) &&
--			    (nh->ieee[2] == fch->saddr[2]) &&
--			    (nh->ieee[3] == fch->saddr[3]) &&
--			    (nh->ieee[4] == fch->saddr[4]) &&
--			    (nh->ieee[5] == fch->saddr[5])) {
--				found = 1;
--				dlprintk ((KERN_INFO "mptlan/type_trans: ARP Re"
--					 "q/Rep w/ bad NAA from system already"
--					 " in DB.\n"));
--				break;
--			}
--		}
--
--		if ((!found) && (nh == NULL)) {
--
--			nh = kmalloc(sizeof(struct NAA_Hosed), GFP_KERNEL);
--			dlprintk ((KERN_INFO "mptlan/type_trans: ARP Req/Rep w/"
--				 " bad NAA from system not yet in DB.\n"));
--
--			if (nh != NULL) {
--				nh->next = NULL;
--				if (!mpt_bad_naa)
--					mpt_bad_naa = nh;
--				if (prevnh)
--					prevnh->next = nh;
--
--				nh->NAA = source_naa; /* Set the S_NAA value. */
--				for (i = 0; i < FC_ALEN; i++)
--					nh->ieee[i] = fch->saddr[i];
--				dlprintk ((KERN_INFO "Got ARP from %02x:%02x:%02x:%02x:"
--					  "%02x:%02x with non-compliant S_NAA value.\n",
--					  fch->saddr[0], fch->saddr[1], fch->saddr[2],
--					  fch->saddr[3], fch->saddr[4],fch->saddr[5]));
--			} else {
--				printk (KERN_ERR "mptlan/type_trans: Unable to"
--					" kmalloc a NAA_Hosed struct.\n");
--			}
--		} else if (!found) {
--			printk (KERN_ERR "mptlan/type_trans: found not"
--				" set, but nh isn't null. Evil "
--				"funkiness abounds.\n");
--		}
--		write_unlock_irq(&bad_naa_lock);
--	}
--}
--#endif
- 
- 	/* Strip the SNAP header from ARP packets since we don't
- 	 * pass them through to the 802.2/SNAP layers.
