@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbYJMIP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbYJMIQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbYJMIP7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYJMIPu
+	id S1756852AbYJMIQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755397AbYJMIQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:15:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57814
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755134AbYJMIPt (ORCPT
+	Mon, 13 Oct 2008 04:16:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:15467 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754907AbYJMIQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:15:49 -0400
-Date: Mon, 13 Oct 2008 01:15:25 -0700 (PDT)
-Message-Id: <20081013.011525.31258522.davem@davemloft.net>
-To: mathieu.desnoyers@polymtl.ca
+	Mon, 13 Oct 2008 04:16:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=f/hGrjqUSMkXpfAgQ/BelvU/NBrU/bumhkwbCxPjJ01L+hkaesFMdr4OcYfF4hiNPN
+         kF4MyWX17zwz7VvvVyUt6QwdxYP/z9n6B2jCuMLMeuF0GCJ7fgVyOAOqrfX2gvjyyJHh
+         bhKu/lG1ruLrb94mNG5CWz6gPeBxgx6tOcISc=
+Date: Mon, 13 Oct 2008 12:19:08 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: torvalds@osdl.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: sparc64: Optimized immediate value implementation build error
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081003201007.GA16025@Krystal>
-References: <20081003201007.GA16025@Krystal>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Subject: [GIT] /proc
+Message-ID: <20081013081908.GA19572@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Fri, 3 Oct 2008 16:10:07 -0400
+Linus, please, pull from
 
-> I ran a cross-compiler on the -lttng tree
-> git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
-> 
-> to build the sparc64 arch, and ran across this build error :
-> 
-> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h: In function `do_fork':
-> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: warning: asm operand 1 probably doesn't match constraints
-> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: error: impossible constraint in `asm'
-> /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: warning: 'value' might be used uninitialized in this function
-> make[2]: *** [kernel/fork.o] Error 1
-> 
-> I think it's caused by :
-> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commit;h=c76bfa90a6eb02651368a152b3646aa672d9e625
+	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
 
-It can't be "caused by" that commit because that's the initial
-immediate value sparc64 support I wrote and the tree very much compiled
-properly when I did test builds way back then.
+to get
+a) oops fix for rare race condition
+b) /proc/*/personality files
+c) removal of kernel.maps_protect sysctl which stopped controlling anything
+   since 2.6.24-rc7 (effectively was always turned on)
 
-I don't have time to look further into this right now, sorry.
+and misc cleanups not worth mentioning.
+
+ Documentation/filesystems/proc.txt |    7 -------
+ arch/arm/kernel/dma.c              |   17 -----------------
+ arch/sparc/include/asm/dma_32.h    |    1 -
+ fs/proc/Kconfig                    |   10 ++++++++++
+ fs/proc/array.c                    |    7 -------
+ fs/proc/base.c                     |   21 ++++++++++-----------
+ fs/proc/inode.c                    |    2 +-
+ fs/proc/internal.h                 |    2 --
+ fs/proc/proc_misc.c                |    1 -
+ fs/proc/proc_sysctl.c              |    6 +++---
+ fs/proc/task_mmu.c                 |   16 +---------------
+ fs/proc/task_nommu.c               |    5 -----
+ fs/proc/vmcore.c                   |    6 ------
+ init/Kconfig                       |   10 ----------
+ kernel/sched_debug.c               |    2 --
+ kernel/sysctl.c                    |   11 -----------
+ 16 files changed, 25 insertions(+), 99 deletions(-)
