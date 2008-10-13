@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbYJMXoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760938AbYJMXp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760781AbYJMXoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 19:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756951AbYJMXoK
+	id S1760938AbYJMXp3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 19:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbYJMXpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 19:44:10 -0400
-Received: from smtp.ono.com ([62.42.230.12]:42979 "EHLO resmaa01.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755862AbYJMXoJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 19:44:09 -0400
-Date: Tue, 14 Oct 2008 01:44:06 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
-Message-ID: <20081014014406.318db8e7@werewolf.home>
-In-Reply-To: <20081013232432.GB32550@tuxdriver.com>
-References: <20081014010202.71d13eaf@werewolf.home>
-	<20081013232432.GB32550@tuxdriver.com>
-X-Mailer: Claws Mail 3.6.1cvs2 (GTK+ 2.14.3; i686-pc-linux-gnu)
+	Mon, 13 Oct 2008 19:45:12 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57859 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757559AbYJMXpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 19:45:10 -0400
+Date: Tue, 14 Oct 2008 10:44:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] intermediate SCSI updates
+Message-Id: <20081014104459.715fe7a2.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
+References: <1223909115.5566.13.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
+	<1223925606.5566.20.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__14_Oct_2008_10_44_59_+1100_Lg+tB609GdSff+pz"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008 19:24:33 -0400, "John W. Linville" <linville@tuxdriver.com> wrote:
+--Signature=_Tue__14_Oct_2008_10_44_59_+1100_Lg+tB609GdSff+pz
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, Oct 14, 2008 at 01:02:02AM +0200, J.A. Magallón wrote:
-> 
-> > werewolf:~# modprobe ath5k
-> > WARNING: Error inserting cfg80211 (/lib/modules/2.6.27-jam03/kernel/net/wireless/cfg80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
-> > WARNING: Error inserting mac80211 (/lib/modules/2.6.27-jam03/kernel/net/mac80211/mac80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
-> > FATAL: Error inserting ath5k (/lib/modules/2.6.27-jam03/kernel/drivers/net/wireless/ath5k/ath5k.ko): Unknown symbol in module, or unknown parameter (see dmesg)
-> > werewolf:~# modprobe mac80211
-> > WARNING: Error inserting cfg80211 (/lib/modules/2.6.27-jam03/kernel/net/wireless/cfg80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
-> > FATAL: Error inserting mac80211 (/lib/modules/2.6.27-jam03/kernel/net/mac80211/mac80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
-> > 
-> > Dmesg is below.
-> 
-> cfg80211 isn't loading, so mac80211 can't find it's symbols, and
-> ath5k can't find mac80211's symbols.
-> 
-> > cfg80211: Unknown parameter `ieee80211_regdom'
-> 
-> config WIRELESS_OLD_REGULATORY
-> 	bool "Old wireless static regulatory definitions"
-...
-> 
-> Is this not clear enough?
-> 
+Hi Linus,
 
-NO.
+On Mon, 13 Oct 2008 14:22:13 -0700 (PDT) Linus Torvalds <torvalds@linux-fou=
+ndation.org> wrote:
+>
+> Is linux-next coverage REALLY so weak that it doesn't even test the=20
+> default config options, much less any random options? What's the point of=
+=20
+> linux-next then?
 
-I'm a complete literate in wireles internals. Not in other areas. And I
-don't undestand a word about regulations and so on. The only thing
-I see there is 'OLD WAY of doing things', so I disable it. I expect
-two things:
+Check the results page of the automated builds I do
+(http://kisskb.ellerman.id.au/linux-next) - I don't think that the
+compile coverage is weak ...  Of course, if people don't read the
+results ...
 
-- As it is an optional thing I can toggle, no driver depends on it.
-- If I choose a driver that depends on it, it will get automagically
-  selected.
+Those automated builds are done after the release.  Before the release,
+the tree is built for ppc64_defconfig, powerpc allnoconfig, 44x_defconfig
+for powerpc, allmodconfig for x86_64 and defconfig for i386, sparc and
+sparc64.
 
-So, please, if migration is not finished:
+All this is mentioned in my release notes every day.
 
-- Default it as Y, or add a depend on every driver that uses it
-- Hide it under the famous 'crazy hacker-only things' boolean
+> Again, the date on that thing is claimed to be September 19th, although i=
+t=20
+> was obviously committed later.
 
-It is enough to have to choose between mac80211 and ieee80211.
+September 19 (Australian time) was the last linux-next release.  I don't
+know off the top of my head if the particular patch in question was in
+next-20080919, but it did contain a version of James' post merge patches.
 
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.0 (Cooker) for i586
-Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__14_Oct_2008_10_44_59_+1100_Lg+tB609GdSff+pz
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjz3XsACgkQjjKRsyhoI8x2egCeNd/q0ntt6N/c9RKPwSe+x4jH
+tIYAoIG0Oy5jnLKDIj/IFfdOgHdijTad
+=cKY4
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__14_Oct_2008_10_44_59_+1100_Lg+tB609GdSff+pz--
