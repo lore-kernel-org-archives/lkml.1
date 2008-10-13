@@ -1,44 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYJMO3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYJMOaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbYJMO3E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:29:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbYJMO2w
+	id S1757311AbYJMOaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYJMO3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:28:52 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47883 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754662AbYJMO2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:28:51 -0400
-To: cl@linux-foundation.org
-CC: miklos@szeredi.hu, nickpiggin@yahoo.com.au, hugh@veritas.com,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
-       akpm@linux-foundation.org
-In-reply-to: <48F3765A.2010301@linux-foundation.org> (message from Christoph
-	Lameter on Mon, 13 Oct 2008 09:24:58 -0700)
-Subject: Re: SLUB defrag pull request?
-References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <48F3765A.2010301@linux-foundation.org>
-Message-Id: <E1KpOPb-0003Wd-AZ@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 13 Oct 2008 16:28:43 +0200
+	Mon, 13 Oct 2008 10:29:55 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:39257 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754970AbYJMO3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 10:29:54 -0400
+Date: Mon, 13 Oct 2008 16:29:51 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+Message-ID: <20081013142951.GB23124@anita.doom>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org> <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com> <20081008080848.GA20525@anita.doom> <48F3088C.9010002@kernel.org> <48F308E8.4030503@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F308E8.4030503@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008, Christoph Lameter wrote:
-> Miklos Szeredi wrote:
-> > I think it's wrong to unhash dentries while they are possibly still
-> > being used.  You can do the shrink_dcache_parent() here, but should
-> > leave the unhashing to be done by prune_one_dentry(), after it's been
-> > checked that there are no other users of the dentry.
-> >
-> >   
-> d_invalidate() calls shrink_dcache_parent() as needed and will fail if 
-> there are other users of the dentry.
+Am 2008-10-13 17:38 +0900 schrieb Tejun Heo:
 
-Only if it's a directory.  Now unhashing an in-use non-directory is
-not fatal, but you'll get things like "filename (deleted)" in /proc,
-and suchlike.  Don't do it.
+> Also, can you please repeat the test several times and see whether there
 
-Miklos
+Still I have the last suggested patch running and the machine solves to
+boot cold any time (I am shure meanwhile, turned off the whole sunday it
+botted this morning and so on - any time).
+
+Consistent is this issue telling something about MISSCLASSIFIED:
+
+sata_nv 0000:00:0a.0: version 3.5
+ACPI: PCI Interrupt Link [LTID] enabled at IRQ 21
+sata_nv 0000:00:0a.0: PCI INT A -> Link[LTID] -> GSI 21 (level, low) -> IRQ 21
+sata_nv 0000:00:0a.0: setting latency timer to 64
+scsi0 : sata_nv
+scsi1 : sata_nv
+ata1: SATA max UDMA/133 cmd 0xf80 ctl 0xf00 bmdma 0xd800 irq 21
+ata2: SATA max UDMA/133 cmd 0xe80 ctl 0xe00 bmdma 0xd808 irq 21
+ata1: hard resetting link
+ata1: link is slow to respond, please be patient (ready=0)
+ata1: SRST failed (errno=-16)
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata1: link online but device misclassified, retrying
+ata1: hard resetting link
+ata1: link is slow to respond, please be patient (ready=0)
+ata1: SRST failed (errno=-16)
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata1: link online but device misclassified, retrying
+ata1: hard resetting link
+XXX CLASSIFY 01:00:00
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata1.00: ATA-7: SAMSUNG HD753LJ, 1AA01106, max UDMA7
+ata1.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata1.00: configured for UDMA/133
+ata1: EH complete
+ata2: hard resetting link
+ata2: SATA link down (SStatus 0 SControl 300)
+ata2: EH complete
+isa bounce pool size: 16 pages
+scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD753LJ  1AA0 PQ: 0 ANSI: 5
+sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 0:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
+sd 0:0:0:0: [sda] Attached SCSI disk
+
+It struggles a bit then (a couple of seconds?), but solves to boot.
+
+> are some patterns?  And please also try pre-2.6.26 kernel a few times
+
+This is consitent now.
+
+> just to make sure it's not some bad coincidence.
+
+I will check this out but need to look if this is possible with my nfsv4
+issues then, I will report.
+
+Konsti
+
+
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
