@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbYJMWT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759965AbYJMWXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932098AbYJMWT0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 18:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759428AbYJMWTP
+	id S1759965AbYJMWXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 18:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbYJMWXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 18:19:15 -0400
-Received: from 1-1-4-20a.ras.sth.bostream.se ([82.182.72.90]:35250 "EHLO
-	amd.kenjo.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759233AbYJMWTO (ORCPT
+	Mon, 13 Oct 2008 18:23:05 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42079 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757461AbYJMWXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 18:19:14 -0400
-Subject: Re: weird throughput on write to SATA disk
-From: kenneth johansson <ken@kenjo.org>
-To: Grant Grundler <grundler@google.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>
-References: <1223925629.3947.7.camel@duo>
-	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
-	 <1223932956.3947.22.camel@duo>
-	 <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 14 Oct 2008 00:19:11 +0200
-Message-Id: <1223936351.3947.41.camel@duo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Oct 2008 18:23:03 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] intermediate SCSI updates
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <1223909115.5566.13.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
+	<1223925606.5566.20.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
+Date: Mon, 13 Oct 2008 18:22:05 -0400
+In-Reply-To: <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org> (Linus Torvalds's message of "Mon\, 13 Oct 2008 14\:22\:13 -0700 \(PDT\)")
+Message-ID: <yq163nwcf02.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 14:34 -0700, Grant Grundler wrote:
-> On Mon, Oct 13, 2008 at 2:22 PM, kenneth johansson <ken@kenjo.org> wrote:
-> > On Mon, 2008-10-13 at 14:07 -0700, Grant Grundler wrote:
-> >> On Mon, Oct 13, 2008 at 12:19 PM, kenneth johansson <ken@kenjo.org> wrote:
-> >> > When writing data to /dev/sdb (that is the whole disk and no filesystem)
-> >> > it starts out ok around 100MB/sec but soon end up doing considerably
-> >> > worse. For prolonged times lasting several minutes it hovers in the
-> >> > 20-30MB/sec.
-> >>
-> >> Is the application using "O_DIRECT"?
-> >
-> > no just open then write no fancy stuff
-> >
-> >> If not, could be issue with how VM writeback is (not) working.
-> >
-> > the access pattern is the simplest possible. Is there any knobs I could
-> > try to adjust.
-> >
-> >> Can you reproduce this using fio or even "dd"?
-> >> (See git://git.kernel.dk/fio)
-> >
-> > dd is having the same effect.
-> 
-> Can you try "dd oflag=direct if=/dev/null of=/dev/sdb bs=64k"?
+>>>>> "Linus" == Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-I changed to use O_DIRECT and it's much more consistent now. 69-75 with
-74 about 95% of the time. the disk is supposed to have 105 115 sustained
-data rate. 
+Linus> What I'm upset about is that this has apparently gotten not
+Linus> even some trivial testing of the _default_ build. I'm not
+Linus> talking about any odd config options here. I'm literally
+Linus> talking about the only _sane_ config option case.
 
+This one initially slipped through my testing, sorry about that.  I
+always compile with the integrity both on and off in my devel tree but
+I messed up while rebasing the patches against James' tree.  These
+mutually dependent block and SCSI merges are always tricky to deal
+with.
 
+However, I wonder why the obvious build fix wasn't merged?  Mike
+Anderson sent out a patch for this right after my patch appeared in
+the SCSI tree...
 
+-- 
+Martin K. Petersen	Oracle Linux Engineering
