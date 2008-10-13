@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbYJMUMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbYJMUL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759797AbYJMUMY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbYJMUGQ
+	id S1759552AbYJMUL4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYJMUGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:06:16 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:43157 "EHLO
+	Mon, 13 Oct 2008 16:06:15 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:43091 "EHLO
 	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbYJMUFn (ORCPT
+	with ESMTP id S1753452AbYJMUFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:05:43 -0400
-Message-Id: <20081013195922.392078574@mail.of.borg>
+	Mon, 13 Oct 2008 16:05:41 -0400
+Message-Id: <20081013195918.623546548@mail.of.borg>
 References: <20081013195846.674654386@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Mon, 13 Oct 2008 21:59:03 +0200
+Date: Mon, 13 Oct 2008 21:58:57 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 17/18] net/rfkill/rfkill-input.c needs <linux/sched.h>
-Content-Disposition: inline; filename=net-rfkill-rfkill-input-c-needs-linux-sched-h.diff
+Subject: [patch 11/18] m68k: <asm/pci.h> needs <asm-generic/pci-dma-compat.h>
+Content-Disposition: inline; filename=m68k-asm-pci-h-needs-asm-generic-pci-dma-compat.h.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-For some m68k configs, I get:
+Several multi-bus subsystems:
 
-| net/rfkill/rfkill-input.c: In function 'rfkill_start':
-| net/rfkill/rfkill-input.c:208: error: dereferencing pointer to incomplete type
+| include/linux/ssb/ssb.h: In function 'ssb_dma_mapping_error':
+| include/linux/ssb/ssb.h:430: error: implicit declaration of function 'pci_dma_mapping_error'
+| include/linux/ssb/ssb.h: In function 'ssb_dma_map_single':
+| include/linux/ssb/ssb.h:444: error: implicit declaration of function 'pci_map_single'
+| include/linux/ssb/ssb.h: In function 'ssb_dma_unmap_single':
+| include/linux/ssb/ssb.h:458: error: implicit declaration of function 'pci_unmap_single'
+| include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_for_cpu':
+| include/linux/ssb/ssb.h:475: error: implicit declaration of function 'pci_dma_sync_single_for_cpu'
+| include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_for_device':
+| include/linux/ssb/ssb.h:493: error: implicit declaration of function 'pci_dma_sync_single_for_device'
 
-As the incomplete type is `struct task_struct', including <linux/sched.h> fixes
-it.
+or legacy drivers:
+
+| drivers/net/hp100.c: In function 'pdl_map_data':
+| drivers/net/hp100.c:291: error: implicit declaration of function 'pci_map_single'
+| drivers/net/hp100.c: In function 'hp100_probe1':
+| drivers/net/hp100.c:707: error: implicit declaration of function 'pci_alloc_consistent'
+| drivers/net/hp100.c:782: error: implicit declaration of function 'pci_free_consistent'
+| drivers/net/hp100.c: In function 'hp100_clean_txring':
+| drivers/net/hp100.c:1614: error: implicit declaration of function 'pci_unmap_single'
+
+and
+
+| drivers/scsi/aic7xxx_old.c: In function 'aic7xxx_allocate_scb':
+| drivers/scsi/aic7xxx_old.c:2573: error: implicit declaration of function 'pci_alloc_consistent'
+| drivers/scsi/aic7xxx_old.c: In function 'aic7xxx_done':
+| drivers/scsi/aic7xxx_old.c:2697: error: implicit declaration of function 'pci_unmap_single'
+| drivers/scsi/aic7xxx_old.c: In function 'aic7xxx_handle_seqint':
+| drivers/scsi/aic7xxx_old.c:4275: error: implicit declaration of function 'pci_map_single'
+| drivers/scsi/aic7xxx_old.c: In function 'aic7xxx_free':
+| drivers/scsi/aic7xxx_old.c:8460: error: implicit declaration of function 'pci_free_consistent'
+
+rely on PCI DMA operations to be always available.
+
+Add #include <asm-generic/pci-dma-compat.h> to <asm/pci.h> to make them happy.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- net/rfkill/rfkill-input.c |    1 +
+ include/asm-m68k/pci.h |    1 +
  1 file changed, 1 insertion(+)
 
---- a/net/rfkill/rfkill-input.c
-+++ b/net/rfkill/rfkill-input.c
-@@ -16,6 +16,7 @@
- #include <linux/workqueue.h>
- #include <linux/init.h>
- #include <linux/rfkill.h>
-+#include <linux/sched.h>
+--- a/include/asm-m68k/pci.h
++++ b/include/asm-m68k/pci.h
+@@ -8,6 +8,7 @@
+  */
  
- #include "rfkill-input.h"
+ #include <asm/scatterlist.h>
++#include <asm-generic/pci-dma-compat.h>
+ 
+ struct pci_ops;
  
 
 -- 
