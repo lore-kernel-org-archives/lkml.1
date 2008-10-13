@@ -1,124 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbYJMTLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYJMTU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbYJMTLr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 15:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbYJMTLh
+	id S1758824AbYJMTU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 15:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756387AbYJMTUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 15:11:37 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:47211 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755592AbYJMTLg (ORCPT
+	Mon, 13 Oct 2008 15:20:13 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:59832 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755921AbYJMTUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 15:11:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gsLmFLEmAXzQvJtY+mAlQSZEjwHtInNLdq617R7/4suhO6TV3DbZP4xSNhdOMnmRZh
-         42+f00byUx87bvfXPO4brctcK5LocpAtrdGOnF10uecoC7Q4bAuK/zX/YnERX+rZlONI
-         WT7+29sw+wgJv6PLXEAw2K/788hVLF1ks72FI=
-Message-ID: <64630f150810131211s2e0d7759k41b0156013cb35dd@mail.gmail.com>
-Date: Mon, 13 Oct 2008 20:11:34 +0100
-From: gettinther <gettinther@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: sata dvdroms fails to be recognized by MCP55 controller with the 2.6.26.5 kernel
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <64630f150810100207g312088ep67c00ca15929091d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <64630f150809291601w3511febdyc769b8871db75602@mail.gmail.com>
-	 <20080930170849.52c00228.akpm@linux-foundation.org>
-	 <48E2E8A1.8090204@gmail.com>
-	 <64630f150810010131g18c1a00m91b3f68ea29a1067@mail.gmail.com>
-	 <64630f150810011601y4e729decq24c614f0b7994f3f@mail.gmail.com>
-	 <48E71ACE.4000505@gmail.com> <48E71AEC.8020701@gmail.com>
-	 <64630f150810060208q22b61900xd7487500eac4e145@mail.gmail.com>
-	 <48EAB71B.1050002@gmail.com>
-	 <64630f150810100207g312088ep67c00ca15929091d@mail.gmail.com>
+	Mon, 13 Oct 2008 15:20:11 -0400
+Subject: Re: [GIT PATCH] intermediate SCSI updates
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
+References: <1223909115.5566.13.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 13 Oct 2008 15:20:06 -0400
+Message-Id: <1223925606.5566.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 10:07 AM, gettinther <gettinther@gmail.com> wrote:
-> On Tue, Oct 7, 2008 at 2:10 AM, Tejun Heo <htejun@gmail.com> wrote:
->> gettinther wrote:
->>> I have tested the patch you sent me and it solves the issue with the
->>> sata dvdrom detection with the 2.6.27.rc8.  The issue is still present
->>> on the 2.6.26.5 kernel.  Are you backporting the solution to that
->>> kernel?
->>
->> It seems nf2/3 still have issues.  Once nf2/3 are cleared, I'll
->> forward the patch to -stable.
->>
->> Thanks.
->>
->> --
->> tejun
->>
->
-> Tejun,
->
-> I applied your patch to the 2.6.26 tree (slightly modified to suit)
-> and it also fixes the issue there.
-> I can post the patch this evening if you want to.
->
-> Thank you again,
->
-> Cyrille
->
+On Mon, 2008-10-13 at 10:22 -0700, Linus Torvalds wrote:
+> 
+> On Mon, 13 Oct 2008, James Bottomley wrote:
+> >
+> > This represents all the pieces of SCSI which were depending on the
+> > already merged block tree.
+> 
+> Grr. And it doesn't actually compile.
+> 
+>   drivers/scsi/sd.c:579:27: error: macro "sd_dif_op" passed 4 arguments, but takes just 3
+>   drivers/scsi/sd.c: In function ‘sd_prep_fn’:
+>   drivers/scsi/sd.c:578: error: ‘sd_dif_op’ undeclared (first use in this function)
+>   drivers/scsi/sd.c:578: error: (Each undeclared identifier is reported only once
+>   drivers/scsi/sd.c:578: error: for each function it appears in.)
+> 
+> Hmm? Was this testedt AT ALL? It can never compile unless that idiotic 
+> CONFIG_BLK_DEV_INTEGRITY option is set that no sane person would set right 
+> now, and which is even documented to not be enabled by default:
+> 
+>   If in doubt, say N.
+> 
+> yet it looks like it has not compiled since a commit that was put in in 
+> the middle of September!
+> 
+> What part of "This is total untested crap" are we missing here?
 
-Here's the patch I applied
+OK, you caught me; I'm relying on linux-next to test randomly built
+configs because I don't have a compile farm available to me where I can
+test every permutation of the options (and obviously, I usually compile
+with them all on to test the actual feature code).
 
---- a/drivers/ata/sata_nv.c.old	2008-07-13 22:51:29.000000000 +0100
-+++ a/drivers/ata/sata_nv.c	2008-10-10 00:45:14.000000000 +0100
-@@ -309,8 +309,6 @@
- static void nv_nf2_thaw(struct ata_port *ap);
- static void nv_ck804_freeze(struct ata_port *ap);
- static void nv_ck804_thaw(struct ata_port *ap);
--static int nv_hardreset(struct ata_link *link, unsigned int *class,
--			unsigned long deadline);
- static int nv_adma_slave_config(struct scsi_device *sdev);
- static int nv_adma_check_atapi_dma(struct ata_queued_cmd *qc);
- static void nv_adma_qc_prep(struct ata_queued_cmd *qc);
-@@ -407,7 +405,6 @@
+> Yeah, I'm grumpy. I expect to not be fed shit like this. It has apparently 
+> been rebased several times, and all apparently with no testing 
+> what-so-ever!
 
- static struct ata_port_operations nv_generic_ops = {
- 	.inherits		= &ata_bmdma_port_ops,
--	.hardreset		= nv_hardreset,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
+Not exactly.  It has to be rebased to run as a postmerge tree, but it
+does get tested by me (admittedly on my limited set of machines, which
+don't include any actual devices that do block integrity) every time I
+rebase.
+
+However, does this work for you?  It fixes the problem for me.
+
+James
+
+---
+
+diff --git a/drivers/scsi/sd.h b/drivers/scsi/sd.h
+index a92b991..75638e7 100644
+--- a/drivers/scsi/sd.h
++++ b/drivers/scsi/sd.h
+@@ -97,7 +97,7 @@ struct sd_dif_tuple {
+        __be32 ref_tag;		/* Target LBA or indirect LBA */
  };
-@@ -416,6 +413,7 @@
- 	.inherits		= &nv_generic_ops,
- 	.freeze			= nv_nf2_freeze,
- 	.thaw			= nv_nf2_thaw,
-+	.hardreset		= sata_std_hardreset,
- };
+ 
+-#if defined(CONFIG_BLK_DEV_INTEGRITY)
++#ifdef CONFIG_BLK_DEV_INTEGRITY
+ 
+ extern void sd_dif_op(struct scsi_cmnd *, unsigned int, unsigned int, unsigned int);
+ extern void sd_dif_config_host(struct scsi_disk *);
+@@ -106,10 +106,19 @@ extern void sd_dif_complete(struct scsi_cmnd *, unsigned int);
+ 
+ #else /* CONFIG_BLK_DEV_INTEGRITY */
+ 
+-#define sd_dif_op(a, b, c)			do { } while (0)
+-#define sd_dif_config_host(a)			do { } while (0)
+-#define sd_dif_prepare(a, b, c)			(0)
+-#define sd_dif_complete(a, b)			(0)
++static inline void sd_dif_op(struct scsi_cmnd *cmd, unsigned int a, unsigned int b, unsigned int c)
++{
++}
++static inline void sd_dif_config_host(struct scsi_disk *disk)
++{
++}
++static inline int sd_dif_prepare(struct request *rq, sector_t s, unsigned int a)
++{
++	return 0;
++}
++static inline void sd_dif_complete(struct scsi_cmnd *cmd, unsigned int a)
++{
++}
+ 
+ #endif /* CONFIG_BLK_DEV_INTEGRITY */
+ 
 
- static struct ata_port_operations nv_ck804_ops = {
-@@ -1588,21 +1586,6 @@
- 	ata_sff_thaw(ap);
- }
 
--static int nv_hardreset(struct ata_link *link, unsigned int *class,
--			unsigned long deadline)
--{
--	int rc;
--
--	/* SATA hardreset fails to retrieve proper device signature on
--	 * some controllers.  Request follow up SRST.  For more info,
--	 * see http://bugzilla.kernel.org/show_bug.cgi?id=3352
--	 */
--	rc = sata_sff_hardreset(link, class, deadline);
--	if (rc)
--		return rc;
--	return -EAGAIN;
--}
--
- static void nv_adma_error_handler(struct ata_port *ap)
- {
- 	struct nv_adma_port_priv *pp = ap->private_data;
