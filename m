@@ -1,78 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760330AbYJMTWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbYJMT0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760330AbYJMTWd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 15:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbYJMTWZ
+	id S932091AbYJMT0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 15:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbYJMT0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 15:22:25 -0400
-Received: from japan.chezphil.org ([77.240.5.4]:5808 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756387AbYJMTWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 15:22:25 -0400
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Date: Mon, 13 Oct 2008 20:22:22 +0100
-Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
-Message-ID: <1223925742287@dmwebmail.dmwebmail.chezphil.org>
-In-Reply-To: <20081013101722.2a1b3afa@infradead.org>
-References: <1223895506638@dmwebmail.dmwebmail.chezphil.org>
-	<87zll8r86h.fsf@basil.nowhere.org> <20081013091848.7dcdaaac@infradead.org>
-	<20081013133051.GL12131@one.firstfloor.org>
-	<20081013093014.607c5925@infradead.org>
-	<20081013140228.GG29938@cs181140183.pp.htv.fi>
-	<20081013101722.2a1b3afa@infradead.org>
-X-Mailer: Decimail Webmail 3alpha16
+	Mon, 13 Oct 2008 15:26:30 -0400
+Received: from ns2.gothnet.se ([82.193.160.251]:2168 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756696AbYJMT0a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 15:26:30 -0400
+Message-ID: <48F3A0DE.9020908@tungstengraphics.com>
+Date: Mon, 13 Oct 2008 21:26:22 +0200
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080926)
 MIME-Version: 1.0
-Content-Type: text/plain; format="flowed"
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
+       Dave Airlie <airlied@gmail.com>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Alan Hourihane <alanh@tungstengraphics.com>
+Subject: Re: AGP PAT issue.
+References: <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADF3FC.7070002@keyaccess.nl> <20080822041544.GF30284@elte.hu> <48AF1B6A.80408@keyaccess.nl> <48C8259B.7040702@keyaccess.nl> <20080911081702.GA27425@elte.hu> <48C8D731.4000309@keyaccess.nl> <7E82351C108FA840AB1866AC776AEC462CA8E8B7@orsmsx505.amr.corp.intel.com> <48CB0CDD.9020706@keyaccess.nl> <48EE28ED.1070401@tungstengraphics.com> <7E82351C108FA840AB1866AC776AEC463789D20D@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC463789D20D@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrotes:
-> On Mon, 13 Oct 2008 17:02:30 +0300
-> Adrian Bunk <bunk <at> kernel.org> wrote:
-> 
-> > On Mon, Oct 13, 2008 at 09:30:14AM -0400, Arjan van de Ven wrote:
-> > > On Mon, 13 Oct 2008 15:30:51 +0200
-> > > Andi Kleen <andi <at> firstfloor.org> wrote:
-> > > > 
-> > > > > Core2 instruction set with tune=generic is still the best to
-> > > > > set.
-> > > > 
-> > > > Not sure that is true. These option are mostly for the compiler.
-> > > 
-> > > exactly, and our benchmarks show that tune=generic is best right now
-> > > for Atom. 
-> > > (586 scheduling sounds nice, but the pipelines are rather different.
-> > > And the benchmarks don't lie..  
-> > 
-> > That sounds a bit dangerous since tune=generic is documented to
-> > change the semantics between gcc versions to better fit more recent
-> > CPUs (there's even a small difference between gcc 4.2 and gcc 4.3):
-> > 
-> 
-> reality is that tune=generic avoids the things that are "really bad"
-> for a wide generation of cpus; the world of x86 is such that there
-> really are many common things that are good for the vast majority of
-> the cpus out there (or at least neutral). 
-> 
-> Future versions of GCC might have a specific ATOM model. Until they do,
-> tune=generic is the right thing based on tests over a few gcc versions.
-> Yes it's a bit fluid, but no gcc isn't going to suddenly go do stupid
-> things for currently mass-sold cpus.
+Pallipadi, Venkatesh wrote:
+>   
+>> -----Original Message-----
+>> From: Thomas Hellstrom [mailto:thomas@tungstengraphics.com]
+>> Sent: Thursday, October 09, 2008 8:53 AM
+>> To: Rene Herman
+>> Cc: Pallipadi, Venkatesh; Ingo Molnar; Dave Airlie; Li,
+>> Shaohua; Yinghai Lu; Andreas Herrmann; Arjan van de Ven; Linux
+>> Kernel; Siddha, Suresh B; Thomas Gleixner; H. Peter Anvin;
+>> Dave Jones; Alan Hourihane
+>> Subject: Re: AGP PAT issue.
+>>
+>> Rene Herman wrote:
+>>     
+>>> On 13-09-08 02:26, Pallipadi, Venkatesh wrote:
+>>>
+>>>       
+>>>>>>> Haven't been subcribed to any lists recently and someone was
+>>>>>>> talking about "the other thread" before but just noticed that
+>>>>>>> an-rc6 was cut.
+>>>>>>>
+>>>>>>> Please note that the shutdown issue remains unfixed in it (I'm
+>>>>>>> doing my coalescing changes locally).
+>>>>>>>
+>>>>>>>               
+>>>>>> here's what is pending in tip/x86/pat for v2.6.28:
+>>>>>>
+>>>>>>             
+>>>>> Only talking about .27 and just making sure again the
+>>>>>           
+>> issue is known.
+>>     
+>>>>> The above mentioned subject for the entry cache one ("fix Xorg
+>>>>> startup/shutdown slowdown with PAT") after all mistakingly says it
+>>>>> does something for shutdown.
+>>>>>
+>>>>>           
+>>>> Can you try the patch here
+>>>> http://www.ussg.iu.edu/hypermail/linux/kernel/0809.1/2074.html
+>>>>
+>>>> That should resolve both reserve and free issues..
+>>>>         
+>>> Not for .27 though.
+>>>
+>>> Rene.
+>>>       
+>> Hi!
+>> What's the status on this?
+>>     
+>
+> This patch is now in upstream git and well on its way to .28
+>
+>   
+>> There are graphics devices we're working with that require large
+>> (non-AGP) write-combined memory buffers at any time.
+>> We can solve the tlb- and cache flush latencies by using pools of these
+>> pages to allocate from and free to, but sooner or later we'll probably
+>> end up with _huge_ memtype lists. In the (very unlikely) worst case I
+>> guess they'd contain every other lowmem page in they system.
+>>
+>> If I understand things correctly the patch above will fix this issue?
+>> Will it be considered for future kernel inclusion.
+>>     
+>
+> Yes this patch will help the above case.
+>
+> Thanks,
+> Venki
+>   
+Thanks, Venki.
+Much appreciated.
 
-Well, if the Intel experts can't even agree, what hope do I have of 
-getting it right :-(   I chose Core2 because I read somewhere that Atom 
-was "feature compatible" with it, but of course that doesn't say 
-anything about the optimal optimisations.  I trust that someone will 
-update Kconfig.cpu with their idea of the right choice for Atom eventually.
-
-(Maybe there should be a way to auto-suggest the right setting for a 
-native build based on /proc/cpuinfo?  I think the gcc build process can 
-do something like that.)
-
-Cheers,  Phil.
-
+/Thomas
 
 
 
