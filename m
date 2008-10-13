@@ -1,61 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYJMOFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYJMOJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbYJMOFd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbYJMOFZ
+	id S1755239AbYJMOJv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYJMOJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:05:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59589 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753225AbYJMOFY (ORCPT
+	Mon, 13 Oct 2008 10:09:42 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38387 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753341AbYJMOJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:05:24 -0400
-Message-ID: <48F37190.2020801@linux-foundation.org>
-Date: Mon, 13 Oct 2008 09:04:32 -0700
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
-References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org> <48ECDD37.8050506@linux-foundation.org> <20081008185532.GA13304@brain> <48ED0B68.2060001@linux-foundation.org> <20081013133404.GC15657@brain>
-In-Reply-To: <20081013133404.GC15657@brain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 13 Oct 2008 10:09:40 -0400
+Date: Mon, 13 Oct 2008 15:04:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fusion: remove dead mpt lan code
+Message-ID: <20081013150402.0141a218@lxorguk.ukuu.org.uk>
+In-Reply-To: <48F34CB9.3020000@pobox.com>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48F2F138.6020103@kernel.org>
+	<48F34CB9.3020000@pobox.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> Currently memory hot remove is not supported with VMEMMAP.  Obviously
-> that should be fixed overall and I am assuming it will.  But the fact
-> remains that the buddy guarentee is that the mem_map is contigious out
-> to MAX_ORDER-1 order pages only beyond that we may not assume
-> contiguity.  This code is broken under the guarentees that are set out
-> by buddy.  Yes it is true that we do only have one memory model combination
-> currently where a greater guarentee of contigious within a node is
-> violated, but right now this code violates the current guarentees.
->   
-> I assume the objection here is the injection of the additional branch
-> into these loops.  The later rejig patch removes this for the non-giant
-> cases for the non-huge use cases.  Are we worried about these same
-> branches in the huge cases?  If so we could make this support dependant
-> on a new configuration option, or perhaps only have two loop chosen
-> based on the order of the page.
->   
-I think we are worried about these additional checks spreading further 
-because there may be assumptions of contiguity elsewhere (in particular 
-when new code is added) since the traditional nature of the memmap is to 
-be linear and not spread out over memory.
+mptlan: Kill unused NAA workaround code
 
-A fix for this particular situation may be as simple as making gigantic 
-pages depend on SPARSE_VMEMMAP? For x86_64 this is certainly sufficient.
-> Something like the patch below?  This patch is not tested as yet, but if
-> this form is acceptable we can get the pair of patches (this plus the
-> prep compound update) tested together and I can repost them once that is
-> done.  This against 2.6.27.
->   
-What is the difference here to the earlier versions?
+From: Alan Cox <alan@redhat.com>
 
+This triggers false bug reports as it does a bogus kmalloc with locks held
+but is never really compiled
+
+Closes #8329
+
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
+
+ drivers/message/fusion/mptlan.c |  108 ---------------------------------------
+ 1 files changed, 0 insertions(+), 108 deletions(-)
+
+
+diff --git a/drivers/message/fusion/mptlan.c b/drivers/message/fusion/mptlan.c
+index a1abf95..603ffd0 100644
+--- a/drivers/message/fusion/mptlan.c
++++ b/drivers/message/fusion/mptlan.c
+@@ -77,12 +77,6 @@ MODULE_VERSION(my_VERSION);
+  *  Fusion MPT LAN private structures
+  */
+ 
+-struct NAA_Hosed {
+-	u16 NAA;
+-	u8 ieee[FC_ALEN];
+-	struct NAA_Hosed *next;
+-};
+-
+ struct BufferControl {
+ 	struct sk_buff	*skb;
+ 	dma_addr_t	dma;
+@@ -159,11 +153,6 @@ static u8 LanCtx = MPT_MAX_PROTOCOL_DRIVERS;
+ static u32 max_buckets_out = 127;
+ static u32 tx_max_out_p = 127 - 16;
+ 
+-#ifdef QLOGIC_NAA_WORKAROUND
+-static struct NAA_Hosed *mpt_bad_naa = NULL;
+-DEFINE_RWLOCK(bad_naa_lock);
+-#endif
+-
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+ /**
+  *	lan_reply - Handle all data sent from the hardware.
+@@ -780,30 +769,6 @@ mpt_lan_sdu_send (struct sk_buff *skb, struct net_device *dev)
+ //			ctx, skb, skb->data));
+ 
+ 	mac = skb_mac_header(skb);
+-#ifdef QLOGIC_NAA_WORKAROUND
+-{
+-	struct NAA_Hosed *nh;
+-
+-	/* Munge the NAA for Tx packets to QLogic boards, which don't follow
+-	   RFC 2625. The longer I look at this, the more my opinion of Qlogic
+-	   drops. */
+-	read_lock_irq(&bad_naa_lock);
+-	for (nh = mpt_bad_naa; nh != NULL; nh=nh->next) {
+-		if ((nh->ieee[0] == mac[0]) &&
+-		    (nh->ieee[1] == mac[1]) &&
+-		    (nh->ieee[2] == mac[2]) &&
+-		    (nh->ieee[3] == mac[3]) &&
+-		    (nh->ieee[4] == mac[4]) &&
+-		    (nh->ieee[5] == mac[5])) {
+-			cur_naa = nh->NAA;
+-			dlprintk ((KERN_INFO "mptlan/sdu_send: using NAA value "
+-				  "= %04x.\n", cur_naa));
+-			break;
+-		}
+-	}
+-	read_unlock_irq(&bad_naa_lock);
+-}
+-#endif
+ 
+ 	pTrans->TransactionDetails[0] = cpu_to_le32((cur_naa         << 16) |
+ 						    (mac[0] <<  8) |
+@@ -1572,79 +1537,6 @@ mpt_lan_type_trans(struct sk_buff *skb, struct net_device *dev)
+ 
+ 	fcllc = (struct fcllc *)skb->data;
+ 
+-#ifdef QLOGIC_NAA_WORKAROUND
+-{
+-	u16 source_naa = fch->stype, found = 0;
+-
+-	/* Workaround for QLogic not following RFC 2625 in regards to the NAA
+-	   value. */
+-
+-	if ((source_naa & 0xF000) == 0)
+-		source_naa = swab16(source_naa);
+-
+-	if (fcllc->ethertype == htons(ETH_P_ARP))
+-	    dlprintk ((KERN_INFO "mptlan/type_trans: got arp req/rep w/ naa of "
+-		      "%04x.\n", source_naa));
+-
+-	if ((fcllc->ethertype == htons(ETH_P_ARP)) &&
+-	   ((source_naa >> 12) !=  MPT_LAN_NAA_RFC2625)){
+-		struct NAA_Hosed *nh, *prevnh;
+-		int i;
+-
+-		dlprintk ((KERN_INFO "mptlan/type_trans: ARP Req/Rep from "
+-			  "system with non-RFC 2625 NAA value (%04x).\n",
+-			  source_naa));
+-
+-		write_lock_irq(&bad_naa_lock);
+-		for (prevnh = nh = mpt_bad_naa; nh != NULL;
+-		     prevnh=nh, nh=nh->next) {
+-			if ((nh->ieee[0] == fch->saddr[0]) &&
+-			    (nh->ieee[1] == fch->saddr[1]) &&
+-			    (nh->ieee[2] == fch->saddr[2]) &&
+-			    (nh->ieee[3] == fch->saddr[3]) &&
+-			    (nh->ieee[4] == fch->saddr[4]) &&
+-			    (nh->ieee[5] == fch->saddr[5])) {
+-				found = 1;
+-				dlprintk ((KERN_INFO "mptlan/type_trans: ARP Re"
+-					 "q/Rep w/ bad NAA from system already"
+-					 " in DB.\n"));
+-				break;
+-			}
+-		}
+-
+-		if ((!found) && (nh == NULL)) {
+-
+-			nh = kmalloc(sizeof(struct NAA_Hosed), GFP_KERNEL);
+-			dlprintk ((KERN_INFO "mptlan/type_trans: ARP Req/Rep w/"
+-				 " bad NAA from system not yet in DB.\n"));
+-
+-			if (nh != NULL) {
+-				nh->next = NULL;
+-				if (!mpt_bad_naa)
+-					mpt_bad_naa = nh;
+-				if (prevnh)
+-					prevnh->next = nh;
+-
+-				nh->NAA = source_naa; /* Set the S_NAA value. */
+-				for (i = 0; i < FC_ALEN; i++)
+-					nh->ieee[i] = fch->saddr[i];
+-				dlprintk ((KERN_INFO "Got ARP from %02x:%02x:%02x:%02x:"
+-					  "%02x:%02x with non-compliant S_NAA value.\n",
+-					  fch->saddr[0], fch->saddr[1], fch->saddr[2],
+-					  fch->saddr[3], fch->saddr[4],fch->saddr[5]));
+-			} else {
+-				printk (KERN_ERR "mptlan/type_trans: Unable to"
+-					" kmalloc a NAA_Hosed struct.\n");
+-			}
+-		} else if (!found) {
+-			printk (KERN_ERR "mptlan/type_trans: found not"
+-				" set, but nh isn't null. Evil "
+-				"funkiness abounds.\n");
+-		}
+-		write_unlock_irq(&bad_naa_lock);
+-	}
+-}
+-#endif
+ 
+ 	/* Strip the SNAP header from ARP packets since we don't
+ 	 * pass them through to the 802.2/SNAP layers.
