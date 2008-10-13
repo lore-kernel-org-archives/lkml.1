@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYJMD5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbYJMD6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbYJMD5j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 23:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbYJMD5a
+	id S1755831AbYJMD6O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 23:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbYJMD54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 23:57:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45288
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753080AbYJMD53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 23:57:29 -0400
-Date: Sun, 12 Oct 2008 20:57:06 -0700 (PDT)
-Message-Id: <20081012.205706.66825182.davem@davemloft.net>
-To: manfred@colorfullife.com
-CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH]: sparc64: Add missing notify_cpu_starting() call.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 12 Oct 2008 23:57:56 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49926 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754990AbYJMD5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 23:57:55 -0400
+Date: Mon, 13 Oct 2008 14:57:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ACPI git tree for linux-next
+Message-Id: <20081013145745.5c4128cb.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.1.10.0809240332110.20067@localhost.localdomain>
+References: <alpine.LFD.1.10.0809240332110.20067@localhost.localdomain>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__13_Oct_2008_14_57_45_+1100_J/iFfQ=JESjg18gm"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__13_Oct_2008_14_57_45_+1100_J/iFfQ=JESjg18gm
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Manfred please be much more careful next time.
+Hi Len,
 
-You broke the sparc32 build (missing linux/cpu.h includes), and
-you skipped over sparc64 entirely.
+On Wed, 24 Sep 2008 03:35:25 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
+>
+> For ACPI, please resume pulling from
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git test
 
-I checked in a fix for the sparc32 build failure and the following
-sparc64 patch to my sparc-2.6 tree to fix this stuff.
+Will do.
 
-And I'll push this off to Linus shortly.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-sparc64: Add missing notify_cpu_starting() call.
+--Signature=_Mon__13_Oct_2008_14_57_45_+1100_J/iFfQ=JESjg18gm
+Content-Type: application/pgp-signature
 
-Commit e545a6140b698b2494daf0b32107bdcc5e901390 ("kernel/cpu.c: create
-a CPU_STARTING cpu_chain notifier") added a notify_cpu_starting()
-notifier event, and hit every arch except sparc64.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Fix that missed case.
+iEYEARECAAYFAkjyxzkACgkQjjKRsyhoI8zvKQCfTAax90DQBoc7t9kyYTsRpQfd
+IskAoKcFrUHnWFdCtoZfHV00p+ASGsXd
+=VXJQ
+-----END PGP SIGNATURE-----
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- arch/sparc64/kernel/smp.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
-index 2be166c..e562711 100644
---- a/arch/sparc64/kernel/smp.c
-+++ b/arch/sparc64/kernel/smp.c
-@@ -21,6 +21,7 @@
- #include <linux/jiffies.h>
- #include <linux/profile.h>
- #include <linux/lmb.h>
-+#include <linux/cpu.h>
- 
- #include <asm/head.h>
- #include <asm/ptrace.h>
-@@ -115,6 +116,9 @@ void __cpuinit smp_callin(void)
- 	atomic_inc(&init_mm.mm_count);
- 	current->active_mm = &init_mm;
- 
-+	/* inform the notifiers about the new cpu */
-+	notify_cpu_starting(cpuid);
-+
- 	while (!cpu_isset(cpuid, smp_commenced_mask))
- 		rmb();
- 
--- 
-1.5.6.5
-
+--Signature=_Mon__13_Oct_2008_14_57_45_+1100_J/iFfQ=JESjg18gm--
