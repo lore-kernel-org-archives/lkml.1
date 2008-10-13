@@ -1,182 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYJMIyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYJMJB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbYJMIyU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbYJMIyL
+	id S1756816AbYJMJB6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYJMJBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:54:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:61805 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754467AbYJMIyJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:54:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=D11UVYNVvlGvFDKX/CPT0+MApysTRb+gT6C4T2sCVLZ0tlfBL6j3DYN9sB9skhLkM2
-         r8ss6SEHe7bN9Aw4xyiyduwsV44dW1+wfsvSAiLOzG2vivQmx6WK8JZbTPs25v8T1BQV
-         +B5oH6d2C04XY+VI9ggKsahrPdykdUCsbSG5o=
-Message-ID: <c62985530810130154q65a162adg2bc018cfddf4dbc9@mail.gmail.com>
-Date: Mon, 13 Oct 2008 10:54:07 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [RFC][PATCH] tty: remove the BKL in n_tty.c
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081013084719.03972D1B9DE@perso1.free.fr>
+	Mon, 13 Oct 2008 05:01:49 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52133 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754879AbYJMJBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 05:01:47 -0400
+Date: Mon, 13 Oct 2008 11:01:06 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Herton Ronaldo Krzesinski <herton@mandriva.com.br>, me@bobcopeland.com,
+       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, bogdano@mandriva.com.br,
+       lcapitulino@mandriva.com.br, draconux@gmail.com,
+       dlallement@mandriva.com, pterjan@mandriva.com
+Subject: Re: Partition check considered as error is breaking mounting in 2.6.27
+Message-ID: <20081013090106.GF19428@kernel.dk>
+References: <Pine.LNX.4.44L0.0809121423030.14509-100000@iolanthe.rowland.org> <200809121714.05443.herton@mandriva.com.br> <b6c5339f0809121327k5fd6c980le0ec5d46be089af2@mail.gmail.com> <200809121807.28345.herton@mandriva.com.br> <20080912163650.0f85a759.akpm@linux-foundation.org> <ac3eb2510810080901g3c3ae2d6l1dd247ed2a1837af@mail.gmail.com> <1223561068.4633.2.camel@lgn.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081013084719.03972D1B9DE@perso1.free.fr>
+In-Reply-To: <1223561068.4633.2.camel@lgn.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/13 Frederic Weisbecker <fweisbec@gmail.com>:
->
-> By using a bkl tracer, I saw that the opost function in n_tty.c, used when we
-> write to the console, requests a lock_kernel(). And since I'm displaying the
-> trace during the tracing, I see this lock very often.
->
-> The opost and opost_block functions in drivers/char/n_tty.c use
-> the bkl to protect the field tty->column.
-> Actually this attribute seems to be only touched on these two functions and
-> also we are in user context.
->
-> A mutex seems to be sufficient to prevent from race conditions here.
-> I made some tests by writing on a tty console whith several threads and it
-> seems to be correct.
->
-> I don't know where to post this patch. I'm not sure if the kill-the-bkl is
-> still on the air on the -tip tree.
->
-> Any comments?
->
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+On Thu, Oct 09 2008, Kay Sievers wrote:
+> On Wed, 2008-10-08 at 18:01 +0200, Kay Sievers wrote:
+> > On Sat, Sep 13, 2008 at 1:36 AM, Andrew Morton
+> > <akpm@linux-foundation.org> wrote:
+> > > On Fri, 12 Sep 2008 18:07:27 -0300
+> > > Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
+> > >
+> > >> Yes, here goes a new version:
+> > >
+> > > Well gee.  Given a choice, I went and replied to the wrong thread.
+> > > Here's what I think:
+> > >
+> > > From: Andrew Morton <akpm@linux-foundation.org>
+> > >
+> > > Herton Krzesinski reports that the error-checking changes in
+> > > 04ebd4aee52b06a2c38127d9208546e5b96f3a19 ("block/ioctl.c and
+> > > fs/partition/check.c: check value returned by add_partition") cause his
+> > > buggy USB camera to no longer mount.  "The camera is an Olympus X-840.
+> > > The original issue comes from the camera itself: its format program
+> > > creates a partition with an off by one error".
+> > >
+> > > Buggy devices happen.  It is better for the kernel to warn and to proceed
+> > > with the mount.
+> > >
+> > > Reported-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+> > > Cc: Abdel Benamrouche <draconux@gmail.com>
+> > > Cc: Jens Axboe <jens.axboe@oracle.com>
+> > > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > ---
+> > >
+> > >  fs/partitions/check.c |    1 -
+> > >  1 file changed, 1 deletion(-)
+> > >
+> > > diff -puN fs/partitions/check.c~rescan_partitions-make-device-capacity-errors-non-fatal fs/partitions/check.c
+> > > --- a/fs/partitions/check.c~rescan_partitions-make-device-capacity-errors-non-fatal
+> > > +++ a/fs/partitions/check.c
+> > > @@ -540,7 +540,6 @@ int rescan_partitions(struct gendisk *di
+> > >                if (from + size > get_capacity(disk)) {
+> > >                        printk(KERN_ERR " %s: p%d exceeds device capacity\n",
+> > >                                disk->disk_name, p);
+> > > -                       continue;
+> > >                }
+> > >                res = add_partition(disk, p, from, size, state->parts[p].flags);
+> > >                if (res) {
+> > 
+> > I was happy to see the original fix, as if causes real problems for
+> > userspace, that the kernel creates invalid block devices with a size
+> > that exceeds the physical disk. So, if we can not make that partition
+> > to skip, like original patch did, because of broken hardware we don't
+> > want to break, can we make it at least do the obvious thing, and limit
+> > the partition with the broken entry to the size of the underlying
+> > hardware. So that the kernel does no longer pretend to have devices of
+> > a size which the hardware does not have.
+> > 
+> > It breaks all sort of userspace tools which read the "size" file in
+> > sysfs, or do BLKGETSIZE and we get, if we are lucky, only:
+> >   attempt to access beyond end of device
+> >   sda: rw=0, want=1953535936, limit=976773168
+> > in other cases it might cause corruption, or lead mkfs to create
+> > devices which will fail when they get used.
+> 
+> 
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: block: sanitize invalid partition table entries
+> 
+> We currently follow blindly what the partition table lies about the
+> disk, and let the kernel create block devices which can not be accessed.
+> Trying to identify the device leads to kernel logs full of:
+>   sdb: rw=0, want=73392, limit=28800
+>   attempt to access beyond end of device
+> 
+> Here is an example of a broken partition table, where sda2 starts
+> behind the end of the disk, and sdb3 is larger than the entire disk:
+>   Disk /dev/sdb: 14 MB, 14745600 bytes
+>   1 heads, 29 sectors/track, 993 cylinders, total 28800 sectors
+>      Device Boot      Start         End      Blocks   Id  System
+>   /dev/sdb1              29        7800        3886   83  Linux
+>   /dev/sdb2           37801       45601        3900+  83  Linux
+>   /dev/sdb3           15602       73402       28900+  83  Linux
+>   /dev/sdb4           23403       28796        2697   83  Linux
+> 
+> The kernel creates these completely invalid devices, which can not be
+> accessed, or may lead to other unpredictable failures:
+>   grep . /sys/class/block/sdb*/{start,size}
+>   /sys/class/block/sdb/size:28800
+>   /sys/class/block/sdb1/start:29
+>   /sys/class/block/sdb1/size:7772
+>   /sys/class/block/sdb2/start:37801
+>   /sys/class/block/sdb2/size:7801
+>   /sys/class/block/sdb3/start:15602
+>   /sys/class/block/sdb3/size:57801
+>   /sys/class/block/sdb4/start:23403
+>   /sys/class/block/sdb4/size:5394
+> 
+> With this patch, we ignore partitions which start behind the end of the disk,
+> and limit partitions to the end of the disk if they pretend to be larger:
+>   grep . /sys/class/block/sdb*/{start,size}
+>   /sys/class/block/sdb/size:28800
+>   /sys/class/block/sdb1/start:29
+>   /sys/class/block/sdb1/size:7772
+>   /sys/class/block/sdb3/start:15602
+>   /sys/class/block/sdb3/size:13198
+>   /sys/class/block/sdb4/start:23403
+>   /sys/class/block/sdb4/size:5394
+> 
+> These warnings are printed to the kernel log:
+>   sdb: p2 ignored, start 37801 is behind the end of the disk
+>   sdb: p3 size 57801 limited to end of disk
+> 
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 > ---
-> diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
-> index 708c2b1..55c963f 100644
-> --- a/drivers/char/n_tty.c
-> +++ b/drivers/char/n_tty.c
-> @@ -62,6 +62,13 @@
->  #define TTY_THRESHOLD_THROTTLE         128 /* now based on remaining room */
->  #define TTY_THRESHOLD_UNTHROTTLE       128
->
-> +
-> +/*
-> + * This Mutex is used to replace a big kernel lock that protected
-> + * the access to tty->column.
-> + */
-> +static DEFINE_MUTEX(tty_column_mutex);
-> +
->  static inline unsigned char *alloc_buf(void)
->  {
->        gfp_t prio = in_interrupt() ? GFP_ATOMIC : GFP_KERNEL;
-> @@ -264,18 +271,19 @@ static inline int is_continuation(unsigned char c, struct tty_struct *tty)
->  *     relevant in the world today. If you ever need them, add them here.
->  *
->  *     Called from both the receive and transmit sides and can be called
-> - *     re-entrantly. Relies on lock_kernel() for tty->column state.
-> + *     re-entrantly.
->  */
->
->  static int opost(unsigned char c, struct tty_struct *tty)
->  {
->        int     space, spaces;
-> +       int     ret = 0;
->
->        space = tty_write_room(tty);
->        if (!space)
->                return -1;
->
-> -       lock_kernel();
-> +       mutex_lock(&tty_column_mutex);
->        if (O_OPOST(tty)) {
->                switch (c) {
->                case '\n':
-> @@ -283,8 +291,8 @@ static int opost(unsigned char c, struct tty_struct *tty)
->                                tty->column = 0;
->                        if (O_ONLCR(tty)) {
->                                if (space < 2) {
-> -                                       unlock_kernel();
-> -                                       return -1;
-> +                                       ret = -1;
-> +                                       goto out;
->                                }
->                                tty_put_char(tty, '\r');
->                                tty->column = 0;
-> @@ -293,8 +301,7 @@ static int opost(unsigned char c, struct tty_struct *tty)
->                        break;
->                case '\r':
->                        if (O_ONOCR(tty) && tty->column == 0) {
-> -                               unlock_kernel();
-> -                               return 0;
-> +                               goto out;
->                        }
->                        if (O_OCRNL(tty)) {
->                                c = '\n';
-> @@ -308,13 +315,12 @@ static int opost(unsigned char c, struct tty_struct *tty)
->                        spaces = 8 - (tty->column & 7);
->                        if (O_TABDLY(tty) == XTABS) {
->                                if (space < spaces) {
-> -                                       unlock_kernel();
-> -                                       return -1;
-> +                                       ret = -1;
-> +                                       goto out;
->                                }
->                                tty->column += spaces;
->                                tty->ops->write(tty, "        ", spaces);
-> -                               unlock_kernel();
-> -                               return 0;
-> +                               goto out;
->                        }
->                        tty->column += spaces;
->                        break;
-> @@ -331,8 +337,9 @@ static int opost(unsigned char c, struct tty_struct *tty)
->                }
->        }
->        tty_put_char(tty, c);
-> -       unlock_kernel();
-> -       return 0;
-> +out:
-> +       mutex_unlock(&tty_column_mutex);
-> +       return ret;
->  }
->
->  /**
-> @@ -346,8 +353,7 @@ static int opost(unsigned char c, struct tty_struct *tty)
->  *     the simple cases normally found and helps to generate blocks of
->  *     symbols for the console driver and thus improve performance.
->  *
-> - *     Called from write_chan under the tty layer write lock. Relies
-> - *     on lock_kernel for the tty->column state.
-> + *     Called from write_chan under the tty layer write lock.
->  */
->
->  static ssize_t opost_block(struct tty_struct *tty,
-> @@ -363,7 +369,7 @@ static ssize_t opost_block(struct tty_struct *tty,
->        if (nr > space)
->                nr = space;
->
-> -       lock_kernel();
-> +       mutex_lock(&tty_column_mutex);
->        for (i = 0, cp = buf; i < nr; i++, cp++) {
->                switch (*cp) {
->                case '\n':
-> @@ -398,7 +404,8 @@ break_out:
->        if (tty->ops->flush_chars)
->                tty->ops->flush_chars(tty);
->        i = tty->ops->write(tty, buf, i);
-> -       unlock_kernel();
-> +
-> +       mutex_unlock(&tty_column_mutex);
->        return i;
->  }
->
->
->
+> 
+>  check.c |   17 +++++++++++++++--
+>  1 file changed, 15 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+> index ecc3330..9545d8c 100644
+> --- a/fs/partitions/check.c
+> +++ b/fs/partitions/check.c
+> @@ -498,10 +498,23 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+>  		sector_t from = state->parts[p].from;
+>  		if (!size)
+>  			continue;
+> +		if (from >= get_capacity(disk)) {
+> +			printk(KERN_WARNING
+> +			       "%s: p%d ignored, start %llu is behind the end of the disk\n",
+> +			       disk->disk_name, p, (unsigned long long) from);
+> +			continue;
+> +		}
+>  		if (from + size > get_capacity(disk)) {
+> +			/*
+> +			 * we can not ignore partitions of broken tables
+> +			 * created by for example camera firmware, but we
+> +			 * limit them to the end of the disk to avoid
+> +			 * creating invalid block devices
+> +			 */
+>  			printk(KERN_WARNING
+> -				"%s: p%d exceeds device capacity\n",
+> -				disk->disk_name, p);
+> +			       "%s: p%d size %llu limited to end of disk\n",
+> +			       disk->disk_name, p, (unsigned long long) size);
+> +			size = get_capacity(disk) - from;
+>  		}
+>  		res = add_partition(disk, p, from, size, state->parts[p].flags);
+>  		if (res) {
+> 
+> 
 
-(Ading Alan in Cc)
+Kay, I added this variant.
+
+-- 
+Jens Axboe
+
