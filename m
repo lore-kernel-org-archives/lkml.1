@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYJMN70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbYJMOAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbYJMN70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYJMN7Q
+	id S1754577AbYJMOAM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYJMN7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:59:16 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46884 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYJMN7P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:59:15 -0400
-To: nickpiggin@yahoo.com.au
-CC: hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
-       cl@linux-foundation.org, akpm@linux-foundation.org
-In-reply-to: <200810132354.30789.nickpiggin@yahoo.com.au> (message from Nick
-	Piggin on Mon, 13 Oct 2008 23:54:30 +1100)
-Subject: Re: SLUB defrag pull request?
-References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au>
-Message-Id: <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 13 Oct 2008 15:59:00 +0200
+	Mon, 13 Oct 2008 09:59:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39856 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752118AbYJMN7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 09:59:54 -0400
+Message-ID: <48F352DE.8060001@kernel.org>
+Date: Mon, 13 Oct 2008 22:53:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pata_of_platform: fix no irq handling
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru> <48F2F138.6020103@kernel.org> <48F34CB9.3020000@pobox.com>
+In-Reply-To: <48F34CB9.3020000@pobox.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Oct 2008 13:55:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008, Nick Piggin wrote:
-> In many cases, yes it seems to. And some of the approaches even if
-> they work now seem like they *might* cause problematic constraints
-> in the design... Have Al and Christoph reviewed the dentry and inode
-> patches?
+Jeff Garzik wrote:
+> Tejun Heo wrote:
+>> Anton Vorontsov wrote:
+>>> When no irq specified the pata_of_platform fills the irq_res with -1,
+>>> which is wrong to do for two reasons:
+>>>
+>>> 1. By definition, 'no irq' should be IRQ 0, not some negative integer;
+>>> 2. pata_platform checks for irq_res.start > 0, but since irq_res.start
+>>>    is unsigned type, the check will be true for `-1'.
+>>>
+>>> Reported-by: Steven A. Falco <sfalco@harris.com>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>
+>> applied to #tj-upstream (will soon be sent upstream)
+> 
+> I have returned!  muhahahahahaha....
 
-This d_invalidate() looks suspicious to me:
+Ah.. great.  Hope you enjoyed the vacation.  Can you please pull from
+#tj-upstream?
 
-+/*
-+ * Slab has dropped all the locks. Get rid of the refcount obtained
-+ * earlier and also free the object.
-+ */
-+static void kick_dentries(struct kmem_cache *s,
-+                               int nr, void **v, void *private)
-+{
-+       struct dentry *dentry;
-+       int i;
-+
-+       /*
-+        * First invalidate the dentries without holding the dcache lock
-+        */
-+       for (i = 0; i < nr; i++) {
-+               dentry = v[i];
-+
-+               if (dentry)
-+                       d_invalidate(dentry);
-+       }
+ git://git.kernel.org/pub/scm/linux/kernel/git/tj/libata-dev.git tj-upstream
+ http://git.kernel.org/?p=linux/kernel/git/tj/libata-dev.git;a=shortlog;h=tj-upstream
 
-I think it's wrong to unhash dentries while they are possibly still
-being used.  You can do the shrink_dcache_parent() here, but should
-leave the unhashing to be done by prune_one_dentry(), after it's been
-checked that there are no other users of the dentry.
+Nothing much.  Rafael's skip-spin-off patchset + Elias's small fix +
+ATA_HORKAGE_ATAPI_MOD16_DMA + pata_of_platform irq fix.
 
-Miklos
+Gwendal posted patches to enable FIS based switching when NCQ is
+disabled on sata_mv but I think this should be put into separate
+branch and stay in linux-next till Mark Lord comes back and reviews it
+as I don't know much about the driver and don't know of anyone other
+than Gwendal and Mark who do.
+
+sata_nv detection problem is still not resolved.  I figured out
+generic and ck804 but nf2/3 is still malfunctioning.  I asked for more
+tests and am waiting for results.
+
+Eh... I guess that's about it.  Enjoy your INBOX.  :-P
+
+-- 
+tejun
