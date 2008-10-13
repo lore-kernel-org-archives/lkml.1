@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbYJMKGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764207AbYJMKHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932420AbYJMKGl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762047AbYJMJp5
+	id S1764207AbYJMKHG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757830AbYJMJp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:45:57 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:33171 "EHLO
+	Mon, 13 Oct 2008 05:45:59 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:3133 "EHLO
 	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763278AbYJMJpw (ORCPT
+	with ESMTP id S1763285AbYJMJpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:45:52 -0400
+	Mon, 13 Oct 2008 05:45:53 -0400
 X-IronPort-AV: E=Sophos;i="4.33,402,1220241600"; 
-   d="scan'208";a="61013704"
+   d="scan'208";a="61013705"
 From: Bryan Wu <cooloney@kernel.org>
 To: alan@redhat.com
 Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
        Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 5/6] Blackfin Serial Driver: Fix bug - BF527-EZKIT unable to receive large files over UART in DMA mode
-Date: Mon, 13 Oct 2008 17:46:24 +0800
-Message-Id: <1223891185-13924-6-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 6/6] Blackfin Serial Driver: Remove BI status for known_good_char
+Date: Mon, 13 Oct 2008 17:46:25 +0800
+Message-Id: <1223891185-13924-7-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1223891185-13924-1-git-send-email-cooloney@kernel.org>
 References: <1223891185-13924-1-git-send-email-cooloney@kernel.org>
@@ -28,59 +28,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sonic Zhang <sonic.zhang@analog.com>
 
-Add spin_lock_irqsave() when receive and transfer data.
-
 Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- drivers/serial/bfin_5xx.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/serial/bfin_5xx.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 44a0855..82854d7 100644
+index 82854d7..350bfc4 100644
 --- a/drivers/serial/bfin_5xx.c
 +++ b/drivers/serial/bfin_5xx.c
-@@ -82,7 +82,9 @@ static void bfin_serial_reset_irda(struct uart_port *port);
- static void bfin_serial_stop_tx(struct uart_port *port)
- {
- 	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+#ifdef CONFIG_SERIAL_BFIN_DMA
- 	struct circ_buf *xmit = &uart->port.info->xmit;
-+#endif
+@@ -220,6 +220,7 @@ static void bfin_serial_rx_chars(struct bfin_serial_port *uart)
+ 			return;
  
- 	while (!(UART_GET_LSR(uart) & TEMT))
- 		cpu_relax();
-@@ -413,7 +415,9 @@ static void bfin_serial_dma_rx_chars(struct bfin_serial_port *uart)
- 
- void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
- {
--	int x_pos, pos;
-+	int x_pos, pos, flags;
-+
-+	spin_lock_irqsave(&uart->port.lock, flags);
- 
- 	uart->rx_dma_nrows = get_dma_curr_ycount(uart->rx_dma_channel);
- 	x_pos = get_dma_curr_xcount(uart->rx_dma_channel);
-@@ -431,6 +435,8 @@ void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
- 		uart->rx_dma_buf.tail = uart->rx_dma_buf.head;
+  known_good_char:
++			status &= ~BI;
+ 			anomaly_start.tv_sec = 0;
+ 		}
  	}
- 
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
-+
- 	mod_timer(&(uart->rx_dma_timer), jiffies + DMA_RX_FLUSH_JIFFIES);
- }
- 
-@@ -465,10 +471,9 @@ static irqreturn_t bfin_serial_dma_rx_int(int irq, void *dev_id)
- 	spin_lock(&uart->port.lock);
- 	irqstat = get_dma_curr_irqstat(uart->rx_dma_channel);
- 	clear_dma_irqstat(uart->rx_dma_channel);
-+	bfin_serial_dma_rx_chars(uart);
- 	spin_unlock(&uart->port.lock);
- 
--	mod_timer(&(uart->rx_dma_timer), jiffies);
--
- 	return IRQ_HANDLED;
- }
- #endif
 -- 
 1.5.6
