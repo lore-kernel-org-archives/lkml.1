@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbYJMHAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYJMHCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbYJMHAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 03:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYJMHAl
+	id S1756287AbYJMHCw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 03:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbYJMHCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 03:00:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60511
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753129AbYJMHAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 03:00:40 -0400
-Date: Mon, 13 Oct 2008 00:00:17 -0700 (PDT)
-Message-Id: <20081013.000017.171095053.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 13 Oct 2008 03:02:44 -0400
+Received: from crmm.lgl.lu ([158.64.72.228]:55823 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753202AbYJMHCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 03:02:44 -0400
+Message-ID: <48F2F28B.4010309@knaff.lu>
+Date: Mon, 13 Oct 2008 09:02:35 +0200
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [update5] [PATCH] init: bzip2 or lzma -compressed kernels and
+ initrds
+References: <200809090641.m896fscX028849@hitchhiker.org.lu> <48C99F29.2030007@zytor.com> <48C9A6C0.4070802@knaff.lu> <48C9A80D.1010703@zytor.com> <48D73858.3070900@knaff.lu> <48D7C304.4020709@zytor.com> <48D7C48F.8010907@knaff.lu> <48D93E68.6040701@zytor.com> <48D9471E.9090108@knaff.lu> <48D95A8F.10705@zytor.com> <48D95ECC.9010107@knaff.lu> <48D96013.1070507@zytor.com> <48D966E4.7080200@knaff.lu> <48D96B58.6080604@zytor.com> <48D96C60.6000104@knaff.lu> <48EE4302.2010404@zytor.com> <48EEC7D1.80404@knaff.lu> <48EFC9A0.5070907@zytor.com> <48F0559C.1040705@knaff.lu>
+In-Reply-To: <48F0559C.1040705@knaff.lu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alain Knaff wrote:
+> Great! Could you tell me where to download the ARM tree from, so that I
+> can have a look?
+> 
+> Thanks,
+> 
+> Alain 
 
-Bug fixes:
+Anybody can help here?
 
-1) The change adding notify_cpu_starting() broke the sparc32 build
-   (fix from Robert Reif), and missed adding the hook to sparc64.
+Thanks
 
-2) chmc driver module init can crash on sun4v systems, because reading
-   the %ver register is illegal on those chips, but since we didn't
-   mark the %ver register asm with __volatile__ gcc could move it
-   before the platform type guard test
-
-Please pull, thanks a lot!
-
-The following changes since commit 4480f15b3306f43bbb0310d461142b4e897ca45b:
-  Randy Dunlap (1):
-        MAINTAINERS: remove colon from headings
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-David S. Miller (2):
-      sparc64: Add missing notify_cpu_starting() call.
-      chmc: Mark %ver register inline asm with __volatile__
-
-Robert Reif (1):
-      sparc32: fix build errors
-
- arch/sparc/kernel/sun4d_smp.c |    1 +
- arch/sparc/kernel/sun4m_smp.c |    1 +
- arch/sparc64/kernel/chmc.c    |    2 +-
- arch/sparc64/kernel/smp.c     |    4 ++++
- 4 files changed, 7 insertions(+), 1 deletions(-)
+Alain
