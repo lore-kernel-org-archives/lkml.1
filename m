@@ -1,185 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYJMJB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbYJMJCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbYJMJB6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYJMJBt
+	id S1757593AbYJMJCe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbYJMJCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:01:49 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52133 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754879AbYJMJBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:01:47 -0400
-Date: Mon, 13 Oct 2008 11:01:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Herton Ronaldo Krzesinski <herton@mandriva.com.br>, me@bobcopeland.com,
-       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, bogdano@mandriva.com.br,
-       lcapitulino@mandriva.com.br, draconux@gmail.com,
-       dlallement@mandriva.com, pterjan@mandriva.com
-Subject: Re: Partition check considered as error is breaking mounting in 2.6.27
-Message-ID: <20081013090106.GF19428@kernel.dk>
-References: <Pine.LNX.4.44L0.0809121423030.14509-100000@iolanthe.rowland.org> <200809121714.05443.herton@mandriva.com.br> <b6c5339f0809121327k5fd6c980le0ec5d46be089af2@mail.gmail.com> <200809121807.28345.herton@mandriva.com.br> <20080912163650.0f85a759.akpm@linux-foundation.org> <ac3eb2510810080901g3c3ae2d6l1dd247ed2a1837af@mail.gmail.com> <1223561068.4633.2.camel@lgn.site>
+	Mon, 13 Oct 2008 05:02:25 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:61589 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755032AbYJMJCX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 05:02:23 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 23/85] ACPI: Clear WAK_STS on resume
+Date: Mon, 13 Oct 2008 11:01:37 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Matthew Garrett <mjg@redhat.com>,
+       Andi Kleen <ak@linux.intel.com>, Len Brown <len.brown@intel.com>
+References: <1223707005-26864-1-git-send-email-lenb@kernel.org>  <32bd813b0324309ab744d70a93bc5d8b82af36ce.1223706853.git.len.brown@intel.com>
+In-Reply-To: <32bd813b0324309ab744d70a93bc5d8b82af36ce.1223706853.git.len.brown@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1223561068.4633.2.camel@lgn.site>
+Message-Id: <200810131101.37578.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 09 2008, Kay Sievers wrote:
-> On Wed, 2008-10-08 at 18:01 +0200, Kay Sievers wrote:
-> > On Sat, Sep 13, 2008 at 1:36 AM, Andrew Morton
-> > <akpm@linux-foundation.org> wrote:
-> > > On Fri, 12 Sep 2008 18:07:27 -0300
-> > > Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
-> > >
-> > >> Yes, here goes a new version:
-> > >
-> > > Well gee.  Given a choice, I went and replied to the wrong thread.
-> > > Here's what I think:
-> > >
-> > > From: Andrew Morton <akpm@linux-foundation.org>
-> > >
-> > > Herton Krzesinski reports that the error-checking changes in
-> > > 04ebd4aee52b06a2c38127d9208546e5b96f3a19 ("block/ioctl.c and
-> > > fs/partition/check.c: check value returned by add_partition") cause his
-> > > buggy USB camera to no longer mount.  "The camera is an Olympus X-840.
-> > > The original issue comes from the camera itself: its format program
-> > > creates a partition with an off by one error".
-> > >
-> > > Buggy devices happen.  It is better for the kernel to warn and to proceed
-> > > with the mount.
-> > >
-> > > Reported-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-> > > Cc: Abdel Benamrouche <draconux@gmail.com>
-> > > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > ---
-> > >
-> > >  fs/partitions/check.c |    1 -
-> > >  1 file changed, 1 deletion(-)
-> > >
-> > > diff -puN fs/partitions/check.c~rescan_partitions-make-device-capacity-errors-non-fatal fs/partitions/check.c
-> > > --- a/fs/partitions/check.c~rescan_partitions-make-device-capacity-errors-non-fatal
-> > > +++ a/fs/partitions/check.c
-> > > @@ -540,7 +540,6 @@ int rescan_partitions(struct gendisk *di
-> > >                if (from + size > get_capacity(disk)) {
-> > >                        printk(KERN_ERR " %s: p%d exceeds device capacity\n",
-> > >                                disk->disk_name, p);
-> > > -                       continue;
-> > >                }
-> > >                res = add_partition(disk, p, from, size, state->parts[p].flags);
-> > >                if (res) {
-> > 
-> > I was happy to see the original fix, as if causes real problems for
-> > userspace, that the kernel creates invalid block devices with a size
-> > that exceeds the physical disk. So, if we can not make that partition
-> > to skip, like original patch did, because of broken hardware we don't
-> > want to break, can we make it at least do the obvious thing, and limit
-> > the partition with the broken entry to the size of the underlying
-> > hardware. So that the kernel does no longer pretend to have devices of
-> > a size which the hardware does not have.
-> > 
-> > It breaks all sort of userspace tools which read the "size" file in
-> > sysfs, or do BLKGETSIZE and we get, if we are lucky, only:
-> >   attempt to access beyond end of device
-> >   sda: rw=0, want=1953535936, limit=976773168
-> > in other cases it might cause corruption, or lead mkfs to create
-> > devices which will fail when they get used.
+Am Samstag, 11. Oktober 2008 schrieb Len Brown:
+> From: Matthew Garrett <mjg59@srcf.ucam.org>
 > 
+> The leading other brand OS appears to clear the WAK_STS flag on resume.
+> When rebooted, certain BIOSes assume that the system is actually
+> resuming if it's still set and so fail to reboot correctly. Make sure
+> that it's cleared at resume time.
 > 
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: block: sanitize invalid partition table entries
+> Comment clarified as suggested by Bob Moore
 > 
-> We currently follow blindly what the partition table lies about the
-> disk, and let the kernel create block devices which can not be accessed.
-> Trying to identify the device leads to kernel logs full of:
->   sdb: rw=0, want=73392, limit=28800
->   attempt to access beyond end of device
-> 
-> Here is an example of a broken partition table, where sda2 starts
-> behind the end of the disk, and sdb3 is larger than the entire disk:
->   Disk /dev/sdb: 14 MB, 14745600 bytes
->   1 heads, 29 sectors/track, 993 cylinders, total 28800 sectors
->      Device Boot      Start         End      Blocks   Id  System
->   /dev/sdb1              29        7800        3886   83  Linux
->   /dev/sdb2           37801       45601        3900+  83  Linux
->   /dev/sdb3           15602       73402       28900+  83  Linux
->   /dev/sdb4           23403       28796        2697   83  Linux
-> 
-> The kernel creates these completely invalid devices, which can not be
-> accessed, or may lead to other unpredictable failures:
->   grep . /sys/class/block/sdb*/{start,size}
->   /sys/class/block/sdb/size:28800
->   /sys/class/block/sdb1/start:29
->   /sys/class/block/sdb1/size:7772
->   /sys/class/block/sdb2/start:37801
->   /sys/class/block/sdb2/size:7801
->   /sys/class/block/sdb3/start:15602
->   /sys/class/block/sdb3/size:57801
->   /sys/class/block/sdb4/start:23403
->   /sys/class/block/sdb4/size:5394
-> 
-> With this patch, we ignore partitions which start behind the end of the disk,
-> and limit partitions to the end of the disk if they pretend to be larger:
->   grep . /sys/class/block/sdb*/{start,size}
->   /sys/class/block/sdb/size:28800
->   /sys/class/block/sdb1/start:29
->   /sys/class/block/sdb1/size:7772
->   /sys/class/block/sdb3/start:15602
->   /sys/class/block/sdb3/size:13198
->   /sys/class/block/sdb4/start:23403
->   /sys/class/block/sdb4/size:5394
-> 
-> These warnings are printed to the kernel log:
->   sdb: p2 ignored, start 37801 is behind the end of the disk
->   sdb: p3 size 57801 limited to end of disk
-> 
-> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> ---
-> 
->  check.c |   17 +++++++++++++++--
->  1 file changed, 15 insertions(+), 2 deletions(-)
-> 
-> 
-> diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-> index ecc3330..9545d8c 100644
-> --- a/fs/partitions/check.c
-> +++ b/fs/partitions/check.c
-> @@ -498,10 +498,23 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
->  		sector_t from = state->parts[p].from;
->  		if (!size)
->  			continue;
-> +		if (from >= get_capacity(disk)) {
-> +			printk(KERN_WARNING
-> +			       "%s: p%d ignored, start %llu is behind the end of the disk\n",
-> +			       disk->disk_name, p, (unsigned long long) from);
-> +			continue;
-> +		}
->  		if (from + size > get_capacity(disk)) {
-> +			/*
-> +			 * we can not ignore partitions of broken tables
-> +			 * created by for example camera firmware, but we
-> +			 * limit them to the end of the disk to avoid
-> +			 * creating invalid block devices
-> +			 */
->  			printk(KERN_WARNING
-> -				"%s: p%d exceeds device capacity\n",
-> -				disk->disk_name, p);
-> +			       "%s: p%d size %llu limited to end of disk\n",
-> +			       disk->disk_name, p, (unsigned long long) size);
-> +			size = get_capacity(disk) - from;
->  		}
->  		res = add_partition(disk, p, from, size, state->parts[p].flags);
->  		if (res) {
-> 
-> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
 
-Kay, I added this variant.
+This patch fixes reboot after suspend on my ASUS P5K.
 
--- 
-Jens Axboe
+Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
