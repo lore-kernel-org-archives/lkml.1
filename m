@@ -1,120 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbYJMKxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbYJMK5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbYJMKxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYJMKxV
+	id S1758392AbYJMK5R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbYJMK5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 06:53:21 -0400
-Received: from sperry-02.control.lth.se ([130.235.83.189]:53813 "EHLO
-	sperry-02.control.lth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754289AbYJMKxU (ORCPT
+	Mon, 13 Oct 2008 06:57:04 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34875 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755513AbYJMK5C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 06:53:20 -0400
-Message-ID: <48F32899.5000006@control.lth.se>
-Date: Mon, 13 Oct 2008 12:53:13 +0200
-From: Anders Blomdell <anders.blomdell@control.lth.se>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Mon, 13 Oct 2008 06:57:02 -0400
+Date: Mon, 13 Oct 2008 12:57:00 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: J?rn Engel <joern@logfs.org>
+Cc: Chris Snook <csnook@redhat.com>, Stefan Monnier <monnier@iro.umontreal.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Filesystem for block devices using flash storage?
+Message-ID: <20081013105700.GD1729@atrey.karlin.mff.cuni.cz>
+References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org> <48ED1D62.8080100@redhat.com> <20081011143552.GA1556@ucw.cz> <20081012130103.GA14119@logfs.org>
 MIME-Version: 1.0
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make ATNGW100 serial ports configurable
-References: <48EF6762.2080205@control.lth.se>	<20081010165814.1c62eabf@hskinnemo-gx745.norway.atmel.com>	<48EF7949.4010108@control.lth.se> <20081013122727.7298bd4a@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20081013122727.7298bd4a@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081012130103.GA14119@logfs.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
-> Anders Blomdell <anders.blomdell@control.lth.se> wrote:
->> Haavard Skinnemoen wrote:
->>> Anders Blomdell <anders.blomdell@control.lth.se> wrote:
->>>> Make configuration of ATNGW100 serial ports selectable in kernel configuration.
->>>>
->>>> Signed-off-by: Anders Blomdell <anders.blomdell@control.lth.se>
->>> Gak. If we're going down this path, why not add #ifdefs for every other
->>> conceivable hardware mod as well and turn the ATNGW100 board code into
->>> an even worse mess than the ATSTK1000 board code?
->> OK, good point. The reason I sent in the patch is that people on AVRFreaks had
->> asked how to do it, and putting it in the configuration would (theoretically)
->> make it possible to catch pin conflicts.
+> On Sat, 11 October 2008 16:35:52 +0200, Pavel Machek wrote:
+> > 
+> > I don't think ext3 is safe w.r.t. whole eraseblocks disappearing. So
+> > if you write data 'nearby' root directory and power fails, bye bye
+> > filesystem, and journal will not help.
 > 
-> Yes, I do realize people want this kind of thing. But I also think
-> there's more than one way to do it, and while a Kconfig option might
-> make things easier while trying it out, I think it will cause
-> maintenance pains in the long run.
-> 
->>> The ATNGW100 has one serial port on board, so IMO the standard board
->>> code should only initialize that one port.
->> Which was my intention, unless SERIAL_ATMEL_USARTn was selected.
-> 
-> Yes, but it's not sensible to even offer the option of other ports when
-> the board just doesn't have them.
-> 
->>> However, it might be sensible to add some sort of interface for
->>> expansion board code. For example something like this:
->>>
->>> #ifdef CONFIG_ATNGW100_EXPANSION
->>> 	atngw100_setup_expansion_board();
->>> #endif
->> Since that file has to reside inside the kernel tree (?), one could almost as
->> easily replace the entire setup.c.
-> 
-> True...but it would take quite a bit of duplication, and you'll have to
-> sync up whenever the "main" setup.c changes.
-> 
->> Shouldn't this be something like:
->>
->> void __init setup_board(void)
->> {
->> ...
->> #ifdef CONFIG_ATNGW100_EXPANSION
->>  	atngw100_setup_expansion_board();
->> #endif
->> }
->>
->> static int __init atngw100_init(void)
->> {
->> ...
->> #ifdef CONFIG_ATNGW100_EXPANSION
->>  	atngw100_init_expansion_board();
->> #endif
->> }
-> 
-> Well, you could do it like that, but you could also just add another
-> postcore_initcall. The only hook which is really needed is the "setup"
-> part, and only if you have additional serial ports.
-Does that mean that 'at32_add_device_usart(...);' is not needed?
+> No device I've ever seen is that stupid.
 
-> In fact, it's probably better to just add a weak definition for it
-> since not all expansion boards will need to override it.
-> 
->>> This will allow people with hardware mods to add all the extra devices
->>> they need, including serial ports, by simply adding another file with
->>> expansion board code. People who aren't afraid to solder stuff on their
->>> boards shouldn't be afraid of writing some board code too, right?
->>>
->>> What do you think?
->> An even nicer way of handling it (provided that initialization does not need to
->> take place during boot), might be to do EXPORT_SYMBOL() on
->> at32_add_device_usart, at32_map_usart, etc and then write a loadable module that
->> handles the initialization.
-> 
-> Hmm...why would that be nicer exactly?
-You could compile your board specific inits outside the kernel tree, making it
-much easier to follow kernel versions (not everyone gets their board specific
-code into the kernel tree :-).
-
-> What _I_ think would be a nicer way to do it is to implement support
-> for flattened device trees and get rid of the board code entirely. Or
-> almost entirely; it depends on how complete we can make the device tree.
-I don't understand the above paragraph, could you please elaborate?
-
-
+I have adata SD flash cards that loose data even normal use, no power
+fails needed.
+									Pavel
 -- 
-Anders Blomdell                  Email: anders.blomdell@control.lth.se
-Department of Automatic Control
-Lund University                  Phone:    +46 46 222 4625
-P.O. Box 118                     Fax:      +46 46 138118
-SE-221 00 Lund, Sweden
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
