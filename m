@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbYJMOAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbYJMODq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbYJMOAM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYJMN7z
+	id S1755200AbYJMODq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYJMODd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:59:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39856 "EHLO hera.kernel.org"
+	Mon, 13 Oct 2008 10:03:33 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:36772 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752118AbYJMN7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:59:54 -0400
-Message-ID: <48F352DE.8060001@kernel.org>
-Date: Mon, 13 Oct 2008 22:53:34 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	id S1752804AbYJMODc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 10:03:32 -0400
+Date: Mon, 13 Oct 2008 17:02:30 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Phil Endecott <phil_wueww_endecott@chezphil.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
+Message-ID: <20081013140228.GG29938@cs181140183.pp.htv.fi>
+References: <1223895506638@dmwebmail.dmwebmail.chezphil.org> <87zll8r86h.fsf@basil.nowhere.org> <20081013091848.7dcdaaac@infradead.org> <20081013133051.GL12131@one.firstfloor.org> <20081013093014.607c5925@infradead.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_of_platform: fix no irq handling
-References: <20081006172653.GA26427@oksana.dev.rtsoft.ru> <48F2F138.6020103@kernel.org> <48F34CB9.3020000@pobox.com>
-In-Reply-To: <48F34CB9.3020000@pobox.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=windows-1251
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Oct 2008 13:55:28 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20081013093014.607c5925@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Tejun Heo wrote:
->> Anton Vorontsov wrote:
->>> When no irq specified the pata_of_platform fills the irq_res with -1,
->>> which is wrong to do for two reasons:
->>>
->>> 1. By definition, 'no irq' should be IRQ 0, not some negative integer;
->>> 2. pata_platform checks for irq_res.start > 0, but since irq_res.start
->>>    is unsigned type, the check will be true for `-1'.
->>>
->>> Reported-by: Steven A. Falco <sfalco@harris.com>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>
->> applied to #tj-upstream (will soon be sent upstream)
+On Mon, Oct 13, 2008 at 09:30:14AM -0400, Arjan van de Ven wrote:
+> On Mon, 13 Oct 2008 15:30:51 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > Core2 instruction set with tune=generic is still the best to set.
+> > 
+> > Not sure that is true. These option are mostly for the compiler.
 > 
-> I have returned!  muhahahahahaha....
+> exactly, and our benchmarks show that tune=generic is best right now
+> for Atom. 
+> (586 scheduling sounds nice, but the pipelines are rather different.
+> And the benchmarks don't lie..  ;-)
 
-Ah.. great.  Hope you enjoyed the vacation.  Can you please pull from
-#tj-upstream?
+That sounds a bit dangerous since tune=generic is documented to change 
+the semantics between gcc versions to better fit more recent CPUs
+(there's even a small difference between gcc 4.2 and gcc 4.3):
 
- git://git.kernel.org/pub/scm/linux/kernel/git/tj/libata-dev.git tj-upstream
- http://git.kernel.org/?p=linux/kernel/git/tj/libata-dev.git;a=shortlog;h=tj-upstream
+          As new processors are deployed in the marketplace, the
+          behavior of this option will change.  Therefore, if you
+          upgrade to a newer version of GCC, the code generated option
+          will change to reflect the processors that were most common
+          when that version of GCC was released.
 
-Nothing much.  Rafael's skip-spin-off patchset + Elias's small fix +
-ATA_HORKAGE_ATAPI_MOD16_DMA + pata_of_platform irq fix.
 
-Gwendal posted patches to enable FIS based switching when NCQ is
-disabled on sata_mv but I think this should be put into separate
-branch and stay in linux-next till Mark Lord comes back and reviews it
-as I don't know much about the driver and don't know of anyone other
-than Gwendal and Mark who do.
-
-sata_nv detection problem is still not resolved.  I figured out
-generic and ck804 but nf2/3 is still malfunctioning.  I asked for more
-tests and am waiting for results.
-
-Eh... I guess that's about it.  Enjoy your INBOX.  :-P
+cu
+Adrian
 
 -- 
-tejun
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
