@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbYJMKdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbYJMKfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758270AbYJMKdD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYJMKcu
+	id S1758270AbYJMKfo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYJMKff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 06:32:50 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:54339 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbYJMKcs (ORCPT
+	Mon, 13 Oct 2008 06:35:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:38661 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbYJMKfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 06:32:48 -0400
+	Mon, 13 Oct 2008 06:35:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=content-disposition:subject:from:date:mime-version:to:cc
-         :content-type:content-transfer-encoding:message-id;
-        b=vwC5A1NWEfp6MaXW/oeXWcweTTcNRQTEJFLFcoq5Q8/ZpNP57jJX7kS0s290/x836l
-         otaxKg93ODMMkkzJimUpU6y9n0aUDeGEeaCuJaSQwWyzeo8Y/IWbrW2XNwDBMiulSz3/
-         iB/vjSVHjuo2l+VnJB0kLNN4TrC+seQ5IBVWo=
-Content-Disposition: inline
-Subject: [PATCH] fs/dcache.c: update comment of d_validate()
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-Date: Mon, 13 Oct 2008 18:32:42 +0800
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=igi0qFRRc7vfwXwLqkCYrmiJm/XAHnWBpahNUjS4Np7Sok3kwMny62CMKywzsY/LRb
+         BZcEozAPg0B8Oaozr+tzv0WsJ0Y9hS8lriUf+k/o/7D6vipSEcJKVNiXxKDeZFki3b/G
+         2UHitG05UqdT1HwdaO1wTq7ByC3WIYowUBkiY=
+Message-ID: <48F3246F.2060104@gmail.com>
+Date: Mon, 13 Oct 2008 12:35:27 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: viro@zeniv.linux.org.uk
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Bryan Wu <cooloney@kernel.org>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Blackfin OTP Char Driver: add writing support of
+ OTP
+References: <1223889199-31658-1-git-send-email-cooloney@kernel.org>	 <48F316C4.1070603@gmail.com>	 <8bd0f97a0810130243q39581ef5y704c500c8ac3ee1c@mail.gmail.com>	 <48F31BF9.6030109@gmail.com> <8bd0f97a0810130307i29e76f6w62f9797b561b4c6f@mail.gmail.com>
+In-Reply-To: <8bd0f97a0810130307i29e76f6w62f9797b561b4c6f@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200810131832.42981.qhfeng.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parameters @hash and @len have been removed since 2.4.3,
-now just to delete them.
+On 10/13/2008 12:07 PM, Mike Frysinger wrote:
+> the pos gets updated every time a half-page gets processed.  so if you
+> call write() and tell it to write 128 bytes, but you get an error half
+> way through, the pos points right at the place where the error
+> occurred.  i dont get what you're asking.
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/fs/dcache.c b/fs/dcache.c
-index e7a1a99..af65426 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1456,8 +1456,6 @@ out:
-  * d_validate - verify dentry provided from insecure source
-  * @dentry: The dentry alleged to be valid child of @dparent
-  * @dparent: The parent dentry (known to be valid)
-- * @hash: Hash of the dentry
-- * @len: Length of the name
-  *
-  * An insecure source has sent us a dentry, here we verify it and dget() it.
-  * This is used by ncpfs in its readdir implementation.
+Ah, OK, that's because I don't know exactly what should happen if a write fails.
+I though userspace expects the state of the fd to not be touched.
+
+>> But is this OK to you:
+>> PROCESS 1                       PROCESS 2
+>> lock
+>>  set allow_writes
+>> write
+>>   check allow_writes
+>>   be interrupted
+>>                                whatever
+>>                                unlock
+>>                                    unset allow_writes
+>>                                sleep
+>>   mutex lock
+>>   the processing...
+> 
+> i dont see a problem here.  there is no loss of data, hardware
+> failure, software crashes, etc...  in other words, there is no
+> misbehavior.
+
+I see no purpose of allow_writes then. Why is it there? I don't need to call
+memlock if anybody else did and I raced with him. Also when somebody else
+unlocks after finishing of writes I can start failing in the middle of my writes
+-- this doesn't have anything to do with locking, but with the design, the one
+global variable.
