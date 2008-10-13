@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760164AbYJMVXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbYJMVXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760164AbYJMVXU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbYJMVWt
+	id S1760642AbYJMVXf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbYJMVWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:22:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46916 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759670AbYJMVWr (ORCPT
+	Mon, 13 Oct 2008 17:22:55 -0400
+Received: from h155.mvista.com ([63.81.120.158]:27715 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1759945AbYJMVWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:22:47 -0400
-Date: Mon, 13 Oct 2008 14:22:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] intermediate SCSI updates
-In-Reply-To: <1223925606.5566.20.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
-References: <1223909115.5566.13.camel@localhost.localdomain>  <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org> <1223925606.5566.20.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 13 Oct 2008 17:22:54 -0400
+Message-ID: <48F3BC2E.5030601@ct.jp.nec.com>
+Date: Mon, 13 Oct 2008 14:22:54 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86/io_apic_32: fix printk format warning
+References: <20081011234130.GE25563@orion>
+In-Reply-To: <20081011234130.GE25563@orion>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 13 Oct 2008, James Bottomley wrote:
+Alexander Beregalov wrote:
+> arch/x86/kernel/io_apic_32.c: In function 'print_local_APIC':
+> arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
+> arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
 > 
-> Not exactly.  It has to be rebased to run as a postmerge tree, but it
-> does get tested by me (admittedly on my limited set of machines, which
-> don't include any actual devices that do block integrity) every time I
-> rebase.
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
+> 
+>  arch/x86/kernel/io_apic_32.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+> index e710289..f678d12 100644
+> --- a/arch/x86/kernel/io_apic_32.c
+> +++ b/arch/x86/kernel/io_apic_32.c
+> @@ -1536,8 +1536,8 @@ __apicdebuginit(void) print_local_APIC(void *dummy)
+>  	}
+>  
+>  	icr = apic_icr_read();
+> -	printk(KERN_DEBUG "... APIC ICR: %08x\n", icr);
+> -	printk(KERN_DEBUG "... APIC ICR2: %08x\n", icr >> 32);
+> +	printk(KERN_DEBUG "... APIC ICR: %08x\n", (unsigned int)icr);
+> +	printk(KERN_DEBUG "... APIC ICR2: %08x\n", (unsigned int)(icr >> 32));
 
-What I'm upset about is that this has apparently gotten not even some 
-trivial testing of the _default_ build. I'm not talking about any odd 
-config options here. I'm literally talking about the only _sane_ config 
-option case.
+looks good, but I think casting to u32 is better, because u32 is used in io_apic_64.c.
 
-You yourself admit that even you don't have any actual devices that can 
-support the block integrity stuff, yet you have apparently only compile- 
-tested the insane case of still enabling that thing and apparently nobody 
-else has bothered either.
-
-Was this in linux-next?
-
-Is linux-next coverage REALLY so weak that it doesn't even test the 
-default config options, much less any random options? What's the point of 
-linux-next then?
-
-Again, the date on that thing is claimed to be September 19th, although it 
-was obviously committed later.
-
-> However, does this work for you?  It fixes the problem for me.
-
-I could trivially have fixed the compile issue. That's not what upsets me. 
-What upsets me is that this set of patches apparently had almost nobody 
-looking at them at all before they got sent to me.
-
-If it was some odd and unusual config option, I'd be less upset. hey, 
-stuff happens. But it sure as heck was nothing of the sort!
-
-			Linus
+thanks,
+Hiroshi Shimamoto
