@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbYJMVl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbYJMVlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbYJMVl3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYJMVlB
+	id S1758217AbYJMVlo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154AbYJMVlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:41:01 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:58875 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754059AbYJMVlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:41:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Vfgeip+B6LMgwT2e/j26xCSEwqpNjqgNjsUfrVxEcEQRglRlv76sged2ympiLMrIdS
-         erEF4L8/Ph5RkB9WNn/LWwbj1O6iCUx7ZkQphsIxTeMaonChihGBfAQnbV15CyNiMk7L
-         hqsHQM/BHPM9Lt39d30jPI9nuI8RkfokeXimw=
-Message-ID: <48F3C060.2050302@gmail.com>
-Date: Mon, 13 Oct 2008 17:40:48 -0400
-From: Robert William Fuller <hydrologiccycle@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080513)
-MIME-Version: 1.0
-To: Hans Verkuil <hverkuil@xs4all.nl>
-CC: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>,
-       video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] video: simplify cx18_get_input() and	ivtv_get_input()
-References: <48F3B56E.9050404@freemail.hu> <200810132328.47170.hverkuil@xs4all.nl>
-In-Reply-To: <200810132328.47170.hverkuil@xs4all.nl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 13 Oct 2008 17:41:20 -0400
+Received: from kroah.org ([198.145.64.141]:43287 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757102AbYJMVlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 17:41:19 -0400
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 24/25] Staging: workaround build system bug
+Date: Mon, 13 Oct 2008 14:38:07 -0700
+Message-Id: <1223933888-8368-1-git-send-email-greg@kroah.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <20081013213651.GA8338@kroah.com>
+References: <20081013213651.GA8338@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans Verkuil wrote:
-> On Monday 13 October 2008 22:54:06 Németh Márton wrote:
->> From: Márton Németh <nm127@freemail.hu>
->>
->> The cx18_get_input() and ivtv_get_input() are called
->> once from the VIDIOC_ENUMINPUT ioctl() and once from
->> the *_log_status() functions. In the first case the
->> struct v4l2_input is already filled with zeros,
->> so doing this again is unnecessary.
-> 
-> And in the second case no one cares whether the struct is zeroed. And 
-> the same situation is also true for ivtv_get_output().
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Yeah, 'cos there's nothing better than uninitialized fields, like the 
-recent report of a control that returns minimum and maximum values of 
-zero, but a step-size of 9.  Why are we optimizing code paths that are 
-not performance critical by uninitializing memory?
+This is needed as CONFIG_STAGING is set to y, yet there is no code in
+drivers/staging/ to build, so the build-in.o doesn't get created
+properly.  Create a "dummy" module in drivers/staging called staging.c
+to work around this bug.
+
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/Makefile  |    3 +++
+ drivers/staging/staging.c |   19 +++++++++++++++++++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/staging/staging.c
+
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index 93decb8..7c466e9 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -1,5 +1,8 @@
+ # Makefile for staging directory
+ 
++# fix for build system bug...
++obj-$(CONFIG_STAGING)		+= staging.o
++
+ obj-$(CONFIG_ET131X)		+= et131x/
+ obj-$(CONFIG_SLICOSS)		+= slicoss/
+ obj-$(CONFIG_SXG)		+= sxg/
+diff --git a/drivers/staging/staging.c b/drivers/staging/staging.c
+new file mode 100644
+index 0000000..233e589
+--- /dev/null
++++ b/drivers/staging/staging.c
+@@ -0,0 +1,19 @@
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/module.h>
++
++static int __init staging_init(void)
++{
++	return 0;
++}
++
++static void __exit staging_exit(void)
++{
++}
++
++module_init(staging_init);
++module_exit(staging_exit);
++
++MODULE_AUTHOR("Greg Kroah-Hartman");
++MODULE_DESCRIPTION("Staging Core");
++MODULE_LICENSE("GPL");
+-- 
+1.6.0.2
+
