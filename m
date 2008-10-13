@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbYJMO0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbYJMO1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbYJMO0A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbYJMOZs
+	id S1756765AbYJMO1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbYJMO1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:25:48 -0400
-Received: from mail.ku-gbr.de ([81.3.11.18]:43617 "EHLO ku-gbr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754763AbYJMOZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:25:47 -0400
-Date: Mon, 13 Oct 2008 16:25:42 +0200
-From: Konstantin Kletschke <lists@ku-gbr.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-Message-ID: <20081013142542.GA23124@anita.doom>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <48E8947A.5020608@kernel.org> <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org> <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com> <20081008080848.GA20525@anita.doom> <48F3088C.9010002@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48F3088C.9010002@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 13 Oct 2008 10:27:37 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47878 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbYJMO1g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 10:27:36 -0400
+To: penberg@cs.helsinki.fi
+CC: nickpiggin@yahoo.com.au, hugh@veritas.com, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, akpm@linux-foundation.org
+In-reply-to: <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Mon, 13 Oct 2008 15:59:00 +0200)
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
+Message-Id: <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 13 Oct 2008 16:27:25 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 2008-10-13 17:36 +0900 schrieb Tejun Heo:
+On Mon, 13 Oct 2008, Miklos Szeredi wrote:
+> On Mon, 13 Oct 2008, Nick Piggin wrote:
+> > In many cases, yes it seems to. And some of the approaches even if
+> > they work now seem like they *might* cause problematic constraints
+> > in the design... Have Al and Christoph reviewed the dentry and inode
+> > patches?
+> 
+> This d_invalidate() looks suspicious to me:
 
-> It has all the fans for a reason.  :-)
+And the things kick_inodes() does without any sort of locking look
+even more dangerous.
 
-:-)
+It should be the other way round: first make sure nothing is
+referencing the inode, and _then_ start cleaning it up with
+appropriate locks held.  See prune_icache().
 
-> Eh... Joke aside.  I still don't know what's going on here.  Before
-> 2.6.26, you always had clean boot, right?
-
-Yes, with 2.6.25 it always had a clean booting system.
-
->From time to time I do an update and with some 2.6.26_rcX I had
-problems the system not solving a cold boot sometimes. Long I suspected
-a hardware issue but one time I went down to 2.6.25 and the problem was
-away. 
-
-Then I updated to 2.6.27_rcX because I was hunting down some nfsv4
-error, considering this as a bug or an issue in front of screen. Then I
-realised the cold boot problem again which I almost forgot meanwhile or
-considered closed from 2.6.26_rcX over 2.6.26 to 2.6.27_rcX.
-
-Konsti
-
--- 
-GPG KeyID EF62FCEF
-Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
+Miklos
