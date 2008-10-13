@@ -1,70 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbYJMV3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760393AbYJMV3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760132AbYJMV3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbYJMV3I
+	id S1760393AbYJMV3u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYJMV3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:29:08 -0400
-Received: from mga14.intel.com ([143.182.124.37]:26743 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754071AbYJMV3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:29:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,405,1220252400"; 
-   d="scan'208";a="59312201"
-Date: Mon, 13 Oct 2008 14:28:39 -0700
-Message-Id: <200810132128.m9DLSdal028794@los-vmm.sc.intel.com>
-Subject: [PATCH] Fix possible NULL ptr dereference in ACPI code
-To: linux-kernel@vger.kernel.org
-From: donald.d.dugger@intel.com
+	Mon, 13 Oct 2008 17:29:41 -0400
+Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:4535 "EHLO
+	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbYJMV3k convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 17:29:40 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: =?utf-8?q?N=C3=A9meth_M=C3=A1rton?= <nm127@freemail.hu>
+Subject: Re: [PATCH 2/2] video: simplify cx18_get_input() and ivtv_get_input()
+Date: Mon, 13 Oct 2008 23:28:46 +0200
+User-Agent: KMail/1.9.9
+Cc: video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
+References: <48F3B56E.9050404@freemail.hu>
+In-Reply-To: <48F3B56E.9050404@freemail.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200810132328.47170.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Code in file `drivers/acpi/pci_link.c' is attempting to evaluate the _DIS
-method to disable a link.  Unfortunately, the method code unconditionally
-uses the last argument as a pointer on success so passing a NULL could
-wind up dereferencing 0.  This patch just passes an appropriate pointer
-to avoid this issue.
+On Monday 13 October 2008 22:54:06 Németh Márton wrote:
+> From: Márton Németh <nm127@freemail.hu>
+>
+> The cx18_get_input() and ivtv_get_input() are called
+> once from the VIDIOC_ENUMINPUT ioctl() and once from
+> the *_log_status() functions. In the first case the
+> struct v4l2_input is already filled with zeros,
+> so doing this again is unnecessary.
 
-Signed-off-by: Don Dugger <donald.d.dugger@intel.com>
+And in the second case no one cares whether the struct is zeroed. And 
+the same situation is also true for ivtv_get_output().
 
------ cut here for acpi-1013.patch -----
-diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
-index cf47805..1d03a1f 100644
---- a/drivers/acpi/pci_link.c
-+++ b/drivers/acpi/pci_link.c
-@@ -671,6 +671,7 @@ int acpi_pci_link_free_irq(acpi_handle handle)
- {
- 	struct acpi_device *device = NULL;
- 	struct acpi_pci_link *link = NULL;
-+	union acpi_operand_object *dummy;
- 	acpi_status result;
- 
- 
-@@ -709,7 +710,7 @@ int acpi_pci_link_free_irq(acpi_handle handle)
- 			  acpi_device_bid(link->device)));
- 
- 	if (link->refcnt == 0) {
--		acpi_ut_evaluate_object(link->device->handle, "_DIS", 0, NULL);
-+		acpi_ut_evaluate_object(link->device->handle, "_DIS", 0, &dummy);
- 	}
- 	mutex_unlock(&acpi_link_lock);
- 	return (link->irq.active);
-@@ -721,6 +722,7 @@ int acpi_pci_link_free_irq(acpi_handle handle)
- 
- static int acpi_pci_link_add(struct acpi_device *device)
- {
-+	union acpi_operand_object *dummy;
- 	int result = 0;
- 	struct acpi_pci_link *link = NULL;
- 	int i = 0;
-@@ -773,7 +775,7 @@ static int acpi_pci_link_add(struct acpi_device *device)
- 
-       end:
- 	/* disable all links -- to be activated on use */
--	acpi_ut_evaluate_object(device->handle, "_DIS", 0, NULL);
-+	acpi_ut_evaluate_object(device->handle, "_DIS", 0, &dummy);
- 	mutex_unlock(&acpi_link_lock);
- 
- 	if (result)
+I would suggest just removing the memset() from ivtv_get_input, 
+ivtv_get_output and cx18_get_input.
+
+Good that you spotted that this memset is no longer needed BTW. I hadn't 
+realized that.
+
+For the record, I NACK this patch, but if you can make a new one that 
+just removes the memsets then I'll sign off on that.
+
+Regards,
+
+	Hans
+
+> The *_log_status() functions are called from
+> VIDIOC_LOG_STATUS ioctl() which is only used for
+> debug purposes, so it is worth to move the filling
+> with zeros to a least frequently used function.
+>
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
+> ---
+> diff -upr linux-2.6.27.orig/drivers/media/video/cx18/cx18-cards.c
+> linux-2.6.27/drivers/media/video/cx18/cx18-cards.c ---
+> linux-2.6.27.orig/drivers/media/video/cx18/cx18-cards.c	2008-10-10
+> 00:13:53.000000000 +0200 +++
+> linux-2.6.27/drivers/media/video/cx18/cx18-cards.c	2008-10-13
+> 21:27:54.000000000 +0200 @@ -320,10 +320,9 @@ int
+> cx18_get_input(struct cx18 *cx, u16 "Composite 3"
+>  	};
+>
+> -	memset(input, 0, sizeof(*input));
+>  	if (index >= cx->nof_inputs)
+>  		return -EINVAL;
+> -	input->index = index;
+> +
+>  	strlcpy(input->name, input_strs[card_input->video_type - 1],
+>  			sizeof(input->name));
+>  	input->type = (card_input->video_type == CX18_CARD_INPUT_VID_TUNER
+> ? diff -upr linux-2.6.27.orig/drivers/media/video/cx18/cx18-ioctl.c
+> linux-2.6.27/drivers/media/video/cx18/cx18-ioctl.c ---
+> linux-2.6.27.orig/drivers/media/video/cx18/cx18-ioctl.c	2008-10-10
+> 00:13:53.000000000 +0200 +++
+> linux-2.6.27/drivers/media/video/cx18/cx18-ioctl.c	2008-10-13
+> 21:28:11.000000000 +0200 @@ -712,7 +712,11 @@ static int
+> cx18_log_status(struct file * cx18_read_eeprom(cx, &tv);
+>  	}
+>  	cx18_call_i2c_clients(cx, VIDIOC_LOG_STATUS, NULL);
+> +
+> +	memset(&vidin, 0, sizeof(vidin));
+> +	vidin.index = cx->active_input;
+>  	cx18_get_input(cx, cx->active_input, &vidin);
+> +
+>  	cx18_get_audio_input(cx, cx->audio_input, &audin);
+>  	CX18_INFO("Video Input: %s\n", vidin.name);
+>  	CX18_INFO("Audio Input: %s\n", audin.name);
+> diff -upr linux-2.6.27.orig/drivers/media/video/ivtv/ivtv-cards.c
+> linux-2.6.27/drivers/media/video/ivtv/ivtv-cards.c ---
+> linux-2.6.27.orig/drivers/media/video/ivtv/ivtv-cards.c	2008-10-10
+> 00:13:53.000000000 +0200 +++
+> linux-2.6.27/drivers/media/video/ivtv/ivtv-cards.c	2008-10-13
+> 21:22:59.000000000 +0200 @@ -1199,10 +1199,9 @@ int
+> ivtv_get_input(struct ivtv *itv, u16 "Composite 3"
+>  	};
+>
+> -	memset(input, 0, sizeof(*input));
+>  	if (index >= itv->nof_inputs)
+>  		return -EINVAL;
+> -	input->index = index;
+> +
+>  	strlcpy(input->name, input_strs[card_input->video_type - 1],
+>  			sizeof(input->name));
+>  	input->type = (card_input->video_type == IVTV_CARD_INPUT_VID_TUNER
+> ? diff -upr linux-2.6.27.orig/drivers/media/video/ivtv/ivtv-ioctl.c
+> linux-2.6.27/drivers/media/video/ivtv/ivtv-ioctl.c ---
+> linux-2.6.27.orig/drivers/media/video/ivtv/ivtv-ioctl.c	2008-10-10
+> 00:13:53.000000000 +0200 +++
+> linux-2.6.27/drivers/media/video/ivtv/ivtv-ioctl.c	2008-10-13
+> 21:21:35.000000000 +0200 @@ -1446,7 +1446,11 @@ static int
+> ivtv_log_status(struct file * ivtv_read_eeprom(itv, &tv);
+>  	}
+>  	ivtv_call_i2c_clients(itv, VIDIOC_LOG_STATUS, NULL);
+> +
+> +	memset(&vidin, 0, sizeof(vidin));
+> +	vidin.index = itv->active_input;
+>  	ivtv_get_input(itv, itv->active_input, &vidin);
+> +
+>  	ivtv_get_audio_input(itv, itv->audio_input, &audin);
+>  	IVTV_INFO("Video Input:  %s\n", vidin.name);
+>  	IVTV_INFO("Audio Input:  %s%s\n", audin.name,
+> --
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
