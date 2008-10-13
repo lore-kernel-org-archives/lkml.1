@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYJMIak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbYJMIcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbYJMIak (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbYJMIab
+	id S1756815AbYJMIcG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbYJMIbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:30:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:23216 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755392AbYJMIab (ORCPT
+	Mon, 13 Oct 2008 04:31:52 -0400
+Received: from ns0.motion-twin.com ([213.186.50.39]:46450 "EHLO
+	mail.motion-twin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754724AbYJMIbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:30:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CGRo88jsU9KQvFtEPR7Lz7RI6u16IcQIo/FBjc48XrFF8eOOy2VC2dC+nOu5HREArt
-         /784tOHl4vhPpr09vnQKC6XYFgYrLV67DswBl73sLniTQGhHjXZVgOoku2cAw6apt3vd
-         jb+O+b4UW1xrz7dxuPWlAJEzHPDIwaCxnYVvM=
-Date: Mon, 13 Oct 2008 12:33:21 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT] /proc
-Message-ID: <20081013083321.GC19572@x200.localdomain>
-References: <20081013081908.GA19572@x200.localdomain> <20081013.012015.107936001.davem@davemloft.net>
+	Mon, 13 Oct 2008 04:31:51 -0400
+Message-ID: <48F30772.7040207@motion-twin.com>
+Date: Mon, 13 Oct 2008 10:31:46 +0200
+From: Nicolas Cannasse <ncannasse@motion-twin.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081013.012015.107936001.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: recv() hangs until SIGCHLD ?
+References: <48EF58D9.6060401@motion-twin.com> <20081010211700.58e953a2@speedy> <48F063C5.3000707@motion-twin.com>
+In-Reply-To: <48F063C5.3000707@motion-twin.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 01:20:15AM -0700, David Miller wrote:
-> From: Alexey Dobriyan <adobriyan@gmail.com>
-> Date: Mon, 13 Oct 2008 12:19:08 +0400
+>> If there is data and the thread didn't wake up then that is a libc or 
+>> kernel problem;
+>> but if there is no data, then look for cases where earlier interrupted 
+>> io actually
+>> consumed the data already or blame the sending process not the receiver.
+>> Also are the sockets blocking or non-blocking?
 > 
-> > Linus, please, pull from
-> > 
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
-> 
-> It doesn't merge without conflicts:
+> The sockets are non-blocking.
 
-So be it. Linus should just rm arch/sparc/include/asm/dma_32.h and commit.
+Sorry, I made a spelling mistake here.
 
-> davem@sunset:~/src/GIT/linux-2.6$ git pull git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
-> remote: Counting objects: 100, done.        
-> remote: Compressing objects: 100% (17/17), done.        
-> remote: Total 71 (delta 60), reused 64 (delta 53)        
-> Unpacking objects: 100% (71/71), done.
-> From git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc
->  * branch            proc       -> FETCH_HEAD
-> Auto-merged Documentation/filesystems/proc.txt
-> CONFLICT (delete/modify): arch/sparc/include/asm/dma_32.h deleted in HEAD and modified in 3bbfe0596746e1590888a6e1e6a07583265238b7. Version 3bbfe0596746e1590888a6e1e6a07583265238b7 of arch/sparc/include/asm/dma_32.h left in tree.
-> Auto-merged kernel/sysctl.c
-> Automatic merge failed; fix conflicts and then commit the result.
-> davem@sunset:~/src/GIT/linux-2.6$ 
-> 
-> This is caused by my sparc merge that Linux took in mid-day Sunday.
+I wanted to tell that the sockets ARE blocking (default behavior).
+
+> In a practical case, we have a thread blocked in recv() for more than 12 
+> hours, which is way beyond the timeout of the sender connection. The 
+> socket has already been closed by the sender so recv() should at least 
+> be noticed and returns 0.
+
+To provide more informations :
+
+Doing a lsof on the receiver, we can see that it has several ESTABLISHED 
+sockets connected to a given host/sender. Doing a lsof on the host does 
+not give any socket connected to the receiver (since they have been 
+closed due to a timeout).
+
+Also, the application correctly handles 0.
+The pseudo-code is the following :
+
+loop:
+ret = recv()
+if( ret == -1 ) {
+    if( errno == EINTR ) goto loop;
+    return -1;
+}
+return ret;
+
+Then, on the higher level, in case we get an error ( ret <= 0 ) then we 
+close the socket.
+
+At first, we were using the libmysqlclient but since we had the bug with 
+it we rewrote a mysql client so we can more easily check what's 
+occurring. The same bug seems to occur with both implementations.
+
+Best,
+Nicolas
