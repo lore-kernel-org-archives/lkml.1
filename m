@@ -1,73 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbYJMT3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYJMTdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932139AbYJMT3B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 15:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbYJMT2x
+	id S1759542AbYJMTdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 15:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbYJMTcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 15:28:53 -0400
-Received: from 220-133-139-86.HINET-IP.hinet.net ([220.133.139.86]:53529 "EHLO
-	cooldavid.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756964AbYJMT2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 15:28:53 -0400
-From: "Guo-Fu Tseng" <cooldavid@cooldavid.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Cc: apw@shadowen.org, jgarzik@redhat.com, ron.mercer@qlogic.com,
-       scofeldm@cisco.com
-Reply-To: cooldavid@cooldavid.org
-Subject: Re: [PATCH] 2.6.27-git2 - fix build error at csum_ipv6_magic()
-Date: Tue, 14 Oct 2008 03:28:14 +0800
-Message-Id: <20081013192101.M74635@cooldavid.org>
-In-Reply-To: <20081013121441.GB14372@linux.vnet.ibm.com>
-References: <20081013121441.GB14372@linux.vnet.ibm.com>
-X-Mailer: Open WebMail 2.51 20050228
-X-OriginatingIP: 140.117.194.21 (cooldavid)
+	Mon, 13 Oct 2008 15:32:55 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:16495 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754497AbYJMTcy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 15:32:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WZXlQV6iykZDieBir3kykipGFp0JKeKBWUXSSU94K8D1K3u4QxFfBm5yrc9zWq2f53
+         06aaG69FenqwU1t6k/fYkEaVxL02j+S4attkXsxWbsL/cpiDI3g1ETDXWBJwZio1yuOo
+         QYzbDEhdUSg3R38PyCfYQswCkztXewx3MmfxE=
+Date: Mon, 13 Oct 2008 21:31:19 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@redhat.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: inconsistent lock state (tty? input?)
+Message-ID: <20081013193114.GA5647@joi>
+References: <20081013183731.GA5676@joi> <20081013145712.5aa06871@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081013145712.5aa06871@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008 17:44:41 +0530, Kamalesh Babulal wrote
-> Hi,
->   2.6.27-git2 kernel build fails with allyesconfig on powerpc with 
-> build error
+On Mon, Oct 13, 2008 at 02:57:12PM -0400, Arjan van de Ven wrote:
+> On Mon, 13 Oct 2008 20:37:43 +0200
+> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 > 
-> <introduced by commit 01f2e4ead2c51226ed1283ef6a8388ca6f4cff8f>
+> > On current git (a447c0932445f92ce6f4c1bd020f62c5097a7842):
+> \
 > 
-> CC    drivers/net/enic/enic_main.o
-> drivers/net/enic/enic_main.c: In function `nic_queue_wq_skb_tso`:
-> drivers/net/enic/enic_main.c:576: error: implicit declaration of function `sum_ipv6_magic`
-> make[3]: *** [drivers/net/enic/enic_main.o] Error 1
+> good spotting;
 > 
-> <introduced by commit c4e84bde1d595d857d3c74b49b9c45cc770df792>
+> the patch below should fix this:
 > 
-> drivers/net/qlge/qlge_main.c: In function `l_tso`:
-> drivers/net/qlge/qlge_main.c:1862: error: implicit declaration of function `sum_ipv6_magic`
-> make[3]: *** [drivers/net/qlge/qlge_main.o] Error 1
+> From 26c117549415c55585f46ad38cd58a5f84f5adc7 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Mon, 13 Oct 2008 14:56:39 -0400
+> Subject: [PATCH] tty: make sure that proc_clear_tty stores the cpu flags
 > 
-> <introduced by commit 95252236e73e789dd186ce796a2abc60b3a61ebe>
+> proc_clear_tty() gets called with interrupts off (while holding the task list lock)
+> from sys_setid. This means that it needs the _irqsave version of the locking primitives.
 > 
-> drivers/net/jme.c: In function `me_tx_tso`:
-> drivers/net/jme.c:1784: error: implicit declaration of function `sum_ipv6_magic`
-> make[2]: *** [drivers/net/jme.o] Error 1
-> 
-> The patch is build tested only.
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Reported-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 > ---
-Thank you Kamalesh.
+>  drivers/char/tty_io.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> index e4dce87..4715961 100644
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+> @@ -3595,9 +3595,10 @@ EXPORT_SYMBOL(tty_devnum);
+>  
+>  void proc_clear_tty(struct task_struct *p)
+>  {
+> -	spin_lock_irq(&p->sighand->siglock);
+> +	unsigned long flags;
+> +	spin_lock_irqsave(&p->sighand->siglock, flags);
+>  	p->signal->tty = NULL;
+> -	spin_unlock_irq(&p->sighand->siglock);
+> +	spin_unlock_irqrestore(&p->sighand->siglock, flags);
+>  }
+>  
+>  /* Called under the sighand lock */
+> -- 
 
-But since <net/ip6_checksum.h> compensate the lack of
-`csum_ipv6_magic` function defined in <asm/checksum.h>
-of some architecture, should <net/ip6_checksum.h> be
-included in <net/checksum.h> as well?
+It worked, thanks!
 
-BTW, if there is a patch against jme driver which I maintain,
-and I just simply agree with it, should I silently noticed that
-and let someone like Jeff or David to review/apply it,
-or should I reply an ack of it?
+But I had to manually apply this patch (this function looks different now)
+Updated patch below:
+---
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] tty: make sure that proc_clear_tty stores the cpu flags
 
-Guo-Fu Tseng
+proc_clear_tty() gets called with interrupts off (while holding the task list lock)
+from sys_setid. This means that it needs the _irqsave version of the locking primitives.
+
+Reported-and-tested-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/char/tty_io.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 7053d63..3f48d88 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -3032,11 +3032,12 @@ EXPORT_SYMBOL(tty_devnum);
+ 
+ void proc_clear_tty(struct task_struct *p)
+ {
++	unsigned long flags;
+ 	struct tty_struct *tty;
+-	spin_lock_irq(&p->sighand->siglock);
++	spin_lock_irqsave(&p->sighand->siglock, flags);
+ 	tty = p->signal->tty;
+ 	p->signal->tty = NULL;
+-	spin_unlock_irq(&p->sighand->siglock);
++	spin_unlock_irqrestore(&p->sighand->siglock, flags);
+ 	tty_kref_put(tty);
+ }
+ 
+-- 
+1.5.6.4
 
