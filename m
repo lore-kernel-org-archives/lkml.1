@@ -1,42 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbYJMRsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYJMRtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbYJMRsw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 13:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYJMRso
+	id S1755837AbYJMRtW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 13:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbYJMRtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 13:48:44 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:15337 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYJMRsn (ORCPT
+	Mon, 13 Oct 2008 13:49:04 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:51227 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbYJMRtD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 13:48:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=iyzserviOqmFTGr1PeSRxMKuUj+0diujr4C1bXLfcer3/dXU0kGv68tdUVxcwfLOiE
-         nzaelULSfaMxoEic3g5q7bLLvYVfceyhJ2wLKqvrsl5DG1HqVDNbbEF8L0yhsVDIGT0I
-         RNT6cv7TCezYfG7OTPjz3fVu+/lGecx4SBhXc=
-Message-ID: <1ef1ea510810131048s3daecedfsa845c3ff5d4ca99a@mail.gmail.com>
-Date: Mon, 13 Oct 2008 10:48:42 -0700
-From: "Thomas Tanaka" <thomas.tanaka@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [Contol Groups] Filesystem namespace isolation using cgroups
-Cc: thomas.tanaka@intel.com
+	Mon, 13 Oct 2008 13:49:03 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: question about pci_disable_device
+Date: Mon, 13 Oct 2008 19:47:44 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200810131947.44992.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is it possible to achieve file system namespace isolation using
-cgroups ? My main goal is to build a container with the capability of
-limiting the view of a given process, similar to what chroot does.
+Hi,
 
-Thank you very much in advance
+could somebody explain what determines when in the sequence of hot
+unplugging pci_disable_device() is called?
 
-Regards,
-
-Thomas
+	Regards
+		Oliver
