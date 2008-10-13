@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbYJMNSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbYJMNTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759657AbYJMNSz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYJMNSr
+	id S1757770AbYJMNTX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 09:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758251AbYJMNSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:18:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60427 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755209AbYJMNSq (ORCPT
+	Mon, 13 Oct 2008 09:18:53 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35760 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758182AbYJMNSw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:18:46 -0400
-Date: Mon, 13 Oct 2008 09:18:48 -0400
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Phil Endecott" <phil_wueww_endecott@chezphil.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
-Message-ID: <20081013091848.7dcdaaac@infradead.org>
-In-Reply-To: <87zll8r86h.fsf@basil.nowhere.org>
-References: <1223895506638@dmwebmail.dmwebmail.chezphil.org>
-	<87zll8r86h.fsf@basil.nowhere.org>
-Organization: Intel
+	Mon, 13 Oct 2008 09:18:52 -0400
+Date: Mon, 13 Oct 2008 10:18:26 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Subject: Re: What's in linux1394-2.6.git?
+Message-ID: <20081013101826.69f8c67e@pedra.chehab.org>
+In-Reply-To: <tkrat.b23c4b2f8887d5b5@s5r6.in-berlin.de>
+References: <tkrat.b23c4b2f8887d5b5@s5r6.in-berlin.de>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008 14:28:06 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+On Fri, 10 Oct 2008 20:30:35 +0200 (CEST)
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> "Phil Endecott" <phil_wueww_endecott@chezphil.org> writes:
-> 
-> > Am I right in thinking that CONFIG_MCORE2 is the correct choice for
-> > an Intel Atom? 
-> 
-> No, Atom is completely different from a Core2.
-> 
-> Right now 586 or 686 is a reasonable choice.
+> I suppose I will ask Mauro instead of Linus to pull the driver, although
+> the patch queue does not touch the DVB subsystem except for adding the
+> driver to the Makefile and Kconfig.
 
-actually 586 is completely wrong.
+Seems fine for me. As we've added several new drivers for 2.6.28, this is
+also safer to avoid (trivial) conflicts.
 
-Core2 instruction set with tune=generic is still the best to set.
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Cheers,
+Mauro
