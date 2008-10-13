@@ -1,44 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbYJMKTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYJMKU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756926AbYJMKTu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762825AbYJMKRB
+	id S932832AbYJMKU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759641AbYJMKUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 06:17:01 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54294 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932692AbYJMKRA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 06:17:00 -0400
-Date: Mon, 13 Oct 2008 11:16:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: alan@redhat.com, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH 0/6] Blackfin Serial Driver updates for 2.6.28
-Message-ID: <20081013111641.100eea07@lxorguk.ukuu.org.uk>
-In-Reply-To: <1223891185-13924-1-git-send-email-cooloney@kernel.org>
-References: <1223891185-13924-1-git-send-email-cooloney@kernel.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 13 Oct 2008 06:20:19 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:35951 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757116AbYJMKUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 06:20:17 -0400
+Subject: Re: [PATCH 1/1] led: add a backlight emulation trigger.
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Rodolfo Giometti <giometti@linux.it>
+In-Reply-To: <1223374230-18413-2-git-send-email-giometti@enneenne.com>
+References: <1223374230-18413-1-git-send-email-giometti@enneenne.com>
+	 <1223374230-18413-2-git-send-email-giometti@enneenne.com>
+Content-Type: text/plain
+Date: Mon, 13 Oct 2008 09:28:16 +0100
+Message-Id: <1223886496.1721.0.camel@ted>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008 17:46:19 +0800
-Bryan Wu <cooloney@kernel.org> wrote:
+On Tue, 2008-10-07 at 12:10 +0200, Rodolfo Giometti wrote:
+> This allows LEDs to be controlled as a backlight device: they turn off
+> and on when the display is blanked and unblanked.
+> 
+> Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 
-> 
-> Hi Alan,
-> 
-> This is Blackfin serial driver updates:
-> 
->  - rewrite kgdb over serial supporting
->  - some bug fixing
+Added to the LEDs tree, thanks.
 
-Queued for once the current tty patches have appeared in Linus tree.
+Richard
+
