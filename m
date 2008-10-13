@@ -1,104 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbYJMGlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYJMGnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755899AbYJMGlz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 02:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYJMGlo
+	id S1756110AbYJMGnq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 02:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYJMGni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 02:41:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43807 "EHLO mx2.mail.elte.hu"
+	Mon, 13 Oct 2008 02:43:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37475 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752910AbYJMGln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 02:41:43 -0400
-Date: Mon, 13 Oct 2008 08:41:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: netdev@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>
-Cc: Davide Pesavento <davidepesa@gmail.com>, linux-kernel@vger.kernel.org
-Subject: net/mac80211/rx.c: fix build error
-Message-ID: <20081013064135.GA19719@elte.hu>
+	id S1753010AbYJMGnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 02:43:37 -0400
+Message-ID: <48F2ED9F.7020606@kernel.org>
+Date: Mon, 13 Oct 2008 15:41:35 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH] block: add BIG FAT WARNING to CONFIG_DEBUG_BLOCK_EXT_DEVT
+References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org> <48EFF84B.5060108@kernel.org> <20081011071939.GA26465@elte.hu> <20081011140826.GS19428@kernel.dk> <20081011143355.GA6274@elte.hu> <20081011143947.GT19428@kernel.dk> <20081011145823.GA14062@elte.hu> <20081011175818.GY19428@kernel.dk>
+In-Reply-To: <20081011175818.GY19428@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Oct 2008 06:43:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+CONFIG_DEBUG_BLOCK_EXT_DEVT can break booting even on some modern
+distros.  Add BIG FAT WARNING to keep people at a safe distance.
 
-FYI, the fixlet below is still needed, even after b0dee578 ("Fix modpost 
-failure when rx handlers are not inlined."). The build error triggered 
-on a -tip testbox.
-
-	Ingo
-
--------------->
->From da854dfe310ff62fda6866e13bd8588effaee51f Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 13 Oct 2008 08:37:08 +0200
-Subject: [PATCH] net/mac80211/rx.c: fix build error
-
-older versions of gcc do not recognize that ieee80211_rx_h_mesh_fwding()
-is unused when CONFIG_MAC80211_MESH is disabled:
-
-  net/built-in.o: In function `ieee80211_rx_h_mesh_fwding':
-  rx.c:(.text+0xd89af): undefined reference to `mpp_path_lookup'
-  rx.c:(.text+0xd89c6): undefined reference to `mpp_path_add'
-
-as this code construct:
-
-        if (ieee80211_vif_is_mesh(&sdata->vif))
-                CALL_RXH(ieee80211_rx_h_mesh_fwding);
-
-still causes ieee80211_rx_h_mesh_fwding() to be linked in.
-
-Protect these places with an #ifdef.
-
-commit b0dee578 ("Fix modpost failure when rx handlers are not inlined.")
-solved part of this problem - this patch is still needed.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- net/mac80211/rx.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+Okay, w/ or w/o Ingo's change, it would be worthwhile to warn
+people more clearly so that we can at least say 'told ya'.  :-)
 
-diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
-index 77e7b01..cf6b121 100644
---- a/net/mac80211/rx.c
-+++ b/net/mac80211/rx.c
-@@ -1379,6 +1379,7 @@ ieee80211_rx_h_amsdu(struct ieee80211_rx_data *rx)
- 	return RX_QUEUED;
- }
- 
-+#ifdef CONFIG_MAC80211_MESH
- static ieee80211_rx_result
- ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
- {
-@@ -1453,7 +1454,7 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
- 	else
- 		return RX_DROP_MONITOR;
- }
--
-+#endif
- 
- static ieee80211_rx_result debug_noinline
- ieee80211_rx_h_data(struct ieee80211_rx_data *rx)
-@@ -1780,8 +1781,10 @@ static void ieee80211_invoke_rx_handlers(struct ieee80211_sub_if_data *sdata,
- 	/* must be after MMIC verify so header is counted in MPDU mic */
- 	CALL_RXH(ieee80211_rx_h_remove_qos_control)
- 	CALL_RXH(ieee80211_rx_h_amsdu)
-+#ifdef CONFIG_MAC80211_MESH
- 	if (ieee80211_vif_is_mesh(&sdata->vif))
- 		CALL_RXH(ieee80211_rx_h_mesh_fwding);
-+#endif
- 	CALL_RXH(ieee80211_rx_h_data)
- 	CALL_RXH(ieee80211_rx_h_ctrl)
- 	CALL_RXH(ieee80211_rx_h_action)
+ lib/Kconfig.debug |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index aa81d28..44e67a1 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -652,6 +652,11 @@ config DEBUG_BLOCK_EXT_DEVT
+ 	depends on BLOCK
+ 	default n
+ 	help
++	  BIG FAT WARNING: ENABLING THIS OPTION MIGHT BREAK BOOTING ON
++	  SOME DISTRIBUTIONS.  DO NOT ENABLE THIS UNLESS YOU KNOW WHAT
++	  YOU ARE DOING.  Distros, please enable this and fix whatever
++	  is broken.
++
+ 	  Conventionally, block device numbers are allocated from
+ 	  predetermined contiguous area.  However, extended block area
+ 	  may introduce non-contiguous block device numbers.  This
