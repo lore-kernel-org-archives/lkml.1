@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYJMIVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbYJMIW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbYJMIVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYJMIVX
+	id S1756921AbYJMIW6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbYJMIWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:21:23 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:38968 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754575AbYJMIVW (ORCPT
+	Mon, 13 Oct 2008 04:22:50 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:53942 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755050AbYJMIWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:21:22 -0400
-Subject: Re: [RFC][PATCH 2/2] first callers of process_deny_checkpoint()
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Cedric Le Goater <clg@fr.ibm.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1223659707.11830.57.camel@nimitz>
-References: <20081009190405.13A253CB@kernel>
-	 <20081009190406.1B257119@kernel> <48EF2BAB.1010009@fr.ibm.com>
-	 <20081010140430.GA14640@us.ibm.com>
-	 <1223657132.10017.42.camel@localhost.localdomain>
-	 <1223659707.11830.57.camel@nimitz>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 10:20:19 +0200
-Message-Id: <1223886019.4404.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 13 Oct 2008 04:22:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=QxeyLBWi65PWPr8gOZgGcTGvr65Lc3wuVQkoUUUiiUsuhd4GKMA6WfygqqkmLomjdi
+         FjqiiNOu3CSqTihwayqFgAFEVOXe/w57iY0rBMT9VY9DI8XUy7yK5/tvsBYFUWJM6BLx
+         YSPR0v1f08gSTTjeTvJcva857bakstzReHX2s=
+Message-ID: <48F30554.1010607@tuffmail.co.uk>
+Date: Mon, 13 Oct 2008 09:22:44 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: acpi-test tree on eeepc: EC error message on second resume
+References: <48F0DB0C.7060201@tuffmail.co.uk> <200810112140.16662.rjw@sisk.pl> <48F100CA.2050600@suse.de> <200810112254.09094.rjw@sisk.pl> <48F1BFD0.7040004@tuffmail.co.uk> <48F24EAE.6020108@suse.de>
+In-Reply-To: <48F24EAE.6020108@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-10 at 10:28 -0700, Dave Hansen wrote:
-> On Fri, 2008-10-10 at 18:45 +0200, Greg Kurz wrote:
-> > It's exactly what I meant before, the tracking facility would be awfully
-> > complicated. It cannot be done that way.
-> > But there's also something awkward with the flag thing : can you provide
-> > right now an exhaustive list of all the places where you must raise it ?
-> 
-> Greg, that's just pure FUD.  We don't say that spinlocks are a bad thing
-> because we can't come up with an exhaustive list of places where we need
-> locking.
-> 
-> We'll do plenty of checks at checkpoint time.
-> 
-> We'll do plenty of checks at runtime.
-> 
-> Neither will work completely on its own, and neither will be exhaustive.
-> The way this will work is just as Serge said: in true Linux style, we'll
-> add more places users of process_deny_checkpoint() incrementally as we
-> find them and as people complain.  We'll also be incrementally removing
-> them as we add functionality.
-> 
-> -- Dave
-> 
+Alexis Starikovskiy wrote:
+> Alan Jenkins wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Saturday, 11 of October 2008, Alexey Starikovskiy wrote:
+>>>  
+>>>> Rafael J. Wysocki wrote:
+>>>>    
+>>>>>> No, we discussed this before -- we are outside of the
+>>>>>> transaction, thus no GPE
+>>>>>> activity could interfere with ec_check_ibf0.
+>>>>>>         
+>>>>> Ok, this is in the process context and we don't really expect to
+>>>>> get an
+>>>>> interrupt at this point, but what happens if the EC generates an
+>>>>> event that's
+>>>>> not related to any transiaction.  Is that guaranteed to never happen?
+>>>>>       
+>>>> Interrupt handler in this case can't cause a change to status
+>>>> register, thus our read of it will not be affected by interrupt.
+>>>>     
+>>> Ok, thanks.
+>>>
+>>> Alan, does the patch work for you?
+>>>
+>>> Rafael
+>>>   
+>>
+>> Yes.  Two reboot cycles, three suspend/resume cycles each, and no error
+>> message.
+>>
+>> I hope we have a better fix in mind though :-P.  The patch doesn't solve
+>> the unnecessary 500ms delay when this thing happens.
+>
+> Something like this?
+>
+> Regards,
+> Alex.
 
-Well then I misunderstood the purpose your initial postings. Sorry. :)
+You sent it as an attachment again :-).
 
--- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+That should work, odd as it looks.  We don't need to worry about the GPE
+workaround because that's only active _inside_ the transaction.  I don't
+know what Zhao thinks is missing.
 
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
+Sorry I can't test right now.  I tried to install 3D support on my
+laptop for showing-off purposes, and somehow broke X.
 
+Thanks
+Alan
