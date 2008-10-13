@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbYJMGdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbYJMGf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbYJMGdN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 02:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYJMGc5
+	id S1756012AbYJMGf0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 02:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYJMGfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 02:32:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57896 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752870AbYJMGc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 02:32:57 -0400
-Date: Mon, 13 Oct 2008 17:32:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       torvalds@osdl.org
-Subject: Re: /proc git tree
-Message-Id: <20081013173248.9cc844c2.sfr@canb.auug.org.au>
-In-Reply-To: <20081002212632.GA5852@x200.localdomain>
-References: <20081002212632.GA5852@x200.localdomain>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__13_Oct_2008_17_32_48_+1100_xVhjq3mqPdXQ+T5n"
+	Mon, 13 Oct 2008 02:35:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:46228 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752910AbYJMGfQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 02:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ayMlAq04AxZ4fGXmaQJxqpp3z0aVViPptkLDnSKAGBjyaoGk+ZtQiiqgxnbogwuzV2
+         n74n7LwDq99qs4B3KTE+FNVPcHgbG1jQdpQG776DgYEmhEjA9dlDtkLpkUwDoOXNpBnM
+         iy2Cg6IZa5kkfN7whlvYQVlgo6JZP4UAHvl+E=
+Date: Mon, 13 Oct 2008 10:38:06 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       Paul Jackson <pj@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] seq_file: don't call bitmap_scnprintf_len()
+Message-ID: <20081013063806.GB3596@x200.localdomain>
+References: <48F1C36D.6080301@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F1C36D.6080301@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__13_Oct_2008_17_32_48_+1100_xVhjq3mqPdXQ+T5n
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Oct 12, 2008 at 05:29:17PM +0800, Lai Jiangshan wrote:
+> "m->count + len < m->size" is true commonly, so bitmap_scnprintf()
+> is commonly called. this fix saves a call to bitmap_scnprintf_len().
 
-Hi Alexey,
+This saves a call if seq buffer is already full which is not a common
+situation, so you're optimising for rare situations and adding branch
+for common ones.
 
-On Fri, 3 Oct 2008 01:26:32 +0400 Alexey Dobriyan <adobriyan@gmail.com> wro=
-te:
->
-> Please, add the following to the list of poor souls:
->=20
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
->=20
-> So far it consists of 5 trivial patches from -mm, in future there will
-> be smallish fs/proc/ reorganization, removing final defense line of ->rea=
-d_proc()
-> users and officially bug-free=C2=B9 examples of showing stuff via seq_fil=
-es.
+> --- a/fs/seq_file.c
+> +++ b/fs/seq_file.c
+> @@ -452,17 +452,18 @@ int seq_dentry(struct seq_file *m, struct dentry *dentry, char *esc)
+>  
+>  int seq_bitmap(struct seq_file *m, unsigned long *bits, unsigned int nr_bits)
+>  {
+> -	size_t len = bitmap_scnprintf_len(nr_bits);
+> -
+> -	if (m->count + len < m->size) {
+> -		bitmap_scnprintf(m->buf + m->count, m->size - m->count,
+> -				 bits, nr_bits);
+> -		m->count += len;
+> -		return 0;
+> +	if (m->count < m->size) {
+> +		int len = bitmap_scnprintf(m->buf + m->count,
+> +				m->size - m->count, bits, nr_bits);
+> +		if (m->count + len < m->size) {
+> +			m->count += len;
+> +			return 0;
+> +		}
+>  	}
+>  	m->count = m->size;
+>  	return -1;
+>  }
+> +EXPORT_SYMBOL(seq_bitmap);
 
-Added.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__13_Oct_2008_17_32_48_+1100_xVhjq3mqPdXQ+T5n
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjy65AACgkQjjKRsyhoI8xHDwCfWcwH8Ip4E5WmZKS5EfU+fUs8
-mLIAoJDDQZiLLVp30eCwnkQfvJ3v6ABt
-=YRLu
------END PGP SIGNATURE-----
-
---Signature=_Mon__13_Oct_2008_17_32_48_+1100_xVhjq3mqPdXQ+T5n--
+Modular users, where are they?
