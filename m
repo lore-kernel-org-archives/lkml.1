@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbYJMOXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbYJMOXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbYJMOXW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYJMOXK
+	id S1756697AbYJMOXk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbYJMOX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:23:10 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:58992 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753859AbYJMOXJ (ORCPT
+	Mon, 13 Oct 2008 10:23:29 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:39683 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754289AbYJMOX2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:23:09 -0400
-Subject: Re: [PATCH] mptsas: remove pointless null check
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20081013150529.75f22702@lxorguk.ukuu.org.uk>
-References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
-	 <48F2F138.6020103@kernel.org> <48F34CB9.3020000@pobox.com>
-	 <20081013150529.75f22702@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 10:22:58 -0400
-Message-Id: <1223907778.5566.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Oct 2008 10:23:28 -0400
+Date: Mon, 13 Oct 2008 15:23:26 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] mfd: Add placeholders for WM8350 client devices
+Message-ID: <20081013142326.GA11689@rakim.wolfsonmicro.main>
+References: <20081013113509.GA31973@rakim.wolfsonmicro.main> <1223897792-32031-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081013133707.GA4759@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081013133707.GA4759@localdomain>
+X-Cookie: Professional driver on closed track.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 15:05 +0100, Alan Cox wrote:
-> mptsas: remove unneeded check
-> 
-> From: Alan Cox <alan@redhat.com>
-> 
-> >From coverity checker. Closes #9675
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> ---
-> 
->  drivers/message/fusion/mptsas.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
+On Mon, Oct 13, 2008 at 03:37:08PM +0200, Samuel Ortiz wrote:
 
--EWRONGLIST
+> > +struct wm8350_gpio {
+> > +	struct platform_device *pdev;
+> > +};
+> I guess you're planning to add more stuff to those structures at some point ?
 
-This is a SCSI patch (although I admit with fusion sitting in
-drivers/message it's hard to tell without looking in the MAINTAINERS
-file).
+Yes - I'll the needed stuff along with the drivers to make the reviews a
+bit clearer.  At the minute these structures are just placeholders to
+avoid merge conflicts when the actual drivers are contributed.
 
-> 
-> diff --git a/drivers/message/fusion/mptsas.c b/drivers/message/fusion/mptsas.c
-> index 12b7325..a9019f0 100644
-> --- a/drivers/message/fusion/mptsas.c
-> +++ b/drivers/message/fusion/mptsas.c
-> @@ -2279,9 +2279,8 @@ mptsas_delete_expander_phys(MPT_ADAPTER *ioc)
->  	mutex_lock(&ioc->sas_topology_mutex);
->  	list_for_each_entry_safe(port_info, n, &ioc->sas_topology, list) {
->  
-> -		if (port_info->phy_info &&
-
-If I remember rightly this check is necessary because phy_info can be
-NULL in certain situations.  Your patch will trip this to oops.  What
-your description needs to say is that we no longer need to check this
-pointer for NULL because it was checked somewhere else in the stack ...
-but I can't see where that is, where is it?
-
-> -		    (!(port_info->phy_info[0].identify.device_info &
-> -		    MPI_SAS_DEVICE_INFO_SMP_TARGET)))
-> +		if (!(port_info->phy_info[0].identify.device_info &
-> +		    MPI_SAS_DEVICE_INFO_SMP_TARGET))
->  			continue;
->  
->  		if (mptsas_sas_expander_pg0(ioc, &buffer,
-
-James
-
-
+Liam, I'll push out an updated version of this patch shortly which
+removes the conditionals from the remove path.
