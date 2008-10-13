@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYJMNlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYJMNoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbYJMNlU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYJMNlJ
+	id S1757940AbYJMNoo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 09:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYJMNoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:41:09 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:50376 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751113AbYJMNlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:41:08 -0400
-Date: Mon, 13 Oct 2008 17:42:40 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Madhusudhan Chikkature <madhu.cr@ti.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Gadiyar, Anand" <gadiyar@ti.com>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-Message-ID: <20081013134239.GB13565@2ka.mipt.ru>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com> <20081010133845.8b82fac3.akpm@linux-foundation.org> <062801c92d37$3413bdd0$LocalHost@wipultra1303>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Oct 2008 09:44:30 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:19202 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbYJMNo3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 09:44:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=dWktZQOx3enoxaa7pKKaOk5+OxtNKYdP/CccZTBVOxyv9+vORCc4EtCUDdPC0/9pPK
+         KXX48p5pJDG+9L2au8QGsUiy6L57282+BUOmOZgdkpBODzSoQXez1ZL7kIBwuFFLK01/
+         01qH+XD7+igVCOh2qMwd9GZI+mZzDQTziA8AI=
+Message-ID: <84144f020810130644w7f89f3d9m3c3d3e63d3034534@mail.gmail.com>
+Date: Mon, 13 Oct 2008 16:44:28 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+Subject: Re: Distributed storage release.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20081013133850.GA13565@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <062801c92d37$3413bdd0$LocalHost@wipultra1303>
-User-Agent: Mutt/1.5.9i
+References: <20081006160034.GA611@2ka.mipt.ru>
+	 <20081012192419.fd8394c9.akpm@linux-foundation.org>
+	 <20081013133850.GA13565@2ka.mipt.ru>
+X-Google-Sender-Auth: fb44b0bfc346f7a6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Hi Evgeniy,
 
-On Mon, Oct 13, 2008 at 06:55:43PM +0530, Madhusudhan Chikkature (madhu.cr@ti.com) wrote:
-> >> +static int hdq_write_byte(struct hdq_data *hdq_data, u8 val, u8 *status)
-> >> +{
-> >> +       int ret;
-> >> +       u8 tmp_status;
-> >> +       unsigned long irqflags;
-> >> +
-> >> +       *status = 0;
-> >> +
-> >> +       spin_lock_irqsave(&hdq_data->hdq_spinlock, irqflags);
-> >> +       /* clear interrupt flags via a dummy read */
-> >> +       hdq_reg_in(hdq_data, OMAP_HDQ_INT_STATUS);
-> >> +       /* ISR loads it with new INT_STATUS */
-> >> +       hdq_data->hdq_irqstatus = 0;
-> >> +       spin_unlock_irqrestore(&hdq_data->hdq_spinlock, irqflags);
-> >> +
-> >> +       hdq_reg_out(hdq_data, OMAP_HDQ_TX_DATA, val);
-> >> +
-> >> +       /* set the GO bit */
-> >> +       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, OMAP_HDQ_CTRL_STATUS_GO,
-> >> +               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
-> >> +       /* wait for the TXCOMPLETE bit */
-> >> +       ret = wait_event_interruptible_timeout(hdq_wait_queue,
-> >> +               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
-> >> +       if (ret < 0) {
-> >> +               dev_dbg(hdq_data->dev, "wait interrupted");
-> >> +               return -EINTR;
-> >> +       }
-> > 
-> > Is this desirable?  The user hits ^C and the driver bails out?
-> > 
-> > I assume so, but was this tested?
-> 
-> Andrew, What is the test scenario you mean here? A user hitting ^C when the driver is waiting for the TXCOMPLETE bit?
+On Mon, Oct 13, 2008 at 4:38 PM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+>> > +static void *dst_crypto_thread_init(void *data)
+>> > +{
+>> > +   struct dst_node *n = data;
+>> > +   struct dst_crypto_engine *e;
+>> > +   int err = -ENOMEM;
+>> > +
+>> > +   e = kzalloc(sizeof(struct dst_crypto_engine), GFP_KERNEL);
+>> > +   if (!e)
+>> > +           goto err_out_exit;
+>> > +   e->src = kzalloc(sizeof(struct scatterlist) * 2 * n->max_pages,
+>> > +                   GFP_KERNEL);
+>>
+>> kcalloc()?
+>
+> What's the difference? In saving one space and replacing another with
+> comma? I do not particulary care, but would like to know why it is
+> needed :)
 
-Just plain return looks suspicious, is there some kind of a race between
-calling code (which for example frees hdq_data) and the path, which sets
-the bit and wakes up this thread?
-
--- 
-	Evgeniy Polyakov
+kcalloc() will check for multiplication overflow which is nice
+especially if size is passed from user-space (not sure if that applies
+here).
