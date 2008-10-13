@@ -1,120 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932445AbYJMKRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbYJMKQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932445AbYJMKRW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 06:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762377AbYJMKHh
+	id S932687AbYJMKQr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 06:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764905AbYJMKH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 06:07:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:8641 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764882AbYJMKHf (ORCPT
+	Mon, 13 Oct 2008 06:07:29 -0400
+Received: from xenbox.codefidence.com ([92.48.73.16]:40907 "EHLO
+	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764912AbYJMKH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 06:07:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Nu6LCtHb8WXsBYtY9PnJ1QLcIILd32jTKPsWQ/cz4rDUTfUFpHuiU5F79CLmwR6P3f
-         bncLLP/9qTkdBU6Ky24We8GSE8cbjSkf6ZT/Tv9o2Xq6wYI6PHKYpbw8/5s3n7UPCUvJ
-         e1RGnK+4aKkv8YWfWpKqa1n/iG8A+Ox2uDZZE=
-Message-ID: <8bd0f97a0810130307i29e76f6w62f9797b561b4c6f@mail.gmail.com>
-Date: Mon, 13 Oct 2008 06:07:34 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] Blackfin OTP Char Driver: add writing support of OTP
-Cc: "Bryan Wu" <cooloney@kernel.org>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48F31BF9.6030109@gmail.com>
+	Mon, 13 Oct 2008 06:07:27 -0400
+X-Greylist: delayed 1414 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Oct 2008 06:07:27 EDT
+Message-ID: <48F3185F.9070700@codefidence.com>
+Date: Mon, 13 Oct 2008 11:43:59 +0200
+From: Gilad Ben-Yossef <gilad@codefidence.com>
+Organization: Codefidence Ltd.
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Neshama Parhoti <pneshama@gmail.com>
+CC: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: section mismatch with a platform driver
+References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>	 <20081013085111.GB29938@cs181140183.pp.htv.fi> <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
+In-Reply-To: <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
-	 <48F316C4.1070603@gmail.com>
-	 <8bd0f97a0810130243q39581ef5y704c500c8ac3ee1c@mail.gmail.com>
-	 <48F31BF9.6030109@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 05:59, Jiri Slaby wrote:
-> On 10/13/2008 11:43 AM, Mike Frysinger wrote:
->> On Mon, Oct 13, 2008 at 05:37, Jiri Slaby wrote:
->>> On 10/13/2008 11:13 AM, Bryan Wu wrote:
->>>> @@ -123,18 +132,95 @@ static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t
->>>>       if (mutex_lock_interruptible(&bfin_otp_lock))
->>>>               return -ERESTARTSYS;
->>>>
->>>> -     /* need otp_init() documentation before this can be implemented */
->>>> +     stampit();
->>>> +
->>>> +     timing = bfin_otp_init_timing();
->>>> +     if (timing == 0) {
->>>> +             mutex_unlock(&bfin_otp_lock);
->>>> +             return -EIO;
->>>> +     }
->>>> +
->>>> +     base_flags = OTP_CHECK_FOR_PREV_WRITE;
->>>> +
->>>> +     bytes_done = 0;
->>>> +     page = *pos / (sizeof(u64) * 2);
->>>> +     while (bytes_done < count) {
->>>> +             flags = base_flags | (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
->>>> +             stamp("processing page %i (0x%x:%s) from %p", page, flags,
->>>> +                     (flags & OTP_UPPER_HALF ? "upper" : "lower"), buff + bytes_done);
->>>> +             if (copy_from_user(&content, buff + bytes_done, sizeof(content))) {
->>>> +                     bytes_done = -EFAULT;
->>>> +                     break;
->>>> +             }
->>>> +             ret = bfrom_OtpWrite(page, flags, &content);
->>>> +             if (ret & OTP_MASTER_ERROR) {
->>>> +                     stamp("error from otp: 0x%x", ret);
->>>> +                     bytes_done = -EIO;
->>>> +                     break;
->>>> +             }
->>>> +             if (flags & OTP_UPPER_HALF)
->>>> +                     ++page;
->>>> +             bytes_done += sizeof(content);
->>>> +             *pos += sizeof(content);
+Neshama Parhoti wrote:
+
+> Hi Adrian and thank you for the help!
+>
+> On Mon, Oct 13, 2008 at 10:51 AM, Adrian Bunk <bunk@kernel.org> wrote:
+>   
+>> On Mon, Oct 13, 2008 at 10:19:05AM +0200, Neshama Parhoti wrote:
+>>     
+>>> WARNING: vmlinux.o(.data+0x44bc4): Section mismatch: reference to
+>>> .init.text:my_probe_func (between 'my_platform_struct' and
+>>> 'debug_level_variable')
 >>>
->>> What happens to pos if it fails later?
->>
->> there is no state maintained in the hardware.  the pos gets updated
->> only when a half-page actually gets processed.  so there is no
->> "later".
+>>> If I understand correctly, it shouts about my probe function being
+>>> referenced from the data section:
+>>>
+>>> static struct platform_driver my_platform_struct = {
+>>>       .probe          = my_probe_func,
+>>>       .remove         = my_remove,
+>>>       .suspend        = my_suspend,
+>>>       .resume         = my_resume,
+>>>       .driver         = {
+>>>               .name = DRIVER_NAME,
+>>>       },
+>>> };
+>>>
+>>>       
+>> It complains about "my_probe_func", and that's not even in the code
+>> you posted.
+>>     
 >
-> Sure there is. Next iteration of the loop. I.e. what happens if bfrom_OtpWrite
-> fails for the second time?
-
-the pos gets updated every time a half-page gets processed.  so if you
-call write() and tell it to write 128 bytes, but you get an error half
-way through, the pos points right at the place where the error
-occurred.  i dont get what you're asking.
-
->>> You should change (and check) allow_writes under the mutex anyway.
->>
->> not really.  the mutex is to restrict access to the OTP hardware, not
->> driver state.  because there is none.  access to allow_writes is
->> atomic in the hardware anyways.
+> It happens even if I use an empty function like this:
 >
-> Yeah, the assignment/check is.
+> static int __init my_probe_func(struct platform_device *pdev)
+> {
+> 	return 0;
+> }
 >
-> But is this OK to you:
-> PROCESS 1                       PROCESS 2
-> lock
->  set allow_writes
-> write
->   check allow_writes
->   be interrupted
->                                whatever
->                                unlock
->                                    unset allow_writes
->                                sleep
->   mutex lock
->   the processing...
+>
+> any idea what's the problem ?
+>   
+That __init macro marks the probe function as "throw after init" - it 
+tells the compiler to put this function in  a separate ELF section that 
+the kernel automatically frees when module init is done, but you are 
+referencing this function in a structure that is not marked as "throw 
+after init".
 
-i dont see a problem here.  there is no loss of data, hardware
-failure, software crashes, etc...  in other words, there is no
-misbehavior.
--mike
+Can't be sure without seeing the whole picture, but the most probable 
+solution is to drop that __init from the probe function. It's seems 
+wrong as in theory the probe function can be called at any time in the 
+life of the kernel, not just in this module init, even if in practice 
+this will never happen, as I suspect is the case with such a platform 
+driver.
+
+Gilad
+
+
+
+-- 
+Gilad Ben-Yossef 
+Chief Coffee Drinker
+
+Codefidence Ltd.
+The code is free, your time isn't.(TM)
+
+Web:    http://codefidence.com
+Email:  gilad@codefidence.com
+Office: +972-8-9316883 ext. 201
+Fax:    +972-8-9316885
+Mobile: +972-52-8260388
+
+	The Doctor: Don't worry, Reinette, just a nightmare. 
+	Everyone has nightmares. Even monsters from under the 
+	bed have nightmares, don't you, monster?
+	Reinette: What do monsters have nightmares about?
+	The Doctor: Me! 
+
