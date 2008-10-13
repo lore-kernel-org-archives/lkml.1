@@ -1,96 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYJMUXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759419AbYJMUXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbYJMUXV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758749AbYJMUWz
+	id S1759419AbYJMUXn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758921AbYJMUXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:22:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:21343 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758701AbYJMUWx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:22:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jk78i6i7sQo5PqMWQuOquY6XpaBpDWEdqTn5ewtg1rMCx0PA265ThL1TjIqYXbv+az
-         RGBHOF5EIH8cejMLS7v8glBBmP5Nyb37KspbvK6JDI0VPLSuOFGt7XBTLe8D0eT45zr7
-         1fCTP45BxtQXsAxqjFsUeGLydUD0XG9XMvkok=
-Message-ID: <9bd6b5360810131322k3d9a6f04h6abcfa6fcd8052f5@mail.gmail.com>
-Date: Tue, 14 Oct 2008 04:22:48 +0800
-From: sniper <s3c24xx@gmail.com>
-To: "Neshama Parhoti" <pneshama@gmail.com>
-Subject: Re: section mismatch with a platform driver
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, "Adrian Bunk" <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <912ec82a0810131158o316201a5o803cb46c67c1b065@mail.gmail.com>
+	Mon, 13 Oct 2008 16:23:13 -0400
+Received: from iona.labri.fr ([147.210.8.143]:48061 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758410AbYJMUXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 16:23:11 -0400
+Message-ID: <48F3ADF5.1060609@inria.fr>
+Date: Mon, 13 Oct 2008 22:22:13 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@osdl.org>,
+       Nathalie Furmento <nathalie.furmento@labri.fr>
+Subject: [PATCH 3/5] mm: extract do_pages_move() out of sys_move_pages()
+References: <48F3AD47.1050301@inria.fr>
+In-Reply-To: <48F3AD47.1050301@inria.fr>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
-	 <20081013085111.GB29938@cs181140183.pp.htv.fi>
-	 <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
-	 <20081013090133.a58116a2.randy.dunlap@oracle.com>
-	 <912ec82a0810130929h42574fav985e922ad019b8f5@mail.gmail.com>
-	 <48F377F4.7070502@oracle.com>
-	 <912ec82a0810131158o316201a5o803cb46c67c1b065@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are some examples in kernel as following:
+To prepare the chunking, move the sys_move_pages() code that
+is used when nodes!=NULL into do_pages_move().
+And rename do_move_pages() into do_move_page_to_node_array().
 
-static struct platform_driver my_platform_driver = {
-       .probe          = my_probe_func,
-       .remove         = __devexit_p(my_remove),
-       .suspend        = my_suspend,
-       .resume         = my_resume,
-       .driver         = {
-               .name = DRIVER_NAME,
-       },
-};
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+---
+ mm/migrate.c |  152 +++++++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 86 insertions(+), 66 deletions(-)
+
+diff --git a/mm/migrate.c b/mm/migrate.c
+index e92e4f1..dffc98b 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -858,9 +858,11 @@ static struct page *new_page_node(struct page *p, unsigned long private,
+  * Move a set of pages as indicated in the pm array. The addr
+  * field must be set to the virtual address of the page to be moved
+  * and the node number must contain a valid target node.
++ * The pm array ends with node = MAX_NUMNODES.
+  */
+-static int do_move_pages(struct mm_struct *mm, struct page_to_node *pm,
+-				int migrate_all)
++static int do_move_page_to_node_array(struct mm_struct *mm,
++				      struct page_to_node *pm,
++				      int migrate_all)
+ {
+ 	int err;
+ 	struct page_to_node *pp;
+@@ -936,6 +938,81 @@ set_status:
+ }
+ 
+ /*
++ * Migrate an array of page address onto an array of nodes and fill
++ * the corresponding array of status.
++ */
++static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
++			 unsigned long nr_pages,
++			 const void __user * __user *pages,
++			 const int __user *nodes,
++			 int __user *status, int flags)
++{
++	struct page_to_node *pm = NULL;
++	nodemask_t task_nodes;
++	int err = 0;
++	int i;
++
++	task_nodes = cpuset_mems_allowed(task);
++
++	/* Limit nr_pages so that the multiplication may not overflow */
++	if (nr_pages >= ULONG_MAX / sizeof(struct page_to_node) - 1) {
++		err = -E2BIG;
++		goto out;
++	}
++
++	pm = vmalloc((nr_pages + 1) * sizeof(struct page_to_node));
++	if (!pm) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	/*
++	 * Get parameters from user space and initialize the pm
++	 * array. Return various errors if the user did something wrong.
++	 */
++	for (i = 0; i < nr_pages; i++) {
++		const void __user *p;
++
++		err = -EFAULT;
++		if (get_user(p, pages + i))
++			goto out_pm;
++
++		pm[i].addr = (unsigned long)p;
++		if (nodes) {
++			int node;
++
++			if (get_user(node, nodes + i))
++				goto out_pm;
++
++			err = -ENODEV;
++			if (!node_state(node, N_HIGH_MEMORY))
++				goto out_pm;
++
++			err = -EACCES;
++			if (!node_isset(node, task_nodes))
++				goto out_pm;
++
++			pm[i].node = node;
++		} else
++			pm[i].node = 0;	/* anything to not match MAX_NUMNODES */
++	}
++	/* End marker */
++	pm[nr_pages].node = MAX_NUMNODES;
++
++	err = do_move_page_to_node_array(mm, pm, flags & MPOL_MF_MOVE_ALL);
++	if (err >= 0)
++		/* Return status information */
++		for (i = 0; i < nr_pages; i++)
++			if (put_user(pm[i].status, status + i))
++				err = -EFAULT;
++
++out_pm:
++	vfree(pm);
++out:
++	return err;
++}
++
++/*
+  * Determine the nodes of an array of pages and store it in an array of status.
+  */
+ static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
+@@ -993,12 +1070,9 @@ asmlinkage long sys_move_pages(pid_t pid, unsigned long nr_pages,
+ 			const int __user *nodes,
+ 			int __user *status, int flags)
+ {
+-	int err = 0;
+-	int i;
+ 	struct task_struct *task;
+-	nodemask_t task_nodes;
+ 	struct mm_struct *mm;
+-	struct page_to_node *pm = NULL;
++	int err;
+ 
+ 	/* Check flags */
+ 	if (flags & ~(MPOL_MF_MOVE|MPOL_MF_MOVE_ALL))
+@@ -1030,75 +1104,21 @@ asmlinkage long sys_move_pages(pid_t pid, unsigned long nr_pages,
+ 	    (current->uid != task->suid) && (current->uid != task->uid) &&
+ 	    !capable(CAP_SYS_NICE)) {
+ 		err = -EPERM;
+-		goto out2;
++		goto out;
+ 	}
+ 
+  	err = security_task_movememory(task);
+  	if (err)
+- 		goto out2;
++		goto out;
+ 
+-	if (!nodes) {
++	if (nodes) {
++		err = do_pages_move(mm, task, nr_pages, pages, nodes, status,
++				    flags);
++	} else {
+ 		err = do_pages_stat(mm, nr_pages, pages, status);
+-		goto out2;
+-	}
+-
+-	task_nodes = cpuset_mems_allowed(task);
+-
+-	/* Limit nr_pages so that the multiplication may not overflow */
+-	if (nr_pages >= ULONG_MAX / sizeof(struct page_to_node) - 1) {
+-		err = -E2BIG;
+-		goto out2;
+ 	}
+ 
+-	pm = vmalloc((nr_pages + 1) * sizeof(struct page_to_node));
+-	if (!pm) {
+-		err = -ENOMEM;
+-		goto out2;
+-	}
+-
+-	/*
+-	 * Get parameters from user space and initialize the pm
+-	 * array. Return various errors if the user did something wrong.
+-	 */
+-	for (i = 0; i < nr_pages; i++) {
+-		const void __user *p;
+-
+-		err = -EFAULT;
+-		if (get_user(p, pages + i))
+-			goto out;
+-
+-		pm[i].addr = (unsigned long)p;
+-		if (nodes) {
+-			int node;
+-
+-			if (get_user(node, nodes + i))
+-				goto out;
+-
+-			err = -ENODEV;
+-			if (!node_state(node, N_HIGH_MEMORY))
+-				goto out;
+-
+-			err = -EACCES;
+-			if (!node_isset(node, task_nodes))
+-				goto out;
+-
+-			pm[i].node = node;
+-		} else
+-			pm[i].node = 0;	/* anything to not match MAX_NUMNODES */
+-	}
+-	/* End marker */
+-	pm[nr_pages].node = MAX_NUMNODES;
+-
+-	err = do_move_pages(mm, pm, flags & MPOL_MF_MOVE_ALL);
+-	if (err >= 0)
+-		/* Return status information */
+-		for (i = 0; i < nr_pages; i++)
+-			if (put_user(pm[i].status, status + i))
+-				err = -EFAULT;
+-
+ out:
+-	vfree(pm);
+-out2:
+ 	mmput(mm);
+ 	return err;
+ }
+-- 
+1.5.6.5
 
 
-static int __devinit my_probe_func(struct platform_device *pdev)
-{
-       return 0;
-}
 
-note that my_platform_*driver*, it let this variable can refer to
-init/exit sections.
-You can find the explanation in /scripts/mod/modpost.c:
-
-/* symbols in .data that may refer to init/exit sections */
-static const char *symbol_white_list[] =
-{
-	"*driver",
-	"*_template", /* scsi uses *_template a lot */
-	"*_timer",    /* arm uses ops structures named _timer a lot */
-	"*_sht",      /* scsi also used *_sht to some extent */
-	"*_ops",
-	"*_probe",
-	"*_probe_one",
-	"*_console",
-	NULL
-};
-
-
-On Tue, Oct 14, 2008 at 2:58 AM, Neshama Parhoti <pneshama@gmail.com> wrote:
-> On Mon, Oct 13, 2008 at 6:31 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>> Does that mean that all drivers with __init in their probe functions are bogus ?
->>
->> It depends.  If your platform doesn't support hotplug, then it's possible
->> that the probe function is only called during system init, so it would be OK.
->
-> Hmm any idea then why did it give me a section mismatch warning ?
->
-> Thanks!!
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
