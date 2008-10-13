@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYJMJ2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbYJMJ3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbYJMJ2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbYJMJ20
+	id S1757793AbYJMJ3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbYJMJ3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:28:26 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:41571 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbYJMJ2Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:28:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BhFiggHjTZVrKwygrcTIIDNtjKUntO3eOSWPIt2HN0BaUTu4D7kF1Vx0iijqn/fwUn
-         LzxW+dcCejPUreE7w65WzuTIwVkNJwfPKiHCDwiExz0mUBdbK42QeTyv70gApf7Hobta
-         0sCoio9AY7yVcMAhJQ7lkE55tfuFad/0cnFm0=
-Message-ID: <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
-Date: Mon, 13 Oct 2008 11:28:23 +0200
-From: "Neshama Parhoti" <pneshama@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: section mismatch with a platform driver
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081013085111.GB29938@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
-	 <20081013085111.GB29938@cs181140183.pp.htv.fi>
+	Mon, 13 Oct 2008 05:29:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33221 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755969AbYJMJ3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 05:29:09 -0400
+Date: Mon, 13 Oct 2008 20:28:58 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next will be back soon
+Message-Id: <20081013202858.e7bba38d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian and thank you for the help!
+--Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 13, 2008 at 10:51 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Mon, Oct 13, 2008 at 10:19:05AM +0200, Neshama Parhoti wrote:
->> WARNING: vmlinux.o(.data+0x44bc4): Section mismatch: reference to
->> .init.text:my_probe_func (between 'my_platform_struct' and
->> 'debug_level_variable')
->>
->> If I understand correctly, it shouts about my probe function being
->> referenced from the data section:
->>
->> static struct platform_driver my_platform_struct = {
->>       .probe          = my_probe_func,
->>       .remove         = my_remove,
->>       .suspend        = my_suspend,
->>       .resume         = my_resume,
->>       .driver         = {
->>               .name = DRIVER_NAME,
->>       },
->> };
->>
-> It complains about "my_probe_func", and that's not even in the code
-> you posted.
+Hi all,
 
-It happens even if I use an empty function like this:
+I am planning to start linux-next releases again tomorrow so if anyone
+has updates they want to make to any of the trees I fetch, now would be
+the time.  This includes resetting your tree to be a subset of Linus' if
+it has all been merged - this saves me quite a bit of time and is much
+more relevant if you rebase your tree (or what you sent Linus is not
+quite what is in the tree I fetch).
 
-static int __init my_probe_func(struct platform_device *pdev)
-{
-	return 0;
-}
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko
+Content-Type: application/pgp-signature
 
-any idea what's the problem ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-thanks again!
-pnesh
+iEYEARECAAYFAkjzFNoACgkQjjKRsyhoI8z0NwCfTTd/ZF+MrWfI83BDIrcPEPCy
+2lwAoLyYVDAuhgWMbT564drdpG3zBDU0
+=FjhV
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko--
