@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbYJMQZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbYJMQ3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759491AbYJMQZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 12:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYJMQZQ
+	id S1759015AbYJMQ3Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 12:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYJMQ3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 12:25:16 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:10395 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755138AbYJMQZO (ORCPT
+	Mon, 13 Oct 2008 12:29:18 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:40462 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754579AbYJMQ3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 12:25:14 -0400
-Date: Mon, 13 Oct 2008 09:24:58 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] MAINTAINERS: move F: line so that it does not break S: line
- info
-Message-Id: <20081013092458.3b478242.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 13 Oct 2008 12:29:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OUoTmZGEzSklIwdkmlW3mZGzrDzPSj8zVZlB2+Os4uQ9syCkZOTPna7vuTroitIKkU
+         2H810rdf52E1NGFsMda3EEo23prmC899+MU5jkgIksI4ArFFN52MQ5/nl3cPXQJft6HD
+         4HKFC7Sif5CXapbOqVWL9VUkKIW/pdJ84Dj7s=
+Message-ID: <912ec82a0810130929h42574fav985e922ad019b8f5@mail.gmail.com>
+Date: Mon, 13 Oct 2008 18:29:16 +0200
+From: "Neshama Parhoti" <pneshama@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: section mismatch with a platform driver
+Cc: "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081013090133.a58116a2.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
+	 <20081013085111.GB29938@cs181140183.pp.htv.fi>
+	 <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
+	 <20081013090133.a58116a2.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, Oct 13, 2008 at 6:01 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> A probe function can be called at any time -- i.e., after system init
+> has completed, so discarding the __init function my_probe_func() is BAD,
+> dangerous, BUGgy.
 
-Move F: line so that it doesn't break the S: line and its
-explanations.
+Thanks for the explanation!
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Reported-by: Jianjun Kong <kongjianjun@gmail.com>
----
- MAINTAINERS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Does that mean that all drivers with __init in their probe functions are bogus ?
 
---- lin2627-g3-kdocfixes.orig/MAINTAINERS
-+++ lin2627-g3-kdocfixes/MAINTAINERS
-@@ -72,8 +72,8 @@ M: Mail patches to
- L: Mailing list that is relevant to this area
- W: Web-page with status/info
- T: SCM tree type and location.  Type is one of: git, hg, quilt.
--S: Status, one of the following:
- F: Applicable files and/or directories
-+S: Status, one of the following:
- 
- 	Supported:	Someone is actually paid to look after this.
- 	Maintained:	Someone actually looks after it.
+>
+> ---
+> ~Randy
+>
