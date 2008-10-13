@@ -1,102 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbYJMAP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYJMBJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbYJMAP3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Oct 2008 20:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYJMAPU
+	id S1754927AbYJMBJo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Oct 2008 21:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbYJMBJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Oct 2008 20:15:20 -0400
-Received: from relay6.ptmail.sapo.pt ([212.55.154.26]:41122 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752048AbYJMAPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Oct 2008 20:15:19 -0400
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Message-ID: <48F29310.1030206@sapo.pt>
-Date: Mon, 13 Oct 2008 01:15:12 +0100
-From: Luis Henriques <henrix@sapo.pt>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sun, 12 Oct 2008 21:09:36 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:21704 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753881AbYJMBJf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Oct 2008 21:09:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=dN1idc2FCPA6oN6UE/Mx25yjLSTyPvIYhfwU0WwOtbPdWtBqpGWJofutofAz8jHu2a
+         0PJnUSbn2jY/C6cmQ+kHjbtsnQ5I1z20nxahht83Tqy2uwuCDjpQAQwjdATbg6D5eSqj
+         PAlSUZa+uU1G1zM3TUMmJPpl99JXWuWI0AlJ8=
+Message-ID: <c9084260810121809y54397bf2h9a602d4aa2468e2e@mail.gmail.com>
+Date: Mon, 13 Oct 2008 03:09:32 +0200
+From: "Geoffroy Carrier" <geoffroy.carrier@koon.fr>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] intelfb: support 945GME (as used in ASUS Eee 901)
+In-Reply-To: <1220010645384@dmwebmail.dmwebmail.chezphil.org>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26.6-rt10
-References: <1223839814.19319.5.camel@localhost.localdomain>
-In-Reply-To: <1223839814.19319.5.camel@localhost.localdomain>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1220010645384@dmwebmail.dmwebmail.chezphil.org>
+X-Google-Sender-Auth: 68c4e965cb1bc819
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steven,
+On Fri, Aug 29, 2008 at 13:50, Phil Endecott
+<phil_wueww_endecott@chezphil.org> wrote:
+> The following patch adds support for Intel's 945GME graphics chip to
+> the intelfb driver.  I have assumed that the 945GME is identical to the
+> already-supported 945GM apart from its PCI IDs; this is based on a quick
+> look at the X driver for these chips which seems to treat them
+> identically.
+>
+> Signed-off-by: Phil Endecott <spam_from_intelfb@chezphil.org>
+>
+> ---
+>
+> The 945GME is used in the ASUS Eee 901, and I coded this in the hope that
+> I'd be able to use it to get a console at the native 1024x600 resolution
+> which is not known to the BIOS.  I realised too late that the intelfb
+> driver does not support mode changing on laptops, so it won't be any
+> use for me.  But rather than throw it away I will post it here as
+> essentially "untested"; maybe someone who knows more about this driver,
+> and with more useful hardware to test on, can pick it up.
+>
+> diff --git a/Documentation/fb/intelfb.txt b/Documentation/fb/intelfb.txt
+> index 27a3160..dd9e944 100644
+> --- a/Documentation/fb/intelfb.txt
+> +++ b/Documentation/fb/intelfb.txt
+> @@ -14,6 +14,7 @@ graphics devices.  These would include:
+>        Intel 915GM
+>        Intel 945G
+>        Intel 945GM
+> +       Intel 945GME
+>        Intel 965G
+>        Intel 965GM
+>
+> diff --git a/drivers/video/intelfb/intelfb.h b/drivers/video/intelfb/intelfb.h
+> index 3325fbd..a50bea6 100644
+> --- a/drivers/video/intelfb/intelfb.h
+> +++ b/drivers/video/intelfb/intelfb.h
+> @@ -12,9 +12,9 @@
+>  #endif
+>
+>  /*** Version/name ***/
+> -#define INTELFB_VERSION                        "0.9.5"
+> +#define INTELFB_VERSION                        "0.9.6"
+>  #define INTELFB_MODULE_NAME            "intelfb"
+> -#define SUPPORTED_CHIPSETS             "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM"
+> +#define SUPPORTED_CHIPSETS             "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM"
+>
+>
+>  /*** Debug/feature defines ***/
+> @@ -58,6 +58,7 @@
+>  #define PCI_DEVICE_ID_INTEL_915GM      0x2592
+>  #define PCI_DEVICE_ID_INTEL_945G       0x2772
+>  #define PCI_DEVICE_ID_INTEL_945GM      0x27A2
+> +#define PCI_DEVICE_ID_INTEL_945GME     0x27AE
+>  #define PCI_DEVICE_ID_INTEL_965G       0x29A2
+>  #define PCI_DEVICE_ID_INTEL_965GM      0x2A02
+>
+> @@ -160,6 +161,7 @@ enum intel_chips {
+>        INTEL_915GM,
+>        INTEL_945G,
+>        INTEL_945GM,
+> +       INTEL_945GME,
+>        INTEL_965G,
+>        INTEL_965GM,
+>  };
+> @@ -363,6 +365,7 @@ struct intelfb_info {
+>                        ((dinfo)->chipset == INTEL_915GM) ||    \
+>                        ((dinfo)->chipset == INTEL_945G) ||     \
+>                        ((dinfo)->chipset == INTEL_945GM) ||    \
+> +                       ((dinfo)->chipset == INTEL_945GME) ||   \
+>                        ((dinfo)->chipset == INTEL_965G) ||     \
+>                        ((dinfo)->chipset == INTEL_965GM))
+>
+> diff --git a/drivers/video/intelfb/intelfb_i2c.c b/drivers/video/intelfb/intelfb_i2c.c
+> index fcf9fad..5d896b8 100644
+> --- a/drivers/video/intelfb/intelfb_i2c.c
+> +++ b/drivers/video/intelfb/intelfb_i2c.c
+> @@ -171,6 +171,7 @@ void intelfb_create_i2c_busses(struct intelfb_info *dinfo)
+>                /* has some LVDS + tv-out */
+>        case INTEL_945G:
+>        case INTEL_945GM:
+> +       case INTEL_945GME:
+>        case INTEL_965G:
+>        case INTEL_965GM:
+>                /* SDVO ports have a single control bus - 2 devices */
+> diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+> index e44303f..a09e236 100644
+> --- a/drivers/video/intelfb/intelfbdrv.c
+> +++ b/drivers/video/intelfb/intelfbdrv.c
+> @@ -2,7 +2,7 @@
+>  * intelfb
+>  *
+>  * Linux framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G/915GM/
+> - * 945G/945GM/965G/965GM integrated graphics chips.
+> + * 945G/945GM/945GME/965G/965GM integrated graphics chips.
+>  *
+>  * Copyright (c) 2002, 2003 David Dawes <dawes@xfree86.org>
+>  *                   2004 Sylvain Meyer
+> @@ -102,6 +102,9 @@
+>  *
+>  *    04/2008 - Version 0.9.5
+>  *              Add support for 965G/965GM. (Maik Broemme <mbroemme@plusserver.de>)
+> + *
+> + *    08/2008 - Version 0.9.6
+> + *              Add support for 945GME. (Phil Endecott <spam_from_intelfb@chezphil.org>)
+>  */
+>
+>  #include <linux/module.h>
+> @@ -183,6 +186,7 @@ static struct pci_device_id intelfb_pci_table[] __devinitdata = {
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_915GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915GM },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945G },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GM },
+> +       { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GME, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GME },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965G },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965GM },
+>        { 0, }
+> @@ -555,6 +559,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+>            (ent->device == PCI_DEVICE_ID_INTEL_915GM) ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_945G)  ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_945GM) ||
+> +           (ent->device == PCI_DEVICE_ID_INTEL_945GME) ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_965G) ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_965GM)) {
+>
+> diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
+> index 8e6d6a4..8b26b27 100644
+> --- a/drivers/video/intelfb/intelfbhw.c
+> +++ b/drivers/video/intelfb/intelfbhw.c
+> @@ -143,6 +143,12 @@ int intelfbhw_get_chipset(struct pci_dev *pdev, struct intelfb_info *dinfo)
+>                dinfo->mobile = 1;
+>                dinfo->pll_index = PLLS_I9xx;
+>                return 0;
+> +       case PCI_DEVICE_ID_INTEL_945GME:
+> +               dinfo->name = "Intel(R) 945GME";
+> +               dinfo->chipset = INTEL_945GME;
+> +               dinfo->mobile = 1;
+> +               dinfo->pll_index = PLLS_I9xx;
+> +               return 0;
+>        case PCI_DEVICE_ID_INTEL_965G:
+>                dinfo->name = "Intel(R) 965G";
+>                dinfo->chipset = INTEL_965G;
+> @@ -186,6 +192,7 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
+>        case PCI_DEVICE_ID_INTEL_915GM:
+>        case PCI_DEVICE_ID_INTEL_945G:
+>        case PCI_DEVICE_ID_INTEL_945GM:
+> +       case PCI_DEVICE_ID_INTEL_945GME:
+>        case PCI_DEVICE_ID_INTEL_965G:
+>        case PCI_DEVICE_ID_INTEL_965GM:
+>                /* 915, 945 and 965 chipsets support a 256MB aperture.
 
-Steven Rostedt wrote:
-> We are pleased to announce the 2.6.26.6-rt10 tree, which can be
-> downloaded from the location:
-> 
->   http://rt.et.redhat.com/download/
-> 
-> Information on the RT patch can be found at:
-> 
->   http://rt.wiki.kernel.org/index.php/Main_Page
-> 
-> Changes since 2.6.26.5-rt9
-> 
->   - ported to 2.6.26.6
-> 
->   - rwlock to handle unnested order unlocks (Steven Rostedt)
-> 
->   - rwlock update torture test to test unnested unlocks (Steven Rostedt)
-> 
->   - remove rt push comment (Gregory Haskins)
-> 
->   - rt sched fix to handle dequeue (Gregory Haskins)
-> 
->   - PPC: remove duplicate stack trace code (Robert Schwebel)
-> 
->   - ARM: ftrace event IRQ call fix (Alexander Pazdnikov)
-> 
->   - fair sched not to resched RT tasks (Peter Zijlstra)
-> 
->   - ftrace quick stop (Steven Rostedt)
-> 
->   - event trace of resched (Steven Rostedt)
-> 
-> 
-> to build a 2.6.26.6-rt10 tree, the following patches should be applied:
-> 
->   http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
->   http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.26.6.bz2
->   http://rt.et.redhat.com/download/patch-2.6.26.6-rt10.bz2
-> 
-> 
-> 
-> And like always, my RT version of Matt Mackall's ketchup will get this
-> for you nicely:
-> 
->   http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
-> 
-> 
-> The broken out patches are also available.
-> 
-> 
-> -- Steve
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+Acked-by: Geoffroy Carrier <geoffroy.carrier@koon.fr>
 
-I found a compilation error while compiling this new version of the rt
-pach.  I guess the following line is enough for you to trace the problem:
+Used with success on mainline 2.6.27.
 
-kernel/trace/trace_events.c:49: error: ‘function_trace_stop’ undeclared
-(first use in this function)
+For your resolution problem, here is my solution.
+Set modes in grub2, thanks to the 915resolution module from:
+http://www.nathancoulson.com/proj_eee.shtml
+It didn't work with 0.5.2-2 (unrecognized chipset), but 0.5.2-3
+includes its support. The new patch was originally written for the
+eeepc901 (AFAIK), but works fine on my laptop (MSI Wind U100).
 
-It seems that an 'extern int function_trace_stop' is missing somewhere...
+FYI, I used in grub.cfg:
+insmod 915resolution
+915resolution 32 1024 600
+[...]
+linux /boot/[...] vga=789
 
-Regards,
---
-Luis Henriques
+I can't wait for kernel modesetting...
+
+-- 
+Geoffroy Carrier
