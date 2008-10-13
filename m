@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbYJMLgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761061AbYJMLgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757605AbYJMLgB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 07:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760505AbYJMLfb
+	id S1761061AbYJMLgp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 07:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbYJMLgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 07:35:31 -0400
-Received: from japan.chezphil.org ([77.240.5.4]:5957 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760293AbYJMLfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 07:35:30 -0400
-X-Greylist: delayed 2221 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Oct 2008 07:35:30 EDT
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Date: Mon, 13 Oct 2008 11:58:26 +0100
-Subject: [PATCH] Mention Intel Atom in Kconfig.cpu
-Message-ID: <1223895506638@dmwebmail.dmwebmail.chezphil.org>
-X-Mailer: Decimail Webmail 3alpha16
-MIME-Version: 1.0
-Content-Type: text/plain; format="flowed"
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+	Mon, 13 Oct 2008 07:36:35 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40149 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757214AbYJMLge (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 07:36:34 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2/2] mfd: Fix warning in WM8350
+Date: Mon, 13 Oct 2008 12:36:32 +0100
+Message-Id: <1223897792-32031-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1223897792-32031-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <20081013113509.GA31973@rakim.wolfsonmicro.main>
+ <1223897792-32031-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am I right in thinking that CONFIG_MCORE2 is the correct choice for an 
-Intel Atom?  (It seems to work for me, so far.)  If this is true, since 
-there are quite a lot of these chips in circulation now and the choice 
-is not obvious, I think it would be helpful to add something along the 
-following lines to arch/x86/Kconfig.cpu.
-
-Signed-off-by: Phil Endecott <kconfigcpu@chezphil.org>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index b225219..7df0801 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -263,11 +263,12 @@ config MPSC
-           in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a 
-newer one.
+ drivers/mfd/wm8350-core.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-  config MCORE2
--       bool "Core 2/newer Xeon"
-+       bool "Core 2/newer Xeon/Atom"
-         help
--         Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 
-51xx and 53xx)
--         CPUs. You can distinguish newer from older Xeons by the CPU family
--         in /proc/cpuinfo. Newer ones have 6 and older ones 15 (not a typo)
-+         Select this for Intel Core 2, newer Core 2 Xeon (Xeon 51xx 
-and 53xx)
-+         and Intel Atom CPUs. You can distinguish newer from older 
-Xeons by
-+         the CPU family in /proc/cpuinfo. Newer ones have 6 and older 
-ones 15
-+         (not a typo).
-
-  config GENERIC_CPU
-         bool "Generic-x86-64"
-
-
-
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index 8554855..35f4557 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -1161,7 +1161,6 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ {
+ 	int ret = -EINVAL;
+ 	u16 id1, id2, mask, mode;
+-	int i;
+ 
+ 	/* get WM8350 revision and config mode */
+ 	wm8350->read_dev(wm8350, WM8350_RESET_ID, sizeof(id1), &id1);
+-- 
+1.5.6.5
 
