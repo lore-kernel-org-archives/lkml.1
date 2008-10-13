@@ -1,59 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYJMIYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbYJMI32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbYJMIYv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbYJMIYl
+	id S1757094AbYJMI32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbYJMI3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:24:41 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:50342 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754912AbYJMIYj (ORCPT
+	Mon, 13 Oct 2008 04:29:18 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:42403 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755228AbYJMI3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:24:39 -0400
-Date: Mon, 13 Oct 2008 10:23:22 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] claw: fix compile bug.
-Message-ID: <20081013082322.GA17793@osiris.boeblingen.de.ibm.com>
+	Mon, 13 Oct 2008 04:29:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lEA6ZdwVQJdl5wKEPJN9/EHEp82kh7tutFWT5UtZOZNO79CznSI+Eb6R+42JpsEdL5
+         RhaPiwxx3gsWdzRgJlub1I5KGLX69hQKpNHHsv4R9oT+9GWgNHSUG949MXUueIXrDmK6
+         ysmXksOLVMM4Nq5YzkVUnbWZEkL1ackl6XH0Y=
+Message-ID: <264b990a0810130129m434ce4d1s93ecb63c4d032d2b@mail.gmail.com>
+Date: Mon, 13 Oct 2008 15:29:14 +0700
+From: "Yudha Harimantoro T" <yudha.ht@gmail.com>
+To: "Bill Davidsen" <davidsen@tmr.com>
+Subject: Re:
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <264b990a0810122318p477f7d19ye5e17414c4f5e8f3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <264b990a0810110030r307829afmc8c2e1dfe6713faa@mail.gmail.com>
+	 <48F0C24E.9030205@tmr.com>
+	 <264b990a0810122318p477f7d19ye5e17414c4f5e8f3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Can you explain to me what the error means?
+I got the kernel panic with the
+http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.27.tar.bz2
 
-git commit b9d3aed7e1e50183085fcd2af643bf42d6b4bd95
-"[S390] more bus_id -> dev_name conversions" introduced this compile bug:
+<b>....
+Kernel panic - not syncing: No init found. Try passing init= option to
+kernel</b>
 
-  CC      drivers/s390/net/claw.o
-drivers/s390/net/claw.c: In function 'claw_new_device':
-drivers/s390/net/claw.c:2917: error: expected ')' before 'ret'
-drivers/s390/net/claw.c:2917: warning: too few arguments for format
-make[2]: *** [drivers/s390/net/claw.o] Error 1
-make[1]: *** [drivers/s390/net] Error 2
+I still got the error.
 
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- drivers/s390/net/claw.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Best regards,
+Yudha_HT
 
-Index: linux-2.6/drivers/s390/net/claw.c
-===================================================================
---- linux-2.6.orig/drivers/s390/net/claw.c
-+++ linux-2.6/drivers/s390/net/claw.c
-@@ -2913,7 +2913,7 @@ claw_new_device(struct ccwgroup_device *
- 	if (ret != 0) {
- 		printk(KERN_WARNING
- 			"claw: ccw_device_set_online %s WRITE failed "
--		       "with ret = %d\n", dev_name(&cgdev->cdev[WRITE]->dev)
-+		       "with ret = %d\n", dev_name(&cgdev->cdev[WRITE]->dev),
- 		       ret);
- 		goto out;
- 	}
+2008/10/13, Yudha Harimantoro T <yudha.ht@gmail.com>:
+> This morning I run `make mrproper` in the kernel tree and rebuild. But
+> it make the kernel panic at 9 s, with the same error.
+>
+> Maybe I'll get the 2.6.27 from the kernel.org now.
+>
+> Thx,
+>
+> Yudha_HT
+>
+> 2008/10/11, Bill Davidsen <davidsen@tmr.com>:
+>> Yudha Harimantoro T wrote:
+>>> Date:	Fri, 10 Oct 2008 16:41:36 -0400
+>>> From:	Bill Davidsen
+>>>
+>>>
+>>>
+>>>> Yudha Harimantoro T wrote:
+>>>>
+>>>>> Hi all,
+>>>>> Yesterday I build kernel 2.6.26.6 and it's run well. Today I got
+>>>>> 2.6.27 patch and try to build it.
+>>>>>
+>>>>> I build with `make oldconfig` and answer any question with default
+>>>>> answer, I just press [enter].
+>>>>> I build with `make`. No error and all compiled.
+>>>>> Then I install with `make modules_install` and `make install`.
+>>>>>
+>>>>>
+>>>
+>>>
+>>>> I realize that this is a low-probability thought, but did you:
+>>>> - apply the patch against 2.6.26 NOT 2.6.26.6
+>>>>
+>>> Yup, I've did it.
+>>>
+>>>> - run make clean before applying the patch
+>>>>
+>>> I still need this for a pure 2.6.26? I'll try this.
+>>>
+>>>
+>>>>> After reboot the system I got 'kernel panic'.
+>>>>> This is the error picture :
+>>>>> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101358.jpg
+>>>>> Is it a bugs?
+>>>>>
+>>>>> http://www.ryht.co.cc/wordpress/wp-content/uploads/2008/10/pa101353.jpg
+>>>>> [2.6.26.6 run well]
+>>>>>
+>>>
+>>>
+>>>> I keep configs in a separate place. I would first copy a 2.6.26 tree to
+>>>> a
+>>>> new directory (cp -rl linux-2.6.26 linux2.6.27) then be sure I had a
+>>>> clean copy with "make distclean" (or "make mrproper") and then apply the
+>>>> 2.6.27 patch. Then I would copy the 2.6.26 (or maybe 2.6.26.6) config to
+>>>> .config, and make the oldconfig.
+>>>> None of that is magic, it just keeps me from making common mistakes,
+>>>> lets
+>>>> me start with a clean 2.6.27, etc, etc.
+>>>> You mentioned oldconfig, but not starting back with a clean 2.6.26,
+>>>> which
+>>>> made me think of this.
+>>>>
+>>> Hm, I `cp /boot/config .config` in new kernel tree [2.6.27] for the
+>>> config. Do I make mistakes?
+>>>
+>>
+>> No, I was just noting that I try to start oldconfig with a known working
+>> config, to reduce the number of choices and possible errors. I wasn't
+>> sure if you did that, so I mentioned it.
+>>
+>> --
+>> Bill Davidsen <davidsen@tmr.com>
+>>   "Woe unto the statesman who makes war without a reason that will still
+>>   be valid when the war is over..." Otto von Bismark
+>>
+>>
+>>
+>
