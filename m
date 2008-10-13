@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbYJMIsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbYJMIwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758385AbYJMIsQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbYJMIrX
+	id S1757204AbYJMIwV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbYJMIwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:47:23 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50597 "EHLO pasmtpB.tele.dk"
+	Mon, 13 Oct 2008 04:52:14 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:38267 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756746AbYJMIrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:47:23 -0400
-Date: Mon, 13 Oct 2008 10:46:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] block: add BIG FAT WARNING to CONFIG_DEBUG_BLOCK_EXT_DEVT
-Message-ID: <20081013084642.GE19428@kernel.dk>
-References: <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org> <48EFF84B.5060108@kernel.org> <20081011071939.GA26465@elte.hu> <20081011140826.GS19428@kernel.dk> <20081011143355.GA6274@elte.hu> <20081011143947.GT19428@kernel.dk> <20081011145823.GA14062@elte.hu> <20081011175818.GY19428@kernel.dk> <48F2ED9F.7020606@kernel.org>
+	id S1754907AbYJMIwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 04:52:13 -0400
+Date: Mon, 13 Oct 2008 11:51:11 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Neshama Parhoti <pneshama@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: section mismatch with a platform driver
+Message-ID: <20081013085111.GB29938@cs181140183.pp.htv.fi>
+References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <48F2ED9F.7020606@kernel.org>
+In-Reply-To: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13 2008, Tejun Heo wrote:
-> CONFIG_DEBUG_BLOCK_EXT_DEVT can break booting even on some modern
-> distros.  Add BIG FAT WARNING to keep people at a safe distance.
+On Mon, Oct 13, 2008 at 10:19:05AM +0200, Neshama Parhoti wrote:
+> Hi all,
 > 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> ---
-> Okay, w/ or w/o Ingo's change, it would be worthwhile to warn
-> people more clearly so that we can at least say 'told ya'.  :-)
+> I am working on a platform driver, and getting the following warning:
 > 
->  lib/Kconfig.debug |    5 +++++
->  1 file changed, 5 insertions(+)
+> WARNING: vmlinux.o(.data+0x44bc4): Section mismatch: reference to
+> .init.text:my_probe_func (between 'my_platform_struct' and
+> 'debug_level_variable')
+> 
+> If I understand correctly, it shouts about my probe function being
+> referenced from the data section:
+> 
+> static struct platform_driver my_platform_struct = {
+> 	.probe		= my_probe,
+> 	.remove		= my_remove,
+> 	.suspend	= my_suspend,
+> 	.resume		= my_resume,
+> 	.driver		= {
+> 		.name = DRIVER_NAME,
+> 	},
+> };
+> 
+> Why is that a problem ? Should I do something different ? Isn't my
+> platform_driver struct completely standard ?
 
-Agree, this looks appropriate. I'll add it.
+It complains about "my_probe_func", and that's not even in the code
+you posted.
+
+Please send the complete file.
+
+> Thank You !
+> Pnesh
+
+cu
+Adrian
 
 -- 
-Jens Axboe
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
