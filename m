@@ -1,117 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbYJMVP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbYJMVPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759530AbYJMVP3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbYJMVPL
+	id S1756762AbYJMVPr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbYJMVP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:15:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60556 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755949AbYJMVPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:15:09 -0400
-Message-ID: <48F3BA28.2010605@zytor.com>
-Date: Mon, 13 Oct 2008 14:14:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 13 Oct 2008 17:15:28 -0400
+Received: from relay6.ptmail.sapo.pt ([212.55.154.26]:35396 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1759420AbYJMVP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 17:15:27 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Message-ID: <48F3BA5F.2000107@sapo.pt>
+Date: Mon, 13 Oct 2008 22:15:11 +0100
+From: Luis Henriques <henrix@sapo.pt>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Tony Luck <tony.luck@intel.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, jbarnes@virtuousgeek.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4 -
- fix v7
-References: <1220254284-29532-1-git-send-email-yhlu.kernel@gmail.com>	 <20080904190457.GB24990@elte.hu>	 <20080904121627.bc182da7.akpm@linux-foundation.org>	 <86802c440809041222q244e1adaj16b80f1590053bcf@mail.gmail.com> <12c511ca0810131332h6e5468abk3dfc511f0b25cbe6@mail.gmail.com>
-In-Reply-To: <12c511ca0810131332h6e5468abk3dfc511f0b25cbe6@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------060904060105010205010101"
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26.6-rt10
+References: <1223839814.19319.5.camel@localhost.localdomain> <48F29310.1030206@sapo.pt> <alpine.DEB.1.10.0810131550540.522@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0810131550540.522@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060904060105010205010101
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Tony Luck wrote:
-> On Thu, Sep 4, 2008 at 12:22 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> On Thu, Sep 4, 2008 at 12:16 PM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->>> On Thu, 4 Sep 2008 21:04:57 +0200
->>> Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>>> +             printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
->>>> +                      conflict->name, conflict->start, conflict->end,
->>>> +                      name, start, end);
->>> start and end have type resource_size_t.  Such types CANNOT be printed
->>> unless cast to a known type.
->>>
->>> Because there is a %s following an incorrect %lld, the above code will
->>> crash the machine.
->> should just remove those lines.
+Steven Rostedt wrote:
+> On Mon, 13 Oct 2008, Luis Henriques wrote:
+>> I found a compilation error while compiling this new version of the rt
+>> pach.  I guess the following line is enough for you to trace the problem:
+>>
+>> kernel/trace/trace_events.c:49: error: ?function_trace_stop? undeclared
+>> (first use in this function)
+>>
+>> It seems that an 'extern int function_trace_stop' is missing somewhere...
+>>
 > 
-> This didn't happen.  These lines are still in the version that went into
-> Linus' tree over the weekend for 2.6.28.  On the ia64 build they spit
-> out a bunch of warnings:
-> 
-> kernel/resource.c:554: warning: format '%llx' expects type 'long long
-> unsigned int', but argument 3 has type 'resource_size_t'
-> 
-> Ditto for args 4, 6 and 7 on the same line.
-> 
-
-Here is a fix... currently running standard tests on it.
-
-	-hpa
+> Luis, I just released a -rt11 that should fix this for you. Can you 
+> download it and give it a try.
 
 
---------------060904060105010205010101
-Content-Type: text/x-patch;
- name="0001-resource-fix-printk-of-resource_size_t.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-resource-fix-printk-of-resource_size_t.patch"
+Hi Steve,
 
->From 2d7c0377c3c98d2605704e67e64d1d19aa30ced3 Mon Sep 17 00:00:00 2001
-From: H. Peter Anvin <hpa@zytor.com>
-Date: Mon, 13 Oct 2008 14:11:03 -0700
-Subject: [PATCH] resource: fix printk() of resource_size_t
+just recompiled it and, although I did not really tested it (just booted
+the new kernel), it seems to works like a charm ;)
 
-Impact: crash on 32-bit platforms, warnings on 64-bit platforms
-
-When printk'ing resource_size_t, we have to explicitly cast them to
-unsigned long long in order to be safe on all platforms.  We must not use
-%z since that applies to size_t, which is frequently not the same type
-as resource_size_t.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- kernel/resource.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 414d6fc..f747fb6 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -550,8 +550,12 @@ static void __init __reserve_region_with_split(struct resource *root,
- 
- 	if (!res) {
- 		printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
--			 conflict->name, conflict->start, conflict->end,
--			 name, start, end);
-+		       conflict->name,
-+		       (unsigned long long)conflict->start,
-+		       (unsigned long long)conflict->end,
-+		       name,
-+		       (unsigned long long)start,
-+		       (unsigned long long)end);
- 
- 		/* failed, split and try again */
- 
--- 
-1.6.0.2
-
-
---------------060904060105010205010101--
+Regards,
+--
+Luis Henriques
