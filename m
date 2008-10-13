@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760938AbYJMMXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbYJMM0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760938AbYJMMXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 08:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbYJMMXZ
+	id S1761077AbYJMM0f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 08:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbYJMM0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 08:23:25 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:3390 "EHLO
+	Mon, 13 Oct 2008 08:26:25 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:4390 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753345AbYJMMXY (ORCPT
+	with ESMTP id S1754904AbYJMM0Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 08:23:24 -0400
+	Mon, 13 Oct 2008 08:26:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=yHcuVX2LcGksx3ZboltuyITidQE2CkyZVzESnaNFDadDk03qbg4hIf97qXkrGmOCzT
-         UyukBjUFdOhsD//8Rm7pbCSVcBsLdGglPNvdgCR0xwvZ4fnm5y2TaRVWCHD1GR9jwMZ8
-         0pJrjxtRYuKgXetrZqkyAJwoCLOtwJTn1N/kU=
-Message-ID: <c62985530810130523n3656c937taf2dfc48b237520a@mail.gmail.com>
-Date: Mon, 13 Oct 2008 14:23:21 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [RFC][PATCH] tty: remove the BKL in n_tty.c
-Cc: "Ingo Molnar" <mingo@elte.hu>, Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <874p3gsrvt.fsf@basil.nowhere.org>
+        h=to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id:from
+         :sender;
+        b=bQq/gtR24mTN07i0rHI4Z+ADMoKX3WxFu0gJipsjGvTAGRcnwBumwbepiIWQNFO9hm
+         oQFicYF0tcPVX7Fmgtc0/1C+WuoZNvlMKzRxaRSsul2sZYXVUxNzaS5AFE+R1t5CNm7C
+         Ec3fR3HZeJTgUDjM9zc507FOPz9eTa3pm7lIE=
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [x86_64] Implementation differences compared to x86_32
+Date: Mon, 13 Oct 2008 14:26:19 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081013084719.03972D1B9DE@perso1.free.fr>
-	 <874p3gsrvt.fsf@basil.nowhere.org>
+Message-Id: <200810131426.20075.goretux@gmail.com>
+From: Eric Lacombe <tuxiko@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/13 Andi Kleen <andi@firstfloor.org>:
-> Frederic Weisbecker <fweisbec@gmail.com> writes:
-> I suppose Alan did it already, but the general rule when doing
-> such changes is to lock data not code.
+Hi,
 
-Ah ok. But there are so much references to tty->column on these functions
-so that I thought the best thing to do was to lock the whole path.
+Thanks again for all your answers.
+I have some new questions with regard to x86_64 specificities.
 
-Thanks.
+- In x86_32, the physical memory is mapped on kernel land by way of 4 MB 
+pages.
+But for x86_64, I read that the physical memory was mapped by way of 4 KB 
+pages. Is it true ? and in this case, why this choice ?
+
+- Is the LDT used in x86_64 ?
+I saw that the GDT_ENTRY_LDT is defined to 10 but when I read in the GDT at 
+0x50 for the segment descriptor, there is nothing, the area is filled with 
+zeros.
+
+- Where can I find some documentation about the specifities of x86_64 compared 
+to x86_32, particularly about memory management ?
+Perhaps you can (or someone on the list) depict those specificities ?
+
+Thanks in advance
+
+	Eric
