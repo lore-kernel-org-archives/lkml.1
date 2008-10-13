@@ -1,124 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759838AbYJMQee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbYJMQju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759838AbYJMQee (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 12:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYJMQe0
+	id S1758248AbYJMQju (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 12:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbYJMQjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 12:34:26 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:56529 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754478AbYJMQeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 12:34:25 -0400
-Date: Mon, 13 Oct 2008 09:34:16 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, pbadari@us.ibm.com,
-       mel@csn.ul.ie, lcm@us.ibm.com, mingo@elte.hu, greg@kroah.com,
-       dave@linux.vnet.ibm.com, nish.aravamudan@gmail.com
-Subject: Re: [PATCH 1/2] [REPOST] mm: show node to memory section
-	relationship with symlinks in sysfs
-Message-ID: <20081013163416.GA7340@us.ibm.com>
-References: <20081009192115.GB8793@us.ibm.com> <20081010124239.f92b5568.akpm@linux-foundation.org> <20081010213357.GD7369@us.ibm.com> <20081010145950.f51def29.akpm@linux-foundation.org> <20081010231844.GA1718@us.ibm.com> <20081010163230.ae9d964d.akpm@linux-foundation.org>
+	Mon, 13 Oct 2008 12:39:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:36382 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755518AbYJMQjk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 12:39:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=h/ptA2Bi34Qghd5yT/gMmBt0Pm7dKx2e4HKViy45TS0pcpR1ms1Tj/1j3lVG7YfeJs
+         mBOo0tuuLdBDVY+826vyn/ltMEyFee/4Y2Feu6AJgN+9++V+mrHBGrK6fM2Lpc6gs5ID
+         sYN2BPnYe9epwcU9rWR0xJ6PsElophQnpbuEs=
+Message-ID: <48F379C4.9070105@tuffmail.co.uk>
+Date: Mon, 13 Oct 2008 17:39:32 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081010163230.ae9d964d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: acpi-test tree on eeepc: EC error message on second resume
+References: <48F0DB0C.7060201@tuffmail.co.uk> <200810112140.16662.rjw@sisk.pl> <48F100CA.2050600@suse.de> <200810112254.09094.rjw@sisk.pl> <48F1BFD0.7040004@tuffmail.co.uk> <48F24EAE.6020108@suse.de> <48F30554.1010607@tuffmail.co.uk>
+In-Reply-To: <48F30554.1010607@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 10, 2008 at 04:32:30PM -0700, Andrew Morton wrote:
-> On Fri, 10 Oct 2008 16:18:44 -0700
-> Gary Hade <garyhade@us.ibm.com> wrote:
-> 
-> > On Fri, Oct 10, 2008 at 02:59:50PM -0700, Andrew Morton wrote:
-> > > On Fri, 10 Oct 2008 14:33:57 -0700
-> > > Gary Hade <garyhade@us.ibm.com> wrote:
-> > > 
-> > > > On Fri, Oct 10, 2008 at 12:42:39PM -0700, Andrew Morton wrote:
-> > > > > On Thu, 9 Oct 2008 12:21:15 -0700
-> > > > > Gary Hade <garyhade@us.ibm.com> wrote:
-> > > > > 
-> > > > > > Show node to memory section relationship with symlinks in sysfs
-> > > > > > 
-> > > > > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
-> > > > > > the memory sections located on nodeX.  For example:
-> > > > > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
-> > > > > > indicates that memory section 135 resides on node1.
-> > > > > 
-> > > > > I'm not seeing here a description of why the kernel needs this feature.
-> > > > > Why is it useful?  How will it be used?  What value does it have to
-> > > > > our users?
-> > > > 
-> > > > Sorry, I should have included that.  In our case, it is another
-> > > > small step towards eventual total node removal.  We will need to
-> > > > know which memory sections to offline for whatever node is targeted
-> > > > for removal.  However, I suspect that exposing the node to section
-> > > > information to user-level could be useful for other purposes.
-> > > > For example, I have been thinking that using memory hotremove
-> > > > functionality to modify the amount of available memory on specific
-> > > > nodes without having to physically add/remove DIMMs might be useful
-> > > > to those that test application or benchmark performance on a
-> > > > multi-node system in various memory configurations.
-> > > > 
-> > > 
-> > > hm, OK, thanks.  It does sound a bit thin, and if we merge this then
-> > > not only do we get a porkier kernel,
-> > 
-> > Would you feel the same about the size increase if patch 2/2 (include
-> > memory section subtree in sysfs with only sparsemem enabled) was
-> > withdrawn?
-> > 
-> > Without patch 2/2 the size increase for non-Sparsemem or Sparsemem
-> > wo/memory hotplug kernels is extremely small.  Even for memory hotplug
-> > enabled kernels there is only a little extra code in ./drivers/base/node.o
-> > which only gets linked into NUMA enabled kernels.  I can gather some numbers
-> > if necessary.
-> 
-> Size is probably a minor issue on memory-hotpluggable machines.
-> 
-> > > we also get a new userspace interface which we're then locked into.
-> > 
-> > True.
-> 
-> That's a bigger issue.  The later we leave this sort of thing, the more
-> information we have.
+Alan Jenkins wrote:
+> Alexis Starikovskiy wrote:
+>   
+>> Alan Jenkins wrote:
+>>     
+>>> Rafael J. Wysocki wrote:
+>>>       
+>>>> On Saturday, 11 of October 2008, Alexey Starikovskiy wrote:
+>>>>  
+>>>>         
+>>>>> Rafael J. Wysocki wrote:
+>>>>>    
+>>>>>           
+>>>>>>> No, we discussed this before -- we are outside of the
+>>>>>>> transaction, thus no GPE
+>>>>>>> activity could interfere with ec_check_ibf0.
+>>>>>>>         
+>>>>>>>               
+>>>>>> Ok, this is in the process context and we don't really expect to
+>>>>>> get an
+>>>>>> interrupt at this point, but what happens if the EC generates an
+>>>>>> event that's
+>>>>>> not related to any transiaction.  Is that guaranteed to never happen?
+>>>>>>       
+>>>>>>             
+>>>>> Interrupt handler in this case can't cause a change to status
+>>>>> register, thus our read of it will not be affected by interrupt.
+>>>>>     
+>>>>>           
+>>>> Ok, thanks.
+>>>>
+>>>> Alan, does the patch work for you?
+>>>>
+>>>> Rafael
+>>>>   
+>>>>         
+>>> Yes.  Two reboot cycles, three suspend/resume cycles each, and no error
+>>> message.
+>>>
+>>> I hope we have a better fix in mind though :-P.  The patch doesn't solve
+>>> the unnecessary 500ms delay when this thing happens.
+>>>       
+>> Something like this?
+>>
+>> Regards,
+>> Alex.
+>>     
+>
+> You sent it as an attachment again :-).
+>
+> That should work, odd as it looks.  We don't need to worry about the GPE
+> workaround because that's only active _inside_ the transaction.  I don't
+> know what Zhao thinks is missing.
+>
+> Sorry I can't test right now.  I tried to install 3D support on my
+> laptop for showing-off purposes, and somehow broke X.
+>   
+Drama over, I've now tested it.  No error messages, and the printk
+timings show that it has stopped hanging for half a second.
 
-I understand your concerns about adding possibly frivolous interfaces
-but in this case we are simply eliminating a very obvious hole in the
-existing set of memory hot-add/remove interfaces.  In general, it
-makes absolutely no sense to provide a resource add/remove mechanism
-without telling the user where the resource is physically located.
-i.e. providing the _maximum_ possible amount of location information
-available for the add/remove controllable resource.  This is especially
-critical for large multi-node systems and for resources that can impact
-application or overall system performance.
-
-The kernel already exports node location information for CPUs
-(e.g. /sys/devices/system/node/node0/cpu0 -> ../../cpu/cpu0) and
-PCI devices (e.g. ./devices/pci0000:00/0000:00:00.0/numa_node).
-Why should memory be treated any differently?
-
-The memory hot-add/remove interfaces include physical device files
-(e.g. /sys/devices/system/memory/memory0/phys_device) which are not
-yet fully implemented.  When systems that support removable memory
-modules force this interface to mature, node location information
-will become even more critical.  This feature will not be very useful
-on multi-node systems if the user does not know what node a specific
-memory module is installed in.  It may be possible to encode the
-node ID into the string provided by the phys_device file but a
-more general node to memory section association as provided by this
-patch is better since it can be used for other purposes.
-
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+Thanks
+Alan
