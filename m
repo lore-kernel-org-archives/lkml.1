@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYJMONk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbYJMOOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYJMONk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 10:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYJMON2
+	id S1756098AbYJMOOh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 10:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYJMOO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 10:13:28 -0400
-Received: from relay.2ka.mipt.ru ([194.85.80.65]:59544 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbYJMON1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 10:13:27 -0400
-Date: Mon, 13 Oct 2008 18:14:49 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage release.
-Message-ID: <20081013141449.GA30768@2ka.mipt.ru>
-References: <20081006160034.GA611@2ka.mipt.ru> <20081012192419.fd8394c9.akpm@linux-foundation.org> <20081013133850.GA13565@2ka.mipt.ru> <84144f020810130644w7f89f3d9m3c3d3e63d3034534@mail.gmail.com>
+	Mon, 13 Oct 2008 10:14:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45245 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752056AbYJMOO2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 10:14:28 -0400
+Date: Mon, 13 Oct 2008 15:05:29 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] mptsas: remove pointless null check
+Message-ID: <20081013150529.75f22702@lxorguk.ukuu.org.uk>
+In-Reply-To: <48F34CB9.3020000@pobox.com>
+References: <20081006172653.GA26427@oksana.dev.rtsoft.ru>
+	<48F2F138.6020103@kernel.org>
+	<48F34CB9.3020000@pobox.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020810130644w7f89f3d9m3c3d3e63d3034534@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka.
+mptsas: remove unneeded check
 
-On Mon, Oct 13, 2008 at 04:44:28PM +0300, Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> > What's the difference? In saving one space and replacing another with
-> > comma? I do not particulary care, but would like to know why it is
-> > needed :)
-> 
-> kcalloc() will check for multiplication overflow which is nice
-> especially if size is passed from user-space (not sure if that applies
-> here).
+From: Alan Cox <alan@redhat.com>
 
-I think that 32-bit overflow check during multiplication in allocation
-code is the last thing to worry about :)
-If this parameters are not checked before, we are screwd already...
+>From coverity checker. Closes #9675
 
-P.S. DST does not check one of them, oops.
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
--- 
-	Evgeniy Polyakov
+ drivers/message/fusion/mptsas.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+
+diff --git a/drivers/message/fusion/mptsas.c b/drivers/message/fusion/mptsas.c
+index 12b7325..a9019f0 100644
+--- a/drivers/message/fusion/mptsas.c
++++ b/drivers/message/fusion/mptsas.c
+@@ -2279,9 +2279,8 @@ mptsas_delete_expander_phys(MPT_ADAPTER *ioc)
+ 	mutex_lock(&ioc->sas_topology_mutex);
+ 	list_for_each_entry_safe(port_info, n, &ioc->sas_topology, list) {
+ 
+-		if (port_info->phy_info &&
+-		    (!(port_info->phy_info[0].identify.device_info &
+-		    MPI_SAS_DEVICE_INFO_SMP_TARGET)))
++		if (!(port_info->phy_info[0].identify.device_info &
++		    MPI_SAS_DEVICE_INFO_SMP_TARGET))
+ 			continue;
+ 
+ 		if (mptsas_sas_expander_pg0(ioc, &buffer,
