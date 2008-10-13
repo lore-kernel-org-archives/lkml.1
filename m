@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYJMUGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbYJMUGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbYJMUGB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYJMUFj
+	id S1755418AbYJMUGc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYJMUFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:05:39 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:44951 "EHLO
+	Mon, 13 Oct 2008 16:05:40 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:44958 "EHLO
 	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbYJMUFi (ORCPT
+	with ESMTP id S1752310AbYJMUFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Oct 2008 16:05:38 -0400
-X-Greylist: delayed 2651 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Oct 2008 16:05:38 EDT
-Message-Id: <20081013195846.674654386@mail.of.borg>
+Message-Id: <20081013195912.989368287@mail.of.borg>
+References: <20081013195846.674654386@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Mon, 13 Oct 2008 21:58:46 +0200
+Date: Mon, 13 Oct 2008 21:58:48 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 00/18] m68k patches for 2.6.28
+Subject: [patch 02/18] m68k: Use new printk() extension %pS to print symbols
+Content-Disposition: inline; filename=m68k-use-percent-pS-infrastructure.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-        Hi Linus,
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Here are the m68k patches I had queued up for the 2.6.28 merge window:
-  [01] [PATCH] m68k: use bcd2bin/bin2bcd
-  [02] [PATCH] m68k: Use new printk() extension %pS to print symbols
-  [03] [PATCH] m68k: Put .bss at the end of the data section
-  [04] [PATCH] m68k: Add NOTES to init data so it's discarded at boot
-  [05] [PATCH] m68k: Reverse platform MMU logic so Sun 3 is last
-  [06] [PATCH] m68k: Disable Amiga serial console support if modular
-  [07] [PATCH] m68k: Modular Amiga keyboard needs key_maps
-  [08] [PATCH] m68k: Remove unused atari_kbd_translate()
-  [09] [PATCH] m68k: Define rtc_lock on Atari
-  [10] [PATCH] m68k: Add missing dma_sync_single_range_for_{cpu,device}()
-  [11] [PATCH] m68k: <asm/pci.h> needs <asm-generic/pci-dma-compat.h>
-  [12] [PATCH] HP input: kill warnings due to suseconds_t differences
-  [13] [PATCH] m68k: Remove the broken Hades support
-  [14] [PATCH] m68k: remove the dead PCI code
-  [15] [PATCH] m68k: init_irq_proc depends on CONFIG_PROC_FS
-  [16] [PATCH] m68k: Atari SCSI needs NVRAM
-  [17] [PATCH] net/rfkill/rfkill-input.c needs <linux/sched.h>
-  [18] [PATCH] arch/m68k/mm/kmap.c: introduce missing kfree
+This changes the oops and backtrace code to use the new `%pS' printk()
+extension to print out symbols rather than manually calling print_symbol.
 
-All of them have been reviewed before.
-All of them (except for the last one) have been braising in linux-next for
-a while.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ arch/m68k/kernel/traps.c |    9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-Thanks for applying!
+--- a/arch/m68k/kernel/traps.c
++++ b/arch/m68k/kernel/traps.c
+@@ -883,8 +883,7 @@ void show_trace(unsigned long *stack)
+ 			if (i % 5 == 0)
+ 				printk("\n       ");
+ #endif
+-			printk(" [<%08lx>]", addr);
+-			print_symbol(" %s\n", addr);
++			printk(" [<%08lx>] %pS\n", addr, (void *)addr);
+ 			i++;
+ 		}
+ 	}
+@@ -900,10 +899,8 @@ void show_registers(struct pt_regs *regs
+ 	int i;
+ 
+ 	print_modules();
+-	printk("PC: [<%08lx>]",regs->pc);
+-	print_symbol(" %s", regs->pc);
+-	printk("\nSR: %04x  SP: %p  a2: %08lx\n",
+-	       regs->sr, regs, regs->a2);
++	printk("PC: [<%08lx>] %pS\n", regs->pc, (void *)regs->pc);
++	printk("SR: %04x  SP: %p  a2: %08lx\n", regs->sr, regs, regs->a2);
+ 	printk("d0: %08lx    d1: %08lx    d2: %08lx    d3: %08lx\n",
+ 	       regs->d0, regs->d1, regs->d2, regs->d3);
+ 	printk("d4: %08lx    d5: %08lx    a0: %08lx    a1: %08lx\n",
 
+-- 
 Gr{oetje,eeting}s,
 
 						Geert
