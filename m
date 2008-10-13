@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbYJMXZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbYJMX12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760715AbYJMXZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 19:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYJMXZc
+	id S932066AbYJMX12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 19:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757023AbYJMX1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 19:25:32 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:34109 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753952AbYJMXZb (ORCPT
+	Mon, 13 Oct 2008 19:27:20 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:40681 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756288AbYJMX1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 19:25:31 -0400
-Message-ID: <48F3D8EA.4080708@lwfinger.net>
-Date: Mon, 13 Oct 2008 16:25:30 -0700
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 13 Oct 2008 19:27:19 -0400
+Date: Mon, 13 Oct 2008 19:24:33 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>, mcgrof@gmail.com
+Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
+Message-ID: <20081013232432.GB32550@tuxdriver.com>
+References: <20081014010202.71d13eaf@werewolf.home>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Stack dump from GIT HEAD if CONFIG_ATA_SFF is not set
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081014010202.71d13eaf@werewolf.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am using kernel 2.6.27-Linus-03151-g4480f15b-dirty. On booting a system built
-with CONFIG_ATA_SFF not set, the following appears in my dmesg output. The
-"dirtiness" of the kernel is due to some code included to trace down messages
-coming from the usb system, and is not involved here. If CONFIG_ATA_SFF=y, the
-message does not appear. From Google results, it seems that this parameter
-should be set for most systems, but one should get clean runs without it.
+On Tue, Oct 14, 2008 at 01:02:02AM +0200, J.A. Magallón wrote:
 
-ata1: SATA max UDMA/133 abar m8192@0xfc484000 port 0xfc484100 irq 4349
-ata2: SATA max UDMA/133 abar m8192@0xfc484000 port 0xfc484180 irq 4349
-ata3: SATA max UDMA/133 abar m8192@0xfc484000 port 0xfc484200 irq 4349
-ata4: SATA max UDMA/133 abar m8192@0xfc484000 port 0xfc484280 irq 4349
-INFO: trying to register non-static key.
-the code is fine but needs lockdep annotation.
-turning off the locking correctness validator.
-Pid: 504, comm: scsi_eh_0 Not tainted 2.6.27-Linus-03151-g4480f15b-dirty #174
-Call Trace:
- [<ffffffff80255af9>] static_obj+0x51/0x6b
- [<ffffffff80258d16>] __lock_acquire+0xd28/0x142f
- [<ffffffff8022f003>] find_busiest_group+0x329/0x7da
- [<ffffffff8025946f>] lock_acquire+0x52/0x6b
- [<ffffffff802483de>] __cancel_work_timer+0xbf/0x1e6
- [<ffffffff80248415>] __cancel_work_timer+0xf6/0x1e6
- [<ffffffff802483de>] __cancel_work_timer+0xbf/0x1e6
- [<ffffffff8025776c>] trace_hardirqs_on_caller+0xef/0x113
- [<ffffffff8041e3e8>] _spin_unlock_irq+0x24/0x27
- [<ffffffff80234882>] finish_task_switch+0x5f/0xc5
- [<ffffffff80234823>] finish_task_switch+0x0/0xc5
- [<ffffffff8041c18a>] thread_return+0x3d/0xbe
- [<ffffffffa0034dd6>] ata_port_flush_task+0x10/0x3b [libata]
- [<ffffffffa0041d4d>] ata_scsi_error+0x20/0x57b [libata]
- [<ffffffff8041e3e8>] _spin_unlock_irq+0x24/0x27
- [<ffffffff80234823>] finish_task_switch+0x0/0xc5
- [<ffffffffa000c68a>] scsi_error_handler+0xda/0x535 [scsi_mod]
- [<ffffffffa000c5b0>] scsi_error_handler+0x0/0x535 [scsi_mod]
- [<ffffffff8024b2a3>] kthread+0x47/0x73
- [<ffffffff8041e05e>] trace_hardirqs_on_thunk+0x3a/0x3f
- [<ffffffff8020ce79>] child_rip+0xa/0x11
- [<ffffffff8020c4af>] restore_args+0x0/0x30
- [<ffffffff8024b237>] kthreadd+0x174/0x199
- [<ffffffff8024b25c>] kthread+0x0/0x73
- [<ffffffff8020ce6f>] child_rip+0x0/0x11
-input: PS/2 Mouse as /class/input/input2
-input: AlpsPS/2 ALPS GlidePoint as /class/input/input3
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: ATA-8: TOSHIBA MK2546GSX, LB014C, max UDMA/100
+> werewolf:~# modprobe ath5k
+> WARNING: Error inserting cfg80211 (/lib/modules/2.6.27-jam03/kernel/net/wireless/cfg80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> WARNING: Error inserting mac80211 (/lib/modules/2.6.27-jam03/kernel/net/mac80211/mac80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> FATAL: Error inserting ath5k (/lib/modules/2.6.27-jam03/kernel/drivers/net/wireless/ath5k/ath5k.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> werewolf:~# modprobe mac80211
+> WARNING: Error inserting cfg80211 (/lib/modules/2.6.27-jam03/kernel/net/wireless/cfg80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> FATAL: Error inserting mac80211 (/lib/modules/2.6.27-jam03/kernel/net/mac80211/mac80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> 
+> Dmesg is below.
 
+cfg80211 isn't loading, so mac80211 can't find it's symbols, and
+ath5k can't find mac80211's symbols.
 
+> cfg80211: Unknown parameter `ieee80211_regdom'
 
-Larry
+config WIRELESS_OLD_REGULATORY
+	bool "Old wireless static regulatory definitions"
+	default n
+	---help---
+	  This option enables the old static regulatory information
+	  and uses it within the new framework. This is available
+	  temporarily as an option to help prevent immediate issues
+	  due to the switch to the new regulatory framework which
+	  does require a new userspace application which has the
+	  database of regulatory information (CRDA) and another for
+	  setting regulatory domains (iw).
 
+	  For more information see:
+
+	  http://wireless.kernel.org/en/developers/Regulatory/CRDA
+	  http://wireless.kernel.org/en/users/Documentation/iw
+
+	  It is important to note though that if you *do* have CRDA present
+	  and if this option is enabled CRDA *will* be called to update the
+	  regulatory domain (for US and JP only). Support for letting the user
+	  set the regulatory domain through iw is also supported. This option
+	  mainly exists to leave around for a kernel release some old static
+	  regulatory domains that were defined and to keep around the old
+	  ieee80211_regdom module parameter. This is being phased out and you
+	  should stop using them ASAP.
+
+	  Say N unless you cannot install a new userspace application
+	  or have one currently depending on the ieee80211_regdom module
+	  parameter and cannot port it to use the new userspace interfaces.
+
+	  This is scheduled for removal for 2.6.29.
+
+Is this not clear enough?
+
+John
+-- 
+John W. Linville		Linux should be at the core
+linville@tuxdriver.com			of your literate lifestyle.
