@@ -1,57 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbYJMJ3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbYJMJcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793AbYJMJ3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbYJMJ3K
+	id S1757600AbYJMJcM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbYJMJb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:29:10 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33221 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755969AbYJMJ3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:29:09 -0400
-Date: Mon, 13 Oct 2008 20:28:58 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next will be back soon
-Message-Id: <20081013202858.e7bba38d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko"
+	Mon, 13 Oct 2008 05:31:57 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56101 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756409AbYJMJb4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 05:31:56 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 00/80] TTY updates for 2.6.28
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 13 Oct 2008 10:31:24 +0100
+Message-ID: <20081013092758.21645.2359.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The big thrust of this is krefs. The tty and tty drivers are now kref accounted
+and this allows some of the locking to be simplified. The pty special casing
+has been mostly pushed into the pty layer and the open paths simplified so we
+are close to disposing of the BKL on open/close.
 
-Hi all,
+Also fix a pile of bugs found in the tty layer during this process and in
+driver code.
 
-I am planning to start linux-next releases again tomorrow so if anyone
-has updates they want to make to any of the trees I fetch, now would be
-the time.  This includes resetting your tree to be a subset of Linus' if
-it has all been merged - this saves me quite a bit of time and is much
-more relevant if you rebase your tree (or what you sent Linus is not
-quite what is in the tree I fetch).
+Finally we add the basics of termiox (the standard Unix termios extension) as
+bits of it are now needed by people wanting things like non-standard handshake.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Resynched against the current git tree as of this morning.
 
---Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko
-Content-Type: application/pgp-signature
+Signed-off-by: Alan Cox <alan@redhat.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkjzFNoACgkQjjKRsyhoI8z0NwCfTTd/ZF+MrWfI83BDIrcPEPCy
-2lwAoLyYVDAuhgWMbT564drdpG3zBDU0
-=FjhV
------END PGP SIGNATURE-----
+---
 
---Signature=_Mon__13_Oct_2008_20_28_58_+1100_7MY2Tqx2y/Wlk7Ko--
+Adrian Bunk (1):
+      coldfire: scheduled SERIAL_COLDFIRE removal
+
+Akinobu Mita (1):
+      ip2: avoid add_timer with pending timer
+
+Alan Cox (46):
+      tty: rename the remaining oddly named n_tty functions
+      fs3270: Correct error returns
+      fs3270: remove extra locks
+      applicom: Fix an unchecked user ioctl range and an error return
+      tty: Minor tidyups and document fixes for n_tty
+      tty: Remove lots of NULL checks
+      tty: fix up gigaset a bit
+      tty: some ICANON magic is in the wrong places
+      tty: simplify ktermios allocation
+      pty: simplify unix98 allocation
+      pty: Fix allocation failure double free
+      pty: Coding style and polish
+      tty: extract the pty init time special cases
+      tty: Finish fixing up the init_dev interface to use ERR_PTR
+      tty: More driver operations
+      tty: kref the tty driver object
+      tty: Clean up the tty_init_dev changes further
+      tty: Remove more special casing and out of place code
+      tty: shutdown method
+      vt: remove bogus lock dropping
+      pty: If the administrator creates a device for a ptmx slave we should not error
+      tty: Fix abusers of current->sighand->tty
+      tty: Redo current tty locking
+      tty: the vhangup syscall is racy
+      mxser: Switch to kref tty
+      stallion: Use krefs
+      tty: kref usage for isicom and moxa
+      tty: usb-serial krefs
+      tty: Move tty_write_message out of kernel/printk
+      tty: Make get_current_tty use a kref
+      tty: compare the tty winsize
+      tty: Termios locking - sort out real_tty confusions and lock reads
+      tty: Add termiox
+      tty: ipw need reworking
+      tty: Cris has a nice RS485 ioctl so we should steal it
+      tty: use krefs to protect driver module counts
+      tty: Add a kref count
+      pps: Reserve a line discipline number for PPS
+      tty: Split tty_port into its own file
+      tty: split the buffering from tty_io
+      uml: small cleanups and note bugs to be dealt with by uml authors...
+      tty: move tioclinux from a special case
+      serial_8250: pci_enable_device fail is not fully handled
+      ftdi: A few errors are err() that should be debug which causes much spewage
+      nozomi: Fix close on error
+      epca: call tty_port_init
+
+Andrew Morton (1):
+      serial-make-uart_ports-ioport-unsigned-long-fix
+
+David Miller (2):
+      serial: allow 8250 to be used on sparc
+      serial: Make uart_port's ioport "unsigned long".
+
+David S. Miller (1):
+      serial: fix device name reporting when minor space is shared between drivers
+
+Graf Yang (1):
+      Blackfin Serial Driver: Fix bug - ircp fails on sir over Blackfin UART
+
+Jason Wessel (2):
+      tty: tty_io.c shadows sparse fix
+      usb: fix pl2303 initialization
+
+Jiri Slaby (6):
+      ip2, init/deinit cleanup
+      ip2, fix sparse warnings
+      ip2, cleanup globals
+      Char: merge ip2main and ip2base
+      Char: sx, fix io unmapping
+      Char: cyclades. remove bogus iomap
+
+Julia Lawall (2):
+      drivers/char/hvc_console.c: adjust call to put_tty_driver
+      drivers/serial/crisv10.c: add missing put_tty_driver
+
+Mike Frysinger (3):
+      Blackfin Serial Driver: move common variables out of serial headers and into the serial driver
+      Blackfin Serial Driver: trim trailing whitespace -- no functional changes
+      Blackfin Serial Driver: use __initdata for data, not __init
+
+Miloslav Trmac (1):
+      audit: Handle embedded NUL in TTY input auditing
+
+Scott Ashcroft (1):
+      Fix oti6858 debug level
+
+Sonic Zhang (4):
+      Blackfin Serial Driver: Fix bug - request UART2/3 peripheral mapped interrupts in PIO mode
+      Blackfin Serial Driver: Fix bug - Don't call tx_stop in tx_transfer.
+      Blackfin Serial Driver: Remove useless stop
+      Blackfin Serial Driver: Fix bug - should suspend/resume/remove all uart ports.
+
+Stephen Rothwell (1):
+      tty: Fallout from tty-move-canon-specials
+
+Sukadev Bhattiprolu (6):
+      Simplify devpts_pty_kill
+      Simplify devpts_pty_new()
+      Simplify devpts_get_tty()
+      Add an instance parameter devpts interfaces
+      Move tty lookup/reopen to caller
+      tty: Move parts of tty_init_dev into new functions
+
+\\\"Will Newton\\\ (1):
+      8250: remove a few inlines of dubious value
+
+
+ Documentation/feature-removal-schedule.txt         |    8 
+ arch/blackfin/kernel/bfin_dma_5xx.c                |   13 
+ .../mach-bf527/include/mach/bfin_serial_5xx.h      |    6 
+ .../mach-bf533/include/mach/bfin_serial_5xx.h      |    4 
+ .../mach-bf537/include/mach/bfin_serial_5xx.h      |    6 
+ .../mach-bf548/include/mach/bfin_serial_5xx.h      |    6 
+ .../mach-bf561/include/mach/bfin_serial_5xx.h      |    4 
+ arch/sparc/include/asm/serial.h                    |    6 
+ arch/um/drivers/line.c                             |    2 
+ drivers/bluetooth/hci_ldisc.c                      |    2 
+ drivers/char/Kconfig                               |    4 
+ drivers/char/Makefile                              |    2 
+ drivers/char/amiserial.c                           |    6 
+ drivers/char/applicom.c                            |    6 
+ drivers/char/cyclades.c                            |   21 
+ drivers/char/epca.c                                |    5 
+ drivers/char/generic_serial.c                      |   21 
+ drivers/char/hvc_console.c                         |    4 
+ drivers/char/ip2/Makefile                          |    2 
+ drivers/char/ip2/i2ellis.c                         |   32 
+ drivers/char/ip2/i2ellis.h                         |    2 
+ drivers/char/ip2/ip2base.c                         |  108 -
+ drivers/char/ip2/ip2main.c                         |  550 +++---
+ drivers/char/isicom.c                              |   61 -
+ drivers/char/istallion.c                           |  113 +
+ drivers/char/moxa.c                                |   61 -
+ drivers/char/mxser.c                               |  193 +-
+ drivers/char/n_hdlc.c                              |    2 
+ drivers/char/n_r3964.c                             |    8 
+ drivers/char/n_tty.c                               |  125 +
+ drivers/char/nozomi.c                              |    5 
+ drivers/char/pcmcia/ipwireless/tty.c               |   19 
+ drivers/char/pty.c                                 |  335 +++
+ drivers/char/stallion.c                            |  139 +
+ drivers/char/sx.c                                  |    4 
+ drivers/char/tty_audit.c                           |    2 
+ drivers/char/tty_buffer.c                          |  511 +++++
+ drivers/char/tty_io.c                              | 1380 ++++----------
+ drivers/char/tty_ioctl.c                           |  212 ++
+ drivers/char/tty_port.c                            |   96 +
+ drivers/char/vt.c                                  |   84 -
+ drivers/char/vt_ioctl.c                            |    2 
+ drivers/isdn/capi/capi.c                           |    2 
+ drivers/isdn/gigaset/ser-gigaset.c                 |   27 
+ drivers/net/wan/Kconfig                            |    2 
+ drivers/s390/char/fs3270.c                         |   17 
+ drivers/serial/8250.c                              |   52 -
+ drivers/serial/8250_pci.c                          |    4 
+ drivers/serial/Kconfig                             |   17 
+ drivers/serial/Makefile                            |   16 
+ drivers/serial/bfin_5xx.c                          |  123 +
+ drivers/serial/crisv10.c                           |    5 
+ drivers/serial/mcfserial.c                         | 1965 --------------------
+ drivers/serial/mcfserial.h                         |   74 -
+ drivers/serial/serial_core.c                       |   12 
+ drivers/usb/serial/aircable.c                      |   15 
+ drivers/usb/serial/belkin_sa.c                     |    3 
+ drivers/usb/serial/console.c                       |    8 
+ drivers/usb/serial/cyberjack.c                     |    3 
+ drivers/usb/serial/cypress_m8.c                    |    5 
+ drivers/usb/serial/digi_acceleport.c               |   19 
+ drivers/usb/serial/empeg.c                         |    8 
+ drivers/usb/serial/ftdi_sio.c                      |   25 
+ drivers/usb/serial/garmin_gps.c                    |    3 
+ drivers/usb/serial/generic.c                       |    3 
+ drivers/usb/serial/io_edgeport.c                   |   43 
+ drivers/usb/serial/io_ti.c                         |   26 
+ drivers/usb/serial/ipaq.c                          |    3 
+ drivers/usb/serial/ipw.c                           |    3 
+ drivers/usb/serial/ir-usb.c                        |    3 
+ drivers/usb/serial/iuu_phoenix.c                   |    3 
+ drivers/usb/serial/keyspan.c                       |   77 -
+ drivers/usb/serial/keyspan_pda.c                   |   16 
+ drivers/usb/serial/kl5kusb105.c                    |    3 
+ drivers/usb/serial/kobil_sct.c                     |    3 
+ drivers/usb/serial/mct_u232.c                      |    6 
+ drivers/usb/serial/mos7720.c                       |   36 
+ drivers/usb/serial/mos7840.c                       |    7 
+ drivers/usb/serial/navman.c                        |    3 
+ drivers/usb/serial/omninet.c                       |   10 
+ drivers/usb/serial/option.c                        |   18 
+ drivers/usb/serial/oti6858.c                       |    7 
+ drivers/usb/serial/pl2303.c                        |   15 
+ drivers/usb/serial/safe_serial.c                   |   11 
+ drivers/usb/serial/sierra.c                        |   16 
+ drivers/usb/serial/spcp8x5.c                       |    3 
+ drivers/usb/serial/ti_usb_3410_5052.c              |   44 
+ drivers/usb/serial/usb-serial.c                    |   24 
+ drivers/usb/serial/visor.c                         |   18 
+ drivers/usb/serial/whiteheat.c                     |    8 
+ fs/devpts/inode.c                                  |   66 -
+ fs/dquot.c                                         |    6 
+ fs/open.c                                          |    3 
+ include/asm-x86/ioctls.h                           |    6 
+ include/linux/devpts_fs.h                          |   31 
+ include/linux/serial.h                             |   16 
+ include/linux/serial_core.h                        |    2 
+ include/linux/termios.h                            |   15 
+ include/linux/tty.h                                |   45 
+ include/linux/tty_driver.h                         |   56 +
+ include/linux/vt_kern.h                            |    2 
+ kernel/acct.c                                      |    2 
+ kernel/auditsc.c                                   |    9 
+ kernel/fork.c                                      |    5 
+ kernel/printk.c                                    |   16 
+ kernel/sys.c                                       |    4 
+ security/selinux/hooks.c                           |    3 
+ 107 files changed, 2877 insertions(+), 4396 deletions(-)
+ create mode 100644 arch/sparc/include/asm/serial.h
+ delete mode 100644 drivers/char/ip2/ip2base.c
+ create mode 100644 drivers/char/tty_buffer.c
+ create mode 100644 drivers/char/tty_port.c
+ delete mode 100644 drivers/serial/mcfserial.c
+ delete mode 100644 drivers/serial/mcfserial.h
+
+-- 
+Signature
