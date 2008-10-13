@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbYJMSCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYJMSDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756461AbYJMSCU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 14:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYJMSCH
+	id S1756862AbYJMSDZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 14:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYJMSDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 14:02:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:60159 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbYJMSCG (ORCPT
+	Mon, 13 Oct 2008 14:03:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36342 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755329AbYJMSDO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 14:02:06 -0400
-Message-ID: <48F38D73.8040804@colorfullife.com>
-Date: Mon, 13 Oct 2008 20:03:31 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 13 Oct 2008 14:03:14 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/uHaEXVSPuHVRkp/pc/zHFmOMlVmaIHtETL6Vz1Z
+	+pZjhnYUAsj0rO
+Date: Mon, 13 Oct 2008 20:03:25 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] powerpc: compile kernel for linkstations optimized for
+ size
+In-Reply-To: <20081013040703.GA11059@ime.usp.br>
+Message-ID: <Pine.LNX.4.64.0810131959140.9041@axis700.grange>
+References: <20081013040703.GA11059@ime.usp.br>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <48F21D58.3000404@colorfullife.com> <20081012224629.GA7353@linux.vnet.ibm.com>
-In-Reply-To: <20081012224629.GA7353@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> Do you send a reschedule IPI to CPUs that are not in dyntick idle mode,
-> but who have failed to pass through a quiescent state?
->   
-Actually, I never send reschedule IPIs.
+On Mon, 13 Oct 2008, Rogério Brito wrote:
 
-- For "usual" cpus, rcu_check_callbacks() checks for quiescent states.
-There should be a set_need_resched() if a cpu holds up a grace period 
-for too long. I just haven't implemented it yet.
-IMHO it doesn't make sense to perform a "for_each_cpu() 
-smd_send_reschedule()". rcu has a hook in each cpu, thus a 
-set_need_resched() by the per-cpu hook is faster/simpler.
+> From: Rogério Brito <rbrito@ime.usp.br>
+> 
+> Since Linkstations and Kuroboxes often have *very* little memory (as
+> they are embedded systems), it is desirable to get their kernels
+> compiled optimized for size.
+> 
+> Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
+> 
+> ---
+> 
+> I have been using kernels optimized for size on my Kurobox (standard)
+> for many different releases and I have experienced no problem with this
+> option enabled. Thus, this patch.
 
-- For nohz cpus, a poller function [schedule_work(), enabled interrupts] 
-peeks into the per-cpu data of the nohz cpu and checks if it is quiet or 
-if it passed through a quiescent state.
-If it didn't, then it sets a cpu_data->kick_poller flag and 
-rcu_irq_exit() reports the grace period.
-No need for an IPI either - rcu has a hook in the irq exit path.
+The comment for this option says: "watch out for broken compilers," if 
+this doesn't hold any more, it should be remove, if it still holds, I 
+wouldn't turn this on by default, as I don't think we can test all 
+possible (cross- or native-) compilers users might want to use. In any 
+case this is one of options that users can select themselves, if it suits 
+them. Also I don't think your CC list is correct, you wanted to send this 
+to the powerpc list and one of powerpc / subarch maintainer.
 
-Right now, I cheat if a nohz cpu is in a long-running nmi 
-[while(other_cpu_is_in_nmi()) cpu_relax()], but I think I can fix that 
-with an set_need_resched() in the rcu_nmi_exit().
+Thanks
+Guennadi
 
---
-    Manfred
+> 
+> --- linux/arch/powerpc/configs/linkstation_defconfig.old	2008-10-13 00:33:00.000000000 -0300
+> +++ linux/arch/powerpc/configs/linkstation_defconfig	2008-10-13 00:38:58.000000000 -0300
+> @@ -90,7 +90,7 @@ CONFIG_NAMESPACES=y
+>  # CONFIG_PID_NS is not set
+>  CONFIG_BLK_DEV_INITRD=y
+>  CONFIG_INITRAMFS_SOURCE=""
+> -# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+> +CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+>  CONFIG_SYSCTL=y
+>  # CONFIG_EMBEDDED is not set
+>  CONFIG_SYSCTL_SYSCALL=y
+> 
+> 
+> -- 
+> Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+> http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+> Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
