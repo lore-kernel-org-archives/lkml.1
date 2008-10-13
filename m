@@ -1,104 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbYJMHED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYJMHEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbYJMHED (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 03:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYJMHDu
+	id S1756645AbYJMHEa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 03:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbYJMHET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 03:03:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60501
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753202AbYJMHDt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 03:03:49 -0400
-Date: Mon, 13 Oct 2008 00:03:25 -0700 (PDT)
-Message-Id: <20081013.000325.205907850.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 13 Oct 2008 03:04:19 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:56080 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753379AbYJMHES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 03:04:18 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18674.62170.845285.407281@harpo.it.uu.se>
+Date: Mon, 13 Oct 2008 09:03:54 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Christian Mueller <Christian.Mueller@wdc.com>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
+ or sleep, PATA models did. (fwd)
+In-Reply-To: <48F2D9A8.1030502@gmail.com>
+References: <D73D40172004714D95D7A84AC3E68EC802282133@wdscexbe03.sc.wdc.com>
+	<48EBFE9B.9070503@gmail.com>
+	<18674.4081.839329.116533@harpo.it.uu.se>
+	<48F2D9A8.1030502@gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tejun Heo writes:
+ > Mikael Pettersson wrote:
+ > > - smartctl -n standby waking Linda's disks from standby is probably
+ > >   a disk firmware issue or a smartctl issue. I see no evidence that
+ > >   sata_promise is to blame for that.
+ > 
+ > /me agrees.  I think it's most likely a problem in the firmware.
+ > 
+ > > - hardreset in sata_promise seems broken. I'll take a closer look
+ > >   at that in about a week's time (I'll be busy with other work the
+ > >   next couple of days).
+ > 
+ > This looks like a rather serious problem, so please take a look at
+ > this.  Also, after the drive went down, does unplugging and replugging
+ > the signal cable fix the problem, if not does doing the same thing
+ > with the power cable make any difference?
 
-Almost entirely fixes of one sort or another, plus some
-new chipset IDs for smc network driver:
-
-1) ACPI_TOSHIBA randconfig build failure fix
-
-2) Compilation and namespace fixes from Adrian Bunk for cases
-   resulting from the phylib changes in the 2.6.28 net merge.
-
-3) Dimitris Michailidis noticed and off-by-one bug in the error
-   path of skb_dma_map()
-
-4) Include touchups (remove dups and remove unnecessary version.h usage)
-   from Huang Weiyi.
-
-5) mac80211 wireless build fix from Ingo Molnar
-
-6) r8169 NULL deref regression fix from Petr Vandrovec
-
-7) SKY2 wake-on-lan regression fix from Rafael J. Wysocki, this one
-   goes back to 2.6.26 it seems
-
-Please pull, thanks a lot!
-
-The following changes since commit f3073ac76755abd63b1d4c3d145f4c15b65b5355:
-  Guennadi Liakhovetski (1):
-        smc911x: Fix external PHY detection
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Adrian Bunk (3):
-      net/tc35815.c: fix compilation
-      net/au1000_eth.c MDIO namespace fixes
-      net/bfin_mac.c MDIO namespace fixes
-
-David S. Miller (1):
-      acpi: Make ACPI_TOSHIBA depend on INPUT.
-
-Dimitris Michailidis (1):
-      net: Fix off-by-one in skb_dma_map
-
-Guennadi Liakhovetski (1):
-      smc911x: Add support for LAN921{5,7,8} chips from SMSC
-
-Huang Weiyi (4):
-      wireless: remove duplicated #include
-      qlge: remove duplicated #include
-      netfilter: remove unused #include <version.h>
-      jme: remove unused #include <version.h>
-
-Ingo Molnar (1):
-      net/mac80211/rx.c: fix build error
-
-Petr Vandrovec (1):
-      r8169: NULL pointer dereference on r8169 load
-
-Rafael J. Wysocki (1):
-      sky2: Fix WOL regression
-
- drivers/acpi/Kconfig            |    2 +-
- drivers/net/au1000_eth.c        |   27 ++++++++++++++-------------
- drivers/net/bfin_mac.c          |   26 +++++++++++++-------------
- drivers/net/jme.c               |    1 -
- drivers/net/qlge/qlge_ethtool.c |    1 -
- drivers/net/qlge/qlge_main.c    |    1 -
- drivers/net/r8169.c             |    3 ++-
- drivers/net/sky2.c              |   19 +++++--------------
- drivers/net/smc911x.c           |    6 ++++--
- drivers/net/smc911x.h           |   14 ++++++++++----
- drivers/net/tc35815.c           |    2 +-
- net/core/skb_dma_map.c          |    2 +-
- net/mac80211/rx.c               |    5 ++++-
- net/netfilter/nf_tproxy_core.c  |    1 -
- net/wireless/core.c             |    1 -
- 15 files changed, 55 insertions(+), 56 deletions(-)
+I couldn't bring the port back up with any combination of signal/power
+cable hotplugging. Even rmmod sata_promise; modprobe sata_promise failed
+to bring the port back up. Hence my suspicion that hardreset is borked
+or doesn't kick in.
