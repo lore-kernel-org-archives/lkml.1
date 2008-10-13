@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbYJMITd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbYJMIUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757103AbYJMITd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYJMITV
+	id S1756791AbYJMIUs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbYJMIUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:19:21 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:34815 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756641AbYJMITU (ORCPT
+	Mon, 13 Oct 2008 04:20:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44142
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754710AbYJMIUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:19:20 -0400
-Subject: Re: [RFC][PATCH 1/2] Track in-kernel when we	expect
-	checkpoint/restart to work
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48EF8E77.8050000@nortel.com>
-References: <20081009190405.13A253CB@kernel>
-	 <1223626834.8787.8.camel@localhost.localdomain>
-	 <48EF144D.1050906@fr.ibm.com> <20081010145934.GF11695@elte.hu>
-	 <48EF7211.2000303@cs.columbia.edu>
-	 <1223656489.10017.33.camel@localhost.localdomain>
-	 <48EF8E77.8050000@nortel.com>
-Content-Type: text/plain
-Date: Mon, 13 Oct 2008 10:18:17 +0200
-Message-Id: <1223885897.4404.5.camel@localhost.localdomain>
+	Mon, 13 Oct 2008 04:20:39 -0400
+Date: Mon, 13 Oct 2008 01:20:15 -0700 (PDT)
+Message-Id: <20081013.012015.107936001.davem@davemloft.net>
+To: adobriyan@gmail.com
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT] /proc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081013081908.GA19572@x200.localdomain>
+References: <20081013081908.GA19572@x200.localdomain>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-10 at 11:18 -0600, Chris Friesen wrote:
-> Greg Kurz wrote:
-> 
-> > This flag is weak... testing it gives absolutly no hint whether the
-> > checkpoint may succeed or not. As it is designed now, a user can only be
-> > aware that checkpoint is *forever* denied. I agree that it's only useful
-> > as a "flexible CR todo list".
-> 
-> I don't think it's true that it gives "absolutly no hint".
-> 
-> If the flag is not set, then checkpoint will succeed, right?  Whereas if 
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Mon, 13 Oct 2008 12:19:08 +0400
 
-Wrong. Unless you test_and_checkpoint atomically, the flag doesn't help.
-
-> the flag is set, then it's an indication that checkpoint could fail (but 
-> may still succeed if whatever condition caused the flag to be set is no 
-> longer true).
+> Linus, please, pull from
 > 
-> Chris
-> 
--- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
 
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
+It doesn't merge without conflicts:
 
+davem@sunset:~/src/GIT/linux-2.6$ git pull git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
+remote: Counting objects: 100, done.        
+remote: Compressing objects: 100% (17/17), done.        
+remote: Total 71 (delta 60), reused 64 (delta 53)        
+Unpacking objects: 100% (71/71), done.
+>From git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc
+ * branch            proc       -> FETCH_HEAD
+Auto-merged Documentation/filesystems/proc.txt
+CONFLICT (delete/modify): arch/sparc/include/asm/dma_32.h deleted in HEAD and modified in 3bbfe0596746e1590888a6e1e6a07583265238b7. Version 3bbfe0596746e1590888a6e1e6a07583265238b7 of arch/sparc/include/asm/dma_32.h left in tree.
+Auto-merged kernel/sysctl.c
+Automatic merge failed; fix conflicts and then commit the result.
+davem@sunset:~/src/GIT/linux-2.6$ 
+
+This is caused by my sparc merge that Linux took in mid-day Sunday.
