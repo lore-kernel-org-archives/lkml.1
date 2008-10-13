@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYJMVyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759648AbYJMVz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbYJMVyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 17:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYJMVym
+	id S1759648AbYJMVz3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 17:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbYJMVzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 17:54:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51206 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754449AbYJMVyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 17:54:41 -0400
-Message-ID: <48F3C380.2020603@zytor.com>
-Date: Mon, 13 Oct 2008 14:54:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 13 Oct 2008 17:55:10 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40975 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753686AbYJMVzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 17:55:08 -0400
+Date: Mon, 13 Oct 2008 14:51:35 -0700
+From: Greg KH <gregkh@suse.de>
+To: Pavel Roskin <proski@gnu.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 25/25] staging: at76_usb wireless driver
+Message-ID: <20081013215134.GA15880@suse.de>
+References: <20081013213651.GA8338@kroah.com> <1223933888-8368-2-git-send-email-greg@kroah.com> <1223934573.26245.8.camel@dv>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Tony Luck <tony.luck@intel.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de, jbarnes@virtuousgeek.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4 -
- fix v7
-References: <1220254284-29532-1-git-send-email-yhlu.kernel@gmail.com>  <20080904190457.GB24990@elte.hu>  <20080904121627.bc182da7.akpm@linux-foundation.org>  <86802c440809041222q244e1adaj16b80f1590053bcf@mail.gmail.com> <12c511ca0810131332h6e5468abk3dfc511f0b25cbe6@mail.gmail.com> <48F3BA28.2010605@zytor.com> <alpine.LFD.2.00.0810131431510.3288@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0810131431510.3288@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223934573.26245.8.camel@dv>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Mon, Oct 13, 2008 at 05:49:33PM -0400, Pavel Roskin wrote:
+> On Mon, 2008-10-13 at 14:38 -0700, Greg KH wrote:
+> > From: Pavel Roskin <proski@gnu.org>
+> > 
+> > Add the at76_usb wireless driver to the staging tree while the
+> > other kernel driver (out of tree) gets rewritten to use the internal
+> > wireless stack.
+> > 
+> > This patch comes directly from the Fedora kernel tree, with only the
+> > directory placement of the files changed.
+> > 
+> > Signed-off-by: Pavel Roskin <proski@gnu.org>
 > 
-> Or we could do what Andrew suggested some time ago, and extend %p to do 
-> resource printing, like %pS and %pF.
-> 
-> TOTALLY UNTESTED! But something like this might allow
-> 
-> 	printk(KERN_DEBUG "  reserve_region: (%s) %pR\n"
-> 		res->name, res);
-> 
-> and if I did things right it should print
-> 
-> 	reserve_region: (name) [xx-xx]
-> 
-> and maybe it's worth it. We certainly do seem to have a fair number of 
-> those irritating casts for resource printouts.
-> 
+> I'm not going to support this code in any way.  I disclaim any
+> responsibility for this code.
 
-There is certainly a lot to be said for this.  Using higher-level 
-interfaces keeps formatting consistent and gives us one place to change 
-things if desired.
+Heh, that's fine with me, but as you did write this code, I do want to
+give you the proper credit.  I'll maintain it while it is in the staging
+tree.
 
-	-hpa
+You might want to poke John, as his version of this patch adds your name
+to the MAINTAINERS file in the Fedora kernels, something I don't think
+you want to have done :)
+
+thanks,
+
+greg k-h
