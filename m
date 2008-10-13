@@ -1,163 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762925AbYJMJom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbYJMJo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762925AbYJMJom (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759567AbYJMJhN
+	id S1761870AbYJMJo7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760890AbYJMJhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:37:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48640 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758461AbYJMJhL (ORCPT
+	Mon, 13 Oct 2008 05:37:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:62902 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758186AbYJMJhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:37:11 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 33/80] tty: Split tty_port into its own file
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:37:07 +0100
-Message-ID: <20081013093703.21645.72724.stgit@localhost.localdomain>
-In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
-References: <20081013092758.21645.2359.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Mon, 13 Oct 2008 05:37:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=NIgGTNiPmaQAUDz5oPLkv9C6i6hYtt3IJNPz6Gi7ywZX8YnvJpV6mZSqQgIRF/6Psy
+         J2U/hOSegTQaJf3pjpiSrDluoCesRjmDhMtaZdM6oQV+kXpL8zYeUhtprtHQ1q9Yj8PT
+         UGlGrar/wB8/AQSOk5IuQ3uM/zLPA5WL4r1qw=
+Message-ID: <48F316C4.1070603@gmail.com>
+Date: Mon, 13 Oct 2008 11:37:08 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Bryan Wu <cooloney@kernel.org>
+CC: sam@ravnborg.org, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH 1/1] Blackfin OTP Char Driver: add writing support of
+ OTP
+References: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1223889199-31658-1-git-send-email-cooloney@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+On 10/13/2008 11:13 AM, Bryan Wu wrote:
+> From: Mike Frysinger <vapier.adi@gmail.com>
 
-Not much in it yet but this will grow a lot
+Some changelog please.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+[...]
+> @@ -123,18 +132,95 @@ static ssize_t bfin_otp_write(struct file *filp, const char __user *buff, size_t
+>  	if (mutex_lock_interruptible(&bfin_otp_lock))
+>  		return -ERESTARTSYS;
+>  
+> -	/* need otp_init() documentation before this can be implemented */
+> +	stampit();
+> +
+> +	timing = bfin_otp_init_timing();
+> +	if (timing == 0) {
+> +		mutex_unlock(&bfin_otp_lock);
+> +		return -EIO;
+> +	}
+> +
+> +	base_flags = OTP_CHECK_FOR_PREV_WRITE;
+> +
+> +	bytes_done = 0;
+> +	page = *pos / (sizeof(u64) * 2);
+> +	while (bytes_done < count) {
+> +		flags = base_flags | (*pos % (sizeof(u64) * 2) ? OTP_UPPER_HALF : OTP_LOWER_HALF);
+> +		stamp("processing page %i (0x%x:%s) from %p", page, flags,
+> +			(flags & OTP_UPPER_HALF ? "upper" : "lower"), buff + bytes_done);
+> +		if (copy_from_user(&content, buff + bytes_done, sizeof(content))) {
+> +			bytes_done = -EFAULT;
+> +			break;
+> +		}
+> +		ret = bfrom_OtpWrite(page, flags, &content);
+> +		if (ret & OTP_MASTER_ERROR) {
+> +			stamp("error from otp: 0x%x", ret);
+> +			bytes_done = -EIO;
+> +			break;
+> +		}
+> +		if (flags & OTP_UPPER_HALF)
+> +			++page;
+> +		bytes_done += sizeof(content);
+> +		*pos += sizeof(content);
 
- drivers/char/Makefile   |    2 +-
- drivers/char/tty_io.c   |   36 -------------------------------
- drivers/char/tty_port.c |   55 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 56 insertions(+), 37 deletions(-)
- create mode 100644 drivers/char/tty_port.c
+What happens to pos if it fails later?
 
+> +	}
+> +
+> +	bfin_otp_deinit_timing(timing);
+>  
+>  	mutex_unlock(&bfin_otp_lock);
+>  
+> +	return bytes_done;
+> +}
+> +
+> +static int bfin_otp_ioctl(struct inode *inode, struct file *filp,
+> +                          unsigned cmd, unsigned long arg)
+> +{
+> +	stampit();
+> +
+> +	switch (cmd) {
+> +	case OTPLOCK: {
+> +		u32 timing;
+> +		int ret = -EIO;
+> +
+> +		if (!allow_writes)
+> +			return -EACCES;
+> +
+> +		if (mutex_lock_interruptible(&bfin_otp_lock))
+> +			return -ERESTARTSYS;
+> +
+> +		timing = bfin_otp_init_timing();
+> +		if (timing) {
+> +			u32 otp_result = bfrom_OtpWrite(arg, OTP_LOCK, NULL);
+> +			stamp("locking page %i resulted in 0x%x", arg, otp_result);
+> +			if (!(otp_result & OTP_MASTER_ERROR))
+> +				ret = 0;
+> +
+> +			bfin_otp_deinit_timing(timing);
+> +		}
+> +
+> +		mutex_unlock(&bfin_otp_lock);
+> +
+> +		return ret;
+> +	}
+> +
+> +	case MEMLOCK:
+> +		allow_writes = false;
+> +		return 0;
+> +
+> +	case MEMUNLOCK:
+> +		allow_writes = true;
+> +		return 0;
 
-diff --git a/drivers/char/Makefile b/drivers/char/Makefile
-index 77ea41b..1a4247d 100644
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -7,7 +7,7 @@
- #
- FONTMAPFILE = cp437.uni
- 
--obj-y	 += mem.o random.o tty_io.o n_tty.o tty_ioctl.o tty_ldisc.o tty_buffer.o
-+obj-y	 += mem.o random.o tty_io.o n_tty.o tty_ioctl.o tty_ldisc.o tty_buffer.o tty_port.o
- 
- obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
- obj-$(CONFIG_UNIX98_PTYS)	+= pty.o
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 3a72693..7323168 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1139,42 +1139,6 @@ ssize_t redirected_tty_write(struct file *file, const char __user *buf,
- 	return tty_write(file, buf, count, ppos);
- }
- 
--void tty_port_init(struct tty_port *port)
--{
--	memset(port, 0, sizeof(*port));
--	init_waitqueue_head(&port->open_wait);
--	init_waitqueue_head(&port->close_wait);
--	mutex_init(&port->mutex);
--	port->close_delay = (50 * HZ) / 100;
--	port->closing_wait = (3000 * HZ) / 100;
--}
--EXPORT_SYMBOL(tty_port_init);
--
--int tty_port_alloc_xmit_buf(struct tty_port *port)
--{
--	/* We may sleep in get_zeroed_page() */
--	mutex_lock(&port->mutex);
--	if (port->xmit_buf == NULL)
--		port->xmit_buf = (unsigned char *)get_zeroed_page(GFP_KERNEL);
--	mutex_unlock(&port->mutex);
--	if (port->xmit_buf == NULL)
--		return -ENOMEM;
--	return 0;
--}
--EXPORT_SYMBOL(tty_port_alloc_xmit_buf);
--
--void tty_port_free_xmit_buf(struct tty_port *port)
--{
--	mutex_lock(&port->mutex);
--	if (port->xmit_buf != NULL) {
--		free_page((unsigned long)port->xmit_buf);
--		port->xmit_buf = NULL;
--	}
--	mutex_unlock(&port->mutex);
--}
--EXPORT_SYMBOL(tty_port_free_xmit_buf);
--
--
- static char ptychar[] = "pqrstuvwxyzabcde";
- 
- /**
-diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
-new file mode 100644
-index 0000000..6fadb19
---- /dev/null
-+++ b/drivers/char/tty_port.c
-@@ -0,0 +1,55 @@
-+/*
-+ * Tty port functions
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/tty.h>
-+#include <linux/tty_driver.h>
-+#include <linux/tty_flip.h>
-+#include <linux/timer.h>
-+#include <linux/string.h>
-+#include <linux/slab.h>
-+#include <linux/sched.h>
-+#include <linux/init.h>
-+#include <linux/wait.h>
-+#include <linux/bitops.h>
-+#include <linux/delay.h>
-+#include <linux/module.h>
-+
-+void tty_port_init(struct tty_port *port)
-+{
-+	memset(port, 0, sizeof(*port));
-+	init_waitqueue_head(&port->open_wait);
-+	init_waitqueue_head(&port->close_wait);
-+	mutex_init(&port->mutex);
-+	port->close_delay = (50 * HZ) / 100;
-+	port->closing_wait = (3000 * HZ) / 100;
-+}
-+EXPORT_SYMBOL(tty_port_init);
-+
-+int tty_port_alloc_xmit_buf(struct tty_port *port)
-+{
-+	/* We may sleep in get_zeroed_page() */
-+	mutex_lock(&port->mutex);
-+	if (port->xmit_buf == NULL)
-+		port->xmit_buf = (unsigned char *)get_zeroed_page(GFP_KERNEL);
-+	mutex_unlock(&port->mutex);
-+	if (port->xmit_buf == NULL)
-+		return -ENOMEM;
-+	return 0;
-+}
-+EXPORT_SYMBOL(tty_port_alloc_xmit_buf);
-+
-+void tty_port_free_xmit_buf(struct tty_port *port)
-+{
-+	mutex_lock(&port->mutex);
-+	if (port->xmit_buf != NULL) {
-+		free_page((unsigned long)port->xmit_buf);
-+		port->xmit_buf = NULL;
-+	}
-+	mutex_unlock(&port->mutex);
-+}
-+EXPORT_SYMBOL(tty_port_free_xmit_buf);
-+
-+
+Please switch to unlocked_ioctl. It should be pretty easy. You should change
+(and check) allow_writes under the mutex anyway.
 
+> +	}
+> +
+>  	return -EINVAL;
