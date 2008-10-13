@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbYJMNfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYJMNg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762311AbYJMNfo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759448AbYJMNfM
+	id S1757842AbYJMNg1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 09:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbYJMNgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:35:12 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40133 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762164AbYJMNfK (ORCPT
+	Mon, 13 Oct 2008 09:36:10 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:35717 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758040AbYJMNgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:35:10 -0400
-Date: Mon, 13 Oct 2008 14:35:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: GIT head no longer boots on x86-64
-Message-ID: <20081013143502.01f3f526@lxorguk.ukuu.org.uk>
-In-Reply-To: <1223895414-19793-1-git-send-email-jirislaby@gmail.com>
-References: <20081013112024.0183f982@lxorguk.ukuu.org.uk>
-	<1223895414-19793-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Oct 2008 09:36:09 -0400
+Date: Mon, 13 Oct 2008 14:36:08 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
+Message-ID: <20081013133608.GD15657@brain>
+References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org> <200810082329.59561.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810082329.59561.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008 12:56:54 +0200
-Jiri Slaby <jirislaby@gmail.com> wrote:
+On Wed, Oct 08, 2008 at 11:29:59PM +1100, Nick Piggin wrote:
+> On Wednesday 08 October 2008 20:33, Andy Whitcroft wrote:
+> > When working with hugepages, hugetlbfs assumes that those hugepages
+> > are smaller than MAX_ORDER.  Specifically it assumes that the mem_map
+> > is contigious and uses that to optimise access to the elements of the
+> > mem_map that represent the hugepage.  Gigantic pages (such as 16GB pages
+> > on powerpc) by definition are of greater order than MAX_ORDER (larger
+> > than MAX_ORDER_NR_PAGES in size).  This means that we can no longer make
+> > use of the buddy alloctor guarentees for the contiguity of the mem_map,
+> > which ensures that the mem_map is at least contigious for maximmally
+> > aligned areas of MAX_ORDER_NR_PAGES pages.
+> >
+> > This patch adds new mem_map accessors and iterator helpers which handle
+> > any discontiguity at MAX_ORDER_NR_PAGES boundaries.  It then uses these
+> > within copy_huge_page, clear_huge_page, and follow_hugetlb_page to allow
+> > these to handle gigantic pages.
+> >
+> > Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+> 
+> Seems good to me... but do you have to add lots of stuff into the end of
+> the for statements? Why not just at the end of the block?
 
-> Could you try the debug patch below to see what address is text_poke trying
-> to translate?
+Yes there is no particular requirement for it to be there.  In the latest
+discussion patch (in separate email) is has the long ones moved out.
 
-
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e40b1
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e50b1
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e40da
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e50da
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e41eb
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e51eb
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4446
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5446
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e458d
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e558d
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4621
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5621
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e49a3
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e59a3
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4a21
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5a21
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4a28
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5a28
-BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e4a7a
-BUG? vmalloc_to_page (from text_poke+0x40/0x14a): ffffffffa01e5a7a
-
-and lots more
+-apw
