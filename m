@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbYJMULk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbYJMUMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbYJMULk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYJMUGL
+	id S1759797AbYJMUMY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbYJMUGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:06:11 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:53408 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbYJMUFo (ORCPT
+	Mon, 13 Oct 2008 16:06:16 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:43157 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753370AbYJMUFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:05:44 -0400
-Message-Id: <20081013195923.281385923@mail.of.borg>
+	Mon, 13 Oct 2008 16:05:43 -0400
+Message-Id: <20081013195922.392078574@mail.of.borg>
 References: <20081013195846.674654386@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Mon, 13 Oct 2008 21:59:04 +0200
+Date: Mon, 13 Oct 2008 21:59:03 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Julia Lawall <julia@diku.dk>
-Subject: [patch 18/18] arch/m68k/mm/kmap.c: introduce missing kfree
-Content-Disposition: inline; filename=m68k-arch-m68k-mm-kmap-c-introduce-missing-kfree.diff
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 17/18] net/rfkill/rfkill-input.c needs <linux/sched.h>
+Content-Disposition: inline; filename=net-rfkill-rfkill-input-c-needs-linux-sched-h.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Error handling code following a kmalloc should free the allocated data.
+For some m68k configs, I get:
 
-The semantic match that finds the problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+| net/rfkill/rfkill-input.c: In function 'rfkill_start':
+| net/rfkill/rfkill-input.c:208: error: dereferencing pointer to incomplete type
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,l;
-position p1,p2;
-expression *ptr != NULL;
-@@
+As the incomplete type is `struct task_struct', including <linux/sched.h> fixes
+it.
 
-(
-if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
-|
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-..
-if (x == NULL) S
-)
-<... when != x
-     when != if (...) { <+...x...+> }
-x->f = E
-..>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
-
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-@@
-
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/mm/kmap.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ net/rfkill/rfkill-input.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/m68k/mm/kmap.c
-+++ b/arch/m68k/mm/kmap.c
-@@ -66,8 +66,10 @@ static struct vm_struct *get_io_area(uns
- 	for (p = &iolist; (tmp = *p) ; p = &tmp->next) {
- 		if (size + addr < (unsigned long)tmp->addr)
- 			break;
--		if (addr > KMAP_END-size)
-+		if (addr > KMAP_END-size) {
-+			kfree(area);
- 			return NULL;
-+		}
- 		addr = tmp->size + (unsigned long)tmp->addr;
- 	}
- 	area->addr = (void *)addr;
+--- a/net/rfkill/rfkill-input.c
++++ b/net/rfkill/rfkill-input.c
+@@ -16,6 +16,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/init.h>
+ #include <linux/rfkill.h>
++#include <linux/sched.h>
+ 
+ #include "rfkill-input.h"
+ 
 
 -- 
 Gr{oetje,eeting}s,
