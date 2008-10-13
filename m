@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbYJMIjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYJMIkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbYJMIjn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 04:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbYJMIjc
+	id S1758013AbYJMIkM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 04:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYJMIjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 04:39:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58813 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757510AbYJMIjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 04:39:31 -0400
-Message-ID: <48F308E8.4030503@kernel.org>
-Date: Mon, 13 Oct 2008 17:38:00 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <48DA0A2C.8010008@kernel.org> <48E890B9.6050307@gmail.com> <48E8947A.5020608@kernel.org> <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org> <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com> <20081008080848.GA20525@anita.doom> <48F3088C.9010002@kernel.org>
-In-Reply-To: <48F3088C.9010002@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Oct 2008 04:39:55 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50842 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755134AbYJMIjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 04:39:54 -0400
+Date: Mon, 13 Oct 2008 09:39:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Alexander V. Lukyanov" <lav@netis.ru>
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Ncurses Developers <ncurses-dev@gnu.org>
+Subject: Re: linux 2.6.26 vt back_color_erase
+Message-ID: <20081013093924.648c892d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081013052437.GA27761@night.netis.ru>
+References: <20081003081147.GA16414@night.netis.ru>
+	<20081010164953.GA27092@night.netis.ru>
+	<alpine.LNX.1.10.0810101310400.21097@fbirervta.pbzchgretzou.qr>
+	<20081013052437.GA27761@night.netis.ru>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Oct 2008 08:39:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Konstantin Kletschke wrote:
->> Am 2008-10-07 10:10 +0200 schrieb Benny Halevy:
->>
->>>> Then I switched off and smoked a cigarette, booting then lasted a bit longer:
->>> See, cigarettes are bad for you(r computer) ;-)
->> Yes... But where does he know from? I have no /dev/eyes still ;-)
->>
+> Probably color ls -l is just broken and should be fixed. Why was it
+> necessary to change the console color semantics that was there for years?
+
+Submit a patch that reverts the change. I would agree it needs reverting.
+
 > 
-> It has all the fans for a reason.  :-)
+> > ncurses should not expect anything. Except what is in terminfo.
+> > Do we need a terminfo db update for the "linux" term?
 > 
-> Eh... Joke aside.  I still don't know what's going on here.  Before
-> 2.6.26, you always had clean boot, right?
+> Sure, unless the change is reverted. The bce attribute will need to be
+> disabled, which is a pity as it saves traffic for color full screen
+> applications. And changing terminfo is very inconvenient for remote logins.
 
-Also, can you please repeat the test several times and see whether there
-are some patterns?  And please also try pre-2.6.26 kernel a few times
-just to make sure it's not some bad coincidence.
-
-Thanks.
-
--- 
-tejun
+Agreed
