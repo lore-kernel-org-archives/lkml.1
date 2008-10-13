@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYJMUJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbYJMUJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbYJMUJG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYJMUFx
+	id S1758071AbYJMUJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYJMUFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:05:53 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:53323 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbYJMUFk (ORCPT
+	Mon, 13 Oct 2008 16:05:55 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:53415 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168AbYJMUFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:05:40 -0400
-Message-Id: <20081013195915.659336491@mail.of.borg>
+	Mon, 13 Oct 2008 16:05:41 -0400
+Message-Id: <20081013195917.925107374@mail.of.borg>
 References: <20081013195846.674654386@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Mon, 13 Oct 2008 21:58:52 +0200
+Date: Mon, 13 Oct 2008 21:58:56 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 06/18] m68k: Disable Amiga serial console support if modular
-Content-Disposition: inline; filename=amiga-amiserial-no-serial-console-if-modular.diff
+Subject: [patch 10/18] m68k: Add missing dma_sync_single_range_for_{cpu,device}()
+Content-Disposition: inline; filename=m68k-add-dma_sync_single_range_for_cpu-device.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-If CONFIG_AMIGA_BUILTIN_SERIAL=m, I get the following warnings:
+| include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_cpu':
+| include/linux/ssb/ssb.h:517: error: implicit declaration of function 'dma_sync_single_range_for_cpu'
+| include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_device':
+| include/linux/ssb/ssb.h:538: error: implicit declaration of function 'dma_sync_single_range_for_device'
 
-| drivers/char/amiserial.c: At top level:
-| drivers/char/amiserial.c:2138: warning: data definition has no type or storage class
-| drivers/char/amiserial.c:2138: warning: type defaults to 'int' in declaration of 'console_initcall'
-| drivers/char/amiserial.c:2138: warning: parameter names (without types) in function declaration
-| drivers/char/amiserial.c:2134: warning: 'amiserial_console_init' defined but not used
-
-Apparently console_initcall() is not defined in the modular case.
-
-Disable serial console support if the driver is modular.
+Add the missing dma_sync_single_range_for_{cpu,device}(), and remove the
+`inline' for the non-static function dma_sync_single_for_device().
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-Any better alternative fix?
+ arch/m68k/kernel/dma.c         |    4 ++--
+ include/asm-m68k/dma-mapping.h |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+), 2 deletions(-)
 
- drivers/char/amiserial.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
---- a/drivers/char/amiserial.c
-+++ b/drivers/char/amiserial.c
-@@ -2071,12 +2071,13 @@ module_init(rs_init)
- module_exit(rs_exit)
- 
- 
-+#if defined(CONFIG_SERIAL_CONSOLE) && !defined(MODULE)
-+
- /*
-  * ------------------------------------------------------------
-  * Serial console driver
-  * ------------------------------------------------------------
-  */
--#ifdef CONFIG_SERIAL_CONSOLE
- 
- static void amiga_serial_putc(char c)
- {
-@@ -2130,6 +2131,7 @@ static int __init amiserial_console_init
- 	return 0;
+--- a/arch/m68k/kernel/dma.c
++++ b/arch/m68k/kernel/dma.c
+@@ -66,8 +66,8 @@ void dma_free_coherent(struct device *de
  }
- console_initcall(amiserial_console_init);
--#endif
-+
-+#endif /* CONFIG_SERIAL_CONSOLE && !MODULE */
+ EXPORT_SYMBOL(dma_free_coherent);
  
- MODULE_LICENSE("GPL");
+-inline void dma_sync_single_for_device(struct device *dev, dma_addr_t handle, size_t size,
+-				       enum dma_data_direction dir)
++void dma_sync_single_for_device(struct device *dev, dma_addr_t handle,
++				size_t size, enum dma_data_direction dir)
+ {
+ 	switch (dir) {
+ 	case DMA_TO_DEVICE:
+--- a/include/asm-m68k/dma-mapping.h
++++ b/include/asm-m68k/dma-mapping.h
+@@ -74,6 +74,14 @@ extern void dma_sync_single_for_device(s
+ extern void dma_sync_sg_for_device(struct device *, struct scatterlist *, int,
+ 				   enum dma_data_direction);
+ 
++static inline void dma_sync_single_range_for_device(struct device *dev,
++		dma_addr_t dma_handle, unsigned long offset, size_t size,
++		enum dma_data_direction direction)
++{
++	/* just sync everything for now */
++	dma_sync_single_for_device(dev, dma_handle, offset + size, direction);
++}
++
+ static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t handle,
+ 					   size_t size, enum dma_data_direction dir)
+ {
+@@ -84,6 +92,14 @@ static inline void dma_sync_sg_for_cpu(s
+ {
+ }
+ 
++static inline void dma_sync_single_range_for_cpu(struct device *dev,
++		dma_addr_t dma_handle, unsigned long offset, size_t size,
++		enum dma_data_direction direction)
++{
++	/* just sync everything for now */
++	dma_sync_single_for_cpu(dev, dma_handle, offset + size, direction);
++}
++
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t handle)
+ {
+ 	return 0;
 
 -- 
 Gr{oetje,eeting}s,
