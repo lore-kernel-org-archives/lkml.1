@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbYJMQ3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbYJMQcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759015AbYJMQ3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 12:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYJMQ3S
+	id S1759821AbYJMQcT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 12:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbYJMQcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 12:29:18 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:40462 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754579AbYJMQ3R (ORCPT
+	Mon, 13 Oct 2008 12:32:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14491 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755116AbYJMQcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 12:29:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OUoTmZGEzSklIwdkmlW3mZGzrDzPSj8zVZlB2+Os4uQ9syCkZOTPna7vuTroitIKkU
-         2H810rdf52E1NGFsMda3EEo23prmC899+MU5jkgIksI4ArFFN52MQ5/nl3cPXQJft6HD
-         4HKFC7Sif5CXapbOqVWL9VUkKIW/pdJ84Dj7s=
-Message-ID: <912ec82a0810130929h42574fav985e922ad019b8f5@mail.gmail.com>
-Date: Mon, 13 Oct 2008 18:29:16 +0200
-From: "Neshama Parhoti" <pneshama@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: section mismatch with a platform driver
-Cc: "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081013090133.a58116a2.randy.dunlap@oracle.com>
+	Mon, 13 Oct 2008 12:32:06 -0400
+Message-ID: <48F377F4.7070502@oracle.com>
+Date: Mon, 13 Oct 2008 09:31:48 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Neshama Parhoti <pneshama@gmail.com>
+CC: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: section mismatch with a platform driver
+References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>	 <20081013085111.GB29938@cs181140183.pp.htv.fi>	 <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>	 <20081013090133.a58116a2.randy.dunlap@oracle.com> <912ec82a0810130929h42574fav985e922ad019b8f5@mail.gmail.com>
+In-Reply-To: <912ec82a0810130929h42574fav985e922ad019b8f5@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <912ec82a0810130119g795c91ffr1083d7e8459a6db1@mail.gmail.com>
-	 <20081013085111.GB29938@cs181140183.pp.htv.fi>
-	 <912ec82a0810130228m3e9e11bcyfcabe1ab46fb0b6b@mail.gmail.com>
-	 <20081013090133.a58116a2.randy.dunlap@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 6:01 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> A probe function can be called at any time -- i.e., after system init
-> has completed, so discarding the __init function my_probe_func() is BAD,
-> dangerous, BUGgy.
+Neshama Parhoti wrote:
+> On Mon, Oct 13, 2008 at 6:01 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> A probe function can be called at any time -- i.e., after system init
+>> has completed, so discarding the __init function my_probe_func() is BAD,
+>> dangerous, BUGgy.
+> 
+> Thanks for the explanation!
+> 
+> Does that mean that all drivers with __init in their probe functions are bogus ?
 
-Thanks for the explanation!
+It depends.  If your platform doesn't support hotplug, then it's possible
+that the probe function is only called during system init, so it would be OK.
 
-Does that mean that all drivers with __init in their probe functions are bogus ?
+And in general, if a kernel is built without hotplug support, then the
+__init probe functions are probably safe.  But I'm not sure about it.
 
->
-> ---
-> ~Randy
->
+-- 
+~Randy
