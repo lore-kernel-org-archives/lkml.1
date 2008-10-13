@@ -1,142 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbYJMSgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759886AbYJMSiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760446AbYJMSgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 14:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759231AbYJMSgX
+	id S1759886AbYJMSiS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 14:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYJMSiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 14:36:23 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32342 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758823AbYJMSgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 14:36:21 -0400
-X-BigFish: VPS-50(z5edJz62a3L1432R98dR936eQ4015M1805M936fO12b6izzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K8OX03-01-NGZ-01
-Date: Mon, 13 Oct 2008 20:35:56 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Please pull arch perfmon update
-Message-ID: <20081013183556.GD23557@erda.amd.com>
-References: <20080929235253.GA31074@one.firstfloor.org>
+	Mon, 13 Oct 2008 14:38:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53908 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755764AbYJMSiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 14:38:08 -0400
+Message-ID: <48F395AA.30208@redhat.com>
+Date: Mon, 13 Oct 2008 14:38:34 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080929235253.GA31074@one.firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 13 Oct 2008 18:36:09.0736 (UTC) FILETIME=[8FAE0080:01C92D62]
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
+CC: Stefan Monnier <monnier@iro.umontreal.ca>, linux-kernel@vger.kernel.org
+Subject: Re: Filesystem for block devices using flash storage?
+References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org> <48ED1D62.8080100@redhat.com> <20081012143505.GA15799@logfs.org> <48F385B5.1040503@redhat.com> <20081013181333.GB22447@logfs.org>
+In-Reply-To: <20081013181333.GB22447@logfs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30.09.08 01:52:53, Andi Kleen wrote:
-> Robert,
+Jörn Engel wrote:
+> On Mon, 13 October 2008 13:30:29 -0400, Chris Snook wrote:
+>>>> logfs tries to solve the write amplification problem by forcing all write 
+>>>> activity to be sequential.  I'm not sure how mature it is.
+>>> Still under development.  What exactly do you mean by the write
+>>> amplification problem?
+>> Write amplification is where a 512 byte write turns into a 128k write, 
+>> due to erase block size.
 > 
-> Here are the arch perfmon changes ported to your latest oprofile tree.
-> I didn't include the forcepmu=... change yet, that will come later.
-> Right now the force option is just removed. Please pull.
+> Ah, yes.  Current logfs still triggers that a bit too often.  I'm
+> currently working on the format changes to avoid the amplification as
+> much as possible.
 > 
-> Thanks,
-> -Andi
+> Another nasty side effect of this is that heuristics for wear leveling
+> are always imprecise.  And wear leveling is still required for most
+> devices.  See http://www.linuxconf.eu/2007/papers/Engel.pdf
 > 
-> The following changes since commit 22d87103484983035cf46891428819573ec7508d:
->   Robert Richter (1):
->         Merge branch 'oprofile/powerpc-for-paul' into oprofile/master
+>> Intel is claiming a write amplification factor of 1.1.  Either they're 
+>> using very small erase blocks, or doing something very smart in the 
+>> controller.
 > 
-> are available in the git repository at:
+> With very small erase blocks the facter should be either 1 or 2, not
+> 1.1.  Most likely they work very much like logfs does, essentially doing
+> the whole log-structured thing internally.
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-misc-2.6.git arch-perfmon2
+> Jörn
 > 
-> Andi Kleen (4):
->       oprofile: drop const in num counters field
->       oprofile: Don't report Nehalem as core_2
->       oprofile: Implement Intel architectural perfmon support
->       oprofile: discover counters for op ppro too
 
-Thanks Andi,
+As I understand it, they mean that in a real-world workload that writes 1x data, 
+a total of 1.1x is written on flash.  Real-world writes are usually, but not 
+always, larger than a single sector.  Of course, the validity of this number 
+depends greatly on the test.
 
-I applied your patches to the x86-oprofile-for-tip branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git
+If someone has more info on the Intel devices, please clue me in.
 
-I added a follow on patch (446223f) on branch arch-perfmon that
-changes the initialization so that it uses the init function in
-op_x86_model_spec (see below). Please give it a try, it is compile
-tested only. If it works for you, I will add it to the tip branch too.
-
-There is one question to patch "oprofile: discover counters for op
-ppro too". arch_perfmon_setup_counters() is actually never called for
-ppro, so there is no code that changes the numbers in
-op_ppro_spec. The patch as it is has no effect (except then loading
-additional module code).
-
-Thanks,
-
--Robert
-
-commit 446223f8d1454e647b54160584c5dec8f83fdddc
-Author: Robert Richter <robert.richter@amd.com>
-Date:   Sun Oct 12 15:12:34 2008 -0400
-
-    x86/oprofile: moving arch perfmon counter setup to op_x86_model_spec.init
-    
-    Cc: Andi Kleen <ak@linux.intel.com>
-    Signed-off-by: Robert Richter <robert.richter@amd.com>
-
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 12d6f85..fd902b8 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -435,7 +435,6 @@ static int __init arch_perfmon_init(char **cpu_type)
-                return 0;
-        *cpu_type = "i386/arch_perfmon";
-        model = &op_arch_perfmon_spec;
--       arch_perfmon_setup_counters();
-        return 1;
- }
- 
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index f5a2268..3266795 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -220,7 +220,7 @@ struct op_x86_model_spec op_ppro_spec = {
-  * the specific CPU.
-  */
- 
--void arch_perfmon_setup_counters(void)
-+static int arch_perfmon_setup_counters(struct oprofile_operations *ignore)
- {
-        union cpuid10_eax eax;
- 
-@@ -240,9 +240,12 @@ void arch_perfmon_setup_counters(void)
-        op_arch_perfmon_spec.num_controls = num_counters;
-        op_ppro_spec.num_counters = num_counters;
-        op_ppro_spec.num_controls = num_counters;
-+
-+       return 0;
- }
- 
- struct op_x86_model_spec op_arch_perfmon_spec = {
-+       .init = &arch_perfmon_setup_counters,
-        /* num_counters/num_controls filled in at runtime */
-        .fill_in_addresses = &ppro_fill_in_addresses,
-        /* user space does the cpuid check for available events */
-diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
-index 596de7a..418c2d0 100644
---- a/arch/x86/oprofile/op_x86_model.h
-+++ b/arch/x86/oprofile/op_x86_model.h
-@@ -51,6 +51,4 @@ extern struct op_x86_model_spec const op_p4_ht2_spec;
- extern struct op_x86_model_spec const op_amd_spec;
- extern struct op_x86_model_spec op_arch_perfmon_spec;
- 
--extern void arch_perfmon_setup_counters(void);
--
- #endif /* OP_X86_MODEL_H */
-
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+-- Chris
