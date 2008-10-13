@@ -1,140 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760464AbYJMMzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbYJMM6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760464AbYJMMzK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 08:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbYJMMyy
+	id S1759579AbYJMM6n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 08:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYJMM6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 08:54:54 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:28647 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755438AbYJMMyx (ORCPT
+	Mon, 13 Oct 2008 08:58:35 -0400
+Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:27912 "HELO
+	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754933AbYJMM6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 08:54:53 -0400
+	Mon, 13 Oct 2008 08:58:34 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TCm2OJUn4NICj3dJ2bdFYo8GnwNDIm3mFzoFma2XwgI72tSiN/JlsZVkT1XLYju2PosoL64zybYgPNxkJqXAn6GTaZheHvCmJQwyXRlbzhpkSyYLeo0jf7Fg9J23zZmKpkigWm8fRnSnRJe0Tpre50/Yb4kITj1XsOfkeOxo67k=  ;
-X-YMail-OSG: q.6JzQ0VM1knLChZ2MyWIiH16wTYgoPyfGs9bBJozGqgKVFl5wWJATfN7qdtQ_5ag0rYAWYJ7RTW5ppe2Z9LSA8pGvhJAYH3y2JMjAy1MgrtRy8tpr_YY7hyV1VvTX6JYTlxksCcbk4W7OzW0bMmndfWnFUw7DL_2FoAhOU5
+  b=c279ZnADFlftTuI0tiPJwdLFTt+YIj1vy7mQgdnAoybZaGfFWQt77Igp2kW6BxxBIBGZ7lIGLAxOkNz37Ce8KaNSZaJRShrNylFTKR/S7vL5KA1g9qqFx73Su4m1mUs/MqVaaSK0XeAwu3LgCL2hMPuK6ugGrBK04Tu6Mc0wke8=  ;
+X-YMail-OSG: .JGmwv0VM1n8OFwl_nUTk9QTCvZcMcvFo8cfNa9epwlL.IdHIpevBv6279Gsvte3RBjzjyBaZYvZmiEOyv9EYB.gRRfozaXcvSou4yR7lw8pzxMytXdAwW_hvXOJpcvcozjionWqkwam2fGUYCnfrxQQrE7enpX_jwUDxh8o
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Hugh Dickins <hugh@veritas.com>, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: SLUB defrag pull request?
-Date: Mon, 13 Oct 2008 23:54:30 +1100
+To: Alex Howells <alex@bytemark.co.uk>
+Subject: Re: Linux 2.6.27 will be a longtime supported kernel
+Date: Mon, 13 Oct 2008 23:58:11 +1100
 User-Agent: KMail/1.9.5
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, cl@linux-foundation.org,
-       akpm@linux-foundation.org
-References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0810131227120.20511@blonde.site>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+References: <alpine.LFD.2.00.0810091651220.3210@nehalem.linux-foundation.org> <20081011210340.GA11198@cs181140183.pp.htv.fi> <48F3421E.6020001@bytemark.co.uk>
+In-Reply-To: <48F3421E.6020001@bytemark.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810132354.30789.nickpiggin@yahoo.com.au>
+Message-Id: <200810132358.11840.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 October 2008 22:42, Hugh Dickins wrote:
-> On Mon, 13 Oct 2008, Pekka Enberg wrote:
-> > On Mon, 2008-10-13 at 10:30 +0300, Pekka Enberg wrote:
-> > > Hi Christoph,
-> > >
-> > > (I'm ccing Andrew and Hugh as well in case they want to chip in.)
+On Monday 13 October 2008 23:42, Alex Howells wrote:
+> Adrian Bunk wrote:
+> > It is intended to fill the niche for users who are not using
+> > distribution kernels but want to use a regression-free kernel for a
+> > longer time. It might be a small part of the userbase, but after the
+> > experiences with 2.6.16 I can say that there are quite a few users
+> > who appreciate such an offering.
 >
-> Thanks for the headsup: and I've taken the liberty of adding Nick too,
-> it would be good to have his input.
+> Your work is very much appreciated, we use 2.6.16 extensively and are
+> moving to base things off 2.6.27 for the future.  It's nice to know
+> it'll be supported for the foreseeable future.
 
-Thanks. I get too easily bored with picking nits, and high level design
-review is not very highly valued, but I'll throw in my 2c anyway since
-I've been asked :) May as well cc some lists.
-
-I think it's a pretty reasonable thing to do. I was always slightly
-irritated by the design, maybe due to the topsy turvy issue... you
-almost want the subsystems to be able to use the struct pages to
-queue into their own LRU algorithms, and then queue the unreferenced
-objects off those struct pages, turning it back around the right way.
-
-
-> > > I'm planning to send a pull request of SLUB defrag today. Is there
-> > > anything in particular you would like to be mentioned in the email to
-> > > Linus?
->
-> I do fear that it'll introduce some hard-to-track-down bugs, either
-> in itself or in the subsystems it's defragging, because it's coming
-> at them from a new angle (isn't it?).
-
-In many cases, yes it seems to. And some of the approaches even if
-they work now seem like they *might* cause problematic constraints
-in the design... Have Al and Christoph reviewed the dentry and inode
-patches?
-
-
-> But I've no evidence for that, it's just my usual personal FUD, and
-> I'm really rather impressed with how well it appears to be working.
-> Just allow me to say "I told you so" when the first bug appears ;)
-
-I've only looked closely at the buffer_head defrag part of the patch so
-far, and it looks like there is a real problem there. The problem is that
-pages are not always pinned until after buffer heads are freed. So it is
-possible to "get" a page that has since been freed and reallocated for
-something else. Boom? In the comments, I see assertions that "this is OK",
-but not much analysis of what concurrency is possible and why it is safe.
-
-A nasty, conceptual problem unfortunately that I'm worried about is that
-now there is a lot more potential for concurrency from the moment the
-data structure is allocated. Obviously this is why the ctor is needed,
-but there are a lot of codepaths leading to allocations of these objects.
-Have they all been audited for concurrency issues? For example, I see
-there is buffer head defragmenting, and I see there is ext3 defragmenting,
-but alloc_buffer_head calls from various filesystems don't seem to have
-been touched. Presumably they have been looked at, but there is no
-indication of why they are OK?
-
-As a broad question, is such an additional concurrency constraint reasonable?
-
-Another high level kind of issue is the efficiency of this thing. It can
-take locks very frequently in some cases.
-
-
-> May I repeat that question overlooked from when I sent my 1/3 fix?
-> I'm wondering whether kick_buffers() ought to check PageLRU: I've no
-> evidence it's needed, but coming to writepage() or try_to_free_buffers()
-> from this direction (by virtue of having a buffer_head in a partial slab
-> page) is new, and I worry it might cause some ordering problem; whereas
-> if the page is PageLRU, then it is already fair game for such reclaim.
-
-Hmm, I don't see an immediate problem there, but it could be an issue.
-Have filesystem developers been made aware of the change and OKed it?
-
-
-> I believe (not necessarily correctly!) that Andrew is tied up with the
-> Linux Foundation's End User conference in NY today and tomorrow.  I'd
-> be happier if you waited for his goahead before asking Linus to pull.
-> As I recall, he was unhappy with Christoph adding such a feature to
-> SLUB and not SLAB while it's still undecided which way we go.
-
-The problem with this approach is that it relies on being able to lock
-out access from freeing an object purely from the slab layer. SLAB
-cannot do this because it has a per-cpu frontend queue that cannot be
-blocked by another CPU. It would involve adding atomic operations in
-the SLAB fastpath, or somehow IPIing all CPUs during defrag operations.
-
-AFAIKS, all my concerns, including SLAB, would be addressed if we would
-be able to instead group reclaimable objects into pages, and reclaim them
-by managing lists of pages.
-
-
-> I cannot remember where we stand in relation to the odd test where
-> SLUB performs or performed worse.  I think it is true to say that the
-> vast majority of developers would prefer to go forward with SLUB than
-> SLAB.  There was a time when I was very perturbed by SLUB's reliance
-> on higher order allocations, but have noticed nothing to protest
-> about since it became less profligate and more adaptive.  And I do
-> think it's a bit unfair to ask Christoph to enhance his competition!
-
-SLAB unfortunately is still significantly faster than SLUB in some
-important workloads. I am also a little worried about SLUB's higher
-order allocations, but won't harp on about that.
+Agreed, I think it is very useful work for many consumers of the
+kernel.
