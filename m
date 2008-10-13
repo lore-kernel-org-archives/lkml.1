@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbYJMPMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYJMPNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbYJMPMk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 11:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYJMPMc
+	id S1757526AbYJMPNn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 11:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbYJMPNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 11:12:32 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:35290 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752112AbYJMPMb (ORCPT
+	Mon, 13 Oct 2008 11:13:35 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:15473 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752231AbYJMPNe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 11:12:31 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: GIT head no longer boots on x86-64
-Date: Mon, 13 Oct 2008 17:11:33 +0200
-Message-Id: <1223910693-28693-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <alpine.LFD.2.00.0810130752020.3288@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0810130752020.3288@nehalem.linux-foundation.org>
+	Mon, 13 Oct 2008 11:13:34 -0400
+X-BigFish: VPS-48(z34a4lz62a3L1432R9370P98dR936eQ1805M936fOzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K8ONM2-02-PL8-01
+Date: Mon, 13 Oct 2008 17:13:07 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       oprofile-list@lists.sourceforge.net, cel <cel@linux.vnet.ibm.com>,
+       cbe-oss-dev@ozlabs.org, benh@kernel.crashing.org
+Subject: Re: [Cbe-oss-dev] powerpc/cell/oprofile: fix mutex locking for
+	spu-oprofile
+Message-ID: <20081013151307.GA23557@erda.amd.com>
+References: <1217620879.15667.145.camel@carll-linux-desktop> <18610.20951.764057.574721@cargo.ozlabs.ibm.com> <200808250955.57638.arnd@arndb.de> <200810131653.29631.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <200810131653.29631.arnd@arndb.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 13 Oct 2008 15:13:20.0694 (UTC) FILETIME=[3A5D8D60:01C92D46]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/13/2008 05:03 PM, Linus Torvalds wrote:
+On 13.10.08 16:53:28, Arnd Bergmann wrote:
+> On Monday 25 August 2008, Arnd Bergmann wrote:
+> > On Monday 25 August 2008, Paul Mackerras wrote:
+> > > 
+> > > > Since rc4 is out now, I understand if you feel more comfortable with
+> > > > putting the patch into -next instead of -merge.
+> > > 
+> > > Linus has been getting stricter about only putting in fixes for
+> > > regressions and serious bugs (see his recent email to Dave Airlie on
+> > > LKML for instance).  I assume that the corruption is just in the data
+> > > that is supplied to userspace and doesn't extend to any kernel data
+> > > structures.
+> > 
+> > That's right, please queue it for -next then.
 > 
-> On Mon, 13 Oct 2008, Alan Cox wrote:
+> I just realized that this patch never made it into powerpc-next after
+> all, neither benh nor paulus version. Whoever is handling it today,
+> could you please pull
 > 
->> On Mon, 13 Oct 2008 12:56:54 +0200
->> Jiri Slaby <jirislaby@gmail.com> wrote:
->>
->>> Could you try the debug patch below to see what address is text_poke trying
->>> to translate?
->> BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e40b1
+>  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git merge
 > 
-> Hmm. Last page of code being fixed up, perhaps?
-> 
-> Does this fix it?
+> to get this commit below. I have rebased it on top of the current
+> benh/powerpc/next branch.
 
-I don't think so. The patch below should.
+All powerpc oprofile patches are in this branch:
 
-More background:
-I guess SMP kernel running on UP? In such a case the module .text
-is patched to use UP locks before the module is added to the modules
-list and it thinks there are no valid data at that place while
-patching.
+git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git powerpc-for-paul
 
-Could you test it? The bug disappeared here in qemu. I've checked
-callers of the function, and it should not matter for them.
+Pending patches are:
 
-Also the !is_module_address(addr) test is useless now.
+Carl Love (1):
+      powerpc/cell/oprofile: fix mutex locking for spu-oprofile
 
----
- include/linux/mm.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Roel Kluin (1):
+      powerpc/cell/oprofile: vma_map: fix test on overlay_tbl_offset
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index c61ba10..45772fd 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -267,6 +267,10 @@ static inline int is_vmalloc_addr(const void *x)
- #ifdef CONFIG_MMU
- 	unsigned long addr = (unsigned long)x;
- 
-+#ifdef CONFIG_X86_64
-+	if (addr >= MODULES_VADDR && addr < MODULES_END)
-+		return 1;
-+#endif
- 	return addr >= VMALLOC_START && addr < VMALLOC_END;
- #else
- 	return 0;
+Please pull from there.
+
+-Robert
+
 -- 
-1.6.0.2
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
