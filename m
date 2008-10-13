@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763211AbYJMJwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbYJMJwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763211AbYJMJwc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760983AbYJMJlI
+	id S1762170AbYJMJwJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761956AbYJMJk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:41:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50971 "EHLO
+	Mon, 13 Oct 2008 05:40:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48694 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761101AbYJMJlG (ORCPT
+	with ESMTP id S1759094AbYJMJk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:41:06 -0400
+	Mon, 13 Oct 2008 05:40:58 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 51/80] pty: If the administrator creates a device for a ptmx
-	slave we should not error
+Subject: [PATCH 50/80] tty: Fix abusers of current->sighand->tty
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 13 Oct 2008 10:41:03 +0100
-Message-ID: <20081013094058.21645.99384.stgit@localhost.localdomain>
+Date: Mon, 13 Oct 2008 10:40:53 +0100
+Message-ID: <20081013094049.21645.87721.stgit@localhost.localdomain>
 In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
 References: <20081013092758.21645.2359.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -28,86 +27,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-The open path for ptmx slaves is via the ptmx device. Opening them any
-other way is not allowed. Vegard Nossum found that previously this was not
-the case and mknod foo c 128 42; cat foo would produce nasty diagnostics
+Various people outside the tty layer still stick their noses in behind the
+scenes. We need to make sure they also obey the locking and referencing rules.
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_io.c |   18 ++++++++++++------
- 1 files changed, 12 insertions(+), 6 deletions(-)
+ kernel/acct.c    |    2 +-
+ kernel/auditsc.c |    9 ++++-----
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index f40298e..2e96ce0 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1227,7 +1227,8 @@ static void tty_line_name(struct tty_driver *driver, int index, char *p)
-  *	init_dev		-	initialise a tty device
-  *	@driver: tty driver we are opening a device on
-  *	@idx: device index
-- *	@tty: returned tty structure
-+ *	@ret_tty: returned tty structure
-+ *	@first_ok: ok to open a new device (used by ptmx)
-  *
-  *	Prepare a tty device. This may not be a "new" clean device but
-  *	could also be an active device. The pty drivers require special
-@@ -1248,7 +1249,7 @@ static void tty_line_name(struct tty_driver *driver, int index, char *p)
-  */
+diff --git a/kernel/acct.c b/kernel/acct.c
+index dd68b90..f6006a6 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -548,7 +548,7 @@ static void do_acct_process(struct bsd_acct_struct *acct,
+ #endif
  
- static int init_dev(struct tty_driver *driver, int idx,
--	struct tty_struct **ret_tty)
-+	struct tty_struct **ret_tty, int first_ok)
- {
- 	struct tty_struct *tty, *o_tty;
- 	struct ktermios *tp, **tp_loc, *o_tp, **o_tp_loc;
-@@ -1279,6 +1280,11 @@ static int init_dev(struct tty_driver *driver, int idx,
- 	}
- 	if (tty) goto fast_track;
+ 	spin_lock_irq(&current->sighand->siglock);
+-	tty = current->signal->tty;
++	tty = current->signal->tty;	/* Safe as we hold the siglock */
+ 	ac.ac_tty = tty ? old_encode_dev(tty_devnum(tty)) : 0;
+ 	ac.ac_utime = encode_comp_t(jiffies_to_AHZ(cputime_to_jiffies(pacct->ac_utime)));
+ 	ac.ac_stime = encode_comp_t(jiffies_to_AHZ(cputime_to_jiffies(pacct->ac_stime)));
+diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+index 59cedfb..cf5bc2f 100644
+--- a/kernel/auditsc.c
++++ b/kernel/auditsc.c
+@@ -246,8 +246,8 @@ static int audit_match_perm(struct audit_context *ctx, int mask)
+ 	unsigned n;
+ 	if (unlikely(!ctx))
+ 		return 0;
+-
+ 	n = ctx->major;
++
+ 	switch (audit_classify_syscall(ctx->arch, n)) {
+ 	case 0:	/* native */
+ 		if ((mask & AUDIT_PERM_WRITE) &&
+@@ -1204,13 +1204,13 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
+ 				 (context->return_valid==AUDITSC_SUCCESS)?"yes":"no",
+ 				 context->return_code);
  
-+	if (driver->subtype == PTY_TYPE_MASTER &&
-+		(driver->flags & TTY_DRIVER_DEVPTS_MEM) && !first_ok) {
-+		retval = -EIO;
-+		goto end_init;
-+	}
- 	/*
- 	 * First time open is complex, especially for PTY devices.
- 	 * This code guarantees that either everything succeeds and the
-@@ -1413,7 +1419,7 @@ static int init_dev(struct tty_driver *driver, int idx,
+-	mutex_lock(&tty_mutex);
+-	read_lock(&tasklist_lock);
++	spin_lock_irq(&tsk->sighand->siglock);
+ 	if (tsk->signal && tsk->signal->tty && tsk->signal->tty->name)
+ 		tty = tsk->signal->tty->name;
+ 	else
+ 		tty = "(none)";
+-	read_unlock(&tasklist_lock);
++	spin_unlock_irq(&tsk->sighand->siglock);
++
+ 	audit_log_format(ab,
+ 		  " a0=%lx a1=%lx a2=%lx a3=%lx items=%d"
+ 		  " ppid=%d pid=%d auid=%u uid=%u gid=%u"
+@@ -1230,7 +1230,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
+ 		  context->egid, context->sgid, context->fsgid, tty,
+ 		  tsk->sessionid);
  
- 	if (retval)
- 		goto release_mem_out;
--	 goto success;
-+	goto success;
+-	mutex_unlock(&tty_mutex);
  
- 	/*
- 	 * This fast open can be used if the tty is already open.
-@@ -1795,7 +1801,7 @@ static void release_dev(struct file *filp)
- }
- 
- /**
-- *	tty_open		-	open a tty device
-+ *	__tty_open		-	open a tty device
-  *	@inode: inode of device file
-  *	@filp: file pointer to tty
-  *
-@@ -1874,7 +1880,7 @@ retry_open:
- 		return -ENODEV;
- 	}
- got_driver:
--	retval = init_dev(driver, index, &tty);
-+	retval = init_dev(driver, index, &tty, 0);
- 	mutex_unlock(&tty_mutex);
- 	if (retval)
- 		return retval;
-@@ -1971,7 +1977,7 @@ static int __ptmx_open(struct inode *inode, struct file *filp)
- 		return index;
- 
- 	mutex_lock(&tty_mutex);
--	retval = init_dev(ptm_driver, index, &tty);
-+	retval = init_dev(ptm_driver, index, &tty, 1);
- 	mutex_unlock(&tty_mutex);
- 
- 	if (retval)
+ 	audit_log_task_info(ab, tsk);
+ 	if (context->filterkey) {
 
