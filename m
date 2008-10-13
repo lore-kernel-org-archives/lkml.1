@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760854AbYJMNpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbYJMNrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760854AbYJMNpB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 09:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbYJMNog
+	id S1758660AbYJMNrE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 09:47:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYJMNqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 09:44:36 -0400
-Received: from stinky.trash.net ([213.144.137.162]:37203 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754598AbYJMNoe (ORCPT
+	Mon, 13 Oct 2008 09:46:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39645 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754144AbYJMNqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 09:44:34 -0400
-Message-ID: <48F350BF.2090301@trash.net>
-Date: Mon, 13 Oct 2008 15:44:31 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Nir Tzachar <nir.tzachar@gmail.com>
-CC: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
-References: <9b2db90b0810101349y7e357ef7g9c53f2ecf19fe3eb@mail.gmail.com> <9b2db90b0810101350o52d79ecka27409bfd3eaf1f8@mail.gmail.com>
-In-Reply-To: <9b2db90b0810101350o52d79ecka27409bfd3eaf1f8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Oct 2008 09:46:52 -0400
+Date: Mon, 13 Oct 2008 15:53:29 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Phil Endecott <phil_wueww_endecott@chezphil.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Mention Intel Atom in Kconfig.cpu
+Message-ID: <20081013135329.GM12131@one.firstfloor.org>
+References: <1223895506638@dmwebmail.dmwebmail.chezphil.org> <87zll8r86h.fsf@basil.nowhere.org> <20081013091848.7dcdaaac@infradead.org> <20081013133051.GL12131@one.firstfloor.org> <20081013093014.607c5925@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081013093014.607c5925@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nir Tzachar wrote:
-> On Fri, Oct 10, 2008 at 10:49 PM, Nir Tzachar <nir.tzachar@gmail.com> wrote:
->>>>> And I always get  the following warning twice:
->>>>>
->>>>> [ 6658.338116] ------------[ cut here ]------------
->>>>> [ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89
->>>>> nf_nat_fn+0x33/0x155()
-
->>> Found it - we lost an ifdef during the transition to nf_conntrack
->>> guarding an exception from defragmentation on loopback input.
->>> This patch should fix the warning.
->>
+On Mon, Oct 13, 2008 at 09:30:14AM -0400, Arjan van de Ven wrote:
+> On Mon, 13 Oct 2008 15:30:51 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > Core2 instruction set with tune=generic is still the best to set.
+> > 
+> > Not sure that is true. These option are mostly for the compiler.
 > 
-> Yes, the patch below fixes the problem.
+> exactly, and our benchmarks show that tune=generic is best right now
 
-Thanks for testing, I've queued the patch for 2.6.28 and -stable.
+So it doesn't matter as long as you set X86_GENERIC (and 
+CONFIG_CC_OPTIMIZE_FOR_SIZE)
+
+It would probably make sense to add a setting for those.
+
+-Andi
+
+-- 
+ak@linux.intel.com
