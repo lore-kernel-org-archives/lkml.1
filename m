@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764930AbYJMJ6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbYJMJ7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764930AbYJMJ6p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759094AbYJMJnO
+	id S1764211AbYJMJ7J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760639AbYJMJnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:43:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:18396 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759375AbYJMJnN (ORCPT
+	Mon, 13 Oct 2008 05:43:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51010 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761215AbYJMJnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:43:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QOfgDcoqiSrEwGF1yslbh867KyDDvpgI8FfTLlbc+Cr2OWDBDssIMuNz2xt0eH+igE
-         UsccYSaqhClT09yoqISV1ybdc+UlzsL0oKDjbtLq2q10VN8xbTrfXCR5aKqsxkmyO6Hd
-         hAE20moIoJs2KO1DPNp5WTgUE44IQtj8YSkBU=
-Message-ID: <c62985530810130243p7d8b1f6dqed1345fb186a4858@mail.gmail.com>
-Date: Mon, 13 Oct 2008 11:43:11 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 2/6] tracepoint: Check if the probe has been registered
-Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20081010140023.GA13137@elte.hu>
+	Mon, 13 Oct 2008 05:43:21 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 64/80] Simplify devpts_pty_new()
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 13 Oct 2008 10:43:18 +0100
+Message-ID: <20081013094313.21645.46319.stgit@localhost.localdomain>
+In-Reply-To: <20081013092758.21645.2359.stgit@localhost.localdomain>
+References: <20081013092758.21645.2359.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081010111631.78545D1BDA2@perso1.free.fr>
-	 <20081010140023.GA13137@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/10 Ingo Molnar <mingo@elte.hu>:
-> applied to tip/tracing/tracepoints, thanks Frederic!
+From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
 
-Hi Ingo.
+devpts_pty_new() is called when setting up a new pty and would not
+will not have an existing dentry or inode for the pty. So don't bother
+looking for an existing dentry - just create a new one.
 
-Are you sure it has been applied? It seems to be lost in the sea :)
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-Thanks....
+ fs/devpts/inode.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
+
+
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index b292ed7..50e885f 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -220,6 +220,7 @@ int devpts_pty_new(struct inode *ptmx_inode, struct tty_struct *tty)
+ 	dev_t device = MKDEV(driver->major, driver->minor_start+number);
+ 	struct dentry *dentry;
+ 	struct inode *inode = new_inode(devpts_mnt->mnt_sb);
++	char s[12];
+ 
+ 	/* We're supposed to be given the slave end of a pty */
+ 	BUG_ON(driver->type != TTY_DRIVER_TYPE_PTY);
+@@ -235,9 +236,13 @@ int devpts_pty_new(struct inode *ptmx_inode, struct tty_struct *tty)
+ 	init_special_inode(inode, S_IFCHR|config.mode, device);
+ 	inode->i_private = tty;
+ 
+-	dentry = get_node(number);
+-	if (!IS_ERR(dentry) && !dentry->d_inode) {
+-		d_instantiate(dentry, inode);
++	sprintf(s, "%d", number);
++
++	mutex_lock(&devpts_root->d_inode->i_mutex);
++
++	dentry = d_alloc_name(devpts_root, s);
++	if (!IS_ERR(dentry)) {
++		d_add(dentry, inode);
+ 		fsnotify_create(devpts_root->d_inode, dentry);
+ 	}
+ 
+
