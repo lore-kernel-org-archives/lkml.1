@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbYJMW50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbYJMW7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759044AbYJMW50 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 18:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbYJMW5R
+	id S1759859AbYJMW7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 18:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbYJMW7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 18:57:17 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:37535 "EHLO smtp.cs.aau.dk"
+	Mon, 13 Oct 2008 18:59:08 -0400
+Received: from smtp.cs.aau.dk ([130.225.194.6]:46255 "EHLO smtp.cs.aau.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755642AbYJMW5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 18:57:17 -0400
-Subject: [PATCH] serial: remove unused variable
+	id S1754692AbYJMW7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 18:59:07 -0400
+Subject: [PATCH] x86: fix compile warning for !(ACPI && X86_IO_APIC) builds
 From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@redhat.com>, David Miller <davem@davemloft.net>,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
        linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=utf-8
-Date: Tue, 14 Oct 2008 00:58:31 +0200
-Message-Id: <1223938711.21717.16.camel@odie.local>
+Date: Tue, 14 Oct 2008 01:00:50 +0200
+Message-Id: <1223938850.21717.21.camel@odie.local>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 8bit
@@ -24,32 +24,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes the following compile warning:
+This fixes the following compile warning for !(ACPI && X86_IO_APIC) builds:
 
-drivers/serial/8250.c: In function 'serial8250_init':
-drivers/serial/8250.c:2963: warning: unused variable 'i'
+arch/x86/kernel/early-quirks.c:99: warning: 'ati_ixp4x0_rev' defined
+but not used
 
-that was introduced by b70ac771 (serial: allow 8250 to be used on sparc)
-that removed the last use of the variable.
+that was introduced by 33fb0e4 (x86: SB450: skip IRQ0 override if it is not
+routed to INT2 of IOAPIC).
 
 Signed-off-by: Simon Holm Thøgersen <odie@cs.aau.dk>
 ---
- drivers/serial/8250.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/early-quirks.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index d4104a3..625fc20 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2960,7 +2960,7 @@ EXPORT_SYMBOL(serial8250_unregister_port);
+diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+index 733c4f8..f60afb6 100644
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -95,6 +95,7 @@ static void __init nvidia_bugs(int num, int slot, int func)
  
- static int __init serial8250_init(void)
+ }
+ 
++#if defined(CONFIG_ACPI) && defined (CONFIG_X86_IO_APIC)
+ static u32 ati_ixp4x0_rev(int num, int slot, int func)
  {
--	int ret, i;
-+	int ret;
+ 	u32 d;
+@@ -115,7 +116,6 @@ static u32 ati_ixp4x0_rev(int num, int slot, int func)
  
- 	if (nr_uarts > UART_NR)
- 		nr_uarts = UART_NR;
+ static void __init ati_bugs(int num, int slot, int func)
+ {
+-#if defined(CONFIG_ACPI) && defined (CONFIG_X86_IO_APIC)
+ 	u32 d;
+ 	u8  b;
+ 
+@@ -138,8 +138,12 @@ static void __init ati_bugs(int num, int slot, int func)
+ 		printk(KERN_INFO "If you got timer trouble "
+ 		       "try acpi_use_timer_override\n");
+ 	}
+-#endif
+ }
++#else
++static void __init ati_bugs(int num, int slot, int func)
++{
++}
++#endif
+ 
+ #ifdef CONFIG_DMAR
+ static void __init intel_g33_dmar(int num, int slot, int func)
 -- 
 1.5.6.2.255.gbed62
 
