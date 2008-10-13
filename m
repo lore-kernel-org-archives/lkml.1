@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYJMSvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761072AbYJMSwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbYJMSvm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 14:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760647AbYJMSvb
+	id S1761072AbYJMSwm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 14:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYJMSwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 14:51:31 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:43271 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755746AbYJMSva (ORCPT
+	Mon, 13 Oct 2008 14:52:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36109
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753170AbYJMSw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 14:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=rBMCkkf6OguSV0doaUyS5XmLc5SWceGkA0PIyTO3qScVXiWzO/vtgnNmPkOgWZbA8w
-         FuqYEMT33K6DQMNrc95swDN8bFrWOyyzKammvgmTzhJ8Ce8lxybhl4vznznX43NKIUQ0
-         6ELR9cocWYbqcpS1ZQscF+liMNs74xFLtQvxs=
-Message-ID: <e9c3a7c20810131151q2d8c4b44ve538e00bc4d8ae1b@mail.gmail.com>
-Date: Mon, 13 Oct 2008 11:51:28 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Subject: Re: dmaengine: DMA_CTRL_ACK flag signification
-Cc: "Nicolas Ferre" <nicolas.ferre@atmel.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-In-Reply-To: <7F38996F7185A24AB9071ED4950AD8C102121A73@swsmsx413.ger.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Oct 2008 14:52:29 -0400
+Date: Mon, 13 Oct 2008 11:52:05 -0700 (PDT)
+Message-Id: <20081013.115205.31287539.davem@davemloft.net>
+To: afleming@freescale.com
+Cc: bunk@kernel.org, buytenh@marvell.com, jgarzik@pobox.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [2.6 patch] export genphy_restart_aneg
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <5281FCAB-128C-4AE7-8241-BF748B1911CF@freescale.com>
+References: <20081013171900.GK29938@cs181140183.pp.htv.fi>
+	<5281FCAB-128C-4AE7-8241-BF748B1911CF@freescale.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48DA2B94.3020804@atmel.com>
-	 <7F38996F7185A24AB9071ED4950AD8C102121A73@swsmsx413.ger.corp.intel.com>
-X-Google-Sender-Auth: f32626e8587a1a6b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 7, 2008 at 2:09 AM, Sosnowski, Maciej
-<maciej.sosnowski@intel.com> wrote:
-> Nicolas Ferre wrote:
->> Hi all,
->>
->> I am in the process of writing a driver for an on-chip Atmel DMA
->> engine.
->>
->> I am a little confused about the use of the flag DMA_CTRL_ACK : It
->> seems that it is set in most of the descriptors in use except the
->> first or last of a descriptor chain. So, I cannot find where this
->> flag is cleared. In short, I do not see what it is used for : how
->> must I take it into account in my driver (in device_prep_dma_memcpy()
->> for instance) ?
->>
->> Can you enlighten me ?
->>
->> Regards,
->
-> Hi Nicolas,
->
-> Sorry for the delay in response.
-> Generally the idea behind DMA_CTRL_ACK is to let an application
-> safely set a chain of dependent operations.
-> What a DMA driver needs to do is to check
-> if a given descriptor has been already acked (using async_tx_test_ack())
-> before it recycles or releases it.
-> You are right that there is no place where DMA_CTRL_ACK
-> is cleared at the moment. I would say it is the offload engine driver
-> responsibility to clear the flag when it recycles the descriptor.
-> Dan, could you confirm?
+From: Andy Fleming <afleming@freescale.com>
+Date: Mon, 13 Oct 2008 13:04:30 -0500
 
-It may be better to call this the 'ownership' bit as while it is clear
-client code owns the descriptor and can add dependent operations, once
-it is set the dmaengine driver is free to recycle the descriptor for
-use in another operation.  The driver's only responsibility* is to
-read the bit in its cleanup routine.
+> 
+> On Oct 13, 2008, at 12:19, Adrian Bunk wrote:
+> 
+> > This patch fixes the following build error caused by
+> > commit ed94493fb38a665cebcf750dfabe8a6dd13e136f
+> > (mv643xx_eth: convert to phylib):
+> >
+> > <--  snip  -->
+> >
+> > ...
+> >  Building modules, stage 2.
+> >  MODPOST 1280 modules
+> > ERROR: "genphy_restart_aneg" [drivers/net/mv643xx_eth.ko] undefined!
+> > ...
+> > make[2]: *** [__modpost] Error 1
+> >
+> > <--  snip  -->
+> >
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> 
+> Could you get genphy_setup_forced, too?  It doesn't appear to be used, but it's currently in include/linux/phy.h, and not static.
 
---
-Dan
-
-*Note that if the driver decides to support transfer sizes larger than
-its hardware maximum then it needs to set the ack bit on any internal
-descriptors.  I.e. if the hardware can only do 4KB per descriptor it
-would allocate two descriptors for an 8KB transfer and set the ack bit
-on the first, leaving the second up to the caller.
+When there is a use we can add the export.
