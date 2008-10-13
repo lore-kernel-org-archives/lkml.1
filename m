@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbYJMHXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbYJMHfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbYJMHXC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 03:23:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYJMHWy
+	id S1755901AbYJMHfS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 03:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYJMHfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 03:22:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57195 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbYJMHWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 03:22:53 -0400
-Date: Mon, 13 Oct 2008 09:22:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: async function call test users
-Message-ID: <20081013072241.GB15346@elte.hu>
-References: <20081012194427.2e21c22e@infradead.org> <20081012194511.64cdd9e4@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081012194511.64cdd9e4@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0601]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 13 Oct 2008 03:35:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57829
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753247AbYJMHfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 03:35:05 -0400
+Date: Mon, 13 Oct 2008 00:34:41 -0700 (PDT)
+Message-Id: <20081013.003441.109866647.davem@davemloft.net>
+To: swivel@shells.gnugeneration.com
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081005.153059.111120997.davem@davemloft.net>
+References: <20081005.132722.203253085.davem@davemloft.net>
+	<20081005214556.GL18569@fc6222126.aspadmin.net>
+	<20081005.153059.111120997.davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Miller <davem@davemloft.net>
+Date: Sun, 05 Oct 2008 15:30:59 -0700 (PDT)
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+> From: swivel@shells.gnugeneration.com
+> Date: Sun, 5 Oct 2008 16:45:57 -0500
+> 
+> > I will be testing this patch today.  At a glance it appears with this
+> > patch we're still not taking rcvlowat into consideration in recv()
+> > with MSG_PEEK flag set.  This should probably also be corrected, as
+> > mentioned in the thread previously.
+> 
+> Yes, I remember you mentioning that.
+> 
+> I'll look into it.
 
-> not for merge! Just for "show that it works"
+Were you able to test my updated patch?
 
-please propagate something like this into tests/ and create a series of 
-unit tests like the lockdep self-tests that prints out a series of 
-WARN()n if it doesnt work or so. It's useful for you too when you are 
-hacking on it.
+If it makes your application work, I might want to defer messing around
+with MSG_PEEK semantics in recvmsg().
 
-Plus an anti-NIH suggestion: you could reuse much of the syslets series 
-i did - sans the ugly syscall ABI bits. The submit/completion bits were 
-pretty mature.
-
-	Ingo
+So I've been waiting for your test results before I proceed.
