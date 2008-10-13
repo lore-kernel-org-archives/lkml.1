@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYJMJQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYJMJRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbYJMJQk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 05:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbYJMJQc
+	id S1757523AbYJMJRu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 05:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbYJMJRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 05:16:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39930 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754034AbYJMJQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 05:16:31 -0400
-Message-ID: <48F3113F.7090905@kernel.org>
-Date: Mon, 13 Oct 2008 18:13:35 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [bug] latest -git boot hang
-References: <20081010203043.GA11798@elte.hu> <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu> <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org> <48EFF84B.5060108@kernel.org> <48F00476.6030108@zytor.com>
-In-Reply-To: <48F00476.6030108@zytor.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Oct 2008 09:15:05 +0000 (UTC)
+	Mon, 13 Oct 2008 05:17:39 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:49463 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755348AbYJMJRi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 05:17:38 -0400
+Date: Mon, 13 Oct 2008 10:17:25 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: ben@simtec.co.uk, s.hauer@pengutronix.de, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Javier Herrero <jherrero@hvsistemas.es>
+Subject: Re: [PATCH 1/1] netdev: DM9000: Added typecasting to supress some warnings on Blackfin
+Message-ID: <20081013091725.GG31627@trinity.fluff.org>
+References: <1223889009-31336-1-git-send-email-cooloney@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1223889009-31336-1-git-send-email-cooloney@kernel.org>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Tejun Heo wrote:
->>
->> Yeap, if fedora didn't work, I think it should be hidden.  Do we already
->> have place to hide things like this?
->>
-> 
-> By the way, I don't see anything in this patchset that lets userspace
-> discover the parent device.  Since the old rule of
-> 
->     partition device = parent device + partition number
-> 
-> ... no longer holds, this is a serious omission for something that is in
-> mainstream (and therefore *requires* that a new interface is deployed
-> for anything that cares.)
-> 
-> This will have to be addressed before 2.6.28 final.
+On Mon, Oct 13, 2008 at 05:10:09PM +0800, Bryan Wu wrote:
+> From: Javier Herrero <jherrero@hvsistemas.es>
 
-The sysfs directory for the parent can be reached by "cd -P
-/sys/class/block/PART/..".  That should be enough, right?  I'll add
-the partition attribute but I don't really think we need to do
-anything to improve parent discovery.
-
-Thanks.
+No, your arch definitions of writesb and co are wrong if they
+are not taking 'void __iomem *' arguments.
+ 
+> Signed-off-by: Javier Herrero <jherrero@hvsistemas.es>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/net/dm9000.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
+> index f42c23f..c4737ca 100644
+> --- a/drivers/net/dm9000.c
+> +++ b/drivers/net/dm9000.c
+> @@ -188,35 +188,35 @@ iow(board_info_t * db, int reg, int value)
+>  
+>  static void dm9000_outblk_8bit(void __iomem *reg, void *data, int count)
+>  {
+> -	writesb(reg, data, count);
+> +	writesb((int)reg, data, count);
+>  }
+>  
+>  static void dm9000_outblk_16bit(void __iomem *reg, void *data, int count)
+>  {
+> -	writesw(reg, data, (count+1) >> 1);
+> +	writesw((int)reg, data, (count+1) >> 1);
+>  }
+>  
+>  static void dm9000_outblk_32bit(void __iomem *reg, void *data, int count)
+>  {
+> -	writesl(reg, data, (count+3) >> 2);
+> +	writesl((int)reg, data, (count+3) >> 2);
+>  }
+>  
+>  /* input block from chip to memory */
+>  
+>  static void dm9000_inblk_8bit(void __iomem *reg, void *data, int count)
+>  {
+> -	readsb(reg, data, count);
+> +	readsb((int)reg, data, count);
+>  }
+>  
+>  
+>  static void dm9000_inblk_16bit(void __iomem *reg, void *data, int count)
+>  {
+> -	readsw(reg, data, (count+1) >> 1);
+> +	readsw((int)reg, data, (count+1) >> 1);
+>  }
+>  
+>  static void dm9000_inblk_32bit(void __iomem *reg, void *data, int count)
+>  {
+> -	readsl(reg, data, (count+3) >> 2);
+> +	readsl((int)reg, data, (count+3) >> 2);
+>  }
+>  
+>  /* dump block from chip to null */
+> -- 
+> 1.5.6
 
 -- 
-tejun
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
