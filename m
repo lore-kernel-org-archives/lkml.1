@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbYJMUIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYJMUIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757319AbYJMUIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 16:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbYJMUFt
+	id S1757780AbYJMUIo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 16:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbYJMUFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 16:05:49 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:45029 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015AbYJMUFk (ORCPT
+	Mon, 13 Oct 2008 16:05:51 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:34655 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753076AbYJMUFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 16:05:40 -0400
-Message-Id: <20081013195916.841528410@mail.of.borg>
+	Mon, 13 Oct 2008 16:05:41 -0400
+Message-Id: <20081013195917.355152928@mail.of.borg>
 References: <20081013195846.674654386@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Mon, 13 Oct 2008 21:58:54 +0200
+Date: Mon, 13 Oct 2008 21:58:55 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
        Michael Schmitz <schmitz@debian.org>
-Subject: [patch 08/18] m68k: Remove unused atari_kbd_translate()
-Content-Disposition: inline; filename=atari-kill-unused-atari_kbd_translate.diff
+Subject: [patch 09/18] m68k: Define rtc_lock on Atari
+Content-Disposition: inline; filename=atari-define-rtc_lock.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-If CONFIG_VT=n, I get:
+The nvram and rtc-cmos drivers use the spinlock rtc_lock to protect against
+concurrent accesses to the CMOS memory. As m68k doesn't support SMP or preempt
+yet, the spinlock calls tend to get optimized away, but not for all
+configurations, causing in some rare cases:
 
-| arch/m68k/atari/built-in.o: In function `atari_kbd_translate':
-| arch/m68k/atari/atakeyb.c:640: undefined reference to `shift_state'
+| ERROR: "rtc_lock" [drivers/rtc/rtc-cmos.ko] undefined!
+| ERROR: "rtc_lock" [drivers/char/nvram.ko] undefined!
 
-Just remove atari_kbd_translate(), as it's unused.
+Add the spinlock to the Atari core code to avoid this.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Acked-by: Michael Schmitz <schmitz@debian.org>
 ---
- arch/m68k/atari/atakeyb.c |   12 ------------
- 1 file changed, 12 deletions(-)
+ arch/m68k/atari/time.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/arch/m68k/atari/atakeyb.c
-+++ b/arch/m68k/atari/atakeyb.c
-@@ -635,15 +635,3 @@ int atari_keyb_init(void)
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(atari_keyb_init);
--
--int atari_kbd_translate(unsigned char keycode, unsigned char *keycodep, char raw_mode)
--{
--#ifdef CONFIG_MAGIC_SYSRQ
--	/* ALT+HELP pressed? */
--	if ((keycode == 98) && ((shift_state & 0xff) == 8))
--		*keycodep = 0xff;
--	else
--#endif
--		*keycodep = keycode;
--	return 1;
--}
+--- a/arch/m68k/atari/time.c
++++ b/arch/m68k/atari/time.c
+@@ -20,6 +20,9 @@
+ 
+ #include <asm/atariints.h>
+ 
++DEFINE_SPINLOCK(rtc_lock);
++EXPORT_SYMBOL_GPL(rtc_lock);
++
+ void __init
+ atari_sched_init(irq_handler_t timer_routine)
+ {
 
 -- 
 Gr{oetje,eeting}s,
