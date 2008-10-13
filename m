@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760894AbYJMRUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760722AbYJMRXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760894AbYJMRUk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 13:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbYJMRUG
+	id S1760722AbYJMRXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 13:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbYJMRW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 13:20:06 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:44246 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932216AbYJMRUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 13:20:04 -0400
-Date: Mon, 13 Oct 2008 20:19:00 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Lennert Buytenhek <buytenh@marvell.com>,
-       Andy Fleming <afleming@freescale.com>, jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [2.6 patch] export genphy_restart_aneg
-Message-ID: <20081013171900.GK29938@cs181140183.pp.htv.fi>
+	Mon, 13 Oct 2008 13:22:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45259 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751235AbYJMRW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 13:22:57 -0400
+Date: Mon, 13 Oct 2008 10:22:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] intermediate SCSI updates
+In-Reply-To: <1223909115.5566.13.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
+References: <1223909115.5566.13.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error caused by
-commit ed94493fb38a665cebcf750dfabe8a6dd13e136f
-(mv643xx_eth: convert to phylib):
-
-<--  snip  -->
-
-...
-  Building modules, stage 2.
-  MODPOST 1280 modules
-ERROR: "genphy_restart_aneg" [drivers/net/mv643xx_eth.ko] undefined!
-...
-make[2]: *** [__modpost] Error 1
-
-<--  snip  -->
 
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+On Mon, 13 Oct 2008, James Bottomley wrote:
+>
+> This represents all the pieces of SCSI which were depending on the
+> already merged block tree.
 
----
+Grr. And it doesn't actually compile.
 
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 1716274..f11e900 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -557,6 +557,7 @@ int genphy_restart_aneg(struct phy_device *phydev)
- 
- 	return ctl;
- }
-+EXPORT_SYMBOL(genphy_restart_aneg);
- 
- 
- /**
+  drivers/scsi/sd.c:579:27: error: macro "sd_dif_op" passed 4 arguments, but takes just 3
+  drivers/scsi/sd.c: In function ¡sd_prep_fn¢:
+  drivers/scsi/sd.c:578: error: ¡sd_dif_op¢ undeclared (first use in this function)
+  drivers/scsi/sd.c:578: error: (Each undeclared identifier is reported only once
+  drivers/scsi/sd.c:578: error: for each function it appears in.)
 
+Hmm? Was this testedt AT ALL? It can never compile unless that idiotic 
+CONFIG_BLK_DEV_INTEGRITY option is set that no sane person would set right 
+now, and which is even documented to not be enabled by default:
+
+  If in doubt, say N.
+
+yet it looks like it has not compiled since a commit that was put in in 
+the middle of September!
+
+What part of "This is total untested crap" are we missing here?
+
+Yeah, I'm grumpy. I expect to not be fed shit like this. It has apparently 
+been rebased several times, and all apparently with no testing 
+what-so-ever!
+
+		Linus
