@@ -1,202 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYJNJUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbYJNJVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbYJNJUo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbYJNJUG
+	id S1759065AbYJNJVB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756307AbYJNJUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:20:06 -0400
-Received: from mailbox2.myri.com ([64.172.73.26]:1892 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755274AbYJNJUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:20:03 -0400
-Message-ID: <48F4627E.30300@myri.com>
-Date: Tue, 14 Oct 2008 11:12:30 +0200
-From: Brice Goglin <brice@myri.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-CC: Adrian Bunk <bunk@kernel.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       linux-kernel@vger.kernel.org, apw@shadowen.org, linuxppc-dev@ozlabs.org,
-       sam@ravnborg.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc	selectsCONFIG_INTEL_IOATDMA=y
-References: <20081013101559.GA14372@linux.vnet.ibm.com> <20081013112631.GD29938@cs181140183.pp.htv.fi> <36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com> <48F391B9.1000206@myri.com> <20081013183503.GA28133@cs181140183.pp.htv.fi>
-In-Reply-To: <20081013183503.GA28133@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 14 Oct 2008 05:20:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:45095 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758836AbYJNJUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 05:20:48 -0400
+Subject: Re: pktcdvd -> sysfs warning with 2.6.27
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Peter Osterlund <petero2@telia.com>
+Cc: Greg KH <greg@kroah.com>, Nix <nix@esperi.org.uk>,
+       linux-kernel@vger.kernel.org, a.zummo@towertech.it
+In-Reply-To: <ac3eb2510810140138u438b3935ia134fe8e5dbb795a@mail.gmail.com>
+References: <87vdvyngni.fsf@hades.wkstn.nix>
+	 <20081012181700.GA21072@kroah.com> <87prm4mbgy.fsf@hades.wkstn.nix>
+	 <20081013214747.GA15765@kroah.com> <m34p3f926s.fsf@telia.com>
+	 <ac3eb2510810140138u438b3935ia134fe8e5dbb795a@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 14 Oct 2008 11:20:41 +0200
+Message-Id: <1223976041.5394.6.camel@nga.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> But considering that igb is in a similar situation it would be nice if 
-> all 3 drivers would handle it the same way.
->   
+On Tue, 2008-10-14 at 10:38 +0200, Kay Sievers wrote:
+> On Tue, Oct 14, 2008 at 7:27 AM, Peter Osterlund <petero2@telia.com> wrote:
+> > Greg KH <greg@kroah.com> writes:
+> >
+> >> On Mon, Oct 13, 2008 at 10:28:13PM +0100, Nix wrote:
+> >>> On 12 Oct 2008, Greg KH uttered the following:
+> >>> > Perhaps some other kernel code is registering with that same major/minor
+> >>> > number, making it already present in sysfs.  Where does that sysfs file
+> >>> > link to before you load your driver?
+> >>>
+> >>> Exactly so. This is probably *not* a regression after all: the only
+> >>> change I made to my 2.6.27 config (weeks before actually rebooting, so I
+> >>> forgot) was to build in the CMOS RTC driver, in a hopeless attempt to
+> >>> make hrtimers work on this old hardware (I knew it was hopeless but
+> >>> tried anyway). (Unsurprisingly it didn't work:
+> >>> <http://www.ussg.iu.edu/hypermail/linux/kernel/0810.1/1033.html> worked,
+> >>> thank *you* Jeff, I have glitch-free pulseaudio and microsecond sleeps
+> >>> and several of my programs are happier!)
+> >>>
+> >>> And, looky here, a smoking gun:
+> >>>
+> >>> hades:~# ls -l /sys/dev/char/254:0 /dev/rtc*
+> >>> lrwxrwxrwx 1 root root 0 2008-10-13 22:16 /sys/dev/char/254:0 -> ../../devices/platform/rtc_cmos/rtc/rtc0
+> >>> hades:~# ls -l
+> >>> lrwxrwxrwx 1 root root      4 2008-10-13 21:57 /dev/rtc -> rtc0
+> >>> crw-r--r-- 1 root root 254, 0 2008-10-13 21:57 /dev/rtc0
+> >>>
+> >>> hades:~# pktsetup cdrw /dev/cdrw
+> >>> hades:~# ls -l /dev/pktcdvd/
+> >>> total 0
+> >>> brw-r----- 1 root root  254,  0 2008-10-13 22:23 cdrw
+> >>> crw-r--r-- 1 root root   10, 63 2008-10-13 21:57 control
+> >>> brw-rw---- 1 root cdrom 254,  0 2008-10-13 22:23 pktcdvd0
+> >>>
+> >>> Am I right in assuming that this sort of isn't going to work? :)
+> >>
+> >> Yes, you are right :)
+> >
+> > I don't think so. One is a character device and the other is a block
+> > device. Block devices didn't use to collide with character devices.
+> > Has that changed recently?
+> 
+> No, that's still true.
+> 
+> >>> Major 254 is listed as LOCAL/EXPERIMENTAL USE in devices.txt. I don't
+> >>> consider either pktcdvd or the rtc drivers as LOCAL/EXPERIMENTAL: the
+> >>> former in particular has been in the kernel for years.
+> >>
+> >> Both of those should get "real" majors assigned to them.  It's not ok to
+> >> randomly go grabbing major:minor numbers like this for code that is in
+> >> mainline.
+> >
+> > It's not about random grabbing. It's about getting a dynamically
+> > assigned number. The pktcdvd driver once had static numbers, but at
+> > the time when the driver was merged into the mainline kernel, dynamic
+> > numbers were considered better. Therefore I changed the driver to use
+> > dynamic numbers.
+> 
+> The pktcdvd driver allocates a dynamic block major, which is fine. But
+> doesn't it use the same number, and now not allocated, for the char
+> devices it uses? That looks like something that needs to fixed, right?
+> 
+>   static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
+>   {
+>     if (class_pktcdvd) {
+>       pd->dev = device_create_drvdata(class_pktcdvd, NULL,
+>                                                 pd->pkt_dev, NULL,
+>                                                 "%s", pd->name);
 
-Jesse,
-What do you think of the below patch?
-I am not very familiar with Kconfig, but it seems to solve the problem.
-If a Kconfig guru could double-check...
-Brice
+Something similar to this, with error checking, might be needed. It has
+two independent majors now in block and char:
+  $ grep pkt /proc/devices 
+  251 pktcdvd-char
+  252 pktcdvd
 
 
-myri10ge: Add MYRI10GE_DCA instead of selecting INTEL_IOATDMA
-
-Add a bool MYRI10GE_DCA defined to y if MYRI10GE and DCA are enabled, but
-MYRI10GE isn't y while DCA=m. And thus remove the need to select INTEL_IOATDMA
-when MYRI10GE is enabled, so that non-x86 architectures can build the myri10ge.
-
-Signed-off-by: Brice Goglin <brice@myri.com>
-
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index e9d5294..0162d55 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2462,7 +2462,6 @@ config MYRI10GE
- 	select FW_LOADER
- 	select CRC32
- 	select INET_LRO
--	select INTEL_IOATDMA
- 	---help---
- 	  This driver supports Myricom Myri-10G Dual Protocol interface in
- 	  Ethernet mode. If the eeprom on your board is not recent enough,
-@@ -2474,6 +2473,11 @@ config MYRI10GE
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called myri10ge.
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 29b7a64..07dd157 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -86,6 +86,7 @@
+ static struct pktcdvd_device *pkt_devs[MAX_WRITERS];
+ static struct proc_dir_entry *pkt_proc;
+ static int pktdev_major;
++static int pktdev_char_major;
+ static int write_congestion_on  = PKT_WRITE_CONGESTION_ON;
+ static int write_congestion_off = PKT_WRITE_CONGESTION_OFF;
+ static struct mutex ctl_mutex;	/* Serialize open/close/setup/teardown */
+@@ -301,9 +302,11 @@ static struct kobj_type kobj_pkt_type_wqueue = {
  
-+config MYRI10GE_DCA
-+	bool
-+	default y
-+	depends on MYRI10GE && DCA && !(MYRI10GE=y && DCA=m)
+ static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
+ {
++	dev_t devno = MKDEV(pktdev_char_major, MINOR(pd->pkt_dev));
 +
- config NETXEN_NIC
- 	tristate "NetXen Multi port (1/10) Gigabit Ethernet NIC"
- 	depends on PCI
-diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
-index 6dce901..a9aebad 100644
---- a/drivers/net/myri10ge/myri10ge.c
-+++ b/drivers/net/myri10ge/myri10ge.c
-@@ -188,7 +188,7 @@ struct myri10ge_slice_state {
- 	dma_addr_t fw_stats_bus;
- 	int watchdog_tx_done;
- 	int watchdog_tx_req;
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	int cached_dca_tag;
- 	int cpu;
- 	__be32 __iomem *dca_tag;
-@@ -220,7 +220,7 @@ struct myri10ge_priv {
- 	int msi_enabled;
- 	int msix_enabled;
- 	struct msix_entry *msix_vectors;
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	int dca_enabled;
- #endif
- 	u32 link_state;
-@@ -902,7 +902,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
- 	struct myri10ge_slice_state *ss;
- 	int i, status;
- 	size_t bytes;
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	unsigned long dca_tag_off;
- #endif
+ 	if (class_pktcdvd) {
+ 		pd->dev = device_create_drvdata(class_pktcdvd, NULL,
+-						pd->pkt_dev, NULL,
++						devno, NULL,
+ 						"%s", pd->name);
+ 		if (IS_ERR(pd->dev))
+ 			pd->dev = NULL;
+@@ -320,10 +323,12 @@ static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
  
-@@ -1012,7 +1012,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
- 	}
- 	put_be32(htonl(mgp->intr_coal_delay), mgp->intr_coal_delay_ptr);
- 
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	status = myri10ge_send_cmd(mgp, MXGEFW_CMD_GET_DCA_OFFSET, &cmd, 0);
- 	dca_tag_off = cmd.data0;
- 	for (i = 0; i < mgp->num_slices; i++) {
-@@ -1051,7 +1051,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
- 	return status;
+ static void pkt_sysfs_dev_remove(struct pktcdvd_device *pd)
+ {
++	dev_t devno = MKDEV(pktdev_char_major, MINOR(pd->pkt_dev));
++
+ 	pkt_kobj_remove(pd->kobj_stat);
+ 	pkt_kobj_remove(pd->kobj_wqueue);
+ 	if (class_pktcdvd)
+-		device_destroy(class_pktcdvd, pd->pkt_dev);
++		device_destroy(class_pktcdvd, devno);
  }
  
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- static void
- myri10ge_write_dca(struct myri10ge_slice_state *ss, int cpu, int tag)
+ 
+@@ -3067,6 +3072,7 @@ static struct miscdevice pkt_misc = {
+ static int __init pkt_init(void)
  {
-@@ -1505,7 +1505,7 @@ static int myri10ge_poll(struct napi_struct *napi, int budget)
- 	struct net_device *netdev = ss->mgp->dev;
- 	int work_done;
+ 	int ret;
++	dev_t devno;
  
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	if (ss->mgp->dca_enabled)
- 		myri10ge_update_dca(ss);
- #endif
-@@ -1736,7 +1736,7 @@ static const char myri10ge_gstrings_main_stats[][ETH_GSTRING_LEN] = {
- 	"tx_boundary", "WC", "irq", "MSI", "MSIX",
- 	"read_dma_bw_MBs", "write_dma_bw_MBs", "read_write_dma_bw_MBs",
- 	"serial_number", "watchdog_resets",
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	"dca_capable_firmware", "dca_device_present",
- #endif
- 	"link_changes", "link_up", "dropped_link_overflow",
-@@ -1815,7 +1815,7 @@ myri10ge_get_ethtool_stats(struct net_device *netdev,
- 	data[i++] = (unsigned int)mgp->read_write_dma;
- 	data[i++] = (unsigned int)mgp->serial_number;
- 	data[i++] = (unsigned int)mgp->watchdog_resets;
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	data[i++] = (unsigned int)(mgp->ss[0].dca_tag != NULL);
- 	data[i++] = (unsigned int)(mgp->dca_enabled);
- #endif
-@@ -3844,7 +3844,7 @@ static int myri10ge_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		dev_err(&pdev->dev, "failed reset\n");
- 		goto abort_with_slices;
- 	}
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	myri10ge_setup_dca(mgp);
- #endif
- 	pci_set_drvdata(pdev, mgp);
-@@ -3948,7 +3948,7 @@ static void myri10ge_remove(struct pci_dev *pdev)
- 	netdev = mgp->dev;
- 	unregister_netdev(netdev);
+ 	mutex_init(&ctl_mutex);
  
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	myri10ge_teardown_dca(mgp);
- #endif
- 	myri10ge_dummy_rdma(mgp, 0);
-@@ -3993,7 +3993,7 @@ static struct pci_driver myri10ge_driver = {
- #endif
- };
+@@ -3083,6 +3089,9 @@ static int __init pkt_init(void)
+ 	if (!pktdev_major)
+ 		pktdev_major = ret;
  
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- static int
- myri10ge_notify_dca(struct notifier_block *nb, unsigned long event, void *p)
- {
-@@ -4024,7 +4024,7 @@ static __init int myri10ge_init_module(void)
- 		       myri10ge_driver.name, myri10ge_rss_hash);
- 		myri10ge_rss_hash = MXGEFW_RSS_HASH_TYPE_SRC_PORT;
- 	}
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	dca_register_notify(&myri10ge_dca_notifier);
- #endif
- 	if (myri10ge_max_slices > MYRI10GE_MAX_SLICES)
-@@ -4037,7 +4037,7 @@ module_init(myri10ge_init_module);
++	alloc_chrdev_region(&devno, 0, 255, "pktcdvd-char");
++	pktdev_char_major = MAJOR(devno);
++
+ 	ret = pkt_sysfs_init();
+ 	if (ret)
+ 		goto out;
+@@ -3117,6 +3126,8 @@ static void __exit pkt_exit(void)
+ 	pkt_debugfs_cleanup();
+ 	pkt_sysfs_cleanup();
  
- static __exit void myri10ge_cleanup_module(void)
- {
--#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
-+#ifdef CONFIG_MYRI10GE_DCA
- 	dca_unregister_notify(&myri10ge_dca_notifier);
- #endif
- 	pci_unregister_driver(&myri10ge_driver);
++	unregister_chrdev_region(MKDEV(pktdev_char_major, 0), 255);
++
+ 	unregister_blkdev(pktdev_major, DRIVER_NAME);
+ 	mempool_destroy(psd_pool);
+ }
+
 
 
