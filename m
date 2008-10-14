@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYJNBmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbYJNBme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbYJNBmK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 21:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbYJNBlq
+	id S1757098AbYJNBme (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 21:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbYJNBmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 21:41:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35647
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755484AbYJNBlp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 21:41:45 -0400
-Date: Mon, 13 Oct 2008 18:41:21 -0700 (PDT)
-Message-Id: <20081013.184121.129699101.davem@davemloft.net>
-To: ron.mercer@qlogic.com
-Cc: kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com, apw@shadowen.org, scofeldm@cisco.com,
-       cooldavid@cooldavid.org
-Subject: Re: [PATCH] 2.6.27-git2 - fix build error at csum_ipv6_magic()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081013230957.GB26780@susedev.qlogic.org>
-References: <20081013121441.GB14372@linux.vnet.ibm.com>
-	<20081013230957.GB26780@susedev.qlogic.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 13 Oct 2008 21:42:23 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37632 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754631AbYJNBmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 21:42:22 -0400
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <86802c440810131814l42340448w7d2158f4bfdda504@mail.gmail.com>
+References: <20081014005428.EC2D8DDF93@ozlabs.org>
+	 <48F3F014.3050406@zytor.com>
+	 <86802c440810131814l42340448w7d2158f4bfdda504@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 14 Oct 2008 12:41:58 +1100
+Message-Id: <1223948518.8157.311.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ron Mercer <ron.mercer@qlogic.com>
-Date: Mon, 13 Oct 2008 16:09:57 -0700
 
-> Signed-off-by: Ron Mercer <ron.mercer@qlogic.com>
+> yes. some pci resource print out etc could use that too.
+> to get rid of the annoying casting.
+> 
+> BTW: can you just enforce resource_t to u64?
 
-I've applied Kamalesh's patch, thanks everyone.
+Why the waste on embedded platforms that don't need it ?
+
+Cheers,
+Ben.
+
+
