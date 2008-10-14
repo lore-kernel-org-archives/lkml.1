@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYJNGwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYJNGzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbYJNGwK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 02:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbYJNGv4
+	id S1755197AbYJNGzy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 02:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYJNGzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 02:51:56 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53914 "EHLO sh.osrg.net"
+	Tue, 14 Oct 2008 02:55:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36064 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbYJNGvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 02:51:55 -0400
-Date: Tue, 14 Oct 2008 15:50:02 +0900
-To: grundler@parisc-linux.org
-Cc: fujita.tomonori@lab.ntt.co.jp, yinghai@kernel.org, matthew@wil.cx,
-       jbarnes@virtuousgeek.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: print out DMA mask info
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081010224508.GB28369@colo.lackof.org>
-References: <48EE8E55.4000009@kernel.org>
-	<20081010114003X.fujita.tomonori@lab.ntt.co.jp>
-	<20081010224508.GB28369@colo.lackof.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751074AbYJNGzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 02:55:44 -0400
+Message-ID: <48F441F0.90408@kernel.org>
+Date: Tue, 14 Oct 2008 15:53:36 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Nick Warne <nick@ukfsn.org>
+CC: linux-kernel@vger.kernel.org, D Bray <db1986@internetdog.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: New CD/DVD reports 'Can Play Audio    NO'
+References: <20081004103355.407fc303@sauron.linicks.net>	<48E82FDB.6020009@kernel.org> <20081005120809.38eb4826@sauron.linicks.net>
+In-Reply-To: <20081005120809.38eb4826@sauron.linicks.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081014154217L.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Oct 2008 06:55:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008 16:45:08 -0600
-Grant Grundler <grundler@parisc-linux.org> wrote:
-
-> On Fri, Oct 10, 2008 at 11:40:56AM +0900, FUJITA Tomonori wrote:
-> > IIRC, except for one SGI architecture, coherent_dma_mask is
-> > meaningless, dma_mask is always equal to coherent_dma_mask.
+Nick Warne wrote:
+> /messages
+> Oct  5 11:54:13 sauron kernel: ata5: PATA max UDMA/133 cmd 0x1f0 ctl
+> 0x3f6 bmdma 0xf400 irq 14
+> Oct  5 11:54:13 sauron kernel: ata6: PATA max
+> UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xf408 irq 15
+> Oct  5 11:54:13 sauron kernel: ata5.00: ATAPI: TSSTcorp CDDVDW
+> SH-S202J, SB00, max UDMA/66
+> Oct  5 11:54:13 sauron kernel: ata5.01: ATAPI: Optiarc DVD RW AD-7200A,
+> 1.06, max UDMA/66
+> Oct  5 11:54:13 sauron kernel: ata5.00: configured for UDMA/66
+> Oct  5 11:54:13 sauron kernel: ata5.01: configured for
+> UDMA/66
 > 
-> Not correct. Several PCI-X devices can only do 32-bit DMA to control
-> data but can do 64-bit DMA for payload data. I don't have the list off
-> the top of my head but that is the origin of coherent DMA mask.
-
-Thanks. I misunderstood coherent_dma_mask. I needed to read several
-old mails (posted in 2002 and 2003) in ia64 mailing list.
-
-
-> > Lots of
-> > IOMMU implementations ignore coherent_dma_mask and use dma_mask for
-> > alloc_coherent().
+> /syslog
+> Oct  5 11:54:13 sauron kernel: sr0: scsi3-mmc drive: 48x/48x writer
+> dvd-ram cd/rw xa/form2 cdda tray
+> Oct  5 11:54:13 sauron kernel: sr1:
+> scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
 > 
-> That sounds like a bug. And I don't think it's "lots".
+> /proc/sys/dev/cdrom/info
+> 
+> drive name:             sr1     sr0
+> drive speed:            48      48
+> drive # of slots:       1       1
+> Can close tray:         1       1
+> Can open tray:          1       1
+> Can lock tray:          1       1
+> Can change speed:       1       1
+> Can select disk:        0       0
+> Can read multisession:  1       1
+> Can read MCN:           1       1
+> Reports media changed:  1       1
+> Can play audio:         1       1
+> Can write CD-R:         1       1
+> Can write CD-RW:        1       1
+> Can read DVD:           1       1
+> Can write DVD-R:        1       1
+> Can write DVD-RAM:      1       1
+> Can read MRW:           1       1
+> Can write MRW:          1       1
+> Can write RAM:          1       1
 
-Maybe it's not "lots" but seems that only IA64 and x86 non-hardware
-IOMMU code (pci-nommu.c and GART) use coherent_dma_mask for
-alloc_coherent. 
+Thanks.  sr.c just doesn't check whether the drive reports audio play
+capability or not.  It just sets it while ide-cd actually checks for
+the capability.  The drive is not reporting it while it can so ide-cd
+needs blacklist entry for it.  Now that idecd has blacklist entry, all
+should be fine.  Eh... I'm not sure whether we need to update sr to
+follow what ide-cd is doing or not.
+
+Thanks.
+
+-- 
+tejun
