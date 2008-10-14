@@ -1,151 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbYJNWb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbYJNWcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbYJNWb4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 18:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYJNWbs
+	id S1754893AbYJNWcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 18:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYJNWc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 18:31:48 -0400
-Received: from mga11.intel.com ([192.55.52.93]:40648 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbYJNWbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 18:31:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,410,1220252400"; 
-   d="scan'208";a="627202158"
-Date: Tue, 14 Oct 2008 15:31:09 -0700
-Message-Id: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com>
-Subject: [PATCH] Enable console on PCI serial devices
-To: linux-kernel@vger.kernel.org
-From: donald.d.dugger@intel.com
+	Tue, 14 Oct 2008 18:32:26 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:17674 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbYJNWcZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 18:32:25 -0400
+Message-ID: <ac3eb2510810141532m508fab47v8abc87f09ffa4cc7@mail.gmail.com>
+Date: Wed, 15 Oct 2008 00:32:23 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Peter Osterlund" <petero2@telia.com>
+Subject: Re: pktcdvd -> sysfs warning with 2.6.27
+Cc: "Greg KH" <greg@kroah.com>, Nix <nix@esperi.org.uk>,
+       linux-kernel@vger.kernel.org, a.zummo@towertech.it
+In-Reply-To: <m3d4i32bs8.fsf@telia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <87vdvyngni.fsf@hades.wkstn.nix> <20081012181700.GA21072@kroah.com>
+	 <87prm4mbgy.fsf@hades.wkstn.nix> <20081013214747.GA15765@kroah.com>
+	 <m34p3f926s.fsf@telia.com>
+	 <ac3eb2510810140138u438b3935ia134fe8e5dbb795a@mail.gmail.com>
+	 <1223976041.5394.6.camel@nga.site> <m3d4i32bs8.fsf@telia.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem with using a PCI serial card for the console is that, until
-the PCI serial driver is loaded, output will be lost.  The issue is that
-PCI serial devices use a non-standard I/O port address and sometimes use
-a non-standard crystal frequency.  This patch gets around those problems
-by allowing you to specify both I/O port address and crystal frequency on
-the kernel command line.  The serial console specification is enhanced to be:
+On Tue, Oct 14, 2008 at 9:53 PM, Peter Osterlund <petero2@telia.com> wrote:
+> Kay Sievers <kay.sievers@vrfy.org> writes:
+>> On Tue, 2008-10-14 at 10:38 +0200, Kay Sievers wrote:
+>>> On Tue, Oct 14, 2008 at 7:27 AM, Peter Osterlund <petero2@telia.com> wrote:
+>>> > Greg KH <greg@kroah.com> writes:
+>>> >
+>>> >> Both of those should get "real" majors assigned to them.  It's not ok to
+>>> >> randomly go grabbing major:minor numbers like this for code that is in
+>>> >> mainline.
+>>> >
+>>> > It's not about random grabbing. It's about getting a dynamically
+>>> > assigned number. The pktcdvd driver once had static numbers, but at
+>>> > the time when the driver was merged into the mainline kernel, dynamic
+>>> > numbers were considered better. Therefore I changed the driver to use
+>>> > dynamic numbers.
+>>>
+>>> The pktcdvd driver allocates a dynamic block major, which is fine. But
+>>> doesn't it use the same number, and now not allocated, for the char
+>>> devices it uses? That looks like something that needs to fixed, right?
+>>>
+>>>   static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
+>>>   {
+>>>     if (class_pktcdvd) {
+>>>       pd->dev = device_create_drvdata(class_pktcdvd, NULL,
+>>>                                                 pd->pkt_dev, NULL,
+>>>                                                 "%s", pd->name);
+>>
+>> Something similar to this, with error checking, might be needed. It has
+>> two independent majors now in block and char:
+>>   $ grep pkt /proc/devices
+>>   251 pktcdvd-char
+>>   252 pktcdvd
+>
+> Maybe, but that character device would not be used for anything,
+> besides creating sub-directories in /sys/class/pktcdvd. The driver
+> implements a block device, not a character device.
 
-	BBBBPNF-III/CCC
+Ah, if the char device nodes are dead anyway, care to change it to
+MKDEV(0, 0), so we get rid of the warnings? This should also go into
+-stable I guess, after it's fixed in the current tree.
 
-where BBBB is the baud rate, P is the parity, N is the number of bits,
-F is the flow control, III is the I/O port address (prefix with 0x for
-hexadecimal) and CCC is the crystal frequency.  -III and /CCC are optional
-and can be omitted although -III must be specified if you want to set
-/CCC.  For example, the option I use is:
+> Is it possible to create a custom directory in sysfs corresponding to
+> a block device? A directory /sys/block/pktcdvd0 is apparently created
+> automatically, but is it possible to extend that directory with driver
+> specific data?
 
-	console=ttyS0,115200-0xe880/921600
+A named (will automatically created in a subdir) sysfs attribute group
+below the block device maybe?
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=include/linux/sysfs.h;h=37fa24152bd810f7d9dd67b685e738179b5bfdf9;hb=HEAD#l33
 
-Signed-off-by: Don Dugger <donald.d.dugger@intel.com>
-
- Documentation/serial-console.txt |   12 ++++++++----
- drivers/serial/8250.c            |    2 +-
- drivers/serial/serial_core.c     |   26 ++++++++++++++++++++++----
- include/linux/serial_core.h      |    2 +-
- 4 files changed, 32 insertions(+), 10 deletions(-)
-
-
------ cut here for patch.d/pci_serial-1014.patch -----
-diff --git a/Documentation/serial-console.txt b/Documentation/serial-console.txt
-index 9a7bc8b..8cffce6 100644
---- a/Documentation/serial-console.txt
-+++ b/Documentation/serial-console.txt
-@@ -21,10 +21,14 @@ The format of this option is:
- 
- 	options:	depend on the driver. For the serial port this
- 			defines the baudrate/parity/bits/flow control of
--			the port, in the format BBBBPNF, where BBBB is the
--			speed, P is parity (n/o/e), N is number of bits,
--			and F is flow control ('r' for RTS). Default is
--			9600n8. The maximum baudrate is 115200.
-+			the port, in the format BBBBPNF-III/CCC, where BBBB
-+			is the speed, P is parity (n/o/e), N is number of bits,
-+			F is flow control ('r' for RTS), III is I/O port
-+			address (prefix with 0x for hexadecimal) and CCC is
-+			the uart crystal frequency. Default is 9600n8. The
-+			I/O port defaults to 0x3f8 for ttyS0 and 0x2f8 for
-+			ttyS1.  The default crystal frequency is 1843200.
-+			The maximum baudrate is 115200.
- 
- You can specify multiple console= options on the kernel command line.
- Output will appear on all of them. The last device will be used when
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index d3ca7d3..5d59cf7 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2632,7 +2632,7 @@ static int __init serial8250_console_setup(struct console *co, char *options)
- 		return -ENODEV;
- 
- 	if (options)
--		uart_parse_options(options, &baud, &parity, &bits, &flow);
-+		uart_parse_options(options, &baud, &parity, &bits, &flow, &port->iobase, &port->uartclk);
- 
- 	return uart_set_options(port, co, baud, parity, bits, flow);
- }
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 6bdf336..31b5545 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -1864,25 +1864,43 @@ uart_get_console(struct uart_port *ports, int nr, struct console *co)
-  *	@parity: pointer to an 'int' variable for the parity.
-  *	@bits: pointer to an 'int' variable for the number of data bits.
-  *	@flow: pointer to an 'int' variable for the flow control character.
-+ *	@ioport: pointer to an 'int' variable for the I/O base for device
-+ *	@clk: pointer to an 'int' variable for the clock devisor
-  *
-  *	uart_parse_options decodes a string containing the serial console
-  *	options.  The format of the string is <baud><parity><bits><flow>,
-  *	eg: 115200n8r
-  */
- void
--uart_parse_options(char *options, int *baud, int *parity, int *bits, int *flow)
-+uart_parse_options(char *options, int *baud, int *parity, int *bits, int *flow, int *ioport, int *clk)
- {
- 	char *s = options;
- 
- 	*baud = simple_strtoul(s, NULL, 10);
- 	while (*s >= '0' && *s <= '9')
- 		s++;
--	if (*s)
-+	if (*s && (*s != '-'))
- 		*parity = *s++;
--	if (*s)
-+	if (*s && (*s != '-'))
- 		*bits = *s++ - '0';
--	if (*s)
-+	if (*s && (*s != '-'))
- 		*flow = *s;
-+	if (*s && (*s != '-'))
-+		*flow = *s++;
-+	if (*s++ == '-') {
-+		int b;
-+
-+		if (*s == '0' && (*(s + 1) == 'x' || *(s + 1) == 'X')) {
-+			s += 2;
-+			b = 16;
-+		} else
-+			b = 10;
-+		*ioport = simple_strtoul(s, NULL, b);
-+		while (*s && (*s != '/'))
-+			s++;
-+		if (*s == '/')
-+			*clk = simple_strtoul(s + 1, NULL, 10) << 4;
-+	}
- }
- EXPORT_SYMBOL_GPL(uart_parse_options);
- 
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index e27f216..3b4fb3a 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -402,7 +402,7 @@ unsigned int uart_get_divisor(struct uart_port *port, unsigned int baud);
- struct uart_port *uart_get_console(struct uart_port *ports, int nr,
- 				   struct console *c);
- void uart_parse_options(char *options, int *baud, int *parity, int *bits,
--			int *flow);
-+			int *flow, int *iobase, int *clk);
- int uart_set_options(struct uart_port *port, struct console *co, int baud,
- 		     int parity, int bits, int flow);
- struct tty_driver *uart_console_device(struct console *co, int *index);
+Thanks,
+Kay
