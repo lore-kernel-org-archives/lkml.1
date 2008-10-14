@@ -1,132 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYJNLxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYJNLyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757548AbYJNLxx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 07:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbYJNLxl
+	id S1758144AbYJNLyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 07:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbYJNLxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 07:53:41 -0400
-Received: from mga09.intel.com ([134.134.136.24]:37092 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755084AbYJNLxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 07:53:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,409,1220252400"; 
-   d="scan'208";a="451008786"
-Date: Tue, 14 Oct 2008 18:57:52 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 5/8 v4] PCI: add a new function to map BAR offset
-Message-ID: <20081014105752.GE1734@yzhao12-linux.sh.intel.com>
-References: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
+	Tue, 14 Oct 2008 07:53:44 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:1190 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbYJNLxm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 07:53:42 -0400
+X-BigFish: VPS-34(zz1432R98dR4015M1805M936fOzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K8Q913-01-L9U-01
+Date: Tue, 14 Oct 2008 13:53:07 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix compile warning for !(ACPI && X86_IO_APIC)
+	builds
+Message-ID: <20081014115307.GB29183@alberich.amd.com>
+References: <1223938850.21717.21.camel@odie.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1223938850.21717.21.camel@odie.local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 14 Oct 2008 11:53:29.0878 (UTC) FILETIME=[79B1FB60:01C92DF3]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new function to map resource number to base register (offset and type).
+On Tue, Oct 14, 2008 at 01:00:50AM +0200, Simon Holm Thøgersen wrote:
+> This fixes the following compile warning for !(ACPI && X86_IO_APIC) builds:
+> 
+> arch/x86/kernel/early-quirks.c:99: warning: 'ati_ixp4x0_rev' defined
+> but not used
 
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+Acked-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 
----
- drivers/pci/pci.c       |   22 ++++++++++++++++++++++
- drivers/pci/pci.h       |    2 ++
- drivers/pci/setup-res.c |   13 +++++--------
- 3 files changed, 29 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 381e958..3575124 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1909,6 +1909,28 @@ int pci_resource_alignment(struct pci_dev *dev, int resno)
- 	return 0;
- }
- 
-+/**
-+ * pci_resource_bar - get position of the BAR associated with a resource
-+ * @dev: the PCI device
-+ * @resno: the resource number
-+ * @type: the BAR type to be filled in
-+ *
-+ * Returns BAR position in config space, or 0 if the BAR is invalid.
-+ */
-+int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
-+{
-+	if (resno < PCI_ROM_RESOURCE) {
-+		*type = pci_bar_unknown;
-+		return PCI_BASE_ADDRESS_0 + 4 * resno;
-+	} else if (resno == PCI_ROM_RESOURCE) {
-+		*type = pci_bar_mem32;
-+		return dev->rom_base_reg;
-+	}
-+
-+	dev_err(&dev->dev, "BAR: invalid resource #%d\n", resno);
-+	return 0;
-+}
-+
- static void __devinit pci_no_domains(void)
- {
- #ifdef CONFIG_PCI_DOMAINS
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 720b7d6..e2237ad 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -162,6 +162,8 @@ extern int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- extern struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
- 				struct pci_dev *bridge, int busnr);
- extern int pci_resource_alignment(struct pci_dev *dev, int resno);
-+extern int pci_resource_bar(struct pci_dev *dev, int resno,
-+			    enum pci_bar_type *type);
- extern void pci_enable_ari(struct pci_dev *dev);
- /**
-  * pci_ari_enabled - query ARI forwarding status
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index ecff483..c3585a0 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -31,6 +31,7 @@ void pci_update_resource(struct pci_dev *dev, int resno)
- 	struct pci_bus_region region;
- 	u32 new, check, mask;
- 	int reg;
-+	enum pci_bar_type type;
- 	struct resource *res = dev->resource + resno;
- 
- 	/*
-@@ -64,17 +65,13 @@ void pci_update_resource(struct pci_dev *dev, int resno)
- 	else
- 		mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
- 
--	if (resno < 6) {
--		reg = PCI_BASE_ADDRESS_0 + 4 * resno;
--	} else if (resno == PCI_ROM_RESOURCE) {
-+	reg = pci_resource_bar(dev, resno, &type);
-+	if (!reg)
-+		return;
-+	if (type != pci_bar_unknown) {
- 		if (!(res->flags & IORESOURCE_ROM_ENABLE))
- 			return;
- 		new |= PCI_ROM_ADDRESS_ENABLE;
--		reg = dev->rom_base_reg;
--	} else {
--		/* Hmm, non-standard resource. */
--	
--		return;		/* kill uninitialised var warning */
- 	}
- 
- 	pci_write_config_dword(dev, reg, new);
--- 
-1.5.6.4
+Makes sense.
+
+Thanks,
+
+Andreas
+
 
