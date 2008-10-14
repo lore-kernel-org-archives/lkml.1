@@ -1,74 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYJNIvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYJNIxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbYJNIvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 04:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYJNIu6
+	id S1756820AbYJNIxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 04:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYJNIxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 04:50:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:41988 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754885AbYJNIu5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 04:50:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:newsgroups:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding:from
-         :sender;
-        b=YJxU1HEEGQIAkFqUNn7lsOytiuwsmONzbknSLgBExmH4c6AwD36+Xhn4bYz5IIp+hk
-         Rj4O8uSj/I2fwi+yq64PZoSzesIHdEV2OoRHi4FpYXu1YCoSlfEFFcP+hlGnKQ2hep/z
-         61ZMnZjzFpLWG05l0WyiKh+52KWTYIn9JRFGo=
-Message-ID: <48F45D52.2010407@tuffmail.co.uk>
-Date: Tue, 14 Oct 2008 09:50:26 +0100
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 14 Oct 2008 04:53:00 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39472 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754517AbYJNIw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 04:52:58 -0400
+Message-ID: <48F45D70.7000904@kernel.org>
+Date: Tue, 14 Oct 2008 17:50:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.acpi.devel,gmane.linux.kernel
-To: Pavel Machek <pavel@suse.cz>
-CC: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Robert Goldner <robert@au-79.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>, linux-stable@vger.kernel.org
-Subject: Re: Patch needed for ASUS EEEPC 701 2.6.27 (perhaps a regession)
-References: <48F0BD2D.8000001@tuffmail.co.uk> <20081013203648.GA3260@ucw.cz>
-In-Reply-To: <20081013203648.GA3260@ucw.cz>
+To: petkovbb@gmail.com
+CC: Nick Warne <nick@ukfsn.org>, linux-kernel@vger.kernel.org,
+       D Bray <db1986@internetdog.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: New CD/DVD reports 'Can Play Audio NO'
+References: <20081004103355.407fc303@sauron.linicks.net>	 <48E82FDB.6020009@kernel.org>	 <20081005120809.38eb4826@sauron.linicks.net>	 <48F441F0.90408@kernel.org> <9ea470500810140126v3058d99dn47768834bd087111@mail.gmail.com>
+In-Reply-To: <9ea470500810140126v3058d99dn47768834bd087111@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Alan Jenkins <aj504@student.cs.york.ac.uk>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Oct 2008 08:52:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Sat 2008-10-11 15:50:21, Alan Jenkins wrote:
->> Robert Goldner wrote:
->>
->>> Hi,
+(cc'ing Bartlomiej, hi!)
+
+Boris Petkov wrote:
+> On Tue, Oct 14, 2008 at 8:53 AM, Tejun Heo <tj@kernel.org> wrote:
+>> Nick Warne wrote:
+>>> /messages
+>>> Oct  5 11:54:13 sauron kernel: ata5: PATA max UDMA/133 cmd 0x1f0 ctl
+>>> 0x3f6 bmdma 0xf400 irq 14
+>>> Oct  5 11:54:13 sauron kernel: ata6: PATA max
+>>> UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xf408 irq 15
+>>> Oct  5 11:54:13 sauron kernel: ata5.00: ATAPI: TSSTcorp CDDVDW
+>>> SH-S202J, SB00, max UDMA/66
+>>> Oct  5 11:54:13 sauron kernel: ata5.01: ATAPI: Optiarc DVD RW AD-7200A,
+>>> 1.06, max UDMA/66
+>>> Oct  5 11:54:13 sauron kernel: ata5.00: configured for UDMA/66
+>>> Oct  5 11:54:13 sauron kernel: ata5.01: configured for
+>>> UDMA/66
 >>>
->>> I am a happy user of an asus eeepc 701 with an self-made kernel 2.6.27.
->>> Its working quite good, but there is one patch needed to avoid problems
->>> related to ACPI and Hotkeys.
->>> After using a few hotkeys there comes a message in syslog like:
->>> ACPI: EC: GPE storm detected, disabling EC GPE
->>> and no hotkey event is recognized any more. This is quite bad on a nettop.
->> Hi, I reported the original bug.  It is a regression, though the issue
->> has been present for a few kernel versions now.
+>>> /syslog
+>>> Oct  5 11:54:13 sauron kernel: sr0: scsi3-mmc drive: 48x/48x writer
+>>> dvd-ram cd/rw xa/form2 cdda tray
+>>> Oct  5 11:54:13 sauron kernel: sr1:
+>>> scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+>>>
+>>> /proc/sys/dev/cdrom/info
+>>>
+>>> drive name:             sr1     sr0
+>>> drive speed:            48      48
+>>> drive # of slots:       1       1
+>>> Can close tray:         1       1
+>>> Can open tray:          1       1
+>>> Can lock tray:          1       1
+>>> Can change speed:       1       1
+>>> Can select disk:        0       0
+>>> Can read multisession:  1       1
+>>> Can read MCN:           1       1
+>>> Reports media changed:  1       1
+>>> Can play audio:         1       1
+>>> Can write CD-R:         1       1
+>>> Can write CD-RW:        1       1
+>>> Can read DVD:           1       1
+>>> Can write DVD-R:        1       1
+>>> Can write DVD-RAM:      1       1
+>>> Can read MRW:           1       1
+>>> Can write MRW:          1       1
+>>> Can write RAM:          1       1
+>> Thanks.  sr.c just doesn't check whether the drive reports audio play
+>> capability or not.  It just sets it while ide-cd actually checks for
+>> the capability.  The drive is not reporting it while it can so ide-cd
+>> needs blacklist entry for it.  Now that idecd has blacklist entry, all
+>> should be fine.  Eh... I'm not sure whether we need to update sr to
+>> follow what ide-cd is doing or not.
 >>
->> I recommend that you avoid reproducing the problem.  I now have to add
->> "noapic" to the boot options on my EeePC, otherwise it randomly hangs /
->> reboots when I press hotkeys - I think it  damaged the hardware.
+>> Thanks.
 > 
-> I guess your hw went bad for some other reason. Restore original
-> system and if it is still broken, RMA?
+> Actually, as I already pointed out, I'm not at all happy with blacklisting
+> stuff. What sounds more sane to me (and this is only me) would be what sr.c
+> does: assume that per se the drive can play audio and try to play it. But how
+> many drives are there that cannot play audio, aka, would it be a safe assumption
+> to say that their number is so diminishingly small that it would be better to
+> announce that a drive can play audio by default and fail graciously in the
+> _very_ seldom case it actually cannot ...
 > 
 
-It could be a coincidence.  But it's suspicious enough to advise caution.  We know what the bug is, and we have a very nice workaround queued up now.  There's no reason to test any more of these specific systems to destruction :).
+Hmm... I don't know.  I think the flag indicates whether the drive has
+DAC and analog audio output, right?  I have quite some SATA drives which
+don't have audio output at all.  I haven't check what they report on the
+mode sense page yet.  Eh... well, having the bit set when the drive
+doesn't support it doesn't hurt too much (yet).  Bartlomiej, what do you
+think?
 
-I did try re-installing off the vendor DVD and it was still broken.  I fear I bought it from the wrong place to get sympathetic _frontline_ support / warrantee.  I'm not interested in RMA back to Asus - too much work and downtime for a cheap system, when I have an easy workaround.  I haven't noticed any problems with "noapic".
+Thanks.
 
-
-The symptoms strongly suggest overflow in an event buffer or counter maintained by the Embedded Controller.  So the EC firmware may have a bug, of the sort that results in "unspecified behaviour".  A bug in a special purpose (read: not subject to wide testing) subsystem which has direct connections to things like frequency and voltage control.
-
-Hopefully I'm wrong, and I don't really know what I'm talking about here.
-
-Regards
-Alan
+-- 
+tejun
