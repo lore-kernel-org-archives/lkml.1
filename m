@@ -1,120 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbYJNP0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbYJNPaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752683AbYJNP0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 11:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbYJNP0f
+	id S1752840AbYJNPaN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 11:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYJNP37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 11:26:35 -0400
-Received: from zombie2.ncsc.mil ([144.51.88.133]:37970 "EHLO zombie2.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318AbYJNP0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 11:26:35 -0400
-Subject: Re: [bug] latest -git boot hang
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>,
-       Casey Schaufler <casey@schaufler-ca.com>
-In-Reply-To: <20081014151236.GA18880@elte.hu>
-References: <20081010203043.GA11798@elte.hu>
-	 <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu>
-	 <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org>
-	 <48EFF84B.5060108@kernel.org> <20081011071939.GA26465@elte.hu>
-	 <1223996859.5193.61.camel@moss-spartans.epoch.ncsc.mil>
-	 <20081014151236.GA18880@elte.hu>
+	Tue, 14 Oct 2008 11:29:59 -0400
+Received: from igw3.watson.ibm.com ([129.34.20.18]:50928 "EHLO
+	igw3.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbYJNP37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 11:29:59 -0400
+Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
+From: david safford <safford@watson.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20081014132823.GA18474@infradead.org>
+References: <cover.1223869200.git.zohar@localhost.localdomain>
+	 <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
+	 <20081014132823.GA18474@infradead.org>
 Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 14 Oct 2008 11:24:16 -0400
-Message-Id: <1223997856.5193.81.camel@moss-spartans.epoch.ncsc.mil>
+Content-Transfer-Encoding: 7bit
+Date: Tue, 14 Oct 2008 11:27:52 -0400
+Message-Id: <1223998072.3089.53.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-14 at 17:12 +0200, Ingo Molnar wrote:
-> * Stephen Smalley <sds@tycho.nsa.gov> wrote:
+On Tue, 2008-10-14 at 09:28 -0400, Christoph Hellwig wrote:
+> >  int vfs_permission(struct nameidata *nd, int mask)
+> >  {
+> > -	return inode_permission(nd->path.dentry->d_inode, mask);
+> > +	int retval;
+> > +
+> > +	retval = inode_permission(nd->path.dentry->d_inode, mask);
+> > +	if (retval)
+> > +		return retval;
+> > +	return integrity_inode_permission(NULL, &nd->path,
+> > +					  mask & (MAY_READ | MAY_WRITE |
+> > +						  MAY_EXEC));
+> >  }
+> >  
+> >  /**
+> > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd, int mask)
+> >   */
+> >  int file_permission(struct file *file, int mask)
+> >  {
+> > -	return inode_permission(file->f_path.dentry->d_inode, mask);
+> > +	int retval;
+> > +
+> > +	retval = inode_permission(file->f_path.dentry->d_inode, mask);
+> > +	if (retval)
+> > +		return retval;
+> > +	return integrity_inode_permission(file, NULL,
+> > +					  mask & (MAY_READ | MAY_WRITE |
+> > +						  MAY_EXEC));
 > 
-> > > Right now i have about 40 such annotations for -tip testing:
-> > > 
-> > >   fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-> > >   fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-> > >   security/selinux/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-> > >   security/smack/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-> > >   security/Kconfig:	depends on BROKEN_BOOT_ALLOWED
-> > 
-> > What in particular under fs/Kconfig and security/*Kconfig falls into 
-> > this category, and why?  What constitutes a "generic distro bootup"? 
-> > For distros that support SELinux, it obviously shouldn't break the 
-> > bootup (there have of course been cases where it has, but those were 
-> > bugs that have been addressed, including the recent /proc/net 
-> > breakage), and for other distros, it should yield no effect as no 
-> > policy will be loaded and thus SELinux just allows everything.
-> 
-> got this one for rootplug:
-> 
-> --- linux.orig/security/Kconfig
-> +++ linux/security/Kconfig
-> @@ -93,6 +93,11 @@ config SECURITY_FILE_CAPABILITIES
->  config SECURITY_ROOTPLUG
->         bool "Root Plug Support"
->         depends on USB=y && SECURITY
-> +
-> +       # fails with hard-to-debug "could not find init" boot failure
-> +       depends on BROKEN_BOOT_ALLOWED
-> +       select BROKEN_BOOT
+> Please don't add anything here as these two wrappers will go away.
+> Please only make decisions based on what you get in inode_permission().
 
-Makes sense - rootplug truly is "specialized".
+Hmm... As Mimi mentioned in the last review, we really need access
+to a path, which is not available in inode_permission. (Note the
+path is not used to make any integrity decision, but is recorded along
+with the measurement to help with the integrity analysis by a third
+party verifier.) Yes, there are other callers without path information,
+but getting a path here covers the bulk of the measurements.
 
+Is there some other alternative, other than this, or passing the 
+dentry into inode_permission, which was also rejected?
+
+> >  }
+> >  
+> >  /*
+> > diff --git a/include/linux/fs.h b/include/linux/fs.h
+> > index 32477e8..349d548 100644
+> > --- a/include/linux/fs.h
+> > +++ b/include/linux/fs.h
+> > @@ -683,6 +683,9 @@ struct inode {
+> >  #ifdef CONFIG_SECURITY
+> >  	void			*i_security;
+> >  #endif
+> > +#ifdef CONFIG_INTEGRITY
+> > +	void			*i_integrity;
+> > +#endif
 > 
-> and this one:
-> 
-> --- linux.orig/security/selinux/Kconfig
-> +++ linux/security/selinux/Kconfig
-> @@ -97,6 +97,11 @@ config SECURITY_SELINUX_CHECKREQPROT_VAL
->  config SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT
->         bool "NSA SELinux enable new secmark network controls by default"
->         depends on SECURITY_SELINUX
-> +
-> +       # old system booted up with this cannot ssh out
-> +       depends on BROKEN_BOOT_ALLOWED
-> +       select BROKEN_BOOT
+> Sorry, but as said before bloating the inode for this is not an option.
+> Please use something like the MRU approach I suggested in the last
+> review round.
 
-What is the oldest distro you test against?  This one does need to be
-disabled for distros that predate the policy support for secmark, but
-we'd really like to deprecate and ultimately remove the legacy network
-controls from SELinux.
+Sorry, in that thread I thought we were ok, as Serge made the points
+that the bloat would only affect Integrity compiled kernels, that
+no one would press for making Integrity default (not only because of the
+bloat, but even more so because of the performance impact of hashing
+all the files), and that having LIM do MRU would be a big hit, as
+LIM allocates i_integrity for all inodes, and references it on all
+inode_permission, bprm and mmap calls.  
 
-> i also have this temporary annotation:
-> 
-> --- linux.orig/security/smack/Kconfig
-> +++ linux/security/smack/Kconfig
-> @@ -1,6 +1,9 @@
->  config SECURITY_SMACK
->         bool "Simplified Mandatory Access Control Kernel Support"
->         depends on NETLABEL && SECURITY_NETWORK
-> +       # breaks networking (TCP connections)
-> +       depends on BROKEN_BOOT_ALLOWED
-> +       select BROKEN_BOOT
->         default n
->         help
->           This selects the Simplified Mandatory Access Control Kernel.
-> 
-> has this problem been fixed? A test is only a success if the freshly 
-> booted kernel can autonomously ssh out over a real network and can 
-> indicate success to the QA server. I've got a good mix of old and new 
-> distros as well.
+If we have to, we have to, but we certainly would prefer not to.
 
-I thought that Casey had changed Smack such that packets wouldn't be
-explicitly labeled by default when they were at the default/ambient
-network label and thus wouldn't break sshd.
-
--- 
-Stephen Smalley
-National Security Agency
+thanks
+dave
 
