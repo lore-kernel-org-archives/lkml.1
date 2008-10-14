@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751531AbYJNNVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbYJNNXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751531AbYJNNVS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 09:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYJNNVG
+	id S1751950AbYJNNXp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 09:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYJNNXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 09:21:06 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:55623 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750806AbYJNNVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 09:21:05 -0400
-Subject: Re: [Labeled-nfs] [RFC v3] Security Label Support for NFSv4
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
-Cc: James Morris <jmorris@namei.org>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>, labeled-nfs@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, viro@zeniv.linux.org.uk,
-       selinux@tycho.nsa.gov
-In-Reply-To: <48F400DD.50905@sparta.com>
-References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov>
-	 <alpine.LRH.1.10.0810141014580.26030@tundra.namei.org>
-	 <48F400DD.50905@sparta.com>
+	Tue, 14 Oct 2008 09:23:36 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56324 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750929AbYJNNXf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 09:23:35 -0400
+Subject: Re: Checkin 7404ad3b6d04efbd918e9e2e776bf560fbedf47d breaks boot
+	on KVM
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <jejb@steeleye.com>
+In-Reply-To: <48F3E1C9.6030007@zytor.com>
+References: <48F3E1C9.6030007@zytor.com>
 Content-Type: text/plain
-Date: Tue, 14 Oct 2008 09:20:48 -0400
-Message-Id: <1223990448.8907.1.camel@localhost>
+Date: Tue, 14 Oct 2008 09:23:29 -0400
+Message-Id: <1223990609.12440.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, MISSING_SUBJECT=0.001,NO_RECEIVED=-0.001, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: D86AD2A240AB96162F9F94B772E94262C4A135B0
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 98 max/h 9 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 22:15 -0400, Matthew N. Dodd wrote:
-> James Morris wrote:
-> > On Mon, 29 Sep 2008, David P. Quigley wrote:
-> > 
-> >> 	* New security flavor (auth_seclabel) to transport process label to
-> >> 	  server. This is a derivative of auth_unix so it does not support
-> >> 	  kerberos which has its own issues that need to be dealt with.
-> > 
-> > This is a problem, as discussed last year:
-> > 
-> > http://linux-nfs.org/pipermail/labeled-nfs/2007-November/000110.html
-> > 
-> > We can't require the use of a new auth flavor which is incompatible with 
-> > auth_gss.
+On Mon, 2008-10-13 at 17:03 -0700, H. Peter Anvin wrote:
+> I just tried a top of tree i386 kernel under KVM, and found that it 
+> fails to boot with a hang during initialization, right after:
 > 
-> auth_seclabel demonstrates the flavor independent changes required for 
-> any RPC layer process label transport.  A GSS solution is currently 
-> under discussion.
+> console [netcon0] enabled 
+> 
+> netconsole: network logging started 
+> 
+> Uniform Multi-Platform E-IDE driver 
+> 
+> ide-floppy driver 1.00 
+> 
+> Driver 'sd' needs updating - please use bus_type methods 
+> 
+> scsi0 : ata_piix 
+> 
+> scsi1 : ata_piix 
+> 
+> ata1: PATA max MWDMA2 cmd 0x1f0 ctl 0x3f6 bmdma 0xc000 irq 14 
+> 
+> ata2: PATA max MWDMA2 cmd 0x170 ctl 0x376 bmdma 0xc008 irq 15 
+> 
+> ata1.00: ATA-7: QEMU HARDDISK, 0.9.1, max UDMA/100 
+> 
+> ata1.00: 16777216 sectors, multi 16: LBA48 
+> 
+> ata1.00: configured for MWDMA2 
+> 
+> ata2.00: ATAPI: QEMU DVD-ROM, 0.9.1, max UDMA/100 
+> 
+> ata2.00: configured for MWDMA2 
+> 
+> scsi 0:0:0:0: Direct-Access     ATA      QEMU HARDDISK    0.9. PQ: 0 
+> ANSI: 5
+> 
+> Bisection fingered the following commit:
+> 
+> 7404ad3b6d04efbd918e9e2e776bf560fbedf47d is first bad commit 
+> 
+> commit 7404ad3b6d04efbd918e9e2e776bf560fbedf47d 
+> 
+> Author: James Bottomley <James.Bottomley@HansenPartnership.com> 
+> 
+> Date:   Sun Aug 31 10:41:52 2008 -0500 
+> 
+> 
+>      [SCSI] sd: use generic helper to print capacities in both binary
+> and SI
+> 
+>      Signed-off-by: James Bottomley
+> <James.Bottomley@HansenPartnership.com>
+> 
+> :040000 040000 98fc7ae95211b8d16e2e8ca46997be660ad9ba93 
+> 2d35d0a2b6232411b840a9ccf6a52b946172566e M      drivers
+> 
+> However, simply reverting this commit caused a panic on boot (not 
+> entirely surprising.)
 
-Right, but I'm not particularly interested in merging "demonstration"
-code that might end up requiring permanent support. I'd very much like
-to see all of this get further through the IETF process before we talk
-about merging into mainline.
+Actually, it is surprising.  That patch takes the default arithmetic for
+calculating the disk size out of sd and uses a routine to do it more
+efficiently in lib/string_helpers.c
 
-Cheers
-  Trond
+So there are two problems:  Why does it panic on revert (could you post
+the oops) and what does kvm object to in string_get_size ... it's a
+fairly innocuous routine as I read it ... your symptoms sound like the
+for loop isn't terminating.
+
+James
+
 
