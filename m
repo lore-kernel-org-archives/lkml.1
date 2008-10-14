@@ -1,99 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYJNM6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYJNNED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYJNM6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 08:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYJNM6K
+	id S1756646AbYJNNED (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 09:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYJNNDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 08:58:10 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53967 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755879AbYJNM6I (ORCPT
+	Tue, 14 Oct 2008 09:03:53 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:59505 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755227AbYJNNDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 08:58:08 -0400
-Subject: Re: [GIT PATCH] intermediate SCSI updates
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
-References: <1223909115.5566.13.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
-	 <1223925606.5566.20.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 14 Oct 2008 08:49:11 -0400
-Message-Id: <1223988551.12440.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Oct 2008 09:03:51 -0400
+Date: Tue, 14 Oct 2008 18:37:54 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Gregory Haskins <ghaskins@novell.com>, arjan <arjan@infradead.org>
+Subject: Re: [RFC PATCH v2 0/5] sched: modular find_busiest_group()
+Message-ID: <20081014130754.GD3995@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Gregory Haskins <ghaskins@novell.com>, arjan <arjan@infradead.org>
+References: <20081009120705.27010.12857.stgit@drishya.in.ibm.com> <1223561968.7382.42.camel@lappy.programming.kicks-ass.net> <1223986153.9557.4.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1223986153.9557.4.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 14:22 -0700, Linus Torvalds wrote: 
+* Peter Zijlstra <peterz@infradead.org> [2008-10-14 14:09:13]:
+
 > 
-> On Mon, 13 Oct 2008, James Bottomley wrote:
-> > 
-> > Not exactly.  It has to be rebased to run as a postmerge tree, but it
-> > does get tested by me (admittedly on my limited set of machines, which
-> > don't include any actual devices that do block integrity) every time I
-> > rebase.
+> Hi,
 > 
-> What I'm upset about is that this has apparently gotten not even some 
-> trivial testing of the _default_ build. I'm not talking about any odd 
-> config options here. I'm literally talking about the only _sane_ config 
-> option case.
+> So the basic issue is sched_group::cpu_power should become more dynamic.
+
+Hi Peter,
+
+This is a good idea.  Dynamically increasing cpu power to some groups
+will automatically help power savings when we want to consolidate
+better to one cpu package when overall system utilisation is very low.  
+ 
+> There are two driving factors:
+> - RT time consumption feedback into CFS
+> - dynamic per-cpu power manangement like Intel's Dynamic Speed
+> Technology (formerly know as Turbo Mode).
 > 
-> You yourself admit that even you don't have any actual devices that can 
-> support the block integrity stuff, yet you have apparently only compile- 
-> tested the insane case of still enabling that thing and apparently nobody 
-> else has bothered either.
-
-Um, well, I wanted to compile the code to make sure it actually did
-compile and that it didn't interfere with the normal operation of sd, so
-for me it's a justifiable option.
-
-> Was this in linux-next?
-
-Yes ... all my trees feed into linux-next.  We just seem to have been
-having a few teething problems with it recently.  Usually this type of
-thing gets picked up by Ingo's random config checker which feeds from
-linux-next.  However, I don't think linux-next has been built for a
-while (Since 19 September according to the logs)
-
-> Is linux-next coverage REALLY so weak that it doesn't even test the 
-> default config options, much less any random options? What's the point of 
-> linux-next then?
+> We currently have sched_group::cpu_power to model SMT. We say that
+> multiple threads that share a core are not as powerful as two cores.
 > 
-> Again, the date on that thing is claimed to be September 19th, although it 
-> was obviously committed later.
-
-Right, which is, unfortunately, how it managed to avoid being in
-anyone's test bed.
-
-> > However, does this work for you?  It fixes the problem for me.
+> Therefore, we move a task when doing so results in more of that power
+> being utilized, resulting in preferring to run tasks on full cores
+> instead of SMT siblings.
 > 
-> I could trivially have fixed the compile issue. That's not what upsets me. 
-> What upsets me is that this set of patches apparently had almost nobody 
-> looking at them at all before they got sent to me.
+> 
+> RT time
+> -------
+> 
+> So the basic issue is that we cannot know how much cpu-time will be
+> consumed by RT tasks (we used to relate that to the number of running
+> tasks, but that's utter nonsense).
+> 
+> Therefore the only way is to measure it and assume the near future looks
+> like the near past.
+> 
+> So why is this an issue.. suppose we have 2 cpus, and 1 cpu is consumed
+> for 50% by RT tasks, while the other is fully available to regular
+> tasks.
+> 
+> In that case we'd want to load-balance such that the cpu affected by the
+> RT task(s) gets half the load the other cpu has.
+> 
+> [ I tried modelling this by scaling the load of cpus up, but that fails
+> to handle certain cases - for instance 100% RT gets real funny, and it
+> fails to properly skip the RT-loaded cores in the low-load situation ]
+> 
+> Dynamic Speed Technology
+> ------------------------
+> 
+> With cpus actively fiddling with their processing capacity we get into
+> similar issues. Again we can measure this, but this would require the
+> addition of a clock that measures work instead of time.
+> 
+> Having that, we can even acturately measure the old SMT case, which has
+> always been approximated by a static percentage - even though the actual
+> gain is very workload dependent.
+> 
+> The idea is to introduce sched_work_clock() so that:
+> 
+>         work_delta / time_delta gives the power for a cpu. <1 means we
+>         did less work than a dedicated pipeline, >1 means we did more.
 
-I agree, but unfortunately our infrastructure is all wrapped around
-linux-next now ... even Andrew doesn't pull my trees directly, he gets
-them from linux-next.  I can and do publish them on kernel.org, but it
-takes a fairly superhuman effort to pull in all the kernel.org trees and
-compile them.
+The challenge here is measurement of 'work'.  What will be the
+parameter that will be fair for most workloads and easy to measure on
+most systems?
 
-> If it was some odd and unusual config option, I'd be less upset. hey, 
-> stuff happens. But it sure as heck was nothing of the sort!
+* Instructions completion count
+* APERF or similar CPU specific counter on x86
+* POWER has PURR and SPURR to have a measure of relative work done  
 
-So I do test the trees, but I'm looking for unusual breakage, so my
-three configs are ia64 (3hr build) parisc (6hr build) and x86 dual core
-(about 40min) with all the options enabled.  However, my testing is
-mostly runtime rather than compile/config time.  Sorry.  Once I get this
-terrasoft box integrated (i.e. when benh gets remote power working) I
-might be able to build faster and try different config options.
 
-James
+> So, if for example our core's canonical freq would be 2.0GHz but we get
+> boosted to 2.2GHz while the other core would get lowered to 1.8GHz we
+> can observe and attribute this asymetric power balance.
+> 
+> [ This assumes that the total power is preserved for non-idle situations
+> - is that true?, if not this gets real interesting ]
 
+I would assume total compute power will be preserved over a long
+period of time.  But certain workloads can benefit more from acceleration
+on the same system challenging the above assumption.
+
+> Also, an SMT thread, when sharing the core with its sibling will get <1,
+> but together they might be >1.
+
+In this case what is the normalised value of '1'  It is difficult to
+estimate the nominal cpu power with threads.  If we can assume
+normalised value to be theoretical max, then sum of both threads can
+be less than 1 and will never achieve 1 in practice :)
+
+> Funny corner cases
+> ------------------
+> 
+> Like mentioned in the RT time note, there is the possiblity that a core
+> has 0 power (left) for SCHED_OTHER. This has a consequence for the
+> balance cpu. Currently we let the first cpu in the domain do the
+> balancing, however if that CPU has 0 power it might not be the best
+> choice (esp since part of the balancing can be done from softirq context
+> - which would basically starve that group).
+
+Agreed, but relative easy to solve compared to other challenges :)
+ 
+> Sched domains
+> -------------
+> 
+> There seems to be a use-case where we need both the cache and the
+> package levels. So I wanted to have both levels in there.
+> 
+> Currently each domain level can only be one of:
+> 
+> SD_LV_NONE = 0,
+> SD_LV_SIBLING,
+> SD_LV_MC,
+> SD_LV_CPU,
+> SD_LV_NODE,
+> SD_LV_ALLNODES,
+> 
+> So to avoid a double domain with 'native' multi-core chips where the
+> cache and package level have the same span, I want to encode this
+> information in the sched_domain::flags as bits, which means a level can
+> be both cache and package.
+
+This will help power savings balance and make the implementation
+clean.  You have suggested this previously also.
+Similarly collapse the NODE level if it is redundant?
+
+> Over balancing
+> --------------
+> 
+> Lastly, we might need to introduce SD_OVER_BALANCE, which toggles the
+> over-balance logic. While over-balancing brings better fairness for a
+> number of cases, its also hard on power savings.
+
+I did not understand this over balance.  Can you please explain.
+
+Thanks,
+Vaidy
 
