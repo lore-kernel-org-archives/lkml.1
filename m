@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYJNCP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbYJNCQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbYJNCP6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 22:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbYJNCPu
+	id S1757380AbYJNCQd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 22:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYJNCQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 22:15:50 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37717 "EHLO gate.crashing.org"
+	Mon, 13 Oct 2008 22:16:21 -0400
+Received: from M4.sparta.com ([157.185.61.2]:56919 "EHLO M4.sparta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755115AbYJNCPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 22:15:49 -0400
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: David Miller <davem@davemloft.net>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       yhlu.kernel@gmail.com
-In-Reply-To: <20081013.184535.57239267.davem@davemloft.net>
-References: <20081014005428.EC2D8DDF93@ozlabs.org>
-	 <48F3F014.3050406@zytor.com> <1223948488.8157.309.camel@pasglop>
-	 <20081013.184535.57239267.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 14 Oct 2008 13:15:37 +1100
-Message-Id: <1223950537.8157.313.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1754497AbYJNCQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 22:16:19 -0400
+Message-ID: <48F400DD.50905@sparta.com>
+Date: Mon, 13 Oct 2008 22:15:57 -0400
+From: "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: James Morris <jmorris@namei.org>
+CC: "David P. Quigley" <dpquigl@tycho.nsa.gov>, labeled-nfs@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, viro@zeniv.linux.org.uk,
+       selinux@tycho.nsa.gov
+Subject: Re: [Labeled-nfs] [RFC v3] Security Label Support for NFSv4
+References: <1222707986-26606-1-git-send-email-dpquigl@tycho.nsa.gov> <alpine.LRH.1.10.0810141014580.26030@tundra.namei.org>
+In-Reply-To: <alpine.LRH.1.10.0810141014580.26030@tundra.namei.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Oct 2008 02:15:59.0998 (UTC) FILETIME=[CCC1E1E0:01C92DA2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 18:45 -0700, David Miller wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Tue, 14 Oct 2008 12:41:27 +1100
+James Morris wrote:
+> On Mon, 29 Sep 2008, David P. Quigley wrote:
 > 
-> > It has to be a pointer tho, thus what do we want ? Something that takes
-> > a pointer to a resource_size_t or to a whole struct resource ? In the
-> > later case, do we want to print the whole flags too ?
+>> 	* New security flavor (auth_seclabel) to transport process label to
+>> 	  server. This is a derivative of auth_unix so it does not support
+>> 	  kerberos which has its own issues that need to be dealt with.
 > 
-> Yes, that's sort of the ugly aspect of this.
+> This is a problem, as discussed last year:
 > 
-> Taking a resource would be cool, and you could use some post modifier
-> character to say which part to print
+> http://linux-nfs.org/pipermail/labeled-nfs/2007-November/000110.html
+> 
+> We can't require the use of a new auth flavor which is incompatible with 
+> auth_gss.
 
-That's a good idea, there's quite a few areas where we don't want the
-flags.. I'll see if I can cook up something after I've finished
-preparing the powerpc tree for Linus to pull.
-
-Cheers,
-Ben.
-
-
+auth_seclabel demonstrates the flavor independent changes required for 
+any RPC layer process label transport.  A GSS solution is currently 
+under discussion.
