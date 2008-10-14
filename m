@@ -1,57 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYJNBlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYJNBmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbYJNBlv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 21:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYJNBlm
+	id S1756533AbYJNBmK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 21:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbYJNBlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 21:41:42 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47882 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753130AbYJNBll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 21:41:41 -0400
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       yhlu.kernel@gmail.com
-In-Reply-To: <48F3F014.3050406@zytor.com>
-References: <20081014005428.EC2D8DDF93@ozlabs.org>
-	 <48F3F014.3050406@zytor.com>
-Content-Type: text/plain
-Date: Tue, 14 Oct 2008 12:41:27 +1100
-Message-Id: <1223948488.8157.309.camel@pasglop>
+	Mon, 13 Oct 2008 21:41:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35647
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755484AbYJNBlp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 21:41:45 -0400
+Date: Mon, 13 Oct 2008 18:41:21 -0700 (PDT)
+Message-Id: <20081013.184121.129699101.davem@davemloft.net>
+To: ron.mercer@qlogic.com
+Cc: kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       jgarzik@redhat.com, apw@shadowen.org, scofeldm@cisco.com,
+       cooldavid@cooldavid.org
+Subject: Re: [PATCH] 2.6.27-git2 - fix build error at csum_ipv6_magic()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081013230957.GB26780@susedev.qlogic.org>
+References: <20081013121441.GB14372@linux.vnet.ibm.com>
+	<20081013230957.GB26780@susedev.qlogic.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 18:04 -0700, H. Peter Anvin wrote:
-> Benjamin Herrenschmidt wrote:
-> > That debug outpout in kernel/resource.c is busted on 32-bit
-> > machines, fix it with appropriate casts.
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> > 
-> > One day Yinghai will figure out that resource_size_t can be 32-bit
-> > and thus as printk arguments must be cast to (unsigned long long)
-> > explicitely when using %llx... hopefully, that day, Ingo will also
-> > catch these before committing them as it's not the first one like
-> > this :-)
-> > 
-> 
-> I really think Linus' solution (add a resource printf modifier, that can 
-> contain the whole format) is much better.
+From: Ron Mercer <ron.mercer@qlogic.com>
+Date: Mon, 13 Oct 2008 16:09:57 -0700
 
-I agree. In fact I may even have a patch somewhere for that. 
+> Signed-off-by: Ron Mercer <ron.mercer@qlogic.com>
 
-It has to be a pointer tho, thus what do we want ? Something that takes
-a pointer to a resource_size_t or to a whole struct resource ? In the
-later case, do we want to print the whole flags too ?
-
-Cheers,
-Ben.
-
+I've applied Kamalesh's patch, thanks everyone.
