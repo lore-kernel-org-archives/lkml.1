@@ -1,48 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYJNVgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYJNVhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753341AbYJNVgX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 17:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYJNVgP
+	id S1754422AbYJNVhq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 17:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbYJNVhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 17:36:15 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:16380 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbYJNVgO (ORCPT
+	Tue, 14 Oct 2008 17:37:37 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:63165 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbYJNVhg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 17:36:14 -0400
-X-IronPort-AV: E=Sophos;i="4.33,410,1220227200"; 
-   d="scan'208";a="108496814"
-From: Roland Dreier <rdreier@cisco.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: question about pci_disable_device
-References: <200810131947.44992.oliver@neukum.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 14 Oct 2008 14:36:13 -0700
-In-Reply-To: <200810131947.44992.oliver@neukum.org> (Oliver Neukum's message
-	of "Mon, 13 Oct 2008 19:47:44 +0200")
-Message-ID: <ada7i8avoz6.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 14 Oct 2008 17:37:36 -0400
+Message-ID: <48F51114.2010105@caviumnetworks.com>
+Date: Tue, 14 Oct 2008 14:37:24 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Oct 2008 21:36:13.0925 (UTC) FILETIME=[E1E42950:01C92E44]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: linux-mips@linux-mips.org,
+       "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
+Subject: [PATCH] serial: Initialize spinlocks in 8250 and don't clobber them.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Oct 2008 21:37:25.0150 (UTC) FILETIME=[0C583BE0:01C92E45]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > could somebody explain what determines when in the sequence of hot
- > unplugging pci_disable_device() is called?
+Initialize spinlocks in 8250 and don't clobber them.
 
-I'm not positive about this, but pci_disable_device() should be called
-as part of the device's driver's .remove method, which is called from
-the sequence:
+Spinlock debugging fails in 8250.c because the lock fields in
+irq_lists are not initialized.  Initialize them.
 
-hotplug driver ->
-    pci_remove_bus_device() ->
-        pci_destroy_dev() ->
-            pci_stop_dev() ->
-                device_unregister()
+In serial8250_isa_init_ports(), the port's lock is initialized.  We
+should not overwrite it.  Only copy in the fields we need.
 
- - R.
+Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+Signed-off-by: Tomaso Paoletti <tpaoletti@caviumnetworks.com>
+---
+ drivers/serial/8250.c |   19 +++++++++++++++++--
+ 1 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index d4104a3..0688799 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2494,6 +2494,9 @@ static void __init serial8250_isa_init_ports(void)
+ 		return;
+ 	first = 0;
+ 
++	for (i = 0; i < ARRAY_SIZE(irq_lists); i++)
++		spin_lock_init(&irq_lists[i].lock);
++
+ 	for (i = 0; i < nr_uarts; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+@@ -2699,12 +2702,24 @@ static struct uart_driver serial8250_reg = {
+  */
+ int __init early_serial_setup(struct uart_port *port)
+ {
++	struct uart_port *p;
++
+ 	if (port->line >= ARRAY_SIZE(serial8250_ports))
+ 		return -ENODEV;
+ 
+ 	serial8250_isa_init_ports();
+-	serial8250_ports[port->line].port	= *port;
+-	serial8250_ports[port->line].port.ops	= &serial8250_pops;
++	p = &serial8250_ports[port->line].port;
++	p->iobase       = port->iobase;
++	p->membase      = port->membase;
++	p->irq          = port->irq;
++	p->uartclk      = port->uartclk;
++	p->fifosize     = port->fifosize;
++	p->regshift     = port->regshift;
++	p->iotype       = port->iotype;
++	p->flags        = port->flags;
++	p->mapbase      = port->mapbase;
++	p->private_data = port->private_data;
++	p->ops		= &serial8250_pops;
+ 	return 0;
+ }
+ 
