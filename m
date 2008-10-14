@@ -1,125 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbYJNJRF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbYJNJRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758527AbYJNJRF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:17:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757555AbYJNJPe
+	id S1758523AbYJNJRt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYJNJRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:15:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38477
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755188AbYJNJPb (ORCPT
+	Tue, 14 Oct 2008 05:17:37 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:19601 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752930AbYJNJRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:15:31 -0400
-Date: Tue, 14 Oct 2008 02:15:06 -0700 (PDT)
-Message-Id: <20081014.021506.18668456.davem@davemloft.net>
-To: mathieu.desnoyers@polymtl.ca
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sparc64: Optimized immediate value implementation build error
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081014044758.GA20420@Krystal>
-References: <20081014021704.GA15549@Krystal>
-	<20081013.193117.38855645.davem@davemloft.net>
-	<20081014044758.GA20420@Krystal>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Tue, 14 Oct 2008 05:17:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bm2G/N+ZH9WR2lJTyKcKlcLHpLXDK2nsQjBgFhJ9i6zmGL30t2BeGRIZHBmMxcs5qy
+         UdjRfmnEPJrc3TQS/To3vpSSP61w7S7LVWAM1Ql5Dhoh3UIhW6fLklDL75G7h1nxiP/x
+         a8KykqFwdjYh/zHtxC1C/YDFSJs///zxLKxM0=
+Message-ID: <2891419e0810140217l70f233bbr3b08760188458c35@mail.gmail.com>
+Date: Tue, 14 Oct 2008 18:17:30 +0900
+From: "Dong-Jae Kang" <baramsori72@gmail.com>
+To: "Andrea Righi" <righi.andrea@gmail.com>
+Subject: Re: [PATCH -mm 0/6] cgroup: block device i/o controller (v11)
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Paul Menage" <menage@google.com>, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk,
+       "Carl Henrik Lunde" <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
+       "Divyesh Shah" <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, "Hirokazu Takahashi" <taka@valinux.co.jp>,
+       "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Marco Innocenti" <m.innocenti@cineca.it>, matt@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       "Ryo Tsuruta" <ryov@valinux.co.jp>,
+       "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1223373818-13687-1-git-send-email-righi.andrea@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <> <1223373818-13687-1-git-send-email-righi.andrea@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9E9Hldq020118
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9E9Hvdq020122
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Tue, 14 Oct 2008 00:47:58 -0400
+Hi, Andrea
+thank you for your contribution to communitythese days, I am testing several IO controllers in container ML,dm-ioband by Ryo tsuruta(v1.7.0), 2-Layer CFQ by Satoshi and yourio-throttle(v11)
+I have several question about io-throttlebelow is my test reusult of io-throttle(v11) with xdd 6.5But, I think I have something wrong, as showed in resultIn direct IO mode, Only read operation was controlled by io-throttleCan you check my  test procedure and result and comments to me about that
+additionally, your testing shell script(run_io_throttle_test.sh) forio-throttle was not updated for new io-throttleso, it could be operated after I fixed it
+------------------------------------------------------------------------------------ Test System Information
+Computer Name, localhost.localdomain, User Name, rootOS release and version, Linux 2.6.27-rc5-mm1 #1 SMP Thu Oct 9 18:27:09 KST 2008Machine hardware type, i686Number of processors on this system, 1Page size in bytes, 4096Number of physical pages, 515885Megabytes of physical memory, 2015Target[0] Q[0], /dev/sdbPer-pass time limit in seconds, 30Blocksize in bytes, 512Request size, 128, blocks, 65536, bytesNumber of Requests, 16384Number of MegaBytes, 512 or 1024Direct I/O, disabled or enableSeek pattern, sequentialQueue Depth, 1
+- Test Procedure
+ï¬	mkdir /dev/blockioctlï¬	mount -t cgroup -o blockio cgroup /dev/blockioctlï¬	mkdir /dev/blockioctl/cgroup-1ï¬	mkdir /dev/blockioctl/cgroup-2ï¬	mkdir /dev/blockioctl/cgroup-3ï¬	echo /dev/sdb:$((1024*1024)):0:0 >/dev/blockioctl/cgroup-1/blockio.bandwidth-maxï¬	echo /dev/sdb:$((2*1024*1024)):0:0 >/dev/blockioctl/cgroup-2/blockio.bandwidth-maxï¬	echo /dev/sdb:$((3*1024*1024)):0:0 >/dev/blockioctl/cgroup-3/blockio.bandwidth-maxï¬	in terminal 1, echo $$ > /dev/blockioctl/cgroup-1/tasksï¬	in terminal 2, echo $$ > /dev/blockioctl/cgroup-2/tasksï¬	in terminal 3, echo $$ > /dev/blockioctl/cgroup-3/tasksï¬	in each terminal, xdd.linux -op write( or read ) -targets 1 /dev/sdb-blocksize 512 -reqsize 128 -mbytes 1024( or 512 )  -timelimit 30-verbose â€“dio(enable or disable)
+- setting status information
+[root@localhost blockioctl]# cat ./cgroup-1/blockio.bandwidth-max8 16 1048576 0 0 0 13016[root@localhost blockioctl]# cat ./cgroup-2/blockio.bandwidth-max8 16 2097152 0 0 0 11763[root@localhost blockioctl]# cat ./cgroup-3/blockio.bandwidth-max8 16 3145728 0 0 0 11133
+- Test Resultxdd.linux -op read -targets 1 /dev/sdb -blocksize 512 -reqsize 128-mbytes 512 -timelimit 30 -dio -verbose
+cgroup-1
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1      31522816      481    30.005     1.051      16.03    0.0624  0.00   read       655360  1      31522816      481    30.005     1.051      16.03    0.0624  0.00   read       655361  1      31522816      481    30.005     1.051      16.03    0.0624  0.00   read       65536
+cgroup-2
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1      62980096      961    30.001     2.099      32.03    0.0312  0.00   read       655360  1      62980096      961    30.001     2.099      32.03    0.0312  0.00   read       655361  1      62980096      961    30.001     2.099      32.03    0.0312  0.00   read       65536
+cgroup-3
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1      94437376     1441    30.003     3.148      48.03    0.0208  0.00   read       655360  1      94437376     1441    30.003     3.148      48.03    0.0208  0.00   read       655361  1      94437376     1441    30.003     3.148      48.03    0.0208  0.00   read       65536
+xdd.linux -op write -targets 1 /dev/sdb -blocksize 512 -reqsize 128-mbytes 512 -timelimit 30 -dio â€“verbose
+cgroup-1
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1     640221184     9769    30.097    21.272     324.58    0.0031  0.00   write       655360  1     640221184     9769    30.097    21.272     324.58    0.0031  0.00   write       655361  1     640221184     9769    30.097    21.272     324.58    0.0031  0.00   write       65536
+cgroup-2
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1     633798656     9671    30.001    21.126     322.36    0.0031  0.00   write       655360  1     633798656     9671    30.001    21.126     322.36    0.0031  0.00   write       655361  1     633798656     9671    30.001    21.126     322.36    0.0031  0.00   write       65536
+cgroup-3
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1     630652928     9623    30.001    21.021     320.76    0.0031  0.00   write       655360  1     630652928     9623    30.001    21.021     320.76    0.0031  0.00   write       655361  1     630652928     9623    30.001    21.021     320.76    0.0031  0.00   write       65536
+xdd.linux -op read -targets 1 /dev/sdb -blocksize 512 -reqsize 128-mbytes 1024  -timelimit 30  -verbose
+cgroup-1
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1      70123520     1070    30.150     2.326      35.49    0.0282  0.00   read       655360  1      70123520     1070    30.150     2.326      35.49    0.0282  0.00   read       655361  1      70123520     1070    30.150     2.326      35.49    0.0282  0.00   read       65536
+cgroup-2
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1      70844416     1081    30.063     2.357      35.96    0.0278  0.00   read       655360  1      70844416     1081    30.063     2.357      35.96    0.0278  0.00   read       655361  1      70844416     1081    30.063     2.357      35.96    0.0278  0.00   read       65536
+cgroup-3
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1      72155136     1101    30.204     2.389      36.45    0.0274  0.00   read       655360  1      72155136     1101    30.204     2.389      36.45    0.0274  0.00   read       655361  1      72155136     1101    30.204     2.389      36.45    0.0274  0.00   read       65536
+xdd.linux -op write -targets 1 /dev/sdb -blocksize 512 -reqsize 128-mbytes 1024  -timelimit 30  -verbose
+cgroup-1
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1     818610176    12491    30.031    27.258     415.93    0.0024  0.00   write       655360  1     818610176    12491    30.031    27.258     415.93    0.0024  0.00   write       655361  1     818610176    12491    30.031    27.258     415.93    0.0024  0.00   write       65536
+cgroup-2
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1     848494592    12947    30.066    28.221     430.62    0.0023  0.00   write       655360  1     848494592    12947    30.066    28.221     430.62    0.0023  0.00   write       655361  1     848494592    12947    30.066    28.221     430.62    0.0023  0.00   write       65536
+cgroup-3
+T  Q       Bytes      Ops    Time      Rate      IOPS   Latency%CPU  OP_Type    ReqSize0  1     786563072    12002    30.078    26.151     399.03    0.0025  0.00   write       655360  1     786563072    12002    30.078    26.151     399.03    0.0025  0.00   write       655361  1     786563072    12002    30.078    26.151     399.03    0.0025  0.00   write       65536
+Best Regards,Dong-Jae Kang
 
-> * David Miller (davem@davemloft.net) wrote:
-> > I'll pull in 0.40 next.
-> 
-> I'm looking forward to hear about the results. Thanks !
-
-It builds, and I made sure that USE_IMMEDIATE does get defined
-by the makefile changes you made.
-
-On the other hand, CONFIG_PSRWLOCK_LATENCY_TEST fails to build:
-
-  CC      lib/psrwlock-latency-trace.o
-lib/psrwlock-latency-trace.c: In function â€˜calibrate_get_cyclesâ€™:
-lib/psrwlock-latency-trace.c:60: error: implicit declaration of function â€˜rdtsc_barrierâ€™
-
-You could use sched_clock() or similar, we do have portable
-interfaces by which to do these things.  And if we don't
-have something fitting exactly what is needed here, add it :-)
-
-Also:
-
-<stdin>:1421:2: warning: #warning syscall marker not implemented
-<stdin>:1425:2: warning: #warning syscall trace not implemented
-
-which should be fixed by the following patch:
-
-sparc: Add sys_trace() and sys_marker() syscall table entries.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/arch/sparc/include/asm/unistd_32.h b/arch/sparc/include/asm/unistd_32.h
-index 648643a..ef924f4 100644
---- a/arch/sparc/include/asm/unistd_32.h
-+++ b/arch/sparc/include/asm/unistd_32.h
-@@ -338,8 +338,10 @@
- #define __NR_dup3		320
- #define __NR_pipe2		321
- #define __NR_inotify_init1	322
-+#define __NR_marker		323
-+#define __NR_trace		324
- 
--#define NR_SYSCALLS		323
-+#define NR_SYSCALLS		325
- 
- /* Sparc 32-bit only has the "setresuid32", "getresuid32" variants,
-  * it never had the plain ones and there is no value to adding those
-diff --git a/arch/sparc/include/asm/unistd_64.h b/arch/sparc/include/asm/unistd_64.h
-index c5cc0e0..bd830d8 100644
---- a/arch/sparc/include/asm/unistd_64.h
-+++ b/arch/sparc/include/asm/unistd_64.h
-@@ -340,8 +340,10 @@
- #define __NR_dup3		320
- #define __NR_pipe2		321
- #define __NR_inotify_init1	322
-+#define __NR_marker		323
-+#define __NR_trace		324
- 
--#define NR_SYSCALLS		323
-+#define NR_SYSCALLS		325
- 
- #ifdef __KERNEL__
- #define __ARCH_WANT_IPC_PARSE_VERSION
-diff --git a/arch/sparc/kernel/systbls.S b/arch/sparc/kernel/systbls.S
-index e1b9233..0a1dd3d 100644
---- a/arch/sparc/kernel/systbls.S
-+++ b/arch/sparc/kernel/systbls.S
-@@ -81,4 +81,4 @@ sys_call_table:
- /*305*/	.long sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
- /*310*/	.long sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
- /*315*/	.long sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
--/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1
-+/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
-diff --git a/arch/sparc64/kernel/systbls.S b/arch/sparc64/kernel/systbls.S
-index 0fdbf3b..0257912 100644
---- a/arch/sparc64/kernel/systbls.S
-+++ b/arch/sparc64/kernel/systbls.S
-@@ -82,7 +82,7 @@ sys_call_table32:
- 	.word compat_sys_set_mempolicy, compat_sys_kexec_load, compat_sys_move_pages, sys_getcpu, compat_sys_epoll_pwait
- /*310*/	.word compat_sys_utimensat, compat_sys_signalfd, sys_timerfd_create, sys_eventfd, compat_sys_fallocate
- 	.word compat_sys_timerfd_settime, compat_sys_timerfd_gettime, compat_sys_signalfd4, sys_eventfd2, sys_epoll_create1
--/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
-+/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
- 
- #endif /* CONFIG_COMPAT */
- 
-@@ -156,4 +156,4 @@ sys_call_table:
- 	.word sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
- /*310*/	.word sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
- 	.word sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
--/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
-+/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+2008/10/7 Andrea Righi <righi.andrea@gmail.com>:>> The objective of the i/o controller is to improve i/o performance> predictability of different cgroups sharing the same block devices.>> Respect to other priority/weight-based solutions the approach used by this> controller is to explicitly choke applications' requests that directly (or> indirectly) generate i/o activity in the system.>> The direct bandwidth and/or iops limiting method has the advantage of improving> the performance predictability at the cost of reducing, in general, the overall> performance of the system (in terms of throughput).>> Detailed informations about design, its goal and usage are described in the> documentation.>> Patchset against 2.6.27-rc5-mm1:>>  [PATCH 0/6] cgroup: block device i/o controller (v11)>  [PATCH 1/6] i/o controller documentation>  [PATCH 2/6] introduce ratelimiting attributes and functionality to res_counter>  [PATCH 3/6] i/o controller infrastructure>  [PATCH 4/6] memcg: interface to charge the right cgroup of asynchronous i/o activity>  [PATCH 5/6] i/o controller instrumentation: accounting and throttling>  [PATCH 6/6] export per-task i/o throttling statistics to userspace>> The all-in-one patch (and previous versions) can be found at:> http://download.systemimager.org/~arighi/linux/patches/io-throttle/>> There are no significant changes respect to v10, I've only implemented/fixed> some suggestions I received.>> Changelog: (v10 -> v11)>> * report per block device i/o statistics (total bytes read/written and iops)>  in blockio.stat for i/o limited cgroups> * distinct bandwidth and iops statistics: both in blockio.throttlecnt and>  /proc/PID/io-throttle-stat (suggested by David Radford)> * merge res_counter_ratelimit functionality into res_counter, to avoid code>  duplication (suggested by Paul Manage)> * use kernel-doc style for documenting struct res_counter attributes>  (suggested by Randy Dunalp)> * udpated documentation>> Thanks to all for the feedback!> -Andrea>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
