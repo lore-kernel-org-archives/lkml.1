@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYJNSE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYJNSFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbYJNSE7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 14:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYJNSEt
+	id S1752056AbYJNSFX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 14:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYJNSEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 14:04:49 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47625 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751422AbYJNSEt (ORCPT
+	Tue, 14 Oct 2008 14:04:52 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33118 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbYJNSEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 14:04:49 -0400
-Date: Tue, 14 Oct 2008 14:04:48 -0400
-To: Pavel Machek <pavel@suse.cz>
-Cc: Chris Snook <csnook@redhat.com>, Stefan Monnier <monnier@iro.umontreal.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Filesystem for block devices using flash storage?
-Message-ID: <20081014180448.GC22851@csclub.uwaterloo.ca>
-References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org> <48ED1D62.8080100@redhat.com> <20081011143552.GA1556@ucw.cz>
+	Tue, 14 Oct 2008 14:04:50 -0400
+Message-ID: <48F4DF3E.2050903@zytor.com>
+Date: Tue, 14 Oct 2008 11:04:46 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081011143552.GA1556@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: Checkin 7404ad3b6d04efbd918e9e2e776bf560fbedf47d breaks boot
+ on KVM
+References: <48F3E1C9.6030007@zytor.com> <1223990609.12440.8.camel@localhost.localdomain>
+In-Reply-To: <1223990609.12440.8.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 11, 2008 at 04:35:52PM +0200, Pavel Machek wrote:
-> I don't think ext3 is safe w.r.t. whole eraseblocks disappearing. So
-> if you write data 'nearby' root directory and power fails, bye bye
-> filesystem, and journal will not help.
+James Bottomley wrote:
+>>
+>> :040000 040000 98fc7ae95211b8d16e2e8ca46997be660ad9ba93 
+>> 2d35d0a2b6232411b840a9ccf6a52b946172566e M      drivers
+>>
+>> However, simply reverting this commit caused a panic on boot (not 
+>> entirely surprising.)
 > 
-> Actually ext2 will at least detect damage...
+> Actually, it is surprising.  That patch takes the default arithmetic for
+> calculating the disk size out of sd and uses a routine to do it more
+> efficiently in lib/string_helpers.c
+> 
+> So there are two problems:  Why does it panic on revert (could you post
+> the oops) and what does kvm object to in string_get_size ... it's a
+> fairly innocuous routine as I read it ... your symptoms sound like the
+> for loop isn't terminating.
+> 
 
-I have never seen a flash device that worked that way.  All the ones I
-have seen have extra spare blocks and will copy an existing block to an
-empty block changing the required bits while doing the copy to represent
-the new data to be written.  When done, they update the block map of the
-device to point to the new block, then the old block is erase and added
-to the spare block list.
+Looks like it's trying to print a zero.  I made a diff to print out the 
+raw numbers, and did indeed get zero.
 
-This is also used as part of wear leveling, where better devices will
-occationally take a rarely written block, move it to a more used spare
-block, and then add the previously rarely used block to the spare list
-for more use.
+Now, *why* it is printing a zero is another matter (as is why using 
+ffz() instead of ilog2() there...).  Some quick investigation showed 
+that sdkp->capacity is a 32-bit quantity in this configuration, and 
+shifting it left by 9 of course ends up with zero; being a virtual disk, 
+it's an exact power of two.
 
-In cases of decent devices like this, ext3 works great.  I have never
-had a chunk of the filesystem disappear yet, although perhaps 2000
-compact flash using units isn't a large enough data set to say much.
+Still, it is bad that string_get_size() hangs on passing zero.
 
--- 
-Len Sorensen
+The spinlock lockup is still happening, so I'm assuming it is an 
+unrelated bug that was masked by the string_get_size issue.
+
+Patch series will follow shortly.
+
+	-hpa
