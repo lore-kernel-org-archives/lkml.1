@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYJNW0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbYJNW30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYJNW0K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 18:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYJNWZ5
+	id S1754298AbYJNW30 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 18:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYJNW3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 18:25:57 -0400
-Received: from smtp3.ono.com ([62.42.230.176]:51573 "EHLO resmaa06.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751844AbYJNWZ4 convert rfc822-to-8bit (ORCPT
+	Tue, 14 Oct 2008 18:29:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60926 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751338AbYJNW3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 18:25:56 -0400
-Date: Wed, 15 Oct 2008 00:25:54 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27-git3: no SD card reader
-Message-ID: <20081015002554.7b234a90@werewolf.home>
-In-Reply-To: <20081014232759.08f5d212@werewolf.home>
-References: <20081014025453.617f2ef8@werewolf.home>
-	<20081014174536.1353d17e@mjolnir.drzeus.cx>
-	<20081014232759.08f5d212@werewolf.home>
-X-Mailer: Claws Mail 3.6.1cvs2 (GTK+ 2.14.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 14 Oct 2008 18:29:17 -0400
+Message-ID: <48F51D38.7010702@zytor.com>
+Date: Tue, 14 Oct 2008 15:29:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Chris Adams <cmadams@hiwaay.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [REVERT Request] VT Breakage
+References: <bmPNn-6ta-11@gated-at.bofh.it> <bmVzl-5F8-13@gated-at.bofh.it> <bmW2j-68c-3@gated-at.bofh.it> <20081014213820.GA1312840@hiwaay.net> <48F51A7D.3040700@zytor.com>
+In-Reply-To: <48F51A7D.3040700@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008 23:27:59 +0200, "J.A. Magallón" <jamagallon@ono.com> wrote:
-
-> On Tue, 14 Oct 2008 17:45:36 +0200, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+H. Peter Anvin wrote:
 > 
-> > On Tue, 14 Oct 2008 02:54:53 +0200
-> > "J.A. Magallón" <jamagallon@ono.com> wrote:
-> > 
-> > > Hi...
-> > > 
-> > > More problems with git3. The left SD card reader is not detected on the One.
-> > > With a working kernel (distro 2.6.27):
-> > > 
-> > > Oct 14 02:44:27 one kernel: mmc0: error -84 whilst initialising SD card
-> > > 
-> > > Any ideas ?
-> > > 
-> > 
-> > -84 is -EILSEQ, which is some kind of bit error. Since you're running a
-> > JMicron controller, I'm guessing that something in your system isn't
-> > handling the higher speed (we forcefully enable highspeed on the
-> > Jmicron controll now).
-> > 
+> I haven't found the technical manual for VT525, but the user manual 
+> mentions as one of options in the configuration menu:
+> 
+> "Erase text to the text background color (PC style)"
+> "Erase text to the screen background color (VT style)"
 > 
 
-> 01:00.0 System peripheral: JMicron Technologies, Inc. Device 2382
-> 01:00.2 SD Host controller: JMicron Technologies, Inc. Device 2381
-> 01:00.3 System peripheral: JMicron Technologies, Inc. Device 2383
-> 01:00.4 System peripheral: JMicron Technologies, Inc. Device 2384
-> 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E/RTL8102E PCI Express Fast Ethernet controller (rev 02)
-> 03:00.0 Ethernet controller: Atheros Communications Inc. AR242x 802.11abg Wireless PCI Express Adapter (rev 01)
-> 04:00.0 System peripheral: JMicron Technologies, Inc. Device 2382
-> 04:00.2 SD Host controller: JMicron Technologies, Inc. Device 2381
-> 04:00.3 System peripheral: JMicron Technologies, Inc. Device 2383
-> 04:00.4 System peripheral: JMicron Technologies, Inc. Device 2384
-> 
+Actually, I did find it:
 
-After updating pci.ids, lspci is more informative:
+http://vt100.net/docs/vt520-rm/ek-vt520-rm.pdf
 
-01:00.0 System peripheral: JMicron Technologies, Inc. SD/MMC Host Controller
-01:00.2 SD Host controller: JMicron Technologies, Inc. Standard SD Host Controller
-01:00.3 System peripheral: JMicron Technologies, Inc. MS Host Controller
-01:00.4 System peripheral: JMicron Technologies, Inc. xD Host Controller
-02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E/RTL8102E PCI Express Fast Ethernet controller (rev 02)
-03:00.0 Ethernet controller: Atheros Communications Inc. AR242x 802.11abg Wireless PCI Express Adapter (rev 01)
-04:00.0 System peripheral: JMicron Technologies, Inc. SD/MMC Host Controller
-04:00.2 SD Host controller: JMicron Technologies, Inc. Standard SD Host Controller
-04:00.3 System peripheral: JMicron Technologies, Inc. MS Host Controller
-04:00.4 System peripheral: JMicron Technologies, Inc. xD Host Controller
+It states:
 
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.0 (Cooker) for i586
-Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
+2.9.7 Erase Color
+The Erase color selection controls the background color used when text 
+is erased or new text is scrolled on to the screen. Screen background 
+causes newly erased areas or scrolled text to be written using color 
+index zero, the screen background. This is VT and DECterm compatible. 
+Text background causes erased areas or scrolled text to be written using 
+the current text background color. This is PC console compatible and is 
+the factory default.
+
+Note the second clause of the last sentence.
+
+> However, to a very large degree this is all moot.  We have done it one 
+> way for 17 years, and that is the terminal emulation that is expected 
+> when $TERM is "linux".  Realistically, if we want to introduce a new 
+> xterm-compatible mode it needs to be just that, a mode; and then we can 
+> set TERM to "xterm".
+
+This still holds, of course.
+
+	-hpa
