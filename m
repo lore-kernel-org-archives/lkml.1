@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbYJNUzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbYJNU4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbYJNUzr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 16:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbYJNUwh
+	id S1755410AbYJNU4G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 16:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbYJNUwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 16:52:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37794 "EHLO mx2.redhat.com"
+	Tue, 14 Oct 2008 16:52:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37800 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754554AbYJNUwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 16:52:35 -0400
+	id S1754907AbYJNUwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 16:52:36 -0400
 From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH -v2 06/16] fanotify: add a userspace interface for fanotify
-	notifications
+Subject: [PATCH -v2 10/16] fanotify: blocking and access granting
 To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
 Cc: viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
        greg@kroah.com, tytso@mit.edu
-Date: Tue, 14 Oct 2008 16:52:02 -0400
-Message-ID: <20081014205202.1057.5882.stgit@paris.rdu.redhat.com>
+Date: Tue, 14 Oct 2008 16:52:23 -0400
+Message-ID: <20081014205223.1057.74371.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20081014205009.1057.12041.stgit@paris.rdu.redhat.com>
 References: <20081014205009.1057.12041.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -27,418 +26,547 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-notifications from fanotify need a userspace interface.  We are going to
-try to do it with sockets.  Scary....
+This patch introduces blocking an access granting for fanotify.  Events are
+sent to userspace and the original process is blocked (assuming not
+O_NONBLOCK) for at most the amount of time determined by the group.  Total
+maximum blocking time is the sum of all groups possible blocking time.
+
+O_NONBLOCK processes trying to read and a group registered to require
+blocking/access control on read MUST have a fastpath entry in order to ever
+make progress.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- include/linux/fanotify.h   |   18 +++
- include/linux/socket.h     |    5 +
- net/Makefile               |    1 
- net/core/sock.c            |    6 +
- net/fanotify/Makefile      |    5 +
- net/fanotify/af_fanotify.c |  232 ++++++++++++++++++++++++++++++++++++++++++++
- net/fanotify/af_fanotify.h |   20 ++++
- 7 files changed, 283 insertions(+), 4 deletions(-)
- create mode 100644 net/fanotify/Makefile
- create mode 100644 net/fanotify/af_fanotify.c
- create mode 100644 net/fanotify/af_fanotify.h
+ fs/aio.c                 |    7 ++
+ fs/notify/Makefile       |    2 -
+ fs/notify/access.c       |  164 ++++++++++++++++++++++++++++++++++++++++++++++
+ fs/notify/fanotify.c     |   46 +++++++++++--
+ fs/notify/fanotify.h     |   17 ++++-
+ fs/notify/group.c        |    8 ++
+ fs/notify/notification.c |    2 +
+ fs/open.c                |    5 +
+ fs/read_write.c          |    6 ++
+ include/linux/fanotify.h |   35 +++++++++-
+ 10 files changed, 278 insertions(+), 14 deletions(-)
+ create mode 100644 fs/notify/access.c
 
+diff --git a/fs/aio.c b/fs/aio.c
+index f658441..008de79 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -31,6 +31,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/security.h>
+ #include <linux/eventfd.h>
++#include <linux/fanotify.h>
+ 
+ #include <asm/kmap_types.h>
+ #include <asm/uaccess.h>
+@@ -1454,6 +1455,9 @@ static ssize_t aio_setup_iocb(struct kiocb *kiocb)
+ 		ret = security_file_permission(file, MAY_READ);
+ 		if (unlikely(ret))
+ 			break;
++		ret = fanotify(file, FAN_ACCESS_PERM);
++		if (unlikely(ret))
++			break;
+ 		ret = aio_setup_single_vector(kiocb);
+ 		if (ret)
+ 			break;
+@@ -1486,6 +1490,9 @@ static ssize_t aio_setup_iocb(struct kiocb *kiocb)
+ 		ret = security_file_permission(file, MAY_READ);
+ 		if (unlikely(ret))
+ 			break;
++		ret = fanotify(file, FAN_ACCESS_PERM);
++		if (unlikely(ret))
++			break;
+ 		ret = aio_setup_vectored_rw(READ, kiocb);
+ 		if (ret)
+ 			break;
+diff --git a/fs/notify/Makefile b/fs/notify/Makefile
+index 90cb910..0af890a 100644
+--- a/fs/notify/Makefile
++++ b/fs/notify/Makefile
+@@ -3,4 +3,4 @@ obj-$(CONFIG_INOTIFY_USER)	+= inotify_user.o
+ 
+ obj-$(CONFIG_DNOTIFY)		+= dnotify.o
+ 
+-obj-$(CONFIG_FANOTIFY)		+= fanotify.o notification.o group.o fastpath.o
++obj-$(CONFIG_FANOTIFY)		+= fanotify.o notification.o group.o fastpath.o access.o
+diff --git a/fs/notify/access.c b/fs/notify/access.c
+new file mode 100644
+index 0000000..6a2606c
+--- /dev/null
++++ b/fs/notify/access.c
+@@ -0,0 +1,164 @@
++/*
++ *  Copyright (C) 2008 Red Hat, Inc., Eric Paris <eparis@redhat.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; see the file COPYING.  If not, write to
++ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <asm/atomic.h>
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/list.h>
++#include <linux/mutex.h>
++#include <linux/path.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++
++#include <linux/fanotify.h>
++#include "fanotify.h"
++
++int fanotify_add_event_to_access(struct fanotify_group *group, struct fanotify_event *event)
++{
++	struct fanotify_event_holder *holder;
++
++	if (list_empty(&event->holder.event_list))
++		holder = (struct fanotify_event_holder *)event;
++	else
++		holder = alloc_event_holder();
++	if (!holder)
++		return -ENOMEM;
++
++	fanotify_get_event(event);
++
++	mutex_lock(&group->access_mutex);
++	spin_lock(&event->holder_spinlock);
++	holder->event = event;
++	list_add_tail(&holder->event_list, &group->access_list);
++	spin_unlock(&event->holder_spinlock);
++	mutex_unlock(&group->access_mutex);
++
++	return 0;
++}
++
++int fanotify_get_response_from_access(struct fanotify_group *group, struct fanotify_event *event)
++{
++	int ret;
++	ret = wait_event_interruptible_timeout(group->access_waitq,
++						event->response,
++						msecs_to_jiffies(5000));
++	/* Timeout or signal? */
++	if (ret <= 0) {
++		struct fanotify_event_holder *holder;
++
++		/* pull the event off the access_list */
++		mutex_lock(&group->access_mutex);
++		list_for_each_entry(holder, &group->access_list, event_list) {
++			if (holder->event != event)
++				continue;
++
++			spin_lock(&event->holder_spinlock);
++			holder->event = NULL;
++			/* as soon as we do this the event.holder might get reused */
++			list_del_init(&holder->event_list);
++			spin_unlock(&event->holder_spinlock);
++
++			if (event != (struct fanotify_event *)holder)
++				fanotify_destroy_event_holder(holder);
++			fanotify_put_event(event);
++			break;
++		}
++		mutex_unlock(&group->access_mutex);
++
++		/*
++		 * if we took a signal, return ERESTARTSYS
++		 * if we timed out userspace is broken so return ALLOW
++		 */
++		return ret;
++	}
++
++	/* userspace responded, convert to something usable */
++	switch (event->response) {
++	case FAN_ALLOW:
++		return 0;
++	case FAN_DENY:
++	default:
++		return -EPERM;
++	}
++}
++
++int fanotify_process_access_response(struct fanotify_group *group, unsigned long cookie, unsigned int response)
++{
++	struct fanotify_event *event = NULL;
++	struct fanotify_event_holder *holder;
++
++	/*
++	 * make sure the response is valid, if invalid we do nothing and either
++	 * userspace can send a valid responce or we will clean it up after the
++	 * timeout
++	 */
++	if (response & ~(FAN_ALLOW | FAN_DENY))
++		return -EINVAL;
++
++	mutex_lock(&group->access_mutex);
++	list_for_each_entry(holder, &group->access_list, event_list) {
++		if (holder->event->cookie != cookie)
++			continue;
++
++		event = holder->event;
++		spin_lock(&event->holder_spinlock);
++		holder->event = NULL;
++		/* as soon as we do this the event.holder might be reused */
++		list_del_init(&holder->event_list);
++		spin_unlock(&event->holder_spinlock);
++
++		if (event != (struct fanotify_event *)holder)
++			fanotify_destroy_event_holder(holder);
++		break;
++	}
++	mutex_unlock(&group->access_mutex);
++
++	if (!event)
++		return -ENOENT;
++
++	event->response = response;
++	wake_up(&group->access_waitq);
++	fanotify_put_event(event);
++
++	return 0;
++}
++
++void fanotify_access_clear_group(struct fanotify_group *group)
++{
++	struct fanotify_event *event = NULL;
++	struct fanotify_event_holder *holder;
++
++	mutex_lock(&group->access_mutex);
++	list_for_each_entry(holder, &group->access_list, event_list) {
++		event = holder->event;
++		spin_lock(&event->holder_spinlock);
++		holder->event = NULL;
++		/* as soon as we do this the event.holder might be reused */
++		list_del_init(&holder->event_list);
++		spin_unlock(&event->holder_spinlock);
++
++		if (event != (struct fanotify_event *)holder)
++			fanotify_destroy_event_holder(holder);
++
++		event->response = FAN_ALLOW;
++		wake_up(&group->access_waitq);
++		fanotify_put_event(event);
++	}
++	mutex_unlock(&group->access_mutex);
++}
+diff --git a/fs/notify/fanotify.c b/fs/notify/fanotify.c
+index aa12e91..d995c14 100644
+--- a/fs/notify/fanotify.c
++++ b/fs/notify/fanotify.c
+@@ -44,22 +44,22 @@ void fanotify_inode_delete(struct inode *inode)
+ }
+ EXPORT_SYMBOL_GPL(fanotify_inode_delete);
+ 
+-void fanotify(struct file *file, unsigned int mask)
++int fanotify(struct file *file, unsigned int mask)
+ {
+ 	struct fanotify_group *group;
+ 	struct fanotify_event *event = NULL;
+ 	struct task_struct *tsk = current;
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+-	int idx;
++	int idx, ret = 0;
+ 
+ 	if (likely(list_empty(&fanotify_groups)))
+-		return;
++		return 0;
+ 
+ 	if (tsk->flags & PF_NOFACCESS)
+-		return;
++		return 0;
+ 
+ 	if (!S_ISREG(inode->i_mode))
+-		return;
++		return 0;
+ 
+ 	if (mask & FAN_MODIFY)
+ 		fanotify_fastpath_clear(inode);
+@@ -86,7 +86,39 @@ void fanotify(struct file *file, unsigned int mask)
+ 				if (!event)
+ 					break;
+ 			}
+-			fanotify_add_event_to_notif(group, event);
++			if (mask & FAN_ALL_EVENTS_PERM) {
++				/*
++				 * if you register for READ_ACCESS you MUST be setting
++				 * fastpath events or the client will NEVER make progress.
++				 * open is a blocking event so we don't require fastpath
++				 * entries and will wait for a decision.
++				 *
++				 * someday we could do an add_timer here, schedule a workqueue,
++				 * and in there we could check to see if this file got a fastpath
++				 * groups which don't obey the protocol could be evicted or an
++				 * O_NONBLOCK exclusion added.  There are some locking and
++				 * security implications to doing it that way, so for now we
++				 * are just going to assume userspace is adding fastpaths for
++				 * O_NONBLOCK files.....
++				 */
++				if ((mask & FAN_ACCESS_PERM) && (file->f_flags & O_NONBLOCK)) {
++					fanotify_add_event_to_notif(group, event);
++					ret = -EWOULDBLOCK;
++					break;
++				}
++				event->cookie = atomic_long_inc_return(&group->cookie);
++				event->response = 0;
++				/* put on access_list first so userspace can't be so fast responding it isn't on the list yet */
++				fanotify_add_event_to_access(group, event);
++
++				fanotify_add_event_to_notif(group, event);
++
++				ret = fanotify_get_response_from_access(group, event);
++				if (ret)
++					break;
++			} else {
++				fanotify_add_event_to_notif(group, event);
++			}
+ 		}
+ 	}
+ 	srcu_read_unlock(&fanotify_grp_srcu_struct, idx);
+@@ -96,6 +128,8 @@ void fanotify(struct file *file, unsigned int mask)
+ 	 */
+ 	if (event)
+ 		fanotify_put_event(event);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(fanotify);
+ 
+diff --git a/fs/notify/fanotify.h b/fs/notify/fanotify.h
+index 091ea5e..e07703f 100644
+--- a/fs/notify/fanotify.h
++++ b/fs/notify/fanotify.h
+@@ -14,12 +14,14 @@
+ #include <linux/wait.h>
+ 
+ /*
+- * A single event can be queued in multiple group->notification_lists.
++ * A single event can be queued in multiple group->notification_lists and to at
++ * most one group->access_list at the same time.
+  *
+- * each group->notification_list will point to an event_holer which in turns points
+- * to the actual event that needs to be sent to userspace.
++ * each group->notification_list or group->access_list will point to an
++ * event_holer which in turns points to the actual event that needs to be sent
++ * to userspace.
+  *
+- * Seemed cheaper to create a refcnt'd event and a small holder for every group
++ * Seemed cheaper to create a refcnt'd event and a small holder for every list
+  * than create a different event for every group
+  * 
+  */
+@@ -44,6 +46,9 @@ struct fanotify_event {
+ 	struct path path;	/* path from the original access */
+ 	unsigned int mask;	/* the type of access */
+ 	atomic_t refcnt;	/* how many groups still are using/need to send this event */
++	/* if waiting for a userspace access answer this is the cookie they will send back */
++	unsigned long cookie;
++	unsigned int response;	/* userspace answer to question */
+ };
+ 
+ /*
+@@ -95,4 +100,8 @@ extern void fanotify_fastpath_clear(struct inode *inode);
+ extern __init int fanotify_fastpath_init(void);
+ extern __init int fanotify_fastpath_uninit(void);
+ 
++extern int fanotify_add_event_to_access(struct fanotify_group *group, struct fanotify_event *event);
++extern int fanotify_get_response_from_access(struct fanotify_group *group, struct fanotify_event *event);
++extern void fanotify_access_clear_group(struct fanotify_group *group);
++
+ #endif	/* _LINUX_FANOTIFY_PRIVATE_H */
+diff --git a/fs/notify/group.c b/fs/notify/group.c
+index 37b8630..68f895e 100644
+--- a/fs/notify/group.c
++++ b/fs/notify/group.c
+@@ -79,6 +79,11 @@ struct fanotify_group *fanotify_find_group(unsigned int priority, unsigned int g
+ 	mutex_init(&group->fastpath_mutex);
+ 	INIT_LIST_HEAD(&group->fastpath_entries);
+ 
++	atomic_set(&group->cookie, 0);
++	mutex_init(&group->access_mutex);
++	INIT_LIST_HEAD(&group->access_list);
++	init_waitqueue_head(&group->access_waitq);
++
+ 	/* Do we need to be the first entry? */
+ 	if (list_empty(&fanotify_groups)) {
+ 		list_add_rcu(&group->group_list, &fanotify_groups);
+@@ -112,6 +117,9 @@ void fanotify_kill_group(struct fanotify_group *group)
+ 	/* clear all fastpath entries for this group */
+ 	fanotify_fastpath_clear_group(group);
+ 
++	/* set an allow for all outstanding access decisions */
++	fanotify_access_clear_group(group);
++
+ 	kfree(group);
+ }
+ 
+diff --git a/fs/notify/notification.c b/fs/notify/notification.c
+index 3dd69ef..89bb02c 100644
+--- a/fs/notify/notification.c
++++ b/fs/notify/notification.c
+@@ -176,6 +176,7 @@ struct fanotify_event *create_event(struct file *file, unsigned int mask)
+ 	event->path.mnt = file->f_path.mnt;
+ 	path_get(&event->path);
+ 
++	event->cookie = 0;
+ 	event->mask = mask;
+ 
+ 	WARN_ON(!event->path.dentry);
+@@ -241,6 +242,7 @@ int fanotify_create_event_fd(struct fanotify_group *group, struct fanotify_event
+ 
+ 	data->fd = client_fd;
+ 	data->mask = event->mask;
++	data->cookie = event->cookie;
+ 
+ 	fanotify_put_event(event);
+ 
+diff --git a/fs/open.c b/fs/open.c
+index 1057c34..b9d9335 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -29,6 +29,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/audit.h>
+ #include <linux/falloc.h>
++#include <linux/fanotify.h>
+ 
+ int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+@@ -820,6 +821,10 @@ static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
+ 	if (error)
+ 		goto cleanup_all;
+ 
++	error = fanotify(f, FAN_OPEN_PERM);
++	if (error)
++		goto cleanup_all;
++
+ 	if (!open && f->f_op)
+ 		open = f->f_op->open;
+ 	if (open) {
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 39f1fce..a74cf76 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -16,6 +16,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/pagemap.h>
+ #include <linux/splice.h>
++#include <linux/fanotify.h>
+ #include "read_write.h"
+ 
+ #include <asm/uaccess.h>
+@@ -201,6 +202,11 @@ int rw_verify_area(int read_write, struct file *file, loff_t *ppos, size_t count
+ 				read_write == READ ? MAY_READ : MAY_WRITE);
+ 	if (retval)
+ 		return retval;
++	if (read_write == READ) {
++		retval = fanotify(file, FAN_ACCESS_PERM);
++		if (retval)
++			return retval;
++	}
+ 	return count > MAX_RW_COUNT ? MAX_RW_COUNT : count;
+ }
+ 
 diff --git a/include/linux/fanotify.h b/include/linux/fanotify.h
-index c991bd9..5add54f 100644
+index 22496b2..0405e4c 100644
 --- a/include/linux/fanotify.h
 +++ b/include/linux/fanotify.h
-@@ -41,11 +41,22 @@
- #include <sys/types.h>
- #endif
+@@ -17,6 +17,10 @@
+ #define FAN_OPEN_NOEXEC		0x00000010	/* File was opened */
+ #define FAN_OPEN_EXEC		0x00000020	/* File was opened with the intention of being exec'ed */
  
-+struct fanotify_addr {
-+        uint32_t group_num;
-+        uint32_t mask;
-+        uint32_t timeout;
-+        uint32_t unused[9];
-+};
++/* userspace may also request blocking for permission checks for open and read */
++#define FAN_ACCESS_PERM		0x00000100
++#define FAN_OPEN_PERM		0x00000200
 +
-+/* struct used for FANOTIFY_GET_EVENT */
+ /* FIXME currently Q's have no limit.... */
+ #define FAN_Q_OVERFLOW		0x80000000	/* Event queued overflowed */
+ 
+@@ -33,6 +37,16 @@
+ 			 FAN_MODIFY |\
+ 			 FAN_CLOSE |\
+ 			 FAN_OPEN)
++/*
++ * Like the above list of events only these are the event types in which the
++ * kernel will wait for answers.
++ */
++#define FAN_ALL_EVENTS_PERM    (FAN_OPEN_PERM |\
++				FAN_ACCESS_PERM)
++
++/* answers will need to be either allow or deny */
++#define FAN_ALLOW		0x00000001
++#define FAN_DENY		0x00000002
+ 
+ #ifdef __KERNEL__
+ #include <linux/types.h>
+@@ -53,6 +67,7 @@ struct fanotify_addr {
  struct fanotify_event_metadata {
  	int32_t fd;
  	uint32_t mask;
++	uint64_t cookie;
  };
  
-+/* fanotify getsockopt optvals */
-+#define FANOTIFY_GET_EVENT	1
-+
- #ifdef __KERNEL__
+ /* fanotify getsockopt optvals */
+@@ -91,12 +106,18 @@ struct fanotify_group {
+ 	struct mutex fastpath_mutex;	/* protect fastpath_entries list */
+ 	struct list_head fastpath_entries; /* all fastpath entries for this group */
  
- #include <linux/fs.h>
-@@ -74,6 +85,8 @@ extern void fanotify(struct file *file, unsigned int mask);
- extern void fanotify_get_group(struct fanotify_group *group);
- extern struct fanotify_group *fanotify_find_group(unsigned int group_num, unsigned int mask);
- extern void fanotify_put_group(struct fanotify_group *group);
++	/* needed to track outstanding requests we expect to hear from userspace */
++	atomic_long_t cookie;		/* next cookie send to userspace for a decision */
++	struct mutex access_mutex;	/* protect access_list list */
++	struct list_head access_list;	/* event_holder we need an answer from userspace */
++	wait_queue_head_t access_waitq;	/* we wait here for userspace access decisions */
 +
-+extern int fanotify_create_event_fd(struct fanotify_group *group, struct fanotify_event_metadata *data, int nonblock);
+ 	unsigned int priority;		/* order this group should receive msgs.  low first */
+ };
+ 
+ #ifdef CONFIG_FANOTIFY
+ 
+-extern void fanotify(struct file *file, unsigned int mask);
++extern int fanotify(struct file *file, unsigned int mask);
+ extern void fanotify_inode_delete(struct inode *inode);
+ 
+ extern void fanotify_get_group(struct fanotify_group *group);
+@@ -106,11 +127,14 @@ extern void fanotify_put_group(struct fanotify_group *group);
+ /* things called from the socket */
+ extern int fanotify_create_event_fd(struct fanotify_group *group, struct fanotify_event_metadata *data, int nonblock);
+ extern int fanotify_fastpath_add(struct fanotify_group *group, int fd, unsigned int mask);
++extern int fanotify_process_access_response(struct fanotify_group *group, unsigned long cookie, unsigned int response);
+ 
  #else
  
- static inline void fanotify(struct file *file, unsigned int mask)
-@@ -90,6 +103,11 @@ static inline struct fanotify_group *fanotify_find_group(unsigned int group_num,
- static inline extern void fanotify_put_group(struct fanotify_group *group)
- {}
- 
-+static inline int fanotify_create_event_fd(struct fanotify_group *group, struct fanotify_event_metadata *data, int nonblock)
+-static inline void fanotify(struct file *file, unsigned int mask)
+-{}
++static inline int fanotify(struct file *file, unsigned int mask)
 +{
-+	memset(data, 0, sizeof(struct fanotify_event_metadata));
 +	return 0;
 +}
+ 
+ static inline void fanotify_get_group(struct fanotify_group *group)
+ {}
+@@ -137,6 +161,11 @@ static inline int fanotify_fastpath_add(struct fanotify_group *group, int fd, un
+ static inline void fanotify_inode_delete(struct inode *inode)
+ {}
+ 
++static inline int fanotify_process_access_response(struct fanotify_group *group, unsigned long cookie, unsigned int response)
++{
++	return 0;
++}
++
  #endif	/* CONFIG_FANOTIFY */
  
  #endif	/* __KERNEL __ */
-diff --git a/include/linux/socket.h b/include/linux/socket.h
-index 20fc4bb..4fe7b83 100644
---- a/include/linux/socket.h
-+++ b/include/linux/socket.h
-@@ -191,7 +191,8 @@ struct ucred {
- #define AF_RXRPC	33	/* RxRPC sockets 		*/
- #define AF_ISDN		34	/* mISDN sockets 		*/
- #define AF_PHONET	35	/* Phonet sockets		*/
--#define AF_MAX		36	/* For now.. */
-+#define AF_FANOTIFY	36	/* fscking all access sockets	*/
-+#define AF_MAX		37	/* For now.. */
- 
- /* Protocol families, same as address families. */
- #define PF_UNSPEC	AF_UNSPEC
-@@ -229,6 +230,7 @@ struct ucred {
- #define PF_RXRPC	AF_RXRPC
- #define PF_ISDN		AF_ISDN
- #define PF_PHONET	AF_PHONET
-+#define PF_FANOTIFY	AF_FANOTIFY
- #define PF_MAX		AF_MAX
- 
- /* Maximum queue length specifiable by listen.  */
-@@ -298,6 +300,7 @@ struct ucred {
- #define SOL_PPPOL2TP	273
- #define SOL_BLUETOOTH	274
- #define SOL_PNPIPE	275
-+#define SOL_FANOTIFY	276
- 
- /* IPX options */
- #define IPX_TYPE	1
-diff --git a/net/Makefile b/net/Makefile
-index 27d1f10..5b98ba4 100644
---- a/net/Makefile
-+++ b/net/Makefile
-@@ -44,6 +44,7 @@ obj-$(CONFIG_ATM)		+= atm/
- obj-$(CONFIG_DECNET)		+= decnet/
- obj-$(CONFIG_ECONET)		+= econet/
- obj-$(CONFIG_PHONET)		+= phonet/
-+obj-$(CONFIG_FANOTIFY)		+= fanotify/
- ifneq ($(CONFIG_VLAN_8021Q),)
- obj-y				+= 8021q/
- endif
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 5e2a313..c7b0cee 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -155,7 +155,7 @@ static const char *af_family_key_strings[AF_MAX+1] = {
-   "sk_lock-27"       , "sk_lock-28"          , "sk_lock-AF_CAN"      ,
-   "sk_lock-AF_TIPC"  , "sk_lock-AF_BLUETOOTH", "sk_lock-IUCV"        ,
-   "sk_lock-AF_RXRPC" , "sk_lock-AF_ISDN"     , "sk_lock-AF_PHONET"   ,
--  "sk_lock-AF_MAX"
-+  "sk_lock-AF_FANOTIFY", "sk_lock-AF_MAX"
- };
- static const char *af_family_slock_key_strings[AF_MAX+1] = {
-   "slock-AF_UNSPEC", "slock-AF_UNIX"     , "slock-AF_INET"     ,
-@@ -170,7 +170,7 @@ static const char *af_family_slock_key_strings[AF_MAX+1] = {
-   "slock-27"       , "slock-28"          , "slock-AF_CAN"      ,
-   "slock-AF_TIPC"  , "slock-AF_BLUETOOTH", "slock-AF_IUCV"     ,
-   "slock-AF_RXRPC" , "slock-AF_ISDN"     , "slock-AF_PHONET"   ,
--  "slock-AF_MAX"
-+  "slock=AF_FANOTIFY", "slock-AF_MAX"
- };
- static const char *af_family_clock_key_strings[AF_MAX+1] = {
-   "clock-AF_UNSPEC", "clock-AF_UNIX"     , "clock-AF_INET"     ,
-@@ -185,7 +185,7 @@ static const char *af_family_clock_key_strings[AF_MAX+1] = {
-   "clock-27"       , "clock-28"          , "clock-AF_CAN"      ,
-   "clock-AF_TIPC"  , "clock-AF_BLUETOOTH", "clock-AF_IUCV"     ,
-   "clock-AF_RXRPC" , "clock-AF_ISDN"     , "clock-AF_PHONET"   ,
--  "clock-AF_MAX"
-+  "clock-AF_FANOTIFY", "clock-AF_MAX"
- };
- #endif
- 
-diff --git a/net/fanotify/Makefile b/net/fanotify/Makefile
-new file mode 100644
-index 0000000..348cf5e
---- /dev/null
-+++ b/net/fanotify/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for the fanotify AF.
-+#
-+
-+obj-$(CONFIG_FANOTIFY) += af_fanotify.o
-diff --git a/net/fanotify/af_fanotify.c b/net/fanotify/af_fanotify.c
-new file mode 100644
-index 0000000..eb2d023
---- /dev/null
-+++ b/net/fanotify/af_fanotify.c
-@@ -0,0 +1,232 @@
-+#include <linux/errno.h>
-+#include <linux/fanotify.h>
-+#include <linux/fdtable.h>
-+#include <linux/file.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/net.h>
-+#include <linux/poll.h>
-+#include <linux/skbuff.h>
-+#include <linux/socket.h>
-+#include <linux/types.h>
-+
-+#include <net/net_namespace.h>
-+#include <net/sock.h>
-+
-+#include "af_fanotify.h"
-+
-+static const struct proto_ops fanotify_proto_ops;
-+
-+static struct proto fanotify_proto = {
-+	.name     = "FANOTIFY",
-+	.owner    = THIS_MODULE,
-+	.obj_size = sizeof(struct fanotify_sock),
-+};
-+
-+static int fan_sock_create(struct net *net, struct socket *sock, int protocol)
-+{
-+	struct sock *sk;
-+	struct fanotify_sock *fan_sock;
-+
-+	/* FIXME maybe a new LSM hook? */
-+	if (!capable(CAP_NET_RAW))
-+		return -EPERM;
-+
-+	if (protocol != 0)
-+		return -ESOCKTNOSUPPORT;
-+
-+	if (sock->type != SOCK_RAW)
-+		return -ESOCKTNOSUPPORT;
-+
-+	sock->state = SS_UNCONNECTED;
-+
-+	sk = sk_alloc(net, PF_FANOTIFY, GFP_KERNEL, &fanotify_proto);
-+	if (sk == NULL)
-+		return -ENOBUFS;
-+
-+	sock->ops = &fanotify_proto_ops;
-+
-+	sock_init_data(sock, sk);
-+
-+	sk->sk_family = PF_FANOTIFY;
-+	//sk->sk_destruct = packet_sock_destruct;
-+	sk_refcnt_debug_inc(sk);
-+
-+	fan_sock = fan_sk(sk);
-+	fan_sock->group = NULL;
-+
-+	return 0;
-+}
-+
-+static int fan_release(struct socket *sock)
-+{
-+	struct sock *sk;
-+	struct fanotify_sock *fan_sock;
-+
-+	struct files_struct *files;
-+	struct socket *testsock;
-+	struct fdtable *fdt;
-+	long j = -1;
-+	unsigned long set, i;
-+	int found = 0, err;
-+
-+	sk = sock->sk;
-+	if (!sk)
-+		return 0;
-+
-+	fan_sock = fan_sk(sk);
-+
-+	if (sock->state == SS_CONNECTED) {
-+		sock->state = SS_UNCONNECTED;
-+		fanotify_put_group(fan_sock->group);
-+	}
-+
-+	fan_sock->group = NULL;
-+
-+	sock_orphan(sk);
-+	sock->sk = NULL;
-+
-+	/* Purge queues */
-+
-+	sk_refcnt_debug_release(sk);
-+
-+	sock_put(sk);
-+
-+	/*
-+	 * we do all of this shit to figure out if this process is closing the last
-+	 * fanotify socket.  If this is the last one being closed we clear the
-+	 * exclusion flag.  If this is not the last close we should remain excluded.
-+	 *
-+	 * the basic idea behind running all of the open fd's was stolen from
-+	 * fs/exec.c:flush_old_files.
-+	 */
-+	files = current->files;
-+	if (files)
-+		spin_lock(&files->file_lock);
-+	for (; !found && files ;) {
-+		j++;
-+		i = j * __NFDBITS;
-+		fdt = files_fdtable(files);
-+		if (i >= fdt->max_fds)
-+			break;
-+		set = fdt->open_fds->fds_bits[j];
-+		if (!set)
-+			continue;
-+		spin_unlock(&files->file_lock);
-+		for ( ; set && !found ; i++, set >>= 1) {
-+			if (set & 1) {
-+				testsock = sockfd_lookup(i, &err);
-+				if (!testsock)
-+					continue;
-+				if ((testsock != sock) && (testsock->ops == &fanotify_proto_ops))
-+					found = 1;
-+				sockfd_put(testsock);
-+			}
-+		}
-+		spin_lock(&files->file_lock);
-+	}
-+	if (files)
-+		spin_unlock(&files->file_lock);
-+
-+	if (!found)
-+		current->flags &= ~PF_NOFACCESS;
-+
-+	return 0;
-+}
-+
-+static int fan_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
-+{
-+	struct fanotify_addr *fan_addr = (struct fanotify_addr *)addr;
-+	struct fanotify_sock *fan_sock;
-+
-+	if (addr_len != sizeof(struct fanotify_addr))
-+		return -EINVAL;
-+
-+	fan_sock = fan_sk(sock->sk);
-+	fan_sock->group = fanotify_find_group(fan_addr->group_num, fan_addr->mask);
-+
-+	if (IS_ERR(fan_sock->group))
-+		return PTR_ERR(fan_sock->group);
-+
-+	sock->state = SS_CONNECTED;
-+	current->flags |= PF_NOFACCESS;
-+
-+	return 0;
-+}
-+
-+static unsigned int fan_poll(struct file * file, struct socket *sock, poll_table *pt)
-+{
-+	return 0;
-+}
-+
-+static int fan_getsockopt(struct socket *sock, int level, int optname, char __user *optval, int __user *optlen)
-+{
-+	struct fanotify_sock *fan_sock;
-+	struct fanotify_group *group;
-+	struct fanotify_event_metadata metadata;
-+	int ret = 0;
-+
-+	if (sock->state != SS_CONNECTED)
-+		return -EBADF;
-+
-+	fan_sock = fan_sk(sock->sk);
-+	group = fan_sock->group;
-+
-+	switch (optname) {
-+	case FANOTIFY_GET_EVENT:
-+		if (*optlen < sizeof(struct fanotify_event_metadata))
-+			return -ENOMEM;
-+		else
-+			*optlen = sizeof(struct fanotify_event_metadata);
-+		ret = fanotify_create_event_fd(group, &metadata, !!(sock->file->f_flags & O_NONBLOCK));
-+		if (ret)
-+			break;
-+
-+		ret = copy_to_user(optval, &metadata, sizeof(struct fanotify_event_metadata));
-+		break;
-+	default:
-+		return -ENOPROTOOPT;
-+	};
-+
-+	return ret;
-+}
-+
-+static const struct net_proto_family fanotify_family_ops = {
-+	.family		=	PF_FANOTIFY,
-+	.create		=	fan_sock_create,
-+	.owner		=	THIS_MODULE,
-+};
-+
-+static const struct proto_ops fanotify_proto_ops = {
-+	.family =	PF_FANOTIFY,
-+	.owner =	THIS_MODULE,
-+	.release =	fan_release,
-+	.bind =		fan_bind,
-+	.connect =	sock_no_connect,
-+	.socketpair =	sock_no_socketpair,
-+	.accept =	sock_no_accept,
-+	.getname =	sock_no_getname,
-+	.poll =		fan_poll,
-+	.ioctl =	sock_no_ioctl,
-+	.listen =	sock_no_listen,
-+	.shutdown =	sock_no_shutdown,
-+	.setsockopt =	sock_no_setsockopt,
-+	.getsockopt =	fan_getsockopt,
-+	.sendmsg =	sock_no_sendmsg,
-+	.recvmsg =	sock_no_recvmsg,
-+	.mmap =		sock_no_mmap,
-+	.sendpage =	sock_no_sendpage,
-+};
-+
-+static int __init fanotify_socket_register(void)
-+{
-+	int rc = proto_register(&fanotify_proto, 0);
-+
-+	if (rc != 0)
-+		goto out;
-+
-+	sock_register(&fanotify_family_ops);
-+out:
-+	return rc;
-+}
-+__initcall(fanotify_socket_register);
-diff --git a/net/fanotify/af_fanotify.h b/net/fanotify/af_fanotify.h
-new file mode 100644
-index 0000000..a987d7b
---- /dev/null
-+++ b/net/fanotify/af_fanotify.h
-@@ -0,0 +1,20 @@
-+#ifndef _LINUX_AF_FANOTIFY_H
-+#define _LINUX_AF_FANOTIFY_H
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/fanotify.h>
-+#include <net/sock.h>
-+
-+struct fanotify_sock {
-+	struct sock		sock;
-+	struct fanotify_group	*group;
-+};
-+
-+static inline struct fanotify_sock *fan_sk(struct sock *sock)
-+{
-+	return (struct fanotify_sock *)sock;
-+}
-+
-+#endif /* __KERNEL__ */
-+#endif /* _LINUX_AF_NET_H */
 
