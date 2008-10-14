@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751580AbYJNN2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbYJNNah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751580AbYJNN2d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 09:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYJNN2Z
+	id S1752547AbYJNNah (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 09:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbYJNNa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 09:28:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40621 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbYJNN2Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 09:28:24 -0400
-Date: Tue, 14 Oct 2008 09:28:23 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
-Message-ID: <20081014132823.GA18474@infradead.org>
-References: <cover.1223869200.git.zohar@localhost.localdomain> <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 14 Oct 2008 09:30:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44851 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750791AbYJNNa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 09:30:29 -0400
+Date: Tue, 14 Oct 2008 10:28:15 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dtor@mail.ru>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix Numlock led on two keyboards (Dell SK8115 and
+ Bright)
+Message-ID: <20081014102815.632b9cf6@pedra.chehab.org>
+In-Reply-To: <alpine.LNX.1.10.0810131747260.26779@jikos.suse.cz>
+References: <20081009170544.4e770dbb@pedra.chehab.org>
+	<alpine.LNX.1.10.0810131747260.26779@jikos.suse.cz>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  int vfs_permission(struct nameidata *nd, int mask)
->  {
-> -	return inode_permission(nd->path.dentry->d_inode, mask);
-> +	int retval;
-> +
-> +	retval = inode_permission(nd->path.dentry->d_inode, mask);
-> +	if (retval)
-> +		return retval;
-> +	return integrity_inode_permission(NULL, &nd->path,
-> +					  mask & (MAY_READ | MAY_WRITE |
-> +						  MAY_EXEC));
->  }
->  
->  /**
-> @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd, int mask)
->   */
->  int file_permission(struct file *file, int mask)
->  {
-> -	return inode_permission(file->f_path.dentry->d_inode, mask);
-> +	int retval;
-> +
-> +	retval = inode_permission(file->f_path.dentry->d_inode, mask);
-> +	if (retval)
-> +		return retval;
-> +	return integrity_inode_permission(file, NULL,
-> +					  mask & (MAY_READ | MAY_WRITE |
-> +						  MAY_EXEC));
+Hi Jiri,
 
-Please don't add anything here as these two wrappers will go away.
-Please only make decisions based on what you get in inode_permission().
+On Mon, 13 Oct 2008 17:49:52 +0200 (CEST)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
->  }
->  
->  /*
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 32477e8..349d548 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -683,6 +683,9 @@ struct inode {
->  #ifdef CONFIG_SECURITY
->  	void			*i_security;
->  #endif
-> +#ifdef CONFIG_INTEGRITY
-> +	void			*i_integrity;
-> +#endif
+> > The keyboards are:
+> > DELL SK8115 (USB ID 413c:2105); and
+> > Bright keyboard (USB ID 1241:1503).
 
-Sorry, but as said before bloating the inode for this is not an option.
-Please use something like the MRU approach I suggested in the last
-review round.
+> the HID subsystem went through a refactoring, and all the quirks have been 
+> separated into individual drivers, so that the code doens't become 
+> unmaintainable mess by having quirks all over the place.
+> 
+> The changes have been present in my git tree -next for quite some time, 
+> and I am planning to send a push request to Linus probably tomorrow. Do 
+> you think you could rebase your patch on top of my tree?
+> 
+> For Dell changes this should be trivial, as there is already a driver 
+> handling exactly this for other Dell keyboards.
 
+Ok, I've rebased the patches, from 'next-20080919' tag, at -next. I'll be
+sending you the patches on the next emails.
+
+In the case of the Bright keyboard, I've cloned Dell entry, since the problem
+is similar.
+
+-- 
+
+Cheers,
+Mauro
