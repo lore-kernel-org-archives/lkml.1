@@ -1,147 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYJNIug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYJNIvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbYJNIug (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 04:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbYJNIuY
+	id S1757386AbYJNIvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 04:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYJNIu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 04:50:24 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:54781 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbYJNIuW (ORCPT
+	Tue, 14 Oct 2008 04:50:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:41988 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754885AbYJNIu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 04:50:22 -0400
+	Tue, 14 Oct 2008 04:50:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=XH6u6L/R/3Dtt2JRZCRmYHXoJMwMYJ/W/8+y0h7Q4gzL7Y0cs5W0FyBACTNeUqoE1n
-         tsyapXnemI7NykK7AaUKccmQi+VnjjMWFWVyhLy1nTEoVOIsU9sBfAjBL4buHxgqecee
-         w7s6DblnG5MJO6+9dA+KPbG5FpjgD3Hm6auSo=
-Message-ID: <386072610810140150t4c960a17yf7bfd6032b8710f2@mail.gmail.com>
-Date: Tue, 14 Oct 2008 16:50:20 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Stephen Hemminger" <shemminger@vyatta.com>
-Subject: Re: [PATCH 1/1] netdev: DM9000: Added typecasting to supress some warnings on Blackfin
-Cc: ben@simtec.co.uk, s.hauer@pengutronix.de, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Javier Herrero" <jherrero@hvsistemas.es>
-In-Reply-To: <20081013054119.7f360ee1@extreme>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:newsgroups:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding:from
+         :sender;
+        b=YJxU1HEEGQIAkFqUNn7lsOytiuwsmONzbknSLgBExmH4c6AwD36+Xhn4bYz5IIp+hk
+         Rj4O8uSj/I2fwi+yq64PZoSzesIHdEV2OoRHi4FpYXu1YCoSlfEFFcP+hlGnKQ2hep/z
+         61ZMnZjzFpLWG05l0WyiKh+52KWTYIn9JRFGo=
+Message-ID: <48F45D52.2010407@tuffmail.co.uk>
+Date: Tue, 14 Oct 2008 09:50:26 +0100
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
+Newsgroups: gmane.linux.acpi.devel,gmane.linux.kernel
+To: Pavel Machek <pavel@suse.cz>
+CC: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Robert Goldner <robert@au-79.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>, linux-stable@vger.kernel.org
+Subject: Re: Patch needed for ASUS EEEPC 701 2.6.27 (perhaps a regession)
+References: <48F0BD2D.8000001@tuffmail.co.uk> <20081013203648.GA3260@ucw.cz>
+In-Reply-To: <20081013203648.GA3260@ucw.cz>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1223889009-31336-1-git-send-email-cooloney@kernel.org>
-	 <20081013054119.7f360ee1@extreme>
-X-Google-Sender-Auth: aab7c3e3cd6d3200
+From: Alan Jenkins <aj504@student.cs.york.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 8:41 PM, Stephen Hemminger
-<shemminger@vyatta.com> wrote:
-> On Mon, 13 Oct 2008 17:10:09 +0800
-> Bryan Wu <cooloney@kernel.org> wrote:
->
->> From: Javier Herrero <jherrero@hvsistemas.es>
+Pavel Machek wrote:
+> On Sat 2008-10-11 15:50:21, Alan Jenkins wrote:
+>> Robert Goldner wrote:
 >>
->> Signed-off-by: Javier Herrero <jherrero@hvsistemas.es>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->> ---
->>  drivers/net/dm9000.c |   12 ++++++------
->>  1 files changed, 6 insertions(+), 6 deletions(-)
+>>> Hi,
+>>>
+>>> I am a happy user of an asus eeepc 701 with an self-made kernel 2.6.27.
+>>> Its working quite good, but there is one patch needed to avoid problems
+>>> related to ACPI and Hotkeys.
+>>> After using a few hotkeys there comes a message in syslog like:
+>>> ACPI: EC: GPE storm detected, disabling EC GPE
+>>> and no hotkey event is recognized any more. This is quite bad on a nettop.
+>> Hi, I reported the original bug.  It is a regression, though the issue
+>> has been present for a few kernel versions now.
 >>
->> diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
->> index f42c23f..c4737ca 100644
->> --- a/drivers/net/dm9000.c
->> +++ b/drivers/net/dm9000.c
->> @@ -188,35 +188,35 @@ iow(board_info_t * db, int reg, int value)
->>
->>  static void dm9000_outblk_8bit(void __iomem *reg, void *data, int count)
->>  {
->> -     writesb(reg, data, count);
->> +     writesb((int)reg, data, count);
->>  }
->
-> You lose the sparse checking for misuse by doing this.
->
-> Why not this instead?
->
->
-> --- a/drivers/net/dm9000.c      2008-10-13 05:29:15.000000000 -0700
-> +++ b/drivers/net/dm9000.c      2008-10-13 05:40:13.000000000 -0700
-> @@ -47,14 +47,6 @@
->  #define CARDNAME       "dm9000"
->  #define DRV_VERSION    "1.31"
->
-> -#ifdef CONFIG_BLACKFIN
-> -#define readsb insb
-> -#define readsw insw
-> -#define readsl insl
-> -#define writesb        outsb
-> -#define writesw        outsw
-> -#define writesl        outsl
-> -#endif
->
->  /*
->  * Transmit timeout, default 5 seconds.
-> @@ -185,7 +177,40 @@ iow(board_info_t * db, int reg, int valu
->  }
->
->  /* routines for sending block to chip */
-> +#ifdef CONFIG_BLACKFIN
-> +static void dm9000_outblk_8bit(void __iomem *reg, void *data, int count)
-> +{
-> +       outsb((unsigned long)reg, data, count);
-> +}
->
+>> I recommend that you avoid reproducing the problem.  I now have to add
+>> "noapic" to the boot options on my EeePC, otherwise it randomly hangs /
+>> reboots when I press hotkeys - I think it  damaged the hardware.
+> 
+> I guess your hw went bad for some other reason. Restore original
+> system and if it is still broken, RMA?
+> 
 
-I added readsl/writesl to blackfin arch, so we don't need to mess up
-the common DM9000 netdev driver here.
+It could be a coincidence.  But it's suspicious enough to advise caution.  We know what the bug is, and we have a very nice workaround queued up now.  There's no reason to test any more of these specific systems to destruction :).
 
--Bryan
+I did try re-installing off the vendor DVD and it was still broken.  I fear I bought it from the wrong place to get sympathetic _frontline_ support / warrantee.  I'm not interested in RMA back to Asus - too much work and downtime for a cheap system, when I have an easy workaround.  I haven't noticed any problems with "noapic".
 
-> +static void dm9000_outblk_16bit(void __iomem *reg, void *data, int count)
-> +{
-> +       outsw((unsigned long)reg, data, (count+1) >> 1);
-> +}
-> +
-> +static void dm9000_outblk_32bit(void __iomem *reg, void *data, int count)
-> +{
-> +       outsl((unsigned long)reg, data, (count+3) >> 2);
-> +}
-> +
-> +/* input block from chip to memory */
-> +
-> +static void dm9000_inblk_8bit(void __iomem *reg, void *data, int count)
-> +{
-> +       insb((unsigned long)reg, data, count);
-> +}
-> +
-> +
-> +static void dm9000_inblk_16bit(void __iomem *reg, void *data, int count)
-> +{
-> +       insw((unsigned long)reg, data, (count+1) >> 1);
-> +}
-> +
-> +static void dm9000_inblk_32bit(void __iomem *reg, void *data, int count)
-> +{
-> +       insl((unsigned long)reg, data, (count+3) >> 2);
-> +}
-> +#else
->  static void dm9000_outblk_8bit(void __iomem *reg, void *data, int count)
->  {
->        writesb(reg, data, count);
-> @@ -218,6 +243,7 @@ static void dm9000_inblk_32bit(void __io
->  {
->        readsl(reg, data, (count+3) >> 2);
->  }
-> +#endif
->
->  /* dump block from chip to null */
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+
+The symptoms strongly suggest overflow in an event buffer or counter maintained by the Embedded Controller.  So the EC firmware may have a bug, of the sort that results in "unspecified behaviour".  A bug in a special purpose (read: not subject to wide testing) subsystem which has direct connections to things like frequency and voltage control.
+
+Hopefully I'm wrong, and I don't really know what I'm talking about here.
+
+Regards
+Alan
