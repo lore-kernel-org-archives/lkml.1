@@ -1,90 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYJNHAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYJNHFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYJNHAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 03:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbYJNHAg
+	id S1756073AbYJNHFf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 03:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbYJNHFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 03:00:36 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:47258 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYJNHAg (ORCPT
+	Tue, 14 Oct 2008 03:05:25 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52308 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYJNHFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 03:00:36 -0400
-Date: Tue, 14 Oct 2008 08:00:35 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
-Message-ID: <20081014070035.GE15657@brain>
-References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org> <48ECDD37.8050506@linux-foundation.org> <20081008185532.GA13304@brain> <48ED0B68.2060001@linux-foundation.org> <20081013133404.GC15657@brain> <48F37190.2020801@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48F37190.2020801@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 14 Oct 2008 03:05:24 -0400
+Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Tom Zanussi <zanussi@comcast.net>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+In-Reply-To: <48F42A93.1040004@cs.helsinki.fi>
+References: <20080923212914.GB5237@localhost>
+	 <1223386477.28348.42.camel@penberg-laptop>
+	 <1223623191.8959.26.camel@penberg-laptop>
+	 <1223628687.8959.37.camel@penberg-laptop>
+	 <1223629803.8959.40.camel@penberg-laptop>
+	 <1223631723.8959.46.camel@penberg-laptop>
+	 <1223701131.7489.25.camel@charm-linux>
+	 <1223881068.31587.1.camel@penberg-laptop>
+	 <1223957031.10883.7.camel@charm-linux>  <48F42A93.1040004@cs.helsinki.fi>
+Date: Tue, 14 Oct 2008 10:05:30 +0300
+Message-Id: <1223967930.18017.2.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 09:04:32AM -0700, Christoph Lameter wrote:
-> Andy Whitcroft wrote:
->> Currently memory hot remove is not supported with VMEMMAP.  Obviously
->> that should be fixed overall and I am assuming it will.  But the fact
->> remains that the buddy guarentee is that the mem_map is contigious out
->> to MAX_ORDER-1 order pages only beyond that we may not assume
->> contiguity.  This code is broken under the guarentees that are set out
->> by buddy.  Yes it is true that we do only have one memory model combination
->> currently where a greater guarentee of contigious within a node is
->> violated, but right now this code violates the current guarentees.
->>   I assume the objection here is the injection of the additional branch
->> into these loops.  The later rejig patch removes this for the non-giant
->> cases for the non-huge use cases.  Are we worried about these same
->> branches in the huge cases?  If so we could make this support dependant
->> on a new configuration option, or perhaps only have two loop chosen
->> based on the order of the page.
->>   
-> I think we are worried about these additional checks spreading further  
-> because there may be assumptions of contiguity elsewhere (in particular  
-> when new code is added) since the traditional nature of the memmap is to  
-> be linear and not spread out over memory.
+On Tue, 2008-10-14 at 08:13 +0300, Pekka Enberg wrote:
+> Hi Tom,
+> 
+> Tom Zanussi wrote:
+> > To me, that sounds like how it should work - if kmemtrace is disabled,
+> > it shouldn't be logging anything, and that's in fact what I saw when
+> > debugging this - it started out disabled and therefore nothing being
+> > logged to relay (printks confirmed that).  When I wrote 1 to the enabled
+> > file, data started getting logged to relay and to the *.out files.
+> > 
+> > So I don't know why the enabled state behaves the way it does, or if
+> > it's unexpected, but that anyway doesn't seem like a relay problem to
+> > me.
+> 
+> Oh, right. Looking at kmemtraced.c, we never enable kmemtrace, just 
+> disable it (which doesn't make much sense). Bug in README or the code. 
 
-Yes, but it is guarenteed to be contigious in all models out to order
-MAX_ORDER-1, and only gigantic pages are larger than this.  We already
-have to cope with discontiguity at the MAX_ORDER boundaries in paths
-which scan over the mem_map in more general terms as SPARSEMEM introduced
-that long long ago, and only gained a contigious mode when we added your
-VMEMMAP mode to that.
+Eduard, here's a fix for the userspace counterpart:
 
-I thought that the approach recommended by Nick, which led to the other
-patch in this series which pulled out compound page preparation to a
-specific gigantic initialiser, helped a lot with this worry as it removed
-any change from the regular case and helped limit gigantic page support
-to hugetlb only.  The only reason that initialiser was placed with the
-normal form was to ensure they were maintained together.
+>From aa95e997458fd4d2a3b9a5c75e1452e22a3159af Mon Sep 17 00:00:00 2001
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Date: Tue, 14 Oct 2008 10:03:51 +0300
+Subject: [PATCH] kmemtrace: enable tracing in kmemtraced
 
-Would it help if I posted these two together, or perhaps even merged as
-a single patch?
+If kmemtrace is not enabled at boot, we need to enable it before we start
+relaying data to userspace.
 
-> A fix for this particular situation may be as simple as making gigantic  
-> pages depend on SPARSE_VMEMMAP? For x86_64 this is certainly sufficient.
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ kmemtraced.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Well that is only true if it doesn't support memory hotplug.
+diff --git a/kmemtraced.c b/kmemtraced.c
+index 217478d..5cc1ada 100644
+--- a/kmemtraced.c
++++ b/kmemtraced.c
+@@ -165,8 +165,6 @@ int main(int argc, char *argv[])
+ 	if (!readers)
+ 		panic("Out of memory!\n");
+ 
+-	write_str("/sys/kernel/debug/kmemtrace/enabled", "0");
+-
+ 	printf("Copying /proc/kallsyms...\n");
+ 	copy_kallsyms();
+ 
+@@ -180,6 +178,8 @@ int main(int argc, char *argv[])
+ 			      strerror(errno));
+ 	}
+ 
++	write_str("/sys/kernel/debug/kmemtrace/enabled", "1");
++
+ 	printf("Logging... Press Control-C to stop.\n");
+ 
+ 	while (sigwait(&signals, &signal) == 0) {
+-- 
+1.5.4.3
 
->> Something like the patch below?  This patch is not tested as yet, but if
->> this form is acceptable we can get the pair of patches (this plus the
->> prep compound update) tested together and I can repost them once that is
->> done.  This against 2.6.27.
->>   
-> What is the difference here to the earlier versions?
 
-This was a move to following the model I felt Nick preferred in the
-prep_compound_page where the gigantic support is pulled out of line and
-made very explicit.  Minimising the normal case impacts.  Which I felt
-was part of the objections to these changes.
 
-The plan here is to only fix up gigantic pages within the context of
-hugetlbfs.
-
--apw
