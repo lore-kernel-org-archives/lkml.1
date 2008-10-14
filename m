@@ -1,100 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYJNMuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbYJNMwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbYJNMuR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 08:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYJNMuE
+	id S1757720AbYJNMwV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 08:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYJNMwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 08:50:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50432 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754812AbYJNMuB (ORCPT
+	Tue, 14 Oct 2008 08:52:13 -0400
+Received: from sunrise.pg.gda.pl ([153.19.40.230]:51190 "EHLO
+	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755394AbYJNMwM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 08:50:01 -0400
-Date: Tue, 14 Oct 2008 05:50:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Madhusudhan Chikkature" <madhu.cr@ti.com>
-Cc: gadiyar@ti.com, johnpol@2ka.mipt.ru, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-Message-Id: <20081014055002.24ff586a.akpm@linux-foundation.org>
-In-Reply-To: <015c01c92dda$1b754340$LocalHost@wipultra1303>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com>
-	<20081010133845.8b82fac3.akpm@linux-foundation.org>
-	<062801c92d37$3413bdd0$LocalHost@wipultra1303>
-	<20081013085323.f8bd7efb.akpm@linux-foundation.org>
-	<015c01c92dda$1b754340$LocalHost@wipultra1303>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	Tue, 14 Oct 2008 08:52:12 -0400
+Date: Tue, 14 Oct 2008 14:51:04 +0200
+From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Bodo Eggert <7eggert@gmx.de>,
+       linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH 0/3] SIGWINCH problem with terminal apps still alive
+Message-ID: <20081014145104.24aa96d0@merlin.oi.pg.gda.pl>
+In-Reply-To: <alpine.LSU.0.999.0810131359310.6408@be1.lrz>
+References: <bjXel-4CU-17@gated-at.bofh.it>
+	<bjYap-5Q0-25@gated-at.bofh.it>
+	<bk30i-3Gx-1@gated-at.bofh.it>
+	<bk6AV-8ms-7@gated-at.bofh.it>
+	<bkrvO-1HF-49@gated-at.bofh.it>
+	<blePJ-6rI-3@gated-at.bofh.it>
+	<blmDC-7ZU-7@gated-at.bofh.it>
+	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
+	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
+	<20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
+	<20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
+	<20081012195957.50feada3@merlin.oi.pg.gda.pl>
+	<20081012190312.0bd04ab8@lxorguk.ukuu.org.uk>
+	<20081012210140.15cecf78@merlin.oi.pg.gda.pl>
+	<20081012212244.117852e0@lxorguk.ukuu.org.uk>
+	<alpine.LSU.0.999.0810131155280.5750@be1.lrz>
+	<20081013110125.5e3e5fa6@lxorguk.ukuu.org.uk>
+	<alpine.LSU.0.999.0810131359310.6408@be1.lrz>
+Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="MP_lRfK+I/7.1m_OCWSW8aeP3x"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 14 Oct 2008 14:21:50 +0530 "Madhusudhan Chikkature" <madhu.cr@ti.com> wrote:
-> 
-> ----- Original Message ----- 
-> From: "Andrew Morton" <akpm@linux-foundation.org>
-> To: "Madhusudhan Chikkature" <madhu.cr@ti.com>
-> Cc: <gadiyar@ti.com>; <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>
-> Sent: Monday, October 13, 2008 9:23 PM
-> Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-> 
-> 
-> >> On Mon, 13 Oct 2008 18:55:43 +0530 "Madhusudhan Chikkature" <madhu.cr@ti.com> wrote:
-> >> 
-> >> ----- Original Message ----- 
-> >> From: "Andrew Morton" <akpm@linux-foundation.org>
-> >> To: "Gadiyar, Anand" <gadiyar@ti.com>
-> >> Cc: <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>; <madhu.cr@ti.com>
-> >> Sent: Saturday, October 11, 2008 2:08 AM
-> >> Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-> >> 
-> >> 
-> >> >> +       /* set the GO bit */
-> >> >> +       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, OMAP_HDQ_CTRL_STATUS_GO,
-> >> >> +               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
-> >> >> +       /* wait for the TXCOMPLETE bit */
-> >> >> +       ret = wait_event_interruptible_timeout(hdq_wait_queue,
-> >> >> +               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
-> >> >> +       if (ret < 0) {
-> >> >> +               dev_dbg(hdq_data->dev, "wait interrupted");
-> >> >> +               return -EINTR;
-> >> >> +       }
-> >> > 
-> >> > Is this desirable?  The user hits ^C and the driver bails out?
-> >> > 
-> >> > I assume so, but was this tested?
-> >> 
-> >> Andrew, What is the test scenario you mean here? A user hitting ^C when the driver is waiting for the TXCOMPLETE bit?
-> > 
-> > Yes.
-> > 
-> 
-> Yes. It is desired to return an error if the condition in the wait is not met. I need to change the check for return value to check for zero and neg value.
-> 
-> I spent some time to test this perticular scenario.I could not really see any impact of hitting ^C when an application is 
-> transfering data in the background. When the h/w is programmed to transfer data and the driver issues a wait, I see that 
-> TXCOMPLETE interrupt comes immediately and wakes up as expected. 
-> 
-> So guess I am unable to hit ^C exactly when the driver is waiting in wait_event_interruptible_timeout(before the condition 
-> is met) for it to catch the signal. Is it generally suggested to use wait_event_timeout so that ^C signal is not caught?
-> 
+--MP_lRfK+I/7.1m_OCWSW8aeP3x
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I think it's reasonable to permit the driver's operations to be interrupted
-in this manner.  It's done in quite a few other places.  But the problem is
-actually *testing* it.
+Hello,
 
-I guess one could do a whitebox-style test.  Add new code like:
+I am sending sligtly corrected patch.
+In case of ioctl(,TIOCSWINSZ,) on pty side we should send signal to
+master side too. I've tested it on modified unix putty version
+and it works properly.
 
-	{
-		static int x;
-		if (!(x++ % 1000)) {
-			printk("hit ^c now\n");
-			msleep(2000);
-		}
-	}
+Signed-off-by: Adam Tla/lka <atlka@pg.gda.pl>
 
-in the right place.
+Maybe we could optimize code more and not call=20
+get_pid() and put_pid() if they are not needed - in case
+where there is no master/slave pair.
 
-Tricky.
+Regards
+
+--=20
+Adam Tla=C5=82ka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
+System  & Network Administration Group       - - - ~~~~~~
+Computer Center, Gda=C5=84sk University of Technology, Poland
+
+--MP_lRfK+I/7.1m_OCWSW8aeP3x
+Content-Type: text/x-patch; name=2.6.27_tty_io_3.patch
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=2.6.27_tty_io_3.patch
+
+--- tty_io_orig.c	2008-10-10 05:37:30.000000000 +0200
++++ tty_io.c	2008-10-14 14:28:50.000000000 +0200
+@@ -2522,29 +2522,33 @@ int tty_do_resize(struct tty_struct *tty
+ 	struct pid *pgrp, *rpgrp;
+ 	unsigned long flags;
+ 
+-	/* For a PTY we need to lock the tty side */
++        /* in case of resize ioctl on slave */
++	if ((tty == real_tty)
++	    && tty->driver->type == TTY_DRIVER_TYPE_PTY)
++		tty = tty->link;
++	
++	/* for a PTY we need to lock the tty side */
+ 	mutex_lock(&real_tty->termios_mutex);
+-	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
+-		goto done;
+-	/* Get the PID values and reference them so we can
+-	   avoid holding the tty ctrl lock while sending signals */
+-	spin_lock_irqsave(&tty->ctrl_lock, flags);
+-	pgrp = get_pid(tty->pgrp);
+-	rpgrp = get_pid(real_tty->pgrp);
+-	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+-
+-	if (pgrp)
+-		kill_pgrp(pgrp, SIGWINCH, 1);
+-	if (rpgrp != pgrp && rpgrp)
+-		kill_pgrp(rpgrp, SIGWINCH, 1);
+-
+-	put_pid(pgrp);
+-	put_pid(rpgrp);
+-
+-	tty->winsize = *ws;
++	flags = memcmp(ws, &real_tty->winsize, sizeof(*ws));
+ 	real_tty->winsize = *ws;
+-done:
+ 	mutex_unlock(&real_tty->termios_mutex);
++	if (flags){
++		/* Get the PID values and reference them so we can
++		 avoid holding the tty ctrl lock while sending signals */
++		spin_lock_irqsave(&tty->ctrl_lock, flags);
++		pgrp = get_pid(tty->pgrp);
++		rpgrp = get_pid(real_tty->pgrp);
++		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
++		
++		if (pgrp)
++			kill_pgrp(pgrp, SIGWINCH, 1);
++		if (rpgrp != pgrp && rpgrp)
++			kill_pgrp(rpgrp, SIGWINCH, 1);
++		
++		put_pid(pgrp);
++		put_pid(rpgrp);
++	}
++	
+ 	return 0;
+ }
+ 
+@@ -2996,7 +3000,7 @@ long tty_ioctl(struct file *file, unsign
+ 	case TIOCSTI:
+ 		return tiocsti(tty, p);
+ 	case TIOCGWINSZ:
+-		return tiocgwinsz(tty, p);
++		return tiocgwinsz(real_tty, p);
+ 	case TIOCSWINSZ:
+ 		return tiocswinsz(tty, real_tty, p);
+ 	case TIOCCONS:
+
+--MP_lRfK+I/7.1m_OCWSW8aeP3x--
