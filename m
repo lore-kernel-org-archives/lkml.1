@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbYJNRu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752365AbYJNR7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751933AbYJNRu1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 13:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbYJNRuN
+	id S1752365AbYJNR7r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 13:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYJNR7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 13:50:13 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41324 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbYJNRuM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 13:50:12 -0400
-Message-ID: <48F4DBA3.4060907@zytor.com>
-Date: Tue, 14 Oct 2008 10:49:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 14 Oct 2008 13:59:32 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:60060 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751122AbYJNR7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 13:59:31 -0400
+Date: Tue, 14 Oct 2008 20:58:22 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: Brice Goglin <brice@myri.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       linux-kernel@vger.kernel.org, apw@shadowen.org, linuxppc-dev@ozlabs.org,
+       sam@ravnborg.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
+	selectsCONFIG_INTEL_IOATDMA=y
+Message-ID: <20081014175822.GA4710@cs181140183.pp.htv.fi>
+References: <20081013101559.GA14372@linux.vnet.ibm.com> <20081013112631.GD29938@cs181140183.pp.htv.fi> <36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com> <48F391B9.1000206@myri.com> <20081013183503.GA28133@cs181140183.pp.htv.fi> <48F4627E.30300@myri.com> <36D9DB17C6DE9E40B059440DB8D95F52066E36C7@orsmsx418.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Antonino A. Daplas" <adaplas@pol.net>
-Subject: Re: [REVERT Request] VT Breakage
-References: <20081014115632.600a7506@lxorguk.ukuu.org.uk>	<alpine.LFD.2.00.0810140936360.3288@nehalem.linux-foundation.org> <20081014183002.059237e7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081014183002.059237e7@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52066E36C7@orsmsx418.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> So please check this patch. Also, can somebody please verify what the 
->> _correct_ vt100 behavior is? The test-case was in the original commit, but 
+On Tue, Oct 14, 2008 at 09:10:33AM -0700, Brandeburg, Jesse wrote:
+> Brice Goglin wrote:
+> > Adrian Bunk wrote:
+> >> But considering that igb is in a similar situation it would be nice
+> >> if all 3 drivers would handle it the same way.
+> >> 
+> > 
+> > Jesse,
+> > What do you think of the below patch?
 > 
-> Ahah a trick question - VT100 is monochrome. Colour VT as far as I can
-> tell (and while I have a genuine VT220 I don't have a non-clone colour
-> terminal[1]) behaves as we did *before* this changeset.
+> Seems like a much better solution.  I can have Jeff Kirsher work on the
+> equivalent patches for igb, and ixgbe today.
 > 
-> Alan
-> [1] And nobody send me one or Telsa will kill me
+> > I am not very familiar with Kconfig, but it seems to solve the
+> > problem. 
+> > If a Kconfig guru could double-check...
+> 
+> Yeah, please Kconfig gurus on the list have a quick look.
 
-VT220 was monochrome, too.  You needed to go to the VT241 before you got 
-color in the DEC terminal range (and even it didn't support color text 
-via the SGR sequence (CSI m), according to the manual -- even the VT510 
-manual doesn't document colored text via SGR.)
+Brice's patch looks fine.
 
-MS-DOS ANSI.SYS definitely only had one attribute at any time; new lines 
-was filled in with the current attribute.
+cu
+Adrian
 
-	-hpa
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
