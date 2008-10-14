@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYJNU43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYJNU5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbYJNU43 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 16:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYJNUwv
+	id S1755275AbYJNU5E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 16:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYJNUxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 16:52:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37816 "EHLO mx2.redhat.com"
+	Tue, 14 Oct 2008 16:53:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37833 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755143AbYJNUwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 16:52:50 -0400
+	id S1754490AbYJNUxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 16:53:01 -0400
 From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH -v2 09/16] fanotify: add group priorities
+Subject: [PATCH -v2 11/16] fanotify: give a special access permission check
 To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
 Cc: viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
        greg@kroah.com, tytso@mit.edu
-Date: Tue, 14 Oct 2008 16:52:17 -0400
-Message-ID: <20081014205217.1057.69686.stgit@paris.rdu.redhat.com>
+Date: Tue, 14 Oct 2008 16:52:28 -0400
+Message-ID: <20081014205228.1057.97074.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20081014205009.1057.12041.stgit@paris.rdu.redhat.com>
 References: <20081014205009.1057.12041.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -26,128 +26,181 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In preperation for blocking fanotify calls group priorities must be added.
-async events will be sent as quickly as possible without waiting for a
-response.
+add a special FANOTIFY_ACCESS_EXEC_PERM check.  This will be applied any
+place a process tries to access a file with execute permissions.  Mainly
+sys_execve, sys_uselib, and mmap'ing a file for exec.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/group.c          |   30 ++++++++++++++++++++++++------
- include/linux/fanotify.h   |    5 ++++-
- net/fanotify/af_fanotify.c |    2 +-
- 3 files changed, 29 insertions(+), 8 deletions(-)
+ fs/aio.c                 |    4 ++--
+ fs/exec.c                |   10 ++++++++++
+ fs/read_write.c          |    2 +-
+ include/linux/fanotify.h |    6 ++++--
+ mm/mmap.c                |    7 +++++++
+ mm/mprotect.c            |    6 ++++++
+ mm/nommu.c               |    7 +++++++
+ 7 files changed, 37 insertions(+), 5 deletions(-)
 
-diff --git a/fs/notify/group.c b/fs/notify/group.c
-index 21037cc..37b8630 100644
---- a/fs/notify/group.c
-+++ b/fs/notify/group.c
-@@ -42,15 +42,16 @@ void fanotify_get_group(struct fanotify_group *group)
- 	atomic_inc(&group->refcnt);
- }
+diff --git a/fs/aio.c b/fs/aio.c
+index 008de79..6395403 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -1455,7 +1455,7 @@ static ssize_t aio_setup_iocb(struct kiocb *kiocb)
+ 		ret = security_file_permission(file, MAY_READ);
+ 		if (unlikely(ret))
+ 			break;
+-		ret = fanotify(file, FAN_ACCESS_PERM);
++		ret = fanotify(file, FAN_ACCESS_NOEXEC_PERM);
+ 		if (unlikely(ret))
+ 			break;
+ 		ret = aio_setup_single_vector(kiocb);
+@@ -1490,7 +1490,7 @@ static ssize_t aio_setup_iocb(struct kiocb *kiocb)
+ 		ret = security_file_permission(file, MAY_READ);
+ 		if (unlikely(ret))
+ 			break;
+-		ret = fanotify(file, FAN_ACCESS_PERM);
++		ret = fanotify(file, FAN_ACCESS_NOEXEC_PERM);
+ 		if (unlikely(ret))
+ 			break;
+ 		ret = aio_setup_vectored_rw(READ, kiocb);
+diff --git a/fs/exec.c b/fs/exec.c
+index 3612805..ab45d65 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -140,6 +140,11 @@ asmlinkage long sys_uselib(const char __user * library)
+ 		goto out;
  
--struct fanotify_group *fanotify_find_group(unsigned int group_num, unsigned int mask)
-+struct fanotify_group *fanotify_find_group(unsigned int priority, unsigned int group_num, unsigned int mask)
- {
- 	struct fanotify_group *group_iter;
- 	struct fanotify_group *group = NULL;
- 
- 	mutex_lock(&fanotify_grp_mutex);
- 	list_for_each_entry_rcu(group_iter, &fanotify_groups, group_list) {
--		if (group_iter->group_num == group_num) {
--			if (group_iter->mask == mask) {
-+		if (group_iter->priority == priority) {
-+			if ((group_iter->mask == mask) &&
-+			    (group_iter->group_num == group_num)) {
- 				fanotify_get_group(group_iter);
- 				group = group_iter;
- 			} else
-@@ -69,6 +70,7 @@ struct fanotify_group *fanotify_find_group(unsigned int group_num, unsigned int
- 
- 	group->group_num = group_num;
- 	group->mask = mask;
-+	group->priority = priority;
- 
- 	mutex_init(&group->notification_mutex);
- 	INIT_LIST_HEAD(&group->notification_list);
-@@ -77,9 +79,26 @@ struct fanotify_group *fanotify_find_group(unsigned int group_num, unsigned int
- 	mutex_init(&group->fastpath_mutex);
- 	INIT_LIST_HEAD(&group->fastpath_entries);
- 
--	/* add it */
--	list_add_rcu(&group->group_list, &fanotify_groups);
-+	/* Do we need to be the first entry? */
-+	if (list_empty(&fanotify_groups)) {
-+		list_add_rcu(&group->group_list, &fanotify_groups);
+ 	fsnotify_open_exec(file);
++	error = fanotify(file, FAN_ACCESS_EXEC_PERM);
++	if (error) {
++		fput(file);
 +		goto out;
 +	}
-+
-+	list_for_each_entry(group_iter, &fanotify_groups, group_list) {
-+		/* insert in front of this one? */
-+		if (priority < group_iter->priority) {
-+			/* I used list_add_tail() to insert in front of group_iter...  */
-+			list_add_tail_rcu(&group->group_list, &group_iter->group_list);
-+			break;
-+		}
  
-+		/* are we at the end?  if so insert at end */
-+		if (list_is_last(&group_iter->group_list, &fanotify_groups)) {
-+			list_add_tail_rcu(&group->group_list, &fanotify_groups);
-+			break;
-+		}
+ 	error = -ENOEXEC;
+ 	if(file->f_op) {
+@@ -694,6 +699,11 @@ struct file *open_exec(const char *name)
+ 		return file;
+ 
+ 	fsnotify_open_exec(file);
++	err = fanotify(file, FAN_ACCESS_EXEC_PERM);
++	if (err) {
++		fput(file);
++		goto out;
 +	}
- out:
- 	mutex_unlock(&fanotify_grp_mutex);
- 	return group;
-@@ -100,7 +119,6 @@ void fanotify_put_group(struct fanotify_group *group)
- {
- 	mutex_lock(&fanotify_grp_mutex);
- 	if (atomic_dec_and_test(&group->refcnt)) {
--
- 		list_del_rcu(&group->group_list);
- 		mutex_unlock(&fanotify_grp_mutex);
  
+ 	err = deny_write_access(file);
+ 	if (err) {
+diff --git a/fs/read_write.c b/fs/read_write.c
+index a74cf76..8ab4646 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -203,7 +203,7 @@ int rw_verify_area(int read_write, struct file *file, loff_t *ppos, size_t count
+ 	if (retval)
+ 		return retval;
+ 	if (read_write == READ) {
+-		retval = fanotify(file, FAN_ACCESS_PERM);
++		retval = fanotify(file, FAN_ACCESS_NOEXEC_PERM);
+ 		if (retval)
+ 			return retval;
+ 	}
 diff --git a/include/linux/fanotify.h b/include/linux/fanotify.h
-index a1ea7e0..22496b2 100644
+index 0405e4c..07b8e77 100644
 --- a/include/linux/fanotify.h
 +++ b/include/linux/fanotify.h
-@@ -42,6 +42,7 @@
- #endif
+@@ -18,8 +18,9 @@
+ #define FAN_OPEN_EXEC		0x00000020	/* File was opened with the intention of being exec'ed */
  
- struct fanotify_addr {
-+	uint32_t priority;
-         uint32_t group_num;
-         uint32_t mask;
-         uint32_t timeout;
-@@ -89,6 +90,8 @@ struct fanotify_group {
- 	/* stores all fastapth entries assoc with this group so they can be cleaned on unregister */
- 	struct mutex fastpath_mutex;	/* protect fastpath_entries list */
- 	struct list_head fastpath_entries; /* all fastpath entries for this group */
+ /* userspace may also request blocking for permission checks for open and read */
+-#define FAN_ACCESS_PERM		0x00000100
+-#define FAN_OPEN_PERM		0x00000200
++#define FAN_ACCESS_NOEXEC_PERM	0x00000100
++#define FAN_ACCESS_EXEC_PERM	0x00000200
++#define FAN_OPEN_PERM		0x00000400
+ 
+ /* FIXME currently Q's have no limit.... */
+ #define FAN_Q_OVERFLOW		0x80000000	/* Event queued overflowed */
+@@ -27,6 +28,7 @@
+ /* helper events */
+ #define FAN_CLOSE		(FAN_CLOSE_WRITE | FAN_CLOSE_NOWRITE) /* close */
+ #define FAN_OPEN		(FAN_OPEN_NOEXEC | FAN_OPEN_EXEC) /* open */
++#define FAN_ACCESS_PERM		(FAN_ACCESS_NOEXEC_PERM | FAN_ACCESS_EXEC_PERM) /* access perm */
+ 
+ /*
+  * All of the events - we build the list by hand so that we can add flags in
+diff --git a/mm/mmap.c b/mm/mmap.c
+index e7a5a68..35d051f 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -18,6 +18,7 @@
+ #include <linux/init.h>
+ #include <linux/file.h>
+ #include <linux/fs.h>
++#include <linux/fanotify.h>
+ #include <linux/personality.h>
+ #include <linux/security.h>
+ #include <linux/hugetlb.h>
+@@ -1027,6 +1028,12 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
+ 		default:
+ 			return -EINVAL;
+ 		}
 +
-+	unsigned int priority;		/* order this group should receive msgs.  low first */
- };
++		if (prot & PROT_EXEC) {
++			error = fanotify(file, FAN_ACCESS_EXEC_PERM);
++			if (error)
++				return error;
++		}
+ 	} else {
+ 		switch (flags & MAP_TYPE) {
+ 		case MAP_SHARED:
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index fded06f..af1da2d 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -16,6 +16,7 @@
+ #include <linux/fs.h>
+ #include <linux/highmem.h>
+ #include <linux/security.h>
++#include <linux/fanotify.h>
+ #include <linux/mempolicy.h>
+ #include <linux/personality.h>
+ #include <linux/syscalls.h>
+@@ -294,6 +295,11 @@ sys_mprotect(unsigned long start, size_t len, unsigned long prot)
+ 		if (error)
+ 			goto out;
  
- #ifdef CONFIG_FANOTIFY
-@@ -97,7 +100,7 @@ extern void fanotify(struct file *file, unsigned int mask);
- extern void fanotify_inode_delete(struct inode *inode);
- 
- extern void fanotify_get_group(struct fanotify_group *group);
--extern struct fanotify_group *fanotify_find_group(unsigned int group_num, unsigned int mask);
-+extern struct fanotify_group *fanotify_find_group(unsigned int priority, unsigned int group_num, unsigned int mask);
- extern void fanotify_put_group(struct fanotify_group *group);
- 
- /* things called from the socket */
-diff --git a/net/fanotify/af_fanotify.c b/net/fanotify/af_fanotify.c
-index f63ee7a..a7d3b96 100644
---- a/net/fanotify/af_fanotify.c
-+++ b/net/fanotify/af_fanotify.c
-@@ -143,7 +143,7 @@ static int fan_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
- 		return -EINVAL;
- 
- 	fan_sock = fan_sk(sock->sk);
--	fan_sock->group = fanotify_find_group(fan_addr->group_num, fan_addr->mask);
-+	fan_sock->group = fanotify_find_group(fan_addr->priority, fan_addr->group_num, fan_addr->mask);
- 
- 	if (IS_ERR(fan_sock->group))
- 		return PTR_ERR(fan_sock->group);
++		if (vma->vm_file && (prot & PROT_EXEC))
++			error = fanotify(vma->vm_file, FAN_ACCESS_EXEC_PERM);
++		if (error)
++			goto out;
++
+ 		tmp = vma->vm_end;
+ 		if (tmp > end)
+ 			tmp = end;
+diff --git a/mm/nommu.c b/mm/nommu.c
+index ed75bc9..f541693 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -18,6 +18,7 @@
+ #include <linux/mman.h>
+ #include <linux/swap.h>
+ #include <linux/file.h>
++#include <linux/fanotify.h>
+ #include <linux/highmem.h>
+ #include <linux/pagemap.h>
+ #include <linux/slab.h>
+@@ -709,6 +710,12 @@ static int validate_mmap_request(struct file *file,
+ 			/* backing file is not executable, try to copy */
+ 			capabilities &= ~BDI_CAP_MAP_DIRECT;
+ 		}
++
++		if (prot & PROT_EXEC) {
++			ret = fanotify(file, FAN_ACCESS_EXEC_PERM);
++			if (ret)
++				return ret;
++		}
+ 	}
+ 	else {
+ 		/* anonymous mappings are always memory backed and can be
 
