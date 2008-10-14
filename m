@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYJNFuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYJNF7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbYJNFuY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 01:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYJNFuK
+	id S1755514AbYJNF7p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 01:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYJNF7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 01:50:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:43753 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbYJNFuI (ORCPT
+	Tue, 14 Oct 2008 01:59:37 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44390 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbYJNF7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 01:50:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=Z5wKdcUGx/hvOWGzHxiZpeMuagFVvYMvVzJYeMKXj5ntRaXf8z3iO8TdmlHuyiahdj
-         Z+ei00EVq0Kdus2uB3sPwwItzRWUc4+pDI8aaBcc27osfXKr2x8cvtgLW/4GfgXG/N4I
-         UxYeZDriAgObeBlqot+PZEB3NmNMOLuCnIHoo=
-Date: Tue, 14 Oct 2008 13:50:47 +0800
-From: Jianjun Kong <kongjianjun@gmail.com>
-To: Simon Holm =?utf-8?B?VGjvv71nZXJzZW4=?= <odie@cs.aau.dk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Alan Cox <alan@redhat.com>,
-       David Miller <davem@davemloft.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial: remove unused variable
-Message-ID: <20081014055047.GA6552@ubuntu>
-References: <1223938711.21717.16.camel@odie.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 14 Oct 2008 01:59:36 -0400
+Date: Tue, 14 Oct 2008 08:06:16 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hans Schou <linux@schou.dk>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SiS55x, another x86 CPU
+Message-ID: <20081014060616.GO12131@one.firstfloor.org>
+References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org> <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1223938711.21717.16.camel@odie.local>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 12:58:31AM +0200, Simon Holm Th�gersen wrote:
->This fixes the following compile warning:
->
->drivers/serial/8250.c: In function 'serial8250_init':
->drivers/serial/8250.c:2963: warning: unused variable 'i'
->
->that was introduced by b70ac771 (serial: allow 8250 to be used on sparc)
->that removed the last use of the variable.
->
->Signed-off-by: Simon Holm Thøgersen <odie@cs.aau.dk>
->---
-> drivers/serial/8250.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
->diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
->index d4104a3..625fc20 100644
->--- a/drivers/serial/8250.c
->+++ b/drivers/serial/8250.c
->@@ -2960,7 +2960,7 @@ EXPORT_SYMBOL(serial8250_unregister_port);
+> >Your attachment seems to be windows line end damaged.
 > 
-> static int __init serial8250_init(void)
-> {
->-	int ret, i;
->+	int ret;
+> Strange, Pine usually do it right with file attachments.
+
+It likely was added on some Windows system.
+
+> (what is "windows line end damaged"?)
+
+It used MSDOS style \r\n line terminators instead of Unix style \n.
+
 > 
-> 	if (nr_uarts > UART_NR)
-> 		nr_uarts = UART_NR;
+> >Also the changes are so small that it's not worth adding a CONFIG 
+> >for it. Just add it unconditionally.
+> 
+> I was not trying to invent anything. It is almost a copy of the UMC 
+> CPU, except that it is 586 code.
 
-I find those code in this function  __init serial8250_init(void)
+Then the comment applies to that one too.
 
-        for (i = 0; i < NR_IRQS; i++)
-                spin_lock_init(&irq_lists[i].lock);
+> 
+> >And hardcoding the cache size for all of SiS seems a bit extreme. 
+> >What happens when SiS ever brings out another part with different 
+> >caches? Ideally figure out some way to detect this particular CPU 
+> >and only use 8 KB only for that. Alternatively ignore it (there's 
+> >nothing really in the kernel that uses the cache sizes anyways)
+> 
+> In that case the cache could be deleted.
+> 
+> One annoying thing is that the "model name" in /proc/cpuinfo is 
+> written as "00/55" instead of "SiS55x" when the CPU is not detected.
 
-So you do not remove the 'i'.
+Is that really so bad?
 
--- 
-Jianjun Kong | Happy Hacking
-HomePage: http://kongove.cn
-Gtalk: kongjianjun@gmail.com
+> 
+> The worst problem is that an unknown CPU writes:
+> printk(KERN_ERR "CPU: Your system may be unstable.\n");
+
+Perhaps it would be better to just remove that printk.
+Its truth seems doubtful.
+
+> and the SiS55x is not unstable. Not until now at least and it has been 
+> on the market for 5 years.
+> 
+> Maybe the message could be changed to something less catastrophic when 
+> CPU is unknown.
+
+Yes that would be a good idea.
+
+-Andi
