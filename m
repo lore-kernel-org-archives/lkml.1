@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYJNJhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbYJNJhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbYJNJhA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJNJgs
+	id S1755722AbYJNJhk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJNJhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:36:48 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:57773 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752638AbYJNJgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:36:48 -0400
-Date: Tue, 14 Oct 2008 12:35:41 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Brice Goglin <brice@myri.com>
-Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       linux-kernel@vger.kernel.org, apw@shadowen.org, linuxppc-dev@ozlabs.org,
-       sam@ravnborg.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
-	selectsCONFIG_INTEL_IOATDMA=y
-Message-ID: <20081014093541.GA10453@cs181140183.pp.htv.fi>
-References: <20081013101559.GA14372@linux.vnet.ibm.com> <20081013112631.GD29938@cs181140183.pp.htv.fi> <36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com> <48F391B9.1000206@myri.com> <20081013183503.GA28133@cs181140183.pp.htv.fi> <48F4627E.30300@myri.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <48F4627E.30300@myri.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Oct 2008 05:37:31 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:44234 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbYJNJha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 05:37:30 -0400
+To: tj@kernel.org
+CC: fuse-devel@lists.sourceforge.net, miklos@szeredi.hu, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+In-reply-to: <48F4568B.7000609@kernel.org> (message from Tejun Heo on Tue, 14
+	Oct 2008 17:21:31 +0900)
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org>
+Message-Id: <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 14 Oct 2008 11:37:14 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 11:12:30AM +0200, Brice Goglin wrote:
-> Adrian Bunk wrote:
-> > But considering that igb is in a similar situation it would be nice if 
-> > all 3 drivers would handle it the same way.
-> >   
+Hi Tejun,
+
+On Tue, 14 Oct 2008, Tejun Heo wrote:
+> Hello, Miklos.
 > 
-> Jesse,
-> What do you think of the below patch?
-> I am not very familiar with Kconfig, but it seems to solve the problem.
-> If a Kconfig guru could double-check...
+> I'm about ready to send the next round of this patchset w/ mmap support,
+> which I'm sure gonna stir up some discussion. :-) Several things I wanna
+> hear your comments about.
 
-The patch looks good, but the main problem is to get an agreement 
-on the policy.
+Great.  Just yesterday evening I was looking through your patches to
+see which ones I can submit for 2.6.28, and I've already applied
 
-> Brice
->...
+  0001-FUSE-add-include-protectors.patch
+  0003-FUSE-implement-nonseekable-open.patch
 
-cu
-Adrian
+Comments about the others:
 
--- 
+  0002-FUSE-pass-nonblock-flag-to-client.patch
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+this is not needed, f_flags are already passed to userspace for read
+and write.
 
+  0004-FUSE-implement-direct-lseek-support.patch
+
+this is trickier to get the interface right I think.  If we want to
+allow filesystems to implement a custom lseek, then we also want them
+to keep track of the file position, which means we must differentiate
+between a write(2) and a pwrite(2) and similarly for reads.  AFAICS
+this isn't needed for CUSE so we can leave this to later.
+
+  0005-FUSE-implement-ioctl-support.patch
+
+See below.
+
+  0006-FUSE-implement-unsolicited-notification.patch
+  0007-FUSE-implement-poll-support.patch
+
+This would be nice, but...  I don't really like the fact that it uses
+the file handle.  Could we have a separate "poll handle" that is
+returned in the POLL reply?
+
+> 1. I'll try to incorporate all other comments here but regarding ioctl I
+> don't think we've reached any better solution, so I'm sticking with the
+> original one.
+
+I still got qualms about this ioctl thing.  One is the security
+aspect, but that could be dealt with.  The other is that I really
+really don't want people to start implementing new custom ioctls for
+their filesystems, as I think that way lies madness.  We could limit
+ioctls to CUSE and that would be fine with me.  Or for non-CUSE users
+we could enforce the "standard" format where the type and length is
+encoded in the command number.
+
+I don't have any problems with the iterative way you implemented
+ioctls.  We just need some additional restrictions to the current
+implementation, I think.
+
+> 2. You told me that the version branching in the userland library wasn't
+> necessary.  Can you explain to me when FUSE version bumping is necessary?
+
+The version number has to be bumped anyway.  But if you are only
+adding new functions to the end of fuse_operations and
+fuse_lowlevel_ops, then the interface can handle that, without needing
+new compatibility functions.
+
+> 3. Any other things on you mind?
+
+One other thing I was thinking about is that do we really need
+emulated char devices to be char devices?  What I mean is, what would
+happen if instead of a char device /dev/dsp would be a regular file
+mounted on /dev/dsp (which implements all the necessary interfaces:
+ioctls, poll, etc)?
+
+Thanks,
+Miklos
