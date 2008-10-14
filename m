@@ -1,75 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYJNLPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbYJNLSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbYJNLPe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 07:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbYJNLPZ
+	id S1756711AbYJNLSU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 07:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbYJNLSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 07:15:25 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37717 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754683AbYJNLPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 07:15:24 -0400
-Date: Tue, 14 Oct 2008 20:14:44 +0900
-To: nico@chdir.org
-Cc: yhlu.kernel@gmail.com, mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: USB problem on x86_64: nommu_map_single() issue?
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081014110539.GA2997@sd-5945.dedibox.fr>
-References: <20081014104500.GB1252@sd-5945.dedibox.fr>
-	<20081014200016H.fujita.tomonori@lab.ntt.co.jp>
-	<20081014110539.GA2997@sd-5945.dedibox.fr>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081014201447I.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 14 Oct 2008 07:18:09 -0400
+Received: from lazybastard.de ([212.112.238.170]:39154 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828AbYJNLSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 07:18:07 -0400
+Date: Tue, 14 Oct 2008 13:18:00 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Stefan Monnier <monnier@iro.umontreal.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Filesystem for block devices using flash storage?
+Message-ID: <20081014111800.GA32413@logfs.org>
+References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008 13:05:39 +0200
-Nicolas Bareil <nico@chdir.org> wrote:
+Rereading the thread, you haven't received a good answer yet.  Which is
+understandable, given the diversity and secrecy of the subject.  The
+properties of flash are reasonably well understood.  To create a block
+device, you need to add an FTL.  How the FTL works depends on the device
+in question, and you will never receive any documentation with the
+device.  In short, you never know.
 
-> On Tue, Oct 14, 2008 at 08:00:09PM +0900, FUJITA Tomonori wrote:
-> > > > Is this a regression? Did it work on earlier kernels?
-> > > 
-> > > Yes this is a regression: USB works in 2.6.26.x with (almost) the same configuration.
-> > 
-> > With old kernels, you can find something like the following line in
-> > the boot log?
-> > 
-> > PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+Unless the device comes from the cheap end.  Practically everyone is
+using the same FTL for cheap devices, with some minor tweaks.  I've
+written down the basics here:
+http://www.linuxconf.eu/2007/papers/Engel.pdf
+
+More expensive devices may still behave the same, may do something
+better or may attempt to do something better and actually be worse.  One
+never knows, so I'll pretend that every device is cheap from now on.
+
+On Wed, 8 October 2008 12:38:51 -0400, Stefan Monnier wrote:
 > 
-> Indeed, I have this line:
-> 
-> Oct 14 12:46:29 brew kernel: [    0.004000] Calgary: detecting Calgary via BIOS EBDA area
-> Oct 14 12:46:29 brew kernel: [    0.004000] Calgary: Unable to locate Rio Grande table in EBDA - bailing!
-> Oct 14 12:46:29 brew kernel: [    0.004000] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-> Oct 14 12:46:29 brew kernel: [    0.004000] Placing software IO TLB between 0x4000000 - 0x8000000
-> Oct 14 12:46:29 brew kernel: [    0.004000] Memory: 4055544k/4980736k available (2225k kernel code, 138092k reserved, 1079k data, 392k init)
-> Oct 14 12:46:29 brew kernel: [    0.004000] CPA: page pool initialized 1 of 1 pages preallocated
+> Google finds some people asking this same question, but I couldn't find
+> any answer to it: what filesystem is recommended to use on an flash
+> based disk that does not give access to the MTD layer (e.g. USB keys,
+> most SSDs, ...)?
 
-Probably, the changes to the initial memory setup code breaks the
-following code:
+Currently: Either fat or none at all.
 
-void __init pci_swiotlb_init(void)
-{
-	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
-	if (!iommu_detected && !no_iommu && max_pfn > MAX_DMA32_PFN)
-	       swiotlb = 1;
+> Since they do their own wear-levelling, any filesystem should be "safe",
+> but I expect there is still a lot of variance in terms of performance,
+> wear, robustness, ...
 
+The wear leveling is not done for the complete device, only for a subset
+of usually 1024 blocks.  If you keep pounding the same (logical) block
+over and over, the number of physical blocks you write to is either 25
+or 1024, depending on whether the device does static wear leveling.
 
-SWIOTLB should be used for your box but somehow pci-nommu is used.
+I have reports of people breaking their devices with a trivial script in
+less than a day (an hour, iirc).
 
+> Has anyone conducted serious experiemnts to try and find out what works
+> better?  Also, since it appears that such devices are here to stay,
+> would there be a need to design a new filesystem or to tune existing
+> filesystems for this particular kind of device?
 
-> The whole kern.log and my config are available here :
-> http://chdir.org/~nbareil/kern.log
+Some expensive device seem to work well with any filesystem.  As for the
+cheap stuff, a new design is needed.  The shopping list includes:
+1. vast majority of writes should be eraseblock-sized and -aligned
+2. wear leveling
+3. scrubbing
 
-The following part in the 2.6.27 boot log looks suspicious:
+And quite frankly, no filesystem currently fits the bill.  Closest
+contenders are btrfs, nilfs and logfs, all of which are still under
+development.  Of those, logfs is the only one designed explicitly for
+flash and happens to be my brainchild.  So naturally my opinion is
+biased and I will refrain from any further arguments for or against. :)
 
-Oct 13 15:43:48 brew kernel: last_pfn = 0x130000 max_arch_pfn = 0x3ffffffff
-Oct 13 15:43:48 brew kernel: x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-Oct 13 15:43:48 brew kernel: last_pfn = 0xcffc2 max_arch_pfn = 0x3ffffffff
+Current status of logfs is that I'm currently fixing one design issue
+that caused many small writes, then have to do some random minor changes
+to the format and... it should be useable sometime this year.
 
+> Or is there some hope for SSDs to provide access to the MTD layer in the
+> not too distant future?
 
-CC'ed Yinghai and Ingo, who might have clues.
+I've talked to manufacturers and not seen any enthusiasm for that idea.
+Most actually have some undocumented commands for raw access - for
+testing and QA.  They simply see no benefit in exposing these to the
+public.  And it is trivial to brick a device with such commands - in the
+sense that the FTL no longer works.
+
+Jörn
+
+-- 
+Optimizations always bust things, because all optimizations are, in
+the long haul, a form of cheating, and cheaters eventually get caught.
+-- Larry Wall
