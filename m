@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYJNWHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbYJNWJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbYJNWHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 18:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYJNWHZ
+	id S1754500AbYJNWJN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 18:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYJNWIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 18:07:25 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:17558 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbYJNWHY (ORCPT
+	Tue, 14 Oct 2008 18:08:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:32921 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbYJNWIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 18:07:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=woNdMT+mMuLiqUHX4wTJTtPMlYdEbwYgU0IJIbgRdR3+pDVDREhvkgu0O9kBa7fbbc
-         ttUkM3v2/0Q/nJgtW7scf6fKmaZxZL85px47gTOeheMfWKWs9tHE1+IN8R5//TYeMZrE
-         tWEWCSoFAYRUJ5X2dYWOPKBnRAvi0jgPFgJhI=
-Date: Wed, 15 Oct 2008 02:10:19 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Kaz Kylheku <kkylheku@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: GPL question: using large contiguous memory in proprietary
-	driver.
-Message-ID: <20081014221018.GA1498@x200.localdomain>
-References: <3f43f78b0810141456r159d71e7h9763e50e7dbc0c51@mail.gmail.com>
+	Tue, 14 Oct 2008 18:08:54 -0400
+Date: Tue, 14 Oct 2008 18:08:48 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ftrace: do not enclose logic in WARN_ON
+Message-ID: <alpine.DEB.1.10.0810141804550.24272@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3f43f78b0810141456r159d71e7h9763e50e7dbc0c51@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 02:56:40PM -0700, Kaz Kylheku wrote:
-> I have the following question. Suppose that some proprietary driver
-> (otherwise completely clean, based only on non-GPL symbols)
 
-You have strange notion of "clean".
+In ftrace, logic is defined in the WARN_ON_ONCE, which can become a
+nop with some configs. This patch fixes it.
 
-> requires a large buffer of physically contiguous memory.
-> 
-> A GPL-ed driver could get this memory by having some boot-time
-> code compiled into the kernel which calls bootmem_alloc during
-> kernel initialization. This function would stash the address of the
-> memory into some global variable which is exported for the
-> module to use.
-> 
-> How do you solve this problem in a proprietary driver?
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/x86/kernel/ftrace.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-:-)
+Index: linux-tip.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-10-14 17:55:40.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-10-14 17:56:29.000000000 -0400
+@@ -62,6 +62,7 @@ ftrace_modify_code(unsigned long ip, uns
+ 		   unsigned char *new_code)
+ {
+ 	unsigned char replaced[MCOUNT_INSN_SIZE];
++	int ret;
+ 
+ 	/*
+ 	 * Note: Due to modules and __init, code can
+@@ -77,8 +78,9 @@ ftrace_modify_code(unsigned long ip, uns
+ 	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
+ 		return 2;
+ 
+-	WARN_ON_ONCE(__copy_to_user_inatomic((char __user *)ip, new_code,
+-				    MCOUNT_INSN_SIZE));
++	ret = __copy_to_user_inatomic((char __user *)ip, new_code,
++					MCOUNT_INSN_SIZE);
++	WARN_ON_ONCE(ret);
+ 
+ 	sync_core();
+ 
 
-> It seems
-> like the above solution taints the kernel, because the kernel
-> provides a symbol which exists only for the sake of supporting
-> a proprietary driver.
-> 
-> Would it be okay to have a mechanism like this:
-> Suppose that  on the kernel command line, you could
-> request a boot-time memory allocation and give it a name.
-> For instance, the parameter:
-> 
->    boot_alloc=foo,8192K
-> 
-> would create an 8192 kilobyte allocation, and associate it
-> with the string "foo".   A non-GPL function would be provided to
-> find the address of this memory, using the string "foo"
-> as the key. The proprietary driver would document the
-> requirement that it needs a memory region of at least
-> 8192K, under the name "foo".
-> 
-> Help! :)
-
-Since the code to reserve memory and code to find by name won't be
-accepted, the question is rather pointless.
