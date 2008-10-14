@@ -1,96 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbYJNKpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYJNK4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbYJNKpV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 06:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbYJNKpF
+	id S1756002AbYJNK4p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 06:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYJNK4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 06:45:05 -0400
-Received: from moog.chdir.org ([88.191.42.160]:60329 "EHLO moog.chdir.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755021AbYJNKpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 06:45:03 -0400
-Date: Tue, 14 Oct 2008 12:45:00 +0200
-From: Nicolas Bareil <nico@chdir.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-usb@vger.kernel.org
-Subject: Re: USB problem on x86_64: nommu_map_single() issue?
-Message-ID: <20081014104500.GB1252@sd-5945.dedibox.fr>
-References: <20081014072045.GA1252@sd-5945.dedibox.fr> <200810141148.48220.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810141148.48220.oliver@neukum.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 14 Oct 2008 06:56:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37342 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754538AbYJNK4g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 06:56:36 -0400
+Date: Tue, 14 Oct 2008 11:56:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [REVERT Request] VT Breakage
+Message-ID: <20081014115632.600a7506@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oliver,
+In April someone merged
 
-On Tue, Oct 14, 2008 at 11:48:47AM +0200, Oliver Neukum wrote:
-> > On 2.6.27, I can't use any USB device (mass storage, mouse) anymore on my x86_64 system, the devices
-> > are not detected: lsusb returns nothing except the hub.
-> 
-> Is this a regression? Did it work on earlier kernels?
+commit c9e587abfdec2c2aaa55fab83bcb4972e2f84f9b
+Author: Jan Engelhardt <jengelh@computergmbh.de>
+Date:   Tue Apr 29 00:59:46 2008 -0700
 
-Yes this is a regression: USB works in 2.6.26.x with (almost) the same configuration.
+    vt: fix background color on line feed
 
-> > I have the following logs in kern.log when booting with my USB mouse plugged :
-> 
-> For confirmation boot with mem=2G on the kernel command line?
 
-With this workaround, the USB works with the following logs (don't know if it's useful):
+Unfortunately it's wrong and its been causing breakages because various
+apps like ncurses expect our previous (and correct) behaviour.
 
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: setting latency timer to 64
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: EHCI Host Controller
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: debug port 1
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: irq 16, io mem 0xf0204000
-Oct 14 12:30:22 brew kernel: USB Universal Host Controller Interface driver v3.0
-Oct 14 12:30:22 brew kernel: ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-Oct 14 12:30:22 brew kernel: usb usb1: configuration #1 chosen from 1 choice
-Oct 14 12:30:22 brew kernel: hub 1-0:1.0: USB hub found
-Oct 14 12:30:22 brew kernel: hub 1-0:1.0: 8 ports detected
-Oct 14 12:30:22 brew kernel: intel_rng: Firmware space is locked read-only. If you can't or
-Oct 14 12:30:22 brew kernel: intel_rng: don't want to disable this in firmware setup, and if
-Oct 14 12:30:22 brew kernel: intel_rng: you are certain that your system has a functional
-Oct 14 12:30:22 brew kernel: intel_rng: RNG, try using the 'no_fwh_detect' option.
-Oct 14 12:30:22 brew kernel: HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
-Oct 14 12:30:22 brew kernel: HDA Intel 0000:00:1b.0: setting latency timer to 64
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.0: setting latency timer to 64
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.0: UHCI Host Controller
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 2
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.0: irq 16, io base 0x00002000
-Oct 14 12:30:22 brew kernel: usb usb2: configuration #1 chosen from 1 choice
-Oct 14 12:30:22 brew kernel: hub 2-0:1.0: USB hub found
-Oct 14 12:30:22 brew kernel: hub 2-0:1.0: 2 ports detected
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.1: setting latency timer to 64
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.1: UHCI Host Controller
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 3
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.1: irq 19, io base 0x00002020
-Oct 14 12:30:22 brew kernel: usb usb3: configuration #1 chosen from 1 choice
-Oct 14 12:30:22 brew kernel: hub 3-0:1.0: USB hub found
-Oct 14 12:30:22 brew kernel: hub 3-0:1.0: 2 ports detected
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.2: setting latency timer to 64
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.2: UHCI Host Controller
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 4
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.2: irq 18, io base 0x00002040
-Oct 14 12:30:22 brew kernel: usb usb4: configuration #1 chosen from 1 choice
-Oct 14 12:30:22 brew kernel: hub 4-0:1.0: USB hub found
-Oct 14 12:30:22 brew kernel: hub 4-0:1.0: 2 ports detected
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 22 (level, low) -> IRQ 22
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.3: setting latency timer to 64
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.3: UHCI Host Controller
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 5
-Oct 14 12:30:22 brew kernel: uhci_hcd 0000:00:1d.3: irq 22, io base 0x00002060
-Oct 14 12:30:22 brew kernel: usb usb5: configuration #1 chosen from 1 choice
-Oct 14 12:30:22 brew kernel: hub 5-0:1.0: USB hub found
-Oct 14 12:30:22 brew kernel: hub 5-0:1.0: 2 ports detected
-Oct 14 12:30:22 brew kernel: usb 3-1: new low speed USB device using uhci_hcd and address 2
+Can you therefore revert it (seems saner than sending you a patch -R)
 
-Thank you for your time!
