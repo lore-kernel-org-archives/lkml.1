@@ -1,45 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYJNRNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYJNRSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYJNRNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 13:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYJNRNJ
+	id S1753829AbYJNRSJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 13:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYJNRR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 13:13:09 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:53345 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbYJNRNI (ORCPT
+	Tue, 14 Oct 2008 13:17:56 -0400
+Received: from anhedonia.sammy.net ([72.46.127.32]:58743 "EHLO
+	anhedonia.sammy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751608AbYJNRRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 13:13:08 -0400
-Message-ID: <48F4D311.20500@nortel.com>
-Date: Tue, 14 Oct 2008 11:12:49 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: Linux 2.6.27 will be a longtime supported kernel
-References: <alpine.LFD.2.00.0810091651220.3210@nehalem.linux-foundation.org> <20081011210340.GA11198@cs181140183.pp.htv.fi>
-In-Reply-To: <20081011210340.GA11198@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Oct 2008 17:12:53.0235 (UTC) FILETIME=[17F23430:01C92E20]
+	Tue, 14 Oct 2008 13:17:55 -0400
+X-Greylist: delayed 2228 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 13:17:55 EDT
+Date: Tue, 14 Oct 2008 12:40:43 -0400
+From: Sam Creasey <sammy@sammy.net>
+To: Julia Lawall <julia@diku.dk>
+Cc: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/2] drivers/scsi/sun3x_esp.c: Convert && to ||
+Message-ID: <20081014164043.GS10918@sammy.net>
+References: <Pine.LNX.4.64.0810141759520.20451@pc-004.diku.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0810141759520.20451@pc-004.diku.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> 2.6.16 has become a bit dated, and I'll maintain 2.6.27 for a few years 
-> as a replacement.
+On Tue, Oct 14, 2008 at 06:00:19PM +0200, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The pattern !E && !E->fld is nonsensical.  The patch below updates this
+> according to the assumption that && should be ||.  But perhaps another
+> solution was intended.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @disable and_comm@
+> expression E;
+> identifier fld;
+> @@
+> 
+> - !E && !E->fld
+> + !E || !E->fld
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+Acked-By: Sam Creasey <sammy@sammy.net>
 
-Consider this another "thank you" for the work that you and also the 
--stable team are doing.
+I doubt this code would have been likely to execute, but you're
+certainly right.  It's a bug, and this looks like the fix.
 
-For various reasons (long release cycles, long-term support contracts, 
-etc.) the release-early/often model can be difficult.  These periodic 
-longer-term kernels are very useful.
+-- Sam
 
-Chris
 
+> 
+> ---
+>  drivers/scsi/sun3x_esp.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -u -p a/drivers/scsi/sun3x_esp.c b/drivers/scsi/sun3x_esp.c
+> --- a/drivers/scsi/sun3x_esp.c
+> +++ b/drivers/scsi/sun3x_esp.c
+> @@ -213,7 +213,7 @@ static int __devinit esp_sun3x_probe(str
+>  	esp->ops = &sun3x_esp_ops;
+>  
+>  	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+> -	if (!res && !res->start)
+> +	if (!res || !res->start)
+>  		goto fail_unlink;
+>  
+>  	esp->regs = ioremap_nocache(res->start, 0x20);
+> @@ -221,7 +221,7 @@ static int __devinit esp_sun3x_probe(str
+>  		goto fail_unmap_regs;
+>  
+>  	res = platform_get_resource(dev, IORESOURCE_MEM, 1);
+> -	if (!res && !res->start)
+> +	if (!res || !res->start)
+>  		goto fail_unmap_regs;
+>  
+>  	esp->dma_regs = ioremap_nocache(res->start, 0x10);
