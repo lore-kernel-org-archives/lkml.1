@@ -1,100 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbYJNXBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYJNXEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbYJNXBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 19:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYJNXBG
+	id S1754556AbYJNXEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 19:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYJNXDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 19:01:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37896 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751454AbYJNXBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 19:01:05 -0400
-Date: Tue, 14 Oct 2008 15:58:17 -0700
-From: Brandon Philips <bphilips@suse.de>
-To: Dave Airlie <airlied@redhat.com>, Zhenyu Wang <zhenyu.z.wang@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] intel-agp: Avoid oops for G33 on 1MB stolen case
-Message-ID: <20081014225817.GA29267@plankton.lan>
+	Tue, 14 Oct 2008 19:03:54 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:47874 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbYJNXDx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 19:03:53 -0400
+Message-ID: <48F52524.4000903@nortel.com>
+Date: Tue, 14 Oct 2008 17:03:00 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Greg KH <greg@kroah.com>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Adrian Bunk <bunk@kernel.org>, Am??rico Wang <xiyou.wangcong@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.27 will be a longtime supported kernel
+References: <alpine.LFD.2.00.0810091651220.3210@nehalem.linux-foundation.org> <20081011210340.GA11198@cs181140183.pp.htv.fi> <20081013112701.GA12706@hack.voiplan.pt> <20081013123705.GF29938@cs181140183.pp.htv.fi> <20081014201054.GD22851@csclub.uwaterloo.ca> <20081014210437.GA17338@kroah.com>
+In-Reply-To: <20081014210437.GA17338@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Oct 2008 23:03:04.0936 (UTC) FILETIME=[03E55680:01C92E51]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is similar to f443675affe3f16dd428e46f0f7fd3f4d703eeab which was
-reverted because it broke older X.org driver. This patch only fixes
-the 1MB stolen case since it causes an oops.
+Greg KH wrote:
+> On Tue, Oct 14, 2008 at 04:10:54PM -0400, Lennart Sorensen wrote:
+> 
+>>On Mon, Oct 13, 2008 at 03:37:05PM +0300, Adrian Bunk wrote:
+>>
+>>>If the question is why it isn't .26 or .28:
+>>>
+>>>I'm checking whether my computer works fine with a kernel, and also 
+>>>very slightly what distributions might use a kernel, but in the end
+>>>it's pretty random.
+>>
+>>So any distributions using .27 by the looks of it?  It looks like Debian
+>>is going with .26 for the 5.0 release, so if nothing else they will have
+>>to be maintaining that one for quite a while.  I suppose having someone
+>>maintain .27 makes sense in that case.
+> 
+> 
+> Fedora, Ubuntu, and openSUSE are going to be based on .27 from what I
+> can tell.
 
-Xorg will not work without the accompanying patch[1] but avoiding an
-oops and making it possible to work with patched xorg driver is
-reasonable.
+According to distrowatch, Mandriva and Gentoo as well.
 
-[1] http://ifup.org/~philips/review/xf86-video-intel-G33-1mb.patch
-
-Explanation of the oops:
-
-> static void intel_i830_init_gtt_entries(void)
-...
->         } else if (IS_G33) {
->         /* G33's GTT size defined in gmch_ctrl */
->                 switch (gmch_ctrl & G33_PGETBL_SIZE_MASK) {
->                 case G33_PGETBL_SIZE_1M:
->                         size = 1024;
->                         break;
-...
->                 size += 4;
-
-size = 1028
-
-Then since we have the BIOS setting 1MB for the device in the GMCH
-control we get to here:
-
->         } else {
->                 switch (gmch_ctrl & I855_GMCH_GMS_MASK) {
->                 case I855_GMCH_GMS_STOLEN_1M:
->                         gtt_entries = MB(1) - KB(size);
->                         break;
-
-MB(1) = 1 * 1024 * 1024
-KB(1028) = 1028 * 1024
-
-MB(1) - KB(1028) = -4096
-
->         gtt_entries /= KB(4);
->         intel_private.gtt_entries = gtt_entries;
-
-We end up with -1 in gtt_entries.
-
-This leads to intel_i915_configure reading/writing to areas outside of
-mapped memory and the oops.
-
-Bugzilla: https://bugzilla.novell.com/show_bug.cgi?id=391261
-
-Signed-off-by: Brandon Philips <bphilips@suse.de>
-
----
- drivers/char/agp/intel-agp.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-Index: linux-2.6/drivers/char/agp/intel-agp.c
-===================================================================
---- linux-2.6.orig/drivers/char/agp/intel-agp.c
-+++ linux-2.6/drivers/char/agp/intel-agp.c
-@@ -559,6 +559,14 @@ static void intel_i830_init_gtt_entries(
- 	} else {
- 		switch (gmch_ctrl & I855_GMCH_GMS_MASK) {
- 		case I855_GMCH_GMS_STOLEN_1M:
-+			if (IS_G33) {
-+				size = 0;
-+				printk(KERN_WARNING PFX
-+				       "Warning: G33 chipset with 1MB"
-+					" allocated. Older X.org Intel drivers"
-+					" will not work.\n");
-+				WARN_ON(1);
-+			}
- 			gtt_entries = MB(1) - KB(size);
- 			break;
- 		case I855_GMCH_GMS_STOLEN_4M:
+Chris
