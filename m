@@ -1,124 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYJNL7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbYJNMAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbYJNL7X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 07:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbYJNL6h
+	id S1758600AbYJNMAS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 08:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYJNMAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 07:58:37 -0400
-Received: from mga02.intel.com ([134.134.136.20]:18033 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755987AbYJNL6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 07:58:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,409,1220252400"; 
-   d="scan'208";a="347869718"
-Date: Tue, 14 Oct 2008 19:00:23 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 7/8 v4] PCI: reserve bus range for the SR-IOV device
-Message-ID: <20081014110023.GG1734@yzhao12-linux.sh.intel.com>
-References: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
+	Tue, 14 Oct 2008 08:00:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41861 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755415AbYJNL77 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 07:59:59 -0400
+Date: Tue, 14 Oct 2008 20:59:59 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH] release memory regions in PAGES_PER_SECTION chunks
+Cc: linux-kernel@vger.kernel.org, Badari Pulavarty <pbadari@us.ibm.com>
+In-Reply-To: <48F3ADEF.1080905@austin.ibm.com>
+References: <48F3ADEF.1080905@austin.ibm.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20081014205507.AD7F.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reserve bus range for SR-IOV at device scanning stage.
 
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+Good catch.
+Looks good to me.
 
----
- drivers/pci/iov.c   |   24 ++++++++++++++++++++++++
- drivers/pci/pci.h   |    5 +++++
- drivers/pci/probe.c |    3 +++
- 3 files changed, 32 insertions(+), 0 deletions(-)
+Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index 3cf9709..7685c6b 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -603,6 +603,30 @@ void pci_iov_remove_sysfs(struct pci_dev *dev)
- 	kfree(iov->ve);
- }
- 
-+/**
-+ * pci_iov_bus_range - find bus range used by SR-IOV capability
-+ * @bus: the PCI bus
-+ *
-+ * Returns max number of buses (exclude current one) used by Virtual
-+ * Functions.
-+ */
-+int pci_iov_bus_range(struct pci_bus *bus)
-+{
-+	int max = 0;
-+	u8 busnr, devfn;
-+	struct pci_dev *dev;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		if (!dev->iov)
-+			continue;
-+		vf_rid(dev, dev->iov->totalvfs - 1, &busnr, &devfn);
-+		if (busnr > max)
-+			max = busnr;
-+	}
-+
-+	return max ? max - bus->number : 0;
-+}
-+
- int pci_iov_resource_align(struct pci_dev *dev, int resno)
- {
- 	if (resno < PCI_IOV_RESOURCES || resno > PCI_IOV_RESOURCES_END)
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index c66a4bd..71149b5 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -206,6 +206,7 @@ void pci_iov_remove_sysfs(struct pci_dev *dev);
- extern int pci_iov_resource_align(struct pci_dev *dev, int resno);
- extern int pci_iov_resource_bar(struct pci_dev *dev, int resno,
- 				enum pci_bar_type *type);
-+extern int pci_iov_bus_range(struct pci_bus *bus);
- #else
- static inline int pci_iov_init(struct pci_dev *dev)
- {
-@@ -229,6 +230,10 @@ static inline int pci_iov_resource_bar(struct pci_dev *dev, int resno,
- {
- 	return 0;
- }
-+extern inline int pci_iov_bus_range(struct pci_bus *bus)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_PCI_IOV */
- 
- #endif /* DRIVERS_PCI_H */
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 831d8d0..b11f4b8 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1129,6 +1129,9 @@ unsigned int __devinit pci_scan_child_bus(struct pci_bus *bus)
- 	for (devfn = 0; devfn < 0x100; devfn += 8)
- 		pci_scan_slot(bus, devfn);
- 
-+	/* Reserve buses for SR-IOV capability. */
-+	max += pci_iov_bus_range(bus);
-+
- 	/*
- 	 * After performing arch-dependent fixup of the bus, look behind
- 	 * all PCI-to-PCI bridges on this bus.
+> During hotplug memory remove, memory regions should be released
+> on a PAGES_PER_SECTION size chunks.  This mirrors the code in
+> add_memory where resources are requested on a PAGES_PER_SECTION size.
+> 
+> Attempting to release the entire memory region fails because there is
+> not a single resource for the total number of pages being removed.
+> Instead the resources for the pages are split in PAGES_PER_SECTION
+> size chunks as requested during memory add.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> 
+> ---
+> 
+> Index: linux-2.6/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-2.6.orig/mm/memory_hotplug.c	2008-10-13 12:00:46.000000000 -0500
+> +++ linux-2.6/mm/memory_hotplug.c	2008-10-13 14:29:31.000000000 -0500
+> @@ -323,11 +323,11 @@
+>  	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
+>  	BUG_ON(nr_pages % PAGES_PER_SECTION);
+>  
+> -	release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
+> -
+>  	sections_to_remove = nr_pages / PAGES_PER_SECTION;
+>  	for (i = 0; i < sections_to_remove; i++) {
+>  		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
+> +		release_mem_region(pfn << PAGE_SHIFT,
+> +				   PAGES_PER_SECTION << PAGE_SHIFT);
+>  		ret = __remove_section(zone, __pfn_to_section(pfn));
+>  		if (ret)
+>  			break;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
 -- 
-1.5.6.4
+Yasunori Goto 
+
 
