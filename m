@@ -1,93 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbYJNHRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbYJNHST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbYJNHRa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 03:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYJNHRU
+	id S1756651AbYJNHST (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 03:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYJNHSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 03:17:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39235 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751471AbYJNHRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 03:17:19 -0400
-Message-ID: <48F44706.7060701@kernel.org>
-Date: Tue, 14 Oct 2008 16:15:18 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 14 Oct 2008 03:18:06 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:28005 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752937AbYJNHSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 03:18:04 -0400
+From: Alex Chiang <achiang@hp.com>
+Subject: [PATCH v6 2/3] PCI: rename pci_update_slot_number to pci_renumber_slot
+To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx,
+       kaneshige.kenji@jp.fujitsu.com, Alex Chiang <achiang@hp.com>
+Date: Tue, 14 Oct 2008 01:18:02 -0600
+Message-ID: <20081014071802.23686.17573.stgit@bob.kio>
+In-Reply-To: <20081014065843.23686.52391.stgit@bob.kio>
+References: <20081014065843.23686.52391.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
-To: Peter Alfredsen <loki_val@gentoo.org>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: SATA Burner Pioneer DVR-216-DBK won't burn
-References: <200810052005.04920.loki_val@gentoo.org>
-In-Reply-To: <200810052005.04920.loki_val@gentoo.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Oct 2008 07:17:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+The GPL exported symbol pci_update_slot_number has been renamed to
+pci_renumber_slot. Some of the safety checks were unnecessary and
+were removed.
 
-Peter Alfredsen wrote:
-> [please CC me on replies]
-> Linux loki 2.6.27-rc8 #5 SMP PREEMPT Sun Oct 5 17:56:00 CEST 2008 x86_64 
-> Intel(R) Core(TM)2 Quad CPU Q9550 @ 2.83GHz GenuineIntel GNU/Linux
-> 
-> I recently acquired a DVR-216-DBK Pioneer SATA burner. With my old 
-> burner, a DVR-110D,  I am able to burn a DVD. With the DVR-216DBK, I'm 
-> not, it stops always at 98%, no matter which speed I burn at.
+Cc: jbarnes@virtuousgeek.org
+Cc: kristen.c.accardi@intel.com
+Cc: matthew@wil.cx
+Cc: kaneshige.kenji@jp.fujitsu.com
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
 
-Can you please attach kernel boot log?  And does the kernel whine
-about anything after the failure?
+ drivers/pci/slot.c  |   15 +++++----------
+ include/linux/pci.h |    2 +-
+ 2 files changed, 6 insertions(+), 11 deletions(-)
 
-> My motherboard is a ASUS P5Q-EM, I have 8GB of ram and am running Gentoo 
-> Linux. I've tried both cdrkit and cdrtools.
-> DVR-216-DBK Fails, connected to ICH10R AHCI SATA controller
-> DVR-110D Succeeds, connected to Marvell 6101 PATA_MARVELL controller
+diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
+index 0c6db03..b9b90ab 100644
+--- a/drivers/pci/slot.c
++++ b/drivers/pci/slot.c
+@@ -175,7 +175,7 @@ placeholder:
+ EXPORT_SYMBOL_GPL(pci_create_slot);
+ 
+ /**
+- * pci_update_slot_number - update %struct pci_slot -> number
++ * pci_renumber_slot - update %struct pci_slot -> number
+  * @slot - %struct pci_slot to update
+  * @slot_nr - new number for slot
+  *
+@@ -183,27 +183,22 @@ EXPORT_SYMBOL_GPL(pci_create_slot);
+  * created a placeholder slot in pci_create_slot() by passing a -1 as
+  * slot_nr, to update their %struct pci_slot with the correct @slot_nr.
+  */
+-
+-void pci_update_slot_number(struct pci_slot *slot, int slot_nr)
++void pci_renumber_slot(struct pci_slot *slot, int slot_nr)
+ {
+-	int name_count = 0;
+ 	struct pci_slot *tmp;
+ 
+ 	down_write(&pci_bus_sem);
+ 
+ 	list_for_each_entry(tmp, &slot->bus->slots, list) {
+ 		WARN_ON(tmp->number == slot_nr);
+-		if (!strcmp(kobject_name(&tmp->kobj), kobject_name(&slot->kobj)))
+-			name_count++;
++		goto out;
+ 	}
+ 
+-	if (name_count > 1)
+-		printk(KERN_WARNING "pci_update_slot_number found %d slots with the same name: %s\n", name_count, kobject_name(&slot->kobj));
+-
+ 	slot->number = slot_nr;
++out:
+ 	up_write(&pci_bus_sem);
+ }
+-EXPORT_SYMBOL_GPL(pci_update_slot_number);
++EXPORT_SYMBOL_GPL(pci_renumber_slot);
+ 
+ /**
+  * pci_destroy_slot - decrement refcount for physical PCI slot
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index cca5700..89f7f90 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -510,7 +510,7 @@ struct pci_bus *pci_add_new_bus(struct pci_bus *parent, struct pci_dev *dev,
+ struct pci_slot *pci_create_slot(struct pci_bus *parent, int slot_nr,
+ 				 const char *name);
+ void pci_destroy_slot(struct pci_slot *slot);
+-void pci_update_slot_number(struct pci_slot *slot, int slot_nr);
++void pci_renumber_slot(struct pci_slot *slot, int slot_nr);
+ int pci_scan_slot(struct pci_bus *bus, int devfn);
+ struct pci_dev *pci_scan_single_device(struct pci_bus *bus, int devfn);
+ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus);
 
-What if you swap the two?  Or is one SATA and the other PATA?  In that
-case, can you get a chip sil3152 controller (probably ~10USD) and see
-whether it works any better?
-
-> I've located other people who seem to be experiencing the same thing:
-> 
-> http://bugs.kde.org/show_bug.cgi?id=169294
-
-This one isn't really related.
-
-> http://ubuntuforums.org/showthread.php?t=543483
-
-This one might or might not.
-
-> This seems to me to point to a problem with the AHCI driver's 
-> interaction with the drive.
-> 
-> Attached is lspci -k and debug output from K3B:
-> 
-> 00:1f.2 SATA controller: Intel Corporation 82801JI (ICH10 Family) SATA 
-> AHCI Controller
->         Kernel driver in use: ahci
-
-I suppose the drive is hanging off this one, right?
-
->  3942252544/4008087552 (98.4%) @16.8x, remaining 0:03 RBU 100.0% UBU 
-> 100.0%
-> :-[ WRITE@LBA=1ddcd0h failed with SK=5h/ASC=A8h/ACQ=04h]: Input/output 
-> error
-> :-( write failed: Input/output error
-> /dev/sr0: flushing cache
-
-k3b doesn't really show which command failed.  I suppose it's
-WRITE(10).  The failure code is ILLEGAL REQUEST and the ASC/ASCQ are
-vendor specific and don't really tell us much detail about the
-failure.  :-(
-
-Can you please try wodim with "-pad -v -V" options?  It will generate
-a lot of output.  You'll probably want to redirect the output to a
-file and watch it using tail or less.
-
-Thanks.
-
--- 
-tejun
