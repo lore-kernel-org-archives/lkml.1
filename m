@@ -1,107 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYJNT4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYJNUDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbYJNT4w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 15:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbYJNT4b
+	id S1754716AbYJNUDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 16:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYJNUDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 15:56:31 -0400
-Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:37890 "EHLO
-	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755087AbYJNT43 (ORCPT
+	Tue, 14 Oct 2008 16:03:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36624 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753906AbYJNUDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 15:56:29 -0400
-X-Authority-Analysis: v=1.0 c=1 a=qYOhu5Qx6v8A:10 a=4toi1r5nGRgA:10
- a=quS4FCQqLwwIv9-0tLQA:9 a=Gs_dYvPeFjGB-PvaLTAA:7
- a=J9Mb2p4LohECD4ogVr3Htx_ap6EA:4 a=dGJ0OcVc7YAA:10 a=iYlkOlhu7C0A:10
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH 6/6] DCB: setting pg will cause tx unit hangs
-To: davem@davemloft.net, jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alexander Duyck <alexander.h.duyck@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Date: Tue, 14 Oct 2008 12:56:05 -0700
-Message-ID: <20081014195605.16879.38567.stgit@gitlost.lost>
-In-Reply-To: <20081014195413.16879.25832.stgit@gitlost.lost>
-References: <20081014195413.16879.25832.stgit@gitlost.lost>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 14 Oct 2008 16:03:03 -0400
+Date: Tue, 14 Oct 2008 13:02:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] UWB, WUSB, and WLP subsystems for 2.6.28
+Message-Id: <20081014130251.aa008a5e.akpm@linux-foundation.org>
+In-Reply-To: <48EF45BC.1020805@csr.com>
+References: <48EF45BC.1020805@csr.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+> On Fri, 10 Oct 2008 13:08:28 +0100 David Vrabel <david.vrabel@csr.com> wrote:
+> Please pull the new UWB, WUSB and WLP subsystems from
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/dvrabel/uwb.git for-upstream
 
-This patch fixes a hang in the ixgbe driver that occured when setting the Data Center Bridging (DCB) settings.
+didn't happen?
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
----
+What is the review status of this work?  I don't remember seeing it on any
+of the lists where I lurk - perhaps a full resend will help things along.
 
- drivers/net/ixgbe/ixgbe_dcb_nl.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+<quick scan>
 
-diff --git a/drivers/net/ixgbe/ixgbe_dcb_nl.c b/drivers/net/ixgbe/ixgbe_dcb_nl.c
-index 51d162d..615c280 100644
---- a/drivers/net/ixgbe/ixgbe_dcb_nl.c
-+++ b/drivers/net/ixgbe/ixgbe_dcb_nl.c
-@@ -135,7 +135,7 @@ static void ixgbe_dcbnl_set_state(struct net_device *netdev, u8 state)
- 		if (adapter->flags & IXGBE_FLAG_DCB_ENABLED) {
- 			return;
- 		} else {
--			if (netdev->flags & IFF_UP)
-+			if (netif_running(netdev))
- 				netdev->stop(netdev);
- 			ixgbe_reset_interrupt_capability(adapter);
- 			ixgbe_napi_del_all(adapter);
-@@ -149,13 +149,13 @@ static void ixgbe_dcbnl_set_state(struct net_device *netdev, u8 state)
- 			adapter->flags |= IXGBE_FLAG_DCB_ENABLED;
- 			ixgbe_init_interrupt_scheme(adapter);
- 			ixgbe_napi_add_all(adapter);
--			if (netdev->flags & IFF_UP)
-+			if (netif_running(netdev))
- 				netdev->open(netdev);
- 		}
- 	} else {
- 		/* Turn off DCB */
- 		if (adapter->flags & IXGBE_FLAG_DCB_ENABLED) {
--			if (netdev->flags & IFF_UP)
-+			if (netif_running(netdev))
- 				netdev->stop(netdev);
- 			ixgbe_reset_interrupt_capability(adapter);
- 			ixgbe_napi_del_all(adapter);
-@@ -169,7 +169,7 @@ static void ixgbe_dcbnl_set_state(struct net_device *netdev, u8 state)
- 			adapter->flags |= IXGBE_FLAG_RSS_ENABLED;
- 			ixgbe_init_interrupt_scheme(adapter);
- 			ixgbe_napi_add_all(adapter);
--			if (netdev->flags & IFF_UP)
-+			if (netif_running(netdev))
- 				netdev->open(netdev);
- 		} else {
- 			return;
-@@ -338,6 +338,9 @@ static u8 ixgbe_dcbnl_set_all(struct net_device *netdev)
- 	while (test_and_set_bit(__IXGBE_RESETTING, &adapter->state))
- 		msleep(1);
- 
-+	if (netif_running(netdev))
-+		ixgbe_down(adapter);
-+
- 	ret = ixgbe_copy_dcb_cfg(&adapter->temp_dcb_cfg, &adapter->dcb_cfg,
- 				 adapter->ring_feature[RING_F_DCB].indices);
- 	if (ret) {
-@@ -345,8 +348,9 @@ static u8 ixgbe_dcbnl_set_all(struct net_device *netdev)
- 		return ret;
- 	}
- 
--	ixgbe_down(adapter);
--	ixgbe_up(adapter);
-+	if (netif_running(netdev))
-+		ixgbe_up(adapter);
-+
- 	adapter->dcb_set_bitmap = 0x00;
- 	clear_bit(__IXGBE_RESETTING, &adapter->state);
- 	return ret;
+Code looks reasonable.
 
+It has lots of comments which start with /**, which is the
+this-is-kerneldoc token.  Only they're not kerneldoc comments.  These
+should all be converted to kerneldoc, or replace the /** with /*.
+
+uwb_beca_purge() should use time_after() or time_before().
+
+In uwb_bce_print_IEs(), the cast of
+uwb_rc_evt_beacon_WUSB_0100.BeaconInfo[] into a struct uwb_rc_evt_beacon*
+looks really worrisome from an alignment POV.  Can it result in misaligned
+accesses on architectures which don't like that?  (ia64, alpha, ...)
+
+Code does kzalloc(a * b, ..) in some places.  kcalloc() is preferred, so
+readers don't have to worry whether the code is vulnerable to
+multiplicative overflows.
+
+The code has a random mixture of
+zero-lines-between-end-of-locals-and-start-of-code and
+one-line-between-end-of-locals-and-start-of-code (and two line).  The
+latter is usually preferred.
+
+The person who misnamed DEFINE_BITMAP as DECLARE_BITMAP instead gets a
+wedgie.
+
+It seems strange that uwb_drp_ie_update(UWB_RSV_STATE_NONE) will free
+rsv->drp_ie then reallocate it.
+
+printk_ratelimit() is a bit silly because it shares state with other
+unrelated subsystems which might be using it.  Direct use of __ratelimit()
+would be better.
+
+
+All minor stuff - I didn't spend long looking...
