@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbYJNMAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbYJNMDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758600AbYJNMAS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 08:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYJNMAA
+	id S1757550AbYJNMDW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 08:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYJNMDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 08:00:00 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41861 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755415AbYJNL77 (ORCPT
+	Tue, 14 Oct 2008 08:03:13 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:9164 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755415AbYJNMDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 07:59:59 -0400
-Date: Tue, 14 Oct 2008 20:59:59 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH] release memory regions in PAGES_PER_SECTION chunks
-Cc: linux-kernel@vger.kernel.org, Badari Pulavarty <pbadari@us.ibm.com>
-In-Reply-To: <48F3ADEF.1080905@austin.ibm.com>
-References: <48F3ADEF.1080905@austin.ibm.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20081014205507.AD7F.E1E9C6FF@jp.fujitsu.com>
+	Tue, 14 Oct 2008 08:03:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ILM4htLGBEjvieG4BhmqF/dZM0RPpZlf2SvLXne/Mnpch/Re5sG92p8uDIpKdzMErS
+         HfEvTGYKipZ4QHoS9IgFLoyOci4Ne+vkRvgq0GTkpSJ8wsTRiaxDIVaYkDHAlNBXOsJW
+         cOl/0ddHrE1SwIuOY4atNbutsYKRrvZdPg2pc=
+Date: Tue, 14 Oct 2008 16:06:05 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: David Miller <davem@davemloft.net>, davej@redhat.com,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: Re: sparc64 allmodconfig build failure...
+Message-ID: <20081014120605.GB23213@x200.localdomain>
+References: <20081013.230251.215237620.davem@davemloft.net> <alpine.LNX.2.00.0810140945060.13897@titan.stealer.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0810140945060.13897@titan.stealer.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 14, 2008 at 10:30:20AM +0200, Sven Wegener wrote:
+> On Mon, 13 Oct 2008, David Miller wrote:
+> 
+> > sparc64 allmodconfig started failing to build recently:
+> > 
+> >   MODPOST 1946 modules
+> > ERROR: "cpufreq_gov_performance" [arch/sparc64/kernel/us3_cpufreq.ko] undefined!
+> > 
+> > It seems to be caused by the following commit:
+> > 
+> > commit c4d14bc0bb5d13e316890651ae4518b764c3344c
+> > Author: Sven Wegener <sven.wegener@stealer.net>
+> > Date:   Sat Sep 20 16:50:08 2008 +0200
+> > 
+> >     [CPUFREQ] Don't export governors for default governor
+> >     
+> >     We don't need to export the governors for use as the default governor,
+> >     because the default governor will be built-in anyway and we can access
+> >     the symbol directly.
+> 
+> Uhm, we could resolve this dependency with the patch below. Although we 
+> might as well revert the above commit or introduce an exported function 
+> that sets the default governor on a policy.
+> 
+> Subject: [CPUFREQ] Fix build failure on sparc64
+> 
+> Commit c4d14bc0bb5d13e316890651ae4518b764c3344c ("[CPUFREQ] Don't export 
+> governors for default governor") caused a build failure, because there are 
+> several architectures that have cpufreq code that can be built as a 
+> module, but the code also requires access to the default governor. Export 
+> the default governor so that it can be accessed by these module.
 
-Good catch.
-Looks good to me.
-
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
-> During hotplug memory remove, memory regions should be released
-> on a PAGES_PER_SECTION size chunks.  This mirrors the code in
-> add_memory where resources are requested on a PAGES_PER_SECTION size.
-> 
-> Attempting to release the entire memory region fails because there is
-> not a single resource for the total number of pages being removed.
-> Instead the resources for the pages are split in PAGES_PER_SECTION
-> size chunks as requested during memory add.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> 
-> ---
-> 
-> Index: linux-2.6/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-2.6.orig/mm/memory_hotplug.c	2008-10-13 12:00:46.000000000 -0500
-> +++ linux-2.6/mm/memory_hotplug.c	2008-10-13 14:29:31.000000000 -0500
-> @@ -323,11 +323,11 @@
->  	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
->  	BUG_ON(nr_pages % PAGES_PER_SECTION);
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -576,7 +576,9 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  	return 0;
+>  }
 >  
-> -	release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
-> -
->  	sections_to_remove = nr_pages / PAGES_PER_SECTION;
->  	for (i = 0; i < sections_to_remove; i++) {
->  		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
-> +		release_mem_region(pfn << PAGE_SHIFT,
-> +				   PAGES_PER_SECTION << PAGE_SHIFT);
->  		ret = __remove_section(zone, __pfn_to_section(pfn));
->  		if (ret)
->  			break;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> -#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+> +#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+> +EXPORT_SYMBOL(cpufreq_gov_conservative);
+> +#else
+>  static
+>  #endif
 
--- 
-Yasunori Goto 
-
-
+This is ugly, ugly.
