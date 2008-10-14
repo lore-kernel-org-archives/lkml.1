@@ -1,85 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYJNHc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbYJNHkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbYJNHc4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 03:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759430AbYJNHcF
+	id S1757036AbYJNHkd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 03:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbYJNHkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 03:32:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:34990 "EHLO mga09.intel.com"
+	Tue, 14 Oct 2008 03:40:24 -0400
+Received: from moog.chdir.org ([88.191.42.160]:60765 "EHLO moog.chdir.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757856AbYJNHcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 03:32:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,407,1220252400"; 
-   d="scan'208";a="347808133"
-Date: Tue, 14 Oct 2008 15:30:11 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [patch]x86: arch_add_memory round up address
-Message-ID: <20081014073011.GA1556@sli10-desk.sh.intel.com>
-References: <86802c440810082340r101f99aem3839d55360451851@mail.gmail.com> <20081009070634.GA12715@sli10-desk.sh.intel.com> <20081014140608.AD63.E1E9C6FF@jp.fujitsu.com>
+	id S1754901AbYJNHkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 03:40:23 -0400
+X-Greylist: delayed 1174 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 03:40:22 EDT
+Date: Tue, 14 Oct 2008 09:20:45 +0200
+From: Nicolas Bareil <nico@chdir.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Subject: USB problem on x86_64: nommu_map_single() issue?
+Message-ID: <20081014072045.GA1252@sd-5945.dedibox.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081014140608.AD63.E1E9C6FF@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 01:16:46PM +0800, Yasunori Goto wrote:
-> > On Thu, Oct 09, 2008 at 02:40:34PM +0800, Yinghai Lu wrote:
-> > > On Wed, Oct 8, 2008 at 11:28 PM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > > On Thu, Oct 09, 2008 at 02:22:50PM +0800, Yinghai Lu wrote:
-> > > >> On Wed, Oct 8, 2008 at 11:08 PM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > >> > On Thu, 2008-10-09 at 14:04 +0800, Yinghai Lu wrote:
-> > > >> >> On Wed, Oct 8, 2008 at 10:31 PM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > >> >> > Round up address to a page, otherwise the last page isn't mapped.
-> > > >> >> >
-> > > >> >> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > >> >> > ---
-> > > >> >> >  arch/x86/mm/init_64.c |    3 ++-
-> > > >> >> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > >> >> >
-> > > >> >> > Index: linux/arch/x86/mm/init_64.c
-> > > >> >> > ===================================================================
-> > > >> >> > --- linux.orig/arch/x86/mm/init_64.c    2008-10-09 11:42:33.000000000 +0800
-> > > >> >> > +++ linux/arch/x86/mm/init_64.c 2008-10-09 11:43:22.000000000 +0800
-> > > >> >> > @@ -721,7 +721,8 @@ int arch_add_memory(int nid, u64 start,
-> > > >> >> >        unsigned long nr_pages = size >> PAGE_SHIFT;
-> > > >> >> >        int ret;
-> > > >> >> >
-> > > >> >> > -       last_mapped_pfn = init_memory_mapping(start, start + size-1);
-> > > >> >> > +       last_mapped_pfn = init_memory_mapping(start,
-> > > >> >> > +               round_up(start + size-1, PAGE_SIZE));
-> > > >> >> >        if (last_mapped_pfn > max_pfn_mapped)
-> > > >> >> >                max_pfn_mapped = last_mapped_pfn;
-> > > >> >>
-> > > >> >> should use
-> > > >> >>
-> > > >> >> last_mapped_pfn = init_memory_mapping(start, start + size);
-> > > >> > No, this still can't guarantee page aligned, though this works in my
-> > > >> > test
-> > > >>
-> > > >> who will call arch_add_memory? that should be start and size already
-> > > >> be page aligned.
-> > > > It's memory hotplug. Doing a round up is always ok and safe even it might be already aligned.
-> > > >
-> > >
-> > > it seems rounding up in that case is wrong...
-> > >
-> > > if the caller call that funtion with extra half page, you don't need
-> > > map that half page, because you can not use it.
-> > shouldn't we mark such page as reserved and so it will not be used? This is the way we handle hole.
-> 
-> Just curious,
-> have you ever seen a real machine which needs this patch?
-No, I just did some experiments on a desktop for memory hotplug and this bug
-triggered a crash in my test.
-Yinghai's suggestion also fixed the bug. I just want to have safer method. Anyway, either approach is ok to me.
+Hi
 
-Thanks,
-Shaohua
+On 2.6.27, I can't use any USB device (mass storage, mouse) anymore on my x86_64 system, the devices
+are not detected: lsusb returns nothing except the hub.
+
+I have the following logs in kern.log when booting with my USB mouse plugged :
+
+Oct 13 15:43:48 brew kernel: USB Universal Host Controller Interface driver v3.0
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.0: setting latency timer to 64
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.0: UHCI Host Controller
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.0: irq 16, io base 0x00002000
+Oct 13 15:43:48 brew kernel: usb usb1: configuration #1 chosen from 1 choice
+Oct 13 15:43:48 brew kernel: hub 1-0:1.0: USB hub found
+Oct 13 15:43:48 brew kernel: hub 1-0:1.0: 2 ports detected
+Oct 13 15:43:48 brew kernel: intel_rng: Firmware space is locked read-only. If you can't or
+Oct 13 15:43:48 brew kernel: intel_rng: don't want to disable this in firmware setup, and if
+Oct 13 15:43:48 brew kernel: intel_rng: you are certain that your system has a functional
+Oct 13 15:43:48 brew kernel: intel_rng: RNG, try using the 'no_fwh_detect' option.
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.1: setting latency timer to 64
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.1: UHCI Host Controller
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.1: irq 19, io base 0x00002020
+Oct 13 15:43:48 brew kernel: usb usb2: configuration #1 chosen from 1 choice
+Oct 13 15:43:48 brew kernel: hub 2-0:1.0: USB hub found
+Oct 13 15:43:48 brew kernel: hub 2-0:1.0: 2 ports detected
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.2: setting latency timer to 64
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.2: UHCI Host Controller
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 3
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.2: irq 18, io base 0x00002040
+Oct 13 15:43:48 brew kernel: usb usb3: configuration #1 chosen from 1 choice
+Oct 13 15:43:48 brew kernel: hub 3-0:1.0: USB hub found
+Oct 13 15:43:48 brew kernel: hub 3-0:1.0: 2 ports detected
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 22 (level, low) -> IRQ 22
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.3: setting latency timer to 64
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.3: UHCI Host Controller
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
+Oct 13 15:43:48 brew kernel: uhci_hcd 0000:00:1d.3: irq 22, io base 0x00002060
+Oct 13 15:43:48 brew kernel: usb usb4: configuration #1 chosen from 1 choice
+Oct 13 15:43:48 brew kernel: hub 4-0:1.0: USB hub found
+Oct 13 15:43:48 brew kernel: hub 4-0:1.0: 2 ports detected
+Oct 13 15:43:48 brew kernel: usb 2-1: new low speed USB device using uhci_hcd and address 2
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 12e8b78e0+8 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 11f0fd480+64 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 12e8b78e0+8 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 11f0fd480+64 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 12e8b78e0+8 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 11f0fd480+64 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+Oct 13 15:43:48 brew kernel: HDA Intel 0000:00:1b.0: setting latency timer to 64
+Oct 13 15:43:48 brew kernel: usb 2-1: device descriptor read/64, error -32
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: setting latency timer to 64
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: EHCI Host Controller
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: debug port 1
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: irq 16, io mem 0xf0204000
+Oct 13 15:43:48 brew kernel: ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+Oct 13 15:43:48 brew kernel: usb usb5: configuration #1 chosen from 1 choice
+Oct 13 15:43:48 brew kernel: hub 5-0:1.0: USB hub found
+Oct 13 15:43:48 brew kernel: hub 5-0:1.0: 8 ports detected
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 12e9de620+8 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 11ed07d80+64 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 12e9de620+8 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 11ed07d80+64 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 12e9de620+8 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: nommu_map_single: overflow 11ed07d80+64 of device mask ffffffff
+Oct 13 15:43:48 brew kernel: hub 2-0:1.0: unable to enumerate USB device on port 1
+...
+
+The whole kern.log and my config are available here :
+ http://chdir.org/~nbareil/kern.log
+ http://chdir.or/~nbareil/config-2.6.27-brew
+
+Thanks!
+
