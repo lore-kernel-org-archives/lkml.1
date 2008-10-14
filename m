@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYJNSFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYJNSPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbYJNSFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 14:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYJNSEw
+	id S1752827AbYJNSPM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 14:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYJNSO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 14:04:52 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33118 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbYJNSEu (ORCPT
+	Tue, 14 Oct 2008 14:14:59 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:34595 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbYJNSO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 14:04:50 -0400
-Message-ID: <48F4DF3E.2050903@zytor.com>
-Date: Tue, 14 Oct 2008 11:04:46 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 14 Oct 2008 14:14:59 -0400
+Date: Tue, 14 Oct 2008 13:44:55 -0400 (EDT)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Alexander V. Lukyanov" <lav@netis.ru>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [REVERT Request] VT Breakage (fwd)
+In-Reply-To: <alpine.LFD.2.00.0810141001330.3288@nehalem.linux-foundation.org>
+Message-ID: <alpine.LNX.1.10.0810141323220.26164@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.2.00.0810141001330.3288@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: Checkin 7404ad3b6d04efbd918e9e2e776bf560fbedf47d breaks boot
- on KVM
-References: <48F3E1C9.6030007@zytor.com> <1223990609.12440.8.camel@localhost.localdomain>
-In-Reply-To: <1223990609.12440.8.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->>
->> :040000 040000 98fc7ae95211b8d16e2e8ca46997be660ad9ba93 
->> 2d35d0a2b6232411b840a9ccf6a52b946172566e M      drivers
->>
->> However, simply reverting this commit caused a panic on boot (not 
->> entirely surprising.)
+
+On Tuesday 2008-10-14 13:03, Linus Torvalds wrote:
+>
+>Alexander, is your patch the same as mine, or something else?
+
+Something else, you reverted more.
+
+>@@ -400,7 +400,7 @@ static u8 build_attr(struct vc_data *vc, u8 _color, u8 _intensity, u8 _blink,
+>  *  Bit 7   : blink
+>  */
+> 	{
+>-	u8 a = _color;
+>+	u8 a = vc->vc_color;
+> 	if (!vc->vc_can_do_color)
+> 		return _intensity |
+> 		       (_italic ? 2 : 0) |
+
+This hunk for example was not reverted in Alexander's patch. I think it 
+should remain at reading "a = _color", because the caller(s) can just be 
+updated to use pass in vc->vc_color for _color. Actually, the callers 
+already do just this.
+
+>Jan, if different, can you test this?
+
+>@@ -1890,9 +1883,9 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+> 			scr_memsetw((unsigned short *) (vc->vc_origin +
+> 							vc->vc_size_row *
+> 							(b - count)),
+>-				    vc->vc_scrl_erase_char,
+>+				    vc->vc_video_erase_char,
+> 				    vc->vc_size_row * count);
+>-			ret = 1;
+>+			return 1;
+> 			break;
 > 
-> Actually, it is surprising.  That patch takes the default arithmetic for
-> calculating the disk size out of sd and uses a routine to do it more
-> efficiently in lib/string_helpers.c
-> 
-> So there are two problems:  Why does it panic on revert (could you post
-> the oops) and what does kvm object to in string_get_size ... it's a
-> fairly innocuous routine as I read it ... your symptoms sound like the
-> for loop isn't terminating.
-> 
+> 		case SCROLL_WRAP_MOVE:
 
-Looks like it's trying to print a zero.  I made a diff to print out the 
-raw numbers, and did indeed get zero.
+His patch remained at "ret = 1". It should not cause any difference 
+besides potential compiler optimizations --- control would just trickle 
+through all the break;s and then return shortly with 'ret' anyway):
 
-Now, *why* it is printing a zero is another matter (as is why using 
-ffz() instead of ilog2() there...).  Some quick investigation showed 
-that sdkp->capacity is a 32-bit quantity in this configuration, and 
-shifting it left by 9 of course ends up with zero; being a virtual disk, 
-it's an exact power of two.
+>-	vc->vc_video_erase_char = saved_ec;
+>-	return ret;
+>+	return 0;
+> }
 
-Still, it is bad that string_get_size() hangs on passing zero.
+As such, your patch is producing the same net effect
+for me as Alexander's.
 
-The spinlock lockup is still happening, so I'm assuming it is an 
-unrelated bug that was masked by the string_get_size issue.
+As for you being unable to reproduce it, it is imperial to test the 
+linux vt-on-a-VGA. You cannot cheat using UML-in-a-xterm (that was a bit 
+of a surprise even to me, so I let you know), serial console or anything 
+like that.
 
-Patch series will follow shortly.
+The expected output is http://tinyurl.com/3zs3dk
+(color erased only on scroll; linewraps causing no scroll don't 
+colorflood); behavior matches xterm.
 
-	-hpa
