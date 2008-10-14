@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751681AbYJNN5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbYJNOBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751681AbYJNN5e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 09:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbYJNN5Z
+	id S1752470AbYJNOBt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 10:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYJNOBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 09:57:25 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:43837 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbYJNN5Y (ORCPT
+	Tue, 14 Oct 2008 10:01:38 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:8600 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbYJNOBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 09:57:24 -0400
-X-BigFish: VPS-37(zz62a3L1432R98dR936eQ1805Mzzzzz32i6bh63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0K8QERA-02-OPK-01
-Date: Tue, 14 Oct 2008 15:56:45 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Oprofile kernel git tree
-Message-ID: <20081014135645.GF23557@erda.amd.com>
-References: <20081013202022.GE23557@erda.amd.com> <87r66kqlpt.fsf@basil.nowhere.org>
+	Tue, 14 Oct 2008 10:01:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xzAwm8ZwPuvM0wg6kEJ1W2YF94Yg1ISYmYXVOqo+FsGmthgwnJAFfCVU+XOxoUUvNn
+         NsGRLKeNtMW5EmL4acxYKyx/6GYTsyafV9ZFXLCy8q17QOS3vqMtjQwR4fCniAxgEzhK
+         8jkY96jzd1m2hw92OL3TdiyRvyurhPkYQVz78=
+Message-ID: <c62985530810140701s50f3a1an8da5383f8eefa29@mail.gmail.com>
+Date: Tue, 14 Oct 2008 16:01:29 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>
+Subject: Re : [PATCH 2/2] fastboot: fix row order in bootgraph.pl
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Arjan van de Ven" <arjan@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <48F49C53.1070103@tuffmail.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <87r66kqlpt.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 14 Oct 2008 13:56:59.0550 (UTC) FILETIME=[BA3433E0:01C92E04]
+References: <48F49C0F.7050705@tuffmail.co.uk> <48F49C53.1070103@tuffmail.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13.10.08 22:33:18, Andi Kleen wrote:
-> Robert Richter <robert.richter@amd.com> writes:
-> >
-> > Feature branches (patches not yet ready for upstream, fast-forward only):
-> >
-> >  arch-perfmon
-> 
-> What do you mean with that? arch-perfmon is definitely ready for upstream.
+2008/10/14, Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+> When bootgraph.pl parses a file, it gives one row for each initcall's
+> pid.  But they are displayed in random (perl hash) order.  Let's
+> sort the pids by the start time of their first initcall instead.
 
-This contains only the patch I wrote that changes the
-initialization. All other patches are already in the upstream branch.
+Thanks. That's a good idea!
 
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+I can't test it yet but I will give you a feedback as soon as I can.
