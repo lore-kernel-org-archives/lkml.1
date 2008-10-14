@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbYJNUwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYJNUwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbYJNUwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 16:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYJNUvz
+	id S1754917AbYJNUwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 16:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYJNUwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 16:51:55 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:61441 "EHLO mx2.netapp.com"
+	Tue, 14 Oct 2008 16:52:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37721 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbYJNUvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 16:51:54 -0400
-X-IronPort-AV: E=Sophos;i="4.33,410,1220252400"; 
-   d="scan'208";a="73349678"
-Subject: Re: nfsd 2.6.28 merge plans
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1228.1224016436@redhat.com>
-References: <20081014120753.7f968845.akpm@linux-foundation.org>
-	 <20081008232237.GH14527@fieldses.org>  <1228.1224016436@redhat.com>
-Content-Type: text/plain
+	id S1754708AbYJNUwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 16:52:09 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH -v2 05/16] fanotify: make use of the new fsnotify_open_exec
+	calls
+To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
+Cc: viro@ZenIV.linux.org.uk, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
+       greg@kroah.com, tytso@mit.edu
+Date: Tue, 14 Oct 2008 16:51:56 -0400
+Message-ID: <20081014205156.1057.12119.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20081014205009.1057.12041.stgit@paris.rdu.redhat.com>
+References: <20081014205009.1057.12041.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 14 Oct 2008 16:51:44 -0400
-Message-Id: <1224017504.8907.42.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-OriginalArrivalTime: 14 Oct 2008 20:51:51.0601 (UTC) FILETIME=[AF05C210:01C92E3E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-14 at 21:33 +0100, David Howells wrote:
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > Is anything happening with David Howells's fscache and cachefiles work over
-> > there?
-> 
-> That's more NFS than NFSD.  I've tried emailing Trond a few times since
-> KS/Plumbers, but I've had no response, so I'm not sure.
-> 
-> David
+This function sends fanotify events for opens which we know are being used
+for exec.  These are basically just systecalls to sys_execve and sys_uselib
 
-I'm happy with the changes that you made after the plumbers conf, so as
-far as the NFS side of the patches is concerned, we should be close to
-ready to merge.
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
--- 
-Trond Myklebust
-Linux NFS client maintainer
+ include/linux/fanotify.h |    4 +++-
+ include/linux/fsnotify.h |    3 ++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+diff --git a/include/linux/fanotify.h b/include/linux/fanotify.h
+index 7f1179e..c991bd9 100644
+--- a/include/linux/fanotify.h
++++ b/include/linux/fanotify.h
+@@ -14,13 +14,15 @@
+ #define FAN_MODIFY		0x00000002	/* File was modified */
+ #define FAN_CLOSE_NOWRITE	0x00000004	/* Unwrittable file closed */
+ #define FAN_CLOSE_WRITE		0x00000008	/* Writtable file closed */
+-#define FAN_OPEN		0x00000010	/* File was opened */
++#define FAN_OPEN_NOEXEC		0x00000010	/* File was opened */
++#define FAN_OPEN_EXEC		0x00000020	/* File was opened with the intention of being exec'ed */
+ 
+ /* FIXME currently Q's have no limit.... */
+ #define FAN_Q_OVERFLOW		0x80000000	/* Event queued overflowed */
+ 
+ /* helper events */
+ #define FAN_CLOSE		(FAN_CLOSE_WRITE | FAN_CLOSE_NOWRITE) /* close */
++#define FAN_OPEN		(FAN_OPEN_NOEXEC | FAN_OPEN_EXEC) /* open */
+ 
+ /*
+  * All of the events - we build the list by hand so that we can add flags in
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index 6fc4160..ccee5ea 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -175,6 +175,7 @@ static inline void fsnotify_modify(struct file *file)
+  */
+ static inline void fsnotify_open_exec(struct file *file)
+ {
++	fanotify(file, FAN_OPEN_EXEC);
+ }
+ 
+ /*
+@@ -191,7 +192,7 @@ static inline void fsnotify_open(struct file *file)
+ 
+ 	inotify_dentry_parent_queue_event(dentry, mask, 0, dentry->d_name.name);
+ 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
+-	fanotify(file, FAN_OPEN);
++	fanotify(file, FAN_OPEN_NOEXEC);
+ }
+ 
+ /*
+
