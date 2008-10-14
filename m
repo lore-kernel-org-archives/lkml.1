@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbYJNUvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbYJNUwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754267AbYJNUvq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 16:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYJNUvh
+	id S1754728AbYJNUwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 16:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYJNUvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 16:51:37 -0400
-Received: from h155.mvista.com ([63.81.120.155]:5024 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751567AbYJNUvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 16:51:36 -0400
-Message-ID: <48F50649.9080507@ru.mvista.com>
-Date: Wed, 15 Oct 2008 00:51:21 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] hpt366: add hpt3xx_disable_fast_irq() helper
-References: <200808021915.03424.bzolnier@gmail.com>
-In-Reply-To: <200808021915.03424.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 14 Oct 2008 16:51:55 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:61441 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752029AbYJNUvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 16:51:54 -0400
+X-IronPort-AV: E=Sophos;i="4.33,410,1220252400"; 
+   d="scan'208";a="73349678"
+Subject: Re: nfsd 2.6.28 merge plans
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1228.1224016436@redhat.com>
+References: <20081014120753.7f968845.akpm@linux-foundation.org>
+	 <20081008232237.GH14527@fieldses.org>  <1228.1224016436@redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 14 Oct 2008 16:51:44 -0400
+Message-Id: <1224017504.8907.42.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-OriginalArrivalTime: 14 Oct 2008 20:51:51.0601 (UTC) FILETIME=[AF05C210:01C92E3E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tue, 2008-10-14 at 21:33 +0100, David Howells wrote:
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > Is anything happening with David Howells's fscache and cachefiles work over
+> > there?
+> 
+> That's more NFS than NFSD.  I've tried emailing Trond a few times since
+> KS/Plumbers, but I've had no response, so I'm not sure.
+> 
+> David
 
-Bartlomiej Zolnierkiewicz wrote:
+I'm happy with the changes that you made after the plumbers conf, so as
+far as the NFS side of the patches is concerned, we should be close to
+ready to merge.
 
-> * Factor out disabling of "fast interrupt" prediction from
->   init_hwif_hpt366() to hpt3xx_disable_fast_irq() helper.
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
-> * Use hpt3xx_disable_fast_irq() in ->init_chipset instead of
->   ->init_hwif method.
-
->   This is a preparation for adding proper PCI PM support.
-
-> While at it:
-
-> * Cache chip type in chip_type variable in hpt3xx_disable_fast_irq().
-
-> There should be no functional changes caused by this patch.
-
-    Except a warning. ;-)
-
-> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-> Index: b/drivers/ide/pci/hpt366.c
-> ===================================================================
-> --- a/drivers/ide/pci/hpt366.c
-> +++ b/drivers/ide/pci/hpt366.c
-> @@ -1265,7 +1297,6 @@ static void __devinit init_hwif_hpt366(i
->  	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
->  	int serialize		= HPT_SERIALIZE_IO;
->  	u8  chip_type		= info->chip_type;
-> -	u8  new_mcr, old_mcr	= 0;
->  
->  	/* Cache the channel's MISC. control registers' offset */
->  	hwif->select_data	= hwif->channel ? 0x54 : 0x50;
-> @@ -1288,29 +1319,6 @@ static void __devinit init_hwif_hpt366(i
->  	/* Serialize access to this device if needed */
->  	if (serialize && hwif->mate)
->  		hwif->serialized = hwif->mate->serialized = 1;
-> -
-> -	/*
-> -	 * Disable the "fast interrupt" prediction.  Don't hold off
-> -	 * on interrupts. (== 0x01 despite what the docs say)
-> -	 */
-> -	pci_read_config_byte(dev, hwif->select_data + 1, &old_mcr);
-> -
-> -	if (info->chip_type >= HPT374)
-> -		new_mcr = old_mcr & ~0x07;
-> -	else if (info->chip_type >= HPT370) {
-> -		new_mcr = old_mcr;
-> -		new_mcr &= ~0x02;
-> -
-> -#ifdef HPT_DELAY_INTERRUPT
-> -		new_mcr &= ~0x01;
-> -#else
-> -		new_mcr |=  0x01;
-> -#endif
-> -	} else					/* HPT366 and HPT368  */
-> -		new_mcr = old_mcr & ~0x80;
-> -
-> -	if (new_mcr != old_mcr)
-> -		pci_write_config_byte(dev, hwif->select_data + 1, new_mcr);
->  }
-
-   CC      drivers/ide/pci/hpt366.o
-drivers/ide/pci/hpt366.c: In function `init_hwif_hpt366':
-drivers/ide/pci/hpt366.c:1290: warning: unused variable `dev'
-
-    You've removed the users of that variable but left the variable itself... 
-alas, it's too late to fix the patch. :-/
-
-MBR, Sergei
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
