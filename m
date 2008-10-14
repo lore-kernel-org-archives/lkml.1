@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbYJNRCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYJNRES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbYJNRCZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 13:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbYJNRCS
+	id S1753507AbYJNRES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 13:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYJNREJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 13:02:18 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:50139 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbYJNRCR (ORCPT
+	Tue, 14 Oct 2008 13:04:09 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:28930 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbYJNREI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 13:02:17 -0400
-Date: Tue, 14 Oct 2008 12:59:31 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
-Message-ID: <20081014165931.GC3349@tuxdriver.com>
-References: <20081014010202.71d13eaf@werewolf.home> <20081013232432.GB32550@tuxdriver.com> <20081014014406.318db8e7@werewolf.home>
+	Tue, 14 Oct 2008 13:04:08 -0400
+Message-ID: <48F4D100.5080400@oracle.com>
+Date: Tue, 14 Oct 2008 10:04:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081014014406.318db8e7@werewolf.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: lkml <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com
+Subject: [PATCH] block: fix current kernel-doc warnings
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 01:44:06AM +0200, J.A. Magallón wrote:
-> On Mon, 13 Oct 2008 19:24:33 -0400, "John W. Linville" <linville@tuxdriver.com> wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> > config WIRELESS_OLD_REGULATORY
-> > 	bool "Old wireless static regulatory definitions"
-> ...
-> > 
-> > Is this not clear enough?
-> > 
-> 
-> NO.
-> 
-> I'm a complete literate in wireles internals. Not in other areas. And I
-> don't undestand a word about regulations and so on. The only thing
-> I see there is 'OLD WAY of doing things', so I disable it. I expect
-> two things:
+Fix block kernel-doc warnings:
 
-You blindly disable things because they say "old", you don't update
-anything in your userland, and then you expect things to work?
+Warning(linux-2.6.27-git4//fs/block_dev.c:1272): No description found for parameter 'path'
+Warning(linux-2.6.27-git4//block/blk-core.c:1021): No description found for parameter 'cpu'
+Warning(linux-2.6.27-git4//block/blk-core.c:1021): No description found for parameter 'part'
+Warning(/var/linsrc/linux-2.6.27-git4//block/genhd.c:544): No description found for parameter 'partno'
 
-> - As it is an optional thing I can toggle, no driver depends on it.
-> - If I choose a driver that depends on it, it will get automagically
->   selected.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ block/blk-core.c |    5 +++--
+ block/genhd.c    |    2 +-
+ fs/block_dev.c   |    2 +-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
-And this fits neither of your scenarios.  The drivers will work just
-fine with the code as you built it -- even better if you update your
-userland with the required component.
-
-The problem is that you were setting a module option that no longer
-existed because you didn't want to do things the "old" way.  Should we
-support a useless module option, even when you expressly disable the
-compatibility option that provides it?
-
-> So, please, if migration is not finished:
-> 
-> - Default it as Y, or add a depend on every driver that uses it
-> - Hide it under the famous 'crazy hacker-only things' boolean
-
-Neither of these are necessary -- just stop specifying the module
-option that doesn't exist, or simply enable the compatibility option
-in the kernel.
-
-> It is enough to have to choose between mac80211 and ieee80211.
-
-Perhaps we should change the name of "ieee80211" to
-"old_ipw2x00_support_crap"?
-
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+--- linux-2.6.27-git4.orig/block/blk-core.c
++++ linux-2.6.27-git4/block/blk-core.c
+@@ -1003,8 +1003,9 @@ static void part_round_stats_single(int 
+ }
+ 
+ /**
+- * part_round_stats()	- Round off the performance stats on a struct
+- * disk_stats.
++ * part_round_stats() - Round off the performance stats on a struct disk_stats.
++ * @cpu: cpu number for stats access
++ * @part: target partition
+  *
+  * The average IO queue length and utilisation statistics are maintained
+  * by observing the current state of the queue length and the amount of
+--- linux-2.6.27-git4.orig/block/genhd.c
++++ linux-2.6.27-git4/block/genhd.c
+@@ -535,7 +535,7 @@ void unlink_gendisk(struct gendisk *disk
+ /**
+  * get_gendisk - get partitioning information for a given device
+  * @devt: device to get partitioning information for
+- * @part: returned partition index
++ * @partno: returned partition index
+  *
+  * This function gets the structure containing partitioning
+  * information for the given device @devt.
+--- linux-2.6.27-git4.orig/fs/block_dev.c
++++ linux-2.6.27-git4/fs/block_dev.c
+@@ -1262,7 +1262,7 @@ EXPORT_SYMBOL(ioctl_by_bdev);
+ 
+ /**
+  * lookup_bdev  - lookup a struct block_device by name
+- * @pathname:	special file representing the block device
++ * @path:	special file representing the block device
+  *
+  * Get a reference to the blockdevice at @pathname in the current
+  * namespace if possible and return it.  Return ERR_PTR(error)
