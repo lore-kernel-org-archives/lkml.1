@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYJNIyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYJNIzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbYJNIyn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 04:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbYJNIyf
+	id S1756820AbYJNIzd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 04:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbYJNIzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 04:54:35 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:40042 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754154AbYJNIye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 04:54:34 -0400
-Date: Tue, 14 Oct 2008 10:54:25 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: QUEUE_FLAG_NONROT and merges
-Message-ID: <20081014105425.4731de06@mjolnir.drzeus.cx>
-In-Reply-To: <20081014075407.GU19428@kernel.dk>
-References: <20081014095017.265faf37@mjolnir.drzeus.cx>
-	<20081014075407.GU19428@kernel.dk>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-3075-1223974474-0001-2"
+	Tue, 14 Oct 2008 04:55:23 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:57876 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751882AbYJNIzW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 04:55:22 -0400
+Message-ID: <015c01c92dda$1b754340$LocalHost@wipultra1303>
+From: "Madhusudhan Chikkature" <madhu.cr@ti.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <gadiyar@ti.com>, <johnpol@2ka.mipt.ru>, <linux-kernel@vger.kernel.org>,
+       <linux-omap@vger.kernel.org>
+References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com><20081010133845.8b82fac3.akpm@linux-foundation.org><062801c92d37$3413bdd0$LocalHost@wipultra1303> <20081013085323.f8bd7efb.akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
+Date: Tue, 14 Oct 2008 14:21:50 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-3075-1223974474-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+----- Original Message ----- 
+From: "Andrew Morton" <akpm@linux-foundation.org>
+To: "Madhusudhan Chikkature" <madhu.cr@ti.com>
+Cc: <gadiyar@ti.com>; <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>
+Sent: Monday, October 13, 2008 9:23 PM
+Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
 
-On Tue, 14 Oct 2008 09:54:08 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Tue, Oct 14 2008, Pierre Ossman wrote:
-> > Hi Jeff,
-> >=20
-> > I noticed you've added a new flag to indicate that the drive has no
-> > seek costs and I figured it would be a good idea to use that on the
-> > MMC/SD cards.
->=20
-> That was me, actually...
->=20
+>> On Mon, 13 Oct 2008 18:55:43 +0530 "Madhusudhan Chikkature" <madhu.cr@ti.com> wrote:
+>> 
+>> ----- Original Message ----- 
+>> From: "Andrew Morton" <akpm@linux-foundation.org>
+>> To: "Gadiyar, Anand" <gadiyar@ti.com>
+>> Cc: <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>; <madhu.cr@ti.com>
+>> Sent: Saturday, October 11, 2008 2:08 AM
+>> Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
+>> 
+>> 
+>> >> +       /* set the GO bit */
+>> >> +       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, OMAP_HDQ_CTRL_STATUS_GO,
+>> >> +               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
+>> >> +       /* wait for the TXCOMPLETE bit */
+>> >> +       ret = wait_event_interruptible_timeout(hdq_wait_queue,
+>> >> +               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
+>> >> +       if (ret < 0) {
+>> >> +               dev_dbg(hdq_data->dev, "wait interrupted");
+>> >> +               return -EINTR;
+>> >> +       }
+>> > 
+>> > Is this desirable?  The user hits ^C and the driver bails out?
+>> > 
+>> > I assume so, but was this tested?
+>> 
+>> Andrew, What is the test scenario you mean here? A user hitting ^C when the driver is waiting for the TXCOMPLETE bit?
+> 
+> Yes.
+> 
 
-Sorry, this was meant for you of course. I don't know how I got things
-mixed up there. I guess I'll have to blame lack of coffee this
-morning. :)
+Yes. It is desired to return an error if the condition in the wait is not met. I need to change the check for return value to check for zero and neg value.
 
-> > Since the name isn't entirely clear in what is implied, I just wanted
-> > to check that there are no plans to assume that there is negligable
-> > request overhead for queues with this flag. I.e. the flag should
-> > indicate that the elevator doesn't have to care about seeks, but it
-> > should still try to merge requests to reduce the transaction overhead.
->=20
-> Sounds about right. The flag is just meant to indicate zero-seek cost,
-> as devices will still have per-command overheads, merging is still
-> applicable.
->=20
-> So yes, you want to set that flag for mmc/sd cards, definitely.
->=20
+I spent some time to test this perticular scenario.I could not really see any impact of hitting ^C when an application is 
+transfering data in the background. When the h/w is programmed to transfer data and the driver issues a wait, I see that 
+TXCOMPLETE interrupt comes immediately and wakes up as expected. 
 
-Great. I'll get a patch out ASAP.
+So guess I am unable to hit ^C exactly when the driver is waiting in wait_event_interruptible_timeout(before the condition 
+is met) for it to catch the signal. Is it generally suggested to use wait_event_timeout so that ^C signal is not caught?
 
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-3075-1223974474-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEUEARECAAYFAkj0XkYACgkQ7b8eESbyJLjPjQCYrV0dVO8vZraldVkCIXdzGqbB
-XwCfWyWa0l+ruKu6B/DNXEIdpECAybU=
-=B/qH
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-3075-1223974474-0001-2--
+Regards,
+Madhu
