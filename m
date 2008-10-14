@@ -1,62 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYJNJUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYJNJUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYJNJUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYJNJUA
+	id S1756932AbYJNJUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbYJNJUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:20:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38394 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754847AbYJNJT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:19:59 -0400
-Message-ID: <48F463C4.3070405@kernel.org>
-Date: Tue, 14 Oct 2008 18:17:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 14 Oct 2008 05:20:06 -0400
+Received: from mailbox2.myri.com ([64.172.73.26]:1892 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755274AbYJNJUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 05:20:03 -0400
+Message-ID: <48F4627E.30300@myri.com>
+Date: Tue, 14 Oct 2008 11:12:30 +0200
+From: Brice Goglin <brice@myri.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: kenneth johansson <ken@kenjo.org>
-CC: Grant Grundler <grundler@google.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: weird throughput on write to SATA disk
-References: <1223925629.3947.7.camel@duo>	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>	 <1223932956.3947.22.camel@duo>	 <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>	 <1223936351.3947.41.camel@duo>	 <da824cf30810131833g6e509d0dvb6cce6c7220a1a28@mail.gmail.com> <1223975694.3947.77.camel@duo>
-In-Reply-To: <1223975694.3947.77.camel@duo>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: Adrian Bunk <bunk@kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       linux-kernel@vger.kernel.org, apw@shadowen.org, linuxppc-dev@ozlabs.org,
+       sam@ravnborg.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc	selectsCONFIG_INTEL_IOATDMA=y
+References: <20081013101559.GA14372@linux.vnet.ibm.com> <20081013112631.GD29938@cs181140183.pp.htv.fi> <36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com> <48F391B9.1000206@myri.com> <20081013183503.GA28133@cs181140183.pp.htv.fi>
+In-Reply-To: <20081013183503.GA28133@cs181140183.pp.htv.fi>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Oct 2008 09:19:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kenneth johansson wrote:
-> On Mon, 2008-10-13 at 18:33 -0700, Grant Grundler wrote:
->> On Mon, Oct 13, 2008 at 3:19 PM, kenneth johansson <ken@kenjo.org> wrote:
->> ...
->>>> Can you try "dd oflag=direct if=/dev/null of=/dev/sdb bs=64k"?
->>> I changed to use O_DIRECT and it's much more consistent now. 69-75 with
->>> 74 about 95% of the time.
->> That's low but it could be worse. Many things can contribute to slow
->> disks. 
-> Well my main problem was that it was fluctuating so much that can't be
-> right. 
-> 
->> Favorites are overtemp (See SMART field 194) and vibration (no
->> measurement possible w/o special equipment). "dd" isn't exactly a
->> performance application until one uses really big block sizes (1MB or
->> larger).
-> All my numbers comes from using 1MB blocks. but I'm not using dd.
-> After removing the logic that actually put some data into the buffers I
-> do get about 105 MB/sec using O_DIRECT. I'm doing a full disk write now
-> to get a reference plot. Not using O_DIRECT should be almost identical. 
-> 
-> 
->>> the disk is supposed to have 105 115 sustained
->>> data rate.
->> Where did 105-115 number come from?
-> datasheet . they listed two drives in the same column so that was not
-> the range it was sustained OD and the model I have max out at 105. 
+Adrian Bunk wrote:
+> But considering that igb is in a similar situation it would be nice if 
+> all 3 drivers would handle it the same way.
+>   
 
-Can you try deadline scheduler?
+Jesse,
+What do you think of the below patch?
+I am not very familiar with Kconfig, but it seems to solve the problem.
+If a Kconfig guru could double-check...
+Brice
 
--- 
-tejun
+
+myri10ge: Add MYRI10GE_DCA instead of selecting INTEL_IOATDMA
+
+Add a bool MYRI10GE_DCA defined to y if MYRI10GE and DCA are enabled, but
+MYRI10GE isn't y while DCA=m. And thus remove the need to select INTEL_IOATDMA
+when MYRI10GE is enabled, so that non-x86 architectures can build the myri10ge.
+
+Signed-off-by: Brice Goglin <brice@myri.com>
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index e9d5294..0162d55 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2462,7 +2462,6 @@ config MYRI10GE
+ 	select FW_LOADER
+ 	select CRC32
+ 	select INET_LRO
+-	select INTEL_IOATDMA
+ 	---help---
+ 	  This driver supports Myricom Myri-10G Dual Protocol interface in
+ 	  Ethernet mode. If the eeprom on your board is not recent enough,
+@@ -2474,6 +2473,11 @@ config MYRI10GE
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called myri10ge.
+ 
++config MYRI10GE_DCA
++	bool
++	default y
++	depends on MYRI10GE && DCA && !(MYRI10GE=y && DCA=m)
++
+ config NETXEN_NIC
+ 	tristate "NetXen Multi port (1/10) Gigabit Ethernet NIC"
+ 	depends on PCI
+diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
+index 6dce901..a9aebad 100644
+--- a/drivers/net/myri10ge/myri10ge.c
++++ b/drivers/net/myri10ge/myri10ge.c
+@@ -188,7 +188,7 @@ struct myri10ge_slice_state {
+ 	dma_addr_t fw_stats_bus;
+ 	int watchdog_tx_done;
+ 	int watchdog_tx_req;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	int cached_dca_tag;
+ 	int cpu;
+ 	__be32 __iomem *dca_tag;
+@@ -220,7 +220,7 @@ struct myri10ge_priv {
+ 	int msi_enabled;
+ 	int msix_enabled;
+ 	struct msix_entry *msix_vectors;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	int dca_enabled;
+ #endif
+ 	u32 link_state;
+@@ -902,7 +902,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
+ 	struct myri10ge_slice_state *ss;
+ 	int i, status;
+ 	size_t bytes;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	unsigned long dca_tag_off;
+ #endif
+ 
+@@ -1012,7 +1012,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
+ 	}
+ 	put_be32(htonl(mgp->intr_coal_delay), mgp->intr_coal_delay_ptr);
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	status = myri10ge_send_cmd(mgp, MXGEFW_CMD_GET_DCA_OFFSET, &cmd, 0);
+ 	dca_tag_off = cmd.data0;
+ 	for (i = 0; i < mgp->num_slices; i++) {
+@@ -1051,7 +1051,7 @@ static int myri10ge_reset(struct myri10ge_priv *mgp)
+ 	return status;
+ }
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ static void
+ myri10ge_write_dca(struct myri10ge_slice_state *ss, int cpu, int tag)
+ {
+@@ -1505,7 +1505,7 @@ static int myri10ge_poll(struct napi_struct *napi, int budget)
+ 	struct net_device *netdev = ss->mgp->dev;
+ 	int work_done;
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	if (ss->mgp->dca_enabled)
+ 		myri10ge_update_dca(ss);
+ #endif
+@@ -1736,7 +1736,7 @@ static const char myri10ge_gstrings_main_stats[][ETH_GSTRING_LEN] = {
+ 	"tx_boundary", "WC", "irq", "MSI", "MSIX",
+ 	"read_dma_bw_MBs", "write_dma_bw_MBs", "read_write_dma_bw_MBs",
+ 	"serial_number", "watchdog_resets",
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	"dca_capable_firmware", "dca_device_present",
+ #endif
+ 	"link_changes", "link_up", "dropped_link_overflow",
+@@ -1815,7 +1815,7 @@ myri10ge_get_ethtool_stats(struct net_device *netdev,
+ 	data[i++] = (unsigned int)mgp->read_write_dma;
+ 	data[i++] = (unsigned int)mgp->serial_number;
+ 	data[i++] = (unsigned int)mgp->watchdog_resets;
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	data[i++] = (unsigned int)(mgp->ss[0].dca_tag != NULL);
+ 	data[i++] = (unsigned int)(mgp->dca_enabled);
+ #endif
+@@ -3844,7 +3844,7 @@ static int myri10ge_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		dev_err(&pdev->dev, "failed reset\n");
+ 		goto abort_with_slices;
+ 	}
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	myri10ge_setup_dca(mgp);
+ #endif
+ 	pci_set_drvdata(pdev, mgp);
+@@ -3948,7 +3948,7 @@ static void myri10ge_remove(struct pci_dev *pdev)
+ 	netdev = mgp->dev;
+ 	unregister_netdev(netdev);
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	myri10ge_teardown_dca(mgp);
+ #endif
+ 	myri10ge_dummy_rdma(mgp, 0);
+@@ -3993,7 +3993,7 @@ static struct pci_driver myri10ge_driver = {
+ #endif
+ };
+ 
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ static int
+ myri10ge_notify_dca(struct notifier_block *nb, unsigned long event, void *p)
+ {
+@@ -4024,7 +4024,7 @@ static __init int myri10ge_init_module(void)
+ 		       myri10ge_driver.name, myri10ge_rss_hash);
+ 		myri10ge_rss_hash = MXGEFW_RSS_HASH_TYPE_SRC_PORT;
+ 	}
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	dca_register_notify(&myri10ge_dca_notifier);
+ #endif
+ 	if (myri10ge_max_slices > MYRI10GE_MAX_SLICES)
+@@ -4037,7 +4037,7 @@ module_init(myri10ge_init_module);
+ 
+ static __exit void myri10ge_cleanup_module(void)
+ {
+-#if (defined CONFIG_DCA) || (defined CONFIG_DCA_MODULE)
++#ifdef CONFIG_MYRI10GE_DCA
+ 	dca_unregister_notify(&myri10ge_dca_notifier);
+ #endif
+ 	pci_unregister_driver(&myri10ge_driver);
+
+
