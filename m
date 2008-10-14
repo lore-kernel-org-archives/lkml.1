@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbYJNJna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYJNJuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755976AbYJNJna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYJNJnW
+	id S1755965AbYJNJuX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbYJNJuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:43:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39079 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754161AbYJNJnW (ORCPT
+	Tue, 14 Oct 2008 05:50:08 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:47100 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbYJNJuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:43:22 -0400
-Date: Tue, 14 Oct 2008 10:40:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux PPC devel <linuxppc-dev@ozlabs.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Ryan S. Arnold" <rsa@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 2/5] hvc_console: Add tty driver flag
- TTY_DRIVER_RESET_TERMIOS
-Message-ID: <20081014104025.517ae734@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081014091413.003841094@linux.vnet.ibm.com>
-References: <20081014091247.433079967@linux.vnet.ibm.com>
-	<20081014091413.003841094@linux.vnet.ibm.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 14 Oct 2008 05:50:07 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Nicolas Bareil <nico@chdir.org>
+Subject: Re: USB problem on x86_64: nommu_map_single() issue?
+Date: Tue, 14 Oct 2008 11:48:47 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <20081014072045.GA1252@sd-5945.dedibox.fr>
+In-Reply-To: <20081014072045.GA1252@sd-5945.dedibox.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810141148.48220.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008 11:12:49 +0200
-Hendrik Brueckner <brueckner@linux.vnet.ibm.com> wrote:
-
-> From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Am Dienstag, 14. Oktober 2008 09:20:45 schrieb Nicolas Bareil:
+> Hi
 > 
-> After a tty hangup() or close() operation, processes might not reset the
-> termio settings to a sane state.
+> On 2.6.27, I can't use any USB device (mass storage, mouse) anymore on my x86_64 system, the devices
+> are not detected: lsusb returns nothing except the hub.
 
-That is the job of the getty task normally. pty is special as the reissue
-of the same pty is done as a new device (with new state).
+Is this a regression? Did it work on earlier kernels?
+> 
+> I have the following logs in kern.log when booting with my USB mouse plugged :
 
-Setting this on the hvc would parallel the PC vt console behaviour but
-differ from most other ports.
+For confirmation boot with mem=2G on the kernel command line?
 
-Anyway its a policy question for PPC64 so if thats how you want it to work
-
-Acked-by: Alan Cox <alan@redhat.com>
-
+	Regards
+		Oliver
