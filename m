@@ -1,78 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761168AbYJNA0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760915AbYJNAaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761168AbYJNA0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 20:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbYJNA0V
+	id S1760915AbYJNAaW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 20:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYJNAaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 20:26:21 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55505 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757066AbYJNA0U (ORCPT
+	Mon, 13 Oct 2008 20:30:08 -0400
+Received: from smtp3.ono.com ([62.42.230.176]:14261 "EHLO resmaa06.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753115AbYJNAaH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 20:26:20 -0400
-Date: Tue, 14 Oct 2008 01:25:43 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [mmotm 10 Oct][PATCH 2/2] fix build error of vmscan
-In-Reply-To: <20081012223946.181A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0810140120280.29541@blonde.site>
-References: <20081012223808.1817.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <20081012223946.181A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 13 Oct 2008 20:30:07 -0400
+Date: Tue, 14 Oct 2008 02:30:03 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
+Message-ID: <20081014023003.07b6d745@werewolf.home>
+In-Reply-To: <20081014012429.3f2924e3@werewolf.home>
+References: <20081014010202.71d13eaf@werewolf.home>
+	<20081013.161228.74135367.davem@davemloft.net>
+	<20081014012429.3f2924e3@werewolf.home>
+X-Mailer: Claws Mail 3.6.1cvs2 (GTK+ 2.14.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Oct 2008, KOSAKI Motohiro wrote:
-> 
-> Patch against: mmotm 10 Oct
-> Patch name: vmscan-fix-pagecache-reclaim-referenced-bit-check-fix-fix-fix.patch
-> Applied after: vmscan-fix-pagecache-reclaim-referenced-bit-check-fix-fix.patch
-> 
-> 
-> --------
-> vmscan-fix-pagecache-reclaim-referenced-bit-check-fix.patch introduce following build error.
-> 
->   CC      mm/vmscan.o
-> mm/vmscan.c: In function 'shrink_active_list':
-> mm/vmscan.c:1248: error: too few arguments to function 'page_referenced'
-> make[1]: *** [mm/vmscan.o] Error 1
-> make: *** [mm] Error 2
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Rik van Riel <riel@redhat.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
+On Tue, 14 Oct 2008 01:24:29 +0200, "J.A. Magallón" <jamagallon@ono.com> wrote:
 
-Excellent though it is, I'd prefer Andrew to ignore your patch:
-because it falls within an unbisectable extent of the mmotm series,
-for which I've now prepared a metapatch including this fix,
-following in a minute or two.
-
-Thanks,
-Hugh
-
+> On Mon, 13 Oct 2008 16:12:28 -0700 (PDT), David Miller <davem@davemloft.net> wrote:
 > 
-> ---
->  mm/vmscan.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> > From: "J.A. Magallón" <jamagallon@ono.com>
+> > Date: Tue, 14 Oct 2008 01:02:02 +0200
+> > 
+> > > Booting .27-git3 on the Aspire One gave me a couple oopses.
+> > 
+> > Fixed by:
+> > 
+> > commit 738e1e694bf6d9e965ba0ce2667a1bec5780a172
+> > Author: Petr Vandrovec <petr@vandrovec.name>
+> > Date:   Sun Oct 12 20:58:29 2008 -0700
+> > 
+> >     r8169: NULL pointer dereference on r8169 load
+> >     
+> >     mmio_addr in r8169 needs to be initialized before use
+> >     
+> >     Maybe that all tp-> initialization should be moved before rtl_init_mac_address call,
+> >     but this is enough to get rid of crash in rtl_rar_set due to mmio_addr being uninitialized.
+> >     
+> >     Signed-off-by: Petr Vandrovec <petr@vandrovec.name>
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> > 
+> > diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> > index bdae2c5..c821da2 100644
+> > --- a/drivers/net/r8169.c
+> > +++ b/drivers/net/r8169.c
+> > @@ -2154,6 +2154,8 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+> >  
+> >  	spin_lock_init(&tp->lock);
+> >  
+> > +	tp->mmio_addr = ioaddr;
+> > +
+> >  	rtl_init_mac_address(tp, ioaddr);
+> >  
+> >  	/* Get MAC address */
+> > @@ -2186,7 +2188,6 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+> >  #endif
+> >  
+> >  	tp->intr_mask = 0xffff;
+> > -	tp->mmio_addr = ioaddr;
+> >  	tp->align = cfg->align;
+> >  	tp->hw_start = cfg->hw_start;
+> >  	tp->intr_event = cfg->intr_event;
+> >
 > 
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1245,7 +1245,8 @@ static void shrink_active_list(unsigned 
->  		}
->  
->  		/* page_referenced clears PageReferenced */
-> -		if (page_mapping_inuse(page) && page_referenced(page))
-> +		if (page_mapping_inuse(page) &&
-> +		    page_referenced(page, 0, sc->mem_cgroup))
->  			pgmoved++;
->  
->  		list_add(&page->lru, &l_inactive);
+> Thanks, this cured the rtl8169 part.
+
+Mmm, spoke too fast. It loads, but:
+
+Oct 14 02:27:45 one kernel: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+Oct 14 02:27:45 one kernel: r8169 0000:02:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+Oct 14 02:27:45 one kernel: r8169 0000:02:00.0: setting latency timer to 64
+Oct 14 02:27:45 one kernel: eth0: RTL8102e at 0xdfffe000, 00:00:00:00:00:00, XID 24a00000 IRQ 219
+Oct 14 02:27:45 one ifplugd(eth0)[5087]: ifplugd 0.28 initializing.
+Oct 14 02:27:45 one ifplugd(eth0)[5087]: Using interface eth0/00:00:00:00:00:00 with driver <r8169> (version: 2.3LK-NAPI)
+Oct 14 02:27:45 one ifplugd(eth0)[5087]: Using detection mode: SIOCETHTOOL
+Oct 14 02:27:45 one ifplugd(eth0)[5087]: Initialization complete, link beat detected.
+Oct 14 02:27:45 one ifplugd(eth0)[5087]: Executing '/etc/ifplugd/ifplugd.action eth0 up'.
+Oct 14 02:27:46 one ifplugd(eth0)[5087]: client: Determining IP information for eth0...SIOCSIFFLAGS: Cannot assign requested address
+Oct 14 02:27:46 one ifplugd(eth0)[5087]: client: SIOCSIFFLAGS: Cannot assign requested address
+
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
