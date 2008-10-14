@@ -1,228 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbYJNPCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbYJNPJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbYJNPCY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 11:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYJNPCP
+	id S1752658AbYJNPJx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 11:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYJNPJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 11:02:15 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:41124 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbYJNPCO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 11:02:14 -0400
-Date: Tue, 14 Oct 2008 17:02:09 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux PPC devel <linuxppc-dev@ozlabs.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Ryan S. Arnold" <rsa@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [RFC PATCH 4/5] hvc_console: Add tty window resizing
-Message-ID: <20081014150209.GB5318@cetus.boeblingen.de.ibm.com>
-Mail-Followup-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Linux PPC devel <linuxppc-dev@ozlabs.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	"Ryan S. Arnold" <rsa@us.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <20081014091247.433079967@linux.vnet.ibm.com> <20081014091413.306993844@linux.vnet.ibm.com> <20081014104428.698b750b@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081014104428.698b750b@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Oct 2008 11:09:45 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:45466 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751324AbYJNPJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 11:09:44 -0400
+Subject: Re: [bug] latest -git boot hang
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>
+In-Reply-To: <20081011071939.GA26465@elte.hu>
+References: <20081010203043.GA11798@elte.hu>
+	 <20081010204015.GA15668@elte.hu> <20081010205642.GA28840@elte.hu>
+	 <alpine.LFD.2.00.0810101408320.3503@nehalem.linux-foundation.org>
+	 <48EFF84B.5060108@kernel.org>  <20081011071939.GA26465@elte.hu>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 14 Oct 2008 11:07:39 -0400
+Message-Id: <1223996859.5193.61.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 10:44:28AM +0100, Alan Cox wrote:
-> > +	hp = container_of(work, struct hvc_struct, tty_resize);
-> > +	if (!hp || !hp->tty)
-> > +		return;
-> What locks hp->tty here, it can go NULL after the test on a hangup it
-> seems ?
-You are right. Thanks.
+On Sat, 2008-10-11 at 09:19 +0200, Ingo Molnar wrote:
+> * Tejun Heo <tj@kernel.org> wrote:
+> 
+> > > It does sound like perhaps the option should be hidden more, if it's 
+> > > really only reasonably enabled for some very specialized distro 
+> > > debuggers, not normal kernel people.
+> > 
+> > Yeap, if fedora didn't work, I think it should be hidden.  Do we 
+> > already have place to hide things like this?
+> 
+> in my local testing i'm using simple annotations like the one attached 
+> further below. Any objections against sending my BROKEN_BOOT_ALLOWED kit 
+> upstream, and merge my annotations for various kernel features that 
+> break a generic distro bootup?
+> 
+> Right now i have about 40 such annotations for -tip testing:
+> 
+>   fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   fs/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   security/selinux/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   security/smack/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   security/Kconfig:	depends on BROKEN_BOOT_ALLOWED
 
-> See tty_do_resize() for all of this stuff in the latest git. If you can't
-> use tty_do_resize from your work queue then please let me know why as I'd
-> like everyone to be using one abstraction.
-I have looked at it  and I have corrected my patch to use tty_do_resize().
-Since tty_do_resize() cannot be called holding the hp spinlock; the code uses
-now tty_kref_get/put to keep track of the tty object. I am not sure if the
-use of the kref's is correct here, so please let me know if there is a better
-solution.
+What in particular under fs/Kconfig and security/*Kconfig falls into
+this category, and why?  What constitutes a "generic distro bootup"?
+For distros that support SELinux, it obviously shouldn't break the
+bootup (there have of course been cases where it has, but those were
+bugs that have been addressed, including the recent /proc/net breakage),
+and for other distros, it should yield no effect as no policy will be
+loaded and thus SELinux just allows everything.
 
-Thanks.
-
-Regards,
-Hendrik
-
-[RFC PATCH 4/5 v2] hvc_console: Add tty window resizing using tty_do_resize()
-
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-
-The patch provides the hvc_resize() function to update the terminal
-window dimensions (struct winsize) for a specified hvc console.
-The function stores the new window size and schedules a function
-that finally updates the tty winsize and signals the change to
-user space (SIGWINCH).
-Because the winsize update must acquire a mutex and might sleep,
-the function is scheduled instead of being called from hvc_poll()
-or khvcd.
-
-This patch uses the tty_do_resize() routine from the tty layer.
-A pending resize work is canceled in hvc_close() and hvc_hangup().
-
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
----
- drivers/char/hvc_console.c |   58 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/char/hvc_console.h |    6 ++++
- 2 files changed, 64 insertions(+)
-
---- a/drivers/char/hvc_console.c	2008-10-14 16:13:12.000000000 +0200
-+++ b/drivers/char/hvc_console.c	2008-10-14 16:43:03.000000000 +0200
-@@ -374,6 +374,9 @@ static void hvc_close(struct tty_struct 
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 
-+		/* cancel pending tty resize work */
-+		cancel_work_sync(&hp->tty_resize);
-+
- 		/*
- 		 * Chain calls chars_in_buffer() and returns immediately if
- 		 * there is no buffered data otherwise sleeps on a wait queue
-@@ -399,6 +402,9 @@ static void hvc_hangup(struct tty_struct
- 	if (!hp)
- 		return;
- 
-+	/* cancel pending tty resize work */
-+	cancel_work_sync(&hp->tty_resize);
-+
- 	spin_lock_irqsave(&hp->lock, flags);
- 
- 	/*
-@@ -494,6 +500,39 @@ static int hvc_write(struct tty_struct *
- 	return written;
- }
- 
-+/**
-+ * hvc_set_winsz() - Resize the hvc tty terminal window.
-+ * @work:	work structure.
-+ *
-+ * The routine shall not be called within an atomic context because it
-+ * might sleep.
-+ *
-+ * Locking:	hp->lock
-+ */
-+static void hvc_set_winsz(struct work_struct *work)
-+{
-+	struct hvc_struct *hp;
-+	unsigned long hvc_flags;
-+	struct tty_struct *tty;
-+	struct winsize ws;
-+
-+	hp = container_of(work, struct hvc_struct, tty_resize);
-+	if (!hp)
-+		return;
-+
-+	spin_lock_irqsave(&hp->lock, hvc_flags);
-+	if (!hp->tty) {
-+		spin_unlock_irqrestore(&hp->lock, hvc_flags);
-+		return;
-+	}
-+	ws  = hp->ws;
-+	tty = tty_kref_get(hp->tty);
-+	spin_unlock_irqrestore(&hp->lock, hvc_flags);
-+
-+	tty_do_resize(tty, tty, &ws);
-+	tty_kref_put(tty);
-+}
-+
- /*
-  * This is actually a contract between the driver and the tty layer outlining
-  * how much write room the driver can guarantee will be sent OR BUFFERED.  This
-@@ -638,6 +677,24 @@ int hvc_poll(struct hvc_struct *hp)
- }
- EXPORT_SYMBOL_GPL(hvc_poll);
- 
-+/**
-+ * hvc_resize() - Update terminal window size information.
-+ * @hp:		HVC console pointer
-+ * @ws:		Terminal window size structure
-+ *
-+ * Stores the specified window size information in the hvc structure of @hp.
-+ * The function schedule the tty resize update.
-+ *
-+ * Locking:	Locking free; the function MUST be called holding hp->lock
-+ */
-+void hvc_resize(struct hvc_struct *hp, struct winsize ws)
-+{
-+	if ((hp->ws.ws_row != ws.ws_row) || (hp->ws.ws_col != ws.ws_col)) {
-+		hp->ws = ws;
-+		schedule_work(&hp->tty_resize);
-+	}
-+}
-+
- /*
-  * This kthread is either polling or interrupt driven.  This is determined by
-  * calling hvc_poll() who determines whether a console adapter support
-@@ -720,6 +777,7 @@ struct hvc_struct __devinit *hvc_alloc(u
- 
- 	kref_init(&hp->kref);
- 
-+	INIT_WORK(&hp->tty_resize, hvc_set_winsz);
- 	spin_lock_init(&hp->lock);
- 	spin_lock(&hvc_structs_lock);
- 
---- a/drivers/char/hvc_console.h	2008-10-14 16:13:11.000000000 +0200
-+++ b/drivers/char/hvc_console.h	2008-10-14 16:13:13.000000000 +0200
-@@ -27,6 +27,7 @@
- #ifndef HVC_CONSOLE_H
- #define HVC_CONSOLE_H
- #include <linux/kref.h>
-+#include <linux/tty.h>
- 
- /*
-  * This is the max number of console adapters that can/will be found as
-@@ -56,6 +57,8 @@ struct hvc_struct {
- 	struct hv_ops *ops;
- 	int irq_requested;
- 	int data;
-+	struct winsize ws;
-+	struct work_struct tty_resize;
- 	struct list_head next;
- 	struct kref kref; /* ref count & hvc_struct lifetime */
- };
-@@ -84,6 +87,9 @@ extern int __devexit hvc_remove(struct h
- int hvc_poll(struct hvc_struct *hp);
- void hvc_kick(void);
- 
-+/* Resize hvc tty terminal window */
-+extern void hvc_resize(struct hvc_struct *hp, struct winsize ws);
-+
- /* default notifier for irq based notification */
- extern int notifier_add_irq(struct hvc_struct *hp, int data);
- extern void notifier_del_irq(struct hvc_struct *hp, int data);
+>   drivers/net/appletalk/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/net/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/media/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/scsi/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/watchdog/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/watchdog/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/ide/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/i2c/busses/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/block/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/console/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/video/console/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/mtd/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   drivers/isdn/icn/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   lib/Kconfig.kgdb:	depends on BROKEN_BOOT_ALLOWED
+>   lib/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
+>   lib/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig.debug:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	# depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig:	depends on BROKEN_BOOT_ALLOWED
+>   arch/x86/Kconfig.cpu:	depends on BROKEN_BOOT_ALLOWED
+> 
+> and note the stark contrast to CONFIG_BROKEN - sometimes a given 
+> functionality is really not meant to be enabled on a generic system.
+> 
+> 	Ingo
+> 
+> ---------------->
+> Subject: qa: no ext devt
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri Oct 10 22:54:57 CEST 2008
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  lib/Kconfig.debug |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux/lib/Kconfig.debug
+> ===================================================================
+> --- linux.orig/lib/Kconfig.debug
+> +++ linux/lib/Kconfig.debug
+> @@ -670,6 +670,8 @@ config DEBUG_BLOCK_EXT_DEVT
+>          bool "Force extended block device numbers and spread them"
+>  	depends on DEBUG_KERNEL
+>  	depends on BLOCK
+> +	depends on BROKEN_BOOT_ALLOWED
+> +	select BROKEN_BOOT
+>  	default n
+>  	help
+>  	  Conventionally, block device numbers are allocated from
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 -- 
-Hendrik Brueckner
-D/3303 Linux on System z Development
-Tel: +49 7031 16-1073
-Fax: +49 7031 16-3456
-eMail: brueckner@linux.vnet.ibm.com
-IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
+Stephen Smalley
+National Security Agency
 
-IBM Deutschland Research & Development GmbH
-Vorsitzender des Aufsichtsrats: Martin Jetter
-Geschaeftsfuehrung: Erich Baier
-Sitz der Gesellschaft: Boeblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
