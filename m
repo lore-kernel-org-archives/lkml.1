@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbYJNOg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbYJNOlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309AbYJNOg3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 10:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYJNOgV
+	id S1752590AbYJNOlZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 10:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYJNOlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 10:36:21 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:35879 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbYJNOgU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 10:36:20 -0400
-X-BigFish: VPS-44(z5edJz62a3L1432R98dR936eQ1805M936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K8QGK4-02-QWT-01
-Date: Tue, 14 Oct 2008 16:35:22 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Please pull arch perfmon update
-Message-ID: <20081014143521.GH23557@erda.amd.com>
-References: <20080929235253.GA31074@one.firstfloor.org> <20081013183556.GD23557@erda.amd.com> <48F3AFBF.3040201@firstfloor.org> <20081014140549.GG23557@erda.amd.com> <20081014141507.GQ12131@one.firstfloor.org>
+	Tue, 14 Oct 2008 10:41:16 -0400
+Received: from kroah.org ([198.145.64.141]:38626 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751240AbYJNOlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 10:41:15 -0400
+Date: Tue, 14 Oct 2008 07:37:44 -0700
+From: Greg KH <greg@kroah.com>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 6/8 v4] PCI: support the SR-IOV capability
+Message-ID: <20081014143744.GA12251@kroah.com>
+References: <20081014103424.GA1704@yzhao12-linux.sh.intel.com> <20081014105928.GF1734@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081014141507.GQ12131@one.firstfloor.org>
+In-Reply-To: <20081014105928.GF1734@yzhao12-linux.sh.intel.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 14 Oct 2008 14:35:35.0826 (UTC) FILETIME=[1ECFDF20:01C92E0A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14.10.08 16:15:07, Andi Kleen wrote:
-> On Tue, Oct 14, 2008 at 04:05:50PM +0200, Robert Richter wrote:
-> > On 13.10.08 22:29:51, Andi Kleen wrote:
-> > > > I added a follow on patch (446223f) on branch arch-perfmon that
-> > > 
-> > > I didn't do that intentionally because it's called too late.
-> > > The function really has to be called early, so that the fallback
-> > > works.
-> > 
-> > The hook is in op_nmi_init() and directly called after
-> > arch_perfmon_init() and before init_sysfs(). Only
-> > register_cpu_notifier() and the setup of oprofile_operations are in
-> > between. This should work.
-> 
-> The problem is that arch perfmon init should only be called after
-> the other initialization function failed.
-> 
-> So you would need a chain of op_x86_model_spec for fallback.
-> 
-> It's simpler and cleaner to just write that out in explicit C.
+On Tue, Oct 14, 2008 at 06:59:28PM +0800, Yu Zhao wrote:
+> +struct pci_iov {
+> +	int cap;		/* capability position */
+> +	int align;		/* page size used to map memory space */
+> +	int is_enabled;		/* status of SR-IOV */
+> +	int nentries;		/* number of sysfs entries used by PF driver */
+> +	u16 totalvfs;		/* total VFs associated with the PF */
+> +	u16 initialvfs;		/* initial VFs associated with the PF */
+> +	u16 numvfs;		/* number of VFs available */
+> +	u16 offset;		/* first VF Routing ID offset */
+> +	u16 stride;		/* following VF stride */
+> +	struct mutex mutex;	/* lock for SR-IOV */
+> +	struct kobject kobj;	/* koject for IOV */
 
-The patch makes arch_perfmon_setup_counters() static, so the init code
-is bound directly to the model (it is model specific code). The
-interface is much cleaner now since the delaration as an external is
-not needed then.
+Why isn't this a real struct device?
 
-The init function is only called, if this cpu type (i386/arch_perfmon)
-is selected. And this type is only selected after all other init
-funtions were failing.
+That way you get all of the proper userspace notification and the like,
+with kobjects, you do not.
 
-Please test the patch, I don't see a reason why it should not work.
+thanks,
 
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+greg k-h
