@@ -1,121 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758359AbYJNBI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYJNBNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758359AbYJNBI6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 21:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYJNBIq
+	id S1755185AbYJNBNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 21:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYJNBNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 21:08:46 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:48070 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752622AbYJNBIp (ORCPT
+	Mon, 13 Oct 2008 21:13:23 -0400
+Received: from smtp.ono.com ([62.42.230.12]:18820 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751239AbYJNBNW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 21:08:45 -0400
-Date: Mon, 13 Oct 2008 19:08:27 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Dong, Eddie" <eddie.dong@intel.com>
-Cc: "Zhao, Yu" <yu.zhao@intel.com>, linux-pci@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Alex Chiang <achiang@hp.com>, Roland Dreier <rdreier@cisco.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 6/6 v3] PCI: document the change
-Message-ID: <20081014010827.GX25780@parisc-linux.org>
-References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F6@pdsmsx502.ccr.corp.intel.com> <20081001160706.GI13822@parisc-linux.org> <08DF4D958216244799FC84F3514D70F00235CC69@pdsmsx415.ccr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <08DF4D958216244799FC84F3514D70F00235CC69@pdsmsx415.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 13 Oct 2008 21:13:22 -0400
+Date: Tue, 14 Oct 2008 03:13:20 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
+Message-ID: <20081014031320.2dc80177@werewolf.home>
+In-Reply-To: <43e72e890810131723k227ff97bya17aee0d9a5da2b@mail.gmail.com>
+References: <20081014010202.71d13eaf@werewolf.home>
+	<20081013232432.GB32550@tuxdriver.com>
+	<43e72e890810131723k227ff97bya17aee0d9a5da2b@mail.gmail.com>
+X-Mailer: Claws Mail 3.6.1cvs2 (GTK+ 2.14.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 08:23:34AM +0800, Dong, Eddie wrote:
-> Matthew Wilcox wrote:
-> > Wouldn't it be more useful to have the iov/N directories
-> > be a symlink to the actual pci_dev used by the virtual
-> > function? 
+On Mon, 13 Oct 2008 17:23:57 -0700, "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+
+> On Mon, Oct 13, 2008 at 4:24 PM, John W. Linville
+> <linville@tuxdriver.com> wrote:
+> > On Tue, Oct 14, 2008 at 01:02:02AM +0200, J.A. Magallón wrote:
+> >
+> >> werewolf:~# modprobe ath5k
+> >> WARNING: Error inserting cfg80211 (/lib/modules/2.6.27-jam03/kernel/net/wireless/cfg80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> >> WARNING: Error inserting mac80211 (/lib/modules/2.6.27-jam03/kernel/net/mac80211/mac80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> >> FATAL: Error inserting ath5k (/lib/modules/2.6.27-jam03/kernel/drivers/net/wireless/ath5k/ath5k.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> >> werewolf:~# modprobe mac80211
+> >> WARNING: Error inserting cfg80211 (/lib/modules/2.6.27-jam03/kernel/net/wireless/cfg80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> >> FATAL: Error inserting mac80211 (/lib/modules/2.6.27-jam03/kernel/net/mac80211/mac80211.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> >>
+> >> Dmesg is below.
+> >
+> > cfg80211 isn't loading, so mac80211 can't find it's symbols, and
+> > ath5k can't find mac80211's symbols.
 > 
-> The main concern here is that a VF may be disabed such as when PF enter
-> D3 state or undergo an reset and thus be plug-off, but user won't
-> re-configure the VF in case the PF return back to working state.
-
-If we're relying on the user to reconfigure virtual functions on return
-to D0 from D3, that's a very fragile system.
-
-> >> +For network device, there are:
-> >> +       - /sys/bus/pci/devices/BB:DD.F/iov/N/mac
-> >> +       - /sys/bus/pci/devices/BB:DD.F/iov/N/vlan
-> >> +               (value update will notify PF driver)
-> > 
-> > We already have tools to set the MAC and VLAN parameters
-> > for network devices.
+> What symbols?
 > 
-> Do you mean Ethtool? If yes, it is impossible for SR-IOV since the
-> configuration has to be done in PF side, rather than VF.
-
-I don't think ethtool has that ability; ip(8) can set mac addresses and
-vconfig(8) sets vlan parameters.
-
-The device driver already has to be aware of SR-IOV.  If it's going to
-support the standard tools (and it damn well ought to), then it should
-call the PF driver to set these kinds of parameters.
-
-> > I'm not 100% convinced about this API.  The assumption
-> > here is that the driver will do it, but I think it should
-> > probably be in the core.  The driver probably wants to be
+> sudo rmmod ath5k
+> sudo dmesg -c > /dev/null
+> sudo modprobe ath5k
+> sudo dmesg -c
 > 
-> Our concern is that the PF driver may put an default state when it is
-> loaded so that SR-IOV can work without any user level configuration, but
-> of course the driver won't dynamically change it.
-> Do u mean we remove this ability?
+> >> cfg80211: Unknown parameter `ieee80211_regdom'
 > 
-> > notified that the PCI core is going to create a virtual
-> > function, and would it please prepare to do so, but I'm
-> > not convinced this should be triggered by the driver. 
-> > How would the driver decide to create a new virtual
-> > function?  
-
-Let me try to explain this a bit better.
-
-The user decides they want a new ethernet virtual function.  In the
-scheme as you have set up:
-
-1. User communicates to ethernet driver "I want a new VF"
-2. Ethernet driver tells PCI core "create new VF".
-
-I propose:
-
-1. User tells PCI core "I want a new VF on PCI device 0000:01:03.0"
-2. PCI core tells driver "User wants a new VF"
-
-My scheme gives us a unified way of creating new VFs, yours requires each
-driver to invent a way for the user to tell them to create a new VF.
-Unless I've misunderstood your code and docs.
-
-> > From my reading of the SR-IOV spec, this isn't how it's
-> > supposed to work.  The device is supposed to be a fully
-> > functional PCI device that on demand can start peeling
-> > off virtual functions; it's not supposed to boot up and
-> > initialise all its virtual functions at once. 
+> Ahh this one.. this is the 2 character module parameter you can pass
+> to cfg80211 upon load and this is available only when
+> CONFIG_WIRELESS_OLD_REGULATORY is enabled.
 > 
-> The spec defines either we enable all VFs or Disable. Per VF enabling is
-> not supported.
-> Is this what you concern?
 
-I don't think that's true.  The spec requires you to enable all the
-VFs from 0 to NumVFs, but NumVFs can be lower than TotalVFs.  At least,
-that's how I read it.
+BTW, I have not set this anywhere and it defaults to JP, instead of the world
+domain as the code reads...
 
-But no, that isn't my concern.  My concern is that you've written a
-driver here that seems to be a stub driver.  That doesn't seem to be
-how SR-IOV is supposed to work; it's supposed to be a fully-functional
-driver that has SR-IOV knowledge added to it.
+I set it in modprobe.conf and now is EU:
+
+options cfg80211 ieee80211_regdom=EU
+
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
