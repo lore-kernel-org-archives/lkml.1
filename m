@@ -1,179 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYJNJQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbYJNJRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbYJNJQo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbYJNJPW
+	id S1758527AbYJNJRF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757555AbYJNJPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:15:22 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:41269 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757443AbYJNJPQ (ORCPT
+	Tue, 14 Oct 2008 05:15:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38477
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755188AbYJNJPb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:15:16 -0400
-Message-Id: <20081014091413.306993844@linux.vnet.ibm.com>
-References: <20081014091247.433079967@linux.vnet.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 14 Oct 2008 11:12:51 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux PPC devel <linuxppc-dev@ozlabs.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Ryan S. Arnold" <rsa@us.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Subject: [RFC PATCH 4/5] hvc_console: Add tty window resizing
-Content-Disposition: inline; filename=hvc/common/04_hvc_setwinsz.patch
+	Tue, 14 Oct 2008 05:15:31 -0400
+Date: Tue, 14 Oct 2008 02:15:06 -0700 (PDT)
+Message-Id: <20081014.021506.18668456.davem@davemloft.net>
+To: mathieu.desnoyers@polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sparc64: Optimized immediate value implementation build error
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081014044758.GA20420@Krystal>
+References: <20081014021704.GA15549@Krystal>
+	<20081013.193117.38855645.davem@davemloft.net>
+	<20081014044758.GA20420@Krystal>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9E9Hldq020118
 
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Tue, 14 Oct 2008 00:47:58 -0400
 
-The patch provides the hvc_resize() function to update the terminal
-window dimensions (struct winsize) for a specified hvc console.
-The function stores the new window size and schedules a function
-that finally updates the tty winsize and signals the change to
-user space (SIGWINCH).
-Because the winsize update must acquire a mutex and might sleep,
-the function is scheduled instead of being called from hvc_poll()
-or khvcd.
+> * David Miller (davem@davemloft.net) wrote:
+> > I'll pull in 0.40 next.
+> 
+> I'm looking forward to hear about the results. Thanks !
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
----
- drivers/char/hvc_console.c |   61 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/char/hvc_console.h |    6 ++++
- 2 files changed, 67 insertions(+)
+It builds, and I made sure that USE_IMMEDIATE does get defined
+by the makefile changes you made.
 
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -494,6 +494,48 @@ static int hvc_write(struct tty_struct *
- 	return written;
- }
- 
-+/**
-+ * hvc_set_winsz() - Resize the hvc tty terminal window.
-+ * @work:	work structure.
-+ *
-+ * The routine shall not be called within an atomic context because it
-+ * acquires the tty termios mutex and might sleep.
-+ *
-+ * Locking:	hp->lock, tty->termios_mutex and tty->ctrl_lock
-+ */
-+static void hvc_set_winsz(struct work_struct *work)
-+{
-+	struct hvc_struct *hp;
-+	struct pid *pgrp;
-+	unsigned long hvc_flags;
-+	unsigned long ctrl_flags;
-+
-+	hp = container_of(work, struct hvc_struct, tty_resize);
-+	if (!hp || !hp->tty)
-+		return;
-+
-+	mutex_lock(&hp->tty->termios_mutex);
-+	spin_lock_irqsave(&hp->lock, hvc_flags);
-+
-+	if ((hp->ws.ws_row == hp->tty->winsize.ws_row) &&
-+	    (hp->ws.ws_col == hp->tty->winsize.ws_col))
-+		goto out_mutex_unlock;
-+
-+	spin_lock_irqsave(&hp->tty->ctrl_lock, ctrl_flags);
-+	pgrp = get_pid(hp->tty->pgrp);
-+	spin_unlock_irqrestore(&hp->tty->ctrl_lock, ctrl_flags);
-+
-+	if (pgrp)
-+		kill_pgrp(pgrp, SIGWINCH, 1);
-+	put_pid(pgrp);
-+
-+	hp->tty->winsize = hp->ws;
-+
-+out_mutex_unlock:
-+	spin_unlock_irqrestore(&hp->lock, hvc_flags);
-+	mutex_unlock(&hp->tty->termios_mutex);
-+}
-+
- /*
-  * This is actually a contract between the driver and the tty layer outlining
-  * how much write room the driver can guarantee will be sent OR BUFFERED.  This
-@@ -638,6 +680,24 @@ int hvc_poll(struct hvc_struct *hp)
- }
- EXPORT_SYMBOL_GPL(hvc_poll);
- 
-+/**
-+ * hvc_resize() - Update terminal window size information.
-+ * @hp:		HVC console pointer
-+ * @ws:		Terminal window size structure
-+ *
-+ * Stores the specified window size information in the hvc structure of @hp.
-+ * The function schedule the tty resize update.
-+ *
-+ * Locking:	Locking free; the function MUST be called holding hp->lock
-+ */
-+void hvc_resize(struct hvc_struct *hp, struct winsize ws)
-+{
-+	if ((hp->ws.ws_row != ws.ws_row) || (hp->ws.ws_col != ws.ws_col)) {
-+		hp->ws = ws;
-+		schedule_work(&hp->tty_resize);
-+	}
-+}
-+
- /*
-  * This kthread is either polling or interrupt driven.  This is determined by
-  * calling hvc_poll() who determines whether a console adapter support
-@@ -720,6 +780,7 @@ struct hvc_struct __devinit *hvc_alloc(u
- 
- 	kref_init(&hp->kref);
- 
-+	INIT_WORK(&hp->tty_resize, hvc_set_winsz);
- 	spin_lock_init(&hp->lock);
- 	spin_lock(&hvc_structs_lock);
- 
---- a/drivers/char/hvc_console.h
-+++ b/drivers/char/hvc_console.h
-@@ -27,6 +27,7 @@
- #ifndef HVC_CONSOLE_H
- #define HVC_CONSOLE_H
- #include <linux/kref.h>
-+#include <linux/tty.h>
- 
- /*
-  * This is the max number of console adapters that can/will be found as
-@@ -56,6 +57,8 @@ struct hvc_struct {
- 	struct hv_ops *ops;
- 	int irq_requested;
- 	int data;
-+	struct winsize ws;
-+	struct work_struct tty_resize;
- 	struct list_head next;
- 	struct kref kref; /* ref count & hvc_struct lifetime */
- };
-@@ -84,6 +87,9 @@ extern int __devexit hvc_remove(struct h
- int hvc_poll(struct hvc_struct *hp);
- void hvc_kick(void);
- 
-+/* Resize hvc tty terminal window */
-+extern void hvc_resize(struct hvc_struct *hp, struct winsize ws);
-+
- /* default notifier for irq based notification */
- extern int notifier_add_irq(struct hvc_struct *hp, int data);
- extern void notifier_del_irq(struct hvc_struct *hp, int data);
+On the other hand, CONFIG_PSRWLOCK_LATENCY_TEST fails to build:
 
--- 
-Hendrik Brueckner
-D/3303 Linux on System z Development
-Tel: +49 7031 16-1073
-Fax: +49 7031 16-3456
-eMail: brueckner@linux.vnet.ibm.com
-IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
+  CC      lib/psrwlock-latency-trace.o
+lib/psrwlock-latency-trace.c: In function ‚Äòcalibrate_get_cycles‚Äô:
+lib/psrwlock-latency-trace.c:60: error: implicit declaration of function ‚Äòrdtsc_barrier‚Äô
 
-IBM Deutschland Research & Development GmbH
-Vorsitzender des Aufsichtsrats: Martin Jetter
-Geschaeftsfuehrung: Erich Baier
-Sitz der Gesellschaft: Boeblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+You could use sched_clock() or similar, we do have portable
+interfaces by which to do these things.  And if we don't
+have something fitting exactly what is needed here, add it :-)
 
+Also:
+
+<stdin>:1421:2: warning: #warning syscall marker not implemented
+<stdin>:1425:2: warning: #warning syscall trace not implemented
+
+which should be fixed by the following patch:
+
+sparc: Add sys_trace() and sys_marker() syscall table entries.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc/include/asm/unistd_32.h b/arch/sparc/include/asm/unistd_32.h
+index 648643a..ef924f4 100644
+--- a/arch/sparc/include/asm/unistd_32.h
++++ b/arch/sparc/include/asm/unistd_32.h
+@@ -338,8 +338,10 @@
+ #define __NR_dup3		320
+ #define __NR_pipe2		321
+ #define __NR_inotify_init1	322
++#define __NR_marker		323
++#define __NR_trace		324
+ 
+-#define NR_SYSCALLS		323
++#define NR_SYSCALLS		325
+ 
+ /* Sparc 32-bit only has the "setresuid32", "getresuid32" variants,
+  * it never had the plain ones and there is no value to adding those
+diff --git a/arch/sparc/include/asm/unistd_64.h b/arch/sparc/include/asm/unistd_64.h
+index c5cc0e0..bd830d8 100644
+--- a/arch/sparc/include/asm/unistd_64.h
++++ b/arch/sparc/include/asm/unistd_64.h
+@@ -340,8 +340,10 @@
+ #define __NR_dup3		320
+ #define __NR_pipe2		321
+ #define __NR_inotify_init1	322
++#define __NR_marker		323
++#define __NR_trace		324
+ 
+-#define NR_SYSCALLS		323
++#define NR_SYSCALLS		325
+ 
+ #ifdef __KERNEL__
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+diff --git a/arch/sparc/kernel/systbls.S b/arch/sparc/kernel/systbls.S
+index e1b9233..0a1dd3d 100644
+--- a/arch/sparc/kernel/systbls.S
++++ b/arch/sparc/kernel/systbls.S
+@@ -81,4 +81,4 @@ sys_call_table:
+ /*305*/	.long sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
+ /*310*/	.long sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
+ /*315*/	.long sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
+-/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1
++/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
+diff --git a/arch/sparc64/kernel/systbls.S b/arch/sparc64/kernel/systbls.S
+index 0fdbf3b..0257912 100644
+--- a/arch/sparc64/kernel/systbls.S
++++ b/arch/sparc64/kernel/systbls.S
+@@ -82,7 +82,7 @@ sys_call_table32:
+ 	.word compat_sys_set_mempolicy, compat_sys_kexec_load, compat_sys_move_pages, sys_getcpu, compat_sys_epoll_pwait
+ /*310*/	.word compat_sys_utimensat, compat_sys_signalfd, sys_timerfd_create, sys_eventfd, compat_sys_fallocate
+ 	.word compat_sys_timerfd_settime, compat_sys_timerfd_gettime, compat_sys_signalfd4, sys_eventfd2, sys_epoll_create1
+-/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
++/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
+ 
+ #endif /* CONFIG_COMPAT */
+ 
+@@ -156,4 +156,4 @@ sys_call_table:
+ 	.word sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
+ /*310*/	.word sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
+ 	.word sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
+-/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
++/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
