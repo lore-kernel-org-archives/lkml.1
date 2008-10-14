@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbYJNJei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYJNJhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbYJNJei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJNJe3
+	id S1755937AbYJNJhA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJNJgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:34:29 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:1319 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752638AbYJNJe3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:34:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=t5nLjUEK8UlVKHqTyODvtOS+Uz0GYgSq7UeslZe8/qB9P81ArZtnUfIWesTRXGaIwU
-         p7GmkAhan+aaDkX60Th+ID0GnRh0hjM5dm9nb7tlHFEa9TEV+gLZ0WADIgJkGhxOfBLj
-         SoK8b+6dV6B0QrMjzbK3RnaI9SCml9Un6dHYk=
-Message-ID: <68676e00810140234o5e85f438l18058c907a7c6260@mail.gmail.com>
-Date: Tue, 14 Oct 2008 11:34:28 +0200
-From: "Luca Tettamanti" <kronos.it@gmail.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: SDHCI: timeout during data transfer
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081012105227.513bb9a8@mjolnir.drzeus.cx>
+	Tue, 14 Oct 2008 05:36:48 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:57773 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752638AbYJNJgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 05:36:48 -0400
+Date: Tue, 14 Oct 2008 12:35:41 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Brice Goglin <brice@myri.com>
+Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       linux-kernel@vger.kernel.org, apw@shadowen.org, linuxppc-dev@ozlabs.org,
+       sam@ravnborg.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
+	selectsCONFIG_INTEL_IOATDMA=y
+Message-ID: <20081014093541.GA10453@cs181140183.pp.htv.fi>
+References: <20081013101559.GA14372@linux.vnet.ibm.com> <20081013112631.GD29938@cs181140183.pp.htv.fi> <36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com> <48F391B9.1000206@myri.com> <20081013183503.GA28133@cs181140183.pp.htv.fi> <48F4627E.30300@myri.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080923212459.GA13888@dreamland.darkstar.lan>
-	 <20081002101754.031d6710@mjolnir.drzeus.cx>
-	 <68676e00810030427g63c07643rf637ca894df795b2@mail.gmail.com>
-	 <20081012105227.513bb9a8@mjolnir.drzeus.cx>
+In-Reply-To: <48F4627E.30300@myri.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 12, 2008 at 10:52 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Fri, 3 Oct 2008 13:27:52 +0200
-> "Luca Tettamanti" <kronos.it@gmail.com> wrote:
->>
->> Hum, cannot reproduce (but it was consistently failing when I tested
->> the patch... the only difference is a mkfs in between). I just got a
->> few retries:
->
-> A silly question, but did you also try disabling the debugging? Since
-> this is a timing issue, the debugging output could be just enough to
-> make the problem go away.
+On Tue, Oct 14, 2008 at 11:12:30AM +0200, Brice Goglin wrote:
+> Adrian Bunk wrote:
+> > But considering that igb is in a similar situation it would be nice if 
+> > all 3 drivers would handle it the same way.
+> >   
+> 
+> Jesse,
+> What do you think of the below patch?
+> I am not very familiar with Kconfig, but it seems to solve the problem.
+> If a Kconfig guru could double-check...
 
-Ok, I managed to reproduce without the debugging, but this time it
-took over a couple of GB before it started failing. Block numbers
-differ from the previous failures (so maybe it's not a cluster of
-broken blocks).
-Will go back and test with debugging enabled.
+The patch looks good, but the main problem is to get an agreement 
+on the policy.
 
-Luca
+> Brice
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
