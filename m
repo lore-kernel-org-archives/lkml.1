@@ -1,229 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbYJNUDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbYJNUEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755010AbYJNUDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 16:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYJNUD0
+	id S1755114AbYJNUEZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 16:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYJNUEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 16:03:26 -0400
-Received: from ns2.suse.de ([195.135.220.15]:54574 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754756AbYJNUDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 16:03:24 -0400
-Date: Tue, 14 Oct 2008 13:03:19 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patches] Ocfs2 features for 2.6.28
-Message-ID: <20081014200319.GK15154@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
+	Tue, 14 Oct 2008 16:04:09 -0400
+Received: from smtp3.ono.com ([62.42.230.176]:37228 "EHLO resmaa05.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752850AbYJNUEI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 16:04:08 -0400
+Date: Tue, 14 Oct 2008 22:03:57 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
+Message-ID: <20081014220357.64266be8@werewolf.home>
+In-Reply-To: <20081014193316.GA8223@electric-eye.fr.zoreil.com>
+References: <20081014010202.71d13eaf@werewolf.home>
+	<20081013.161228.74135367.davem@davemloft.net>
+	<20081014012429.3f2924e3@werewolf.home>
+	<20081014023003.07b6d745@werewolf.home>
+	<20081014193316.GA8223@electric-eye.fr.zoreil.com>
+X-Mailer: Claws Mail 3.6.1cvs2 (GTK+ 2.14.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, 14 Oct 2008 21:33:16 +0200, Francois Romieu <romieu@fr.zoreil.com> wrote:
 
-	The majority of these Ocfs2 patches were sent to the list back in
-September:
+> J.A. Magallón <jamagallon@ono.com> :
+> [...]
+> > Oct 14 02:27:45 one kernel: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> > Oct 14 02:27:45 one kernel: r8169 0000:02:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> > Oct 14 02:27:45 one kernel: r8169 0000:02:00.0: setting latency timer to 64
+> > Oct 14 02:27:45 one kernel: eth0: RTL8102e at 0xdfffe000, 00:00:00:00:00:00, XID 24a00000 IRQ 219
+> 
+> The MAC address does not look sane. Does the revert below cure it ?
+> 
+> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> index c821da2..5b8f8ba 100644
+> --- a/drivers/net/r8169.c
+> +++ b/drivers/net/r8169.c
+> @@ -1911,74 +1911,6 @@ static void rtl_disable_msi(struct pci_dev *pdev, struct rtl8169_private *tp)
+>  	}
+>  }
+>  
+> -static int rtl_eeprom_read(struct pci_dev *pdev, int cap, int addr, __le32 *val)
+> -{
+> -	int ret, count = 100;
+> -	u16 status = 0;
+> -	u32 value;
+> -
+> -	ret = pci_write_config_word(pdev, cap + PCI_VPD_ADDR, addr);
+> -	if (ret < 0)
+> -		return ret;
+> -
+> -	do {
+> -		udelay(10);
+> -		ret = pci_read_config_word(pdev, cap + PCI_VPD_ADDR, &status);
+> -		if (ret < 0)
+> -			return ret;
+> -	} while (!(status & PCI_VPD_ADDR_F) && --count);
+> -
+> -	if (!(status & PCI_VPD_ADDR_F))
+> -		return -ETIMEDOUT;
+> -
+> -	ret = pci_read_config_dword(pdev, cap + PCI_VPD_DATA, &value);
+> -	if (ret < 0)
+> -		return ret;
+> -
+> -	*val = cpu_to_le32(value);
+> -
+> -	return 0;
+> -}
+> -
+> -static void rtl_init_mac_address(struct rtl8169_private *tp,
+> -				 void __iomem *ioaddr)
+> -{
+> -	struct pci_dev *pdev = tp->pci_dev;
+> -	u8 cfg1;
+> -	int vpd_cap;
+> -	u8 mac[8];
+> -	DECLARE_MAC_BUF(buf);
+> -
+> -	cfg1 = RTL_R8(Config1);
+> -	if (!(cfg1  & VPD)) {
+> -		dprintk("VPD access not enabled, enabling\n");
+> -		RTL_W8(Cfg9346, Cfg9346_Unlock);
+> -		RTL_W8(Config1, cfg1 | VPD);
+> -		RTL_W8(Cfg9346, Cfg9346_Lock);
+> -	}
+> -
+> -	vpd_cap = pci_find_capability(pdev, PCI_CAP_ID_VPD);
+> -	if (!vpd_cap)
+> -		return;
+> -
+> -	/* MAC address is stored in EEPROM at offset 0x0e
+> -	 * Realtek says: "The VPD address does not have to be a DWORD-aligned
+> -	 * address as defined in the PCI 2.2 Specifications, but the VPD data
+> -	 * is always consecutive 4-byte data starting from the VPD address
+> -	 * specified."
+> -	 */
+> -	if (rtl_eeprom_read(pdev, vpd_cap, 0x000e, (__le32*)&mac[0]) < 0 ||
+> -	    rtl_eeprom_read(pdev, vpd_cap, 0x0012, (__le32*)&mac[4]) < 0) {
+> -		dprintk("Reading MAC address from EEPROM failed\n");
+> -		return;
+> -	}
+> -
+> -	dprintk("MAC address found in EEPROM: %s\n", print_mac(buf, mac));
+> -
+> -	/* Write MAC address */
+> -	rtl_rar_set(tp, mac);
+> -}
+> -
+>  static int __devinit
+>  rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  {
+> @@ -2156,8 +2088,6 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  
+>  	tp->mmio_addr = ioaddr;
+>  
+> -	rtl_init_mac_address(tp, ioaddr);
+> -
+>  	/* Get MAC address */
+>  	for (i = 0; i < MAC_ADDR_LEN; i++)
+>  		dev->dev_addr[i] = RTL_R8(MAC0 + i);
 
-	http://lkml.org/lkml/2008/9/24/383
+Yes. I have updated to git4, and it works with this patch.
 
-All feedback has been incorporated - my original e-mail describing the
-contents of our tree is attached below.
-
-The only exception is that I added (after the initial send to lkml) an
-internal api cleanup series from Joel. This doesn't really make any
-functional changes, but simplifies our block I/O handling code in
-anticipation of some features we're planning for 2.6.29. For reference,
-these changes are the topmost 6 patches in the branch. I don't think they're
-are particularly controversial or tricky.
-	--Mark
-
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
-
-to receive the following updates:
-
- Documentation/filesystems/ocfs2.txt |    6 +
- fs/Kconfig                          |   34 +-
- fs/ocfs2/Makefile                   |    3 +-
- fs/ocfs2/alloc.c                    |  913 +++++--
- fs/ocfs2/alloc.h                    |   86 +-
- fs/ocfs2/aops.c                     |   60 +-
- fs/ocfs2/buffer_head_io.c           |  134 +-
- fs/ocfs2/buffer_head_io.h           |   23 +-
- fs/ocfs2/cluster/masklog.c          |    1 +
- fs/ocfs2/cluster/masklog.h          |    1 +
- fs/ocfs2/dir.c                      |  109 +-
- fs/ocfs2/dlmglue.c                  |    9 +-
- fs/ocfs2/extent_map.c               |   70 +-
- fs/ocfs2/extent_map.h               |    4 +
- fs/ocfs2/file.c                     |  333 +--
- fs/ocfs2/file.h                     |   32 +-
- fs/ocfs2/inode.c                    |   87 +-
- fs/ocfs2/inode.h                    |    6 +-
- fs/ocfs2/ioctl.c                    |    3 +-
- fs/ocfs2/journal.c                  |   89 +-
- fs/ocfs2/journal.h                  |   52 +-
- fs/ocfs2/localalloc.c               |  384 +++-
- fs/ocfs2/localalloc.h               |    4 +
- fs/ocfs2/locks.c                    |   15 +
- fs/ocfs2/locks.h                    |    1 +
- fs/ocfs2/namei.c                    |  101 +-
- fs/ocfs2/ocfs2.h                    |   56 +-
- fs/ocfs2/ocfs2_fs.h                 |  220 ++-
- fs/ocfs2/ocfs2_jbd_compat.h         |   82 +
- fs/ocfs2/resize.c                   |   11 +-
- fs/ocfs2/slot_map.c                 |    7 +-
- fs/ocfs2/stack_user.c               |   33 +
- fs/ocfs2/stackglue.c                |   20 +
- fs/ocfs2/stackglue.h                |   19 +
- fs/ocfs2/suballoc.c                 |  248 ++-
- fs/ocfs2/suballoc.h                 |   26 +-
- fs/ocfs2/super.c                    |   62 +-
- fs/ocfs2/symlink.c                  |   18 +-
- fs/ocfs2/uptodate.c                 |   38 +-
- fs/ocfs2/uptodate.h                 |    3 +
- fs/ocfs2/xattr.c                    | 4834 +++++++++++++++++++++++++++++++++++
- fs/ocfs2/xattr.h                    |   68 +
- 42 files changed, 7359 insertions(+), 946 deletions(-)
- create mode 100644 fs/ocfs2/ocfs2_jbd_compat.h
- create mode 100644 fs/ocfs2/xattr.c
- create mode 100644 fs/ocfs2/xattr.h
-
-Joel Becker (21):
-      ocfs2: Prefix the extent tree operations structure.
-      ocfs2: Prefix the ocfs2_extent_tree structure.
-      ocfs2: Make ocfs2_extent_tree get/put instead of alloc.
-      ocfs2: Make 'private' into 'object' on ocfs2_extent_tree.
-      ocfs2: Provide the get_root_el() method to ocfs2_extent_tree_operations.
-      ocfs2: Use struct ocfs2_extent_tree in ocfs2_num_free_extents().
-      ocfs2: Determine an extent tree's max_leaf_clusters in an et_op.
-      ocfs2: Create specific get_extent_tree functions.
-      ocfs2: Add an insertion check to ocfs2_extent_tree_operations.
-      ocfs2: Make ocfs2_extent_tree the first-class representation of a tree.
-      ocfs2: Comment struct ocfs2_extent_tree_operations.
-      ocfs2: Change ocfs2_get_*_extent_tree() to ocfs2_init_*_extent_tree()
-      ocfs2: Limit inode allocation to 32bits.
-      ocfs2: Add the 'inode64' mount option.
-      ocfs2: Switch over to JBD2.
-      ocfs2: Separate out sync reads from ocfs2_read_blocks()
-      ocfs2: Require an inode for ocfs2_read_block(s)().
-      ocfs2: Simplify ocfs2_read_block()
-      ocfs2: Move ocfs2_bread() into dir.c
-      ocfs2: Kill the last naked wait_on_buffer() for cached reads.
-      ocfs2: Make cached block reads the common case.
-
-Mark Fasheh (12):
-      ocfs2: POSIX file locks support
-      ocfs2: Track local alloc bits internally
-      ocfs2: throttle back local alloc when low on disk space
-      ocfs2: track local alloc state via debugfs
-      ocfs2: fix printk format warnings
-      ocfs2: Remove pointless !!
-      ocfs2: make la_debug_mutex static
-      ocfs2: Documentation update for user_xattr / nouser_xattr mount options
-      ocfs2: use smaller counters in ocfs2_remove_xattr_clusters_from_cache
-      ocfs2: Don't check for NULL before brelse()
-      ocfs2: Uninline ocfs2_xattr_name_hash()
-      ocfs2: Move trusted and user attribute support into xattr.c
-
-Sunil Mushran (1):
-      ocfs2: Add xattr mount option in ocfs2_show_options()
-
-Tao Ma (19):
-      ocfs2: Modify ocfs2_num_free_extents for future xattr usage.
-      ocfs2: Use ocfs2_extent_list instead of ocfs2_dinode.
-      ocfs2: Abstract ocfs2_extent_tree in b-tree operations.
-      ocfs2: Make high level btree extend code generic
-      ocfs2: Add the basic xattr disk layout in ocfs2_fs.h
-      ocfs2: Add helper function in uptodate.c for removing xattr clusters
-      ocfs2: Add extent tree operation for xattr value btrees
-      ocfs2: Add xattr index tree operations
-      ocfs2: Add xattr bucket iteration for large numbers of EAs
-      ocfs2: Add xattr lookup code xattr btrees
-      ocfs2: Optionally limit extent size in ocfs2_insert_extent()
-      ocfs2: Enable xattr set in index btree
-      ocfs2: Delete all xattr buckets during inode removal
-      ocfs2: bug-fix for journal extend in xattr.
-      ocfs2: Resolve deadlock in ocfs2_xattr_free_block.
-      ocfs2/xattr.c: Fix a bug when inserting xattr.
-      ocfs2: Add empty bucket support in xattr.
-      ocfs2: Calculate EA hash only by its suffix.
-      ocfs2: Refactor xattr list and remove ocfs2_xattr_handler().
-
-Tiger Yang (3):
-      ocfs2: reserve inline space for extended attribute
-      ocfs2: Add extended attribute support
-      ocfs2: Add incompatible flag for extended attribute
-
-Hi,
-
-	The following patches comprise the bulk of Ocfs2 updates for the
-2.6.28 merge window. They can roughly be broken up into 4 sets which add
-incremental features to Ocfs2. The patches are presented as they come in
-git.
-
-
-EA Support
-
-The largest set adds support for extended attributes in Ocfs2. Extended
-attributes are stored both within the inode block, and externally, when their
-numbers grow. Individual attributes can be arbitrarily sized. Smaller ones
-have their data stored inline. Larger attributes grow out to a btree. In
-theory the btrees have similar limits to inode data. In practice though, the
-VFS limits EA sizes to 64K.
-
-When inode space for attributes run low, new ones are created in an external
-disk block. When the block fills up, external attributes are moved to an
-indexed btree. The btree can store many thousands of attributes, if needed.
-
-The patches leading up to EA support further abstracted portions of the Ocfs2
-btree code. Ultimately, this means we can "add" a btree to any Ocfs2 structure
-by embedding a header, and providing the proper callbacks to manipulate
-certain key fields. The xattr code makes use of this, as will future Ocfs2
-features.
-
-Joel made some further improvements to our 'generic' (for Ocfs2 at least)
-btree support which completed the interface by cleaning things up and
-providing for proper callbacks in a static operations structure. Those patches
-follow the xattr series as they were developed afterwards.
-
-
-JBD2 Support
-
-Ocfs2 can now use JBD2. Amongst other benefits, this allows us to support
-large block devices with more than 32 bits worth of block numbers. As a part
-of these patches, and 'inode64' mount option is added which toggles creation
-of inodes whose inode number requires more than 32 bits to be adequately
-described.
-
-JBD2 support in Ocfs2 is compiled in by default, however since journaling is
-so central to the operation of a file system, we kept our 'legacy' JBD
-support. We did this to provide a fallback for any users who might hit a
-problem, while we fix it. Legacy JBD support will be removed from Ocfs2 in
-2.6.29.
-
-
-Cluster Aware POSIX File Locks
-
-This was added via the 'plock' interface which Dave Teigland pulled into
-fs/dlm last merge window. The majority of the support is actually provided in
-userspace via the dlm_controld. As a result, cluster-aware POSIX locks only
-work for userspace cluster stacks right now.
-
-
-Local Alloc Throttling
-
-These patches allow the "local alloc" file in Ocfs2 to throttle back the
-number of free disk blocks it caches. This is done during times of extreme
-fragmentation, or very low disk space. The traditional behavior was to
-completely disable the local alloc feature, which resulted in performance
-problems on some corner cases. The throttling has increased performance by 10
-times during such situations.
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
