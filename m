@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbYJNOlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbYJNOnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbYJNOlZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 10:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYJNOlQ
+	id S1752800AbYJNOnE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 10:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYJNOmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 10:41:16 -0400
-Received: from kroah.org ([198.145.64.141]:38626 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751240AbYJNOlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 10:41:15 -0400
-Date: Tue, 14 Oct 2008 07:37:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Yu Zhao <yu.zhao@intel.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 6/8 v4] PCI: support the SR-IOV capability
-Message-ID: <20081014143744.GA12251@kroah.com>
-References: <20081014103424.GA1704@yzhao12-linux.sh.intel.com> <20081014105928.GF1734@yzhao12-linux.sh.intel.com>
+	Tue, 14 Oct 2008 10:42:53 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41995 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751261AbYJNOmx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 10:42:53 -0400
+Date: Tue, 14 Oct 2008 16:42:48 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Steven Toth <stoth@linuxtv.org>
+cc: Mauro Carvalho Chehab <mchehab@redhat.com>, video4linux-list@redhat.com,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] dvb: Input data pointer of cx24116_writeregN() should be
+ const
+Message-ID: <Pine.LNX.4.64.0810141640380.19843@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081014105928.GF1734@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1705537250-1223995368=:19843"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 06:59:28PM +0800, Yu Zhao wrote:
-> +struct pci_iov {
-> +	int cap;		/* capability position */
-> +	int align;		/* page size used to map memory space */
-> +	int is_enabled;		/* status of SR-IOV */
-> +	int nentries;		/* number of sysfs entries used by PF driver */
-> +	u16 totalvfs;		/* total VFs associated with the PF */
-> +	u16 initialvfs;		/* initial VFs associated with the PF */
-> +	u16 numvfs;		/* number of VFs available */
-> +	u16 offset;		/* first VF Routing ID offset */
-> +	u16 stride;		/* following VF stride */
-> +	struct mutex mutex;	/* lock for SR-IOV */
-> +	struct kobject kobj;	/* koject for IOV */
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Why isn't this a real struct device?
+---584349381-1705537250-1223995368=:19843
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-That way you get all of the proper userspace notification and the like,
-with kobjects, you do not.
+| drivers/media/dvb/frontends/cx24116.c:573: warning: passing argument 3 of 'cx24116_writeregN' discards qualifiers from pointer target type
 
-thanks,
+Make the `data' input pointer parameter of cx24116_writeregN() const to kill
+the warning.
 
-greg k-h
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+diff --git a/drivers/media/dvb/frontends/cx24116.c b/drivers/media/dvb/frontends/cx24116.c
+index deb36f4..aff88b9 100644
+--- a/drivers/media/dvb/frontends/cx24116.c
++++ b/drivers/media/dvb/frontends/cx24116.c
+@@ -200,7 +200,8 @@ static int cx24116_writereg(struct cx24116_state* state, int reg, int data)
+ }
+ 
+ /* Bulk byte writes to a single I2C address, for 32k firmware load */
+-static int cx24116_writeregN(struct cx24116_state* state, int reg, u8 *data, u16 len)
++static int cx24116_writeregN(struct cx24116_state* state, int reg,
++			     const u8 *data, u16 len)
+ {
+ 	int ret = -EREMOTEIO;
+ 	struct i2c_msg msg;
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-1705537250-1223995368=:19843--
