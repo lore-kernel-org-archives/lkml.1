@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYJNRSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYJNRUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbYJNRSJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 13:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYJNRR4
+	id S1753924AbYJNRUc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 13:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYJNRUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 13:17:56 -0400
-Received: from anhedonia.sammy.net ([72.46.127.32]:58743 "EHLO
-	anhedonia.sammy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608AbYJNRRz (ORCPT
+	Tue, 14 Oct 2008 13:20:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46100 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751235AbYJNRUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 13:17:55 -0400
-X-Greylist: delayed 2228 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 13:17:55 EDT
-Date: Tue, 14 Oct 2008 12:40:43 -0400
-From: Sam Creasey <sammy@sammy.net>
-To: Julia Lawall <julia@diku.dk>
-Cc: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/2] drivers/scsi/sun3x_esp.c: Convert && to ||
-Message-ID: <20081014164043.GS10918@sammy.net>
-References: <Pine.LNX.4.64.0810141759520.20451@pc-004.diku.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810141759520.20451@pc-004.diku.dk>
-User-Agent: Mutt/1.5.9i
+	Tue, 14 Oct 2008 13:20:23 -0400
+Date: Tue, 14 Oct 2008 10:20:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/18] m68k: Disable Amiga serial console support if
+ modular
+In-Reply-To: <20081013195915.659336491@mail.of.borg>
+Message-ID: <alpine.LFD.2.00.0810141018590.3288@nehalem.linux-foundation.org>
+References: <20081013195846.674654386@mail.of.borg> <20081013195915.659336491@mail.of.borg>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 06:00:19PM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The pattern !E && !E->fld is nonsensical.  The patch below updates this
-> according to the assumption that && should be ||.  But perhaps another
-> solution was intended.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @disable and_comm@
-> expression E;
-> identifier fld;
-> @@
-> 
-> - !E && !E->fld
-> + !E || !E->fld
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-Acked-By: Sam Creasey <sammy@sammy.net>
-
-I doubt this code would have been likely to execute, but you're
-certainly right.  It's a bug, and this looks like the fix.
-
--- Sam
 
 
-> 
-> ---
->  drivers/scsi/sun3x_esp.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -u -p a/drivers/scsi/sun3x_esp.c b/drivers/scsi/sun3x_esp.c
-> --- a/drivers/scsi/sun3x_esp.c
-> +++ b/drivers/scsi/sun3x_esp.c
-> @@ -213,7 +213,7 @@ static int __devinit esp_sun3x_probe(str
->  	esp->ops = &sun3x_esp_ops;
->  
->  	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
-> -	if (!res && !res->start)
-> +	if (!res || !res->start)
->  		goto fail_unlink;
->  
->  	esp->regs = ioremap_nocache(res->start, 0x20);
-> @@ -221,7 +221,7 @@ static int __devinit esp_sun3x_probe(str
->  		goto fail_unmap_regs;
->  
->  	res = platform_get_resource(dev, IORESOURCE_MEM, 1);
-> -	if (!res && !res->start)
-> +	if (!res || !res->start)
->  		goto fail_unmap_regs;
->  
->  	esp->dma_regs = ioremap_nocache(res->start, 0x10);
+On Mon, 13 Oct 2008, Geert Uytterhoeven wrote:
+>
+> Apparently console_initcall() is not defined in the modular case.
+
+We can certainly fix that. 
+
+Does this make things work for you? If so, send it back with a sign-off 
+(add you can add mine too - but I'm not going to add it until it's tested)
+
+		Linus
+---
+ include/linux/init.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 93538b6..d9625b5 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -273,6 +273,7 @@ void __init parse_early_param(void);
+ #else /* MODULE */
+ 
+ /* Don't use these in modules, but some people do... */
++#define console_initcall(fn)		module_init(fn)
+ #define core_initcall(fn)		module_init(fn)
+ #define postcore_initcall(fn)		module_init(fn)
+ #define arch_initcall(fn)		module_init(fn)
