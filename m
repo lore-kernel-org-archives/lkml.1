@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYJNJuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbYJNJvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbYJNJuX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbYJNJuI
+	id S1756536AbYJNJvg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbYJNJv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:50:08 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:47100 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754059AbYJNJuH (ORCPT
+	Tue, 14 Oct 2008 05:51:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32937 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754059AbYJNJv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:50:07 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Nicolas Bareil <nico@chdir.org>
-Subject: Re: USB problem on x86_64: nommu_map_single() issue?
-Date: Tue, 14 Oct 2008 11:48:47 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <20081014072045.GA1252@sd-5945.dedibox.fr>
-In-Reply-To: <20081014072045.GA1252@sd-5945.dedibox.fr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 14 Oct 2008 05:51:27 -0400
+Date: Tue, 14 Oct 2008 10:44:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux PPC devel <linuxppc-dev@ozlabs.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Ryan S. Arnold" <rsa@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 4/5] hvc_console: Add tty window resizing
+Message-ID: <20081014104428.698b750b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081014091413.306993844@linux.vnet.ibm.com>
+References: <20081014091247.433079967@linux.vnet.ibm.com>
+	<20081014091413.306993844@linux.vnet.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810141148.48220.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 14. Oktober 2008 09:20:45 schrieb Nicolas Bareil:
-> Hi
-> 
-> On 2.6.27, I can't use any USB device (mass storage, mouse) anymore on my x86_64 system, the devices
-> are not detected: lsusb returns nothing except the hub.
+> +	hp = container_of(work, struct hvc_struct, tty_resize);
+> +	if (!hp || !hp->tty)
+> +		return;
 
-Is this a regression? Did it work on earlier kernels?
-> 
-> I have the following logs in kern.log when booting with my USB mouse plugged :
+What locks hp->tty here, it can go NULL after the test on a hangup it
+seems ?
 
-For confirmation boot with mem=2G on the kernel command line?
+> + * hvc_resize() - Update terminal window size information.
+> + * @hp:		HVC console pointer
+> + * @ws:		Terminal window size structure
 
-	Regards
-		Oliver
+See tty_do_resize() for all of this stuff in the latest git. If you can't
+use tty_do_resize from your work queue then please let me know why as I'd
+like everyone to be using one abstraction.
+
+We also now have a "resize" operation for devices that want to react to a
+resize from TIOCSWINSZ
