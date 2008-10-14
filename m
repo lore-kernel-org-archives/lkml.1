@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYJNIzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbYJNJDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYJNIzd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 04:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbYJNIzX
+	id S1755759AbYJNJDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYJNJDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 04:55:23 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:57876 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbYJNIzW convert rfc822-to-8bit (ORCPT
+	Tue, 14 Oct 2008 05:03:05 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:9467 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbYJNJDC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 04:55:22 -0400
-Message-ID: <015c01c92dda$1b754340$LocalHost@wipultra1303>
-From: "Madhusudhan Chikkature" <madhu.cr@ti.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <gadiyar@ti.com>, <johnpol@2ka.mipt.ru>, <linux-kernel@vger.kernel.org>,
-       <linux-omap@vger.kernel.org>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com><20081010133845.8b82fac3.akpm@linux-foundation.org><062801c92d37$3413bdd0$LocalHost@wipultra1303> <20081013085323.f8bd7efb.akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
-Date: Tue, 14 Oct 2008 14:21:50 +0530
+	Tue, 14 Oct 2008 05:03:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=mFoPjwr44f+zxCc1qwab7j7uAjbxLdPxaLYtwij4psQNsMJFWsRpGX94mBjGJO/AoE
+         g2bHWZlfXCnG28bQiOG9QUPe0BOnk2T9YDhEMV4MBM/Oqce71ujh0/H0RyQ1BBfXyGHr
+         kwkq4nj3EQ5EV3CQyaO6GB0LySHM8/RgMqxlE=
+Message-ID: <9ea470500810140203l56cbc1d3i9a798580efe91867@mail.gmail.com>
+Date: Tue, 14 Oct 2008 11:03:01 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Tejun Heo" <tj@kernel.org>
+Subject: Re: New CD/DVD reports 'Can Play Audio NO'
+Cc: "Nick Warne" <nick@ukfsn.org>, linux-kernel@vger.kernel.org,
+       "D Bray" <db1986@internetdog.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+In-Reply-To: <48F45D70.7000904@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081004103355.407fc303@sauron.linicks.net>
+	 <48E82FDB.6020009@kernel.org>
+	 <20081005120809.38eb4826@sauron.linicks.net>
+	 <48F441F0.90408@kernel.org>
+	 <9ea470500810140126v3058d99dn47768834bd087111@mail.gmail.com>
+	 <48F45D70.7000904@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[..]
 
------ Original Message ----- 
-From: "Andrew Morton" <akpm@linux-foundation.org>
-To: "Madhusudhan Chikkature" <madhu.cr@ti.com>
-Cc: <gadiyar@ti.com>; <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>
-Sent: Monday, October 13, 2008 9:23 PM
-Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
+>>> Thanks.  sr.c just doesn't check whether the drive reports audio play
+>>> capability or not.  It just sets it while ide-cd actually checks for
+>>> the capability.  The drive is not reporting it while it can so ide-cd
+>>> needs blacklist entry for it.  Now that idecd has blacklist entry, all
+>>> should be fine.  Eh... I'm not sure whether we need to update sr to
+>>> follow what ide-cd is doing or not.
+>>>
+>>> Thanks.
+>>
+>> Actually, as I already pointed out, I'm not at all happy with blacklisting
+>> stuff. What sounds more sane to me (and this is only me) would be what sr.c
+>> does: assume that per se the drive can play audio and try to play it. But how
+>> many drives are there that cannot play audio, aka, would it be a safe assumption
+>> to say that their number is so diminishingly small that it would be better to
+>> announce that a drive can play audio by default and fail graciously in the
+>> _very_ seldom case it actually cannot ...
+>>
+>
+> Hmm... I don't know.  I think the flag indicates whether the drive has
+> DAC and analog audio output, right?
 
+Currently, ide-cd checks the AudioPlay bit advertized in the CD-ROM Capabilities
+and Mechanical Status Page.
 
->> On Mon, 13 Oct 2008 18:55:43 +0530 "Madhusudhan Chikkature" <madhu.cr@ti.com> wrote:
->> 
->> ----- Original Message ----- 
->> From: "Andrew Morton" <akpm@linux-foundation.org>
->> To: "Gadiyar, Anand" <gadiyar@ti.com>
->> Cc: <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>; <madhu.cr@ti.com>
->> Sent: Saturday, October 11, 2008 2:08 AM
->> Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
->> 
->> 
->> >> +       /* set the GO bit */
->> >> +       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, OMAP_HDQ_CTRL_STATUS_GO,
->> >> +               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
->> >> +       /* wait for the TXCOMPLETE bit */
->> >> +       ret = wait_event_interruptible_timeout(hdq_wait_queue,
->> >> +               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
->> >> +       if (ret < 0) {
->> >> +               dev_dbg(hdq_data->dev, "wait interrupted");
->> >> +               return -EINTR;
->> >> +       }
->> > 
->> > Is this desirable?  The user hits ^C and the driver bails out?
->> > 
->> > I assume so, but was this tested?
->> 
->> Andrew, What is the test scenario you mean here? A user hitting ^C when the driver is waiting for the TXCOMPLETE bit?
-> 
-> Yes.
-> 
+> I have quite some SATA drives which
+> don't have audio output at all.  I haven't check what they report on the
+> mode sense page yet.  Eh... well, having the bit set when the drive
+> doesn't support it doesn't hurt too much (yet).  Bartlomiej, what do you
+> think?
 
-Yes. It is desired to return an error if the condition in the wait is not met. I need to change the check for return value to check for zero and neg value.
-
-I spent some time to test this perticular scenario.I could not really see any impact of hitting ^C when an application is 
-transfering data in the background. When the h/w is programmed to transfer data and the driver issues a wait, I see that 
-TXCOMPLETE interrupt comes immediately and wakes up as expected. 
-
-So guess I am unable to hit ^C exactly when the driver is waiting in wait_event_interruptible_timeout(before the condition 
-is met) for it to catch the signal. Is it generally suggested to use wait_event_timeout so that ^C signal is not caught?
-
-Regards,
-Madhu
+-- 
+Regards/Gruss,
+Boris
