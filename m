@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbYJNPpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbYJNPwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193AbYJNPpx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 11:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYJNPpp
+	id S1753018AbYJNPwN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 11:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYJNPwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 11:45:45 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:47738 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751296AbYJNPpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 11:45:45 -0400
-Date: Tue, 14 Oct 2008 17:45:36 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27-git3: no SD card reader
-Message-ID: <20081014174536.1353d17e@mjolnir.drzeus.cx>
-In-Reply-To: <20081014025453.617f2ef8@werewolf.home>
-References: <20081014025453.617f2ef8@werewolf.home>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-6045-1223999144-0001-2"
+	Tue, 14 Oct 2008 11:52:01 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:36426 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbYJNPwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 11:52:00 -0400
+Date: Tue, 14 Oct 2008 09:51:43 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: Distributed storage release.
+In-reply-to: <20081013133850.GA13565@2ka.mipt.ru>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Message-id: <20081014155143.GM2009@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20081006160034.GA611@2ka.mipt.ru>
+ <20081012192419.fd8394c9.akpm@linux-foundation.org>
+ <20081013133850.GA13565@2ka.mipt.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Oct 13, 2008  17:38 +0400, Evgeniy Polyakov wrote:
+> There are two types of errors: long lines, which are actually comments
+> on the same line as structure members or a little bit more than 80;
+> and things like spaces and braces. All other errors should be already
+> fixed, but stuff like this: for (i = 0; i < 10; ++i) are not, since we
+> can argue forever if this is better than for (i=0; i<10; ++i) or 
+> int (* iterator) (struct dst_crypto_engine *e, vs
+> int (*iterator) (struct dst_crypto_engine *e,
+> :)
+> Also braces on the same line with the structure definition does not look
+> good imho, and it is reported as error by checkpatch.
 
---=_freyr.drzeus.cx-6045-1223999144-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+While it is true that one coding style vs. another could be argued for
+a long time - the right answer is that the _right_ coding style for code
+added to the Linux kernel is Linus' CodingStyle document.
 
-On Tue, 14 Oct 2008 02:54:53 +0200
-"J.A. Magall=C3=B3n" <jamagallon@ono.com> wrote:
+Whether you think the braces here or there look better - consistency
+with other code in the same project is very important, and any changes
+you get to your code will come in the Linus CodingStyle and this will
+result in code that is a mix between your personal style and the official
+style and it will be a mess...
 
-> Hi...
->=20
-> More problems with git3. The left SD card reader is not detected on the O=
-ne.
-> With a working kernel (distro 2.6.27):
->=20
-> Oct 14 02:44:27 one kernel: mmc0: error -84 whilst initialising SD card
->=20
-> Any ideas ?
->=20
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
--84 is -EILSEQ, which is some kind of bit error. Since you're running a
-JMicron controller, I'm guessing that something in your system isn't
-handling the higher speed (we forcefully enable highspeed on the
-Jmicron controll now).
-
-What machine is this? Have you tested more than one card?
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-6045-1223999144-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkj0vqUACgkQ7b8eESbyJLgtUACfdcKxR3o+AqyAQ5ySAbVi5KNi
-looAn0BhOMsNNe0STlO5NdRKzg5uycm4
-=+K/e
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-6045-1223999144-0001-2--
