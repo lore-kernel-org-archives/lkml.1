@@ -1,69 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYJNLvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYJNLxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYJNLvz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 07:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbYJNLvp
+	id S1757548AbYJNLxx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 07:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbYJNLxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 07:51:45 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45303 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755513AbYJNLvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 07:51:44 -0400
-Subject: Re: lockdep vs rmmod loop
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20081013175732.GA16390@x200.localdomain>
-References: <20081013175732.GA16390@x200.localdomain>
-Content-Type: text/plain
-Date: Tue, 14 Oct 2008 13:51:38 +0200
-Message-Id: <1223985098.9557.3.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Oct 2008 07:53:41 -0400
+Received: from mga09.intel.com ([134.134.136.24]:37092 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755084AbYJNLxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 07:53:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,409,1220252400"; 
+   d="scan'208";a="451008786"
+Date: Tue, 14 Oct 2008 18:57:52 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: [PATCH 5/8 v4] PCI: add a new function to map BAR offset
+Message-ID: <20081014105752.GE1734@yzhao12-linux.sh.intel.com>
+References: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 21:57 +0400, Alexey Dobriyan wrote:
-> This exists for quite some time, IIRC.
-> 
-> 	# rmmod loop
+Add a new function to map resource number to base register (offset and type).
 
-I tried to reproduce with -git from today but failed.
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-v2.6.27-3976-g7591103
+---
+ drivers/pci/pci.c       |   22 ++++++++++++++++++++++
+ drivers/pci/pci.h       |    2 ++
+ drivers/pci/setup-res.c |   13 +++++--------
+ 3 files changed, 29 insertions(+), 8 deletions(-)
 
-I build a x86_64 kernel with modular loop and lockdep enabled, then I
-did: modprobe loop; rmmod loop
-
-Is there anything else to reproducing this?
-
-> INFO: trying to register non-static key.
-> the code is fine but needs lockdep annotation.
-> turning off the locking correctness validator.
-> Pid: 26915, comm: rmmod Not tainted 2.6.27-4480f15b3306f43bbb0310d461142b4e897ca45b #2
-> Call Trace:
->  [<ffffffff80253fcc>] ? static_obj+0x8c/0xa0
->  [<ffffffff80258a3d>] __lock_acquire+0x55d/0x9a0
->  [<ffffffff80258ed8>] lock_acquire+0x58/0x80
->  [<ffffffff80244755>] ? __cancel_work_timer+0x55/0x210
->  [<ffffffff80244789>] __cancel_work_timer+0x89/0x210
->  [<ffffffff80244755>] ? __cancel_work_timer+0x55/0x210
->  [<ffffffff80256dad>] ? trace_hardirqs_on+0xd/0x10
->  [<ffffffff80256d19>] ? trace_hardirqs_on_caller+0xc9/0x150
->  [<ffffffff80256dad>] ? trace_hardirqs_on+0xd/0x10
->  [<ffffffff80422482>] ? _spin_unlock_irqrestore+0x42/0x80
->  [<ffffffff8023ce04>] ? try_to_del_timer_sync+0x44/0x90
->  [<ffffffff8024492b>] cancel_work_sync+0xb/0x10
->  [<ffffffff802fadb9>] kblockd_flush_work+0x9/0x10
->  [<ffffffff802fc6a7>] blk_sync_queue+0x27/0x30
->  [<ffffffff802fc6d1>] blk_cleanup_queue+0x21/0x60
->  [<ffffffffa00820c8>] loop_free+0x18/0x40 [loop]
->  [<ffffffffa008429b>] loop_exit+0x7b/0xc1 [loop]
->  [<ffffffff8025fd67>] sys_delete_module+0x147/0x220
->  [<ffffffff80256d19>] ? trace_hardirqs_on_caller+0xc9/0x150
->  [<ffffffff804219a7>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff8020b64b>] system_call_fastpath+0x16/0x1b
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 381e958..3575124 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1909,6 +1909,28 @@ int pci_resource_alignment(struct pci_dev *dev, int resno)
+ 	return 0;
+ }
+ 
++/**
++ * pci_resource_bar - get position of the BAR associated with a resource
++ * @dev: the PCI device
++ * @resno: the resource number
++ * @type: the BAR type to be filled in
++ *
++ * Returns BAR position in config space, or 0 if the BAR is invalid.
++ */
++int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
++{
++	if (resno < PCI_ROM_RESOURCE) {
++		*type = pci_bar_unknown;
++		return PCI_BASE_ADDRESS_0 + 4 * resno;
++	} else if (resno == PCI_ROM_RESOURCE) {
++		*type = pci_bar_mem32;
++		return dev->rom_base_reg;
++	}
++
++	dev_err(&dev->dev, "BAR: invalid resource #%d\n", resno);
++	return 0;
++}
++
+ static void __devinit pci_no_domains(void)
+ {
+ #ifdef CONFIG_PCI_DOMAINS
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 720b7d6..e2237ad 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -162,6 +162,8 @@ extern int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ extern struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
+ 				struct pci_dev *bridge, int busnr);
+ extern int pci_resource_alignment(struct pci_dev *dev, int resno);
++extern int pci_resource_bar(struct pci_dev *dev, int resno,
++			    enum pci_bar_type *type);
+ extern void pci_enable_ari(struct pci_dev *dev);
+ /**
+  * pci_ari_enabled - query ARI forwarding status
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index ecff483..c3585a0 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -31,6 +31,7 @@ void pci_update_resource(struct pci_dev *dev, int resno)
+ 	struct pci_bus_region region;
+ 	u32 new, check, mask;
+ 	int reg;
++	enum pci_bar_type type;
+ 	struct resource *res = dev->resource + resno;
+ 
+ 	/*
+@@ -64,17 +65,13 @@ void pci_update_resource(struct pci_dev *dev, int resno)
+ 	else
+ 		mask = (u32)PCI_BASE_ADDRESS_MEM_MASK;
+ 
+-	if (resno < 6) {
+-		reg = PCI_BASE_ADDRESS_0 + 4 * resno;
+-	} else if (resno == PCI_ROM_RESOURCE) {
++	reg = pci_resource_bar(dev, resno, &type);
++	if (!reg)
++		return;
++	if (type != pci_bar_unknown) {
+ 		if (!(res->flags & IORESOURCE_ROM_ENABLE))
+ 			return;
+ 		new |= PCI_ROM_ADDRESS_ENABLE;
+-		reg = dev->rom_base_reg;
+-	} else {
+-		/* Hmm, non-standard resource. */
+-	
+-		return;		/* kill uninitialised var warning */
+ 	}
+ 
+ 	pci_write_config_dword(dev, reg, new);
+-- 
+1.5.6.4
 
