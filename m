@@ -1,189 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYJNTqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbYJNTui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754469AbYJNTqG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 15:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYJNToj
+	id S1754327AbYJNTui (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 15:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYJNTua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 15:44:39 -0400
-Received: from crmm.lgl.lu ([158.64.72.228]:49906 "EHLO lll.lu"
+	Tue, 14 Oct 2008 15:50:30 -0400
+Received: from mail.ipom.com ([69.73.131.218]:58746 "EHLO mail.ipom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752528AbYJNToj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 15:44:39 -0400
-Date: Tue, 14 Oct 2008 21:44:28 +0200
-From: Alain Knaff <alain@knaff.lu>
-Message-Id: <200810141944.m9EJiSq8011717@hitchhiker>
-Subject: update7 [PATCH 5/5] init: bzip2 or lzma -compressed kernels and initrds
-To: <hpa@zytor.com>, <linux-kernel@vger.kernel.org>, <alain@knaff.lu>
-X-Mailer: mail (GNU Mailutils 1.1)
+	id S1751909AbYJNTu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 15:50:28 -0400
+X-Greylist: delayed 1197 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 15:50:28 EDT
+Message-ID: <48F4F337.8080104@ipom.com>
+Date: Tue, 14 Oct 2008 21:29:59 +0200
+From: Phil Dibowitz <phil@ipom.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+CC: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
+       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
+Subject: Re: Avoid I/O errors when issuing SCSI ioctls to JMicron USB/ATA
+ bridge
+References: <Pine.LNX.4.44L0.0810141111080.2662-300000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0810141111080.2662-300000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBB8D029AB346657DDACB9C38"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the fifth part of the bzip2/lzma patch
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBB8D029AB346657DDACB9C38
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The bzip patch is based on an idea by Christian Ludwig, includes support for
-compressing the kernel with bzip2 or lzma rather than gzip. Both
-compressors give smaller sizes than gzip.  Lzma's decompresses faster
-than bzip2.
+Alexandre Oliva wrote:
+> Here's the patch that implements the fix you suggested to avoid the
+> I/O errors that I was running into with my new USB enclosure with a
+> JMicron USB/ATA bridge, while issuing scsi-io USN or other such
+> queries used by Fedora's mkinitrd.
+> http://bugzilla.kernel.org/show_bug.cgi?id=3D9638#c85
 
-It also supports ramdisks and initramfs' compressed using these two
-compressors.
+Alexandre,
 
-The functionality has been successfully used for a couple of years by
-the udpcast project
+The patch looks generally good, but you've included every possible revisi=
+on
+of the hardware. Can you please change your patch to include just the
+revision in question (0x0100) rather than the whole range (0x0000 - 0x999=
+9)?
 
-This version applies to "tip" kernel 2.6.27
+Thanks.
+--=20
+Phil Dibowitz                             phil@ipom.com
+Open Source software and tech docs        Insanity Palace of Metallica
+http://www.phildev.net/                   http://www.ipom.com/
 
-This part contains:
-- cleanup of NEW_CODE ifdefs
+"Never write it in C if you can do it in 'awk';
+ Never do it in 'awk' if 'sed' can handle it;
+ Never use 'sed' when 'tr' can do the job;
+ Never invoke 'tr' when 'cat' is sufficient;
+ Avoid using 'cat' whenever possible" -- Taylor's Laws of Programming
 
-Signed-off-by: Alain Knaff <alain@knaff.lu>
 
----
 
-diff -urNp arm/arch/arm/boot/compressed/misc.c final/arch/arm/boot/compressed/misc.c
---- arm/arch/arm/boot/compressed/misc.c	2008-10-14 02:14:38.000000000 +0200
-+++ final/arch/arm/boot/compressed/misc.c	2008-10-14 02:14:58.000000000 +0200
-@@ -182,7 +182,6 @@ static ulg free_mem_ptr;
- static ulg free_mem_end_ptr;
- 
- #define ARCH_HAS_DECOMP_WDOG
--#define NEW_CODE
- 
- #ifdef CONFIG_KERNEL_GZIP
- #include "../../../../lib/inflate.c"
-diff -urNp arm/arch/x86/boot/compressed/misc.c final/arch/x86/boot/compressed/misc.c
---- arm/arch/x86/boot/compressed/misc.c	2008-10-14 01:50:59.000000000 +0200
-+++ final/arch/x86/boot/compressed/misc.c	2008-10-14 01:51:22.000000000 +0200
-@@ -150,8 +150,6 @@ static char *vidmem;
- static int vidport;
- static int lines, cols;
- 
--#define NEW_CODE
--
- #ifdef CONFIG_KERNEL_GZIP
- #include "../../../../lib/inflate.c"
- #endif
-diff -urNp arm/include/linux/decompress/mm.h final/include/linux/decompress/mm.h
---- arm/include/linux/decompress/mm.h	2008-10-14 01:57:39.000000000 +0200
-+++ final/include/linux/decompress/mm.h	2008-10-14 01:37:39.000000000 +0200
-@@ -77,7 +77,6 @@ static void free(void *where)
- 
- static void(*error)(char *m);
- #define set_error_fn(x) error = x;
--#define NEW_CODE
- 
- #define INIT __init
- #define STATIC
-diff -urNp arm/lib/inflate.c final/lib/inflate.c
---- arm/lib/inflate.c	2008-10-14 01:20:26.000000000 +0200
-+++ final/lib/inflate.c	2008-10-14 01:35:45.000000000 +0200
-@@ -116,7 +116,6 @@ static char rcsid[] = "#Id: inflate.c,v 
- 
- #include <linux/string.h>
- 
--#ifdef NEW_CODE
- static int(*flush_cb)(void*, unsigned int);
- static int(*fill_cb)(void*, unsigned int);
- 
-@@ -179,7 +178,6 @@ static int INIT fill_inbuf(void)
- 
- static void flush_window(void);
- /* End stuff copied from initramfs */
--#endif
- 
- #define slide window
- 
-@@ -680,19 +678,16 @@ STATIC int INIT inflate_codes(
- 
-       /* do the copy */
-       do {
--#ifdef NEW_CODE
- 	if (flush_cb) {
--#endif
- 		/* Sliding window emulated using circular buffer:
- 		 * manage wrap-around */
- 		e = WSIZE - ((d &= WSIZE-1) > w ? d : w);
- 		if (e > n)
- 			e = n;
--#ifdef NEW_CODE
- 	} else {
- 		e = n;
- 	}
--#endif
-+
- 	n -= e;
- 
- #if !defined(NOMEMCPY) && !defined(DEBUG)
-@@ -1218,7 +1213,6 @@ makecrc(void)
- #define ENCRYPTED    0x20 /* bit 5 set: file is encrypted */
- #define RESERVED     0xC0 /* bit 6,7:   reserved */
- 
--#ifdef NEW_CODE
- /* ===========================================================================
-  * Write the output window window[0..outcnt-1] and update crc and bytes_out.
-  * (Used for the decompressed data only.)
-@@ -1247,23 +1241,18 @@ static int empty_fill(void *buf, unsigne
- {
- 	return 0;
- }
--#endif
-+
- 
- 
- /*
-  * Do the uncompression!
-  */
--STATIC int INIT gunzip(
--#ifdef NEW_CODE
--		       unsigned char *buf, int len,
-+STATIC int INIT gunzip(unsigned char *buf, int len,
- 		       int(*fill)(void*, unsigned int),
- 		       int(*flush)(void*, unsigned int),
- 		       unsigned char *output,
- 		       int *posp,
- 		       void(*error_fn)(char *x)
--#else
--		       void
--#endif
-   )
- {
-     uint8_t flags;
-@@ -1273,7 +1262,6 @@ STATIC int INIT gunzip(
-     uint32_t orig_len = 0;       /* original uncompressed length */
-     int res;
- 
--#ifdef NEW_CODE
-     set_error_fn(error_fn);
-     if (fill == NULL)
- 	    fill_cb = empty_fill;
-@@ -1293,8 +1281,6 @@ STATIC int INIT gunzip(
- 	    inbuf = buf;
-     else
- 	    inbuf = malloc(INBUFSIZ);
--#endif
--
-     inptr = 0;
-     outcnt = 0;		/* bytes in output buffer */
-     bytes_out = 0;
-@@ -1401,20 +1387,16 @@ STATIC int INIT gunzip(
- 	    error("length error");
- 	    return -1;
-     }
--#ifdef NEW_CODE
-     if (!output)
- 	    free(window);
-     if (posp)
- 	    *posp = inptr;
--#endif
-     return 0;
- 
-  underrun:			/* NEXTBYTE() goto's here if needed */
-     free(window);
--#ifdef NEW_CODE
-     if (!buf)
- 	    free(inbuf);
--#endif
-     error("out of input data");
-     return -1;
- }
+--------------enigBB8D029AB346657DDACB9C38
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkj08zcACgkQN5XoxaHnMrtwkgCdH/as5auZbjmsSYbFYdDCznFV
+PxEAoJUKuJfmd3b7XNMV3MWpNS0IWySl
+=TR3C
+-----END PGP SIGNATURE-----
+
+--------------enigBB8D029AB346657DDACB9C38--
