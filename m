@@ -1,92 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYJNLai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYJNLlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbYJNLai (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 07:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbYJNLa2
+	id S1756512AbYJNLlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 07:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbYJNLlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 07:30:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:62922 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755247AbYJNLa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 07:30:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,409,1220252400"; 
-   d="scan'208";a="347864302"
-Date: Tue, 14 Oct 2008 18:34:24 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: linux-pci@vger.kernel.org
-Cc: jbarnes@virtuousgeek.org, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
-       rdreier@cisco.com, greg@kroah.com, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
-Subject: [PATCH 0/8 v4] PCI: Linux kernel SR-IOV support
-Message-ID: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
+	Tue, 14 Oct 2008 07:41:12 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:47228 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755084AbYJNLlL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 07:41:11 -0400
+Date: Tue, 14 Oct 2008 17:10:41 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dtor@insightbb.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] serial: fix serial port lock init
+Message-ID: <20081014114041.GB7410@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <200810140005.39852.rjw@sisk.pl> <20081013235013.17e3106b@lxorguk.ukuu.org.uk> <20081014065541.GA11047@elte.hu> <20081014102253.GA13503@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081014102253.GA13503@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+* Ingo Molnar <mingo@elte.hu> [2008-10-14 12:22:53]:
 
-Following patches are intended to support SR-IOV capability in the
-Linux kernel. With these patches, people can turn a PCI device with
-the capability into multiple ones from software perspective, which
-will benefit KVM and achieve other purposes such as QoS, security,
-and etc.
+> 
+> > [   31.099528] BUG: spinlock bad magic on CPU#1, agetty/2608
+> 
+> the patch below fixes this. There's another incarnation of the bug that 
+> i bisected today, a spontaneous reboot crash with certain configs:
+> 
+> | b70ac7718579b5cbf3bdd74fd01132d1c91596f4 is first bad commit
+> | commit b70ac7718579b5cbf3bdd74fd01132d1c91596f4
+> | Author: David Miller <davem@davemloft.net>
+> | Date:   Mon Oct 13 10:36:31 2008 +0100
+> |
+> |     serial: allow 8250 to be used on sparc
+> 
+>  # bad:  [e7f2f991] Merge phase #5 (misc) of git://git.kernel.org/pub/
+>  # good: [3fa8749e] Linux 2.6.27
+>  # good: [4dd9ec49] Merge git://git.kernel.org/pub/scm/linux/kernel/gi
+>  # good: [5c3c4d9b] Merge git://git.kernel.org/pub/scm/linux/kernel/gi
+>  # good: [1a2217a9] Merge git://git.kernel.org/pub/scm/linux/kernel/gi
+>  # good: [cf81978d] i386: convert hardware exception 15 to an interrup
+>  # good: [c00193f9] Merge branches 'oprofile-v2' and 'timers/hpet' int
+>  # bad:  [8f520021] tty: Termios locking - sort out real_tty confusion
+>  # good: [f1ddfd95] ip2: init/deinit cleanup
+>  # bad:  [b70ac771] serial: allow 8250 to be used on sparc
+>  # good: [9bde10a4] serial-make-uart_ports-ioport-unsigned-long-fix
+>  # good: [43b11d33] ftdi: A few errors are err() that should be debug 
+>  # good: [b5d674ab] 8250: remove a few inlines of dubious value
+> 
+> ( but it's the same basic problem: we lost the lock init sequence when a
+>   patch was removed from the middle. )
+> 
+> 	Ingo
+> 
+> ----------------->
+> From b15be1e63d0df3a1b4a25e7a28cfca9f93690884 Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 14 Oct 2008 12:14:17 +0200
+> Subject: [PATCH] serial: fix serial port lock init
+> 
 
-[PATCH 1/8 v4] PCI: define PCI resource names in a 'enum'
-[PATCH 2/8 v4] PCI: export __pci_read_base
-[PATCH 3/8 v4] PCI: export pci_alloc_child_bus
-[PATCH 4/8 v4] PCI: add a wrapper for resource_alignment
-[PATCH 5/8 v4] PCI: add a new function to map BAR offset
-[PATCH 6/8 v4] PCI: support the SR-IOV capability
-[PATCH 7/8 v4] PCI: reserve bus range for the SR-IOV device
-[PATCH 8/8 v4] PCI: document the changes
+Thanks, the patch fixes the warning.
 
----
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
- b/Documentation/DocBook/kernel-api.tmpl |    1 
- b/Documentation/PCI/pci-iov-howto.txt   |  223 ++++++++
- b/drivers/pci/Kconfig                   |   12 
- b/drivers/pci/Makefile                  |    2 
- b/drivers/pci/iov.c                     |  853 ++++++++++++++++++++++++++++++++
- b/drivers/pci/pci-sysfs.c               |    4 
- b/drivers/pci/pci.c                     |   19 
- b/drivers/pci/pci.h                     |    9 
- b/drivers/pci/probe.c                   |    2 
- b/drivers/pci/proc.c                    |    7 
- b/drivers/pci/setup-bus.c               |    4 
- b/drivers/pci/setup-res.c               |    8 
- b/include/linux/pci.h                   |   38 -
- b/include/linux/pci_regs.h              |   22 
- drivers/pci/iov.c                       |   24 
- drivers/pci/pci-sysfs.c                 |    4 
- drivers/pci/pci.c                       |   61 ++
- drivers/pci/pci.h                       |   65 ++
- drivers/pci/probe.c                     |   39 -
- drivers/pci/setup-res.c                 |   14 
- include/linux/pci.h                     |   57 ++
- 21 files changed, 1397 insertions(+), 71 deletions(-)
-
----
-
-Single Root I/O Virtualization (SR-IOV) capability defined by PCI-SIG
-is intended to enable multiple system software to share PCI hardware
-resources.  PCI device that supports this capability can be extended
-to one Physical Functions plus multiple Virtual Functions. Physical
-Function, which could be considered as the "real" PCI device, reflects
-the hardware instance and manages all physical resources. Virtual
-Functions are associated with a Physical Function and shares physical
-resources with the Physical Function.Software can control allocation of
-Virtual Functions via registers encapsulated in the capability structure.
-
-SR-IOV specification can be found at
-http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
-
-Devices that support SR-IOV are available from following vendors:
-http://download.intel.com/design/network/ProdBrf/320025.pdf
-http://www.netxen.com/products/chipsolutions/NX3031.html
-http://www.neterion.com/products/x3100.html
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/serial/8250.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+> index d4104a3..d3ca7d3 100644
+> --- a/drivers/serial/8250.c
+> +++ b/drivers/serial/8250.c
+> @@ -2969,6 +2969,9 @@ static int __init serial8250_init(void)
+>  		"%d ports, IRQ sharing %sabled\n", nr_uarts,
+>  		share_irqs ? "en" : "dis");
+> 
+> +	for (i = 0; i < NR_IRQS; i++)
+> +		spin_lock_init(&irq_lists[i].lock);
+> +
+>  #ifdef CONFIG_SPARC
+>  	ret = sunserial_register_minors(&serial8250_reg, UART_NR);
+>  #else
+> 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
