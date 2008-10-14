@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbYJNTCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYJNTI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbYJNTCr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 15:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYJNTCk
+	id S1753552AbYJNTI3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 15:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYJNTIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 15:02:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36472
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751392AbYJNTCj (ORCPT
+	Tue, 14 Oct 2008 15:08:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33481 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750812AbYJNTIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 15:02:39 -0400
-Date: Tue, 14 Oct 2008 12:02:15 -0700 (PDT)
-Message-Id: <20081014.120215.101891203.davem@davemloft.net>
-To: mathieu.desnoyers@polymtl.ca
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sparc64: Optimized immediate value implementation build error
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081014160848.GA20740@Krystal>
-References: <20081014044758.GA20420@Krystal>
-	<20081014.021506.18668456.davem@davemloft.net>
-	<20081014160848.GA20740@Krystal>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 14 Oct 2008 15:08:18 -0400
+Date: Tue, 14 Oct 2008 12:07:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Subject: Re: nfsd 2.6.28 merge plans
+Message-Id: <20081014120753.7f968845.akpm@linux-foundation.org>
+In-Reply-To: <20081008232237.GH14527@fieldses.org>
+References: <20081008232237.GH14527@fieldses.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9EJ2qdq024512
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Tue, 14 Oct 2008 12:08:48 -0400
-
-> * David Miller (davem@davemloft.net) wrote:
-> > On the other hand, CONFIG_PSRWLOCK_LATENCY_TEST fails to build:
-> > 
-> >   CC      lib/psrwlock-latency-trace.o
-> > lib/psrwlock-latency-trace.c: In function â€˜calibrate_get_cyclesâ€™:
-> > lib/psrwlock-latency-trace.c:60: error: implicit declaration of function â€˜rdtsc_barrierâ€™
-> > 
-> > You could use sched_clock() or similar, we do have portable
-> > interfaces by which to do these things.  And if we don't
-> > have something fitting exactly what is needed here, add it :-)
-> > 
+> On Wed, 8 Oct 2008 19:22:37 -0400 "J. Bruce Fields" <bfields@fieldses.org> wrote:
+> Linus's release announcement for -rc9 suggested 2.6.27 could be released
+> (and the 2.6.28 merge window opened) any day now.
 > 
-> I think the %tick register we get with get_cycles() on sparc64 is what
-> is needed. Hopefully it's synchronized across CPUs on SMP systems ?
-
-Yes, it is synchronized.
-
-> On x86_64, rdtsc_barrier() issues a synchronizing instruction (cpuid)
-> which serializes the instructions executed on the CPU so we do not
-> execute rdtsc speculatively. Is reading %tick synchronized on sparc64 or
-> not ?
-
-It is synchronized on sparc64.
-
-> Is there a similar %tick register on sparc32 ? I've read somewhere it's
-> new to sparc v8. (http://cr.yp.to/hardware/sparc.html) So I guess we
-> should simply disable this psrwlock latency tracer on SPARC32 ?
-
-Not really.  There is only the time keeping device out in I/O space
-which is very expensive to access.
-
-This is why we don't have a sched_clock() implementation on sparc32.
-
-> Probably that the best way to deal with this is to create a 
+> What I'm currently planning to merge is the contents of
 > 
-> (generic code)
-> HAVE_GET_CYCLES
->   def_bool n
+> 	git://linux-nfs.org/~bfields/linux.git for-2.6.28
 > 
-> (sparc, x86, powerpc... Kconfig)
-> config SPARC64/X86/POWERPC
->   select HAVE_GET_CYCLES
+> summarized below.
 > 
-> And we can make CONFIG_PSRWLOCK_LATENCY_TEST depend on HAVE_GET_CYCLES.
-
-Yes, something like that.
-
-> > Also:
-> > 
-> > <stdin>:1421:2: warning: #warning syscall marker not implemented
-> > <stdin>:1425:2: warning: #warning syscall trace not implemented
-> > 
-> > which should be fixed by the following patch:
-> > 
-> > sparc: Add sys_trace() and sys_marker() syscall table entries.
-> > 
+> Chuck's contributed a ton of small patches preparing for ipv6 support
+> (which we expect to complete in 2.6.29), Tom Tucker has added support
+> for fast memory registration to the server rdma code, and Benny's
+> NFSv4.1 work continues to produce miscellaneous NFSv4.1 bugfixes and
+> cleanups.
 > 
-> Thanks, I'll merge it :) I don't expect the userspace tracing to be in
-> its final form, but it's good to add such support.
+> There's also one pure locking patch, which makes vfs support for posix
+> locking configurable.
+> 
+> And I've got some grace period patches (which I hope will also pave the
+> way for nfsd lock migration support in 2.6.29), and some minor tweaks to
+> our rpcsec_gss code which (together with recent nfs-utils patches)
+> finally makes rpcsec_gss for v2 and v3 work as well as it does for v4.
 
-I think so too :)
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Thanks.
+
+Is anything happening with David Howells's fscache and cachefiles work over
+there?
+
