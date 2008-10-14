@@ -1,70 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbYJNUaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbYJNUaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbYJNUaR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 16:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYJNUaD
+	id S1754737AbYJNUaw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 16:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYJNUam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 16:30:03 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:41275 "EHLO pardus.org.tr"
+	Tue, 14 Oct 2008 16:30:42 -0400
+Received: from styx.suse.cz ([82.119.242.94]:44671 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750899AbYJNUaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 16:30:01 -0400
-X-Greylist: delayed 611 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 16:30:00 EDT
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-To: Greg KH <gregkh@suse.de>
-Subject: Re: Linux 2.6.25.17
-Date: Tue, 14 Oct 2008 23:19:25 +0300
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-References: <20080908143516.GA7311@suse.de>
-In-Reply-To: <20080908143516.GA7311@suse.de>
+	id S1751054AbYJNUal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 16:30:41 -0400
+Date: Tue, 14 Oct 2008 22:30:40 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+cc: Jiri Kosina <jikos@jikos.cz>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] Adds a driver for Bright ABNT2 Brazilian keyboard
+In-Reply-To: <20081014110913.22f28ea7@pedra.chehab.org>
+Message-ID: <alpine.LNX.1.10.0810142228230.26779@jikos.suse.cz>
+References: <20081014110913.22f28ea7@pedra.chehab.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200810142319.33603.caglar@pardus.org.tr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+On Tue, 14 Oct 2008, Mauro Carvalho Chehab wrote:
 
-08 Eyl 2008 Pts tarihinde, Greg KH şunları yazmıştı: 
-> We (the -stable team) are announcing the release of the 2.6.25.17
-> kernel.
-> 
-> It contains lots of bugfixes, all over the map.  Any users of the 2.6.25
-> kernel series should upgrade to this version.  For details on the fixes,
-> see the changelog entries and the diffstat below.
-[...]
+> This keyboard needs to reset the LEDS during probe.
 
-> Yinghai Lu (1):
->       x86: work around MTRR mask setting
+Thanks. We also need to have additional entry added into 
+drivers/hid/hid-dummy.c, because of the COMPAT fun. I will fix this up and 
+apply the patch.
 
-That particular patch causes _lots_ of WARN_ON messages on one of our servers and following commit in Linus's tree solved that problem. If -stable team will release another .25 update maybe following patch can be considered to solve that sitation introduced with 2.6.2.5.17
+Thanks,
 
-commit 9754a5b840a209bc1f192d59f63e81b698a55ac8
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Fri Aug 22 08:22:23 2008 +0200
-
-    x86: work around MTRR mask setting, v2
-
-    improve the debug printout:
-
-    - make it actually display something
-    - print it only once
-
-    would be nice to have a WARN_ONCE() facility, to feed such things to
-    kerneloops.org.
-
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Cheers
 -- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+Jiri Kosina
+SUSE Labs
