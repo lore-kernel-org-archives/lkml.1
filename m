@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYJNC6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYJNC6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbYJNC6B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 22:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYJNC5u
+	id S1757335AbYJNC6e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 22:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbYJNC6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 22:57:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46139 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754458AbYJNC5u (ORCPT
+	Mon, 13 Oct 2008 22:58:21 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:44033 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755262AbYJNC6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 22:57:50 -0400
-Message-ID: <48F409E9.3030501@zytor.com>
-Date: Mon, 13 Oct 2008 19:54:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 13 Oct 2008 22:58:20 -0400
+Date: Mon, 13 Oct 2008 22:58:14 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, adilger@sun.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 4/4] jbd2: don't dirty original metadata buffer on abort
+Message-ID: <20081014025814.GB9332@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, adilger@sun.com,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, jack@suse.cz
+References: <48EF168A.4000705@hitachi.com> <48EF1A11.9090303@hitachi.com> <20081013203641.GA6469@mail.oracle.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       yhlu.kernel@gmail.com
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-References: <20081014005428.EC2D8DDF93@ozlabs.org>	 <48F3F014.3050406@zytor.com> <1223948488.8157.309.camel@pasglop>
-In-Reply-To: <1223948488.8157.309.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081013203641.GA6469@mail.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
->>>
->> I really think Linus' solution (add a resource printf modifier, that can 
->> contain the whole format) is much better.
+On Mon, Oct 13, 2008 at 01:36:42PM -0700, Joel Becker wrote:
+> > This patch prevents original metadata buffers from being dirtied
+> > on abort by clearing BH_JBDDirty flag from those buffers.  Thus,
+> > no metadata buffers are written to the filesystem without journaling.
 > 
-> I agree. In fact I may even have a patch somewhere for that. 
-> 
-> It has to be a pointer tho, thus what do we want ? Something that takes
-> a pointer to a resource_size_t or to a whole struct resource ? In the
-> later case, do we want to print the whole flags too ?
-> 
+> 	It's not my place to Ack such patches, but I noticed this bug
+> during Plumbers, and Eric and Andreas pointed me to this patch, which
+> fixes it quite nicely.  Just $0.02 :-)
 
-Linus already posted a patch.  He took a struct resource
-and printed it as a range.  I pointed out that we should use the flags 
-to determine formatting options, e.g. I/O space is only 16 bits on x86.
+Already pushed to Linus, and in mainline.  :-)
 
-	-hpa
+							- Ted
