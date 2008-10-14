@@ -1,168 +1,616 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbYJNAHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbYJNATR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759985AbYJNAHo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 20:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbYJNAHf
+	id S932200AbYJNATR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 20:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbYJNAS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 20:07:35 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55905 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757133AbYJNAHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 20:07:34 -0400
-Date: Tue, 14 Oct 2008 02:07:32 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [GIT] HID patches for 2.6.28
-Message-ID: <alpine.LNX.1.10.0810140055060.26779@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 13 Oct 2008 20:18:57 -0400
+Received: from crmm.lgl.lu ([158.64.72.228]:52893 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756416AbYJNASz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 20:18:55 -0400
+Date: Tue, 14 Oct 2008 02:18:50 +0200
+From: Alain Knaff <alain@knaff.lu>
+Message-Id: <200810140018.m9E0IoDd002419@hitchhiker.org.lu>
+Subject: [PATCH 2/5] init: bzip2 or lzma -compressed kernels and initrds
+To: <hpa@zytor.com>, <linux-kernel@vger.kernel.org>, <alain@knaff.lu>
+X-Mailer: mail (GNU Mailutils 1.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+This is the second part of the bzip2/lzma patch
 
-could you please pull from 'for-linus' branch of
+The bzip patch is based on an idea by Christian Ludwig, includes support for
+compressing the kernel with bzip2 or lzma rather than gzip. Both
+compressors give smaller sizes than gzip.  Lzma's decompresses faster
+than bzip2.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+It also supports ramdisks and initramfs' compressed using these two
+compressors.
 
-to receive 2.6.28 patches for the HID (the HIDeously slow devices, you 
-know) code.
+The functionality has been successfully used for a couple of years by
+the udpcast project
 
-The most notable change is a conversion of the whole HID core code into 
-bus, and conversion of all the quirks to specialized separate drivers.  
-Over past years, the quirks have been added in order to support broken 
-devices (not complying with HID standard) all over the code, and turned it 
-into total unmaintainable mess. The HID bus provides easy means for 
-drivers for quirky devices to use as much of the common code as possible, 
-and allows for re-implementing only the quirky part.
+This version applies to "tip" kernel 2.6.27
 
+This part contains:
+- support for new compressions (bzip2 and lzma) in initramfs and
+old-style ramdisk
+- config dialog for kernel compression (but new kernel compressions
+not yet supported)
 
- Documentation/feature-removal-schedule.txt  |    7 +
- drivers/hid/Kconfig                         |  195 +++++
- drivers/hid/Makefile                        |   34 +-
- drivers/hid/hid-a4tech.c                    |  162 ++++
- drivers/hid/hid-apple.c                     |  484 +++++++++++
- drivers/hid/hid-belkin.c                    |  105 +++
- drivers/hid/hid-cherry.c                    |   87 ++
- drivers/hid/hid-chicony.c                   |   80 ++
- drivers/hid/hid-core.c                      | 1177 +++++++++++++++++++++------
- drivers/hid/hid-cypress.c                   |  158 ++++
- drivers/hid/hid-dell.c                      |   74 ++
- drivers/hid/hid-dummy.c                     |   69 ++
- drivers/hid/hid-ezkey.c                     |   95 +++
- drivers/hid/hid-gyration.c                  |   96 +++
- drivers/hid/hid-ids.h                       |  397 +++++++++
- drivers/hid/hid-input-quirks.c              |  484 -----------
- drivers/hid/hid-input.c                     |  915 ++++++++--------------
- drivers/hid/hid-lg.c                        |  342 ++++++++
- drivers/hid/hid-lg.h                        |   18 +
- drivers/hid/{usbhid => }/hid-lg2ff.c        |   14 +-
- drivers/hid/{usbhid => }/hid-lgff.c         |   34 +-
- drivers/hid/hid-microsoft.c                 |  219 +++++
- drivers/hid/hid-monterey.c                  |   82 ++
- drivers/hid/hid-petalynx.c                  |  122 +++
- drivers/hid/{usbhid/hid-plff.c => hid-pl.c} |   83 ++-
- drivers/hid/hid-samsung.c                   |  100 +++
- drivers/hid/hid-sony.c                      |  110 +++
- drivers/hid/hid-sunplus.c                   |   82 ++
- drivers/hid/{usbhid => }/hid-tmff.c         |  138 ++--
- drivers/hid/{usbhid => }/hid-zpff.c         |   71 ++-
- drivers/hid/hidraw.c                        |    8 +-
- drivers/hid/usbhid/Kconfig                  |   75 --
- drivers/hid/usbhid/Makefile                 |   18 -
- drivers/hid/usbhid/hid-core.c               |  463 ++++++------
- drivers/hid/usbhid/hid-ff.c                 |   95 ---
- drivers/hid/usbhid/hid-pidff.c              |    5 +-
- drivers/hid/usbhid/hid-quirks.c             |  934 +---------------------
- drivers/hid/usbhid/hiddev.c                 |   20 +-
- drivers/hid/usbhid/usbhid.h                 |    4 +-
- drivers/hid/usbhid/usbkbd.c                 |   12 +-
- drivers/hid/usbhid/usbmouse.c               |    8 +-
- include/linux/hid.h                         |  373 +++++++--
- include/linux/hiddev.h                      |   46 +-
- include/linux/mod_devicetable.h             |   10 +
- net/bluetooth/hidp/core.c                   |  214 +++--
- net/bluetooth/hidp/hidp.h                   |    2 +
- scripts/mod/file2alias.c                    |   18 +
- 47 files changed, 5390 insertions(+), 2949 deletions(-)
+Signed-off-by: Alain Knaff <alain@knaff.lu>
 
-Alex Chiang (1):
-      HID: fix grammo in HID_COMPAT Kconfig help text
+---
 
-Anssi Hannula (1):
-      HID: fix a lockup regression when using force feedback on a PID device
-
-Antonio Ospite (2):
-      HID: hiddev.h: Fix mixed space and tabs in example code.
-      HID: hiddev.h: Fix example code.
-
-Greg Kroah-Hartman (2):
-      HID: remove info() macro from usb HID drivers
-      HID: remove warn() macro from usb hid drivers
-
-Harvey Harrison (1):
-      HID: make compat functions static
-
-Jiri Kosina (3):
-      HID: introduce list for hiddev creation forcing
-      HID: add support for Super Dual Box Pro USB PS2/PS2 adapter
-      HID: fix incorrent length condition in hidraw_write()
-
-Jiri Slaby (35):
-      modpost: add support for hid
-      HID: make a bus from hid code
-      HID: hid, make parsing event driven
-      HID: move ids into separate file
-      HID: move usage input mapping to hid.h
-      HID: move logitech quirks
-      HID: move ignore quirks
-      HID: move apple quirks
-      HID: add compat support
-      HID: indent switches/cases
-      HID: move microsoft quirks
-      HID: move sunplus quirks
-      HID: move cypress quirks
-      HID: move a4tech quirks
-      HID: move cherry quirks
-      HID: move ezkey quirks
-      HID: move chicony quirks
-      HID: move belkin quirks
-      HID: move petalynx quirks
-      HID: move monterey quirks
-      HID: move gyration quirks
-      HID: move samsung quirks
-      HID: remove hid-input-quirks
-      HID: remove rdesc quirk support
-      HID: move sony quirks
-      HID: move dell quirks
-      HID: move connect quirks
-      HID: move reset leds quirk
-      HID: move logitech FF processing
-      HID: fix tty<->hid deadlock
-      HID: move pantherlord FF processing
-      HID: move thrustmaster FF processing
-      HID: move zeroplus FF processing
-      HID: remove hid-ff
-      HID: convert to dev_* prints
-
-Peter Korsgaard (1):
-      HID: add appletv IR receiver quirk
-
-Randy Dunlap (1):
-      HID: fix gyration build error
-
-Remi Cattiau (1):
-      HID: ignore iBuddy devices
-
-Richard Hughes (1):
-      HID: remove ignore quirk for MGE UPS devices
-
-Sergey Belyashov (1):
-      HID: Autocentering support for Logitech MOMO Racing Wheel
-
-Tomoya Adachi (1):
-      HID: report descriptor fix for remaining MacBook JIS keyboards
-
+diff -urNp library/drivers/block/Kconfig generic/drivers/block/Kconfig
+--- library/drivers/block/Kconfig	2008-10-11 14:11:56.000000000 +0200
++++ generic/drivers/block/Kconfig	2008-10-13 22:55:42.000000000 +0200
+@@ -357,6 +357,30 @@ config BLK_DEV_XIP
+ 	  will prevent RAM block device backing store memory from being
+ 	  allocated from highmem (only a problem for highmem systems).
+ 
++config RD_BZIP2
++	bool "Initial ramdisk compressed using bzip2"
++	default n
++	depends on BLK_DEV_INITRD=y
++	help
++	  Support loading of a bzip2 encoded initial ramdisk or cpio buffer
++	  If unsure, say N.
++
++config RD_LZMA
++	bool "Initial ramdisk compressed using lzma"
++	default n
++	depends on BLK_DEV_INITRD=y
++	help
++	  Support loading of a lzma encoded initial ramdisk or cpio buffer
++	  If unsure, say N.
++
++config RD_GZIP
++	bool "Initial ramdisk compressed using gzip"
++	default y
++	depends on BLK_DEV_INITRD=y
++	help
++	  Support loading of a gzip encoded initial ramdisk or cpio buffer.
++	  If unsure, say Y.
++
+ config CDROM_PKTCDVD
+ 	tristate "Packet writing on CD/DVD media"
+ 	depends on !UML
+diff -urNp library/include/linux/decompress/mm.h generic/include/linux/decompress/mm.h
+--- library/include/linux/decompress/mm.h	2008-10-14 00:59:56.000000000 +0200
++++ generic/include/linux/decompress/mm.h	2008-10-14 01:22:39.000000000 +0200
+@@ -10,7 +10,7 @@
+ #ifndef DECOMPR_MM_H
+ #define DECOMPR_MM_H
+ 
+-#ifndef NO_INFLATE_MALLOC
++#ifdef STATIC
+ 
+ /* Code active when included from pre-boot environment: */
+ 
+@@ -56,7 +56,7 @@ static void free(void *where)
+ 
+ #define INIT
+ 
+-#else /* NO_INFLATE_MALLOC */
++#else /* STATIC */
+ 
+ /* Code active when compiled standalone for use when loading ramdisk: */
+ 
+@@ -75,16 +75,15 @@ static void free(void *where)
+ #define large_malloc(a) vmalloc(a)
+ #define large_free(a) vfree(a)
+ 
+-#if 0 /* temporarily disable this section until generic is patched */
+ static void(*error)(char *m);
+ #define set_error_fn(x) error = x;
++#define NEW_CODE
+ 
+ #define INIT __init
+ #define STATIC
+-#endif /* 0 */
+ 
+ #include <linux/init.h>
+ 
+-#endif /* NO_INFLATE_MALLOC */
++#endif /* STATIC */
+ 
+ #endif /* DECOMPR_MM_H */
+diff -urNp library/init/do_mounts_rd.c generic/init/do_mounts_rd.c
+--- library/init/do_mounts_rd.c	2008-10-11 14:12:10.000000000 +0200
++++ generic/init/do_mounts_rd.c	2008-10-13 22:55:42.000000000 +0200
+@@ -10,6 +10,12 @@
+ 
+ #include "do_mounts.h"
+ 
++#include <linux/decompress/generic.h>
++
++#include <linux/decompress/bunzip2.h>
++#include <linux/decompress/unlzma.h>
++#include <linux/decompress/inflate.h>
++
+ int __initdata rd_prompt = 1;/* 1 = prompt for RAM disk, 0 = don't prompt */
+ 
+ static int __init prompt_ramdisk(char *str)
+@@ -28,7 +34,9 @@ static int __init ramdisk_start_setup(ch
+ }
+ __setup("ramdisk_start=", ramdisk_start_setup);
+ 
+-static int __init crd_load(int in_fd, int out_fd);
++
++
++static int __init crd_load(int in_fd, int out_fd, decompress_fn deco);
+ 
+ /*
+  * This routine tries to find a RAM disk image to load, and returns the
+@@ -44,7 +52,7 @@ static int __init crd_load(int in_fd, in
+  * 	gzip
+  */
+ static int __init 
+-identify_ramdisk_image(int fd, int start_block)
++identify_ramdisk_image(int fd, int start_block, decompress_fn *decompressor)
+ {
+ 	const int size = 512;
+ 	struct minix_super_block *minixsb;
+@@ -70,6 +78,7 @@ identify_ramdisk_image(int fd, int start
+ 	sys_lseek(fd, start_block * BLOCK_SIZE, 0);
+ 	sys_read(fd, buf, size);
+ 
++#ifdef CONFIG_RD_GZIP
+ 	/*
+ 	 * If it matches the gzip magic numbers, return -1
+ 	 */
+@@ -77,9 +86,39 @@ identify_ramdisk_image(int fd, int start
+ 		printk(KERN_NOTICE
+ 		       "RAMDISK: Compressed image found at block %d\n",
+ 		       start_block);
++		*decompressor = gunzip;
+ 		nblocks = 0;
+ 		goto done;
+ 	}
++#endif
++
++#ifdef CONFIG_RD_BZIP2
++	/*
++	 * If it matches the bzip2 magic numbers, return -1
++	 */
++	if (buf[0] == 0x42 && (buf[1] == 0x5a)) {
++		printk(KERN_NOTICE
++		       "RAMDISK: Bzipped image found at block %d\n",
++		       start_block);
++		*decompressor = bunzip2;
++		nblocks = 0;
++		goto done;
++	}
++#endif
++
++#ifdef CONFIG_RD_LZMA
++	/*
++	 * If it matches the lzma magic numbers, return -1
++	 */
++	if (buf[0] == 0x5d && (buf[1] == 0x00)) {
++		printk(KERN_NOTICE
++		       "RAMDISK: Lzma image found at block %d\n",
++		       start_block);
++		*decompressor = unlzma;
++		nblocks = 0;
++		goto done;
++	}
++#endif
+ 
+ 	/* romfs is at block zero too */
+ 	if (romfsb->word0 == ROMSB_WORD0 &&
+@@ -143,6 +182,7 @@ int __init rd_load_image(char *from)
+ 	int nblocks, i, disk;
+ 	char *buf = NULL;
+ 	unsigned short rotate = 0;
++	decompress_fn decompressor = NULL;
+ #if !defined(CONFIG_S390) && !defined(CONFIG_PPC_ISERIES)
+ 	char rotator[4] = { '|' , '/' , '-' , '\\' };
+ #endif
+@@ -155,12 +195,12 @@ int __init rd_load_image(char *from)
+ 	if (in_fd < 0)
+ 		goto noclose_input;
+ 
+-	nblocks = identify_ramdisk_image(in_fd, rd_image_start);
++	nblocks = identify_ramdisk_image(in_fd, rd_image_start, &decompressor);
+ 	if (nblocks < 0)
+ 		goto done;
+ 
+ 	if (nblocks == 0) {
+-		if (crd_load(in_fd, out_fd) == 0)
++		if (crd_load(in_fd, out_fd, decompressor) == 0)
+ 			goto successful_load;
+ 		goto done;
+ 	}
+@@ -259,138 +299,48 @@ int __init rd_load_disk(int n)
+ 	return rd_load_image("/dev/root");
+ }
+ 
+-/*
+- * gzip declarations
+- */
+-
+-#define OF(args)  args
+-
+-#ifndef memzero
+-#define memzero(s, n)     memset ((s), 0, (n))
+-#endif
+-
+-typedef unsigned char  uch;
+-typedef unsigned short ush;
+-typedef unsigned long  ulg;
+-
+-#define INBUFSIZ 4096
+-#define WSIZE 0x8000    /* window size--must be a power of two, and */
+-			/*  at least 32K for zip's deflate method */
+-
+-static uch *inbuf;
+-static uch *window;
+-
+-static unsigned insize;  /* valid bytes in inbuf */
+-static unsigned inptr;   /* index of next byte to be processed in inbuf */
+-static unsigned outcnt;  /* bytes in output buffer */
+ static int exit_code;
+-static int unzip_error;
+-static long bytes_out;
++static int decompress_error;
+ static int crd_infd, crd_outfd;
+ 
+-#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf())
+-		
+-/* Diagnostic functions (stubbed out) */
+-#define Assert(cond,msg)
+-#define Trace(x)
+-#define Tracev(x)
+-#define Tracevv(x)
+-#define Tracec(c,x)
+-#define Tracecv(c,x)
+-
+-#define STATIC static
+-#define INIT __init
+-
+-static int  __init fill_inbuf(void);
+-static void __init flush_window(void);
+-static void __init error(char *m);
+-
+-#define NO_INFLATE_MALLOC
+-
+-#include "../lib/inflate.c"
+-
+-/* ===========================================================================
+- * Fill the input buffer. This is called only when the buffer is empty
+- * and at least one byte is really needed.
+- * Returning -1 does not guarantee that gunzip() will ever return.
+- */
+-static int __init fill_inbuf(void)
++static int __init compr_fill(void *buf, unsigned int len)
+ {
+-	if (exit_code) return -1;
+-	
+-	insize = sys_read(crd_infd, inbuf, INBUFSIZ);
+-	if (insize == 0) {
+-		error("RAMDISK: ran out of compressed data");
+-		return -1;
+-	}
+-
+-	inptr = 1;
+-
+-	return inbuf[0];
++	int r = sys_read(crd_infd, buf, len);
++	if (r < 0)
++		printk(KERN_ERR "RAMDISK: error while reading compressed data");
++	else if (r == 0)
++		printk(KERN_ERR "RAMDISK: EOF while reading compressed data");
++	return r;
+ }
+ 
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-static void __init flush_window(void)
++static int __init compr_flush(void *window, unsigned int outcnt)
+ {
+-    ulg c = crc;         /* temporary variable */
+-    unsigned n, written;
+-    uch *in, ch;
+-    
+-    written = sys_write(crd_outfd, window, outcnt);
+-    if (written != outcnt && unzip_error == 0) {
+-	printk(KERN_ERR "RAMDISK: incomplete write (%d != %d) %ld\n",
+-	       written, outcnt, bytes_out);
+-	unzip_error = 1;
+-    }
+-    in = window;
+-    for (n = 0; n < outcnt; n++) {
+-	    ch = *in++;
+-	    c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-    }
+-    crc = c;
+-    bytes_out += (ulg)outcnt;
+-    outcnt = 0;
++	int written = sys_write(crd_outfd, window, outcnt);
++	if (written != outcnt) {
++		if (decompress_error == 0)
++			printk(KERN_ERR
++			       "RAMDISK: incomplete write (%d != %d)\n",
++			       written, outcnt);
++		decompress_error = 1;
++		return -1;
++	}
++	return outcnt;
+ }
+ 
+ static void __init error(char *x)
+ {
+ 	printk(KERN_ERR "%s\n", x);
+ 	exit_code = 1;
+-	unzip_error = 1;
++	decompress_error = 1;
+ }
+ 
+-static int __init crd_load(int in_fd, int out_fd)
++static int __init crd_load(int in_fd, int out_fd, decompress_fn deco)
+ {
+ 	int result;
+-
+-	insize = 0;		/* valid bytes in inbuf */
+-	inptr = 0;		/* index of next byte to be processed in inbuf */
+-	outcnt = 0;		/* bytes in output buffer */
+-	exit_code = 0;
+-	bytes_out = 0;
+-	crc = (ulg)0xffffffffL; /* shift register contents */
+-
+ 	crd_infd = in_fd;
+ 	crd_outfd = out_fd;
+-	inbuf = kmalloc(INBUFSIZ, GFP_KERNEL);
+-	if (!inbuf) {
+-		printk(KERN_ERR "RAMDISK: Couldn't allocate gzip buffer\n");
+-		return -1;
+-	}
+-	window = kmalloc(WSIZE, GFP_KERNEL);
+-	if (!window) {
+-		printk(KERN_ERR "RAMDISK: Couldn't allocate gzip window\n");
+-		kfree(inbuf);
+-		return -1;
+-	}
+-	makecrc();
+-	result = gunzip();
+-	if (unzip_error)
++	result = deco(NULL, 0, compr_fill, compr_flush, NULL, NULL, error);
++	if (decompress_error)
+ 		result = 1;
+-	kfree(inbuf);
+-	kfree(window);
+ 	return result;
+ }
+diff -urNp library/init/initramfs.c generic/init/initramfs.c
+--- library/init/initramfs.c	2008-10-13 22:22:37.000000000 +0200
++++ generic/init/initramfs.c	2008-10-13 22:55:42.000000000 +0200
+@@ -330,11 +330,14 @@ static int __init write_buffer(char *buf
+ 	return len - count;
+ }
+ 
+-static void __init flush_buffer(char *buf, unsigned len)
++
++static int __init flush_buffer(void *bufv, unsigned len)
+ {
++	char *buf = (char *) bufv;
+ 	int written;
++	int origLen = len;
+ 	if (message)
+-		return;
++		return -1;
+ 	while ((written = write_buffer(buf, len)) < len && !message) {
+ 		char c = buf[written];
+ 		if (c == '0') {
+@@ -348,73 +351,14 @@ static void __init flush_buffer(char *bu
+ 		} else
+ 			error("junk in compressed archive");
+ 	}
++	return origLen;
+ }
+ 
+-/*
+- * gzip declarations
+- */
++static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
+ 
+-#define OF(args)  args
+-
+-#ifndef memzero
+-#define memzero(s, n)     memset ((s), 0, (n))
+-#endif
+-
+-typedef unsigned char  uch;
+-typedef unsigned short ush;
+-typedef unsigned long  ulg;
+-
+-#define WSIZE 0x8000    /* window size--must be a power of two, and */
+-			/*  at least 32K for zip's deflate method */
+-
+-static uch *inbuf;
+-static uch *window;
+-
+-static unsigned insize;  /* valid bytes in inbuf */
+-static unsigned inptr;   /* index of next byte to be processed in inbuf */
+-static unsigned outcnt;  /* bytes in output buffer */
+-static long bytes_out;
+-
+-#define get_byte()  (inptr < insize ? inbuf[inptr++] : -1)
+-		
+-/* Diagnostic functions (stubbed out) */
+-#define Assert(cond,msg)
+-#define Trace(x)
+-#define Tracev(x)
+-#define Tracevv(x)
+-#define Tracec(c,x)
+-#define Tracecv(c,x)
+-
+-#define STATIC static
+-#define INIT __init
+-
+-static void __init flush_window(void);
+-static void __init error(char *m);
+-
+-#define NO_INFLATE_MALLOC
+-
+-#include "../lib/inflate.c"
+-
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-static void __init flush_window(void)
+-{
+-	ulg c = crc;         /* temporary variable */
+-	unsigned n;
+-	uch *in, ch;
+-
+-	flush_buffer(window, outcnt);
+-	in = window;
+-	for (n = 0; n < outcnt; n++) {
+-		ch = *in++;
+-		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-	}
+-	crc = c;
+-	bytes_out += (ulg)outcnt;
+-	outcnt = 0;
+-}
++#include <linux/decompress/bunzip2.h>
++#include <linux/decompress/unlzma.h>
++#include <linux/decompress/inflate.h>
+ 
+ static char * __init unpack_to_rootfs(char *buf, unsigned len)
+ {
+@@ -422,9 +366,10 @@ static char * __init unpack_to_rootfs(ch
+ 	header_buf = kmalloc(110, GFP_KERNEL);
+ 	symlink_buf = kmalloc(PATH_MAX + N_ALIGN(PATH_MAX) + 1, GFP_KERNEL);
+ 	name_buf = kmalloc(N_ALIGN(PATH_MAX), GFP_KERNEL);
+-	window = kmalloc(WSIZE, GFP_KERNEL);
+-	if (!window || !header_buf || !symlink_buf || !name_buf)
++
++	if (!header_buf || !symlink_buf || !name_buf)
+ 		panic("can't allocate buffers");
++
+ 	state = Start;
+ 	this_header = 0;
+ 	message = NULL;
+@@ -444,21 +389,41 @@ static char * __init unpack_to_rootfs(ch
+ 			continue;
+ 		}
+ 		this_header = 0;
+-		insize = len;
+-		inbuf = buf;
+-		inptr = 0;
+-		outcnt = 0;		/* bytes in output buffer */
+-		bytes_out = 0;
+-		crc = (ulg)0xffffffffL; /* shift register contents */
+-		makecrc();
+-		gunzip();
++#ifdef CONFIG_RD_GZIP
++		if (!gunzip(buf, len, NULL, flush_buffer, NULL,
++			    &my_inptr, error) &&
++		    message == NULL)
++			goto ok;
++#endif
++
++#ifdef CONFIG_RD_BZIP2
++		message = NULL; /* Zero out message, or else cpio will
++				   think an error has already occured */
++		if (!bunzip2(buf, len, NULL, flush_buffer, NULL,
++			     &my_inptr, error) < 0
++		    &&
++		    message == NULL) {
++			goto ok;
++		}
++#endif
++
++#ifdef CONFIG_RD_LZMA
++		message = NULL; /* Zero out message, or else cpio will
++				   think an error has already occured */
++		if (!unlzma(buf, len, NULL, flush_buffer, NULL,
++			    &my_inptr, error) < 0
++		    &&
++		    message == NULL) {
++			goto ok;
++		}
++#endif
++ok:
+ 		if (state != Reset)
+-			error("junk in gzipped archive");
+-		this_header = saved_offset + inptr;
+-		buf += inptr;
+-		len -= inptr;
++			error("junk in compressed archive");
++		this_header = saved_offset + my_inptr;
++		buf += my_inptr;
++		len -= my_inptr;
+ 	}
+-	kfree(window);
+ 	kfree(name_buf);
+ 	kfree(symlink_buf);
+ 	kfree(header_buf);
+diff -urNp library/init/Kconfig generic/init/Kconfig
+--- library/init/Kconfig	2008-10-11 14:12:10.000000000 +0200
++++ generic/init/Kconfig	2008-10-13 22:55:42.000000000 +0200
+@@ -101,6 +101,56 @@ config LOCALVERSION_AUTO
+ 
+ 	  which is done within the script "scripts/setlocalversion".)
+ 
++choice
++        prompt "Kernel compression mode"
++        default KERNEL_GZIP
++        help
++	  The linux kernel is a kind of self-extracting executable.
++	  Several compression algorithms are available, which differ
++	  in efficiency, compression and decompression speed.
++	  Compression speed is only relevant when building a kernel.
++	  Decompression speed is relevant at each boot.
++
++	  If you have any problems with bzip2 or lzma compressed
++	  kernels, mail me (Alain Knaff) <alain@knaff.lu>. (An older
++	  version of this functionality (bzip2 only), for 2.4, was
++	  supplied by Christian Ludwig)
++
++	  High compression options are mostly useful for users, who
++	  are low on disk space (embedded systems), but for whom ram
++	  size matters less.
++
++	  If in doubt, select 'gzip'
++
++config KERNEL_GZIP
++       bool "Gzip"
++       help
++         The old and tried gzip compression. Its compression ratio is
++	 the poorest among the 3 choices; however its speed (both
++	 compression and decompression) is the fastest.
++
++config KERNEL_BZIP2
++	bool "Bzip2"
++	help
++	  Its compression ratio and speed is intermediate.
++	  Decompression speed is slowest among the 3.
++	  The kernel size is about 10 per cent smaller with bzip2,
++	  in comparison to gzip.
++	  Bzip2 uses a large amount of memory. For modern kernels
++	  you will need at least 8MB RAM or more for booting.
++
++config KERNEL_LZMA
++       bool "LZMA"
++       help
++         The most recent compression algorithm.
++	 Its ratio is best, decompression speed is between the other
++	 2. Compression is slowest.
++	 The kernel size is about 33 per cent smaller with lzma,
++	 in comparison to gzip.
++
++endchoice
++
++
+ config SWAP
+ 	bool "Support for paging of anonymous memory (swap)"
+ 	depends on MMU && BLOCK
