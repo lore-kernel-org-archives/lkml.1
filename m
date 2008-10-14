@@ -1,52 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbYJNAzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbYJNAzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758733AbYJNAzA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 20:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYJNAyu
+	id S1760899AbYJNAzc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 20:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758555AbYJNAy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 20:54:50 -0400
-Received: from ozlabs.org ([203.10.76.45]:38033 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754380AbYJNAyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 20:54:50 -0400
-To: <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, <yhlu.kernel@gmail.com>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 14 Oct 2008 11:53:05 +1100
-Subject: [PATCH] Fix broken debug output reserve_region_with_split()
-Message-Id: <20081014005428.EC2D8DDF93@ozlabs.org>
+	Mon, 13 Oct 2008 20:54:58 -0400
+Received: from smtp2.ono.com ([62.42.230.20]:6102 "EHLO resmaa04.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758297AbYJNAy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 20:54:57 -0400
+Date: Tue, 14 Oct 2008 02:54:53 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.27-git3: no SD card reader
+Message-ID: <20081014025453.617f2ef8@werewolf.home>
+X-Mailer: Claws Mail 3.6.1cvs2 (GTK+ 2.14.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That debug outpout in kernel/resource.c is busted on 32-bit
-machines, fix it with appropriate casts.
+Hi...
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+More problems with git3. The left SD card reader is not detected on the One.
+With a working kernel (distro 2.6.27):
 
-One day Yinghai will figure out that resource_size_t can be 32-bit
-and thus as printk arguments must be cast to (unsigned long long)
-explicitely when using %llx... hopefully, that day, Ingo will also
-catch these before committing them as it's not the first one like
-this :-)
+Oct 14 02:37:34 one kernel: sdhci: Secure Digital Host Controller Interface driver
+Oct 14 02:37:34 one kernel: sdhci: Copyright(c) Pierre Ossman
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:01:00.0: SDHCI controller found [197b:2382] (rev 0)
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:01:00.0: setting latency timer to 64
+Oct 14 02:37:34 one kernel: mmc0: SDHCI controller on PCI [0000:01:00.0] using ADMA
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:01:00.2: SDHCI controller found [197b:2381] (rev 0)
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:01:00.2: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:01:00.2: Refusing to bind to secondary interface.
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:01:00.2: PCI INT A disabled
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:04:00.0: SDHCI controller found [197b:2382] (rev 0)
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:04:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:04:00.0: setting latency timer to 64
+Oct 14 02:37:34 one kernel: mmc1: SDHCI controller on PCI [0000:04:00.0] using ADMA
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:04:00.2: SDHCI controller found [197b:2381] (rev 0)
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:04:00.2: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:04:00.2: Refusing to bind to secondary interface.
+Oct 14 02:37:34 one kernel: sdhci-pci 0000:04:00.2: PCI INT A disabled
+Oct 14 02:37:34 one kernel: jmb38x_ms 0000:01:00.3: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 14 02:37:34 one kernel: jmb38x_ms 0000:01:00.3: setting latency timer to 64
+Oct 14 02:37:34 one kernel: jmb38x_ms 0000:04:00.3: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+Oct 14 02:37:34 one kernel: jmb38x_ms 0000:04:00.3: setting latency timer to 64
+Oct 14 02:37:34 one kernel: mmc0: new SD card at address 0002
+Oct 14 02:37:34 one kernel: mmc1: new SDHC card at address 0002
+Oct 14 02:37:34 one kernel: mmcblk0: mmc0:0002 00000 1974272KiB
+Oct 14 02:37:34 one kernel:  mmcblk0: unknown partition table
+Oct 14 02:37:34 one kernel: mmcblk1: mmc1:0002       7917568KiB
+Oct 14 02:37:34 one kernel:  mmcblk1: p1
 
+With -git3:
 
- kernel/resource.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Oct 14 02:44:27 one kernel: sdhci: Secure Digital Host Controller Interface driver
+Oct 14 02:44:27 one kernel: sdhci: Copyright(c) Pierre Ossman
+Oct 14 02:44:27 one kernel: jmb38x_ms 0000:01:00.3: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 14 02:44:27 one kernel: jmb38x_ms 0000:01:00.3: setting latency timer to 64
+Oct 14 02:44:27 one kernel: jmb38x_ms 0000:04:00.3: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+Oct 14 02:44:27 one kernel: jmb38x_ms 0000:04:00.3: setting latency timer to 64
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:01:00.0: SDHCI controller found [197b:2382] (rev 0)
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:01:00.0: setting latency timer to 64
+Oct 14 02:44:27 one kernel: mmc0: SDHCI controller on PCI [0000:01:00.0] using ADMA
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:01:00.2: SDHCI controller found [197b:2381] (rev 0)
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:01:00.2: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:01:00.2: Refusing to bind to secondary interface.
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:01:00.2: PCI INT A disabled
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:04:00.0: SDHCI controller found [197b:2382] (rev 0)
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:04:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:04:00.0: setting latency timer to 64
+Oct 14 02:44:27 one kernel: mmc1: SDHCI controller on PCI [0000:04:00.0] using ADMA
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:04:00.2: SDHCI controller found [197b:2381] (rev 0)
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:04:00.2: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:04:00.2: Refusing to bind to secondary interface.
+Oct 14 02:44:27 one kernel: sdhci-pci 0000:04:00.2: PCI INT A disabled
+Oct 14 02:44:27 one kernel: mmc0: error -84 whilst initialising SD card
 
---- linux-work.orig/kernel/resource.c	2008-10-14 11:48:31.000000000 +1100
-+++ linux-work/kernel/resource.c	2008-10-14 11:48:50.000000000 +1100
-@@ -550,8 +550,9 @@ static void __init __reserve_region_with
- 
- 	if (!res) {
- 		printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
--			 conflict->name, conflict->start, conflict->end,
--			 name, start, end);
-+		       conflict->name, (unsigned long long)conflict->start,
-+		       (unsigned long long)conflict->end,
-+		       name, (unsigned long long)start, (unsigned long long)end);
- 
- 		/* failed, split and try again */
- 
+Any ideas ?
 
+TIA
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.0 (Cooker) for i586
+Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
