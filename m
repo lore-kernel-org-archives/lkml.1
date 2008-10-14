@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbYJNVEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbYJNVFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbYJNVEy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 17:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYJNVEp
+	id S1754407AbYJNVFU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 17:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbYJNVEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 17:04:45 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55520 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753168AbYJNVEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 17:04:45 -0400
-To: matt.craighead@conifersystems.com
-CC: miklos@szeredi.hu, tj@kernel.org, fuse-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-In-reply-to: <2cff7cb50810141032m5793a405h7425dfa122fb67ba@mail.gmail.com>
-	(matt.craighead@conifersystems.com)
-Subject: Re: [fuse-devel] [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org>
-	 <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <2cff7cb50810141032m5793a405h7425dfa122fb67ba@mail.gmail.com>
-Message-Id: <E1Kpr47-0000lw-Fk@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 14 Oct 2008 23:04:27 +0200
+	Tue, 14 Oct 2008 17:04:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39196 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754790AbYJNVEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 17:04:51 -0400
+Date: Tue, 14 Oct 2008 23:04:04 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [kerneloops] regression in 2.6.27 wrt "lock_page" and the
+	"hwclock" program
+Message-ID: <20081014210404.GJ10429@nb.net.home>
+References: <20081004174433.14a5e093@infradead.org> <20081004215225.2444d54b.akpm@linux-foundation.org> <20081005081145.30ba921b@infradead.org> <20081005102742.de8353b4.akpm@linux-foundation.org> <20081005103826.6771540a@infradead.org> <20081012200004.GI10429@nb.net.home> <alpine.LFD.2.00.0810121308210.3402@nehalem.linux-foundation.org> <20081013105559.15ccb67f@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081013105559.15ccb67f@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008, Matt Craighead wrote:
-> > The other is that I really
-> > really don't want people to start implementing new custom ioctls for
-> > their filesystems, as I think that way lies madness.
-> 
-> Do you have a proposed alternative for file systems that need complex
-> non-standard file system operations?  I think the suggestion on the web site
-> was to use get/setxattr.  I tried that and found two problems:
-> 
-> 1. there's no bidirectional version that both sends arguments to the
-> operation and receives more than just a status back in a single API call --
-> you can get, you can set, but you can't set and get extra info back
-> 2. xattr's are limited in size by the kernel; large ones get truncated
+On Mon, Oct 13, 2008 at 10:55:59AM -0400, Arjan van de Ven wrote:
+> Karel: Can you describe what it WANTS to do so we can see if we can
 
-Another alternative is to use some sort of out-of-band communication
-with the server (socket, shared memory, etc).  Doesn't suffer from
-either of the above issues and does not have the limitations and
-implementation problems (having to access another process's address
-space directly) of ioctls.
+ It wants to "atomically" (without context switch) read/write time
+ from CMOS. This is unrealistic of course.
 
-OTOH if you can solve it with standard file operations within the same
-namespace as the regular files, that's the best solution.  Like you
-said you get network transparency, and you also let normal tools
-operate on the special control files, which can be a very powerful
-thing (think scripting).  You'd never get that with ioctls, and that's
-one of the reasons why ioctls suck.
+> just extend the linux kernel to do that the right way?
 
-Miklos
+ The kernel is already extended and hwclock uses the extension :-)
+ The solution is /dev/rtc.
+
+ The code that directly works with CMOS is fallback solution for
+ people who don't want or can not use the standard RTC device. I guess
+ people use this functionally for experiments only. Today the RTC
+ framework should work everywhere.
+
+ I'll simply remove the "cli" / "sti" code -- eventually I can try
+ to optimize it by mlockall() and SCHED_FIFO (as suggested by Linus).
+
+    Karel
+
+-- 
+ Karel Zak  <kzak@redhat.com>
