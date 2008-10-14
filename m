@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYJNC6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYJNDBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbYJNC6e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 22:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbYJNC6V
+	id S1756933AbYJNDBI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 23:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbYJNDAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 22:58:21 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:44033 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755262AbYJNC6U (ORCPT
+	Mon, 13 Oct 2008 23:00:55 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:11597 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754852AbYJNDAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 22:58:20 -0400
-Date: Mon, 13 Oct 2008 22:58:14 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, adilger@sun.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 4/4] jbd2: don't dirty original metadata buffer on abort
-Message-ID: <20081014025814.GB9332@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, adilger@sun.com,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, jack@suse.cz
-References: <48EF168A.4000705@hitachi.com> <48EF1A11.9090303@hitachi.com> <20081013203641.GA6469@mail.oracle.com>
+	Mon, 13 Oct 2008 23:00:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TSCnQVzFi+f7+aobqq8HDVsEaKU1Oh1Ix3bssIiNZPt8E3JH8DUgAJB7fx6HwwAzN/
+         HsPwuoks37HArakjDHOyECYhmoOtznZ2VItoEpFtAi/tq27t7isLLn7zkBPfaQlblrK0
+         qwaI8GVMDJBX++H+RUyEB6mc4+c5ODSR34zXk=
+Date: Mon, 13 Oct 2008 23:00:50 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Liam Girdwood <lrg@kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Subject: Re: [PATCH] input: wm97xx - update email address for Liam Girdwood
+Message-ID: <20081014030049.GD8594@anvil.corenet.prv>
+References: <1223814477.6814.351.camel@dell-desktop.example.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081013203641.GA6469@mail.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1223814477.6814.351.camel@dell-desktop.example.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 01:36:42PM -0700, Joel Becker wrote:
-> > This patch prevents original metadata buffers from being dirtied
-> > on abort by clearing BH_JBDDirty flag from those buffers.  Thus,
-> > no metadata buffers are written to the filesystem without journaling.
+On Sun, Oct 12, 2008 at 01:27:57PM +0100, Liam Girdwood wrote:
+> This updates the email address for Liam Girdwood as my old address is no
+> longer valid.
 > 
-> 	It's not my place to Ack such patches, but I noticed this bug
-> during Plumbers, and Eric and Andreas pointed me to this patch, which
-> fixes it quite nicely.  Just $0.02 :-)
+> Signed-off-by: Liam Girdwood <lrg@slimlogic.co.uk>
 
-Already pushed to Linus, and in mainline.  :-)
+Applied, thank you Liam.
 
-							- Ted
+-- 
+Dmitry
