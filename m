@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751438AbYJNNSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751800AbYJNNT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751438AbYJNNSY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 09:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYJNNSQ
+	id S1751800AbYJNNT3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 09:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbYJNNTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 09:18:16 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:16677 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbYJNNSP (ORCPT
+	Tue, 14 Oct 2008 09:19:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:22439 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750791AbYJNNTV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 09:18:15 -0400
+	Tue, 14 Oct 2008 09:19:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding:sender;
-        b=E3X055oxlJHRursv9wYe6iYOXc8ZD8h6z/q6R0WI0/2ZW163yzB5YgEe52ab6Dc26y
-         i3+NsnvvNBzn9kRoyamFAdZWSG2j8yH4X0O0vEK/DrhBJTZtpSWzGs6126FozWL2AAN0
-         sUJBRvFGlwz3GT8sO0AhoZtxxIELkcBlOlUQg=
-Message-ID: <48F49C0F.7050705@tuffmail.co.uk>
-Date: Tue, 14 Oct 2008 14:18:07 +0100
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=Pad7XNfNIInIEmpYL4EFq+NdSu0JDW5/qvO6yOU9vih7hN87uqs31/oFTQ0sc8UGH8
+         ec/6ksDo0gGW+GdBFf6rUnyayTyGYBFXyOd6I78WJpnqTz1NHQX1id60EmNZTevf17G+
+         jujpeHxU5p6M0e5RKL8ZlUhkqNa+m033D3GL4=
+Message-ID: <48F49C53.1070103@tuffmail.co.uk>
+Date: Tue, 14 Oct 2008 14:19:15 +0100
 From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: =?ISO-8859-1?Q?=22Fr=E9d=E9ric_Weisbecker=22?= <fweisbec@gmail.com>,
+CC: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
        Arjan van de Ven <arjan@infradead.org>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] fastboot: fix bootgraph.pl to run with "use strict"
+Subject: [PATCH 2/2] fastboot: fix row order in bootgraph.pl
+References: <48F49C0F.7050705@tuffmail.co.uk>
+In-Reply-To: <48F49C0F.7050705@tuffmail.co.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As a perl novice, I would prefer to have the benefit of the interpreters'
-wisdom.  It turns out there were already some warnings, so let's fix them.
+When bootgraph.pl parses a file, it gives one row for each initcall's 
+pid.  But they are displayed in random (perl hash) order.  Let's
+sort the pids by the start time of their first initcall instead.
+
+This helps trace module initcalls, where each has a separate pid.  
+bootgraph.pl will show module initcalls during the initramfs; it may
+also be adapted to show subsequent module initcalls.
 
 Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 
 diff --git a/scripts/bootgraph.pl b/scripts/bootgraph.pl
-index 5e7316e..ea2b079 100644
+index ea2b079..d2c61ef 100644
 --- a/scripts/bootgraph.pl
 +++ b/scripts/bootgraph.pl
-@@ -37,7 +37,10 @@
- # 	dmesg | perl scripts/bootgraph.pl > output.svg
- #
- 
--my %start, %end;
-+use strict;
-+
-+my %start;
-+my %end;
- my $done = 0;
- my $maxtime = 0;
- my $firsttime = 100;
-@@ -105,12 +108,14 @@ my $threshold = ($maxtime - $firsttime) / 60.0;
+@@ -108,9 +108,9 @@ my $threshold = ($maxtime - $firsttime) / 60.0;
  my $stylecounter = 0;
  my %rows;
  my $rowscount = 1;
-+my $key;
-+my $value;
- while (($key,$value) = each %start) {
++my @initcalls = sort { $start{$a} <=> $start{$b} } keys(%start);
+ my $key;
+-my $value;
+-while (($key,$value) = each %start) {
++foreach $key (@initcalls) {
  	my $duration = $end{$key} - $start{$key};
  
  	if ($duration >= $threshold) {
--		my $s, $s2, $e, $y;
--		$pid = $pids{$key};
-+		my ($s, $s2, $e, $w, $y, $y2, $style);
-+		my $pid = $pids{$key};
- 
- 		if (!defined($rows{$pid})) {
+@@ -121,7 +121,7 @@ while (($key,$value) = each %start) {
  			$rows{$pid} = $rowscount;
-@@ -140,9 +145,9 @@ while (($key,$value) = each %start) {
- my $time = $firsttime;
- my $step = ($maxtime - $firsttime) / 15;
- while ($time < $maxtime) {
--	my $s2 = ($time - $firsttime) * $mult;
-+	my $s3 = ($time - $firsttime) * $mult;
- 	my $tm = int($time * 100) / 100.0;
--	print "<text transform=\"translate($s2,89) rotate(90)\">$tm</text>\n";
-+	print "<text transform=\"translate($s3,89) rotate(90)\">$tm</text>\n";
- 	$time = $time + $step;
- }
- 
+ 			$rowscount = $rowscount + 1;
+ 		}
+-		$s = ($value - $firsttime) * $mult;
++		$s = ($start{$key} - $firsttime) * $mult;
+ 		$s2 = $s + 6;
+ 		$e = ($end{$key} - $firsttime) * $mult;
+ 		$w = $e - $s;
 
 
