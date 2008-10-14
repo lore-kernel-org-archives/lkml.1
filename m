@@ -1,81 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYJNMab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758315AbYJNMbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbYJNMab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 08:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbYJNMaV
+	id S1758315AbYJNMbl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 08:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbYJNMbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 08:30:21 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:36360 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755508AbYJNMaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 08:30:20 -0400
-Date: Tue, 14 Oct 2008 06:30:02 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Yu Zhao <yu.zhao@intel.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 6/8 v4] PCI: support the SR-IOV capability
-Message-ID: <20081014123002.GA15064@parisc-linux.org>
-References: <20081014103424.GA1704@yzhao12-linux.sh.intel.com> <20081014105928.GF1734@yzhao12-linux.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081014105928.GF1734@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 14 Oct 2008 08:31:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48355 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753833AbYJNMbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 08:31:32 -0400
+Subject: GFS2: Support for FIEMAP ioctl (RFC)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 14 Oct 2008 13:29:48 +0100
+Message-Id: <1223987388.25004.63.camel@quoit>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 06:59:28PM +0800, Yu Zhao wrote:
-> +++ b/drivers/pci/pci.h
-> @@ -176,4 +176,59 @@ static inline int pci_ari_enabled(struct pci_dev *dev)
-> +struct pci_iov {
-> +	int cap;		/* capability position */
-> +	int align;		/* page size used to map memory space */
-> +	int is_enabled;		/* status of SR-IOV */
-> +	int nentries;		/* number of sysfs entries used by PF driver */
-> +	u16 totalvfs;		/* total VFs associated with the PF */
-> +	u16 initialvfs;		/* initial VFs associated with the PF */
-> +	u16 numvfs;		/* number of VFs available */
-> +	u16 offset;		/* first VF Routing ID offset */
-> +	u16 stride;		/* following VF stride */
-> +	struct mutex mutex;	/* lock for SR-IOV */
-> +	struct kobject kobj;	/* koject for IOV */
-> +	struct pci_dev *dev;	/* Physical Function */
-> +	struct vf_entry *ve;	/* Virtual Function related */
-> +	int (*notify)(struct pci_dev *, u32);	/* event callback function */
-> +};
 
-> +++ b/include/linux/pci.h
-> @@ -87,6 +87,12 @@ enum {
->  	/* #6: expansion ROM */
->  	PCI_ROM_RESOURCE,
->  
-> +	/* device specific resources */
-> +#ifdef CONFIG_PCI_IOV
-> +	PCI_IOV_RESOURCES,
-> +	PCI_IOV_RESOURCES_END = PCI_IOV_RESOURCES + PCI_IOV_NUM_BAR - 1,
-> +#endif
-> +
->  	/* address space assigned to buses behind the bridge */
->  #ifndef PCI_BRIDGE_RES_NUM
->  #define PCI_BRIDGE_RES_NUM 4
+My plan is to start off my next GFS2 -nmw git tree with this patch.
 
-Why expand the number of resources in struct pci_dev instead of putting
-the new resources in struct pci_iov?
+This patch implements the FIEMAP ioctl for GFS2. We can use the generic
+code (aside from a lock order issue, solved as per Ted Tso's suggestion)
+for which I've introduced a new variant of the generic function. We also
+have one exception to deal with, namely stuffed files, so we do that
+"by hand", setting all the required flags.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+This has been tested with a modified (I could only find an old version) of
+Eric's test program, and appears to work correctly.
+
+This patch does not currently support FIEMAP of xattrs, but the plan is to add
+that feature at some future point.
+
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>
+
+diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
+index 534e1e2..f6e2a5b 100644
+--- a/fs/gfs2/ops_inode.c
++++ b/fs/gfs2/ops_inode.c
+@@ -19,6 +19,7 @@
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/crc32.h>
+ #include <linux/lm_interface.h>
++#include <linux/fiemap.h>
+ #include <asm/uaccess.h>
+ 
+ #include "gfs2.h"
+@@ -1212,6 +1213,48 @@ static int gfs2_removexattr(struct dentry *dentry, const char *name)
+ 	return gfs2_ea_remove(GFS2_I(dentry->d_inode), &er);
+ }
+ 
++static int gfs2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		       u64 start, u64 len)
++{
++	struct gfs2_inode *ip = GFS2_I(inode);
++	struct gfs2_holder gh;
++	int ret;
++
++	ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC);
++	if (ret)
++		return ret;
++
++	mutex_lock(&inode->i_mutex);
++
++	ret = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, 0, &gh);
++	if (ret)
++		goto out;
++
++	if (gfs2_is_stuffed(ip)) {
++		u64 phys = ip->i_no_addr << inode->i_blkbits;
++		u64 size = i_size_read(inode);
++		u32 flags = FIEMAP_EXTENT_LAST|FIEMAP_EXTENT_NOT_ALIGNED|
++			    FIEMAP_EXTENT_DATA_INLINE;
++		phys += sizeof(struct gfs2_dinode);
++		phys += start;
++		if (start + len > size)
++			len = size - start;
++		if (start < size)
++			ret = fiemap_fill_next_extent(fieinfo, start, phys,
++						      len, flags);
++		if (ret == 1)
++			ret = 0;
++	} else {
++		ret = __generic_block_fiemap(inode, fieinfo, start, len,
++					     gfs2_block_map);
++	}
++
++	gfs2_glock_dq_uninit(&gh);
++out:
++	mutex_unlock(&inode->i_mutex);
++	return ret;
++}
++
+ const struct inode_operations gfs2_file_iops = {
+ 	.permission = gfs2_permission,
+ 	.setattr = gfs2_setattr,
+@@ -1220,6 +1263,7 @@ const struct inode_operations gfs2_file_iops = {
+ 	.getxattr = gfs2_getxattr,
+ 	.listxattr = gfs2_listxattr,
+ 	.removexattr = gfs2_removexattr,
++	.fiemap = gfs2_fiemap,
+ };
+ 
+ const struct inode_operations gfs2_dir_iops = {
+@@ -1239,6 +1283,7 @@ const struct inode_operations gfs2_dir_iops = {
+ 	.getxattr = gfs2_getxattr,
+ 	.listxattr = gfs2_listxattr,
+ 	.removexattr = gfs2_removexattr,
++	.fiemap = gfs2_fiemap,
+ };
+ 
+ const struct inode_operations gfs2_symlink_iops = {
+@@ -1251,5 +1296,6 @@ const struct inode_operations gfs2_symlink_iops = {
+ 	.getxattr = gfs2_getxattr,
+ 	.listxattr = gfs2_listxattr,
+ 	.removexattr = gfs2_removexattr,
++	.fiemap = gfs2_fiemap,
+ };
+ 
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index d152856..f9b5c24 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -231,7 +231,8 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+ #define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
+ #define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
+ 
+-/*
++/**
++ * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
+  * @inode - the inode to map
+  * @arg - the pointer to userspace where we copy everything to
+  * @get_block - the fs's get_block function
+@@ -242,11 +243,15 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+  *
+  * If it is possible to have data blocks beyond a hole past @inode->i_size, then
+  * please do not use this function, it will stop at the first unmapped block
+- * beyond i_size
++ * beyond i_size.
++ *
++ * If you use this function directly, you need to do your own locking. Use
++ * generic_block_fiemap if you want the locking done for you.
+  */
+-int generic_block_fiemap(struct inode *inode,
+-			 struct fiemap_extent_info *fieinfo, u64 start,
+-			 u64 len, get_block_t *get_block)
++
++int __generic_block_fiemap(struct inode *inode,
++			   struct fiemap_extent_info *fieinfo, u64 start,
++			   u64 len, get_block_t *get_block)
+ {
+ 	struct buffer_head tmp;
+ 	unsigned int start_blk;
+@@ -260,9 +265,6 @@ int generic_block_fiemap(struct inode *inode,
+ 
+ 	start_blk = logical_to_blk(inode, start);
+ 
+-	/* guard against change */
+-	mutex_lock(&inode->i_mutex);
+-
+ 	length = (long long)min_t(u64, len, i_size_read(inode));
+ 	map_len = length;
+ 
+@@ -334,14 +336,36 @@ int generic_block_fiemap(struct inode *inode,
+ 		cond_resched();
+ 	} while (1);
+ 
+-	mutex_unlock(&inode->i_mutex);
+-
+ 	/* if ret is 1 then we just hit the end of the extent array */
+ 	if (ret == 1)
+ 		ret = 0;
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL(__generic_block_fiemap);
++
++/**
++ * generic_block_fiemap - FIEMAP for block based inodes
++ * @inode: The inode to map
++ * @fieinfo: The mapping information
++ * @start: The initial block to map
++ * @len: The length of the extent to attempt to map
++ * @get_block: The block mapping function for the fs
++ *
++ * Calls __generic_block_fiemap to map the inode, after taking
++ * the inode's mutex lock.
++ */
++
++int generic_block_fiemap(struct inode *inode,
++			 struct fiemap_extent_info *fieinfo, u64 start,
++			 u64 len, get_block_t *get_block)
++{
++	int ret;
++	mutex_lock(&inode->i_mutex);
++	ret = __generic_block_fiemap(inode, fieinfo, start, len, get_block);
++	mutex_unlock(&inode->i_mutex);
++	return ret;
++}
+ EXPORT_SYMBOL(generic_block_fiemap);
+ 
+ #endif  /*  CONFIG_BLOCK  */
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 44e3cb2..b998bc2 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2005,6 +2005,9 @@ extern int vfs_fstat(unsigned int, struct kstat *);
+ 
+ extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
+ 		    unsigned long arg);
++extern int __generic_block_fiemap(struct inode *inode,
++				  struct fiemap_extent_info *fieinfo, u64 start,
++				  u64 len, get_block_t *get_block);
+ extern int generic_block_fiemap(struct inode *inode,
+ 				struct fiemap_extent_info *fieinfo, u64 start,
+ 				u64 len, get_block_t *get_block);
+
+
