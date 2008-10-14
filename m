@@ -1,178 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYJNQBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbYJNQDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbYJNQBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 12:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYJNQBF
+	id S1753594AbYJNQDX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 12:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYJNQDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 12:01:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55135 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbYJNQBB (ORCPT
+	Tue, 14 Oct 2008 12:03:15 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:30188 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbYJNQDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 12:01:01 -0400
-Message-ID: <48F4C237.2060103@zytor.com>
-Date: Tue, 14 Oct 2008 09:00:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 14 Oct 2008 12:03:13 -0400
+X-BigFish: VPS-45(z5edJz62a3L146fK1432R98dR936eQ4015M1805Mzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K8QKJ9-01-XTB-01
+Date: Tue, 14 Oct 2008 18:01:48 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Please pull arch perfmon update
+Message-ID: <20081014160148.GA1029@erda.amd.com>
+References: <20080929235253.GA31074@one.firstfloor.org> <20081013183556.GD23557@erda.amd.com> <48F3AFBF.3040201@firstfloor.org>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <jejb@steeleye.com>
-Subject: Re: Checkin 7404ad3b6d04efbd918e9e2e776bf560fbedf47d breaks boot
- on KVM
-References: <48F3E1C9.6030007@zytor.com> <1223990609.12440.8.camel@localhost.localdomain>
-In-Reply-To: <1223990609.12440.8.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <48F3AFBF.3040201@firstfloor.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 14 Oct 2008 16:02:02.0333 (UTC) FILETIME=[323608D0:01C92E16]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->> 
-> Actually, it is surprising.  That patch takes the default arithmetic for
-> calculating the disk size out of sd and uses a routine to do it more
-> efficiently in lib/string_helpers.c
+On 13.10.08 22:29:51, Andi Kleen wrote:
+> > There is one question to patch "oprofile: discover counters for op
+> > ppro too". arch_perfmon_setup_counters() is actually never called for
+> > ppro, so there is no code that changes the numbers in
+> > op_ppro_spec. The patch as it is has no effect (except then loading
+> > additional module code).
 > 
-> So there are two problems:  Why does it panic on revert (could you post
-> the oops) and what does kvm object to in string_get_size ... it's a
-> fairly innocuous routine as I read it ... your symptoms sound like the
-> for loop isn't terminating.
-> 
+> Ah true, i must have deleted one hunk too much while refactoring.
+> It's ok to drop this patch for now.
 
-Here is the oops.  Note that it does get well past the hang point before 
-it crashes.  It is 100% reproducible.
+I sent it upstream anyway, please send an additional patch that fixes
+this.
 
-console [netcon0] enabled 
+Thanks,
 
-netconsole: network logging started 
+-Robert
 
-Uniform Multi-Platform E-IDE driver 
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-ide-floppy driver 1.00 
-
-Driver 'sd' needs updating - please use bus_type methods 
-
-scsi0 : ata_piix 
-
-scsi1 : ata_piix 
-
-ata1: PATA max MWDMA2 cmd 0x1f0 ctl 0x3f6 bmdma 0xc000 irq 14 
-
-ata2: PATA max MWDMA2 cmd 0x170 ctl 0x376 bmdma 0xc008 irq 15 
-
-ata1.00: ATA-7: QEMU HARDDISK, 0.9.1, max UDMA/100 
-
-ata1.00: 16777216 sectors, multi 16: LBA48 
-
-ata1.00: configured for MWDMA2 
-
-ata2.00: ATAPI: QEMU DVD-ROM, 0.9.1, max UDMA/100 
-
-ata2.00: configured for MWDMA2 
-
-scsi 0:0:0:0: Direct-Access     ATA      QEMU HARDDISK    0.9. PQ: 0 
-ANSI: 5
-sd 0:0:0:0: [sda] 16777216 512-byte hardware sectors (8590 MB) 
-
-sd 0:0:0:0: [sda] Write Protect is off 
-
-sd 0:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't 
-support DPO or FUA
-sd 0:0:0:0: [sda] 16777216 512-byte hardware sectors (8590 MB) 
-
-sd 0:0:0:0: [sda] Write Protect is off 
-
-sd 0:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't 
-support DPO or FUA
-  sda: sda1 
-
-sd 0:0:0:0: [sda] Attached SCSI disk 
-
-scsi 1:0:0:0: CD-ROM            QEMU     QEMU DVD-ROM     0.9. PQ: 0 
-ANSI: 5
-PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12 
-
-serio: i8042 KBD port at 0x60,0x64 irq 1 
-
-serio: i8042 AUX port at 0x60,0x64 irq 12 
-
-mice: PS/2 mouse device common for all mice 
-
-input: AT Translated Set 2 keyboard as /class/input/input0 
-
-md: linear personality registered for level -1 
-
-md: raid0 personality registered for level 0 
-
-md: raid1 personality registered for level 1 
-
-md: raid10 personality registered for level 10 
-
-raid6: int32x1    972 MB/s 
-
-raid6: int32x2   1032 MB/s 
-
-raid6: int32x4    763 MB/s
-raid6: int32x8    729 MB/s
-raid6: mmxx1     2572 MB/s
-raid6: mmxx2     3154 MB/s
-raid6: sse1x1    2036 MB/s
-raid6: sse1x2    2430 MB/s
-raid6: sse2x1    3506 MB/s
-raid6: sse2x2    3428 MB/s
-raid6: using algorithm sse2x1 (3506 MB/s)
-md: raid6 personality registered for level 6
-md: raid5 personality registered for level 5
-md: raid4 personality registered for level 4
-EDAC MC: Ver: 2.1.0 Oct 13 2008
-input: ImExPS/2 Generic Explorer Mouse as /class/input/input1
-dcdbas dcdbas: Dell Systems Management Base Driver (version 5.6.0-3.2)
-usbcore: registered new interface driver hiddev
-usbcore: registered new interface driver usbhid
-usbhid: v2.6:USB HID core driver
-TCP cubic registered
-NET: Registered protocol family 17
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-Using IPI Shortcut mode
-registered taskstats version 1
-BIOS EDD facility v0.16 2004-Jun-25, 1 devices found
-md: Autodetecting RAID arrays.
-md: Scanned 0 and added 0 devices.
-md: autorun ...
-md: ... autorun DONE.
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with ordered data mode.
-VFS: Mounted root (ext3 filesystem) readonly.
-Freeing unused kernel memory: 304k freed
-Write protecting the kernel text: 3692k
-Write protecting the kernel read-only data: 1556k
-BUG: spinlock bad magic on CPU#0, swapper/1
-  lock: c0b75418, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
-Pid: 1, comm: swapper Not tainted 2.6.27 #17
-Call Trace:
-  [<c0597388>] ? printk+0xf/0x17
-  [<c03ac8ae>] spin_bug+0x75/0x80
-  [<c03ac97c>] _raw_spin_lock+0x1e/0xe4
-  [<c0412a3f>] ? serial8250_startup+0x33e/0x4e5
-  [<c0599821>] _spin_lock_irq+0x32/0x3a
-  [<c0412a3f>] ? serial8250_startup+0x33e/0x4e5
-  [<c0412a3f>] serial8250_startup+0x33e/0x4e5
-  [<c040f5fb>] uart_startup+0x84/0x143
-  [<c0410309>] uart_open+0x14b/0x381
-  [<c05996ba>] ? _spin_unlock+0x27/0x3c
-  [<c03f483f>] ? check_tty_count+0x3b/0x8a
-  [<c03f70b9>] tty_open+0x263/0x366
-  [<c0271b2a>] chrdev_open+0x168/0x180
-  [<c026df19>] __dentry_open+0x146/0x234
-  [<c026e08e>] nameidata_to_filp+0x1f/0x33
-  [<c02719c2>] ? chrdev_open+0x0/0x180
-  [<c0278ed1>] do_filp_open+0x342/0x659
-  [<c023651c>] ? trace_hardirqs_off+0xb/0xd
-  [<c05996ba>] ? _spin_unlock+0x27/0x3c
-  [<c026dcff>] do_sys_open+0x42/0xb7
-  [<c026ddb6>] sys_open+0x1e/0x26
-  [<c0201216>] init_post+0x2a/0x13c
-  [<c0203d53>] ? kernel_thread_helper+0x7/0x10
