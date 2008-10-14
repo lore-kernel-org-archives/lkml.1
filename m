@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYJNSBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYJNSE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbYJNSBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 14:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYJNSBO
+	id S1753163AbYJNSE7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 14:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYJNSEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 14:01:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:11073 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbYJNSBN (ORCPT
+	Tue, 14 Oct 2008 14:04:49 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47625 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751422AbYJNSEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 14:01:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jO2XlWjwpFDwYM5JYqDUDZgGvUNQr6cSVRJ6Z1MwbZN0YObQa9a46oqxvicmijeGPd
-         TnPjdVRtea3RBaKKFfoMVXp6SGdRnBRVyAuAQyOMVGQHG8ilnwrBJIKWOZtg51CcTnTr
-         GR+T09DyhaNS6lmlHi4w4ZaWJTDgMI9Mhvb4w=
-Date: Tue, 14 Oct 2008 20:00:06 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <jejb@steeleye.com>
-Subject: Re: Checkin 7404ad3b6d04efbd918e9e2e776bf560fbedf47d breaks boot
-	on KVM
-Message-ID: <20081014175901.GA5584@joi>
-References: <48F3E1C9.6030007@zytor.com> <1223990609.12440.8.camel@localhost.localdomain> <48F4C237.2060103@zytor.com>
+	Tue, 14 Oct 2008 14:04:49 -0400
+Date: Tue, 14 Oct 2008 14:04:48 -0400
+To: Pavel Machek <pavel@suse.cz>
+Cc: Chris Snook <csnook@redhat.com>, Stefan Monnier <monnier@iro.umontreal.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Filesystem for block devices using flash storage?
+Message-ID: <20081014180448.GC22851@csclub.uwaterloo.ca>
+References: <jwvvdw33v5p.fsf-monnier+gmane.linux.kernel@gnu.org> <48ED1D62.8080100@redhat.com> <20081011143552.GA1556@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48F4C237.2060103@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081011143552.GA1556@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 09:00:55AM -0700, H. Peter Anvin wrote:
-> James Bottomley wrote:
->> Actually, it is surprising.  That patch takes the default arithmetic for
->> calculating the disk size out of sd and uses a routine to do it more
->> efficiently in lib/string_helpers.c
->> So there are two problems:  Why does it panic on revert (could you post
->> the oops) and what does kvm object to in string_get_size ... it's a
->> fairly innocuous routine as I read it ... your symptoms sound like the
->> for loop isn't terminating.
->
-> Here is the oops.  Note that it does get well past the hang point before it 
-> crashes.  It is 100% reproducible.
->
-> (...)
-> BUG: spinlock bad magic on CPU#0, swapper/1
->  lock: c0b75418, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
-> Pid: 1, comm: swapper Not tainted 2.6.27 #17
-> Call Trace:
->  [<c0597388>] ? printk+0xf/0x17
->  [<c03ac8ae>] spin_bug+0x75/0x80
->  [<c03ac97c>] _raw_spin_lock+0x1e/0xe4
->  [<c0412a3f>] ? serial8250_startup+0x33e/0x4e5
->  [<c0599821>] _spin_lock_irq+0x32/0x3a
->  [<c0412a3f>] ? serial8250_startup+0x33e/0x4e5
->  [<c0412a3f>] serial8250_startup+0x33e/0x4e5
->  [<c040f5fb>] uart_startup+0x84/0x143
->  [<c0410309>] uart_open+0x14b/0x381
->  [<c05996ba>] ? _spin_unlock+0x27/0x3c
->  [<c03f483f>] ? check_tty_count+0x3b/0x8a
->  [<c03f70b9>] tty_open+0x263/0x366
->  [<c0271b2a>] chrdev_open+0x168/0x180
->  [<c026df19>] __dentry_open+0x146/0x234
->  [<c026e08e>] nameidata_to_filp+0x1f/0x33
->  [<c02719c2>] ? chrdev_open+0x0/0x180
->  [<c0278ed1>] do_filp_open+0x342/0x659
->  [<c023651c>] ? trace_hardirqs_off+0xb/0xd
->  [<c05996ba>] ? _spin_unlock+0x27/0x3c
->  [<c026dcff>] do_sys_open+0x42/0xb7
->  [<c026ddb6>] sys_open+0x1e/0x26
->  [<c0201216>] init_post+0x2a/0x13c
->  [<c0203d53>] ? kernel_thread_helper+0x7/0x10
+On Sat, Oct 11, 2008 at 04:35:52PM +0200, Pavel Machek wrote:
+> I don't think ext3 is safe w.r.t. whole eraseblocks disappearing. So
+> if you write data 'nearby' root directory and power fails, bye bye
+> filesystem, and journal will not help.
+> 
+> Actually ext2 will at least detect damage...
 
-It's a different issue.
-See: http://lkml.org/lkml/2008/10/13/470 and http://lkml.org/lkml/2008/10/13/474
+I have never seen a flash device that worked that way.  All the ones I
+have seen have extra spare blocks and will copy an existing block to an
+empty block changing the required bits while doing the copy to represent
+the new data to be written.  When done, they update the block map of the
+device to point to the new block, then the old block is erase and added
+to the spare block list.
 
-Marcin
+This is also used as part of wear leveling, where better devices will
+occationally take a rarely written block, move it to a more used spare
+block, and then add the previously rarely used block to the spare list
+for more use.
+
+In cases of decent devices like this, ext3 works great.  I have never
+had a chunk of the filesystem disappear yet, although perhaps 2000
+compact flash using units isn't a large enough data set to say much.
+
+-- 
+Len Sorensen
