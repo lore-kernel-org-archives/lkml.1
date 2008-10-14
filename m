@@ -1,96 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYJNF3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbYJNFin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbYJNF3l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 01:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYJNF3d
+	id S1755048AbYJNFin (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 01:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYJNFif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 01:29:33 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:46491 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbYJNF3c (ORCPT
+	Tue, 14 Oct 2008 01:38:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38106
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751374AbYJNFif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 01:29:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=xdYLPLRKn5eXqAfdD/qQ7n+lt5z4ZseGdrXSX861fTpDRfZYDO+C8k5Mu6k+4g/mUP
-         532dN5EJ5e2UG/iejmlL8ShPHIaxqoJBF19cxh1b+gSyV3Mf6upT2RQviGmqbicQdQe/
-         BPz+MsyXed8FCwqPoWZClmMmvJo6qGiwriSZs=
-Message-ID: <86802c440810132229j3f72d09ao9f28928ba01b767f@mail.gmail.com>
-Date: Mon, 13 Oct 2008 22:29:31 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Tony Luck" <tony.luck@intel.com>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4 - fix v7
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, tglx@linutronix.de,
-       hpa@zytor.com, jbarnes@virtuousgeek.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <12c511ca0810131332h6e5468abk3dfc511f0b25cbe6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 14 Oct 2008 01:38:35 -0400
+Date: Mon, 13 Oct 2008 22:38:11 -0700 (PDT)
+Message-Id: <20081013.223811.174710738.davem@davemloft.net>
+To: hpa@zytor.com
+Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       yhlu.kernel@gmail.com
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48F409E9.3030501@zytor.com>
+References: <48F3F014.3050406@zytor.com>
+	<1223948488.8157.309.camel@pasglop>
+	<48F409E9.3030501@zytor.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220254284-29532-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080904190457.GB24990@elte.hu>
-	 <20080904121627.bc182da7.akpm@linux-foundation.org>
-	 <86802c440809041222q244e1adaj16b80f1590053bcf@mail.gmail.com>
-	 <12c511ca0810131332h6e5468abk3dfc511f0b25cbe6@mail.gmail.com>
-X-Google-Sender-Auth: 2560cb66def5e91b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 1:32 PM, Tony Luck <tony.luck@intel.com> wrote:
-> On Thu, Sep 4, 2008 at 12:22 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> On Thu, Sep 4, 2008 at 12:16 PM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->>> On Thu, 4 Sep 2008 21:04:57 +0200
->>> Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>>> +             printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
->>>> +                      conflict->name, conflict->start, conflict->end,
->>>> +                      name, start, end);
->>>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Mon, 13 Oct 2008 19:54:33 -0700
 
-Ingo, how come following patch getting lost?
+> I pointed out that we should use the flags to determine formatting
+> options, e.g. I/O space is only 16 bits on x86.
 
-commit 1cf44baad76b6f20f95ece397c6f643320aa44c9
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Thu Sep 4 21:26:06 2008 +0200
+It's 64-bit on sparc64 :-)
 
-    IO resources: fix/remove printk
-
-    Andrew Morton noticed that the printk in kernel/resource.c was buggy:
-
-    | start and end have type resource_size_t.  Such types CANNOT be printed
-    | unless cast to a known type.
-    |
-    | Because there is a %s following an incorrect %lld, the above code will
-    | crash the machine.
-
-    ... and it's probably quite unneeded as well, so remove it.
-
-    Reported-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 414d6fc..fc59dcc 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -549,13 +549,9 @@ static void __init
-__reserve_region_with_split(struct resource *root,
-        }
-
-        if (!res) {
--               printk(KERN_DEBUG "    __reserve_region_with_split:
-(%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
--                        conflict->name, conflict->start, conflict->end,
--                        name, start, end);
--
-                /* failed, split and try again */
-
--               /* conflict coverred whole area */
-+               /* conflict covered whole area */
-                if (conflict->start <= start && conflict->end >= end)
-                        return;
+There's also the bit where we use a 32-bit resource_t on sparc32
+but encode the top 4-bits of the 36 bit physical I/O address in
+the resource flags member.
