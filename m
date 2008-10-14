@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYJNRUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYJNR1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbYJNRUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 13:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYJNRUX
+	id S1753520AbYJNR1x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 13:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYJNR1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 13:20:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46100 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751235AbYJNRUX (ORCPT
+	Tue, 14 Oct 2008 13:27:44 -0400
+Received: from qb-out-0506.google.com ([72.14.204.235]:57845 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbYJNR1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 13:20:23 -0400
-Date: Tue, 14 Oct 2008 10:20:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/18] m68k: Disable Amiga serial console support if
- modular
-In-Reply-To: <20081013195915.659336491@mail.of.borg>
-Message-ID: <alpine.LFD.2.00.0810141018590.3288@nehalem.linux-foundation.org>
-References: <20081013195846.674654386@mail.of.borg> <20081013195915.659336491@mail.of.borg>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 14 Oct 2008 13:27:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=QEJLaoUNzbaJ9hrSDAN5FFIJjfvAPzNUHITA9L+MRPHymYxlA2eihN4i+lzEaTPqiw
+         QM+5d8J5jV2eJO57lFaSCHJqScTA979PDXv4AfwM9ZGKRZ0gLFJGy5t9p4h14pAiuee7
+         Cs2ew5sRaSuJ1Dk7ggSy7bMy+9OnX+ESGanpo=
+Message-ID: <3aaafc130810141027p660efb62p92c586b1c40a5e71@mail.gmail.com>
+Date: Tue, 14 Oct 2008 13:27:42 -0400
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Lindent and __user, etc.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Indent doesn't understand macros and typedefs, so when running Lindent
+it makes some wrong suggestions about pointers. For example, something
+like "void fun(void __iomem *ptr)" comes back as "void fun(void
+__iomem * ptr)" from Lindent. I emailed the maintainer, and as indent
+doesn't do any parsing, the only solution is by telling it your
+typedefs with -T. Obviously, telling Lindent about every typedef and
+special macro in the kernel might be prohibitive, but should it at
+least know about __kernel, __user, etc. and all the u8, u16, etc.
+typedefs?
 
+Letting indent know about some common typenames will also help it find
+other style bugs it currently misses. I can submit more examples if
+desired, and I'll submit a patch to Lindent if people think it would
+be a good idea. Please CC me directly with replies.
 
-On Mon, 13 Oct 2008, Geert Uytterhoeven wrote:
->
-> Apparently console_initcall() is not defined in the modular case.
-
-We can certainly fix that. 
-
-Does this make things work for you? If so, send it back with a sign-off 
-(add you can add mine too - but I'm not going to add it until it's tested)
-
-		Linus
----
- include/linux/init.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 93538b6..d9625b5 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -273,6 +273,7 @@ void __init parse_early_param(void);
- #else /* MODULE */
- 
- /* Don't use these in modules, but some people do... */
-+#define console_initcall(fn)		module_init(fn)
- #define core_initcall(fn)		module_init(fn)
- #define postcore_initcall(fn)		module_init(fn)
- #define arch_initcall(fn)		module_init(fn)
+Thanks,
+J.R.
