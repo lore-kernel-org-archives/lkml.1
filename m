@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbYJNBew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYJNBky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbYJNBew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 21:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYJNBem
+	id S1755441AbYJNBky (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 21:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYJNBkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 21:34:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41575
+	Mon, 13 Oct 2008 21:40:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51099
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753685AbYJNBel (ORCPT
+	by vger.kernel.org with ESMTP id S1751498AbYJNBko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 21:34:41 -0400
-Date: Mon, 13 Oct 2008 18:34:17 -0700 (PDT)
-Message-Id: <20081013.183417.203314150.davem@davemloft.net>
-To: yinghai@kernel.org
-Cc: hpa@zytor.com, benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+	Mon, 13 Oct 2008 21:40:44 -0400
+Date: Mon, 13 Oct 2008 18:40:20 -0700 (PDT)
+Message-Id: <20081013.184020.193699133.davem@davemloft.net>
+To: cooldavid@cooldavid.org
+Cc: kamalesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       apw@shadowen.org, jgarzik@redhat.com, ron.mercer@qlogic.com,
+       scofeldm@cisco.com
+Subject: Re: [PATCH] 2.6.27-git2 - fix build error at csum_ipv6_magic()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <86802c440810131814l42340448w7d2158f4bfdda504@mail.gmail.com>
-References: <20081014005428.EC2D8DDF93@ozlabs.org>
-	<48F3F014.3050406@zytor.com>
-	<86802c440810131814l42340448w7d2158f4bfdda504@mail.gmail.com>
+In-Reply-To: <20081013192101.M74635@cooldavid.org>
+References: <20081013121441.GB14372@linux.vnet.ibm.com>
+	<20081013192101.M74635@cooldavid.org>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,36 +29,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Yinghai Lu" <yinghai@kernel.org>
-Date: Mon, 13 Oct 2008 18:14:21 -0700
+From: "Guo-Fu Tseng" <cooldavid@cooldavid.org>
+Date: Tue, 14 Oct 2008 03:28:14 +0800
 
-> On Mon, Oct 13, 2008 at 6:04 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> > Benjamin Herrenschmidt wrote:
-> >>
-> >> That debug outpout in kernel/resource.c is busted on 32-bit
-> >> machines, fix it with appropriate casts.
-> >>
-> >> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >> ---
-> >>
-> >> One day Yinghai will figure out that resource_size_t can be 32-bit
-> >> and thus as printk arguments must be cast to (unsigned long long)
-> >> explicitely when using %llx... hopefully, that day, Ingo will also
-> >> catch these before committing them as it's not the first one like
-> >> this :-)
-> 
-> we had patch to remove that two debug lines.
-> 
-> >>
-> >
-> > I really think Linus' solution (add a resource printf modifier, that can
-> > contain the whole format) is much better.
-> 
-> yes. some pci resource print out etc could use that too.
-> to get rid of the annoying casting.
-> 
-> BTW: can you just enforce resource_t to u64?
+> But since <net/ip6_checksum.h> compensate the lack of
+> `csum_ipv6_magic` function defined in <asm/checksum.h>
+> of some architecture, should <net/ip6_checksum.h> be
+> included in <net/checksum.h> as well?
 
-Casting to u64 won't work.  That can be either "unsigned long" or
-"unsigned long long" depending upon the architecture, so you'd still
-need to cast.
+No, the standard convention is that if you need to call this
+ipv6 checksumming routine you include net/ip6_checksum.h
+From: "Guo-Fu Tseng" <cooldavid@cooldavid.org>
+Date: Tue, 14 Oct 2008 03:28:14 +0800
+
+> BTW, if there is a patch against jme driver which I maintain,
+> and I just simply agree with it, should I silently noticed that
+> and let someone like Jeff or David to review/apply it,
+> or should I reply an ack of it?
+
+You can ACK it and I usually apply patches like this directly.
