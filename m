@@ -1,165 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYJNJTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYJNJUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757848AbYJNJTH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbYJNJSj
+	id S1754602AbYJNJUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYJNJUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:18:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56206
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755301AbYJNJSe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:18:34 -0400
-Date: Tue, 14 Oct 2008 02:18:10 -0700 (PDT)
-Message-Id: <20081014.021810.168711446.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+	Tue, 14 Oct 2008 05:20:00 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38394 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754847AbYJNJT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 05:19:59 -0400
+Message-ID: <48F463C4.3070405@kernel.org>
+Date: Tue, 14 Oct 2008 18:17:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: kenneth johansson <ken@kenjo.org>
+CC: Grant Grundler <grundler@google.com>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: weird throughput on write to SATA disk
+References: <1223925629.3947.7.camel@duo>	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>	 <1223932956.3947.22.camel@duo>	 <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>	 <1223936351.3947.41.camel@duo>	 <da824cf30810131833g6e509d0dvb6cce6c7220a1a28@mail.gmail.com> <1223975694.3947.77.camel@duo>
+In-Reply-To: <1223975694.3947.77.camel@duo>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Oct 2008 09:19:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+kenneth johansson wrote:
+> On Mon, 2008-10-13 at 18:33 -0700, Grant Grundler wrote:
+>> On Mon, Oct 13, 2008 at 3:19 PM, kenneth johansson <ken@kenjo.org> wrote:
+>> ...
+>>>> Can you try "dd oflag=direct if=/dev/null of=/dev/sdb bs=64k"?
+>>> I changed to use O_DIRECT and it's much more consistent now. 69-75 with
+>>> 74 about 95% of the time.
+>> That's low but it could be worse. Many things can contribute to slow
+>> disks. 
+> Well my main problem was that it was fluctuating so much that can't be
+> right. 
+> 
+>> Favorites are overtemp (See SMART field 194) and vibration (no
+>> measurement possible w/o special equipment). "dd" isn't exactly a
+>> performance application until one uses really big block sizes (1MB or
+>> larger).
+> All my numbers comes from using 1MB blocks. but I'm not using dd.
+> After removing the logic that actually put some data into the buffers I
+> do get about 105 MB/sec using O_DIRECT. I'm doing a full disk write now
+> to get a reference plot. Not using O_DIRECT should be almost identical. 
+> 
+> 
+>>> the disk is supposed to have 105 115 sustained
+>>> data rate.
+>> Where did 105-115 number come from?
+> datasheet . they listed two drives in the same column so that was not
+> the range it was sustained OD and the model I have max out at 105. 
 
-More bug fixes and tidy-ups, highlights:
+Can you try deadline scheduler?
 
-1) pktgen leaks packets, fix from Ilpo Järvinen
-
-2) Build failure and other fixes from Adrian Bunk
-
-3) s390 build fixes from Alexey Dobriyan and Heiko Carstens
-
-4) Fix of the build of several drivers due to missing
-   net/ip6_checksum.h include, from Kamalesh Babulal
-
-5) tulip de2104x MAC address fetching fix from Martin Langer
-
-6) Alan Cox email address update, this is what touches most of
-   the files in the diffstat below
-
-Please pull, thanks a lot!
-
-The following changes since commit bf94e17bc8d35fc339945a42990a2f2b5e9b5a40:
-  Ingo Molnar (1):
-        net/mac80211/rx.c: fix build error
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Adrian Bunk (2):
-      mISDN/dsp_cmx.c: fix size checks
-      net: export genphy_restart_aneg
-
-Alan Cox (1):
-      net: Rationalise email address: Network Specific Parts
-
-Alexey Dobriyan (2):
-      s390: claw compile fixlet
-      netns: mib6 section fixlet
-
-Andrew Morton (1):
-      misdn: use nonseekable_open()
-
-Divy Le Ray (2):
-      cxgb3: update driver version
-      cxgb3: extend copyrights to 2008
-
-Heiko Carstens (1):
-      dsa: fix compile bug on s390
-
-Ilpo Järvinen (1):
-      pktgen: fix skb leak in case of failure
-
-Kamalesh Babulal (1):
-      net: fix driver build errors due to missing net/ip6_checksum.h include
-
-Martin Langer (1):
-      de2104x: wrong MAC address fix
-
-Randy Dunlap (1):
-      net/phy: add missing kernel-doc
-
-Roland Dreier (1):
-      enic: Fix Kconfig headline description
-
-Ron Mercer (1):
-      qlge: Fix page size ifdef test.
-
- drivers/isdn/mISDN/dsp_cmx.c         |    4 ++--
- drivers/isdn/mISDN/timerdev.c        |    2 +-
- drivers/net/3c501.c                  |   12 ++++++------
- drivers/net/3c515.c                  |    2 +-
- drivers/net/Kconfig                  |    2 +-
- drivers/net/appletalk/cops.c         |    2 +-
- drivers/net/cxgb3/adapter.h          |    2 +-
- drivers/net/cxgb3/ael1002.c          |    2 +-
- drivers/net/cxgb3/common.h           |    2 +-
- drivers/net/cxgb3/cxgb3_ctl_defs.h   |    2 +-
- drivers/net/cxgb3/cxgb3_defs.h       |    2 +-
- drivers/net/cxgb3/cxgb3_ioctl.h      |    2 +-
- drivers/net/cxgb3/cxgb3_main.c       |    2 +-
- drivers/net/cxgb3/cxgb3_offload.c    |    2 +-
- drivers/net/cxgb3/cxgb3_offload.h    |    2 +-
- drivers/net/cxgb3/firmware_exports.h |    2 +-
- drivers/net/cxgb3/l2t.c              |    2 +-
- drivers/net/cxgb3/l2t.h              |    2 +-
- drivers/net/cxgb3/mc5.c              |    2 +-
- drivers/net/cxgb3/sge.c              |    2 +-
- drivers/net/cxgb3/t3_cpl.h           |    2 +-
- drivers/net/cxgb3/t3_hw.c            |    2 +-
- drivers/net/cxgb3/t3cdev.h           |    2 +-
- drivers/net/cxgb3/version.h          |    4 ++--
- drivers/net/cxgb3/vsc8211.c          |    2 +-
- drivers/net/cxgb3/xgmac.c            |    2 +-
- drivers/net/eexpress.c               |    2 +-
- drivers/net/enic/enic_main.c         |    1 +
- drivers/net/ibmlana.c                |    2 +-
- drivers/net/jme.c                    |    1 +
- drivers/net/macmace.c                |    2 +-
- drivers/net/pcmcia/3c589_cs.c        |    2 +-
- drivers/net/pcmcia/nmclan_cs.c       |    2 +-
- drivers/net/phy/mdio_bus.c           |    1 +
- drivers/net/phy/phy_device.c         |    1 +
- drivers/net/qlge/qlge.h              |    2 +-
- drivers/net/qlge/qlge_main.c         |    1 +
- drivers/net/tlan.c                   |    3 ++-
- drivers/net/tokenring/smctr.c        |    2 +-
- drivers/net/tulip/de2104x.c          |    1 +
- drivers/net/tulip/dmfe.c             |    4 ++--
- drivers/net/via-velocity.c           |    2 +-
- drivers/net/wan/z85230.c             |    3 ++-
- drivers/net/wan/z85230.h             |    2 +-
- drivers/net/wireless/wavelan.c       |    2 +-
- drivers/net/wireless/wavelan.p.h     |    2 +-
- drivers/s390/net/claw.c              |    2 +-
- include/linux/if_ether.h             |    2 +-
- include/linux/if_fddi.h              |    2 +-
- include/linux/if_hippi.h             |    2 +-
- include/linux/igmp.h                 |    2 +-
- include/linux/netdevice.h            |    2 +-
- net/802/psnap.c                      |    2 +-
- net/appletalk/ddp.c                  |    4 ++--
- net/core/datagram.c                  |    2 +-
- net/core/dev_mcast.c                 |    2 +-
- net/core/pktgen.c                    |    8 +++++---
- net/core/skbuff.c                    |    2 +-
- net/core/stream.c                    |    2 +-
- net/dsa/Kconfig                      |    2 +-
- net/ipv4/icmp.c                      |    2 +-
- net/ipv4/igmp.c                      |    2 +-
- net/ipv4/ip_fragment.c               |    2 +-
- net/ipv4/ip_input.c                  |    2 +-
- net/ipv4/ipip.c                      |    2 +-
- net/ipv4/ipmr.c                      |    2 +-
- net/ipv4/udp.c                       |    2 +-
- net/ipv6/af_inet6.c                  |    2 +-
- net/netlink/af_netlink.c             |    2 +-
- net/sunrpc/xprtsock.c                |    4 ++--
- net/unix/af_unix.c                   |    2 +-
- 71 files changed, 87 insertions(+), 77 deletions(-)
+-- 
+tejun
