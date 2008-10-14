@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbYJNOPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbYJNOef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752385AbYJNOPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 10:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYJNOPf
+	id S1751872AbYJNOef (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 10:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbYJNOeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 10:15:35 -0400
-Received: from moog.chdir.org ([88.191.42.160]:53438 "EHLO moog.chdir.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750883AbYJNOPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 10:15:34 -0400
-Date: Tue, 14 Oct 2008 16:15:31 +0200
-From: Nicolas Bareil <nico@chdir.org>
-To: Nicolas Bareil <nico@chdir.org>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: USB problem on x86_64: nommu_map_single() issue?
-Message-ID: <20081014141531.GB2196@sd-5945.dedibox.fr>
-References: <20081014072045.GA1252@sd-5945.dedibox.fr> <200810141148.48220.oliver@neukum.org> <20081014104500.GB1252@sd-5945.dedibox.fr> <200810141300.29502.oliver@neukum.org> <20081014134341.GA2196@sd-5945.dedibox.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081014134341.GA2196@sd-5945.dedibox.fr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 14 Oct 2008 10:34:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55317 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750883AbYJNOeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 10:34:24 -0400
+Date: Tue, 14 Oct 2008 07:30:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: madhu.cr@ti.com, gadiyar@ti.com, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
+Message-Id: <20081014073058.e5d972e6.akpm@linux-foundation.org>
+In-Reply-To: <20081014134249.GA5611@2ka.mipt.ru>
+References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com>
+	<20081010133845.8b82fac3.akpm@linux-foundation.org>
+	<062801c92d37$3413bdd0$LocalHost@wipultra1303>
+	<20081013085323.f8bd7efb.akpm@linux-foundation.org>
+	<015c01c92dda$1b754340$LocalHost@wipultra1303>
+	<20081014055002.24ff586a.akpm@linux-foundation.org>
+	<20081014134249.GA5611@2ka.mipt.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 03:43:41PM +0200, Nicolas Bareil wrote:
-> commit 6f21d806f698a5c437dcae1f03e8dd73e3f5aab1
-> Merge: e59e14b... 9f72632...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Sun Sep 21 12:40:56 2008 -0700
+> On Tue, 14 Oct 2008 17:42:49 +0400 Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> Hi.
 > 
->     Merge branch 'kvm-updates/2.6.27' of git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm
+> On Tue, Oct 14, 2008 at 05:50:02AM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > I think it's reasonable to permit the driver's operations to be interrupted
+> > in this manner.  It's done in quite a few other places.  But the problem is
+> > actually *testing* it.
 > 
->     * 'kvm-updates/2.6.27' of git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm:
->       KVM: ia64: 'struct fdesc' build fix
-> 
-> Do you think I'm good to bisect that tree or do you have an idea?
+> Why not just skipping the waiting and returning error pretending user
+> really sent a signal?
 
-Strangely, if I disable MMC, there is no error at all. I'm currently
-booting on a 2.6.27 kernel and everything seems to be ok. My kernel log
-is at http://chdir.org/~nbareil/kern.log.2.6.27.without.mmc for
-information.
-
-Thanks
+Better than nothing, but because signal_pending() isn't actually true,
+upper layers wil behave differently.
 
