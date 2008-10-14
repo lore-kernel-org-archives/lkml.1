@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYJNCUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYJNCbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbYJNCUB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Oct 2008 22:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbYJNCTw
+	id S1756631AbYJNCbv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Oct 2008 22:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYJNCbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 22:19:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58768 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755378AbYJNCTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 22:19:51 -0400
-Message-ID: <48F40164.5000502@kernel.org>
-Date: Tue, 14 Oct 2008 11:18:12 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-CC: Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: SMART to USB/sata dock in 2.6.27-rc5 doesn't work
-References: <48EE7E0A.8040701@dgreaves.com>
-In-Reply-To: <48EE7E0A.8040701@dgreaves.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Oct 2008 22:31:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50624
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754763AbYJNCbl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Oct 2008 22:31:41 -0400
+Date: Mon, 13 Oct 2008 19:31:17 -0700 (PDT)
+Message-Id: <20081013.193117.38855645.davem@davemloft.net>
+To: mathieu.desnoyers@polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sparc64: Optimized immediate value implementation build error
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081014021704.GA15549@Krystal>
+References: <20081013233752.GA7866@Krystal>
+	<20081013.183134.193695176.davem@davemloft.net>
+	<20081014021704.GA15549@Krystal>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Oct 2008 02:19:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> I just bought a usb/sata adapter like this:
->   http://www.thinkgeek.com/computing/drives/a7ea/?cpg=ab
-> lsusb -v is below
-> 
-> Works OK as a hot-plug SATA disk so I can check what's on that old disk in the
-> corner; but smartctl doesn't work so I can't see if it has any errors, run
-> selftests etc.
-> 
-> Kernel is 2.6.27-rc5 (I've also tried older kernels)
-> 
-> I plugged a previously zeroed drive in and...
-> 
-> root@ash:~ # smartctl -a /dev/sde
-> smartctl version 5.38 [i686-pc-linux-gnu] Copyright (C) 2002-8 Bruce Allen
-> Home page is http://smartmontools.sourceforge.net/
-> 
-> Device: ST332062 0AS              Version:
-> Device type: disk
-> Local Time is: Thu Oct  9 21:38:16 2008 BST
-> Device supports SMART and is Enabled
-> Temperature Warning Disabled or Not Supported
-> SMART Health Status: OK
-> 
-> Error Counter logging not supported
-> Device does not support Self Test logging
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Mon, 13 Oct 2008 22:17:04 -0400
 
-The USB bridge should support SAT (SCSI-ATA translation) and many
-don't.  Nothing much can be done about it.  The hardware just don't know
-how to do it.
+> * David Miller (davem@davemloft.net) wrote:
+> > From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > Date: Mon, 13 Oct 2008 19:37:53 -0400
+> > 
+> > > * David Miller (davem@davemloft.net) wrote:
+> > > > From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > > > Date: Fri, 3 Oct 2008 16:10:07 -0400
+> > > > 
+> > > > > I ran a cross-compiler on the -lttng tree
+> > > > > git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
+> > > > > 
+> > > > > to build the sparc64 arch, and ran across this build error :
+> > > > > 
+> > > > > /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h: In function `do_fork':
+> > > > > /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: warning: asm operand 1 probably doesn't match constraints
+> > > > > /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: error: impossible constraint in `asm'
+> > > > > /home/compudj/git/morestable/linux-2.6-lttng/include/trace/sched.h:38: warning: 'value' might be used uninitialized in this function
+> > > > > make[2]: *** [kernel/fork.o] Error 1
+> > > > > 
+> > > > > I think it's caused by :
+> > > > > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commit;h=c76bfa90a6eb02651368a152b3646aa672d9e625
+> > > > 
+> > > > It can't be "caused by" that commit because that's the initial
+> > > > immediate value sparc64 support I wrote and the tree very much compiled
+> > > > properly when I did test builds way back then.
+> > > > 
+> > > > I don't have time to look further into this right now, sorry.
+> > > 
+> > > Ok, I'll dig into this. I use gcc 3.4.5, that could be my problem; it's
+> > > broken on x86_64. I'll do some testing in this direction. Also, I see
+> > > that you have used .uaword and declared "int" in your sparc64
+> > > implementation to encode pointers. Am I missing something or should it
+> > > be "long" and either .word or .xword (32 or 64 bits) ?
+> > 
+> > long would be for ".uaxword", ".uaword" is 32-bit.  It means
+> > "UnAligned WORD"
+> > 
+> 
+> Ok, it's fixed.
 
--- 
-tejun
+How? :-)
+
+> If someone has access to a sparc64 gcc >= 4.0.0 compiler (native or
+> cross) and some spare cycles, if would be interesting to build test this
+> with CONFIG_IMMEDIATE=y and with CONFIG_TRACEPOINTS=y and
+> CONFIG_MARKERS=y :
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
+> branch : 2.6.27-lttng-0.40
+
+I just checked out 0.39 and was building it to try and reproduce your failure.
+I'll pull in 0.40 next.
