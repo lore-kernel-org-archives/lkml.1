@@ -1,147 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYJNJOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbYJNJPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbYJNJOj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 05:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbYJNJOU
+	id S1757475AbYJNJPU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 05:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJNJO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 05:14:20 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:33962 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754925AbYJNJOT (ORCPT
+	Tue, 14 Oct 2008 05:14:58 -0400
+Received: from 1-1-4-20a.ras.sth.bostream.se ([82.182.72.90]:57059 "EHLO
+	amd.kenjo.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752479AbYJNJO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 05:14:19 -0400
-Message-Id: <20081014091413.107040955@linux.vnet.ibm.com>
-References: <20081014091247.433079967@linux.vnet.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 14 Oct 2008 11:12:50 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux PPC devel <linuxppc-dev@ozlabs.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Ryan S. Arnold" <rsa@us.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Subject: [RFC PATCH 3/5] hvc_console: Fix loop if put_char() returns 0
-Content-Disposition: inline; filename=hvc/common/03_hvc_put_char.patch
+	Tue, 14 Oct 2008 05:14:57 -0400
+Subject: Re: weird throughput on write to SATA disk
+From: kenneth johansson <ken@kenjo.org>
+To: Grant Grundler <grundler@google.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <da824cf30810131833g6e509d0dvb6cce6c7220a1a28@mail.gmail.com>
+References: <1223925629.3947.7.camel@duo>
+	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
+	 <1223932956.3947.22.camel@duo>
+	 <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>
+	 <1223936351.3947.41.camel@duo>
+	 <da824cf30810131833g6e509d0dvb6cce6c7220a1a28@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 14 Oct 2008 11:14:54 +0200
+Message-Id: <1223975694.3947.77.camel@duo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+On Mon, 2008-10-13 at 18:33 -0700, Grant Grundler wrote:
+> On Mon, Oct 13, 2008 at 3:19 PM, kenneth johansson <ken@kenjo.org> wrote:
+> ...
+> >> Can you try "dd oflag=direct if=/dev/null of=/dev/sdb bs=64k"?
+> >
+> > I changed to use O_DIRECT and it's much more consistent now. 69-75 with
+> > 74 about 95% of the time.
+> 
+> That's low but it could be worse. Many things can contribute to slow
+> disks. 
+Well my main problem was that it was fluctuating so much that can't be
+right. 
 
-If put_char() routine of a hvc console backend returns 0, then the
-hvc console starts looping in the following scenarios:
+> Favorites are overtemp (See SMART field 194) and vibration (no
+> measurement possible w/o special equipment). "dd" isn't exactly a
+> performance application until one uses really big block sizes (1MB or
+> larger).
+All my numbers comes from using 1MB blocks. but I'm not using dd.
+After removing the logic that actually put some data into the buffers I
+do get about 105 MB/sec using O_DIRECT. I'm doing a full disk write now
+to get a reference plot. Not using O_DIRECT should be almost identical. 
 
-1. hvc_console_print()
-	If put_char() returns 0 then the while loop may loop forever.
-	I have added the missing check for 0 to throw away console messages.
 
-2. khvcd may loop:
-	The thread calls hvc_poll() --> hvc_push()... if there are still
-	buffered data then the HVC_POLL_WRITE bit is set and causes the
-	khvcd thread to loop (if yield() returns immediately).
+> > the disk is supposed to have 105 115 sustained
+> > data rate.
+> 
+> Where did 105-115 number come from?
+datasheet . they listed two drives in the same column so that was not
+the range it was sustained OD and the model I have max out at 105. 
 
-	However, instead of looping, the khvcd thread could sleep for
-	MIN_TIMEOUT (doing the same as for get_chars()).
-	The MIN_TIMEOUT is set if hvc_push() was not able to write
-	data to the backend. If data has been written, the timeout is
-	set to 0 to immediately re-schedule hvc_poll().
-
-Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Tested-by: Christian Borntraeger <borntraeger@de.ibm.com> (virtio_console)
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
----
- drivers/char/hvc_console.c |   20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
-
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -161,7 +161,7 @@ static void hvc_console_print(struct con
- 			}
- 		} else {
- 			r = cons_ops[index]->put_chars(vtermnos[index], c, i);
--			if (r < 0) {
-+			if (r <= 0) {
- 				/* throw away chars on error */
- 				i = 0;
- 			} else if (r > 0) {
-@@ -431,7 +431,7 @@ static void hvc_hangup(struct tty_struct
-  * Push buffered characters whether they were just recently buffered or waiting
-  * on a blocked hypervisor.  Call this function with hp->lock held.
-  */
--static void hvc_push(struct hvc_struct *hp)
-+static int hvc_push(struct hvc_struct *hp)
- {
- 	int n;
- 
-@@ -439,7 +439,7 @@ static void hvc_push(struct hvc_struct *
- 	if (n <= 0) {
- 		if (n == 0) {
- 			hp->do_wakeup = 1;
--			return;
-+			return 0;
- 		}
- 		/* throw away output on error; this happens when
- 		   there is no session connected to the vterm. */
-@@ -450,6 +450,8 @@ static void hvc_push(struct hvc_struct *
- 		memmove(hp->outbuf, hp->outbuf + n, hp->n_outbuf);
- 	else
- 		hp->do_wakeup = 1;
-+
-+	return n;
- }
- 
- static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count)
-@@ -538,16 +540,20 @@ int hvc_poll(struct hvc_struct *hp)
- 	char buf[N_INBUF] __ALIGNED__;
- 	unsigned long flags;
- 	int read_total = 0;
-+	int written_total = 0;
- 
- 	spin_lock_irqsave(&hp->lock, flags);
- 
- 	/* Push pending writes */
- 	if (hp->n_outbuf > 0)
--		hvc_push(hp);
-+		written_total = hvc_push(hp);
- 
- 	/* Reschedule us if still some write pending */
--	if (hp->n_outbuf > 0)
-+	if (hp->n_outbuf > 0) {
- 		poll_mask |= HVC_POLL_WRITE;
-+		/* If hvc_push() was not able to write, sleep a few msecs */
-+		timeout = (written_total) ? 0 : MIN_TIMEOUT;
-+	}
- 
- 	/* No tty attached, just skip */
- 	tty = hp->tty;
-@@ -659,10 +665,6 @@ static int khvcd(void *unused)
- 			poll_mask |= HVC_POLL_READ;
- 		if (hvc_kicked)
- 			continue;
--		if (poll_mask & HVC_POLL_WRITE) {
--			yield();
--			continue;
--		}
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		if (!hvc_kicked) {
- 			if (poll_mask == 0)
-
--- 
-Hendrik Brueckner
-D/3303 Linux on System z Development
-Tel: +49 7031 16-1073
-Fax: +49 7031 16-3456
-eMail: brueckner@linux.vnet.ibm.com
-IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
-
-IBM Deutschland Research & Development GmbH
-Vorsitzender des Aufsichtsrats: Martin Jetter
-Geschaeftsfuehrung: Erich Baier
-Sitz der Gesellschaft: Boeblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
 
