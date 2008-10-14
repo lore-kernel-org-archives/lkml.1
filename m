@@ -1,42 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYJNK4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbYJNLAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbYJNK4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 06:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYJNK4h
+	id S1756238AbYJNLAb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 07:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbYJNLAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 06:56:37 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37342 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754538AbYJNK4g (ORCPT
+	Tue, 14 Oct 2008 07:00:16 -0400
+Received: from stinky.trash.net ([213.144.137.162]:65207 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754538AbYJNLAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 06:56:36 -0400
-Date: Tue, 14 Oct 2008 11:56:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [REVERT Request] VT Breakage
-Message-ID: <20081014115632.600a7506@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Oct 2008 07:00:14 -0400
+Message-ID: <48F47BB9.9090902@trash.net>
+Date: Tue, 14 Oct 2008 13:00:09 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, shemminger@linux-foundation.org,
+       netdev@vger.kernel.org, containers@lists.linux-foundation.org,
+       kaber@trash.et, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: [bug, -git] ERROR: "ebt_unregister_table"	[net/bridge/netfilter/ebtable_nat.ko]
+ undefined
+References: <20080821221943.GO31136@x200.localdomain> <20081013070347.GA3813@elte.hu> <20081013070940.GA6340@elte.hu> <20081013073501.GB4254@x200.localdomain> <20081014103005.GA19420@elte.hu>
+In-Reply-To: <20081014103005.GA19420@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------080305030308060309020303"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In April someone merged
+This is a multi-part message in MIME format.
+--------------080305030308060309020303
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-commit c9e587abfdec2c2aaa55fab83bcb4972e2f84f9b
-Author: Jan Engelhardt <jengelh@computergmbh.de>
-Date:   Tue Apr 29 00:59:46 2008 -0700
+Ingo Molnar wrote:
+> i think you misunderstood my report. This is about latest upstream -git 
+> being broken:
+> 
+> ERROR: "ebt_register_table" [net/bridge/netfilter/ebtable_filter.ko] undefined!
+> ERROR: "ebt_do_table" [net/bridge/netfilter/ebtable_filter.ko] undefined!
+> ERROR: "ebt_unregister_table" [net/bridge/netfilter/ebtable_filter.ko] undefined!
+> ERROR: "ebt_register_table" [net/bridge/netfilter/ebtable_broute.ko] undefined!
+> ERROR: "ebt_do_table" [net/bridge/netfilter/ebtable_broute.ko] undefined!
+> ERROR: "ebt_unregister_table" [net/bridge/netfilter/ebtable_broute.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> 
+> i posted to this thread because i wanted to find a relevant context. 
+> (but probably is not)
+> 
+> Anyway, i started a new thread for this.
+> 
+> the dependencies there look pretty complex so i did not find a quick fix 
+> - but i can test patches.
 
-    vt: fix background color on line feed
+This appears to be caused by Jan's Kconfig changes to use menuconfig,
+which lost a dependency on BRIDGE:
 
+-menu "Bridge: Netfilter Configuration"
+-       depends on BRIDGE && BRIDGE_NETFILTER
+-
+-config BRIDGE_NF_EBTABLES
++menuconfig BRIDGE_NF_EBTABLES
+         tristate "Ethernet Bridge tables (ebtables) support"
+         select NETFILTER_XTABLES
+         help
+           ebtables is a general, extensible frame/packet identification
+           framework. Say 'Y' or 'M' here if you want to do Ethernet
+           filtering/NAT/brouting on the Ethernet bridge.
 
-Unfortunately it's wrong and its been causing breakages because various
-apps like ncurses expect our previous (and correct) behaviour.
+Does this patch fix it?
 
-Can you therefore revert it (seems saner than sending you a patch -R)
+--------------080305030308060309020303
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
 
+diff --git a/net/bridge/netfilter/Kconfig b/net/bridge/netfilter/Kconfig
+index 366d3e9..ba6f73e 100644
+--- a/net/bridge/netfilter/Kconfig
++++ b/net/bridge/netfilter/Kconfig
+@@ -4,6 +4,7 @@
+ 
+ menuconfig BRIDGE_NF_EBTABLES
+ 	tristate "Ethernet Bridge tables (ebtables) support"
++	depends on BRIDGE && BRIDGE_NETFILTER
+ 	select NETFILTER_XTABLES
+ 	help
+ 	  ebtables is a general, extensible frame/packet identification
+
+--------------080305030308060309020303--
