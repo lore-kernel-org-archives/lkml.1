@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbYJNHcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761205AbYJNHby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932121AbYJNHcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 03:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760554AbYJNHac
+	id S1761205AbYJNHby (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 03:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758998AbYJNH3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 03:30:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:10824 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759027AbYJNHaa (ORCPT
+	Tue, 14 Oct 2008 03:29:31 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:53340 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760054AbYJNH33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 03:30:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=ms3DTGksDxRiOOOM6QcyP03c0mSKu16XhdqdISmFfg//iIJQH8NkVXucKexTNYGzuQ
-         9VvExqCm8tPNHk5rNmzEE3Jr2nl4jz47mtkIoWRb+d4v62zxTcAQuj5GVfRlaJcUVkxB
-         xqz0nQSS50Q4+HK3OHmt6NqYY6s/S9PWUQiCU=
-Date: Tue, 14 Oct 2008 10:30:33 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, jens.axboe@oracle.com,
+	Tue, 14 Oct 2008 03:29:29 -0400
+Date: Tue, 14 Oct 2008 09:29:26 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Paul Bolle <pebolle@tiscali.nl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-m68k@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
-Message-ID: <20081014073033.GA5284@localhost>
-References: <1223386477.28348.42.camel@penberg-laptop> <1223623191.8959.26.camel@penberg-laptop> <1223628687.8959.37.camel@penberg-laptop> <1223629803.8959.40.camel@penberg-laptop> <1223631723.8959.46.camel@penberg-laptop> <1223701131.7489.25.camel@charm-linux> <1223881068.31587.1.camel@penberg-laptop> <1223957031.10883.7.camel@charm-linux> <48F42A93.1040004@cs.helsinki.fi> <1223963208.10883.55.camel@charm-linux>
+Subject: Re: [patch 06/18] m68k: Disable Amiga serial console support if
+ modular
+In-Reply-To: <1223932097.3619.51.camel@x41.thuisdomein>
+Message-ID: <Pine.LNX.4.64.0810140928480.6220@anakin>
+References: <20081013195846.674654386@mail.of.borg> <20081013195915.659336491@mail.of.borg>
+ <1223932097.3619.51.camel@x41.thuisdomein>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223963208.10883.55.camel@charm-linux>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 12:46:47AM -0500, Tom Zanussi wrote:
-> Hi Pekka,
+On Mon, 13 Oct 2008, Paul Bolle wrote:
+> On Mon, 2008-10-13 at 21:58 +0200, Geert Uytterhoeven wrote:
+> > Apparently console_initcall() is not defined in the modular case.
 > 
-> On Tue, 2008-10-14 at 08:13 +0300, Pekka Enberg wrote:
-> > Hi Tom,
-> > 
-> > Tom Zanussi wrote:
-> > > To me, that sounds like how it should work - if kmemtrace is disabled,
-> > > it shouldn't be logging anything, and that's in fact what I saw when
-> > > debugging this - it started out disabled and therefore nothing being
-> > > logged to relay (printks confirmed that).  When I wrote 1 to the enabled
-> > > file, data started getting logged to relay and to the *.out files.
-> > > 
-> > > So I don't know why the enabled state behaves the way it does, or if
-> > > it's unexpected, but that anyway doesn't seem like a relay problem to
-> > > me.
-> > 
-> > Oh, right. Looking at kmemtraced.c, we never enable kmemtrace, just 
-> > disable it (which doesn't make much sense). Bug in README or the code. 
-> > Eduard?
-> > 
-> > Btw, Tom, you can add my
-> > 
-> > Tested-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > 
-> > to your patch if you want. Are you going to send it to Andrew or do you 
-> > want me to pick it up with rest of the kmemtrace patches?
+> Yes, see include/linux/init.h:
+> #ifndef MODULE
+> [...]
+> #define console_initcall(fn) \
+>         static initcall_t __initcall_##fn \
+>         __used __section(.con_initcall.init) = fn
+> [...]
 > 
-> If you pick it up that would be fine with me.  Here's my sob:
+> > Any better alternative fix?
 > 
-> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> Well, (a number of) other serial consoles cannot be selected if the
+> corresponding serial driver is modular. Try:
+> grep -B 2 -E "depends on .*=y" drivers/serial/Kconfig | \
+>     grep -A 2 -E "^config .*CONSOLE"
 > 
-> Thanks,
-> 
-> Tom
->
+> For instance:
+> config SERIAL_8250_CONSOLE
+> 	bool "Console on 8250/16550 and compatible serial port"
+> 	depends on SERIAL_8250=y
 
-Great, this makes it go swifter. I'll commit the change to
-kmemtrace-user.
+Yes, I saw those.
 
+> Maybe this config entry (in arch/m68k/Kconfig) could be cleaned up (or
+> split into multiple entries):
+> config SERIAL_CONSOLE
+>         bool "Support for serial port console"
+>         depends on (AMIGA || ATARI || MAC || SUN3 || SUN3X || VME ||
+> APOLLO) && (ATARI_MFPSER=y || ATARI_MIDI=y || MAC_SCC=y ||
+> AMIGA_BUILTIN_SERIAL=y || GVPIOEXT=y || MULTIFACE_III_TTY=y || SERIAL=y
+> || MVME147_SCC || SERIAL167 || MVME162_SCC || BVME6000_SCC || DN_SERIAL)
+> [...]
+> 
+> That "depends on" line seems likely to lead to problems like the one you
+> ran into. But your patch (which I didn't test) is probably simpler.
 
+Adding all those extra config symbols seems like a bit overkill to me...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
