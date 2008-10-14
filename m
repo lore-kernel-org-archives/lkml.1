@@ -1,141 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYJNVxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753712AbYJNV4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbYJNVxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 17:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYJNVxj
+	id S1753712AbYJNV4u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 17:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYJNV4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 17:53:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46833 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751347AbYJNVxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 17:53:38 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+CNAgDiq2C6EdMjk5C7fxI0qaagWc16LBssDEIzS
-	cTDSRcuWcH5Cjz
-Date: Tue, 14 Oct 2008 23:53:37 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Stefan Herbrechtsmeier <hbmeier@hni.uni-paderborn.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, lethal@linux-sh.org,
-       linux-sh@vger.kernel.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>
-Subject: [PATCH] soc-camera: fix compile breakage on SH
-In-Reply-To: <20081014183936.GB4710@cs181140183.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0810142335400.10458@axis700.grange>
-References: <20081014183936.GB4710@cs181140183.pp.htv.fi>
+	Tue, 14 Oct 2008 17:56:42 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:20361 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbYJNV4l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 17:56:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=j3zKG0Aq0yKgtzdL1ft4o4T/7dVtQ6RLClHGqg4cPgfmkgngTtHoU0BaaUPi2Pw8Ph
+         n+q2R2ez1Zbfo0HiiqcwNipEaGYPUY+sHP7TGwBCkvJRgaafVkgstvQLuCZaPkQyTfqh
+         2+BZGCSYAVM3RxbV9bBCjHU2cIBTw5C3T9Cw8=
+Message-ID: <3f43f78b0810141456r159d71e7h9763e50e7dbc0c51@mail.gmail.com>
+Date: Tue, 14 Oct 2008 14:56:40 -0700
+From: "Kaz Kylheku" <kkylheku@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: GPL question: using large contiguous memory in proprietary driver.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix Migo-R compile breakage caused by incomplete merge.
+Hi all,
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+I have the following question. Suppose that some proprietary driver
+(otherwise completely clean, based only on non-GPL symbols)
+requires a large buffer of physically contiguous memory.
 
----
+A GPL-ed driver could get this memory by having some boot-time
+code compiled into the kernel which calls bootmem_alloc during
+kernel initialization. This function would stash the address of the
+memory into some global variable which is exported for the
+module to use.
 
-Hi Adrian,
+How do you solve this problem in a proprietary driver? It seems
+like the above solution taints the kernel, because the kernel
+provides a symbol which exists only for the sake of supporting
+a proprietary driver.
 
-please see, if the patch below fixes it. Completely untested. Magnus, 
-could you please verify if it also works (of course, if it at least 
-compiles:-)) If it doesn't, please fix it along these lines, if it suits 
-your needs.
+Would it be okay to have a mechanism like this:
+Suppose that  on the kernel command line, you could
+request a boot-time memory allocation and give it a name.
+For instance, the parameter:
 
-On Tue, 14 Oct 2008, Adrian Bunk wrote:
+   boot_alloc=foo,8192K
 
-> Commit 81034663159f39d005316b5c139038459cd16721
-> (V4L/DVB (8687): soc-camera: Move .power and .reset from
->  soc_camera host to sensor driver) causes the following build error:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      arch/sh/boards/mach-migor/setup.o
-> arch/sh/boards/mach-migor/setup.c:408: error: unknown field 'enable_camera' specified in initializer
-> arch/sh/boards/mach-migor/setup.c:408: warning: excess elements in struct initializer
-> arch/sh/boards/mach-migor/setup.c:408: warning: (near initialization for 'sh_mobile_ceu_info')
-> arch/sh/boards/mach-migor/setup.c:409: error: unknown field 'disable_camera' specified in initializer
-> arch/sh/boards/mach-migor/setup.c:409: warning: excess elements in struct initializer
-> arch/sh/boards/mach-migor/setup.c:409: warning: (near initialization for 'sh_mobile_ceu_info')
-> make[2]: *** [arch/sh/boards/mach-migor/setup.o] Error 1
-> 
-> <--  snip  -->
+would create an 8192 kilobyte allocation, and associate it
+with the string "foo".   A non-GPL function would be provided to
+find the address of this memory, using the string "foo"
+as the key. The proprietary driver would document the
+requirement that it needs a memory region of at least
+8192K, under the name "foo".
 
-
-diff --git a/arch/sh/boards/mach-migor/setup.c b/arch/sh/boards/mach-migor/setup.c
-index 714dce9..95459f3 100644
---- a/arch/sh/boards/mach-migor/setup.c
-+++ b/arch/sh/boards/mach-migor/setup.c
-@@ -312,6 +312,14 @@ static void camera_power_off(void)
- 	ctrl_outb(ctrl_inb(PORT_PTDR) & ~0x08, PORT_PTDR);
- }
- 
-+static void camera_power(int mode)
-+{
-+	if (mode)
-+		camera_power_on();
-+	else
-+		camera_power_off();
-+}
-+
- #ifdef CONFIG_I2C
- static unsigned char camera_ov772x_magic[] =
- {
-@@ -391,6 +399,7 @@ static struct soc_camera_platform_info ov772x_info = {
- 	},
- 	.bus_param =  SOCAM_PCLK_SAMPLE_RISING | SOCAM_HSYNC_ACTIVE_HIGH |
- 	SOCAM_VSYNC_ACTIVE_HIGH | SOCAM_MASTER | SOCAM_DATAWIDTH_8,
-+	.power = camera_power,
- 	.set_capture = ov772x_set_capture,
- };
- 
-@@ -405,8 +414,6 @@ static struct platform_device migor_camera_device = {
- static struct sh_mobile_ceu_info sh_mobile_ceu_info = {
- 	.flags = SOCAM_MASTER | SOCAM_DATAWIDTH_8 | SOCAM_PCLK_SAMPLE_RISING \
- 	| SOCAM_HSYNC_ACTIVE_HIGH | SOCAM_VSYNC_ACTIVE_HIGH,
--	.enable_camera = camera_power_on,
--	.disable_camera = camera_power_off,
- };
- 
- static struct resource migor_ceu_resources[] = {
-diff --git a/drivers/media/video/soc_camera_platform.c b/drivers/media/video/soc_camera_platform.c
-index 1adc257..5b08873 100644
---- a/drivers/media/video/soc_camera_platform.c
-+++ b/drivers/media/video/soc_camera_platform.c
-@@ -44,11 +44,21 @@ soc_camera_platform_get_info(struct soc_camera_device *icd)
- 
- static int soc_camera_platform_init(struct soc_camera_device *icd)
- {
-+	struct soc_camera_platform_info *p = soc_camera_platform_get_info(icd);
-+
-+	if (p->power)
-+		p->power(1);
-+
- 	return 0;
- }
- 
- static int soc_camera_platform_release(struct soc_camera_device *icd)
- {
-+	struct soc_camera_platform_info *p = soc_camera_platform_get_info(icd);
-+
-+	if (p->power)
-+		p->power(0);
-+
- 	return 0;
- }
- 
-diff --git a/include/media/soc_camera_platform.h b/include/media/soc_camera_platform.h
-index 851f182..7c81ad3 100644
---- a/include/media/soc_camera_platform.h
-+++ b/include/media/soc_camera_platform.h
-@@ -9,6 +9,7 @@ struct soc_camera_platform_info {
- 	unsigned long format_depth;
- 	struct v4l2_pix_format format;
- 	unsigned long bus_param;
-+	void (*power)(int);
- 	int (*set_capture)(struct soc_camera_platform_info *info, int enable);
- };
- 
+Help! :)
