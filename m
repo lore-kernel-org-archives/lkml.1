@@ -1,44 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYJNM5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYJNM6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528AbYJNM5s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 08:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbYJNM5j
+	id S1757378AbYJNM6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 08:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYJNM6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 08:57:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:17499 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755410AbYJNM5g (ORCPT
+	Tue, 14 Oct 2008 08:58:10 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:53967 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755879AbYJNM6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 08:57:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=xyD/+cN0UDk6Rzw9udxYYiV/FTEuCE0TEdq8YuV1OQz6IS4WqHvpChZMW0Wg7vq+Ec
-         1BbSCDmIN2luF0rdq64AYFH9WbS1AX2As4W/SrFguTyritXaX0IPdHG9EwbJBhKO+FkN
-         Wja4vfP5/gOlNjmmd5oCybCOzomH2zYRIBHb4=
-Message-ID: <5a4c581d0810140557k37924493x1cad719ac69b205a@mail.gmail.com>
-Date: Tue, 14 Oct 2008 14:57:35 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: heads-up: 2.6.27-git4 panics on boot and hangs hard in spin_bug
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 14 Oct 2008 08:58:08 -0400
+Subject: Re: [GIT PATCH] intermediate SCSI updates
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
+References: <1223909115.5566.13.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0810131017030.3288@nehalem.linux-foundation.org>
+	 <1223925606.5566.20.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0810131416410.3288@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 14 Oct 2008 08:49:11 -0400
+Message-Id: <1223988551.12440.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I will be posting details in a few hours when I'm back home,
- boot sequence of my Fedora 9 is about to complete with
- filesystems mounted, but the BUG doesn't hit the disk;
- x86 on a Dell Latitude D610.
+On Mon, 2008-10-13 at 14:22 -0700, Linus Torvalds wrote: 
+> 
+> On Mon, 13 Oct 2008, James Bottomley wrote:
+> > 
+> > Not exactly.  It has to be rebased to run as a postmerge tree, but it
+> > does get tested by me (admittedly on my limited set of machines, which
+> > don't include any actual devices that do block integrity) every time I
+> > rebase.
+> 
+> What I'm upset about is that this has apparently gotten not even some 
+> trivial testing of the _default_ build. I'm not talking about any odd 
+> config options here. I'm literally talking about the only _sane_ config 
+> option case.
+> 
+> You yourself admit that even you don't have any actual devices that can 
+> support the block integrity stuff, yet you have apparently only compile- 
+> tested the insane case of still enabling that thing and apparently nobody 
+> else has bothered either.
 
-2.6.27-git3 works fine.
+Um, well, I wanted to compile the code to make sure it actually did
+compile and that it didn't interfere with the normal operation of sd, so
+for me it's a justifiable option.
 
---alessandro
+> Was this in linux-next?
 
- "Leave the city, leave the cold / Young people far too old"
+Yes ... all my trees feed into linux-next.  We just seem to have been
+having a few teething problems with it recently.  Usually this type of
+thing gets picked up by Ingo's random config checker which feeds from
+linux-next.  However, I don't think linux-next has been built for a
+while (Since 19 September according to the logs)
 
-   (Anna Ternheim, 'To Be Gone')
+> Is linux-next coverage REALLY so weak that it doesn't even test the 
+> default config options, much less any random options? What's the point of 
+> linux-next then?
+> 
+> Again, the date on that thing is claimed to be September 19th, although it 
+> was obviously committed later.
+
+Right, which is, unfortunately, how it managed to avoid being in
+anyone's test bed.
+
+> > However, does this work for you?  It fixes the problem for me.
+> 
+> I could trivially have fixed the compile issue. That's not what upsets me. 
+> What upsets me is that this set of patches apparently had almost nobody 
+> looking at them at all before they got sent to me.
+
+I agree, but unfortunately our infrastructure is all wrapped around
+linux-next now ... even Andrew doesn't pull my trees directly, he gets
+them from linux-next.  I can and do publish them on kernel.org, but it
+takes a fairly superhuman effort to pull in all the kernel.org trees and
+compile them.
+
+> If it was some odd and unusual config option, I'd be less upset. hey, 
+> stuff happens. But it sure as heck was nothing of the sort!
+
+So I do test the trees, but I'm looking for unusual breakage, so my
+three configs are ia64 (3hr build) parisc (6hr build) and x86 dual core
+(about 40min) with all the options enabled.  However, my testing is
+mostly runtime rather than compile/config time.  Sorry.  Once I get this
+terrasoft box integrated (i.e. when benh gets remote power working) I
+might be able to build faster and try different config options.
+
+James
+
+
