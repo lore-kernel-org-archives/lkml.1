@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYJNG6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYJNHAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbYJNG6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 02:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYJNG6G
+	id S1756152AbYJNHAo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 03:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbYJNHAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 02:58:06 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44629 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbYJNG6F (ORCPT
+	Tue, 14 Oct 2008 03:00:36 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:47258 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbYJNHAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 02:58:05 -0400
-Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1223963208.10883.55.camel@charm-linux>
-References: <20080923212914.GB5237@localhost>
-	 <1223386477.28348.42.camel@penberg-laptop>
-	 <1223623191.8959.26.camel@penberg-laptop>
-	 <1223628687.8959.37.camel@penberg-laptop>
-	 <1223629803.8959.40.camel@penberg-laptop>
-	 <1223631723.8959.46.camel@penberg-laptop>
-	 <1223701131.7489.25.camel@charm-linux>
-	 <1223881068.31587.1.camel@penberg-laptop>
-	 <1223957031.10883.7.camel@charm-linux>  <48F42A93.1040004@cs.helsinki.fi>
-	 <1223963208.10883.55.camel@charm-linux>
-Date: Tue, 14 Oct 2008 09:58:10 +0300
-Message-Id: <1223967490.18017.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 14 Oct 2008 03:00:36 -0400
+Date: Tue, 14 Oct 2008 08:00:35 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/1] hugetlbfs: handle pages higher order than MAX_ORDER
+Message-ID: <20081014070035.GE15657@brain>
+References: <1223458431-12640-1-git-send-email-apw@shadowen.org> <1223458431-12640-2-git-send-email-apw@shadowen.org> <48ECDD37.8050506@linux-foundation.org> <20081008185532.GA13304@brain> <48ED0B68.2060001@linux-foundation.org> <20081013133404.GC15657@brain> <48F37190.2020801@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F37190.2020801@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-14 at 00:46 -0500, Tom Zanussi wrote:
-> > Tested-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > 
-> > to your patch if you want. Are you going to send it to Andrew or do you 
-> > want me to pick it up with rest of the kmemtrace patches?
-> 
-> If you pick it up that would be fine with me.  Here's my sob:
-> 
-> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+On Mon, Oct 13, 2008 at 09:04:32AM -0700, Christoph Lameter wrote:
+> Andy Whitcroft wrote:
+>> Currently memory hot remove is not supported with VMEMMAP.  Obviously
+>> that should be fixed overall and I am assuming it will.  But the fact
+>> remains that the buddy guarentee is that the mem_map is contigious out
+>> to MAX_ORDER-1 order pages only beyond that we may not assume
+>> contiguity.  This code is broken under the guarentees that are set out
+>> by buddy.  Yes it is true that we do only have one memory model combination
+>> currently where a greater guarentee of contigious within a node is
+>> violated, but right now this code violates the current guarentees.
+>>   I assume the objection here is the injection of the additional branch
+>> into these loops.  The later rejig patch removes this for the non-giant
+>> cases for the non-huge use cases.  Are we worried about these same
+>> branches in the huge cases?  If so we could make this support dependant
+>> on a new configuration option, or perhaps only have two loop chosen
+>> based on the order of the page.
+>>   
+> I think we are worried about these additional checks spreading further  
+> because there may be assumptions of contiguity elsewhere (in particular  
+> when new code is added) since the traditional nature of the memmap is to  
+> be linear and not spread out over memory.
 
-Applied, thanks!
+Yes, but it is guarenteed to be contigious in all models out to order
+MAX_ORDER-1, and only gigantic pages are larger than this.  We already
+have to cope with discontiguity at the MAX_ORDER boundaries in paths
+which scan over the mem_map in more general terms as SPARSEMEM introduced
+that long long ago, and only gained a contigious mode when we added your
+VMEMMAP mode to that.
 
-http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=51b19be3535c8fbcce6b6f838d89b9a6a4cc5b92
+I thought that the approach recommended by Nick, which led to the other
+patch in this series which pulled out compound page preparation to a
+specific gigantic initialiser, helped a lot with this worry as it removed
+any change from the regular case and helped limit gigantic page support
+to hugetlb only.  The only reason that initialiser was placed with the
+normal form was to ensure they were maintained together.
 
+Would it help if I posted these two together, or perhaps even merged as
+a single patch?
+
+> A fix for this particular situation may be as simple as making gigantic  
+> pages depend on SPARSE_VMEMMAP? For x86_64 this is certainly sufficient.
+
+Well that is only true if it doesn't support memory hotplug.
+
+>> Something like the patch below?  This patch is not tested as yet, but if
+>> this form is acceptable we can get the pair of patches (this plus the
+>> prep compound update) tested together and I can repost them once that is
+>> done.  This against 2.6.27.
+>>   
+> What is the difference here to the earlier versions?
+
+This was a move to following the model I felt Nick preferred in the
+prep_compound_page where the gigantic support is pulled out of line and
+made very explicit.  Minimising the normal case impacts.  Which I felt
+was part of the objections to these changes.
+
+The plan here is to only fix up gigantic pages within the context of
+hugetlbfs.
+
+-apw
