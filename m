@@ -1,106 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbYJNI0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYJNIaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756871AbYJNI0l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 04:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYJNI0Z
+	id S1756247AbYJNIaq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 04:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYJNIai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 04:26:25 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:57547 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbYJNI0Y (ORCPT
+	Tue, 14 Oct 2008 04:30:38 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:45910 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751916AbYJNIag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 04:26:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=akqxRfmzGj3WHku5sbzl2gLrZPxaM8Wrgjz7tBv5Qh4EjRD2t3OUUqbJ/alNSM7VTV
-         bCcxk+JAfPJk64U5r2R31J3c9NnizRkf8z2JgL/GQ+ga8OmnxM08USi6oNKV/0nlycDR
-         i52Deqi6c3ONLxX8G9y7/9xaWkPmcyWeZ+C0k=
-Message-ID: <9ea470500810140126v3058d99dn47768834bd087111@mail.gmail.com>
-Date: Tue, 14 Oct 2008 10:26:19 +0200
-From: "Boris Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: "Tejun Heo" <tj@kernel.org>
-Subject: Re: New CD/DVD reports 'Can Play Audio NO'
-Cc: "Nick Warne" <nick@ukfsn.org>, linux-kernel@vger.kernel.org,
-       "D Bray" <db1986@internetdog.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <48F441F0.90408@kernel.org>
+	Tue, 14 Oct 2008 04:30:36 -0400
+Date: Tue, 14 Oct 2008 10:30:20 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: David Miller <davem@davemloft.net>
+cc: davej@redhat.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: Re: sparc64 allmodconfig build failure...
+In-Reply-To: <20081013.230251.215237620.davem@davemloft.net>
+Message-ID: <alpine.LNX.2.00.0810140945060.13897@titan.stealer.net>
+References: <20081013.230251.215237620.davem@davemloft.net>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+Organization: STEALER.net
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081004103355.407fc303@sauron.linicks.net>
-	 <48E82FDB.6020009@kernel.org>
-	 <20081005120809.38eb4826@sauron.linicks.net>
-	 <48F441F0.90408@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: 0.1
+X-Spam-Bar: /
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Tue, 14 Oct 2008 08:30:33 +0000
+	Bayes: 0.4214 Tokens: new, 257; hammy, 5; neutral, 2; spammy, 1.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4214]
+	*  0.0 DNS_FROM_SECURITYSAGE RBL: Envelope sender in
+	*      blackholes.securitysage.com
+X-Spam-Signature: 2481baefc4566e34c33356fd1270b5332de07182
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 8:53 AM, Tejun Heo <tj@kernel.org> wrote:
-> Nick Warne wrote:
->> /messages
->> Oct  5 11:54:13 sauron kernel: ata5: PATA max UDMA/133 cmd 0x1f0 ctl
->> 0x3f6 bmdma 0xf400 irq 14
->> Oct  5 11:54:13 sauron kernel: ata6: PATA max
->> UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xf408 irq 15
->> Oct  5 11:54:13 sauron kernel: ata5.00: ATAPI: TSSTcorp CDDVDW
->> SH-S202J, SB00, max UDMA/66
->> Oct  5 11:54:13 sauron kernel: ata5.01: ATAPI: Optiarc DVD RW AD-7200A,
->> 1.06, max UDMA/66
->> Oct  5 11:54:13 sauron kernel: ata5.00: configured for UDMA/66
->> Oct  5 11:54:13 sauron kernel: ata5.01: configured for
->> UDMA/66
->>
->> /syslog
->> Oct  5 11:54:13 sauron kernel: sr0: scsi3-mmc drive: 48x/48x writer
->> dvd-ram cd/rw xa/form2 cdda tray
->> Oct  5 11:54:13 sauron kernel: sr1:
->> scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
->>
->> /proc/sys/dev/cdrom/info
->>
->> drive name:             sr1     sr0
->> drive speed:            48      48
->> drive # of slots:       1       1
->> Can close tray:         1       1
->> Can open tray:          1       1
->> Can lock tray:          1       1
->> Can change speed:       1       1
->> Can select disk:        0       0
->> Can read multisession:  1       1
->> Can read MCN:           1       1
->> Reports media changed:  1       1
->> Can play audio:         1       1
->> Can write CD-R:         1       1
->> Can write CD-RW:        1       1
->> Can read DVD:           1       1
->> Can write DVD-R:        1       1
->> Can write DVD-RAM:      1       1
->> Can read MRW:           1       1
->> Can write MRW:          1       1
->> Can write RAM:          1       1
->
-> Thanks.  sr.c just doesn't check whether the drive reports audio play
-> capability or not.  It just sets it while ide-cd actually checks for
-> the capability.  The drive is not reporting it while it can so ide-cd
-> needs blacklist entry for it.  Now that idecd has blacklist entry, all
-> should be fine.  Eh... I'm not sure whether we need to update sr to
-> follow what ide-cd is doing or not.
->
-> Thanks.
+On Mon, 13 Oct 2008, David Miller wrote:
 
-Actually, as I already pointed out, I'm not at all happy with blacklisting
-stuff. What sounds more sane to me (and this is only me) would be what sr.c
-does: assume that per se the drive can play audio and try to play it. But how
-many drives are there that cannot play audio, aka, would it be a safe assumption
-to say that their number is so diminishingly small that it would be better to
-announce that a drive can play audio by default and fail graciously in the
-_very_ seldom case it actually cannot ...
+> sparc64 allmodconfig started failing to build recently:
+> 
+>   MODPOST 1946 modules
+> ERROR: "cpufreq_gov_performance" [arch/sparc64/kernel/us3_cpufreq.ko] undefined!
+> 
+> It seems to be caused by the following commit:
+> 
+> commit c4d14bc0bb5d13e316890651ae4518b764c3344c
+> Author: Sven Wegener <sven.wegener@stealer.net>
+> Date:   Sat Sep 20 16:50:08 2008 +0200
+> 
+>     [CPUFREQ] Don't export governors for default governor
+>     
+>     We don't need to export the governors for use as the default governor,
+>     because the default governor will be built-in anyway and we can access
+>     the symbol directly.
 
--- 
-Regards/Gruss,
-Boris
+Uhm, we could resolve this dependency with the patch below. Although we 
+might as well revert the above commit or introduce an exported function 
+that sets the default governor on a policy.
+
+Subject: [CPUFREQ] Fix build failure on sparc64
+
+Commit c4d14bc0bb5d13e316890651ae4518b764c3344c ("[CPUFREQ] Don't export 
+governors for default governor") caused a build failure, because there are 
+several architectures that have cpufreq code that can be built as a 
+module, but the code also requires access to the default governor. Export 
+the default governor so that it can be accessed by these module.
+
+Reported-by: David Miller <davem@davemloft.net>
+Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+---
+ drivers/cpufreq/cpufreq_conservative.c |    4 +++-
+ drivers/cpufreq/cpufreq_ondemand.c     |    4 +++-
+ drivers/cpufreq/cpufreq_performance.c  |    4 +++-
+ drivers/cpufreq/cpufreq_powersave.c    |    4 +++-
+ drivers/cpufreq/cpufreq_userspace.c    |    4 +++-
+ 5 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index e265783..65297e3 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -576,7 +576,9 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
+-#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
++EXPORT_SYMBOL(cpufreq_gov_conservative);
++#else
+ static
+ #endif
+ struct cpufreq_governor cpufreq_gov_conservative = {
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 2ab3c12..78348b3 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -626,7 +626,9 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
+-#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
++EXPORT_SYMBOL(cpufreq_gov_ondemand);
++#else
+ static
+ #endif
+ struct cpufreq_governor cpufreq_gov_ondemand = {
+diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
+index 7e2e515..799bfd1 100644
+--- a/drivers/cpufreq/cpufreq_performance.c
++++ b/drivers/cpufreq/cpufreq_performance.c
+@@ -36,7 +36,9 @@ static int cpufreq_governor_performance(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
++EXPORT_SYMBOL(cpufreq_gov_performance);
++#elif defined(CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE)
+ static
+ #endif
+ struct cpufreq_governor cpufreq_gov_performance = {
+diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
+index e6db5fa..9db749d 100644
+--- a/drivers/cpufreq/cpufreq_powersave.c
++++ b/drivers/cpufreq/cpufreq_powersave.c
+@@ -35,7 +35,9 @@ static int cpufreq_governor_powersave(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
+-#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
++EXPORT_SYMBOL(cpufreq_gov_powersave);
++#else
+ static
+ #endif
+ struct cpufreq_governor cpufreq_gov_powersave = {
+diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
+index 1442bba..fb47b29 100644
+--- a/drivers/cpufreq/cpufreq_userspace.c
++++ b/drivers/cpufreq/cpufreq_userspace.c
+@@ -187,7 +187,9 @@ static int cpufreq_governor_userspace(struct cpufreq_policy *policy,
+ }
+ 
+ 
+-#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
++EXPORT_SYMBOL(cpufreq_gov_userspace);
++#else
+ static
+ #endif
+ struct cpufreq_governor cpufreq_gov_userspace = {
