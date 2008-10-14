@@ -1,143 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbYJNMwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYJNM5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757720AbYJNMwV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 08:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYJNMwN
+	id S1756528AbYJNM5s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 08:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbYJNM5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 08:52:13 -0400
-Received: from sunrise.pg.gda.pl ([153.19.40.230]:51190 "EHLO
-	sunrise.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755394AbYJNMwM (ORCPT
+	Tue, 14 Oct 2008 08:57:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:17499 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755410AbYJNM5g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 08:52:12 -0400
-Date: Tue, 14 Oct 2008 14:51:04 +0200
-From: Adam =?UTF-8?B?VGxhxYJrYQ==?= <atlka@pg.gda.pl>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Bodo Eggert <7eggert@gmx.de>,
-       linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH 0/3] SIGWINCH problem with terminal apps still alive
-Message-ID: <20081014145104.24aa96d0@merlin.oi.pg.gda.pl>
-In-Reply-To: <alpine.LSU.0.999.0810131359310.6408@be1.lrz>
-References: <bjXel-4CU-17@gated-at.bofh.it>
-	<bjYap-5Q0-25@gated-at.bofh.it>
-	<bk30i-3Gx-1@gated-at.bofh.it>
-	<bk6AV-8ms-7@gated-at.bofh.it>
-	<bkrvO-1HF-49@gated-at.bofh.it>
-	<blePJ-6rI-3@gated-at.bofh.it>
-	<blmDC-7ZU-7@gated-at.bofh.it>
-	<E1Kof4h-0005Q3-Ns@be1.7eggert.dyndns.org>
-	<20081011185821.0dab4c81@lxorguk.ukuu.org.uk>
-	<20081012143231.6ef9e590@merlin.oi.pg.gda.pl>
-	<20081012152200.4a8f14c4@lxorguk.ukuu.org.uk>
-	<20081012195957.50feada3@merlin.oi.pg.gda.pl>
-	<20081012190312.0bd04ab8@lxorguk.ukuu.org.uk>
-	<20081012210140.15cecf78@merlin.oi.pg.gda.pl>
-	<20081012212244.117852e0@lxorguk.ukuu.org.uk>
-	<alpine.LSU.0.999.0810131155280.5750@be1.lrz>
-	<20081013110125.5e3e5fa6@lxorguk.ukuu.org.uk>
-	<alpine.LSU.0.999.0810131359310.6408@be1.lrz>
-Organization: =?UTF-8?B?R2RhxYRzaw==?= University of Technology
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_lRfK+I/7.1m_OCWSW8aeP3x"
+	Tue, 14 Oct 2008 08:57:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=xyD/+cN0UDk6Rzw9udxYYiV/FTEuCE0TEdq8YuV1OQz6IS4WqHvpChZMW0Wg7vq+Ec
+         1BbSCDmIN2luF0rdq64AYFH9WbS1AX2As4W/SrFguTyritXaX0IPdHG9EwbJBhKO+FkN
+         Wja4vfP5/gOlNjmmd5oCybCOzomH2zYRIBHb4=
+Message-ID: <5a4c581d0810140557k37924493x1cad719ac69b205a@mail.gmail.com>
+Date: Tue, 14 Oct 2008 14:57:35 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: heads-up: 2.6.27-git4 panics on boot and hangs hard in spin_bug
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_lRfK+I/7.1m_OCWSW8aeP3x
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+I will be posting details in a few hours when I'm back home,
+ boot sequence of my Fedora 9 is about to complete with
+ filesystems mounted, but the BUG doesn't hit the disk;
+ x86 on a Dell Latitude D610.
 
-Hello,
+2.6.27-git3 works fine.
 
-I am sending sligtly corrected patch.
-In case of ioctl(,TIOCSWINSZ,) on pty side we should send signal to
-master side too. I've tested it on modified unix putty version
-and it works properly.
+--alessandro
 
-Signed-off-by: Adam Tla/lka <atlka@pg.gda.pl>
+ "Leave the city, leave the cold / Young people far too old"
 
-Maybe we could optimize code more and not call=20
-get_pid() and put_pid() if they are not needed - in case
-where there is no master/slave pair.
-
-Regards
-
---=20
-Adam Tla=C5=82ka       mailto:atlka@pg.gda.pl    ^v^ ^v^ ^v^
-System  & Network Administration Group       - - - ~~~~~~
-Computer Center, Gda=C5=84sk University of Technology, Poland
-
---MP_lRfK+I/7.1m_OCWSW8aeP3x
-Content-Type: text/x-patch; name=2.6.27_tty_io_3.patch
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=2.6.27_tty_io_3.patch
-
---- tty_io_orig.c	2008-10-10 05:37:30.000000000 +0200
-+++ tty_io.c	2008-10-14 14:28:50.000000000 +0200
-@@ -2522,29 +2522,33 @@ int tty_do_resize(struct tty_struct *tty
- 	struct pid *pgrp, *rpgrp;
- 	unsigned long flags;
- 
--	/* For a PTY we need to lock the tty side */
-+        /* in case of resize ioctl on slave */
-+	if ((tty == real_tty)
-+	    && tty->driver->type == TTY_DRIVER_TYPE_PTY)
-+		tty = tty->link;
-+	
-+	/* for a PTY we need to lock the tty side */
- 	mutex_lock(&real_tty->termios_mutex);
--	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
--		goto done;
--	/* Get the PID values and reference them so we can
--	   avoid holding the tty ctrl lock while sending signals */
--	spin_lock_irqsave(&tty->ctrl_lock, flags);
--	pgrp = get_pid(tty->pgrp);
--	rpgrp = get_pid(real_tty->pgrp);
--	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
--
--	if (pgrp)
--		kill_pgrp(pgrp, SIGWINCH, 1);
--	if (rpgrp != pgrp && rpgrp)
--		kill_pgrp(rpgrp, SIGWINCH, 1);
--
--	put_pid(pgrp);
--	put_pid(rpgrp);
--
--	tty->winsize = *ws;
-+	flags = memcmp(ws, &real_tty->winsize, sizeof(*ws));
- 	real_tty->winsize = *ws;
--done:
- 	mutex_unlock(&real_tty->termios_mutex);
-+	if (flags){
-+		/* Get the PID values and reference them so we can
-+		 avoid holding the tty ctrl lock while sending signals */
-+		spin_lock_irqsave(&tty->ctrl_lock, flags);
-+		pgrp = get_pid(tty->pgrp);
-+		rpgrp = get_pid(real_tty->pgrp);
-+		spin_unlock_irqrestore(&tty->ctrl_lock, flags);
-+		
-+		if (pgrp)
-+			kill_pgrp(pgrp, SIGWINCH, 1);
-+		if (rpgrp != pgrp && rpgrp)
-+			kill_pgrp(rpgrp, SIGWINCH, 1);
-+		
-+		put_pid(pgrp);
-+		put_pid(rpgrp);
-+	}
-+	
- 	return 0;
- }
- 
-@@ -2996,7 +3000,7 @@ long tty_ioctl(struct file *file, unsign
- 	case TIOCSTI:
- 		return tiocsti(tty, p);
- 	case TIOCGWINSZ:
--		return tiocgwinsz(tty, p);
-+		return tiocgwinsz(real_tty, p);
- 	case TIOCSWINSZ:
- 		return tiocswinsz(tty, real_tty, p);
- 	case TIOCCONS:
-
---MP_lRfK+I/7.1m_OCWSW8aeP3x--
+   (Anna Ternheim, 'To Be Gone')
