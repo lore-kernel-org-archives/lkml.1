@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbYJNXnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYJNXv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755062AbYJNXnk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 19:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYJNXnc
+	id S1754139AbYJNXv4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 19:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYJNXvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 19:43:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34521 "EHLO
+	Tue, 14 Oct 2008 19:51:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48523 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752594AbYJNXnb (ORCPT
+	by vger.kernel.org with ESMTP id S1752068AbYJNXvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 19:43:31 -0400
-Date: Tue, 14 Oct 2008 16:43:12 -0700 (PDT)
+	Tue, 14 Oct 2008 19:51:45 -0400
+Date: Tue, 14 Oct 2008 16:51:31 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
 cc: linux-next@vger.kernel.org,
@@ -19,7 +19,7 @@ cc: linux-next@vger.kernel.org,
        Liam Girdwood <lrg@slimlogic.co.uk>
 Subject: Re: linux-next: origin tree build failure
 In-Reply-To: <20081015095916.f30c0979.sfr@canb.auug.org.au>
-Message-ID: <alpine.LFD.2.00.0810141637210.3288@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0810141647420.3288@nehalem.linux-foundation.org>
 References: <20081015095916.f30c0979.sfr@canb.auug.org.au>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
@@ -31,32 +31,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 On Wed, 15 Oct 2008, Stephen Rothwell wrote:
-> 
-> drivers/mfd/wm8350-core.c: In function 'wm8350_device_init':
-> drivers/mfd/wm8350-core.c:1220: error: 'NO_IRQ' undeclared (first use in this function)
-> 
-> Caused by commit ebccec0fa4e35dff0c18663a492a65f4dc6cad7a ("mfd: Add
-> WM8350 interrupt support").
-> 
-> I applied the following (probably incorrect) patch.  Maybe this driver
-> needs to be restricted to certain architectures?  (NO_IRQ appears to only
-> be defined for arm, blackfin, powerpc, mn10300 and parisc)
+>
+> +#ifndef NO_IRQ
+> +#define NO_IRQ	0
+> +#endif
 
-Grr. Can we please just get rid of that IDIOTIC thing instead?
+Btw, as to why not do this idiocy, just grep for it.
 
-NO_IRQ was a bad idea to begin with. Let's not add more.
+We have several drivers that try to do something this stupid. Don't take 
+my word for it? Look for them. And see them do things like
 
-I assume that broken driver is some ARM-specific thing. I certainly don't 
-want to see NO_IRQ in any general drivers. So instead of having that 
-NO_IRQ insanity spread any more, I'd much rather see the driver either 
-fixed to not use it, or just marked ARM-only.
+ - drivers/scsi/arm/fas216.h:
 
-The proper way to test for whether an interrupt is valid or not is to do
+	#ifndef NO_IRQ
+	#define NO_IRQ 255
+	#endif
 
-	if (dev->irq) {
-		...
+ - drivers/pcmcia/pd6729.c (really interesting):
 
-and no other. There is no spoon. That NO_IRQ was insane. And architectures 
-or drivers that still think otherwise should fix themselves.
+	#ifndef NO_IRQ
+	#define NO_IRQ  ((unsigned int)(0))
+	#endif
+
+ - drivers/rtc/rtc-m48t59.c:
+
+	#ifndef NO_IRQ
+	#define NO_IRQ  (-1)
+	#endif
+
+so please don't add yet another version to the insanity. Just mark 
+anything with NO_IRQ as BROKEN or ARM-specific, or something.
 
 		Linus
