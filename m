@@ -1,182 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYJNQI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYJNQJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbYJNQI6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 12:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYJNQIv
+	id S1754013AbYJNQJt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 12:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYJNQJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 12:08:51 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:45934 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751891AbYJNQIu convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 12:08:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap0EAFlg9EhMQWq+/2dsb2JhbACBcr1QgWs
-Date: Tue, 14 Oct 2008 12:08:48 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sparc64: Optimized immediate value implementation build error
-Message-ID: <20081014160848.GA20740@Krystal>
-References: <20081014021704.GA15549@Krystal> <20081013.193117.38855645.davem@davemloft.net> <20081014044758.GA20420@Krystal> <20081014.021506.18668456.davem@davemloft.net>
+	Tue, 14 Oct 2008 12:09:39 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:7686 "EHLO
+	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751046AbYJNQJi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 12:09:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=plW+DP5cD9noj4hwcKUt92CuOXIk1htyio4JW42Qv9epWBXgAykMTg1iHeodi2Eg6
+	bs+YOXiwtqlUt/GDujUsw==
+Message-ID: <da824cf30810140909y11bdd92akf9046c996c367130@mail.gmail.com>
+Date: Tue, 14 Oct 2008 09:09:21 -0700
+From: "Grant Grundler" <grundler@google.com>
+To: "kenneth johansson" <ken@kenjo.org>
+Subject: Re: weird throughput on write to SATA disk
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1223975694.3947.77.camel@duo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20081014.021506.18668456.davem@davemloft.net>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:56:51 up 131 days, 20:37,  9 users,  load average: 0.53, 0.51,
-	0.43
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1223925629.3947.7.camel@duo>
+	 <da824cf30810131407m1a73bd11xa30fd118ee5a4c8f@mail.gmail.com>
+	 <1223932956.3947.22.camel@duo>
+	 <da824cf30810131434r34179666kc8d075c7eecdbbae@mail.gmail.com>
+	 <1223936351.3947.41.camel@duo>
+	 <da824cf30810131833g6e509d0dvb6cce6c7220a1a28@mail.gmail.com>
+	 <1223975694.3947.77.camel@duo>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Miller (davem@davemloft.net) wrote:
-> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Date: Tue, 14 Oct 2008 00:47:58 -0400
-> 
-> > * David Miller (davem@davemloft.net) wrote:
-> > > I'll pull in 0.40 next.
-> > 
-> > I'm looking forward to hear about the results. Thanks !
-> 
-> It builds, and I made sure that USE_IMMEDIATE does get defined
-> by the makefile changes you made.
-> 
-> On the other hand, CONFIG_PSRWLOCK_LATENCY_TEST fails to build:
-> 
->   CC      lib/psrwlock-latency-trace.o
-> lib/psrwlock-latency-trace.c: In function ‘calibrate_get_cycles’:
-> lib/psrwlock-latency-trace.c:60: error: implicit declaration of function ‘rdtsc_barrier’
-> 
-> You could use sched_clock() or similar, we do have portable
-> interfaces by which to do these things.  And if we don't
-> have something fitting exactly what is needed here, add it :-)
-> 
+On Tue, Oct 14, 2008 at 2:14 AM, kenneth johansson <ken@kenjo.org> wrote:
+...
+> All my numbers comes from using 1MB blocks. but I'm not using dd.
+> After removing the logic that actually put some data into the buffers I
+> do get about 105 MB/sec using O_DIRECT.
 
-I think the %tick register we get with get_cycles() on sparc64 is what
-is needed. Hopefully it's synchronized across CPUs on SMP systems ?
+Ok. Good.
 
-sched_clock() is meant to provide a clock good enough for scheduler
-needs, which implies some rough edges in the way precise counting can be
-capped to a max value so it does not go over the predicted cycle count
-within the current jiffies period and stuff like that. Given this
-latency_test code mainly aims at checking the worse-case latencies
-generated by psrwlock, I prefer to use rock-solid time bases (e.g.
-synchronized cycle counter) and do just disable the whole code if the
-architecture does not provide a precise enough counter or a counter
-which requires any kind of locking (I don't want to change the
-measurements of timings of this new locking mechanism because of
-seq_lock timings).
+> I'm doing a full disk write now to get a reference plot.
 
-On x86_64, rdtsc_barrier() issues a synchronizing instruction (cpuid)
-which serializes the instructions executed on the CPU so we do not
-execute rdtsc speculatively. Is reading %tick synchronized on sparc64 or
-not ? If not, just defining an empty get_cycles_barrier() macro should
-be good enough. As a comparison, get_cycles() on x86_32 issues rdtsc
-which is guaranteed to be a synchronizing instruction, so
-rdtsc_barrier() is defined as empty.
+See http://hdperf.sourceforge.net/  and http://nathan.laredo.name/hdperf/
+Simple tool to (relatively) quickly measure the perf across the disk platter.
 
-Is there a similar %tick register on sparc32 ? I've read somewhere it's
-new to sparc v8. (http://cr.yp.to/hardware/sparc.html) So I guess we
-should simply disable this psrwlock latency tracer on SPARC32 ?
+> Not using O_DIRECT should be almost identical.
 
-Probably that the best way to deal with this is to create a 
+*should* - but there are known problems with writeback.
+Some of them are described nicely by Dave Chinner as "Random Thought #3":
+    http://iou.parisc-linux.org/lsf2008/linux_storage_scalability-Dave_Chinner.odp
 
-(generic code)
-HAVE_GET_CYCLES
-  def_bool n
+Look for "writeback" for a summary of the discussion:
+    http://iou.parisc-linux.org/lsf2008/SUMMARY-Storage.txt
 
-(sparc, x86, powerpc... Kconfig)
-config SPARC64/X86/POWERPC
-  select HAVE_GET_CYCLES
-
-And we can make CONFIG_PSRWLOCK_LATENCY_TEST depend on HAVE_GET_CYCLES.
-
-
-> Also:
-> 
-> <stdin>:1421:2: warning: #warning syscall marker not implemented
-> <stdin>:1425:2: warning: #warning syscall trace not implemented
-> 
-> which should be fixed by the following patch:
-> 
-> sparc: Add sys_trace() and sys_marker() syscall table entries.
-> 
-
-Thanks, I'll merge it :) I don't expect the userspace tracing to be in
-its final form, but it's good to add such support.
-
-Mathieu
-
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/arch/sparc/include/asm/unistd_32.h b/arch/sparc/include/asm/unistd_32.h
-> index 648643a..ef924f4 100644
-> --- a/arch/sparc/include/asm/unistd_32.h
-> +++ b/arch/sparc/include/asm/unistd_32.h
-> @@ -338,8 +338,10 @@
->  #define __NR_dup3		320
->  #define __NR_pipe2		321
->  #define __NR_inotify_init1	322
-> +#define __NR_marker		323
-> +#define __NR_trace		324
->  
-> -#define NR_SYSCALLS		323
-> +#define NR_SYSCALLS		325
->  
->  /* Sparc 32-bit only has the "setresuid32", "getresuid32" variants,
->   * it never had the plain ones and there is no value to adding those
-> diff --git a/arch/sparc/include/asm/unistd_64.h b/arch/sparc/include/asm/unistd_64.h
-> index c5cc0e0..bd830d8 100644
-> --- a/arch/sparc/include/asm/unistd_64.h
-> +++ b/arch/sparc/include/asm/unistd_64.h
-> @@ -340,8 +340,10 @@
->  #define __NR_dup3		320
->  #define __NR_pipe2		321
->  #define __NR_inotify_init1	322
-> +#define __NR_marker		323
-> +#define __NR_trace		324
->  
-> -#define NR_SYSCALLS		323
-> +#define NR_SYSCALLS		325
->  
->  #ifdef __KERNEL__
->  #define __ARCH_WANT_IPC_PARSE_VERSION
-> diff --git a/arch/sparc/kernel/systbls.S b/arch/sparc/kernel/systbls.S
-> index e1b9233..0a1dd3d 100644
-> --- a/arch/sparc/kernel/systbls.S
-> +++ b/arch/sparc/kernel/systbls.S
-> @@ -81,4 +81,4 @@ sys_call_table:
->  /*305*/	.long sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
->  /*310*/	.long sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
->  /*315*/	.long sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
-> -/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1
-> +/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
-> diff --git a/arch/sparc64/kernel/systbls.S b/arch/sparc64/kernel/systbls.S
-> index 0fdbf3b..0257912 100644
-> --- a/arch/sparc64/kernel/systbls.S
-> +++ b/arch/sparc64/kernel/systbls.S
-> @@ -82,7 +82,7 @@ sys_call_table32:
->  	.word compat_sys_set_mempolicy, compat_sys_kexec_load, compat_sys_move_pages, sys_getcpu, compat_sys_epoll_pwait
->  /*310*/	.word compat_sys_utimensat, compat_sys_signalfd, sys_timerfd_create, sys_eventfd, compat_sys_fallocate
->  	.word compat_sys_timerfd_settime, compat_sys_timerfd_gettime, compat_sys_signalfd4, sys_eventfd2, sys_epoll_create1
-> -/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
-> +/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
->  
->  #endif /* CONFIG_COMPAT */
->  
-> @@ -156,4 +156,4 @@ sys_call_table:
->  	.word sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
->  /*310*/	.word sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
->  	.word sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
-> -/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
-> +/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_marker, sys_trace
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+hth,
+grant
