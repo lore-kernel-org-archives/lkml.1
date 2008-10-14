@@ -1,50 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYJNMoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYJNMuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbYJNMoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 08:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbYJNMns
+	id S1757445AbYJNMuR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 08:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYJNMuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 08:43:48 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45374 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756036AbYJNMns (ORCPT
+	Tue, 14 Oct 2008 08:50:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50432 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754812AbYJNMuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 08:43:48 -0400
-To: szaka@ntfs-3g.org
-CC: miklos@szeredi.hu, tj@kernel.org, fuse-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-In-reply-to: <Pine.LNX.4.61.0810141512570.14752@dhcppc2> (message from
-	Szabolcs Szakacsits on Tue, 14 Oct 2008 15:16:43 +0300 (MET DST))
-Subject: Re: [fuse-devel] [PATCHSET] FUSE: extend FUSE to support more
- operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org>
- <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <Pine.LNX.4.61.0810141512570.14752@dhcppc2>
-Message-Id: <E1KpjF2-0007jD-B4@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 14 Oct 2008 14:43:12 +0200
+	Tue, 14 Oct 2008 08:50:01 -0400
+Date: Tue, 14 Oct 2008 05:50:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Madhusudhan Chikkature" <madhu.cr@ti.com>
+Cc: gadiyar@ti.com, johnpol@2ka.mipt.ru, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
+Message-Id: <20081014055002.24ff586a.akpm@linux-foundation.org>
+In-Reply-To: <015c01c92dda$1b754340$LocalHost@wipultra1303>
+References: <5A47E75E594F054BAF48C5E4FC4B92AB02D6107AF0@dbde02.ent.ti.com>
+	<20081010133845.8b82fac3.akpm@linux-foundation.org>
+	<062801c92d37$3413bdd0$LocalHost@wipultra1303>
+	<20081013085323.f8bd7efb.akpm@linux-foundation.org>
+	<015c01c92dda$1b754340$LocalHost@wipultra1303>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008, Szabolcs Szakacsits wrote:
-> On Tue, 14 Oct 2008, Miklos Szeredi wrote:
+> On Tue, 14 Oct 2008 14:21:50 +0530 "Madhusudhan Chikkature" <madhu.cr@ti.com> wrote:
 > 
-> > I still got qualms about this ioctl thing.  One is the security
-> > aspect, but that could be dealt with.  The other is that I really
-> > really don't want people to start implementing new custom ioctls for
-> > their filesystems, as I think that way lies madness.  We could limit
-> > ioctls to CUSE and that would be fine with me.  Or for non-CUSE users
-> > we could enforce the "standard" format where the type and length is
-> > encoded in the command number.
+> ----- Original Message ----- 
+> From: "Andrew Morton" <akpm@linux-foundation.org>
+> To: "Madhusudhan Chikkature" <madhu.cr@ti.com>
+> Cc: <gadiyar@ti.com>; <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>
+> Sent: Monday, October 13, 2008 9:23 PM
+> Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
 > 
-> Is this enough to support the most useful/requested file system ioctls, 
-> like FIEMAP?
+> 
+> >> On Mon, 13 Oct 2008 18:55:43 +0530 "Madhusudhan Chikkature" <madhu.cr@ti.com> wrote:
+> >> 
+> >> ----- Original Message ----- 
+> >> From: "Andrew Morton" <akpm@linux-foundation.org>
+> >> To: "Gadiyar, Anand" <gadiyar@ti.com>
+> >> Cc: <johnpol@2ka.mipt.ru>; <linux-kernel@vger.kernel.org>; <linux-omap@vger.kernel.org>; <madhu.cr@ti.com>
+> >> Sent: Saturday, October 11, 2008 2:08 AM
+> >> Subject: Re: [PATCH 1/5] HDQ Driver for OMAP2430/3430
+> >> 
+> >> 
+> >> >> +       /* set the GO bit */
+> >> >> +       hdq_reg_merge(hdq_data, OMAP_HDQ_CTRL_STATUS, OMAP_HDQ_CTRL_STATUS_GO,
+> >> >> +               OMAP_HDQ_CTRL_STATUS_DIR | OMAP_HDQ_CTRL_STATUS_GO);
+> >> >> +       /* wait for the TXCOMPLETE bit */
+> >> >> +       ret = wait_event_interruptible_timeout(hdq_wait_queue,
+> >> >> +               hdq_data->hdq_irqstatus, OMAP_HDQ_TIMEOUT);
+> >> >> +       if (ret < 0) {
+> >> >> +               dev_dbg(hdq_data->dev, "wait interrupted");
+> >> >> +               return -EINTR;
+> >> >> +       }
+> >> > 
+> >> > Is this desirable?  The user hits ^C and the driver bails out?
+> >> > 
+> >> > I assume so, but was this tested?
+> >> 
+> >> Andrew, What is the test scenario you mean here? A user hitting ^C when the driver is waiting for the TXCOMPLETE bit?
+> > 
+> > Yes.
+> > 
+> 
+> Yes. It is desired to return an error if the condition in the wait is not met. I need to change the check for return value to check for zero and neg value.
+> 
+> I spent some time to test this perticular scenario.I could not really see any impact of hitting ^C when an application is 
+> transfering data in the background. When the h/w is programmed to transfer data and the driver issues a wait, I see that 
+> TXCOMPLETE interrupt comes immediately and wakes up as expected. 
+> 
+> So guess I am unable to hit ^C exactly when the driver is waiting in wait_event_interruptible_timeout(before the condition 
+> is met) for it to catch the signal. Is it generally suggested to use wait_event_timeout so that ^C signal is not caught?
+> 
 
-Looking at FIEMAP patches...
+I think it's reasonable to permit the driver's operations to be interrupted
+in this manner.  It's done in quite a few other places.  But the problem is
+actually *testing* it.
 
-No, FIEMAP doesn't seem fit in that category.  But FIEMAP has a
-specific handler, so it would not get as far as the generic ioctl
-handler anyway.  If we need FIEMAP support in fuse, that will need to
-be handled independently of the generic ioctls (just like FIBMAP).
+I guess one could do a whitebox-style test.  Add new code like:
 
-Miklos
+	{
+		static int x;
+		if (!(x++ % 1000)) {
+			printk("hit ^c now\n");
+			msleep(2000);
+		}
+	}
+
+in the right place.
+
+Tricky.
