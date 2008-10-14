@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbYJNSTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbYJNSeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbYJNSTj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 14:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYJNSTb
+	id S1752755AbYJNSeg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 14:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYJNSeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 14:19:31 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:42026 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbYJNSTa (ORCPT
+	Tue, 14 Oct 2008 14:34:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37616 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751024AbYJNSeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 14:19:30 -0400
-X-IronPort-AV: E=Sophos;i="4.33,410,1220227200"; 
-   d="scan'208";a="90823327"
-From: Roland Dreier <rdreier@cisco.com>
-To: linux-kernel@vger.kernel.org, Markus Metzger <markus.t.metzger@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: X86_DS config option needs better help text
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 14 Oct 2008 11:19:28 -0700
-Message-ID: <adavdvvvy33.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Oct 2008 18:19:29.0330 (UTC) FILETIME=[65CDE920:01C92E29]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Tue, 14 Oct 2008 14:34:24 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: jejb@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, hpa@zytor.com
+Subject: [PATCH 1/2] scsi: fix computation of the full size of the device
+Date: Tue, 14 Oct 2008 11:34:20 -0700
+Message-Id: <1224009261-31247-1-git-send-email-hpa@zytor.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <48F4DF3E.2050903@zytor.com>
+References: <48F4DF3E.2050903@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed while building a new kernel from latest git:
+When computing the full size of the device, we need to cast
+sdkp->capacity before shifting, since in some configurations sector_t
+can be a 32-bit number.
 
-    Debug Store support (X86_DS) [Y/n/?] (NEW) ?
+Also, change ffz(~x) to the more idiomatic ilog2(x).
 
-and asking for help just gives
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ drivers/scsi/sd.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-    Add support for Debug Store.
-    This allows the kernel to provide a memory buffer to the hardware
-    to store various profiling and tracing events.
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index a7b53be..151fc68 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1438,7 +1438,7 @@ got_data:
+ 
+ 	{
+ 		char cap_str_2[10], cap_str_10[10];
+-		u64 sz = sdkp->capacity << ffz(~sector_size);
++		u64 sz = (u64)sdkp->capacity << ilog2(sector_size);
+ 
+ 		string_get_size(sz, STRING_UNITS_2, cap_str_2,
+ 				sizeof(cap_str_2));
+-- 
+1.6.0.2
 
-This doesn't really let me decide if I want it or not.  Is there a cost
-to enabling this, and if so what?  What new feature does this give me?
-
-Is there even a point to making this a user-visible option at all, or
-should it just be an internal config variable selected by X86_PTRACE_BTS
-and any future users of this?
-
-X86_PTRACE_BTS also could use an improved help text.
-
-No patch, sorry, since I don't actually know for sure what this does.
-
-Thanks,
-  Roland
