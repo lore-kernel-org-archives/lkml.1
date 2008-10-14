@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbYJNTui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbYJNTwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbYJNTui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 15:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYJNTua
+	id S1754380AbYJNTwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 15:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYJNTv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 15:50:30 -0400
-Received: from mail.ipom.com ([69.73.131.218]:58746 "EHLO mail.ipom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751909AbYJNTu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 15:50:28 -0400
-X-Greylist: delayed 1197 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 15:50:28 EDT
-Message-ID: <48F4F337.8080104@ipom.com>
-Date: Tue, 14 Oct 2008 21:29:59 +0200
-From: Phil Dibowitz <phil@ipom.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-CC: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
-Subject: Re: Avoid I/O errors when issuing SCSI ioctls to JMicron USB/ATA
- bridge
-References: <Pine.LNX.4.44L0.0810141111080.2662-300000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0810141111080.2662-300000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBB8D029AB346657DDACB9C38"
+	Tue, 14 Oct 2008 15:51:58 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:43330 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbYJNTv5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 15:51:57 -0400
+Date: Tue, 14 Oct 2008 21:51:37 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] i2c updates for 2.6.28, round 1
+Message-ID: <20081014215137.2d039afb@hyperion.delvare>
+In-Reply-To: <20081014.114609.74110219.davem@davemloft.net>
+References: <20081014180333.55d9004a@hyperion.delvare>
+	<20081014.114609.74110219.davem@davemloft.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBB8D029AB346657DDACB9C38
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Dave,
 
-Alexandre Oliva wrote:
-> Here's the patch that implements the fix you suggested to avoid the
-> I/O errors that I was running into with my new USB enclosure with a
-> JMicron USB/ATA bridge, while issuing scsi-io USN or other such
-> queries used by Fedora's mkinitrd.
-> http://bugzilla.kernel.org/show_bug.cgi?id=3D9638#c85
+On Tue, 14 Oct 2008 11:46:09 -0700 (PDT), David Miller wrote:
+> From: Jean Delvare <khali@linux-fr.org>
+> Date: Tue, 14 Oct 2008 18:03:33 +0200
+> 
+> > Please pull the first round of i2c subsystem updates for Linux 2.6.28
+> > from:
+> > 
+> > git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+> 
+> Jean, do you have my bus addressing and sparc I2C driver bits
+> in your queue that I submitted months ago?
 
-Alexandre,
+Except for one i2c-i801 patch which depends on a pci_ids update, all I
+have in my queue was part of this pull request. So, no, I don't have
+your bus addressing nor sparc I2C driver bits. Honestly, I can't even
+remember getting such patches from you. Do you have some reference I
+can search for? If not, please send the patches to the i2c list again.
 
-The patch looks generally good, but you've included every possible revisi=
-on
-of the hardware. Can you please change your patch to include just the
-revision in question (0x0100) rather than the whole range (0x0000 - 0x999=
-9)?
-
-Thanks.
---=20
-Phil Dibowitz                             phil@ipom.com
-Open Source software and tech docs        Insanity Palace of Metallica
-http://www.phildev.net/                   http://www.ipom.com/
-
-"Never write it in C if you can do it in 'awk';
- Never do it in 'awk' if 'sed' can handle it;
- Never use 'sed' when 'tr' can do the job;
- Never invoke 'tr' when 'cat' is sufficient;
- Avoid using 'cat' whenever possible" -- Taylor's Laws of Programming
-
-
-
---------------enigBB8D029AB346657DDACB9C38
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkj08zcACgkQN5XoxaHnMrtwkgCdH/as5auZbjmsSYbFYdDCznFV
-PxEAoJUKuJfmd3b7XNMV3MWpNS0IWySl
-=TR3C
------END PGP SIGNATURE-----
-
---------------enigBB8D029AB346657DDACB9C38--
+-- 
+Jean Delvare
