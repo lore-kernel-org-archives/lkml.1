@@ -1,103 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYJNLlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbYJNLmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbYJNLlV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 07:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbYJNLlM
+	id S1756948AbYJNLmw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 07:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbYJNLmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 07:41:12 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:47228 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755084AbYJNLlL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 07:41:11 -0400
-Date: Tue, 14 Oct 2008 17:10:41 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dmitry Torokhov <dtor@insightbb.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial: fix serial port lock init
-Message-ID: <20081014114041.GB7410@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <200810140005.39852.rjw@sisk.pl> <20081013235013.17e3106b@lxorguk.ukuu.org.uk> <20081014065541.GA11047@elte.hu> <20081014102253.GA13503@elte.hu>
+	Tue, 14 Oct 2008 07:42:42 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11373 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755274AbYJNLml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 07:42:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,409,1220252400"; 
+   d="scan'208";a="451006176"
+Date: Tue, 14 Oct 2008 18:46:34 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: [PATCH 1/8 v4] PCI: define PCI resource names in an 'enum'
+Message-ID: <20081014104634.GA1734@yzhao12-linux.sh.intel.com>
+References: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081014102253.GA13503@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20081014103424.GA1704@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2008-10-14 12:22:53]:
+This patch moves all definitions of PCI resource names to an 'enum',
+and also replaces some hard-coded resource variables with symbol
+names. This change eases the introduction of device specific resources.
 
-> 
-> > [   31.099528] BUG: spinlock bad magic on CPU#1, agetty/2608
-> 
-> the patch below fixes this. There's another incarnation of the bug that 
-> i bisected today, a spontaneous reboot crash with certain configs:
-> 
-> | b70ac7718579b5cbf3bdd74fd01132d1c91596f4 is first bad commit
-> | commit b70ac7718579b5cbf3bdd74fd01132d1c91596f4
-> | Author: David Miller <davem@davemloft.net>
-> | Date:   Mon Oct 13 10:36:31 2008 +0100
-> |
-> |     serial: allow 8250 to be used on sparc
-> 
->  # bad:  [e7f2f991] Merge phase #5 (misc) of git://git.kernel.org/pub/
->  # good: [3fa8749e] Linux 2.6.27
->  # good: [4dd9ec49] Merge git://git.kernel.org/pub/scm/linux/kernel/gi
->  # good: [5c3c4d9b] Merge git://git.kernel.org/pub/scm/linux/kernel/gi
->  # good: [1a2217a9] Merge git://git.kernel.org/pub/scm/linux/kernel/gi
->  # good: [cf81978d] i386: convert hardware exception 15 to an interrup
->  # good: [c00193f9] Merge branches 'oprofile-v2' and 'timers/hpet' int
->  # bad:  [8f520021] tty: Termios locking - sort out real_tty confusion
->  # good: [f1ddfd95] ip2: init/deinit cleanup
->  # bad:  [b70ac771] serial: allow 8250 to be used on sparc
->  # good: [9bde10a4] serial-make-uart_ports-ioport-unsigned-long-fix
->  # good: [43b11d33] ftdi: A few errors are err() that should be debug 
->  # good: [b5d674ab] 8250: remove a few inlines of dubious value
-> 
-> ( but it's the same basic problem: we lost the lock init sequence when a
->   patch was removed from the middle. )
-> 
-> 	Ingo
-> 
-> ----------------->
-> From b15be1e63d0df3a1b4a25e7a28cfca9f93690884 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 14 Oct 2008 12:14:17 +0200
-> Subject: [PATCH] serial: fix serial port lock init
-> 
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-Thanks, the patch fixes the warning.
+---
+ drivers/pci/pci-sysfs.c |    4 +++-
+ drivers/pci/pci.c       |   19 ++-----------------
+ drivers/pci/probe.c     |    2 +-
+ drivers/pci/proc.c      |    7 ++++---
+ include/linux/pci.h     |   37 ++++++++++++++++++++++++-------------
+ 5 files changed, 34 insertions(+), 35 deletions(-)
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/serial/8250.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-> index d4104a3..d3ca7d3 100644
-> --- a/drivers/serial/8250.c
-> +++ b/drivers/serial/8250.c
-> @@ -2969,6 +2969,9 @@ static int __init serial8250_init(void)
->  		"%d ports, IRQ sharing %sabled\n", nr_uarts,
->  		share_irqs ? "en" : "dis");
-> 
-> +	for (i = 0; i < NR_IRQS; i++)
-> +		spin_lock_init(&irq_lists[i].lock);
-> +
->  #ifdef CONFIG_SPARC
->  	ret = sunserial_register_minors(&serial8250_reg, UART_NR);
->  #else
-> 
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 2cad6da..c41b783 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -101,11 +101,13 @@ resource_show(struct device * dev, struct device_attribute *attr, char * buf)
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	char * str = buf;
+ 	int i;
+-	int max = 7;
++	int max;
+ 	resource_size_t start, end;
+ 
+ 	if (pci_dev->subordinate)
+ 		max = DEVICE_COUNT_RESOURCE;
++	else
++		max = PCI_BRIDGE_RESOURCES;
+ 
+ 	for (i = 0; i < max; i++) {
+ 		struct resource *res =  &pci_dev->resource[i];
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 5ecd2d7..a9c64b0 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -359,24 +359,9 @@ pci_find_parent_resource(const struct pci_dev *dev, struct resource *res)
+ static void
+ pci_restore_bars(struct pci_dev *dev)
+ {
+-	int i, numres;
+-
+-	switch (dev->hdr_type) {
+-	case PCI_HEADER_TYPE_NORMAL:
+-		numres = 6;
+-		break;
+-	case PCI_HEADER_TYPE_BRIDGE:
+-		numres = 2;
+-		break;
+-	case PCI_HEADER_TYPE_CARDBUS:
+-		numres = 1;
+-		break;
+-	default:
+-		/* Should never get here, but just in case... */
+-		return;
+-	}
++	int i;
+ 
+-	for (i = 0; i < numres; i++)
++	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++)
+ 		pci_update_resource(dev, i);
+ }
+ 
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index dcd6bf1..03ddfee 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -492,7 +492,7 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
+ 	child->subordinate = 0xff;
+ 
+ 	/* Set up default resource pointers and names.. */
+-	for (i = 0; i < 4; i++) {
++	for (i = 0; i < PCI_BRIDGE_RES_NUM; i++) {
+ 		child->resource[i] = &bridge->resource[PCI_BRIDGE_RESOURCES+i];
+ 		child->resource[i]->name = child->name;
+ 	}
+diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
+index e1098c3..f6f2a59 100644
+--- a/drivers/pci/proc.c
++++ b/drivers/pci/proc.c
+@@ -352,15 +352,16 @@ static int show_device(struct seq_file *m, void *v)
+ 			dev->vendor,
+ 			dev->device,
+ 			dev->irq);
+-	/* Here should be 7 and not PCI_NUM_RESOURCES as we need to preserve compatibility */
+-	for (i=0; i<7; i++) {
++
++	/* only print standard and ROM resources to preserve compatibility */
++	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		resource_size_t start, end;
+ 		pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+ 		seq_printf(m, "\t%16llx",
+ 			(unsigned long long)(start |
+ 			(dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
+ 	}
+-	for (i=0; i<7; i++) {
++	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		resource_size_t start, end;
+ 		pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+ 		seq_printf(m, "\t%16llx",
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index f280783..497d639 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -76,7 +76,30 @@ enum pci_mmap_state {
+ #define PCI_DMA_FROMDEVICE	2
+ #define PCI_DMA_NONE		3
+ 
+-#define DEVICE_COUNT_RESOURCE	12
++/*
++ *  For PCI devices, the region numbers are assigned this way:
++ */
++enum {
++	/* #0-5: standard PCI regions */
++	PCI_STD_RESOURCES,
++	PCI_STD_RESOURCES_END = 5,
++
++	/* #6: expansion ROM */
++	PCI_ROM_RESOURCE,
++
++	/* address space assigned to buses behind the bridge */
++#ifndef PCI_BRIDGE_RES_NUM
++#define PCI_BRIDGE_RES_NUM 4
++#endif
++	PCI_BRIDGE_RESOURCES,
++	PCI_BRIDGE_RES_END = PCI_BRIDGE_RESOURCES + PCI_BRIDGE_RES_NUM - 1,
++
++	/* total resources associated with a PCI device */
++	PCI_NUM_RESOURCES,
++
++	/* preserve this for compatibility */
++	DEVICE_COUNT_RESOURCE
++};
+ 
+ typedef int __bitwise pci_power_t;
+ 
+@@ -262,18 +285,6 @@ static inline void pci_add_saved_cap(struct pci_dev *pci_dev,
+ 	hlist_add_head(&new_cap->next, &pci_dev->saved_cap_space);
+ }
+ 
+-/*
+- *  For PCI devices, the region numbers are assigned this way:
+- *
+- *	0-5	standard PCI regions
+- *	6	expansion ROM
+- *	7-10	bridges: address space assigned to buses behind the bridge
+- */
+-
+-#define PCI_ROM_RESOURCE	6
+-#define PCI_BRIDGE_RESOURCES	7
+-#define PCI_NUM_RESOURCES	11
+-
+ #ifndef PCI_BUS_NUM_RESOURCES
+ #define PCI_BUS_NUM_RESOURCES	16
+ #endif
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1.5.6.4
+
