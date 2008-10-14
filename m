@@ -1,54 +1,56 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760212AbYJNAlZ (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 13 Oct 2008 20:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYJNAlN
+	id S1755897AbYJPOH5 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 16 Oct 2008 10:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbYJPOHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Oct 2008 20:41:13 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:33022 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751616AbYJNAlM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Oct 2008 20:41:12 -0400
-Message-ID: <17029668.1223944869601.JavaMail.ngmail@webmail15.arcor-online.net>
-Date: Tue, 14 Oct 2008 02:41:09 +0200 (CEST)
-From: madini12@arcor.de
-To: chan.ptrck1@gmail.com
-Subject: URGENT HELP FROM PATRICK CHAN!!!
+	Thu, 16 Oct 2008 10:07:47 -0400
+Received: from 78-159-102-117.internetserviceteam.com ([78.159.102.117]:64650
+	"EHLO server.eu-host.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750920AbYJPOHr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 10:07:47 -0400
+X-Greylist: delayed 139231 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 10:07:46 EDT
+Date: Wed, 15 Oct 2008 00:31:14 +0400
+To: vwnut@aol.com, kr19592006@yahoo.com, zuributterfly@yahoo.com,
+	bpalmer201@optonline.net, texasman408@yahoo.com,
+	ted@voicegatecorp.com, sealpoint1@mchsi.com
+From: process <process@xomka.com>
+Subject: Your account has been...
+Message-ID: <9b6f58b10b1f77084907076f9ba65c97@fiter.com>
+X-Priority: 3
+X-Mailer: Cerberus Helpdesk v. 2.6.1 Release (http://www.cerberusweb.com)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-X-ngMessageSubType: MessageSubType_MAIL
-X-WebmailclientIP: 77.248.237.228
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760212AbYJNAlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755897AbYJPOH5@vger.kernel.org>
 
-URGENT HELP FROM PATRICK CHAN!!!
 
-I am Mr. Patrick K. W Chan Executive Director & Chief Financial Officer=
- of Hang Seng Bank Ltd, Hong Kong. I have a lucrative business forums s=
-troke of common interest to share with you, it involves transferring a =
-large sum of money. I got your reference in my quest for one that fits =
-my proposed business relationship. If you are interested in working wit=
-h me to contact me via my private e-mail (chanpathk@yahoo.com.hk) for m=
-ore information=20
-  =20
-Your earliest response to this letter will be appreciated.=20
-  =20
-Sincerely,=20
-  =20
-Mr. Patrick Chan=20
-E-mail: chanpathk@yahoo.com.hk
+www.medicalaz.net
 
-Jetzt komfortabel bei Arcor-Digital TV einsteigen: Mehr Happy Ends, meh=
-r Herzschmerz, mehr Fernsehen! Erleben Sie 50 digitale TV Programme und=
- optional 60 Pay TV Sender, einen elektronischen Programmf=FChrer mit M=
-ovie Star Bewertungen von TV Movie. Au=DFerdem, aktuelle Filmhits und s=
-pannende Dokus in der Arcor-Videothek. Infos unter www.arcor.de/tv
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+ORDER RIGHT NOW ALL MEDICINES YOU NEED!
+
+OXYCO...
+VICO...
+HYDRO...
+
+PHEN...
+MERID..
+
+VALI...
+XANA...
+KLONOP...
+ATIVA...
+
+AMBIE...
+SOM...
+
+NO RX REQUIRED. VISA / MC / AMEX / ECHECK
+FAST DELIVERY. 2-5 DAYS OVER USA.
+
+VISIT US AT
+www.medicalaz.net
+
+
