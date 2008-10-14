@@ -1,215 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYJNXTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYJNXTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbYJNXTQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 19:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYJNXSP
+	id S1755495AbYJNXTc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 19:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYJNXSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 19:18:15 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:43026 "EHLO
+	Tue, 14 Oct 2008 19:18:16 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:43030 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751465AbYJNXSM (ORCPT
+	with ESMTP id S1752582AbYJNXSM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Oct 2008 19:18:12 -0400
-Message-Id: <20081014231810.008236344@fluff.org.uk>
+Message-Id: <20081014231810.337018575@fluff.org.uk>
 References: <20081014231714.739345038@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Wed, 15 Oct 2008 00:17:16 +0100
+Date: Wed, 15 Oct 2008 00:17:17 +0100
 From: ben@fluff.org.uk
 To: linux-kernel@vger.kernel.org
-Cc: drzeus-mmc@drzeus.cx, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 2/5] s3cmci: cpufreq support
-Content-Disposition: inline; filename=simtec/cpufreq/s3c24xx-cpufreq-driver-mmc.patch
+Cc: drzeus-mmc@drzeus.cx, Christer Weinigel <christer@weinigel.se>,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: [patch 3/5] s3cmci: Support transfers which are not multiple of 32 bits.
+Content-Disposition: inline; filename=thirdparty/christer-mmc-byte-alignment.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support for cpu frequency changing.
+From: Christer Weinigel <christer@weinigel.se>
 
+To be able to do SDIO the s3cmci driver has to support non-word-sized
+transfers.  Change pio_words into pio_bytes and fix up all the places
+where it is used.  
+
+This variant of the patch will not overrun the buffer when reading an
+odd number of bytes.  When writing, this variant will still read past
+the end of the buffer, but since the driver can't support non-word-
+aligned transfers anyway, this should not be a problem, since a
+word-aligned transfer will never cross a page boundary.
+
+This has been tested with a CSR SDIO Bluetooth Type A device on a
+Samsung S3C24A0 processor.
+
+Signed-off-by: Christer Weinigel <christer@weinigel.se>
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.27-quilt5/drivers/mmc/host/s3cmci.c
+Index: linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.c
 ===================================================================
---- linux-2.6.27-quilt5.orig/drivers/mmc/host/s3cmci.c	2008-10-15 00:04:11.000000000 +0100
-+++ linux-2.6.27-quilt5/drivers/mmc/host/s3cmci.c	2008-10-15 00:11:42.000000000 +0100
-@@ -13,6 +13,7 @@
- #include <linux/clk.h>
- #include <linux/mmc/host.h>
- #include <linux/platform_device.h>
-+#include <linux/cpufreq.h>
- #include <linux/irq.h>
- #include <linux/io.h>
- 
-@@ -1033,10 +1034,33 @@ static void s3cmci_request(struct mmc_ho
- 		s3cmci_send_request(mmc);
+--- linux-2.6.27-rc5-quilt1.orig/drivers/mmc/host/s3cmci.c	2008-09-04 11:35:38.000000000 +0100
++++ linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.c	2008-09-08 16:23:58.000000000 +0100
+@@ -190,7 +190,7 @@ static inline void clear_imask(struct s3
  }
  
-+static void s3cmci_set_clk(struct s3cmci_host *host, struct mmc_ios *ios)
-+{
-+	u32 mci_psc;
-+
-+	/* Set clock */
-+	for (mci_psc = 0; mci_psc < 255; mci_psc++) {
-+		host->real_rate = host->clk_rate / (host->clk_div*(mci_psc+1));
-+
-+		if (host->real_rate <= ios->clock)
-+			break;
-+	}
-+
-+	if (mci_psc > 255)
-+		mci_psc = 255;
-+
-+	host->prescaler = mci_psc;
-+	writel(host->prescaler, host->base + S3C2410_SDIPRE);
-+
-+	/* If requested clock is 0, real_rate will be 0, too */
-+	if (ios->clock == 0)
-+		host->real_rate = 0;
-+}
-+
- static void s3cmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ static inline int get_data_buffer(struct s3cmci_host *host,
+-				  u32 *words, u32 **pointer)
++				  u32 *bytes, u32 **pointer)
  {
- 	struct s3cmci_host *host = mmc_priv(mmc);
--	u32 mci_psc, mci_con;
-+	u32 mci_con;
+ 	struct scatterlist *sg;
  
- 	/* Set the power state */
- 
-@@ -1074,23 +1098,7 @@ static void s3cmci_set_ios(struct mmc_ho
- 		break;
+@@ -207,7 +207,7 @@ static inline int get_data_buffer(struct
  	}
+ 	sg = &host->mrq->data->sg[host->pio_sgptr];
  
--	/* Set clock */
--	for (mci_psc = 0; mci_psc < 255; mci_psc++) {
--		host->real_rate = host->clk_rate / (host->clk_div*(mci_psc+1));
--
--		if (host->real_rate <= ios->clock)
--			break;
--	}
--
--	if (mci_psc > 255)
--		mci_psc = 255;
--
--	host->prescaler = mci_psc;
--	writel(host->prescaler, host->base + S3C2410_SDIPRE);
--
--	/* If requested clock is 0, real_rate will be 0, too */
--	if (ios->clock == 0)
--		host->real_rate = 0;
-+	s3cmci_set_clk(host, ios);
+-	*words = sg->length >> 2;
++	*bytes = sg->length;
+ 	*pointer = sg_virt(sg);
  
- 	/* Set CLOCK_ENABLE */
- 	if (ios->clock)
-@@ -1148,6 +1156,61 @@ static struct s3c24xx_mci_pdata s3cmci_d
- 	 * checks. Any zero fields to ensure reaonable defaults are picked. */
- };
+ 	host->pio_sgptr++;
+@@ -223,7 +223,7 @@ static inline u32 fifo_count(struct s3cm
+ 	u32 fifostat = readl(host->base + S3C2410_SDIFSTA);
  
-+#ifdef CONFIG_CPU_FREQ
-+
-+static int s3cmci_cpufreq_transition(struct notifier_block *nb,
-+				     unsigned long val, void *data)
-+{
-+	struct s3cmci_host *host;
-+	struct mmc_host *mmc;
-+	unsigned long newclk;
-+	unsigned long flags;
-+
-+	host = container_of(nb, struct s3cmci_host, freq_transition);
-+	newclk = clk_get_rate(host->clk);
-+	mmc = host->mmc;
-+
-+	if ((val == CPUFREQ_PRECHANGE && newclk > host->clk_rate) ||
-+	    (val == CPUFREQ_POSTCHANGE && newclk < host->clk_rate)) {
-+		spin_lock_irqsave(&mmc->lock, flags);
-+
-+		host->clk_rate = newclk;
-+
-+		if (mmc->ios.power_mode != MMC_POWER_OFF &&
-+		    mmc->ios.clock != 0)
-+			s3cmci_set_clk(host, &mmc->ios);
-+
-+		spin_unlock_irqrestore(&mmc->lock, flags);
-+	}
-+
-+	return 0;
-+}
-+
-+static inline int s3cmci_cpufreq_register(struct s3cmci_host *host)
-+{
-+	host->freq_transition.notifier_call = s3cmci_cpufreq_transition;
-+
-+	return cpufreq_register_notifier(&host->freq_transition,
-+					 CPUFREQ_TRANSITION_NOTIFIER);
-+}
-+
-+static inline void s3cmci_cpufreq_deregister(struct s3cmci_host *host)
-+{
-+	cpufreq_unregister_notifier(&host->freq_transition,
-+				    CPUFREQ_TRANSITION_NOTIFIER);
-+}
-+
-+#else
-+static inline int s3cmci_cpufreq_register(struct s3cmci_host *host)
-+{
-+	return 0;
-+}
-+
-+static inline void s3cmci_cpufreq_deregister(struct s3cmci_host *host)
-+{
-+}
-+#endif
-+
- static int __devinit s3cmci_probe(struct platform_device *pdev, int is2440)
- {
- 	struct s3cmci_host *host;
-@@ -1298,10 +1361,16 @@ static int __devinit s3cmci_probe(struct
- 	    (host->is2440?"2440":""),
- 	    host->base, host->irq, host->irq_cd, host->dma);
- 
-+	ret = s3cmci_cpufreq_register(host);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to register cpufreq\n");
-+		goto free_dmabuf;
-+	}
-+
- 	ret = mmc_add_host(mmc);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to add mmc host.\n");
--		goto free_dmabuf;
-+		goto free_cpufreq;
- 	}
- 
- 	platform_set_drvdata(pdev, mmc);
-@@ -1309,6 +1378,9 @@ static int __devinit s3cmci_probe(struct
- 
- 	return 0;
- 
-+ free_cpufreq:
-+	s3cmci_cpufreq_deregister(host);
-+
-  free_dmabuf:
- 	clk_disable(host->clk);
- 
-@@ -1342,6 +1414,7 @@ static void s3cmci_shutdown(struct platf
- 	if (host->irq_cd >= 0)
- 		free_irq(host->irq_cd, host);
- 
-+	s3cmci_cpufreq_deregister(host);
- 	mmc_remove_host(mmc);
- 	clk_disable(host->clk);
+ 	fifostat &= S3C2410_SDIFSTA_COUNTMASK;
+-	return fifostat >> 2;
++	return fifostat;
  }
-Index: linux-2.6.27-quilt5/drivers/mmc/host/s3cmci.h
-===================================================================
---- linux-2.6.27-quilt5.orig/drivers/mmc/host/s3cmci.h	2008-10-10 15:44:48.000000000 +0100
-+++ linux-2.6.27-quilt5/drivers/mmc/host/s3cmci.h	2008-10-15 00:10:30.000000000 +0100
-@@ -67,4 +67,8 @@ struct s3cmci_host {
  
- 	unsigned int		ccnt, dcnt;
- 	struct tasklet_struct	pio_tasklet;
+ static inline u32 fifo_free(struct s3cmci_host *host)
+@@ -231,13 +231,14 @@ static inline u32 fifo_free(struct s3cmc
+ 	u32 fifostat = readl(host->base + S3C2410_SDIFSTA);
+ 
+ 	fifostat &= S3C2410_SDIFSTA_COUNTMASK;
+-	return (63 - fifostat) >> 2;
++	return 63 - fifostat;
+ }
+ 
+ static void do_pio_read(struct s3cmci_host *host)
+ {
+ 	int res;
+ 	u32 fifo;
++	u32 fifo_words;
+ 	void __iomem *from_ptr;
+ 
+ 	/* write real prescaler to host, it might be set slow to fix */
+@@ -246,8 +247,8 @@ static void do_pio_read(struct s3cmci_ho
+ 	from_ptr = host->base + host->sdidata;
+ 
+ 	while ((fifo = fifo_count(host))) {
+-		if (!host->pio_words) {
+-			res = get_data_buffer(host, &host->pio_words,
++		if (!host->pio_bytes) {
++			res = get_data_buffer(host, &host->pio_bytes,
+ 					      &host->pio_ptr);
+ 			if (res) {
+ 				host->pio_active = XFER_NONE;
+@@ -260,26 +261,45 @@ static void do_pio_read(struct s3cmci_ho
+ 
+ 			dbg(host, dbg_pio,
+ 			    "pio_read(): new target: [%i]@[%p]\n",
+-			    host->pio_words, host->pio_ptr);
++			    host->pio_bytes, host->pio_ptr);
+ 		}
+ 
+ 		dbg(host, dbg_pio,
+ 		    "pio_read(): fifo:[%02i] buffer:[%03i] dcnt:[%08X]\n",
+-		    fifo, host->pio_words,
++		    fifo, host->pio_bytes,
+ 		    readl(host->base + S3C2410_SDIDCNT));
+ 
+-		if (fifo > host->pio_words)
+-			fifo = host->pio_words;
++		/* If we have reached the end of the block, we can
++		 * read a word and get 1 to 3 bytes.  If we in the
++		 * middle of the block, we have to read full words,
++		 * otherwise we will write garbage, so round down to
++		 * an even multiple of 4. */
++		if (fifo >= host->pio_bytes)
++			fifo = host->pio_bytes;
++		else
++			fifo -= fifo & 3;
+ 
+-		host->pio_words -= fifo;
++		host->pio_bytes -= fifo;
+ 		host->pio_count += fifo;
+ 
+-		while (fifo--)
++		fifo_words = fifo >> 2;
++		while (fifo_words--)
+ 			*(host->pio_ptr++) = readl(from_ptr);
 +
-+#ifdef CONFIG_CPU_FREQ
-+	struct notifier_block	freq_transition;
-+#endif
- };
++		if (fifo & 3) {
++			u32 n = fifo & 3;
++			u32 data = readl(from_ptr);
++			u8 *p = (u8 *)host->pio_ptr;
++
++			while (n--) {
++				*p++ = data;
++				data >>= 8;
++			}
++		}
+ 	}
+ 
+-	if (!host->pio_words) {
+-		res = get_data_buffer(host, &host->pio_words, &host->pio_ptr);
++	if (!host->pio_bytes) {
++		res = get_data_buffer(host, &host->pio_bytes, &host->pio_ptr);
+ 		if (res) {
+ 			dbg(host, dbg_pio,
+ 			    "pio_read(): complete (no more buffers).\n");
+@@ -303,8 +323,8 @@ static void do_pio_write(struct s3cmci_h
+ 	to_ptr = host->base + host->sdidata;
+ 
+ 	while ((fifo = fifo_free(host))) {
+-		if (!host->pio_words) {
+-			res = get_data_buffer(host, &host->pio_words,
++		if (!host->pio_bytes) {
++			res = get_data_buffer(host, &host->pio_bytes,
+ 							&host->pio_ptr);
+ 			if (res) {
+ 				dbg(host, dbg_pio,
+@@ -316,16 +336,23 @@ static void do_pio_write(struct s3cmci_h
+ 
+ 			dbg(host, dbg_pio,
+ 			    "pio_write(): new source: [%i]@[%p]\n",
+-			    host->pio_words, host->pio_ptr);
++			    host->pio_bytes, host->pio_ptr);
+ 
+ 		}
+ 
+-		if (fifo > host->pio_words)
+-			fifo = host->pio_words;
++		/* If we have reached the end of the block, we have to
++		 * write exactly the remaining number of bytes.  If we
++		 * in the middle of the block, we have to write full
++		 * words, so round down to an even multiple of 4. */
++		if (fifo >= host->pio_bytes)
++			fifo = host->pio_bytes;
++		else
++			fifo -= fifo & 3;
+ 
+-		host->pio_words -= fifo;
++		host->pio_bytes -= fifo;
+ 		host->pio_count += fifo;
+ 
++		fifo = (fifo + 3) >> 2;
+ 		while (fifo--)
+ 			writel(*(host->pio_ptr++), to_ptr);
+ 	}
+@@ -350,9 +377,9 @@ static void pio_tasklet(unsigned long da
+ 		clear_imask(host);
+ 		if (host->pio_active != XFER_NONE) {
+ 			dbg(host, dbg_err, "unfinished %s "
+-			    "- pio_count:[%u] pio_words:[%u]\n",
++			    "- pio_count:[%u] pio_bytes:[%u]\n",
+ 			    (host->pio_active == XFER_READ) ? "read" : "write",
+-			    host->pio_count, host->pio_words);
++			    host->pio_count, host->pio_bytes);
+ 
+ 			if (host->mrq->data)
+ 				host->mrq->data->error = -EINVAL;
+@@ -813,11 +840,10 @@ static int s3cmci_setup_data(struct s3cm
+ 		/* We cannot deal with unaligned blocks with more than
+ 		 * one block being transfered. */
+ 
+-		if (data->blocks > 1)
++		if (data->blocks > 1) {
++			pr_warning("%s: can't do non-word sized block transfers (blksz %d)\n", __func__, data->blksz);
+ 			return -EINVAL;
+-
+-		/* No support yet for non-word block transfers. */
+-		return -EINVAL;
++		}
+ 	}
+ 
+ 	while (readl(host->base + S3C2410_SDIDSTA) &
+@@ -897,7 +923,7 @@ static int s3cmci_prepare_pio(struct s3c
+ 	BUG_ON((data->flags & BOTH_DIR) == BOTH_DIR);
+ 
+ 	host->pio_sgptr = 0;
+-	host->pio_words = 0;
++	host->pio_bytes = 0;
+ 	host->pio_count = 0;
+ 	host->pio_active = rw ? XFER_WRITE : XFER_READ;
+ 
+Index: linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.h
+===================================================================
+--- linux-2.6.27-rc5-quilt1.orig/drivers/mmc/host/s3cmci.h	2008-09-04 11:35:38.000000000 +0100
++++ linux-2.6.27-rc5-quilt1/drivers/mmc/host/s3cmci.h	2008-09-08 16:23:58.000000000 +0100
+@@ -51,7 +51,7 @@ struct s3cmci_host {
+ 	int			dma_complete;
+ 
+ 	u32			pio_sgptr;
+-	u32			pio_words;
++	u32			pio_bytes;
+ 	u32			pio_count;
+ 	u32			*pio_ptr;
+ #define XFER_NONE 0
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
