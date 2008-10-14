@@ -1,77 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYJNF7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbYJNGDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbYJNF7p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 01:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYJNF7h
+	id S1755944AbYJNGDZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 02:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYJNGDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 01:59:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44390 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750766AbYJNF7g (ORCPT
+	Tue, 14 Oct 2008 02:03:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33633
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752651AbYJNGDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 01:59:36 -0400
-Date: Tue, 14 Oct 2008 08:06:16 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hans Schou <linux@schou.dk>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SiS55x, another x86 CPU
-Message-ID: <20081014060616.GO12131@one.firstfloor.org>
-References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org> <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk>
+	Tue, 14 Oct 2008 02:03:15 -0400
+Date: Mon, 13 Oct 2008 23:02:51 -0700 (PDT)
+Message-Id: <20081013.230251.215237620.davem@davemloft.net>
+To: sven.wegener@stealer.net
+CC: davej@redhat.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: sparc64 allmodconfig build failure...
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >Your attachment seems to be windows line end damaged.
-> 
-> Strange, Pine usually do it right with file attachments.
 
-It likely was added on some Windows system.
+sparc64 allmodconfig started failing to build recently:
 
-> (what is "windows line end damaged"?)
+  MODPOST 1946 modules
+ERROR: "cpufreq_gov_performance" [arch/sparc64/kernel/us3_cpufreq.ko] undefined!
 
-It used MSDOS style \r\n line terminators instead of Unix style \n.
+It seems to be caused by the following commit:
 
-> 
-> >Also the changes are so small that it's not worth adding a CONFIG 
-> >for it. Just add it unconditionally.
-> 
-> I was not trying to invent anything. It is almost a copy of the UMC 
-> CPU, except that it is 586 code.
+commit c4d14bc0bb5d13e316890651ae4518b764c3344c
+Author: Sven Wegener <sven.wegener@stealer.net>
+Date:   Sat Sep 20 16:50:08 2008 +0200
 
-Then the comment applies to that one too.
+    [CPUFREQ] Don't export governors for default governor
+    
+    We don't need to export the governors for use as the default governor,
+    because the default governor will be built-in anyway and we can access
+    the symbol directly.
+    
+    This also fixes the following sparse warnings:
+    
+    drivers/cpufreq/cpufreq_conservative.c:578:25: warning: symbol 'cpufreq_gov_conservative' was not declared. Should it be static?
+    drivers/cpufreq/cpufreq_ondemand.c:582:25: warning: symbol 'cpufreq_gov_ondemand' was not declared. Should it be static?
+    drivers/cpufreq/cpufreq_performance.c:39:25: warning: symbol 'cpufreq_gov_performance' was not declared. Should it be static?
+    drivers/cpufreq/cpufreq_powersave.c:38:25: warning: symbol 'cpufreq_gov_powersave' was not declared. Should it be static?
+    drivers/cpufreq/cpufreq_userspace.c:190:25: warning: symbol 'cpufreq_gov_userspace' was not declared. Should it be static?
+    
+    Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+    Signed-off-by: Dave Jones <davej@redhat.com>
 
-> 
-> >And hardcoding the cache size for all of SiS seems a bit extreme. 
-> >What happens when SiS ever brings out another part with different 
-> >caches? Ideally figure out some way to detect this particular CPU 
-> >and only use 8 KB only for that. Alternatively ignore it (there's 
-> >nothing really in the kernel that uses the cache sizes anyways)
-> 
-> In that case the cache could be deleted.
-> 
-> One annoying thing is that the "model name" in /proc/cpuinfo is 
-> written as "00/55" instead of "SiS55x" when the CPU is not detected.
-
-Is that really so bad?
-
-> 
-> The worst problem is that an unknown CPU writes:
-> printk(KERN_ERR "CPU: Your system may be unstable.\n");
-
-Perhaps it would be better to just remove that printk.
-Its truth seems doubtful.
-
-> and the SiS55x is not unstable. Not until now at least and it has been 
-> on the market for 5 years.
-> 
-> Maybe the message could be changed to something less catastrophic when 
-> CPU is unknown.
-
-Yes that would be a good idea.
-
--Andi
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 4ee53a4..e265783 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -576,13 +576,15 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
++static
++#endif
+ struct cpufreq_governor cpufreq_gov_conservative = {
+ 	.name			= "conservative",
+ 	.governor		= cpufreq_governor_dbs,
+ 	.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
+ 	.owner			= THIS_MODULE,
+ };
+-EXPORT_SYMBOL(cpufreq_gov_conservative);
+ 
+ static int __init cpufreq_gov_dbs_init(void)
+ {
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 39253d6..bd06934 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -626,13 +626,15 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
++static
++#endif
+ struct cpufreq_governor cpufreq_gov_ondemand = {
+ 	.name			= "ondemand",
+ 	.governor		= cpufreq_governor_dbs,
+ 	.max_transition_latency = TRANSITION_LATENCY_LIMIT,
+ 	.owner			= THIS_MODULE,
+ };
+-EXPORT_SYMBOL(cpufreq_gov_ondemand);
+ 
+ static int __init cpufreq_gov_dbs_init(void)
+ {
+diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
+index e8e1451..7e2e515 100644
+--- a/drivers/cpufreq/cpufreq_performance.c
++++ b/drivers/cpufreq/cpufreq_performance.c
+@@ -36,12 +36,14 @@ static int cpufreq_governor_performance(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE
++static
++#endif
+ struct cpufreq_governor cpufreq_gov_performance = {
+ 	.name		= "performance",
+ 	.governor	= cpufreq_governor_performance,
+ 	.owner		= THIS_MODULE,
+ };
+-EXPORT_SYMBOL(cpufreq_gov_performance);
+ 
+ 
+ static int __init cpufreq_gov_performance_init(void)
+diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
+index 88d2f44..e6db5fa 100644
+--- a/drivers/cpufreq/cpufreq_powersave.c
++++ b/drivers/cpufreq/cpufreq_powersave.c
+@@ -35,12 +35,14 @@ static int cpufreq_governor_powersave(struct cpufreq_policy *policy,
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
++static
++#endif
+ struct cpufreq_governor cpufreq_gov_powersave = {
+ 	.name		= "powersave",
+ 	.governor	= cpufreq_governor_powersave,
+ 	.owner		= THIS_MODULE,
+ };
+-EXPORT_SYMBOL(cpufreq_gov_powersave);
+ 
+ static int __init cpufreq_gov_powersave_init(void)
+ {
+diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
+index 32244aa..1442bba 100644
+--- a/drivers/cpufreq/cpufreq_userspace.c
++++ b/drivers/cpufreq/cpufreq_userspace.c
+@@ -187,6 +187,9 @@ static int cpufreq_governor_userspace(struct cpufreq_policy *policy,
+ }
+ 
+ 
++#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
++static
++#endif
+ struct cpufreq_governor cpufreq_gov_userspace = {
+ 	.name		= "userspace",
+ 	.governor	= cpufreq_governor_userspace,
+@@ -194,7 +197,6 @@ struct cpufreq_governor cpufreq_gov_userspace = {
+ 	.show_setspeed	= show_speed,
+ 	.owner		= THIS_MODULE,
+ };
+-EXPORT_SYMBOL(cpufreq_gov_userspace);
+ 
+ static int __init cpufreq_gov_userspace_init(void)
+ {
