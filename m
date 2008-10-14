@@ -1,127 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbYJNTdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYJNTgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbYJNTdl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 15:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYJNTdd
+	id S1754022AbYJNTgn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 15:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYJNTgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 15:33:33 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:32770 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751519AbYJNTdd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 15:33:33 -0400
-Date: Tue, 14 Oct 2008 21:33:16 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: =?unknown-8bit?B?Si5BLiBNYWdhbGzDs24=?= <jamagallon@ono.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27-git3: rtl8169 oops and wireless missing symbols
-Message-ID: <20081014193316.GA8223@electric-eye.fr.zoreil.com>
-References: <20081014010202.71d13eaf@werewolf.home> <20081013.161228.74135367.davem@davemloft.net> <20081014012429.3f2924e3@werewolf.home> <20081014023003.07b6d745@werewolf.home>
+	Tue, 14 Oct 2008 15:36:35 -0400
+Received: from smtp1.nine.ch ([217.150.241.29]:37159 "EHLO smtp1.nine.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751664AbYJNTge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 15:36:34 -0400
+X-Greylist: delayed 1289 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 15:36:34 EDT
+Date: Tue, 14 Oct 2008 21:15:02 +0200 (CEST)
+From: Alex Raimondi <mailinglist@miromico.ch>
+X-X-Sender: raimondi@ibm1
+To: haavard.skinnemoen@atmel.com
+cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org, jmay@miromico.ch
+Subject: [PATCH 1/1] Bypass probe_on_irq in ucb1400_ts
+Message-ID: <alpine.DEB.1.10.0810142103500.5803@ibm1>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081014023003.07b6d745@werewolf.home>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón <jamagallon@ono.com> :
-[...]
-> Oct 14 02:27:45 one kernel: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-> Oct 14 02:27:45 one kernel: r8169 0000:02:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> Oct 14 02:27:45 one kernel: r8169 0000:02:00.0: setting latency timer to 64
-> Oct 14 02:27:45 one kernel: eth0: RTL8102e at 0xdfffe000, 00:00:00:00:00:00, XID 24a00000 IRQ 219
+Irq probing in ucb1400_ts (drivers/input/touchscreen) fails (at least on 
+our AVR32 board). On irq probing system hangs. 
 
-The MAC address does not look sane. Does the revert below cure it ?
+This patch introduces a module parameter 'irq' to specify the irq line to 
+use.  If modul is loaded with this parameter irq probing is bypassed, 
+otherwise irq is probed.
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index c821da2..5b8f8ba 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -1911,74 +1911,6 @@ static void rtl_disable_msi(struct pci_dev *pdev, struct rtl8169_private *tp)
- 	}
- }
+I don't know who is actually maintaining the ucb1400_ts code. But I didn't 
+want to sneak it in with our Hammerhead board code. Maybe you have an idea 
+why irq probing fails.
+
+
+Alex
+
+>From 35cfb1355ace42fb6e83c34b0a0dd626a6f81d6e Mon Sep 17 00:00:00 2001
+From: Alex Raimondi <mailinglist@miromico.ch>
+Date: Tue, 14 Oct 2008 16:20:19 +0200
+Subject: [PATCH 6/7] Automatic irq probing fails (at least) on AVR32 (system hangs). This
+ patch introduces a module parameter in ucb1400_ts which allows to
+ bypass irq probing by specifying the irq to use on the command line.
+
+
+Signed-off-by: Alex Raimondi <mailinglist@miromico.ch>
+---
+ drivers/input/touchscreen/ucb1400_ts.c |   17 +++++++++++++----
+ 1 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/input/touchscreen/ucb1400_ts.c b/drivers/input/touchscreen/ucb1400_ts.c
+index 607f993..09bd395 100644
+--- a/drivers/input/touchscreen/ucb1400_ts.c
++++ b/drivers/input/touchscreen/ucb1400_ts.c
+@@ -97,6 +97,10 @@ struct ucb1400 {
+ static int adcsync;
+ static int ts_delay = 55; /* us */
+ static int ts_delay_pressure;	/* us */
++static int irq;
++
++module_param(irq, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
++MODULE_PARM_DESC(irq, "IRQ");
  
--static int rtl_eeprom_read(struct pci_dev *pdev, int cap, int addr, __le32 *val)
--{
--	int ret, count = 100;
--	u16 status = 0;
--	u32 value;
--
--	ret = pci_write_config_word(pdev, cap + PCI_VPD_ADDR, addr);
--	if (ret < 0)
--		return ret;
--
--	do {
--		udelay(10);
--		ret = pci_read_config_word(pdev, cap + PCI_VPD_ADDR, &status);
--		if (ret < 0)
--			return ret;
--	} while (!(status & PCI_VPD_ADDR_F) && --count);
--
--	if (!(status & PCI_VPD_ADDR_F))
--		return -ETIMEDOUT;
--
--	ret = pci_read_config_dword(pdev, cap + PCI_VPD_DATA, &value);
--	if (ret < 0)
--		return ret;
--
--	*val = cpu_to_le32(value);
--
--	return 0;
--}
--
--static void rtl_init_mac_address(struct rtl8169_private *tp,
--				 void __iomem *ioaddr)
--{
--	struct pci_dev *pdev = tp->pci_dev;
--	u8 cfg1;
--	int vpd_cap;
--	u8 mac[8];
--	DECLARE_MAC_BUF(buf);
--
--	cfg1 = RTL_R8(Config1);
--	if (!(cfg1  & VPD)) {
--		dprintk("VPD access not enabled, enabling\n");
--		RTL_W8(Cfg9346, Cfg9346_Unlock);
--		RTL_W8(Config1, cfg1 | VPD);
--		RTL_W8(Cfg9346, Cfg9346_Lock);
--	}
--
--	vpd_cap = pci_find_capability(pdev, PCI_CAP_ID_VPD);
--	if (!vpd_cap)
--		return;
--
--	/* MAC address is stored in EEPROM at offset 0x0e
--	 * Realtek says: "The VPD address does not have to be a DWORD-aligned
--	 * address as defined in the PCI 2.2 Specifications, but the VPD data
--	 * is always consecutive 4-byte data starting from the VPD address
--	 * specified."
--	 */
--	if (rtl_eeprom_read(pdev, vpd_cap, 0x000e, (__le32*)&mac[0]) < 0 ||
--	    rtl_eeprom_read(pdev, vpd_cap, 0x0012, (__le32*)&mac[4]) < 0) {
--		dprintk("Reading MAC address from EEPROM failed\n");
--		return;
--	}
--
--	dprintk("MAC address found in EEPROM: %s\n", print_mac(buf, mac));
--
--	/* Write MAC address */
--	rtl_rar_set(tp, mac);
--}
--
- static int __devinit
- rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ static inline u16 ucb1400_reg_read(struct ucb1400 *ucb, u16 reg)
  {
-@@ -2156,8 +2088,6 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -484,6 +488,8 @@ static int ucb1400_ts_probe(struct device *dev)
+ 	ucb->ts_idev = idev;
+ 	ucb->adcsync = adcsync;
+ 	ucb->ac97 = to_ac97_t(dev);
++	ucb->irq = irq;
++
+ 	init_waitqueue_head(&ucb->ts_wait);
  
- 	tp->mmio_addr = ioaddr;
+ 	id = ucb1400_reg_read(ucb, UCB_ID);
+@@ -492,12 +498,15 @@ static int ucb1400_ts_probe(struct device *dev)
+ 		goto err_free_devs;
+ 	}
  
--	rtl_init_mac_address(tp, ioaddr);
--
- 	/* Get MAC address */
- 	for (i = 0; i < MAC_ADDR_LEN; i++)
- 		dev->dev_addr[i] = RTL_R8(MAC0 + i);
+-	error = ucb1400_detect_irq(ucb);
+-	if (error) {
+-		printk(KERN_ERR "UCB1400: IRQ probe failed\n");
+-		goto err_free_devs;
++	if (ucb->irq == 0) {
++		error = ucb1400_detect_irq(ucb);
++		if (error) {
++			printk(KERN_ERR "UCB1400: IRQ probe failed\n");
++			goto err_free_devs;
++		}
+ 	}
+ 
++
+ 	error = request_irq(ucb->irq, ucb1400_hard_irq, IRQF_TRIGGER_RISING,
+ 				"UCB1400", ucb);
+ 	if (error) {
+-- 
+1.5.5.GIT
+
