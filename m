@@ -1,77 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYJOMuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYJOMuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbYJOMuJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 08:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYJOMtz
+	id S1754839AbYJOMuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 08:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYJOMub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 08:49:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39774 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbYJOMty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 08:49:54 -0400
-Message-ID: <48F5E6D4.8080603@redhat.com>
-Date: Wed, 15 Oct 2008 07:49:24 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Wed, 15 Oct 2008 08:50:31 -0400
+Received: from cluster-d.mailcontrol.com ([217.69.20.190]:49344 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754504AbYJOMua (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 08:50:30 -0400
+Message-ID: <48F5E704.1070808@csr.com>
+Date: Wed, 15 Oct 2008 13:50:12 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Possible ext3 corruption with 1K block size
-References: <200810150724.42180.arvidjaar@mail.ru>
-In-Reply-To: <200810150724.42180.arvidjaar@mail.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] UWB, WUSB, and WLP subsystems for 2.6.28
+References: <48EF45BC.1020805@csr.com> <20081014130251.aa008a5e.akpm@linux-foundation.org>
+In-Reply-To: <20081014130251.aa008a5e.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Oct 2008 12:50:12.0733 (UTC) FILETIME=[905E32D0:01C92EC4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> There is long standing open bug report on Mandriva which is currently
-> beieved to have root cause in file system corruption. It shows itself
-> in RPM DB corruption (at least, there is no other known method to trigger
-> it). So far all reported cases happened on filesystem with 1K block size
-> and stopped when RPM DB was moved to FS with 4K block size.
+Andrew Morton wrote:
+>> On Fri, 10 Oct 2008 13:08:28 +0100 David Vrabel <david.vrabel@csr.com> wrote:
+>> Please pull the new UWB, WUSB and WLP subsystems from
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/dvrabel/uwb.git for-upstream
 > 
-> There are also similar RH reports as well.
-> 
-> Here are references:
-> 
-> https://qa.mandriva.com/show_bug.cgi?id=32547
-> 
-> This one is rather long. 
+> didn't happen?
 
-yep, unfortunately IIRC most of the bug is "me too's" and "how do I do
-the workaround" :)
+Not yet.
 
-> Interesting bits are probably around
-> 
-> https://qa.mandriva.com/show_bug.cgi?id=32547#c177
-> https://qa.mandriva.com/show_bug.cgi?id=32547#c148 (many users reporting
-> dumpe2fs)
-> 
-> https://bugzilla.redhat.com/show_bug.cgi?id=230362
-> https://bugzilla.redhat.com/show_bug.cgi?id=375931
-> https://bugzilla.redhat.com/show_bug.cgi?id=305301
-> 
-> The Mandriva bugzilla also mentions this mail from Stephen Tweedie 
-> http://lkml.org/lkml/2007/9/18/232
+> What is the review status of this work?  I don't remember seeing it on any
+> of the lists where I lurk - perhaps a full resend will help things along.
 
-I don't think this is related, in the end... there was some possiblity
-of corruption from that, but I think it's doubtful it'd hit 1k block
-filesystems more, and in any case, the corruption has been seen since
-then if I read it right.
+Several iterations were posted and reviewed on the linux-usb mailing list.
 
-> which indicates some issues with 1K blocks, but according to last comment:
-> https://qa.mandriva.com/show_bug.cgi?id=32547#c300
+> <quick scan>
 > 
-> it is still present in 2.6.27 (at least was present on -rc6)
+> Code looks reasonable.
 > 
-> There was a kernel bug report http://bugzilla.kernel.org/show_bug.cgi?id=11564,
-> but in this case it was identified as hardware issue.
+> It has lots of comments which start with /**, which is the
+> this-is-kerneldoc token.  Only they're not kerneldoc comments.  These
+> should all be converted to kerneldoc, or replace the /** with /*.
 
-My kingdom for a testcase... does anyone have simple steps to reproduce
-this?  Or do they all start with "install mandriva on a 1k block size
-system?"  :)
+I've been fixing these up when I've been updating the documentation.
 
--Eric
+> uwb_beca_purge() should use time_after() or time_before().
+
+Ok.
+
+> In uwb_bce_print_IEs(), the cast of
+> uwb_rc_evt_beacon_WUSB_0100.BeaconInfo[] into a struct uwb_rc_evt_beacon*
+> looks really worrisome from an alignment POV.  Can it result in misaligned
+> accesses on architectures which don't like that?  (ia64, alpha, ...)
+
+In that function *be is of type struct uwb_rc_evt_beacon which is 48
+octets long. struct uwb_beacon_frame only contains u8's so there are no
+alignment issues.
+
+> Code does kzalloc(a * b, ..) in some places.  kcalloc() is preferred, so
+> readers don't have to worry whether the code is vulnerable to
+> multiplicative overflows.
+
+Ok.
+
+> The code has a random mixture of
+> zero-lines-between-end-of-locals-and-start-of-code and
+> one-line-between-end-of-locals-and-start-of-code (and two line).  The
+> latter is usually preferred.
+
+I agree here. I've been fixing these up when had to make other changes
+to the affected functions.
+
+> The person who misnamed DEFINE_BITMAP as DECLARE_BITMAP instead gets a
+> wedgie.
+
+Not sure you mean here?
+
+> It seems strange that uwb_drp_ie_update(UWB_RSV_STATE_NONE) will free
+> rsv->drp_ie then reallocate it.
+
+If rsv->state == UWB_RSV_STATE_NONE the function returns in the switch
+before the call to uwb_drp_ie_alloc().
+
+> printk_ratelimit() is a bit silly because it shares state with other
+> unrelated subsystems which might be using it.  Direct use of __ratelimit()
+> would be better.
+
+Ok.
+
+> All minor stuff - I didn't spend long looking...
+
+I can fix up some of the issues in the next couple of days (use
+time_after() and kcalloc()).  Could these subsystems then be merged?
+
+The printk_ratelimit() will take a bit longer.
+
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
