@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbYJOEnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbYJOFGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752437AbYJOEnz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 00:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbYJOEnr
+	id S1752136AbYJOFGP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 01:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYJOFF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 00:43:47 -0400
-Received: from gw.goop.org ([64.81.55.164]:52422 "EHLO mail.goop.org"
+	Wed, 15 Oct 2008 01:05:59 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:53498 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750932AbYJOEnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 00:43:46 -0400
-Message-ID: <48F574FF.2040600@goop.org>
-Date: Tue, 14 Oct 2008 21:43:43 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	id S1750973AbYJOFF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 01:05:58 -0400
+Date: Wed, 15 Oct 2008 08:05:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: usbhid_set_leds problems
+Message-ID: <20081015050557.GB20183@cs181140183.pp.htv.fi>
+References: <20081015041346.GE4710@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Cliff Wickman <cpw@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/tlb_uv: remove strange mc146818rtc include
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20081015041346.GE4710@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For some reason tlb_uv was including linux/mc146818rtc.h.  It really
-just needs linux/seq_file.h
+On Wed, Oct 15, 2008 at 07:13:46AM +0300, Adrian Bunk wrote:
+> With CONFIG_USB_HID=n I'm getting the following build error:
+> 
+> <--  snip  -->
+> 
+> ...
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `bright_probe':
+> drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
+> drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
+> drivers/built-in.o: In function `dell_probe':
+> drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
+> drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
+> drivers/built-in.o: In function `lg_probe':
+> drivers/hid/hid-lg.c:252: undefined reference to `usbhid_set_leds'
+> drivers/hid/hid-lg.c:252: more undefined references to `usbhid_set_leds' follow
+> ...
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> 
+> <--  snip  -->
+> 
+> 
+> And I'm not sure commit 6edfa8dc33803a49ad936ead9840e453bee6ca3b
+> (HID: move reset leds quirk) was a good idea at all since I don't
+> see cases like HID_DELL=y, CONFIG_USB_HID=m could now work at all.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citix.com>
-Cc: Cliff Wickman <cpw@sgi.com>
----
- arch/x86/kernel/tlb_uv.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Scrap that mail, I shouldn't send patches before the first cup of tea...
 
-===================================================================
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -6,7 +6,7 @@
-  *	This code is released under the GNU General Public License version 2 or
-  *	later.
-  */
--#include <linux/mc146818rtc.h>
-+#include <linux/seq_file.h>
- #include <linux/proc_fs.h>
- #include <linux/kernel.h>
- 
+I just found the actual problem.
 
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
