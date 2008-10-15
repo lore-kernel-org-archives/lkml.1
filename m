@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbYJOKVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbYJOKdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbYJOKVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 06:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYJOKVB
+	id S1753195AbYJOKdr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 06:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbYJOKdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 06:21:01 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46721 "EHLO smtp5.pp.htv.fi"
+	Wed, 15 Oct 2008 06:33:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33939 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753842AbYJOKU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 06:20:59 -0400
-Date: Wed, 15 Oct 2008 13:20:56 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: zippel@linux-m68k.org, sam@ravnborg.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [2.6 patch] HID: fix default building of all quirky devices
-Message-ID: <20081015102056.GH20183@cs181140183.pp.htv.fi>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751241AbYJOKdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 06:33:38 -0400
+Date: Wed, 15 Oct 2008 06:33:29 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: "Steve French" <smfrench@gmail.com>
+Cc: linux-kernel@vger.kernel.org, niallain@gmail.com,
+       linux-cifs-client@lists.samba.org
+Subject: Re: [PATCH 2/5] cifs: eliminate usage of kthread_stop for cifsd
+Message-ID: <20081015063329.3e089ab9@tleilax.poochiereds.net>
+In-Reply-To: <524f69650810141829u2d708e4axe47a8a78a2b72941@mail.gmail.com>
+References: <1224031267-17194-1-git-send-email-jlayton@redhat.com>
+	<1224031267-17194-3-git-send-email-jlayton@redhat.com>
+	<524f69650810141829u2d708e4axe47a8a78a2b72941@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 09:43:18AM +0200, Jiri Kosina wrote:
-> On Wed, 15 Oct 2008, Adrian Bunk wrote:
+On Tue, 14 Oct 2008 20:29:31 -0500
+"Steve French" <smfrench@gmail.com> wrote:
+
+> On Tue, Oct 14, 2008 at 7:41 PM, Jeff Layton <jlayton@redhat.com> wrote:
+> > When cifs_demultiplex_thread was converted to a kthread based kernel
+> > thread, great pains were taken to make it so that kthread_stop would be
+> > used to bring it down. This just added unnecessary complexity since we
+> > needed to use a signal anyway to break out of kernel_recvmsg.
+> >
+> > Also, cifs_demultiplex_thread does a bit of cleanup as it's exiting, and
+> > we need to be certain that this gets done. It's possible for a kthread
+> > to exit before its main function is ever run if kthread_stop is called
+> > soon after its creation. While I'm not sure that this is a real problem
+> > with cifsd now, it could be at some point in the future if cifs_mount is
+> > ever changed to bring down the thread quickly.
+> >
+> > The upshot here is that using kthread_stop to bring down the thread just
+> > adds extra complexity with no real benefit. This patch changes the code
+> > to use the original method to bring down the thread, but still leaves it
+> > so that the thread is actually started with kthread_run.
+> >
+> > This seems to fix the deadlock caused by the reproducer in this bug
+> > report:
+> >
+> > https://bugzilla.samba.org/show_bug.cgi?id=5720
 > 
-> > Commit 9be7bbd54df3c9c393ccd19acc49f90c517d1291
-> > (HID: build drivers for all quirky devices by default)
-> > was wrong in that it select'ed the drivers, causing
-> > build errors like the following with CONFIG_USB_HID=n:
-> > <--  snip  -->
-> > 
-> > ...
-> >   LD      .tmp_vmlinux1
-> > drivers/built-in.o: In function `bright_probe':
-> > drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
-> > drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
-> > drivers/built-in.o: In function `dell_probe':
-> > drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
-> > drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
-> > drivers/built-in.o: In function `lg_probe':
-> > drivers/hid/hid-lg.c:252: undefined reference to `usbhid_set_leds'
-> > drivers/hid/hid-lg.c:252: more undefined references to `usbhid_set_leds' follow
-> > drivers/built-in.o: In function `sony_set_operational':
-> > drivers/hid/hid-sony.c:42: undefined reference to `usb_control_msg'
-> > drivers/hid/hid-sony.c:42: undefined reference to `usb_control_msg'
-> > make[1]: *** [.tmp_vmlinux1] Error 1
+> I agree with what Jeff is suggesting in this patch, and have no
+> problem merging the patch, but want to make sure that those who wanted
+> cifs to switch all of cifs threads to kthread usage are also ok with
+> this.
 > 
-> Hmm ... I am not really sure, isn't this a bug in Kconfig?
+> I don't like the patch 1 (disabling a section of code code) and 5
+> (basically reenabling similar code fixing some problems) though - has
+> to be a better way to do this by rewriting the function once.
+>
 
-No.
+The main argument for the way that I've proposed is that once you take
+kthread_stop out, it becomes much easier to hit the other races.
 
-> What we have right now:
-> 
-> - CONFIG_HID selects all the individual quirk-drivers automatically
-> - the individual quirk drivers have dependency on CONFIG_USB_HID
-> 
-> Therefore I'd expect when CONFIG_HID is selected and CONFIG_USB_HID 
-> deselected the individual drivers not to get built (due to their 
-> dependency on unset option).
+The other races are pretty dangerous -- you're likely to oops, but may
+also corrupt memory in use-after-free situations. My suggestion would
+be to take the patchset as is. While it'll temporarily break multiuser
+mounts if someone bisects in the middle of the series, that person
+shouldn't be vulnerable to the other problems.
 
-Different people have different expectations.
-
-Many kernel developers seem to wrongly assume kconfig was something 
-trivial and everything that does not work as expected was a bug in 
-kconfig. But it is not, and there is no magic bullet like changing
-how select behaves in some way that will suddenly solve all problems.
-
-> But currently what happens is when I de-select CONFIG_USB_HID in 
-> menuconfig, the configuration options for individual drivers vanish from 
-> the menuconfig menu (which is expected, they depend on unset option), but 
-> after saving .config they are still there. Is this how it is expected to 
-> behave? (i.e. select having preference over dependency).
-
-Select ignores dependencies on the selected options.
-
-That's the documented behavior.
-
-> Thanks,
-
-cu
-Adrian
+If you feel strongly about it though, we could eliminate patch 1, roll
+similar changes into patch 5, and move it to the beginning of the
+series.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jeff Layton <jlayton@redhat.com>
