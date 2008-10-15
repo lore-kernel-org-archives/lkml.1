@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYJOOFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYJOOGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYJOOFn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 10:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYJOOEt
+	id S1755790AbYJOOGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 10:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYJOOEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 10:04:49 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:45082 "EHLO
+	Wed, 15 Oct 2008 10:04:51 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:45093 "EHLO
 	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752017AbYJOOEr (ORCPT
+	with ESMTP id S1752043AbYJOOEr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Oct 2008 10:04:47 -0400
-Subject: [PATCH 17/21] fat: Fix _fat_bmap() race
+Subject: [PATCH 20/21] fat: ->i_pos race fix
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, hirofumi@mail.parknet.co.jp
 From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Wed, 15 Oct 2008 22:58:00 +0900
-Message-ID: <9562d38c3e848f5f6e81722369.ps@mail.parknet.co.jp>
+Date: Wed, 15 Oct 2008 22:58:01 +0900
+Message-ID: <ed5d0b893e848f5f6e92022369.ps@mail.parknet.co.jp>
 References: <b4c7cd913e848f5f6e3122369.ps@mail.parknet.co.jp>
 	<4e3b7e0f3e848f5f6e4222369.ps@mail.parknet.co.jp>
 	<0f24bbb03e848f5f6e5322369.ps@mail.parknet.co.jp>
@@ -32,41 +32,66 @@ References: <b4c7cd913e848f5f6e3122369.ps@mail.parknet.co.jp>
 	<6b812e3e3e848f5f6e81422369.ps@mail.parknet.co.jp>
 	<cd30496c3e848f5f6e81522369.ps@mail.parknet.co.jp>
 	<056ecdb93e848f5f6e81622369.ps@mail.parknet.co.jp>
-In-Reply-To: <056ecdb93e848f5f6e81622369.ps@mail.parknet.co.jp>
+	<9562d38c3e848f5f6e81722369.ps@mail.parknet.co.jp>
+	<e24598993e848f5f6e91822369.ps@mail.parknet.co.jp>
+	<01d62c0f3e848f5f6e91922369.ps@mail.parknet.co.jp>
+In-Reply-To: <01d62c0f3e848f5f6e91922369.ps@mail.parknet.co.jp>
 X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fat_get_cluster() assumes the requested blocknr isn't truncated during
-read. _fat_bmap() doesn't follow this rule.
+i_pos is 64bits value, hence it's not atomic to update.
 
-This protects it by ->i_mutex.
+Important place is fat_write_inode() only, other places without lock
+are just for printk().
+
+This adds lock for "BITS_PER_LONG == 32" kernel.
 
 Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
 
- fs/fat/inode.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ fs/fat/inode.c |   21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
-diff -puN fs/fat/inode.c~fat_fat_bmap-fix fs/fat/inode.c
---- linux-2.6/fs/fat/inode.c~fat_fat_bmap-fix	2008-09-14 05:25:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/inode.c	2008-09-14 06:28:26.000000000 +0900
-@@ -199,7 +199,14 @@ static ssize_t fat_direct_IO(int rw, str
- 
- static sector_t _fat_bmap(struct address_space *mapping, sector_t block)
- {
--	return generic_block_bmap(mapping, block, fat_get_block);
-+	sector_t blocknr;
-+
-+	/* fat_get_cluster() assumes the requested blocknr isn't truncated. */
-+	mutex_lock(&mapping->host->i_mutex);
-+	blocknr = generic_block_bmap(mapping, block, fat_get_block);
-+	mutex_unlock(&mapping->host->i_mutex);
-+
-+	return blocknr;
+diff -puN fs/fat/inode.c~fat_i_pos-race-fix fs/fat/inode.c
+--- linux-2.6/fs/fat/inode.c~fat_i_pos-race-fix	2008-09-29 19:04:03.000000000 +0900
++++ linux-2.6-hirofumi/fs/fat/inode.c	2008-09-29 19:04:03.000000000 +0900
+@@ -542,6 +542,20 @@ static int fat_statfs(struct dentry *den
+ 	return 0;
  }
  
- static const struct address_space_operations fat_aops = {
++static inline loff_t fat_i_pos_read(struct msdos_sb_info *sbi,
++				    struct inode *inode)
++{
++	loff_t i_pos;
++#if BITS_PER_LONG == 32
++	spin_lock(&sbi->inode_hash_lock);
++#endif
++	i_pos = MSDOS_I(inode)->i_pos;
++#if BITS_PER_LONG == 32
++	spin_unlock(&sbi->inode_hash_lock);
++#endif
++	return i_pos;
++}
++
+ static int fat_write_inode(struct inode *inode, int wait)
+ {
+ 	struct super_block *sb = inode->i_sb;
+@@ -551,9 +565,12 @@ static int fat_write_inode(struct inode 
+ 	loff_t i_pos;
+ 	int err;
+ 
++	if (inode->i_ino == MSDOS_ROOT_INO)
++		return 0;
++
+ retry:
+-	i_pos = MSDOS_I(inode)->i_pos;
+-	if (inode->i_ino == MSDOS_ROOT_INO || !i_pos)
++	i_pos = fat_i_pos_read(sbi, inode);
++	if (!i_pos)
+ 		return 0;
+ 
+ 	bh = sb_bread(sb, i_pos >> sbi->dir_per_block_bits);
 _
