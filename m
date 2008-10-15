@@ -1,47 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYJOXEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYJOXFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbYJOXEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 19:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYJOXEY
+	id S1755530AbYJOXFq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 19:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYJOXFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 19:04:24 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:60118 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119AbYJOXEY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 19:04:24 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, bart@jukie.net
-Subject: Re: [PATCH 01/21] fat: document additional vfat mount options
-References: <b4c7cd913e848f5f6e3122369.ps@mail.parknet.co.jp>
-	<20081015150754.bfca0d4d.akpm@linux-foundation.org>
-Date: Thu, 16 Oct 2008 08:04:20 +0900
-In-Reply-To: <20081015150754.bfca0d4d.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 15 Oct 2008 15:07:54 -0700")
-Message-ID: <87k5c9h34b.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Wed, 15 Oct 2008 19:05:38 -0400
+Received: from mx1.suse.de ([195.135.220.2]:51052 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbYJOXFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 19:05:37 -0400
+Subject: patch disable-config_dynamic_ftrace-due-to-possible-memory-corruption-on-module-unload.patch added to 2.6.27-stable tree
+To: rostedt@goodmis.org, akpm@linux-foundation.org, arjan@infradead.org,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
+From: <gregkh@suse.de>
+Date: Wed, 15 Oct 2008 16:01:58 -0700
+In-Reply-To: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
+Message-Id: <20081015230514.D54EB14544DF@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
 
-> On Wed, 15 Oct 2008 22:57:55 +0900
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
->
->> Subject: [PATCH 01/21] fat: document additional vfat mount options
->
-> It's awkward receiving a 21-patch series late in the merge window. 
-> It's really really really late to be considering this sort of thing for
-> 2.6.28.
->
-> Could I suggest that you run a quilt or a git tree for fatfs and get
-> that fed into linux-next?
+This is a note to let you know that we have just queued up the patch titled
 
-Ugh, sorry. Um.. I'll ask ftpadmin@ and will try...
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+    Subject: disable CONFIG_DYNAMIC_FTRACE due to possible memory corruption on module unload
+
+to the 2.6.27-stable tree.  Its filename is
+
+    disable-config_dynamic_ftrace-due-to-possible-memory-corruption-on-module-unload.patch
+
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From rostedt@goodmis.org  Wed Oct 15 15:55:25 2008
+From: Steven Rostedt <rostedt@goodmis.org>
+Date: Wed, 15 Oct 2008 18:21:44 -0400 (EDT)
+Subject: disable CONFIG_DYNAMIC_FTRACE due to possible memory corruption on module unload
+To: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, gregkh@suse.de, jesse.brandeburg@intel.com, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
+
+From: Steven Rostedt <rostedt@goodmis.org>
+
+While debugging the e1000e corruption bug with Intel, we discovered
+today that the dynamic ftrace code in mainline is the likely source of
+this bug.
+
+For the stable kernel we are providing the only viable fix patch: labeling
+CONFIG_DYNAMIC_FTRACE as broken. (see the patch below)
+
+We will follow up with a backport patch that contains the fixes. But since
+the fixes are not a one liner, the safest approach for now is to
+disable the code in question.
+
+The cause of the bug is due to the way the current code in mainline
+handles dynamic ftrace.  When dynamic ftrace is turned on, it also
+turns on CONFIG_FTRACE which enables the -pg config in gcc that places
+a call to mcount at every function call. With just CONFIG_FTRACE this
+causes a noticeable overhead.  CONFIG_DYNAMIC_FTRACE works to ease this
+overhead by dynamically updating the mcount call sites into nops.
+
+The problem arises when we trace functions and modules are unloaded.
+The first time a function is called, it will call mcount and the mcount
+call will call ftrace_record_ip. This records the calling site and
+stores it in a preallocated hash table. Later on a daemon will
+wake up and call kstop_machine and convert any mcount callers into
+nops.
+
+The evolution of this code first tried to do this without the kstop_machine
+and used cmpxchg to update the callers as they were called. But I
+was informed that this is dangerous to do on SMP machines if another
+CPU is running that same code. The solution was to do this with
+kstop_machine.
+
+We still used cmpxchg to test if the code that we are modifying is
+indeed code that we expect to be before updating it - as a final
+line of defense.
+
+But on 32bit machines, ioremapped memory and modules share the same
+address space. When a module would load its code into memory and execute
+some code, that would register the function.
+
+On module unload, ftrace incorrectly did not zap these functions from
+its hash (this was the bug). The cmpxchg could have saved us in most
+cases (via luck) - but with ioremap-ed memory that was exactly the wrong
+thing to do - the results of cmpxchg on device memory are undefined.
+(and will likely result in a write)
+
+The pending .28 ftrace tree does not have this bug anymore, as a general push
+towards more robustness of code patching, this is done differently: we do not
+use cmpxchg and we do a WARN_ON and turn the tracer off if anything deviates
+from its expected state. Furthermore, patch sites are statically identified
+during build time so there's no runtime discovery of dynamic code areas
+anymore, and no room for code unmaps to cause the hash to become out of date.
+
+We believe the fragility of dynamic patching has been sufficiently
+addressed in the development code via the static patching method, but further
+suggestions to make it more robust are welcome.
+
+Signed-off-by: Steven Rostedt <srostedt@goodmis.org>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ kernel/trace/Kconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -103,7 +103,8 @@ config CONTEXT_SWITCH_TRACER
+ 	  all switching of tasks.
+ 
+ config DYNAMIC_FTRACE
+-	bool "enable/disable ftrace tracepoints dynamically"
++	bool "enable/disable ftrace tracepoints dynamically (BROKEN)"
++	depends on BROKEN
+ 	depends on FTRACE
+ 	depends on HAVE_DYNAMIC_FTRACE
+ 	default y
+
+
+Patches currently in stable-queue which might be from rostedt@goodmis.org are
+
+queue-2.6.27/disable-config_dynamic_ftrace-due-to-possible-memory-corruption-on-module-unload.patch
