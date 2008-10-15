@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbYJORth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYJORu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbYJORth (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 13:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070AbYJORsr
+	id S1756537AbYJORu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 13:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbYJORt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 13:48:47 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:44991 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754210AbYJORsq (ORCPT
+	Wed, 15 Oct 2008 13:49:59 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:15359 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754210AbYJORt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 13:48:46 -0400
-Message-Id: <20081015174414.135124484@de.ibm.com>
-References: <20081015174215.337001494@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 15 Oct 2008 19:42:18 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 3/5] vmcp: remove BKL
-Content-Disposition: inline; filename=003-vmcp-bkl.diff
+	Wed, 15 Oct 2008 13:49:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=V5w7V32XW5lDZeaF/21yKucrk8ajSkf+tMO5kzRbBnRmy4nxL2OMupdFdg6vGTygoK
+         r2sPtFhX8Uw2jtL9MKg1ugMmOlRAuiSh2O8neGQ6aehfZWGwV8GGAo0nWFH7M8opevTR
+         xvKfTeBX6eG6J/g4AAVtHQbUdIc2G/atK6CbY=
+Date: Wed, 15 Oct 2008 21:52:52 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH] fastboot: Introduce an asynchronous function call
+	mechanism
+Message-ID: <20081015175252.GA10600@x200.localdomain>
+References: <20081012194427.2e21c22e@infradead.org> <20081015014117.faff3a61.akpm@linux-foundation.org> <20081015075246.2e1610f3@infradead.org> <20081015095905.41219c9d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081015095905.41219c9d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+On Wed, Oct 15, 2008 at 09:59:05AM -0700, Andrew Morton wrote:
+> On Wed, 15 Oct 2008 07:52:46 -0400 Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > On Wed, 15 Oct 2008 01:41:17 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > +static int async_active = 0;
+> > > 
+> > > ?
+> > ok will add comment
+> 
+> I was actually "?"ing at the "= 0".  I thought that would be obvious
+> but it's whizzed past two people so far :(
 
-The vmcp driver uses the session->mutex for concurrent access of the data
-structures. Therefore, the BKL in vmcp_open does not protect against any
-other function in the driver.
-The BLK in vmcp_open would protect concurrent access to the module init
-but all necessary steps ave finished before misc_register is called.
-We can safely remove the lock_kernel from vcmp.
+Is there evidence that some gccs will not add such variable to .bss?
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- drivers/s390/char/vmcp.c |    3 ---
- 1 file changed, 3 deletions(-)
-
-Index: quilt-2.6/drivers/s390/char/vmcp.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/char/vmcp.c
-+++ quilt-2.6/drivers/s390/char/vmcp.c
-@@ -16,7 +16,6 @@
- #include <linux/kernel.h>
- #include <linux/miscdevice.h>
- #include <linux/module.h>
--#include <linux/smp_lock.h>
- #include <asm/cpcmd.h>
- #include <asm/debug.h>
- #include <asm/uaccess.h>
-@@ -41,13 +40,11 @@ static int vmcp_open(struct inode *inode
- 	if (!session)
- 		return -ENOMEM;
- 
--	lock_kernel();
- 	session->bufsize = PAGE_SIZE;
- 	session->response = NULL;
- 	session->resp_size = 0;
- 	mutex_init(&session->mutex);
- 	file->private_data = session;
--	unlock_kernel();
- 	return nonseekable_open(inode, file);
- }
- 
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Because "= 0;" is more readable.
