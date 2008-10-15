@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969AbYJOG7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbYJOHDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751969AbYJOG7h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 02:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYJOG6y
+	id S1753267AbYJOHDT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 03:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYJOHDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 02:58:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58763 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbYJOG6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 02:58:53 -0400
-Message-ID: <48F5942A.2060705@cn.fujitsu.com>
-Date: Wed, 15 Oct 2008 14:56:42 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 15 Oct 2008 03:03:00 -0400
+Received: from webmail58.yandex.ru ([77.88.61.3]:36248 "EHLO
+	webmail58.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbYJOHDA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 03:03:00 -0400
+X-Greylist: delayed 1379 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 03:03:00 EDT
+X-Yandex-Spam: 1
+From: Antipov Dmitry <dmantipov@yandex.ru>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.27: 0 MHz CPU and wrong system time on AMD Geode system
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip/tracing/markers] markers: remove exported symbol marker_probe_cb_noarg()
-Content-Type: text/plain; charset=UTF-8
+Message-Id: <414861224052797@webmail58.yandex.ru>
+Date: Wed, 15 Oct 2008 10:39:57 +0400
+X-Mailer: Yamail [ http://yandex.ru ] 5.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After updating the kernel to 2.6.27 from 2.6.25.4, my system time goes wrong and
+CPU becomes 0 MHz (as shown by /proc/cpuinfo), probably due to these issues:
 
-marker_probe_cb_noarg() should not be seen by outer code.
-this patch remove it.
+TSC: Unable to calibrate against PIT
+TSC: No reference (HPET/PMTIMER) available
+Marking TSC unstable due to could not calculate TSC khz
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/include/linux/marker.h b/include/linux/marker.h
-index 38e32e7..4aca94a 100644
---- a/include/linux/marker.h
-+++ b/include/linux/marker.h
-@@ -137,8 +137,6 @@ extern marker_probe_func __mark_empty_function;
- 
- extern void marker_probe_cb(const struct marker *mdata,
- 	void *call_private, ...);
--extern void marker_probe_cb_noarg(const struct marker *mdata,
--	void *call_private, ...);
- 
- /*
-  * Connect a probe to a marker.
-diff --git a/kernel/marker.c b/kernel/marker.c
-index ef43c86..0f2a944 100644
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -157,7 +157,7 @@ EXPORT_SYMBOL_GPL(marker_probe_cb);
-  *
-  * Should be connected to markers "MARK_NOARGS".
-  */
--void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
-+static void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
- {
- 	va_list args;	/* not initialized */
- 	char ptype;
-@@ -197,7 +197,6 @@ void marker_probe_cb_noarg(const struct marker *mdata, void *call_private, ...)
- 	}
- 	rcu_read_unlock_sched();
- }
--EXPORT_SYMBOL_GPL(marker_probe_cb_noarg);
- 
- static void free_old_closure(struct rcu_head *head)
- {
+The hardware is http://www.fit-pc.com/new/fit-pc-1-0-specifications.html,
+and the base system is Fedora 9.
 
+More details: 2.6.25.4 .config: http://78.153.153.8/tmp/config-2.6.25.4.txt
+              2.6.25.4 boot messages: http://78.153.153.8/tmp/boot-2.6.25.4.txt
+              2.6.27 .config: http://78.153.153.8/tmp/config-2.6.27.txt
+              2.6.27 boot messages: http://78.153.153.8/tmp/boot-2.6.27.txt
 
-
-
+Dmitry
