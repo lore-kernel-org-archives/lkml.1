@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYJOWzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYJOXEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbYJOWzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYJOWz0
+	id S1754981AbYJOXEc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 19:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYJOXEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:55:26 -0400
-Received: from ns1.suse.de ([195.135.220.2]:50367 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753658AbYJOWz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:55:26 -0400
-Date: Wed, 15 Oct 2008 15:51:34 -0700
-From: Greg KH <gregkh@suse.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, jesse.brandeburg@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -stable] disable CONFIG_DYNAMIC_FTRACE due to possible
-	memory corruption on module unload
-Message-ID: <20081015225134.GA23026@suse.de>
-References: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com> <alpine.DEB.1.10.0810151843130.19408@gandalf.stny.rr.com>
+	Wed, 15 Oct 2008 19:04:24 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:60118 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752119AbYJOXEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 19:04:24 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, bart@jukie.net
+Subject: Re: [PATCH 01/21] fat: document additional vfat mount options
+References: <b4c7cd913e848f5f6e3122369.ps@mail.parknet.co.jp>
+	<20081015150754.bfca0d4d.akpm@linux-foundation.org>
+Date: Thu, 16 Oct 2008 08:04:20 +0900
+In-Reply-To: <20081015150754.bfca0d4d.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed, 15 Oct 2008 15:07:54 -0700")
+Message-ID: <87k5c9h34b.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810151843130.19408@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 06:46:12PM -0400, Steven Rostedt wrote:
-> 
-> On Wed, 15 Oct 2008, Steven Rostedt wrote:
-> > 
-> > The problem arises when we trace functions and modules are unloaded.
-> 
-> Note, it is not just module unloading. The issue can happen when the
-> init functions of a module are freed and the nvram is vmapped there as
-> well.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Ok, that makes sense why so many people hit this.
+> On Wed, 15 Oct 2008 22:57:55 +0900
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+>
+>> Subject: [PATCH 01/21] fat: document additional vfat mount options
+>
+> It's awkward receiving a 21-patch series late in the merge window. 
+> It's really really really late to be considering this sort of thing for
+> 2.6.28.
+>
+> Could I suggest that you run a quilt or a git tree for fatfs and get
+> that fed into linux-next?
 
-I'll go do a 2.6.27.1 with this patch in it right now, thanks for
-spending the time to look into this.
-
-greg k-h
+Ugh, sorry. Um.. I'll ask ftpadmin@ and will try...
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
