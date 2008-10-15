@@ -1,129 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYJOXFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbYJOXIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYJOXFq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 19:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYJOXFi
+	id S1755014AbYJOXIx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 19:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbYJOXIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 19:05:38 -0400
-Received: from mx1.suse.de ([195.135.220.2]:51052 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbYJOXFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 19:05:37 -0400
-Subject: patch disable-config_dynamic_ftrace-due-to-possible-memory-corruption-on-module-unload.patch added to 2.6.27-stable tree
-To: rostedt@goodmis.org, akpm@linux-foundation.org, arjan@infradead.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org
-Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
-From: <gregkh@suse.de>
-Date: Wed, 15 Oct 2008 16:01:58 -0700
-In-Reply-To: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
-Message-Id: <20081015230514.D54EB14544DF@imap.suse.de>
+	Wed, 15 Oct 2008 19:08:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41511
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753457AbYJOXIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 19:08:44 -0400
+Date: Wed, 15 Oct 2008 16:08:21 -0700 (PDT)
+Message-Id: <20081015.160821.143702739.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: alan@lxorguk.ukuu.org.uk, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: is the weeks before -rc1 the time to really be working on
+ -next?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081015155353.f15a996e.akpm@linux-foundation.org>
+References: <20081015145606.2af3baf1.akpm@linux-foundation.org>
+	<20081015233607.54c1d6b8@lxorguk.ukuu.org.uk>
+	<20081015155353.f15a996e.akpm@linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 15 Oct 2008 15:53:53 -0700
 
-This is a note to let you know that we have just queued up the patch titled
+> But the problem here is that once linux-next merges your patches, you
+> no longer have a tree on which to base your patches!  You need to get
+> your hands on "linux-next without my stuff" to maintain them.
 
-    Subject: disable CONFIG_DYNAMIC_FTRACE due to possible memory corruption on module unload
+I know this doesn't work for you, but if you ran -mm just like any
+other GIT tree it might mesh a whole lot better.
 
-to the 2.6.27-stable tree.  Its filename is
+And in reality that kind of situation isn't a big deal in the
+context of -next.  People are rebasing their trees all the time
+there, and it mostly seems to work itself out.
 
-    disable-config_dynamic_ftrace-due-to-possible-memory-corruption-on-module-unload.patch
+It's a lot more work for a contributor to do work against -mm,
+since the response to "which -mm should I work against and where
+do I get it from" is a bit more involved that just "pull from
+this GIT tree and do your work on top of that."
 
-A git repo of this tree can be found at 
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+And just like networking we could have Stephen treat the -mm
+GIT tree as "important" which roughly means that other conflicting
+trees will be knocked out of a -next release in deference to -mm.
 
+Those people will have to fix their stuff, not you.  And you'll
+always therefore get coverage in -next.
 
->From rostedt@goodmis.org  Wed Oct 15 15:55:25 2008
-From: Steven Rostedt <rostedt@goodmis.org>
-Date: Wed, 15 Oct 2008 18:21:44 -0400 (EDT)
-Subject: disable CONFIG_DYNAMIC_FTRACE due to possible memory corruption on module unload
-To: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, gregkh@suse.de, jesse.brandeburg@intel.com, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Message-ID: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
-
-From: Steven Rostedt <rostedt@goodmis.org>
-
-While debugging the e1000e corruption bug with Intel, we discovered
-today that the dynamic ftrace code in mainline is the likely source of
-this bug.
-
-For the stable kernel we are providing the only viable fix patch: labeling
-CONFIG_DYNAMIC_FTRACE as broken. (see the patch below)
-
-We will follow up with a backport patch that contains the fixes. But since
-the fixes are not a one liner, the safest approach for now is to
-disable the code in question.
-
-The cause of the bug is due to the way the current code in mainline
-handles dynamic ftrace.  When dynamic ftrace is turned on, it also
-turns on CONFIG_FTRACE which enables the -pg config in gcc that places
-a call to mcount at every function call. With just CONFIG_FTRACE this
-causes a noticeable overhead.  CONFIG_DYNAMIC_FTRACE works to ease this
-overhead by dynamically updating the mcount call sites into nops.
-
-The problem arises when we trace functions and modules are unloaded.
-The first time a function is called, it will call mcount and the mcount
-call will call ftrace_record_ip. This records the calling site and
-stores it in a preallocated hash table. Later on a daemon will
-wake up and call kstop_machine and convert any mcount callers into
-nops.
-
-The evolution of this code first tried to do this without the kstop_machine
-and used cmpxchg to update the callers as they were called. But I
-was informed that this is dangerous to do on SMP machines if another
-CPU is running that same code. The solution was to do this with
-kstop_machine.
-
-We still used cmpxchg to test if the code that we are modifying is
-indeed code that we expect to be before updating it - as a final
-line of defense.
-
-But on 32bit machines, ioremapped memory and modules share the same
-address space. When a module would load its code into memory and execute
-some code, that would register the function.
-
-On module unload, ftrace incorrectly did not zap these functions from
-its hash (this was the bug). The cmpxchg could have saved us in most
-cases (via luck) - but with ioremap-ed memory that was exactly the wrong
-thing to do - the results of cmpxchg on device memory are undefined.
-(and will likely result in a write)
-
-The pending .28 ftrace tree does not have this bug anymore, as a general push
-towards more robustness of code patching, this is done differently: we do not
-use cmpxchg and we do a WARN_ON and turn the tracer off if anything deviates
-from its expected state. Furthermore, patch sites are statically identified
-during build time so there's no runtime discovery of dynamic code areas
-anymore, and no room for code unmaps to cause the hash to become out of date.
-
-We believe the fragility of dynamic patching has been sufficiently
-addressed in the development code via the static patching method, but further
-suggestions to make it more robust are welcome.
-
-Signed-off-by: Steven Rostedt <srostedt@goodmis.org>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- kernel/trace/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -103,7 +103,8 @@ config CONTEXT_SWITCH_TRACER
- 	  all switching of tasks.
- 
- config DYNAMIC_FTRACE
--	bool "enable/disable ftrace tracepoints dynamically"
-+	bool "enable/disable ftrace tracepoints dynamically (BROKEN)"
-+	depends on BROKEN
- 	depends on FTRACE
- 	depends on HAVE_DYNAMIC_FTRACE
- 	default y
-
-
-Patches currently in stable-queue which might be from rostedt@goodmis.org are
-
-queue-2.6.27/disable-config_dynamic_ftrace-due-to-possible-memory-corruption-on-module-unload.patch
+Unlike the general sentiment expressed here, I think -next is helping.
+Even if only because Stephen pokes people with trees causing problems
+on a daily basis.
