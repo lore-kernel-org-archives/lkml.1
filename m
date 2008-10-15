@@ -1,84 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYJOVpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbYJOVsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbYJOVpf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 17:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYJOVp1
+	id S1755063AbYJOVsg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYJOVs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 17:45:27 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47350 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753201AbYJOVp1 (ORCPT
+	Wed, 15 Oct 2008 17:48:28 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:14348 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753333AbYJOVs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 17:45:27 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 15 Oct 2008 23:44:53 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] FireWire updates post 2.6.27
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.6559742adfdec1ce@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Wed, 15 Oct 2008 17:48:28 -0400
+Subject: [PATCH] disable CPU side GART accesses
+From: Bob Montgomery <bob.montgomery@hp.com>
+Reply-To: bob.montgomery@hp.com
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: vojtech@suse.cz, Linus Torvalds <torvalds@linux-foundation.org>,
+       chandru@in.ibm.com
+Content-Type: text/plain
+Organization: Contractor at HP
+Date: Wed, 15 Oct 2008 15:48:37 -0600
+Message-Id: <1224107317.2215.238.camel@amd.troyhebe>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+This patch prevents improper access of the GART aperture from kdump
+kernels running on AMD systems.  
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+Symptoms of the problem include hangs, spurious restarts, and MCE
+(Machine Check Exception) panics in some AMD Opteron systems that
+enable the GART IOMMU and access /proc/vmcore or /dev/oldmem from a
+kdump kernel.  Note that the GART IOMMU will not be enabled on systems
+with less than 4 GB of RAM, so symptoms will not appear.  This problem
+has been reproduced on Family 10H Quad-Core AMD Opteron systems.
 
-to receive the following IEEE 1394/ FireWire subsystem updates.
-We have got little fixes, the last small bit of BKL removal in the old
-stack, and further improved connection stability in the old stack.  Some
-work on the new stack has been going on too, but too slow to make it for
-this merge.
+This patch changes the initialization of the GART to set the DISGARTCPU
+bit in the GART Aperture Control Register (AMD64_GARTAPERTURECTL).
+Setting the bit prevents requests from the CPUs from accessing the
+GART.  In other words, CPU memory accesses to the aperture address
+range will not cause the GART to perform an address translation.
+The aperture area is currently being unmapped at the kernel level
+with set_memory_np() in gart_iommu_init to prevent accesses from the
+CPU, but that kernel level unmapping is not in effect in the kexec'd
+kdump kernel.  By disabling the CPU-side accesses within the GART,
+which does persist through the kexec of the kdump kernel, the kdump
+kernel is prevented from interacting with the GART during accesses
+to the dump memory areas which include the address range of the GART
+aperture.  Although the patch can be applied to the kdump kernel,
+it is not exercised there because the kdump kernel doesn't attempt
+to initialize the GART, since it typically runs in less than 4 GB
+of memory.
 
-Jay Fenlason (2):
-      firewire: fw_send_request_sync()
-      firewire: Add more documentation to firewire-cdev.h
 
-Julia Lawall (1):
-      ieee1394: Use DIV_ROUND_UP
+Signed-off-by: Bob Montgomery <bob.montgomery@hp.com>
 
-Stefan Richter (13):
-      ieee1394: sbp2: stricter dma_sync
-      ieee1394: sbp2: check for DMA mapping failures
-      ieee1394: sbp2: enforce s/g segment size limit
-      ieee1394: raw1394: replace BKL by local mutex, make ioctl() and mmap() thread-safe
-      ieee1394: raw1394: narrow down the state_mutex protected region
-      ieee1394: raw1394: make write() thread-safe
-      ieee1394: dv1394, video1394: remove unnecessary expressions
-      ieee1394: nodemgr clean up class iterators
-      ieee1394: survive a few seconds connection loss
-      firewire: fw-sbp2: enforce s/g segment size limit
-      firewire: fw-sbp2: fix another small generation access bug
-      firewire: fix setting tag and sy in iso transmission
-      firewire: fix ioctl() return code
 
- drivers/firewire/fw-card.c         |   56 ++----
- drivers/firewire/fw-cdev.c         |    6 +-
- drivers/firewire/fw-device.c       |   37 +---
- drivers/firewire/fw-sbp2.c         |  116 +++++-------
- drivers/firewire/fw-transaction.c  |   48 +++++-
- drivers/firewire/fw-transaction.h  |    9 +-
- drivers/ieee1394/csr1212.c         |    2 +-
- drivers/ieee1394/dv1394.c          |    2 +-
- drivers/ieee1394/eth1394.c         |    2 +-
- drivers/ieee1394/nodemgr.c         |  279 +++++++++++-----------------
- drivers/ieee1394/nodemgr.h         |    2 +-
- drivers/ieee1394/raw1394-private.h |    1 +
- drivers/ieee1394/raw1394.c         |  230 +++++++++++++----------
- drivers/ieee1394/sbp2.c            |  218 +++++++++-------------
- drivers/ieee1394/sbp2.h            |   33 +---
- drivers/ieee1394/video1394.c       |    8 +-
- include/linux/firewire-cdev.h      |    9 +-
- 17 files changed, 470 insertions(+), 588 deletions(-)
+--- linux-2.6.27/include/asm-x86/gart.h	2008-10-13 16:36:34.000000000 -0600
++++ linux-2.6.27-fix/include/asm-x86/gart.h	2008-10-14 10:37:32.000000000 -0600
+@@ -44,7 +44,8 @@ static inline void enable_gart_translati
+         /* Enable GART translation for this hammer. */
+         pci_read_config_dword(dev, AMD64_GARTAPERTURECTL, &ctl);
+         ctl |= GARTEN;
+-        ctl &= ~(DISGARTCPU | DISGARTIO);
++        ctl |= DISGARTCPU;
++        ctl &= ~(DISGARTIO);
+         pci_write_config_dword(dev, AMD64_GARTAPERTURECTL, ctl);
+ }
+ 
 
-Thanks,
--- 
-Stefan Richter
--=====-==--- =-=- -====
-http://arcgraph.de/sr/
 
