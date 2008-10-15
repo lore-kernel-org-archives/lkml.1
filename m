@@ -1,38 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYJOOU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbYJOOYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbYJOOU3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 10:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYJOOUS
+	id S1755670AbYJOOYv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 10:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYJOOYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 10:20:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:62672 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbYJOOUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 10:20:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=CXG+HFJRTcvyZV3VGroyi1WYwIQDh4gzFfzPg9+K5U3gImzAhLVO2HqNrxWoQWzkuj
-         u94AGO5RMhn4gIFGz4rqJ7GuB9c3xpORpdUshGixbhap7PsglI2OOhavAJxlYAbPueCW
-         KLVjZOB8+Zb/arHbSV418Uy1NbXmi51/YnKYQ=
-Message-ID: <b82a89170810150720p2d5ab5efnd6c5ef0bdbd1a03d@mail.gmail.com>
-Date: Wed, 15 Oct 2008 19:50:15 +0530
-From: "Niraj kumar" <niraj17@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [QUESTION] Where can I get lockstat/lockdep userspace tools
+	Wed, 15 Oct 2008 10:24:42 -0400
+Received: from mx34.mail.ru ([194.67.23.200]:4283 "EHLO mx34.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751839AbYJOOYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 10:24:41 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Eric Sandeen <sandeen@redhat.com>, pterjan@mandriva.org
+Subject: Re: Possible ext3 corruption with 1K block size
+Date: Wed, 15 Oct 2008 18:24:31 +0400
+User-Agent: KMail/1.9.10
+Cc: linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200810150724.42180.arvidjaar@mail.ru> <48F5E6D4.8080603@redhat.com>
+In-Reply-To: <48F5E6D4.8080603@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart7561009.HbZexBdqDx";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-Id: <200810151824.36119.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--nextPart7561009.HbZexBdqDx
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Can anybody tell me where I can get the userspace tools (similar to
-what Solaris has) for working with lockstat/lockdep feature in kernel.
+On Wednesday 15 October 2008, Eric Sandeen wrote:
+> Andrey Borzenkov wrote:
+> > There is long standing open bug report on Mandriva which is currently
+> > beieved to have root cause in file system corruption. It shows itself
+> > in RPM DB corruption (at least, there is no other known method to trigg=
+er
+> > it). So far all reported cases happened on filesystem with 1K block size
+> > and stopped when RPM DB was moved to FS with 4K block size.
+> >=20
+> > There are also similar RH reports as well.
+> >=20
+> > Here are references:
+> >=20
+> > https://qa.mandriva.com/show_bug.cgi?id=3D32547
+> >=20
+> > This one is rather long.=20
+>=20
+> yep, unfortunately IIRC most of the bug is "me too's" and "how do I do
+> the workaround" :)
+>=20
+> > Interesting bits are probably around
+> >=20
+> > https://qa.mandriva.com/show_bug.cgi?id=3D32547#c177
+> > https://qa.mandriva.com/show_bug.cgi?id=3D32547#c148 (many users report=
+ing
+> > dumpe2fs)
+> >=20
+> > https://bugzilla.redhat.com/show_bug.cgi?id=3D230362
+> > https://bugzilla.redhat.com/show_bug.cgi?id=3D375931
+> > https://bugzilla.redhat.com/show_bug.cgi?id=3D305301
+> >=20
+> > The Mandriva bugzilla also mentions this mail from Stephen Tweedie=20
+> > http://lkml.org/lkml/2007/9/18/232
+>=20
+> I don't think this is related, in the end... there was some possiblity
+> of corruption from that, but I think it's doubtful it'd hit 1k block
+> filesystems more, and in any case, the corruption has been seen since
+> then if I read it right.
+>=20
+> > which indicates some issues with 1K blocks, but according to last comme=
+nt:
+> > https://qa.mandriva.com/show_bug.cgi?id=3D32547#c300
+> >=20
+> > it is still present in 2.6.27 (at least was present on -rc6)
+> >=20
+> > There was a kernel bug report http://bugzilla.kernel.org/show_bug.cgi?i=
+d=3D11564,
+> > but in this case it was identified as hardware issue.
+>=20
+> My kingdom for a testcase... does anyone have simple steps to reproduce
+> this?  Or do they all start with "install mandriva on a 1k block size
+> system?"  :)
+>=20
 
--Niraj
+May be RH will do? :)
+
+As indicated by last comment, Pascal has some ways to trigger it; I
+forgot to Cc to him initially; doing it now.
+
+--nextPart7561009.HbZexBdqDx
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkj1/SAACgkQR6LMutpd94x0UQCfe0q3Q0MaVtXbHzjwEJLowWv4
+NbsAn1cMjhDXyXvOqCGCISe/xNEVjBIn
+=yphD
+-----END PGP SIGNATURE-----
+
+--nextPart7561009.HbZexBdqDx--
