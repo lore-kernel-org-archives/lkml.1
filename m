@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYJOUWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYJOUXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbYJOUWR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYJOUWB
+	id S1755459AbYJOUXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYJOUXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:22:01 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:41474 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbYJOUWB (ORCPT
+	Wed, 15 Oct 2008 16:23:14 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37496 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbYJOUXN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:22:01 -0400
-Message-ID: <48F650E3.8040805@fr.ibm.com>
-Date: Wed, 15 Oct 2008 22:21:55 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jan Blunck <jblunck@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bharata@linux.vnet.ibm.com
-Subject: Re: union mount status
-References: <48F51B6C.2080000@fr.ibm.com> <20081015191144.GJ29067@bolzano.suse.de>
-In-Reply-To: <20081015191144.GJ29067@bolzano.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 15 Oct 2008 16:23:13 -0400
+Date: Wed, 15 Oct 2008 16:23:16 -0400
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH] fastboot: Introduce an asynchronous function call
+ mechanism
+Message-ID: <20081015162316.0a0c284a@infradead.org>
+In-Reply-To: <20081015095905.41219c9d.akpm@linux-foundation.org>
+References: <20081012194427.2e21c22e@infradead.org>
+	<20081015014117.faff3a61.akpm@linux-foundation.org>
+	<20081015075246.2e1610f3@infradead.org>
+	<20081015095905.41219c9d.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Blunck wrote:
-> On Wed, Oct 15, Daniel Lezcano wrote:
-> 
->> Hi all,
->>
->> What is the status of this patchset ?
->> Bharata Rao told me, no consensus was reached yet.
->> After looking at Jan Blunk's ftp server, it looks like the latest 
->> patchset was for 2.6.25-mm1. Is anyone working on this patchset right now ?
-> 
-> Not that I know of.
-> 
-> The state is as follows: we (David Woodhouse, Bharata Rao, Erez Zadok and me)
-> agreed on a more or less final version of the whiteout patches. I haven't
-> posted them yet since I know that Al Viro isn't convinced of the idea that
-> they are actaully necessary. 
+On Wed, 15 Oct 2008 09:59:05 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-The union mount could *very* interesting for the containers (aka 
-namespaces). If you create a container, you can share the same rootfs 
-between  the different containers and make a COW for each container 
-writing on its own filesystem, no ? Using together the mount namespaces, 
-the union mount and the ro bind mount, can be very powerful IMHO.
+> > > 
+> > > Please talk to Evgeniy about his new thread_pool stuff which I've
+> > > suggested become a generic library.
+> 
+> ^^ this?
 
+if thread pools can deliver me the same ordering guarantees.....
+which I kinda doubt given the point of the concept of them..
