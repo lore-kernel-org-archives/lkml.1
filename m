@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYJOUh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYJOUkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbYJOUh2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYJOUhS
+	id S1754679AbYJOUkP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYJOUkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:37:18 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:26900 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbYJOUhR convert rfc822-to-8bit (ORCPT
+	Wed, 15 Oct 2008 16:40:03 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:43946 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbYJOUkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:37:17 -0400
-From: "Brown, John M (WGBU R&D)" <john.brown3@hp.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Wed, 15 Oct 2008 20:35:54 +0000
-Subject: RE: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old
- code ordering
-Thread-Topic: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old
- code ordering
-Thread-Index: Acku0H6Ihgb7eBEqQDWJIpnS27lNAQANKc3A
-Message-ID: <C075D3D77BA5EF4FBB0939047B182ABF25C79AD3EE@GVW1144EXB.americas.hpqcorp.net>
-References: <200810142254.07024.rjw@sisk.pl>
- <20081015085809.GA1061@srcf.ucam.org> <200810151605.35883.rjw@sisk.pl>
- <20081015141526.GA5633@srcf.ucam.org>
-In-Reply-To: <20081015141526.GA5633@srcf.ucam.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Oct 2008 16:40:00 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
+Subject: Re: [PATCH 3/6] vfs: add __d_instantiate() helper
+References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
+	<e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
+	<7754d3f83e848f5f6f2326623.ps@mail.parknet.co.jp>
+	<20081015194119.GA24892@infradead.org>
+Date: Thu, 16 Oct 2008 05:39:56 +0900
+In-Reply-To: <20081015194119.GA24892@infradead.org> (Christoph Hellwig's
+	message of "Wed, 15 Oct 2008 15:41:19 -0400")
+Message-ID: <87wsg9oan7.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't know the technical details behind *how* Windows copes with it, but I can tell you that it works fine on Windows.  Naturally we'd like it to work fine on Linux, too, and Rafael's blacklist fix accomplishes that.  There may be other solutions to this issue on Linux that are worth looking into, but perhaps we can accept Rafael's fix as a workaround for now.
+Christoph Hellwig <hch@infradead.org> writes:
 
-BTW, there is probably at least one more fairly recent vintage HP workstation that will require this same fix.  My testing isn't complete yet, though.
-
-John
-
------Original Message-----
-From: Matthew Garrett [mailto:mjg59@srcf.ucam.org]
-Sent: Wednesday, October 15, 2008 8:15 AM
-To: Rafael J. Wysocki
-Cc: Len Brown; ACPI Devel Maling List; Andrew Morton; LKML; Brown, John M (WGBU R&D)
-Subject: Re: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old code ordering
-
-On Wed, Oct 15, 2008 at 04:05:35PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, 15 of October 2008, Matthew Garrett wrote:
-> > I think trying to work out what would be more useful than just
-> > adding it to a blacklist.
+> On Wed, Oct 15, 2008 at 10:58:10PM +0900, OGAWA Hirofumi wrote:
+>> 
+>> This adds __d_instantiate() for users which is already taking
+>> dcache_lock, and replace with it.
+>> 
+>> The part of d_add_ci() isn't equivalent. But it should be needed
+>> fsnotify_d_instantiate() actually, because the path is to add the
+>> inode to negative dentry.  fsnotify_d_instantiate() should be called
+>> after change from negative to positive.
+>> 
+>> __d_instantiate_unique() and d_materialise_unique() does opencoded
+>> optimized version. From history, it seems a intent, so just add comment.
 >
-> Well, machines that require the "old" ordering are simply broken,
-> because you just can't assume that specific devices are not in D3
-> before you execute _PTS.
->
-> IOW, we aren't doing anything wrong and the BIOS is buggy.
+> Looks good, but I think those "optimized' version should also be
+> converted, a single if shouldn't matter with todays branch predictors.
 
-So how does Windows cope with this?
+Me too.
 
---
-Matthew Garrett | mjg59@srcf.ucam.org
+Trond, do you care the following convert? E.g.
+
+in d_materialise_unique():
+
+from
+		dentry->d_inode = NULL;
+		goto found_lock;
+to
+		__d_instantiate(dentry, NULL);
+		goto found_lock;
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
