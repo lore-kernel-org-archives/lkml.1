@@ -1,49 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYJOWUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYJOWVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYJOWUT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbYJOWUG
+	id S1755463AbYJOWVz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbYJOWVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:20:06 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:35359 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbYJOWUF (ORCPT
+	Wed, 15 Oct 2008 18:21:47 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37210 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753370AbYJOWVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:20:05 -0400
-Date: Wed, 15 Oct 2008 16:19:48 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, ying.huang@intel.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, tglx@linutronix.de
-Subject: Re: [PATCH -mm -v5] Separate atomic_t declaration from asm/atomic.h into asm/atomic_def.h
-Message-ID: <20081015221947.GN15064@parisc-linux.org>
-References: <1223459070.5872.167.camel@yhuang-dev.sh.intel.com> <20081010144335.65d8153b.akpm@linux-foundation.org> <20081010214958.GA7708@elte.hu> <20081010155450.094288b4.akpm@linux-foundation.org> <20081014184718.GG15064@parisc-linux.org> <20081015151119.493ea13f.akpm@linux-foundation.org>
+	Wed, 15 Oct 2008 18:21:47 -0400
+Date: Wed, 15 Oct 2008 18:21:44 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, gregkh@suse.de,
+       jesse.brandeburg@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH -stable] disable CONFIG_DYNAMIC_FTRACE due to possible memory
+ corruption on module unload
+Message-ID: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081015151119.493ea13f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 03:11:19PM -0700, Andrew Morton wrote:
-> On Tue, 14 Oct 2008 12:47:19 -0600
-> Matthew Wilcox <matthew@wil.cx> wrote:
-> > Roman Zippel did me one better and suggested just putting it in types.h,
-> > which works for me.
-> 
-> OK.  Or we could do the usual include/asm-generic/atomic_types.h and
-> then architectures can choose to include that if it is appropriate.
-> 
-> Anyway the good news is that this concept is an addition to rather than
-> a replacement of this current patch.
 
-Um, no.  Roman and I are against the creation of a new file.  Just put
-the atomic_t definition in <linux/types.h>.
+While debugging the e1000e corruption bug with Intel, we discovered
+today that the dynamic ftrace code in mainline is the likely source of
+this bug.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+For the stable kernel we are providing the only viable fix patch: labeling
+CONFIG_DYNAMIC_FTRACE as broken. (see the patch below)
+
+We will follow up with a backport patch that contains the fixes. But since
+the fixes are not a one liner, the safest approach for now is to
+disable the code in question.
+
+The cause of the bug is due to the way the current code in mainline
+handles dynamic ftrace.  When dynamic ftrace is turned on, it also
+turns on CONFIG_FTRACE which enables the -pg config in gcc that places
+a call to mcount at every function call. With just CONFIG_FTRACE this
+causes a noticeable overhead.  CONFIG_DYNAMIC_FTRACE works to ease this
+overhead by dynamically updating the mcount call sites into nops.
+
+The problem arises when we trace functions and modules are unloaded.
+The first time a function is called, it will call mcount and the mcount
+call will call ftrace_record_ip. This records the calling site and
+stores it in a preallocated hash table. Later on a daemon will
+wake up and call kstop_machine and convert any mcount callers into
+nops.
+
+The evolution of this code first tried to do this without the kstop_machine
+and used cmpxchg to update the callers as they were called. But I
+was informed that this is dangerous to do on SMP machines if another
+CPU is running that same code. The solution was to do this with
+kstop_machine.
+
+We still used cmpxchg to test if the code that we are modifying is
+indeed code that we expect to be before updating it - as a final
+line of defense.
+
+But on 32bit machines, ioremapped memory and modules share the same
+address space. When a module would load its code into memory and execute
+some code, that would register the function.
+
+On module unload, ftrace incorrectly did not zap these functions from
+its hash (this was the bug). The cmpxchg could have saved us in most
+cases (via luck) - but with ioremap-ed memory that was exactly the wrong
+thing to do - the results of cmpxchg on device memory are undefined.
+(and will likely result in a write)
+
+The pending .28 ftrace tree does not have this bug anymore, as a general push
+towards more robustness of code patching, this is done differently: we do not
+use cmpxchg and we do a WARN_ON and turn the tracer off if anything deviates
+from its expected state. Furthermore, patch sites are statically identified
+during build time so there's no runtime discovery of dynamic code areas
+anymore, and no room for code unmaps to cause the hash to become out of date.
+
+We believe the fragility of dynamic patching has been sufficiently
+addressed in the development code via the static patching method, but further
+suggestions to make it more robust are welcome.
+
+Signed-off-by: Steven Rostedt <srostedt@goodmis.org>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/trace/Kconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-compile.git/kernel/trace/Kconfig
+===================================================================
+--- linux-compile.git.orig/kernel/trace/Kconfig	2008-10-02 10:18:49.000000000 -0400
++++ linux-compile.git/kernel/trace/Kconfig	2008-10-15 17:29:34.000000000 -0400
+@@ -103,7 +103,8 @@ config CONTEXT_SWITCH_TRACER
+ 	  all switching of tasks.
+ 
+ config DYNAMIC_FTRACE
+-	bool "enable/disable ftrace tracepoints dynamically"
++	bool "enable/disable ftrace tracepoints dynamically (BROKEN)"
++	depends on BROKEN
+ 	depends on FTRACE
+ 	depends on HAVE_DYNAMIC_FTRACE
+ 	default y
+
