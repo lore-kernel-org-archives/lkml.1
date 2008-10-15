@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYJOOMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbYJOONl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758196AbYJOOMY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 10:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbYJOOGV
+	id S1758690AbYJOONl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 10:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756828AbYJOOIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 10:06:21 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:32964 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755655AbYJOOGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 10:06:10 -0400
-Subject: [PATCH 01/21] fat: document additional vfat mount options
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, hirofumi@mail.parknet.co.jp, bart@jukie.net
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Wed, 15 Oct 2008 22:57:55 +0900
-Message-ID: <b4c7cd913e848f5f6e3122369.ps@mail.parknet.co.jp>
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Wed, 15 Oct 2008 10:08:46 -0400
+Received: from mx2.compro.net ([216.54.166.4]:18317 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756824AbYJOOIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 10:08:45 -0400
+X-Greylist: delayed 855 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 10:08:45 EDT
+X-IronPort-AV: E=Sophos;i="4.33,416,1220241600"; 
+   d="scan'208";a="2958792"
+Message-ID: <48F5F614.3080008@compro.net>
+Date: Wed, 15 Oct 2008 09:54:28 -0400
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Kaz Kylheku <kkylheku@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: GPL question: using large contiguous memory in proprietary driver.
+References: <3f43f78b0810141456r159d71e7h9763e50e7dbc0c51@mail.gmail.com>
+In-Reply-To: <3f43f78b0810141456r159d71e7h9763e50e7dbc0c51@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kaz Kylheku wrote:
+> Hi all,
+> 
+> I have the following question. Suppose that some proprietary driver
+> (otherwise completely clean, based only on non-GPL symbols)
+> requires a large buffer of physically contiguous memory.
+> 
+> A GPL-ed driver could get this memory by having some boot-time
+> code compiled into the kernel which calls bootmem_alloc during
+> kernel initialization. This function would stash the address of the
+> memory into some global variable which is exported for the
+> module to use.
+> 
+> How do you solve this problem in a proprietary driver? It seems
+> like the above solution taints the kernel, because the kernel
+> provides a symbol which exists only for the sake of supporting
+> a proprietary driver.
+> 
+> Would it be okay to have a mechanism like this:
+> Suppose that  on the kernel command line, you could
+> request a boot-time memory allocation and give it a name.
+> For instance, the parameter:
+> 
+>    boot_alloc=foo,8192K
+> 
+> would create an 8192 kilobyte allocation, and associate it
+> with the string "foo".   A non-GPL function would be provided to
+> find the address of this memory, using the string "foo"
+> as the key. The proprietary driver would document the
+> requirement that it needs a memory region of at least
+> 8192K, under the name "foo".
+> 
+> Help! :)
 
-From: Bart Trojanowski <bart@jukie.net>
+Hardware with scatter/gatcher capabilites would be best. But short
+of that, you could just use the bigphysarea patch. GOOGLE for it and you'll
+find a version suitable for most kernel versions. I've been using it for years with
+a GPL driver but even if the driver wasn't GPL I would still be using it.
 
-While debugging a sync mount regression on vfat I noticed that there
-were mount options parsed by the driver that were not documented.
+I sure wish it could be included in the kernel??
 
-[hirofumi@mail.parknet.co.jp: fix some parts]
-Signed-off-by: Bart Trojanowski <bart@jukie.net>
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
+There really aren't many good reasons not to GPL your driver BTW.
 
- Documentation/filesystems/vfat.txt |   24 ++++++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
-
-diff -puN Documentation/filesystems/vfat.txt~fat-doc-fixes Documentation/filesystems/vfat.txt
---- linux-2.6/Documentation/filesystems/vfat.txt~fat-doc-fixes	2008-08-24 22:47:00.000000000 +0900
-+++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2008-08-24 22:47:00.000000000 +0900
-@@ -8,6 +8,12 @@ if you want to format from within Linux.
- 
- VFAT MOUNT OPTIONS
- ----------------------------------------------------------------------
-+uid=###       -- Set the owner of all files on this filesystem.
-+		 The default is the uid of current process.
-+
-+gid=###       -- Set the group of all files on this filesystem.
-+		 The default is the gid of current process.
-+
- umask=###     -- The permission mask (for files and directories, see umask(1)).
-                  The default is the umask of current process.
- 
-@@ -36,7 +42,7 @@ codepage=###  -- Sets the codepage numbe
- 		 characters on FAT filesystem.
- 		 By default, FAT_DEFAULT_CODEPAGE setting is used.
- 
--iocharset=name -- Character set to use for converting between the
-+iocharset=<name> -- Character set to use for converting between the
- 		 encoding is used for user visible filename and 16 bit
- 		 Unicode characters. Long filenames are stored on disk
- 		 in Unicode format, but Unix for the most part doesn't
-@@ -86,6 +92,8 @@ check=s|r|n   -- Case sensitivity checki
-                  r: relaxed, case insensitive
-                  n: normal, default setting, currently case insensitive
- 
-+nocase        -- This was deprecated for vfat. Use shortname=win95 instead.
-+
- shortname=lower|win95|winnt|mixed
- 	      -- Shortname display/create setting.
- 		 lower: convert to lowercase for display,
-@@ -99,11 +107,23 @@ shortname=lower|win95|winnt|mixed
- tz=UTC        -- Interpret timestamps as UTC rather than local time.
-                  This option disables the conversion of timestamps
-                  between local time (as used by Windows on FAT) and UTC
--                 (which Linux uses internally).  This is particuluarly
-+                 (which Linux uses internally).  This is particularly
-                  useful when mounting devices (like digital cameras)
-                  that are set to UTC in order to avoid the pitfalls of
-                  local time.
- 
-+showexec      -- If set, the execute permission bits of the file will be
-+		 allowed only if the extension part of the name is .EXE,
-+		 .COM, or .BAT. Not set by default.
-+
-+debug         -- Can be set, but unused by the current implementation.
-+
-+sys_immutable -- If set, ATTR_SYS attribute on FAT is handled as
-+		 IMMUTABLE flag on Linux. Not set by default.
-+
-+flush         -- If set, the filesystem will try to flush to disk more
-+		 early than normal. Not set by default.
-+
- <bool>: 0,1,yes,no,true,false
- 
- TODO
-_
+Mark
