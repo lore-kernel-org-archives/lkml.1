@@ -1,68 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbYJOIMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbYJOIY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbYJOIMW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 04:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYJOIMM
+	id S1752930AbYJOIY1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 04:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYJOIYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 04:12:12 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:60147 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbYJOIML (ORCPT
+	Wed, 15 Oct 2008 04:24:19 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:60584 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbYJOIYS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 04:12:11 -0400
-Message-ID: <48F5A638.8020003@colorfullife.com>
-Date: Wed, 15 Oct 2008 10:13:44 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <48F21D58.3000404@colorfullife.com> <20081012224629.GA7353@linux.vnet.ibm.com> <48F38D73.8040804@colorfullife.com> <20081015011143.GE6874@linux.vnet.ibm.com>
-In-Reply-To: <20081015011143.GE6874@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 15 Oct 2008 04:24:18 -0400
+Date: Wed, 15 Oct 2008 17:16:55 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] memcg: migration account fix
+Message-Id: <20081015171655.1e19ebeb.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081010180335.c9cf53c4.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081010175936.f3b1f4e0.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081010180335.c9cf53c4.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
->> - For nohz cpus, a poller function [schedule_work(), enabled interrupts] 
->> peeks into the per-cpu data of the nohz cpu and checks if it is quiet or if 
->> it passed through a quiescent state.
->> If it didn't, then it sets a cpu_data->kick_poller flag and rcu_irq_exit() 
->> reports the grace period.
->> No need for an IPI either - rcu has a hook in the irq exit path.
->>     
->
-> I considered adding a cpu_quiet() on the irq exit path, but eventually
-> decided that I should instead place the added overhead in the infrequently
-> invoked force_quiescent_state() function.  Could be argued either way,
-> of course.
->   
-rcu_irq_exit() is only called on idle cpus.
-You are trading time spent by the idle cpu in 'hlt' with "real" cpu time.
+> @@ -795,43 +767,67 @@ int mem_cgroup_prepare_migration(struct 
+>  	if (PageCgroupUsed(pc)) {
+>  		mem = pc->mem_cgroup;
+>  		css_get(&mem->css);
+> -		if (PageCgroupCache(pc)) {
+> -			if (page_is_file_cache(page))
+> -				ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+> -			else
+> -				ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
+> -		}
+>  	}
+>  	unlock_page_cgroup(pc);
+> +
+>  	if (mem) {
+> -		ret = mem_cgroup_charge_common(newpage, NULL, GFP_KERNEL,
+> -			ctype, mem);
+> +		ret = mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem);
+>  		css_put(&mem->css);
+> +		*ptr = mem;
+>  	}
+>  	return ret;
+>  }
+>  
+"*ptr = mem" should be outside of if(mem).
+Otherwise, ptr would be kept unset when !PageCgroupUsed.
+(unmap_and_move, caller of prepare_migration, doesn't initilize it.)
 
->> Right now, I cheat if a nohz cpu is in a long-running nmi 
->> [while(other_cpu_is_in_nmi()) cpu_relax()], but I think I can fix that with 
->> an set_need_resched() in the rcu_nmi_exit().
->>     
->
-> Hmmm...  I don't see where the NMI exit path checks the TIF_NEED_RESCHED
-> flag, but I could easily be missing something.
->   
-Good point.
-I haven't looked at the issue yet.
-Perhaps a smd_send_reschedule(smp_processor_id()) is necessary.
+And,
 
-Btw, I found a bug in my state machine: Right now, the state machine 
-will lock up if all cpus are in nohz mode.
-I'm not sure if it applies to your code as well.
+>  /* remove redundant charge if migration failed*/
+> -void mem_cgroup_end_migration(struct page *newpage)
+> +void mem_cgroup_end_migration(struct mem_cgroup *mem,
+> +		struct page *oldpage, struct page *newpage)
+>  {
+> +	struct page *target, *unused;
+> +	struct page_cgroup *pc;
+> +	enum charge_type ctype;
+> +
+mem_cgroup_end_migration should handle "mem == NULL" case
+(just return would be enough).
 
---
-    Manfred
+> +	/* at migration success, oldpage->mapping is NULL. */
+> +	if (oldpage->mapping) {
+> +		target = oldpage;
+> +		unused = NULL;
+> +	} else {
+> +		target = newpage;
+> +		unused = oldpage;
+> +	}
+> +
+> +	if (PageAnon(target))
+> +		ctype = MEM_CGROUP_CHARGE_TYPE_MAPPED;
+> +	else if (page_is_file_cache(target))
+> +		ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
+> +	else
+> +		ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
+> +
+> +	/* unused page is not on radix-tree now. */
+> +	if (unused && ctype != MEM_CGROUP_CHARGE_TYPE_MAPPED)
+> +		__mem_cgroup_uncharge_common(unused, ctype);
+> +
+> +	pc = lookup_page_cgroup(target);
+>  	/*
+> -	 * At success, page->mapping is not NULL.
+> -	 * special rollback care is necessary when
+> -	 * 1. at migration failure. (newpage->mapping is cleared in this case)
+> -	 * 2. the newpage was moved but not remapped again because the task
+> -	 *    exits and the newpage is obsolete. In this case, the new page
+> -	 *    may be a swapcache. So, we just call mem_cgroup_uncharge_page()
+> -	 *    always for avoiding mess. The  page_cgroup will be removed if
+> -	 *    unnecessary. File cache pages is still on radix-tree. Don't
+> -	 *    care it.
+> +	 * __mem_cgroup_commit_charge() check PCG_USED bit of page_cgroup.
+> +	 * So, double-counting is effectively avoided.
+>  	 */
+> -	if (!newpage->mapping)
+> -		__mem_cgroup_uncharge_common(newpage,
+> -				MEM_CGROUP_CHARGE_TYPE_FORCE);
+> -	else if (PageAnon(newpage))
+> -		mem_cgroup_uncharge_page(newpage);
+> +	__mem_cgroup_commit_charge(mem, pc, ctype);
+> +
+> +	/*
+> +	 * Both of oldpage and newpage are still under lock_page().
+> +	 * Then, we don't have to care about race in radix-tree.
+> +	 * But we have to be careful that this page is unmapped or not.
+> +	 *
+> +	 * There is a case for !page_mapped(). At the start of
+> +	 * migration, oldpage was mapped. But now, it's zapped.
+> +	 * But we know *target* page is not freed/reused under us.
+> +	 * mem_cgroup_uncharge_page() does all necessary checks.
+> +	 */
+> +	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+> +		mem_cgroup_uncharge_page(target);
+>  }
+>  
+> +
+>  /*
+>   * A call to try to shrink memory usage under specified resource controller.
+>   * This is typically used for page reclaiming for shmem for reducing side
+> 
+
+BTW, I'm now testing v7 patches with some fixes I've reported,
+and it has worked well so far(for several hours) in my test.
+(testing page migration and rmdir(force_empty) under swap in/out activity)
+
+
+Thanks,
+Daisuke Nishimura.
