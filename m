@@ -1,555 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbYJOGQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbYJOGRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670AbYJOGQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 02:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYJOGQA
+	id S1752920AbYJOGRd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 02:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYJOGR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 02:16:00 -0400
-Received: from usaga01-in.huawei.com ([206.16.17.211]:56548 "EHLO
-	usaga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbYJOGP7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 02:15:59 -0400
-Date: Wed, 15 Oct 2008 14:15:36 +0800
-From: fangxiaozhi 00110321 <huananhu@huawei.com>
-Subject: [PATCH 10/12]linux-usb: To support more Huawei data card product IDs,
- fix kernel 2.6.27-rc7
-In-reply-to: <fa2ee5174af6a.4af6afa2ee517@huawei.com>
-To: linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, zihan@huawei.com, zhangqianchun@huawei.com,
-       greg@kroah.com, stern@rowland.harvard.edu, phil@ipom.com
-Message-id: <f890997c4fde1.4fde1f890997c@huawei.com>
-MIME-version: 1.0
-X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.14 (built Aug  8 2006)
-Content-type: text/plain; charset=us-ascii
-Content-language: zh-CN
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-Accept-Language: zh-CN
-References: <fa2ee5174af6a.4af6afa2ee517@huawei.com>
+	Wed, 15 Oct 2008 02:17:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45748 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751138AbYJOGRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 02:17:25 -0400
+Message-ID: <48F58A96.8040406@kernel.org>
+Date: Wed, 15 Oct 2008 15:15:50 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, lists@ku-gbr.de
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <48E89839.5030307@panasas.com> <48E899F9.9040206@kernel.org> <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com> <20081008080848.GA20525@anita.doom> <48F3088C.9010002@kernel.org> <48F308E8.4030503@kernel.org> <20081013142951.GB23124@anita.doom>
+In-Reply-To: <20081013142951.GB23124@anita.doom>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------060901070508000602070409"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 15 Oct 2008 06:17:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: fangxiaozhi <huananhu@huawei.com>
- 
-1. This patch is based on the kernel of 2.6.27-rc7 
-2. In this patch, we want to do one thing: add more Huawei product IDs into the USB driver. Then it can support  more Huawei data card devices. So to declare the unusual device for new Huawei data card devices 
-in unusual_devs.h and to declare more new product IDs in option.c.
-3. To modify the data value and length in the function of 
-usb_stor_huawei_e220_init in initializers.c
-That's because based on the USB standard, while sending SET_FETURE_D to the device, it requires the corresponding data to be zero, and its sending length also must be zero.
-In our old solution, it can be compatible with our WCDMA data card devices, but can not support our CDMA data card devices. 
-But in this new solution, it can be compatible with all of our data card devices.
+This is a multi-part message in MIME format.
+--------------060901070508000602070409
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: fangxiaozhi <huananhu@huawei.com>
+Hmm... this is proving to be much more difficult than I expected. :-(
 
-----------------------------------------------------------------------------------
+Can you please try the attached patch?
+
+Thanks.
+
+-- 
+tejun
+
+--------------060901070508000602070409
+Content-Type: text/x-patch;
+ name="sata_nv-nf2-hrst-debug-take2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sata_nv-nf2-hrst-debug-take2.patch"
+
+---
+ drivers/ata/libata-core.c |    3 +-
+ drivers/ata/sata_nv.c     |   48 +++++++++++++++++++---------------------------
+ 2 files changed, 22 insertions(+), 29 deletions(-)
+
+Index: tree0/drivers/ata/libata-core.c
+===================================================================
+--- tree0.orig/drivers/ata/libata-core.c
++++ tree0/drivers/ata/libata-core.c
+@@ -1099,6 +1099,7 @@ unsigned int ata_dev_classify(const stru
+ 	 * We follow the current spec and consider that 0x69/0x96
+ 	 * identifies a port multiplier and 0x3c/0xc3 a SEMB device.
+ 	 */
++	printk("XXX CLASSIFY %02x:%02x:%02x\n", tf->lbal, tf->lbam, tf->lbah);
+ 	if ((tf->lbam == 0) && (tf->lbah == 0)) {
+ 		DPRINTK("found ATA device by sig\n");
+ 		return ATA_DEV_ATA;
+@@ -5673,7 +5674,7 @@ int ata_host_register(struct ata_host *h
  
-diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/serial/option.c linux-2.6.27-rc7/drivers/usb/serial/option.c
---- linux-2.6.27-rc7-orig/drivers/usb/serial/option.c	2008-10-13 09:02:08.000000000 -0400
-+++ linux-2.6.27-rc7/drivers/usb/serial/option.c	2008-09-24 00:00:14.000000000 -0400
-@@ -106,11 +106,20 @@ static int  option_send_setup(struct tty
- #define HUAWEI_PRODUCT_E220			0x1003
- #define HUAWEI_PRODUCT_E220BIS			0x1004
- #define HUAWEI_PRODUCT_E1401			0x1401
-+#define HUAWEI_PRODUCT_E1402			0x1402
- #define HUAWEI_PRODUCT_E1403			0x1403
-+#define HUAWEI_PRODUCT_E1404			0x1404
- #define HUAWEI_PRODUCT_E1405			0x1405
- #define HUAWEI_PRODUCT_E1406			0x1406
-+#define HUAWEI_PRODUCT_E1407			0x1407
- #define HUAWEI_PRODUCT_E1408			0x1408
- #define HUAWEI_PRODUCT_E1409			0x1409
-+#define HUAWEI_PRODUCT_E140A			0x140A
-+#define HUAWEI_PRODUCT_E140B			0x140B
-+#define HUAWEI_PRODUCT_E140C			0x140C
-+#define HUAWEI_PRODUCT_E140D			0x140D
-+#define HUAWEI_PRODUCT_E140E			0x140E
-+#define HUAWEI_PRODUCT_E140F			0x140F
- #define HUAWEI_PRODUCT_E1410			0x1410
- #define HUAWEI_PRODUCT_E1411			0x1411
- #define HUAWEI_PRODUCT_E1412			0x1412
-@@ -121,6 +130,44 @@ static int  option_send_setup(struct tty
- #define HUAWEI_PRODUCT_E1417			0x1417
- #define HUAWEI_PRODUCT_E1418			0x1418
- #define HUAWEI_PRODUCT_E1419			0x1419
-+#define HUAWEI_PRODUCT_E141A			0x141A
-+#define HUAWEI_PRODUCT_E141B			0x141B
-+#define HUAWEI_PRODUCT_E141C			0x141C
-+#define HUAWEI_PRODUCT_E141D			0x141D
-+#define HUAWEI_PRODUCT_E141E			0x141E
-+#define HUAWEI_PRODUCT_E141F			0x141F
-+#define HUAWEI_PRODUCT_E1420			0x1420
-+#define HUAWEI_PRODUCT_E1421			0x1421
-+#define HUAWEI_PRODUCT_E1422			0x1422
-+#define HUAWEI_PRODUCT_E1423			0x1423
-+#define HUAWEI_PRODUCT_E1424			0x1424
-+#define HUAWEI_PRODUCT_E1425			0x1425
-+#define HUAWEI_PRODUCT_E1426			0x1426
-+#define HUAWEI_PRODUCT_E1427			0x1427
-+#define HUAWEI_PRODUCT_E1428			0x1428
-+#define HUAWEI_PRODUCT_E1429			0x1429
-+#define HUAWEI_PRODUCT_E142A			0x142A
-+#define HUAWEI_PRODUCT_E142B			0x142B
-+#define HUAWEI_PRODUCT_E142C			0x142C
-+#define HUAWEI_PRODUCT_E142D			0x142D
-+#define HUAWEI_PRODUCT_E142E			0x142E
-+#define HUAWEI_PRODUCT_E142F			0x142F
-+#define HUAWEI_PRODUCT_E1430			0x1430
-+#define HUAWEI_PRODUCT_E1431			0x1431
-+#define HUAWEI_PRODUCT_E1432			0x1432
-+#define HUAWEI_PRODUCT_E1433			0x1433
-+#define HUAWEI_PRODUCT_E1434			0x1434
-+#define HUAWEI_PRODUCT_E1435			0x1435
-+#define HUAWEI_PRODUCT_E1436			0x1436
-+#define HUAWEI_PRODUCT_E1437			0x1437
-+#define HUAWEI_PRODUCT_E1438			0x1438
-+#define HUAWEI_PRODUCT_E1439			0x1439
-+#define HUAWEI_PRODUCT_E143A			0x143A
-+#define HUAWEI_PRODUCT_E143B			0x143B
-+#define HUAWEI_PRODUCT_E143C			0x143C
-+#define HUAWEI_PRODUCT_E143D			0x143D
-+#define HUAWEI_PRODUCT_E143E			0x143E
-+#define HUAWEI_PRODUCT_E143F			0x143F
+ 			ehi->probe_mask |= ATA_ALL_DEVICES;
+ 			ehi->action |= ATA_EH_RESET | ATA_EH_LPM;
+-			ehi->flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET;
++			ehi->flags |= ATA_EHI_NO_AUTOPSY/* | ATA_EHI_QUIET*/;
  
- #define NOVATELWIRELESS_VENDOR_ID		0x1410
+ 			ap->pflags &= ~ATA_PFLAG_INITIALIZING;
+ 			ap->pflags |= ATA_PFLAG_LOADING;
+Index: tree0/drivers/ata/sata_nv.c
+===================================================================
+--- tree0.orig/drivers/ata/sata_nv.c
++++ tree0/drivers/ata/sata_nv.c
+@@ -307,10 +307,10 @@ static int nv_scr_write(struct ata_port
  
-@@ -259,11 +306,20 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1401, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1402, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1403, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1404, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1405, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1406, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1407, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1408, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1409, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140A, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140B, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140C, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140D, 0xff, 0xff, 0xff) }, 
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140E, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140F, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1410, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1411, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1412, 0xff, 0xff, 0xff) },
-@@ -274,6 +330,44 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1417, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1418, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1419, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141A, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141B, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141C, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141D, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141E, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141F, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1420, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1421, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1422, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1423, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1424, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1425, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1426, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1427, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1428, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1429, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142A, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142B, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142C, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142D, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142E, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142F, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1430, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1431, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1432, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1433, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1434, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1435, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1436, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1437, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1438, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1439, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143A, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143B, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143C, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143D, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143E, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143F, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_9508) },
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V640) }, /* Novatel Merlin V640/XV620 */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V620) }, /* Novatel Merlin V620/S620 */
-diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c linux-2.6.27-rc7/drivers/usb/storage/initializers.c
---- linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c	2008-10-13 09:02:08.000000000 -0400
-+++ linux-2.6.27-rc7/drivers/usb/storage/initializers.c	2008-10-13 09:03:40.000000000 -0400
-@@ -95,11 +95,10 @@ int usb_stor_huawei_e220_init(struct us_
- {
- 	int result;
+ static void nv_nf2_freeze(struct ata_port *ap);
+ static void nv_nf2_thaw(struct ata_port *ap);
++static int nv_nf2_hardreset(struct ata_link *link, unsigned int *class,
++			    unsigned long deadline);
+ static void nv_ck804_freeze(struct ata_port *ap);
+ static void nv_ck804_thaw(struct ata_port *ap);
+-static int nv_hardreset(struct ata_link *link, unsigned int *class,
+-			unsigned long deadline);
+ static int nv_adma_slave_config(struct scsi_device *sdev);
+ static int nv_adma_check_atapi_dma(struct ata_queued_cmd *qc);
+ static void nv_adma_qc_prep(struct ata_queued_cmd *qc);
+@@ -405,17 +405,8 @@ static struct scsi_host_template nv_swnc
+ 	.slave_configure	= nv_swncq_slave_config,
+ };
  
--	us->iobuf[0] = 0x1;
- 	result = usb_stor_control_msg(us, us->send_ctrl_pipe,
- 				      USB_REQ_SET_FEATURE,
- 				      USB_TYPE_STANDARD | USB_RECIP_DEVICE,
--				      0x01, 0x0, us->iobuf, 0x1, 1000);
-+				      0x01, 0x0, NULL, 0x0, 1000);
- 	US_DEBUGP("usb_control_msg performing result is %d\n", result);
- 	return (result ? 0 : -1);
+-/* OSDL bz3352 reports that some nv controllers can't determine device
+- * signature reliably and nv_hardreset is implemented to work around
+- * the problem.  This was reported on nf3 and it's unclear whether any
+- * other controllers are affected.  However, the workaround has been
+- * applied to all variants and there isn't much to gain by trying to
+- * find out exactly which ones are affected at this point especially
+- * because NV has moved over to ahci for newer controllers.
+- */
+ static struct ata_port_operations nv_common_ops = {
+ 	.inherits		= &ata_bmdma_port_ops,
+-	.hardreset		= nv_hardreset,
+ 	.scr_read		= nv_scr_read,
+ 	.scr_write		= nv_scr_write,
+ };
+@@ -429,12 +420,17 @@ static struct ata_port_operations nv_gen
+ 	.hardreset		= ATA_OP_NULL,
+ };
+ 
++/* OSDL bz3352 reports that nf2/3 controllers can't determine device
++ * signature reliably.  Use sata_std_hardreset().
++ */
+ static struct ata_port_operations nv_nf2_ops = {
+ 	.inherits		= &nv_common_ops,
+ 	.freeze			= nv_nf2_freeze,
+ 	.thaw			= nv_nf2_thaw,
++	.hardreset		= nv_nf2_hardreset,
+ };
+ 
++/* CK804 finally gets hardreset right */
+ static struct ata_port_operations nv_ck804_ops = {
+ 	.inherits		= &nv_common_ops,
+ 	.freeze			= nv_ck804_freeze,
+@@ -443,7 +439,7 @@ static struct ata_port_operations nv_ck8
+ };
+ 
+ static struct ata_port_operations nv_adma_ops = {
+-	.inherits		= &nv_common_ops,
++	.inherits		= &nv_ck804_ops,
+ 
+ 	.check_atapi_dma	= nv_adma_check_atapi_dma,
+ 	.sff_tf_read		= nv_adma_tf_read,
+@@ -467,7 +463,7 @@ static struct ata_port_operations nv_adm
+ };
+ 
+ static struct ata_port_operations nv_swncq_ops = {
+-	.inherits		= &nv_common_ops,
++	.inherits		= &nv_generic_ops,
+ 
+ 	.qc_defer		= ata_std_qc_defer,
+ 	.qc_prep		= nv_swncq_qc_prep,
+@@ -1553,6 +1549,17 @@ static void nv_nf2_thaw(struct ata_port
+ 	iowrite8(mask, scr_addr + NV_INT_ENABLE);
  }
-diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/storage/unusual_devs.h linux-2.6.27-rc7/drivers/usb/storage/unusual_devs.h
---- linux-2.6.27-rc7-orig/drivers/usb/storage/unusual_devs.h	2008-10-13 09:02:08.000000000 -0400
-+++ linux-2.6.27-rc7/drivers/usb/storage/unusual_devs.h	2008-10-14 09:54:39.000000000 -0400
-@@ -1602,97 +1602,332 @@ UNUSUAL_DEV(  0x1210, 0x0003, 0x0100, 0x
- /* Reported by fangxiaozhi <huananhu@huawei.com>
-  * This brings the HUAWEI data card devices into multi-port mode
-  */
--UNUSUAL_DEV( 0x12d1, 0x1001, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1001, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1003, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1003, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1004, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1004, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1401, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1401, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1403, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1402, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),		
-+UNUSUAL_DEV(  0x12d1, 0x1403, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1404, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1405, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1406, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1407, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1408, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1409, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x140A, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),  
-+UNUSUAL_DEV(  0x12d1, 0x140B, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0), 
-+UNUSUAL_DEV(  0x12d1, 0x140C, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),  
-+UNUSUAL_DEV(  0x12d1, 0x140D, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0), 
-+UNUSUAL_DEV(  0x12d1, 0x140E, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0), 
-+UNUSUAL_DEV(  0x12d1, 0x140F, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1410, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1411, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1412, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1413, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1414, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1415, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1416, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1417, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1418, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1419, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141A, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141B, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141C, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141D, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141E, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141F, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1420, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1421, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1422, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1423, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1424, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1425, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1426, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1427, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1428, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1429, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142A, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142B, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142C, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142D, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142E, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142F, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1430, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1431, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1405, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1432, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1406, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1433, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1408, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1434, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1409, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1435, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1410, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1436, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1411, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1437, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1412, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1438, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1413, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1439, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1414, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x143A, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1415, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x143B, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1416, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x143C, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1417, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x143D, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1418, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x143E, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1419, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x143F, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 
++static int nv_nf2_hardreset(struct ata_link *link, unsigned int *class,
++			    unsigned long deadline)
++{
++	bool online;
++	int rc;
++
++	rc = sata_link_hardreset(link, sata_deb_timing_hotplug, deadline,
++				 &online, NULL);
++	return online ? -EAGAIN : rc;
++}
++
+ static void nv_ck804_freeze(struct ata_port *ap)
+ {
+ 	void __iomem *mmio_base = ap->host->iomap[NV_MMIO_BAR];
+@@ -1605,21 +1612,6 @@ static void nv_mcp55_thaw(struct ata_por
+ 	ata_sff_thaw(ap);
+ }
+ 
+-static int nv_hardreset(struct ata_link *link, unsigned int *class,
+-			unsigned long deadline)
+-{
+-	int rc;
+-
+-	/* SATA hardreset fails to retrieve proper device signature on
+-	 * some controllers.  Request follow up SRST.  For more info,
+-	 * see http://bugzilla.kernel.org/show_bug.cgi?id=3352
+-	 */
+-	rc = sata_sff_hardreset(link, class, deadline);
+-	if (rc)
+-		return rc;
+-	return -EAGAIN;
+-}
+-
+ static void nv_adma_error_handler(struct ata_port *ap)
+ {
+ 	struct nv_adma_port_priv *pp = ap->private_data;
 
+--------------060901070508000602070409--
