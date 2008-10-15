@@ -1,36 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYJONog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYJONo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYJONog (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 09:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbYJONo2
+	id S1753517AbYJONo5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 09:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbYJONos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 09:44:28 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:62985 "EHLO
+	Wed, 15 Oct 2008 09:44:48 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:63026 "EHLO
 	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751815AbYJONo1 (ORCPT
+	by vger.kernel.org with ESMTP id S1752997AbYJONor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 09:44:27 -0400
+	Wed, 15 Oct 2008 09:44:47 -0400
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: AqwEAAeQ9UhMQWq+/2dsb2JhbACBcr9rgWs
-Date: Wed, 15 Oct 2008 09:44:16 -0400
+Date: Wed, 15 Oct 2008 09:44:46 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip/tracing/markers] markers: simplify
-	marker_set_format()
-Message-ID: <20081015134416.GA29281@Krystal>
-References: <48F59425.40601@cn.fujitsu.com>
+Subject: Re: [PATCH tip/tracing/markers] markers: let marker_table be close
+	to its comments
+Message-ID: <20081015134446.GB29281@Krystal>
+References: <48F5942F.4080400@cn.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48F59425.40601@cn.fujitsu.com>
+In-Reply-To: <48F5942F.4080400@cn.fujitsu.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:42:52 up 132 days, 18:23,  9 users,  load average: 0.33, 0.54,
-	0.55
+X-Uptime: 09:44:28 up 132 days, 18:24,  9 users,  load average: 0.34, 0.49,
+	0.53
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,182 +38,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
 > 
-> current marker_set_format() is complex this patch simplify it, 
-> and decrease the overhead of marker_update_probes().
+> marker_table is defined far from its comments, this fix make
+> cleanup for it.
 > 
 
-Yep, I think I did put the format string after the name \0, which was
-rather tricky. I agree that such change makes the code more readable at
-the expense of doing 2 allocations per marker rather than one, but
-readability might be a good thing here.
-
-Thanks !
+Good idea! Thanks.
 
 Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
 
 > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 > ---
 > diff --git a/kernel/marker.c b/kernel/marker.c
-> index e49a9c5..ef43c86 100644
+> index e9c6b2b..e49a9c5 100644
 > --- a/kernel/marker.c
 > +++ b/kernel/marker.c
-> @@ -65,6 +65,7 @@ struct marker_entry {
->  	void *oldptr;
->  	int rcu_pending;
->  	unsigned char ptype:1;
-> +	unsigned char format_allocated:1;
+> @@ -43,6 +43,7 @@ static DEFINE_MUTEX(markers_mutex);
+>   */
+>  #define MARKER_HASH_BITS 6
+>  #define MARKER_TABLE_SIZE (1 << MARKER_HASH_BITS)
+> +static struct hlist_head marker_table[MARKER_TABLE_SIZE];
+>  
+>  /*
+>   * Note about RCU :
+> @@ -67,8 +68,6 @@ struct marker_entry {
 >  	char name[0];	/* Contains name'\0'format'\0' */
 >  };
 >  
-> @@ -415,6 +416,7 @@ static struct marker_entry *add_marker(const char *name, const char *format)
->  	e->single.probe_private = NULL;
->  	e->multi = NULL;
->  	e->ptype = 0;
-> +	e->format_allocated = 0;
->  	e->refcount = 0;
->  	e->rcu_pending = 0;
->  	hlist_add_head(&e->hlist, head);
-> @@ -446,6 +448,8 @@ static int remove_marker(const char *name)
->  	if (e->single.func != __mark_empty_function)
->  		return -EBUSY;
->  	hlist_del(&e->hlist);
-> +	if (e->format_allocated)
-> +		kfree(e->format);
->  	/* Make sure the call_rcu has been executed */
->  	if (e->rcu_pending)
->  		rcu_barrier_sched();
-> @@ -456,57 +460,34 @@ static int remove_marker(const char *name)
->  /*
->   * Set the mark_entry format to the format found in the element.
->   */
-> -static int marker_set_format(struct marker_entry **entry, const char *format)
-> +static int marker_set_format(struct marker_entry *entry, const char *format)
->  {
-> -	struct marker_entry *e;
-> -	size_t name_len = strlen((*entry)->name) + 1;
-> -	size_t format_len = strlen(format) + 1;
+> -static struct hlist_head marker_table[MARKER_TABLE_SIZE];
 > -
-> -
-> -	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
-> -			GFP_KERNEL);
-> -	if (!e)
-> +	entry->format = kstrdup(format, GFP_KERNEL);
-> +	if (!entry->format)
->  		return -ENOMEM;
-> -	memcpy(&e->name[0], (*entry)->name, name_len);
-> -	e->format = &e->name[name_len];
-> -	memcpy(e->format, format, format_len);
-> -	if (strcmp(e->format, MARK_NOARGS) == 0)
-> -		e->call = marker_probe_cb_noarg;
-> -	else
-> -		e->call = marker_probe_cb;
-> -	e->single = (*entry)->single;
-> -	e->multi = (*entry)->multi;
-> -	e->ptype = (*entry)->ptype;
-> -	e->refcount = (*entry)->refcount;
-> -	e->rcu_pending = 0;
-> -	hlist_add_before(&e->hlist, &(*entry)->hlist);
-> -	hlist_del(&(*entry)->hlist);
-> -	/* Make sure the call_rcu has been executed */
-> -	if ((*entry)->rcu_pending)
-> -		rcu_barrier_sched();
-> -	kfree(*entry);
-> -	*entry = e;
-> +	entry->format_allocated = 1;
-> +
->  	trace_mark(core_marker_format, "name %s format %s",
-> -			e->name, e->format);
-> +			entry->name, entry->format);
->  	return 0;
->  }
->  
->  /*
->   * Sets the probe callback corresponding to one marker.
->   */
-> -static int set_marker(struct marker_entry **entry, struct marker *elem,
-> +static int set_marker(struct marker_entry *entry, struct marker *elem,
->  		int active)
->  {
->  	int ret;
-> -	WARN_ON(strcmp((*entry)->name, elem->name) != 0);
-> +	WARN_ON(strcmp(entry->name, elem->name) != 0);
->  
-> -	if ((*entry)->format) {
-> -		if (strcmp((*entry)->format, elem->format) != 0) {
-> +	if (entry->format) {
-> +		if (strcmp(entry->format, elem->format) != 0) {
->  			printk(KERN_NOTICE
->  				"Format mismatch for probe %s "
->  				"(%s), marker (%s)\n",
-> -				(*entry)->name,
-> -				(*entry)->format,
-> +				entry->name,
-> +				entry->format,
->  				elem->format);
->  			return -EPERM;
->  		}
-> @@ -522,34 +503,33 @@ static int set_marker(struct marker_entry **entry, struct marker *elem,
->  	 * pass from a "safe" callback (with argument) to an "unsafe"
->  	 * callback (does not set arguments).
->  	 */
-> -	elem->call = (*entry)->call;
-> +	elem->call = entry->call;
->  	/*
->  	 * Sanity check :
->  	 * We only update the single probe private data when the ptr is
->  	 * set to a _non_ single probe! (0 -> 1 and N -> 1, N != 1)
->  	 */
->  	WARN_ON(elem->single.func != __mark_empty_function
-> -		&& elem->single.probe_private
-> -		!= (*entry)->single.probe_private &&
-> -		!elem->ptype);
-> -	elem->single.probe_private = (*entry)->single.probe_private;
-> +		&& elem->single.probe_private != entry->single.probe_private
-> +		&& !elem->ptype);
-> +	elem->single.probe_private = entry->single.probe_private;
->  	/*
->  	 * Make sure the private data is valid when we update the
->  	 * single probe ptr.
->  	 */
->  	smp_wmb();
-> -	elem->single.func = (*entry)->single.func;
-> +	elem->single.func = entry->single.func;
->  	/*
->  	 * We also make sure that the new probe callbacks array is consistent
->  	 * before setting a pointer to it.
->  	 */
-> -	rcu_assign_pointer(elem->multi, (*entry)->multi);
-> +	rcu_assign_pointer(elem->multi, entry->multi);
->  	/*
->  	 * Update the function or multi probe array pointer before setting the
->  	 * ptype.
->  	 */
->  	smp_wmb();
-> -	elem->ptype = (*entry)->ptype;
-> +	elem->ptype = entry->ptype;
->  	elem->state = active;
->  
->  	return 0;
-> @@ -593,8 +573,7 @@ void marker_update_probe_range(struct marker *begin,
->  	for (iter = begin; iter < end; iter++) {
->  		mark_entry = get_marker(iter->name);
->  		if (mark_entry) {
-> -			set_marker(&mark_entry, iter,
-> -					!!mark_entry->refcount);
-> +			set_marker(mark_entry, iter, !!mark_entry->refcount);
->  			/*
->  			 * ignore error, continue
->  			 */
-> @@ -656,7 +635,7 @@ int marker_probe_register(const char *name, const char *format,
->  			ret = PTR_ERR(entry);
->  	} else if (format) {
->  		if (!entry->format)
-> -			ret = marker_set_format(&entry, format);
-> +			ret = marker_set_format(entry, format);
->  		else if (strcmp(entry->format, format))
->  			ret = -EPERM;
->  	}
-> 
+>  /**
+>   * __mark_empty_function - Empty probe callback
+>   * @probe_private: probe private data
 > 
 > 
 > 
