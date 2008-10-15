@@ -1,141 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbYJOIY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYJOI03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbYJOIY1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 04:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYJOIYT
+	id S1753374AbYJOI03 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 04:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYJOI0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 04:24:19 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:60584 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbYJOIYS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 04:24:18 -0400
-Date: Wed, 15 Oct 2008 17:16:55 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] memcg: migration account fix
-Message-Id: <20081015171655.1e19ebeb.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081010180335.c9cf53c4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081010175936.f3b1f4e0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081010180335.c9cf53c4.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Oct 2008 04:26:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38650 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751820AbYJOI0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 04:26:20 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19x1gMqkZpxPs+mD8P54UGaEK68rStP2RTwGmRSFe
+	EFQ7W//f/NQGsk
+Date: Wed, 15 Oct 2008 10:26:23 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+cc: Adrian Bunk <bunk@kernel.org>,
+       Stefan Herbrechtsmeier <hbmeier@hni.uni-paderborn.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, lethal@linux-sh.org,
+       linux-sh@vger.kernel.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>
+Subject: Re: [PATCH] soc-camera: fix compile breakage on SH
+In-Reply-To: <aec7e5c30810150103p7ed810ccyc815ad578d64feac@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0810151011450.3896@axis700.grange>
+References: <20081014183936.GB4710@cs181140183.pp.htv.fi> 
+ <Pine.LNX.4.64.0810142335400.10458@axis700.grange> 
+ <20081015033303.GC4710@cs181140183.pp.htv.fi>  <20081015052026.GC20183@cs181140183.pp.htv.fi>
+  <aec7e5c30810142328n1563163bw636b8baf1a47ad8b@mail.gmail.com> 
+ <Pine.LNX.4.64.0810150836100.3896@axis700.grange>
+ <aec7e5c30810150103p7ed810ccyc815ad578d64feac@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -795,43 +767,67 @@ int mem_cgroup_prepare_migration(struct 
->  	if (PageCgroupUsed(pc)) {
->  		mem = pc->mem_cgroup;
->  		css_get(&mem->css);
-> -		if (PageCgroupCache(pc)) {
-> -			if (page_is_file_cache(page))
-> -				ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
-> -			else
-> -				ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
-> -		}
->  	}
->  	unlock_page_cgroup(pc);
-> +
->  	if (mem) {
-> -		ret = mem_cgroup_charge_common(newpage, NULL, GFP_KERNEL,
-> -			ctype, mem);
-> +		ret = mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem);
->  		css_put(&mem->css);
-> +		*ptr = mem;
->  	}
->  	return ret;
->  }
->  
-"*ptr = mem" should be outside of if(mem).
-Otherwise, ptr would be kept unset when !PageCgroupUsed.
-(unmap_and_move, caller of prepare_migration, doesn't initilize it.)
+On Wed, 15 Oct 2008, Magnus Damm wrote:
 
-And,
-
->  /* remove redundant charge if migration failed*/
-> -void mem_cgroup_end_migration(struct page *newpage)
-> +void mem_cgroup_end_migration(struct mem_cgroup *mem,
-> +		struct page *oldpage, struct page *newpage)
->  {
-> +	struct page *target, *unused;
-> +	struct page_cgroup *pc;
-> +	enum charge_type ctype;
-> +
-mem_cgroup_end_migration should handle "mem == NULL" case
-(just return would be enough).
-
-> +	/* at migration success, oldpage->mapping is NULL. */
-> +	if (oldpage->mapping) {
-> +		target = oldpage;
-> +		unused = NULL;
-> +	} else {
-> +		target = newpage;
-> +		unused = oldpage;
-> +	}
-> +
-> +	if (PageAnon(target))
-> +		ctype = MEM_CGROUP_CHARGE_TYPE_MAPPED;
-> +	else if (page_is_file_cache(target))
-> +		ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
-> +	else
-> +		ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
-> +
-> +	/* unused page is not on radix-tree now. */
-> +	if (unused && ctype != MEM_CGROUP_CHARGE_TYPE_MAPPED)
-> +		__mem_cgroup_uncharge_common(unused, ctype);
-> +
-> +	pc = lookup_page_cgroup(target);
->  	/*
-> -	 * At success, page->mapping is not NULL.
-> -	 * special rollback care is necessary when
-> -	 * 1. at migration failure. (newpage->mapping is cleared in this case)
-> -	 * 2. the newpage was moved but not remapped again because the task
-> -	 *    exits and the newpage is obsolete. In this case, the new page
-> -	 *    may be a swapcache. So, we just call mem_cgroup_uncharge_page()
-> -	 *    always for avoiding mess. The  page_cgroup will be removed if
-> -	 *    unnecessary. File cache pages is still on radix-tree. Don't
-> -	 *    care it.
-> +	 * __mem_cgroup_commit_charge() check PCG_USED bit of page_cgroup.
-> +	 * So, double-counting is effectively avoided.
->  	 */
-> -	if (!newpage->mapping)
-> -		__mem_cgroup_uncharge_common(newpage,
-> -				MEM_CGROUP_CHARGE_TYPE_FORCE);
-> -	else if (PageAnon(newpage))
-> -		mem_cgroup_uncharge_page(newpage);
-> +	__mem_cgroup_commit_charge(mem, pc, ctype);
-> +
-> +	/*
-> +	 * Both of oldpage and newpage are still under lock_page().
-> +	 * Then, we don't have to care about race in radix-tree.
-> +	 * But we have to be careful that this page is unmapped or not.
-> +	 *
-> +	 * There is a case for !page_mapped(). At the start of
-> +	 * migration, oldpage was mapped. But now, it's zapped.
-> +	 * But we know *target* page is not freed/reused under us.
-> +	 * mem_cgroup_uncharge_page() does all necessary checks.
-> +	 */
-> +	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
-> +		mem_cgroup_uncharge_page(target);
->  }
->  
-> +
->  /*
->   * A call to try to shrink memory usage under specified resource controller.
->   * This is typically used for page reclaiming for shmem for reducing side
+> Hi Guennadi,
 > 
+> On Wed, Oct 15, 2008 at 3:41 PM, Guennadi Liakhovetski
+> <g.liakhovetski@gmx.de> wrote:
+> > Hi Magnus
+> >
+> > On Wed, 15 Oct 2008, Magnus Damm wrote:
+> >
+> >> Thanks for working on fixing the breakage. I'd prefer to wait a bit
+> >> since there are quite a few pinmux patches queued up that may break if
+> >> we merge a fix right now. I can fix it up later on.
+> >
+> > no, I would not leave the kernel in a non-compilable state even if just
+> > for one board. Please, test a new version of the patch below. And yes, You
+> > will have to rebase your patches, sorry. Another thing, could you also,
+> > please, add a license / copyright header to
+> > include/media/soc_camera_platform.h?
+> 
+> I'm not asking you to keep the board broken forever. It's just a
+> question of in which order the trees are getting merged. Again, I'd
+> rather see that this fix is put _on_top_ of the patches that are
+> already queued up in the SuperH tree. Merging it before doesn't help
+> anything in my opinion - especially since the change should go though
+> the SuperH tree anyway.
 
-BTW, I'm now testing v7 patches with some fixes I've reported,
-and it has worked well so far(for several hours) in my test.
-(testing page migration and rmdir(force_empty) under swap in/out activity)
+I think, compilation-breakage fixes should have higher priority than 
+further enhancements. Think about bisection. If you now first commit 
+several more patches, you make the interval where the tree is not 
+compilable longer, and thus the probabiliy that someone hits it in their 
+git.bisect higher. That's why I think any compilation breakage should be 
+fixed ASAP. And which changes do you mean specifically? This one:
 
+http://marc.info/?l=linux-sh&m=122346619318532&w=2
 
-Thanks,
-Daisuke Nishimura.
+Yes, indeed they conflict, but it is trivial to fix. So, I would prefer to 
+close the compile-breakage window ASAP, and then trivially update that one 
+your patch. Let's see what others say. And as for through which tree it 
+should go, if you insist the sh-part going through the sh-tree, then it 
+has to be split into two parts - video and sh. Thus extending the 
+breakage-window by one commit...
+
+> Feel free to add any header you like. =)
+
+Thanks, but no thanks:-) I cannot add your copyright, at least not without 
+your explicit agreement (I think). So, I'd prefer you submit a patch for 
+that.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
