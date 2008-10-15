@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYJOWqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYJOWum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbYJOWqW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYJOWqO
+	id S1755529AbYJOWum (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYJOWud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:46:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48153 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbYJOWqO (ORCPT
+	Wed, 15 Oct 2008 18:50:33 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:54094 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753469AbYJOWuc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:46:14 -0400
-Date: Wed, 15 Oct 2008 18:46:12 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, gregkh@suse.de,
-       jesse.brandeburg@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -stable] disable CONFIG_DYNAMIC_FTRACE due to possible
- memory corruption on module unload
-In-Reply-To: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0810151843130.19408@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 15 Oct 2008 18:50:32 -0400
+Subject: [PATCH vfs-2.6 4/6] vfs: remove unnecessary fsnotify_d_instantiate()
+To: viro@zeniv.linux.org.uk
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       hirofumi@mail.parknet.co.jp
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Thu, 16 Oct 2008 07:50:29 +0900
+Message-ID: <f5d2a7043e848f673b5420397.ps@mail.parknet.co.jp>
+References: <e86c95d83e848f673b3120397.ps@mail.parknet.co.jp>
+	<ef1e4d933e848f673b4220397.ps@mail.parknet.co.jp>
+	<4e71a4b03e848f673b4320397.ps@mail.parknet.co.jp>
+In-Reply-To: <4e71a4b03e848f673b4320397.ps@mail.parknet.co.jp>
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 15 Oct 2008, Steven Rostedt wrote:
-> 
-> The problem arises when we trace functions and modules are unloaded.
+This calls d_move(), so fsnotify_d_instantiate() is unnecessary like
+rename path.
 
-Note, it is not just module unloading. The issue can happen when the
-init functions of a module are freed and the nvram is vmapped there as
-well.
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
 
--- Steve
+ fs/dcache.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff -puN fs/dcache.c~dcache-cleanup-4 fs/dcache.c
+--- vfs-2.6/fs/dcache.c~dcache-cleanup-4	2008-10-16 06:57:33.000000000 +0900
++++ vfs-2.6-hirofumi/fs/dcache.c	2008-10-16 06:57:33.000000000 +0900
+@@ -1210,7 +1210,6 @@ struct dentry *d_splice_alias(struct ino
+ 		new = __d_find_alias(inode, 1);
+ 		if (new) {
+ 			BUG_ON(!(new->d_flags & DCACHE_DISCONNECTED));
+-			fsnotify_d_instantiate(new, inode);
+ 			spin_unlock(&dcache_lock);
+ 			security_d_instantiate(new, inode);
+ 			d_rehash(dentry);
+_
