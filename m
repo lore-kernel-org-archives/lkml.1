@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbYJOWDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbYJOWGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755138AbYJOWDq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYJOWDf
+	id S1755333AbYJOWGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYJOWGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:03:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54597 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751839AbYJOWDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:03:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: is the weeks before -rc1 the time to really be working on -next?
-Date: Thu, 16 Oct 2008 00:08:08 +0200
-User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20081015174015.GB8663@kroah.com> <20081015145606.2af3baf1.akpm@linux-foundation.org>
-In-Reply-To: <20081015145606.2af3baf1.akpm@linux-foundation.org>
+	Wed, 15 Oct 2008 18:06:06 -0400
+Received: from smtp1.stealer.net ([88.198.224.204]:37505 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751973AbYJOWGF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 18:06:05 -0400
+Date: Thu, 16 Oct 2008 00:05:46 +0200 (CEST)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: David Miller <davem@davemloft.net>
+cc: adobriyan@gmail.com, davej@redhat.com, linux-kernel@vger.kernel.org,
+       cpufreq@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: sparc64 allmodconfig build failure...
+In-Reply-To: <20081014.154916.232117559.davem@davemloft.net>
+Message-ID: <alpine.LNX.2.00.0810152354350.28346@titan.stealer.net>
+References: <alpine.LNX.2.00.0810140945060.13897@titan.stealer.net> <20081014120605.GB23213@x200.localdomain> <alpine.LNX.2.00.0810141434030.13897@titan.stealer.net> <20081014.154916.232117559.davem@davemloft.net>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+Organization: STEALER.net
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810160008.08869.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: 0.1
+X-Spam-Bar: /
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Wed, 15 Oct 2008 22:06:02 +0000
+	Bayes: 0.4637 Tokens: new, 189; hammy, 4; neutral, 1; spammy, 1.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4637]
+X-Spam-Signature: 616d6fae5a6f04dbe27426162e2ac5fa7b22bdb6
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 15 of October 2008, Andrew Morton wrote:
-> On Wed, 15 Oct 2008 10:40:15 -0700
-> Greg KH <greg@kroah.com> wrote:
-> 
-> > Just wondering, I know that -next is failing right now, and is a major
-> > pain to produce, but that seems to be primarily due to all of the
-> > subsystems merging with Linus right now.
-> 
-> No, I'd say it's primarily due to subsystem maintainers losing
-> discipline and changing (or compile-time and runtime breaking) other
-> people's stuff.  This problem appears to have become much worse since
-> linux-next started.  I suspect Stephen is cleaning up others' trash so
-> they're producing more of it.
-> 
-> This situation has totally screwed me over, because my tree is so
-> dependent upon the composite everyone-else tree.  And a large reason
-> for that dependency is not that I'm carrying patches against other
-> people's code - it's that they're changing (or breaking) things which
-> lie outside their area of responsibility.
-> 
-> During Stephen's absence I was forced to try to assemble a
-> linux-next-like tree locally and that has become much much harder than
-> it was before linux-next, because all those trees have gone so rampant.
-> 
-> On one day of last week it took me from 10:00AM until 4:00PM just to
-> get all the patches applied and partially compiling, despite the fact
-> that I had them all applied and compiling 24 hours beforehand.
-> 
-> > So does it even make sense to try to create a -next during the 2 weeks
-> > of the major merge window?  It seems to just cause you a whole lot of
-> > work, that in the end, is mostly unecessary as all of the subsystem
-> > maintainers are doing the merging themselves as trees move into Linus's
-> > tree?
-> > 
-> 
-> It's very useful to me, because my tree is based on everyone else's. 
-> With no linux-next I'd need to either go back to pulling everyone
-> else's junk or I'd need to rebase on mainline.
-> 
-> The latter is sorely tempting.  It would save me vast amounts of time
-> and hair-tearing.  I'd base my tree on mainline and dammit I'd merge
-> first.  So everyone who has been changing stuff which is outside their
-> area of responsibility and breaking other people's stuff would get to
-> see the consequences of their actions instead of Stephen and I bearing
-> the brunt of it all the time.
-> 
-> 
-> I fear we've reached the stage now where people are merrily merging
-> bright-and-shiny things into their local trees without giving much
-> thought at all to the consequences for others.
+On Tue, 14 Oct 2008, David Miller wrote:
 
-Not to mention trying to compile their trees or to test them. :-(
+> From: Sven Wegener <sven.wegener@stealer.net>
+> Date: Tue, 14 Oct 2008 23:08:17 +0200 (CEST)
+> 
+> > Yeah, with the default governor being any of supported governors, we
+> > either need some ugly #ifdef mess to only export the governor that
+> > is selected or just revert to the old code, which unconditionally
+> > exports all governors. Or something like the patch below. With the
+> > additional modules that I oversaw and that require the export, I'm
+> > fine with just reverting the commit, although I think that
+> > encapsulating the default governor decision in a built-in function
+> > is cleaner than having modules reference different symbols depending
+> > on configuration.
+> 
+> Personally I prefer the revert.
+
+Fine with me. Dave J. or Linus, please revert 
+c4d14bc0bb5d13e316890651ae4518b764c3344c, because it breaks allmodconfig 
+as reported by David Miller on architectures that have cpufreq code that 
+can be build as a module. All ways to only export the default governor are 
+a ifdef mess and ugly, let's just revert the commit.
+
+Thanks,
+Sven
