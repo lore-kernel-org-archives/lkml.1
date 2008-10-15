@@ -1,52 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYJOBwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYJOB5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbYJOBwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 21:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYJOBw2
+	id S1754052AbYJOB5J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 21:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYJOB4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 21:52:28 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:17950 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbYJOBw2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 21:52:28 -0400
-From: "Wildman, Tom" <tom.wildman@hp.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "alan@redhat.com" <alan@redhat.com>
-Date: Wed, 15 Oct 2008 01:51:30 +0000
-Subject: Superpages Project  -  sourceforge.net/projects/linuxsuperpages
-Thread-Topic: Superpages Project  -  sourceforge.net/projects/linuxsuperpages
-Thread-Index: Ackt+vJLHAX5TYoOSR+Lk5x7VU2X5wAbMOpA
-Message-ID: <F9E7AD49A6823D4AA5A36E1DE32F0F9B27570B8CBC@GVW1092EXB.americas.hpqcorp.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 14 Oct 2008 21:56:54 -0400
+Received: from meaning.com ([72.52.86.57]:55930 "HELO meaning.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751105AbYJOB4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 21:56:53 -0400
+X-Greylist: delayed 562 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Oct 2008 21:56:53 EDT
+Message-ID: <48F54BB1.7040706@meaning.com>
+Date: Tue, 14 Oct 2008 21:47:29 -0400
+From: Glenn Powers <glenn@meaning.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Perfectly Random
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-A new project has been created at SourceForge with an implementation of the Rice University's Superpages FreeBSD prototype that has been ported to the 2.6 Linux kernel for IA64, x86-64, and x86-32.
+This is a proposal for a linux kernel module. This module will transfer 
+entropy to /dev/random from nuclear decay random number generators. 
+Addition information on this method of entropy generation can be found at:
+http://www.fourmilab.ch/hotbits/
 
-The project can be found at:  http://sourceforge.net/projects/linuxsuperpages
+The lack of sufficient entropy is the Achilles Heel of cryptography and 
+anyone who considers arithmetical methods of random sequence generation 
+is, of course, in a state of sin. (D. Knuth, The Art of Computer 
+Programming: Volume 2, Seminumerical Algorithms, 2nd edition, 
+Addison-Wesley, 1981.) While I am quite familiar with sin, I often 
+strive for something better.
 
-The major benefit of supporting Superpages is increased memory reach of the processor's TLB, which reduces the number of TLB misses in applications that have large data sets.  Some benchmarks have been improved 20% in execution time.
+Although any reasonable time base can be used for entropy generation, 
+the best "something better" I've found is a not-so-hot three way between 
+rubidium, cesium and quartz. The ultra-high quality quartz oscillator, 
+rubidium gas and associated control electronics, called "L-PRO" or LPRO 
+atomic frequency standard (manufactured by Efratom, Datum and now 
+Symmetricom) can be purchased on eBay for US$100-US$200. The cesium is 
+for long-baseline intervals, such that including a Pioneer-like star 
+charts on your storage media would probably be a good idea. Combined, 
+this is my definition of "non-random."
 
-Reference www.cs.rice.edu/~jnavarro/superpages/ for more information about the Rice University's Superpages project.
+This precise time interval can be transferred to the linux kernel by 
+constructing a TTL interface as described in the LPRO manual, connecting 
+it to an available interrupt and changing the timer interrupt in the 
+kernel. Rinse. Repeat.
 
-The project is being made available to the Open Source community to share the implementation and knowledge.  With the enhancements to the x86 architectures to support multiple and large page sizes there should be increased interest in this functionality.
+Among the interesting properties of nuclear radiation is that it is both 
+truly random and truly linear, depending how you look at it. Averaged 
+over time, the nuclear decay rate is perfectly linear. This property has 
+been used for decades for carbon-dating.
 
-/Tom
+However, the exact instant of a nuclear event is dependent on the entire 
+universe. This is makes it possible to extract entropy from four such 
+events. It's a horse race between the time interval between the first 
+and second events and the time interval between the third and four 
+events. This method effectively decouples the decay rate from the 
+entropy stream.
 
-Tom Wildman
-Hewlett-Packard Company
-200 Forest Street                    Phone: 978.841.7648
-Marlboro, MA  01752                  Email: tom.wildman@hp.com
+These nuclear events can be sensed with an opto-isolated Gieger/Mullen 
+and are combined with the 10 MHz TTL LPRO signal using a NAND gate, 
+which is then connected to an available system interrupt.
 
+THE KERNEL MODULE WILL:
+
+Copy the current CPU clock tick of these interrupts to a ring buffer.
+
+THEN:
+
+A Linux-RTAI application will compute the entropy and transfer it to 
+/dev/random, a database or a network interface.
+
+THEN:
+
+The system can be tuned.
+
+THEN:
+
+The best tunings can be incorporated into the "RandomNuclear" module.
+
+cheers,
+glenn
 
