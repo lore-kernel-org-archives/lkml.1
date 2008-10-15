@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYJOVkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbYJOVmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbYJOVkK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 17:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYJOVj4
+	id S1755080AbYJOVmT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYJOVmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 17:39:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37710 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751790AbYJOVj4 (ORCPT
+	Wed, 15 Oct 2008 17:42:11 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:39884 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752670AbYJOVmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 17:39:56 -0400
-Date: Wed, 15 Oct 2008 14:39:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: riel@redhat.com, Lee.Schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [METAPATCH] mmotm: fix split-lru bisectability
-Message-Id: <20081015143915.cc4395ed.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0810140125550.29541@blonde.site>
-References: <Pine.LNX.4.64.0810140125550.29541@blonde.site>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Oct 2008 17:42:11 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] vfs: add d_ancestor()
+References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
+	<e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
+	<20081015195318.GA28349@infradead.org>
+Date: Thu, 16 Oct 2008 06:42:07 +0900
+In-Reply-To: <20081015195318.GA28349@infradead.org> (Christoph Hellwig's
+	message of "Wed, 15 Oct 2008 15:53:18 -0400")
+Message-ID: <87skqxmt74.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008 01:32:18 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
+Christoph Hellwig <hch@infradead.org> writes:
 
-> There's an unbisectable 24-patch extent in the mmotm series, from
-> define-page_file_cache-function to mlock-mlocked-pages-are-unevictable-fix:
-> unbisectable because startup gets swamped by "Bad page state" messages
-> (with three unrelated build errors and their fixes along the way).
-> 
-> These bad page states come from when Linus fasttracked the PAGE_FLAGS
-> "cleanup" into 2.6.26, conflicting with PG_swapbacked patches already
-> queued in -mm, and then the merge was botched.  We fixed up the end
-> result at the time, but never got around to fixing the intermediates.
-> It would be regrettable if this unbisectability were preserved in git.
-> 
-> To apply this metapatch, cd into mmotm's broken-out or patches directory
-> (before define-page_file_cache-function has been applied), move series
-> file there if it's kept elsewhere, apply metapatch with "patch -p1" (one
-> file is deleted from series), then move back series file if necessary.
-> 
-> Based on mmotm .DATE=2008-10-10-19-22.  Doesn't bother to update the
-> diffstats: I've tried to keep the diffs minimal, without all the noise
-> which a quilt refresh here would have added.  So oddly I'm commenting
-> out NORECL_PGRESCUED and NORECL_PGCULLED in one patch, then removing
-> those lines in their fix patch - hmm, shouldn't they have got defined
-> eventually, and that code restored?  End result is the same as mmotm,
-> except that KOSAKI-San's page_referenced() args fix is included.
-> 
-> I'm pleased to say that checkpatch.pl reports that this metapatch
-> has no obvious style problems and is ready for submission :-)
-> 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> 
->  series                                                       |    1 
->  define-page_file_cache-function.patch                        |   26 +++++--
->  vmscan-fix-pagecache-reclaim-referenced-bit-check-fix.patch  |    5 -
->  unevictable-lru-infrastructure.patch                         |   12 +--
->  unevictable-lru-infrastructure-defer-vm-event-counting.patch |    4 -
->  mlock-mlocked-pages-are-unevictable.patch                    |   24 -------
->  mlock-mlocked-pages-are-unevictable-fix.patch                |   33 ----------
->  7 files changed, 32 insertions(+), 73 deletions(-)
+> This change looks good, but a slightly more detailed changelog would be
+> good.
 
-OK, thanks, I did that.  Fingers crossed..
+tweaked...
+
+>>  /*
+>> - * Helper that returns 1 if p1 is a parent of p2, else 0
+>> + * Helper that returns the ancestor dentry of p2 which is a child of
+>> + * p1, if p1 is an ancestor of p2, else NULL.
+>>   */
+>> -static int d_isparent(struct dentry *p1, struct dentry *p2)
+>> +struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
+>
+> Given that d_ancestor is non-static a kerneldoc comment describing it
+> instead of a plain one would be good.
+
+Yes.
+
+>>  int is_subdir(struct dentry * new_dentry, struct dentry * old_dentry)
+>>  {
+>>  	int result;
+>> -	struct dentry * saved = new_dentry;
+>>  	unsigned long seq;
+>>  
+>> +	if (new_dentry == old_dentry)
+>> +		return 1;
+>
+> Maybe a comment like in your commit description here would be good?
+
+Sure, thanks.
+
+> 	/*
+> 	 * Need rcu_readlock to protect against the d_parent trashing due to
+> 	 * d_move.
+> 	 */
+> 	rcu_read_lock();
+> 	do {
+> 		/* for restarting inner loop in case of seq retry */
+>  		seq = read_seqbegin(&rename_lock);
+> 		if (d_ancestor(old_dentry, new_dentry))
+> 			result = 1;
+> 		else
+> 			result = 0;
+> 	} while (read_seqretry(&rename_lock, seq));
+>  	rcu_read_unlock();
+
+I'll borrow your version. Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
