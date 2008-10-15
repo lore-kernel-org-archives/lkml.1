@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYJONat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYJONbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYJONat (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 09:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYJONak
+	id S1754995AbYJONbW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 09:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbYJONbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 09:30:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55682 "EHLO mx2.redhat.com"
+	Wed, 15 Oct 2008 09:31:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55700 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbYJONah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 09:30:37 -0400
+	id S1754204AbYJONbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 09:31:02 -0400
 From: Avi Kivity <avi@redhat.com>
-To: linux@redhat.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: [GIT PULL] KVM updates for Linux 2.6.28
-Date: Wed, 15 Oct 2008 15:30:34 +0200
-Message-Id: <1224077434-9702-1-git-send-email-avi@redhat.com>
+Date: Wed, 15 Oct 2008 15:30:54 +0200
+Message-Id: <1224077454-9734-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
