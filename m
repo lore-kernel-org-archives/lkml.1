@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbYJOXyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYJOX5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbYJOXyF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 19:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbYJOXxy
+	id S1755495AbYJOX5A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 19:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYJOX4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 19:53:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:21031 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753788AbYJOXxx (ORCPT
+	Wed, 15 Oct 2008 19:56:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35320
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753604AbYJOX4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 19:53:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Brod604WjywMdQywRCP9x5jwXL93T6Dw12qh1E2HrPzm6HtHwMnTAYcitJRZh13h0z
-         zH6DqnzFATcQ4EIuZhC1HocG0xc81Go+WqflLWCapIhRIRuuWBcpunxL435Afr3NNu79
-         QO66sZ2HLXchUlaLvCMU6igrdrkv/t//PY5oo=
-Message-ID: <12c511ca0810151653p535d5ae4j297cf5b41900a4ba@mail.gmail.com>
-Date: Wed, 15 Oct 2008 16:53:51 -0700
-From: "Tony Luck" <tony.luck@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: is the weeks before -rc1 the time to really be working on -next?
-Cc: "David Miller" <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-       greg@kroah.com, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Wed, 15 Oct 2008 19:56:51 -0400
+Date: Wed, 15 Oct 2008 16:56:27 -0700 (PDT)
+Message-Id: <20081015.165627.46518276.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: alan@lxorguk.ukuu.org.uk, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: is the weeks before -rc1 the time to really be working on
+ -next?
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <20081015164139.ebcd24c6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+References: <20081015155353.f15a996e.akpm@linux-foundation.org>
+	<20081015.160821.143702739.davem@davemloft.net>
+	<20081015164139.ebcd24c6.akpm@linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081015145606.2af3baf1.akpm@linux-foundation.org>
-	 <20081015233607.54c1d6b8@lxorguk.ukuu.org.uk>
-	 <20081015155353.f15a996e.akpm@linux-foundation.org>
-	 <20081015.160821.143702739.davem@davemloft.net>
-	 <20081015164139.ebcd24c6.akpm@linux-foundation.org>
-X-Google-Sender-Auth: efc006d1a8a07a07
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 15 Oct 2008 16:41:39 -0700
+
+> On Wed, 15 Oct 2008 16:08:21 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > And just like networking we could have Stephen treat the -mm
+> > GIT tree as "important" which roughly means that other conflicting
+> > trees will be knocked out of a -next release in deference to -mm.
+> > 
+> > Those people will have to fix their stuff, not you.  And you'll
+> > always therefore get coverage in -next.
+> 
 > Yes, but then people would end up being based on linux-next, and that's
 > a pretty rubbery target with all the rebasing and trees getting
 > dropped, etc.  And they'd accidentally end up having to actually
 > compile and run linux-next, shock-horror-oh-the-humanity.
 
-I built and booted linux-next a couple of times a week or so
-for ia64.  Most of the time it worked just fine.  I found a few
-build problems, but only three run-time problems. My boot
-log shows 49 successful boots of linux-next based kernels
-from 2.6.25-rc2 to 2.6.27-rc6
+That's not the idea actually.
 
-But perhaps less people are working on breaking ia64 :-)
+The idea is that you run your tree strictly just like any other
+subsystem maintainer.  Your tree is a clone of Linus's and you
+put -mm stuff in on top of that.  Full stop.
 
--Tony
+So anyone can work on -mm independent of -next.  Just like networking,
+PCI, INPUT, or any other subsystem.  There is no reason in my mind to
+treat -mm specially, anything else is just pain for the people that
+could contribute and help.
+
+> I doubt if the world would end if we just stopped trying to run any of
+> these uber-trees.  Everyone bases their work on mainline and then
+> everything goes smash/bang/curse during the merge window.  It wouldn't
+> be pretty, but it'd sure make people merge their trees promptly ;)
+
+I think this aspect is interesting actually.
+
+For folks that use stable GIT trees, we can cross polinate ourselves
+to resolve merge problems quite simply, and I have seen this happen
+already in the most recent cycle.
+
+Things go smoothly for people that maintain stable GIT trees.  The
+more stuff you touch the more important this is.
+
+The "I rebase my tree ever 3 hours" stuff only works if you are
+strictly working in a certain area and have no contributors you care
+about.
+
+But I even question this situation, no piece of code is an island in
+the kernel and even well contained drivers want to modify some
+infrastructure from time to time.
