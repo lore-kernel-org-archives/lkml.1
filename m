@@ -1,131 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYJOUOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbYJOUO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbYJOUOl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJOUOG
+	id S1756174AbYJOUO2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbYJOUOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:14:06 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51974 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753832AbYJOUOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:14:04 -0400
-Date: Wed, 15 Oct 2008 15:14:04 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Cc: Russ Anderson <rja@sgi.com>, Huang Ying <ying.huang@intel.com>,
-       Jack Steiner <steiner@sgi.com>
-Subject: [PATCH 5/7] x86: Add UV watchlist bios call
-Message-ID: <20081015201404.GF197213@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
+	Wed, 15 Oct 2008 16:14:03 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:57016 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756071AbYJOUOA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 16:14:00 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, bnaujok@sgi.com
+Subject: Re: [PATCH 6/6] vfs: add LOOKUP_RENAME_NEW intent
+References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
+	<e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
+	<7754d3f83e848f5f6f2326623.ps@mail.parknet.co.jp>
+	<524881153e848f5f6f3426623.ps@mail.parknet.co.jp>
+	<f29a09483e848f5f6f3526623.ps@mail.parknet.co.jp>
+	<a9ddfd693e848f5f6f3626623.ps@mail.parknet.co.jp>
+	<20081015193716.GA22707@infradead.org>
+Date: Thu, 16 Oct 2008 05:13:54 +0900
+In-Reply-To: <20081015193716.GA22707@infradead.org> (Christoph Hellwig's
+	message of "Wed, 15 Oct 2008 15:37:16 -0400")
+Message-ID: <87r66hpqf1.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 5/7] x86: Add UV watchlist bios call
+Christoph Hellwig <hch@infradead.org> writes:
 
-Calls to allocate and free UV watchlists.
+> On Wed, Oct 15, 2008 at 10:58:11PM +0900, OGAWA Hirofumi wrote:
+>> 
+>> This adds LOOKUP_RENAME_NEW intent for lookup of rename destination.
+>> 
+>> LOOKUP_RENAME_NEW is going to be used like LOOKUP_CREATE. But since
+>> the destination of rename() can be existing directory entry, so it has a
+>> difference. Although that difference doesn't matter in my usage, this
+>> tells it to user of this intent.
+>
+> Is this for handling CI rename properly?  Barry was looking into this,
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
+Exactly, it is for some kind of CI rename workaround.
 
----
- arch/x86/kernel/bios_uv.c |   33 +++++++++++++++++++++++++++++++++
- include/asm-x86/uv/bios.h |   17 ++++++++++++++++-
- 2 files changed, 49 insertions(+), 1 deletion(-)
+> but i told him to hold off for a while - the lookup code is changing
+> quite a bit because Al is trying to sort out the lookup intent mess and
+> we hopefully will stop passing the nameidata to ->lookup soon.
 
-Index: linux/arch/x86/kernel/bios_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/bios_uv.c	2008-10-15 09:56:25.000000000 -0500
-+++ linux/arch/x86/kernel/bios_uv.c	2008-10-15 13:54:40.000000000 -0500
-@@ -100,6 +100,39 @@ s64 uv_bios_get_sn_info(int fc, int *uvt
- 	return ret;
- }
- 
-+int
-+uv_bios_mq_watchlist_alloc(int blade, void *mq, unsigned int mq_size,
-+			   unsigned long *intr_mmr_offset)
-+{
-+	union uv_watchlist_u size_blade;
-+	unsigned long addr;
-+	u64 watchlist;
-+	s64 ret;
-+
-+	addr = (unsigned long)mq;
-+	size_blade.size = mq_size;
-+	size_blade.blade = blade;
-+
-+	/*
-+	 * bios returns watchlist number or negative error number.
-+	 */
-+	ret = (int)uv_bios_call_irqsave(UV_BIOS_WATCHLIST_ALLOC, addr,
-+			size_blade.val, (u64)intr_mmr_offset,
-+			(u64)&watchlist, 0);
-+	if (ret < BIOS_STATUS_SUCCESS )
-+		return ret;
-+
-+	return watchlist;
-+}
-+EXPORT_SYMBOL_GPL(uv_bios_mq_watchlist_alloc);
-+
-+int
-+uv_bios_mq_watchlist_free(int blade, int watchlist_num)
-+{
-+	return (int)uv_bios_call_irqsave(UV_BIOS_WATCHLIST_FREE,
-+				blade, watchlist_num, 0, 0, 0);
-+}
-+EXPORT_SYMBOL_GPL(uv_bios_mq_watchlist_free);
- 
- s64 uv_bios_freq_base(u64 clock_type, u64 *ticks_per_second)
- {
-Index: linux/include/asm-x86/uv/bios.h
-===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-10-15 09:56:26.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-10-15 13:48:43.000000000 -0500
-@@ -32,7 +32,9 @@
- enum uv_bios_cmd {
- 	UV_BIOS_COMMON,
- 	UV_BIOS_GET_SN_INFO,
--	UV_BIOS_FREQ_BASE
-+	UV_BIOS_FREQ_BASE,
-+	UV_BIOS_WATCHLIST_ALLOC,
-+	UV_BIOS_WATCHLIST_FREE
- };
- 
- /*
-@@ -71,6 +73,15 @@ union partition_info_u {
- 	};
- };
- 
-+union uv_watchlist_u {
-+	u64	val;
-+	struct {
-+		u64	blade	: 16,
-+			size	: 32,
-+			filler	: 16;
-+	};
-+};
-+
- /*
-  * bios calls have 6 parameters
-  */
-@@ -80,9 +91,13 @@ extern s64 uv_bios_call_reentrant(enum u
- 
- extern s64 uv_bios_get_sn_info(int, int *, long *, long *, long *);
- extern s64 uv_bios_freq_base(u64, u64 *);
-+extern int uv_bios_mq_watchlist_alloc(int, void *, unsigned int,
-+					unsigned long *);
-+extern int uv_bios_mq_watchlist_free(int, int);
- 
- extern void uv_bios_init(void);
- 
-+extern unsigned long sn_rtc_cycles_per_second;
- extern int uv_type;
- extern long sn_partition_id;
- extern long sn_coherency_id;
+Umm.. however the intent for ->lookup() is useful for optimization in
+some case?
+
+> Also I think LOOKUP_RENAME_TARGET might be a little more descriptive
+> than LOOKUP_RENAME_NEW.
+
+It is the name which namei.c is using, anyway I don't care at all.
+I'll take it.
 -- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+
+[PATCH] vfs: add LOOKUP_RENAME_TARGET intent
+
+This adds LOOKUP_RENAME_TARGET intent for lookup of rename destination.
+
+LOOKUP_RENAME_TARGET is going to be used like LOOKUP_CREATE. But since
+the destination of rename() can be existing directory entry, so it has a
+difference. Although that difference doesn't matter in my usage, this
+tells it to user of this intent.
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ fs/namei.c            |    1 +
+ include/linux/namei.h |    1 +
+ 2 files changed, 2 insertions(+)
+
+diff -puN fs/namei.c~dcache-add-rename-intent fs/namei.c
+--- linux-2.6/fs/namei.c~dcache-add-rename-intent	2008-10-15 20:35:24.000000000 +0900
++++ linux-2.6-hirofumi/fs/namei.c	2008-10-16 05:06:53.000000000 +0900
+@@ -2660,6 +2660,7 @@ asmlinkage long sys_renameat(int olddfd,
+ 
+ 	oldnd.flags &= ~LOOKUP_PARENT;
+ 	newnd.flags &= ~LOOKUP_PARENT;
++	newnd.flags |= LOOKUP_RENAME_TARGET;
+ 
+ 	trap = lock_rename(new_dir, old_dir);
+ 
+diff -puN include/linux/namei.h~dcache-add-rename-intent include/linux/namei.h
+--- linux-2.6/include/linux/namei.h~dcache-add-rename-intent	2008-10-15 20:35:24.000000000 +0900
++++ linux-2.6-hirofumi/include/linux/namei.h	2008-10-16 05:07:15.000000000 +0900
+@@ -53,6 +53,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LA
+  */
+ #define LOOKUP_OPEN		(0x0100)
+ #define LOOKUP_CREATE		(0x0200)
++#define LOOKUP_RENAME_TARGET	(0x0400)
+ 
+ extern int user_path_at(int, const char __user *, unsigned, struct path *);
+ 
+_
