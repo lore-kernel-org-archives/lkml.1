@@ -1,139 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYJOBg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYJOBhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbYJOBg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 21:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbYJOBgq
+	id S1755266AbYJOBhf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 21:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYJOBhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 21:36:46 -0400
-Received: from mail.suse.de ([195.135.220.2]:36961 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754837AbYJOBgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 21:36:45 -0400
-Date: Tue, 14 Oct 2008 18:36:22 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git patches] Ocfs2 features for 2.6.28 (build errors)
-Message-ID: <20081015013622.GV15154@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <20081014200319.GK15154@wotan.suse.de> <20081014182037.38503fd0.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081014182037.38503fd0.randy.dunlap@oracle.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+	Tue, 14 Oct 2008 21:37:24 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63999 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751276AbYJOBhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 21:37:22 -0400
+Message-ID: <48F548C7.6010609@cn.fujitsu.com>
+Date: Wed, 15 Oct 2008 09:35:03 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       Paul Jackson <pj@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] seq_file: don't call bitmap_scnprintf_len()
+References: <48F1C36D.6080301@cn.fujitsu.com> <20081013063806.GB3596@x200.localdomain> <48F2F620.9020305@cn.fujitsu.com>
+In-Reply-To: <48F2F620.9020305@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 06:20:37PM -0700, Randy Dunlap wrote:
-> In 2.6.27-git5 I am seeing build errors as follow:
+Lai Jiangshan wrote:
+> Alexey Dobriyan wrote:
+>> On Sun, Oct 12, 2008 at 05:29:17PM +0800, Lai Jiangshan wrote:
+>>> "m->count + len < m->size" is true commonly, so bitmap_scnprintf()
+>>> is commonly called. this fix saves a call to bitmap_scnprintf_len().
+>> This saves a call if seq buffer is already full which is not a common
+>> situation, so you're optimising for rare situations and adding branch
+>> for common ones.
 > 
-> fs/ocfs2/xattr.c: In function 'ocfs2_xattr_bucket_find':
-> fs/ocfs2/xattr.c:2352: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-> fs/ocfs2/xattr.c:2352: error: (Each undeclared identifier is reported only once
-> fs/ocfs2/xattr.c:2352: error: for each function it appears in.)
-> fs/ocfs2/xattr.c: In function 'ocfs2_iterate_xattr_buckets':
-> fs/ocfs2/xattr.c:2429: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-> fs/ocfs2/xattr.c: In function 'ocfs2_xattr_update_xattr_search':
-> fs/ocfs2/xattr.c:2697: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-> fs/ocfs2/xattr.c: In function 'ocfs2_defrag_xattr_bucket':
-> fs/ocfs2/xattr.c:2902: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-> fs/ocfs2/xattr.c: In function 'ocfs2_read_xattr_bucket':
-> fs/ocfs2/xattr.c:3157: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-> fs/ocfs2/xattr.c: In function 'ocfs2_xattr_set_entry_in_bucket':
-> fs/ocfs2/xattr.c:4104: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-> make[2]: *** [fs/ocfs2/xattr.o] Error 1
+> Hi Alexey
+> 
+> I think this saves a call if seq buffer is _not_ full after called.
+> 
+> since calling bitmap_scnprintf() is the common situation. so we use
+> the return value of bitmap_scnprintf() instead of bitmap_scnprintf_len().
+> 
+> In old code bitmap_scnprintf_len() and bitmap_scnprintf() must be called
+> commonly.
+> 
+> Thanks Lai.
 
-Argh, I must have forgotten to commit my merge fixes for that file. This
-patch should fix things. Thanks for reporting this Randy.
+Hi, Alexey,
 
+Have noticed this comment? I hold my ground, ;-)
+And seq_cpumask_list(), seq_nodemask_list() are needed for print mask
+safely, Should I send independent patches for them if we can't
+make an agreement about this fix.
 
-The following patch can also be pulled:
+Lai
 
-Please pull from 'build_fix' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git build_fix
-	--Mark
+> 
+>>> --- a/fs/seq_file.c
+>>> +++ b/fs/seq_file.c
+>>> @@ -452,17 +452,18 @@ int seq_dentry(struct seq_file *m, struct dentry *dentry, char *esc)
+>>>  
+>>>  int seq_bitmap(struct seq_file *m, unsigned long *bits, unsigned int nr_bits)
+>>>  {
+>>> -	size_t len = bitmap_scnprintf_len(nr_bits);
+>>> -
+>>> -	if (m->count + len < m->size) {
+>>> -		bitmap_scnprintf(m->buf + m->count, m->size - m->count,
+>>> -				 bits, nr_bits);
+>>> -		m->count += len;
+>>> -		return 0;
+>>> +	if (m->count < m->size) {
+>>> +		int len = bitmap_scnprintf(m->buf + m->count,
+>>> +				m->size - m->count, bits, nr_bits);
+>>> +		if (m->count + len < m->size) {
+>>> +			m->count += len;
+>>> +			return 0;
+>>> +		}
+>>>  	}
+>>>  	m->count = m->size;
+>>>  	return -1;
+>>>  }
+>>> +EXPORT_SYMBOL(seq_bitmap);
+>> Modular users, where are they?
+>>
+>>
+>>
+> 
+> 
 
---
-Mark Fasheh
-
-From: Mark Fasheh <mfasheh@suse.com>
-
-ocfs2: fix build error
-
-I merged the latest ocfs2_read_blocks() changes in xattr.c wrong. This makes
-Ocfs2 compile again.
-
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/xattr.c |   14 ++++++--------
- 1 files changed, 6 insertions(+), 8 deletions(-)
-
-diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index c25780a..802c414 100644
---- a/fs/ocfs2/xattr.c
-+++ b/fs/ocfs2/xattr.c
-@@ -2349,7 +2349,7 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
- 		 */
- 		ret = ocfs2_read_blocks(inode, xs->bucket.bhs[0]->b_blocknr + 1,
- 					blk_per_bucket - 1, &xs->bucket.bhs[1],
--					OCFS2_BH_CACHED);
-+					0);
- 		if (ret) {
- 			mlog_errno(ret);
- 			goto out;
-@@ -2426,7 +2426,7 @@ static int ocfs2_iterate_xattr_buckets(struct inode *inode,
- 
- 	for (i = 0; i < num_buckets; i++, blkno += blk_per_bucket) {
- 		ret = ocfs2_read_blocks(inode, blkno, blk_per_bucket,
--					bucket.bhs, OCFS2_BH_CACHED);
-+					bucket.bhs, 0);
- 		if (ret) {
- 			mlog_errno(ret);
- 			goto out;
-@@ -2694,7 +2694,7 @@ static int ocfs2_xattr_update_xattr_search(struct inode *inode,
- 			ret = ocfs2_read_blocks(inode,
- 					xs->bucket.bhs[0]->b_blocknr + 1,
- 					blk_per_bucket - 1, &xs->bucket.bhs[1],
--					OCFS2_BH_CACHED);
-+					0);
- 			if (ret) {
- 				mlog_errno(ret);
- 				return ret;
-@@ -2898,8 +2898,7 @@ static int ocfs2_defrag_xattr_bucket(struct inode *inode,
- 	if (!bhs)
- 		return -ENOMEM;
- 
--	ret = ocfs2_read_blocks(inode, blkno, blk_per_bucket, bhs,
--				OCFS2_BH_CACHED);
-+	ret = ocfs2_read_blocks(inode, blkno, blk_per_bucket, bhs, 0);
- 	if (ret)
- 		goto out;
- 
-@@ -3153,8 +3152,7 @@ static int ocfs2_read_xattr_bucket(struct inode *inode,
- 
- 	if (!new)
- 		return ocfs2_read_blocks(inode, blkno,
--					 blk_per_bucket, bhs,
--					 OCFS2_BH_CACHED);
-+					 blk_per_bucket, bhs, 0);
- 
- 	for (i = 0; i < blk_per_bucket; i++) {
- 		bhs[i] = sb_getblk(inode->i_sb, blkno + i);
-@@ -4101,7 +4099,7 @@ static int ocfs2_xattr_set_entry_in_bucket(struct inode *inode,
- 		ret = ocfs2_read_blocks(inode,
- 					xs->bucket.bhs[0]->b_blocknr + 1,
- 					blk_per_bucket - 1, &xs->bucket.bhs[1],
--					OCFS2_BH_CACHED);
-+					0);
- 		if (ret) {
- 			mlog_errno(ret);
- 			goto out;
--- 
-1.5.4.1
 
