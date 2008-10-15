@@ -1,733 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbYJOONZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYJOOMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbYJOONZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 10:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbYJOOG0
+	id S1758196AbYJOOMY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 10:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbYJOOGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 10:06:26 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:32967 "EHLO
+	Wed, 15 Oct 2008 10:06:21 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:32964 "EHLO
 	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755643AbYJOOGL (ORCPT
+	with ESMTP id S1755655AbYJOOGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 10:06:11 -0400
-Subject: [PATCH 03/21] fat: split include/msdos_fs.h
+	Wed, 15 Oct 2008 10:06:10 -0400
+Subject: [PATCH 01/21] fat: document additional vfat mount options
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, hirofumi@mail.parknet.co.jp
+Cc: linux-kernel@vger.kernel.org, hirofumi@mail.parknet.co.jp, bart@jukie.net
 From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Wed, 15 Oct 2008 22:57:57 +0900
-Message-ID: <0f24bbb03e848f5f6e5322369.ps@mail.parknet.co.jp>
-References: <b4c7cd913e848f5f6e3122369.ps@mail.parknet.co.jp>
-	<4e3b7e0f3e848f5f6e4222369.ps@mail.parknet.co.jp>
-In-Reply-To: <4e3b7e0f3e848f5f6e4222369.ps@mail.parknet.co.jp>
+Date: Wed, 15 Oct 2008 22:57:55 +0900
+Message-ID: <b4c7cd913e848f5f6e3122369.ps@mail.parknet.co.jp>
 X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This splits __KERNEL__ stuff in include/msdos_fs.h into fs/fat/fat.h.
+From: Bart Trojanowski <bart@jukie.net>
 
+While debugging a sync mount regression on vfat I noticed that there
+were mount options parsed by the driver that were not documented.
+
+[hirofumi@mail.parknet.co.jp: fix some parts]
+Signed-off-by: Bart Trojanowski <bart@jukie.net>
 Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
 
- fs/fat/cache.c           |    2 
- fs/fat/dir.c             |    2 
- fs/fat/fat.h             |  274 +++++++++++++++++++++++++++++++++++++++++++++
- fs/fat/fatent.c          |    1 
- fs/fat/file.c            |    2 
- fs/fat/inode.c           |    2 
- fs/fat/misc.c            |    2 
- fs/fat/namei_msdos.c     |    2 
- fs/fat/namei_vfat.c      |    3 
- include/linux/msdos_fs.h |  276 ----------------------------------------------
- 10 files changed, 284 insertions(+), 282 deletions(-)
+ Documentation/filesystems/vfat.txt |   24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
-diff -puN fs/fat/cache.c~fat_split-msdos_fs-h fs/fat/cache.c
---- linux-2.6/fs/fat/cache.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/cache.c	2008-10-11 23:45:34.000000000 +0900
-@@ -9,8 +9,8 @@
-  */
+diff -puN Documentation/filesystems/vfat.txt~fat-doc-fixes Documentation/filesystems/vfat.txt
+--- linux-2.6/Documentation/filesystems/vfat.txt~fat-doc-fixes	2008-08-24 22:47:00.000000000 +0900
++++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2008-08-24 22:47:00.000000000 +0900
+@@ -8,6 +8,12 @@ if you want to format from within Linux.
  
- #include <linux/fs.h>
--#include <linux/msdos_fs.h>
- #include <linux/buffer_head.h>
-+#include "fat.h"
+ VFAT MOUNT OPTIONS
+ ----------------------------------------------------------------------
++uid=###       -- Set the owner of all files on this filesystem.
++		 The default is the uid of current process.
++
++gid=###       -- Set the group of all files on this filesystem.
++		 The default is the gid of current process.
++
+ umask=###     -- The permission mask (for files and directories, see umask(1)).
+                  The default is the umask of current process.
  
- /* this must be > 0. */
- #define FAT_MAX_CACHE	8
-diff -puN fs/fat/dir.c~fat_split-msdos_fs-h fs/fat/dir.c
---- linux-2.6/fs/fat/dir.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/dir.c	2008-10-11 23:45:34.000000000 +0900
-@@ -16,11 +16,11 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/time.h>
--#include <linux/msdos_fs.h>
- #include <linux/smp_lock.h>
- #include <linux/buffer_head.h>
- #include <linux/compat.h>
- #include <asm/uaccess.h>
-+#include "fat.h"
+@@ -36,7 +42,7 @@ codepage=###  -- Sets the codepage numbe
+ 		 characters on FAT filesystem.
+ 		 By default, FAT_DEFAULT_CODEPAGE setting is used.
  
- static inline loff_t fat_make_i_pos(struct super_block *sb,
- 				    struct buffer_head *bh,
-diff -puN /dev/null fs/fat/fat.h
---- /dev/null	2008-10-10 23:58:12.880001316 +0900
-+++ linux-2.6-hirofumi/fs/fat/fat.h	2008-10-11 23:45:34.000000000 +0900
-@@ -0,0 +1,274 @@
-+#ifndef _FAT_H
-+#define _FAT_H
-+
-+#include <linux/buffer_head.h>
-+#include <linux/string.h>
-+#include <linux/nls.h>
-+#include <linux/fs.h>
-+#include <linux/mutex.h>
-+#include <linux/msdos_fs.h>
-+
-+/*
-+ * vfat shortname flags
-+ */
-+#define VFAT_SFN_DISPLAY_LOWER	0x0001 /* convert to lowercase for display */
-+#define VFAT_SFN_DISPLAY_WIN95	0x0002 /* emulate win95 rule for display */
-+#define VFAT_SFN_DISPLAY_WINNT	0x0004 /* emulate winnt rule for display */
-+#define VFAT_SFN_CREATE_WIN95	0x0100 /* emulate win95 rule for create */
-+#define VFAT_SFN_CREATE_WINNT	0x0200 /* emulate winnt rule for create */
-+
-+struct fat_mount_options {
-+	uid_t fs_uid;
-+	gid_t fs_gid;
-+	unsigned short fs_fmask;
-+	unsigned short fs_dmask;
-+	unsigned short codepage;  /* Codepage for shortname conversions */
-+	char *iocharset;          /* Charset used for filename input/display */
-+	unsigned short shortname; /* flags for shortname display/create rule */
-+	unsigned char name_check; /* r = relaxed, n = normal, s = strict */
-+	unsigned short allow_utime;/* permission for setting the [am]time */
-+	unsigned quiet:1,         /* set = fake successful chmods and chowns */
-+		 showexec:1,      /* set = only set x bit for com/exe/bat */
-+		 sys_immutable:1, /* set = system files are immutable */
-+		 dotsOK:1,        /* set = hidden and system files are named '.filename' */
-+		 isvfat:1,        /* 0=no vfat long filename support, 1=vfat support */
-+		 utf8:1,	  /* Use of UTF-8 character set (Default) */
-+		 unicode_xlate:1, /* create escape sequences for unhandled Unicode */
-+		 numtail:1,       /* Does first alias have a numeric '~1' type tail? */
-+		 flush:1,	  /* write things quickly */
-+		 nocase:1,	  /* Does this need case conversion? 0=need case conversion*/
-+		 usefree:1,	  /* Use free_clusters for FAT32 */
-+		 tz_utc:1;	  /* Filesystem timestamps are in UTC */
-+};
-+
-+#define FAT_HASH_BITS	8
-+#define FAT_HASH_SIZE	(1UL << FAT_HASH_BITS)
-+#define FAT_HASH_MASK	(FAT_HASH_SIZE-1)
-+
-+/*
-+ * MS-DOS file system in-core superblock data
-+ */
-+struct msdos_sb_info {
-+	unsigned short sec_per_clus; /* sectors/cluster */
-+	unsigned short cluster_bits; /* log2(cluster_size) */
-+	unsigned int cluster_size;   /* cluster size */
-+	unsigned char fats,fat_bits; /* number of FATs, FAT bits (12 or 16) */
-+	unsigned short fat_start;
-+	unsigned long fat_length;    /* FAT start & length (sec.) */
-+	unsigned long dir_start;
-+	unsigned short dir_entries;  /* root dir start & entries */
-+	unsigned long data_start;    /* first data sector */
-+	unsigned long max_cluster;   /* maximum cluster number */
-+	unsigned long root_cluster;  /* first cluster of the root directory */
-+	unsigned long fsinfo_sector; /* sector number of FAT32 fsinfo */
-+	struct mutex fat_lock;
-+	unsigned int prev_free;      /* previously allocated cluster number */
-+	unsigned int free_clusters;  /* -1 if undefined */
-+	unsigned int free_clus_valid; /* is free_clusters valid? */
-+	struct fat_mount_options options;
-+	struct nls_table *nls_disk;  /* Codepage used on disk */
-+	struct nls_table *nls_io;    /* Charset used for input and display */
-+	const void *dir_ops;		     /* Opaque; default directory operations */
-+	int dir_per_block;	     /* dir entries per block */
-+	int dir_per_block_bits;	     /* log2(dir_per_block) */
-+
-+	int fatent_shift;
-+	struct fatent_operations *fatent_ops;
-+
-+	spinlock_t inode_hash_lock;
-+	struct hlist_head inode_hashtable[FAT_HASH_SIZE];
-+};
-+
-+#define FAT_CACHE_VALID	0	/* special case for valid cache */
-+
-+/*
-+ * MS-DOS file system inode data in memory
-+ */
-+struct msdos_inode_info {
-+	spinlock_t cache_lru_lock;
-+	struct list_head cache_lru;
-+	int nr_caches;
-+	/* for avoiding the race between fat_free() and fat_get_cluster() */
-+	unsigned int cache_valid_id;
-+
-+	loff_t mmu_private;
-+	int i_start;		/* first cluster or 0 */
-+	int i_logstart;		/* logical first cluster */
-+	int i_attrs;		/* unused attribute bits */
-+	loff_t i_pos;		/* on-disk position of directory entry or 0 */
-+	struct hlist_node i_fat_hash;	/* hash by i_location */
-+	struct inode vfs_inode;
-+};
-+
-+struct fat_slot_info {
-+	loff_t i_pos;		/* on-disk position of directory entry */
-+	loff_t slot_off;	/* offset for slot or de start */
-+	int nr_slots;		/* number of slots + 1(de) in filename */
-+	struct msdos_dir_entry *de;
-+	struct buffer_head *bh;
-+};
-+
-+static inline struct msdos_sb_info *MSDOS_SB(struct super_block *sb)
-+{
-+	return sb->s_fs_info;
-+}
-+
-+static inline struct msdos_inode_info *MSDOS_I(struct inode *inode)
-+{
-+	return container_of(inode, struct msdos_inode_info, vfs_inode);
-+}
-+
-+/* Return the FAT attribute byte for this inode */
-+static inline u8 fat_attr(struct inode *inode)
-+{
-+	return ((inode->i_mode & S_IWUGO) ? ATTR_NONE : ATTR_RO) |
-+		(S_ISDIR(inode->i_mode) ? ATTR_DIR : ATTR_NONE) |
-+		MSDOS_I(inode)->i_attrs;
-+}
-+
-+static inline unsigned char fat_checksum(const __u8 *name)
-+{
-+	unsigned char s = name[0];
-+	s = (s<<7) + (s>>1) + name[1];	s = (s<<7) + (s>>1) + name[2];
-+	s = (s<<7) + (s>>1) + name[3];	s = (s<<7) + (s>>1) + name[4];
-+	s = (s<<7) + (s>>1) + name[5];	s = (s<<7) + (s>>1) + name[6];
-+	s = (s<<7) + (s>>1) + name[7];	s = (s<<7) + (s>>1) + name[8];
-+	s = (s<<7) + (s>>1) + name[9];	s = (s<<7) + (s>>1) + name[10];
-+	return s;
-+}
-+
-+static inline sector_t fat_clus_to_blknr(struct msdos_sb_info *sbi, int clus)
-+{
-+	return ((sector_t)clus - FAT_START_ENT) * sbi->sec_per_clus
-+		+ sbi->data_start;
-+}
-+
-+static inline void fat16_towchar(wchar_t *dst, const __u8 *src, size_t len)
-+{
-+#ifdef __BIG_ENDIAN
-+	while (len--) {
-+		*dst++ = src[0] | (src[1] << 8);
-+		src += 2;
-+	}
-+#else
-+	memcpy(dst, src, len * 2);
-+#endif
-+}
-+
-+static inline void fatwchar_to16(__u8 *dst, const wchar_t *src, size_t len)
-+{
-+#ifdef __BIG_ENDIAN
-+	while (len--) {
-+		dst[0] = *src & 0x00FF;
-+		dst[1] = (*src & 0xFF00) >> 8;
-+		dst += 2;
-+		src++;
-+	}
-+#else
-+	memcpy(dst, src, len * 2);
-+#endif
-+}
-+
-+/* fat/cache.c */
-+extern void fat_cache_inval_inode(struct inode *inode);
-+extern int fat_get_cluster(struct inode *inode, int cluster,
-+			   int *fclus, int *dclus);
-+extern int fat_bmap(struct inode *inode, sector_t sector, sector_t *phys,
-+		    unsigned long *mapped_blocks);
-+
-+/* fat/dir.c */
-+extern const struct file_operations fat_dir_operations;
-+extern int fat_search_long(struct inode *inode, const unsigned char *name,
-+			   int name_len, struct fat_slot_info *sinfo);
-+extern int fat_dir_empty(struct inode *dir);
-+extern int fat_subdirs(struct inode *dir);
-+extern int fat_scan(struct inode *dir, const unsigned char *name,
-+		    struct fat_slot_info *sinfo);
-+extern int fat_get_dotdot_entry(struct inode *dir, struct buffer_head **bh,
-+				struct msdos_dir_entry **de, loff_t *i_pos);
-+extern int fat_alloc_new_dir(struct inode *dir, struct timespec *ts);
-+extern int fat_add_entries(struct inode *dir, void *slots, int nr_slots,
-+			   struct fat_slot_info *sinfo);
-+extern int fat_remove_entries(struct inode *dir, struct fat_slot_info *sinfo);
-+
-+/* fat/fatent.c */
-+struct fat_entry {
-+	int entry;
-+	union {
-+		u8 *ent12_p[2];
-+		__le16 *ent16_p;
-+		__le32 *ent32_p;
-+	} u;
-+	int nr_bhs;
-+	struct buffer_head *bhs[2];
-+};
-+
-+static inline void fatent_init(struct fat_entry *fatent)
-+{
-+	fatent->nr_bhs = 0;
-+	fatent->entry = 0;
-+	fatent->u.ent32_p = NULL;
-+	fatent->bhs[0] = fatent->bhs[1] = NULL;
-+}
-+
-+static inline void fatent_set_entry(struct fat_entry *fatent, int entry)
-+{
-+	fatent->entry = entry;
-+	fatent->u.ent32_p = NULL;
-+}
-+
-+static inline void fatent_brelse(struct fat_entry *fatent)
-+{
-+	int i;
-+	fatent->u.ent32_p = NULL;
-+	for (i = 0; i < fatent->nr_bhs; i++)
-+		brelse(fatent->bhs[i]);
-+	fatent->nr_bhs = 0;
-+	fatent->bhs[0] = fatent->bhs[1] = NULL;
-+}
-+
-+extern void fat_ent_access_init(struct super_block *sb);
-+extern int fat_ent_read(struct inode *inode, struct fat_entry *fatent,
-+			int entry);
-+extern int fat_ent_write(struct inode *inode, struct fat_entry *fatent,
-+			 int new, int wait);
-+extern int fat_alloc_clusters(struct inode *inode, int *cluster,
-+			      int nr_cluster);
-+extern int fat_free_clusters(struct inode *inode, int cluster);
-+extern int fat_count_free_clusters(struct super_block *sb);
-+
-+/* fat/file.c */
-+extern int fat_generic_ioctl(struct inode *inode, struct file *filp,
-+			     unsigned int cmd, unsigned long arg);
-+extern const struct file_operations fat_file_operations;
-+extern const struct inode_operations fat_file_inode_operations;
-+extern int fat_setattr(struct dentry * dentry, struct iattr * attr);
-+extern void fat_truncate(struct inode *inode);
-+extern int fat_getattr(struct vfsmount *mnt, struct dentry *dentry,
-+		       struct kstat *stat);
-+
-+/* fat/inode.c */
-+extern void fat_attach(struct inode *inode, loff_t i_pos);
-+extern void fat_detach(struct inode *inode);
-+extern struct inode *fat_iget(struct super_block *sb, loff_t i_pos);
-+extern struct inode *fat_build_inode(struct super_block *sb,
-+			struct msdos_dir_entry *de, loff_t i_pos);
-+extern int fat_sync_inode(struct inode *inode);
-+extern int fat_fill_super(struct super_block *sb, void *data, int silent,
-+			const struct inode_operations *fs_dir_inode_ops, int isvfat);
-+
-+extern int fat_flush_inodes(struct super_block *sb, struct inode *i1,
-+		            struct inode *i2);
-+/* fat/misc.c */
-+extern void fat_fs_panic(struct super_block *s, const char *fmt, ...);
-+extern void fat_clusters_flush(struct super_block *sb);
-+extern int fat_chain_add(struct inode *inode, int new_dclus, int nr_cluster);
-+extern int date_dos2unix(unsigned short time, unsigned short date, int tz_utc);
-+extern void fat_date_unix2dos(int unix_date, __le16 *time, __le16 *date,
-+			      int tz_utc);
-+extern int fat_sync_bhs(struct buffer_head **bhs, int nr_bhs);
-+
-+int fat_cache_init(void);
-+void fat_cache_destroy(void);
-+
-+#endif /* !_FAT_H */
-diff -puN fs/fat/fatent.c~fat_split-msdos_fs-h fs/fat/fatent.c
---- linux-2.6/fs/fat/fatent.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/fatent.c	2008-10-11 23:45:46.000000000 +0900
-@@ -7,6 +7,7 @@
- #include <linux/fs.h>
- #include <linux/msdos_fs.h>
- #include <linux/blkdev.h>
-+#include "fat.h"
+-iocharset=name -- Character set to use for converting between the
++iocharset=<name> -- Character set to use for converting between the
+ 		 encoding is used for user visible filename and 16 bit
+ 		 Unicode characters. Long filenames are stored on disk
+ 		 in Unicode format, but Unix for the most part doesn't
+@@ -86,6 +92,8 @@ check=s|r|n   -- Case sensitivity checki
+                  r: relaxed, case insensitive
+                  n: normal, default setting, currently case insensitive
  
- struct fatent_operations {
- 	void (*ent_blocknr)(struct super_block *, int, int *, sector_t *);
-diff -puN fs/fat/file.c~fat_split-msdos_fs-h fs/fat/file.c
---- linux-2.6/fs/fat/file.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/file.c	2008-10-11 23:45:34.000000000 +0900
-@@ -10,13 +10,13 @@
- #include <linux/module.h>
- #include <linux/mount.h>
- #include <linux/time.h>
--#include <linux/msdos_fs.h>
- #include <linux/buffer_head.h>
- #include <linux/writeback.h>
- #include <linux/backing-dev.h>
- #include <linux/blkdev.h>
- #include <linux/fsnotify.h>
- #include <linux/security.h>
-+#include "fat.h"
++nocase        -- This was deprecated for vfat. Use shortname=win95 instead.
++
+ shortname=lower|win95|winnt|mixed
+ 	      -- Shortname display/create setting.
+ 		 lower: convert to lowercase for display,
+@@ -99,11 +107,23 @@ shortname=lower|win95|winnt|mixed
+ tz=UTC        -- Interpret timestamps as UTC rather than local time.
+                  This option disables the conversion of timestamps
+                  between local time (as used by Windows on FAT) and UTC
+-                 (which Linux uses internally).  This is particuluarly
++                 (which Linux uses internally).  This is particularly
+                  useful when mounting devices (like digital cameras)
+                  that are set to UTC in order to avoid the pitfalls of
+                  local time.
  
- int fat_generic_ioctl(struct inode *inode, struct file *filp,
- 		      unsigned int cmd, unsigned long arg)
-diff -puN fs/fat/inode.c~fat_split-msdos_fs-h fs/fat/inode.c
---- linux-2.6/fs/fat/inode.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/inode.c	2008-10-11 23:45:34.000000000 +0900
-@@ -16,7 +16,6 @@
- #include <linux/slab.h>
- #include <linux/smp_lock.h>
- #include <linux/seq_file.h>
--#include <linux/msdos_fs.h>
- #include <linux/pagemap.h>
- #include <linux/mpage.h>
- #include <linux/buffer_head.h>
-@@ -28,6 +27,7 @@
- #include <linux/writeback.h>
- #include <linux/log2.h>
- #include <asm/unaligned.h>
-+#include "fat.h"
++showexec      -- If set, the execute permission bits of the file will be
++		 allowed only if the extension part of the name is .EXE,
++		 .COM, or .BAT. Not set by default.
++
++debug         -- Can be set, but unused by the current implementation.
++
++sys_immutable -- If set, ATTR_SYS attribute on FAT is handled as
++		 IMMUTABLE flag on Linux. Not set by default.
++
++flush         -- If set, the filesystem will try to flush to disk more
++		 early than normal. Not set by default.
++
+ <bool>: 0,1,yes,no,true,false
  
- #ifndef CONFIG_FAT_DEFAULT_IOCHARSET
- /* if user don't select VFAT, this is undefined. */
-diff -puN fs/fat/misc.c~fat_split-msdos_fs-h fs/fat/misc.c
---- linux-2.6/fs/fat/misc.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/misc.c	2008-10-11 23:45:34.000000000 +0900
-@@ -8,8 +8,8 @@
- 
- #include <linux/module.h>
- #include <linux/fs.h>
--#include <linux/msdos_fs.h>
- #include <linux/buffer_head.h>
-+#include "fat.h"
- 
- /*
-  * fat_fs_panic reports a severe file system problem and sets the file system
-diff -puN fs/fat/namei_msdos.c~fat_split-msdos_fs-h fs/fat/namei_msdos.c
---- linux-2.6/fs/fat/namei_msdos.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/namei_msdos.c	2008-10-11 23:45:34.000000000 +0900
-@@ -9,8 +9,8 @@
- #include <linux/module.h>
- #include <linux/time.h>
- #include <linux/buffer_head.h>
--#include <linux/msdos_fs.h>
- #include <linux/smp_lock.h>
-+#include "fat.h"
- 
- /* Characters that are undesirable in an MS-DOS file name */
- static unsigned char bad_chars[] = "*?<>|\"";
-diff -puN fs/fat/namei_vfat.c~fat_split-msdos_fs-h fs/fat/namei_vfat.c
---- linux-2.6/fs/fat/namei_vfat.c~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/namei_vfat.c	2008-10-11 23:45:34.000000000 +0900
-@@ -16,14 +16,13 @@
-  */
- 
- #include <linux/module.h>
--
- #include <linux/jiffies.h>
--#include <linux/msdos_fs.h>
- #include <linux/ctype.h>
- #include <linux/slab.h>
- #include <linux/smp_lock.h>
- #include <linux/buffer_head.h>
- #include <linux/namei.h>
-+#include "fat.h"
- 
- static int vfat_revalidate(struct dentry *dentry, struct nameidata *nd)
- {
-diff -puN include/linux/msdos_fs.h~fat_split-msdos_fs-h include/linux/msdos_fs.h
---- linux-2.6/include/linux/msdos_fs.h~fat_split-msdos_fs-h	2008-10-11 23:45:34.000000000 +0900
-+++ linux-2.6-hirofumi/include/linux/msdos_fs.h	2008-10-11 23:45:34.000000000 +0900
-@@ -167,282 +167,10 @@ struct msdos_dir_slot {
- };
- 
- #ifdef __KERNEL__
--
--#include <linux/buffer_head.h>
--#include <linux/string.h>
--#include <linux/nls.h>
--#include <linux/fs.h>
--#include <linux/mutex.h>
--
--/*
-- * vfat shortname flags
-- */
--#define VFAT_SFN_DISPLAY_LOWER	0x0001 /* convert to lowercase for display */
--#define VFAT_SFN_DISPLAY_WIN95	0x0002 /* emulate win95 rule for display */
--#define VFAT_SFN_DISPLAY_WINNT	0x0004 /* emulate winnt rule for display */
--#define VFAT_SFN_CREATE_WIN95	0x0100 /* emulate win95 rule for create */
--#define VFAT_SFN_CREATE_WINNT	0x0200 /* emulate winnt rule for create */
--
--struct fat_mount_options {
--	uid_t fs_uid;
--	gid_t fs_gid;
--	unsigned short fs_fmask;
--	unsigned short fs_dmask;
--	unsigned short codepage;  /* Codepage for shortname conversions */
--	char *iocharset;          /* Charset used for filename input/display */
--	unsigned short shortname; /* flags for shortname display/create rule */
--	unsigned char name_check; /* r = relaxed, n = normal, s = strict */
--	unsigned short allow_utime;/* permission for setting the [am]time */
--	unsigned quiet:1,         /* set = fake successful chmods and chowns */
--		 showexec:1,      /* set = only set x bit for com/exe/bat */
--		 sys_immutable:1, /* set = system files are immutable */
--		 dotsOK:1,        /* set = hidden and system files are named '.filename' */
--		 isvfat:1,        /* 0=no vfat long filename support, 1=vfat support */
--		 utf8:1,	  /* Use of UTF-8 character set (Default) */
--		 unicode_xlate:1, /* create escape sequences for unhandled Unicode */
--		 numtail:1,       /* Does first alias have a numeric '~1' type tail? */
--		 flush:1,	  /* write things quickly */
--		 nocase:1,	  /* Does this need case conversion? 0=need case conversion*/
--		 usefree:1,	  /* Use free_clusters for FAT32 */
--		 tz_utc:1;	  /* Filesystem timestamps are in UTC */
--};
--
--#define FAT_HASH_BITS	8
--#define FAT_HASH_SIZE	(1UL << FAT_HASH_BITS)
--#define FAT_HASH_MASK	(FAT_HASH_SIZE-1)
--
--/*
-- * MS-DOS file system in-core superblock data
-- */
--struct msdos_sb_info {
--	unsigned short sec_per_clus; /* sectors/cluster */
--	unsigned short cluster_bits; /* log2(cluster_size) */
--	unsigned int cluster_size;   /* cluster size */
--	unsigned char fats,fat_bits; /* number of FATs, FAT bits (12 or 16) */
--	unsigned short fat_start;
--	unsigned long fat_length;    /* FAT start & length (sec.) */
--	unsigned long dir_start;
--	unsigned short dir_entries;  /* root dir start & entries */
--	unsigned long data_start;    /* first data sector */
--	unsigned long max_cluster;   /* maximum cluster number */
--	unsigned long root_cluster;  /* first cluster of the root directory */
--	unsigned long fsinfo_sector; /* sector number of FAT32 fsinfo */
--	struct mutex fat_lock;
--	unsigned int prev_free;      /* previously allocated cluster number */
--	unsigned int free_clusters;  /* -1 if undefined */
--	unsigned int free_clus_valid; /* is free_clusters valid? */
--	struct fat_mount_options options;
--	struct nls_table *nls_disk;  /* Codepage used on disk */
--	struct nls_table *nls_io;    /* Charset used for input and display */
--	const void *dir_ops;		     /* Opaque; default directory operations */
--	int dir_per_block;	     /* dir entries per block */
--	int dir_per_block_bits;	     /* log2(dir_per_block) */
--
--	int fatent_shift;
--	struct fatent_operations *fatent_ops;
--
--	spinlock_t inode_hash_lock;
--	struct hlist_head inode_hashtable[FAT_HASH_SIZE];
--};
--
--#define FAT_CACHE_VALID	0	/* special case for valid cache */
--
--/*
-- * MS-DOS file system inode data in memory
-- */
--struct msdos_inode_info {
--	spinlock_t cache_lru_lock;
--	struct list_head cache_lru;
--	int nr_caches;
--	/* for avoiding the race between fat_free() and fat_get_cluster() */
--	unsigned int cache_valid_id;
--
--	loff_t mmu_private;
--	int i_start;		/* first cluster or 0 */
--	int i_logstart;		/* logical first cluster */
--	int i_attrs;		/* unused attribute bits */
--	loff_t i_pos;		/* on-disk position of directory entry or 0 */
--	struct hlist_node i_fat_hash;	/* hash by i_location */
--	struct inode vfs_inode;
--};
--
--struct fat_slot_info {
--	loff_t i_pos;		/* on-disk position of directory entry */
--	loff_t slot_off;	/* offset for slot or de start */
--	int nr_slots;		/* number of slots + 1(de) in filename */
--	struct msdos_dir_entry *de;
--	struct buffer_head *bh;
--};
--
--static inline struct msdos_sb_info *MSDOS_SB(struct super_block *sb)
--{
--	return sb->s_fs_info;
--}
--
--static inline struct msdos_inode_info *MSDOS_I(struct inode *inode)
--{
--	return container_of(inode, struct msdos_inode_info, vfs_inode);
--}
--
--/* Return the FAT attribute byte for this inode */
--static inline u8 fat_attr(struct inode *inode)
--{
--	return ((inode->i_mode & S_IWUGO) ? ATTR_NONE : ATTR_RO) |
--		(S_ISDIR(inode->i_mode) ? ATTR_DIR : ATTR_NONE) |
--		MSDOS_I(inode)->i_attrs;
--}
--
--static inline unsigned char fat_checksum(const __u8 *name)
--{
--	unsigned char s = name[0];
--	s = (s<<7) + (s>>1) + name[1];	s = (s<<7) + (s>>1) + name[2];
--	s = (s<<7) + (s>>1) + name[3];	s = (s<<7) + (s>>1) + name[4];
--	s = (s<<7) + (s>>1) + name[5];	s = (s<<7) + (s>>1) + name[6];
--	s = (s<<7) + (s>>1) + name[7];	s = (s<<7) + (s>>1) + name[8];
--	s = (s<<7) + (s>>1) + name[9];	s = (s<<7) + (s>>1) + name[10];
--	return s;
--}
--
--static inline sector_t fat_clus_to_blknr(struct msdos_sb_info *sbi, int clus)
--{
--	return ((sector_t)clus - FAT_START_ENT) * sbi->sec_per_clus
--		+ sbi->data_start;
--}
--
--static inline void fat16_towchar(wchar_t *dst, const __u8 *src, size_t len)
--{
--#ifdef __BIG_ENDIAN
--	while (len--) {
--		*dst++ = src[0] | (src[1] << 8);
--		src += 2;
--	}
--#else
--	memcpy(dst, src, len * 2);
--#endif
--}
--
--static inline void fatwchar_to16(__u8 *dst, const wchar_t *src, size_t len)
--{
--#ifdef __BIG_ENDIAN
--	while (len--) {
--		dst[0] = *src & 0x00FF;
--		dst[1] = (*src & 0xFF00) >> 8;
--		dst += 2;
--		src++;
--	}
--#else
--	memcpy(dst, src, len * 2);
--#endif
--}
--
- /* media of boot sector */
- static inline int fat_valid_media(u8 media)
- {
- 	return 0xf8 <= media || media == 0xf0;
- }
--
--/* fat/cache.c */
--extern void fat_cache_inval_inode(struct inode *inode);
--extern int fat_get_cluster(struct inode *inode, int cluster,
--			   int *fclus, int *dclus);
--extern int fat_bmap(struct inode *inode, sector_t sector, sector_t *phys,
--		    unsigned long *mapped_blocks);
--
--/* fat/dir.c */
--extern const struct file_operations fat_dir_operations;
--extern int fat_search_long(struct inode *inode, const unsigned char *name,
--			   int name_len, struct fat_slot_info *sinfo);
--extern int fat_dir_empty(struct inode *dir);
--extern int fat_subdirs(struct inode *dir);
--extern int fat_scan(struct inode *dir, const unsigned char *name,
--		    struct fat_slot_info *sinfo);
--extern int fat_get_dotdot_entry(struct inode *dir, struct buffer_head **bh,
--				struct msdos_dir_entry **de, loff_t *i_pos);
--extern int fat_alloc_new_dir(struct inode *dir, struct timespec *ts);
--extern int fat_add_entries(struct inode *dir, void *slots, int nr_slots,
--			   struct fat_slot_info *sinfo);
--extern int fat_remove_entries(struct inode *dir, struct fat_slot_info *sinfo);
--
--/* fat/fatent.c */
--struct fat_entry {
--	int entry;
--	union {
--		u8 *ent12_p[2];
--		__le16 *ent16_p;
--		__le32 *ent32_p;
--	} u;
--	int nr_bhs;
--	struct buffer_head *bhs[2];
--};
--
--static inline void fatent_init(struct fat_entry *fatent)
--{
--	fatent->nr_bhs = 0;
--	fatent->entry = 0;
--	fatent->u.ent32_p = NULL;
--	fatent->bhs[0] = fatent->bhs[1] = NULL;
--}
--
--static inline void fatent_set_entry(struct fat_entry *fatent, int entry)
--{
--	fatent->entry = entry;
--	fatent->u.ent32_p = NULL;
--}
--
--static inline void fatent_brelse(struct fat_entry *fatent)
--{
--	int i;
--	fatent->u.ent32_p = NULL;
--	for (i = 0; i < fatent->nr_bhs; i++)
--		brelse(fatent->bhs[i]);
--	fatent->nr_bhs = 0;
--	fatent->bhs[0] = fatent->bhs[1] = NULL;
--}
--
--extern void fat_ent_access_init(struct super_block *sb);
--extern int fat_ent_read(struct inode *inode, struct fat_entry *fatent,
--			int entry);
--extern int fat_ent_write(struct inode *inode, struct fat_entry *fatent,
--			 int new, int wait);
--extern int fat_alloc_clusters(struct inode *inode, int *cluster,
--			      int nr_cluster);
--extern int fat_free_clusters(struct inode *inode, int cluster);
--extern int fat_count_free_clusters(struct super_block *sb);
--
--/* fat/file.c */
--extern int fat_generic_ioctl(struct inode *inode, struct file *filp,
--			     unsigned int cmd, unsigned long arg);
--extern const struct file_operations fat_file_operations;
--extern const struct inode_operations fat_file_inode_operations;
--extern int fat_setattr(struct dentry * dentry, struct iattr * attr);
--extern void fat_truncate(struct inode *inode);
--extern int fat_getattr(struct vfsmount *mnt, struct dentry *dentry,
--		       struct kstat *stat);
--
--/* fat/inode.c */
--extern void fat_attach(struct inode *inode, loff_t i_pos);
--extern void fat_detach(struct inode *inode);
--extern struct inode *fat_iget(struct super_block *sb, loff_t i_pos);
--extern struct inode *fat_build_inode(struct super_block *sb,
--			struct msdos_dir_entry *de, loff_t i_pos);
--extern int fat_sync_inode(struct inode *inode);
--extern int fat_fill_super(struct super_block *sb, void *data, int silent,
--			const struct inode_operations *fs_dir_inode_ops, int isvfat);
--
--extern int fat_flush_inodes(struct super_block *sb, struct inode *i1,
--		            struct inode *i2);
--/* fat/misc.c */
--extern void fat_fs_panic(struct super_block *s, const char *fmt, ...);
--extern void fat_clusters_flush(struct super_block *sb);
--extern int fat_chain_add(struct inode *inode, int new_dclus, int nr_cluster);
--extern int date_dos2unix(unsigned short time, unsigned short date, int tz_utc);
--extern void fat_date_unix2dos(int unix_date, __le16 *time, __le16 *date,
--			      int tz_utc);
--extern int fat_sync_bhs(struct buffer_head **bhs, int nr_bhs);
--
--int fat_cache_init(void);
--void fat_cache_destroy(void);
--
--#endif /* __KERNEL__ */
--
--#endif
-+#endif /* !__KERNEL__ */
-+#endif /* !_LINUX_MSDOS_FS_H */
+ TODO
 _
