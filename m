@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYJOK7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYJOLCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbYJOK7K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 06:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYJOK6z
+	id S1754151AbYJOLCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 07:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYJOLCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 06:58:55 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38126 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754072AbYJOK6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 06:58:54 -0400
-Date: Wed, 15 Oct 2008 21:58:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next tree for Oct 15
-Message-Id: <20081015215845.b6bbcb64.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__15_Oct_2008_21_58_45_+1100_dL7IkeQ4GBTAy5cs"
+	Wed, 15 Oct 2008 07:02:00 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:58680 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751667AbYJOLB7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 07:01:59 -0400
+Date: Wed, 15 Oct 2008 12:01:57 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: linux-next: origin tree build failure
+Message-ID: <20081015110157.GA24363@rakim.wolfsonmicro.main>
+References: <20081015095916.f30c0979.sfr@canb.auug.org.au> <20081015093319.GA19403@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081015093319.GA19403@elte.hu>
+X-Cookie: Life -- Love It or Leave It.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__15_Oct_2008_21_58_45_+1100_dL7IkeQ4GBTAy5cs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Oct 15, 2008 at 11:33:19AM +0200, Ingo Molnar wrote:
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Hi all,
+> hm:
 
-This tree didn't make it again.  It has just taken way to long,again.  I
-will make another attempt tomorrow when, hopefully, some of the things I
-have reported today and yesterday will be fixed.
+>  Author:     Mark Brown <broonie@opensource.wolfsonmicro.com>
+>  AuthorDate: Fri Oct 10 15:58:14 2008 +0100
+>  Commit:     Liam Girdwood <lrg@slimlogic.co.uk>
+>  CommitDate: Mon Oct 13 21:51:56 2008 +0100
 
-If people are too busy at the moment to fix up their trees, just let me
-know and I will drop them (or just take another break until after -rc1).
+> if a patch is merged as agressively as that, it should at minimum be 
+> tested a bit.
 
-There are lots of conflicts - most of them are against Linus' tree, so
-need looking at when you are preparing your tree for Linus to merge.  If
-you ask Linus to merge your tree, at least make the tree I merge the same
-(or a superset).
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+It has been tested (I've got some systems here that rely on the WM8350
+fairly heavily) - what was missing was cross platform testing on
+architectures that don't define NO_IRQ.  The code is rather older than
+the dates indicate due to some rearrangement of the patch series, though
+obviously out of tree stuff has to be taken with a grain of salt.
 
---Signature=_Wed__15_Oct_2008_21_58_45_+1100_dL7IkeQ4GBTAy5cs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkj1zOUACgkQjjKRsyhoI8wzEQCfQUjOwCzaECm7dKLwd5OTT0VV
-2bMAn2WBEAyboO2izUXbdbejPJXC8qLw
-=HldB
------END PGP SIGNATURE-----
-
---Signature=_Wed__15_Oct_2008_21_58_45_+1100_dL7IkeQ4GBTAy5cs--
+Anyway, I've posted a patch removing the use of NO_IRQ from the driver
+(as <1224066054-24401-1-git-send-email-broonie@opensource.wolfsonmicro.com>)
+which should hopefully be merged shortly.
