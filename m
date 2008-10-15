@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbYJOPva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYJOPv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932AbYJOPva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 11:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYJOPu7
+	id S1755348AbYJOPv6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 11:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYJOPvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 11:50:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46674 "EHLO mx2.redhat.com"
+	Wed, 15 Oct 2008 11:51:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46701 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752594AbYJOPu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 11:50:58 -0400
+	id S1754005AbYJOPvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 11:51:15 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 2/7] FRV: Provide dma_map_page() for NOMMU and fix comments
+Subject: [PATCH 4/7] FRV: Eliminate NULL test and memset after alloc_bootmem
 To: torvalds@osdl.org
-Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Date: Wed, 15 Oct 2008 16:50:53 +0100
-Message-ID: <20081015155053.2158.38001.stgit@warthog.procyon.org.uk>
+Cc: linux-kernel@vger.kernel.org, Julia Lawall <julia@diku.dk>,
+       David Howells <dhowells@redhat.com>
+Date: Wed, 15 Oct 2008 16:51:04 +0100
+Message-ID: <20081015155104.2158.33413.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20081015155048.2158.35981.stgit@warthog.procyon.org.uk>
 References: <20081015155048.2158.35981.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -29,105 +30,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide dma_map_page() for the NOMMU-mode FRV arch.
+From: Julia Lawall <julia@diku.dk>
 
-Also do some fixing on the comments attached to the various DMA functions for
-both MMU and NOMMU mode FRV code.
+As noted by Akinobu Mita in patch b1fceac2b9e04d278316b2faddf276015fc06e3b,
+alloc_bootmem and related functions never return NULL and always return a
+zeroed region of memory.  Thus a NULL test or memset after calls to these
+functions is unnecessary.
 
+ arch/frv/mm/init.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+This was fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+expression E;
+statement S;
+@@
+
+E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
+... when != E
+(
+- BUG_ON (E == NULL);
+|
+- if (E == NULL) S
+)
+
+@@
+expression E,E1;
+@@
+
+E = \(alloc_bootmem\|alloc_bootmem_low\|alloc_bootmem_pages\|alloc_bootmem_low_pages\)(...)
+... when != E
+- memset(E,0,E1);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- arch/frv/mb93090-mb00/pci-dma-nommu.c |   23 ++++++++++++++++++++---
- arch/frv/mb93090-mb00/pci-dma.c       |   11 +++++++++--
- 2 files changed, 29 insertions(+), 5 deletions(-)
+ arch/frv/mm/init.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
 
-diff --git a/arch/frv/mb93090-mb00/pci-dma-nommu.c b/arch/frv/mb93090-mb00/pci-dma-nommu.c
-index 64ee58d..52ff9ae 100644
---- a/arch/frv/mb93090-mb00/pci-dma-nommu.c
-+++ b/arch/frv/mb93090-mb00/pci-dma-nommu.c
-@@ -111,7 +111,7 @@ EXPORT_SYMBOL(dma_free_coherent);
-  * The 32-bit bus address to use is returned.
-  *
-  * Once the device is given the dma address, the device owns this memory
-- * until either pci_unmap_single or pci_dma_sync_single is performed.
-+ * until either dma_unmap_single or pci_dma_sync_single is performed.
-  */
- dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
- 			  enum dma_data_direction direction)
-@@ -129,7 +129,7 @@ EXPORT_SYMBOL(dma_map_single);
- /*
-  * Map a set of buffers described by scatterlist in streaming
-  * mode for DMA.  This is the scather-gather version of the
-- * above pci_map_single interface.  Here the scatter gather list
-+ * above dma_map_single interface.  Here the scatter gather list
-  * elements are each tagged with the appropriate dma address
-  * and length.  They are obtained via sg_dma_{address,length}(SG).
-  *
-@@ -139,7 +139,7 @@ EXPORT_SYMBOL(dma_map_single);
-  *       The routine returns the number of addr/length pairs actually
-  *       used, at most nents.
-  *
-- * Device ownership issues as mentioned above for pci_map_single are
-+ * Device ownership issues as mentioned above for dma_map_single are
-  * the same here.
-  */
- int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-@@ -158,3 +158,20 @@ int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- }
+diff --git a/arch/frv/mm/init.c b/arch/frv/mm/init.c
+index 1b851db..0708284 100644
+--- a/arch/frv/mm/init.c
++++ b/arch/frv/mm/init.c
+@@ -87,8 +87,6 @@ void __init paging_init(void)
  
- EXPORT_SYMBOL(dma_map_sg);
-+
-+/*
-+ * Map a single page of the indicated size for DMA in streaming mode.
-+ * The 32-bit bus address to use is returned.
-+ *
-+ * Device ownership issues as mentioned above for dma_map_single are
-+ * the same here.
-+ */
-+dma_addr_t dma_map_page(struct device *dev, struct page *page, unsigned long offset,
-+			size_t size, enum dma_data_direction direction)
-+{
-+	BUG_ON(direction == DMA_NONE);
-+	flush_dcache_page(page);
-+	return (dma_addr_t) page_to_phys(page) + offset;
-+}
-+
-+EXPORT_SYMBOL(dma_map_page);
-diff --git a/arch/frv/mb93090-mb00/pci-dma.c b/arch/frv/mb93090-mb00/pci-dma.c
-index 662f7b1..3ddedeb 100644
---- a/arch/frv/mb93090-mb00/pci-dma.c
-+++ b/arch/frv/mb93090-mb00/pci-dma.c
-@@ -61,7 +61,7 @@ EXPORT_SYMBOL(dma_map_single);
- /*
-  * Map a set of buffers described by scatterlist in streaming
-  * mode for DMA.  This is the scather-gather version of the
-- * above pci_map_single interface.  Here the scatter gather list
-+ * above dma_map_single interface.  Here the scatter gather list
-  * elements are each tagged with the appropriate dma address
-  * and length.  They are obtained via sg_dma_{address,length}(SG).
-  *
-@@ -71,7 +71,7 @@ EXPORT_SYMBOL(dma_map_single);
-  *       The routine returns the number of addr/length pairs actually
-  *       used, at most nents.
-  *
-- * Device ownership issues as mentioned above for pci_map_single are
-+ * Device ownership issues as mentioned above for dma_map_single are
-  * the same here.
-  */
- int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-@@ -105,6 +105,13 @@ int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 		pkmap_page_table = alloc_bootmem_pages(PAGE_SIZE);
  
- EXPORT_SYMBOL(dma_map_sg);
- 
-+/*
-+ * Map a single page of the indicated size for DMA in streaming mode.
-+ * The 32-bit bus address to use is returned.
-+ *
-+ * Device ownership issues as mentioned above for dma_map_single are
-+ * the same here.
-+ */
- dma_addr_t dma_map_page(struct device *dev, struct page *page, unsigned long offset,
- 			size_t size, enum dma_data_direction direction)
- {
+-		memset(pkmap_page_table, 0, PAGE_SIZE);
+-
+ 		pge = swapper_pg_dir + pgd_index_k(PKMAP_BASE);
+ 		pue = pud_offset(pge, PKMAP_BASE);
+ 		pme = pmd_offset(pue, PKMAP_BASE);
 
