@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbYJOHn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbYJOHup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbYJOHn3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 03:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYJOHnV
+	id S1753406AbYJOHup (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 03:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYJOHui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 03:43:21 -0400
-Received: from styx.suse.cz ([82.119.242.94]:34617 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751533AbYJOHnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 03:43:20 -0400
-Date: Wed, 15 Oct 2008 09:43:18 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Adrian Bunk <bunk@kernel.org>, zippel@linux-m68k.org, sam@ravnborg.org
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [2.6 patch] HID: fix default building of all quirky devices
-In-Reply-To: <20081015073011.GE20183@cs181140183.pp.htv.fi>
-Message-ID: <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 15 Oct 2008 03:50:38 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:6420 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbYJOHuh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 03:50:37 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -9.389
+Message-ID: <48F5A0C8.1080102@tremplin-utc.net>
+Date: Wed, 15 Oct 2008 09:50:32 +0200
+From: Eric Piel <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@suse.cz>
+Cc: lm-sensors@lm-sensors.org, kernel list <linux-kernel@vger.kernel.org>,
+       Thomas Renninger <trenn@suse.de>, Tejun Heo <tj@kernel.org>,
+       Yan Burman <burman.yan@gmail.com>
+Subject: Re: Accelerometer driver for HP laptops
+References: <48C984F5.5000804@tudelft.nl> <200809120736.06594.trenn@suse.de> <48CAD89F.1050806@tremplin-utc.net> <20081015072511.GA20607@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20081015072511.GA20607@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008, Adrian Bunk wrote:
-
-> Commit 9be7bbd54df3c9c393ccd19acc49f90c517d1291
-> (HID: build drivers for all quirky devices by default)
-> was wrong in that it select'ed the drivers, causing
-> build errors like the following with CONFIG_USB_HID=n:
-> <--  snip  -->
+Pavel Machek schreef:
+> Hi!
 > 
-> ...
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `bright_probe':
-> drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
-> drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
-> drivers/built-in.o: In function `dell_probe':
-> drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
-> drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
-> drivers/built-in.o: In function `lg_probe':
-> drivers/hid/hid-lg.c:252: undefined reference to `usbhid_set_leds'
-> drivers/hid/hid-lg.c:252: more undefined references to `usbhid_set_leds' follow
-> drivers/built-in.o: In function `sony_set_operational':
-> drivers/hid/hid-sony.c:42: undefined reference to `usb_control_msg'
-> drivers/hid/hid-sony.c:42: undefined reference to `usb_control_msg'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+> I took a look at the driver, and it seems to work for me... I'd like
+> to get it to the mainline...
+> 
+>>>> Attached is our work-in-progress version of the driver for a fourth take
+>>>> on the LKML (it used to be mdps). It works really fine, with lots of
+>>>> "goodies" (like automatically convert the axes to fit to a standard,
+>>>> automatic power-off of the device when not in used) excepted the
+>>>> interrupt support for free-fall detection.
+> 
+> I wonder if mdps was really a better name? Driver is HP-specific
+> (because of the ACPI usage), not really chip specific... and lis3lv02d
+> looks like an alphabet soup to me...
+> 
+> Ok, it is a bit chip-specific, too...
+Yes, the point is that several people got interested in adding to the
+driver SPI and I²C support last time I submitted the driver. I did my
+best to concentrate the ACPI stuff only to some 3 or 4 small functions,
+so that it can be be easily done.
 
-Hmm ... I am not really sure, isn't this a bug in Kconfig?
+> 
+> What are the next plans... lm_sensors is listed as orphan in
+> MAINTAINERS, so I guess I'll clean it up a tiny bit then submit to akpm?
+Yes I've hold things up because I can't get the free-fall detection
+working correctly on my laptop. However here is the merge window (not
+that it matters that much with new drivers), free-fall is "just" not
+always detected, and there are lots of people who have showed interest
+in the driver. Fixing the last small things can be done once in Linus'
+tree as well!
 
-What we have right now:
+I've got already a changelog ready. Give me a couple of days to clean
+things up and I'll send it to akpm myself :-)
 
-- CONFIG_HID selects all the individual quirk-drivers automatically
-- the individual quirk drivers have dependency on CONFIG_USB_HID
-
-Therefore I'd expect when CONFIG_HID is selected and CONFIG_USB_HID 
-deselected the individual drivers not to get built (due to their 
-dependency on unset option).
-
-But currently what happens is when I de-select CONFIG_USB_HID in 
-menuconfig, the configuration options for individual drivers vanish from 
-the menuconfig menu (which is expected, they depend on unset option), but 
-after saving .config they are still there. Is this how it is expected to 
-behave? (i.e. select having preference over dependency).
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+See you,
+Eric
