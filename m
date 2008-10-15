@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYJORrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbYJORsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753527AbYJORrg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 13:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYJORrV
+	id S1755688AbYJORsX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 13:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYJORsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 13:47:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:53330 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754875AbYJORrT (ORCPT
+	Wed, 15 Oct 2008 13:48:12 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:46198 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751434AbYJORsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 13:47:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=N26/cq8BfldVukPSAqUOOccJIy50OgBypzDLIHQwFQ2MFEHgjXwByRZv7MZnJZ77xE
-         nFHGF7VKYuh2lUPkSgUndTSa8we9NMbI4I81OySy5ZDJg8Hs/pFzeMgtYY1E9AxIwoXq
-         1Mbhr3BL/EDohek1tFPWUotn7XaL3gjmS6T5I=
-Date: Wed, 15 Oct 2008 21:47:15 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: =?utf-8?B?0JXQstCz0LXQvdC40Lkg0JzQsNC90LDRh9C60LjQvQ==?= 
-	<sfstudio@mail.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Re: Re: patch to 2.6.27 fix build rpm
-Message-ID: <20081015174715.GA768@localhost>
-References: <20081015172412.GB20222@localhost> <E1KqAJK-000KWz-00.sfstudio-mail-ru@f121.mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1KqAJK-000KWz-00.sfstudio-mail-ru@f121.mail.ru>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 15 Oct 2008 13:48:11 -0400
+Message-Id: <20081015174413.781182094@de.ibm.com>
+References: <20081015174215.337001494@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 15 Oct 2008 19:42:17 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Glauber <jang@linux.vnet.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 2/5] qdio: remove incorrect memset
+Content-Disposition: inline; filename=002-qdio-strlen.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Евгений Маначкин - Wed, Oct 15, 2008 at 11:37:26PM +0600]
-| From: Evgeniy Manachkin <sfstudio@mail.ru>
-| Subject: [PATCH] mkspec - fix build rpm
-| 
-| This is patch to fix incorrect mkspec script to make rpm correctly at 2.6.27 vanilla kernel. This is regression in 2.6.27. 2.6.26 make rpm work good.
-| In 2.6.27 'make rpm' say error from rpmbuild "Many unpacked files (*.fw)." 
-| This is patch fix it this error.
-| 
-| Sorry my English.
-| 
-| Signed-off-by: Evgeniy Manachkin <sfstudio@mail.ru>
-| 
-|  --- linux-2.6.27/scripts/package/mkspec.orig    2008-10-11 00:00:38.000000000 +0700
-|  +++ linux-2.6.27/scripts/package/mkspec 2008-10-11 00:39:43.000000000 +0700
-|  @@ -64,8 +64,10 @@ fi
-|   echo "%install"
-|   echo "%ifarch ia64"
-|   echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/modules'
-|  +echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/firmware'
-|   echo "%else"
-|   echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/modules'
-|  +echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/firmware'
-|   echo "%endif"
-|  
-|   echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} modules_install'
-|  @@ -92,5 +94,6 @@ echo "%files"
-|   echo '%defattr (-, root, root)'
-|   echo "%dir /lib/modules"
-|   echo "/lib/modules/$KERNELRELEASE"
-|  +echo "/lib/firmware"
-|   echo "/boot/*"
-|   echo ""
-| 
+From: Jan Glauber <jang@linux.vnet.ibm.com>
 
-Much better thanks! Lets wait for LKML feedback.
+Remove the memset since zeroing the string is not needed and use
+snprintf instead of sprintf.
 
-P.S.
-As I see you use Mail.ru web interface for patch submission
-unfortunately it's not goot -- better use Thunderbird or something
-like that since mPOP does mangle tabulators. There was some doc about
-how to configure mail clients but I don't remember where is it (maybe
-somewhere inside Documentations :-)
+Signed-off-by: Jan Glauber <jang@linux.vnet.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-		- Cyrill -
+ drivers/s390/cio/qdio_debug.c |   19 ++++++-------------
+ 1 file changed, 6 insertions(+), 13 deletions(-)
+
+Index: quilt-2.6/drivers/s390/cio/qdio_debug.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/cio/qdio_debug.c
++++ quilt-2.6/drivers/s390/cio/qdio_debug.c
+@@ -20,6 +20,7 @@ static struct dentry *debugfs_root;
+ #define MAX_DEBUGFS_QUEUES	32
+ static struct dentry *debugfs_queues[MAX_DEBUGFS_QUEUES] = { NULL };
+ static DEFINE_MUTEX(debugfs_mutex);
++#define QDIO_DEBUGFS_NAME_LEN	40
+ 
+ void qdio_allocate_do_dbf(struct qdio_initialize *init_data)
+ {
+@@ -152,17 +153,6 @@ static int qstat_seq_open(struct inode *
+ 			   filp->f_path.dentry->d_inode->i_private);
+ }
+ 
+-static void get_queue_name(struct qdio_q *q, struct ccw_device *cdev, char *name)
+-{
+-	memset(name, 0, sizeof(name));
+-	sprintf(name, "%s", dev_name(&cdev->dev));
+-	if (q->is_input_q)
+-		sprintf(name + strlen(name), "_input");
+-	else
+-		sprintf(name + strlen(name), "_output");
+-	sprintf(name + strlen(name), "_%d", q->nr);
+-}
+-
+ static void remove_debugfs_entry(struct qdio_q *q)
+ {
+ 	int i;
+@@ -189,14 +179,17 @@ static struct file_operations debugfs_fo
+ static void setup_debugfs_entry(struct qdio_q *q, struct ccw_device *cdev)
+ {
+ 	int i = 0;
+-	char name[40];
++	char name[QDIO_DEBUGFS_NAME_LEN];
+ 
+ 	while (debugfs_queues[i] != NULL) {
+ 		i++;
+ 		if (i >= MAX_DEBUGFS_QUEUES)
+ 			return;
+ 	}
+-	get_queue_name(q, cdev, name);
++	snprintf(name, QDIO_DEBUGFS_NAME_LEN, "%s_%s_%d",
++		 dev_name(&cdev->dev),
++		 q->is_input_q ? "input" : "output",
++		 q->nr);
+ 	debugfs_queues[i] = debugfs_create_file(name, S_IFREG | S_IRUGO | S_IWUSR,
+ 						debugfs_root, q, &debugfs_fops);
+ }
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
