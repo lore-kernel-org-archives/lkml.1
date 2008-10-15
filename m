@@ -1,43 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbYJOHDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbYJOHDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbYJOHDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 03:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYJOHDA
+	id S1753608AbYJOHDj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 03:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYJOHD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 03:03:00 -0400
-Received: from webmail58.yandex.ru ([77.88.61.3]:36248 "EHLO
-	webmail58.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbYJOHDA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 03:03:00 -0400
-X-Greylist: delayed 1379 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 03:03:00 EDT
-X-Yandex-Spam: 1
-From: Antipov Dmitry <dmantipov@yandex.ru>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.27: 0 MHz CPU and wrong system time on AMD Geode system
+	Wed, 15 Oct 2008 03:03:27 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52647 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751576AbYJOHDZ (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 03:03:25 -0400
+Date: Wed, 15 Oct 2008 18:03:13 +1100
+To: options@melbourne.sgi.com, unrecognized@melbourne.sgi.com,
+       with@melbourne.sgi.com, rw@melbourne.sgi.com, remount@melbourne.sgi.com,
+       fix@melbourne.sgi.com, XFS@melbourne.sgi.com
+Subject: [PATCH]
+User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
-Message-Id: <414861224052797@webmail58.yandex.ru>
-Date: Wed, 15 Oct 2008 10:39:57 +0400
-X-Mailer: Yamail [ http://yandex.ru ] 5.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
+Message-Id: <20081015070313.89A8A58FA1E9@chook.melbourne.sgi.com>
+From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After updating the kernel to 2.6.27 from 2.6.25.4, my system time goes wrong and
-CPU becomes 0 MHz (as shown by /proc/cpuinfo), probably due to these issues:
+Hi Linus,
 
-TSC: Unable to calibrate against PIT
-TSC: No reference (HPET/PMTIMER) available
-Marking TSC unstable due to could not calculate TSC khz
+Please include the following patch for 2.6.27.1 stable release as
+suggested by Christoph Hellwig and Eric Sandeen.
+It fixes a regression in the recent remount recoding
+where remounting say from ro to rw allows the xfs flags to
+be out of sync with the vfs flags, resulting
+in failures for some programs such as touch (which end up calling xfs_setattr).
+The fix is a very minor and clear.
 
-The hardware is http://www.fit-pc.com/new/fit-pc-1-0-specifications.html,
-and the base system is Fedora 9.
+Thanks,
+Tim.
 
-More details: 2.6.25.4 .config: http://78.153.153.8/tmp/config-2.6.25.4.txt
-              2.6.25.4 boot messages: http://78.153.153.8/tmp/boot-2.6.25.4.txt
-              2.6.27 .config: http://78.153.153.8/tmp/config-2.6.27.txt
-              2.6.27 boot messages: http://78.153.153.8/tmp/boot-2.6.27.txt
+Date: Sun, 12 Oct 2008 14:30:44 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: xfs@oss.sgi.com
+Subject: [PATCH] fix remount rw with unrecognized options
 
-Dmitry
+When we skip unrecognized options in xfs_fs_remount we should just break
+out of the switch and not return because otherwise we may skip clearing
+the xfs-internal read-only flag.  This will only show up on some
+operations like touch because most read-only checks are done by the VFS
+which thinks this filesystem is r/w.  Eventually we should replace the
+XFS read-only flag with a helper that always checks the VFS flag to make
+sure they can never get out of sync.
+
+Bug reported and fix verified by Marcel Beister on #xfs.
+Bug fix verified by updated xfstests/189.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Eric Sandeen <sandeen@sandeen.net>
+Signed-off-by: Timothy Shimmin <tes@sgi.com>
+
+Index: mainline/fs/xfs/linux-2.6/xfs_super.c
+===================================================================
+--- mainline.orig/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:26.542652847 +1100
++++ mainline/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:45.376217172 +1100
+@@ -1323,7 +1323,7 @@ xfs_fs_remount(
+ 	"XFS: mount option \"%s\" not supported for remount\n", p);
+ 			return -EINVAL;
+ #else
+-			return 0;
++			break;
+ #endif
+ 		}
+ 	}
