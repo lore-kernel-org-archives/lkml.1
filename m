@@ -1,145 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYJOAmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbYJOAm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752939AbYJOAmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 20:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYJOAlR
+	id S1753106AbYJOAm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 20:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYJOAlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 20:41:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47530 "EHLO mx2.redhat.com"
+	Tue, 14 Oct 2008 20:41:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47533 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272AbYJOAlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 20:41:15 -0400
+	id S1751951AbYJOAlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 20:41:18 -0400
 From: Jeff Layton <jlayton@redhat.com>
 To: smfrench@gmail.com
 Cc: smfrench@austin.rr.com, linux-kernel@vger.kernel.org, niallain@gmail.com,
        linux-cifs-client@lists.samba.org
-Subject: [PATCH 3/5] cifs: handle the TCP_Server_Info->tsk field more carefully
-Date: Tue, 14 Oct 2008 20:41:05 -0400
-Message-Id: <1224031267-17194-4-git-send-email-jlayton@redhat.com>
+Subject: [PATCH 4/5] cifs: clean up server protocol handling for TCP_Server_Info
+Date: Tue, 14 Oct 2008 20:41:06 -0400
+Message-Id: <1224031267-17194-5-git-send-email-jlayton@redhat.com>
 In-Reply-To: <1224031267-17194-1-git-send-email-jlayton@redhat.com>
 References: <1224031267-17194-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently handle the TCP_Server_Info->tsk field without any locking,
-but with some half-measures to try and prevent races. These aren't
-really sufficient though. When taking down cifsd, use xchg() to swap
-the contents of the tsk field with NULL so we don't end up trying
-to send it more than one signal. Also, don't allow cifsd to exit until
-the signal is received if we expect one.
+We're currently declaring both a sockaddr_in and sockaddr6_in on the
+stack, but we really only need storage for one of them. Declare a
+sockaddr struct and cast it to the proper type. Also, eliminate the
+protocolType field in the TCP_Server_Info struct. It's redundant since
+we have a sin_family field in the sockaddr anyway.
+
+We may need to revisit this if SCTP is ever implemented, but for now
+this will simplify the code.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/cifs/connect.c |   41 ++++++++++++++++++++++++++++-------------
- 1 files changed, 28 insertions(+), 13 deletions(-)
+ fs/cifs/cifsglob.h |    8 --------
+ fs/cifs/connect.c  |   31 +++++++++++++++----------------
+ 2 files changed, 15 insertions(+), 24 deletions(-)
 
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index 0d22479..72ec198 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -84,13 +84,6 @@ enum securityEnum {
+ 	MSKerberos,		/* MS Kerberos via SPNEGO */
+ };
+ 
+-enum protocolEnum {
+-	IPV4 = 0,
+-	IPV6,
+-	SCTP
+-	/* Netbios frames protocol not supported at this time */
+-};
+-
+ struct mac_key {
+ 	unsigned int len;
+ 	union {
+@@ -137,7 +130,6 @@ struct TCP_Server_Info {
+ 	void *Server_NlsInfo;	/* BB - placeholder for future NLS info  */
+ 	unsigned short server_codepage;	/* codepage for the server    */
+ 	unsigned long ip_address;	/* IP addr for the server if known */
+-	enum protocolEnum protocolType;
+ 	char versionMajor;
+ 	char versionMinor;
+ 	bool svlocal:1;			/* local server or remote */
 diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index dfc18c1..a631c15 100644
+index a631c15..af0546f 100644
 --- a/fs/cifs/connect.c
 +++ b/fs/cifs/connect.c
-@@ -748,6 +748,7 @@ multi_t2_fnd:
- 	write_unlock(&GlobalSMBSeslock);
- 
- 	kfree(server->hostname);
-+	task_to_wake = xchg(&server->tsk, NULL);
- 	kfree(server);
- 
- 	length = atomic_dec_return(&tcpSesAllocCount);
-@@ -755,6 +756,16 @@ multi_t2_fnd:
- 		mempool_resize(cifs_req_poolp, length + cifs_min_rcv,
- 				GFP_KERNEL);
- 
-+	/* if server->tsk was NULL then wait for a signal before exiting */
-+	if (!task_to_wake) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		while(!signal_pending(current)) {
-+			schedule();
-+			set_current_state(TASK_INTERRUPTIBLE);
-+		}
-+		set_current_state(TASK_RUNNING);
-+	}
-+
- 	return 0;
- }
- 
-@@ -1750,6 +1761,16 @@ convert_delimiter(char *path, char delim)
- 	}
- }
- 
-+static void
-+kill_cifsd(struct TCP_Server_Info *server)
-+{
-+	struct task_struct *task;
-+
-+	task = xchg(&server->tsk, NULL);
-+	if (task)
-+		force_sig(SIGKILL, task);
-+}
-+
- int
- cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 	   char *mount_data, const char *devname)
-@@ -2113,7 +2134,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 			spin_lock(&GlobalMid_Lock);
- 			srvTcp->tcpStatus = CifsExiting;
- 			spin_unlock(&GlobalMid_Lock);
--			force_sig(SIGKILL, srvTcp->tsk);
-+			kill_cifsd(srvTcp);
- 		}
- 		 /* If find_unc succeeded then rc == 0 so we can not end */
- 		if (tcon)  /* up accidently freeing someone elses tcon struct */
-@@ -2126,19 +2147,15 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 					temp_rc = CIFSSMBLogoff(xid, pSesInfo);
- 					/* if the socketUseCount is now zero */
- 					if ((temp_rc == -ESHUTDOWN) &&
--					    (pSesInfo->server) &&
--					    (pSesInfo->server->tsk))
--						force_sig(SIGKILL,
--							pSesInfo->server->tsk);
-+					    (pSesInfo->server))
-+						kill_cifsd(pSesInfo->server);
- 				} else {
- 					cFYI(1, ("No session or bad tcon"));
--					if ((pSesInfo->server) &&
--					    (pSesInfo->server->tsk)) {
-+					if (pSesInfo->server) {
- 						spin_lock(&GlobalMid_Lock);
- 						srvTcp->tcpStatus = CifsExiting;
- 						spin_unlock(&GlobalMid_Lock);
--						force_sig(SIGKILL,
--							pSesInfo->server->tsk);
-+						kill_cifsd(pSesInfo->server);
- 					}
- 				}
- 				sesInfoFree(pSesInfo);
-@@ -3425,7 +3442,6 @@ cifs_umount(struct super_block *sb, struct cifs_sb_info *cifs_sb)
+@@ -187,7 +187,7 @@ cifs_reconnect(struct TCP_Server_Info *server)
+ 	while ((server->tcpStatus != CifsExiting) &&
+ 	       (server->tcpStatus != CifsGood)) {
+ 		try_to_freeze();
+-		if (server->protocolType == IPV6) {
++		if (server->addr.sockAddr6.sin6_family == AF_INET6) {
+ 			rc = ipv6_connect(&server->addr.sockAddr6,
+ 					  &server->ssocket);
+ 		} else {
+@@ -1777,10 +1777,10 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ {
  	int rc = 0;
  	int xid;
- 	struct cifsSesInfo *ses = NULL;
--	struct task_struct *cifsd_task;
- 	char *tmp;
+-	int address_type = AF_INET;
+ 	struct socket *csocket = NULL;
+-	struct sockaddr_in sin_server;
+-	struct sockaddr_in6 sin_server6;
++	struct sockaddr addr;
++	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
++	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
+ 	struct smb_vol volume_info;
+ 	struct cifsSesInfo *pSesInfo = NULL;
+ 	struct cifsSesInfo *existingCifsSes = NULL;
+@@ -1813,16 +1813,16 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
  
- 	xid = GetXid();
-@@ -3441,7 +3457,6 @@ cifs_umount(struct super_block *sb, struct cifs_sb_info *cifs_sb)
- 		tconInfoFree(cifs_sb->tcon);
- 		if ((ses) && (ses->server)) {
- 			/* save off task so we do not refer to ses later */
--			cifsd_task = ses->server->tsk;
- 			cFYI(1, ("About to do SMBLogoff "));
- 			rc = CIFSSMBLogoff(xid, ses);
- 			if (rc == -EBUSY) {
-@@ -3449,8 +3464,8 @@ cifs_umount(struct super_block *sb, struct cifs_sb_info *cifs_sb)
- 				return 0;
- 			} else if (rc == -ESHUTDOWN) {
- 				cFYI(1, ("Waking up socket by sending signal"));
--				if (cifsd_task)
--					force_sig(SIGKILL, cifsd_task);
-+				if (ses->server)
-+					kill_cifsd(ses->server);
- 				rc = 0;
- 			} /* else - we have an smb session
- 				left on this socket do not kill cifsd */
+ 	if (volume_info.UNCip && volume_info.UNC) {
+ 		rc = cifs_inet_pton(AF_INET, volume_info.UNCip,
+-				    &sin_server.sin_addr.s_addr);
++				    &sin_server->sin_addr.s_addr);
+ 
+ 		if (rc <= 0) {
+ 			/* not ipv4 address, try ipv6 */
+ 			rc = cifs_inet_pton(AF_INET6, volume_info.UNCip,
+-					    &sin_server6.sin6_addr.in6_u);
++					    &sin_server6->sin6_addr.in6_u);
+ 			if (rc > 0)
+-				address_type = AF_INET6;
++				addr.sa_family = AF_INET6;
+ 		} else {
+-			address_type = AF_INET;
++			addr.sa_family = AF_INET;
+ 		}
+ 
+ 		if (rc <= 0) {
+@@ -1866,16 +1866,16 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 		cFYI(1, ("Existing tcp session with server found"));
+ 	} else {	/* create socket */
+ 		if (volume_info.port)
+-			sin_server.sin_port = htons(volume_info.port);
++			sin_server->sin_port = htons(volume_info.port);
+ 		else
+-			sin_server.sin_port = 0;
+-		if (address_type == AF_INET6) {
++			sin_server->sin_port = 0;
++		if (addr.sa_family == AF_INET6) {
+ 			cFYI(1, ("attempting ipv6 connect"));
+ 			/* BB should we allow ipv6 on port 139? */
+ 			/* other OS never observed in Wild doing 139 with v6 */
+-			rc = ipv6_connect(&sin_server6, &csocket);
++			rc = ipv6_connect(sin_server6, &csocket);
+ 		} else
+-			rc = ipv4_connect(&sin_server, &csocket,
++			rc = ipv4_connect(sin_server, &csocket,
+ 				  volume_info.source_rfc1001_name,
+ 				  volume_info.target_rfc1001_name);
+ 		if (rc < 0) {
+@@ -1892,12 +1892,11 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 			sock_release(csocket);
+ 			goto out;
+ 		} else {
+-			memcpy(&srvTcp->addr.sockAddr, &sin_server,
++			memcpy(&srvTcp->addr.sockAddr, sin_server,
+ 				sizeof(struct sockaddr_in));
+ 			atomic_set(&srvTcp->inFlight, 0);
+ 			/* BB Add code for ipv6 case too */
+ 			srvTcp->ssocket = csocket;
+-			srvTcp->protocolType = IPV4;
+ 			srvTcp->hostname = extract_hostname(volume_info.UNC);
+ 			if (IS_ERR(srvTcp->hostname)) {
+ 				rc = PTR_ERR(srvTcp->hostname);
+@@ -1949,7 +1948,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 		else {
+ 			pSesInfo->server = srvTcp;
+ 			sprintf(pSesInfo->serverName, "%u.%u.%u.%u",
+-				NIPQUAD(sin_server.sin_addr.s_addr));
++				NIPQUAD(sin_server->sin_addr.s_addr));
+ 		}
+ 
+ 		if (!rc) {
 -- 
 1.5.5.1
 
