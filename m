@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYJOH4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbYJOID3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbYJOH4A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 03:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYJOHzp
+	id S1752974AbYJOID3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 04:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYJOIDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 03:55:45 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:47422 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753282AbYJOHzo (ORCPT
+	Wed, 15 Oct 2008 04:03:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:49572 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbYJOIDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 03:55:44 -0400
-Date: Wed, 15 Oct 2008 09:55:36 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Huang Weiyi <weiyi.huang@gmail.com>
-cc: p_gortmaker@yahoo.com, linux-kernel@vger.kernel.org
-Subject: Re: m68k: remove duplicated #include
-In-Reply-To: <20081015072826.7144.WEIYI.HUANG@gmail.com>
-Message-ID: <Pine.LNX.4.64.0810150955070.25759@anakin>
-References: <20081015072826.7144.WEIYI.HUANG@gmail.com>
+	Wed, 15 Oct 2008 04:03:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=io70Cb8R6t+1USnPMI9aghKA1Tlg8dIi/XZB1w4Deb1FTx0Xb+JLmlruvcjOaVFSP9
+         xx/IBEqx/NH4nF8n3w/PhkUwYdSD6+PBOnozjUroWFlZ+Mz0iG519IEdBtckC2mTkckB
+         YjJxvoqGJUER/tk61NcaAORUg3071JdmGxqTY=
+Message-ID: <aec7e5c30810150103p7ed810ccyc815ad578d64feac@mail.gmail.com>
+Date: Wed, 15 Oct 2008 17:03:07 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] soc-camera: fix compile breakage on SH
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Stefan Herbrechtsmeier" <hbmeier@hni.uni-paderborn.de>,
+       "Mauro Carvalho Chehab" <mchehab@redhat.com>, lethal@linux-sh.org,
+       linux-sh@vger.kernel.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, "Magnus Damm" <damm@igel.co.jp>
+In-Reply-To: <Pine.LNX.4.64.0810150836100.3896@axis700.grange>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081014183936.GB4710@cs181140183.pp.htv.fi>
+	 <Pine.LNX.4.64.0810142335400.10458@axis700.grange>
+	 <20081015033303.GC4710@cs181140183.pp.htv.fi>
+	 <20081015052026.GC20183@cs181140183.pp.htv.fi>
+	 <aec7e5c30810142328n1563163bw636b8baf1a47ad8b@mail.gmail.com>
+	 <Pine.LNX.4.64.0810150836100.3896@axis700.grange>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008, Huang Weiyi wrote:
-> Removed duplicated include <linux/smp_lock.h> in
-> arch/m68k/bvme6000/rtc.c.
-> 
-> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+Hi Guennadi,
 
-Thanks! Queued for 2.6.29.
+On Wed, Oct 15, 2008 at 3:41 PM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> Hi Magnus
+>
+> On Wed, 15 Oct 2008, Magnus Damm wrote:
+>
+>> Thanks for working on fixing the breakage. I'd prefer to wait a bit
+>> since there are quite a few pinmux patches queued up that may break if
+>> we merge a fix right now. I can fix it up later on.
+>
+> no, I would not leave the kernel in a non-compilable state even if just
+> for one board. Please, test a new version of the patch below. And yes, You
+> will have to rebase your patches, sorry. Another thing, could you also,
+> please, add a license / copyright header to
+> include/media/soc_camera_platform.h?
 
-BTW, our patch is whitespace-challenged (tab -> space).
+I'm not asking you to keep the board broken forever. It's just a
+question of in which order the trees are getting merged. Again, I'd
+rather see that this fix is put _on_top_ of the patches that are
+already queued up in the SuperH tree. Merging it before doesn't help
+anything in my opinion - especially since the change should go though
+the SuperH tree anyway.
 
-> diff --git a/arch/m68k/bvme6000/rtc.c b/arch/m68k/bvme6000/rtc.c
-> index e8ac3f7..24d848b 100644
-> --- a/arch/m68k/bvme6000/rtc.c
-> +++ b/arch/m68k/bvme6000/rtc.c
-> @@ -18,7 +18,6 @@
->  #include <linux/poll.h>
->  #include <linux/module.h>
->  #include <linux/mc146818rtc.h> /* For struct rtc_time and ioctls, etc */
-> -#include <linux/smp_lock.h>
->  #include <linux/bcd.h>
->  #include <asm/bvme6000hw.h>
+Feel free to add any header you like. =)
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+/ magnus
