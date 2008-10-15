@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYJOUO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYJOUPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756526AbYJOUO6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbYJOUOW
+	id S1756611AbYJOUPX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbYJOUOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:14:22 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51983 "EHLO relay.sgi.com"
+	Wed, 15 Oct 2008 16:14:35 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:60033 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756136AbYJOUOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:14:20 -0400
-Date: Wed, 15 Oct 2008 15:14:19 -0500
+	id S1754441AbYJOUOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 16:14:34 -0400
+Date: Wed, 15 Oct 2008 15:14:34 -0500
 From: Russ Anderson <rja@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
        linux-kernel@vger.kernel.org
 Cc: Russ Anderson <rja@sgi.com>, Huang Ying <ying.huang@intel.com>,
        Jack Steiner <steiner@sgi.com>
-Subject: [PATCH 6/7] x86: Add UV memory protection bios call
-Message-ID: <20081015201419.GG197213@sgi.com>
+Subject: [PATCH 7/7] x86: Add UV reserved page bios call
+Message-ID: <20081015201434.GH197213@sgi.com>
 Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,68 +26,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 6/7] x86: Add UV memory protection bios call
+[PATCH 7/7] x86: Add UV reserved page bios call
 
-Call to change memory protections on UV.
+Call to get the address of the reserved page.
 
 Signed-off-by: Russ Anderson <rja@sgi.com>
 
 ---
- arch/x86/kernel/bios_uv.c |    8 ++++++++
- include/asm-x86/uv/bios.h |   10 +++++++++-
- 2 files changed, 17 insertions(+), 1 deletion(-)
+ arch/x86/kernel/bios_uv.c |   11 +++++++++++
+ include/asm-x86/uv/bios.h |    5 ++++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
 Index: linux/arch/x86/kernel/bios_uv.c
 ===================================================================
---- linux.orig/arch/x86/kernel/bios_uv.c	2008-10-15 09:56:28.000000000 -0500
-+++ linux/arch/x86/kernel/bios_uv.c	2008-10-15 09:56:29.000000000 -0500
-@@ -134,6 +134,14 @@ uv_bios_mq_watchlist_free(int blade, int
+--- linux.orig/arch/x86/kernel/bios_uv.c	2008-10-15 11:42:14.000000000 -0500
++++ linux/arch/x86/kernel/bios_uv.c	2008-10-15 11:43:10.000000000 -0500
+@@ -142,6 +142,17 @@ uv_bios_change_memprotect(u64 paddr, u64
  }
- EXPORT_SYMBOL_GPL(uv_bios_mq_watchlist_free);
+ EXPORT_SYMBOL_GPL(uv_bios_change_memprotect);
  
 +s64
-+uv_bios_change_memprotect(u64 paddr, u64 len, enum uv_memprotect perms)
++uv_bios_reserved_page_pa(u64 buf, u64 *cookie, u64 *addr, u64 *len)
 +{
-+	return uv_bios_call_irqsave(UV_BIOS_MEMPROTECT, paddr, len,
-+					perms, 0, 0);
++	s64 ret;
++
++	ret = uv_bios_call_irqsave(UV_BIOS_GET_PARTITION_ADDR, (u64)cookie,
++					(u64)addr, buf, (u64)len, 0);
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(uv_bios_change_memprotect);
++EXPORT_SYMBOL_GPL(uv_bios_reserved_page_pa);
 +
  s64 uv_bios_freq_base(u64 clock_type, u64 *ticks_per_second)
  {
  	return uv_bios_call(UV_BIOS_FREQ_BASE, clock_type,
 Index: linux/include/asm-x86/uv/bios.h
 ===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-10-15 09:56:28.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-10-15 09:56:29.000000000 -0500
-@@ -34,7 +34,8 @@ enum uv_bios_cmd {
- 	UV_BIOS_GET_SN_INFO,
+--- linux.orig/include/asm-x86/uv/bios.h	2008-10-15 11:42:14.000000000 -0500
++++ linux/include/asm-x86/uv/bios.h	2008-10-15 11:43:10.000000000 -0500
+@@ -35,13 +35,15 @@ enum uv_bios_cmd {
  	UV_BIOS_FREQ_BASE,
  	UV_BIOS_WATCHLIST_ALLOC,
--	UV_BIOS_WATCHLIST_FREE
-+	UV_BIOS_WATCHLIST_FREE,
-+	UV_BIOS_MEMPROTECT
+ 	UV_BIOS_WATCHLIST_FREE,
+-	UV_BIOS_MEMPROTECT
++	UV_BIOS_MEMPROTECT,
++	UV_BIOS_GET_PARTITION_ADDR
  };
  
  /*
-@@ -82,6 +83,12 @@ union uv_watchlist_u {
- 	};
- };
- 
-+enum uv_memprotect {
-+	UV_MEMPROT_RESTRICT_ACCESS,
-+	UV_MEMPROT_ALLOW_AMO,
-+	UV_MEMPROT_ALLOW_RW
-+};
-+
- /*
-  * bios calls have 6 parameters
+  * Status values returned from a BIOS call.
   */
-@@ -94,6 +101,7 @@ extern s64 uv_bios_freq_base(u64, u64 *)
- extern int uv_bios_mq_watchlist_alloc(int, void *, unsigned int,
+ enum {
++	BIOS_STATUS_MORE_PASSES		=  1,
+ 	BIOS_STATUS_SUCCESS		=  0,
+ 	BIOS_STATUS_UNIMPLEMENTED	= -ENOSYS,
+ 	BIOS_STATUS_EINVAL		= -EINVAL,
+@@ -102,6 +104,7 @@ extern int uv_bios_mq_watchlist_alloc(in
  					unsigned long *);
  extern int uv_bios_mq_watchlist_free(int, int);
-+extern s64 uv_bios_change_memprotect(u64, u64, enum uv_memprotect);
+ extern s64 uv_bios_change_memprotect(u64, u64, enum uv_memprotect);
++extern s64 uv_bios_reserved_page_pa(u64, u64 *, u64 *, u64 *);
  
  extern void uv_bios_init(void);
  
