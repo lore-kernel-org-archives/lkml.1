@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYJOPXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbYJOPdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbYJOPXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 11:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYJOPXn
+	id S1753340AbYJOPdn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 11:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYJOPdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 11:23:43 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:46895 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbYJOPXm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 11:23:42 -0400
-Message-Id: <48F6274D.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Wed, 15 Oct 2008 16:24:29 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Chris Lalancette" <clalance@redhat.com>
-Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH]: Fix Xen domU boot with batched
-	 mprotect
-References: <48F5CE10.3060403@redhat.com>
-In-Reply-To: <48F5CE10.3060403@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 15 Oct 2008 11:33:35 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:49996 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751667AbYJOPde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 11:33:34 -0400
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] mfd: Don't use =?UTF-8?Q?NO=5FIRQ=20in=20WM=38=33=35=30?=
+MIME-Version: 1.0
+Date: Wed, 15 Oct 2008 11:33:33 -0400
+From: Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@kernel.org>
+Reply-To: sameo@openedhand.com
+In-Reply-To: <20081015141514.GA25479@rakim.wolfsonmicro.main>
+References: <1224066054-24401-1-git-send-email-broonie@opensource.wolfsonmicro.com> <9fb8beea82becda1567755f13aab4c11@localhost> <20081015141514.GA25479@rakim.wolfsonmicro.main>
+Message-ID: <e69468e3780112f64f427e5dd79cdd3c@localhost>
+User-Agent: RoundCube Webmail/0.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Chris Lalancette <clalance@redhat.com> 15.10.08 13:03 >>>
->The right thing to do is to use arbitrary_virt_to_machine, so that we can be
->sure we are modifying the right pfn.  This unfortunately introduces a
->performance penalty because of a full page-table-walk, but we can avoid that
->penalty for pages in the p2m list by checking if virt_addr_valid is true, and if
->so, just doing the lookup in the p2m table.
 
-Could you explain how virt_addr_valid() can validly be used here? Looking
-at its implementation
 
-#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
 
-a kaddr in kmap space (i.e. above high_memory) would return a bogus
-physical address, and hence pfn_valid() on the resulting pfn is meaningless.
+On Wed, 15 Oct 2008 15:15:14 +0100, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Wed, Oct 15, 2008 at 07:55:17AM -0400, Samuel Ortiz wrote:
+> 
+>> I'll send a pull request to Linus soon.
+> 
+> Thanks, it's fairly urgent since it breaks allmodconfig and allyesconfig
+> on at least x86_64.
+My patch queue is ready. I'll wait for a linux-next iteration, and send the
+pull request. That will happen tomorrow morning.
 
-I'd instead simply compare the address in question against high_memory,
-and perhaps instead of in arbitrary_virt_to_machine() in
-ptep_modify_prot_commit() under an #ifdef CONFIG_HIGHPTE. But
-performance-wise, CONFIG_HIGHPTE sucks under Xen anyway, so you'd
-better not turn this on in the first place. We may want/need to provide
-a means to disable this at run time so the same kernel when run natively
-could still make use of it, but without impacting performance under Xen.
-
-Jan
-
+Cheers,
+Samuel.
