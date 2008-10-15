@@ -1,127 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYJOOIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYJOOJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbYJOOIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 10:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbYJOOE6
+	id S1757122AbYJOOJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 10:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbYJOOE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 10:04:58 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:45116 "EHLO
+	Wed, 15 Oct 2008 10:04:59 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:45131 "EHLO
 	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752459AbYJOOEt (ORCPT
+	with ESMTP id S1752385AbYJOOEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Oct 2008 10:04:49 -0400
-Subject: [PATCH 3/6] vfs: add __d_instantiate() helper
+Subject: [PATCH 5/6] vfs: remove LOOKUP_PARENT from non LOOKUP_PARENT lookup
 To: viro@zeniv.linux.org.uk
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        hirofumi@mail.parknet.co.jp
 From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Wed, 15 Oct 2008 22:58:10 +0900
-Message-ID: <7754d3f83e848f5f6f2326623.ps@mail.parknet.co.jp>
+Date: Wed, 15 Oct 2008 22:58:11 +0900
+Message-ID: <f29a09483e848f5f6f3526623.ps@mail.parknet.co.jp>
 References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
 	<e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
-In-Reply-To: <e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
+	<7754d3f83e848f5f6f2326623.ps@mail.parknet.co.jp>
+	<524881153e848f5f6f3426623.ps@mail.parknet.co.jp>
+In-Reply-To: <524881153e848f5f6f3426623.ps@mail.parknet.co.jp>
 X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This adds __d_instantiate() for users which is already taking
-dcache_lock, and replace with it.
+lookup_hash() with LOOKUP_PARENT is bogus. And this prepares to add
+new intent on those path.
 
-The part of d_add_ci() isn't equivalent. But it should be needed
-fsnotify_d_instantiate() actually, because the path is to add the
-inode to negative dentry.  fsnotify_d_instantiate() should be called
-after change from negative to positive.
-
-__d_instantiate_unique() and d_materialise_unique() does opencoded
-optimized version. From history, it seems a intent, so just add comment.
+The user of LOOKUP_PARENT intent is nfs only, and it checks whether
+nd->flags has LOOKUP_CREATE or LOOKUP_OPEN, so the result is same.
 
 Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
 
- fs/dcache.c |   29 ++++++++++++++++-------------
- 1 file changed, 16 insertions(+), 13 deletions(-)
+ fs/namei.c |   27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
 
-diff -puN fs/dcache.c~dcache-cleanup-3 fs/dcache.c
---- linux-2.6/fs/dcache.c~dcache-cleanup-3	2008-09-30 05:24:37.000000000 +0900
-+++ linux-2.6-hirofumi/fs/dcache.c	2008-09-30 05:24:37.000000000 +0900
-@@ -981,6 +981,15 @@ struct dentry *d_alloc_name(struct dentr
- 	return d_alloc(parent, &q);
- }
+diff -puN fs/namei.c~dcache-remove-parent fs/namei.c
+--- linux-2.6/fs/namei.c~dcache-remove-parent	2008-08-26 11:13:30.000000000 +0900
++++ linux-2.6-hirofumi/fs/namei.c	2008-08-26 11:13:30.000000000 +0900
+@@ -2176,16 +2176,19 @@ static long do_rmdir(int dfd, const char
+ 		return error;
  
-+/* the caller must hold dcache_lock */
-+static void __d_instantiate(struct dentry *dentry, struct inode *inode)
-+{
-+	if (inode)
-+		list_add(&dentry->d_alias, &inode->i_dentry);
-+	dentry->d_inode = inode;
-+	fsnotify_d_instantiate(dentry, inode);
-+}
+ 	switch(nd.last_type) {
+-		case LAST_DOTDOT:
+-			error = -ENOTEMPTY;
+-			goto exit1;
+-		case LAST_DOT:
+-			error = -EINVAL;
+-			goto exit1;
+-		case LAST_ROOT:
+-			error = -EBUSY;
+-			goto exit1;
++	case LAST_DOTDOT:
++		error = -ENOTEMPTY;
++		goto exit1;
++	case LAST_DOT:
++		error = -EINVAL;
++		goto exit1;
++	case LAST_ROOT:
++		error = -EBUSY;
++		goto exit1;
+ 	}
 +
- /**
-  * d_instantiate - fill in inode information for a dentry
-  * @entry: dentry to complete
-@@ -1000,10 +1009,7 @@ void d_instantiate(struct dentry *entry,
- {
- 	BUG_ON(!list_empty(&entry->d_alias));
- 	spin_lock(&dcache_lock);
--	if (inode)
--		list_add(&entry->d_alias, &inode->i_dentry);
--	entry->d_inode = inode;
--	fsnotify_d_instantiate(entry, inode);
-+	__d_instantiate(entry, inode);
- 	spin_unlock(&dcache_lock);
- 	security_d_instantiate(entry, inode);
- }
-@@ -1033,6 +1039,7 @@ static struct dentry *__d_instantiate_un
- 	unsigned int hash = entry->d_name.hash;
++	nd.flags &= ~LOOKUP_PARENT;
++
+ 	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
+ 	dentry = lookup_hash(&nd);
+ 	error = PTR_ERR(dentry);
+@@ -2263,6 +2266,9 @@ static long do_unlinkat(int dfd, const c
+ 	error = -EISDIR;
+ 	if (nd.last_type != LAST_NORM)
+ 		goto exit1;
++
++	nd.flags &= ~LOOKUP_PARENT;
++
+ 	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
+ 	dentry = lookup_hash(&nd);
+ 	error = PTR_ERR(dentry);
+@@ -2652,6 +2658,9 @@ asmlinkage long sys_renameat(int olddfd,
+ 	if (newnd.last_type != LAST_NORM)
+ 		goto exit2;
  
- 	if (!inode) {
-+		/* __d_instantiate() by hand */
- 		entry->d_inode = NULL;
- 		return NULL;
- 	}
-@@ -1052,9 +1059,7 @@ static struct dentry *__d_instantiate_un
- 		return alias;
- 	}
++	oldnd.flags &= ~LOOKUP_PARENT;
++	newnd.flags &= ~LOOKUP_PARENT;
++
+ 	trap = lock_rename(new_dir, old_dir);
  
--	list_add(&entry->d_alias, &inode->i_dentry);
--	entry->d_inode = inode;
--	fsnotify_d_instantiate(entry, inode);
-+	__d_instantiate(entry, inode);
- 	return NULL;
- }
- 
-@@ -1211,10 +1216,8 @@ struct dentry *d_splice_alias(struct ino
- 			d_move(new, dentry);
- 			iput(inode);
- 		} else {
--			/* d_instantiate takes dcache_lock, so we do it by hand */
--			list_add(&dentry->d_alias, &inode->i_dentry);
--			dentry->d_inode = inode;
--			fsnotify_d_instantiate(dentry, inode);
-+			/* already taking dcache_lock, so d_add() by hand */
-+			__d_instantiate(dentry, inode);
- 			spin_unlock(&dcache_lock);
- 			security_d_instantiate(dentry, inode);
- 			d_rehash(dentry);
-@@ -1297,8 +1300,7 @@ struct dentry *d_add_ci(struct dentry *d
- 		 * d_instantiate() by hand because it takes dcache_lock which
- 		 * we already hold.
- 		 */
--		list_add(&found->d_alias, &inode->i_dentry);
--		found->d_inode = inode;
-+		__d_instantiate(found, inode);
- 		spin_unlock(&dcache_lock);
- 		security_d_instantiate(found, inode);
- 		return found;
-@@ -1827,6 +1829,7 @@ struct dentry *d_materialise_unique(stru
- 
- 	if (!inode) {
- 		actual = dentry;
-+		/* __d_instantiate() by hand */
- 		dentry->d_inode = NULL;
- 		goto found_lock;
- 	}
+ 	old_dentry = lookup_hash(&oldnd);
 _
