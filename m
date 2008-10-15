@@ -1,50 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYJOBgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYJOBg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYJOBgo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 21:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYJOBgg
+	id S1755217AbYJOBg6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 21:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbYJOBgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 21:36:36 -0400
-Received: from mail.windriver.com ([147.11.1.11]:60537 "EHLO mail.wrs.com"
+	Tue, 14 Oct 2008 21:36:46 -0400
+Received: from mail.suse.de ([195.135.220.2]:36961 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751276AbYJOBgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 21:36:35 -0400
-Message-ID: <48F54923.1080904@windriver.com>
-Date: Tue, 14 Oct 2008 20:36:35 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: anils_r@yahoo.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kgdb for 2.6.26
-References: <444546.96900.qm@web32406.mail.mud.yahoo.com>
-In-Reply-To: <444546.96900.qm@web32406.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Oct 2008 01:36:33.0443 (UTC) FILETIME=[7497FF30:01C92E66]
+	id S1754837AbYJOBgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 21:36:45 -0400
+Date: Tue, 14 Oct 2008 18:36:22 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git patches] Ocfs2 features for 2.6.28 (build errors)
+Message-ID: <20081015013622.GV15154@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <20081014200319.GK15154@wotan.suse.de> <20081014182037.38503fd0.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081014182037.38503fd0.randy.dunlap@oracle.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anil kumar wrote:
-> Hi,
->
-> I found that kgdb is now able in kernel 2.6.26. Is there any other patch I need to have kgdb up and running for this kernel like 8250.patch, i386.patch along with this. If so, can you please point me to the location to pick it for this kernel.
->
-> with regards,
->   Anil
->
->
->       
->   
+On Tue, Oct 14, 2008 at 06:20:37PM -0700, Randy Dunlap wrote:
+> In 2.6.27-git5 I am seeing build errors as follow:
+> 
+> fs/ocfs2/xattr.c: In function 'ocfs2_xattr_bucket_find':
+> fs/ocfs2/xattr.c:2352: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
+> fs/ocfs2/xattr.c:2352: error: (Each undeclared identifier is reported only once
+> fs/ocfs2/xattr.c:2352: error: for each function it appears in.)
+> fs/ocfs2/xattr.c: In function 'ocfs2_iterate_xattr_buckets':
+> fs/ocfs2/xattr.c:2429: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
+> fs/ocfs2/xattr.c: In function 'ocfs2_xattr_update_xattr_search':
+> fs/ocfs2/xattr.c:2697: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
+> fs/ocfs2/xattr.c: In function 'ocfs2_defrag_xattr_bucket':
+> fs/ocfs2/xattr.c:2902: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
+> fs/ocfs2/xattr.c: In function 'ocfs2_read_xattr_bucket':
+> fs/ocfs2/xattr.c:3157: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
+> fs/ocfs2/xattr.c: In function 'ocfs2_xattr_set_entry_in_bucket':
+> fs/ocfs2/xattr.c:4104: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
+> make[2]: *** [fs/ocfs2/xattr.o] Error 1
 
-If you are looking for other I/O drivers such as the kgdb_8250 module,
-you can find the full kgdb patch set (which is not all in the mainline at:
+Argh, I must have forgotten to commit my merge fixes for that file. This
+patch should fix things. Thanks for reporting this Randy.
 
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=kgdb_2.6.26
 
-All that is merged in the 2.6.26 kernel is kgdb core, x86 arch specific
-kgdb, and the kgdboc (kgdb over serial console) I/O module.
+The following patch can also be pulled:
 
-Cheers,
-Jason.
+Please pull from 'build_fix' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git build_fix
+	--Mark
+
+--
+Mark Fasheh
+
+From: Mark Fasheh <mfasheh@suse.com>
+
+ocfs2: fix build error
+
+I merged the latest ocfs2_read_blocks() changes in xattr.c wrong. This makes
+Ocfs2 compile again.
+
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/xattr.c |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index c25780a..802c414 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -2349,7 +2349,7 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
+ 		 */
+ 		ret = ocfs2_read_blocks(inode, xs->bucket.bhs[0]->b_blocknr + 1,
+ 					blk_per_bucket - 1, &xs->bucket.bhs[1],
+-					OCFS2_BH_CACHED);
++					0);
+ 		if (ret) {
+ 			mlog_errno(ret);
+ 			goto out;
+@@ -2426,7 +2426,7 @@ static int ocfs2_iterate_xattr_buckets(struct inode *inode,
+ 
+ 	for (i = 0; i < num_buckets; i++, blkno += blk_per_bucket) {
+ 		ret = ocfs2_read_blocks(inode, blkno, blk_per_bucket,
+-					bucket.bhs, OCFS2_BH_CACHED);
++					bucket.bhs, 0);
+ 		if (ret) {
+ 			mlog_errno(ret);
+ 			goto out;
+@@ -2694,7 +2694,7 @@ static int ocfs2_xattr_update_xattr_search(struct inode *inode,
+ 			ret = ocfs2_read_blocks(inode,
+ 					xs->bucket.bhs[0]->b_blocknr + 1,
+ 					blk_per_bucket - 1, &xs->bucket.bhs[1],
+-					OCFS2_BH_CACHED);
++					0);
+ 			if (ret) {
+ 				mlog_errno(ret);
+ 				return ret;
+@@ -2898,8 +2898,7 @@ static int ocfs2_defrag_xattr_bucket(struct inode *inode,
+ 	if (!bhs)
+ 		return -ENOMEM;
+ 
+-	ret = ocfs2_read_blocks(inode, blkno, blk_per_bucket, bhs,
+-				OCFS2_BH_CACHED);
++	ret = ocfs2_read_blocks(inode, blkno, blk_per_bucket, bhs, 0);
+ 	if (ret)
+ 		goto out;
+ 
+@@ -3153,8 +3152,7 @@ static int ocfs2_read_xattr_bucket(struct inode *inode,
+ 
+ 	if (!new)
+ 		return ocfs2_read_blocks(inode, blkno,
+-					 blk_per_bucket, bhs,
+-					 OCFS2_BH_CACHED);
++					 blk_per_bucket, bhs, 0);
+ 
+ 	for (i = 0; i < blk_per_bucket; i++) {
+ 		bhs[i] = sb_getblk(inode->i_sb, blkno + i);
+@@ -4101,7 +4099,7 @@ static int ocfs2_xattr_set_entry_in_bucket(struct inode *inode,
+ 		ret = ocfs2_read_blocks(inode,
+ 					xs->bucket.bhs[0]->b_blocknr + 1,
+ 					blk_per_bucket - 1, &xs->bucket.bhs[1],
+-					OCFS2_BH_CACHED);
++					0);
+ 		if (ret) {
+ 			mlog_errno(ret);
+ 			goto out;
+-- 
+1.5.4.1
+
