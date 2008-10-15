@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYJOVeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYJOVkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbYJOVeo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 17:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYJOVeg
+	id S1754497AbYJOVkK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYJOVj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 17:34:36 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:21964 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753427AbYJOVeg (ORCPT
+	Wed, 15 Oct 2008 17:39:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37710 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751790AbYJOVj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 17:34:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mgrXHnfegGiOME1hosRCOP2VfXJebrqYq1kApHSsxFshmpQOvO7HSUikDytgSQPy1HTy3E8H8vybQQ52V6HF+3nhgdqd41CWyOLnexyaKyZceHXbjDC/Pzzn8yRasf+KQG37RO3y3H3zWMHrYHfEG1vtQ8p7gZ2ONC5f1JmaHik=  ;
-X-YMail-OSG: ri7K5u0VM1m6jScxCeao2ecUt8vp7t_1Fzj0V6CYJLfNkDZTLaPJVH2WMeB8bUwstno_eWCYgjTfkBkzy8iR1fedEA27zjS3fCfGEfkrg4GrdyHVkdOJsdbv9hOfuM7.6tAsQJFx3Q3kC38Q74VdRJB7zBefu2LHfyeVFXYHBpq2jP5st_HNzqoveZm1
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 6/9] mpc52xx_psc_spi: remove code associated with !CONFIG_PPC_MERGE
-Date: Wed, 15 Oct 2008 14:34:33 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       akpm@linux-foundation.org
-References: <1219294018-12557-1-git-send-email-galak@kernel.crashing.org> <1219294018-12557-7-git-send-email-galak@kernel.crashing.org> <764B32F3-E12E-4649-A2BB-3F94044D371F@kernel.crashing.org>
-In-Reply-To: <764B32F3-E12E-4649-A2BB-3F94044D371F@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 15 Oct 2008 17:39:56 -0400
+Date: Wed, 15 Oct 2008 14:39:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: riel@redhat.com, Lee.Schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org
+Subject: Re: [METAPATCH] mmotm: fix split-lru bisectability
+Message-Id: <20081015143915.cc4395ed.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0810140125550.29541@blonde.site>
+References: <Pine.LNX.4.64.0810140125550.29541@blonde.site>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810151434.33693.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 October 2008, Kumar Gala wrote:
-> 
-> On Aug 20, 2008, at 11:46 PM, Kumar Gala wrote:
-> 
-> > Now that arch/ppc is gone we don't need CONFIG_PPC_MERGE anymore
-> > remove the dead code associated with !CONFIG_PPC_MERGE.
-> >
-> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> > ---
-> > drivers/spi/mpc52xx_psc_spi.c |   55  
-> > -----------------------------------------
-> > 1 files changed, 0 insertions(+), 55 deletions(-)
-> 
-> Any update on acceptance of this patch?
+On Tue, 14 Oct 2008 01:32:18 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-Still seems to be in the MM queue ready to merge
-a bit later in the window.
+> There's an unbisectable 24-patch extent in the mmotm series, from
+> define-page_file_cache-function to mlock-mlocked-pages-are-unevictable-fix:
+> unbisectable because startup gets swamped by "Bad page state" messages
+> (with three unrelated build errors and their fixes along the way).
+> 
+> These bad page states come from when Linus fasttracked the PAGE_FLAGS
+> "cleanup" into 2.6.26, conflicting with PG_swapbacked patches already
+> queued in -mm, and then the merge was botched.  We fixed up the end
+> result at the time, but never got around to fixing the intermediates.
+> It would be regrettable if this unbisectability were preserved in git.
+> 
+> To apply this metapatch, cd into mmotm's broken-out or patches directory
+> (before define-page_file_cache-function has been applied), move series
+> file there if it's kept elsewhere, apply metapatch with "patch -p1" (one
+> file is deleted from series), then move back series file if necessary.
+> 
+> Based on mmotm .DATE=2008-10-10-19-22.  Doesn't bother to update the
+> diffstats: I've tried to keep the diffs minimal, without all the noise
+> which a quilt refresh here would have added.  So oddly I'm commenting
+> out NORECL_PGRESCUED and NORECL_PGCULLED in one patch, then removing
+> those lines in their fix patch - hmm, shouldn't they have got defined
+> eventually, and that code restored?  End result is the same as mmotm,
+> except that KOSAKI-San's page_referenced() args fix is included.
+> 
+> I'm pleased to say that checkpatch.pl reports that this metapatch
+> has no obvious style problems and is ready for submission :-)
+> 
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> 
+>  series                                                       |    1 
+>  define-page_file_cache-function.patch                        |   26 +++++--
+>  vmscan-fix-pagecache-reclaim-referenced-bit-check-fix.patch  |    5 -
+>  unevictable-lru-infrastructure.patch                         |   12 +--
+>  unevictable-lru-infrastructure-defer-vm-event-counting.patch |    4 -
+>  mlock-mlocked-pages-are-unevictable.patch                    |   24 -------
+>  mlock-mlocked-pages-are-unevictable-fix.patch                |   33 ----------
+>  7 files changed, 32 insertions(+), 73 deletions(-)
 
-- Dave
-
+OK, thanks, I did that.  Fingers crossed..
