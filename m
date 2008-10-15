@@ -1,55 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbYJOUwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYJOVDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188AbYJOUwE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYJOUvy
+	id S1754559AbYJOVDE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYJOVCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:51:54 -0400
-Received: from smtpout.eastlink.ca ([24.222.0.30]:34467 "EHLO
-	smtpout.eastlink.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbYJOUvy (ORCPT
+	Wed, 15 Oct 2008 17:02:53 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:24401 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075AbYJOVCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:51:54 -0400
-X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 16:51:54 EDT
-Date: Wed, 15 Oct 2008 17:21:41 -0300
-From: Peter Cordes <peter@cordes.ca>
-Subject: no way to swapoff a deleted swap file?
-To: linux-kernel@vger.kernel.org
-Message-id: <20081015202141.GX26067@cordes.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAE/t9UgY3sZc/2dsb2JhbADCT4Fr
-X-IronPort-AV: E=Sophos;i="4.33,417,1220238000";   d="scan'208";a="383214146"
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 15 Oct 2008 17:02:52 -0400
+X-BigFish: VPS11(zz78fbpzzzzz32i43j64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-SS: 5,
+X-WSS-ID: 0K8ST49-01-4G9-01
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Robert Richter <robert.richter@amd.com>
+Subject: [PATCH 1/8] OProfile: Rework oprofile_add_ibs_sample() function
+Date: Wed, 15 Oct 2008 22:09:03 +0200
+Message-ID: <1224101350-12877-2-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <20081015110444.GA28703@elte.hu>
+References: <20081015110444.GA28703@elte.hu>
+X-OriginalArrivalTime: 15 Oct 2008 21:02:38.0799 (UTC) FILETIME=[5B3215F0:01C92F09]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- I unlinked a swapfile without realizing I was still swapping on it.
-Now my /proc/swaps looks like this:
-Filename                                Type            Size    Used	Priority
-/var/tmp/EXP/cache/swap/1\040(deleted)  file            1288644 1448	-1
-/var/tmp/EXP/cache/swap/2\040(deleted)  file            1433368 0	-2
+Code looks much more cleaner now.
 
- AFAICT, there's nothing I can pass to swapoff(2) that will make the
-kernel let go of them.  If that's the case, please consider this a
-feature request for a way to do this.  Now I'm going to have to reboot
-before I can mkfs that partition.
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ arch/x86/oprofile/op_model_amd.c |    5 ++-
+ drivers/oprofile/cpu_buffer.c    |   48 ++++++++++++--------------------------
+ 2 files changed, 18 insertions(+), 35 deletions(-)
 
- If kswapd0 had a fd open on the swap files, swapoff /proc/$PID/fd/3
-could possibly work.  But it looks like the files are open but with no
-user-space accessable file descriptors to them.  Which makes sense,
-except for this case.
-
- thanks, and happy hacking,
-
+diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
+index d9faf60..54632e0 100644
+--- a/arch/x86/oprofile/op_model_amd.c
++++ b/arch/x86/oprofile/op_model_amd.c
+@@ -67,8 +67,9 @@ static unsigned long reset_value[NUM_COUNTERS];
+ 
+ /* The function interface needs to be fixed, something like add
+    data. Should then be added to linux/oprofile.h. */
+-extern void oprofile_add_ibs_sample(struct pt_regs *const regs,
+-				    unsigned int * const ibs_sample, u8 code);
++extern void
++oprofile_add_ibs_sample(struct pt_regs *const regs,
++			unsigned int * const ibs_sample, int ibs_code);
+ 
+ struct ibs_fetch_sample {
+ 	/* MSRC001_1031 IBS Fetch Linear Address Register */
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index e1bd5a9..d6c6827 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -257,21 +257,23 @@ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
+ 
+ #ifdef CONFIG_OPROFILE_IBS
+ 
+-#define MAX_IBS_SAMPLE_SIZE	14
+-static int log_ibs_sample(struct oprofile_cpu_buffer *cpu_buf,
+-	unsigned long pc, int is_kernel, unsigned  int *ibs, int ibs_code)
++#define MAX_IBS_SAMPLE_SIZE 14
++
++void oprofile_add_ibs_sample(struct pt_regs *const regs,
++			     unsigned int * const ibs_sample, int ibs_code)
+ {
++	int is_kernel = !user_mode(regs);
++	struct oprofile_cpu_buffer *cpu_buf = &__get_cpu_var(cpu_buffer);
+ 	struct task_struct *task;
+ 
+ 	cpu_buf->sample_received++;
+ 
+ 	if (nr_available_slots(cpu_buf) < MAX_IBS_SAMPLE_SIZE) {
++		/* we can't backtrace since we lost the source of this event */
+ 		cpu_buf->sample_lost_overflow++;
+-		return 0;
++		return;
+ 	}
+ 
+-	is_kernel = !!is_kernel;
+-
+ 	/* notice a switch from user->kernel or vice versa */
+ 	if (cpu_buf->last_is_kernel != is_kernel) {
+ 		cpu_buf->last_is_kernel = is_kernel;
+@@ -281,7 +283,6 @@ static int log_ibs_sample(struct oprofile_cpu_buffer *cpu_buf,
+ 	/* notice a task switch */
+ 	if (!is_kernel) {
+ 		task = current;
+-
+ 		if (cpu_buf->last_task != task) {
+ 			cpu_buf->last_task = task;
+ 			add_code(cpu_buf, (unsigned long)task);
+@@ -289,36 +290,17 @@ static int log_ibs_sample(struct oprofile_cpu_buffer *cpu_buf,
+ 	}
+ 
+ 	add_code(cpu_buf, ibs_code);
+-	add_sample(cpu_buf, ibs[0], ibs[1]);
+-	add_sample(cpu_buf, ibs[2], ibs[3]);
+-	add_sample(cpu_buf, ibs[4], ibs[5]);
++	add_sample(cpu_buf, ibs_sample[0], ibs_sample[1]);
++	add_sample(cpu_buf, ibs_sample[2], ibs_sample[3]);
++	add_sample(cpu_buf, ibs_sample[4], ibs_sample[5]);
+ 
+ 	if (ibs_code == IBS_OP_BEGIN) {
+-	add_sample(cpu_buf, ibs[6], ibs[7]);
+-	add_sample(cpu_buf, ibs[8], ibs[9]);
+-	add_sample(cpu_buf, ibs[10], ibs[11]);
+-	}
+-
+-	return 1;
+-}
+-
+-void oprofile_add_ibs_sample(struct pt_regs *const regs,
+-				unsigned int * const ibs_sample, u8 code)
+-{
+-	int is_kernel = !user_mode(regs);
+-	unsigned long pc = profile_pc(regs);
+-
+-	struct oprofile_cpu_buffer *cpu_buf =
+-			 &per_cpu(cpu_buffer, smp_processor_id());
+-
+-	if (!backtrace_depth) {
+-		log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code);
+-		return;
++		add_sample(cpu_buf, ibs_sample[6], ibs_sample[7]);
++		add_sample(cpu_buf, ibs_sample[8], ibs_sample[9]);
++		add_sample(cpu_buf, ibs_sample[10], ibs_sample[11]);
+ 	}
+ 
+-	/* if log_sample() fails we can't backtrace since we lost the source
+-	* of this event */
+-	if (log_ibs_sample(cpu_buf, pc, is_kernel, ibs_sample, code))
++	if (backtrace_depth)
+ 		oprofile_ops.backtrace(regs, backtrace_depth);
+ }
+ 
 -- 
-#define X(x,y) x##y
-Peter Cordes ;  e-mail: X(peter@cor , des.ca)
+1.6.0.1
 
-"The gods confound the man who first found out how to distinguish the hours!
- Confound him, too, who in this place set up a sundial, to cut and hack
- my day so wretchedly into small pieces!" -- Plautus, 200 BC
+
