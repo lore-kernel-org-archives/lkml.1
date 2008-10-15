@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYJOWYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYJOW0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbYJOWYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYJOWYm
+	id S1755637AbYJOW0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYJOW03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:24:42 -0400
-Received: from 0x55512ece.adsl.cybercity.dk ([85.81.46.206]:18758 "EHLO
-	sko.w0.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969AbYJOWYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:24:41 -0400
-Date: Thu, 16 Oct 2008 00:24:37 +0200 (CEST)
-From: Hans Schou <linux@schou.dk>
-X-X-Sender: linux@sko.w0.dk
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SiS55x, another x86 CPU
-In-Reply-To: <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk>
-Message-ID: <Pine.LNX.4.64.0810160008530.7873@sko.w0.dk>
-References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org>
- <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org>
- <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 15 Oct 2008 18:26:29 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35610 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751969AbYJOW02 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 18:26:28 -0400
+Date: Wed, 15 Oct 2008 23:26:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Steve Kemp <steve@steve.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: trivial patches: Should we care about control reaches end of
+ non-void function
+Message-ID: <20081015232625.547ebe9e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081015180732.GA4119@steve.org.uk>
+References: <20081015180732.GA4119@steve.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008, Hans Schou wrote:
+>   I see some functions in the kernel have added "return 0" after the
+>  BUG, presumably to silence these warnings.  Would a patch to do this
+>  consistently, or is that too trivial even for trivial patches?
 
-> If any CR/LF in your file you must have added them yourself.
+Probably better to mark BUG() properly for the compiler.
 
-Sorry, you are right. Pine do change attachment which is recognized as 
-ASCII text files. Pine thinks the right thing to do, based on the file 
-extension, is to convert a text file to CR/LF:
-http://www.washington.edu/pine/faq/attachments.html#7.2.1
+If you can get __attribute((__noreturn__)) on the end of the BUG function
+somehow say
 
-I could not find a way within Pine where I could attach a file in way 
-where everything is preserved as is, but regarding the actual case 
-with SiS55x I don't think there is a need for posting the patch 
-correctly anyway. The patch was not that popular after all.
+static inline void bug_off(void) __attribute((__noreturn__)) {};
 
-rgds/hans
+and expanded that onto the end of the macro maybe it would shut up
+
+Alan
