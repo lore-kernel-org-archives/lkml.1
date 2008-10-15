@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbYJOLjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYJOLj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbYJOLjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 07:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYJOLjh
+	id S1754826AbYJOLj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 07:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYJOLjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 07:39:37 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:48398 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751851AbYJOLjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 07:39:36 -0400
-Subject: Re: [PATCH] regulator: Build on non-ARM platforms
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1224068014-24845-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1224068014-24845-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain
-Date: Wed, 15 Oct 2008 12:39:34 +0100
-Message-Id: <1224070774.6814.414.camel@dell-desktop.example.com>
+	Wed, 15 Oct 2008 07:39:42 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41693 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753895AbYJOLjl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 07:39:41 -0400
+Date: Wed, 15 Oct 2008 12:39:23 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Stanislav Brabec <utx@penguin.cz>,
+       kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
+       lenz@cs.wisc.edu, Dirk@Opfer-Online.de, arminlitzel@web.de,
+       pavel.urban@ct.cz, metan@atrey.karlin.mff.cuni.cz,
+       thommycheck@gmail.com, milan@ucw.cz
+Subject: Re: 2.6.27-rc8 regression on arm: kernel will no longer boot on Sharp Zaurus c-3000
+Message-ID: <20081015113923.GA21756@flint.arm.linux.org.uk>
+References: <20081009091929.GE29957@atrey.karlin.mff.cuni.cz> <1223553647.3194.8.camel@hammer.suse.cz> <20081009142351.GA4697@flint.arm.linux.org.uk> <20081015101747.GB28824@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081015101747.GB28824@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-15 at 11:53 +0100, Mark Brown wrote:
-> When the regulator API was merged it was added to the separate Kconfig
-> which ARM uses for drivers but not the generic one in drivers/.  Since
-> there is nothing ARM-specific about the API add it there too.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+On Wed, Oct 15, 2008 at 12:17:47PM +0200, Pavel Machek wrote:
+> Thanks for the effort, but it looks like it did not make it, right?
 
-Applied.
+Correct - Linus was unpredictable and released 2.6.27 that evening,
+four days early giving me no time to push the fix to him.
 
-Thanks
+However, it's gone in as part of the first ARM merge, so should be in
+-rc1.
 
-Liam
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
