@@ -1,59 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYJORz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbYJOR5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbYJORz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 13:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYJORzS
+	id S1755672AbYJOR5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 13:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYJOR5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 13:55:18 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:29347 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753244AbYJORzQ (ORCPT
+	Wed, 15 Oct 2008 13:57:10 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:59823 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753327AbYJOR5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 13:55:16 -0400
-X-IronPort-AV: E=Sophos;i="4.33,417,1220227200"; 
-   d="scan'208";a="175804551"
-From: Roland Dreier <rdreier@cisco.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] fastboot: Introduce an asynchronous function call mechanism
-References: <20081012194427.2e21c22e@infradead.org>
-	<20081015014117.faff3a61.akpm@linux-foundation.org>
-	<20081015075246.2e1610f3@infradead.org>
-	<20081015095905.41219c9d.akpm@linux-foundation.org>
-	<20081015175252.GA10600@x200.localdomain>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 15 Oct 2008 10:55:15 -0700
-In-Reply-To: <20081015175252.GA10600@x200.localdomain> (Alexey Dobriyan's
-	message of "Wed, 15 Oct 2008 21:52:52 +0400")
-Message-ID: <aday70pd9q4.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 Oct 2008 17:55:15.0636 (UTC) FILETIME=[2DBF8F40:01C92EEF]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Wed, 15 Oct 2008 13:57:08 -0400
+Message-Id: <20081015175304.782682524@de.ibm.com>
+References: <20081015174506.107691579@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 15 Oct 2008 19:45:07 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/2] arch_setup_additional_pages arguments
+Content-Disposition: inline; filename=100-vdso-dynobj.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > I was actually "?"ing at the "= 0".  I thought that would be obvious
- > > but it's whizzed past two people so far :(
- > 
- > Is there evidence that some gccs will not add such variable to .bss?
- > 
- > Because "= 0;" is more readable.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-From: http://gcc.gnu.org/gcc-3.3/changes.html
+arch_setup_additional_pages currently gets two arguments, the binary
+format descripton and an indication if the process uses an executable
+stack or not. The second argument is not used by anybody, it could
+be removed without replacement.
 
-  GCC 3.3.1 automatically places zero-initialized variables in the .bss
-  section on some operating systems. Versions of GNU Emacs up to (and
-  including) 21.3 will not work correctly when using this optimization;
-  you can use -fno-zero-initialized-in-bss to disable it.
+What actually does make sense is to pass an indication if the process
+uses the elf interpreter or not. The glibc code will not use anything
+from the vdso if the process does not use the dynamic linker, so for
+statically linked binaries the architecture backend can choose not
+to map the vdso.
 
-so presumably gcc 3.2 (which we still support, right?) does not do this
-(and puts such variables in .data).
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
- - R.
+ arch/powerpc/include/asm/elf.h     |    2 +-
+ arch/powerpc/kernel/vdso.c         |    3 +--
+ arch/sh/include/asm/elf.h          |    2 +-
+ arch/sh/kernel/vsyscall/vsyscall.c |    3 +--
+ arch/x86/vdso/vdso32-setup.c       |    2 +-
+ arch/x86/vdso/vma.c                |    2 +-
+ fs/binfmt_elf.c                    |    2 +-
+ include/asm-x86/elf.h              |    2 +-
+ 8 files changed, 8 insertions(+), 10 deletions(-)
+
+Index: quilt-2.6/arch/powerpc/include/asm/elf.h
+===================================================================
+--- quilt-2.6.orig/arch/powerpc/include/asm/elf.h
++++ quilt-2.6/arch/powerpc/include/asm/elf.h
+@@ -267,7 +267,7 @@ extern int ucache_bsize;
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
+ struct linux_binprm;
+ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+-				       int executable_stack);
++				       int uses_interp);
+ #define VDSO_AUX_ENT(a,b) NEW_AUX_ENT(a,b);
+ 
+ #endif /* __KERNEL__ */
+Index: quilt-2.6/arch/powerpc/kernel/vdso.c
+===================================================================
+--- quilt-2.6.orig/arch/powerpc/kernel/vdso.c
++++ quilt-2.6/arch/powerpc/kernel/vdso.c
+@@ -184,8 +184,7 @@ static void dump_vdso_pages(struct vm_ar
+  * This is called from binfmt_elf, we create the special vma for the
+  * vDSO and insert it into the mm struct tree
+  */
+-int arch_setup_additional_pages(struct linux_binprm *bprm,
+-				int executable_stack)
++int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	struct page **vdso_pagelist;
+Index: quilt-2.6/arch/sh/include/asm/elf.h
+===================================================================
+--- quilt-2.6.orig/arch/sh/include/asm/elf.h
++++ quilt-2.6/arch/sh/include/asm/elf.h
+@@ -202,7 +202,7 @@ extern int dump_task_fpu (struct task_st
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
+ struct linux_binprm;
+ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+-				       int executable_stack);
++				       int uses_interp);
+ 
+ extern unsigned int vdso_enabled;
+ extern void __kernel_vsyscall;
+Index: quilt-2.6/arch/sh/kernel/vsyscall/vsyscall.c
+===================================================================
+--- quilt-2.6.orig/arch/sh/kernel/vsyscall/vsyscall.c
++++ quilt-2.6/arch/sh/kernel/vsyscall/vsyscall.c
+@@ -59,8 +59,7 @@ int __init vsyscall_init(void)
+ }
+ 
+ /* Setup a VMA at program startup for the vsyscall page */
+-int arch_setup_additional_pages(struct linux_binprm *bprm,
+-				int executable_stack)
++int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+Index: quilt-2.6/arch/x86/vdso/vdso32-setup.c
+===================================================================
+--- quilt-2.6.orig/arch/x86/vdso/vdso32-setup.c
++++ quilt-2.6/arch/x86/vdso/vdso32-setup.c
+@@ -310,7 +310,7 @@ int __init sysenter_setup(void)
+ }
+ 
+ /* Setup a VMA at program startup for the vsyscall page */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int exstack)
++int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+Index: quilt-2.6/arch/x86/vdso/vma.c
+===================================================================
+--- quilt-2.6.orig/arch/x86/vdso/vma.c
++++ quilt-2.6/arch/x86/vdso/vma.c
+@@ -98,7 +98,7 @@ static unsigned long vdso_addr(unsigned 
+ 
+ /* Setup a VMA at program startup for the vsyscall page.
+    Not called for compat tasks */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int exstack)
++int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+Index: quilt-2.6/fs/binfmt_elf.c
+===================================================================
+--- quilt-2.6.orig/fs/binfmt_elf.c
++++ quilt-2.6/fs/binfmt_elf.c
+@@ -949,7 +949,7 @@ static int load_elf_binary(struct linux_
+ 	set_binfmt(&elf_format);
+ 
+ #ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
+-	retval = arch_setup_additional_pages(bprm, executable_stack);
++	retval = arch_setup_additional_pages(bprm, !!elf_interpreter);
+ 	if (retval < 0) {
+ 		send_sig(SIGKILL, current, 0);
+ 		goto out;
+Index: quilt-2.6/include/asm-x86/elf.h
+===================================================================
+--- quilt-2.6.orig/include/asm-x86/elf.h
++++ quilt-2.6/include/asm-x86/elf.h
+@@ -325,7 +325,7 @@ struct linux_binprm;
+ 
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+-				       int executable_stack);
++				       int uses_interp);
+ 
+ extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
+ #define compat_arch_setup_additional_pages	syscall32_setup_pages
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
