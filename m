@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYJOVQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbYJOVQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbYJOVQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 17:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbYJOVQI
+	id S1753714AbYJOVQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYJOVQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 17:16:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54299 "EHLO ogre.sisk.pl"
+	Wed, 15 Oct 2008 17:16:23 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:59114 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753472AbYJOVQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 17:16:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old code ordering
-Date: Wed, 15 Oct 2008 23:20:05 +0200
-User-Agent: KMail/1.9.9
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, John Brown <john.brown3@hp.com>
-References: <200810142254.07024.rjw@sisk.pl> <200810151605.35883.rjw@sisk.pl> <20081015141526.GA5633@srcf.ucam.org>
-In-Reply-To: <20081015141526.GA5633@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1754908AbYJOVQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 17:16:22 -0400
+Date: Thu, 16 Oct 2008 01:18:12 +0400
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] fastboot: Introduce an asynchronous function call mechanism
+Message-ID: <20081015211812.GA30735@2ka.mipt.ru>
+References: <20081012194427.2e21c22e@infradead.org> <20081015014117.faff3a61.akpm@linux-foundation.org> <20081015075246.2e1610f3@infradead.org> <20081015095905.41219c9d.akpm@linux-foundation.org> <20081015162316.0a0c284a@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810152320.06167.rjw@sisk.pl>
+In-Reply-To: <20081015162316.0a0c284a@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 15 of October 2008, Matthew Garrett wrote:
-> On Wed, Oct 15, 2008 at 04:05:35PM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, 15 of October 2008, Matthew Garrett wrote:
-> > > I think trying to work out what would be more useful than just adding it to
-> > > a blacklist. 
-> > 
-> > Well, machines that require the "old" ordering are simply broken, because
-> > you just can't assume that specific devices are not in D3 before you
-> > execute _PTS.
-> > 
-> > IOW, we aren't doing anything wrong and the BIOS is buggy.
+Hi Arjan.
+
+[ I've switched to the different mail system recently, you could update
+you blacklist filter, or we can bury the war axe: ipw2100 still does not
+work with power tricks :) ]
+
+On Wed, Oct 15, 2008 at 04:23:16PM -0400, Arjan van de Ven (arjan@infradead.org) wrote:
+> On Wed, 15 Oct 2008 09:59:05 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> So how does Windows cope with this?
+> > > > 
+> > > > Please talk to Evgeniy about his new thread_pool stuff which I've
+> > > > suggested become a generic library.
+> > 
+> > ^^ this?
+> 
+> if thread pools can deliver me the same ordering guarantees.....
+> which I kinda doubt given the point of the concept of them..
 
-I don't know. :-(
+One can schedule execution on given thread in the pool (actually on
+given set of threads, which have the same private pointer), if needed
+threads are busy, caller will sleep, if there are no such threads,
+execution fails. Although I'm not quite sure this is exactly what you
+asked for.
 
-One possible explanation is that the device causing the trouble is not put
-into D3 at all during suspend, but I'm speculating here.
-
-Thanks,
-Rafael
+-- 
+	Evgeniy Polyakov
