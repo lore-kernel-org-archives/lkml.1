@@ -1,51 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYJOIxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYJOI4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbYJOIxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 04:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYJOIxJ
+	id S1753421AbYJOI4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 04:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYJOIz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 04:53:09 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:61963 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbYJOIxI (ORCPT
+	Wed, 15 Oct 2008 04:55:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:17360 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbYJOIz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 04:53:08 -0400
+	Wed, 15 Oct 2008 04:55:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
+        d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=xUR1ijt8e20YpkUq28bn3rmfSRUjQA/oKaXf1VNFqnXFu0/f+SnPiNWpiviLCcwwr5
-         OBI3H2w3yIsXxd0h+K+DCc2JoipvUEOarXaV8sO+LAAprIgv0po8T1s9OICbn21CQ3Mg
-         uuadpzPqqqX4pnIlyv2BlENqEtlF9UZsWDALg=
-Message-ID: <36ca99e90810150153g29fddf88mdfb06b49fe973b1b@mail.gmail.com>
-Date: Wed, 15 Oct 2008 10:53:06 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>
-Subject: Re: Superpages Project - sourceforge.net/projects/linuxsuperpages
-Cc: "Wildman, Tom" <tom.wildman@hp.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "alan@redhat.com" <alan@redhat.com>
-In-Reply-To: <48F5A9FF.2020306@tuffmail.co.uk>
+        b=gSpASg2GHCoqbNFn0U4b368xHe5M5Rh9f55ySNFVR2Avt5+AQZSJhZJCQoLV2Dlr+s
+         02RDDV+PW2azM7X+PcjloVcV+DkIoZaaQYY6VlhE9M889g5hHMpmyYAysn7uCTbl32rZ
+         XDXTk9LCSq4pUuglQMp5avMaF6FqiXq0BdKm8=
+Message-ID: <aec7e5c30810150155q244834c0i65b2f3b927ba2d37@mail.gmail.com>
+Date: Wed, 15 Oct 2008 17:55:56 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] soc-camera: fix compile breakage on SH
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Stefan Herbrechtsmeier" <hbmeier@hni.uni-paderborn.de>,
+       "Mauro Carvalho Chehab" <mchehab@redhat.com>, lethal@linux-sh.org,
+       linux-sh@vger.kernel.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, "Magnus Damm" <damm@igel.co.jp>
+In-Reply-To: <Pine.LNX.4.64.0810151011450.3896@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <F9E7AD49A6823D4AA5A36E1DE32F0F9B27570B8CBC@GVW1092EXB.americas.hpqcorp.net>
-	 <48F5A9FF.2020306@tuffmail.co.uk>
+References: <20081014183936.GB4710@cs181140183.pp.htv.fi>
+	 <Pine.LNX.4.64.0810142335400.10458@axis700.grange>
+	 <20081015033303.GC4710@cs181140183.pp.htv.fi>
+	 <20081015052026.GC20183@cs181140183.pp.htv.fi>
+	 <aec7e5c30810142328n1563163bw636b8baf1a47ad8b@mail.gmail.com>
+	 <Pine.LNX.4.64.0810150836100.3896@axis700.grange>
+	 <aec7e5c30810150103p7ed810ccyc815ad578d64feac@mail.gmail.com>
+	 <Pine.LNX.4.64.0810151011450.3896@axis700.grange>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 10:29, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
-> Wildman, Tom wrote:
->> A new project has been created at SourceForge with an implementation of the Rice University's Superpages FreeBSD prototype that has been ported to the 2.6 Linux kernel for IA64, x86-64, and x86-32.
+On Wed, Oct 15, 2008 at 5:26 PM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Wed, 15 Oct 2008, Magnus Damm wrote:
+>> On Wed, Oct 15, 2008 at 3:41 PM, Guennadi Liakhovetski
+>> <g.liakhovetski@gmx.de> wrote:
+>> > On Wed, 15 Oct 2008, Magnus Damm wrote:
+>> >
+>> >> Thanks for working on fixing the breakage. I'd prefer to wait a bit
+>> >> since there are quite a few pinmux patches queued up that may break if
+>> >> we merge a fix right now. I can fix it up later on.
+>> >
+>> > no, I would not leave the kernel in a non-compilable state even if just
+>> > for one board. Please, test a new version of the patch below. And yes, You
+>> > will have to rebase your patches, sorry. Another thing, could you also,
+>> > please, add a license / copyright header to
+>> > include/media/soc_camera_platform.h?
 >>
->> The project can be found at:  http://sourceforge.net/projects/linuxsuperpages
->>
+>> I'm not asking you to keep the board broken forever. It's just a
+>> question of in which order the trees are getting merged. Again, I'd
+>> rather see that this fix is put _on_top_ of the patches that are
+>> already queued up in the SuperH tree. Merging it before doesn't help
+>> anything in my opinion - especially since the change should go though
+>> the SuperH tree anyway.
 >
-> Maybe I'm just struggling with the re-designed Sourceforge, but I can't
-> find a link to the "Wiki section" mentioned in the summary.
-Click "More" in the menu bar, right of "Summary", "Tracker", "Forums",
-and "Download".
+> I think, compilation-breakage fixes should have higher priority than
+> further enhancements. Think about bisection. If you now first commit
+> several more patches, you make the interval where the tree is not
+> compilable longer, and thus the probabiliy that someone hits it in their
+> git.bisect higher. That's why I think any compilation breakage should be
+> fixed ASAP. And which changes do you mean specifically? This one:
+>
+> http://marc.info/?l=linux-sh&m=122346619318532&w=2
+>
+> Yes, indeed they conflict, but it is trivial to fix. So, I would prefer to
+> close the compile-breakage window ASAP, and then trivially update that one
+> your patch. Let's see what others say. And as for through which tree it
+> should go, if you insist the sh-part going through the sh-tree, then it
+> has to be split into two parts - video and sh. Thus extending the
+> breakage-window by one commit...
+
+Yeah, that one plus a patch for the smc91x platform data and another
+one for mmc (which needs updating anyway). So maybe it's not such a
+big deal. And I see your point with closing the window ASAP to do
+damage control. Otoh I wonder how big difference it will be extending
+the breakage window with one commit - there must be zillions of
+commits in after the breakage already.
+
+Paul, any strong feelings regarding merging things though the SuperH tree?
+
+>> Feel free to add any header you like. =)
+>
+> Thanks, but no thanks:-) I cannot add your copyright, at least not without
+> your explicit agreement (I think). So, I'd prefer you submit a patch for
+> that.
+
+I wonder if it's a large enough bit sequence to actually copyright. =)
+But sure, I'll do that.
+
+Is this .29 material, or will there be a second v4l round with trivial
+driver changes for .28?
+
+I've already posted some vivi patches and two simple patches for the
+sh_mobile_ceu driver - sorry about the timing - and i have one more
+sh_mobile_ceu patch outstanding. Also, I think one of my coworkers may
+post a soc_camera driver for ov772x chips soon too.
+
+Is there any chance that can get included in .28?
+
+Thank you!
+
+/ magnus
