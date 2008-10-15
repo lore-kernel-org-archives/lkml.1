@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbYJOWwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYJOWyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754399AbYJOWwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYJOWug
+	id S1755977AbYJOWyU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYJOWyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:50:36 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:54100 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089AbYJOWud (ORCPT
+	Wed, 15 Oct 2008 18:54:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49328 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751338AbYJOWyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:50:33 -0400
-Subject: [PATCH vfs-2.6 6/6] vfs: add LOOKUP_RENAME_TARGET intent
-To: viro@zeniv.linux.org.uk
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       hirofumi@mail.parknet.co.jp
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Thu, 16 Oct 2008 07:50:29 +0900
-Message-ID: <11d623e93e848f673b5620397.ps@mail.parknet.co.jp>
-References: <e86c95d83e848f673b3120397.ps@mail.parknet.co.jp>
-	<ef1e4d933e848f673b4220397.ps@mail.parknet.co.jp>
-	<4e71a4b03e848f673b4320397.ps@mail.parknet.co.jp>
-	<f5d2a7043e848f673b5420397.ps@mail.parknet.co.jp>
-	<e8c7efff3e848f673b5520397.ps@mail.parknet.co.jp>
-In-Reply-To: <e8c7efff3e848f673b5520397.ps@mail.parknet.co.jp>
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Wed, 15 Oct 2008 18:54:08 -0400
+Date: Wed, 15 Oct 2008 15:53:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: greg@kroah.com, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: is the weeks before -rc1 the time to really be working on
+ -next?
+Message-Id: <20081015155353.f15a996e.akpm@linux-foundation.org>
+In-Reply-To: <20081015233607.54c1d6b8@lxorguk.ukuu.org.uk>
+References: <20081015174015.GB8663@kroah.com>
+	<20081015145606.2af3baf1.akpm@linux-foundation.org>
+	<20081015233607.54c1d6b8@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 15 Oct 2008 23:36:07 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-This adds LOOKUP_RENAME_TARGET intent for lookup of rename destination.
+> > first.  So everyone who has been changing stuff which is outside their
+> > area of responsibility and breaking other people's stuff would get to
+> > see the consequences of their actions instead of Stephen and I bearing
+> > the brunt of it all the time.
+> > 
+> > 
+> > I fear we've reached the stage now where people are merrily merging
+> > bright-and-shiny things into their local trees without giving much
+> > thought at all to the consequences for others.
+> 
+> Its not that simple. There are areas where the tree divides don't fit the
+> coding divides. ttydev was horribly entwined with USB and there really
+> wasn't a way to break that up at the time in question. Because -next
+> tries to assemble all the trees based on Linus tree it can't cope with
+> that case well at all and in fact there was some neccessary rule bending
+> to make next work out where some of the ttydev work was done with ttydev
+> on top of other subtrees.
 
-LOOKUP_RENAME_TARGET is going to be used like LOOKUP_CREATE. But since
-the destination of rename() can be existing directory entry, so it has a
-difference. Although that difference doesn't matter in my usage, this
-tells it to user of this intent.
+Yes, sometimes there are nasty special cases and I of course understand
+that and I did allow for it in making that assertion.  There's quite a
+lot of gratuitous lazy stuff happening too.
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
+> So at times it would be very helpful with -next to be able to do limited
+> tree ordering. If I could have flagged tty as requiring USB first for
+> example there would have been a lot less pain involved.
 
- fs/namei.c            |    1 +
- include/linux/namei.h |    1 +
- 2 files changed, 2 insertions(+)
+Well there's an alternative here: you base the ttydev tree on top of
+linux-next.  That way we spread the load around a bit.
 
-diff -puN fs/namei.c~dcache-add-rename-intent fs/namei.c
---- vfs-2.6/fs/namei.c~dcache-add-rename-intent	2008-10-16 06:57:40.000000000 +0900
-+++ vfs-2.6-hirofumi/fs/namei.c	2008-10-16 06:57:40.000000000 +0900
-@@ -2654,6 +2654,7 @@ asmlinkage long sys_renameat(int olddfd,
- 
- 	oldnd.flags &= ~LOOKUP_PARENT;
- 	newnd.flags &= ~LOOKUP_PARENT;
-+	newnd.flags |= LOOKUP_RENAME_TARGET;
- 
- 	trap = lock_rename(new_dir, old_dir);
- 
-diff -puN include/linux/namei.h~dcache-add-rename-intent include/linux/namei.h
---- vfs-2.6/include/linux/namei.h~dcache-add-rename-intent	2008-10-16 06:57:40.000000000 +0900
-+++ vfs-2.6-hirofumi/include/linux/namei.h	2008-10-16 06:58:05.000000000 +0900
-@@ -54,6 +54,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LA
- #define LOOKUP_OPEN		0x0100
- #define LOOKUP_CREATE		0x0200
- #define LOOKUP_EXCL		0x0400
-+#define LOOKUP_RENAME_TARGET	0x0800
- 
- extern int user_path_at(int, const char __user *, unsigned, struct path *);
- 
-_
+But the problem here is that once linux-next merges your patches, you
+no longer have a tree on which to base your patches!  You need to get
+your hands on "linux-next without my stuff" to maintain them.
+
+
+I'm in the same situation with -mm and I do have a scheme planned for
+that, but it'll involve asking Stephen to add a "mm starts here" tag,
+so I can extract "linux-next without my stuff".  (I still haven't got
+around to making this happen - I've become a fulltime reject fixer).
+
+
+But the problem with that scheme is that it'd be hard to generalise for
+other trees.  Or maybe not - we can just say "Alan goes first, then
+-mm".  Then you piggyback on top of the infrastructure which I use.
+
+
+Then again, the ttydev problem was hopefully a once-off, so we don't
+need to do anything now.
+
