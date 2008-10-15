@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbYJOUOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYJOUOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbYJOUOA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYJOUNt
+	id S1756348AbYJOUOl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJOUOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:13:49 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44456 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753681AbYJOUNs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:13:48 -0400
-Date: Wed, 15 Oct 2008 15:13:48 -0500
+	Wed, 15 Oct 2008 16:14:06 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:51974 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753832AbYJOUOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 16:14:04 -0400
+Date: Wed, 15 Oct 2008 15:14:04 -0500
 From: Russ Anderson <rja@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
        linux-kernel@vger.kernel.org
 Cc: Russ Anderson <rja@sgi.com>, Huang Ying <ying.huang@intel.com>,
        Jack Steiner <steiner@sgi.com>
-Subject: [PATCH 4/7] x86: Add UV sysfs entries
-Message-ID: <20081015201348.GE197213@sgi.com>
+Subject: [PATCH 5/7] x86: Add UV watchlist bios call
+Message-ID: <20081015201404.GF197213@sgi.com>
 Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,119 +26,106 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 4/7] x86: Add UV sysfs entries
+[PATCH 5/7] x86: Add UV watchlist bios call
 
-Create /sys/firmware/sgi_uv sysfs entries for partition_id and coherence_id.
+Calls to allocate and free UV watchlists.
 
 Signed-off-by: Russ Anderson <rja@sgi.com>
 
 ---
- arch/x86/kernel/Makefile   |    2 -
- arch/x86/kernel/uv_sysfs.c |   72 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/uv/bios.h  |    1 
- 3 files changed, 74 insertions(+), 1 deletion(-)
+ arch/x86/kernel/bios_uv.c |   33 +++++++++++++++++++++++++++++++++
+ include/asm-x86/uv/bios.h |   17 ++++++++++++++++-
+ 2 files changed, 49 insertions(+), 1 deletion(-)
 
-Index: linux/arch/x86/kernel/Makefile
+Index: linux/arch/x86/kernel/bios_uv.c
 ===================================================================
---- linux.orig/arch/x86/kernel/Makefile	2008-10-15 09:56:10.000000000 -0500
-+++ linux/arch/x86/kernel/Makefile	2008-10-15 09:56:26.000000000 -0500
-@@ -107,7 +107,7 @@ obj-$(CONFIG_OLPC)		+= olpc.o
- # 64 bit specific files
- ifeq ($(CONFIG_X86_64),y)
-         obj-y				+= genapic_64.o genapic_flat_64.o genx2apic_uv_x.o tlb_uv.o
--	obj-y				+= bios_uv.o
-+	obj-y				+= bios_uv.o uv_sysfs.o
-         obj-y				+= genx2apic_cluster.o
-         obj-y				+= genx2apic_phys.o
-         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
-Index: linux/arch/x86/kernel/uv_sysfs.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/arch/x86/kernel/uv_sysfs.c	2008-10-15 09:56:26.000000000 -0500
-@@ -0,0 +1,72 @@
-+/*
-+ * This file supports the /sys/firmware/sgi_uv interfaces for SGI UV.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ *
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  Copyright (c) Russ Anderson
-+ */
-+
-+#include <linux/sysdev.h>
-+#include <asm/uv/bios.h>
-+
-+struct kobject *sgi_uv_kobj;
-+
-+static ssize_t partition_id_show(struct kobject *kobj,
-+			struct kobj_attribute *attr, char *buf)
+--- linux.orig/arch/x86/kernel/bios_uv.c	2008-10-15 09:56:25.000000000 -0500
++++ linux/arch/x86/kernel/bios_uv.c	2008-10-15 13:54:40.000000000 -0500
+@@ -100,6 +100,39 @@ s64 uv_bios_get_sn_info(int fc, int *uvt
+ 	return ret;
+ }
+ 
++int
++uv_bios_mq_watchlist_alloc(int blade, void *mq, unsigned int mq_size,
++			   unsigned long *intr_mmr_offset)
 +{
-+	return snprintf(buf, PAGE_SIZE, "%ld\n", sn_partition_id);
-+}
++	union uv_watchlist_u size_blade;
++	unsigned long addr;
++	u64 watchlist;
++	s64 ret;
 +
-+static ssize_t coherence_id_show(struct kobject *kobj,
-+			struct kobj_attribute *attr, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%ld\n", partition_coherence_id());
-+}
++	addr = (unsigned long)mq;
++	size_blade.size = mq_size;
++	size_blade.blade = blade;
 +
-+static struct kobj_attribute partition_id_attr =
-+	__ATTR(partition_id, S_IRUGO, partition_id_show, NULL);
-+
-+static struct kobj_attribute coherence_id_attr =
-+	__ATTR(coherence_id, S_IRUGO, coherence_id_show, NULL);
-+
-+
-+static int __init sgi_uv_sysfs_init(void)
-+{
-+	unsigned long ret;
-+
-+	if (!sgi_uv_kobj)
-+		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
-+	if (!sgi_uv_kobj) {
-+		printk(KERN_WARNING "kobject_create_and_add sgi_uv failed \n");
-+		return -EINVAL;
-+	}
-+
-+	ret = sysfs_create_file(sgi_uv_kobj, &partition_id_attr.attr);
-+	if (ret) {
-+		printk(KERN_WARNING "sysfs_create_file partition_id failed \n");
++	/*
++	 * bios returns watchlist number or negative error number.
++	 */
++	ret = (int)uv_bios_call_irqsave(UV_BIOS_WATCHLIST_ALLOC, addr,
++			size_blade.val, (u64)intr_mmr_offset,
++			(u64)&watchlist, 0);
++	if (ret < BIOS_STATUS_SUCCESS )
 +		return ret;
-+	}
 +
-+	ret = sysfs_create_file(sgi_uv_kobj, &coherence_id_attr.attr);
-+	if (ret) {
-+		printk(KERN_WARNING "sysfs_create_file coherence_id failed \n");
-+		return ret;
-+	}
-+
-+	return 0;
++	return watchlist;
 +}
++EXPORT_SYMBOL_GPL(uv_bios_mq_watchlist_alloc);
 +
-+device_initcall(sgi_uv_sysfs_init);
++int
++uv_bios_mq_watchlist_free(int blade, int watchlist_num)
++{
++	return (int)uv_bios_call_irqsave(UV_BIOS_WATCHLIST_FREE,
++				blade, watchlist_num, 0, 0, 0);
++}
++EXPORT_SYMBOL_GPL(uv_bios_mq_watchlist_free);
+ 
+ s64 uv_bios_freq_base(u64 clock_type, u64 *ticks_per_second)
+ {
 Index: linux/include/asm-x86/uv/bios.h
 ===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-10-15 09:56:25.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-10-15 09:56:26.000000000 -0500
-@@ -89,5 +89,6 @@ extern long sn_coherency_id;
- extern long sn_region_size;
- #define partition_coherence_id()	(sn_coherency_id)
+--- linux.orig/include/asm-x86/uv/bios.h	2008-10-15 09:56:26.000000000 -0500
++++ linux/include/asm-x86/uv/bios.h	2008-10-15 13:48:43.000000000 -0500
+@@ -32,7 +32,9 @@
+ enum uv_bios_cmd {
+ 	UV_BIOS_COMMON,
+ 	UV_BIOS_GET_SN_INFO,
+-	UV_BIOS_FREQ_BASE
++	UV_BIOS_FREQ_BASE,
++	UV_BIOS_WATCHLIST_ALLOC,
++	UV_BIOS_WATCHLIST_FREE
+ };
  
-+extern struct kobject *sgi_uv_kobj;	/* /sys/firmware/sgi_uv */
+ /*
+@@ -71,6 +73,15 @@ union partition_info_u {
+ 	};
+ };
  
- #endif /* ASM_X86__UV__BIOS_H */
++union uv_watchlist_u {
++	u64	val;
++	struct {
++		u64	blade	: 16,
++			size	: 32,
++			filler	: 16;
++	};
++};
++
+ /*
+  * bios calls have 6 parameters
+  */
+@@ -80,9 +91,13 @@ extern s64 uv_bios_call_reentrant(enum u
+ 
+ extern s64 uv_bios_get_sn_info(int, int *, long *, long *, long *);
+ extern s64 uv_bios_freq_base(u64, u64 *);
++extern int uv_bios_mq_watchlist_alloc(int, void *, unsigned int,
++					unsigned long *);
++extern int uv_bios_mq_watchlist_free(int, int);
+ 
+ extern void uv_bios_init(void);
+ 
++extern unsigned long sn_rtc_cycles_per_second;
+ extern int uv_type;
+ extern long sn_partition_id;
+ extern long sn_coherency_id;
 -- 
 Russ Anderson, OS RAS/Partitioning Project Lead  
 SGI - Silicon Graphics Inc          rja@sgi.com
