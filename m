@@ -1,148 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbYJOJxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbYJOKAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbYJOJxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 05:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYJOJxJ
+	id S1752815AbYJOKAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 06:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbYJOJ7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 05:53:09 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:1495 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbYJOJxG (ORCPT
+	Wed, 15 Oct 2008 05:59:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49237 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbYJOJ7v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 05:53:06 -0400
-X-BigFish: VPS-4(zz4015Mzzzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K8RY43-01-JEO-01
-Date: Wed, 15 Oct 2008 11:51:53 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: x86: SB600: skip IRQ0 override if it is not routed to INT2 of
-	IOAPIC
-Message-ID: <20081015095153.GG29098@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 15 Oct 2008 05:59:51 -0400
+Date: Wed, 15 Oct 2008 12:06:37 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hans Schou <linux@schou.dk>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SiS55x, another x86 CPU
+Message-ID: <20081015100637.GS12131@one.firstfloor.org>
+References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org> <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org> <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 15 Oct 2008 09:52:17.0038 (UTC) FILETIME=[B5286AE0:01C92EAB]
+In-Reply-To: <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some more HP laptops BIOS reports an IRQ0 override
-but the SB600 chipset is configured such that timer
-interrupts go to INT0 of IOAPIC.
+> If any CR/LF in your file you must have added them yourself.
 
-Check IRQ0 routing and if it is routed to INT0 of IOAPIC skip the
-timer override.
+There were definitely CR/LFs in the patch attachment you sent.
+And no my mailer doesn't add them.
 
-See following bug reports:
-http://bugzilla.kernel.org/show_bug.cgi?id=11715
-http://bugzilla.kernel.org/show_bug.cgi?id=11516
+-Andi
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/early-quirks.c |   55 +++++++++++++++++++++++++++++++++++++--
- 1 files changed, 52 insertions(+), 3 deletions(-)
-
-Patch is against v2.6.27-3977-gc166ab7 (yesterday's Linus git).
-Please apply.
-
-Thanks,
-Andreas
-
-
-diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
-index 733c4f8..3ce029f 100644
---- a/arch/x86/kernel/early-quirks.c
-+++ b/arch/x86/kernel/early-quirks.c
-@@ -95,7 +95,8 @@ static void __init nvidia_bugs(int num, int slot, int func)
- 
- }
- 
--static u32 ati_ixp4x0_rev(int num, int slot, int func)
-+#if defined(CONFIG_ACPI) && defined(CONFIG_X86_IO_APIC)
-+static u32 __init ati_ixp4x0_rev(int num, int slot, int func)
- {
- 	u32 d;
- 	u8  b;
-@@ -115,7 +116,6 @@ static u32 ati_ixp4x0_rev(int num, int slot, int func)
- 
- static void __init ati_bugs(int num, int slot, int func)
- {
--#if defined(CONFIG_ACPI) && defined (CONFIG_X86_IO_APIC)
- 	u32 d;
- 	u8  b;
- 
-@@ -138,9 +138,56 @@ static void __init ati_bugs(int num, int slot, int func)
- 		printk(KERN_INFO "If you got timer trouble "
- 		       "try acpi_use_timer_override\n");
- 	}
--#endif
- }
- 
-+static u32 __init ati_sbx00_rev(int num, int slot, int func)
-+{
-+	u32 old, d;
-+
-+	d = read_pci_config(num, slot, func, 0x70);
-+	old = d;
-+	d &= ~(1<<8);
-+	write_pci_config(num, slot, func, 0x70, d);
-+	d = read_pci_config(num, slot, func, 0x8);
-+	d &= 0xff;
-+	write_pci_config(num, slot, func, 0x70, old);
-+
-+	return d;
-+}
-+
-+static void __init ati_bugs_contd(int num, int slot, int func)
-+{
-+	u32 d, rev;
-+
-+	if (acpi_use_timer_override)
-+		return;
-+
-+	rev = ati_sbx00_rev(num, slot, func);
-+	if (rev > 0x13)
-+		return;
-+
-+	/* check for IRQ0 interrupt swap */
-+	d = read_pci_config(num, slot, func, 0x64);
-+	if (!(d & (1<<14)))
-+		acpi_skip_timer_override = 1;
-+
-+	if (acpi_skip_timer_override) {
-+		printk(KERN_INFO "SB600 revision 0x%x\n", rev);
-+		printk(KERN_INFO "Ignoring ACPI timer override.\n");
-+		printk(KERN_INFO "If you got timer trouble "
-+		       "try acpi_use_timer_override\n");
-+	}
-+}
-+#else
-+static void __init ati_bugs(int num, int slot, int func)
-+{
-+}
-+
-+static void __init ati_bugs_contd(int num, int slot, int func)
-+{
-+}
-+#endif
-+
- #ifdef CONFIG_DMAR
- static void __init intel_g33_dmar(int num, int slot, int func)
- {
-@@ -176,6 +223,8 @@ static struct chipset early_qrk[] __initdata = {
- 	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, fix_hypertransport_config },
- 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
- 	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs },
-+	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS,
-+	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs_contd },
- #ifdef CONFIG_DMAR
- 	{ PCI_VENDOR_ID_INTEL, 0x29c0,
- 	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, intel_g33_dmar },
 -- 
-1.6.0.2
-
-
-
+ak@linux.intel.com
