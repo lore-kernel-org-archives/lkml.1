@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbYJOJEC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYJOJFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368AbYJOJEC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 05:04:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYJOJDx
+	id S1753748AbYJOJFg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 05:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYJOJF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 05:03:53 -0400
-Received: from qb-out-0506.google.com ([72.14.204.228]:60642 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbYJOJDw (ORCPT
+	Wed, 15 Oct 2008 05:05:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33158 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751608AbYJOJF1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 05:03:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=ctjW0GOoab33xVDFdFFWuWMiCqtNjjTzjZ+rdsJNXMm8AEY5yKMdgqMmdpVJ2ghTJh
-         +FycoBOWax3hPTZXATGZ1IZtgsdKP3j4DEgCR4fs0Iw6XrHfXrwPkrNfI18xTncbkgPg
-         c4HQyY5SPZyoHXr/7BXKj3hfSBjELVRbIgioI=
-Message-ID: <2ea1731b0810150203t10567a74xb10e214396073771@mail.gmail.com>
-Date: Wed, 15 Oct 2008 11:03:50 +0200
-From: "Marco Stornelli" <marco.stornelli@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] PRAMFS with XIP support
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Oct 2008 05:05:27 -0400
+Date: Wed, 15 Oct 2008 10:05:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Kaz Kylheku" <kkylheku@gmail.com>
+Cc: "Chris Friesen" <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+Subject: Re: GPL question: using large contiguous memory in proprietary
+ driver.
+Message-ID: <20081015100521.739277f2@lxorguk.ukuu.org.uk>
+In-Reply-To: <3f43f78b0810141623s4282f9eof87014d2dee17810@mail.gmail.com>
+References: <3f43f78b0810141456r159d71e7h9763e50e7dbc0c51@mail.gmail.com>
+	<48F5193B.1010601@nortel.com>
+	<3f43f78b0810141623s4282f9eof87014d2dee17810@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+> But thanks to the gracious tolerance of the kernel development
+> community, such drivers are permitted to exist. That is the question:
 
-I forward ported the PRAMFS for 2.6.27 kernel. In addition I added the
-XIP support for this kind of filesystem. I've got even some benchmark
-results made with bonnie++. You can download the patches from
-http://sourceforge.net/tracker/?atid=595818&group_id=91077&func=browse.
-I'm not posting here because the patches are very big ~2800 lines of
-code. Any comments are welcome.
+Thats an interesting interpretation and not one I'd want to rely upon.
 
-Regards,
+> setting aside GPL chapter and verse, could that tolerance extend
+> to allow such a driver to get a piece of boot-time memory, and if so,
+> what mechanism would be tolerated?
 
-Marco Stornelli
+You should discuss such matters with your lawyer. What you are trying to
+ask I think is a question about what constitutes an independant work, and
+that is a legal not a technical question.
+
+Alan
