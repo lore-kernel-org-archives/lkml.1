@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYJOVY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYJOVbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755427AbYJOVY2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 17:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYJOVYU
+	id S1754762AbYJOVbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYJOVbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 17:24:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58901 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753626AbYJOVYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 17:24:19 -0400
-Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net, akpm@linux-foundation.org
-Message-Id: <764B32F3-E12E-4649-A2BB-3F94044D371F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1219294018-12557-7-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 6/9] mpc52xx_psc_spi: remove code associated with !CONFIG_PPC_MERGE
-Date: Wed, 15 Oct 2008 16:23:33 -0500
-References: <1219294018-12557-1-git-send-email-galak@kernel.crashing.org> <1219294018-12557-2-git-send-email-galak@kernel.crashing.org> <1219294018-12557-3-git-send-email-galak@kernel.crashing.org> <1219294018-12557-4-git-send-email-galak@kernel.crashing.org> <1219294018-12557-5-git-send-email-galak@kernel.crashing.org> <1219294018-12557-6-git-send-email-galak@kernel.crashing.org> <1219294018-12557-7-git-send-email-galak@kernel.crashing.org>
-X-Mailer: Apple Mail (2.929.2)
+	Wed, 15 Oct 2008 17:31:23 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:34546 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753370AbYJOVbW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 17:31:22 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Christoph Hellwig <hch@infradead.org>, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] vfs: add __d_instantiate() helper
+References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
+	<e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
+	<7754d3f83e848f5f6f2326623.ps@mail.parknet.co.jp>
+	<20081015194119.GA24892@infradead.org>
+	<87wsg9oan7.fsf@devron.myhome.or.jp>
+	<1224103667.7371.44.camel@localhost>
+Date: Thu, 16 Oct 2008 06:31:18 +0900
+In-Reply-To: <1224103667.7371.44.camel@localhost> (Trond Myklebust's message
+	of "Wed, 15 Oct 2008 16:47:47 -0400")
+Message-ID: <87bpxlo89l.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Trond Myklebust <Trond.Myklebust@netapp.com> writes:
 
-On Aug 20, 2008, at 11:46 PM, Kumar Gala wrote:
-
-> Now that arch/ppc is gone we don't need CONFIG_PPC_MERGE anymore
-> remove the dead code associated with !CONFIG_PPC_MERGE.
+>> Trond, do you care the following convert? E.g.
+>> 
+>> in d_materialise_unique():
+>> 
+>> from
+>> 		dentry->d_inode = NULL;
+>> 		goto found_lock;
+>> to
+>> 		__d_instantiate(dentry, NULL);
+>> 		goto found_lock;
 >
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> drivers/spi/mpc52xx_psc_spi.c |   55  
-> -----------------------------------------
-> 1 files changed, 0 insertions(+), 55 deletions(-)
+> That would be fine by me.
 
-Any update on acceptance of this patch?
-
-- k
+Thanks. I'll replace those.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
