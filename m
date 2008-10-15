@@ -1,82 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYJOX5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYJPAA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbYJOX5A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 19:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYJOX4w
+	id S1755183AbYJPAA2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 20:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYJPAAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 19:56:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35320
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753604AbYJOX4v (ORCPT
+	Wed, 15 Oct 2008 20:00:19 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:56798 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753527AbYJPAAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 19:56:51 -0400
-Date: Wed, 15 Oct 2008 16:56:27 -0700 (PDT)
-Message-Id: <20081015.165627.46518276.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: alan@lxorguk.ukuu.org.uk, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: is the weeks before -rc1 the time to really be working on
- -next?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081015164139.ebcd24c6.akpm@linux-foundation.org>
-References: <20081015155353.f15a996e.akpm@linux-foundation.org>
-	<20081015.160821.143702739.davem@davemloft.net>
-	<20081015164139.ebcd24c6.akpm@linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 15 Oct 2008 20:00:17 -0400
+Message-ID: <48F683EB.2030003@cs.columbia.edu>
+Date: Wed, 15 Oct 2008 19:59:39 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Cedric Le Goater <clg@fr.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       jeremy@goop.org, arnd@arndb.de, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrey Mirkin <major@openvz.org>
+Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
+References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu> <1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu> <1223571036.11830.32.camel@nimitz> <20081010153951.GD28977@elte.hu> <48F30315.1070909@fr.ibm.com> <48F3737B.6070904@cs.columbia.edu> <48F60891.1070807@fr.ibm.com>
+In-Reply-To: <48F60891.1070807@fr.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 15 Oct 2008 16:41:39 -0700
 
-> On Wed, 15 Oct 2008 16:08:21 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
+
+Cedric Le Goater wrote:
+>>> the self checkpoint and self restore syscalls, like Oren is proposing, are 
+>>> simpler but they require the process cooperation to be triggered. we could
+>>> image doing that in a special signal handler which would allow us to jump
+>>> in the right task context. 
+>> This description is not accurate:
+>>
+>> For checkpoint, both implementations use an "external" task to read the state
+>> from other tasks. (In my implementation that "other" task can be self).
 > 
-> > And just like networking we could have Stephen treat the -mm
-> > GIT tree as "important" which roughly means that other conflicting
-> > trees will be knocked out of a -next release in deference to -mm.
-> > 
-> > Those people will have to fix their stuff, not you.  And you'll
-> > always therefore get coverage in -next.
+> which is good, since some applications want to checkpoint themselves and that's
+> a way to provide them a generic service.
+>  
+>> For restart, both implementation expect the restarting process to restore its
+>> own state. They differ in that Andrew's patchset also creates that process
+>> while mine (at the moment) relies on the existing (self) task.
 > 
-> Yes, but then people would end up being based on linux-next, and that's
-> a pretty rubbery target with all the rebasing and trees getting
-> dropped, etc.  And they'd accidentally end up having to actually
-> compile and run linux-next, shock-horror-oh-the-humanity.
+> hmm, 
+> 
+> It seems that your patchset relies on the fact that the tasks are checkpointed 
+> and restarted at a syscall boundary. right ? I'm might be completely wrong
+> on that :)
+> 
 
-That's not the idea actually.
+Yes. I believe openvz too. And probably everyone else as well. I don't
+know of a sane way to do it otherwise :o
 
-The idea is that you run your tree strictly just like any other
-subsystem maintainer.  Your tree is a clone of Linus's and you
-put -mm stuff in on top of that.  Full stop.
+To be precise, either syscall boundary, or the task was in user space
+before being frozen, or (not yet in this implementation) in some special
+frozen state like ptrace or vfork.
 
-So anyone can work on -mm independent of -next.  Just like networking,
-PCI, INPUT, or any other subsystem.  There is no reason in my mind to
-treat -mm specially, anything else is just pain for the people that
-could contribute and help.
+>> In other words, none of them will require any cooperation on part of the
+>> checkpointed tasks, and both will require cooperation on part of the restarting
+>> tasks (the latter is easy since we create and fully control these tasks).
+> 
+> yes.
+> 
+>>> I don't have any preference but looking at the code of the different patchsets
+>>> there are some tricky areas and I'm wondering which path is easier, safer, 
+>>> and portable. 
+>> I am thinking which path is preferred: create the processes in kernel space
+>> (like Andrew's patch does) or in user space (like Zap does). In the mini-summit
+>> we agreed in favor of kernel space, but I can still see arguments why user space
+>> may be better.
+> 
+> I'm more familiar with the second algorithm, restarting the process tree in
+> user space and let each task restart itself with the sys_restart syscall. But
+> that's because I've been working on a C/R framework which freezes tasks on 
+> a syscall boundary, which makes a developer's life easy for restart. 
+> 
+> But as you know, a restarted process resumes its execution where it was 
+> checkpointed. So i'm wondering what are the hidden issues with a in-kernel 
+> checkpoint and in-kernel restart. To be more precise, why Andrey needs a 
+> i386_ret_from_resume  trampoline in : 
+> 
+> 	http://lkml.org/lkml/2008/9/3/181
+> 
+> and why don't you ? 
+> 
 
-> I doubt if the world would end if we just stopped trying to run any of
-> these uber-trees.  Everyone bases their work on mainline and then
-> everything goes smash/bang/curse during the merge window.  It wouldn't
-> be pretty, but it'd sure make people merge their trees promptly ;)
+Usually fork() at the child task returns to user space. IIRC, he needs
+the child task to return in kernel and invoke his function, which
+eventually will invoke the equivalent of do_restart().
 
-I think this aspect is interesting actually.
+So the end result is the same: all restarting tasks restore their own
+state in their own contexts by eventually calling do_restart(). If you
+create  processes in userspace, then they get there via sys_restart(),
+if you create them in the kernel, then they get there directly after
+the trampoline.
 
-For folks that use stable GIT trees, we can cross polinate ourselves
-to resolve merge problems quite simply, and I have seen this happen
-already in the most recent cycle.
+Oren.
 
-Things go smoothly for people that maintain stable GIT trees.  The
-more stuff you touch the more important this is.
-
-The "I rebase my tree ever 3 hours" stuff only works if you are
-strictly working in a certain area and have no contributors you care
-about.
-
-But I even question this situation, no piece of code is an island in
-the kernel and even well contained drivers want to modify some
-infrastructure from time to time.
+>> (note: I refer strictly to the creation of the processes during restart, not 
+>>  how their state is restored).
+> 
+> OK 
+> 
+>> any thoughts ?
+> 
+> thanks Oren,
+> 
+> C.
