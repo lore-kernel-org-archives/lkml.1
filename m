@@ -1,198 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbYJOTwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbYJOTxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbYJOTwo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 15:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbYJOTuj
+	id S1755102AbYJOTxe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 15:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbYJOTxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 15:50:39 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:59673 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755520AbYJOTue (ORCPT
+	Wed, 15 Oct 2008 15:53:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60722 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754947AbYJOTxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 15:50:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
-         :message-id:content-type:content-transfer-encoding;
-        b=pA1uQ0/vlf+McGULgAy34fXY14Mt5qDJBQbVHnuztz2JWD6xK1yYOifA5jpm4ufZzX
-         fdJnZ6yoX+PdsX05XPGl3F9rXpPjOc+3wFOok4KDQm7lg3QdpyobCina1vNkhksJf5PN
-         ZSvFrO+WexAbTh9S6sOwWkRpF+U6sgoxtUZ+s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] ide-cd: remove obsolete seek optimization
-Date: Wed, 15 Oct 2008 21:47:47 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
+	Wed, 15 Oct 2008 15:53:22 -0400
+Date: Wed, 15 Oct 2008 15:53:18 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] vfs: add d_ancestor()
+Message-ID: <20081015195318.GA28349@infradead.org>
+References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp> <e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810152147.47534.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It doesn't make much sense nowadays and is problematic on some drives.
+On Wed, Oct 15, 2008 at 10:58:10PM +0900, OGAWA Hirofumi wrote:
+> 
+> 
+> This adds d_ancestor() instead of d_isparent(), then use it.
+> 
+> If new_dentry == old_dentry, is_subdir() returns 1, looks strange. But
+> I'm not checking callers for now, so this keeps current behavior.
 
-Cc: Borislav Petkov <petkovbb@googlemail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-against pata tree
+This change looks good, but a slightly more detailed changelog would be
+good.
 
- drivers/ide/ide-cd.c |   89 +++------------------------------------------------
- drivers/ide/ide-cd.h |    2 -
- include/linux/ide.h  |    4 --
- 3 files changed, 6 insertions(+), 89 deletions(-)
+>  
+>  /*
+> - * Helper that returns 1 if p1 is a parent of p2, else 0
+> + * Helper that returns the ancestor dentry of p2 which is a child of
+> + * p1, if p1 is an ancestor of p2, else NULL.
+>   */
+> -static int d_isparent(struct dentry *p1, struct dentry *p2)
+> +struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
 
-Index: b/drivers/ide/ide-cd.c
-===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -774,52 +774,6 @@ static ide_startstop_t cdrom_start_rw_co
- 	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);
- }
- 
--#define IDECD_SEEK_THRESHOLD	(1000)			/* 1000 blocks */
--#define IDECD_SEEK_TIMER	(5 * WAIT_MIN_SLEEP)	/* 100 ms */
--#define IDECD_SEEK_TIMEOUT	(2 * WAIT_CMD)		/* 20 sec */
--
--static ide_startstop_t cdrom_seek_intr(ide_drive_t *drive)
--{
--	struct cdrom_info *info = drive->driver_data;
--	int stat;
--	static int retry = 10;
--
--	ide_debug_log(IDE_DBG_FUNC, "Call %s\n", __func__);
--
--	if (cdrom_decode_status(drive, 0, &stat))
--		return ide_stopped;
--
--	drive->atapi_flags |= IDE_AFLAG_SEEKING;
--
--	if (retry && time_after(jiffies, info->start_seek + IDECD_SEEK_TIMER)) {
--		if (--retry == 0)
--			drive->dev_flags &= ~IDE_DFLAG_DSC_OVERLAP;
--	}
--	return ide_stopped;
--}
--
--static void ide_cd_prepare_seek_request(ide_drive_t *drive, struct request *rq)
--{
--	sector_t frame = rq->sector;
--
--	ide_debug_log(IDE_DBG_FUNC, "Call %s\n", __func__);
--
--	sector_div(frame, queue_hardsect_size(drive->queue) >> SECTOR_BITS);
--
--	memset(rq->cmd, 0, BLK_MAX_CDB);
--	rq->cmd[0] = GPCMD_SEEK;
--	put_unaligned(cpu_to_be32(frame), (unsigned int *) &rq->cmd[2]);
--
--	rq->timeout = ATAPI_WAIT_PC;
--}
--
--static ide_startstop_t cdrom_start_seek_continuation(ide_drive_t *drive)
--{
--	struct request *rq = drive->hwif->hwgroup->rq;
--
--	return cdrom_transfer_packet_command(drive, rq, &cdrom_seek_intr);
--}
--
- /*
-  * Fix up a possibly partially-processed request so that we can start it over
-  * entirely, or even put it back on the request queue.
-@@ -1259,7 +1213,6 @@ static void cdrom_do_block_pc(ide_drive_
- static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
- 					sector_t block)
- {
--	struct cdrom_info *info = drive->driver_data;
- 	ide_handler_t *fn;
- 	int xferlen;
- 
-@@ -1269,44 +1222,14 @@ static ide_startstop_t ide_cd_do_request
- 		      (unsigned long long)block);
- 
- 	if (blk_fs_request(rq)) {
--		if (drive->atapi_flags & IDE_AFLAG_SEEKING) {
--			ide_hwif_t *hwif = drive->hwif;
--			unsigned long elapsed = jiffies - info->start_seek;
--			int stat = hwif->tp_ops->read_status(hwif);
--
--			if ((stat & ATA_DSC) != ATA_DSC) {
--				if (elapsed < IDECD_SEEK_TIMEOUT) {
--					ide_stall_queue(drive,
--							IDECD_SEEK_TIMER);
--					return ide_stopped;
--				}
--				printk(KERN_ERR PFX "%s: DSC timeout\n",
--						drive->name);
--			}
--			drive->atapi_flags &= ~IDE_AFLAG_SEEKING;
--		}
--		if (rq_data_dir(rq) == READ &&
--		    IDE_LARGE_SEEK(info->last_block, block,
--			    IDECD_SEEK_THRESHOLD) &&
--		    (drive->dev_flags & IDE_DFLAG_DSC_OVERLAP)) {
--			xferlen = 0;
--			fn = cdrom_start_seek_continuation;
--
--			drive->dma = 0;
--			info->start_seek = jiffies;
--
--			ide_cd_prepare_seek_request(drive, rq);
--		} else {
--			xferlen = 32768;
--			fn = cdrom_start_rw_cont;
-+		xferlen = 32768;
-+		fn = cdrom_start_rw_cont;
- 
--			if (cdrom_start_rw(drive, rq) == ide_stopped)
--				return ide_stopped;
-+		if (cdrom_start_rw(drive, rq) == ide_stopped)
-+			return ide_stopped;
- 
--			if (ide_cd_prepare_rw_request(drive, rq) == ide_stopped)
--				return ide_stopped;
--		}
--		info->last_block = block;
-+		if (ide_cd_prepare_rw_request(drive, rq) == ide_stopped)
-+			return ide_stopped;
- 	} else if (blk_sense_request(rq) || blk_pc_request(rq) ||
- 		   rq->cmd_type == REQ_TYPE_ATA_PC) {
- 		xferlen = rq->data_len;
-Index: b/drivers/ide/ide-cd.h
-===================================================================
---- a/drivers/ide/ide-cd.h
-+++ b/drivers/ide/ide-cd.h
-@@ -88,8 +88,6 @@ struct cdrom_info {
- 	struct request_sense sense_data;
- 
- 	struct request request_sense_request;
--	unsigned long last_block;
--	unsigned long start_seek;
- 
- 	u8 max_speed;		/* Max speed of the drive. */
- 	u8 current_speed;	/* Current speed of the drive. */
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -122,8 +122,6 @@ struct ide_io_ports {
- #define MAX_DRIVES	2	/* per interface; 2 assumed by lots of code */
- #define SECTOR_SIZE	512
- 
--#define IDE_LARGE_SEEK(b1,b2,t)	(((b1) > (b2) + (t)) || ((b2) > (b1) + (t)))
--
- /*
-  * Timeouts for various operations:
-  */
-@@ -496,8 +494,6 @@ enum {
- 	 * when more than one interrupt is needed.
- 	 */
- 	IDE_AFLAG_LIMIT_NFRAMES		= (1 << 7),
--	/* Seeking in progress. */
--	IDE_AFLAG_SEEKING		= (1 << 8),
- 	/* Saved TOC information is current. */
- 	IDE_AFLAG_TOC_VALID		= (1 << 9),
- 	/* We think that the drive door is locked. */
+Given that d_ancestor is non-static a kerneldoc comment describing it
+instead of a plain one would be good.
+
+>  int is_subdir(struct dentry * new_dentry, struct dentry * old_dentry)
+>  {
+>  	int result;
+> -	struct dentry * saved = new_dentry;
+>  	unsigned long seq;
+>  
+> +	if (new_dentry == old_dentry)
+> +		return 1;
+
+Maybe a comment like in your commit description here would be good?
+
+> +
+>  	/* need rcu_readlock to protect against the d_parent trashing due to
+>  	 * d_move
+>  	 */
+>  	rcu_read_lock();
+>          do {
+>  		/* for restarting inner loop in case of seq retry */
+> -		new_dentry = saved;
+> -		result = 0;
+>  		seq = read_seqbegin(&rename_lock);
+> -		for (;;) {
+> -			if (new_dentry != old_dentry) {
+> -				if (IS_ROOT(new_dentry))
+> -					break;
+> -				new_dentry = new_dentry->d_parent;
+> -				continue;
+> -			}
+> -			result = 1;
+> -			break;
+> -		}
+> +		result = (d_ancestor(old_dentry, new_dentry) != NULL);
+>  	} while (read_seqretry(&rename_lock, seq));
+
+That's a big improvement, but with a better loop and fixing all the
+formatting mess in the old code it could become even better:
+
+	/*
+	 * Need rcu_readlock to protect against the d_parent trashing due to
+	 * d_move.
+	 */
+	rcu_read_lock();
+	do {
+		/* for restarting inner loop in case of seq retry */
+ 		seq = read_seqbegin(&rename_lock);
+		if (d_ancestor(old_dentry, new_dentry))
+			result = 1;
+		else
+			result = 0;
+	} while (read_seqretry(&rename_lock, seq));
+ 	rcu_read_unlock();
+
+
+Nice set of patches!
