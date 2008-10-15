@@ -1,118 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYJOI4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYJOI6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbYJOI4O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 04:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYJOIz6
+	id S1753488AbYJOI6b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 04:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYJOI6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 04:55:58 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:17360 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbYJOIz5 (ORCPT
+	Wed, 15 Oct 2008 04:58:22 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:46810 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751030AbYJOI6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 04:55:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gSpASg2GHCoqbNFn0U4b368xHe5M5Rh9f55ySNFVR2Avt5+AQZSJhZJCQoLV2Dlr+s
-         02RDDV+PW2azM7X+PcjloVcV+DkIoZaaQYY6VlhE9M889g5hHMpmyYAysn7uCTbl32rZ
-         XDXTk9LCSq4pUuglQMp5avMaF6FqiXq0BdKm8=
-Message-ID: <aec7e5c30810150155q244834c0i65b2f3b927ba2d37@mail.gmail.com>
-Date: Wed, 15 Oct 2008 17:55:56 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] soc-camera: fix compile breakage on SH
-Cc: "Adrian Bunk" <bunk@kernel.org>,
-       "Stefan Herbrechtsmeier" <hbmeier@hni.uni-paderborn.de>,
-       "Mauro Carvalho Chehab" <mchehab@redhat.com>, lethal@linux-sh.org,
-       linux-sh@vger.kernel.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, "Magnus Damm" <damm@igel.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0810151011450.3896@axis700.grange>
+	Wed, 15 Oct 2008 04:58:21 -0400
+Date: Wed, 15 Oct 2008 09:58:09 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, John Brown <john.brown3@hp.com>
+Subject: Re: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old code ordering
+Message-ID: <20081015085809.GA1061@srcf.ucam.org>
+References: <200810142254.07024.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081014183936.GB4710@cs181140183.pp.htv.fi>
-	 <Pine.LNX.4.64.0810142335400.10458@axis700.grange>
-	 <20081015033303.GC4710@cs181140183.pp.htv.fi>
-	 <20081015052026.GC20183@cs181140183.pp.htv.fi>
-	 <aec7e5c30810142328n1563163bw636b8baf1a47ad8b@mail.gmail.com>
-	 <Pine.LNX.4.64.0810150836100.3896@axis700.grange>
-	 <aec7e5c30810150103p7ed810ccyc815ad578d64feac@mail.gmail.com>
-	 <Pine.LNX.4.64.0810151011450.3896@axis700.grange>
+In-Reply-To: <200810142254.07024.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 5:26 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> On Wed, 15 Oct 2008, Magnus Damm wrote:
->> On Wed, Oct 15, 2008 at 3:41 PM, Guennadi Liakhovetski
->> <g.liakhovetski@gmx.de> wrote:
->> > On Wed, 15 Oct 2008, Magnus Damm wrote:
->> >
->> >> Thanks for working on fixing the breakage. I'd prefer to wait a bit
->> >> since there are quite a few pinmux patches queued up that may break if
->> >> we merge a fix right now. I can fix it up later on.
->> >
->> > no, I would not leave the kernel in a non-compilable state even if just
->> > for one board. Please, test a new version of the patch below. And yes, You
->> > will have to rebase your patches, sorry. Another thing, could you also,
->> > please, add a license / copyright header to
->> > include/media/soc_camera_platform.h?
->>
->> I'm not asking you to keep the board broken forever. It's just a
->> question of in which order the trees are getting merged. Again, I'd
->> rather see that this fix is put _on_top_ of the patches that are
->> already queued up in the SuperH tree. Merging it before doesn't help
->> anything in my opinion - especially since the change should go though
->> the SuperH tree anyway.
->
-> I think, compilation-breakage fixes should have higher priority than
-> further enhancements. Think about bisection. If you now first commit
-> several more patches, you make the interval where the tree is not
-> compilable longer, and thus the probabiliy that someone hits it in their
-> git.bisect higher. That's why I think any compilation breakage should be
-> fixed ASAP. And which changes do you mean specifically? This one:
->
-> http://marc.info/?l=linux-sh&m=122346619318532&w=2
->
-> Yes, indeed they conflict, but it is trivial to fix. So, I would prefer to
-> close the compile-breakage window ASAP, and then trivially update that one
-> your patch. Let's see what others say. And as for through which tree it
-> should go, if you insist the sh-part going through the sh-tree, then it
-> has to be split into two parts - video and sh. Thus extending the
-> breakage-window by one commit...
+On Tue, Oct 14, 2008 at 10:54:06PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> ACPI suspend: Blacklist HP xw4600 Workstation for old code ordering
+> 
+> HP xw4600 Workstation is known to require the "old" (ie. compatible
+> with ACPI 1.0) suspend code ordering, so blacklist it for this
+> purpose.
 
-Yeah, that one plus a patch for the smc91x platform data and another
-one for mmc (which needs updating anyway). So maybe it's not such a
-big deal. And I see your point with closing the window ASAP to do
-damage control. Otoh I wonder how big difference it will be extending
-the breakage window with one commit - there must be zillions of
-commits in after the breakage already.
+This doesn't seem to be scaling especially well. The xw4600 is a new 
+machine, so if it needs the "old" code ordering then that's a strong 
+indication that we're doing something wrong. I think trying to work out 
+what would be more useful than just adding it to a blacklist.
 
-Paul, any strong feelings regarding merging things though the SuperH tree?
-
->> Feel free to add any header you like. =)
->
-> Thanks, but no thanks:-) I cannot add your copyright, at least not without
-> your explicit agreement (I think). So, I'd prefer you submit a patch for
-> that.
-
-I wonder if it's a large enough bit sequence to actually copyright. =)
-But sure, I'll do that.
-
-Is this .29 material, or will there be a second v4l round with trivial
-driver changes for .28?
-
-I've already posted some vivi patches and two simple patches for the
-sh_mobile_ceu driver - sorry about the timing - and i have one more
-sh_mobile_ceu patch outstanding. Also, I think one of my coworkers may
-post a soc_camera driver for ov772x chips soon too.
-
-Is there any chance that can get included in .28?
-
-Thank you!
-
-/ magnus
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
