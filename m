@@ -1,106 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbYJOTvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbYJOTvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbYJOTvM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 15:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbYJOTuR
+	id S1756146AbYJOTvb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 15:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbYJOTuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 15:50:17 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:59673 "EHLO
+	Wed, 15 Oct 2008 15:50:20 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:61913 "EHLO
 	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552AbYJOTuO (ORCPT
+	with ESMTP id S1753976AbYJOTuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 15:50:14 -0400
+	Wed, 15 Oct 2008 15:50:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-type:content-transfer-encoding
          :content-disposition:message-id;
-        b=luIvCW3oGL4xCHHvvO7pllqanhhCxYfQPyOpRWnTNTplNEvS/FFoqoxqD5findOhAo
-         1rGPH8Z6gLEPE0OXDVHzA8p3YZxE63HHg+TqepzoK+zqhAXXCQCC5TKuSGYszZGwe4aE
-         fBK+tvtWuuUjglPKqIgksXGN6Q50/QasqhtZM=
+        b=UUbDzPpzEj9tFmuyrFw4/vFsMGH+/Ywqgu71FvEWiaVKsTjtromMzADkirWBHfvwT9
+         JRFNVf2uvkoU5YK2Rj2wmPYAhoRNtlTzLSEmDGL73NFd/rCpqfpGB4ObuXwqEtQGR3cn
+         5n5g2S3YofuM1PZKc+74ch9cgJ1WTPHukSc6s=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 09/18] ide: add ->set_irq method
-Date: Wed, 15 Oct 2008 20:22:44 +0200
+To: Elias Oltmanns <eo@nebensachen.de>
+Subject: Re: [PATCH] ide: replace the global ide_lock spinlock by per-hwgroup spinlocks
+Date: Wed, 15 Oct 2008 20:27:47 +0200
 User-Agent: KMail/1.9.10
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <20080620213424.13202.16889.sendpatchset@localhost.localdomain> <48F5DFF7.9010908@ru.mvista.com>
-In-Reply-To: <48F5DFF7.9010908@ru.mvista.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Vaibhav V. Nivargi" <vaibhav.nivargi@gmail.com>,
+       "Alok N. Kataria" <alokk@calsoftinc.com>,
+       Ravikiran Thirumalai <kiran@scalex86.org>,
+       Shai Fultheim <shai@scalex86.org>
+References: <200810102126.14475.bzolnier@gmail.com> <87ej2ld761.fsf@denkblock.local>
+In-Reply-To: <87ej2ld761.fsf@denkblock.local>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810152022.44708.bzolnier@gmail.com>
+Message-Id: <200810152027.47368.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 October 2008, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> > Add ->set_irq method for setting nIEN bit of ATA Device Control
-> > register and use it instead of ide_set_irq().
+On Sunday 12 October 2008, Elias Oltmanns wrote:
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] ide: replace the global ide_lock spinlock by per-hwgroup spinlocks
+> >
+> > Now that (almost) all host drivers have been fixed not to abuse ide_lock
+> > and core code usage of ide_lock has been sanitized we may safely replace
+> > ide_lock by per-hwgroup locks.
+> >
+> > This patch is partially based on earlier patch from Ravikiran G Thirumalai.
 > >
 > > While at it:
+> > - don't use deprecated HWIF() and HWGROUP() macros
+> > - update locking documentation in ide.h
 > >
-> > * Use ->set_irq in init_irq() and do_reset1().
-> >
-> > * Don't use HWIF() macro in ide_check_pm_state().
-> >
-> > There should be no functional changes caused by this patch.
-> >
+> > Cc: Vaibhav V. Nivargi <vaibhav.nivargi@gmail.com>
+> > Cc: Alok N. Kataria <alokk@calsoftinc.com>
+> > Cc: Ravikiran Thirumalai <kiran@scalex86.org>
+> > Cc: Shai Fultheim <shai@scalex86.org>
 > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >   
-> [...]
-> > Index: b/drivers/ide/ide-iops.c
-> > ===================================================================
-> > --- a/drivers/ide/ide-iops.c
-> > +++ b/drivers/ide/ide-iops.c
-> > @@ -135,6 +135,23 @@ static u8 ide_read_sff_dma_status(ide_hw
-> >  		return inb(hwif->dma_base + ATA_DMA_STATUS);
-> >  }
-> >  
-> > +static void ide_set_irq(ide_hwif_t *hwif, int on)
-> > +{
-> > +	u8 ctl = ATA_DEVCTL_OBS;
-> > +
-> > +	if (on == 4) { /* hack for SRST */
-> > +		ctl |= 4;
-> > +		on &= ~4;
-> > +	}
-> > +
-> > +	ctl |= on ? 0 : 2;
-> > +
-> > +	if (hwif->host_flags & IDE_HFLAG_MMIO)
-> > +		writeb(ctl, (void __iomem *)hwif->io_ports.ctl_addr);
-> > +	else
-> > +		outb(ctl, hwif->io_ports.ctl_addr);
-> > +}
-> > +
-> >  static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
-> >  {
-> >  	ide_hwif_t *hwif = drive->hwif;
-> >   
-> [...]
-> > @@ -1162,16 +1180,15 @@ static ide_startstop_t do_reset1 (ide_dr
-> >  	 * immediate interrupt due to the edge transition it produces.
-> >  	 * This single interrupt gives us a "fast poll" for drives that
-> >  	 * recover from reset very quickly, saving us the first 50ms wait time.
-> > +	 *
-> > +	 * TODO: add ->softreset method and stop abusing ->set_irq
-> >  	 */
-> >  	/* set SRST and nIEN */
-> > -	hwif->OUTBSYNC(hwif, ATA_DEVCTL_OBS | 6, io_ports->ctl_addr);
-> > +	hwif->set_irq(hwif, 4);
-> >  	/* more than enough time */
-> >  	udelay(10);
+> > ---
+> > this is against 2.6.27 + pata tree + pre-patchset posted on Wednesday
+> > (http://lkml.org/lkml/2008/10/8/221)
 > 
->    It seems to me that the whole idea of having 2 separate methods for 
-> writing the single device control register is a wrong idea.
-> I'm suggesting to convert set_irq() method to write_devctrl() method and 
-> pass the register value directly to it.
+> I've only had a casual look at this patch, but there is one thing:
+> 
+> [...]
+> > Index: b/drivers/ide/ide-probe.c
+> > ===================================================================
+> > --- a/drivers/ide/ide-probe.c
+> > +++ b/drivers/ide/ide-probe.c
+> [...]
+> > @@ -1091,11 +1092,11 @@ static int init_irq (ide_hwif_t *hwif)
+> >  		 * linked list, the first entry is the hwif that owns
+> >  		 * hwgroup->handler - do not change that.
+> >  		 */
+> > -		spin_lock_irq(&ide_lock);
+> > +		spin_lock_irq(&hwgroup->lock);
+> >  		hwif->next = hwgroup->hwif->next;
+> >  		hwgroup->hwif->next = hwif;
+> >  		BUG_ON(hwif->next == hwif);
+> > -		spin_unlock_irq(&ide_lock);
+> > +		spin_unlock_irq(&hwgroup->lock);
+> >  	} else {
+> >  		hwgroup = kmalloc_node(sizeof(*hwgroup), GFP_KERNEL|__GFP_ZERO,
+> >  				       hwif_to_node(hwif));
+> 
+> Something like
+> 
+> 	spin_lock_init(&hwgroup->lock);
+> 
+> should go into this else clause too.
 
-Makes sense.  Care to make a patch?
+Thanks!
+
+I fixed this in v2, obvious interdiff:
+
+...
+v2:
+Add missing spin_lock_init(&hwgroup->lock).  (Noticed by Elias Oltmanns)
+...
+
+diff -u b/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+--- b/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1103,6 +1103,8 @@
+ 		if (hwgroup == NULL)
+ 			goto out_up;
+ 
++		spin_lock_init(&hwgroup->lock);
++
+ 		hwif->hwgroup = hwgroup;
+ 		hwgroup->hwif = hwif->next = hwif;
+ 
