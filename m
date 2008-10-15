@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbYJOA5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYJOA6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbYJOA5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 20:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbYJOA4a
+	id S1755344AbYJOA6M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 20:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYJOA4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 20:56:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:36863 "EHLO mail.goop.org"
+	Tue, 14 Oct 2008 20:56:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:36867 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbYJOA42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751443AbYJOA42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Oct 2008 20:56:28 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 3 of 5] xen-netfront: Avoid unaligned accesses to IP
-	header
-X-Mercurial-Node: d3d2ad0d95db689f77abec9af20b271f30ad3910
-Message-Id: <d3d2ad0d95db689f77ab.1224031842@abulafia.goop.org>
+Subject: [PATCH 5 of 5] xen: compilation fix of drivers/xen/events.c
+	on IA64
+X-Mercurial-Node: 92ff3451f2c8697a5165f95395831d8813bdea86
+Message-Id: <92ff3451f2c8697a5165.1224031844@abulafia.goop.org>
 In-Reply-To: <patchbomb.1224031839@abulafia.goop.org>
-Date: Tue, 14 Oct 2008 17:50:42 -0700
+Date: Tue, 14 Oct 2008 17:50:44 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, Isaku Yamahata <yamahata@valinux.co.jp>,
-       NetDev <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Isaku Yamahata <yamahata@valinux.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 
-Align ip header to a 16 byte boundary to avoid unaligned
-access like other drivers.
-Without this patch, xen-netfront doesn't work well on ia64.
+use set_xen_guest_handle() instead of direct assigning.
 
-[ Jeff, this is the only patch in the series which is in your
-  territory. -J ]
+> linux-2.6/drivers/xen/events.c: In function 'xen_poll_irq':
+> linux-2.6/drivers/xen/events.c:757: error: incompatible types in assignment
+> make[4]: *** [drivers/xen/events.o] Error 1
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/net/xen-netfront.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/xen/events.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -239,10 +239,13 @@
- 	 */
- 	batch_target = np->rx_target - (req_prod - np->rx.rsp_cons);
- 	for (i = skb_queue_len(&np->rx_batch); i < batch_target; i++) {
--		skb = __netdev_alloc_skb(dev, RX_COPY_THRESHOLD,
-+		skb = __netdev_alloc_skb(dev, RX_COPY_THRESHOLD + NET_IP_ALIGN,
- 					 GFP_ATOMIC | __GFP_NOWARN);
- 		if (unlikely(!skb))
- 			goto no_skb;
-+
-+		/* Align ip header to a 16 bytes boundary */
-+		skb_reserve(skb, NET_IP_ALIGN);
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -776,7 +776,7 @@
  
- 		page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
- 		if (!page) {
+ 		poll.nr_ports = 1;
+ 		poll.timeout = 0;
+-		poll.ports = &evtchn;
++		set_xen_guest_handle(poll.ports, &evtchn);
+ 
+ 		if (HYPERVISOR_sched_op(SCHEDOP_poll, &poll) != 0)
+ 			BUG();
 
 
