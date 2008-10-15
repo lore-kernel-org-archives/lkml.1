@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYJONju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYJONmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbYJONju (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 09:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYJONjm
+	id S1755246AbYJONmk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 09:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbYJONmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 09:39:42 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:63154 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753112AbYJONjl (ORCPT
+	Wed, 15 Oct 2008 09:42:32 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60115 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752955AbYJONmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 09:39:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oOONwyC620xe3mjRcn1Q72KXuE0FnBzw/zksPxtU+KCJuwd0r9WpzHHfaUU1MosaGA
-         Pfz4qXhjlFIIo8Ad4VhvL9a3efX2DxmOc9k57bFB22Ri5JzwuCuYJqsA5MfRWtR5NlgS
-         BvJFDERapNRja69x0AO/m8sDLwkoVZr1H6Vp8=
-Message-ID: <b6a2187b0810150639j37ed3be6v3c800fb7d3a4a1f0@mail.gmail.com>
-Date: Wed, 15 Oct 2008 21:39:39 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: linux 2.6.27 kernel panic on x86 - please revert commit 3a85e770aa77e4f1a4096275c97b64c10cd7323e
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>
-In-Reply-To: <20081015120558.GA23347@elte.hu>
+	Wed, 15 Oct 2008 09:42:31 -0400
+Date: Wed, 15 Oct 2008 08:42:04 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <tj@kernel.org>, Greg KH <greg@kroah.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: sysfs: tagged directories not merged completely yet
+Message-ID: <20081015134204.GA26886@us.ibm.com>
+References: <m1k5d2oh4y.fsf@frodo.ebiederm.org> <20081003101331.GH28946@ZenIV.linux.org.uk> <20081005053236.GA9472@kroah.com> <m1bpxwajyy.fsf@frodo.ebiederm.org> <20081007222726.GA9465@kroah.com> <48EBF21E.40709@kernel.org> <m1myh8rnf4.fsf@frodo.ebiederm.org> <48F45075.7000003@kernel.org> <20081014185320.GA24908@us.ibm.com> <m13aiyk7jf.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0810151902510.19590@boston.corp.fedex.com>
-	 <20081015112324.GB31476@elte.hu>
-	 <b6a2187b0810150502m3b363b90q106102578e92811d@mail.gmail.com>
-	 <20081015120558.GA23347@elte.hu>
+In-Reply-To: <m13aiyk7jf.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 8:05 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> Unsetting CONFIG_COMPAT_VDSO solves the issue.
->>
->> Thanks for your help, and sorry for the fault alarm. Did take a while
->> to trace it down to the commit.
->
-> hm, setting the option should not break new glibc so this is a
-> regression and we've still got a bug to fix.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> 
+> > Again fuse doesn't address the *core* issue (sysfs needing a way to
+> > create files for multiple devicenames with same name).  But I believe
+> > Benjamin was looking into a minimal patch to fix that.  Benjamin,
+> > have you gotten anywhere with that?
+> 
+> I would love to hear a minimal strategy for that.
 
-Something must have triggered the bug. Every single linux git update
-has been ok with CONFIG_COMPAT_VDSO=y until now, and I had glibc-2.7
-since Dec 2007.
+Oh I just meant for kernel-space.  So if a container is creating lo,
+it will create a device named lo, but the sysfs file will be called
+lo_1 or something.
 
-Jeff.
+> The only minimal strategy user space wise is to create multiple superblocks.
+> Anything else I an think of violates backwards compatibility.
+
+Yes, the above would require that the container either not mount
+sysfs, ignore sysfs, or tweak sysfs using
+	mount -t tmpfs none /sys/class/net
+	mount --bind /sys/devices/virtual/net/lo_1 /sys/class/net/lo
+or using fuse.
+
+I'd definately prefer the sysfs tagging approach.  But I'd prefer
+the above over never being able to use network namespaces on a
+standard distro (with sysfs enabled).
+
+-serge
