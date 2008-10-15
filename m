@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYJOOif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYJOOoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971AbYJOOif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 10:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYJOOi2
+	id S1756018AbYJOOoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 10:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYJOOoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 10:38:28 -0400
-Received: from mx45.mail.ru ([194.67.23.236]:46952 "EHLO mx45.mail.ru"
+	Wed, 15 Oct 2008 10:44:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52999 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751239AbYJOOi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 10:38:27 -0400
-X-Greylist: delayed 1674 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 10:38:27 EDT
-From: =?koi8-r?Q?=E5=D7=C7=C5=CE=C9=CA_=ED=C1=CE=C1=DE=CB=C9=CE?= 
-	<sfstudio@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: patch to 2.6.27 fix build rpm
-Mime-Version: 1.0
-X-Mailer: mPOP Web-Mail 2.19
-X-Originating-IP: 127.0.0.1 via proxy [207.226.47.244]
-Date: Wed, 15 Oct 2008 20:04:02 +0600
-Reply-To: =?koi8-r?Q?=E5=D7=C7=C5=CE=C9=CA_=ED=C1=CE=C1=DE=CB=C9=CE?= 
-	  <sfstudio@mail.ru>
-Content-Type: text/plain; charset=koi8-r
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1Kq6yo-000PeN-00.sfstudio-mail-ru@f143.mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+	id S1751800AbYJOOoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 10:44:06 -0400
+Message-ID: <48F601A5.1050405@redhat.com>
+Date: Wed, 15 Oct 2008 09:43:49 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: pterjan@mandriva.org, linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Possible ext3 corruption with 1K block size
+References: <200810150724.42180.arvidjaar@mail.ru> <48F5E6D4.8080603@redhat.com> <200810151824.36119.arvidjaar@mail.ru>
+In-Reply-To: <200810151824.36119.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Latest working kernel version:2.6.26.6
-Distribution: any
-Hardware Environment: any
-Software Environment: any
-Problem Description: Build error from make rpm. Many unpacked files (*.fw).
-
-Steps to reproduce: 
-
-Add in .config:
-# CONFIG_PREVENT_FIRMWARE_BUILD is not set
-CONFIG_FW_LOADER=y
-CONFIG_FIRMWARE_IN_KERNEL=y
-CONFIG_EXTRA_FIRMWARE=""
-
-and say make rpm to build.
-
-This patch for file linux-2.6.27/scripts/package/mkspec is fix this problem:
+Andrey Borzenkov wrote:
+> On Wednesday 15 October 2008, Eric Sandeen wrote:
 
 
---- mkspec.old  2008-10-11 00:00:38.000000000 +0700
-+++ mkspec      2008-10-11 00:39:43.000000000 +0700
-@@ -64,8 +64,10 @@
- echo "%install"
- echo "%ifarch ia64"
- echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/modules'
-+echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/firmware'
- echo "%else"
- echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/modules'
-+echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/firmware'
- echo "%endif"
+>> My kingdom for a testcase... does anyone have simple steps to reproduce
+>> this?  Or do they all start with "install mandriva on a 1k block size
+>> system?"  :)
+>>
+> 
+> May be RH will do? :)
 
- echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} modules_install'
-@@ -92,5 +94,6 @@
- echo '%defattr (-, root, root)'
- echo "%dir /lib/modules"
- echo "/lib/modules/$KERNELRELEASE"
-+echo "/lib/firmware"
- echo "/boot/*"
- echo ""
+I did try a 1k-block root fs Fedora install, and didn't see any problems...
 
-С уважением, Маначкин Е.Р.
-________________________________________
-|Комплексные решения на базе Linux.
-|Opensource wireless routers firmware
-|www: http://wive-ng.sf.net
-|mail-to: sfstudio@mail.ru
-|ICQ: 485758428
-|JID: sfstudio-omsk@jabber.ru
+> As indicated by last comment, Pascal has some ways to trigger it; I
+> forgot to Cc to him initially; doing it now.
 
+Ok, good deal.
 
+-Eric
