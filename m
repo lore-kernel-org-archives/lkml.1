@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYJOGoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbYJOGzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbYJOGoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 02:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbYJOGoY
+	id S1752828AbYJOGzQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 02:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYJOGy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 02:44:24 -0400
-Received: from static.172.68.46.78.clients.your-server.de ([78.46.68.172]:35587
-	"EHLO mail.systohc.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751211AbYJOGoY (ORCPT
+	Wed, 15 Oct 2008 02:54:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38386
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751024AbYJOGy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 02:44:24 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 02:44:23 EDT
-Date: Wed, 15 Oct 2008 08:39:17 +0200
-From: Fabiano Sidler <lists@fipscode.ch>
-To: linux-kernel@vger.kernel.org
-Subject: Creating dev nodes from driver or via uevent?
-Message-ID: <20081015063917.GA18487@true>
-Reply-To: linux-kernel@vger.kernel.org
+	Wed, 15 Oct 2008 02:54:59 -0400
+Date: Tue, 14 Oct 2008 23:54:35 -0700 (PDT)
+Message-Id: <20081014.235435.215118354.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-10-14
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081015013204.GH3349@tuxdriver.com>
+References: <20081015013204.GH3349@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks!
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Tue, 14 Oct 2008 21:32:05 -0400
 
-Probably a very basic question, but is it better to directly mknod from a
-module's init funtion or to use the uevent/udev mechanism? If the latter,
-are there good overviews, explanations and comprehensive code samples
-especially for using udev, as well as how to package the userspace program
-creating the nodes along with a driver?
+> Here is a nice little batch of wireless fixes in time for 2.6.28-rc1.
+> There are also a few USB ID additions as well.  I think this is all
+> mostly obvious, and hopefully still acceptable at this stage.
+> 
+> Please let me know if there are problems!
 
-Thank you for answering!
-Greetings,
-Fabiano
+Looks good, pulled in, thanks John.
+
+I'll push back out to net-2.6 after my build checks
+complete.
