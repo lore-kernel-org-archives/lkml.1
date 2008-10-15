@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbYJOQ7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYJORLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbYJOQ7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 12:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYJOQ70
+	id S1754146AbYJORLO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 13:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYJORK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 12:59:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58865 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752118AbYJOQ7Z (ORCPT
+	Wed, 15 Oct 2008 13:10:58 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:31432 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752118AbYJORK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 12:59:25 -0400
-Date: Wed, 15 Oct 2008 09:59:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] fastboot: Introduce an asynchronous function call
- mechanism
-Message-Id: <20081015095905.41219c9d.akpm@linux-foundation.org>
-In-Reply-To: <20081015075246.2e1610f3@infradead.org>
-References: <20081012194427.2e21c22e@infradead.org>
-	<20081015014117.faff3a61.akpm@linux-foundation.org>
-	<20081015075246.2e1610f3@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 15 Oct 2008 13:10:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YctAVYjD2oxo/2iioBjjMJsotq+iZ92K0Cb+zk0leEXi3Ymw05um7Fg3Tsu0wv6AKTlaw/FJC2PGKrKXcNlhEAzJgX/n2jggGNjnoPBhlRR98/1eh6MkxeX+2WxVKqqyCdYFgWJfcwEXOFoKyww/fjOl9bHLWhAerQADfXUvhe8=  ;
+X-YMail-OSG: XAS_MAMVM1nqcemdeeDn1I0N.MKjSfSB6KjEYzNmkKOnxByPPXtVSD2fCNhSZ89ULDbc86lDBGDXI_1sYuKr0rEyJAGeXaYQACJzNO7w5VNl2o.hyncmCtJ6c65bt3YDb.rpDkKPOjHRAojvILk5CenL7zm287s2GQBwMSve
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [rfc] SLOB memory ordering issue
+Date: Thu, 16 Oct 2008 04:10:49 +1100
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <200810160334.13082.nickpiggin@yahoo.com.au> <1224089658.3316.218.camel@calx>
+In-Reply-To: <1224089658.3316.218.camel@calx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810160410.49894.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008 07:52:46 -0400 Arjan van de Ven <arjan@infradead.org> wrote:
+On Thursday 16 October 2008 03:54, Matt Mackall wrote:
+> On Thu, 2008-10-16 at 03:34 +1100, Nick Piggin wrote:
+> > I think I see a possible memory ordering problem with SLOB:
+> > In slab caches with constructors, the constructor is run
+> > before returning the object to caller, with no memory barrier
+> > afterwards.
+> >
+> > Now there is nothing that indicates the _exact_ behaviour
+> > required here. Is it at all reasonable to expect ->ctor() to
+> > be visible to all CPUs and not just the allocating CPU?
+>
+> Do you have a failure scenario in mind?
+>
+> First, it's a categorical mistake for another CPU to be looking at the
+> contents of an object unless it knows that it's in an allocated state.
+>
+> For another CPU to receive that knowledge (by reading a causally-valid
+> pointer to it in memory), a memory barrier has to occur, no?
 
-> On Wed, 15 Oct 2008 01:41:17 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > +static int async_active = 0;
-> > 
-> > ?
-> ok will add comment
+No.
 
-I was actually "?"ing at the "= 0".  I thought that would be obvious
-but it's whizzed past two people so far :(
- 
-> > 
-> > Please talk to Evgeniy about his new thread_pool stuff which I've
-> > suggested become a generic library.
+For (slightly bad) example. Some architectures have a ctor for their
+page table page slabs. Not a bad thing to do.
 
-^^ this?
+Now they allocate these guys, take a lock, then insert them into the
+page tables. The lock is only an acquire barrier, so it can leak past
+stores.
 
+The read side is all lockless and in some cases even done by hardware.
+
+Now in _practice_, this is not a problem because some architectures
+don't have ctors, and I spotted the issue and put proper barriers in
+there. But it was a known fact that ctors were always used, and if I
+had assumed ctors were barriers so didn't need the wmb, then there
+would be a bug.
+
+Especially the fact that a lock doesn't order the stores makes me
+worried that a lockless read-side algorithm might have a bug here.
+Fortunately, most of them use RCU and probably use rcu_assign_pointer
+even if they do have ctors. But I can't be sure...
