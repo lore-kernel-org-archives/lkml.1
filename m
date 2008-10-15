@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbYJOQsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYJOQvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbYJOQsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 12:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYJOQsN
+	id S1754744AbYJOQvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 12:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYJOQve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 12:48:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42049 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751995AbYJOQsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 12:48:12 -0400
-Date: Wed, 15 Oct 2008 18:47:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [git pull] scheduler fixes
-Message-ID: <20081015164758.GA3156@elte.hu>
+	Wed, 15 Oct 2008 12:51:34 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:48525 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbYJOQvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 12:51:33 -0400
+Message-ID: <48F61F86.5020108@caviumnetworks.com>
+Date: Wed, 15 Oct 2008 09:51:18 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0513]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: linux-serial@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
+Subject: [PATCH] 8250: Don't clobber spinlocks in 8250.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Oct 2008 16:51:19.0047 (UTC) FILETIME=[3EF68970:01C92EE6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Don't clobber spinlocks in 8250.
 
-Please pull the latest sched-fixes-for-linus git tree from:
+In serial8250_isa_init_ports(), the port's lock is initialized.  We
+should not overwrite it.  Only copy in the fields we need.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+Signed-off-by: Tomaso Paoletti <tpaoletti@caviumnetworks.com>
+---
+ drivers/serial/8250.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
- Thanks,
-
-	Ingo
-
------------------->
-Dave Kleikamp (1):
-      sched_clock: prevent scd->clock from moving backwards
-
-
- kernel/sched_clock.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index e8ab096..8178724 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -118,13 +118,13 @@ static u64 __update_sched_clock(struct sched_clock_data *scd, u64 now)
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index d3ca7d3..da65fea 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2699,12 +2699,24 @@ static struct uart_driver serial8250_reg = {
+  */
+ int __init early_serial_setup(struct uart_port *port)
+ {
++	struct uart_port *p;
++
+ 	if (port->line >= ARRAY_SIZE(serial8250_ports))
+ 		return -ENODEV;
  
- 	/*
- 	 * scd->clock = clamp(scd->tick_gtod + delta,
--	 * 		      max(scd->tick_gtod, scd->clock),
--	 * 		      scd->tick_gtod + TICK_NSEC);
-+	 *		      max(scd->tick_gtod, scd->clock),
-+	 *		      max(scd->clock, scd->tick_gtod + TICK_NSEC));
- 	 */
+ 	serial8250_isa_init_ports();
+-	serial8250_ports[port->line].port	= *port;
+-	serial8250_ports[port->line].port.ops	= &serial8250_pops;
++	p = &serial8250_ports[port->line].port;
++	p->iobase       = port->iobase;
++	p->membase      = port->membase;
++	p->irq          = port->irq;
++	p->uartclk      = port->uartclk;
++	p->fifosize     = port->fifosize;
++	p->regshift     = port->regshift;
++	p->iotype       = port->iotype;
++	p->flags        = port->flags;
++	p->mapbase      = port->mapbase;
++	p->private_data = port->private_data;
++	p->ops		= &serial8250_pops;
+ 	return 0;
+ }
  
- 	clock = scd->tick_gtod + delta;
- 	min_clock = wrap_max(scd->tick_gtod, scd->clock);
--	max_clock = scd->tick_gtod + TICK_NSEC;
-+	max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
- 
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
