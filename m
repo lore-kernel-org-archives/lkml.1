@@ -1,101 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYJOLEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYJOLF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbYJOLEm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 07:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYJOLEe
+	id S1754752AbYJOLF2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 07:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYJOLFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 07:04:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59746 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751706AbYJOLEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 07:04:33 -0400
-Message-ID: <48F5CE10.3060403@redhat.com>
-Date: Wed, 15 Oct 2008 13:03:44 +0200
-From: Chris Lalancette <clalance@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 15 Oct 2008 07:05:19 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:65168 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbYJOLFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 07:05:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:subject:message-id:mime-version
+         :content-type;
+        b=AgIl+x+AEEjXsSviQl1SOrdoFWi9hn3oCc4ZkHEtfi/RsCR6VqaXcPeqMX3g3Nzzxj
+         32C/dMAeJ79f3BDjbrLMwbseQek5JnjC5jT7LuVtwvB9pU8uTw5GyXHnaIyodREdSzOQ
+         T1xHJ37xfzkXlzO4xFZp6LlBGwebHEwAiPFRY=
+Date: Wed, 15 Oct 2008 19:05:02 +0800 (SGT)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+X-X-Sender: root@boston.corp.fedex.com
+To: lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: linux 2.6.27 kernel panic on x86 - please revert commit
+ 3a85e770aa77e4f1a4096275c97b64c10cd7323e
+Message-ID: <Pine.LNX.4.64.0810151902510.19590@boston.corp.fedex.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>
-Subject: [PATCH]: Fix Xen domU boot with batched mprotect
-Content-Type: multipart/mixed;
- boundary="------------070406010509010007030301"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070406010509010007030301
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Recent i686 2.6.27 kernels with a certain amount of memory (between 736 and
-855MB) have a problem booting under a hypervisor that supports batched mprotect
-(this includes the RHEL-5 Xen hypervisor as well as any 3.3 or later Xen
-hypervisor).  The problem ends up being that xen_ptep_modify_prot_commit() is
-using virt_to_machine to calculate which pfn to update.  However, this only
-works for pages that are in the p2m list, and the pages coming from
-change_pte_range() in mm/mprotect.c are kmap_atomic pages.  Because of this, we
-can run into the situation where the lookup in the p2m table returns an
-INVALID_MFN, which we then try to pass to the hypervisor, which then (correctly)
-denies the request to a totally bogus pfn.
 
-The right thing to do is to use arbitrary_virt_to_machine, so that we can be
-sure we are modifying the right pfn.  This unfortunately introduces a
-performance penalty because of a full page-table-walk, but we can avoid that
-penalty for pages in the p2m list by checking if virt_addr_valid is true, and if
-so, just doing the lookup in the p2m table.
+Commit 3a85e770aa77e4f1a4096275c97b64c10cd7323e broke linux boot on x86 
+resulting in kernel panic. Here's the console output ...
 
-The attached patch implements this, and allows my 2.6.27 i686 based guest with
-768MB of memory to boot on a RHEL-5 hypervisor again.  Thanks to Jeremy for the
-suggestions about how to fix this particular issue.
+Net: Registered protocol family 17
+Using IPI No-Shortcut mode
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem (readonly).
+Freeing unsued kernel memory: 312k freed
+init[1]: segfault at ffffe01c up b7f0dc28 sp bfc26628 error 5 in ld-2.7.90.so[b7f0b000+1c000]
+Kernel panic - not syncing: Attempted to kill init!
 
-Signed-off-by: Chris Lalancette <clalance@redhat.com>
 
---------------070406010509010007030301
-Content-Type: text/x-patch;
- name="lkml-768MB-virt_to_machine-3.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="lkml-768MB-virt_to_machine-3.patch"
+Thanks,
+Jeff.
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index ae173f6..f579103 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -246,11 +246,21 @@ xmaddr_t arbitrary_virt_to_machine(void *vaddr)
- {
- 	unsigned long address = (unsigned long)vaddr;
- 	unsigned int level;
--	pte_t *pte = lookup_address(address, &level);
--	unsigned offset = address & ~PAGE_MASK;
-+	pte_t *pte;
-+	unsigned offset;
- 
--	BUG_ON(pte == NULL);
-+	/*
-+	 * if the PFN is in the linear mapped vaddr range, we can just use
-+	 * the (quick) virt_to_machine() p2m lookup
-+	 */
-+	if (virt_addr_valid(vaddr))
-+		return virt_to_machine(vaddr);
- 
-+	/* otherwise we have to do a (slower) full page-table walk */
-+
-+	pte = lookup_address(address, &level);
-+	BUG_ON(pte == NULL);
-+	offset = address & ~PAGE_MASK;
- 	return XMADDR(((phys_addr_t)pte_mfn(*pte) << PAGE_SHIFT) + offset);
- }
- 
-@@ -410,7 +420,7 @@ void xen_ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
- 
- 	xen_mc_batch();
- 
--	u.ptr = virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
-+	u.ptr = arbitrary_virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
- 	u.val = pte_val_ma(pte);
- 	xen_extend_mmu_update(&u);
- 
 
---------------070406010509010007030301--
+Please revert this ...
+
+commit 3a85e770aa77e4f1a4096275c97b64c10cd7323e
+Author: Suresh Siddha <suresh.b.siddha@intel.com>
+Date:   Tue Sep 23 14:00:37 2008 -0700
+
+     x86, cpa: remove USER permission from the very early identity mapping attribute
+
+     remove USER from the PTE/PDE attributes for the very early identity
+     mapping. We overwrite these mappings with KERNEL attribute later
+     in the boot. Just being paranoid here as there is no need for USER bit
+     to be set.
+
+     If this breaks something(don't know the history), then we can simply drop
+     this change.
+
+     Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+     Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+     Cc: arjan@linux.intel.com
+     Cc: venkatesh.pallipadi@intel.com
+     Cc: jeremy@goop.org
+     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
+index 0ff73e7..bbf0f59 100644
+--- a/include/asm-x86/pgtable.h
++++ b/include/asm-x86/pgtable.h
+@@ -138,8 +138,8 @@
+  #ifdef CONFIG_X86_64
+  #define __PAGE_KERNEL_IDENT_LARGE_EXEC	__PAGE_KERNEL_LARGE_EXEC
+  #else
+-#define PTE_IDENT_ATTR	 0x007		/* PRESENT+RW+USER */
+-#define PDE_IDENT_ATTR	 0x067		/* PRESENT+RW+USER+DIRTY+ACCESSED */
++#define PTE_IDENT_ATTR	 0x003		/* PRESENT+RW */
++#define PDE_IDENT_ATTR	 0x063		/* PRESENT+RW+DIRTY+ACCESSED */
+  #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
+  #endif
+
