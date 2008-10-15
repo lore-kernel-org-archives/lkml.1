@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbYJOHvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYJOHzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752266AbYJOHvG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 03:51:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYJOHux
+	id S1753534AbYJOHzs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 03:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbYJOHzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 03:50:53 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:41470 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752017AbYJOHuw (ORCPT
+	Wed, 15 Oct 2008 03:55:36 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:43934 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbYJOHzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 03:50:52 -0400
-Date: Wed, 15 Oct 2008 09:50:45 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 17/18] net/rfkill/rfkill-input.c needs <linux/sched.h>
-In-Reply-To: <20081015031018.GA25190@khazad-dum.debian.net>
-Message-ID: <Pine.LNX.4.64.0810150950000.25759@anakin>
-References: <20081013195846.674654386@mail.of.borg> <20081013195922.392078574@mail.of.borg>
- <20081013204559.GC28597@khazad-dum.debian.net> <Pine.LNX.4.64.0810140920320.6220@anakin>
- <20081015031018.GA25190@khazad-dum.debian.net>
+	Wed, 15 Oct 2008 03:55:36 -0400
+Date: Wed, 15 Oct 2008 13:23:51 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Brice Goglin <brice@myri.com>, Jeff Garzik <jgarzik@redhat.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       linux-kernel@vger.kernel.org, apw@shadowen.org, linuxppc-dev@ozlabs.org,
+       sam@ravnborg.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Subject: Re: [BUILD_FAILURE] 2.6.27-git2 - allyesconfig on powerpc
+	selectsCONFIG_INTEL_IOATDMA=y
+Message-ID: <20081015075351.GA7925@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20081013101559.GA14372@linux.vnet.ibm.com> <20081013112631.GD29938@cs181140183.pp.htv.fi> <36D9DB17C6DE9E40B059440DB8D95F52066E2EAE@orsmsx418.amr.corp.intel.com> <48F391B9.1000206@myri.com> <20081013183503.GA28133@cs181140183.pp.htv.fi> <48F4627E.30300@myri.com> <36D9DB17C6DE9E40B059440DB8D95F52066E36C7@orsmsx418.amr.corp.intel.com> <20081014175822.GA4710@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081014175822.GA4710@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008, Henrique de Moraes Holschuh wrote:
-> On Tue, 14 Oct 2008, Geert Uytterhoeven wrote:
-> > Unfortunately that's not possible, due to Include Hell(tm).
-> > Therefore, including <linux/sched.h> is the way this has been fixed in
-> > the past.
+* Adrian Bunk <bunk@kernel.org> [2008-10-14 20:58:22]:
+
+> On Tue, Oct 14, 2008 at 09:10:33AM -0700, Brandeburg, Jesse wrote:
+> > Brice Goglin wrote:
+> > > Adrian Bunk wrote:
+> > >> But considering that igb is in a similar situation it would be nice
+> > >> if all 3 drivers would handle it the same way.
+> > >> 
+> > > 
+> > > Jesse,
+> > > What do you think of the below patch?
+> > 
+> > Seems like a much better solution.  I can have Jeff Kirsher work on the
+> > equivalent patches for igb, and ixgbe today.
+> > 
+> > > I am not very familiar with Kconfig, but it seems to solve the
+> > > problem. 
+> > > If a Kconfig guru could double-check...
+> > 
+> > Yeah, please Kconfig gurus on the list have a quick look.
 > 
-> I see.  Well, when doing this I'd suggest adding a comment, otherwise the
-> include could end up getting removed sooner or later without anyone asking
-> linux-m68k first (I seriously douby anyone will do git blame to find out why
-> an #include line exists before removing it).
+> Brice's patch looks fine.
 > 
-> Something like:
-> #include <sched.h> /* m68k needs task_struct for <whatever> */
+> cu
+> Adrian
+> 
 
-Probably we should start looking again into extracting struct
-task_struct into its own header file, cfr. what Roman Zippel did a long
-time ago...
+Thanks, the patch fixes the build failure with CONFIG_MYRI10GE=y, once
+patch for CONFIG_IXGBE are send out by Jeff Kirsher/Jesse, I will retest
+them.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
