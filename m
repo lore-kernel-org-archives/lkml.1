@@ -1,64 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbYJONA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYJONDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbYJONA5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 09:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbYJONAt
+	id S1754682AbYJONDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 09:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYJONDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 09:00:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45675 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYJONAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 09:00:48 -0400
-Subject: Re: Superpages Project  -  sourceforge.net/projects/linuxsuperpages
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Wildman, Tom" <tom.wildman@hp.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "alan@redhat.com" <alan@redhat.com>, Mel Gorman <mel@skynet.ie>
-In-Reply-To: <F9E7AD49A6823D4AA5A36E1DE32F0F9B27570B8CBC@GVW1092EXB.americas.hpqcorp.net>
-References: <F9E7AD49A6823D4AA5A36E1DE32F0F9B27570B8CBC@GVW1092EXB.americas.hpqcorp.net>
-Content-Type: text/plain
-Date: Wed, 15 Oct 2008 15:00:47 +0200
-Message-Id: <1224075647.28131.6.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Oct 2008 09:03:15 -0400
+Received: from mail.windriver.com ([147.11.1.11]:55446 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751276AbYJONDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 09:03:14 -0400
+Message-ID: <48F5EA0C.2030702@windriver.com>
+Date: Wed, 15 Oct 2008 21:03:08 +0800
+From: Chen Zumeng <zumeng.chen@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Ranjit Manomohan <ranjitm@google.com>
+CC: Bruce Ashfield <bruce.ashfield@windriver.com>,
+       linux-kernel@vger.kernel.org, zumeng.chen@windriver.com
+Subject: Re: [PATCH 0/2] Traffic control cgroups subsystem
+References: <4C86297B4AC6554B8BA018F0806590CE017D5B3A@email1> <48DCB21B.9010506@windriver.com>
+In-Reply-To: <48DCB21B.9010506@windriver.com>
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 15 Oct 2008 13:03:09.0153 (UTC) FILETIME=[5F267D10:01C92EC6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-15 at 01:51 +0000, Wildman, Tom wrote:
-> A new project has been created at SourceForge with an implementation
-> of the Rice University's Superpages FreeBSD prototype that has been
-> ported to the 2.6 Linux kernel for IA64, x86-64, and x86-32.
-> 
-> The project can be found at:
-> http://sourceforge.net/projects/linuxsuperpages
-> 
-> The major benefit of supporting Superpages is increased memory reach
-> of the processor's TLB, which reduces the number of TLB misses in
-> applications that have large data sets.  Some benchmarks have been
-> improved 20% in execution time.
-> 
-> Reference www.cs.rice.edu/~jnavarro/superpages/ for more information
-> about the Rice University's Superpages project.
-> 
-> The project is being made available to the Open Source community to
-> share the implementation and knowledge.  With the enhancements to the
-> x86 architectures to support multiple and large page sizes there
-> should be increased interest in this functionality.
+Hi Ranjit,
 
-How are you proposing to address the fun issues like online compaction
-etc. ?
+Acked the basic functional test of your patches QoS based
+on controller group.
 
-Furthermore, what's the added advantage of dynamic superpages over
-exlpicit superpage support, eg. though the use of libhugetlb?
+Regards,
+Zumeng
 
-Unless you realize online compaction and add a kind of extend allocation
-to the page allocator there will hardly ever be a situation where you
-can promote a page.
-
-All of which is rather expensive to do, changing the application might
-be easier and deliver better performance gains.
+Chen Zumeng wrote:
+> ±èÀç¿­ wrote:
+>>> Incorporated fixes suggested by Li Zefan.
+>>>
+>>> Please consider for net-next-2.6.
+>>>
+>>> This patch provides a simple resource controller (cgroup_tc) based on 
+>>> the cgroups infrastructure to manage network traffic. The cgroup_tc 
+>>> resource controller can be used to schedule and shape traffic belonging 
+>>> to the task(s) in a particular cgroup.
+>>>
+>>> The implementation consists of two parts:
+>>>
+>>> 1) A resource controller (cgroup_tc) that is used to associate packets from
+>>>   a particular task belonging to a cgroup with a traffic control class id (
+>>>   tc_classid). This tc_classid is propagated to all sockets created by tasks
+>>>   in the cgroup and will be used for classifying packets at the link layer.
+>>>
+>>> 2) A new traffic control classifier (cls_cgroup) that can classify packets
+>>>   based on the tc_classid field in the socket to specific destination classes.
+>>>
+>>> An example of the use of this resource controller would be to limit the 
+>>> traffic from all tasks from a file_server cgroup to 100Mbps. We could 
+>>> achieve this by doing:
+>>>
+>>> # make a cgroup of file transfer processes and assign it a arbitrary 
+>>> unique # classid of 0x1234 - this will be used later to direct packets.
+>>> mkdir -p /dev/cgroup
+>>> mount -t cgroup tc -otc /dev/cgroup
+>>> mkdir /dev/cgroup/file_transfer
+>>> echo 0x1234 > /dev/cgroup/file_transfer/tc.classid
+>>> echo $PID_OF_FILE_XFER_PROCESS > /dev/cgroup/file_transfer/tasks
+>>>
+>>> # Now create a HTB class that rate limits traffic to 100mbits and 
+>>> attach # a filter to direct all traffic from cgroup file_transfer to this new class.
+>>> tc qdisc add dev eth0 root handle 1: htb tc class add dev eth0 parent 
+>>> 1: classid 1:10 htb rate 100mbit ceil 100mbit tc filter add dev eth0 
+>>> parent 1: handle 800 protocol ip prio 1 cgroup value 0x1234 classid 
+>>> 1:10
+>>>
+>>> Signed-off-by: Ranjit Manomohan <ranjitm <at> google.com>
+>>>
+>> I installed your patch to kernel-2.6.27-rc7 with some hunkles but without failes.
+>> After compiling the kernel, I run the command which you wrote above. Most of all commands successfully are run except the last command " tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 cgroup value 0x1234 classid 1:10"
+>>
+>> After that, I received this messages
+>> "Unknown filter "cgroup", hence option "value" is unparsable"
+>>
+>> So I operated this command with "strace", then below messages returned.
+>> ...
+>> socket(PF_NETLINK, SOCK_RAW, 0)         = 3
+>> setsockopt(3, SOL_SOCKET, SO_SNDBUF, [32768], 4) = 0 setsockopt(3, SOL_SOCKET, SO_RCVBUF, [32768], 4) = 0 bind(3, {sa_family=AF_NETLINK, pid=0, groups=00000000}, 12) = 0 getsockname(3, {sa_family=AF_NETLINK, pid=5452, groups=00000000}, [12]) = 0
+>> time(NULL)                              = 1222389948
+>> open("/usr/lib/tc/f_cgroup.so", O_RDONLY) = -1 ENOENT (No such file or directory) write(2, "Unknown filter \"cgroup\", hence o"..., 60Unknown filter "cgroup", hence option "value" is unparsable
+> I think there may be a file named f_cgroup.c in iproute-2.6.xxxx/tc/,
+> right? and it looks like tc_group should be supported by tc also.
+> 
+> Regards,
+> Zumeng
+>> ) = 60
+>> close(3)                                = 0
+>> exit_group(1)                           = ?
+>>
+>> This messages told me tc couldn¡¯t find "f_cgroup.so" library in my system.
+>> With this message, I thought that we need a modified "tc" command file to recognize the new filter, cgroup.
+>>
+>> And I saw the line in your patch below
+>> ">Please consider for net-next-2.6."
+>> What's the meaning of the line?
+>> I wonder if I have to adopt another patch for net-netxt-2.6 before adopting this patch?
+>>
+>> You didn't mentioned base kernel for this patch.
+>> I am willing to know the base kernel version and why you didn't mention.
+>>
+>> I've worked couple of days for resolving this problem. But I couldn't find the proper answer yet.
+>>
+>> I'd really thank you if you help me.
+>>
+>>
+>> To unsubscribe from this list: send the line "unsubscribe netdev" in the body of a message to majordomo <at> vger.kernel.org More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> 
+> 
 
