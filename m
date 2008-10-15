@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYJOPd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYJOPft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbYJOPd7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 11:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYJOPdt
+	id S1753955AbYJOPft (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 11:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYJOPfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 11:33:49 -0400
-Received: from el-out-1112.google.com ([209.85.162.179]:18182 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751667AbYJOPds (ORCPT
+	Wed, 15 Oct 2008 11:35:41 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:33115 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbYJOPfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 11:33:48 -0400
+	Wed, 15 Oct 2008 11:35:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=COrDMhK0gadu5BC44XCTZES+KP9qIk3Mfe6d5qLyKQw377SsLwo3pXuo8NgMDQmwet
-         unHjtHSjAiFwozUpfhXWc5lNMxjFQ5vAOP+r/vEMGzLuBXT8DxwTZ/0PQyIBQdhJupvW
-         xw5+o0TnzZuGnmtWNTTyrajnopG37dcThegug=
-Message-ID: <48F60D56.6040209@gmail.com>
-Date: Wed, 15 Oct 2008 17:33:42 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=ifbYZEi7TTVI5pjkBhiaIDHVsC1IJlPCS5uw0Jxl5uWjvJOcgpNZ5q7kYTshl7Yz6T
+         M5geIsnzg6eP/7iv6Ko+DFAw1rQdnGUtRXb+HhGIdyojUWHa0Ok/oemftjgzVfphdm2K
+         7S3LYyBuunmA1/z86u1xWPCBZ/o9rcaxVQwec=
+Date: Wed, 15 Oct 2008 19:35:33 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: =?utf-8?B?0JXQstCz0LXQvdC40Lkg0JzQsNC90LDRh9C60LjQvQ==?= 
+	<sfstudio@mail.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: patch to 2.6.27 fix build rpm
+Message-ID: <20081015153533.GA20222@localhost>
+References: <E1Kq6yo-000PeN-00.sfstudio-mail-ru@f143.mail.ru>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: GIT head no longer boots on x86-64
-References: <alpine.LFD.2.00.0810130752020.3288@nehalem.linux-foundation.org> <1223910693-28693-1-git-send-email-jirislaby@gmail.com> <20081013164717.7a21084a@lxorguk.ukuu.org.uk> <20081015115153.GA16413@elte.hu> <alpine.LFD.2.00.0810150758310.3288@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0810150758310.3288@nehalem.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <E1Kq6yo-000PeN-00.sfstudio-mail-ru@f143.mail.ru>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/15/2008 05:06 PM, Linus Torvalds wrote:
-> On Wed, 15 Oct 2008, Ingo Molnar wrote:
->> Queued the fix below up in tip/x86/urgent for a merge to Linus later 
->> today. Thanks!
-> 
-> Please don't send this crap to me.
-> 
-> Guys, _look_ at the patch for one second. And then tell me it isn't crap. 
+[Евгений Маначкин - Wed, Oct 15, 2008 at 08:04:02PM +0600]
+| Latest working kernel version:2.6.26.6
+| Distribution: any
+| Hardware Environment: any
+| Software Environment: any
+| Problem Description: Build error from make rpm. Many unpacked files (*.fw).
+| 
+| Steps to reproduce: 
+| 
+| Add in .config:
+| # CONFIG_PREVENT_FIRMWARE_BUILD is not set
+| CONFIG_FW_LOADER=y
+| CONFIG_FIRMWARE_IN_KERNEL=y
+| CONFIG_EXTRA_FIRMWARE=""
+| 
+| and say make rpm to build.
+| 
+| This patch for file linux-2.6.27/scripts/package/mkspec is fix this problem:
+| 
+| 
+| --- mkspec.old  2008-10-11 00:00:38.000000000 +0700
+| +++ mkspec      2008-10-11 00:39:43.000000000 +0700
+| @@ -64,8 +64,10 @@
+|  echo "%install"
+|  echo "%ifarch ia64"
+|  echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/modules'
+| +echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/firmware'
+|  echo "%else"
+|  echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/modules'
+| +echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/firmware'
+|  echo "%endif"
+| 
+|  echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} modules_install'
+| @@ -92,5 +94,6 @@
+|  echo '%defattr (-, root, root)'
+|  echo "%dir /lib/modules"
+|  echo "/lib/modules/$KERNELRELEASE"
+| +echo "/lib/firmware"
+|  echo "/boot/*"
+|  echo ""
+| 
+| С уважением, Маначкин Е.Р.
+| ________________________________________
+| |Комплексные решения на базе Linux.
+| |Opensource wireless routers firmware
+| |www: http://wive-ng.sf.net
+| |mail-to: sfstudio@mail.ru
+| |ICQ: 485758428
+| |JID: sfstudio-omsk@jabber.ru
+| 
+| 
 
-Not in my eyes.
+Hi Евгений,
 
-> The question is: "Is this a vmalloc'ed area?". That's the name of the 
-> function. AND YOU JUST BROKE IT!
+please use patch form described in Documentation/SubmittingPatches
+(kernel source tree). Thanks.
 
-Modules area is vmalloc'ed on x86; on x86_64 only in different virtual address
-space area. So returning true from is_vmalloc_addr() for this space looks very
-sane to me, as it was on x86_32 for years.
-
-Users usually do
-is_vmalloc_addr(a) ? vfree(a) : kfree(a);
-Even there it makes more sense to me.
-
-However I'm fine with introducing is_module_addr() alike function for x86 to
-check the general modules space bounds on x86_64 and return is_vmalloc_addr() on
-x86_32. Does this look better?
+		- Cyrill -
