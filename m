@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYJOLwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbYJOLww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYJOLwY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 07:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYJOLwQ
+	id S1752738AbYJOLww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 07:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYJOLwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 07:52:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48105 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751239AbYJOLwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 07:52:16 -0400
-Date: Wed, 15 Oct 2008 13:51:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jiri Slaby <jirislaby@gmail.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: GIT head no longer boots on x86-64
-Message-ID: <20081015115153.GA16413@elte.hu>
-References: <alpine.LFD.2.00.0810130752020.3288@nehalem.linux-foundation.org> <1223910693-28693-1-git-send-email-jirislaby@gmail.com> <20081013164717.7a21084a@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081013164717.7a21084a@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Wed, 15 Oct 2008 07:52:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46856 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYJOLwm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 07:52:42 -0400
+Date: Wed, 15 Oct 2008 07:52:46 -0400
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH] fastboot: Introduce an asynchronous function call
+ mechanism
+Message-ID: <20081015075246.2e1610f3@infradead.org>
+In-Reply-To: <20081015014117.faff3a61.akpm@linux-foundation.org>
+References: <20081012194427.2e21c22e@infradead.org>
+	<20081015014117.faff3a61.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > I guess SMP kernel running on UP? In such a case the module .text
+On Wed, 15 Oct 2008 01:41:17 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> > +static int async_active = 0;
 > 
-> Yep
+> ?
+ok will add comment
+
 > 
-> > is patched to use UP locks before the module is added to the modules
-> > list and it thinks there are no valid data at that place while
-> > patching.
-> > 
-> > Could you test it? The bug disappeared here in qemu. I've checked
-> > callers of the function, and it should not matter for them.
+> Please talk to Evgeniy about his new thread_pool stuff which I've
+> suggested become a generic library.
 > 
-> Seems to do the job.
+> (looks at changelog, doesn't really understand the need for the
+> thread pool thing, doesn't understand the comment about device
+> numbers)
 
-Queued the fix below up in tip/x86/urgent for a merge to Linus later 
-today. Thanks!
+it's very simple. Take the case of doing each sata port probe as an
+asynchronous item. In order to keep a stable device naming/ordering,
+all the sata probes need to be done in sequence, but, say, the USB
+probing can be done in parallel. This means that we need to assign the
+various async tasks to specific pools (based on which device number
+space they will put devices in) and can't just arbitrarily spawn them
+to arbitrary threads.
 
-	Ingo
+> 
+> > +
+> > +void call_async(int pool_number, int argc, ...)
+> 
+> This looks like schedule_work().  Why cannot that be used (perhaps
+> after suitable modification)?
 
------------------->
->From 5870942537422066655816e971629aa729c023d8 Mon Sep 17 00:00:00 2001
-From: Jiri Slaby <jirislaby@gmail.com>
-Date: Mon, 13 Oct 2008 17:11:33 +0200
-Subject: [PATCH] x86: fix CONFIG_DEBUG_VIRTUAL=y boot crash on x86-64
+as I said in the comments... the object lifetimes don't work.
+We need to be able to schedule one per sata port (as per Linus'
+suggest) which means we need a new work struct per function call. And
+then we need something that garbage collects these, now dynamically
+allocated, work structs. Which work queues just don't do. If you make
+them do that... you end up with the code I wrote.
 
-Alan reported a bootup crash in the module loader:
+> 
+> 
+> 
 
-> BUG? vmalloc_to_page (from text_poke+0x30/0x14a): ffffffffa01e40b1
 
-SMP kernel is running on UP, in such a case the module .text
-is patched to use UP locks before the module is added to the modules
-list and it thinks there are no valid data at that place while
-patching.
-
-Also the !is_module_address(addr) test is useless now.
-
-Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Tested-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
- include/linux/mm.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index c61ba10..45772fd 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -267,6 +267,10 @@ static inline int is_vmalloc_addr(const void *x)
- #ifdef CONFIG_MMU
- 	unsigned long addr = (unsigned long)x;
- 
-+#ifdef CONFIG_X86_64
-+	if (addr >= MODULES_VADDR && addr < MODULES_END)
-+		return 1;
-+#endif
- 	return addr >= VMALLOC_START && addr < VMALLOC_END;
- #else
- 	return 0;
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
