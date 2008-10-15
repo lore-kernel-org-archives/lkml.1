@@ -1,96 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYJOPft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbYJOPgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYJOPft (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 11:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYJOPfl
+	id S1754796AbYJOPgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 11:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYJOPgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 11:35:41 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:33115 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbYJOPfk (ORCPT
+	Wed, 15 Oct 2008 11:36:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55815 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751757AbYJOPgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 11:35:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=ifbYZEi7TTVI5pjkBhiaIDHVsC1IJlPCS5uw0Jxl5uWjvJOcgpNZ5q7kYTshl7Yz6T
-         M5geIsnzg6eP/7iv6Ko+DFAw1rQdnGUtRXb+HhGIdyojUWHa0Ok/oemftjgzVfphdm2K
-         7S3LYyBuunmA1/z86u1xWPCBZ/o9rcaxVQwec=
-Date: Wed, 15 Oct 2008 19:35:33 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: =?utf-8?B?0JXQstCz0LXQvdC40Lkg0JzQsNC90LDRh9C60LjQvQ==?= 
-	<sfstudio@mail.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: patch to 2.6.27 fix build rpm
-Message-ID: <20081015153533.GA20222@localhost>
-References: <E1Kq6yo-000PeN-00.sfstudio-mail-ru@f143.mail.ru>
+	Wed, 15 Oct 2008 11:36:11 -0400
+Date: Wed, 15 Oct 2008 08:35:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jiri Slaby <jirislaby@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "David S. Miller" <davem@davemloft.net>
+Subject: Re: GIT head no longer boots on x86-64
+In-Reply-To: <alpine.LFD.2.00.0810150758310.3288@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0810150815000.3288@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0810130752020.3288@nehalem.linux-foundation.org> <1223910693-28693-1-git-send-email-jirislaby@gmail.com> <20081013164717.7a21084a@lxorguk.ukuu.org.uk> <20081015115153.GA16413@elte.hu>
+ <alpine.LFD.2.00.0810150758310.3288@nehalem.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1Kq6yo-000PeN-00.sfstudio-mail-ru@f143.mail.ru>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Евгений Маначкин - Wed, Oct 15, 2008 at 08:04:02PM +0600]
-| Latest working kernel version:2.6.26.6
-| Distribution: any
-| Hardware Environment: any
-| Software Environment: any
-| Problem Description: Build error from make rpm. Many unpacked files (*.fw).
-| 
-| Steps to reproduce: 
-| 
-| Add in .config:
-| # CONFIG_PREVENT_FIRMWARE_BUILD is not set
-| CONFIG_FW_LOADER=y
-| CONFIG_FIRMWARE_IN_KERNEL=y
-| CONFIG_EXTRA_FIRMWARE=""
-| 
-| and say make rpm to build.
-| 
-| This patch for file linux-2.6.27/scripts/package/mkspec is fix this problem:
-| 
-| 
-| --- mkspec.old  2008-10-11 00:00:38.000000000 +0700
-| +++ mkspec      2008-10-11 00:39:43.000000000 +0700
-| @@ -64,8 +64,10 @@
-|  echo "%install"
-|  echo "%ifarch ia64"
-|  echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/modules'
-| +echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/firmware'
-|  echo "%else"
-|  echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/modules'
-| +echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/firmware'
-|  echo "%endif"
-| 
-|  echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} modules_install'
-| @@ -92,5 +94,6 @@
-|  echo '%defattr (-, root, root)'
-|  echo "%dir /lib/modules"
-|  echo "/lib/modules/$KERNELRELEASE"
-| +echo "/lib/firmware"
-|  echo "/boot/*"
-|  echo ""
-| 
-| С уважением, Маначкин Е.Р.
-| ________________________________________
-| |Комплексные решения на базе Linux.
-| |Opensource wireless routers firmware
-| |www: http://wive-ng.sf.net
-| |mail-to: sfstudio@mail.ru
-| |ICQ: 485758428
-| |JID: sfstudio-omsk@jabber.ru
-| 
-| 
 
-Hi Евгений,
 
-please use patch form described in Documentation/SubmittingPatches
-(kernel source tree). Thanks.
+On Wed, 15 Oct 2008, Linus Torvalds wrote:
+> 
+> The code in question already does
+> 
+> 	VIRTUAL_BUG_ON(!is_vmalloc_addr(vmalloc_addr) &&
+>                        !is_module_address(addr));
+> 
+> and look at that thing and ask yourself: where was the bug again.
 
-		- Cyrill -
+Btw, I don't even know if this is a sparc64 issue too, but it sounds 
+possible. Sparc64 seems similar to x86-64 in that there is a special range 
+for module addresses.
+
+I'm too lazy to check everybody's "module_alloc()", and maybe others do 
+too, but use a different symbol, so grepping for it doesn't trigger.
+
+But regardless, a much more correct fix appears to just screw this, and 
+make it explicit on the symbol. And only do it if modules are even 
+supported.
+
+And if you *really* want to change "is_vmalloc_addr()", then
+
+ (a) do it right, not some crappy x86-64-specific sh*t
+ (b) do it like I do it, and make it dependent on modules even being 
+     enabled
+ (c) and rename it to match what it does.
+
+not the horrible patch I've seen.
+
+Oh, btw. This patch is *totally* untested. I don't even enable modules. So 
+if it doesn't compile, it isn't perfect. But while it may not _work_, at 
+least it's not _ugly_.
+
+(Quite frankly, I think an even more correct fix is to rename the whole 
+"vmalloc_to_page()" function, since it's clearly used for other things 
+than vmalloc. Maybe "kernel_virtual_to_page()". Whatever. This is trying 
+to be minimal without being totally disgusting).
+
+			Linus
+
+---
+ mm/vmalloc.c |   18 ++++++++++++++++--
+ 1 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index bba06c4..f018d7e 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -168,6 +168,21 @@ int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page ***pages)
+ }
+ EXPORT_SYMBOL_GPL(map_vm_area);
+ 
++static inline int is_vmalloc_or_module_addr(const void *x)
++{
++	/*
++	 * x86-64 and sparc64 put modules in a special place,
++	 * and fall back on vmalloc() if that fails. Others
++	 * just put it in the vmalloc space.
++	 */
++#if defined(CONFIG_MODULES) && defined(MODULES_VADDR)
++	unsigned long addr = (unsigned long)x;
++	if (addr >= MODULES_VADDR && addr < MODULES_END)
++		return 1;
++#endif
++	return is_vmalloc_addr(x);
++}
++
+ /*
+  * Map a vmalloc()-space virtual address to the physical page.
+  */
+@@ -184,8 +199,7 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
+ 	 * XXX we might need to change this if we add VIRTUAL_BUG_ON for
+ 	 * architectures that do not vmalloc module space
+ 	 */
+-	VIRTUAL_BUG_ON(!is_vmalloc_addr(vmalloc_addr) &&
+-			!is_module_address(addr));
++	VIRTUAL_BUG_ON(!is_vmalloc_or_module_addr(vmalloc_addr));
+ 
+ 	if (!pgd_none(*pgd)) {
+ 		pud = pud_offset(pgd, addr);
