@@ -1,81 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYJOBVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYJOB06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbYJOBVb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 21:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYJOBVX
+	id S1753748AbYJOB06 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 21:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYJOB0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 21:21:23 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:59134 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbYJOBVX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 21:21:23 -0400
-Date: Tue, 14 Oct 2008 18:20:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mark Fasheh <mfasheh@suse.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git patches] Ocfs2 features for 2.6.28 (build errors)
-Message-Id: <20081014182037.38503fd0.randy.dunlap@oracle.com>
-In-Reply-To: <20081014200319.GK15154@wotan.suse.de>
-References: <20081014200319.GK15154@wotan.suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 14 Oct 2008 21:26:49 -0400
+Received: from sh.osrg.net ([192.16.179.4]:33460 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbYJOB0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Oct 2008 21:26:48 -0400
+Date: Wed, 15 Oct 2008 10:26:23 +0900
+To: dgilbert@interlog.com
+Cc: avi@redhat.com, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: scsi-debug documentation?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <48F53417.1090501@interlog.com>
+References: <48F4F049.5090709@redhat.com>
+	<48F53417.1090501@interlog.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <20081015102627Q.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008 13:03:19 -0700 Mark Fasheh wrote:
+On Tue, 14 Oct 2008 20:06:47 -0400
+Douglas Gilbert <dgilbert@interlog.com> wrote:
 
-> Hi Linus,
+> Avi Kivity wrote:
+> > scsi-debug points to http://www.torque.net/sg/sdebug26.html as its
+> > documentation.  That site appears to be dead however.  Does anyone have
+> > a copy?
+> > 
+> > If so, I suggest Documentation/scsi/ as a better place for it.
 > 
-> 	The majority of these Ocfs2 patches were sent to the list back in
-> September:
+> Avi,
+> The torque.net domain has been sold and is no longer
+> functional. My pages have moved to
+>    http://sg.danny.cz/sg
+> This includes documentation on the sg driver and various user
+> space packages: sg3_utils, smp_utils, sdparm and lsscsi.
 > 
-> 	http://lkml.org/lkml/2008/9/24/383
-> 
-> All feedback has been incorporated - my original e-mail describing the
-> contents of our tree is attached below.
-> 
-> The only exception is that I added (after the initial send to lkml) an
-> internal api cleanup series from Joel. This doesn't really make any
-> functional changes, but simplifies our block I/O handling code in
-> anticipation of some features we're planning for 2.6.29. For reference,
-> these changes are the topmost 6 patches in the branch. I don't think they're
-> are particularly controversial or tricky.
-> 	--Mark
-> 
-> Please pull from 'upstream-linus' branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+> So the page you were looking for is now:
+>    http://sg.danny.cz/sg/sdebug26.html
 
+Why not update Kconfig and scsi_debug.c?
 
-In 2.6.27-git5 I am seeing build errors as follow:
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] update scsi_debug's URL
 
-fs/ocfs2/xattr.c: In function 'ocfs2_xattr_bucket_find':
-fs/ocfs2/xattr.c:2352: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-fs/ocfs2/xattr.c:2352: error: (Each undeclared identifier is reported only once
-fs/ocfs2/xattr.c:2352: error: for each function it appears in.)
-fs/ocfs2/xattr.c: In function 'ocfs2_iterate_xattr_buckets':
-fs/ocfs2/xattr.c:2429: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-fs/ocfs2/xattr.c: In function 'ocfs2_xattr_update_xattr_search':
-fs/ocfs2/xattr.c:2697: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-fs/ocfs2/xattr.c: In function 'ocfs2_defrag_xattr_bucket':
-fs/ocfs2/xattr.c:2902: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-fs/ocfs2/xattr.c: In function 'ocfs2_read_xattr_bucket':
-fs/ocfs2/xattr.c:3157: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-fs/ocfs2/xattr.c: In function 'ocfs2_xattr_set_entry_in_bucket':
-fs/ocfs2/xattr.c:4104: error: 'OCFS2_BH_CACHED' undeclared (first use in this function)
-make[2]: *** [fs/ocfs2/xattr.o] Error 1
-
-
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
-~Randy
+ drivers/scsi/Kconfig      |    4 ++--
+ drivers/scsi/scsi_debug.c |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index 403ecad..510396f 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -1517,8 +1517,8 @@ config SCSI_DEBUG
+ 	  each with multiple dummy SCSI devices (disks). It defaults to one
+ 	  host adapter with one dummy SCSI disk. Each dummy disk uses kernel
+ 	  RAM as storage (i.e. it is a ramdisk). To save space when multiple
+-	  dummy disks are simulated, they share the same kernel RAM for 
+-	  their storage. See <http://www.torque.net/sg/sdebug.html> for more
++	  dummy disks are simulated, they share the same kernel RAM for
++	  their storage. See <http://sg.danny.cz/sg/sdebug26.html> for more
+ 	  information. This driver is primarily of use to those testing the
+ 	  SCSI and block subsystems. If unsure, say N.
+ 
+diff --git a/drivers/scsi/scsi_debug.c b/drivers/scsi/scsi_debug.c
+index 27c633f..671fed0 100644
+--- a/drivers/scsi/scsi_debug.c
++++ b/drivers/scsi/scsi_debug.c
+@@ -12,7 +12,7 @@
+  *  SAS disks.
+  *
+  *
+- *  For documentation see http://www.torque.net/sg/sdebug26.html
++ *  For documentation see http://sg.danny.cz/sg/sdebug26.html
+  *
+  *   D. Gilbert (dpg) work for Magneto-Optical device test [20010421]
+  *   dpg: work for devfs large number of disks [20010809]
+-- 
+1.5.6.5
+
