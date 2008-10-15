@@ -1,121 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbYJOVTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYJOVTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbYJOVTV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 17:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbYJOVTJ
+	id S1753997AbYJOVTf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbYJOVTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 17:19:09 -0400
-Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:52556 "EHLO
-	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753367AbYJOVTI (ORCPT
+	Wed, 15 Oct 2008 17:19:11 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:36727 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753367AbYJOVTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 17:19:08 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhsBAF/79UhR8Vqu/2dsb2JhbAAIwjGBaw
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: [Linux-uvc-devel] [BUG] NULL pointer dereference caused by uvcvideo stress test
-Date: Wed, 15 Oct 2008 23:19:17 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-uvc-devel@lists.berlios.de,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <gbiduj$9p3$1@ger.gmane.org> <200810152017.47347.laurent.pinchart@skynet.be> <48F63C4E.3070103@tuffmail.co.uk>
-In-Reply-To: <48F63C4E.3070103@tuffmail.co.uk>
-X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
+	Wed, 15 Oct 2008 17:19:10 -0400
+Message-ID: <48F65E48.8080301@ru.mvista.com>
+Date: Thu, 16 Oct 2008 01:19:04 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_V5l9IffuyycGmcm"
-Message-Id: <200810152319.17925.laurent.pinchart@skynet.be>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] hpt366: add hpt3xx_disable_fast_irq() helper
+References: <200808021915.03424.bzolnier@gmail.com> <48F50649.9080507@ru.mvista.com> <200810152011.18478.bzolnier@gmail.com>
+In-Reply-To: <200810152011.18478.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_V5l9IffuyycGmcm
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello.
 
-Hi Alan,
+Bartlomiej Zolnierkiewicz wrote:
 
-On Wednesday 15 October 2008, Alan Jenkins wrote:
-> Laurent Pinchart wrote:
-> > On Wednesday 15 October 2008, Alan Jenkins wrote:
-> > > If you look at the trace, it happens as "hald-probe-video" opens the
-> > > video device.  This is from Ubuntu 8.04.  Possibly it's significant that
-> > > I use the camera first, to make sure it works (I use Kopete, the
-> > > settings dialogue includes a video test).
-> >
-> > The NULL pointer (or rather 0x00000030 pointer) dereference happens in
-> > video_open:
-> >
-> >         file->f_op = fops_get(vfl->fops);
-> >         if (file->f_op->open)
-> >                 err = file->f_op->open(inode, file);
-> >
-> > file->f_op ends up being NULL. Either vfl->fops is NULL to begin with, or
-> > fops_get failed to get a reference to the file_operations structure.
-> >
-> > I'd be surprised if vfl->fops was NULL. To rule out that case, can you
-> > add a BUG_ON(vfl->fops == NULL) before the call to fops_get ?
-> >
-> > I'm not too familiar with the module loader, but a quick look at the code
-> > shows that the module could be marked as being unloaded
-> > (MODULE_STATE_GOING) before its exit function is called. If this is the
-> > case video_open would still be called, as the video device would still be
-> > registered, but fops_get would fail in try_module_get and return a NULL
-> > pointer. It seems the pointer returned by fops_get should be tested in
-> > video_open.
-> >
-> > I've CC'ed the v4l maintainer to get his opinion on this.
+>>> * Factor out disabling of "fast interrupt" prediction from
+>>>   init_hwif_hpt366() to hpt3xx_disable_fast_irq() helper.
+>>>       
+>>> * Use hpt3xx_disable_fast_irq() in ->init_chipset instead of
+>>>   ->init_hwif method.
+>>>       
+>>>   This is a preparation for adding proper PCI PM support.
+>>>       
+>>> While at it:
+>>>       
+>>> * Cache chip type in chip_type variable in hpt3xx_disable_fast_irq().
+>>>       
+>>> There should be no functional changes caused by this patch.
+>>>       
+>>     Except a warning. ;-)
+>>     
 >
-> I put one before and one after
+> Sorry for that but... shit happens. ;)
+>   
+
+   Compile testing the patches would have helped. ;-)
+
+>>     You've removed the users of that variable but left the variable itself... 
+>> alas, it's too late to fix the patch. :-/
+>>     
 >
-> 134    BUG_ON(vfl->fops == NULL);
-> 135    file->f_op = fops_get(vfl->fops);
-> 136    BUG_ON(file->f_op == NULL);
+> Not such a big deal, we just have to make an another one...
 >
-> and the second one triggered
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] hpt366: fix compile warning
+>
+> Fixup for commit 1785192b5310ee25165768f5bb80f13146788e3e
+> ("hpt366: add hpt3xx_disable_fast_irq() helper"):
+>
+>    CC      drivers/ide/pci/hpt366.o
+> drivers/ide/pci/hpt366.c: In function `init_hwif_hpt366':
+> drivers/ide/pci/hpt366.c:1290: warning: unused variable `dev'
+>
+> Reported-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>   
 
-This confirms my suspicion. Could you please try the attached patch ?
+   Duh. I've posted this patch a bit earlier. ;-)
 
-Best regards,
+MBR, Sergei
 
-Laurent Pinchart
 
---Boundary-00=_V5l9IffuyycGmcm
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="fops_get_check.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="fops_get_check.patch"
-
-diff --git a/drivers/media/video/v4l2-dev.c b/drivers/media/video/v4l2-dev.c
-index 155fdec..7a3c1ed 100644
---- a/drivers/media/video/v4l2-dev.c
-+++ b/drivers/media/video/v4l2-dev.c
-@@ -132,6 +132,11 @@ static int video_open(struct inode *inode, struct file *file)
- 	}
- 	old_fops = file->f_op;
- 	file->f_op = fops_get(vfl->fops);
-+	if (file->f_op == NULL) {
-+		file->f_op = old_fops;
-+		err = -ENODEV;
-+		goto out;
-+	}
- 	if (file->f_op->open)
- 		err = file->f_op->open(inode, file);
- 	if (err) {
-@@ -139,6 +144,7 @@ static int video_open(struct inode *inode, struct file *file)
- 		file->f_op = fops_get(old_fops);
- 	}
- 	fops_put(old_fops);
-+out:
- 	mutex_unlock(&videodev_lock);
- 	unlock_kernel();
- 	return err;
-
---Boundary-00=_V5l9IffuyycGmcm--
