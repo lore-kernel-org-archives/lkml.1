@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYJOWcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYJOWct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbYJOWcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYJOWcH
+	id S1755929AbYJOWct (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYJOWcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:32:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43509 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751735AbYJOWcG (ORCPT
+	Wed, 15 Oct 2008 18:32:39 -0400
+Received: from vms172073pub.verizon.net ([206.46.172.73]:35144 "EHLO
+	vms172073pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753797AbYJOWch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:32:06 -0400
-Date: Wed, 15 Oct 2008 15:31:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: mingo@elte.hu, ying.huang@intel.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, tglx@linutronix.de
-Subject: Re: [PATCH -mm -v5] Separate atomic_t declaration from asm/atomic.h
- into asm/atomic_def.h
-Message-Id: <20081015153124.c560e97e.akpm@linux-foundation.org>
-In-Reply-To: <20081015221947.GN15064@parisc-linux.org>
-References: <1223459070.5872.167.camel@yhuang-dev.sh.intel.com>
-	<20081010144335.65d8153b.akpm@linux-foundation.org>
-	<20081010214958.GA7708@elte.hu>
-	<20081010155450.094288b4.akpm@linux-foundation.org>
-	<20081014184718.GG15064@parisc-linux.org>
-	<20081015151119.493ea13f.akpm@linux-foundation.org>
-	<20081015221947.GN15064@parisc-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Oct 2008 18:32:37 -0400
+Date: Wed, 15 Oct 2008 18:32:30 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 53/85] i7300_idle driver v1.55
+In-reply-to: <20081011083347.GA31918@elte.hu>
+X-X-Sender: lenb@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andy Henroid <andrew.d.henroid@intel.com>,
+       Len Brown <len.brown@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Message-id: <alpine.LFD.1.10.0810151822520.3026@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
+ <e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com>
+ <20081011083347.GA31918@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008 16:19:48 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
 
-> On Wed, Oct 15, 2008 at 03:11:19PM -0700, Andrew Morton wrote:
-> > On Tue, 14 Oct 2008 12:47:19 -0600
-> > Matthew Wilcox <matthew@wil.cx> wrote:
-> > > Roman Zippel did me one better and suggested just putting it in types.h,
-> > > which works for me.
-> > 
-> > OK.  Or we could do the usual include/asm-generic/atomic_types.h and
-> > then architectures can choose to include that if it is appropriate.
-> > 
-> > Anyway the good news is that this concept is an addition to rather than
-> > a replacement of this current patch.
+
+> > --- a/arch/x86/kernel/process_64.c
+> > +++ b/arch/x86/kernel/process_64.c
+> > @@ -62,6 +62,13 @@ void idle_notifier_register(struct notifier_block *n)
+> >  {
+> >  	atomic_notifier_chain_register(&idle_notifier, n);
+> >  }
+> > +EXPORT_SYMBOL_GPL(idle_notifier_register);
+> > +
+> > +void idle_notifier_unregister(struct notifier_block *n)
+> > +{
+> > +	atomic_notifier_chain_unregister(&idle_notifier, n);
+> > +}
+> > +EXPORT_SYMBOL_GPL(idle_notifier_unregister);
 > 
-> Um, no.  Roman and I are against the creation of a new file.  Just put
-> the atomic_t definition in <linux/types.h>.
+> hm, such x86 infrastructure changes should be submitted via the x86 
+> tree, and you should at least have Cc:-ed the maintainers.
 
-Well we've been glacially fartarsing around with this for sufficiently
-long that any such alterations will be too late for 2.6.28.
+I agree that this patch did not hit the list in the conventional way.
+I apologize for that, and I thank you, Ingo, for noticing the patch.
 
-I'll drop it all.  Again.
+> The thing is, we are _getting rid_ of the idle notifiers, not extending 
+> them. The last thing we need is random opaque stuff getting called in 
+> weird ordering when we enter/exit idle state. We want all that be 
+> visible and have explicit, in-source-code ordering.
+
+The patch on the table is basically a platform (chipset) idle hook.
+When the system is very idle, it saves energy in the memory sub-system.
+Linux customers are asking for this capability b/c it allows them
+to save energy and save money.
+
+We considered putting a platform hook into the cpuidle code,
+but it seemed simpler this way -- since the new platform hook
+would end up looking almost exactly like the idle notifier
+that we have already.  So x86-wise, all we did here is
+expose the register/unregister so the driver can be modular.
+
+I'm certainly open to suggestions.
+
+thanks,
+-Len
+
+
+
+
