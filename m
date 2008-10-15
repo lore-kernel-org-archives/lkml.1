@@ -1,61 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbYJOJxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbYJOJxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753698AbYJOJxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 05:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYJOJxG
+	id S1754303AbYJOJxc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 05:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYJOJxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 05:53:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39103 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752040AbYJOJxF (ORCPT
+	Wed, 15 Oct 2008 05:53:09 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:1495 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752367AbYJOJxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 05:53:05 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] tty: make sure that proc_clear_tty stores the cpu flags
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Wed, 15 Oct 2008 10:52:34 +0100
-Message-ID: <20081015095214.330.59301.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Wed, 15 Oct 2008 05:53:06 -0400
+X-BigFish: VPS-4(zz4015Mzzzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K8RY43-01-JEO-01
+Date: Wed, 15 Oct 2008 11:51:53 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org
+Subject: x86: SB600: skip IRQ0 override if it is not routed to INT2 of
+	IOAPIC
+Message-ID: <20081015095153.GG29098@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 15 Oct 2008 09:52:17.0038 (UTC) FILETIME=[B5286AE0:01C92EAB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
+On some more HP laptops BIOS reports an IRQ0 override
+but the SB600 chipset is configured such that timer
+interrupts go to INT0 of IOAPIC.
 
-proc_clear_tty() gets called with interrupts off (while holding the task list
-lock) from sys_setid. This means that it needs the _irqsave version of the
-locking primitives.
+Check IRQ0 routing and if it is routed to INT0 of IOAPIC skip the
+timer override.
 
-Reported-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Tested-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Alan Cox <alan@redhat.com>
+See following bug reports:
+http://bugzilla.kernel.org/show_bug.cgi?id=11715
+http://bugzilla.kernel.org/show_bug.cgi?id=11516
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
+ arch/x86/kernel/early-quirks.c |   55 +++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 52 insertions(+), 3 deletions(-)
 
- drivers/char/tty_io.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+Patch is against v2.6.27-3977-gc166ab7 (yesterday's Linus git).
+Please apply.
+
+Thanks,
+Andreas
 
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 7053d63..3f48d88 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -3032,11 +3032,12 @@ EXPORT_SYMBOL(tty_devnum);
+diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
+index 733c4f8..3ce029f 100644
+--- a/arch/x86/kernel/early-quirks.c
++++ b/arch/x86/kernel/early-quirks.c
+@@ -95,7 +95,8 @@ static void __init nvidia_bugs(int num, int slot, int func)
  
- void proc_clear_tty(struct task_struct *p)
- {
-+	unsigned long flags;
- 	struct tty_struct *tty;
--	spin_lock_irq(&p->sighand->siglock);
-+	spin_lock_irqsave(&p->sighand->siglock, flags);
- 	tty = p->signal->tty;
- 	p->signal->tty = NULL;
--	spin_unlock_irq(&p->sighand->siglock);
-+	spin_unlock_irqrestore(&p->sighand->siglock, flags);
- 	tty_kref_put(tty);
  }
  
+-static u32 ati_ixp4x0_rev(int num, int slot, int func)
++#if defined(CONFIG_ACPI) && defined(CONFIG_X86_IO_APIC)
++static u32 __init ati_ixp4x0_rev(int num, int slot, int func)
+ {
+ 	u32 d;
+ 	u8  b;
+@@ -115,7 +116,6 @@ static u32 ati_ixp4x0_rev(int num, int slot, int func)
+ 
+ static void __init ati_bugs(int num, int slot, int func)
+ {
+-#if defined(CONFIG_ACPI) && defined (CONFIG_X86_IO_APIC)
+ 	u32 d;
+ 	u8  b;
+ 
+@@ -138,9 +138,56 @@ static void __init ati_bugs(int num, int slot, int func)
+ 		printk(KERN_INFO "If you got timer trouble "
+ 		       "try acpi_use_timer_override\n");
+ 	}
+-#endif
+ }
+ 
++static u32 __init ati_sbx00_rev(int num, int slot, int func)
++{
++	u32 old, d;
++
++	d = read_pci_config(num, slot, func, 0x70);
++	old = d;
++	d &= ~(1<<8);
++	write_pci_config(num, slot, func, 0x70, d);
++	d = read_pci_config(num, slot, func, 0x8);
++	d &= 0xff;
++	write_pci_config(num, slot, func, 0x70, old);
++
++	return d;
++}
++
++static void __init ati_bugs_contd(int num, int slot, int func)
++{
++	u32 d, rev;
++
++	if (acpi_use_timer_override)
++		return;
++
++	rev = ati_sbx00_rev(num, slot, func);
++	if (rev > 0x13)
++		return;
++
++	/* check for IRQ0 interrupt swap */
++	d = read_pci_config(num, slot, func, 0x64);
++	if (!(d & (1<<14)))
++		acpi_skip_timer_override = 1;
++
++	if (acpi_skip_timer_override) {
++		printk(KERN_INFO "SB600 revision 0x%x\n", rev);
++		printk(KERN_INFO "Ignoring ACPI timer override.\n");
++		printk(KERN_INFO "If you got timer trouble "
++		       "try acpi_use_timer_override\n");
++	}
++}
++#else
++static void __init ati_bugs(int num, int slot, int func)
++{
++}
++
++static void __init ati_bugs_contd(int num, int slot, int func)
++{
++}
++#endif
++
+ #ifdef CONFIG_DMAR
+ static void __init intel_g33_dmar(int num, int slot, int func)
+ {
+@@ -176,6 +223,8 @@ static struct chipset early_qrk[] __initdata = {
+ 	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, fix_hypertransport_config },
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
+ 	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs },
++	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS,
++	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs_contd },
+ #ifdef CONFIG_DMAR
+ 	{ PCI_VENDOR_ID_INTEL, 0x29c0,
+ 	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, intel_g33_dmar },
+-- 
+1.6.0.2
+
+
 
