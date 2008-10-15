@@ -1,110 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYJOWVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYJOWYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYJOWVz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbYJOWVr
+	id S1755571AbYJOWYu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYJOWYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:21:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37210 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbYJOWVr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:21:47 -0400
-Date: Wed, 15 Oct 2008 18:21:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, gregkh@suse.de,
-       jesse.brandeburg@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH -stable] disable CONFIG_DYNAMIC_FTRACE due to possible memory
- corruption on module unload
-Message-ID: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 15 Oct 2008 18:24:42 -0400
+Received: from 0x55512ece.adsl.cybercity.dk ([85.81.46.206]:18758 "EHLO
+	sko.w0.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751969AbYJOWYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 18:24:41 -0400
+Date: Thu, 16 Oct 2008 00:24:37 +0200 (CEST)
+From: Hans Schou <linux@schou.dk>
+X-X-Sender: linux@sko.w0.dk
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SiS55x, another x86 CPU
+In-Reply-To: <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk>
+Message-ID: <Pine.LNX.4.64.0810160008530.7873@sko.w0.dk>
+References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org>
+ <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 14 Oct 2008, Hans Schou wrote:
 
-While debugging the e1000e corruption bug with Intel, we discovered
-today that the dynamic ftrace code in mainline is the likely source of
-this bug.
+> If any CR/LF in your file you must have added them yourself.
 
-For the stable kernel we are providing the only viable fix patch: labeling
-CONFIG_DYNAMIC_FTRACE as broken. (see the patch below)
+Sorry, you are right. Pine do change attachment which is recognized as 
+ASCII text files. Pine thinks the right thing to do, based on the file 
+extension, is to convert a text file to CR/LF:
+http://www.washington.edu/pine/faq/attachments.html#7.2.1
 
-We will follow up with a backport patch that contains the fixes. But since
-the fixes are not a one liner, the safest approach for now is to
-disable the code in question.
+I could not find a way within Pine where I could attach a file in way 
+where everything is preserved as is, but regarding the actual case 
+with SiS55x I don't think there is a need for posting the patch 
+correctly anyway. The patch was not that popular after all.
 
-The cause of the bug is due to the way the current code in mainline
-handles dynamic ftrace.  When dynamic ftrace is turned on, it also
-turns on CONFIG_FTRACE which enables the -pg config in gcc that places
-a call to mcount at every function call. With just CONFIG_FTRACE this
-causes a noticeable overhead.  CONFIG_DYNAMIC_FTRACE works to ease this
-overhead by dynamically updating the mcount call sites into nops.
-
-The problem arises when we trace functions and modules are unloaded.
-The first time a function is called, it will call mcount and the mcount
-call will call ftrace_record_ip. This records the calling site and
-stores it in a preallocated hash table. Later on a daemon will
-wake up and call kstop_machine and convert any mcount callers into
-nops.
-
-The evolution of this code first tried to do this without the kstop_machine
-and used cmpxchg to update the callers as they were called. But I
-was informed that this is dangerous to do on SMP machines if another
-CPU is running that same code. The solution was to do this with
-kstop_machine.
-
-We still used cmpxchg to test if the code that we are modifying is
-indeed code that we expect to be before updating it - as a final
-line of defense.
-
-But on 32bit machines, ioremapped memory and modules share the same
-address space. When a module would load its code into memory and execute
-some code, that would register the function.
-
-On module unload, ftrace incorrectly did not zap these functions from
-its hash (this was the bug). The cmpxchg could have saved us in most
-cases (via luck) - but with ioremap-ed memory that was exactly the wrong
-thing to do - the results of cmpxchg on device memory are undefined.
-(and will likely result in a write)
-
-The pending .28 ftrace tree does not have this bug anymore, as a general push
-towards more robustness of code patching, this is done differently: we do not
-use cmpxchg and we do a WARN_ON and turn the tracer off if anything deviates
-from its expected state. Furthermore, patch sites are statically identified
-during build time so there's no runtime discovery of dynamic code areas
-anymore, and no room for code unmaps to cause the hash to become out of date.
-
-We believe the fragility of dynamic patching has been sufficiently
-addressed in the development code via the static patching method, but further
-suggestions to make it more robust are welcome.
-
-Signed-off-by: Steven Rostedt <srostedt@goodmis.org>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/trace/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-compile.git/kernel/trace/Kconfig
-===================================================================
---- linux-compile.git.orig/kernel/trace/Kconfig	2008-10-02 10:18:49.000000000 -0400
-+++ linux-compile.git/kernel/trace/Kconfig	2008-10-15 17:29:34.000000000 -0400
-@@ -103,7 +103,8 @@ config CONTEXT_SWITCH_TRACER
- 	  all switching of tasks.
- 
- config DYNAMIC_FTRACE
--	bool "enable/disable ftrace tracepoints dynamically"
-+	bool "enable/disable ftrace tracepoints dynamically (BROKEN)"
-+	depends on BROKEN
- 	depends on FTRACE
- 	depends on HAVE_DYNAMIC_FTRACE
- 	default y
-
+rgds/hans
