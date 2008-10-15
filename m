@@ -1,43 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYJOVnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYJOVpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbYJOVnh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 17:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYJOVna
+	id S1755528AbYJOVpf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 17:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYJOVp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 17:43:30 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:39891 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861AbYJOVn3 (ORCPT
+	Wed, 15 Oct 2008 17:45:27 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47350 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753201AbYJOVp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 17:43:29 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] vfs: remove LOOKUP_PARENT from non LOOKUP_PARENT lookup
-References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
-	<e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
-	<7754d3f83e848f5f6f2326623.ps@mail.parknet.co.jp>
-	<524881153e848f5f6f3426623.ps@mail.parknet.co.jp>
-	<f29a09483e848f5f6f3526623.ps@mail.parknet.co.jp>
-	<20081015194434.GC24892@infradead.org>
-Date: Thu, 16 Oct 2008 06:43:26 +0900
-In-Reply-To: <20081015194434.GC24892@infradead.org> (Christoph Hellwig's
-	message of "Wed, 15 Oct 2008 15:44:34 -0400")
-Message-ID: <87od1lmt4x.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 15 Oct 2008 17:45:27 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 15 Oct 2008 23:44:53 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire updates post 2.6.27
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.6559742adfdec1ce@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+Linus, please pull from the for-linus branch at
 
-> Makes sense to me, but in this area you really need to work against
-> Al's vfs.git tree as there's quite some work going on.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-I'll send updated patchset soon for vfs-2.6. Thanks.
+to receive the following IEEE 1394/ FireWire subsystem updates.
+We have got little fixes, the last small bit of BKL removal in the old
+stack, and further improved connection stability in the old stack.  Some
+work on the new stack has been going on too, but too slow to make it for
+this merge.
+
+Jay Fenlason (2):
+      firewire: fw_send_request_sync()
+      firewire: Add more documentation to firewire-cdev.h
+
+Julia Lawall (1):
+      ieee1394: Use DIV_ROUND_UP
+
+Stefan Richter (13):
+      ieee1394: sbp2: stricter dma_sync
+      ieee1394: sbp2: check for DMA mapping failures
+      ieee1394: sbp2: enforce s/g segment size limit
+      ieee1394: raw1394: replace BKL by local mutex, make ioctl() and mmap() thread-safe
+      ieee1394: raw1394: narrow down the state_mutex protected region
+      ieee1394: raw1394: make write() thread-safe
+      ieee1394: dv1394, video1394: remove unnecessary expressions
+      ieee1394: nodemgr clean up class iterators
+      ieee1394: survive a few seconds connection loss
+      firewire: fw-sbp2: enforce s/g segment size limit
+      firewire: fw-sbp2: fix another small generation access bug
+      firewire: fix setting tag and sy in iso transmission
+      firewire: fix ioctl() return code
+
+ drivers/firewire/fw-card.c         |   56 ++----
+ drivers/firewire/fw-cdev.c         |    6 +-
+ drivers/firewire/fw-device.c       |   37 +---
+ drivers/firewire/fw-sbp2.c         |  116 +++++-------
+ drivers/firewire/fw-transaction.c  |   48 +++++-
+ drivers/firewire/fw-transaction.h  |    9 +-
+ drivers/ieee1394/csr1212.c         |    2 +-
+ drivers/ieee1394/dv1394.c          |    2 +-
+ drivers/ieee1394/eth1394.c         |    2 +-
+ drivers/ieee1394/nodemgr.c         |  279 +++++++++++-----------------
+ drivers/ieee1394/nodemgr.h         |    2 +-
+ drivers/ieee1394/raw1394-private.h |    1 +
+ drivers/ieee1394/raw1394.c         |  230 +++++++++++++----------
+ drivers/ieee1394/sbp2.c            |  218 +++++++++-------------
+ drivers/ieee1394/sbp2.h            |   33 +---
+ drivers/ieee1394/video1394.c       |    8 +-
+ include/linux/firewire-cdev.h      |    9 +-
+ 17 files changed, 470 insertions(+), 588 deletions(-)
+
+Thanks,
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Stefan Richter
+-=====-==--- =-=- -====
+http://arcgraph.de/sr/
+
