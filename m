@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYJOJmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYJOJmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbYJOJmR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 05:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYJOJmC
+	id S1753966AbYJOJmb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 05:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYJOJmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 15 Oct 2008 05:42:03 -0400
+Received: from styx.suse.cz ([82.119.242.94]:39720 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752056AbYJOJmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Oct 2008 05:42:02 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60472 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751655AbYJOJmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 05:42:01 -0400
-Subject: Re: [git pull] Please pull from powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Robert Richter <robert.richter@amd.com>,
+Date: Wed, 15 Oct 2008 11:42:00 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jean Delvare <khali@linux-fr.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <200810151041.29069.arnd@arndb.de>
-References: <1224033396.8157.386.camel@pasglop>
-	 <20081015083516.GL23557@erda.amd.com>  <200810151041.29069.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 15 Oct 2008 20:41:26 +1100
-Message-Id: <1224063686.8157.449.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [GIT] HID patches for 2.6.28
+In-Reply-To: <20081015093636.GB19403@elte.hu>
+Message-ID: <alpine.LNX.1.10.0810151139200.26779@jikos.suse.cz>
+References: <alpine.LNX.1.10.0810140055060.26779@jikos.suse.cz> <alpine.LNX.1.10.0810150011280.26779@jikos.suse.cz> <20081015093636.GB19403@elte.hu>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-15 at 10:41 +0200, Arnd Bergmann wrote:
-> On Wednesday 15 October 2008, Robert Richter wrote:
-> > there are still these OProfile patches for powerpc pending:
-> > 
-> > Carl Love (1):
-> >       powerpc/cell/oprofile: fix mutex locking for spu-oprofile
-> > 
-> > Roel Kluin (1):
-> >       powerpc/cell/oprofile: vma_map: fix test on overlay_tbl_offset
-> > 
-> > Can you or Paul send them upstream? You can pull from here:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git powerpc-for-paul
-> > 
-> 
-> The patch from Roel is already in there, with a slightly different
-> subject line. The one from Carl is still missing.
+On Wed, 15 Oct 2008, Ingo Molnar wrote:
 
-I'll put it in my tree tomorrow, it will be in the second batch. For
-lurkers, make sure that if you have a patch missing, it's resent and
-shows up in patchwork. Some patches that missed the new patchwork
-transition might have fallen off if paulus didn't pick them up before I
-took over.
+> this or the I2C updates cause widespread build failures in latest -git:
 
-Cheers,
-Ben.
+For the usbhid_set_leds(), Adrian has already sent me a fix [1]. Still, I 
+would like to understand whether this failure is bug or feature in 
+select/depends handling in Kconfig, because it seems to behave differently 
+from what I was expecting.
 
+But I have Adrian's patch in my tree and will be sending pull request to 
+Linus today, after I sort a few more pending things up.
 
+[1] http://lkml.org/lkml/2008/10/15/24
+
+Thanks,
+
+-- 
+Jiri Kosina
