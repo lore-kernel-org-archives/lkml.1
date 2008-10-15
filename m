@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYJOUeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYJOUh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYJOUeG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbYJOUdy
+	id S1754110AbYJOUh2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYJOUhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:33:54 -0400
-Received: from kroah.org ([198.145.64.141]:41732 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752367AbYJOUdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:33:53 -0400
-Date: Wed, 15 Oct 2008 13:30:38 -0700
-From: Greg KH <greg@kroah.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: is the weeks before -rc1 the time to really be working on
-	-next?
-Message-ID: <20081015203038.GA14959@kroah.com>
-References: <20081015174015.GB8663@kroah.com> <Pine.LNX.4.64.0810152202230.25933@anakin>
+	Wed, 15 Oct 2008 16:37:18 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:26900 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbYJOUhR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 16:37:17 -0400
+From: "Brown, John M (WGBU R&D)" <john.brown3@hp.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Wed, 15 Oct 2008 20:35:54 +0000
+Subject: RE: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old
+ code ordering
+Thread-Topic: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old
+ code ordering
+Thread-Index: Acku0H6Ihgb7eBEqQDWJIpnS27lNAQANKc3A
+Message-ID: <C075D3D77BA5EF4FBB0939047B182ABF25C79AD3EE@GVW1144EXB.americas.hpqcorp.net>
+References: <200810142254.07024.rjw@sisk.pl>
+ <20081015085809.GA1061@srcf.ucam.org> <200810151605.35883.rjw@sisk.pl>
+ <20081015141526.GA5633@srcf.ucam.org>
+In-Reply-To: <20081015141526.GA5633@srcf.ucam.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810152202230.25933@anakin>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 10:04:17PM +0200, Geert Uytterhoeven wrote:
-> On Wed, 15 Oct 2008, Greg KH wrote:
-> > Just wondering, I know that -next is failing right now, and is a major
-> > pain to produce, but that seems to be primarily due to all of the
-> > subsystems merging with Linus right now.
-> > 
-> > So does it even make sense to try to create a -next during the 2 weeks
-> > of the major merge window?  It seems to just cause you a whole lot of
-> > work, that in the end, is mostly unecessary as all of the subsystem
-> > maintainers are doing the merging themselves as trees move into Linus's
-> > tree?
-> 
-> I don't know if it's worth the effort...
-> 
-> However, we definitely missed linux-next during the last few weeks, seeing
-> things getting into mainline that don't even survive simple compile tests.
+I don't know the technical details behind *how* Windows copes with it, but I can tell you that it works fine on Windows.  Naturally we'd like it to work fine on Linux, too, and Rafael's blacklist fix accomplishes that.  There may be other solutions to this issue on Linux that are worth looking into, but perhaps we can accept Rafael's fix as a workaround for now.
 
-Oh I agree, I missed it a lot the past few weeks, it's amazing how much
-we already started to rely on it in such a short time.  That shows how
-valuable the effort is.
+BTW, there is probably at least one more fairly recent vintage HP workstation that will require this same fix.  My testing isn't complete yet, though.
 
-Keep it up, I just don't want to see Stephen burn out during the pre-rc1
-time period when it might not make as much sense to be trying to create
-the tree.
+John
 
-thanks,
+-----Original Message-----
+From: Matthew Garrett [mailto:mjg59@srcf.ucam.org]
+Sent: Wednesday, October 15, 2008 8:15 AM
+To: Rafael J. Wysocki
+Cc: Len Brown; ACPI Devel Maling List; Andrew Morton; LKML; Brown, John M (WGBU R&D)
+Subject: Re: [PATCH] ACPI suspend: Blacklist HP xw4600 Workstation for old code ordering
 
-greg k-h
+On Wed, Oct 15, 2008 at 04:05:35PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, 15 of October 2008, Matthew Garrett wrote:
+> > I think trying to work out what would be more useful than just
+> > adding it to a blacklist.
+>
+> Well, machines that require the "old" ordering are simply broken,
+> because you just can't assume that specific devices are not in D3
+> before you execute _PTS.
+>
+> IOW, we aren't doing anything wrong and the BIOS is buggy.
+
+So how does Windows cope with this?
+
+--
+Matthew Garrett | mjg59@srcf.ucam.org
