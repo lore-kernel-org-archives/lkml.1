@@ -1,166 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYJOQdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYJOQea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbYJOQdE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 12:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYJOQcz
+	id S1755245AbYJOQea (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 12:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYJOQeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 12:32:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58554 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752579AbYJOQcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 12:32:54 -0400
-Date: Wed, 15 Oct 2008 18:32:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] x86 fixes
-Message-ID: <20081015163244.GA25660@elte.hu>
+	Wed, 15 Oct 2008 12:34:23 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:28106 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752470AbYJOQeW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 12:34:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rkwbMTears0f9VUbbC5mDL1VkNdKJryPRGmbkVOA3f7azwoHseRs/rPz1o8SVLe5xCSyAKuNipiZ/Z/8WmOqM6HINBUBeZRnYBpTcRuyTzKhOqO8fi0LVmXhbnhyPjWBKUXGfvKEXWpEuCZpA/GKTbvcJbZhTHo+kzM0wyb4GGE=  ;
+X-YMail-OSG: JNWKhfIVM1kdIa_zFz2OSFUQxNfnA.3_E72J9ZZjBG8VYjm58p.htXTP1mJAw3DeqZgstHntZMdUtYx86tYZCbcl2wUggkqDWl7vu1PyE7ndxi6EBcCA99drwiUuYtjIjuKnFqJyTiY.lVPHudZ7N6nkkoE47kQTENYs.e3N
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: torvalds@linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Matt Mackall <mpm@selenic.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [rfc] SLOB memory ordering issue
+Date: Thu, 16 Oct 2008 03:34:12 +1100
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Message-Id: <200810160334.13082.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+I think I see a possible memory ordering problem with SLOB:
+In slab caches with constructors, the constructor is run
+before returning the object to caller, with no memory barrier
+afterwards.
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Now there is nothing that indicates the _exact_ behaviour
+required here. Is it at all reasonable to expect ->ctor() to
+be visible to all CPUs and not just the allocating CPU?
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+SLAB and SLUB don't appear to have this problem. Of course,
+they have per-CPU fastpath queues, so _can_ have effectively
+exactly the same ordering issue if the object was brought
+back into the "initialized" state before being freed, rather
+than by ->ctor(). However in that case, it is at least
+kind of visible to the caller.
 
- Thanks,
+Anyone care or think it is a problem? Should we just document
+that ->ctor doesn't imply any barriers? Better ideas?
 
-	Ingo
-
------------------->
-Ingo Molnar (1):
-      x86/mm: unify init task OOM handling
-
-Linus Torvalds (1):
-      x86/mm: do not trigger a kernel warning if user-space disables interrupts and generates a page fault
-
-Suresh Siddha (1):
-      x86: fix compat-vdso
-
-
- arch/x86/mm/fault.c       |   45 +++++++++++++++++----------------------------
- include/asm-x86/pgtable.h |    7 ++++++-
- 2 files changed, 23 insertions(+), 29 deletions(-)
-
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index a742d75..8bc5956 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -645,24 +645,23 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	}
- 
- 
--#ifdef CONFIG_X86_32
--	/* It's safe to allow irq's after cr2 has been saved and the vmalloc
--	   fault has been handled. */
--	if (regs->flags & (X86_EFLAGS_IF | X86_VM_MASK))
--		local_irq_enable();
--
- 	/*
--	 * If we're in an interrupt, have no user context or are running in an
--	 * atomic region then we must not take the fault.
-+	 * It's safe to allow irq's after cr2 has been saved and the
-+	 * vmalloc fault has been handled.
-+	 *
-+	 * User-mode registers count as a user access even for any
-+	 * potential system fault or CPU buglet.
- 	 */
--	if (in_atomic() || !mm)
--		goto bad_area_nosemaphore;
--#else /* CONFIG_X86_64 */
--	if (likely(regs->flags & X86_EFLAGS_IF))
-+	if (user_mode_vm(regs)) {
-+		local_irq_enable();
-+		error_code |= PF_USER;
-+	} else if (regs->flags & X86_EFLAGS_IF)
- 		local_irq_enable();
- 
-+#ifdef CONFIG_X86_64
- 	if (unlikely(error_code & PF_RSVD))
- 		pgtable_bad(address, regs, error_code);
-+#endif
- 
- 	/*
- 	 * If we're in an interrupt, have no user context or are running in an
-@@ -671,15 +670,9 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	if (unlikely(in_atomic() || !mm))
- 		goto bad_area_nosemaphore;
- 
--	/*
--	 * User-mode registers count as a user access even for any
--	 * potential system fault or CPU buglet.
--	 */
--	if (user_mode_vm(regs))
--		error_code |= PF_USER;
- again:
--#endif
--	/* When running in the kernel we expect faults to occur only to
-+	/*
-+	 * When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
- 	 * erroneous fault occurring in a code path which already holds mmap_sem
-@@ -742,9 +735,6 @@ good_area:
- 			goto bad_area;
- 	}
- 
--#ifdef CONFIG_X86_32
--survive:
--#endif
- 	/*
- 	 * If for any reason at all we couldn't handle the fault,
- 	 * make sure we exit gracefully rather than endlessly redo
-@@ -879,12 +869,11 @@ out_of_memory:
- 	up_read(&mm->mmap_sem);
- 	if (is_global_init(tsk)) {
- 		yield();
--#ifdef CONFIG_X86_32
--		down_read(&mm->mmap_sem);
--		goto survive;
--#else
-+		/*
-+		 * Re-lookup the vma - in theory the vma tree might
-+		 * have changed:
-+		 */
- 		goto again;
--#endif
- 	}
- 
- 	printk("VM: killing process %s\n", tsk->comm);
-diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
-index ed93245..e9f10af 100644
---- a/include/asm-x86/pgtable.h
-+++ b/include/asm-x86/pgtable.h
-@@ -138,8 +138,13 @@
- #ifdef CONFIG_X86_64
- #define __PAGE_KERNEL_IDENT_LARGE_EXEC	__PAGE_KERNEL_LARGE_EXEC
- #else
-+/*
-+ * For PDE_IDENT_ATTR include USER bit. As the PDE and PTE protection
-+ * bits are combined, this will alow user to access the high address mapped
-+ * VDSO in the presence of CONFIG_COMPAT_VDSO
-+ */
- #define PTE_IDENT_ATTR	 0x003		/* PRESENT+RW */
--#define PDE_IDENT_ATTR	 0x063		/* PRESENT+RW+DIRTY+ACCESSED */
-+#define PDE_IDENT_ATTR	 0x067		/* PRESENT+RW+USER+DIRTY+ACCESSED */
- #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
- #endif
- 
