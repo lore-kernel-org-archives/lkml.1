@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYJOPGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYJOPNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbYJOPGv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 11:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYJOPGn
+	id S1754686AbYJOPNi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 11:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYJOPNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 11:06:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53566 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751074AbYJOPGn (ORCPT
+	Wed, 15 Oct 2008 11:13:30 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:37790 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736AbYJOPN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 11:06:43 -0400
-Date: Wed, 15 Oct 2008 08:06:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: GIT head no longer boots on x86-64
-In-Reply-To: <20081015115153.GA16413@elte.hu>
-Message-ID: <alpine.LFD.2.00.0810150758310.3288@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0810130752020.3288@nehalem.linux-foundation.org> <1223910693-28693-1-git-send-email-jirislaby@gmail.com> <20081013164717.7a21084a@lxorguk.ukuu.org.uk> <20081015115153.GA16413@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 15 Oct 2008 11:13:29 -0400
+Message-ID: <48F60891.1070807@fr.ibm.com>
+Date: Wed, 15 Oct 2008 17:13:21 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Oren Laadan <orenl@cs.columbia.edu>
+CC: Ingo Molnar <mingo@elte.hu>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       jeremy@goop.org, arnd@arndb.de, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrey Mirkin <major@openvz.org>
+Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
+References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu> <1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu> <1223571036.11830.32.camel@nimitz> <20081010153951.GD28977@elte.hu> <48F30315.1070909@fr.ibm.com> <48F3737B.6070904@cs.columbia.edu>
+In-Reply-To: <48F3737B.6070904@cs.columbia.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 15 Oct 2008, Ingo Molnar wrote:
+>> the self checkpoint and self restore syscalls, like Oren is proposing, are 
+>> simpler but they require the process cooperation to be triggered. we could
+>> image doing that in a special signal handler which would allow us to jump
+>> in the right task context. 
 > 
-> Queued the fix below up in tip/x86/urgent for a merge to Linus later 
-> today. Thanks!
+> This description is not accurate:
+> 
+> For checkpoint, both implementations use an "external" task to read the state
+> from other tasks. (In my implementation that "other" task can be self).
 
-Please don't send this crap to me.
+which is good, since some applications want to checkpoint themselves and that's
+a way to provide them a generic service.
+ 
+> For restart, both implementation expect the restarting process to restore its
+> own state. They differ in that Andrew's patchset also creates that process
+> while mine (at the moment) relies on the existing (self) task.
 
-Guys, _look_ at the patch for one second. And then tell me it isn't crap. 
+hmm, 
 
-The question is: "Is this a vmalloc'ed area?". That's the name of the 
-function. AND YOU JUST BROKE IT!
+It seems that your patchset relies on the fact that the tasks are checkpointed 
+and restarted at a syscall boundary. right ? I'm might be completely wrong
+on that :)
 
-Fix the damn caller instead. Don't make x86-64-specific changes to a 
-generic function that breaks the whole meaning of the function. I don't 
-understand what the hell is wrong with you people - we don't fix bugs by 
-introducing idiocies, we fix them by fixing the code.
+> In other words, none of them will require any cooperation on part of the
+> checkpointed tasks, and both will require cooperation on part of the restarting
+> tasks (the latter is easy since we create and fully control these tasks).
 
-EVEN YOUR COMMIT MESSAGE should have made this obvious.
+yes.
 
-The code in question already does
+>> I don't have any preference but looking at the code of the different patchsets
+>> there are some tricky areas and I'm wondering which path is easier, safer, 
+>> and portable. 
+> 
+> I am thinking which path is preferred: create the processes in kernel space
+> (like Andrew's patch does) or in user space (like Zap does). In the mini-summit
+> we agreed in favor of kernel space, but I can still see arguments why user space
+> may be better.
 
-	VIRTUAL_BUG_ON(!is_vmalloc_addr(vmalloc_addr) &&
-                       !is_module_address(addr));
+I'm more familiar with the second algorithm, restarting the process tree in
+user space and let each task restart itself with the sys_restart syscall. But
+that's because I've been working on a C/R framework which freezes tasks on 
+a syscall boundary, which makes a developer's life easy for restart. 
 
-and look at that thing and ask yourself: where was the bug again.
+But as you know, a restarted process resumes its execution where it was 
+checkpointed. So i'm wondering what are the hidden issues with a in-kernel 
+checkpoint and in-kernel restart. To be more precise, why Andrey needs a 
+i386_ret_from_resume  trampoline in : 
 
-And dammit, if you say it was in "is_vmalloc_addr()", I can only shake my 
-head.
+	http://lkml.org/lkml/2008/9/3/181
 
-Please guys. Use some taste. 
+and why don't you ? 
 
-		Linus
+> (note: I refer strictly to the creation of the processes during restart, not 
+>  how their state is restored).
+
+OK 
+
+> any thoughts ?
+
+thanks Oren,
+
+C.
