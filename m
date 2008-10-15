@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYJOWyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYJOWzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbYJOWyf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbYJOWyQ
+	id S1756143AbYJOWzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYJOWz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:54:16 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48077 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754731AbYJOWyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:54:15 -0400
-Date: Thu, 16 Oct 2008 00:54:13 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Adrian Bunk <bunk@kernel.org>, zippel@linux-m68k.org, sam@ravnborg.org,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [2.6 patch] HID: fix default building of all quirky devices
-In-Reply-To: <alpine.LFD.2.00.0810151009350.3288@nehalem.linux-foundation.org>
-Message-ID: <alpine.LNX.1.10.0810160050180.26779@jikos.suse.cz>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz> <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
- <alpine.LFD.2.00.0810151009350.3288@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 15 Oct 2008 18:55:26 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50367 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753658AbYJOWz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 18:55:26 -0400
+Date: Wed, 15 Oct 2008 15:51:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, jesse.brandeburg@intel.com,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -stable] disable CONFIG_DYNAMIC_FTRACE due to possible
+	memory corruption on module unload
+Message-ID: <20081015225134.GA23026@suse.de>
+References: <alpine.DEB.1.10.0810151815110.18960@gandalf.stny.rr.com> <alpine.DEB.1.10.0810151843130.19408@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0810151843130.19408@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008, Linus Torvalds wrote:
-
-> > Hmm ... I am not really sure, isn't this a bug in Kconfig?
-> Not really, more of a misfeature.
-> That said, even if we were to consider it a bug, Adrian's patch is 
-> obviously the better way to do it. You shouldn't do non-local dependencies 
-> (have one config option select fifty other ones), when the local ones are 
-> clearer and more readable (have one config option just describe its *own* 
-> dependencies).
-
-I agree. 
-
-And even though I really think this is at least a misfeature, it's indeed 
-properly documented in Documentation/kbuild/kconfig-language.txt, so I am 
-really the only one to blame here.
-
-On Wed, 15 Oct 2008, Linus Torvalds wrote:
-
-> Side note: Adrian too has a very odd and non-obvious way of doing this.
+On Wed, Oct 15, 2008 at 06:46:12PM -0400, Steven Rostedt wrote:
 > 
-> His patch did config entries like
+> On Wed, 15 Oct 2008, Steven Rostedt wrote:
+> > 
+> > The problem arises when we trace functions and modules are unloaded.
 > 
-> 	config HID_BRIGHT
-> 		tristate "Bright" if EMBEDDED
-> 		default USB_HID
-> 		depends on USB_HID
-> 
-> which is a really odd way to express this. The much more natural one is
-> 
-> 	config HID_BRIGHT
-> 		tristate "Bright" if EMBEDDED
-> 		depends on USB_HID
-> 		default y
-> 
-> since there's no point in saying "default USB_HID" + "depends on USB_HID", 
-> and that's just confusing. Since it depends on USB_HID, the "default y" 
-> will automatically degrade to whatever USB_HID was set to.
+> Note, it is not just module unloading. The issue can happen when the
+> init functions of a module are freed and the nvram is vmapped there as
+> well.
 
-Hmm, yes, looks slightly better.
+Ok, that makes sense why so many people hit this.
 
-I see you haven't pulled Adrian's fix from my tree yet. So please drop my 
-latest pull request, I will do it the "depens on + default y" way and send 
-you a new one shortly. There have been some more VID/PID additions 
-accumulated in the meantime anyway, so I'll send them too within a new 
-pull request.
+I'll go do a 2.6.27.1 with this patch in it right now, thanks for
+spending the time to look into this.
 
--- 
-Jiri Kosina
+greg k-h
