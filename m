@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYJOUZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbYJOU2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbYJOUZD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYJOUYx
+	id S1755093AbYJOU2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYJOU2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:24:53 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:57416 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751736AbYJOUYx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:24:53 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] vfs: replace parent == dentry->d_parent by IS_ROOT()
-References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
-	<20081015194519.GD24892@infradead.org>
-Date: Thu, 16 Oct 2008 05:24:49 +0900
-In-Reply-To: <20081015194519.GD24892@infradead.org> (Christoph Hellwig's
-	message of "Wed, 15 Oct 2008 15:45:19 -0400")
-Message-ID: <874p3dppwu.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 15 Oct 2008 16:28:04 -0400
+Received: from kroah.org ([198.145.64.141]:42714 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750966AbYJOU2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 16:28:03 -0400
+Date: Wed, 15 Oct 2008 12:17:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: stable@kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH 0/2] x86: check correctness of IRQ0 override
+	on systems with ATI/AMD SB450/SB600 chipsets
+Message-ID: <20081015191720.GA7966@kroah.com>
+References: <20081015104118.GA4706@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <20081015104118.GA4706@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+On Wed, Oct 15, 2008 at 12:41:18PM +0200, Andreas Herrmann wrote:
+> Hi,
+> 
+> following patches should go into 2.6.27-stable tree.
+> 
+> They fix issues with HP Laptops that provide a wrong override for IRQ0
+> and which change the thermal trip point as soon as Linux unmasks
+> IOAPIC INT2.
 
-> Looks correct, but I'm not entirely sure it's a worthwhile cleanup,
-> noth version are about the same level of readability to me.
+Are these patches in the upstream Linus kernel already?
 
-Yes. However, I think mix is not readable (and not grep friendly).
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+If so, can you please give us the git commit ids?
+
+thanks,
+
+greg k-h
