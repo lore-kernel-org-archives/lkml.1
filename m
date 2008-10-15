@@ -1,499 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYJOAch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbYJOAf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbYJOAch (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Oct 2008 20:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYJOAc2
+	id S1753243AbYJOAf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Oct 2008 20:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYJOAfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Oct 2008 20:32:28 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44510 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbYJOAc0 (ORCPT
+	Tue, 14 Oct 2008 20:35:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47965 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751434AbYJOAfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Oct 2008 20:32:26 -0400
-Date: Wed, 15 Oct 2008 09:32:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/5] memcg:  charge-commit-cancel
-Message-Id: <20081015093203.fba93c35.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081014151243.cbad50a0.nishimura@mxp.nes.nec.co.jp>
-References: <20081010175936.f3b1f4e0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081010180150.38e85c33.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081014151243.cbad50a0.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Oct 2008 20:35:11 -0400
+Date: Tue, 14 Oct 2008 17:34:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: linux-next: origin tree build failure
+In-Reply-To: <20081015000541.GA22570@opensource.wolfsonmicro.com>
+Message-ID: <alpine.LFD.2.00.0810141721450.3288@nehalem.linux-foundation.org>
+References: <20081015095916.f30c0979.sfr@canb.auug.org.au> <alpine.LFD.2.00.0810141637210.3288@nehalem.linux-foundation.org> <20081015000541.GA22570@opensource.wolfsonmicro.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008 15:12:43 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-
-> On Fri, 10 Oct 2008 18:01:50 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > There is a small race in do_swap_page(). When the page swapped-in is charged,
-> > the mapcount can be greater than 0. But, at the same time some process (shares
-> > it ) call unmap and make mapcount 1->0 and the page is uncharged.
-> > 
-> >       CPUA 			CPUB
-> >        mapcount == 1.
-> >    (1) charge if mapcount==0     zap_pte_range()
-> >                                 (2) mapcount 1 => 0.
-> > 			        (3) uncharge(). (success)
-> >    (4) set page'rmap()
-> >        mapcoint 0=>1
-> > 
-> > Then, this swap page's account is leaked.
-> > 
-> > For fixing this, I added a new interface.
-> >   - precharge
-> >    account to res_counter by PAGE_SIZE and try to free pages if necessary.
-> >   - commit	
-> >    register page_cgroup and add to LRU if necessary.
-> >   - cancel
-> >    uncharge PAGE_SIZE because of do_swap_page failure.
-> > 
-> > 
-> >      CPUA              
-> >   (1) charge (always)
-> >   (2) set page's rmap (mapcount > 0)
-> >   (3) commit charge was necessary or not after set_pte().
-> > 
-> > This protocol uses PCG_USED bit on page_cgroup for avoiding over accounting.
-> > Usual mem_cgroup_charge_common() does precharge -> commit at a time.
-> > 
-> > And this patch also adds following function to clarify all charges.
-> > 
-> >   - mem_cgroup_newpage_charge() ....replacement for mem_cgroup_charge()
-> > 	called against newly allocated anon pages.
-> > 
-> >   - mem_cgroup_charge_migrate_fixup()
-> >         called only from remove_migration_ptes().
-> > 	we'll have to rewrite this later.(this patch just keeps old behavior)
-> > 	This function will be removed by additional patch to make migration
-> > 	clearer.
-> > 
-> > Good for clarify "what we does"
-> > 
-> > Then, we have 4 following charge points.
-> >   - newpage
-> >   - swapin
-> >   - add-to-cache.
-> >   - migration.
-> > 
-> > precharge/commit/cancel can be used for other places,
-> >  - shmem, (and other places need precharge.)
-> >  - move_account(force_empty) etc...
-> >  - migration.
-> > 
-> > we'll revisit later.
-> > 
-> > Changelog v5 -> v6:
-> >  - added newpage_charge() and migrate_fixup().
-> >  - renamed  functions for swap-in from "swap" to "swapin"
-> >  - add more precise description.
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> >  include/linux/memcontrol.h |   35 +++++++++-
-> >  mm/memcontrol.c            |  151 +++++++++++++++++++++++++++++++++++----------
-> >  mm/memory.c                |   12 ++-
-> >  mm/migrate.c               |    2 
-> >  mm/swapfile.c              |    6 +
-> >  5 files changed, 165 insertions(+), 41 deletions(-)
-> > 
-> > Index: mmotm-2.6.27-rc8+/include/linux/memcontrol.h
-> > ===================================================================
-> > --- mmotm-2.6.27-rc8+.orig/include/linux/memcontrol.h
-> > +++ mmotm-2.6.27-rc8+/include/linux/memcontrol.h
-> > @@ -27,8 +27,17 @@ struct mm_struct;
-> >  
-> >  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
-> >  
-> > -extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
-> > +extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
-> >  				gfp_t gfp_mask);
-> > +extern int mem_cgroup_charge_migrate_fixup(struct page *page,
-> > +				struct mm_struct *mm, gfp_t gfp_mask);
-> > +/* for swap handling */
-> > +extern int mem_cgroup_try_charge(struct mm_struct *mm,
-> > +		gfp_t gfp_mask, struct mem_cgroup **ptr);
-> > +extern void mem_cgroup_commit_charge_swapin(struct page *page,
-> > +					struct mem_cgroup *ptr);
-> > +extern void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *ptr);
-> > +
-> >  extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
-> >  					gfp_t gfp_mask);
-> >  extern void mem_cgroup_move_lists(struct page *page, enum lru_list lru);
-> > @@ -71,7 +80,9 @@ extern long mem_cgroup_calc_reclaim(stru
-> >  
-> >  
-> >  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
-> > -static inline int mem_cgroup_charge(struct page *page,
-> > +struct mem_cgroup;
-> > +
-> > +static inline int mem_cgroup_newpage_charge(struct page *page,
-> >  					struct mm_struct *mm, gfp_t gfp_mask)
-> >  {
-> >  	return 0;
-> > @@ -83,6 +94,26 @@ static inline int mem_cgroup_cache_charg
-> >  	return 0;
-> >  }
-> >  
-> > +static inline int mem_cgroup_charge_migrate_fixup(struct page *page,
-> > +					struct mm_struct *mm, gfp_t gfp_mask)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +static int mem_cgroup_try_charge(struct mm_struct *mm,
-> > +				gfp_t gfp_mask, struct mem_cgroup **ptr)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +static void mem_cgroup_commit_charge_swapin(struct page *page,
-> > +					  struct mem_cgroup *ptr)
-> > +{
-> > +}
-> > +static void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *ptr)
-> > +{
-> > +}
-> > +
-> >  static inline void mem_cgroup_uncharge_page(struct page *page)
-> >  {
-> >  }
-> > Index: mmotm-2.6.27-rc8+/mm/memcontrol.c
-> > ===================================================================
-> > --- mmotm-2.6.27-rc8+.orig/mm/memcontrol.c
-> > +++ mmotm-2.6.27-rc8+/mm/memcontrol.c
-> > @@ -467,35 +467,31 @@ unsigned long mem_cgroup_isolate_pages(u
-> >  	return nr_taken;
-> >  }
-> >  
-> > -/*
-> > - * Charge the memory controller for page usage.
-> > - * Return
-> > - * 0 if the charge was successful
-> > - * < 0 if the cgroup is over its limit
-> > +
-> > +/**
-> > + * mem_cgroup_try_charge - get charge of PAGE_SIZE.
-> > + * @mm: an mm_struct which is charged against. (when *memcg is NULL)
-> > + * @gfp_mask: gfp_mask for reclaim.
-> > + * @memcg: a pointer to memory cgroup which is charged against.
-> > + *
-> > + * charge aginst memory cgroup pointed by *memcg. if *memcg == NULL, estimated
-> > + * memory cgroup from @mm is got and stored in *memcg.
-> > + *
-> > + * Retruns 0 if success. -ENOMEM at failure.
-> >   */
-> > -static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
-> > -				gfp_t gfp_mask, enum charge_type ctype,
-> > -				struct mem_cgroup *memcg)
-> > +
-> > +int mem_cgroup_try_charge(struct mm_struct *mm,
-> > +			gfp_t gfp_mask, struct mem_cgroup **memcg)
-> >  {
-> >  	struct mem_cgroup *mem;
-> > -	struct page_cgroup *pc;
-> > -	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-> > -	struct mem_cgroup_per_zone *mz;
-> > -	unsigned long flags;
-> > -
-> > -	pc = lookup_page_cgroup(page);
-> > -	/* can happen at boot */
-> > -	if (unlikely(!pc))
-> > -		return 0;
-> > -	prefetchw(pc);
-> > +	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-> >  	/*
-> >  	 * We always charge the cgroup the mm_struct belongs to.
-> >  	 * The mm_struct's mem_cgroup changes on task migration if the
-> >  	 * thread group leader migrates. It's possible that mm is not
-> >  	 * set, if so charge the init_mm (happens for pagecache usage).
-> >  	 */
-> > -
-> > -	if (likely(!memcg)) {
-> > +	if (likely(!*memcg)) {
-> >  		rcu_read_lock();
-> >  		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
-> >  		if (unlikely(!mem)) {
-> > @@ -506,15 +502,17 @@ static int mem_cgroup_charge_common(stru
-> >  		 * For every charge from the cgroup, increment reference count
-> >  		 */
-> >  		css_get(&mem->css);
-> > +		*memcg = mem;
-> >  		rcu_read_unlock();
-> >  	} else {
-> > -		mem = memcg;
-> > -		css_get(&memcg->css);
-> > +		mem = *memcg;
-> > +		css_get(&mem->css);
-> >  	}
-> >  
-> > +
-> >  	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
-> >  		if (!(gfp_mask & __GFP_WAIT))
-> > -			goto out;
-> > +			goto nomem;
-> >  
-> >  		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
-> >  			continue;
-> > @@ -531,18 +529,33 @@ static int mem_cgroup_charge_common(stru
-> >  
-> >  		if (!nr_retries--) {
-> >  			mem_cgroup_out_of_memory(mem, gfp_mask);
-> > -			goto out;
-> > +			goto nomem;
-> >  		}
-> >  	}
-> > +	return 0;
-> > +nomem:
-> > +	css_put(&mem->css);
-> > +	return -ENOMEM;
-> > +}
-> >  
-> > +/*
-> > + * commit a charge got by mem_cgroup_try_charge() and makes page_cgroup to be
-> > + * USED state. If already USED, uncharge and return.
-> > + */
-> > +
-> > +static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
-> > +				     struct page_cgroup *pc,
-> > +				     enum charge_type ctype)
-> > +{
-> > +	struct mem_cgroup_per_zone *mz;
-> > +	unsigned long flags;
-> >  
-> mem_cgroup_try_charge may return with memcg=NULL, 
-> so __mem_cgroup_commit_charge should handle this case.
-> (mem_cgroup_commit_charge_swapin and mem_cgroup_cancel_charge_swapin
-> have already handled it.)
-> 
-Hmm...looks into this again, thanks !
 
 
-> I acutually have seen a NULL-pointer-dereference BUG caused by this
-> in testing previous version.
-> 
-> >  	lock_page_cgroup(pc);
-> >  	if (unlikely(PageCgroupUsed(pc))) {
-> >  		unlock_page_cgroup(pc);
-> >  		res_counter_uncharge(&mem->res, PAGE_SIZE);
-> >  		css_put(&mem->css);
-> > -
-> > -		goto done;
-> > +		return;
-> >  	}
-> >  	pc->mem_cgroup = mem;
-> >  	/*
-> > @@ -557,15 +570,39 @@ static int mem_cgroup_charge_common(stru
-> >  	__mem_cgroup_add_list(mz, pc);
-> >  	spin_unlock_irqrestore(&mz->lru_lock, flags);
-> >  	unlock_page_cgroup(pc);
-> > +}
-> >  
-> > -done:
-> > +/*
-> > + * Charge the memory controller for page usage.
-> > + * Return
-> > + * 0 if the charge was successful
-> > + * < 0 if the cgroup is over its limit
-> > + */
-> > +static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
-> > +				gfp_t gfp_mask, enum charge_type ctype,
-> > +				struct mem_cgroup *memcg)
-> > +{
-> > +	struct mem_cgroup *mem;
-> > +	struct page_cgroup *pc;
-> > +	int ret;
-> > +
-> > +	pc = lookup_page_cgroup(page);
-> > +	/* can happen at boot */
-> > +	if (unlikely(!pc))
-> > +		return 0;
-> > +	prefetchw(pc);
-> > +
-> > +	mem = memcg;
-> > +	ret = mem_cgroup_try_charge(mm, gfp_mask, &mem);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	__mem_cgroup_commit_charge(mem, pc, ctype);
-> >  	return 0;
-> > -out:
-> > -	css_put(&mem->css);
-> > -	return -ENOMEM;
-> >  }
-> >  
-> > -int mem_cgroup_charge(struct page *page, struct mm_struct *mm, gfp_t gfp_mask)
-> > +int mem_cgroup_newpage_charge(struct page *page,
-> > +			      struct mm_struct *mm, gfp_t gfp_mask)
-> >  {
-> >  	if (mem_cgroup_subsys.disabled)
-> >  		return 0;
-> > @@ -586,6 +623,34 @@ int mem_cgroup_charge(struct page *page,
-> >  				MEM_CGROUP_CHARGE_TYPE_MAPPED, NULL);
-> >  }
-> >  
-> > +/*
-> > + * same as mem_cgroup_newpage_charge(), now.
-> > + * But what we assume is different from newpage, and this is special case.
-> > + * treat this in special function. easy for maintainance.
-> > + */
-> > +
-> > +int mem_cgroup_charge_migrate_fixup(struct page *page,
-> > +				struct mm_struct *mm, gfp_t gfp_mask)
-> > +{
-> > +	if (mem_cgroup_subsys.disabled)
-> > +		return 0;
-> > +
-> > +	if (PageCompound(page))
-> > +		return 0;
-> > +
-> > +	if (page_mapped(page) || (page->mapping && !PageAnon(page)))
-> > +		return 0;
-> > +
-> > +	if (unlikely(!mm))
-> > +		mm = &init_mm;
-> > +
-> > +	return mem_cgroup_charge_common(page, mm, gfp_mask,
-> > +				MEM_CGROUP_CHARGE_TYPE_MAPPED, NULL);
-> > +}
-> > +
-> > +
-> > +
-> > +
-> >  int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
-> >  				gfp_t gfp_mask)
-> >  {
-> > @@ -628,6 +693,30 @@ int mem_cgroup_cache_charge(struct page 
-> >  				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
-> >  }
-> >  
-> > +
-> > +void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
-> > +{
-> > +	struct page_cgroup *pc;
-> > +
-> > +	if (mem_cgroup_subsys.disabled)
-> > +		return;
-> > +	if (!ptr)
-> > +		return;
-> > +	pc = lookup_page_cgroup(page);
-> > +	__mem_cgroup_commit_charge(ptr, pc, MEM_CGROUP_CHARGE_TYPE_MAPPED);
-> > +}
-> > +
-> > +void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *mem)
-> > +{
-> > +	if (mem_cgroup_subsys.disabled)
-> > +		return;
-> > +	if (!mem)
-> > +		return;
-> > +	res_counter_uncharge(&mem->res, PAGE_SIZE);
-> > +	css_put(&mem->css);
-> > +}
-> > +
-> > +
-> >  /*
-> >   * uncharge if !page_mapped(page)
-> >   */
-> > Index: mmotm-2.6.27-rc8+/mm/memory.c
-> > ===================================================================
-> > --- mmotm-2.6.27-rc8+.orig/mm/memory.c
-> > +++ mmotm-2.6.27-rc8+/mm/memory.c
-> > @@ -1891,7 +1891,7 @@ gotten:
-> >  	cow_user_page(new_page, old_page, address, vma);
-> >  	__SetPageUptodate(new_page);
-> >  
-> > -	if (mem_cgroup_charge(new_page, mm, GFP_KERNEL))
-> > +	if (mem_cgroup_newpage_charge(new_page, mm, GFP_KERNEL))
-> >  		goto oom_free_new;
-> >  
-> >  	/*
-> > @@ -2287,6 +2287,7 @@ static int do_swap_page(struct mm_struct
-> >  	struct page *page;
-> >  	swp_entry_t entry;
-> >  	pte_t pte;
-> > +	struct mem_cgroup *ptr = NULL;
-> >  	int ret = 0;
-> >  
-> >  	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-> > @@ -2325,7 +2326,7 @@ static int do_swap_page(struct mm_struct
-> >  	lock_page(page);
-> >  	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-> >  
-> > -	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
-> > +	if (mem_cgroup_try_charge(mm, GFP_KERNEL, &ptr) == -ENOMEM) {
-> >  		ret = VM_FAULT_OOM;
-> >  		unlock_page(page);
-> >  		goto out;
-> > @@ -2355,6 +2356,7 @@ static int do_swap_page(struct mm_struct
-> >  	flush_icache_page(vma, page);
-> >  	set_pte_at(mm, address, page_table, pte);
-> >  	page_add_anon_rmap(page, vma, address);
-> > +	mem_cgroup_commit_charge_swapin(page, ptr);
-> >  
-> >  	swap_free(entry);
-> >  	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
-> > @@ -2375,7 +2377,7 @@ unlock:
-> >  out:
-> >  	return ret;
-> >  out_nomap:
-> > -	mem_cgroup_uncharge_page(page);
-> > +	mem_cgroup_cancel_charge_swapin(ptr);
-> >  	pte_unmap_unlock(page_table, ptl);
-> >  	unlock_page(page);
-> >  	page_cache_release(page);
-> > @@ -2405,7 +2407,7 @@ static int do_anonymous_page(struct mm_s
-> >  		goto oom;
-> >  	__SetPageUptodate(page);
-> >  
-> > -	if (mem_cgroup_charge(page, mm, GFP_KERNEL))
-> > +	if (mem_cgroup_newpage_charge(page, mm, GFP_KERNEL))
-> >  		goto oom_free_page;
-> >  
-> >  	entry = mk_pte(page, vma->vm_page_prot);
-> > @@ -2498,7 +2500,7 @@ static int __do_fault(struct mm_struct *
-> >  				ret = VM_FAULT_OOM;
-> >  				goto out;
-> >  			}
-> > -			if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
-> > +			if (mem_cgroup_newpage_charge(page, mm, GFP_KERNEL)) {
-> >  				ret = VM_FAULT_OOM;
-> >  				page_cache_release(page);
-> >  				goto out;
-> > Index: mmotm-2.6.27-rc8+/mm/migrate.c
-> > ===================================================================
-> > --- mmotm-2.6.27-rc8+.orig/mm/migrate.c
-> > +++ mmotm-2.6.27-rc8+/mm/migrate.c
-> > @@ -133,7 +133,7 @@ static void remove_migration_pte(struct 
-> >  	 * be reliable, and this charge can actually fail: oh well, we don't
-> >  	 * make the situation any worse by proceeding as if it had succeeded.
-> >  	 */
-> > -	mem_cgroup_charge(new, mm, GFP_ATOMIC);
-> > +	mem_cgroup_charge_migrate_fixup(new, mm, GFP_ATOMIC);
-> >  
-> >  	get_page(new);
-> >  	pte = pte_mkold(mk_pte(new, vma->vm_page_prot));
-> > Index: mmotm-2.6.27-rc8+/mm/swapfile.c
-> > ===================================================================
-> > --- mmotm-2.6.27-rc8+.orig/mm/swapfile.c
-> > +++ mmotm-2.6.27-rc8+/mm/swapfile.c
-> > @@ -530,17 +530,18 @@ unsigned int count_swap_pages(int type, 
-> >  static int unuse_pte(struct vm_area_struct *vma, pmd_t *pmd,
-> >  		unsigned long addr, swp_entry_t entry, struct page *page)
-> >  {
-> > +	struct mem_cgroup *ptr;
-> should be initialized to NULL.
-> 
-exactly.
+On Wed, 15 Oct 2008, Mark Brown wrote:
+>
+> That would be people on the ARM list.  Unless I misremember I first
+> heard about using NO_IRQ from the ARM list in connection with another
+> (much less ARM-specific) driver only within the past six months.
 
-Thanks,
--Kame
+ARM should just do
 
+	#define NO_IRQ (0)
+
+and be done with it. It's what powerpc did long ago. That allows old 
+broken drivers to work, and doesn't require new drivers to introduce more 
+NO_IRQ insanity.
+
+If there is a "hardware irq 0", either it can be special (eg some 
+system-only irq not used by any drivers) or the irq numbers can/must be 
+remapped.
+
+ARM already converted to the generic irq layer, and there are actually 
+parts of that that know that irq 0 has special meaning. Like the 
+autoprobing and spurious irq handling. Of course, ARM may not care, and 
+the generic code is generally trying to avoid any assumptions, but it's 
+still true that all generic _drivers_ do the whole "if (irq)" thing.
+
+Yeah, yeah, we've let NO_IRQ poison some subsystems (like IDE and 
+apparently parts of i2c), but that was a mistake.
+
+		Linus
