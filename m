@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYJORTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYJORY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbYJORTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 13:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYJORTi
+	id S1754752AbYJORY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 13:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYJORYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 13:19:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48187 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751839AbYJORTh (ORCPT
+	Wed, 15 Oct 2008 13:24:17 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:12688 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbYJORYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 13:19:37 -0400
-Date: Wed, 15 Oct 2008 10:17:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Adrian Bunk <bunk@kernel.org>, zippel@linux-m68k.org, sam@ravnborg.org,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [2.6 patch] HID: fix default building of all quirky devices
-In-Reply-To: <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0810151009350.3288@nehalem.linux-foundation.org>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz>
- <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 15 Oct 2008 13:24:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=X+pJD6eyAuvGTB5piC5CoGMA8jy3ffc6Dvn2ywDFuLy9j33xsHx5QdilFWcs5gTdRj
+         mVWzSKdQwYPmM7sR5aNBI+Oa12N8S70eKxykhgQYVx3rv6F17KqsEYTKhnnDMlUEBQJI
+         2PZ5wt+qo7zhvG4dagUF+7JfhUSTI6nLWi2Po=
+Date: Wed, 15 Oct 2008 21:24:12 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: =?utf-8?B?0JXQstCz0LXQvdC40Lkg0JzQsNC90LDRh9C60LjQvQ==?= 
+	<sfstudio@mail.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Re: patch to 2.6.27 fix build rpm
+Message-ID: <20081015172412.GB20222@localhost>
+References: <20081015153533.GA20222@localhost> <E1Kq9dq-0008uC-00.sfstudio-mail-ru@f12.mail.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <E1Kq9dq-0008uC-00.sfstudio-mail-ru@f12.mail.ru>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Евгений Маначкин - Wed, Oct 15, 2008 at 11:54:34PM +0700]
+| This is OK ?
+| 
+| --- linux-2.6.27/scripts/package/mkspec.orig    2008-10-11 00:00:38.000000000 +0700
+| +++ linux-2.6.27/scripts/package/mkspec 2008-10-11 00:39:43.000000000 +0700
+| @@ -64,8 +64,10 @@ fi
+|  echo "%install"
+|  echo "%ifarch ia64"
+|  echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/modules'
+| +echo 'mkdir -p $RPM_BUILD_ROOT/boot/efi $RPM_BUILD_ROOT/lib/firmware'
+|  echo "%else"
+|  echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/modules'
+| +echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/firmware'
+|  echo "%endif"
+| 
+|  echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} modules_install'
+| @@ -92,5 +94,6 @@ echo "%files"
+|  echo '%defattr (-, root, root)'
+|  echo "%dir /lib/modules"
+|  echo "/lib/modules/$KERNELRELEASE"
+| +echo "/lib/firmware"
+|  echo "/boot/*"
+|  echo ""
+| 
 
+Evgeniy, it should be something like that
 
-On Wed, 15 Oct 2008, Linus Torvalds wrote:
-> 
-> And notice how you mis-use select. That's not how to disable a question. A 
-> question gets disabled by just doing an "if xyz" on the question itself, 
-> like Adrian did.
+---
+From: Evgeniy Manachkin <sfstudio@mail.ru>
+Subject: [PATCH] mkspec - fix build rpm
 
-Side note: Adrian too has a very odd and non-obvious way of doing this.
+Patch description goes here
 
-His patch did config entries like
+Signed-off-by: Evgeniy Manachkin <sfstudio@mail.ru>
+---
+Patch body goes here
 
-	config HID_BRIGHT
-		tristate "Bright" if EMBEDDED
-		default USB_HID
-		depends on USB_HID
+I didn't check the patch just show you the form of patch submission.
+For example -- take a look on
 
-which is a really odd way to express this. The much more natural one is
+	http://lkml.org/lkml/2008/10/15/2
+or
+	http://lkml.org/lkml/2008/10/15/20
 
-	config HID_BRIGHT
-		tristate "Bright" if EMBEDDED
-		depends on USB_HID
-		default y
+Actually SubmittingPatches has a quite good description how to
+make it right :)
 
-since there's no point in saying "default USB_HID" + "depends on USB_HID", 
-and that's just confusing. Since it depends on USB_HID, the "default y" 
-will automatically degrade to whatever USB_HID was set to.
-
-			Linus
+		- Cyrill -
