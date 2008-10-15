@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbYJOHNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbYJOHX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753207AbYJOHNn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 03:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYJOHNf
+	id S1753231AbYJOHX7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 03:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYJOHXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 03:13:35 -0400
-Received: from styx.suse.cz ([82.119.242.94]:32936 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751789AbYJOHNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 03:13:34 -0400
-Date: Wed, 15 Oct 2008 09:13:32 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: usbhid_set_leds problems
-In-Reply-To: <20081015050557.GB20183@cs181140183.pp.htv.fi>
-Message-ID: <alpine.LNX.1.10.0810150912500.26779@jikos.suse.cz>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 15 Oct 2008 03:23:51 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:45124 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbYJOHXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 03:23:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=G3IO9Cu3UZoGWijtR3elSiXfhK0j+uuvXBbRjJ/4v9+B8gjinl4y4+vY8Z0yCkXPed
+         Nqfb8Fbv6Q1yx3j0ey7Oq1CKty/dTnO6haXq81/tZ14DkVGjbxAeBKE/iQMwhr9ie1x/
+         Fzxx7dNCd8jCTAotmWgOCyE01P3bO8ye2TLkM=
+Message-ID: <df9815e70810150023w2a14fad5ge08ea4edad4ae0b1@mail.gmail.com>
+Date: Wed, 15 Oct 2008 15:23:49 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Creating dev nodes from driver or via uevent?
+In-Reply-To: <20081015063917.GA18487@true>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081015063917.GA18487@true>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008, Adrian Bunk wrote:
+On Wed, Oct 15, 2008 at 2:39 PM, Fabiano Sidler <lists@fipscode.ch> wrote:
+> Hi folks!
+>
+> Probably a very basic question, but is it better to directly mknod from a
+> module's init funtion or to use the uevent/udev mechanism? If the latter,
+> are there good overviews, explanations and comprehensive code samples
+> especially for using udev,
+You can refer to any in-tree driver that calls class_create() and
+device_create_drvdata() afterwards.  say drivers/char/raw.c
 
-> >   LD      .tmp_vmlinux1
-> > drivers/built-in.o: In function `bright_probe':
-> > drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
-> > drivers/hid/hid-bright.c:38: undefined reference to `usbhid_set_leds'
-> > drivers/built-in.o: In function `dell_probe':
-> > drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
-> > drivers/hid/hid-dell.c:41: undefined reference to `usbhid_set_leds'
-> > drivers/built-in.o: In function `lg_probe':
-> > drivers/hid/hid-lg.c:252: undefined reference to `usbhid_set_leds'
-> > drivers/hid/hid-lg.c:252: more undefined references to `usbhid_set_leds' follow
-> > ...
-> > make[1]: *** [.tmp_vmlinux1] Error 1
-> > And I'm not sure commit 6edfa8dc33803a49ad936ead9840e453bee6ca3b
-> > (HID: move reset leds quirk) was a good idea at all since I don't
-> > see cases like HID_DELL=y, CONFIG_USB_HID=m could now work at all.
-> Scrap that mail, I shouldn't send patches before the first cup of tea...
-> I just found the actual problem.
+LDD3 by Greg has some descriptions on this, but since the interface
+has changed..
 
-Hmm, so what was the culprit actually? The build error shouldn't be there.
-
-Thanks,
 
 -- 
-Jiri Kosina
-SUSE Labs
+Thanks,
+Jike
