@@ -1,61 +1,555 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbYJOGNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbYJOGQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752188AbYJOGNl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 02:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYJOGNc
+	id S1752670AbYJOGQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 02:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYJOGQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 02:13:32 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:37189 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbYJOGNb (ORCPT
+	Wed, 15 Oct 2008 02:16:00 -0400
+Received: from usaga01-in.huawei.com ([206.16.17.211]:56548 "EHLO
+	usaga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750861AbYJOGP7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 02:13:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MM2jehecnQoVCpWMA2C9r0f9TV997iTitnh7UJGAEyHHvktDfRA5wi9AT/v3HX4aGu
-         Yz/1X4dAQVS9p7Gz9rEkmUDB1JnutwOdHnjuPHEhbG8sOcFH2k2YcvHvuiFixh34X3Gv
-         NJ3/235E4lbffJlQnTLnXOf0w3abb/nPgwXwo=
-Message-ID: <2891419e0810142313p1aa16295ne2aa8ac3a87be491@mail.gmail.com>
-Date: Wed, 15 Oct 2008 15:13:28 +0900
-From: "Dong-Jae Kang" <baramsori72@gmail.com>
-To: righi.andrea@gmail.com
-Subject: Re: [PATCH -mm 0/6] cgroup: block device i/o controller (v11)
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Paul Menage" <menage@google.com>, agk@sourceware.org,
-       akpm@linux-foundation.org, axboe@kernel.dk,
-       "Carl Henrik Lunde" <chlunde@ping.uio.no>, dave@linux.vnet.ibm.com,
-       "Divyesh Shah" <dpshah@google.com>, eric.rannaud@gmail.com,
-       fernando@oss.ntt.co.jp, "Hirokazu Takahashi" <taka@valinux.co.jp>,
-       "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Marco Innocenti" <m.innocenti@cineca.it>, matt@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       "Ryo Tsuruta" <ryov@valinux.co.jp>,
-       "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48F46CB6.3010904@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <1223373818-13687-1-git-send-email-righi.andrea@gmail.com>
-	 <2891419e0810140217l70f233bbr3b08760188458c35@mail.gmail.com>
-	 <48F46CB6.3010904@gmail.com>
+	Wed, 15 Oct 2008 02:15:59 -0400
+Date: Wed, 15 Oct 2008 14:15:36 +0800
+From: fangxiaozhi 00110321 <huananhu@huawei.com>
+Subject: [PATCH 10/12]linux-usb: To support more Huawei data card product IDs,
+ fix kernel 2.6.27-rc7
+In-reply-to: <fa2ee5174af6a.4af6afa2ee517@huawei.com>
+To: linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, zihan@huawei.com, zhangqianchun@huawei.com,
+       greg@kroah.com, stern@rowland.harvard.edu, phil@ipom.com
+Message-id: <f890997c4fde1.4fde1f890997c@huawei.com>
+MIME-version: 1.0
+X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.14 (built Aug  8 2006)
+Content-type: text/plain; charset=us-ascii
+Content-language: zh-CN
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-Accept-Language: zh-CN
+References: <fa2ee5174af6a.4af6afa2ee517@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9F6Dldq028881
 
-Hi, AndreaThank you for your comments
-> Dong-Jae Kang wrote:>> Hi, Andrea>>>> thank you for your contribution to community>> these days, I am testing several IO controllers in container ML,>> dm-ioband by Ryo tsuruta(v1.7.0), 2-Layer CFQ by Satoshi and your>> io-throttle(v11)>> Thanks! this is surely a valuable task.>>>>> I have several question about io-throttle>> below is my test reusult of io-throttle(v11) with xdd 6.5>> But, I think I have something wrong, as showed in result>> In direct IO mode, Only read operation was controlled by io-throttle>> Can you check my  test procedure and result and comments to me about that>> Your procedure is correct. Anyway, you found a known bug in io-throttle> v11. If you want to properly use it you need to mount the memory> controller together with blockio, since currently blockio depends on it> to retrieve the owner of a page during writes in submit_bio().>> As reported in:>> [PATCH -mm 4/6] memcg: interface to charge the right cgroup of asynchronous i/o activity>> this is no more than a hack and in perspective a more generic framework> able to provide this functionality should be used (i.e. bio-cgroup).
-But, In my opinion,it is some strange that the bandwidth of write operation in direct IOmode was not controlled by io-throttleI think [PATCH -mm 4/6] is for control of buffered IO.Do I misunderstand it?
-> I'll fix this issue in the next version of io-throttle (probably I'll> try to rewrite io-throttle on top of bio-cgroup), but for now the> workaround is to mount the cgroupfs using -o blockio,memory (at least).>
-Oh, it sounds good.I look foward to your next io-throttle
->>>> additionally, your testing shell script(run_io_throttle_test.sh) for>> io-throttle was not updated for new io-throttle>> so, it could be operated after I fixed it>> The testing of iops limiting is not yet implemented and I don't have a> very good testcase for this, but I can share with you a small script that> I'm using to check if iops limiting is working or not, if you're interested.
-thank you, Andrea.I want to check iops limiting of io-throttle is working well.Have a nice day...>>>>> ----------------------------------------------------------------------------------->> - Test System Information>>>> Computer Name, localhost.localdomain, User Name, root>> OS release and version, Linux 2.6.27-rc5-mm1 #1 SMP Thu Oct 9 18:27:09 KST 2008>> Machine hardware type, i686>> Number of processors on this system, 1>> Page size in bytes, 4096>> Number of physical pages, 515885>> Megabytes of physical memory, 2015>> Target[0] Q[0], /dev/sdb>> Per-pass time limit in seconds, 30>> Blocksize in bytes, 512>> Request size, 128, blocks, 65536, bytes>> Number of Requests, 16384>> Number of MegaBytes, 512 or 1024>> Direct I/O, disabled or enable>> Seek pattern, sequential>> Queue Depth, 1>>>> - Test Procedure>>>> ï¬     mkdir /dev/blockioctl>> ï¬     mount -t cgroup -o blockio cgroup /dev/blockioctl>> ï¬     mkdir /dev/blockioctl/cgroup-1>> ï¬     mkdir /dev/blockioctl/cgroup-2>> ï¬     mkdir /dev/blockioctl/cgroup-3>> ï¬     echo /dev/sdb:$((1024*1024)):0:0 >>> /dev/blockioctl/cgroup-1/blockio.bandwidth-max>> ï¬     echo /dev/sdb:$((2*1024*1024)):0:0 >>> /dev/blockioctl/cgroup-2/blockio.bandwidth-max>> ï¬     echo /dev/sdb:$((3*1024*1024)):0:0 >>> /dev/blockioctl/cgroup-3/blockio.bandwidth-max>> ï¬     in terminal 1, echo $$ > /dev/blockioctl/cgroup-1/tasks>> ï¬     in terminal 2, echo $$ > /dev/blockioctl/cgroup-2/tasks>> ï¬     in terminal 3, echo $$ > /dev/blockioctl/cgroup-3/tasks>> ï¬     in each terminal, xdd.linux -op write( or read ) -targets 1 /dev/sdb>> -blocksize 512 -reqsize 128 -mbytes 1024( or 512 )  -timelimit 30>> -verbose â€“dio(enable or disable)>>>> - setting status information>>>> [root@localhost blockioctl]# cat ./cgroup-1/blockio.bandwidth-max>> 8 16 1048576 0 0 0 13016>> [root@localhost blockioctl]# cat ./cgroup-2/blockio.bandwidth-max>> 8 16 2097152 0 0 0 11763>> [root@localhost blockioctl]# cat ./cgroup-3/blockio.bandwidth-max>> 8 16 3145728 0 0 0 11133>>>> - Test Result>> xdd.linux -op read -targets 1 /dev/sdb -blocksize 512 -reqsize 128>> -mbytes 512 -timelimit 30 -dio -verbose>>>> cgroup-1>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1      31522816      481    30.005     1.051      16.03    0.0624>>   0.00   read       65536>> 0  1      31522816      481    30.005     1.051      16.03    0.0624>>   0.00   read       65536>> 1  1      31522816      481    30.005     1.051      16.03    0.0624>>   0.00   read       65536>>>> cgroup-2>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1      62980096      961    30.001     2.099      32.03    0.0312>>   0.00   read       65536>> 0  1      62980096      961    30.001     2.099      32.03    0.0312>>   0.00   read       65536>> 1  1      62980096      961    30.001     2.099      32.03    0.0312>>   0.00   read       65536>>>> cgroup-3>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1      94437376     1441    30.003     3.148      48.03    0.0208>>   0.00   read       65536>> 0  1      94437376     1441    30.003     3.148      48.03    0.0208>>   0.00   read       65536>> 1  1      94437376     1441    30.003     3.148      48.03    0.0208>>   0.00   read       65536>>>> xdd.linux -op write -targets 1 /dev/sdb -blocksize 512 -reqsize 128>> -mbytes 512 -timelimit 30 -dio â€“verbose>>>> cgroup-1>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1     640221184     9769    30.097    21.272     324.58    0.0031>>   0.00   write       65536>> 0  1     640221184     9769    30.097    21.272     324.58    0.0031>>   0.00   write       65536>> 1  1     640221184     9769    30.097    21.272     324.58    0.0031>>   0.00   write       65536>>>> cgroup-2>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1     633798656     9671    30.001    21.126     322.36    0.0031>>   0.00   write       65536>> 0  1     633798656     9671    30.001    21.126     322.36    0.0031>>   0.00   write       65536>> 1  1     633798656     9671    30.001    21.126     322.36    0.0031>>   0.00   write       65536>>>> cgroup-3>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1     630652928     9623    30.001    21.021     320.76    0.0031>>   0.00   write       65536>> 0  1     630652928     9623    30.001    21.021     320.76    0.0031>>   0.00   write       65536>> 1  1     630652928     9623    30.001    21.021     320.76    0.0031>>   0.00   write       65536>>>> xdd.linux -op read -targets 1 /dev/sdb -blocksize 512 -reqsize 128>> -mbytes 1024  -timelimit 30  -verbose>>>> cgroup-1>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1      70123520     1070    30.150     2.326      35.49    0.0282>>   0.00   read       65536>> 0  1      70123520     1070    30.150     2.326      35.49    0.0282>>   0.00   read       65536>> 1  1      70123520     1070    30.150     2.326      35.49    0.0282>>   0.00   read       65536>>>> cgroup-2>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1      70844416     1081    30.063     2.357      35.96    0.0278>>   0.00   read       65536>> 0  1      70844416     1081    30.063     2.357      35.96    0.0278>>   0.00   read       65536>> 1  1      70844416     1081    30.063     2.357      35.96    0.0278>>   0.00   read       65536>>>> cgroup-3>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1      72155136     1101    30.204     2.389      36.45    0.0274>>   0.00   read       65536>> 0  1      72155136     1101    30.204     2.389      36.45    0.0274>>   0.00   read       65536>> 1  1      72155136     1101    30.204     2.389      36.45    0.0274>>   0.00   read       65536>>>> xdd.linux -op write -targets 1 /dev/sdb -blocksize 512 -reqsize 128>> -mbytes 1024  -timelimit 30  -verbose>>>> cgroup-1>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1     818610176    12491    30.031    27.258     415.93    0.0024>>   0.00   write       65536>> 0  1     818610176    12491    30.031    27.258     415.93    0.0024>>   0.00   write       65536>> 1  1     818610176    12491    30.031    27.258     415.93    0.0024>>   0.00   write       65536>>>> cgroup-2>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1     848494592    12947    30.066    28.221     430.62    0.0023>>   0.00   write       65536>> 0  1     848494592    12947    30.066    28.221     430.62    0.0023>>   0.00   write       65536>> 1  1     848494592    12947    30.066    28.221     430.62    0.0023>>   0.00   write       65536>>>> cgroup-3>>>> T  Q       Bytes      Ops    Time      Rate      IOPS   Latency>> %CPU  OP_Type    ReqSize>> 0  1     786563072    12002    30.078    26.151     399.03    0.0025>>   0.00   write       65536>> 0  1     786563072    12002    30.078    26.151     399.03    0.0025>>   0.00   write       65536>> 1  1     786563072    12002    30.078    26.151     399.03    0.0025>>   0.00   write       65536>>>> Best Regards,>> Dong-Jae Kang>>>>>> 2008/10/7 Andrea Righi <righi.andrea@gmail.com>:>>> The objective of the i/o controller is to improve i/o performance>>> predictability of different cgroups sharing the same block devices.>>>>>> Respect to other priority/weight-based solutions the approach used by this>>> controller is to explicitly choke applications' requests that directly (or>>> indirectly) generate i/o activity in the system.>>>>>> The direct bandwidth and/or iops limiting method has the advantage of improving>>> the performance predictability at the cost of reducing, in general, the overall>>> performance of the system (in terms of throughput).>>>>>> Detailed informations about design, its goal and usage are described in the>>> documentation.>>>>>> Patchset against 2.6.27-rc5-mm1:>>>>>>  [PATCH 0/6] cgroup: block device i/o controller (v11)>>>  [PATCH 1/6] i/o controller documentation>>>  [PATCH 2/6] introduce ratelimiting attributes and functionality to res_counter>>>  [PATCH 3/6] i/o controller infrastructure>>>  [PATCH 4/6] memcg: interface to charge the right cgroup of asynchronous i/o activity>>>  [PATCH 5/6] i/o controller instrumentation: accounting and throttling>>>  [PATCH 6/6] export per-task i/o throttling statistics to userspace>>>>>> The all-in-one patch (and previous versions) can be found at:>>> http://download.systemimager.org/~arighi/linux/patches/io-throttle/>>>>>> There are no significant changes respect to v10, I've only implemented/fixed>>> some suggestions I received.>>>>>> Changelog: (v10 -> v11)>>>>>> * report per block device i/o statistics (total bytes read/written and iops)>>>  in blockio.stat for i/o limited cgroups>>> * distinct bandwidth and iops statistics: both in blockio.throttlecnt and>>>  /proc/PID/io-throttle-stat (suggested by David Radford)>>> * merge res_counter_ratelimit functionality into res_counter, to avoid code>>>  duplication (suggested by Paul Manage)>>> * use kernel-doc style for documenting struct res_counter attributes>>>  (suggested by Randy Dunalp)>>> * udpated documentation>>>>>> Thanks to all for the feedback!>>> -Andrea>
+From: fangxiaozhi <huananhu@huawei.com>
+ 
+1. This patch is based on the kernel of 2.6.27-rc7 
+2. In this patch, we want to do one thing: add more Huawei product IDs into the USB driver. Then it can support  more Huawei data card devices. So to declare the unusual device for new Huawei data card devices 
+in unusual_devs.h and to declare more new product IDs in option.c.
+3. To modify the data value and length in the function of 
+usb_stor_huawei_e220_init in initializers.c
+That's because based on the USB standard, while sending SET_FETURE_D to the device, it requires the corresponding data to be zero, and its sending length also must be zero.
+In our old solution, it can be compatible with our WCDMA data card devices, but can not support our CDMA data card devices. 
+But in this new solution, it can be compatible with all of our data card devices.
 
+Signed-off-by: fangxiaozhi <huananhu@huawei.com>
 
--- -------------------------------------------------------------------------------------------------   DONG-JAE, KANG   Senior Member of Engineering Staff   Internet Platform Research Dept, S/W Content Research Lab   Electronics and Telecommunications Research Institute(ETRI)   138 Gajeongno, Yuseong-gu, Daejeon, 305-700 KOREA   Phone : 82-42-860-1561 Fax : 82-42-860-6699   Mobile : 82-10-9919-2353 E-mail : djkang@etri.re.kr (MSN)-------------------------------------------------------------------------------------------------ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+----------------------------------------------------------------------------------
+ 
+diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/serial/option.c linux-2.6.27-rc7/drivers/usb/serial/option.c
+--- linux-2.6.27-rc7-orig/drivers/usb/serial/option.c	2008-10-13 09:02:08.000000000 -0400
++++ linux-2.6.27-rc7/drivers/usb/serial/option.c	2008-09-24 00:00:14.000000000 -0400
+@@ -106,11 +106,20 @@ static int  option_send_setup(struct tty
+ #define HUAWEI_PRODUCT_E220			0x1003
+ #define HUAWEI_PRODUCT_E220BIS			0x1004
+ #define HUAWEI_PRODUCT_E1401			0x1401
++#define HUAWEI_PRODUCT_E1402			0x1402
+ #define HUAWEI_PRODUCT_E1403			0x1403
++#define HUAWEI_PRODUCT_E1404			0x1404
+ #define HUAWEI_PRODUCT_E1405			0x1405
+ #define HUAWEI_PRODUCT_E1406			0x1406
++#define HUAWEI_PRODUCT_E1407			0x1407
+ #define HUAWEI_PRODUCT_E1408			0x1408
+ #define HUAWEI_PRODUCT_E1409			0x1409
++#define HUAWEI_PRODUCT_E140A			0x140A
++#define HUAWEI_PRODUCT_E140B			0x140B
++#define HUAWEI_PRODUCT_E140C			0x140C
++#define HUAWEI_PRODUCT_E140D			0x140D
++#define HUAWEI_PRODUCT_E140E			0x140E
++#define HUAWEI_PRODUCT_E140F			0x140F
+ #define HUAWEI_PRODUCT_E1410			0x1410
+ #define HUAWEI_PRODUCT_E1411			0x1411
+ #define HUAWEI_PRODUCT_E1412			0x1412
+@@ -121,6 +130,44 @@ static int  option_send_setup(struct tty
+ #define HUAWEI_PRODUCT_E1417			0x1417
+ #define HUAWEI_PRODUCT_E1418			0x1418
+ #define HUAWEI_PRODUCT_E1419			0x1419
++#define HUAWEI_PRODUCT_E141A			0x141A
++#define HUAWEI_PRODUCT_E141B			0x141B
++#define HUAWEI_PRODUCT_E141C			0x141C
++#define HUAWEI_PRODUCT_E141D			0x141D
++#define HUAWEI_PRODUCT_E141E			0x141E
++#define HUAWEI_PRODUCT_E141F			0x141F
++#define HUAWEI_PRODUCT_E1420			0x1420
++#define HUAWEI_PRODUCT_E1421			0x1421
++#define HUAWEI_PRODUCT_E1422			0x1422
++#define HUAWEI_PRODUCT_E1423			0x1423
++#define HUAWEI_PRODUCT_E1424			0x1424
++#define HUAWEI_PRODUCT_E1425			0x1425
++#define HUAWEI_PRODUCT_E1426			0x1426
++#define HUAWEI_PRODUCT_E1427			0x1427
++#define HUAWEI_PRODUCT_E1428			0x1428
++#define HUAWEI_PRODUCT_E1429			0x1429
++#define HUAWEI_PRODUCT_E142A			0x142A
++#define HUAWEI_PRODUCT_E142B			0x142B
++#define HUAWEI_PRODUCT_E142C			0x142C
++#define HUAWEI_PRODUCT_E142D			0x142D
++#define HUAWEI_PRODUCT_E142E			0x142E
++#define HUAWEI_PRODUCT_E142F			0x142F
++#define HUAWEI_PRODUCT_E1430			0x1430
++#define HUAWEI_PRODUCT_E1431			0x1431
++#define HUAWEI_PRODUCT_E1432			0x1432
++#define HUAWEI_PRODUCT_E1433			0x1433
++#define HUAWEI_PRODUCT_E1434			0x1434
++#define HUAWEI_PRODUCT_E1435			0x1435
++#define HUAWEI_PRODUCT_E1436			0x1436
++#define HUAWEI_PRODUCT_E1437			0x1437
++#define HUAWEI_PRODUCT_E1438			0x1438
++#define HUAWEI_PRODUCT_E1439			0x1439
++#define HUAWEI_PRODUCT_E143A			0x143A
++#define HUAWEI_PRODUCT_E143B			0x143B
++#define HUAWEI_PRODUCT_E143C			0x143C
++#define HUAWEI_PRODUCT_E143D			0x143D
++#define HUAWEI_PRODUCT_E143E			0x143E
++#define HUAWEI_PRODUCT_E143F			0x143F
+ 
+ #define NOVATELWIRELESS_VENDOR_ID		0x1410
+ 
+@@ -259,11 +306,20 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220BIS, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1401, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1402, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1403, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1404, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1405, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1406, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1407, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1408, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1409, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140A, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140B, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140C, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140D, 0xff, 0xff, 0xff) }, 
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140E, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E140F, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1410, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1411, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1412, 0xff, 0xff, 0xff) },
+@@ -274,6 +330,44 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1417, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1418, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1419, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141A, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141B, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141C, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141D, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141E, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E141F, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1420, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1421, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1422, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1423, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1424, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1425, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1426, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1427, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1428, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1429, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142A, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142B, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142C, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142D, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142E, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E142F, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1430, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1431, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1432, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1433, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1434, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1435, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1436, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1437, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1438, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E1439, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143A, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143B, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143C, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143D, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143E, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E143F, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_9508) },
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V640) }, /* Novatel Merlin V640/XV620 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_V620) }, /* Novatel Merlin V620/S620 */
+diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c linux-2.6.27-rc7/drivers/usb/storage/initializers.c
+--- linux-2.6.27-rc7-orig/drivers/usb/storage/initializers.c	2008-10-13 09:02:08.000000000 -0400
++++ linux-2.6.27-rc7/drivers/usb/storage/initializers.c	2008-10-13 09:03:40.000000000 -0400
+@@ -95,11 +95,10 @@ int usb_stor_huawei_e220_init(struct us_
+ {
+ 	int result;
+ 
+-	us->iobuf[0] = 0x1;
+ 	result = usb_stor_control_msg(us, us->send_ctrl_pipe,
+ 				      USB_REQ_SET_FEATURE,
+ 				      USB_TYPE_STANDARD | USB_RECIP_DEVICE,
+-				      0x01, 0x0, us->iobuf, 0x1, 1000);
++				      0x01, 0x0, NULL, 0x0, 1000);
+ 	US_DEBUGP("usb_control_msg performing result is %d\n", result);
+ 	return (result ? 0 : -1);
+ }
+diff -uprN -X linux-2.6.27-rc7-orig/Documentation/dontdiff linux-2.6.27-rc7-orig/drivers/usb/storage/unusual_devs.h linux-2.6.27-rc7/drivers/usb/storage/unusual_devs.h
+--- linux-2.6.27-rc7-orig/drivers/usb/storage/unusual_devs.h	2008-10-13 09:02:08.000000000 -0400
++++ linux-2.6.27-rc7/drivers/usb/storage/unusual_devs.h	2008-10-14 09:54:39.000000000 -0400
+@@ -1602,97 +1602,332 @@ UNUSUAL_DEV(  0x1210, 0x0003, 0x0100, 0x
+ /* Reported by fangxiaozhi <huananhu@huawei.com>
+  * This brings the HUAWEI data card devices into multi-port mode
+  */
+-UNUSUAL_DEV( 0x12d1, 0x1001, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1001, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1003, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1003, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1004, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1004, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1401, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1401, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1403, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1402, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),		
++UNUSUAL_DEV(  0x12d1, 0x1403, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1404, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1405, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1406, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1407, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1408, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1409, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x140A, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),  
++UNUSUAL_DEV(  0x12d1, 0x140B, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0), 
++UNUSUAL_DEV(  0x12d1, 0x140C, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),  
++UNUSUAL_DEV(  0x12d1, 0x140D, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0), 
++UNUSUAL_DEV(  0x12d1, 0x140E, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0), 
++UNUSUAL_DEV(  0x12d1, 0x140F, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1410, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1411, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1412, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1413, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1414, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1415, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1416, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1417, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1418, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1419, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x141A, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x141B, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x141C, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x141D, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x141E, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x141F, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1420, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1421, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1422, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1423, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1424, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1425, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1426, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1427, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1428, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1429, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x142A, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x142B, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x142C, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x142D, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x142E, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x142F, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1430, 0x0000, 0x0000,
++		"HUAWEI MOBILE",
++		"Mass Storage",
++		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
++		0),
++UNUSUAL_DEV(  0x12d1, 0x1431, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1405, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1432, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1406, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1433, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1408, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1434, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1409, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1435, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1410, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1436, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1411, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1437, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1412, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1438, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1413, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x1439, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1414, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x143A, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1415, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x143B, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1416, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x143C, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1417, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x143D, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1418, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x143E, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+ 		0),
+-UNUSUAL_DEV( 0x12d1, 0x1419, 0x0000, 0x0000,
++UNUSUAL_DEV(  0x12d1, 0x143F, 0x0000, 0x0000,
+ 		"HUAWEI MOBILE",
+ 		"Mass Storage",
+ 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+
