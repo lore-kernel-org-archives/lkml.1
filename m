@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYJOWge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJOWhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYJOWge (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYJOWg0
+	id S1755915AbYJOWhH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJOWgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:36:26 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35525 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753109AbYJOWgZ (ORCPT
+	Wed, 15 Oct 2008 18:36:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52440 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753179AbYJOWgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:36:25 -0400
-Date: Wed, 15 Oct 2008 23:36:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: is the weeks before -rc1 the time to really be working on
- -next?
-Message-ID: <20081015233607.54c1d6b8@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081015145606.2af3baf1.akpm@linux-foundation.org>
-References: <20081015174015.GB8663@kroah.com>
-	<20081015145606.2af3baf1.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 15 Oct 2008 18:36:53 -0400
+Date: Wed, 15 Oct 2008 15:36:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, cmm@us.ibm.com
+Subject: Re: [PATCH] vmscan: set try_to_release_page's gfp_mask to 0
+Message-Id: <20081015153641.afcc94e5.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
+References: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
+	<20080812202127.b88e8250.akpm@linux-foundation.org>
+	<6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,26 +29,78 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> first.  So everyone who has been changing stuff which is outside their
-> area of responsibility and breaking other people's stuff would get to
-> see the consequences of their actions instead of Stephen and I bearing
-> the brunt of it all the time.
+On Wed, 13 Aug 2008 15:24:40 +0900
+Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
+
+> At 12:21 08/08/13, Andrew Morton wrote:
+> >On Wed, 13 Aug 2008 11:21:16 +0900 Hisashi Hifumi 
+> ><hifumi.hisashi@oss.ntt.co.jp> wrote:
+> >
+> >> Hi.
+> >> 
+> >> shrink_page_list passes gfp_mask to try_to_release_page.
+> >> When shrink_page_list is called from kswapd or buddy system, gfp_mask is set
+> >> and (gfp_mask & __GFP_WAIT) and (gfp_mask & __GFP_FS) check is positive.
+> >> releasepage of jbd/jbd2(ext3/4, ocfs2) and XFS use this parameter. 
+> >> If try_to_free_page fails due to bh busy in jbd/jbd2, jbd/jbd2 lets a 
+> >thread wait for 
+> >> committing transaction. I think this has big performance impacts for vmscan.
+> >> So I modified shrink_page_list not to pass gfp_mask to try_to_release_page
+> >> in ordered to improve vmscan performance.
+> >> 
+> >> Thanks.
+> >> 
+> >> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> >> 
+> >> diff -Nrup linux-2.6.27-rc2.org/mm/vmscan.c linux-2.6.27-rc2.vmscan/mm/vmscan.c
+> >> --- linux-2.6.27-rc2.org/mm/vmscan.c	2008-08-11 14:33:24.000000000 +0900
+> >> +++ linux-2.6.27-rc2.vmscan/mm/vmscan.c	2008-08-12 18:57:05.000000000 +0900
+> >> @@ -614,7 +614,7 @@ static unsigned long shrink_page_list(st
+> >>  		* Otherwise, leave the page on the LRU so it is swappable.
+> >>  		*/
+> >>  		if (PagePrivate(page)) {
+> >> -			if (!try_to_release_page(page, sc->gfp_mask))
+> >> +			if (!try_to_release_page(page, 0))
+> >>  				goto activate_locked;
+> >>  			if (!mapping && page_count(page) == 1) {
+> >>  				unlock_page(page);
+> >
+> >I think the change makes sense.
+> >
+> >Has this change been shown to improve any workloads?  If so, please
+> >provide full information for the changelog.  If not, please mention
+> >this and explain why benefits were not demonstrable.  This information
+> >should _always_ be present in a "performance" patch's changelog!
 > 
+> Sorry, I do not have performance number yet. I'll try this.
 > 
-> I fear we've reached the stage now where people are merrily merging
-> bright-and-shiny things into their local trees without giving much
-> thought at all to the consequences for others.
 
-Its not that simple. There are areas where the tree divides don't fit the
-coding divides. ttydev was horribly entwined with USB and there really
-wasn't a way to break that up at the time in question. Because -next
-tries to assemble all the trees based on Linus tree it can't cope with
-that case well at all and in fact there was some neccessary rule bending
-to make next work out where some of the ttydev work was done with ttydev
-on top of other subtrees.
+This patch remains in a stalled state...
 
-So at times it would be very helpful with -next to be able to do limited
-tree ordering. If I could have flagged tty as requiring USB first for
-example there would have been a lot less pain involved.
+And then there's this:
 
-Alan
+: Probably a better fix would be to explicitly tell
+: journal_try_to_free_buffers() when it need to block on journal commit,
+: rather than (mis)interpreting the gfp_t in this fashion.  I assume the
+: only caller who really cares is direct-io.  That would be quite a bit
+: of churn, and the asynchronous behaviour perhaps makes sense _anyway_
+: when called from page reclaim.
+: 
+: otoh, there is a risk that this change will cause page reclaim to sit
+: there burning huge amounts of CPU time and not achieving anything,
+: because all it is doing is scanning over busy pages.  In that case,
+: blocking behind a commit which would make those pages reclaimable is
+: correct behaviour.  But given that the offending code in
+: journal_try_to_free_buffers() has only been there for a few weeks, I
+: guess this isn't a concern.
+: 
+: 
+: Really, I think what this patch tells us is that 3f31fddf ("jbd: fix
+: race between free buffer and commit transaction") was an unpleasant
+: hack which had undesirable and unexpected side-effects.  I think - that
+: depends upon your as-yet-undisclosed testing results?
+: 
+: Perhaps we should revert 3f31fddf and have another think about how to
+: fix the direct-io -EIO problem.  One option would be to hold our noses
+: and add a new gfp_t flag for this specific purpose?
+:
