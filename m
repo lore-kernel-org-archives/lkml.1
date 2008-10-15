@@ -1,105 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbYJOUuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbYJOUwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754944AbYJOUuQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYJOUuD
+	id S1755188AbYJOUwE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYJOUvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:50:03 -0400
-Received: from willie.n0ano.com ([64.66.241.76]:59937 "EHLO xolotl.n0ano.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750966AbYJOUuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:50:01 -0400
-From: n0ano@n0ano.com
-Date: Wed, 15 Oct 2008 14:48:51 -0600
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: n0ano@n0ano.com, Yinghai Lu <yinghai@kernel.org>,
-       donald.d.dugger@intel.com, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Enable console on PCI serial devices
-Message-ID: <20081015204850.GC14490@xolotl.n0ano.com>
-References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <86802c440810141539x97ceaa4meaab109fae3d9d4c@mail.gmail.com> <20081014233031.GB14490@xolotl.n0ano.com> <1224061999.25929.7.camel@test.thuisdomein>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224061999.25929.7.camel@test.thuisdomein>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 15 Oct 2008 16:51:54 -0400
+Received: from smtpout.eastlink.ca ([24.222.0.30]:34467 "EHLO
+	smtpout.eastlink.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbYJOUvy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 16:51:54 -0400
+X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 16:51:54 EDT
+Date: Wed, 15 Oct 2008 17:21:41 -0300
+From: Peter Cordes <peter@cordes.ca>
+Subject: no way to swapoff a deleted swap file?
+To: linux-kernel@vger.kernel.org
+Message-id: <20081015202141.GX26067@cordes.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAE/t9UgY3sZc/2dsb2JhbADCT4Fr
+X-IronPort-AV: E=Sophos;i="4.33,417,1220238000";   d="scan'208";a="383214146"
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 11:13:19AM +0200, Paul Bolle wrote:
->... 
-> Shouldn't the earlycon entry be updated for the "clk" stuff too?
-> 
-> 
-> Paul Bolle
+ I unlinked a swapfile without realizing I was still swapping on it.
+Now my /proc/swaps looks like this:
+Filename                                Type            Size    Used	Priority
+/var/tmp/EXP/cache/swap/1\040(deleted)  file            1288644 1448	-1
+/var/tmp/EXP/cache/swap/2\040(deleted)  file            1433368 0	-2
 
-Indeed, I missed that.  Here is the final (?) version of the patch,
-the only change is in the documentation.
+ AFAICT, there's nothing I can pass to swapoff(2) that will make the
+kernel let go of them.  If that's the case, please consider this a
+feature request for a way to do this.  Now I'm going to have to reboot
+before I can mkfs that partition.
 
-As an aside, I would personally be in favor of removing the `earlycon'
-kernel parameter entirely, it seems to be a strict subset of the
-`console' parameter and anyone that wants `earlycon' probably wants
-`console' anyway.  Is there a strong argument for keeping that
-parameter that I'm missing?
+ If kswapd0 had a fd open on the swap files, swapoff /proc/$PID/fd/3
+could possibly work.  But it looks like the files are open but with no
+user-space accessable file descriptors to them.  Which makes sense,
+except for this case.
+
+ thanks, and happy hacking,
 
 -- 
-Don Dugger
-"Censeo Toto nos in Kansa esse decisse." - D. Gale
-n0ano@n0ano.com
-Ph: 303/443-3786
+#define X(x,y) x##y
+Peter Cordes ;  e-mail: X(peter@cor , des.ca)
 
- Documentation/kernel-parameters.txt |   13 ++++++++-----
- drivers/serial/8250_early.c         |    5 +++++
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 2443f5b..bf6dd6f 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -505,12 +505,15 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Documentation/networking/netconsole.txt for an
- 			alternative.
- 
--		uart[8250],io,<addr>[,options]
--		uart[8250],mmio,<addr>[,options]
-+		uart[8250],io,<addr>[,options[,clk]]
-+		uart[8250],mmio,<addr>[,options[,clk]]
- 			Start an early, polled-mode console on the 8250/16550
- 			UART at the specified I/O port or MMIO address,
- 			switching to the matching ttyS device later.  The
--			options are the same as for ttyS, above.
-+			"options" are the same as for ttyS, above.  "clk"
-+			is the crystal frequency which defaults to 115200
-+			(typically the fastest baud rate supported by the
-+			uart) but some hardware use different crystals.
- 
-                 If the device connected to the port is not a TTY but a braille
-                 device, prepend "brl," before the device type, for instance
-@@ -518,8 +521,8 @@ and is between 256 and 4096 characters. It is defined in the file
- 		For now, only VisioBraille is supported.
- 
- 	earlycon=	[KNL] Output early console device and options.
--		uart[8250],io,<addr>[,options]
--		uart[8250],mmio,<addr>[,options]
-+		uart[8250],io,<addr>[,options,[clkd]]
-+		uart[8250],mmio,<addr>[,options,[clkd]]
- 			Start an early, polled-mode console on the 8250/16550
- 			UART at the specified I/O port or MMIO address.
- 			The options are the same as for ttyS, above.
-diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
-index f279745..edd5803 100644
---- a/drivers/serial/8250_early.c
-+++ b/drivers/serial/8250_early.c
-@@ -180,6 +180,11 @@ static int __init parse_options(struct early_serial8250_device *device,
- 		snprintf(device->options, sizeof(device->options), "%u",
- 			device->baud);
- 	}
-+	options = strchr(options, ',');
-+	if (options) {
-+		options++;
-+		port->uartclk = simple_strtoul(options, NULL, 0) * 16;
-+	}
- 
- 	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
- 		mmio ? "MMIO" : "I/O port",
+"The gods confound the man who first found out how to distinguish the hours!
+ Confound him, too, who in this place set up a sundial, to cut and hack
+ my day so wretchedly into small pieces!" -- Plautus, 200 BC
