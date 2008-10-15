@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYJOShj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbYJOSjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbYJOShj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 14:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYJOShc
+	id S1755617AbYJOSjO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 14:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbYJOSi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 14:37:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34341 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbYJOShb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 14:37:31 -0400
-Subject: sched: only update rq->clock while holding rq->lock
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: vatsa <vatsa@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 15 Oct 2008 20:37:23 +0200
-Message-Id: <1224095843.28131.13.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Oct 2008 14:38:59 -0400
+Received: from www.steve.org.uk ([80.68.85.46]:37185 "EHLO skx.xen-hosting.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753113AbYJOSi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 14:38:59 -0400
+X-Greylist: delayed 1884 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Oct 2008 14:38:58 EDT
+Date: Wed, 15 Oct 2008 19:07:32 +0100
+From: Steve Kemp <steve@steve.org.uk>
+To: linux-kernel@vger.kernel.org
+Subject: trivial patches: Should we care about control reaches end of
+	non-void function
+Message-ID: <20081015180732.GA4119@steve.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vatsa,
+  During my build processes I see a lot of messages like this:
 
-you said someone would send a patch to this effect, I don't want to
-steal credit, but I think this patch is better posted sooner rather than
-later.
+  In function xxx:
+ xxx.c:123: control reaches end of non-void function
 
----
+  These are typically caused by constructs like:
 
-Subject: sched: only update rq->clock while holding rq->lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Wed Oct 15 20:30:26 CEST 2008
+    static int some_function()
+    {
+        switch (blah) {
+        ...
 
-Vatsa noticed rq->clock going funny and tracked it down to an update_rq_clock()
-outside a rq->lock section.
+        default:
+            BUG();
+        }
+    }
 
-This is a problem because things like double_rq_lock() update the rq->clock
-value for both rqs. Therefore disabling interrupts isn't strong enough.
+  I see some functions in the kernel have added "return 0" after the
+ BUG, presumably to silence these warnings.  Would a patch to do this
+ consistently, or is that too trivial even for trivial patches?
 
-Reported-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+  Actual example:
+    ./mm/mempolicy.c
+        policy_zonelist - gives this warning.
+        slab_node       - gives this warning
+        __mpol_equal    - has the warning silenced via explicit return.
 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -4448,12 +4448,8 @@ need_resched_nonpreemptible:
- 	if (sched_feat(HRTICK))
- 		hrtick_clear(rq);
- 
--	/*
--	 * Do the rq-clock update outside the rq lock:
--	 */
--	local_irq_disable();
-+	spin_lock_irq(&rq->lock);
- 	update_rq_clock(rq);
--	spin_lock(&rq->lock);
- 	clear_tsk_need_resched(prev);
- 
- 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
-
+Steve
+-- 
+Managed Anti-Spam Service
+http://mail-scanning.com/
 
