@@ -1,106 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJOWhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYJOWho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYJOWhH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 18:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJOWgy
+	id S1754414AbYJOWho (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 18:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYJOWhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 18:36:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52440 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753179AbYJOWgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 18:36:53 -0400
-Date: Wed, 15 Oct 2008 15:36:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, cmm@us.ibm.com
-Subject: Re: [PATCH] vmscan: set try_to_release_page's gfp_mask to 0
-Message-Id: <20081015153641.afcc94e5.akpm@linux-foundation.org>
-In-Reply-To: <6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
-References: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
-	<20080812202127.b88e8250.akpm@linux-foundation.org>
-	<6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Oct 2008 18:37:35 -0400
+Received: from 0x55512ece.adsl.cybercity.dk ([85.81.46.206]:18796 "EHLO
+	sko.w0.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbYJOWhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 18:37:35 -0400
+Date: Thu, 16 Oct 2008 00:37:30 +0200 (CEST)
+From: Hans Schou <linux@schou.dk>
+X-X-Sender: linux@sko.w0.dk
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SiS55x, another x86 CPU
+In-Reply-To: <Pine.LNX.4.64.0810152150070.25933@anakin>
+Message-ID: <Pine.LNX.4.64.0810160027150.7873@sko.w0.dk>
+References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org>
+ <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk> <20081015100637.GS12131@one.firstfloor.org>
+ <Pine.LNX.4.64.0810152150070.25933@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Aug 2008 15:24:40 +0900
-Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
+On Wed, 15 Oct 2008, Geert Uytterhoeven wrote:
 
-> At 12:21 08/08/13, Andrew Morton wrote:
-> >On Wed, 13 Aug 2008 11:21:16 +0900 Hisashi Hifumi 
-> ><hifumi.hisashi@oss.ntt.co.jp> wrote:
-> >
-> >> Hi.
-> >> 
-> >> shrink_page_list passes gfp_mask to try_to_release_page.
-> >> When shrink_page_list is called from kswapd or buddy system, gfp_mask is set
-> >> and (gfp_mask & __GFP_WAIT) and (gfp_mask & __GFP_FS) check is positive.
-> >> releasepage of jbd/jbd2(ext3/4, ocfs2) and XFS use this parameter. 
-> >> If try_to_free_page fails due to bh busy in jbd/jbd2, jbd/jbd2 lets a 
-> >thread wait for 
-> >> committing transaction. I think this has big performance impacts for vmscan.
-> >> So I modified shrink_page_list not to pass gfp_mask to try_to_release_page
-> >> in ordered to improve vmscan performance.
-> >> 
-> >> Thanks.
-> >> 
-> >> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> >> 
-> >> diff -Nrup linux-2.6.27-rc2.org/mm/vmscan.c linux-2.6.27-rc2.vmscan/mm/vmscan.c
-> >> --- linux-2.6.27-rc2.org/mm/vmscan.c	2008-08-11 14:33:24.000000000 +0900
-> >> +++ linux-2.6.27-rc2.vmscan/mm/vmscan.c	2008-08-12 18:57:05.000000000 +0900
-> >> @@ -614,7 +614,7 @@ static unsigned long shrink_page_list(st
-> >>  		* Otherwise, leave the page on the LRU so it is swappable.
-> >>  		*/
-> >>  		if (PagePrivate(page)) {
-> >> -			if (!try_to_release_page(page, sc->gfp_mask))
-> >> +			if (!try_to_release_page(page, 0))
-> >>  				goto activate_locked;
-> >>  			if (!mapping && page_count(page) == 1) {
-> >>  				unlock_page(page);
-> >
-> >I think the change makes sense.
-> >
-> >Has this change been shown to improve any workloads?  If so, please
-> >provide full information for the changelog.  If not, please mention
-> >this and explain why benefits were not demonstrable.  This information
-> >should _always_ be present in a "performance" patch's changelog!
-> 
-> Sorry, I do not have performance number yet. I'll try this.
-> 
+> On Wed, 15 Oct 2008, Andi Kleen wrote:
+>>> If any CR/LF in your file you must have added them yourself.
+>>
+>> There were definitely CR/LFs in the patch attachment you sent.
+>> And no my mailer doesn't add them.
+>
+> Interesting. I didn't see any CR/LFs neither, after exporting the
+> attachment to a file (I'm using pine).
 
-This patch remains in a stalled state...
+As far as I could see, Pine does this:
 
-And then there's this:
+1. If file has not extension like: .zip .jpg .exe, see it as ASCII
+2. Add CR/LF to the file
+3. Encode file as base64
 
-: Probably a better fix would be to explicitly tell
-: journal_try_to_free_buffers() when it need to block on journal commit,
-: rather than (mis)interpreting the gfp_t in this fashion.  I assume the
-: only caller who really cares is direct-io.  That would be quite a bit
-: of churn, and the asynchronous behaviour perhaps makes sense _anyway_
-: when called from page reclaim.
-: 
-: otoh, there is a risk that this change will cause page reclaim to sit
-: there burning huge amounts of CPU time and not achieving anything,
-: because all it is doing is scanning over busy pages.  In that case,
-: blocking behind a commit which would make those pages reclaimable is
-: correct behaviour.  But given that the offending code in
-: journal_try_to_free_buffers() has only been there for a few weeks, I
-: guess this isn't a concern.
-: 
-: 
-: Really, I think what this patch tells us is that 3f31fddf ("jbd: fix
-: race between free buffer and commit transaction") was an unpleasant
-: hack which had undesirable and unexpected side-effects.  I think - that
-: depends upon your as-yet-undisclosed testing results?
-: 
-: Perhaps we should revert 3f31fddf and have another think about how to
-: fix the direct-io -EIO problem.  One option would be to hold our noses
-: and add a new gfp_t flag for this specific purpose?
-:
+On reception of the file:
+
+1. Decode file as specified (in this case base64)
+2. If it looks like a text file, convert CR/LF to LF.
+
+> However, when doing a base64 decode on the raw attachment data, the
+> CR/LFs did pop up.
+
+I think time is up for getting rid of Pine and there stupid license. 
+I'll check if "nail" can handle attachment correctly.
+
+/hans
