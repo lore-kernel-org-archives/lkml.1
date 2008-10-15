@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYJOUkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbYJOUoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbYJOUkP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 16:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYJOUkD
+	id S1754442AbYJOUoZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 16:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYJOUoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 16:40:03 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:43946 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbYJOUkA (ORCPT
+	Wed, 15 Oct 2008 16:44:15 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:38866 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751735AbYJOUoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 16:40:00 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
-Subject: Re: [PATCH 3/6] vfs: add __d_instantiate() helper
-References: <fcaad2cb3e848f5f6f1126623.ps@mail.parknet.co.jp>
-	<e015bca83e848f5f6f2226623.ps@mail.parknet.co.jp>
-	<7754d3f83e848f5f6f2326623.ps@mail.parknet.co.jp>
-	<20081015194119.GA24892@infradead.org>
-Date: Thu, 16 Oct 2008 05:39:56 +0900
-In-Reply-To: <20081015194119.GA24892@infradead.org> (Christoph Hellwig's
-	message of "Wed, 15 Oct 2008 15:41:19 -0400")
-Message-ID: <87wsg9oan7.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
+	Wed, 15 Oct 2008 16:44:14 -0400
+Date: Wed, 15 Oct 2008 15:44:13 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>, JensAxboejens.axboe@oracle.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 2/1] cciss regression: firmware version not displayed in procfs
+Message-ID: <20081015204413.GA19110@roadking.ldev.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+Patch 2 of 1
 
-> On Wed, Oct 15, 2008 at 10:58:10PM +0900, OGAWA Hirofumi wrote:
->> 
->> This adds __d_instantiate() for users which is already taking
->> dcache_lock, and replace with it.
->> 
->> The part of d_add_ci() isn't equivalent. But it should be needed
->> fsnotify_d_instantiate() actually, because the path is to add the
->> inode to negative dentry.  fsnotify_d_instantiate() should be called
->> after change from negative to positive.
->> 
->> __d_instantiate_unique() and d_materialise_unique() does opencoded
->> optimized version. From history, it seems a intent, so just add comment.
->
-> Looks good, but I think those "optimized' version should also be
-> converted, a single if shouldn't matter with todays branch predictors.
+This patch fixes another regression introduced by commit
+6ae5ce8e8d4de666f31286808d2285aa6a50fa40. The fiwmware version is no longer
+being displayed in procfs. Please consider this for inclusion.
 
-Me too.
+Signed-off-by: Mike Miller <mike.miller@hp.com>
 
-Trond, do you care the following convert? E.g.
-
-in d_materialise_unique():
-
-from
-		dentry->d_inode = NULL;
-		goto found_lock;
-to
-		__d_instantiate(dentry, NULL);
-		goto found_lock;
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 1e1f915..09b27d5 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1631,6 +1632,7 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
+ 	int ctlr = h->ctlr;
+ 	int num_luns;
+ 	ReportLunData_struct *ld_buff = NULL;
++	InquiryData_struct *inq_buff = NULL;
+ 	int return_code;
+ 	int listlength = 0;
+ 	int i;
+@@ -1651,6 +1653,26 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
+ 	h->busy_configuring = 1;
+ 	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
+ 
++	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
++        if (inq_buff == NULL) {
++                printk(KERN_ERR "cciss: out of memory\n");
++                return ENOMEM;
++        }
++
++	/* Get the firmware version */ 
++	return_code = sendcmd_withirq(CISS_INQUIRY, ctlr, inq_buff, 
++		sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
++	if (return_code == IO_OK) {
++		h->firm_ver[0] = inq_buff->data_byte[32];
++		h->firm_ver[1] = inq_buff->data_byte[33];
++		h->firm_ver[2] = inq_buff->data_byte[34];
++		h->firm_ver[3] = inq_buff->data_byte[35];
++	} else {	 /* send command failed */
++		printk(KERN_WARNING "cciss: unable to determine firmware"
++			" version of controller\n");
++	}
++
++	/* Get the number of logical volumes */ 
+ 	ld_buff = kzalloc(sizeof(ReportLunData_struct), GFP_KERNEL);
+ 	if (ld_buff == NULL)
+ 		goto mem_msg;
