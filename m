@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbYJPRoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYJPRou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758063AbYJPRoe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbYJPRn6
+	id S1758242AbYJPRou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYJPRoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:43:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:14069 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbYJPRn4 (ORCPT
+	Thu, 16 Oct 2008 13:44:09 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:21761 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757344AbYJPRoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:43:56 -0400
+	Thu, 16 Oct 2008 13:44:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=dJpOfvqaYk5KbH26BWd9G4yFZfGofL7SWinpS9jz1Y2LpEYyV824aqGLkYpi6cyLkG
-         B0NLTBgYw+fUcV5I8zFOu4BIRzS1rdT0191WNj4dK1xdLP76JMafHtwVRpZDX62yTANQ
-         FlBjH6tfuqjX6JBywO2R8fTeBfn6evfhQKxik=
-Message-ID: <86802c440810161043k4c4bf6e6x4f5a70c54c53ca3b@mail.gmail.com>
-Date: Thu, 16 Oct 2008 10:43:56 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: bob.montgomery@hp.com
-Subject: Re: [PATCH] disable CPU side GART accesses
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "vojtech@suse.cz" <vojtech@suse.cz>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "chandru@in.ibm.com" <chandru@in.ibm.com>,
-       "Joerg Roedel" <joerg.roedel@amd.com>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Pavel Machek" <pavel@ucw.cz>
-In-Reply-To: <1224176445.2215.258.camel@amd.troyhebe>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1224107317.2215.238.camel@amd.troyhebe>
-	 <20081015234842.GA10999@elte.hu> <48F68940.40409@kernel.org>
-	 <1224176445.2215.258.camel@amd.troyhebe>
-X-Google-Sender-Auth: b0a0b6d71cc8e77f
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :sender;
+        b=H0eLiaeBH9zBzgLXz1NkPhsuGTVxkiARYMTljZ0YOfMuv4Wexa3rblsyC/tjtq5v6i
+         YDWYzc1/JuNcTKhKoH/Gk6nSjBc7GJ7KsNfL5xyu/BQbLeyF9oGKSNK32uUqjXCRCtSw
+         Ik4CaaJ5VjIcO6phhRaO2VPvv2IgZBXvGPvw4=
+From: Bryan Wu <cooloney@kernel.org>
+To: alan@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 2/9] Blackfin Serial Driver: Add a debug function to serial driver.
+Date: Fri, 17 Oct 2008 01:44:00 +0800
+Message-Id: <1224179047-13073-3-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1224179047-13073-1-git-send-email-cooloney@kernel.org>
+References: <1224179047-13073-1-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 10:00 AM, Bob Montgomery <bob.montgomery@hp.com> wrote:
->
-> The problem occurs when the copy operation reads from the GART aperture
-> (iommu window) and wakes up the GART translation hardware.  This patch
-> stops that by telling the GART to ignore addresses that come from the
-> CPU and to only translate addresses from the IO side.
+From: Graf Yang <graf.yang@analog.com>
 
-why kdump need to copy those area? those area is supposed to be
-reserved in e820 table by BIOS or first kernel.
+Signed-off-by: Graf Yang <graf.yang@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/serial/bfin_5xx.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 44 insertions(+), 0 deletions(-)
 
-YH
+diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+index d63fad7..16b891e 100644
+--- a/drivers/serial/bfin_5xx.c
++++ b/drivers/serial/bfin_5xx.c
+@@ -21,6 +21,7 @@
+ #include <linux/tty.h>
+ #include <linux/tty_flip.h>
+ #include <linux/serial_core.h>
++#include <stdarg.h>
+ 
+ #if defined(CONFIG_KGDB_SERIAL_CONSOLE) || \
+ 	defined(CONFIG_KGDB_SERIAL_CONSOLE_MODULE)
+@@ -1155,6 +1156,49 @@ struct console __init *bfin_earlyserial_init(unsigned int port,
+ 
+ #endif /* CONFIG_SERIAL_BFIN_CONSOLE */
+ 
++#ifdef CONFIG_DEBUG_KERNEL
++void bfin_serial_debug(const char *fmt, ...)
++{
++	struct bfin_serial_port *uart = &bfin_serial_ports[0];
++	unsigned short status, tmp;
++	int flags, i, count;
++	char buf[128];
++	va_list ap;
++
++	if (bfin_serial_console.index < 0)
++		return;		/* Too early. */
++
++	va_start(ap, fmt);
++	vsprintf(buf, fmt, ap);
++	va_end(ap);
++	count = strlen(buf);
++
++	spin_lock_irqsave(&uart->port.lock, flags);
++
++	for (i = 0; i < count; i++) {
++		do {
++			status = UART_GET_LSR(uart);
++		} while (!(status & THRE));
++
++#ifndef CONFIG_BF54x
++		tmp = UART_GET_LCR(uart);
++		tmp &= ~DLAB;
++		UART_PUT_LCR(uart, tmp);
++#endif
++		UART_PUT_CHAR(uart, buf[i]);
++		if (buf[i] == '\n') {
++			do {
++				status = UART_GET_LSR(uart);
++			} while (!(status & THRE));
++			UART_PUT_CHAR(uart, '\r');
++		}
++	}
++
++	spin_unlock_irqrestore(&uart->port.lock, flags);
++}
++EXPORT_SYMBOL(bfin_serial_debug);
++#endif
++
+ static struct uart_driver bfin_serial_reg = {
+ 	.owner			= THIS_MODULE,
+ 	.driver_name		= "bfin-uart",
+-- 
+1.5.6
+
