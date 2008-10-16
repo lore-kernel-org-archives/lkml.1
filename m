@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYJPGRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYJPGT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbYJPGRm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 02:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbYJPGNF
+	id S1757458AbYJPGT0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 02:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbYJPGN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 02:13:05 -0400
-Received: from qmta01.emeryville.ca.mail.comcast.net ([76.96.30.16]:42178 "EHLO
-	QMTA01.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755184AbYJPGND (ORCPT
+	Thu, 16 Oct 2008 02:13:28 -0400
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:59414 "EHLO
+	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755441AbYJPGNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 02:13:03 -0400
-X-Authority-Analysis: v=1.0 c=1 a=Zow0e3gTvPwA:10 a=1eQj4xbIPsIA:10
- a=z56Yt4NhsqPYbtU2DXgA:9 a=vEA_nnbCKvmdnYmwP5oA:7
- a=E7XEqaLHROjdGdxKZUaExrYALpQA:4 a=i92e0Ub4el8A:10 a=d_-3mwAUsuEA:10
- a=eZLSmJVMEtUA:10
-Subject: [RFC PATCH 16/21]  Remove early tracing for now
+	Thu, 16 Oct 2008 02:13:25 -0400
+X-Authority-Analysis: v=1.0 c=1 a=8aG_8LW-thsA:10 a=ata07m3BuiIA:10
+ a=IBg0jQH8y8dE10vQx4QA:9 a=1JOTrF24COkwg89G4ScA:7
+ a=hCp9II6BGI3vFUJRg725TDD_QdkA:4 a=i92e0Ub4el8A:10 a=d_-3mwAUsuEA:10
+ a=rPt6xJ-oxjAA:10
+Subject: [RFC PATCH 21/21]   Re-add late setup/early tracing.
 From: Tom Zanussi <zanussi@comcast.net>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -29,8 +29,8 @@ Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 Content-Type: text/plain
-Date: Thu, 16 Oct 2008 01:06:35 -0500
-Message-Id: <1224137195.16328.235.camel@charm-linux>
+Date: Thu, 16 Oct 2008 01:06:59 -0500
+Message-Id: <1224137219.16328.240.camel@charm-linux>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -38,196 +38,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove early tracing - for one thing relay doesn't trace any more, for
-another, relay is pointless without user files, since its purpose now is
-only to relay, after all.
-
 ---
- include/linux/relay.h |    6 ---
- kernel/relay.c        |  111 ++++---------------------------------------------
- 2 files changed, 8 insertions(+), 109 deletions(-)
+ include/linux/relay_pagewriter.h |    5 +++
+ kernel/relay_pagewriter.c        |   66 +++++++++++++++++++++++++++++++-------
+ 2 files changed, 59 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index a33b728..1dbed4e 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -49,7 +49,6 @@ struct rchan_buf
- 	size_t consumed_offset;		/* bytes consumed in cur page */
- 	size_t nr_pages;		/* number of unconsumed pages */
- 	unsigned int finalized;		/* buffer has been finalized */
--	size_t early_bytes;		/* bytes consumed before VFS inited */
- 	unsigned int cpu;		/* this buf's cpu */
- } ____cacheline_aligned;
+diff --git a/include/linux/relay_pagewriter.h b/include/linux/relay_pagewriter.h
+index 91ad16b..8fb4038 100644
+--- a/include/linux/relay_pagewriter.h
++++ b/include/linux/relay_pagewriter.h
+@@ -26,6 +26,7 @@
+  */
+ #define PAGEWRITER_PAD_WRITES		0x00010000	/* don't cross pages */
+ #define PAGEWRITER_FLIGHT_MODE		0x00020000	/* n_pages page ring */
++#define PAGEWRITER_LATE_SETUP		0x00040000	/* delay chan create */
  
-@@ -65,7 +64,6 @@ struct rchan
- 	struct rchan_buf *buf[NR_CPUS]; /* per-cpu channel buffers */
- 	struct list_head list;		/* for channel list */
- 	struct dentry *parent;		/* parent dentry passed to open */
--	int has_base_filename;		/* has a filename associated? */
- 	char base_filename[NAME_MAX];	/* saved base filename */
- 	unsigned long flags;		/* relay flags for this channel */
- };
-@@ -177,10 +175,6 @@ extern void relay_flush(struct rchan *chan);
- extern void relay_close(struct rchan *chan);
- extern void relay_reset(struct rchan *chan);
- 
--extern int relay_late_setup_files(struct rchan *chan,
--				  const char *base_filename,
--				  struct dentry *parent);
--
  /*
-  * exported relay file operations, kernel/relay.c
-  */
-diff --git a/kernel/relay.c b/kernel/relay.c
-index b27b655..9c37cd6 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -84,10 +84,7 @@ static void __relay_remove_page(struct rchan_buf *buf,
-  */
- static inline void relay_update_filesize(struct rchan_buf *buf, size_t length)
- {
--	if (buf->dentry)
--		buf->dentry->d_inode->i_size +=	length;
--	else
--		buf->early_bytes += length;
-+	buf->dentry->d_inode->i_size +=	length;
- }
+  * Per-cpu pagewriter buffer
+@@ -49,12 +50,14 @@ struct pagewriter {
+ 	struct rchan *rchan;		/* associated relay channel */
+ 	struct pagewriter_callbacks *cb;	/* client callbacks */
+ 	size_t n_pages;			/* number of pages per buffer */
++	size_t n_pages_wakeup;		/* save for LATE */
+ 	struct kref kref;		/* channel refcount */
+ 	void *private_data;		/* for user-defined data */
+ 	size_t last_toobig;		/* tried to log event > page size */
+ 	struct pagewriter_buf *buf[NR_CPUS]; /* per-cpu channel buffers */
+ 	struct list_head list;		/* for channel list */
+ 	atomic_t dropped;		/* dropped events due to buffer-full */
++	char base_filename[NAME_MAX];	/* saved base filename, for LATE */
+ 	unsigned long flags;		/* pagewriter flags for this channel */
+ };
  
- /**
-@@ -386,7 +383,7 @@ static inline void relay_set_buf_dentry(struct rchan_buf *buf,
- 					struct dentry *dentry)
- {
- 	buf->dentry = dentry;
--	buf->dentry->d_inode->i_size = buf->early_bytes;
-+	buf->dentry->d_inode->i_size = 0;
- }
+@@ -286,5 +289,7 @@ extern void pagewriter_flush(struct pagewriter *pagewriter);
+ extern void pagewriter_close(struct pagewriter *pagewriter);
+ extern void pagewriter_reset(struct pagewriter *pagewriter);
+ extern void pagewriter_save_flight_data(struct pagewriter *pagewriter);
++extern int pagewriter_late_setup(struct pagewriter *pagewriter,
++				 struct dentry *parent);
  
- static struct dentry *relay_create_buf_file(struct rchan *chan,
-@@ -427,12 +424,10 @@ static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
- 	if (!buf)
+ #endif /* _LINUX_RELAY_PAGEWRITER_H */
+diff --git a/kernel/relay_pagewriter.c b/kernel/relay_pagewriter.c
+index c3369f5..369abbe 100644
+--- a/kernel/relay_pagewriter.c
++++ b/kernel/relay_pagewriter.c
+@@ -72,23 +72,27 @@ struct pagewriter *pagewriter_open(const char *base_filename,
+ {
+ 	unsigned int i;
+ 	struct pagewriter *pagewriter;
+-	struct rchan *rchan;
+ 
+ 	if (!n_pages)
  		return NULL;
  
--	if (chan->has_base_filename) {
--		dentry = relay_create_buf_file(chan, buf, cpu);
--		if (!dentry)
--			goto free_buf;
--		relay_set_buf_dentry(buf, dentry);
--	}
-+	dentry = relay_create_buf_file(chan, buf, cpu);
-+	if (!dentry)
-+		goto free_buf;
-+	relay_set_buf_dentry(buf, dentry);
- 
-  	buf->cpu = cpu;
-  	__relay_reset(buf, 1);
-@@ -513,10 +508,8 @@ struct rchan *relay_open(const char *base_filename,
- 	chan->flags = rchan_flags;
- 
- 	chan->private_data = private_data;
--	if (base_filename) {
--		chan->has_base_filename = 1;
--		strlcpy(chan->base_filename, base_filename, NAME_MAX);
--	}
-+	strlcpy(chan->base_filename, base_filename, NAME_MAX);
+-	rchan = relay_open(base_filename, parent, n_pages_wakeup, NULL,
+-			   private_data, flags);
+-	if (!rchan)
+-		return NULL;
+-
+ 	pagewriter = kzalloc(sizeof(struct pagewriter), GFP_KERNEL);
+-	if (!pagewriter) {
+-		relay_close(rchan);
++	if (!pagewriter)
+ 		return NULL;
 +
- 	setup_callbacks(chan, cb);
- 	kref_init(&chan->kref);
++	if (flags & PAGEWRITER_LATE_SETUP) {
++		strlcpy(pagewriter->base_filename, base_filename, NAME_MAX);
++		pagewriter->n_pages_wakeup = n_pages_wakeup;
++	} else {
++		pagewriter->rchan = relay_open(base_filename, parent,
++					       n_pages_wakeup, NULL,
++					       private_data, flags);
++		if (!pagewriter->rchan) {
++			kfree(pagewriter);
++			return NULL;
++		}
+ 	}
  
-@@ -544,94 +537,6 @@ free_bufs:
+-	pagewriter->rchan = rchan;
+ 	pagewriter->flags = flags;
+ 	pagewriter->n_pages = n_pages;
+ 	atomic_set(&pagewriter->dropped, 0);
+@@ -115,9 +119,9 @@ free_bufs:
+ 		pagewriter_close_buf(pagewriter->buf[i]);
+ 	}
+ 
+-	kfree(pagewriter);
+-	relay_close(rchan);
++	relay_close(pagewriter->rchan);
+ 	kref_put(&pagewriter->kref, pagewriter_destroy);
++	kfree(pagewriter);
+ 	mutex_unlock(&pagewriters_mutex);
+ 	return NULL;
  }
- EXPORT_SYMBOL_GPL(relay_open);
+@@ -240,6 +244,43 @@ void pagewriter_save_flight_data(struct pagewriter *pagewriter)
+ }
+ EXPORT_SYMBOL_GPL(pagewriter_save_flight_data);
  
--struct rchan_percpu_buf_dispatcher {
--	struct rchan_buf *buf;
--	struct dentry *dentry;
--};
--
--/* Called in atomic context. */
--static void __relay_set_buf_dentry(void *info)
--{
--	struct rchan_percpu_buf_dispatcher *p = info;
--
--	relay_set_buf_dentry(p->buf, p->dentry);
--}
--
--/**
-- *	relay_late_setup_files - triggers file creation
-- *	@chan: channel to operate on
-- *	@base_filename: base name of files to create
-- *	@parent: dentry of parent directory, %NULL for root directory
-- *
-- *	Returns 0 if successful, non-zero otherwise.
-- *
-- *	Use to setup files for a previously buffer-only channel.
-- *	Useful to do early tracing in kernel, before VFS is up, for example.
-- */
--int relay_late_setup_files(struct rchan *chan,
--			   const char *base_filename,
--			   struct dentry *parent)
--{
--	int err = 0;
--	unsigned int i, curr_cpu;
--	unsigned long flags;
--	struct dentry *dentry;
--	struct rchan_percpu_buf_dispatcher disp;
--
--	if (!chan || !base_filename)
--		return -EINVAL;
--
--	strlcpy(chan->base_filename, base_filename, NAME_MAX);
--
--	mutex_lock(&relay_channels_mutex);
--	/* Is chan already set up? */
--	if (unlikely(chan->has_base_filename))
--		return -EEXIST;
--	chan->has_base_filename = 1;
--	chan->parent = parent;
--	curr_cpu = get_cpu();
--	/*
--	 * The CPU hotplug notifier ran before us and created buffers with
--	 * no files associated. So it's safe to call relay_setup_buf_file()
--	 * on all currently online CPUs.
--	 */
--	for_each_online_cpu(i) {
--		if (unlikely(!chan->buf[i])) {
--			printk(KERN_ERR "relay_late_setup_files: CPU %u "
--					"has no buffer, it must have!\n", i);
--			BUG();
--			err = -EINVAL;
--			break;
--		}
--
--		dentry = relay_create_buf_file(chan, chan->buf[i], i);
--		if (unlikely(!dentry)) {
--			err = -EINVAL;
--			break;
--		}
--
--		if (curr_cpu == i) {
--			local_irq_save(flags);
--			relay_set_buf_dentry(chan->buf[i], dentry);
--			local_irq_restore(flags);
--		} else {
--			disp.buf = chan->buf[i];
--			disp.dentry = dentry;
--			smp_mb();
--			/* relay_channels_mutex must be held, so wait. */
--			err = smp_call_function_single(i,
--						       __relay_set_buf_dentry,
--						       &disp, 1);
--		}
--		if (unlikely(err))
--			break;
--	}
--	put_cpu();
--	mutex_unlock(&relay_channels_mutex);
--
--	return err;
--}
--
- /**
-  *	relay_close - close the channel
-  *	@chan: the channel
++/**
++ *	pagewriter_late_setup - create relay channel and log early pages
++ *	@pagewriter: pagewriter
++ *	@parent: dentry of parent directory, %NULL for root directory
++ *
++ *	If the pagewriter was initially created in early mode
++ *	(PAGEWRITER_LATE_SETUP), this creates the relay channel and
++ *	sends all the early pages in the page pools to relay and
++ *	therefore onto their final destination e.g. disk or network.
++ *
++ *	Returns 0 if successful, non-zero otherwise.
++ *
++ *	Use to setup files for a previously buffer-only channel.
++ *	Useful to do early tracing in kernel, before VFS is up, for example.
++ */
++int pagewriter_late_setup(struct pagewriter *pagewriter,
++			  struct dentry *parent)
++{
++	if (!pagewriter)
++		return -EINVAL;
++
++	pagewriter->rchan = relay_open(pagewriter->base_filename,
++				       parent,
++				       pagewriter->n_pages_wakeup,
++				       NULL,
++				       pagewriter->private_data,
++				       pagewriter->flags);
++	if (!pagewriter->rchan)
++		return -ENOMEM;
++
++	pagewriter->flags &= ~PAGEWRITER_LATE_SETUP;
++	pagewriter_save_flight_data(pagewriter);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pagewriter_late_setup);
++
+ /*
+  * end relay kernel API
+  */
+@@ -573,7 +614,8 @@ size_t pagewriter_switch_page_default_callback(struct pagewriter_buf *buf,
+ 	if (!(buf->pagewriter->flags & PAGEWRITER_PAD_WRITES))
+ 		remainder = length - (PAGE_SIZE - buf->offset);
+ 
+-	if (buf->pagewriter->flags & PAGEWRITER_FLIGHT_MODE) {
++	if (buf->pagewriter->flags & PAGEWRITER_FLIGHT_MODE ||
++	    buf->pagewriter->flags & PAGEWRITER_LATE_SETUP) {
+ 		list_add_tail(&buf->page->list, &buf->pool);
+ 		buf->n_pages_flight++;
+ 	} else {
 -- 
 1.5.3.5
 
