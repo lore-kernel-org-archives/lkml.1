@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYJPOR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYJPOX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbYJPOR4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 10:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYJPORq
+	id S1755004AbYJPOX3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 10:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYJPOXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 10:17:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58136 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbYJPORp convert rfc822-to-8bit (ORCPT
+	Thu, 16 Oct 2008 10:23:20 -0400
+Received: from moloch.purdy.org ([192.207.141.11]:4214 "EHLO
+	moloch.hellmouth.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbYJPOXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:17:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhao Yakui <yakui.zhao@intel.com>
-Subject: Re: Suspend/resume regression between 2.6.26 and 2.6.27-rc1
-Date: Thu, 16 Oct 2008 16:21:53 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <lenb@kernel.org>, "linux-acpi" <linux-acpi@vger.kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>, mingo@elte.hu
-References: <1223625973.2735.142.camel@rzhang-dt> <200810101441.14123.rjw@sisk.pl> <1224143818.3944.68.camel@yakui_zhao.sh.intel.com>
-In-Reply-To: <1224143818.3944.68.camel@yakui_zhao.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Thu, 16 Oct 2008 10:23:20 -0400
+Date: Thu, 16 Oct 2008 15:17:52 +0100
+From: Sean Purdy <sean-kernel@purdy.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: david@fromorbit.com
+Subject: Re: BUG: XFS internal error xfs_trans_cancel in 2.6.27
+Message-ID: <20081016151752.F30919@moloch.hellmouth.net>
+References: <20081009113610.F13062@moloch.hellmouth.net> <20081009230227.GL9597@disturbed>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810161621.54864.rjw@sisk.pl>
+User-Agent: Mutt/1.2.5i
+In-Reply-To: <20081009230227.GL9597@disturbed>; from david@fromorbit.com on Fri, Oct 10, 2008 at 10:02:27AM +1100
+X-Comments: Public PGP key available on request
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 16 of October 2008, Zhao Yakui wrote:
-> On Fri, 2008-10-10 at 14:41 +0200, Rafael J. Wysocki wrote:
-> > On Friday, 10 of October 2008, Zhang Rui wrote:
-> > > Hi, len,
-> > > 
-> > > this is the ACPI regression test result based on the latest ACPI test branch.
-> > > 
-> > > 1. on ﻿Acer:(AMD CPU, VIA chipset. 64 bit kernel)
-> > > ﻿When doing S3 test, after pressing the power button, the system
-> > > reboots instead of resuming. But if S3 is done after S4, the system can
-> > > resume very well after pressing power button or using the RTC
-> > > alarm.
-> > > Note that this is an upstream regression as it can be reproduced on
-> > > linus' tree.
-> > > Yakui is investigating this issue.
+On Fri, 10 Oct 2008, Dave Chinner said:
+> On Thu, Oct 09, 2008 at 11:36:10AM +0100, Sean Purdy wrote:
+> > Hi,
 > > 
-> > We had some reports of the second suspend (S3) failure too, where the second
-> > attempt to suspend to RAM (or to resume from it) failed after a successful
-> > one.  I wonder if that's related.
-> Some suspend/resume tests are done on one Acer laptop(AMD CPU, VIA
-> chipset, 64-bit kernel).
->    The system will be rebooted when pressing power button after the box
-> enters S3 state. But if S3 is done after doing S4, the system can be
-> resumed very well after pressing power button.This issue can be
-> reproduced on the upstream kernel.
+> > Further to the discussion (and patching) of an xfs_trans_cancel
+> > issue in June, in kernel < 2.6.26
+> > 
+> > A similar issue came up on one disk of a 4 x 750GiB machine
+> > with a 2.6.24 kernel.  So I installed 2.6.27-6 and gave it another try.
+> > But I'm still seeing the same problem.  Remounting the drive each time
+> > is fine, and xfs_check shows no errors.
 > 
-> After the further test we can confirm that this is a regression. The
-> 2.6.26 kernel can work well on this box. But the 2.6.27-rc1 will fail.
-> 
-> After using the git-bisect it is confirmed that the commit
-> 736f12bff9d9e7b4e895c64f73b190c8383fc2a1 is good. 
->     >commit 736f12bff9d9e7b4e895c64f73b190c8383fc2a1
->     >Author: Glauber Costa <gcosta@redhat.com>
->     > Date:   Tue May 27 20:14:51 2008 -0700
->        >x86: don't use gdt_page openly.
-> 
-> And the commit 
-> 55f262391a2365d657a00ed68edd1a51bca66af5 is bad. 
->    >commit 55f262391a2365d657a00ed68edd1a51bca66af5
->    >Author: Yinghai Lu <yhlu.kernel@gmail.com>
->    >Date:   Wed Jun 25 17:54:23 2008 -0700
->     >x86: rename setup_32.c to setup.c
-> 
->   The patches between the above two commits are related with X86. When
-> using git-bisect between the above two commits, we will get the
-> compiling errors(For example: some files don't exist) or the kernel
-> panic. So we can't continue using git-bisect to identify which commit
-> the regression is caused by.
+> 2.6.27-6? You mean 2.6.27-rc6?
 
-If you test SMP kernels on a non-SMP box, that may be
-http://bugzilla.kernel.org/show_bug.cgi?id=11568.  In which case, please test
-the patch from http://bugzilla.kernel.org/show_bug.cgi?id=11568#c46 .
+I meant rc9 as it happens, but never mind.
+ 
+> Anyway, you need to try this patch:
+> 
+> http://oss.sgi.com/archives/xfs/2008-10/msg00105.html
+> 
+> which I posted a few days ago that fixes the latest reproducable
+> case of this shutdown that I know of.
 
-Thanks,
-Rafael
+This patch worked fine, thanks very much!  Can we get it into
+some stable version of 2.6.27?  Maybe I can put in a bug request
+for the next Ubuntu kernel.
+
+
+Sean
