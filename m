@@ -1,74 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbYJPRcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbYJPRcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbYJPRcD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbYJPRPM
+	id S1753440AbYJPRcn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbYJPRS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:15:12 -0400
-Received: from kroah.org ([198.145.64.141]:47054 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753325AbYJPRPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:15:10 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: "Andrew G. Harvey" <agh@cisco.com>, "Hans J. Koch" <hjk@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 46/46] UIO: Fix mapping of logical and virtual memory
-Date: Thu, 16 Oct 2008 10:10:47 -0700
-Message-Id: <1224177047-11859-46-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <20081016170954.GA11824@kroah.com>
-References: <20081016170954.GA11824@kroah.com>
+	Thu, 16 Oct 2008 13:18:57 -0400
+Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:35894 "EHLO
+	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757452AbYJPRS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:18:56 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAOsU90hR9dva/2dsb2JhbACBcsJIg2w
+Date: Thu, 16 Oct 2008 19:18:49 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Zvonimir Rakamaric <zrakamar@cs.ubc.ca>
+Subject: [WATCHDOG] v2.6.28-rc1 watchdog patches - part 2
+Message-ID: <20081016171849.GH30246@infomag.infomag.iguana.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew G. Harvey <agh@cisco.com>
+Hi Linus,
 
-mmap() doesn't work as expected for UIO_MEM_LOGICAL or UIO_MEM_VIRTUAL
-mappings. The offset into the memory needs to be added, otherwise
-uio_vma_fault always returns the first page only. Note that for UIO
-userspace calls mmap() with offset = N * getpagesize() to access
-mapping N. This must be compensated when calculating the offset. A
-comment was added to explain this since it is not obvious.
+Please pull from 'master' branch of
+	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+or if master.kernel.org hasn't synced up yet:
+	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
 
-Signed-off-by: Andrew G. Harvey <agh@cisco.com>
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/uio/uio.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+This will update the following files:
 
-diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-index 557e73e..5dccf05 100644
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -490,15 +490,23 @@ static int uio_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
- 	struct uio_device *idev = vma->vm_private_data;
- 	struct page *page;
-+	unsigned long offset;
+ drivers/watchdog/ib700wdt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+with these Changes:
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Wed Oct 15 08:53:06 2008 +0000
+
+    [WATCHDOG] ib700wdt.c - fix buffer_underflow bug
+    
+    This fixes Bug 11399:
+    if ibwdt_set_heartbeat(int t) is called with value 30 then
+    the check "if ((t < 0) || (t > 30))" in ibwdt_set_heartbeat
+    is not going to fail because t == 30, but in the loop, the
+    check wd_times[i] > t is never going to be true because
+    none of the wd_times are greater than the value of t (i.e. 30).
+    So we are exiting the loop with i == -1 and therefore setting
+    wd_margin to -1 which is wrong.
+    
+    Reported-by: Zvonimir Rakamaric <zrakamar@cs.ubc.ca>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+The Changes can also be looked at on:
+	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+
+For completeness, I added the overal diff below.
+
+Greetings,
+Wim.
+
+================================================================================
+diff --git a/drivers/watchdog/ib700wdt.c b/drivers/watchdog/ib700wdt.c
+index 05a2810..8782ec1 100644
+--- a/drivers/watchdog/ib700wdt.c
++++ b/drivers/watchdog/ib700wdt.c
+@@ -154,7 +154,7 @@ static int ibwdt_set_heartbeat(int t)
+ 		return -EINVAL;
  
- 	int mi = uio_find_mem_index(vma);
- 	if (mi < 0)
- 		return VM_FAULT_SIGBUS;
- 
-+	/*
-+	 * We need to subtract mi because userspace uses offset = N*PAGE_SIZE
-+	 * to use mem[N].
-+	 */
-+	offset = (vmf->pgoff - mi) << PAGE_SHIFT;
-+
- 	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
--		page = virt_to_page(idev->info->mem[mi].addr);
-+		page = virt_to_page(idev->info->mem[mi].addr + offset);
- 	else
--		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
-+		page = vmalloc_to_page((void *)idev->info->mem[mi].addr
-+							+ offset);
- 	get_page(page);
- 	vmf->page = page;
+ 	for (i = 0x0F; i > -1; i--)
+-		if (wd_times[i] > t)
++		if (wd_times[i] >= t)
+ 			break;
+ 	wd_margin = i;
  	return 0;
--- 
-1.6.0.2
-
