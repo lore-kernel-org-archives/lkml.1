@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbYJPPQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYJPPSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbYJPPQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 11:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYJPPQH
+	id S1755255AbYJPPSW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 11:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYJPPSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 11:16:07 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:51489 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753517AbYJPPQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 11:16:04 -0400
-Date: Thu, 16 Oct 2008 17:15:54 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: jekhor@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH] rtc-s3c: Fix section mismatch warnings
-Message-ID: <20081016171554.1ed8dd0f@i1501.lan.towertech.it>
-In-Reply-To: <1224169301-18018-1-git-send-email-jekhor@gmail.com>
-References: <1224169301-18018-1-git-send-email-jekhor@gmail.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 11:18:14 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:50952 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbYJPPSO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 11:18:14 -0400
+Date: Thu, 16 Oct 2008 17:18:10 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg KH <greg@kroah.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-Reply-To: <20081016002509.GA25868@kroah.com>
+Message-ID: <Pine.LNX.4.64.0810161715240.25933@anakin>
+References: <20081016002509.GA25868@kroah.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008 18:01:41 +0300
-Yauhen Kharuzhy <jekhor@gmail.com> wrote:
-
+On Wed, 15 Oct 2008, Greg KH wrote:
+> You brought this topic up a few months ago, and passed it off as
+> something we would discuss at the kernel summit.  But that never
+> happened, so I figured I'd bring it up again here.
 > 
-> Warnings was appeared when compile rtc-s3c.c because
-> platform_driver structure s3c2410_rtcdrv has wrong name.
+> So, as someone who constantly is dealing with kernel version numbers all
+> the time with the -stable trees, our current numbering scheme is a pain
+> a times.  How about this proposal instead?
+
+> Any thoughts?
 > 
-> Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
+> Let the bike-shedding begin!
 
- -ENOPATCH :)
+What about just using the git SHA1?
 
--- 
+Advantages:
+  - We're all getting older. Training our memory to remember SHA1 IDs is
+    actually good for us!
+  - Perhaps Google will finally start tracking git commits, so I can
+    feed them a git commit ID mentioned in a random email and find the
+    actual commit, without having to know to which repository it
+    belongs?
 
- Best regards,
+Gr{oetje,eeting}s,
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+						Geert
 
-  http://www.towertech.it
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
