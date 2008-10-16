@@ -1,43 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYJPTSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbYJPTSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbYJPTSV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbYJPTSL
+	id S1757558AbYJPTSr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbYJPTSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:18:11 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:48898 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756361AbYJPTSK (ORCPT
+	Thu, 16 Oct 2008 15:18:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:9377 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756241AbYJPTSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:18:10 -0400
-Date: Thu, 16 Oct 2008 20:18:04 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Hans Schou <linux@schou.dk>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SiS55x, another x86 CPU
-In-Reply-To: <Pine.LNX.4.64.0810162050150.7314@sko.w0.dk>
-Message-ID: <alpine.LFD.1.10.0810162014590.21444@ftp.linux-mips.org>
-References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org> <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org> <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk> <20081015100637.GS12131@one.firstfloor.org>
- <Pine.LNX.4.64.0810152150070.25933@anakin> <Pine.LNX.4.64.0810160027150.7873@sko.w0.dk> <Pine.LNX.4.64.0810160907330.25933@anakin> <Pine.LNX.4.64.0810162050150.7314@sko.w0.dk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 16 Oct 2008 15:18:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:references:date:in-reply-to:message-id:user-agent
+         :mime-version:content-type:from;
+        b=p4poD2UM+r8+TLz44A/ZSMXEBSjHhFmixU6Xvwu8i1gbjJlHIEdtwih2DTM8NVDVw4
+         SfPSUuZ5iKvveKd+mqus+hQuzpmq2rM8duJv49T1NvHzKEaIT3egwJ0UoEpN6qRHaiUE
+         /BywcjkFEVXVV1sU3+e1xCmnOoSw7hWdoUnFA=
+To: Theodore Tso <tytso@mit.edu>
+Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: ext2, ext3, ext4 config headlines inconsistent:
+References: <adaod1nvx98.fsf@cisco.com> <20081016151559.GB12962@mit.edu>
+Date: Thu, 16 Oct 2008 21:18:27 +0200
+In-Reply-To: <20081016151559.GB12962@mit.edu> (Theodore Tso's message of "Thu,
+	16 Oct 2008 11:15:59 -0400")
+Message-ID: <87abd45oxo.fsf@basilikum.skogtun.org>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+From: Harald Arnesen <skogtun.harald@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, Hans Schou wrote:
+Theodore Tso <tytso@mit.edu> writes:
 
-> > But, why do you send patches as attachments in the first place?
-> 
-> Ingo said I could do so when it was something to do with x86 patches.
-> Anyway, it looks like ^R in Pine did work correctly.
+> On Tue, Oct 14, 2008 at 11:37:23AM -0700, Roland Dreier wrote:
+>> Hi Ted,
+>> 
+>> While running an oldconfig with the new kernel, I got the following prompt:
+>> 
+>>     Second extended fs support (EXT2_FS) [N/m/y/?] n
+>>     Ext3 journalling file system support (EXT3_FS) [N/m/y/?] n
+>>     The Extended 4 (ext4) filesystem (EXT4_FS) [N/m/y/?] (NEW) n
+>> 
+>> the lack of parallelism in the headline prompts is a little jarring.
+>> Any interest in a patch to make this look uniform, or is it not worth
+>> it?  If you are interested, which variant do you prefer?
+>
+> I'll note that we don't have consistency across all of the entries in
+> fs/Kconfig, not just ext2/ext3/ext4.  If it were just up to me I'd
+> probably prefer:
+>
+>     Ext2 file system support (EXT2_FS) [N/m/y/?] n
+>     Ext3 file system support (EXT3_FS) [N/m/y/?] n
+>     Ext4 file system support (EXT4_FS) [N/m/y/?] (NEW) n
+>
+> ... but it might be worth looking at the other entries in fs/Kconfig
+> as well.
 
- You've got:
+Something completely different - Documentation/filesystems/ext4:
 
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+  - When comparing performance with other filesystems, remember that
+    ext3/4 by default offers higher data integrity guarantees than most.
+    So when comparing with a metadata-only journalling filesystem, such
+    as ext3, use `mount -o data=writeback'.  And you might as well use
+       ^^^^
+    `mount -o nobh' too along with it.  Making the journal larger than
+    the mke2fs default often helps performance with metadata-intensive
+    workloads.
 
-in your headers -- it may be good for poetry, but will guarantee you 
-breakage with inline patches.  There's an option to disable it.
-
-  Maciej
+Anything _but_ ext3 here?
+-- 
+Hilsen Harald.
