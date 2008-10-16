@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYJPSBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYJPSAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbYJPSBb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbYJPSA3
+	id S1756055AbYJPSAr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYJPSAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:00:29 -0400
-Received: from mx1.suse.de ([195.135.220.2]:36033 "EHLO mx1.suse.de"
+	Thu, 16 Oct 2008 14:00:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35987 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754911AbYJPSA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:00:27 -0400
-Date: Thu, 16 Oct 2008 10:56:25 -0700
+	id S1753440AbYJPSAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:00:21 -0400
+Date: Thu, 16 Oct 2008 10:55:47 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,79 +22,84 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       John Linville <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: [patch 03/14] mac80211: fix two issues in debugfs
-Message-ID: <20081016175625.GD12850@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dario Faggioli <raistlin@linux.it>,
+       Michael Trimarchi <trimarchimichael@yahoo.it>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 01/14] sched_rt.c: resch needed in rt_rq_enqueue() for the
+	root rt_rq
+Message-ID: <20081016175547.GB12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mac80211-fix-two-issues-in-debugfs.patch"
+Content-Disposition: inline; filename="sched_rt.c-resch-needed-in-rt_rq_enqueue-for-the-root-rt_rq.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us
-know.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Johannes Berg <johannes@sipsolutions.net>
 
-Not in trees above 2.6.27 as it is fixed differently in .28.
+From: Dario Faggioli <raistlin@linux.it>
 
-This fixes RHBZ 466264, whenever the master interface is
-renamed this code would BUG_ON. Also fixes a separately
-reported bug with the debugfs dir being NULL.
+commit f6121f4f8708195e88cbdf8dd8d171b226b3f858 upstream
 
-This patch is not applicable to the next kernel version
-because both these issues have been fixed, the first one
-by not having the master interface have a ieee80211_ptr
-at all, and the second one by also leaving the function
-early.
+While working on the new version of the code for SCHED_SPORADIC I
+noticed something strange in the present throttling mechanism. More
+specifically in the throttling timer handler in sched_rt.c
+(do_sched_rt_period_timer()) and in rt_rq_enqueue().
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: John Linville <linville@tuxdriver.com>
+The problem is that, when unthrottling a runqueue, rt_rq_enqueue() only
+asks for rescheduling if the runqueue has a sched_entity associated to
+it (i.e., rt_rq->rt_se != NULL).
+Now, if the runqueue is the root rq (which has a rt_se = NULL)
+rescheduling does not take place, and it is delayed to some undefined
+instant in the future.
+
+This imply some random bandwidth usage by the RT tasks under throttling.
+For instance, setting rt_runtime_us/rt_period_us = 950ms/1000ms an RT
+task will get less than 95%. In our tests we got something varying
+between 70% to 95%.
+Using smaller time values, e.g., 95ms/100ms, things are even worse, and
+I can see values also going down to 20-25%!!
+
+The tests we performed are simply running 'yes' as a SCHED_FIFO task,
+and checking the CPU usage with top, but we can investigate thoroughly
+if you think it is needed.
+
+Things go much better, for us, with the attached patch... Don't know if
+it is the best approach, but it solved the issue for us.
+
+Signed-off-by: Dario Faggioli <raistlin@linux.it>
+Signed-off-by: Michael Trimarchi <trimarchimichael@yahoo.it>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/debugfs_netdev.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ kernel/sched_rt.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/net/mac80211/debugfs_netdev.c
-+++ b/net/mac80211/debugfs_netdev.c
-@@ -537,6 +537,7 @@ static int netdev_notify(struct notifier
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -102,12 +102,12 @@ static void dequeue_rt_entity(struct sch
+ 
+ static void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
  {
- 	struct net_device *dev = ndev;
- 	struct dentry *dir;
-+	struct ieee80211_local *local;
- 	struct ieee80211_sub_if_data *sdata;
- 	char buf[10+IFNAMSIZ];
++	struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
+ 	struct sched_rt_entity *rt_se = rt_rq->rt_se;
  
-@@ -549,10 +550,19 @@ static int netdev_notify(struct notifier
- 	if (dev->ieee80211_ptr->wiphy->privid != mac80211_wiphy_privid)
- 		return 0;
- 
--	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
-+	/*
-+	 * Do not use IEEE80211_DEV_TO_SUB_IF because that
-+	 * BUG_ONs for the master netdev which we need to
-+	 * handle here.
-+	 */
-+	sdata = netdev_priv(dev);
- 
--	sprintf(buf, "netdev:%s", dev->name);
- 	dir = sdata->debugfsdir;
-+
-+	if (!dir)
-+		return 0;
-+
-+	sprintf(buf, "netdev:%s", dev->name);
- 	if (!debugfs_rename(dir->d_parent, dir, dir->d_parent, buf))
- 		printk(KERN_ERR "mac80211: debugfs: failed to rename debugfs "
- 		       "dir to %s\n", buf);
+-	if (rt_se && !on_rt_rq(rt_se) && rt_rq->rt_nr_running) {
+-		struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
+-
+-		enqueue_rt_entity(rt_se);
++	if (rt_rq->rt_nr_running) {
++		if (rt_se && !on_rt_rq(rt_se))
++			enqueue_rt_entity(rt_se);
+ 		if (rt_rq->highest_prio < curr->prio)
+ 			resched_task(curr);
+ 	}
 
 -- 
