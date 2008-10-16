@@ -1,109 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbYJPCz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbYJPC7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755063AbYJPCz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 22:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYJPCzM
+	id S1754862AbYJPC7O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 22:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYJPC66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 22:55:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38357 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753424AbYJPCzL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 22:55:11 -0400
-Date: Wed, 15 Oct 2008 19:54:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, cmm@us.ibm.com
-Subject: Re: [PATCH] vmscan: set try_to_release_page's gfp_mask to 0
-Message-Id: <20081015195458.cc203dd5.akpm@linux-foundation.org>
-In-Reply-To: <6.0.0.20.2.20081016112735.04a68e70@172.19.0.2>
-References: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
-	<20080812202127.b88e8250.akpm@linux-foundation.org>
-	<6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
-	<20081015153641.afcc94e5.akpm@linux-foundation.org>
-	<6.0.0.20.2.20081016112735.04a68e70@172.19.0.2>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 15 Oct 2008 22:58:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39451 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752893AbYJPC66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 22:58:58 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: prasad@linux.vnet.ibm.com
+X-Fcc: ~/Mail/linus
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
+       mingo@elte.hu, jason.wessel@windriver.com, avi@qumranet.com,
+       richardj_moore@uk.ibm.com
+Subject: Re: [RFC Patch 2/9] x86 architecture implementation of Hardware
+	Breakpoint interfaces
+In-Reply-To: K.Prasad's message of  Thursday, 9 October 2008 00:53:48 +0530 <20081008192348.GB4989@in.ibm.com>
+References: <20081008192044.GA4510@in.ibm.com>
+	<20081008192348.GB4989@in.ibm.com>
+X-Shopping-List: (1) Unreliable trash
+   (2) Interlocking scary ladder auditions
+   (3) Sulfurous inorganic flossbag doodads
+   (4) Golden doodads
+   (5) Studious basket Garden Weasels
+Message-Id: <20081016025728.3F92B1544CB@magilla.localdomain>
+Date: Wed, 15 Oct 2008 19:57:28 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008 11:44:39 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
+I'm leaving aside the single-step stuff, which I just posted about.
 
-> Hi Andrew.
-> 
-> >Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
-> >
-> >> At 12:21 08/08/13, Andrew Morton wrote:
-> >> >On Wed, 13 Aug 2008 11:21:16 +0900 Hisashi Hifumi 
-> >> ><hifumi.hisashi@oss.ntt.co.jp> wrote:
-> 
-> >> >> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> >> >> 
-> >> >> diff -Nrup linux-2.6.27-rc2.org/mm/vmscan.c 
-> >linux-2.6.27-rc2.vmscan/mm/vmscan.c
-> >> >> --- linux-2.6.27-rc2.org/mm/vmscan.c	2008-08-11 14:33:24.000000000 +0900
-> >> >> +++ linux-2.6.27-rc2.vmscan/mm/vmscan.c	2008-08-12 18:57:05.000000000 +0900
-> >> >> @@ -614,7 +614,7 @@ static unsigned long shrink_page_list(st
-> >> >>  		* Otherwise, leave the page on the LRU so it is swappable.
-> >> >>  		*/
-> >> >>  		if (PagePrivate(page)) {
-> >> >> -			if (!try_to_release_page(page, sc->gfp_mask))
-> >> >> +			if (!try_to_release_page(page, 0))
-> >> >>  				goto activate_locked;
-> >> >>  			if (!mapping && page_count(page) == 1) {
-> >> >>  				unlock_page(page);
-> >> >
-> >> >I think the change makes sense.
-> >> >
-> >> >Has this change been shown to improve any workloads?  If so, please
-> >> >provide full information for the changelog.  If not, please mention
-> >> >this and explain why benefits were not demonstrable.  This information
-> >> >should _always_ be present in a "performance" patch's changelog!
-> >> 
-> >> Sorry, I do not have performance number yet. I'll try this.
-> >> 
-> >
-> 
-> Unfortunately, I did not succeed to get good performance number that
-> prove this patch had some benefit.
+I'm also concerned about getting RF right here.  We need to make sure that
+every place that warps ->ip away somewhere also clears RF.  In case of
+instruction breakpoints in user space, we might also want to mask RF from
+being seen/changed via ptrace/user_regset (a bit like is done for TF).
 
-OK, thanks, I dropped it.
+I'm a little inclined to do a first x86 version without instruction
+breakpoint support and hash out the rest of the code for a bit.  Then add
+instruction breakpoints in a later patch.  (Not that it has to be a lot
+later or anything.  Just to table the detailed review of RF fiddling until
+after most of the meaty stuff is pretty baked.)
 
-> >This patch remains in a stalled state...
-> >
-> >And then there's this:
-> >
-> 
-> >: 
-> >: Really, I think what this patch tells us is that 3f31fddf ("jbd: fix
-> >: race between free buffer and commit transaction") was an unpleasant
-> >: hack which had undesirable and unexpected side-effects.  I think - that
-> >: depends upon your as-yet-undisclosed testing results?
-> >: 
-> >: Perhaps we should revert 3f31fddf and have another think about how to
-> >: fix the direct-io -EIO problem.  One option would be to hold our noses
-> >: and add a new gfp_t flag for this specific purpose?
-> >:
-> 
-> direct-io -EIO problem was already fixed by following patch.
-> 
-> commit 6ccfa806a9cfbbf1cd43d5b6aa47ef2c0eb518fd
-> Author: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> Date:   Tue Sep 2 14:35:40 2008 -0700
-> 
->     VFS: fix dio write returning EIO when try_to_release_page fails
-> 
-> Dio falls back to buffered write when dio write gets EIO due to failure of try_to_release_page
-> by above patch. So I think just reverting the patch 3f31fddf ("jbd: fix race between 
-> free buffer and commit transaction") is good approach.
 
-Fair enough.  Could I ask that you (or someone) send a suitable patch
-sometime?
-
-I could generate the patch, but I'd never get around to testing it. 
-Too busy fixing rejects and compile errors :(
-
+Thanks,
+Roland
