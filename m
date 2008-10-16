@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYJPA2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYJPA3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYJPA2g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 20:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYJPA23
+	id S1756028AbYJPA3m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 20:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbYJPA3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 20:28:29 -0400
-Received: from kroah.org ([198.145.64.141]:37338 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752269AbYJPA22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 20:28:28 -0400
-Date: Wed, 15 Oct 2008 17:25:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC] Kernel version numbering scheme change
-Message-ID: <20081016002509.GA25868@kroah.com>
+	Wed, 15 Oct 2008 20:29:35 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51266 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754185AbYJPA3e (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 20:29:34 -0400
+Date: Thu, 16 Oct 2008 11:29:26 +1100
+To: stable@kernel.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: [PATCH] XFS fix remount rw with unrecognized options
+User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081016002926.D912558FA22B@chook.melbourne.sgi.com>
+From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Resending as I mangled sending the mail from home last time. Sorry.
 
-You brought this topic up a few months ago, and passed it off as
-something we would discuss at the kernel summit.  But that never
-happened, so I figured I'd bring it up again here.
+Please include the following patch for 2.6.27.1 stable release as
+suggested by Christoph Hellwig and Eric Sandeen.
+It fixes a regression in the recent remount recoding
+where remounting say from ro to rw allows the xfs flags to
+be out of sync with the vfs flags, resulting
+in failures for some programs such as touch (which end up calling xfs_setattr).
+The fix is a very minor and clear.
 
-So, as someone who constantly is dealing with kernel version numbers all
-the time with the -stable trees, our current numbering scheme is a pain
-a times.  How about this proposal instead?
+Thanks,
+Tim.
 
-We number the kernel based on the year, and the numbers of releases we
-have done this year:
-	YEAR.NUMBER.MINOR_RELEASE
+Date: Sun, 12 Oct 2008 14:30:44 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: xfs@oss.sgi.com
+Subject: [PATCH] fix remount rw with unrecognized options
 
-For example, the first release in 2009 would be called:
-	2009.0.0
-The second:
-	2009.1.0
+When we skip unrecognized options in xfs_fs_remount we should just break
+out of the switch and not return because otherwise we may skip clearing
+the xfs-internal read-only flag.  This will only show up on some
+operations like touch because most read-only checks are done by the VFS
+which thinks this filesystem is r/w.  Eventually we should replace the
+XFS read-only flag with a helper that always checks the VFS flag to make
+sure they can never get out of sync.
 
-If we want to be a bit more "non-zero-counting" friendly: we can start
-at "1" for the number:
-	2009.1.0 for the first release
-	2009.2.0 for the second.
+Bug reported and fix verified by Marcel Beister on #xfs.
+Bug fix verified by updated xfstests/189.
 
-Then the stable releases can increment the minor number:
-	2009.1.1 for the first stable release
-	2009.1.2 for the second.
-	and so on.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Eric Sandeen <sandeen@sandeen.net>
+Signed-off-by: Timothy Shimmin <tes@sgi.com>
 
-Benefits of this is it more accuratly represents to people just how old
-the kernel they are currently running is (2.6.9 would be have been
-2004.9.0 on this naming scheme.)
-
-Yes, we can handle the major/minor macros in the kernel to provide a
-compatible number so that automated scripts will not break, that's not a
-big deal.
-
-Any thoughts?
-
-Let the bike-shedding begin!
-
-thanks,
-
-greg k-h
+Index: mainline/fs/xfs/linux-2.6/xfs_super.c
+===================================================================
+--- mainline.orig/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:26.542652847 +1100
++++ mainline/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:45.376217172 +1100
+@@ -1323,7 +1323,7 @@ xfs_fs_remount(
+ 	"XFS: mount option \"%s\" not supported for remount\n", p);
+ 			return -EINVAL;
+ #else
+-			return 0;
++			break;
+ #endif
+ 		}
+ 	}
