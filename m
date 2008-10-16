@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbYJPHh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYJPHjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbYJPHh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 03:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYJPHhJ
+	id S1755479AbYJPHjI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 03:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYJPHit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 03:37:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46579
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751438AbYJPHhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 03:37:07 -0400
-Date: Thu, 16 Oct 2008 00:36:44 -0700 (PDT)
-Message-Id: <20081016.003644.74134312.davem@davemloft.net>
-To: geert@linux-m68k.org
-Cc: akpm@linux-foundation.org, dan.j.williams@intel.com, tiwai@suse.de,
-       linux-ext4@vger.kernel.org, netdev@vger.kernel.org,
-       linux-ide@vger.kernel.org, bzolnier@gmail.com, marek.vasut@gmail.com,
-       dwmw2@infradead.org, mark.fasheh@oracle.com, ralf@linux-mips.org,
-       mchehab@infradead.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+	Thu, 16 Oct 2008 03:38:49 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60775 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752501AbYJPHis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 03:38:48 -0400
+Date: Thu, 16 Oct 2008 10:38:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dan Williams <dan.j.williams@intel.com>, linux-ext4@vger.kernel.org,
+       netdev@vger.kernel.org, linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, marek.vasut@gmail.com,
+       David Woodhouse <dwmw2@infradead.org>,
+       Mark Fasheh <mark.fasheh@oracle.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
 Subject: Re: powerpc allmodconfig
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0810160930300.25933@anakin>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org>
-	<20081015.220247.262683261.davem@davemloft.net>
-	<Pine.LNX.4.64.0810160930300.25933@anakin>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Message-ID: <20081016073836.GB23630@cs181140183.pp.htv.fi>
+References: <20081015213337.a99a9595.akpm@linux-foundation.org> <s5h1vyhrsja.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <s5h1vyhrsja.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 16 Oct 2008 09:31:29 +0200 (CEST)
-
-> On Wed, 15 Oct 2008, David Miller wrote:
-> > > kernel/resource.c: In function '__reserve_region_with_split':
-> > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
-> > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
-> > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 6 has type 'resource_size_t'
-> > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'resource_size_t'
+On Thu, Oct 16, 2008 at 07:57:29AM +0200, Takashi Iwai wrote:
+> At Wed, 15 Oct 2008 21:33:37 -0700,
+> Andrew Morton wrote:
 > > 
-> > Known issue, Ben wants to add a new variant of %pX in order to print resources so that
-> > resource_size_t vs. unsigned long stuff doesn't matter like this any more.
+> > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
+> > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
 > 
-> Will still give a warning, as resource_size_t is not a pointer.
+> These are definitions of deprecated interfaces.
+> We can remove it in 2.6.29.  If we don't want to be conservative, it
+> can be removed in 2.6.28, too.
+>...
 
-The idea is to pass in a pointer to the resource struct,
-and the %pX variant specified says what part to print.
+Since it's an in-kernel API there's no reason to keep it once there are 
+no users left.
+
+But currently sound/soc/at32/playpaq_wm8510.c still seems to use it.
+
+> thanks,
+> 
+> Takashi
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
