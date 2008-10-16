@@ -1,336 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYJPSQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYJPSRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbYJPSQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756286AbYJPSOe
+	id S1756985AbYJPSRv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757952AbYJPSQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:14:34 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50396 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755862AbYJPSOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:14:32 -0400
-Subject: [PATCH 9/9] Restore open file descriprtors
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm <linux-mm@kvack.org>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Thu, 16 Oct 2008 11:14:27 -0700
-References: <20081016181414.934C4FCC@kernel>
-In-Reply-To: <20081016181414.934C4FCC@kernel>
-Message-Id: <20081016181427.1E5C5472@kernel>
+	Thu, 16 Oct 2008 14:16:24 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:63282 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757925AbYJPSQX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:16:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=ZKR5NDPRmkbTmbEdQCx9Qltr8FbTW+i39Z/g8urH7Iie8dbmqHfpO1BFks4Jod/FeK
+         Of8T7pS23T/l3fYjkQdfKPEmpGI+FOfKb+0Dp0vMl7Hw4fIFT0U+IEbbnGSccFWeqc37
+         wETYfuVahnXRMJ//4RzWPK7fz/EgLywtbGlv4=
+Date: Thu, 16 Oct 2008 14:14:52 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+Message-ID: <20081016181452.GA29739@yoda.jdub.homelinux.org>
+References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080906120346.GA30964@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 06, 2008 at 02:03:47PM +0200, Ingo Molnar wrote:
+>
+>* Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+>> I spent the day chasing a bug that would hang PPC on boot up when 
+>> ftrace is configured in. I found that it was simply a stupid bug I did 
+>> to handle the non MCOUNT_RECORD case. Since I was testing only on x86, 
+>> and the MCOUNT_RECORD is automatically set for dynamic ftrace if it is 
+>> available, I did not test the case where MCOUNT_RECORD was not set.
+>> 
+>> I have not finished porting MCOUNT_RECORD to PPC, but have found that 
+>> it has caused some issues for archs that do not support it yet.
+>> 
+>> This patch series handles these cases.
+>
+>applied to tip/tracing/ftrace, thanks Steve.
 
-From: Oren Laadan <orenl@cs.columbia.edu>
+Are these two merged yet?  I just spent the better part of the morning
+trying to figure out why various Fedora kernels based on 2.6.27-rcX and
+2.6.27 final hung on my G5 and finally got one booting with FTRACE
+disabled.
 
-Restore open file descriptors: for each FD read 'struct cr_hdr_fd_ent'
-and lookup objref in the hash table; if not found (first occurence), read
-in 'struct cr_hdr_fd_data', create a new FD and register in the hash.
-Otherwise attach the file pointer from the hash as an FD.
-
-This patch only handles basic FDs - regular files, directories and also
-symbolic links.
-
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
-
- linux-2.6.git-dave/checkpoint/Makefile        |    2 
- linux-2.6.git-dave/checkpoint/restart.c       |    4 
- linux-2.6.git-dave/checkpoint/rstr_file.c     |  246 ++++++++++++++++++++++++++
- linux-2.6.git-dave/include/linux/checkpoint.h |    1 
- 4 files changed, 252 insertions(+), 1 deletion(-)
-
-diff -puN checkpoint/Makefile~v6_PATCH_9_9_Restore_open_file_descriprtors checkpoint/Makefile
---- linux-2.6.git/checkpoint/Makefile~v6_PATCH_9_9_Restore_open_file_descriprtors	2008-10-16 10:53:39.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/Makefile	2008-10-16 10:53:39.000000000 -0700
-@@ -3,4 +3,4 @@
- #
- 
- obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
--		ckpt_mem.o rstr_mem.o ckpt_file.o
-+		ckpt_mem.o rstr_mem.o ckpt_file.o rstr_file.o
-diff -puN checkpoint/restart.c~v6_PATCH_9_9_Restore_open_file_descriprtors checkpoint/restart.c
---- linux-2.6.git/checkpoint/restart.c~v6_PATCH_9_9_Restore_open_file_descriprtors	2008-10-16 10:53:39.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/restart.c	2008-10-16 10:53:39.000000000 -0700
-@@ -219,6 +219,10 @@ static int cr_read_task(struct cr_ctx *c
- 	cr_debug("memory: ret %d\n", ret);
- 	if (ret < 0)
- 		goto out;
-+	ret = cr_read_files(ctx);
-+	cr_debug("files: ret %d\n", ret);
-+	if (ret < 0)
-+		goto out;
- 	ret = cr_read_thread(ctx);
- 	cr_debug("thread: ret %d\n", ret);
- 	if (ret < 0)
-diff -puN /dev/null checkpoint/rstr_file.c
---- /dev/null	2008-09-02 09:40:19.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/rstr_file.c	2008-10-16 10:53:39.000000000 -0700
-@@ -0,0 +1,246 @@
-+/*
-+ *  Checkpoint file descriptors
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/file.h>
-+#include <linux/fdtable.h>
-+#include <linux/fsnotify.h>
-+#include <linux/syscalls.h>
-+#include <linux/checkpoint.h>
-+#include <linux/checkpoint_hdr.h>
-+
-+#include "checkpoint_file.h"
-+
-+static int cr_close_all_fds(struct files_struct *files)
-+{
-+	int *fdtable;
-+	int nfds;
-+
-+	nfds = cr_scan_fds(files, &fdtable);
-+	if (nfds < 0)
-+		return nfds;
-+	while (nfds--)
-+		sys_close(fdtable[nfds]);
-+	kfree(fdtable);
-+	return 0;
-+}
-+
-+/**
-+ * cr_attach_file - attach a lonely file ptr to a file descriptor
-+ * @file: lonely file pointer
-+ */
-+static int cr_attach_file(struct file *file)
-+{
-+	int fd = get_unused_fd_flags(0);
-+
-+	if (fd >= 0) {
-+		fsnotify_open(file->f_path.dentry);
-+		fd_install(fd, file);
-+	}
-+	return fd;
-+}
-+
-+/**
-+ * cr_attach_get_file - attach (and get) lonely file ptr to a file descriptor
-+ * @file: lonely file pointer
-+ */
-+static int cr_attach_get_file(struct file *file)
-+{
-+	int fd = get_unused_fd_flags(0);
-+
-+	if (fd >= 0) {
-+		fsnotify_open(file->f_path.dentry);
-+		fd_install(fd, file);
-+		get_file(file);
-+	}
-+	return fd;
-+}
-+
-+#define CR_SETFL_MASK (O_APPEND|O_NONBLOCK|O_NDELAY|FASYNC|O_DIRECT|O_NOATIME)
-+
-+/* cr_read_fd_data - restore the state of a given file pointer */
-+static int
-+cr_read_fd_data(struct cr_ctx *ctx, struct files_struct *files, int parent)
-+{
-+	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int rparent, ret;
-+	int fd = 0;	/* pacify gcc warning */
-+
-+	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_DATA);
-+	cr_debug("rparent %d parent %d flags %#x mode %#x how %d\n",
-+		 rparent, parent, hh->f_flags, hh->f_mode, hh->fd_type);
-+	if (rparent < 0) {
-+		ret = parent;
-+		goto out;
-+	}
-+
-+	ret = -EINVAL;
-+
-+	if (rparent != parent)
-+		goto out;
-+
-+	/* FIX: more sanity checks on f_flags, f_mode etc */
-+
-+	switch (hh->fd_type) {
-+	case CR_FD_FILE:
-+	case CR_FD_DIR:
-+	case CR_FD_LINK:
-+		file = cr_read_open_fname(ctx, hh->f_flags, hh->f_mode);
-+		break;
-+	default:
-+		goto out;
-+	}
-+
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		goto out;
-+	}
-+
-+	/* FIX: need to restore uid, gid, owner etc */
-+
-+	fd = cr_attach_file(file);	/* no need to cleanup 'file' below */
-+	if (fd < 0) {
-+		filp_close(file, NULL);
-+		ret = fd;
-+		goto out;
-+	}
-+
-+	/* register new <objref, file> tuple in hash table */
-+	ret = cr_obj_add_ref(ctx, (void *) file, parent, CR_OBJ_FILE, 0);
-+	if (ret < 0)
-+		goto out;
-+	ret = sys_fcntl(fd, F_SETFL, hh->f_flags & CR_SETFL_MASK);
-+	if (ret < 0)
-+		goto out;
-+	ret = vfs_llseek(file, hh->f_pos, SEEK_SET);
-+	if (ret == -ESPIPE)	/* ignore error on non-seekable files */
-+		ret = 0;
-+
-+	ret = 0;
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret < 0 ? ret : fd;
-+}
-+
-+/**
-+ * cr_read_fd_ent - restore the state of a given file descriptor
-+ * @ctx: checkpoint context
-+ * @files: files_struct pointer
-+ * @parent: parent objref
-+ *
-+ * Restores the state of a file descriptor; looks up the objref (in the
-+ * header) in the hash table, and if found picks the matching file and
-+ * use it; otherwise calls cr_read_fd_data to restore the file too.
-+ */
-+static int
-+cr_read_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int parent)
-+{
-+	struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int newfd, rparent, ret;
-+
-+	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_ENT);
-+	cr_debug("rparent %d parent %d ref %d fd %d c.o.e %d\n",
-+		 rparent, parent, hh->objref, hh->fd, hh->close_on_exec);
-+	if (rparent < 0) {
-+		ret = rparent;
-+		goto out;
-+	}
-+
-+	ret = -EINVAL;
-+
-+	if (rparent != parent)
-+		goto out;
-+	if (hh->objref <= 0)
-+		goto out;
-+
-+	file = cr_obj_get_by_ref(ctx, hh->objref, CR_OBJ_FILE);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		goto out;
-+	}
-+
-+	if (file) {
-+		/* reuse file descriptor found in the hash table */
-+		newfd = cr_attach_get_file(file);
-+	} else {
-+		/* create new file pointer (and register in hash table) */
-+		newfd = cr_read_fd_data(ctx, files, hh->objref);
-+	}
-+
-+	if (newfd < 0) {
-+		ret = newfd;
-+		goto out;
-+	}
-+
-+	cr_debug("newfd got %d wanted %d\n", newfd, hh->fd);
-+
-+	/* if newfd isn't desired fd then reposition it */
-+	if (newfd != hh->fd) {
-+		ret = sys_dup2(newfd, hh->fd);
-+		if (ret < 0)
-+			goto out;
-+		sys_close(newfd);
-+	}
-+
-+	if (hh->close_on_exec)
-+		set_close_on_exec(hh->fd, 1);
-+
-+	ret = 0;
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret;
-+}
-+
-+int cr_read_files(struct cr_ctx *ctx)
-+{
-+	struct cr_hdr_files *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct files_struct *files = current->files;
-+	int i, parent, ret;
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FILES);
-+	if (parent < 0) {
-+		ret = parent;
-+		goto out;
-+	}
-+
-+	ret = -EINVAL;
-+#if 0	/* activate when containers are used */
-+	if (parent != task_pid_vnr(current))
-+		goto out;
-+#endif
-+	cr_debug("objref %d nfds %d\n", hh->objref, hh->nfds);
-+	if (hh->objref < 0 || hh->nfds < 0)
-+		goto out;
-+
-+	if (hh->nfds > sysctl_nr_open) {
-+		ret = -EMFILE;
-+		goto out;
-+	}
-+
-+	/* point of no return -- close all file descriptors */
-+	ret = cr_close_all_fds(files);
-+	if (ret < 0)
-+		goto out;
-+
-+	for (i = 0; i < hh->nfds; i++) {
-+		ret = cr_read_fd_ent(ctx, files, hh->objref);
-+		if (ret < 0)
-+			break;
-+	}
-+
-+	ret = 0;
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret;
-+}
-diff -puN include/linux/checkpoint.h~v6_PATCH_9_9_Restore_open_file_descriprtors include/linux/checkpoint.h
---- linux-2.6.git/include/linux/checkpoint.h~v6_PATCH_9_9_Restore_open_file_descriprtors	2008-10-16 10:53:39.000000000 -0700
-+++ linux-2.6.git-dave/include/linux/checkpoint.h	2008-10-16 10:53:39.000000000 -0700
-@@ -85,6 +85,7 @@ extern int cr_write_files(struct cr_ctx 
- 
- extern int do_restart(struct cr_ctx *ctx);
- extern int cr_read_mm(struct cr_ctx *ctx);
-+extern int cr_read_files(struct cr_ctx *ctx);
- 
- /* there are from fs/read_write.c, not exported otherwise in a header */
- extern loff_t file_pos_read(struct file *file);
-_
+josh
