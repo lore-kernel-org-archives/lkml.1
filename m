@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbYJPWef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYJPWgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757692AbYJPWef (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYJPWe1
+	id S1757363AbYJPWgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYJPWgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:34:27 -0400
-Received: from mail-in-02.arcor-online.net ([151.189.21.42]:49318 "EHLO
-	mail-in-02.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754964AbYJPWe0 (ORCPT
+	Thu, 16 Oct 2008 18:36:42 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:6192 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753102AbYJPWgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:34:26 -0400
-Date: Fri, 17 Oct 2008 00:45:22 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Chris Friesen <cfriesen@nortel.com>
-cc: Bodo Eggert <7eggert@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-kernel@vger.kernel.org, jeffschroeder@computer.org
-Subject: Re: [PATCH] use tmpfs for rootfs v2
-In-Reply-To: <48F7A971.3040500@nortel.com>
-Message-ID: <alpine.LSU.0.999.0810170025090.14480@be1.lrz>
-References: <alpine.LSU.0.999.0810161400160.5456@be1.lrz>
- <Pine.LNX.4.64.0810161507130.25933@anakin> <alpine.LSU.0.999.0810161936590.5051@be1.lrz>
- <48F7A971.3040500@nortel.com>
+	Thu, 16 Oct 2008 18:36:41 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAJJe90h5LF1j/2dsb2JhbADEJINs
+X-IronPort-AV: E=Sophos;i="4.33,426,1220193000"; 
+   d="scan'208";a="232258871"
+Date: Fri, 17 Oct 2008 09:36:37 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Jianjun Kong <jianjun@zeuux.org>
+Cc: Tim Shimmin <tes@sgi.com>, stable@kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH] XFS fix remount rw with unrecognized options
+Message-ID: <20081016223637.GB31761@disturbed>
+Mail-Followup-To: Jianjun Kong <jianjun@zeuux.org>,
+	Tim Shimmin <tes@sgi.com>, stable@kernel.org,
+	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+References: <20081016002926.D912558FA22B@chook.melbourne.sgi.com> <20081016134112.GA8773@ubuntu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081016134112.GA8773@ubuntu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, Chris Friesen wrote:
-> Bodo Eggert wrote:
-
-> > Having tmpfs as the root filesystem allows you to get rid of the now unused
-> > ramfs and free some kernel memory. On my system, that's about 5198 bytes
-> > compared to having a ramfs root.
+On Thu, Oct 16, 2008 at 09:41:12PM +0800, Jianjun Kong wrote:
 > 
-> If you're not using swap, I assume the memory usage of tmpfs and ramfs would
-> be identical?
+> And the code above "return 0" can not be executed, so delete them.
+> __________________________________________
+> #if 0
+>                         printk(KERN_INFO
+>         "XFS: mount option \"%s\" not supported for remount\n", p);
+>                         return -EINVAL;
+> #else                                                                                                            
+>                         return 0;
+> -----------------------------------------
 
-I'd rather think having ACL, security labels etc. pp. will make tmpfs use 
-more memory per file or directory. If you have no use for tmpfs' features,
-you should use ramfs. But if you do want to use tmpfs in your system,
-my guess is you'll be most likely be better off using no ramfs.
+That ifdef was added to stub out the behaviour we *actually want*
+remount to have when it encounters an invalid remount option.
+The reason for leaving it is in the next release we should have all
+the other problems we discovered by doing this fixed, so that
+code will be re-enabled. Hence the temporary #if 0 around it.
+
+So at this point, don't remove it.
+
+Cheers,
+
+Dave.
 -- 
-Good programming is 99% sweat and 1% coffee.
+Dave Chinner
+david@fromorbit.com
