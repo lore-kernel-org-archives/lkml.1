@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbYJPRVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbYJPRWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbYJPRVm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbYJPRO0
+	id S1758255AbYJPRWY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbYJPRO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:26 -0400
-Received: from kroah.org ([198.145.64.141]:46961 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:29 -0400
+Received: from kroah.org ([198.145.64.141]:46968 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755528AbYJPROY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:24 -0400
+	id S1755310AbYJPRO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:26 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 17/46] usb gadget: link fixes for gadget zero
-Date: Thu, 16 Oct 2008 10:10:18 -0700
-Message-Id: <1224177047-11859-17-git-send-email-gregkh@suse.de>
+Subject: [PATCH 19/46] usb gadget: link fixes for printer gadget
+Date: Thu, 16 Oct 2008 10:10:20 -0700
+Message-Id: <1224177047-11859-19-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -25,145 +25,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <dbrownell@users.sourceforge.net>
 
-Change how the Gadget Zero driver builds:  don't use
-separate compilation, since it works poorly when key
-parts are library code (with init sections etc).
-Instead be as close as we can to "gcc --combine ...".
+Change how the printer gadget driver builds:  don't use
+separate compilation, since it works poorly when key parts
+are library code (with init sections etc).  Instead be as
+close as we can to "gcc --combine ...".
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/gadget/Makefile     |    2 +-
- drivers/usb/gadget/f_loopback.c |   34 ++++++++++++++++++----------------
- drivers/usb/gadget/zero.c       |   17 +++++++++++++++++
- 3 files changed, 36 insertions(+), 17 deletions(-)
+ drivers/usb/gadget/Makefile  |    3 +--
+ drivers/usb/gadget/printer.c |   14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/usb/gadget/Makefile b/drivers/usb/gadget/Makefile
-index 853dd02..55f5891 100644
+index c47204f..99956b7 100644
 --- a/drivers/usb/gadget/Makefile
 +++ b/drivers/usb/gadget/Makefile
-@@ -24,7 +24,7 @@ obj-$(CONFIG_USB_M66592)	+= m66592-udc.o
- #
- C_UTILS =	composite.o usbstring.o config.o epautoconf.o
+@@ -31,8 +31,7 @@ g_midi-objs			:= gmidi.o
+ gadgetfs-objs			:= inode.o
+ g_file_storage-objs		:= file_storage.o usbstring.o config.o \
+ 					epautoconf.o
+-g_printer-objs			:= printer.o usbstring.o config.o \
+-					epautoconf.o
++g_printer-objs			:= printer.o
+ g_cdc-objs			:= cdc2.o u_ether.o f_ecm.o \
+ 					u_serial.o f_acm.o $(C_UTILS)
  
--g_zero-objs			:= zero.o f_sourcesink.o f_loopback.o $(C_UTILS)
-+g_zero-objs			:= zero.o
- g_ether-objs			:= ether.o u_ether.o f_subset.o f_ecm.o $(C_UTILS)
- g_serial-objs			:= serial.o
- g_midi-objs			:= gmidi.o usbstring.o config.o epautoconf.o
-diff --git a/drivers/usb/gadget/f_loopback.c b/drivers/usb/gadget/f_loopback.c
-index eda4cde..87dde01 100644
---- a/drivers/usb/gadget/f_loopback.c
-+++ b/drivers/usb/gadget/f_loopback.c
-@@ -70,7 +70,7 @@ static struct usb_interface_descriptor loopback_intf = {
+diff --git a/drivers/usb/gadget/printer.c b/drivers/usb/gadget/printer.c
+index 7a8d4a1..2b3b9e1 100644
+--- a/drivers/usb/gadget/printer.c
++++ b/drivers/usb/gadget/printer.c
+@@ -53,6 +53,20 @@
  
- /* full speed support: */
+ #include "gadget_chips.h"
  
--static struct usb_endpoint_descriptor fs_source_desc = {
-+static struct usb_endpoint_descriptor fs_loop_source_desc = {
- 	.bLength =		USB_DT_ENDPOINT_SIZE,
- 	.bDescriptorType =	USB_DT_ENDPOINT,
- 
-@@ -78,7 +78,7 @@ static struct usb_endpoint_descriptor fs_source_desc = {
- 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
- };
- 
--static struct usb_endpoint_descriptor fs_sink_desc = {
-+static struct usb_endpoint_descriptor fs_loop_sink_desc = {
- 	.bLength =		USB_DT_ENDPOINT_SIZE,
- 	.bDescriptorType =	USB_DT_ENDPOINT,
- 
-@@ -88,14 +88,14 @@ static struct usb_endpoint_descriptor fs_sink_desc = {
- 
- static struct usb_descriptor_header *fs_loopback_descs[] = {
- 	(struct usb_descriptor_header *) &loopback_intf,
--	(struct usb_descriptor_header *) &fs_sink_desc,
--	(struct usb_descriptor_header *) &fs_source_desc,
-+	(struct usb_descriptor_header *) &fs_loop_sink_desc,
-+	(struct usb_descriptor_header *) &fs_loop_source_desc,
- 	NULL,
- };
- 
- /* high speed support: */
- 
--static struct usb_endpoint_descriptor hs_source_desc = {
-+static struct usb_endpoint_descriptor hs_loop_source_desc = {
- 	.bLength =		USB_DT_ENDPOINT_SIZE,
- 	.bDescriptorType =	USB_DT_ENDPOINT,
- 
-@@ -103,7 +103,7 @@ static struct usb_endpoint_descriptor hs_source_desc = {
- 	.wMaxPacketSize =	__constant_cpu_to_le16(512),
- };
- 
--static struct usb_endpoint_descriptor hs_sink_desc = {
-+static struct usb_endpoint_descriptor hs_loop_sink_desc = {
- 	.bLength =		USB_DT_ENDPOINT_SIZE,
- 	.bDescriptorType =	USB_DT_ENDPOINT,
- 
-@@ -113,8 +113,8 @@ static struct usb_endpoint_descriptor hs_sink_desc = {
- 
- static struct usb_descriptor_header *hs_loopback_descs[] = {
- 	(struct usb_descriptor_header *) &loopback_intf,
--	(struct usb_descriptor_header *) &hs_source_desc,
--	(struct usb_descriptor_header *) &hs_sink_desc,
-+	(struct usb_descriptor_header *) &hs_loop_source_desc,
-+	(struct usb_descriptor_header *) &hs_loop_sink_desc,
- 	NULL,
- };
- 
-@@ -152,7 +152,7 @@ loopback_bind(struct usb_configuration *c, struct usb_function *f)
- 
- 	/* allocate endpoints */
- 
--	loop->in_ep = usb_ep_autoconfig(cdev->gadget, &fs_source_desc);
-+	loop->in_ep = usb_ep_autoconfig(cdev->gadget, &fs_loop_source_desc);
- 	if (!loop->in_ep) {
- autoconf_fail:
- 		ERROR(cdev, "%s: can't autoconfigure on %s\n",
-@@ -161,17 +161,17 @@ autoconf_fail:
- 	}
- 	loop->in_ep->driver_data = cdev;	/* claim */
- 
--	loop->out_ep = usb_ep_autoconfig(cdev->gadget, &fs_sink_desc);
-+	loop->out_ep = usb_ep_autoconfig(cdev->gadget, &fs_loop_sink_desc);
- 	if (!loop->out_ep)
- 		goto autoconf_fail;
- 	loop->out_ep->driver_data = cdev;	/* claim */
- 
- 	/* support high speed hardware */
- 	if (gadget_is_dualspeed(c->cdev->gadget)) {
--		hs_source_desc.bEndpointAddress =
--				fs_source_desc.bEndpointAddress;
--		hs_sink_desc.bEndpointAddress =
--				fs_sink_desc.bEndpointAddress;
-+		hs_loop_source_desc.bEndpointAddress =
-+				fs_loop_source_desc.bEndpointAddress;
-+		hs_loop_sink_desc.bEndpointAddress =
-+				fs_loop_sink_desc.bEndpointAddress;
- 		f->hs_descriptors = hs_loopback_descs;
- 	}
- 
-@@ -255,8 +255,10 @@ enable_loopback(struct usb_composite_dev *cdev, struct f_loopback *loop)
- 	struct usb_request			*req;
- 	unsigned				i;
- 
--	src = ep_choose(cdev->gadget, &hs_source_desc, &fs_source_desc);
--	sink = ep_choose(cdev->gadget, &hs_sink_desc, &fs_sink_desc);
-+	src = ep_choose(cdev->gadget,
-+			&hs_loop_source_desc, &fs_loop_source_desc);
-+	sink = ep_choose(cdev->gadget,
-+			&hs_loop_sink_desc, &fs_loop_sink_desc);
- 
- 	/* one endpoint writes data back IN to the host */
- 	ep = loop->in_ep;
-diff --git a/drivers/usb/gadget/zero.c b/drivers/usb/gadget/zero.c
-index aa0bd4f..361d965 100644
---- a/drivers/usb/gadget/zero.c
-+++ b/drivers/usb/gadget/zero.c
-@@ -59,6 +59,23 @@
- 
- /*-------------------------------------------------------------------------*/
- 
++
 +/*
 + * Kbuild is not very cooperative with respect to linking separately
 + * compiled library objects into one module.  So for now we won't use
@@ -171,19 +67,15 @@ index aa0bd4f..361d965 100644
 + * the runtime footprint, and giving us at least some parts of what
 + * a "gcc --combine ... part1.c part2.c part3.c ... " build would.
 + */
-+#include "composite.c"
 +#include "usbstring.c"
 +#include "config.c"
 +#include "epautoconf.c"
 +
-+#include "f_sourcesink.c"
-+#include "f_loopback.c"
-+
 +/*-------------------------------------------------------------------------*/
 +
- #define DRIVER_VERSION		"Cinco de Mayo 2008"
+ #define DRIVER_DESC		"Printer Gadget"
+ #define DRIVER_VERSION		"2007 OCT 06"
  
- static const char longname[] = "Gadget Zero";
 -- 
 1.6.0.2
 
