@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYJPUne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYJPUse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbYJPUne (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 16:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbYJPUnY
+	id S1756879AbYJPUse (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 16:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbYJPUs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 16:43:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51614 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754266AbYJPUnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 16:43:24 -0400
-Message-ID: <48F7A74F.5050807@redhat.com>
-Date: Thu, 16 Oct 2008 15:42:55 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 16 Oct 2008 16:48:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:20725 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754986AbYJPUs0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 16:48:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QOcLoiU/ZNWyS/HkAfwe3QCdr2LP9EQ+LFCrn8asMERw+6H0lWMXnFtEx/OQZ8zmQA
+         mnKHpRYzwMgjQ3IguKwA3Lw6FDO72ej7JvO+g/ZyX5v4BOr6mWg2euhaCU10rs/SmA5t
+         5GYHRuBT3BaHMqOKsHqvFC9HbM6mG5bS/N3+A=
+Date: Fri, 17 Oct 2008 00:51:25 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2008-10-16-00-52 uploaded
+Message-ID: <20081016205125.GB2468@x200.localdomain>
+References: <200810160758.m9G7wZmt018529@imap1.linux-foundation.org> <Pine.LNX.4.64.0810161336510.14604@shark.he.net>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ext4: oops on boot with root fs needing recovery
-References: <48F7A013.6060508@goop.org> <20081016203257.GI12962@mit.edu>
-In-Reply-To: <20081016203257.GI12962@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0810161336510.14604@shark.he.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Thu, Oct 16, 2008 at 01:12:03PM -0700, Jeremy Fitzhardinge wrote:
->> I had a crash and rebooted.  The root filesystem needed journal  
->> recovery, but ext4 crashed.
->>
->> My root fs is ext3 (no extents), but I've been mounting it as ext4 to  
->> see how it turns out.
+On Thu, Oct 16, 2008 at 01:38:13PM -0700, Randy.Dunlap wrote:
+> On Thu, 16 Oct 2008, akpm@linux-foundation.org wrote:
 > 
-> Yeah, known bug.  I'll push a patch to Linus to fix this.
+> > The mm-of-the-moment snapshot 2008-10-16-00-52 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > It contains the following patches against 2.6.27:
 > 
->       	    	       	      	       	     - Ted
->
+> 
+> build-r9169.out:ksysfs.c:(.text+0x1a773): undefined reference to `create_proc_profile'
+> 
+> when CONFIG_PROC_FS=n and CONFIG_SYSFS=n
 
-Jeremy, I see you're using an f10 kernel; it'll be in the next kernel
-build there, as well.
+ksysfs.c is compiled if SYSFS=n?
 
--Eric
+what's up?
