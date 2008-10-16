@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbYJPSDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYJPSEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757734AbYJPSDc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbYJPSAx
+	id S1757780AbYJPSEa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbYJPSBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:00:53 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36115 "EHLO mx1.suse.de"
+	Thu, 16 Oct 2008 14:01:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:46902 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754680AbYJPSAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:00:52 -0400
-Date: Thu, 16 Oct 2008 10:56:39 -0700
+	id S1754557AbYJPSBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:01:06 -0400
+Date: Thu, 16 Oct 2008 10:56:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 09/14] b43legacy: Fix failure in rate-adjustment mechanism
-Message-ID: <20081016175639.GJ12850@suse.de>
+       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 12/14] x86: improve UP kernel when CPU-hotplug and SMP is
+	enabled
+Message-ID: <20081016175646.GM12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="b43legacy-fix-failure-in-rate-adjustment-mechanism.patch"
+Content-Disposition: inline; filename="x86-improve-up-kernel-when-cpu-hotplug-and-smp-is-enabled.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,34 +41,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit c6a2afdacccd56cc0be8e9a7977f0ed1509069f6 upstream
-Date: Sat, 6 Sep 2008 16:51:22 -0500
-Subject: [patch 09/14] b43legacy: Fix failure in rate-adjustment mechanism
+commit 649c6653fa94ec8f3ea32b19c97b790ec4e8e4ac upstream
 
-A coding error present since b43legacy was incorporated into the
-kernel has prevented the driver from using the rate-setting mechanism
-of mac80211. The driver has been forced to remain at a 1 Mb/s rate.
+num_possible_cpus() can be > 1 when disabled CPUs have been accounted.
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Disabled CPUs are not in the cpu_present_map, so we can use
+num_present_cpus() as a safe indicator to switch to UP alternatives.
+
+Reported-by: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/b43legacy/xmit.c |    2 +-
+ arch/x86/kernel/alternative.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/wireless/b43legacy/xmit.c
-+++ b/drivers/net/wireless/b43legacy/xmit.c
-@@ -626,7 +626,7 @@ void b43legacy_handle_hwtxstatus(struct 
- 	tmp = hw->count;
- 	status.frame_count = (tmp >> 4);
- 	status.rts_count = (tmp & 0x0F);
--	tmp = hw->flags;
-+	tmp = hw->flags << 1;
- 	status.supp_reason = ((tmp & 0x1C) >> 2);
- 	status.pm_indicated = !!(tmp & 0x80);
- 	status.intermediate = !!(tmp & 0x40);
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -444,7 +444,7 @@ void __init alternative_instructions(voi
+ 					    _text, _etext);
+ 
+ 		/* Only switch to UP mode if we don't immediately boot others */
+-		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
++		if (num_present_cpus() == 1 || setup_max_cpus <= 1)
+ 			alternatives_smp_switch(0);
+ 	}
+ #endif
 
 -- 
