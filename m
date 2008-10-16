@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYJPSbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYJPShH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYJPSbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYJPSbR
+	id S1755402AbYJPShH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYJPSg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:31:17 -0400
-Received: from vena.lwn.net ([206.168.112.25]:54846 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbYJPSbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:31:16 -0400
-Date: Thu, 16 Oct 2008 12:31:14 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: [Pull] Documentation tree
-Message-ID: <20081016123114.4841bc93@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Thu, 16 Oct 2008 14:36:56 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:5607 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752162AbYJPSgz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:36:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=g2whe1XV/YadllPjGOLkMWDBAU6V2GRyWL6l0s1bB3pwelxHGX3ZqDMdMKC9QJbQW/
+         vZ7dXGGP2vdfaJ7/qMTr+wjOI8X3SsSINMSYzlfvcS7U/wUkmpqVQaPV6t0jGsE7rj3A
+         Bl38N9Qv5T1nulCZKZec1lvIL/hfRoczGZkl0=
+Date: Thu, 16 Oct 2008 14:35:29 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+Message-ID: <20081016183529.GB29739@yoda.jdub.homelinux.org>
+References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu> <20081016181452.GA29739@yoda.jdub.homelinux.org> <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Linus,
+On Thu, Oct 16, 2008 at 02:22:48PM -0400, Steven Rostedt wrote:
+>
+>On Thu, 16 Oct 2008, Josh Boyer wrote:
+>
+>> On Sat, Sep 06, 2008 at 02:03:47PM +0200, Ingo Molnar wrote:
+>> >
+>> >* Steven Rostedt <rostedt@goodmis.org> wrote:
+>> >
+>> >> I spent the day chasing a bug that would hang PPC on boot up when 
+>> >> ftrace is configured in. I found that it was simply a stupid bug I did 
+>> >> to handle the non MCOUNT_RECORD case. Since I was testing only on x86, 
+>> >> and the MCOUNT_RECORD is automatically set for dynamic ftrace if it is 
+>> >> available, I did not test the case where MCOUNT_RECORD was not set.
+>> >> 
+>> >> I have not finished porting MCOUNT_RECORD to PPC, but have found that 
+>> >> it has caused some issues for archs that do not support it yet.
+>> >> 
+>> >> This patch series handles these cases.
+>> >
+>> >applied to tip/tracing/ftrace, thanks Steve.
+>> 
+>> Are these two merged yet?  I just spent the better part of the morning
+>> trying to figure out why various Fedora kernels based on 2.6.27-rcX and
+>> 2.6.27 final hung on my G5 and finally got one booting with FTRACE
+>> disabled.
+>
+>My powerbook does not boot with ftrace enabled. I'm currently debugging 
+>it. When I get it working, you'll see patches.
 
-The latest version of my documentation tree can be pulled from:
+Well, that's why I asked.  You sent 2 patches out over a month ago that
+don't appear to have shown up in any Linus or PowerPC tree.
 
-  git://git.lwn.net/linux-2.6.git docs
+>They will be to linux-tip though, and not for the current mainline (unless 
+>the code in linux-tip gets merged).
 
-It contains the development process document, the removal of the V4L1
-document, and a number of other documentation-related patches I've
-picked up from the list.
+If linux-tip is some x86 topic branch, I think that's the wrong place for
+fixes that are needed on non-x86 arches.
 
-Alberto Bertogli (1):
-      Documentation/block/data-integrity.txt: Fix section numbers
-
-Andi Kleen (2):
-      Add kerneldoc documentation for new printk format extensions
-      Add a reference to paper to SubmittingPatches
-
-Bernhard Walle (1):
-      Document panic_on_unrecovered_nmi sysctl
-
-Hidetoshi Seto (1):
-      doc: Test-by?
-
-Jonathan Corbet (2):
-      Add the development process document
-      Remove videobook.tmpl
-
- Documentation/00-INDEX                             |    3 +
- Documentation/DocBook/Makefile                     |    2 +-
- Documentation/DocBook/videobook.tmpl               | 1654 --------------------
- Documentation/SubmittingPatches                    |    7 +-
- Documentation/block/data-integrity.txt             |    4 +-
- Documentation/development-process/1.Intro          |  274 ++++
- Documentation/development-process/2.Process        |  459 ++++++
- Documentation/development-process/3.Early-stage    |  195 +++
- Documentation/development-process/4.Coding         |  384 +++++
- Documentation/development-process/5.Posting        |  278 ++++
- Documentation/development-process/6.Followthrough  |  202 +++
- Documentation/development-process/7.AdvancedTopics |  173 ++
- Documentation/development-process/8.Conclusion     |   74 +
- Documentation/filesystems/proc.txt                 |   12 +
- kernel/printk.c                                    |    2 +
- lib/vsprintf.c                                     |   12 +
- 16 files changed, 2077 insertions(+), 1658 deletions(-)
- delete mode 100644 Documentation/DocBook/videobook.tmpl
- create mode 100644 Documentation/development-process/1.Intro
- create mode 100644 Documentation/development-process/2.Process
- create mode 100644 Documentation/development-process/3.Early-stage
- create mode 100644 Documentation/development-process/4.Coding
- create mode 100644 Documentation/development-process/5.Posting
- create mode 100644 Documentation/development-process/6.Followthrough
- create mode 100644 Documentation/development-process/7.AdvancedTopics
- create mode 100644 Documentation/development-process/8.Conclusion
+josh
