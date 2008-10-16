@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbYJPWz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYJPW4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477AbYJPWz5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbYJPWzq
+	id S1758146AbYJPW4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbYJPWz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:55:46 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:51034 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755075AbYJPWzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:55:45 -0400
-Message-ID: <48F7C69E.3060509@sgi.com>
-Date: Thu, 16 Oct 2008 15:56:30 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>, adobriyan@gmail.com,
-       menage@google.com, pj@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] seq_file: Add seq_cpumask_list(), seq_nodemask_list()
-References: <48F1C375.5020105@cn.fujitsu.com> <20081016125827.d72c52c8.akpm@linux-foundation.org>
-In-Reply-To: <20081016125827.d72c52c8.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 16 Oct 2008 18:55:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48786 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757280AbYJPWz4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 18:55:56 -0400
+Date: Thu, 16 Oct 2008 15:55:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: eric.piel@tremplin-utc.net, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, rpurdie@rpsys.net, trenn@suse.de,
+       burman.yan@gmail.com
+Subject: Re: Driver for HP harddisk protection LED
+Message-Id: <20081016155514.eed60f09.akpm@linux-foundation.org>
+In-Reply-To: <20081016091016.GA15439@atrey.karlin.mff.cuni.cz>
+References: <48C984F5.5000804@tudelft.nl>
+	<200809120736.06594.trenn@suse.de>
+	<48CAD89F.1050806@tremplin-utc.net>
+	<20081015072511.GA20607@atrey.karlin.mff.cuni.cz>
+	<20081016091016.GA15439@atrey.karlin.mff.cuni.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sun, 12 Oct 2008 17:29:25 +0800
-> Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> 
->> +static inline int seq_cpumask_list(struct seq_file *m, cpumask_t *mask)
->> +{
->> +	return seq_bitmap_list(m, mask->bits, NR_CPUS);
->> +}
-> 
-> Is it possible to avoid using NR_CPUS?  In some situations it'd be much
-> more efficient to use the runtime-determined max possible cpu index.
-> 
-> But I don't immediately recall how to get at that number. 
-> num_possible_cpus() assumes that there are no holes in the CPU
-> identifier list.
-> 
+On Thu, 16 Oct 2008 11:10:16 +0200
+Pavel Machek <pavel@suse.cz> wrote:
 
-nr_cpu_ids represents the max index +1 of the possible cpus.  (Usually the
-same as num_possible_cpus() except a.) it doesn't need to do the cpus_weight()
-op, and b.) *if* (a big if) the cpu indices are sparse, then they wouldn't
-be the same values.)
+> HP notebooks contain accelerometer-based disk protection subsystem,
+> and LED that indicates hard disk is protected. This is driver for the
+> LED part.
 
-Thanks,
-Mike
+- fix comment typo
+
+- use standard suspend/resume ifdef avoidance trick
+
+
+ drivers/leds/leds-hp-disk.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- a/drivers/leds/leds-hp-disk.c~leds-driver-for-hp-harddisk-protection-led-fix
++++ a/drivers/leds/leds-hp-disk.c
+@@ -49,7 +49,7 @@ static struct acpi_hpled adev;
+ 
+ static acpi_status hpled_acpi_write(acpi_handle handle, int reg)
+ {
+-	unsigned long ret; /* Not used when writting */
++	unsigned long ret; /* Not used when writing */
+ 	union acpi_object in_obj[1];
+ 	struct acpi_object_list args = { 1, in_obj };
+ 
+@@ -83,6 +83,9 @@ static int hpled_resume(struct acpi_devi
+ 	led_classdev_resume(&hpled_led);
+ 	return 0;
+ }
++#else
++#define hpled_suspend NULL
++#define hpled_resume NULL
+ #endif
+ 
+ static int hpled_add(struct acpi_device *device)
+@@ -119,10 +122,8 @@ static struct acpi_driver leds_hp_driver
+ 	.ops = {
+ 		.add     = hpled_add,
+ 		.remove  = hpled_remove,
+-#ifdef CONFIG_PM
+ 		.suspend = hpled_suspend,
+ 		.resume  = hpled_resume,
+-#endif
+ 	}
+ };
+ 
+_
+
