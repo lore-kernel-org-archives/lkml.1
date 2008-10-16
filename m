@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYJPOX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbYJPO1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYJPOX3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 10:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYJPOXU
+	id S1754941AbYJPO1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 10:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYJPO1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 10:23:20 -0400
-Received: from moloch.purdy.org ([192.207.141.11]:4214 "EHLO
-	moloch.hellmouth.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753341AbYJPOXU (ORCPT
+	Thu, 16 Oct 2008 10:27:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56926 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753389AbYJPO1F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:23:20 -0400
-Date: Thu, 16 Oct 2008 15:17:52 +0100
-From: Sean Purdy <sean-kernel@purdy.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: david@fromorbit.com
-Subject: Re: BUG: XFS internal error xfs_trans_cancel in 2.6.27
-Message-ID: <20081016151752.F30919@moloch.hellmouth.net>
-References: <20081009113610.F13062@moloch.hellmouth.net> <20081009230227.GL9597@disturbed>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <20081009230227.GL9597@disturbed>; from david@fromorbit.com on Fri, Oct 10, 2008 at 10:02:27AM +1100
-X-Comments: Public PGP key available on request
+	Thu, 16 Oct 2008 10:27:05 -0400
+Date: Thu, 16 Oct 2008 10:27:03 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 6/9] Use virtual debug registers in process/thread
+ handling code
+In-Reply-To: <20081016014407.81BDA1544CB@magilla.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0810161014270.2487-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Oct 2008, Dave Chinner said:
-> On Thu, Oct 09, 2008 at 11:36:10AM +0100, Sean Purdy wrote:
-> > Hi,
-> > 
-> > Further to the discussion (and patching) of an xfs_trans_cancel
-> > issue in June, in kernel < 2.6.26
-> > 
-> > A similar issue came up on one disk of a 4 x 750GiB machine
-> > with a 2.6.24 kernel.  So I installed 2.6.27-6 and gave it another try.
-> > But I'm still seeing the same problem.  Remounting the drive each time
-> > is fine, and xfs_check shows no errors.
+On Wed, 15 Oct 2008, Roland McGrath wrote:
+
+> +/*
+> +	 * Handle debug registers.  This must be done _after_ current
+> +	 * is updated.
+> +	 */
+> +	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
+> +		switch_to_thread_hw_breakpoint(next_p);
 > 
-> 2.6.27-6? You mean 2.6.27-rc6?
+> It would be good if we could arrange that this works before current changes.
+> That way it says in __switch_to_xtra, which is off the hot path.
 
-I meant rc9 as it happens, but never mind.
- 
-> Anyway, you need to try this patch:
-> 
-> http://oss.sgi.com/archives/xfs/2008-10/msg00105.html
-> 
-> which I posted a few days ago that fixes the latest reproducable
-> case of this shutdown that I know of.
+There's a problem with moving the switch_to_thread_hw_breakpoint() call 
+before current is updated.  Suppose a kernel breakpoint is triggered in 
+between the two.  The hw-breakpoint handler will see that current is 
+different from the task pointer stored in the chbi area, so it will 
+think the task pointer is leftover from an old task (lazy switching) 
+and will erase it.  Then until the next context switch, no 
+user-breakpoints will be installed.
 
-This patch worked fine, thanks very much!  Can we get it into
-some stable version of 2.6.27?  Maybe I can put in a bug request
-for the next Ubuntu kernel.
+The real problem is that it's impossible to update both current and 
+chbi->bp_task at the same instant, so there will always be a window in 
+which they disagree and a breakpoint might get triggered.  Since we use 
+lazy switching, we are forced to assume that a disagreement means that 
+current is correct an chbi->bp_task is old.  But if you move the code 
+above then you'll create a window in which current is old and 
+chbi->bp_task is correct.
 
+Alan Stern
 
-Sean
