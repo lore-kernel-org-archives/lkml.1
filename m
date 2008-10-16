@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbYJPWmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbYJPWnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757957AbYJPWmb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbYJPWmW
+	id S1758074AbYJPWnj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbYJPWnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:42:22 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:46249 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754939AbYJPWmV (ORCPT
+	Thu, 16 Oct 2008 18:43:31 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:57357 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754939AbYJPWna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:42:21 -0400
-Date: Fri, 17 Oct 2008 00:53:15 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: jeffschroeder@computer.org
-cc: Bodo Eggert <7eggert@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] use tmpfs for rootfs v2
-In-Reply-To: <c24352ca0810161403r1842185bg2f8b4f8c067af541@mail.gmail.com>
-Message-ID: <alpine.LSU.0.999.0810170047350.14480@be1.lrz>
-References: <alpine.LSU.0.999.0810161400160.5456@be1.lrz> 
- <Pine.LNX.4.64.0810161507130.25933@anakin>  <alpine.LSU.0.999.0810161936590.5051@be1.lrz>
- <c24352ca0810161403r1842185bg2f8b4f8c067af541@mail.gmail.com>
+	Thu, 16 Oct 2008 18:43:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cTUV1TaFsg2La5cYsg17QVP7GiYEH19TgGlQA27GC+y/lwj1CyygpVyWFEPjVpwK5C
+         3yeAtA+uxNG3XE0DsGdaUjG+SBF9t5KVT0WfD2oVXIReWvQK/ZXEgQLusWl+hyc+IAKD
+         49T9SOrVZXSAfYK7UHGwi7coMsOeOrySSPoFk=
+Message-ID: <c62985530810161543q23f9ae75jb08ff986a214da0@mail.gmail.com>
+Date: Fri, 17 Oct 2008 00:43:28 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [git pull] core kernel updates for v2.6.28
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Kumar Gala" <galak@kernel.crashing.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Becky Bruce" <becky.bruce@freescale.com>
+In-Reply-To: <alpine.LFD.2.00.0810161518320.3288@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081015125023.GA6702@elte.hu>
+	 <alpine.LFD.2.00.0810161518320.3288@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, Jeff Schroeder wrote:
+2008/10/17 Linus Torvalds <torvalds@linux-foundation.org>:
+> The fact is, that second argument was a "ptrdiff_t", which is neither
+> "int" nor "long".  It should be "%td" I think. But the thing is, when you
+> fix a warning, you should damn well know what the hell you're doing, not
+> just shut it up.
 
-
-> Haven't gotten the hang of attaching patches inline using gmail yet.
-> Here is a patch ontop of the previous one that fixes whitespace problems
-> pointed out by checkpatch.pl. It is based on 2.7.27
-> 3fa8749e584b55f1180411ab1b51117190bac1e5
-> 
-> It is also available here:
-> http://www.digitalprognosis.com/opensource/patches/linux-2.6/0001-Cleanup-the-whitespace-to-be-checkpatch-compliant.patch
-
-Thanks. I'll update the patch soon.
-
-Things you should know: In foo.rej, there are extra spaces. Some fools will 
-keep them while applying these hunks.-(
-
--- 
-"A slipping gear could let your M203 grenade launcher fire when you
-least expect it. That would make you quite unpopular in what's left of
-your unit."
--Army's magazine of preventive maintenance.
+Sorry, I made some falses assumptions about the printed type I guess...
