@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYJPRQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYJPRQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYJPRQn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYJPROE
+	id S1756280AbYJPRQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYJPROF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:04 -0400
-Received: from kroah.org ([198.145.64.141]:46918 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:05 -0400
+Received: from kroah.org ([198.145.64.141]:46922 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754894AbYJPROC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:02 -0400
+	id S1756046AbYJPROD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:03 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 02/46] sysfs: crash debugging
-Date: Thu, 16 Oct 2008 10:10:03 -0700
-Message-Id: <1224177047-11859-2-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 03/46] device create: block: convert device_create_drvdata to device_create
+Date: Thu, 16 Oct 2008 10:10:04 -0700
+Message-Id: <1224177047-11859-3-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -25,122 +22,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Now that device_create() has been audited, rename things back to the
+original call to be sane.
 
-Print the name of the last-accessed sysfs file when we oops, to help track
-down oopses which occur in sysfs store/read handlers.  Because these oopses
-tend to not leave any trace of the offending code in the stack traces.
-
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kernel/dumpstack_32.c |    2 ++
- arch/x86/kernel/dumpstack_64.c |    2 ++
- fs/sysfs/file.c                |   13 +++++++++++++
- include/linux/sysfs.h          |    6 ++++++
- 4 files changed, 23 insertions(+), 0 deletions(-)
+ block/bsg.c                |    3 +--
+ drivers/block/aoe/aoechr.c |    6 +++---
+ drivers/block/paride/pg.c  |    5 ++---
+ drivers/block/paride/pt.c  |   10 ++++------
+ drivers/block/pktcdvd.c    |    5 ++---
+ 5 files changed, 12 insertions(+), 17 deletions(-)
 
-diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
-index 201ee35..1a78180 100644
---- a/arch/x86/kernel/dumpstack_32.c
-+++ b/arch/x86/kernel/dumpstack_32.c
-@@ -13,6 +13,7 @@
- #include <linux/kexec.h>
- #include <linux/bug.h>
- #include <linux/nmi.h>
-+#include <linux/sysfs.h>
+diff --git a/block/bsg.c b/block/bsg.c
+index 56cb343..034112b 100644
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -1024,8 +1024,7 @@ int bsg_register_queue(struct request_queue *q, struct device *parent,
+ 	bcd->release = release;
+ 	kref_init(&bcd->ref);
+ 	dev = MKDEV(bsg_major, bcd->minor);
+-	class_dev = device_create_drvdata(bsg_class, parent, dev, NULL,
+-					  "%s", devname);
++	class_dev = device_create(bsg_class, parent, dev, NULL, "%s", devname);
+ 	if (IS_ERR(class_dev)) {
+ 		ret = PTR_ERR(class_dev);
+ 		goto put_dev;
+diff --git a/drivers/block/aoe/aoechr.c b/drivers/block/aoe/aoechr.c
+index 1f56d2c..200efc4 100644
+--- a/drivers/block/aoe/aoechr.c
++++ b/drivers/block/aoe/aoechr.c
+@@ -284,9 +284,9 @@ aoechr_init(void)
+ 		return PTR_ERR(aoe_class);
+ 	}
+ 	for (i = 0; i < ARRAY_SIZE(chardevs); ++i)
+-		device_create_drvdata(aoe_class, NULL,
+-				      MKDEV(AOE_MAJOR, chardevs[i].minor),
+-				      NULL, chardevs[i].name);
++		device_create(aoe_class, NULL,
++			      MKDEV(AOE_MAJOR, chardevs[i].minor), NULL,
++			      chardevs[i].name);
  
- #include <asm/stacktrace.h>
- 
-@@ -343,6 +344,7 @@ int __kprobes __die(const char *str, struct pt_regs *regs, long err)
- 	printk("DEBUG_PAGEALLOC");
- #endif
- 	printk("\n");
-+	sysfs_printk_last_file();
- 	if (notify_die(DIE_OOPS, str, regs, err,
- 			current->thread.trap_no, SIGSEGV) == NOTIFY_STOP)
- 		return 1;
-diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
-index 086cc81..96a5db7 100644
---- a/arch/x86/kernel/dumpstack_64.c
-+++ b/arch/x86/kernel/dumpstack_64.c
-@@ -13,6 +13,7 @@
- #include <linux/kexec.h>
- #include <linux/bug.h>
- #include <linux/nmi.h>
-+#include <linux/sysfs.h>
- 
- #include <asm/stacktrace.h>
- 
-@@ -489,6 +490,7 @@ int __kprobes __die(const char *str, struct pt_regs *regs, long err)
- 	printk("DEBUG_PAGEALLOC");
- #endif
- 	printk("\n");
-+	sysfs_printk_last_file();
- 	if (notify_die(DIE_OOPS, str, regs, err,
- 			current->thread.trap_no, SIGSEGV) == NOTIFY_STOP)
- 		return 1;
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index c9e4e50..ce8339c 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -19,10 +19,18 @@
- #include <linux/poll.h>
- #include <linux/list.h>
- #include <linux/mutex.h>
-+#include <linux/limits.h>
- #include <asm/uaccess.h>
- 
- #include "sysfs.h"
- 
-+/* used in crash dumps to help with debugging */
-+static char last_sysfs_file[PATH_MAX];
-+void sysfs_printk_last_file(void)
-+{
-+	printk(KERN_EMERG "last sysfs file: %s\n", last_sysfs_file);
-+}
-+
- /*
-  * There's one sysfs_buffer for each open file and one
-  * sysfs_open_dirent for each sysfs_dirent with one or more open
-@@ -328,6 +336,11 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	struct sysfs_buffer *buffer;
- 	struct sysfs_ops *ops;
- 	int error = -EACCES;
-+	char *p;
-+
-+	p = d_path(&file->f_path, last_sysfs_file, sizeof(last_sysfs_file));
-+	if (p)
-+		memmove(last_sysfs_file, p, strlen(p) + 1);
- 
- 	/* need attr_sd for attr and ops, its parent for kobj */
- 	if (!sysfs_get_active_two(attr_sd))
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 37fa241..8ec406a 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -119,6 +119,8 @@ void sysfs_remove_file_from_group(struct kobject *kobj,
- 
- void sysfs_notify(struct kobject *kobj, char *dir, char *attr);
- 
-+void sysfs_printk_last_file(void);
-+
- extern int __must_check sysfs_init(void);
- 
- #else /* CONFIG_SYSFS */
-@@ -231,6 +233,10 @@ static inline int __must_check sysfs_init(void)
  	return 0;
  }
+diff --git a/drivers/block/paride/pg.c b/drivers/block/paride/pg.c
+index d731ca4..9dfa271 100644
+--- a/drivers/block/paride/pg.c
++++ b/drivers/block/paride/pg.c
+@@ -686,9 +686,8 @@ static int __init pg_init(void)
+ 	for (unit = 0; unit < PG_UNITS; unit++) {
+ 		struct pg *dev = &devices[unit];
+ 		if (dev->present)
+-			device_create_drvdata(pg_class, NULL,
+-					      MKDEV(major, unit), NULL,
+-					      "pg%u", unit);
++			device_create(pg_class, NULL, MKDEV(major, unit), NULL,
++				      "pg%u", unit);
+ 	}
+ 	err = 0;
+ 	goto out;
+diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
+index 673b8b2..5ae2296 100644
+--- a/drivers/block/paride/pt.c
++++ b/drivers/block/paride/pt.c
+@@ -979,12 +979,10 @@ static int __init pt_init(void)
  
-+static inline void sysfs_printk_last_file(void)
-+{
-+}
-+
- #endif /* CONFIG_SYSFS */
+ 	for (unit = 0; unit < PT_UNITS; unit++)
+ 		if (pt[unit].present) {
+-			device_create_drvdata(pt_class, NULL,
+-					      MKDEV(major, unit), NULL,
+-					      "pt%d", unit);
+-			device_create_drvdata(pt_class, NULL,
+-					      MKDEV(major, unit + 128), NULL,
+-					      "pt%dn", unit);
++			device_create(pt_class, NULL, MKDEV(major, unit), NULL,
++				      "pt%d", unit);
++			device_create(pt_class, NULL, MKDEV(major, unit + 128),
++				      NULL, "pt%dn", unit);
+ 		}
+ 	goto out;
  
- #endif /* _SYSFS_H_ */
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 0e07715..195ca7c 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -302,9 +302,8 @@ static struct kobj_type kobj_pkt_type_wqueue = {
+ static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
+ {
+ 	if (class_pktcdvd) {
+-		pd->dev = device_create_drvdata(class_pktcdvd, NULL,
+-						pd->pkt_dev, NULL,
+-						"%s", pd->name);
++		pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, NULL,
++					"%s", pd->name);
+ 		if (IS_ERR(pd->dev))
+ 			pd->dev = NULL;
+ 	}
 -- 
 1.6.0.2
 
