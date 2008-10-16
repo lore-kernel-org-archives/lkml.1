@@ -1,59 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYJPNTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYJPNVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbYJPNTr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 09:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYJPNTi
+	id S1754666AbYJPNVS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 09:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYJPNVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 09:19:38 -0400
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:50868 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751255AbYJPNTh (ORCPT
+	Thu, 16 Oct 2008 09:21:07 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:64492 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752037AbYJPNVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 09:19:37 -0400
-X-Greylist: delayed 1247 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 09:19:37 EDT
-Date: Thu, 16 Oct 2008 13:58:17 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: origin tree build failure
-Message-ID: <20081016125817.GA28746@linux-mips.org>
-References: <20081016113112.698aa9ae.sfr@canb.auug.org.au>
+	Thu, 16 Oct 2008 09:21:06 -0400
+Message-ID: <48F7411F.3020109@nokia.com>
+Date: Thu, 16 Oct 2008 16:26:55 +0300
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081016113112.698aa9ae.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Pierre Ossman" <drzeus@drzeus.cx>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] mmc_block: print better data error message after timeout
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Oct 2008 13:20:29.0319 (UTC) FILETIME=[F58CF970:01C92F91]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 11:31:12AM +1100, Stephen Rothwell wrote:
+In particular, if the card gets an ECC error it will
+timeout, in which case it is much more helpful to see
+an ECC error rather than a timeout error.
 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/rtc/rtc-ds1286.c: In function 'ds1286_rtc_read':
-> drivers/rtc/rtc-ds1286.c:33: error: implicit declaration of function '__raw_readl'
-> drivers/rtc/rtc-ds1286.c: In function 'ds1286_rtc_write':
-> drivers/rtc/rtc-ds1286.c:38: error: implicit declaration of function '__raw_writel'
-> drivers/rtc/rtc-ds1286.c: In function 'ds1286_probe':
-> drivers/rtc/rtc-ds1286.c:345: error: implicit declaration of function 'ioremap'
-> drivers/rtc/rtc-ds1286.c:345: warning: assignment makes pointer from integer without a cast
-> drivers/rtc/rtc-ds1286.c:365: error: implicit declaration of function 'iounmap'
-> 
-> Caused by commit 5f119f29063c9a9bf1ab40112c02710c2db84f29 ("MIPS: DS1286:
-> New RTC driver") which presumably needs to depend in some architecture or
-> feature.
-> 
-> I just reverted it for now.
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+---
+ drivers/mmc/card/block.c |   47 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 43 insertions(+), 4 deletions(-)
 
-It's just missing an include which Geert has already posted in a different
-thread.
-
-As far as I can say these two RTC chips are only being uses in MIPS
-systems so maybe it's a good idea to allow configuring the driver if it
-builds and does no harm on another platform/architecture?  I can cook up
-a patch if that's what people want.
-
-  Ralf
+diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
+index 24c97d3..d121462 100644
+--- a/drivers/mmc/card/block.c
++++ b/drivers/mmc/card/block.c
+@@ -210,6 +210,47 @@ static u32 mmc_sd_num_wr_blocks(struct mmc_card *card)
+ 	return blocks;
+ }
+ 
++static void print_data_error(struct mmc_blk_request *brq, struct mmc_card *card,
++			     struct request *req)
++{
++	struct mmc_command cmd;
++	char *emsg;
++	u32 status;
++	int status_err = 0;
++
++	if (brq->data.error != -ETIMEDOUT || mmc_host_is_spi(card->host))
++		goto out_print;
++
++	if (brq->mrq.stop)
++		/* 'Stop' response contains card status */
++		status = brq->mrq.stop->resp[0];
++	else {
++		cmd.opcode = MMC_SEND_STATUS;
++		cmd.arg = card->rca << 16;
++		cmd.flags = MMC_RSP_R1 | MMC_CMD_AC;
++		status_err = mmc_wait_for_cmd(card->host, &cmd, 0);
++		if (status_err)
++			goto out_print;
++		status = cmd.resp[0];
++	}
++
++	emsg = (status & R1_CARD_ECC_FAILED) ? "ECC" : "I/O";
++
++	printk(KERN_ERR "%s: %s error transferring data, sector %u, "
++	       "card status %#x\n", req->rq_disk->disk_name, emsg,
++	       (unsigned)req->sector, status);
++
++	return;
++
++out_print:
++	printk(KERN_ERR "%s: error %d transferring data, sector %u, nr %u\n",
++	       req->rq_disk->disk_name, brq->data.error, (unsigned)req->sector,
++	       (unsigned)req->nr_sectors);
++	if (status_err)
++		printk(KERN_ERR "%s: error %d requesting card status\n",
++		       req->rq_disk->disk_name, status_err);
++}
++
+ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
+ {
+ 	struct mmc_blk_data *md = mq->data;
+@@ -281,10 +322,8 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
+ 			       req->rq_disk->disk_name, brq.cmd.error);
+ 		}
+ 
+-		if (brq.data.error) {
+-			printk(KERN_ERR "%s: error %d transferring data\n",
+-			       req->rq_disk->disk_name, brq.data.error);
+-		}
++		if (brq.data.error)
++			print_data_error(&brq, card, req);
+ 
+ 		if (brq.stop.error) {
+ 			printk(KERN_ERR "%s: error %d sending stop command\n",
+-- 
+1.5.4.3
