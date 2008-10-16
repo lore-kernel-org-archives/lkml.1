@@ -1,152 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbYJPPWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYJPPXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755579AbYJPPWn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 11:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYJPPWd
+	id S1755970AbYJPPXW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 11:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYJPPXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 11:22:33 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:33495 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753587AbYJPPWc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 11:22:32 -0400
-Message-ID: <48F75C10.2000904@hp.com>
-Date: Thu, 16 Oct 2008 11:21:52 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 16 Oct 2008 11:23:14 -0400
+Received: from kroah.org ([198.145.64.141]:32982 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753581AbYJPPXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 11:23:13 -0400
+Date: Thu, 16 Oct 2008 08:17:48 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081016151748.GA31075@kroah.com>
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Mike Miller <mike.miller@hp.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, JensAxboejens.axboe@oracle.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>, dchapman@redhat.com,
-       hare@novell.com, sandy.garza@hp.com, karen.skweres@hp.com
-Subject: Re: [PATCH 1/1] cciss: fix regression, sysfs symlink missing
-References: <20081014184649.GA12212@roadking.ldev.net>
-In-Reply-To: <20081014184649.GA12212@roadking.ldev.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081016124943.GE23630@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Miller wrote:
-> Patch 1 of 1
+On Thu, Oct 16, 2008 at 03:49:43PM +0300, Adrian Bunk wrote:
+> On Wed, Oct 15, 2008 at 05:25:09PM -0700, Greg KH wrote:
+> > Hi,
 > 
-> This patch fixes a regression where the device symlink to the pci address is
-> not created. Offending commit 6ae5ce8e8d4de666f31286808d2285aa6a50fa40,
-> cciss: rmove redundant code.
+> Hi Greg,
 > 
-> Please consider this for inclusion.
+> >...
+> > Yes, we can handle the major/minor macros in the kernel to provide a
+> > compatible number so that automated scripts will not break, that's not a
+> > big deal.
+> > 
+> > Any thoughts?
+> >...
 > 
-> signed-off-by: Mike Miller <mike.miller@hp.com>
+> how much of userspace breaks when we suddenly "just for fun" change the 
+> version numbering scheme in a very radical way?
 > 
-> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> index 1e1f915..44fb98e 100644
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -1365,6 +1365,7 @@ static void cciss_add_disk(ctlr_info_t *h, struct gendisk *disk,
->  	disk->first_minor = drv_index << NWD_SHIFT;
->  	disk->fops = &cciss_fops;
->  	disk->private_data = &h->drv[drv_index];
-> +	disk->driverfs_dev = &(hba[drv_index]->pdev->dev);
->  
->  	/* Set up queue information */
->  	blk_queue_bounce_limit(disk->queue, h->pdev->dma_mask);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I'm not thinking of scripts for building the kernel.
 > 
+> I'm thinking of the fact that starting with glibc different pieces of 
+> userspace software interpret the kernel version number they get from 
+> various sources like e.g. <linux/version.h>, "uname -r" or an ioctl.
+> 
+> As a random example, the "config" script of OpenSSL 0.9.8g contains the 
+> following:
+> 
+> <--  snip  -->
+> 
+> ...
+> RELEASE=`(uname -r) 2>/dev/null` || RELEASE="unknown"
+> ...
+> case "${SYSTEM}:${RELEASE}:${VERSION}:${MACHINE}" in
+> ...
+>     Linux:[2-9].*)
+>         echo "${MACHINE}-whatever-linux2"; exit 0
+>         ;;
+> 
+>     Linux:1.*)
+>         echo "${MACHINE}-whatever-linux1"; exit 0
+>         ;;
+> ...
+> 
+> <--  snip  -->
+> 
+> 
+> Change the version number of the kernel in the way you suggest, and 
+> trying to build it will fail with:
+> 
+> <--  snip  -->
+> 
+> $ ./config
+> Operating system: x86_64-whatever-Linux
+> This system (Linux) is not supported. See file INSTALL for details.
+> $ 
+> 
+> <--  snip  -->
+> 
+> 
+> If a distribution will try to autobuild an urgent OpenSSL security 
+> update for their stable release in a chroot on a machine running
+> kernel 2009.2.3 they will surely love you for being responsible
+> for this...
 
-Hi Mike -
+Distros properly patch things and backport "urgent OpenSSL security
+updates" to older versions of packages, so they would not run into this
+problem.
 
-I'm finding that
+Newer releases would run into this problem, but as almost all distros
+have huge, easy to run, build systems, a change like this would show up
+immediately and be fixed in a matter of hours, with the needed fixes
+being pushed upstream to the various packages as needed.
 
-hba[drv_index]
+So I really don't think this is much of a problem.
 
-(for any index) is NULL, and I'm getting the NULL pointer dereference
-bug shown below.
+It's interesting that openssl doesn't just check for Linux 1.x and
+assumes that Linux 9.23.12 will work just fine with what they are doing :)
 
-I'm using Linus' tree up to:
+thanks,
 
-6c5e51dae2c37127e00be392f40842e08077e96a
-
-patched with your patch here.
-
-To determine this, I simply did:
-
-        if (hba[drv_index] == NULL)
-                printk("cciss_add_disk(%d) hba null\n", drv_index);
-        else if (hba[drv_index]->pdev == NULL)
-                printk("cciss_add_disk(%d) hba->pdev null\n", drv_index);
-        else
-                disk->driverfs_dev = &(hba[drv_index]->pdev->dev);
-
-and find:
-
-cciss_add_disk(1) hba null
-cciss_add_disk(2) hba null
-cciss_add_disk(3) hba null
-cciss_add_disk(4) hba null
-cciss_add_disk(5) hba null
-cciss_add_disk(6) hba null
-cciss_add_disk(7) hba null
-
-in the dmesg log after boot...
-
-Regards,
-Alan
-
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000020
-IP: [<ffffffffa00ae506>] cciss_add_disk+0x80/0x10f [cciss]
-PGD 87b069067 PUD 87b06a067 PMD 0
-Oops: 0000 [1] SMP
-CPU 0
-Modules linked in: cciss(+) sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd
-ehci_hcd
-Pid: 1852, comm: insmod Not tainted 2.6.27 #1
-RIP: 0010:[<ffffffffa00ae506>]  [<ffffffffa00ae506>]
-cciss_add_disk+0x80/0x10f [cciss]
-RSP: 0018:ffff88087b03fc38  EFLAGS: 00010282
-RAX: 0000000000000000 RBX: ffff88087b005000 RCX: 00000000fffffffb
-RDX: ffff88087b03f967 RSI: 00000000ffffffff RDI: ffff88087b0027c0
-RBP: ffff88087b140000 R08: 0000000000000000 R09: ffff88087b03f900
-R10: 0000000000000000 R11: ffffffffa00ae74a R12: 0000000000000001
-R13: ffff88087b140000 R14: ffff88087b140040 R15: ffff88087b140000
-FS:  0000000000682850(0063) GS:ffffffff80703a80(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000020 CR3: 000000087b010000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process insmod (pid: 1852, threadinfo ffff88087b03e000, task
-ffff88087b94c2c0)
-Stack:  ffff88087b980680 ffff88087bc45170 ffff88087b1400f0 ffff88107cf88000
- ffff88087bc45140 ffffffffa00af3da ffff880800000083 0000000000000000
- 0000000100000040 0000000800000000 ffff88087b110000 00000001802d0c5d
-Call Trace:
- [<ffffffffa00af3da>] ? rebuild_lun_table+0x5b8/0x6c7 [cciss]
- [<ffffffffa00b188d>] ? cciss_init_one+0x988/0xb3d [cciss]
- [<ffffffff8032e84c>] ? pci_device_probe+0xb6/0x105
- [<ffffffff80398ae0>] ? driver_probe_device+0xd0/0x14d
- [<ffffffff80398ba3>] ? __driver_attach+0x46/0x6d
- [<ffffffff80398b5d>] ? __driver_attach+0x0/0x6d
- [<ffffffff80398283>] ? bus_for_each_dev+0x44/0x6f
- [<ffffffff803986b9>] ? bus_add_driver+0xb4/0x203
- [<ffffffff80398dff>] ? driver_register+0x8d/0x101
- [<ffffffffa00c3000>] ? cciss_init+0x0/0x2e [cciss]
- [<ffffffff8032eaab>] ? __pci_register_driver+0x5a/0x8b
- [<ffffffffa00c3000>] ? cciss_init+0x0/0x2e [cciss]
- [<ffffffff80209041>] ? _stext+0x41/0x110
- [<ffffffff8025428f>] ? sys_init_module+0x9e/0x1ab
- [<ffffffff8020be0b>] ? system_call_fastpath+0x16/0x1b
-
-
-Code: 03 44 89 e0 4d 63 e4 4d 89 e6 c1 e0 04 49 c1 e6 06 89 43 04 4b 8d
-84 2e 90 00 00 00 4d 01 ee 48 89 43 48 4a 8b 04 e5 80 13 0c a0 <48> 8b
-40 20 48 83 e8 80 48 89 43 60 49 8b 45 20 48 8b 70 58 e8
-RIP  [<ffffffffa00ae506>] cciss_add_disk+0x80/0x10f [cciss]
- RSP <ffff88087b03fc38>
-CR2: 0000000000000020
----[ end trace 12ad011b32e7c85e ]---
-
+greg k-h
