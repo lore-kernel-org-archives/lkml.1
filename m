@@ -1,197 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbYJPFaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbYJPFm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753799AbYJPFaR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 01:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYJPFaD
+	id S1754119AbYJPFm5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 01:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYJPFmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 01:30:03 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:55911 "EHLO
+	Thu, 16 Oct 2008 01:42:47 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:63029 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYJPFaB (ORCPT
+	with ESMTP id S1751721AbYJPFmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 01:30:01 -0400
+	Thu, 16 Oct 2008 01:42:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
          :mime-version:content-type:content-disposition:in-reply-to
          :user-agent:from;
-        b=Rua+D2skUH1rlJqn+Jn7sy7+b0Xer43PMN54Z2GNelzFBkfgy4MT85c+xGzL8iGt8I
-         xL+TdcMpnAsUVngUfHKAfxs4qGKQkE8sIYROKmEnqGciU1gSYdAEoaD3XIPsMjhEs4wH
-         xpjcjniUIT77MCwN4P9qZ9hdsbifDz5mazm2M=
-Date: Thu, 16 Oct 2008 07:29:54 +0200
+        b=rvXR4Vr1BF0ZFXquGvDfbZGiFkB4VvWaox9j9ZPP6vDu4S4K8ckFpAonRgp4iXAUtw
+         oC/BG+xB6Q40YFZhmJFT1Bla6SliFahwGT5h5slwGFHJJlkm6k00sI37zeyaXlaiSLr4
+         3id3T5RIg1ZmdmkG+hC/KFcoPCerujUxTRxHM=
+Date: Thu, 16 Oct 2008 07:42:39 +0200
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide-floppy: remove idefloppy_floppy_t typedef
-Message-ID: <20081016052953.GA32756@gollum.tnic>
+Subject: Re: [PATCH] ide-cd: remove obsolete seek optimization
+Message-ID: <20081016054238.GB32756@gollum.tnic>
 Reply-To: petkovbb@gmail.com
 Mail-Followup-To: petkovbb@gmail.com,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
 	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200810152136.48019.bzolnier@gmail.com>
+References: <200810152147.47534.bzolnier@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810152136.48019.bzolnier@gmail.com>
+In-Reply-To: <200810152147.47534.bzolnier@gmail.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 09:36:47PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> There should be no functional changes caused by this patch.
-> 
+On Wed, Oct 15, 2008 at 09:47:47PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> It doesn't make much sense nowadays and is problematic on some drives.
+
+This is a big chunk, after all. We should do more hammering on it though, just
+to be sure.
+
 > Cc: Borislav Petkov <petkovbb@googlemail.com>
 > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
-
 > ---
 > against pata tree
 > 
->  drivers/ide/ide-floppy.c       |   18 +++++++++---------
->  drivers/ide/ide-floppy.h       |    2 --
->  drivers/ide/ide-floppy_ioctl.c |    8 ++++----
->  3 files changed, 13 insertions(+), 15 deletions(-)
+>  drivers/ide/ide-cd.c |   89 +++------------------------------------------------
+>  drivers/ide/ide-cd.h |    2 -
+>  include/linux/ide.h  |    4 --
+>  3 files changed, 6 insertions(+), 89 deletions(-)
 > 
-> Index: b/drivers/ide/ide-floppy.c
+> Index: b/drivers/ide/ide-cd.c
 > ===================================================================
-> --- a/drivers/ide/ide-floppy.c
-> +++ b/drivers/ide/ide-floppy.c
-> @@ -70,7 +70,7 @@
->   */
->  static int ide_floppy_end_request(ide_drive_t *drive, int uptodate, int nsecs)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct request *rq = HWGROUP(drive)->rq;
->  	int error;
->  
-> @@ -117,7 +117,7 @@ static void idefloppy_update_buffers(ide
->  
->  static void ide_floppy_callback(ide_drive_t *drive, int dsc)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct ide_atapi_pc *pc = drive->pc;
->  	int uptodate = pc->error ? 0 : 1;
->  
-> @@ -154,7 +154,7 @@ static void ide_floppy_callback(ide_driv
->  	ide_floppy_end_request(drive, uptodate, 0);
+> --- a/drivers/ide/ide-cd.c
+> +++ b/drivers/ide/ide-cd.c
+> @@ -774,52 +774,6 @@ static ide_startstop_t cdrom_start_rw_co
+>  	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);
 >  }
 >  
-> -static void ide_floppy_report_error(idefloppy_floppy_t *floppy,
-> +static void ide_floppy_report_error(struct ide_disk_obj *floppy,
->  				    struct ide_atapi_pc *pc)
->  {
->  	/* supress error messages resulting from Medium not present */
-> @@ -173,7 +173,7 @@ static void ide_floppy_report_error(idef
->  static ide_startstop_t idefloppy_issue_pc(ide_drive_t *drive,
->  		struct ide_atapi_pc *pc)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  
->  	if (floppy->failed_pc == NULL &&
->  	    pc->c[0] != GPCMD_REQUEST_SENSE)
-> @@ -237,7 +237,7 @@ static void idefloppy_create_rw_cmd(ide_
->  				    struct ide_atapi_pc *pc, struct request *rq,
->  				    unsigned long sector)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	int block = sector / floppy->bs_factor;
->  	int blocks = rq->nr_sectors / floppy->bs_factor;
->  	int cmd = rq_data_dir(rq);
-> @@ -261,7 +261,7 @@ static void idefloppy_create_rw_cmd(ide_
->  	pc->flags |= PC_FLAG_DMA_OK;
->  }
->  
-> -static void idefloppy_blockpc_cmd(idefloppy_floppy_t *floppy,
-> +static void idefloppy_blockpc_cmd(struct ide_disk_obj *floppy,
->  		struct ide_atapi_pc *pc, struct request *rq)
->  {
->  	ide_init_pc(pc);
-> @@ -283,7 +283,7 @@ static void idefloppy_blockpc_cmd(ideflo
->  static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
->  					     struct request *rq, sector_t block)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	ide_hwif_t *hwif = drive->hwif;
->  	struct ide_atapi_pc *pc;
->  
-> @@ -344,7 +344,7 @@ static ide_startstop_t ide_floppy_do_req
->   */
->  static int ide_floppy_get_flexible_disk_page(ide_drive_t *drive)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct gendisk *disk = floppy->disk;
->  	struct ide_atapi_pc pc;
->  	u8 *page;
-> @@ -407,7 +407,7 @@ static int ide_floppy_get_flexible_disk_
->   */
->  static int ide_floppy_get_capacity(ide_drive_t *drive)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct gendisk *disk = floppy->disk;
->  	struct ide_atapi_pc pc;
->  	u8 *cap_desc;
-> Index: b/drivers/ide/ide-floppy.h
-> ===================================================================
-> --- a/drivers/ide/ide-floppy.h
-> +++ b/drivers/ide/ide-floppy.h
-> @@ -4,8 +4,6 @@
->  #include "ide-gd.h"
->  
->  #ifdef CONFIG_IDE_GD_ATAPI
-> -typedef struct ide_disk_obj idefloppy_floppy_t;
+> -#define IDECD_SEEK_THRESHOLD	(1000)			/* 1000 blocks */
+> -#define IDECD_SEEK_TIMER	(5 * WAIT_MIN_SLEEP)	/* 100 ms */
+> -#define IDECD_SEEK_TIMEOUT	(2 * WAIT_CMD)		/* 20 sec */
+> -
+> -static ide_startstop_t cdrom_seek_intr(ide_drive_t *drive)
+> -{
+> -	struct cdrom_info *info = drive->driver_data;
+> -	int stat;
+> -	static int retry = 10;
+> -
+> -	ide_debug_log(IDE_DBG_FUNC, "Call %s\n", __func__);
+> -
+> -	if (cdrom_decode_status(drive, 0, &stat))
+> -		return ide_stopped;
+> -
+> -	drive->atapi_flags |= IDE_AFLAG_SEEKING;
+> -
+> -	if (retry && time_after(jiffies, info->start_seek + IDECD_SEEK_TIMER)) {
+> -		if (--retry == 0)
+> -			drive->dev_flags &= ~IDE_DFLAG_DSC_OVERLAP;
+> -	}
+> -	return ide_stopped;
+> -}
+> -
+> -static void ide_cd_prepare_seek_request(ide_drive_t *drive, struct request *rq)
+> -{
+> -	sector_t frame = rq->sector;
+> -
+> -	ide_debug_log(IDE_DBG_FUNC, "Call %s\n", __func__);
+> -
+> -	sector_div(frame, queue_hardsect_size(drive->queue) >> SECTOR_BITS);
+> -
+> -	memset(rq->cmd, 0, BLK_MAX_CDB);
+> -	rq->cmd[0] = GPCMD_SEEK;
+> -	put_unaligned(cpu_to_be32(frame), (unsigned int *) &rq->cmd[2]);
+> -
+> -	rq->timeout = ATAPI_WAIT_PC;
+> -}
+> -
+> -static ide_startstop_t cdrom_start_seek_continuation(ide_drive_t *drive)
+> -{
+> -	struct request *rq = drive->hwif->hwgroup->rq;
+> -
+> -	return cdrom_transfer_packet_command(drive, rq, &cdrom_seek_intr);
+> -}
 > -
 >  /*
->   * Pages of the SELECT SENSE / MODE SENSE packet commands.
->   * See SFF-8070i spec.
-> Index: b/drivers/ide/ide-floppy_ioctl.c
+>   * Fix up a possibly partially-processed request so that we can start it over
+>   * entirely, or even put it back on the request queue.
+> @@ -1259,7 +1213,6 @@ static void cdrom_do_block_pc(ide_drive_
+>  static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+>  					sector_t block)
+>  {
+> -	struct cdrom_info *info = drive->driver_data;
+>  	ide_handler_t *fn;
+>  	int xferlen;
+>  
+> @@ -1269,44 +1222,14 @@ static ide_startstop_t ide_cd_do_request
+>  		      (unsigned long long)block);
+>  
+>  	if (blk_fs_request(rq)) {
+> -		if (drive->atapi_flags & IDE_AFLAG_SEEKING) {
+> -			ide_hwif_t *hwif = drive->hwif;
+> -			unsigned long elapsed = jiffies - info->start_seek;
+> -			int stat = hwif->tp_ops->read_status(hwif);
+> -
+> -			if ((stat & ATA_DSC) != ATA_DSC) {
+> -				if (elapsed < IDECD_SEEK_TIMEOUT) {
+> -					ide_stall_queue(drive,
+> -							IDECD_SEEK_TIMER);
+> -					return ide_stopped;
+> -				}
+> -				printk(KERN_ERR PFX "%s: DSC timeout\n",
+> -						drive->name);
+> -			}
+> -			drive->atapi_flags &= ~IDE_AFLAG_SEEKING;
+> -		}
+> -		if (rq_data_dir(rq) == READ &&
+> -		    IDE_LARGE_SEEK(info->last_block, block,
+> -			    IDECD_SEEK_THRESHOLD) &&
+> -		    (drive->dev_flags & IDE_DFLAG_DSC_OVERLAP)) {
+> -			xferlen = 0;
+> -			fn = cdrom_start_seek_continuation;
+> -
+> -			drive->dma = 0;
+> -			info->start_seek = jiffies;
+> -
+> -			ide_cd_prepare_seek_request(drive, rq);
+> -		} else {
+> -			xferlen = 32768;
+> -			fn = cdrom_start_rw_cont;
+> +		xferlen = 32768;
+> +		fn = cdrom_start_rw_cont;
+>  
+> -			if (cdrom_start_rw(drive, rq) == ide_stopped)
+> -				return ide_stopped;
+> +		if (cdrom_start_rw(drive, rq) == ide_stopped)
+> +			return ide_stopped;
+>  
+> -			if (ide_cd_prepare_rw_request(drive, rq) == ide_stopped)
+> -				return ide_stopped;
+> -		}
+> -		info->last_block = block;
+> +		if (ide_cd_prepare_rw_request(drive, rq) == ide_stopped)
+> +			return ide_stopped;
+>  	} else if (blk_sense_request(rq) || blk_pc_request(rq) ||
+>  		   rq->cmd_type == REQ_TYPE_ATA_PC) {
+>  		xferlen = rq->data_len;
+> Index: b/drivers/ide/ide-cd.h
 > ===================================================================
-> --- a/drivers/ide/ide-floppy_ioctl.c
-> +++ b/drivers/ide/ide-floppy_ioctl.c
-> @@ -113,7 +113,7 @@ static void ide_floppy_create_format_uni
+> --- a/drivers/ide/ide-cd.h
+> +++ b/drivers/ide/ide-cd.h
+> @@ -88,8 +88,6 @@ struct cdrom_info {
+>  	struct request_sense sense_data;
 >  
->  static int ide_floppy_get_sfrp_bit(ide_drive_t *drive)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct ide_atapi_pc pc;
+>  	struct request request_sense_request;
+> -	unsigned long last_block;
+> -	unsigned long start_seek;
 >  
->  	drive->atapi_flags &= ~IDE_AFLAG_SRFP;
-> @@ -132,7 +132,7 @@ static int ide_floppy_get_sfrp_bit(ide_d
+>  	u8 max_speed;		/* Max speed of the drive. */
+>  	u8 current_speed;	/* Current speed of the drive. */
+> Index: b/include/linux/ide.h
+> ===================================================================
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -122,8 +122,6 @@ struct ide_io_ports {
+>  #define MAX_DRIVES	2	/* per interface; 2 assumed by lots of code */
+>  #define SECTOR_SIZE	512
 >  
->  static int ide_floppy_format_unit(ide_drive_t *drive, int __user *arg)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct ide_atapi_pc pc;
->  	int blocks, length, flags, err = 0;
->  
-> @@ -190,7 +190,7 @@ out:
->  
->  static int ide_floppy_get_format_progress(ide_drive_t *drive, int __user *arg)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct ide_atapi_pc pc;
->  	int progress_indication = 0x10000;
->  
-> @@ -226,7 +226,7 @@ static int ide_floppy_get_format_progres
->  static int ide_floppy_lockdoor(ide_drive_t *drive, struct ide_atapi_pc *pc,
->  			       unsigned long arg, unsigned int cmd)
->  {
-> -	idefloppy_floppy_t *floppy = drive->driver_data;
-> +	struct ide_disk_obj *floppy = drive->driver_data;
->  	struct gendisk *disk = floppy->disk;
->  	int prevent = (arg && cmd != CDROMEJECT) ? 1 : 0;
->  
+> -#define IDE_LARGE_SEEK(b1,b2,t)	(((b1) > (b2) + (t)) || ((b2) > (b1) + (t)))
+> -
+>  /*
+>   * Timeouts for various operations:
+>   */
+> @@ -496,8 +494,6 @@ enum {
+>  	 * when more than one interrupt is needed.
+>  	 */
+>  	IDE_AFLAG_LIMIT_NFRAMES		= (1 << 7),
+> -	/* Seeking in progress. */
+> -	IDE_AFLAG_SEEKING		= (1 << 8),
+>  	/* Saved TOC information is current. */
+>  	IDE_AFLAG_TOC_VALID		= (1 << 9),
+>  	/* We think that the drive door is locked. */
+
+maybe:					= (1 << 8),
+
 
 -- 
 Regards/Gruss,
