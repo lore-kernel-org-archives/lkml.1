@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbYJPLbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbYJPLci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbYJPLbc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 07:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbYJPLbX
+	id S1756312AbYJPLci (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 07:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbYJPLcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 07:31:23 -0400
-Received: from forwards6.yandex.ru ([77.88.61.38]:59005 "EHLO
-	forwards6.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbYJPLbX (ORCPT
+	Thu, 16 Oct 2008 07:32:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:37811 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753608AbYJPLca convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 07:31:23 -0400
-X-Yandex-Spam: 1 
-X-Yandex-Front: smtp4
-X-Yandex-TimeMark: 1224156672
-X-MsgDayCount: 3
-X-Comment: RFC 2476 MSA function at smtp4.yandex.ru logged sender identity as: dmantipov
-Message-ID: <48F725FF.6000709@yandex.ru>
-Date: Thu, 16 Oct 2008 15:31:11 +0400
-From: Dmitry Antipov <dmantipov@yandex.ru>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 16 Oct 2008 07:32:30 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Subject: Re: [Patch] kernel/kallsyms.c: fix double return's
+Date: Thu, 16 Oct 2008 22:32:28 +1100
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+References: <20081010094223.GA2925@hack.voiplan.pt>
+In-Reply-To: <20081010094223.GA2925@hack.voiplan.pt>
 MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27: 0 MHz CPU and wrong system time on AMD Geode system
-References: <414861224052797@webmail58.yandex.ru> <20081015162143.GA19397@cosmic.amd.com>
-In-Reply-To: <20081015162143.GA19397@cosmic.amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200810162232.28678.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse wrote:
+On Friday 10 October 2008 20:43:03 Américo Wang wrote:
+> Commit 6dd06c9fbe025f542bce4cdb91790c0f91962722 introduced double
+> returns in the function kallsyms_lookup(), it's weird.
+> The second one should be removed.
+>
+> Signed-off-by: WANG Cong <wangcong@zeuux.org>
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
 
-> Hmmm - this is an interesting regression.  Please remove
-> CONFIG_GEODE_MFGPT_TIMER=y from your 2.6.27 kernel and see if the
-> problem goes away. 
+Yeah, weird.
 
-Unfortunately it doesn't help.
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
-> I have been running 2.6.26.5 on my system with no problems, but I'm
- > embarrassed to admit that I haven't run anything newer in a while.
-
-What system do you have?
-
-Dmitry
+Thanks!
+Rusty.
