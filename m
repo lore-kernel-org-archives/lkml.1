@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbYJPRW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbYJPRX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758527AbYJPRW5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbYJPROa
+	id S1758580AbYJPRX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYJPROg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:30 -0400
-Received: from kroah.org ([198.145.64.141]:46973 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:36 -0400
+Received: from kroah.org ([198.145.64.141]:46977 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756171AbYJPRO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:29 -0400
+	id S1756224AbYJPROe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:34 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 21/46] usb gadget: link fixes for cdc composite gadget
-Date: Thu, 16 Oct 2008 10:10:22 -0700
-Message-Id: <1224177047-11859-21-git-send-email-gregkh@suse.de>
+Subject: [PATCH 22/46] usb gadget: link fixes for network gadget
+Date: Thu, 16 Oct 2008 10:10:23 -0700
+Message-Id: <1224177047-11859-22-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -25,38 +25,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <dbrownell@users.sourceforge.net>
 
-Change how the CDC Composite gadget driver builds:  don't
+Change how the Ethernet/RNDIS gadget driver builds:  don't
 use separate compilation, since it works poorly when key
 parts are library code (with init sections etc).  Instead
 be as close as we can to "gcc --combine ...".
 
+This is a bit more complicated than most of the others
+because it had to resolve a few symbol collisions.
+
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/gadget/Makefile  |    3 +--
- drivers/usb/gadget/cdc2.c    |   25 +++++++++++++++++++++++--
- drivers/usb/gadget/u_ether.c |    4 ++--
- 3 files changed, 26 insertions(+), 6 deletions(-)
+ drivers/usb/gadget/Makefile   |    8 +---
+ drivers/usb/gadget/ether.c    |   28 +++++++++-
+ drivers/usb/gadget/f_ecm.c    |  108 +++++++++++++++++++-------------------
+ drivers/usb/gadget/f_subset.c |   44 ++++++++--------
+ drivers/usb/gadget/rndis.c    |  115 +++++++++++++++++++---------------------
+ 5 files changed, 158 insertions(+), 145 deletions(-)
 
 diff --git a/drivers/usb/gadget/Makefile b/drivers/usb/gadget/Makefile
-index 736d58f..bfa0229 100644
+index bfa0229..2267fa0 100644
 --- a/drivers/usb/gadget/Makefile
 +++ b/drivers/usb/gadget/Makefile
-@@ -31,8 +31,7 @@ g_midi-objs			:= gmidi.o
+@@ -22,10 +22,8 @@ obj-$(CONFIG_USB_M66592)	+= m66592-udc.o
+ #
+ # USB gadget drivers
+ #
+-C_UTILS =	composite.o usbstring.o config.o epautoconf.o
+-
+ g_zero-objs			:= zero.o
+-g_ether-objs			:= ether.o u_ether.o f_subset.o f_ecm.o $(C_UTILS)
++g_ether-objs			:= ether.o
+ g_serial-objs			:= serial.o
+ g_midi-objs			:= gmidi.o
  gadgetfs-objs			:= inode.o
- g_file_storage-objs		:= file_storage.o
+@@ -33,10 +31,6 @@ g_file_storage-objs		:= file_storage.o
  g_printer-objs			:= printer.o
--g_cdc-objs			:= cdc2.o u_ether.o f_ecm.o \
--					u_serial.o f_acm.o $(C_UTILS)
-+g_cdc-objs			:= cdc2.o
+ g_cdc-objs			:= cdc2.o
  
- ifeq ($(CONFIG_USB_ETH_RNDIS),y)
- 	g_ether-objs		+= f_rndis.o rndis.o
-diff --git a/drivers/usb/gadget/cdc2.c b/drivers/usb/gadget/cdc2.c
-index a39a4b9..a724fc1 100644
---- a/drivers/usb/gadget/cdc2.c
-+++ b/drivers/usb/gadget/cdc2.c
-@@ -43,6 +43,25 @@
+-ifeq ($(CONFIG_USB_ETH_RNDIS),y)
+-	g_ether-objs		+= f_rndis.o rndis.o
+-endif
+- 
+ obj-$(CONFIG_USB_ZERO)		+= g_zero.o
+ obj-$(CONFIG_USB_ETH)		+= g_ether.o
+ obj-$(CONFIG_USB_GADGETFS)	+= gadgetfs.o
+diff --git a/drivers/usb/gadget/ether.c b/drivers/usb/gadget/ether.c
+index bcac2e6..944c8e8 100644
+--- a/drivers/usb/gadget/ether.c
++++ b/drivers/usb/gadget/ether.c
+@@ -96,6 +96,28 @@ static inline bool has_rndis(void)
  
  /*-------------------------------------------------------------------------*/
  
@@ -67,34 +85,37 @@ index a39a4b9..a724fc1 100644
 + * the runtime footprint, and giving us at least some parts of what
 + * a "gcc --combine ... part1.c part2.c part3.c ... " build would.
 + */
-+
 +#include "composite.c"
 +#include "usbstring.c"
 +#include "config.c"
 +#include "epautoconf.c"
-+#include "u_serial.c"
-+#include "f_acm.c"
++
 +#include "f_ecm.c"
++#include "f_subset.c"
++#ifdef	CONFIG_USB_ETH_RNDIS
++#include "f_rndis.c"
++#include "rndis.c"
++#endif
 +#include "u_ether.c"
 +
 +/*-------------------------------------------------------------------------*/
 +
- static struct usb_device_descriptor device_desc = {
- 	.bLength =		sizeof device_desc,
- 	.bDescriptorType =	USB_DT_DEVICE,
-@@ -148,7 +167,8 @@ static int __init cdc_bind(struct usb_composite_dev *cdev)
- 	int			status;
- 
- 	if (!can_support_ecm(cdev->gadget)) {
--		ERROR(cdev, "controller '%s' not usable\n", gadget->name);
-+		dev_err(&gadget->dev, "controller '%s' not usable\n",
-+				gadget->name);
- 		return -EINVAL;
- 	}
- 
-@@ -203,7 +223,8 @@ static int __init cdc_bind(struct usb_composite_dev *cdev)
+ /* DO NOT REUSE THESE IDs with a protocol-incompatible driver!!  Ever!!
+  * Instead:  allocate your own, using normal USB-IF procedures.
+  */
+@@ -293,7 +315,8 @@ static int __init eth_bind(struct usb_composite_dev *cdev)
+ 		 * but if the controller isn't recognized at all then
+ 		 * that assumption is a bit more likely to be wrong.
+ 		 */
+-		WARNING(cdev, "controller '%s' not recognized; trying %s\n",
++		dev_warn(&gadget->dev,
++				"controller '%s' not recognized; trying %s\n",
+ 				gadget->name,
+ 				eth_config_driver.label);
+ 		device_desc.bcdDevice =
+@@ -332,7 +355,8 @@ static int __init eth_bind(struct usb_composite_dev *cdev)
  	if (status < 0)
- 		goto fail1;
+ 		goto fail;
  
 -	INFO(cdev, "%s, version: " DRIVER_VERSION "\n", DRIVER_DESC);
 +	dev_info(&gadget->dev, "%s, version: " DRIVER_VERSION "\n",
@@ -102,28 +123,874 @@ index a39a4b9..a724fc1 100644
  
  	return 0;
  
-diff --git a/drivers/usb/gadget/u_ether.c b/drivers/usb/gadget/u_ether.c
-index 3791e62..dbd575a 100644
---- a/drivers/usb/gadget/u_ether.c
-+++ b/drivers/usb/gadget/u_ether.c
-@@ -52,7 +52,7 @@
-  * this single "physical" link to be used by multiple virtual links.)
+diff --git a/drivers/usb/gadget/f_ecm.c b/drivers/usb/gadget/f_ecm.c
+index a2b5c09..4ae5799 100644
+--- a/drivers/usb/gadget/f_ecm.c
++++ b/drivers/usb/gadget/f_ecm.c
+@@ -83,7 +83,7 @@ static inline struct f_ecm *func_to_ecm(struct usb_function *f)
+ }
+ 
+ /* peak (theoretical) bulk transfer rate in bits-per-second */
+-static inline unsigned bitrate(struct usb_gadget *g)
++static inline unsigned ecm_bitrate(struct usb_gadget *g)
+ {
+ 	if (gadget_is_dualspeed(g) && g->speed == USB_SPEED_HIGH)
+ 		return 13 * 512 * 8 * 1000 * 8;
+@@ -107,7 +107,7 @@ static inline unsigned bitrate(struct usb_gadget *g)
   */
  
--#define DRIVER_VERSION	"29-May-2008"
-+#define UETH__VERSION	"29-May-2008"
+ #define LOG2_STATUS_INTERVAL_MSEC	5	/* 1 << 5 == 32 msec */
+-#define STATUS_BYTECOUNT		16	/* 8 byte header + data */
++#define ECM_STATUS_BYTECOUNT		16	/* 8 byte header + data */
  
- struct eth_dev {
- 	/* lock is held while accessing port_usb
-@@ -170,7 +170,7 @@ static void eth_get_drvinfo(struct net_device *net, struct ethtool_drvinfo *p)
- 	struct eth_dev	*dev = netdev_priv(net);
  
- 	strlcpy(p->driver, "g_ether", sizeof p->driver);
--	strlcpy(p->version, DRIVER_VERSION, sizeof p->version);
-+	strlcpy(p->version, UETH__VERSION, sizeof p->version);
- 	strlcpy(p->fw_version, dev->gadget->name, sizeof p->fw_version);
- 	strlcpy(p->bus_info, dev_name(&dev->gadget->dev), sizeof p->bus_info);
+ /* interface descriptor: */
+@@ -125,8 +125,8 @@ static struct usb_interface_descriptor ecm_control_intf __initdata = {
+ 	/* .iInterface = DYNAMIC */
+ };
+ 
+-static struct usb_cdc_header_desc header_desc __initdata = {
+-	.bLength =		sizeof header_desc,
++static struct usb_cdc_header_desc ecm_header_desc __initdata = {
++	.bLength =		sizeof ecm_header_desc,
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_HEADER_TYPE,
+ 
+@@ -141,8 +141,8 @@ static struct usb_cdc_union_desc ecm_union_desc __initdata = {
+ 	/* .bSlaveInterface0 =	DYNAMIC */
+ };
+ 
+-static struct usb_cdc_ether_desc ether_desc __initdata = {
+-	.bLength =		sizeof ether_desc,
++static struct usb_cdc_ether_desc ecm_desc __initdata = {
++	.bLength =		sizeof ecm_desc,
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_ETHERNET_TYPE,
+ 
+@@ -186,17 +186,17 @@ static struct usb_interface_descriptor ecm_data_intf __initdata = {
+ 
+ /* full speed support: */
+ 
+-static struct usb_endpoint_descriptor fs_notify_desc __initdata = {
++static struct usb_endpoint_descriptor fs_ecm_notify_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(STATUS_BYTECOUNT),
++	.wMaxPacketSize =	__constant_cpu_to_le16(ECM_STATUS_BYTECOUNT),
+ 	.bInterval =		1 << LOG2_STATUS_INTERVAL_MSEC,
+ };
+ 
+-static struct usb_endpoint_descriptor fs_in_desc __initdata = {
++static struct usb_endpoint_descriptor fs_ecm_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -204,7 +204,7 @@ static struct usb_endpoint_descriptor fs_in_desc __initdata = {
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+ };
+ 
+-static struct usb_endpoint_descriptor fs_out_desc __initdata = {
++static struct usb_endpoint_descriptor fs_ecm_out_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -212,34 +212,34 @@ static struct usb_endpoint_descriptor fs_out_desc __initdata = {
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+ };
+ 
+-static struct usb_descriptor_header *eth_fs_function[] __initdata = {
++static struct usb_descriptor_header *ecm_fs_function[] __initdata = {
+ 	/* CDC ECM control descriptors */
+ 	(struct usb_descriptor_header *) &ecm_control_intf,
+-	(struct usb_descriptor_header *) &header_desc,
++	(struct usb_descriptor_header *) &ecm_header_desc,
+ 	(struct usb_descriptor_header *) &ecm_union_desc,
+-	(struct usb_descriptor_header *) &ether_desc,
++	(struct usb_descriptor_header *) &ecm_desc,
+ 	/* NOTE: status endpoint might need to be removed */
+-	(struct usb_descriptor_header *) &fs_notify_desc,
++	(struct usb_descriptor_header *) &fs_ecm_notify_desc,
+ 	/* data interface, altsettings 0 and 1 */
+ 	(struct usb_descriptor_header *) &ecm_data_nop_intf,
+ 	(struct usb_descriptor_header *) &ecm_data_intf,
+-	(struct usb_descriptor_header *) &fs_in_desc,
+-	(struct usb_descriptor_header *) &fs_out_desc,
++	(struct usb_descriptor_header *) &fs_ecm_in_desc,
++	(struct usb_descriptor_header *) &fs_ecm_out_desc,
+ 	NULL,
+ };
+ 
+ /* high speed support: */
+ 
+-static struct usb_endpoint_descriptor hs_notify_desc __initdata = {
++static struct usb_endpoint_descriptor hs_ecm_notify_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(STATUS_BYTECOUNT),
++	.wMaxPacketSize =	__constant_cpu_to_le16(ECM_STATUS_BYTECOUNT),
+ 	.bInterval =		LOG2_STATUS_INTERVAL_MSEC + 4,
+ };
+-static struct usb_endpoint_descriptor hs_in_desc __initdata = {
++static struct usb_endpoint_descriptor hs_ecm_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -248,7 +248,7 @@ static struct usb_endpoint_descriptor hs_in_desc __initdata = {
+ 	.wMaxPacketSize =	__constant_cpu_to_le16(512),
+ };
+ 
+-static struct usb_endpoint_descriptor hs_out_desc __initdata = {
++static struct usb_endpoint_descriptor hs_ecm_out_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -257,19 +257,19 @@ static struct usb_endpoint_descriptor hs_out_desc __initdata = {
+ 	.wMaxPacketSize =	__constant_cpu_to_le16(512),
+ };
+ 
+-static struct usb_descriptor_header *eth_hs_function[] __initdata = {
++static struct usb_descriptor_header *ecm_hs_function[] __initdata = {
+ 	/* CDC ECM control descriptors */
+ 	(struct usb_descriptor_header *) &ecm_control_intf,
+-	(struct usb_descriptor_header *) &header_desc,
++	(struct usb_descriptor_header *) &ecm_header_desc,
+ 	(struct usb_descriptor_header *) &ecm_union_desc,
+-	(struct usb_descriptor_header *) &ether_desc,
++	(struct usb_descriptor_header *) &ecm_desc,
+ 	/* NOTE: status endpoint might need to be removed */
+-	(struct usb_descriptor_header *) &hs_notify_desc,
++	(struct usb_descriptor_header *) &hs_ecm_notify_desc,
+ 	/* data interface, altsettings 0 and 1 */
+ 	(struct usb_descriptor_header *) &ecm_data_nop_intf,
+ 	(struct usb_descriptor_header *) &ecm_data_intf,
+-	(struct usb_descriptor_header *) &hs_in_desc,
+-	(struct usb_descriptor_header *) &hs_out_desc,
++	(struct usb_descriptor_header *) &hs_ecm_in_desc,
++	(struct usb_descriptor_header *) &hs_ecm_out_desc,
+ 	NULL,
+ };
+ 
+@@ -329,14 +329,14 @@ static void ecm_do_notify(struct f_ecm *ecm)
+ 		event->bNotificationType = USB_CDC_NOTIFY_SPEED_CHANGE;
+ 		event->wValue = cpu_to_le16(0);
+ 		event->wLength = cpu_to_le16(8);
+-		req->length = STATUS_BYTECOUNT;
++		req->length = ECM_STATUS_BYTECOUNT;
+ 
+ 		/* SPEED_CHANGE data is up/down speeds in bits/sec */
+ 		data = req->buf + sizeof *event;
+-		data[0] = cpu_to_le32(bitrate(cdev->gadget));
++		data[0] = cpu_to_le32(ecm_bitrate(cdev->gadget));
+ 		data[1] = data[0];
+ 
+-		DBG(cdev, "notify speed %d\n", bitrate(cdev->gadget));
++		DBG(cdev, "notify speed %d\n", ecm_bitrate(cdev->gadget));
+ 		ecm->notify_state = ECM_NOTIFY_NONE;
+ 		break;
+ 	}
+@@ -628,13 +628,13 @@ ecm_bind(struct usb_configuration *c, struct usb_function *f)
+ 	status = -ENODEV;
+ 
+ 	/* allocate instance-specific endpoints */
+-	ep = usb_ep_autoconfig(cdev->gadget, &fs_in_desc);
++	ep = usb_ep_autoconfig(cdev->gadget, &fs_ecm_in_desc);
+ 	if (!ep)
+ 		goto fail;
+ 	ecm->port.in_ep = ep;
+ 	ep->driver_data = cdev;	/* claim */
+ 
+-	ep = usb_ep_autoconfig(cdev->gadget, &fs_out_desc);
++	ep = usb_ep_autoconfig(cdev->gadget, &fs_ecm_out_desc);
+ 	if (!ep)
+ 		goto fail;
+ 	ecm->port.out_ep = ep;
+@@ -644,7 +644,7 @@ ecm_bind(struct usb_configuration *c, struct usb_function *f)
+ 	 * don't treat it that way.  It's simpler, and some newer CDC
+ 	 * profiles (wireless handsets) no longer treat it as optional.
+ 	 */
+-	ep = usb_ep_autoconfig(cdev->gadget, &fs_notify_desc);
++	ep = usb_ep_autoconfig(cdev->gadget, &fs_ecm_notify_desc);
+ 	if (!ep)
+ 		goto fail;
+ 	ecm->notify = ep;
+@@ -656,47 +656,47 @@ ecm_bind(struct usb_configuration *c, struct usb_function *f)
+ 	ecm->notify_req = usb_ep_alloc_request(ep, GFP_KERNEL);
+ 	if (!ecm->notify_req)
+ 		goto fail;
+-	ecm->notify_req->buf = kmalloc(STATUS_BYTECOUNT, GFP_KERNEL);
++	ecm->notify_req->buf = kmalloc(ECM_STATUS_BYTECOUNT, GFP_KERNEL);
+ 	if (!ecm->notify_req->buf)
+ 		goto fail;
+ 	ecm->notify_req->context = ecm;
+ 	ecm->notify_req->complete = ecm_notify_complete;
+ 
+ 	/* copy descriptors, and track endpoint copies */
+-	f->descriptors = usb_copy_descriptors(eth_fs_function);
++	f->descriptors = usb_copy_descriptors(ecm_fs_function);
+ 	if (!f->descriptors)
+ 		goto fail;
+ 
+-	ecm->fs.in = usb_find_endpoint(eth_fs_function,
+-			f->descriptors, &fs_in_desc);
+-	ecm->fs.out = usb_find_endpoint(eth_fs_function,
+-			f->descriptors, &fs_out_desc);
+-	ecm->fs.notify = usb_find_endpoint(eth_fs_function,
+-			f->descriptors, &fs_notify_desc);
++	ecm->fs.in = usb_find_endpoint(ecm_fs_function,
++			f->descriptors, &fs_ecm_in_desc);
++	ecm->fs.out = usb_find_endpoint(ecm_fs_function,
++			f->descriptors, &fs_ecm_out_desc);
++	ecm->fs.notify = usb_find_endpoint(ecm_fs_function,
++			f->descriptors, &fs_ecm_notify_desc);
+ 
+ 	/* support all relevant hardware speeds... we expect that when
+ 	 * hardware is dual speed, all bulk-capable endpoints work at
+ 	 * both speeds
+ 	 */
+ 	if (gadget_is_dualspeed(c->cdev->gadget)) {
+-		hs_in_desc.bEndpointAddress =
+-				fs_in_desc.bEndpointAddress;
+-		hs_out_desc.bEndpointAddress =
+-				fs_out_desc.bEndpointAddress;
+-		hs_notify_desc.bEndpointAddress =
+-				fs_notify_desc.bEndpointAddress;
++		hs_ecm_in_desc.bEndpointAddress =
++				fs_ecm_in_desc.bEndpointAddress;
++		hs_ecm_out_desc.bEndpointAddress =
++				fs_ecm_out_desc.bEndpointAddress;
++		hs_ecm_notify_desc.bEndpointAddress =
++				fs_ecm_notify_desc.bEndpointAddress;
+ 
+ 		/* copy descriptors, and track endpoint copies */
+-		f->hs_descriptors = usb_copy_descriptors(eth_hs_function);
++		f->hs_descriptors = usb_copy_descriptors(ecm_hs_function);
+ 		if (!f->hs_descriptors)
+ 			goto fail;
+ 
+-		ecm->hs.in = usb_find_endpoint(eth_hs_function,
+-				f->hs_descriptors, &hs_in_desc);
+-		ecm->hs.out = usb_find_endpoint(eth_hs_function,
+-				f->hs_descriptors, &hs_out_desc);
+-		ecm->hs.notify = usb_find_endpoint(eth_hs_function,
+-				f->hs_descriptors, &hs_notify_desc);
++		ecm->hs.in = usb_find_endpoint(ecm_hs_function,
++				f->hs_descriptors, &hs_ecm_in_desc);
++		ecm->hs.out = usb_find_endpoint(ecm_hs_function,
++				f->hs_descriptors, &hs_ecm_out_desc);
++		ecm->hs.notify = usb_find_endpoint(ecm_hs_function,
++				f->hs_descriptors, &hs_ecm_notify_desc);
+ 	}
+ 
+ 	/* NOTE:  all that is done without knowing or caring about
+@@ -795,7 +795,7 @@ int __init ecm_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN])
+ 		if (status < 0)
+ 			return status;
+ 		ecm_string_defs[1].id = status;
+-		ether_desc.iMACAddress = status;
++		ecm_desc.iMACAddress = status;
+ 	}
+ 
+ 	/* allocate and initialize one new instance */
+diff --git a/drivers/usb/gadget/f_subset.c b/drivers/usb/gadget/f_subset.c
+index acb8d23..fe18328 100644
+--- a/drivers/usb/gadget/f_subset.c
++++ b/drivers/usb/gadget/f_subset.c
+@@ -103,8 +103,8 @@ static struct usb_interface_descriptor subset_data_intf __initdata = {
+ 	/* .iInterface = DYNAMIC */
+ };
+ 
+-static struct usb_cdc_header_desc header_desc __initdata = {
+-	.bLength =		sizeof header_desc,
++static struct usb_cdc_header_desc mdlm_header_desc __initdata = {
++	.bLength =		sizeof mdlm_header_desc,
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_HEADER_TYPE,
+ 
+@@ -152,7 +152,7 @@ static struct usb_cdc_ether_desc ether_desc __initdata = {
+ 
+ /* full speed support: */
+ 
+-static struct usb_endpoint_descriptor fs_in_desc __initdata = {
++static struct usb_endpoint_descriptor fs_subset_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -160,7 +160,7 @@ static struct usb_endpoint_descriptor fs_in_desc __initdata = {
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+ };
+ 
+-static struct usb_endpoint_descriptor fs_out_desc __initdata = {
++static struct usb_endpoint_descriptor fs_subset_out_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -170,18 +170,18 @@ static struct usb_endpoint_descriptor fs_out_desc __initdata = {
+ 
+ static struct usb_descriptor_header *fs_eth_function[] __initdata = {
+ 	(struct usb_descriptor_header *) &subset_data_intf,
+-	(struct usb_descriptor_header *) &header_desc,
++	(struct usb_descriptor_header *) &mdlm_header_desc,
+ 	(struct usb_descriptor_header *) &mdlm_desc,
+ 	(struct usb_descriptor_header *) &mdlm_detail_desc,
+ 	(struct usb_descriptor_header *) &ether_desc,
+-	(struct usb_descriptor_header *) &fs_in_desc,
+-	(struct usb_descriptor_header *) &fs_out_desc,
++	(struct usb_descriptor_header *) &fs_subset_in_desc,
++	(struct usb_descriptor_header *) &fs_subset_out_desc,
+ 	NULL,
+ };
+ 
+ /* high speed support: */
+ 
+-static struct usb_endpoint_descriptor hs_in_desc __initdata = {
++static struct usb_endpoint_descriptor hs_subset_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -189,7 +189,7 @@ static struct usb_endpoint_descriptor hs_in_desc __initdata = {
+ 	.wMaxPacketSize =	__constant_cpu_to_le16(512),
+ };
+ 
+-static struct usb_endpoint_descriptor hs_out_desc __initdata = {
++static struct usb_endpoint_descriptor hs_subset_out_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+@@ -199,12 +199,12 @@ static struct usb_endpoint_descriptor hs_out_desc __initdata = {
+ 
+ static struct usb_descriptor_header *hs_eth_function[] __initdata = {
+ 	(struct usb_descriptor_header *) &subset_data_intf,
+-	(struct usb_descriptor_header *) &header_desc,
++	(struct usb_descriptor_header *) &mdlm_header_desc,
+ 	(struct usb_descriptor_header *) &mdlm_desc,
+ 	(struct usb_descriptor_header *) &mdlm_detail_desc,
+ 	(struct usb_descriptor_header *) &ether_desc,
+-	(struct usb_descriptor_header *) &hs_in_desc,
+-	(struct usb_descriptor_header *) &hs_out_desc,
++	(struct usb_descriptor_header *) &hs_subset_in_desc,
++	(struct usb_descriptor_header *) &hs_subset_out_desc,
+ 	NULL,
+ };
+ 
+@@ -281,13 +281,13 @@ geth_bind(struct usb_configuration *c, struct usb_function *f)
+ 	status = -ENODEV;
+ 
+ 	/* allocate instance-specific endpoints */
+-	ep = usb_ep_autoconfig(cdev->gadget, &fs_in_desc);
++	ep = usb_ep_autoconfig(cdev->gadget, &fs_subset_in_desc);
+ 	if (!ep)
+ 		goto fail;
+ 	geth->port.in_ep = ep;
+ 	ep->driver_data = cdev;	/* claim */
+ 
+-	ep = usb_ep_autoconfig(cdev->gadget, &fs_out_desc);
++	ep = usb_ep_autoconfig(cdev->gadget, &fs_subset_out_desc);
+ 	if (!ep)
+ 		goto fail;
+ 	geth->port.out_ep = ep;
+@@ -297,9 +297,9 @@ geth_bind(struct usb_configuration *c, struct usb_function *f)
+ 	f->descriptors = usb_copy_descriptors(fs_eth_function);
+ 
+ 	geth->fs.in = usb_find_endpoint(fs_eth_function,
+-			f->descriptors, &fs_in_desc);
++			f->descriptors, &fs_subset_in_desc);
+ 	geth->fs.out = usb_find_endpoint(fs_eth_function,
+-			f->descriptors, &fs_out_desc);
++			f->descriptors, &fs_subset_out_desc);
+ 
+ 
+ 	/* support all relevant hardware speeds... we expect that when
+@@ -307,18 +307,18 @@ geth_bind(struct usb_configuration *c, struct usb_function *f)
+ 	 * both speeds
+ 	 */
+ 	if (gadget_is_dualspeed(c->cdev->gadget)) {
+-		hs_in_desc.bEndpointAddress =
+-				fs_in_desc.bEndpointAddress;
+-		hs_out_desc.bEndpointAddress =
+-				fs_out_desc.bEndpointAddress;
++		hs_subset_in_desc.bEndpointAddress =
++				fs_subset_in_desc.bEndpointAddress;
++		hs_subset_out_desc.bEndpointAddress =
++				fs_subset_out_desc.bEndpointAddress;
+ 
+ 		/* copy descriptors, and track endpoint copies */
+ 		f->hs_descriptors = usb_copy_descriptors(hs_eth_function);
+ 
+ 		geth->hs.in = usb_find_endpoint(hs_eth_function,
+-				f->hs_descriptors, &hs_in_desc);
++				f->hs_descriptors, &hs_subset_in_desc);
+ 		geth->hs.out = usb_find_endpoint(hs_eth_function,
+-				f->hs_descriptors, &hs_out_desc);
++				f->hs_descriptors, &hs_subset_out_desc);
+ 	}
+ 
+ 	/* NOTE:  all that is done without knowing or caring about
+diff --git a/drivers/usb/gadget/rndis.c b/drivers/usb/gadget/rndis.c
+index 7228e85..8c26f5e 100644
+--- a/drivers/usb/gadget/rndis.c
++++ b/drivers/usb/gadget/rndis.c
+@@ -57,11 +57,6 @@ MODULE_PARM_DESC (rndis_debug, "enable debugging");
+ #define rndis_debug		0
+ #endif
+ 
+-#define DBG(str,args...) do { \
+-	if (rndis_debug) \
+-		pr_debug(str , ## args); \
+-	} while (0)
+-
+ #define RNDIS_MAX_CONFIGS	1
+ 
+ 
+@@ -183,9 +178,9 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	if (!resp) return -ENOMEM;
+ 
+ 	if (buf_len && rndis_debug > 1) {
+-		DBG("query OID %08x value, len %d:\n", OID, buf_len);
++		pr_debug("query OID %08x value, len %d:\n", OID, buf_len);
+ 		for (i = 0; i < buf_len; i += 16) {
+-			DBG("%03d: %08x %08x %08x %08x\n", i,
++			pr_debug("%03d: %08x %08x %08x %08x\n", i,
+ 				get_unaligned_le32(&buf[i]),
+ 				get_unaligned_le32(&buf[i + 4]),
+ 				get_unaligned_le32(&buf[i + 8]),
+@@ -209,7 +204,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_SUPPORTED_LIST:
+-		DBG("%s: OID_GEN_SUPPORTED_LIST\n", __func__);
++		pr_debug("%s: OID_GEN_SUPPORTED_LIST\n", __func__);
+ 		length = sizeof (oid_supported_list);
+ 		count  = length / sizeof (u32);
+ 		for (i = 0; i < count; i++)
+@@ -219,7 +214,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_HARDWARE_STATUS:
+-		DBG("%s: OID_GEN_HARDWARE_STATUS\n", __func__);
++		pr_debug("%s: OID_GEN_HARDWARE_STATUS\n", __func__);
+ 		/* Bogus question!
+ 		 * Hardware must be ready to receive high level protocols.
+ 		 * BTW:
+@@ -232,14 +227,14 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_MEDIA_SUPPORTED:
+-		DBG("%s: OID_GEN_MEDIA_SUPPORTED\n", __func__);
++		pr_debug("%s: OID_GEN_MEDIA_SUPPORTED\n", __func__);
+ 		*outbuf = cpu_to_le32 (rndis_per_dev_params [configNr].medium);
+ 		retval = 0;
+ 		break;
+ 
+ 	/* mandatory */
+ 	case OID_GEN_MEDIA_IN_USE:
+-		DBG("%s: OID_GEN_MEDIA_IN_USE\n", __func__);
++		pr_debug("%s: OID_GEN_MEDIA_IN_USE\n", __func__);
+ 		/* one medium, one transport... (maybe you do it better) */
+ 		*outbuf = cpu_to_le32 (rndis_per_dev_params [configNr].medium);
+ 		retval = 0;
+@@ -247,7 +242,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_MAXIMUM_FRAME_SIZE:
+-		DBG("%s: OID_GEN_MAXIMUM_FRAME_SIZE\n", __func__);
++		pr_debug("%s: OID_GEN_MAXIMUM_FRAME_SIZE\n", __func__);
+ 		if (rndis_per_dev_params [configNr].dev) {
+ 			*outbuf = cpu_to_le32 (
+ 				rndis_per_dev_params [configNr].dev->mtu);
+@@ -258,7 +253,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	/* mandatory */
+ 	case OID_GEN_LINK_SPEED:
+ 		if (rndis_debug > 1)
+-			DBG("%s: OID_GEN_LINK_SPEED\n", __func__);
++			pr_debug("%s: OID_GEN_LINK_SPEED\n", __func__);
+ 		if (rndis_per_dev_params [configNr].media_state
+ 				== NDIS_MEDIA_STATE_DISCONNECTED)
+ 			*outbuf = __constant_cpu_to_le32 (0);
+@@ -270,7 +265,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_TRANSMIT_BLOCK_SIZE:
+-		DBG("%s: OID_GEN_TRANSMIT_BLOCK_SIZE\n", __func__);
++		pr_debug("%s: OID_GEN_TRANSMIT_BLOCK_SIZE\n", __func__);
+ 		if (rndis_per_dev_params [configNr].dev) {
+ 			*outbuf = cpu_to_le32 (
+ 				rndis_per_dev_params [configNr].dev->mtu);
+@@ -280,7 +275,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_RECEIVE_BLOCK_SIZE:
+-		DBG("%s: OID_GEN_RECEIVE_BLOCK_SIZE\n", __func__);
++		pr_debug("%s: OID_GEN_RECEIVE_BLOCK_SIZE\n", __func__);
+ 		if (rndis_per_dev_params [configNr].dev) {
+ 			*outbuf = cpu_to_le32 (
+ 				rndis_per_dev_params [configNr].dev->mtu);
+@@ -290,7 +285,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_VENDOR_ID:
+-		DBG("%s: OID_GEN_VENDOR_ID\n", __func__);
++		pr_debug("%s: OID_GEN_VENDOR_ID\n", __func__);
+ 		*outbuf = cpu_to_le32 (
+ 			rndis_per_dev_params [configNr].vendorID);
+ 		retval = 0;
+@@ -298,7 +293,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_VENDOR_DESCRIPTION:
+-		DBG("%s: OID_GEN_VENDOR_DESCRIPTION\n", __func__);
++		pr_debug("%s: OID_GEN_VENDOR_DESCRIPTION\n", __func__);
+ 		length = strlen (rndis_per_dev_params [configNr].vendorDescr);
+ 		memcpy (outbuf,
+ 			rndis_per_dev_params [configNr].vendorDescr, length);
+@@ -306,7 +301,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 		break;
+ 
+ 	case OID_GEN_VENDOR_DRIVER_VERSION:
+-		DBG("%s: OID_GEN_VENDOR_DRIVER_VERSION\n", __func__);
++		pr_debug("%s: OID_GEN_VENDOR_DRIVER_VERSION\n", __func__);
+ 		/* Created as LE */
+ 		*outbuf = rndis_driver_version;
+ 		retval = 0;
+@@ -314,14 +309,14 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_CURRENT_PACKET_FILTER:
+-		DBG("%s: OID_GEN_CURRENT_PACKET_FILTER\n", __func__);
++		pr_debug("%s: OID_GEN_CURRENT_PACKET_FILTER\n", __func__);
+ 		*outbuf = cpu_to_le32 (*rndis_per_dev_params[configNr].filter);
+ 		retval = 0;
+ 		break;
+ 
+ 	/* mandatory */
+ 	case OID_GEN_MAXIMUM_TOTAL_SIZE:
+-		DBG("%s: OID_GEN_MAXIMUM_TOTAL_SIZE\n", __func__);
++		pr_debug("%s: OID_GEN_MAXIMUM_TOTAL_SIZE\n", __func__);
+ 		*outbuf = __constant_cpu_to_le32(RNDIS_MAX_TOTAL_SIZE);
+ 		retval = 0;
+ 		break;
+@@ -329,14 +324,14 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	/* mandatory */
+ 	case OID_GEN_MEDIA_CONNECT_STATUS:
+ 		if (rndis_debug > 1)
+-			DBG("%s: OID_GEN_MEDIA_CONNECT_STATUS\n", __func__);
++			pr_debug("%s: OID_GEN_MEDIA_CONNECT_STATUS\n", __func__);
+ 		*outbuf = cpu_to_le32 (rndis_per_dev_params [configNr]
+ 						.media_state);
+ 		retval = 0;
+ 		break;
+ 
+ 	case OID_GEN_PHYSICAL_MEDIUM:
+-		DBG("%s: OID_GEN_PHYSICAL_MEDIUM\n", __func__);
++		pr_debug("%s: OID_GEN_PHYSICAL_MEDIUM\n", __func__);
+ 		*outbuf = __constant_cpu_to_le32 (0);
+ 		retval = 0;
+ 		break;
+@@ -346,7 +341,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	 * versions emit undefined RNDIS messages. DOCUMENT ALL THESE!
+ 	 */
+ 	case OID_GEN_MAC_OPTIONS:		/* from WinME */
+-		DBG("%s: OID_GEN_MAC_OPTIONS\n", __func__);
++		pr_debug("%s: OID_GEN_MAC_OPTIONS\n", __func__);
+ 		*outbuf = __constant_cpu_to_le32(
+ 			  NDIS_MAC_OPTION_RECEIVE_SERIALIZED
+ 			| NDIS_MAC_OPTION_FULL_DUPLEX);
+@@ -358,7 +353,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	/* mandatory */
+ 	case OID_GEN_XMIT_OK:
+ 		if (rndis_debug > 1)
+-			DBG("%s: OID_GEN_XMIT_OK\n", __func__);
++			pr_debug("%s: OID_GEN_XMIT_OK\n", __func__);
+ 		if (stats) {
+ 			*outbuf = cpu_to_le32(stats->tx_packets
+ 				- stats->tx_errors - stats->tx_dropped);
+@@ -369,7 +364,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	/* mandatory */
+ 	case OID_GEN_RCV_OK:
+ 		if (rndis_debug > 1)
+-			DBG("%s: OID_GEN_RCV_OK\n", __func__);
++			pr_debug("%s: OID_GEN_RCV_OK\n", __func__);
+ 		if (stats) {
+ 			*outbuf = cpu_to_le32(stats->rx_packets
+ 				- stats->rx_errors - stats->rx_dropped);
+@@ -380,7 +375,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	/* mandatory */
+ 	case OID_GEN_XMIT_ERROR:
+ 		if (rndis_debug > 1)
+-			DBG("%s: OID_GEN_XMIT_ERROR\n", __func__);
++			pr_debug("%s: OID_GEN_XMIT_ERROR\n", __func__);
+ 		if (stats) {
+ 			*outbuf = cpu_to_le32(stats->tx_errors);
+ 			retval = 0;
+@@ -390,7 +385,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 	/* mandatory */
+ 	case OID_GEN_RCV_ERROR:
+ 		if (rndis_debug > 1)
+-			DBG("%s: OID_GEN_RCV_ERROR\n", __func__);
++			pr_debug("%s: OID_GEN_RCV_ERROR\n", __func__);
+ 		if (stats) {
+ 			*outbuf = cpu_to_le32(stats->rx_errors);
+ 			retval = 0;
+@@ -399,7 +394,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_GEN_RCV_NO_BUFFER:
+-		DBG("%s: OID_GEN_RCV_NO_BUFFER\n", __func__);
++		pr_debug("%s: OID_GEN_RCV_NO_BUFFER\n", __func__);
+ 		if (stats) {
+ 			*outbuf = cpu_to_le32(stats->rx_dropped);
+ 			retval = 0;
+@@ -410,7 +405,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_802_3_PERMANENT_ADDRESS:
+-		DBG("%s: OID_802_3_PERMANENT_ADDRESS\n", __func__);
++		pr_debug("%s: OID_802_3_PERMANENT_ADDRESS\n", __func__);
+ 		if (rndis_per_dev_params [configNr].dev) {
+ 			length = ETH_ALEN;
+ 			memcpy (outbuf,
+@@ -422,7 +417,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_802_3_CURRENT_ADDRESS:
+-		DBG("%s: OID_802_3_CURRENT_ADDRESS\n", __func__);
++		pr_debug("%s: OID_802_3_CURRENT_ADDRESS\n", __func__);
+ 		if (rndis_per_dev_params [configNr].dev) {
+ 			length = ETH_ALEN;
+ 			memcpy (outbuf,
+@@ -434,7 +429,7 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_802_3_MULTICAST_LIST:
+-		DBG("%s: OID_802_3_MULTICAST_LIST\n", __func__);
++		pr_debug("%s: OID_802_3_MULTICAST_LIST\n", __func__);
+ 		/* Multicast base address only */
+ 		*outbuf = __constant_cpu_to_le32 (0xE0000000);
+ 		retval = 0;
+@@ -442,21 +437,21 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_802_3_MAXIMUM_LIST_SIZE:
+-		DBG("%s: OID_802_3_MAXIMUM_LIST_SIZE\n", __func__);
++		pr_debug("%s: OID_802_3_MAXIMUM_LIST_SIZE\n", __func__);
+ 		/* Multicast base address only */
+ 		*outbuf = __constant_cpu_to_le32 (1);
+ 		retval = 0;
+ 		break;
+ 
+ 	case OID_802_3_MAC_OPTIONS:
+-		DBG("%s: OID_802_3_MAC_OPTIONS\n", __func__);
++		pr_debug("%s: OID_802_3_MAC_OPTIONS\n", __func__);
+ 		break;
+ 
+ 	/* ieee802.3 statistics OIDs (table 4-4) */
+ 
+ 	/* mandatory */
+ 	case OID_802_3_RCV_ERROR_ALIGNMENT:
+-		DBG("%s: OID_802_3_RCV_ERROR_ALIGNMENT\n", __func__);
++		pr_debug("%s: OID_802_3_RCV_ERROR_ALIGNMENT\n", __func__);
+ 		if (stats) {
+ 			*outbuf = cpu_to_le32(stats->rx_frame_errors);
+ 			retval = 0;
+@@ -465,14 +460,14 @@ gen_ndis_query_resp (int configNr, u32 OID, u8 *buf, unsigned buf_len,
+ 
+ 	/* mandatory */
+ 	case OID_802_3_XMIT_ONE_COLLISION:
+-		DBG("%s: OID_802_3_XMIT_ONE_COLLISION\n", __func__);
++		pr_debug("%s: OID_802_3_XMIT_ONE_COLLISION\n", __func__);
+ 		*outbuf = __constant_cpu_to_le32 (0);
+ 		retval = 0;
+ 		break;
+ 
+ 	/* mandatory */
+ 	case OID_802_3_XMIT_MORE_COLLISIONS:
+-		DBG("%s: OID_802_3_XMIT_MORE_COLLISIONS\n", __func__);
++		pr_debug("%s: OID_802_3_XMIT_MORE_COLLISIONS\n", __func__);
+ 		*outbuf = __constant_cpu_to_le32 (0);
+ 		retval = 0;
+ 		break;
+@@ -504,9 +499,9 @@ static int gen_ndis_set_resp (u8 configNr, u32 OID, u8 *buf, u32 buf_len,
+ 		return -ENOMEM;
+ 
+ 	if (buf_len && rndis_debug > 1) {
+-		DBG("set OID %08x value, len %d:\n", OID, buf_len);
++		pr_debug("set OID %08x value, len %d:\n", OID, buf_len);
+ 		for (i = 0; i < buf_len; i += 16) {
+-			DBG("%03d: %08x %08x %08x %08x\n", i,
++			pr_debug("%03d: %08x %08x %08x %08x\n", i,
+ 				get_unaligned_le32(&buf[i]),
+ 				get_unaligned_le32(&buf[i + 4]),
+ 				get_unaligned_le32(&buf[i + 8]),
+@@ -525,7 +520,7 @@ static int gen_ndis_set_resp (u8 configNr, u32 OID, u8 *buf, u32 buf_len,
+ 		 *	MULTICAST, ALL_MULTICAST, BROADCAST
+ 		 */
+ 		*params->filter = (u16)get_unaligned_le32(buf);
+-		DBG("%s: OID_GEN_CURRENT_PACKET_FILTER %08x\n",
++		pr_debug("%s: OID_GEN_CURRENT_PACKET_FILTER %08x\n",
+ 			__func__, *params->filter);
+ 
+ 		/* this call has a significant side effect:  it's
+@@ -547,7 +542,7 @@ static int gen_ndis_set_resp (u8 configNr, u32 OID, u8 *buf, u32 buf_len,
+ 
+ 	case OID_802_3_MULTICAST_LIST:
+ 		/* I think we can ignore this */
+-		DBG("%s: OID_802_3_MULTICAST_LIST\n", __func__);
++		pr_debug("%s: OID_802_3_MULTICAST_LIST\n", __func__);
+ 		retval = 0;
+ 		break;
+ 
+@@ -606,7 +601,7 @@ static int rndis_query_response (int configNr, rndis_query_msg_type *buf)
+ 	rndis_resp_t            *r;
+ 	struct rndis_params	*params = rndis_per_dev_params + configNr;
+ 
+-	// DBG("%s: OID = %08X\n", __func__, cpu_to_le32(buf->OID));
++	/* pr_debug("%s: OID = %08X\n", __func__, cpu_to_le32(buf->OID)); */
+ 	if (!params->dev)
+ 		return -ENOTSUPP;
+ 
+@@ -659,15 +654,15 @@ static int rndis_set_response (int configNr, rndis_set_msg_type *buf)
+ 	BufOffset = le32_to_cpu (buf->InformationBufferOffset);
+ 
+ #ifdef	VERBOSE_DEBUG
+-	DBG("%s: Length: %d\n", __func__, BufLength);
+-	DBG("%s: Offset: %d\n", __func__, BufOffset);
+-	DBG("%s: InfoBuffer: ", __func__);
++	pr_debug("%s: Length: %d\n", __func__, BufLength);
++	pr_debug("%s: Offset: %d\n", __func__, BufOffset);
++	pr_debug("%s: InfoBuffer: ", __func__);
+ 
+ 	for (i = 0; i < BufLength; i++) {
+-		DBG("%02x ", *(((u8 *) buf) + i + 8 + BufOffset));
++		pr_debug("%02x ", *(((u8 *) buf) + i + 8 + BufOffset));
+ 	}
+ 
+-	DBG("\n");
++	pr_debug("\n");
+ #endif
+ 
+ 	resp->MessageType = __constant_cpu_to_le32 (REMOTE_NDIS_SET_CMPLT);
+@@ -821,14 +816,14 @@ int rndis_msg_parser (u8 configNr, u8 *buf)
+ 	/* For USB: responses may take up to 10 seconds */
+ 	switch (MsgType) {
+ 	case REMOTE_NDIS_INITIALIZE_MSG:
+-		DBG("%s: REMOTE_NDIS_INITIALIZE_MSG\n",
++		pr_debug("%s: REMOTE_NDIS_INITIALIZE_MSG\n",
+ 			__func__ );
+ 		params->state = RNDIS_INITIALIZED;
+ 		return  rndis_init_response (configNr,
+ 					(rndis_init_msg_type *) buf);
+ 
+ 	case REMOTE_NDIS_HALT_MSG:
+-		DBG("%s: REMOTE_NDIS_HALT_MSG\n",
++		pr_debug("%s: REMOTE_NDIS_HALT_MSG\n",
+ 			__func__ );
+ 		params->state = RNDIS_UNINITIALIZED;
+ 		if (params->dev) {
+@@ -846,7 +841,7 @@ int rndis_msg_parser (u8 configNr, u8 *buf)
+ 					(rndis_set_msg_type *) buf);
+ 
+ 	case REMOTE_NDIS_RESET_MSG:
+-		DBG("%s: REMOTE_NDIS_RESET_MSG\n",
++		pr_debug("%s: REMOTE_NDIS_RESET_MSG\n",
+ 			__func__ );
+ 		return rndis_reset_response (configNr,
+ 					(rndis_reset_msg_type *) buf);
+@@ -854,7 +849,7 @@ int rndis_msg_parser (u8 configNr, u8 *buf)
+ 	case REMOTE_NDIS_KEEPALIVE_MSG:
+ 		/* For USB: host does this every 5 seconds */
+ 		if (rndis_debug > 1)
+-			DBG("%s: REMOTE_NDIS_KEEPALIVE_MSG\n",
++			pr_debug("%s: REMOTE_NDIS_KEEPALIVE_MSG\n",
+ 				__func__ );
+ 		return rndis_keepalive_response (configNr,
+ 						 (rndis_keepalive_msg_type *)
+@@ -870,7 +865,7 @@ int rndis_msg_parser (u8 configNr, u8 *buf)
+ 		{
+ 			unsigned i;
+ 			for (i = 0; i < MsgLength; i += 16) {
+-				DBG("%03d: "
++				pr_debug("%03d: "
+ 					" %02x %02x %02x %02x"
+ 					" %02x %02x %02x %02x"
+ 					" %02x %02x %02x %02x"
+@@ -905,18 +900,18 @@ int rndis_register(void (*resp_avail)(void *v), void *v)
+ 			rndis_per_dev_params [i].used = 1;
+ 			rndis_per_dev_params [i].resp_avail = resp_avail;
+ 			rndis_per_dev_params [i].v = v;
+-			DBG("%s: configNr = %d\n", __func__, i);
++			pr_debug("%s: configNr = %d\n", __func__, i);
+ 			return i;
+ 		}
+ 	}
+-	DBG("failed\n");
++	pr_debug("failed\n");
+ 
+ 	return -ENODEV;
  }
+ 
+ void rndis_deregister (int configNr)
+ {
+-	DBG("%s: \n", __func__ );
++	pr_debug("%s: \n", __func__);
+ 
+ 	if (configNr >= RNDIS_MAX_CONFIGS) return;
+ 	rndis_per_dev_params [configNr].used = 0;
+@@ -926,7 +921,7 @@ void rndis_deregister (int configNr)
+ 
+ int rndis_set_param_dev(u8 configNr, struct net_device *dev, u16 *cdc_filter)
+ {
+-	DBG("%s:\n", __func__ );
++	pr_debug("%s:\n", __func__);
+ 	if (!dev)
+ 		return -EINVAL;
+ 	if (configNr >= RNDIS_MAX_CONFIGS) return -1;
+@@ -939,7 +934,7 @@ int rndis_set_param_dev(u8 configNr, struct net_device *dev, u16 *cdc_filter)
+ 
+ int rndis_set_param_vendor (u8 configNr, u32 vendorID, const char *vendorDescr)
+ {
+-	DBG("%s:\n", __func__ );
++	pr_debug("%s:\n", __func__);
+ 	if (!vendorDescr) return -1;
+ 	if (configNr >= RNDIS_MAX_CONFIGS) return -1;
+ 
+@@ -951,7 +946,7 @@ int rndis_set_param_vendor (u8 configNr, u32 vendorID, const char *vendorDescr)
+ 
+ int rndis_set_param_medium (u8 configNr, u32 medium, u32 speed)
+ {
+-	DBG("%s: %u %u\n", __func__, medium, speed);
++	pr_debug("%s: %u %u\n", __func__, medium, speed);
+ 	if (configNr >= RNDIS_MAX_CONFIGS) return -1;
+ 
+ 	rndis_per_dev_params [configNr].medium = medium;
+@@ -1114,7 +1109,7 @@ static ssize_t rndis_proc_write(struct file *file, const char __user *buffer,
+ 			break;
+ 		default:
+ 			if (fl_speed) p->speed = speed;
+-			else DBG("%c is not valid\n", c);
++			else pr_debug("%c is not valid\n", c);
+ 			break;
+ 		}
+ 
+@@ -1159,12 +1154,12 @@ int __init rndis_init (void)
+ 					&rndis_proc_fops,
+ 					(void *)(rndis_per_dev_params + i))))
+ 		{
+-			DBG("%s :remove entries", __func__);
++			pr_debug("%s :remove entries", __func__);
+ 			while (i) {
+ 				sprintf (name, NAME_TEMPLATE, --i);
+ 				remove_proc_entry (name, NULL);
+ 			}
+-			DBG("\n");
++			pr_debug("\n");
+ 			return -EIO;
+ 		}
+ #endif
 -- 
 1.6.0.2
 
