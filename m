@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYJPXo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbYJPXqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbYJPXo5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYJPXos
+	id S1755586AbYJPXqM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYJPXp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:44:48 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43679 "EHLO e5.ny.us.ibm.com"
+	Thu, 16 Oct 2008 19:45:56 -0400
+Received: from mga11.intel.com ([192.55.52.93]:29306 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbYJPXor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:44:47 -0400
-Date: Thu, 16 Oct 2008 19:44:37 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: davem@davemloft.net, alan@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: Make uart_port's ioport "resource_size_t"
-Message-ID: <20081016194437.14c7604b@zod.rchland.ibm.com>
-In-Reply-To: <20081016144645.1c868fc0.akpm@linux-foundation.org>
-References: <20081014162621.GA18166@yoda.jdub.homelinux.org>
-	<20081016144645.1c868fc0.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751281AbYJPXp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 19:45:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,427,1220252400"; 
+   d="scan'208";a="628112589"
+Message-Id: <20081016233153.093366000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 16 Oct 2008 16:31:53 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, dwmw2@infradead.org, jbarnes@virtuousgeek.org
+Cc: youquan.song@intel.com, suresh.b.siddha@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: [patch 0/4] dmar: queued invalidation patches
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008 14:46:45 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Reposting the patchset posted earlier on Oct 8th. This time against Linus's git.
 
-> On Tue, 14 Oct 2008 12:26:21 -0400
-> Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> 
-> > Recently uart_port's iobase was changed to be an 'unsigned
-> > long' to avoid chopping off the upper 32-bits of the
-> > address on 64-bit CPUs.  However, there are CPUs that are
-> > 32-bit but have a 64-bit address space.  This changes
-> > iobase to be 'resource_size_t' to accommodate those types
-> > of systems.  This also matches what is done for the mapbase
-> > member of uart_port.
-> > 
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> > 
-> > ---
-> > 
-> > diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-> > index e27f216..cb0185b 100644
-> > --- a/include/linux/serial_core.h
-> > +++ b/include/linux/serial_core.h
-> > @@ -241,7 +241,7 @@ typedef unsigned int __bitwise__ upf_t;
-> >  
-> >  struct uart_port {
-> >  	spinlock_t		lock;			/* port lock */
-> > -	unsigned long		iobase;			/* in/out[bwl] */
-> > +	resource_size_t		iobase;			/* in/out[bwl] */
-> >  	unsigned char __iomem	*membase;		/* read/write[bwl] */
-> >  	unsigned int		irq;			/* irq number */
-> >  	unsigned int		uartclk;		/* base uart clock */
-> 
-> This will of course require that all now-broken printk()s be unbroken. 
-> I spot two in serial_core.c alone.
+As this patchset removes a temporary quirk (disabling dma-remapping
+when intr-remapping is enabled) we would like to see it go in to Linus tree
+in this merge window. I am not sure if David is ready with his iommu
+git tree setup. As Ingo pushed the original pieces, I am ok with Ingo
+picking this up and pushing it to Linus. Either way, I am fine and would
+like to see go into some subsystem tree and to Linus before the merge window
+is closed. Thanks.
+---
 
-Yes, I know that.  There's a patch, or at least a discussion, floating
-around on how to fix this with a %pX thing right?  We can delay this
-until that comes to fruition if you'd like.
+This patchset enables queued invalidation for DMA-remapping. And as such
+removes the quirk from the x2apic/interrupt-remapping patchset which
+disables dma-remapping while enabling interrupt-remapping.
 
-josh
+Patches are on top of -tip tree because of its interaction with
+x2apic/interrupt-remapping patches in tip.
+
+Signed-off-by: Youquan Song <youquan.song@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+-- 
+
