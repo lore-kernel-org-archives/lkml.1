@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYJPSEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbYJPSDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbYJPSEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYJPSBG
+	id S1757734AbYJPSDc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbYJPSAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:01:06 -0400
-Received: from ns.suse.de ([195.135.220.2]:36179 "EHLO mx1.suse.de"
+	Thu, 16 Oct 2008 14:00:53 -0400
+Received: from ns1.suse.de ([195.135.220.2]:36115 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754761AbYJPSBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:01:03 -0400
-Date: Thu, 16 Oct 2008 10:56:44 -0700
+	id S1754680AbYJPSAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:00:52 -0400
+Date: Thu, 16 Oct 2008 10:56:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 11/14] x86: SB450: skip IRQ0 override if it is not routed
-	to INT2 of IOAPIC
-Message-ID: <20081016175644.GL12850@suse.de>
+       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 09/14] b43legacy: Fix failure in rate-adjustment mechanism
+Message-ID: <20081016175639.GJ12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-sb450-skip-irq0-override-if-it-is-not-routed-to-int2-of-ioapic.patch"
+Content-Disposition: inline; filename="b43legacy-fix-failure-in-rate-adjustment-mechanism.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,93 +40,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-commit 33fb0e4eb53f16af312f9698f974e2e64af39c12 upstream
+commit c6a2afdacccd56cc0be8e9a7977f0ed1509069f6 upstream
+Date: Sat, 6 Sep 2008 16:51:22 -0500
+Subject: [patch 09/14] b43legacy: Fix failure in rate-adjustment mechanism
 
-On some HP nx6... laptops (e.g. nx6325) BIOS reports an IRQ0 override
-but the SB450 chipset is configured such that timer interrupts goe to
-INT0 of IOAPIC.
+A coding error present since b43legacy was incorporated into the
+kernel has prevented the driver from using the rate-setting mechanism
+of mac80211. The driver has been forced to remain at a 1 Mb/s rate.
 
-Check IRQ0 routing and if it is routed to INT0 of IOAPIC skip the
-timer override.
-
-[ This more generic PCI ID based quirk should alleviate the need for
-  dmi_ignore_irq0_timer_override DMI quirks. ]
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-Acked-by: "Maciej W. Rozycki" <macro@linux-mips.org>
-Tested-by: Dmitry Torokhov <dtor@mail.ru>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/early-quirks.c |   48 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+ drivers/net/wireless/b43legacy/xmit.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kernel/early-quirks.c
-+++ b/arch/x86/kernel/early-quirks.c
-@@ -95,6 +95,52 @@ static void __init nvidia_bugs(int num, 
- 
- }
- 
-+static u32 ati_ixp4x0_rev(int num, int slot, int func)
-+{
-+	u32 d;
-+	u8  b;
-+
-+	b = read_pci_config_byte(num, slot, func, 0xac);
-+	b &= ~(1<<5);
-+	write_pci_config_byte(num, slot, func, 0xac, b);
-+
-+	d = read_pci_config(num, slot, func, 0x70);
-+	d |= 1<<8;
-+	write_pci_config(num, slot, func, 0x70, d);
-+
-+	d = read_pci_config(num, slot, func, 0x8);
-+	d &= 0xff;
-+	return d;
-+}
-+
-+static void __init ati_bugs(int num, int slot, int func)
-+{
-+#if defined(CONFIG_ACPI) && defined (CONFIG_X86_IO_APIC)
-+	u32 d;
-+	u8  b;
-+
-+	if (acpi_use_timer_override)
-+		return;
-+
-+	d = ati_ixp4x0_rev(num, slot, func);
-+	if (d  < 0x82)
-+		acpi_skip_timer_override = 1;
-+	else {
-+		/* check for IRQ0 interrupt swap */
-+		outb(0x72, 0xcd6); b = inb(0xcd7);
-+		if (!(b & 0x2))
-+			acpi_skip_timer_override = 1;
-+	}
-+
-+	if (acpi_skip_timer_override) {
-+		printk(KERN_INFO "SB4X0 revision 0x%x\n", d);
-+		printk(KERN_INFO "Ignoring ACPI timer override.\n");
-+		printk(KERN_INFO "If you got timer trouble "
-+		       "try acpi_use_timer_override\n");
-+	}
-+#endif
-+}
-+
- #define QFLAG_APPLY_ONCE 	0x1
- #define QFLAG_APPLIED		0x2
- #define QFLAG_DONE		(QFLAG_APPLY_ONCE|QFLAG_APPLIED)
-@@ -114,6 +160,8 @@ static struct chipset early_qrk[] __init
- 	  PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, QFLAG_APPLY_ONCE, via_bugs },
- 	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB,
- 	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, fix_hypertransport_config },
-+	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
-+	  PCI_CLASS_SERIAL_SMBUS, PCI_ANY_ID, 0, ati_bugs },
- 	{}
- };
- 
+--- a/drivers/net/wireless/b43legacy/xmit.c
++++ b/drivers/net/wireless/b43legacy/xmit.c
+@@ -626,7 +626,7 @@ void b43legacy_handle_hwtxstatus(struct 
+ 	tmp = hw->count;
+ 	status.frame_count = (tmp >> 4);
+ 	status.rts_count = (tmp & 0x0F);
+-	tmp = hw->flags;
++	tmp = hw->flags << 1;
+ 	status.supp_reason = ((tmp & 0x1C) >> 2);
+ 	status.pm_indicated = !!(tmp & 0x80);
+ 	status.intermediate = !!(tmp & 0x40);
 
 -- 
