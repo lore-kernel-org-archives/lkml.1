@@ -1,79 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYJPNwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYJPNyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYJPNwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 09:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYJPNwh
+	id S1755020AbYJPNyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 09:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYJPNyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 09:52:37 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:41837 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbYJPNwh (ORCPT
+	Thu, 16 Oct 2008 09:54:25 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:42251 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbYJPNyY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 09:52:37 -0400
-Message-ID: <48F74674.20202@cs.columbia.edu>
-Date: Thu, 16 Oct 2008 09:49:40 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Thu, 16 Oct 2008 09:54:24 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: CaT <cat@zip.com.au>, James Bottomley <James.Bottomley@SteelEye.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>
+Date: Thu, 16 Oct 2008 07:54:07 -0600
+Subject: RE: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl
+ processing
+Thread-Topic: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl
+ processing
+Thread-Index: AckvJJ2GhMeDaq1TR0+CSBa4qYJUXgAccc3Q
+Message-ID: <4B6A08C587958942AA3002690DD4F8C32D24DF36@cosmail02.lsi.com>
+In-Reply-To: <20081016001721.GW19077@zip.com.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Daniel Lezcano <dlezcano@fr.ibm.com>
-CC: Cedric Le Goater <clg@fr.ibm.com>, jeremy@goop.org, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrey Mirkin <major@openvz.org>
-Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
-References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu> <1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu> <1223571036.11830.32.camel@nimitz>	<20081010153951.GD28977@elte.hu> <48F30315.1070909@fr.ibm.com>	<1223916223.29877.14.camel@nimitz> <48F6092D.6050400@fr.ibm.com> <48F685A3.1060804@cs.columbia.edu> <48F7352F.3020700@fr.ibm.com>
-In-Reply-To: <48F7352F.3020700@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+What MegaCli cmds did you using (DCMD or DCDB?).
 
+Thanks,
 
-Daniel Lezcano wrote:
-> Oren Laadan wrote:
->> Cedric Le Goater wrote:
->>> Dave Hansen wrote:
->>>> On Mon, 2008-10-13 at 10:13 +0200, Cedric Le Goater wrote:
->>>>> hmm, that's rather complex, because we have to take into account
->>>>> the kernel stack, no ? This is what Andrey was trying to solve in
->>>>> his patchset back in September :
->>>>>
->>>>>         http://lkml.org/lkml/2008/9/3/96
->>>>>
->>>>> the restart phase simulates a clone and switch_to to (not) restore
->>>>> the kernel stack. right ? 
->>>> Do we ever have to worry about the kernel stack if we simply say that
->>>> tasks have to be *in* userspace when we checkpoint them. 
->>> at a syscall boundary for example. that would make our life easier
->>> definitely.
->>
->> The ideal situation is never worry about kernel stack: either we catch
->> the task in user space or at a syscall boundary. This is taken care of
->> by freezing the tasks prior to checkpoint.
->>
->> The one exception (and it is a tedious one !) are states in which the
->> task is already frozen by definition: any ptrace blocking point where
->> the tracee waits for the tracer to grant permission to proceed with
->> its execution. Another example is in vfork(), waiting for completion.
-> 
-> I would say these are perfect places for "may be non-checkpointable" :)
+Bo Yang
 
-For now, yes. But we definitely want this capability in the long
-run; otherwise we won't be able to checkpoint a kernel compile
-('make' uses vfork), or anything with 'gdb' running inside, or
-'strace', and other goodies.
+-----Original Message-----
+From: CaT [mailto:cat@zip.com.au]
+Sent: Wednesday, October 15, 2008 8:17 PM
+To: James Bottomley
+Cc: Andrew Morton; Patro, Sumant; linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; Kolli, Neela; Yang, Bo; Patro, Sumant
+Subject: Re: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl processing
 
-> 
->> In both cases, there will be a kernel stack and we cannot avoid it.
->> The bad news is that it may be a bit tedious to restart these cases.
->> The good news, however, is that they are very well defined locations
->> with well defined semantics. So upon restart all that is needed is
->> to emulate the expected behavior had we not been checkpointed. This,
->> luckily, does not require rebuilding the kernel stack, but instead
->> some smart glue code for a finite set of special cases.
+With hope that resurrecting a 1.5yr old thread is not a wrong thing to
+do...
+
+On Wed, Feb 07, 2007 at 05:02:13PM -0500, James Bottomley wrote:
+> On Wed, 2007-02-07 at 13:30 -0800, Andrew Morton wrote:
+> > I suspect all this horror is due to stupidity in the DMA API.
+> >
+> > pci_alloc_consistent() just goes and assumes GFP_ATOMIC, whereas
+> > the caller (megasas_mgmt_fw_ioctl) would have been perfectly happy
+> > to use GFP_KERNEL.
+> >
+> > I bet this fixes it
+>
+> It does, but the DMA API was expanded to cope with this exact case, so
+> use dma_alloc_coherent() directly in the megaraid code instead.  The dev
+> is just &pci_dev->dev.
+
+I'm wondering if this was meant to lay this issue to rest. The reason
+being that I just got this error last night during a period of high disk
+and network IO (there was an over-the-network backup happening). dmesg
+gives:
+
+MegaCli: page allocation failure. order:0, mode:0x10d4
+
+Call Trace:
+ [<ffffffff80232c55>] printk_ratelimit+0x15/0x20
+ [<ffffffff8026306f>] __alloc_pages+0x2ff/0x320
+ [<ffffffff80212920>] dma_alloc_pages+0x20/0x90
+ [<ffffffff80212a29>] dma_alloc_coherent+0x99/0x200
+ [<ffffffff8043b859>] megasas_mgmt_ioctl_fw+0x1c9/0x450
+ [<ffffffff8043bce8>] megasas_mgmt_ioctl+0x28/0x40
+ [<ffffffff8028eff1>] do_ioctl+0x31/0x90
+ [<ffffffff8028f0c3>] vfs_ioctl+0x73/0x2d0
+ [<ffffffff8028f36a>] sys_ioctl+0x4a/0x80
+ [<ffffffff8020bb3e>] system_call+0x7e/0x83
+
+Mem-info:
+DMA per-cpu:
+CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
+DMA32 per-cpu:
+CPU    0: Hot: hi:  186, btch:  31 usd: 128   Cold: hi:   62, btch:  15 usd:  14
+CPU    1: Hot: hi:  186, btch:  31 usd: 183   Cold: hi:   62, btch:  15 usd:  59
+Active:322989 inactive:1073 dirty:168 writeback:7 unstable:0
+ free:3894 slab:171815 mapped:3457 pagetables:4277 bounce:0
+DMA free:6788kB min:16kB low:20kB high:24kB active:0kB inactive:0kB present:6148kB pages_scanned:0 all_unreclaimable? yes
+lowmem_reserve[]: 0 1988 1988 1988
+DMA32 free:8788kB min:5692kB low:7112kB high:8536kB active:1291956kB inactive:4292kB present:2035720kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 3*4kB 5*8kB 3*16kB 1*32kB 4*64kB 2*128kB 2*256kB 1*512kB 1*1024kB 0*2048kB 1*4096kB = 6788kB
+DMA32: 804*4kB 19*8kB 34*16kB 37*32kB 0*64kB 1*128kB 0*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 8808kB
+Swap cache: add 132711, delete 132711, find 496226/496957, race 0+0
+Free swap  = 979400kB
+Total swap = 979924kB
+Free swap:       979400kB
+524200 pages of RAM
+14486 reserved pages
+93705 pages shared
+0 pages swap cached
+megasas: Failed to alloc kernel SGL buffer for IOCTL
+MegaCli[18889]: segfault at 0000000000000000 rip 00000000004ab9b5 rsp 00007fff48802c30 error 4
+
+I was attempting to get the state of the raid array (monitoring for downed
+drives, etc) with MegaCLI 2.00.11. This is with kernel 2.6.23.16.
+
+--
+  "Police noticed some rustling sounds from Linn's bottom area
+  and on closer inspection a roll of cash was found protruding
+  from Linn's anus, the full amount of cash taken in the robbery."
+    - http://www.smh.com.au/news/world/robber-hides-loot-up-his-booty/2008/05/09/1210131248617.html
