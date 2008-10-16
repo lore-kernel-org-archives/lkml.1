@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYJPOlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYJPOpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbYJPOlA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 10:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbYJPOkt
+	id S1755389AbYJPOpT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 10:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYJPOpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 10:40:49 -0400
-Received: from ryu.zarb.org ([212.85.158.22]:48689 "EHLO ryu.zarb.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754315AbYJPOks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:40:48 -0400
-Subject: Re: Possible ext3 corruption with 1K block size
-From: Pascal Terjan <pterjan@mandriva.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, pterjan@mandriva.org,
-       linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <48F751E9.8070705@redhat.com>
-References: <200810150724.42180.arvidjaar@mail.ru>
-	 <48F5E6D4.8080603@redhat.com> <200810151824.36119.arvidjaar@mail.ru>
-	 <48F601A5.1050405@redhat.com> <1224164860.11578.14.camel@plop>
-	 <48F751E9.8070705@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Mandriva
-Date: Thu, 16 Oct 2008 16:40:44 +0200
-Message-Id: <1224168044.11578.15.camel@plop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0-2mdv2009.0 
-Content-Transfer-Encoding: 8bit
+	Thu, 16 Oct 2008 10:45:07 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:6638 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752536AbYJPOpG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 10:45:06 -0400
+Date: Thu, 16 Oct 2008 18:45:03 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] gpiolib: fix oops on reading sysfs exported GPIOs
+Message-ID: <20081016144503.GA17455@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le jeudi 16 octobre 2008 à 09:38 -0500, Eric Sandeen a écrit :
-> Pascal Terjan wrote:
-> > Le mercredi 15 octobre 2008 à 09:43 -0500, Eric Sandeen a écrit :
-> >> Andrey Borzenkov wrote:
-> >>> On Wednesday 15 October 2008, Eric Sandeen wrote:
-> >>
-> >>>> My kingdom for a testcase... does anyone have simple steps to reproduce
-> >>>> this?  Or do they all start with "install mandriva on a 1k block size
-> >>>> system?"  :)
-> >>>>
-> >>> May be RH will do? :)
-> >> I did try a 1k-block root fs Fedora install, and didn't see any problems...
-> >>
-> >>> As indicated by last comment, Pascal has some ways to trigger it; I
-> >>> forgot to Cc to him initially; doing it now.
-> >> Ok, good deal.
-> >>
-> > 
-> > On my test machine I reproduce it easily : rpm --rebuilddb and if the db
-> > is not detected to be corrupted yet it will be after installing a few
-> > packages (tested again with 2.6.27).
-> > 
-> > If I do the rebuilddb on a 2.6.17 and then reboot on a recent kernel,
-> > then I can install/uninstall thousands of packages without any
-> > corruption.
-> 
-> so it seems to be the database rebuilding, under a recent kernel, which
-> causes the problem?  installing under a recent kernel is ok, as long as
-> the db was created on an older kernel?
+We can get the following oops when a GPIO controller doesn't provide
+.direction_input and .get callbacks:
 
-Yes
+root@b1:~# cat /sys/class/gpio/gpio255/value
+Unable to handle kernel paging request for instruction fetch
+Faulting instruction address: 0x00000000
+Oops: Kernel access of bad area, sig: 11 [#1]
+[...]
+NIP [00000000] 0x0
+LR [c0182fb0] gpio_get_value_cansleep+0x40/0x50
+Call Trace:
+[c7b79e80] [c0183f28] gpio_value_show+0x5c/0x94
+[c7b79ea0] [c01a584c] dev_attr_show+0x30/0x7c
+[c7b79eb0] [c00d6b48] fill_read_buffer+0x68/0xe0
+[c7b79ed0] [c00d6c54] sysfs_read_file+0x94/0xbc
+[c7b79ef0] [c008f24c] vfs_read+0xb4/0x16c
+[c7b79f10] [c008f580] sys_read+0x4c/0x90
+[c7b79f40] [c0013a14] ret_from_syscall+0x0/0x38
 
+GPIO users should always issue the gpio_direction_input() call and
+check its return value prior to trying gpio_get_value().
+
+For sysfs users there are few ways to solve the problem:
+
+1. Call gpio_direction_input() in the gpio_value_show(). This isn't
+   good because some GPIO controllers provide capability to read-back
+   output pins. Using the FLAG_IS_OUT isn't good for the same reason.
+
+2. Call gpio_direction_input() at the export time, if succeeded, set
+   FLAG_CAN_INPUT. Then check that flag in the gpio_value_show().
+   Viable.
+
+3. Just check for .get != NULL in the gpio_value_show(). Most
+   straightforward. This is implemented in the patch.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/gpio/gpiolib.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 8d29405..4e4a498 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -236,6 +236,8 @@ static ssize_t gpio_value_show(struct device *dev,
+ 
+ 	if (!test_bit(FLAG_EXPORT, &desc->flags))
+ 		status = -EIO;
++	else if (!desc->chip->get)
++		status = -EINVAL;
+ 	else
+ 		status = sprintf(buf, "%d\n", gpio_get_value_cansleep(gpio));
+ 
+-- 
+1.5.6.3
