@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbYJPTSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbYJPTTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757558AbYJPTSr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbYJPTSf
+	id S1757615AbYJPTTf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYJPTT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:18:35 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:9377 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756241AbYJPTSe (ORCPT
+	Thu, 16 Oct 2008 15:19:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42076 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751209AbYJPTT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:18:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:cc:subject:references:date:in-reply-to:message-id:user-agent
-         :mime-version:content-type:from;
-        b=p4poD2UM+r8+TLz44A/ZSMXEBSjHhFmixU6Xvwu8i1gbjJlHIEdtwih2DTM8NVDVw4
-         SfPSUuZ5iKvveKd+mqus+hQuzpmq2rM8duJv49T1NvHzKEaIT3egwJ0UoEpN6qRHaiUE
-         /BywcjkFEVXVV1sU3+e1xCmnOoSw7hWdoUnFA=
-To: Theodore Tso <tytso@mit.edu>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: ext2, ext3, ext4 config headlines inconsistent:
-References: <adaod1nvx98.fsf@cisco.com> <20081016151559.GB12962@mit.edu>
-Date: Thu, 16 Oct 2008 21:18:27 +0200
-In-Reply-To: <20081016151559.GB12962@mit.edu> (Theodore Tso's message of "Thu,
-	16 Oct 2008 11:15:59 -0400")
-Message-ID: <87abd45oxo.fsf@basilikum.skogtun.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Harald Arnesen <skogtun.harald@gmail.com>
+	Thu, 16 Oct 2008 15:19:26 -0400
+Date: Thu, 16 Oct 2008 12:18:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: BARRE Sebastien <sbarre@sdelcc.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.26.5] rtc-ds1307 : SMBus compatibility
+Message-Id: <20081016121843.2e0c3792.akpm@linux-foundation.org>
+In-Reply-To: <C1C62166118DFA4A8BBA01A2411F0D170E9BE59C2F@PRI-MBX-101.dom1.vinci-energies.net>
+References: <C1C62166118DFA4A8BBA01A2411F0D170E9BE59C2F@PRI-MBX-101.dom1.vinci-energies.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso <tytso@mit.edu> writes:
+On Tue, 7 Oct 2008 14:55:52 +0200
+BARRE Sebastien <sbarre@sdelcc.com> wrote:
 
-> On Tue, Oct 14, 2008 at 11:37:23AM -0700, Roland Dreier wrote:
->> Hi Ted,
->> 
->> While running an oldconfig with the new kernel, I got the following prompt:
->> 
->>     Second extended fs support (EXT2_FS) [N/m/y/?] n
->>     Ext3 journalling file system support (EXT3_FS) [N/m/y/?] n
->>     The Extended 4 (ext4) filesystem (EXT4_FS) [N/m/y/?] (NEW) n
->> 
->> the lack of parallelism in the headline prompts is a little jarring.
->> Any interest in a patch to make this look uniform, or is it not worth
->> it?  If you are interested, which variant do you prefer?
->
-> I'll note that we don't have consistency across all of the entries in
-> fs/Kconfig, not just ext2/ext3/ext4.  If it were just up to me I'd
-> probably prefer:
->
->     Ext2 file system support (EXT2_FS) [N/m/y/?] n
->     Ext3 file system support (EXT3_FS) [N/m/y/?] n
->     Ext4 file system support (EXT4_FS) [N/m/y/?] (NEW) n
->
-> ... but it might be worth looking at the other entries in fs/Kconfig
-> as well.
+> This patch change all i2c access functions to SMBus access functions in order to use the ds1307 on SMBus.
+> I expect that using SMBus access functions is correct for all boards with i2C or SMBus adapter. Is it correct ?
+> 
+> I have tested it on my Geode LX board with a ds1307 device.
+> 
 
-Something completely different - Documentation/filesystems/ext4:
+Alas, some patches against that driver have just been sent to Linus and
+this patch isn't mergeable any more.  Can you please redo it against
+2.6.28-rc1 (when that is released) or Linus's current git tree and
+resend, copying the following:
 
-  - When comparing performance with other filesystems, remember that
-    ext3/4 by default offers higher data integrity guarantees than most.
-    So when comparing with a metadata-only journalling filesystem, such
-    as ext3, use `mount -o data=writeback'.  And you might as well use
-       ^^^^
-    `mount -o nobh' too along with it.  Making the journal larger than
-    the mke2fs default often helps performance with metadata-intensive
-    workloads.
+i2c@lm-sensors.org
+David Brownell <david-b@pacbell.net>
+Alessandro Zummo <a.zummo@towertech.it>
+linux-kernel@vger.kernel.org
+Andrew Morton <akpm@linux-foundation.org>
 
-Anything _but_ ext3 here?
--- 
-Hilsen Harald.
+Also, your email client replaced all the tabs with spaces.  Please fix
+that up beforehand.
+
+Thanks.
+
