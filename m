@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYJPOi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbYJPOjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbYJPOi4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 10:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYJPOiq
+	id S1754409AbYJPOjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 10:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYJPOir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 16 Oct 2008 10:38:47 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49651 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754013AbYJPOiq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 16 Oct 2008 10:38:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58560 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753893AbYJPOip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:38:45 -0400
-Message-ID: <48F751E9.8070705@redhat.com>
-Date: Thu, 16 Oct 2008 09:38:33 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+Date: Thu, 16 Oct 2008 10:38:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
+ interfaces
+In-Reply-To: <20081016024956.602C61544CB@magilla.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0810161027100.2487-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Pascal Terjan <pterjan@mandriva.com>
-CC: Andrey Borzenkov <arvidjaar@mail.ru>, pterjan@mandriva.org,
-       linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Possible ext3 corruption with 1K block size
-References: <200810150724.42180.arvidjaar@mail.ru>	 <48F5E6D4.8080603@redhat.com> <200810151824.36119.arvidjaar@mail.ru>	 <48F601A5.1050405@redhat.com> <1224164860.11578.14.camel@plop>
-In-Reply-To: <1224164860.11578.14.camel@plop>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pascal Terjan wrote:
-> Le mercredi 15 octobre 2008 à 09:43 -0500, Eric Sandeen a écrit :
->> Andrey Borzenkov wrote:
->>> On Wednesday 15 October 2008, Eric Sandeen wrote:
->>
->>>> My kingdom for a testcase... does anyone have simple steps to reproduce
->>>> this?  Or do they all start with "install mandriva on a 1k block size
->>>> system?"  :)
->>>>
->>> May be RH will do? :)
->> I did try a 1k-block root fs Fedora install, and didn't see any problems...
->>
->>> As indicated by last comment, Pascal has some ways to trigger it; I
->>> forgot to Cc to him initially; doing it now.
->> Ok, good deal.
->>
-> 
-> On my test machine I reproduce it easily : rpm --rebuilddb and if the db
-> is not detected to be corrupted yet it will be after installing a few
-> packages (tested again with 2.6.27).
-> 
-> If I do the rebuilddb on a 2.6.17 and then reboot on a recent kernel,
-> then I can install/uninstall thousands of packages without any
-> corruption.
+On Wed, 15 Oct 2008, Roland McGrath wrote:
 
-so it seems to be the database rebuilding, under a recent kernel, which
-causes the problem?  installing under a recent kernel is ok, as long as
-the db was created on an older kernel?
+> AFAIK no hardware's facility delivers two separate exceptions for a single
+> hit of a single breakpoint slot.  There is just one hit, and it's either
+> before the instruction or after it.  So you only need one handler function,
+> and one pointer slot for it.
 
-Ok that's a good clue...
+Hmm...  What happens on x86 if you have both an instruction breakpoint 
+and a data breakpoint triggered for the same instruction?  My old 386 
+manual seems to imply that you'll get two exceptions: a fault and a 
+trap.
 
--Eric
+But I guess this would count as two separate breakpoint slots, with two 
+different handlers registered.  So it shouldn't pose a problem.
+
+> For fire-before types, there are two flavors.  On powerpc, data breakpoints
+> are fire-before, and to actually complete the triggering load/store you
+> have to clear the dabr (disable the breakpoint) before resuming (and then
+> potentially deal with step-then-reenable, etc).  On x86, instruction
+> breakpoints are fire-before, but there is the option of using the magic RF
+> bit to suppress the hit without disabling the breakpoint.  So you need
+> another inline a la *_supported() to indicate what's possible.  (Possibly
+> the handler should be able to control this with its return value,
+> i.e. allow returning with RF clear for some reason.)
+
+There's another RF-related issue which the patch currently ignores.  
+Namely, what should happen if a new user breakpoint is registered at
+the current PC address?  We should force the RF flag to 0 so that the
+breakpoint will be triggered when execution resumes.  The problem is
+that it's not easy to tell whether the current PC corresponds to the
+same linear address as that registered for the breakpoint -- i.e., I
+don't know how the code should go about translating from virtual
+addresses to linear addresses.  Would this in fact always be the
+identity mapping?  Presumably not if we're in VM86 mode.
+
+Alan Stern
+
