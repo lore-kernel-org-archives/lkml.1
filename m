@@ -1,86 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbYJPIHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYJPIVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbYJPIHF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 04:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYJPIGr
+	id S1754712AbYJPIVi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 04:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYJPIVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 04:06:47 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:46961 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbYJPIGq (ORCPT
+	Thu, 16 Oct 2008 04:21:30 -0400
+Received: from cpsmtpo-eml03.kpnxchange.com ([213.75.38.152]:49051 "EHLO
+	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752942AbYJPIV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 04:06:46 -0400
-Date: Thu, 16 Oct 2008 10:06:41 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jiri Kosina <jkosina@suse.cz>, Adrian Bunk <bunk@kernel.org>,
-       zippel@linux-m68k.org, sam@ravnborg.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: select validation (was: Re: [2.6 patch] HID: fix default building
- of all quirky devices)
-In-Reply-To: <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0810161002240.25933@anakin>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi>
- <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi>
- <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz>
- <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
+	Thu, 16 Oct 2008 04:21:29 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Is Debug Store supposed to default to Y?
+Date: Thu, 16 Oct 2008 10:21:24 +0200
+User-Agent: KMail/1.9.9
+Cc: Markus Metzger <markus.t.metzger@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810161021.25572.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Oct 2008 08:21:26.0299 (UTC) FILETIME=[2EAD66B0:01C92F68]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Oct 2008, Linus Torvalds wrote:
-> On Wed, 15 Oct 2008, Jiri Kosina wrote:
-> > Hmm ... I am not really sure, isn't this a bug in Kconfig?
-> 
-> Not really, more of a misfeature.
-> 
-> That said, even if we were to consider it a bug, Adrian's patch is 
-> obviously the better way to do it. You shouldn't do non-local dependencies 
-> (have one config option select fifty other ones), when the local ones are 
-> clearer and more readable (have one config option just describe its *own* 
-> dependencies).
-> 
-> Don't get me wrong - select is very useful, but not for "should I ask this 
-> question or not". The point to use select is when you have some library or 
-> other common infrastructure that isn't worth a question of its own (eg 
-> "Why the hell would the user want to care whether he needs CRC32 
-> routines?"), and some code says "I will need this infrastructure" by just 
-> saying "select CRC32" to let the build system know that it needs that 
-> particular piece of functionality.
-> 
-> In other words, "select" is kind of a "depends on", but for things that it 
-> is insane to ask. It would be totally _idiotic_ to ask a user "do you want 
-> to have CRC32 routines in the kernel?" and then based on that say "ok, you 
-> didn't ask for CRC32, so now you cannot use the AX88796 network driver".
-> 
-> See? THAT is what "select" is for. And when you use select, the way we do 
-> things now, you have to select everything you need. You cannot assume that 
-> it will recursively select whatever it needs.
-> 
-> And notice how you mis-use select. That's not how to disable a question. A 
-> question gets disabled by just doing an "if xyz" on the question itself, 
-> like Adrian did.
+Both CONFIG_X86_DS and X86_PTRACE_BTS currently default to yes.
+Is that intended?
 
-Would it be possible for kconfig to check for invalid usage of select?
+The help text is a bit short on info to help users determine if they 
+really need/want these options. What will I be missing if I don't enable 
+them on a regular desktop system? What is their cost?
 
-Like you should not use select to enable something that has
-dependencies. However, that would fail in case both the selector option
-and the selected option depend on the same.
-
-And doing it dynamically (you should not use select to enable something that
-has dependencies that are (currently) not fulfilled) wouldn't find all
-incorrect usages.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Cheers,
+FJP
