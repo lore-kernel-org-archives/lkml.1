@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbYJPRT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbYJPRT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbYJPRT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYJPROS
+	id S1757680AbYJPRT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbYJPROU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:18 -0400
-Received: from kroah.org ([198.145.64.141]:46942 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:20 -0400
+Received: from kroah.org ([198.145.64.141]:46949 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755254AbYJPROP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:15 -0400
+	id S1756129AbYJPROS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:18 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 10/46] device create: scsi: convert device_create_drvdata to device_create
-Date: Thu, 16 Oct 2008 10:10:11 -0700
-Message-Id: <1224177047-11859-10-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 12/46] device create: usb: convert device_create_drvdata to device_create
+Date: Thu, 16 Oct 2008 10:10:13 -0700
+Message-Id: <1224177047-11859-12-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -26,103 +25,148 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Now that device_create() has been audited, rename things back to the
 original call to be sane.
 
-Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/scsi/ch.c      |    6 +++---
- drivers/scsi/dpt_i2o.c |    2 +-
- drivers/scsi/osst.c    |    3 ++-
- drivers/scsi/sg.c      |   10 ++++------
- drivers/scsi/st.c      |   11 ++++-------
- 5 files changed, 14 insertions(+), 18 deletions(-)
+ drivers/usb/core/devio.c               |    6 +++---
+ drivers/usb/core/file.c                |    6 +++---
+ drivers/usb/core/hcd.c                 |    5 ++---
+ drivers/usb/gadget/printer.c           |    4 ++--
+ drivers/usb/misc/phidgetkit.c          |    5 ++---
+ drivers/usb/misc/phidgetmotorcontrol.c |    5 ++---
+ drivers/usb/misc/phidgetservo.c        |    5 ++---
+ drivers/usb/mon/mon_bin.c              |    6 +++---
+ 8 files changed, 19 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
-index 3c257fe..88ecf94 100644
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -914,9 +914,9 @@ static int ch_probe(struct device *dev)
- 	ch->minor = minor;
- 	sprintf(ch->name,"ch%d",ch->minor);
+diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
+index 20290c5..7a4fa79 100644
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -1729,9 +1729,9 @@ static int usb_classdev_add(struct usb_device *dev)
+ {
+ 	struct device *cldev;
  
--	class_dev = device_create_drvdata(ch_sysfs_class, dev,
--					  MKDEV(SCSI_CHANGER_MAJOR, ch->minor),
--					  ch, "s%s", ch->name);
-+	class_dev = device_create(ch_sysfs_class, dev,
-+				  MKDEV(SCSI_CHANGER_MAJOR, ch->minor), ch,
-+				  "s%s", ch->name);
- 	if (IS_ERR(class_dev)) {
- 		printk(KERN_WARNING "ch%d: device_create failed\n",
- 		       ch->minor);
-diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
-index 1fe0901..8aba4fd 100644
---- a/drivers/scsi/dpt_i2o.c
-+++ b/drivers/scsi/dpt_i2o.c
-@@ -271,7 +271,7 @@ rebuild_sys_tab:
- 		pHba->initialized = TRUE;
- 		pHba->state &= ~DPTI_STATE_RESET;
- 		if (adpt_sysfs_class) {
--			struct device *dev = device_create_drvdata(adpt_sysfs_class,
-+			struct device *dev = device_create(adpt_sysfs_class,
- 				NULL, MKDEV(DPTI_I2O_MAJOR, pHba->unit), NULL,
- 				"dpti%d", pHba->unit);
- 			if (IS_ERR(dev)) {
-diff --git a/drivers/scsi/osst.c b/drivers/scsi/osst.c
-index 1c79f97..0ea78d9 100644
---- a/drivers/scsi/osst.c
-+++ b/drivers/scsi/osst.c
-@@ -5708,7 +5708,8 @@ static int osst_sysfs_add(dev_t dev, struct device *device, struct osst_tape * S
- 	struct device *osst_member;
- 	int err;
+-	cldev = device_create_drvdata(usb_classdev_class, &dev->dev,
+-				      dev->dev.devt, NULL, "usbdev%d.%d",
+-				      dev->bus->busnum, dev->devnum);
++	cldev = device_create(usb_classdev_class, &dev->dev, dev->dev.devt,
++			      NULL, "usbdev%d.%d", dev->bus->busnum,
++			      dev->devnum);
+ 	if (IS_ERR(cldev))
+ 		return PTR_ERR(cldev);
+ 	dev->usb_classdev = cldev;
+diff --git a/drivers/usb/core/file.c b/drivers/usb/core/file.c
+index 6b1b229..55f7f31 100644
+--- a/drivers/usb/core/file.c
++++ b/drivers/usb/core/file.c
+@@ -196,9 +196,9 @@ int usb_register_dev(struct usb_interface *intf,
+ 		++temp;
+ 	else
+ 		temp = name;
+-	intf->usb_dev = device_create_drvdata(usb_class->class, &intf->dev,
+-					      MKDEV(USB_MAJOR, minor), NULL,
+-					      "%s", temp);
++	intf->usb_dev = device_create(usb_class->class, &intf->dev,
++				      MKDEV(USB_MAJOR, minor), NULL,
++				      "%s", temp);
+ 	if (IS_ERR(intf->usb_dev)) {
+ 		down_write(&minor_rwsem);
+ 		usb_minors[intf->minor] = NULL;
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 8ab389d..c8035a8 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -818,9 +818,8 @@ static int usb_register_bus(struct usb_bus *bus)
+ 	set_bit (busnum, busmap.busmap);
+ 	bus->busnum = busnum;
  
--	osst_member = device_create_drvdata(osst_sysfs_class, device, dev, STp, "%s", name);
-+	osst_member = device_create(osst_sysfs_class, device, dev, STp,
-+				    "%s", name);
- 	if (IS_ERR(osst_member)) {
- 		printk(KERN_WARNING "osst :W: Unable to add sysfs class member %s\n", name);
- 		return PTR_ERR(osst_member);
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index ba9b9bb..93bd59a 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1450,12 +1450,10 @@ sg_add(struct device *cl_dev, struct class_interface *cl_intf)
- 	if (sg_sysfs_valid) {
- 		struct device *sg_class_member;
+-	bus->dev = device_create_drvdata(usb_host_class, bus->controller,
+-					 MKDEV(0, 0), bus,
+-					 "usb_host%d", busnum);
++	bus->dev = device_create(usb_host_class, bus->controller, MKDEV(0, 0),
++				 bus, "usb_host%d", busnum);
+ 	result = PTR_ERR(bus->dev);
+ 	if (IS_ERR(bus->dev))
+ 		goto error_create_class_dev;
+diff --git a/drivers/usb/gadget/printer.c b/drivers/usb/gadget/printer.c
+index e009008..7a8d4a1 100644
+--- a/drivers/usb/gadget/printer.c
++++ b/drivers/usb/gadget/printer.c
+@@ -1360,8 +1360,8 @@ printer_bind(struct usb_gadget *gadget)
  
--		sg_class_member = device_create_drvdata(sg_sysfs_class,
--							cl_dev->parent,
--							MKDEV(SCSI_GENERIC_MAJOR,
--							      sdp->index),
--							sdp,
--							"%s", disk->disk_name);
-+		sg_class_member = device_create(sg_sysfs_class, cl_dev->parent,
-+						MKDEV(SCSI_GENERIC_MAJOR,
-+						      sdp->index),
-+						sdp, "%s", disk->disk_name);
- 		if (IS_ERR(sg_class_member)) {
- 			printk(KERN_ERR "sg_add: "
- 			       "device_create failed\n");
-diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index c2bb53e..5c28d08 100644
---- a/drivers/scsi/st.c
-+++ b/drivers/scsi/st.c
-@@ -4428,13 +4428,10 @@ static int do_create_class_files(struct scsi_tape *STp, int dev_num, int mode)
- 		snprintf(name, 10, "%s%s%s", rew ? "n" : "",
- 			 STp->disk->disk_name, st_formats[i]);
- 		st_class_member =
--			device_create_drvdata(st_sysfs_class,
--					      &STp->device->sdev_gendev,
--					      MKDEV(SCSI_TAPE_MAJOR,
--						    TAPE_MINOR(dev_num,
--							      mode, rew)),
--					      &STp->modes[mode],
--					      "%s", name);
-+			device_create(st_sysfs_class, &STp->device->sdev_gendev,
-+				      MKDEV(SCSI_TAPE_MAJOR,
-+					    TAPE_MINOR(dev_num, mode, rew)),
-+				      &STp->modes[mode], "%s", name);
- 		if (IS_ERR(st_class_member)) {
- 			printk(KERN_WARNING "st%d: device_create failed\n",
- 			       dev_num);
+ 
+ 	/* Setup the sysfs files for the printer gadget. */
+-	dev->pdev = device_create_drvdata(usb_gadget_class, NULL,
+-					  g_printer_devno, NULL, "g_printer");
++	dev->pdev = device_create(usb_gadget_class, NULL, g_printer_devno,
++				  NULL, "g_printer");
+ 	if (IS_ERR(dev->pdev)) {
+ 		ERROR(dev, "Failed to create device: g_printer\n");
+ 		goto fail;
+diff --git a/drivers/usb/misc/phidgetkit.c b/drivers/usb/misc/phidgetkit.c
+index 4cfa25b..cc8e0a9 100644
+--- a/drivers/usb/misc/phidgetkit.c
++++ b/drivers/usb/misc/phidgetkit.c
+@@ -595,9 +595,8 @@ static int interfacekit_probe(struct usb_interface *intf, const struct usb_devic
+         } while(value);
+         kit->dev_no = bit;
+ 
+-	kit->dev = device_create_drvdata(phidget_class, &kit->udev->dev,
+-					MKDEV(0, 0), kit,
+-					"interfacekit%d", kit->dev_no);
++	kit->dev = device_create(phidget_class, &kit->udev->dev, MKDEV(0, 0),
++				 kit, "interfacekit%d", kit->dev_no);
+         if (IS_ERR(kit->dev)) {
+                 rc = PTR_ERR(kit->dev);
+                 kit->dev = NULL;
+diff --git a/drivers/usb/misc/phidgetmotorcontrol.c b/drivers/usb/misc/phidgetmotorcontrol.c
+index 9b4696f..38088b4 100644
+--- a/drivers/usb/misc/phidgetmotorcontrol.c
++++ b/drivers/usb/misc/phidgetmotorcontrol.c
+@@ -365,9 +365,8 @@ static int motorcontrol_probe(struct usb_interface *intf, const struct usb_devic
+ 	} while(value);
+ 	mc->dev_no = bit;
+ 
+-	mc->dev = device_create_drvdata(phidget_class, &mc->udev->dev,
+-					MKDEV(0, 0), mc,
+-					"motorcontrol%d", mc->dev_no);
++	mc->dev = device_create(phidget_class, &mc->udev->dev, MKDEV(0, 0), mc,
++				"motorcontrol%d", mc->dev_no);
+ 	if (IS_ERR(mc->dev)) {
+ 		rc = PTR_ERR(mc->dev);
+ 		mc->dev = NULL;
+diff --git a/drivers/usb/misc/phidgetservo.c b/drivers/usb/misc/phidgetservo.c
+index 1ca7ddb..bef6fe1 100644
+--- a/drivers/usb/misc/phidgetservo.c
++++ b/drivers/usb/misc/phidgetservo.c
+@@ -275,9 +275,8 @@ servo_probe(struct usb_interface *interface, const struct usb_device_id *id)
+         } while (value);
+ 	dev->dev_no = bit;
+ 
+-	dev->dev = device_create_drvdata(phidget_class, &dev->udev->dev,
+-					 MKDEV(0, 0), dev,
+-					 "servo%d", dev->dev_no);
++	dev->dev = device_create(phidget_class, &dev->udev->dev, MKDEV(0, 0),
++				 dev, "servo%d", dev->dev_no);
+ 	if (IS_ERR(dev->dev)) {
+ 		rc = PTR_ERR(dev->dev);
+ 		dev->dev = NULL;
+diff --git a/drivers/usb/mon/mon_bin.c b/drivers/usb/mon/mon_bin.c
+index 6566fc0..c9de3f0 100644
+--- a/drivers/usb/mon/mon_bin.c
++++ b/drivers/usb/mon/mon_bin.c
+@@ -1162,9 +1162,9 @@ int mon_bin_add(struct mon_bus *mbus, const struct usb_bus *ubus)
+ 	if (minor >= MON_BIN_MAX_MINOR)
+ 		return 0;
+ 
+-	dev = device_create_drvdata(mon_bin_class, ubus? ubus->controller: NULL,
+-				    MKDEV(MAJOR(mon_bin_dev0), minor), NULL,
+-				    "usbmon%d", minor);
++	dev = device_create(mon_bin_class, ubus ? ubus->controller : NULL,
++			    MKDEV(MAJOR(mon_bin_dev0), minor), NULL,
++			    "usbmon%d", minor);
+ 	if (IS_ERR(dev))
+ 		return 0;
+ 
 -- 
 1.6.0.2
 
