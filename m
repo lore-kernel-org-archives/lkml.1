@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756973AbYJPVrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbYJPVu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756973AbYJPVrZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 17:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbYJPVrP
+	id S1757352AbYJPVu3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 17:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbYJPVuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 17:47:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52923 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755172AbYJPVrO (ORCPT
+	Thu, 16 Oct 2008 17:50:19 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:7504 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755369AbYJPVuS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 17:47:14 -0400
-Date: Thu, 16 Oct 2008 14:46:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: davem@davemloft.net, alan@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: Make uart_port's ioport "resource_size_t"
-Message-Id: <20081016144645.1c868fc0.akpm@linux-foundation.org>
-In-Reply-To: <20081014162621.GA18166@yoda.jdub.homelinux.org>
-References: <20081014162621.GA18166@yoda.jdub.homelinux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 16 Oct 2008 17:50:18 -0400
+Date: Thu, 16 Oct 2008 16:50:16 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>, JensAxboejens.axboe@oracle.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 2/2] cciss: fix regression in procfs display fw version, obsoletes previous patch 2 of 2
+Message-ID: <20081016215016.GB25704@roadking.ldev.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Oct 2008 12:26:21 -0400
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-> Recently uart_port's iobase was changed to be an 'unsigned
-> long' to avoid chopping off the upper 32-bits of the
-> address on 64-bit CPUs.  However, there are CPUs that are
-> 32-bit but have a 64-bit address space.  This changes
-> iobase to be 'resource_size_t' to accommodate those types
-> of systems.  This also matches what is done for the mapbase
-> member of uart_port.
-> 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> 
-> ---
-> 
-> diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-> index e27f216..cb0185b 100644
-> --- a/include/linux/serial_core.h
-> +++ b/include/linux/serial_core.h
-> @@ -241,7 +241,7 @@ typedef unsigned int __bitwise__ upf_t;
->  
->  struct uart_port {
->  	spinlock_t		lock;			/* port lock */
-> -	unsigned long		iobase;			/* in/out[bwl] */
-> +	resource_size_t		iobase;			/* in/out[bwl] */
->  	unsigned char __iomem	*membase;		/* read/write[bwl] */
->  	unsigned int		irq;			/* irq number */
->  	unsigned int		uartclk;		/* base uart clock */
+Patch 2 of 2
 
-This will of course require that all now-broken printk()s be unbroken. 
-I spot two in serial_core.c alone.
+This patch obsoletes patch 2/2 from yesterday. It fixes a regression in
+procfs where the controller firmware version is not displayed. The previous
+patch also addressed the problem but the code would be called whenever
+anything changed on the array such as the number of logical volumes, etc.
+This patch only gets called once for each controller.
+Please consider this for inclusion.
 
+Signed-of-by: Mike Miller <mike.miller@hp.com>
+
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 0f367b1..efa5414 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -3404,7 +3404,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	int i;
+ 	int j = 0;
+ 	int rc;
+-	int dac;
++	int dac, return_code;
++	InquiryData_struct *inq_buff = NULL;
+ 
+ 	i = alloc_cciss_hba();
+ 	if (i < 0)
+@@ -3510,6 +3511,25 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	/* Turn the interrupts on so we can service requests */
+ 	hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
+ 
++	/* Get the firmware version */ 
++	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
++        if (inq_buff == NULL) {
++                printk(KERN_ERR "cciss: out of memory\n");
++                return ENOMEM;
++        }
++
++	return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff, 
++		sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
++	if (return_code == IO_OK) {
++		hba[i]->firm_ver[0] = inq_buff->data_byte[32];
++		hba[i]->firm_ver[1] = inq_buff->data_byte[33];
++		hba[i]->firm_ver[2] = inq_buff->data_byte[34];
++		hba[i]->firm_ver[3] = inq_buff->data_byte[35];
++	} else {	 /* send command failed */
++		printk(KERN_WARNING "cciss: unable to determine firmware"
++			" version of controller\n");
++	}
++
+ 	cciss_procinit(i);
+ 
+ 	hba[i]->cciss_max_sectors = 2048;
