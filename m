@@ -1,116 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbYJPNrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbYJPNsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbYJPNrs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 09:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYJPNrk
+	id S1753509AbYJPNsI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 09:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYJPNrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 09:47:40 -0400
-Received: from smtp.zeuux.org ([210.51.160.52]:50364 "EHLO z.billxu.com"
+	Thu, 16 Oct 2008 09:47:46 -0400
+Received: from ryu.zarb.org ([212.85.158.22]:33438 "EHLO ryu.zarb.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751425AbYJPNrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 09:47:39 -0400
-X-Greylist: delayed 382 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 09:47:39 EDT
-Date: Thu, 16 Oct 2008 21:41:12 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: Tim Shimmin <tes@sgi.com>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: [PATCH] XFS fix remount rw with unrecognized options
-Message-ID: <20081016134112.GA8773@ubuntu>
-References: <20081016002926.D912558FA22B@chook.melbourne.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081016002926.D912558FA22B@chook.melbourne.sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1753810AbYJPNrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 09:47:45 -0400
+Subject: Re: Possible ext3 corruption with 1K block size
+From: Pascal Terjan <pterjan@mandriva.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, pterjan@mandriva.org,
+       linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <48F601A5.1050405@redhat.com>
+References: <200810150724.42180.arvidjaar@mail.ru>
+	 <48F5E6D4.8080603@redhat.com> <200810151824.36119.arvidjaar@mail.ru>
+	 <48F601A5.1050405@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Mandriva
+Date: Thu, 16 Oct 2008 15:47:40 +0200
+Message-Id: <1224164860.11578.14.camel@plop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0-2mdv2009.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 11:29:26AM +1100, Tim Shimmin wrote:
->Resending as I mangled sending the mail from home last time. Sorry.
->
->Please include the following patch for 2.6.27.1 stable release as
->suggested by Christoph Hellwig and Eric Sandeen.
->It fixes a regression in the recent remount recoding
->where remounting say from ro to rw allows the xfs flags to
->be out of sync with the vfs flags, resulting
->in failures for some programs such as touch (which end up calling xfs_setattr).
->The fix is a very minor and clear.
->
->Thanks,
->Tim.
->
->Date: Sun, 12 Oct 2008 14:30:44 +0200
->From: Christoph Hellwig <hch@lst.de>
->To: xfs@oss.sgi.com
->Subject: [PATCH] fix remount rw with unrecognized options
->
->When we skip unrecognized options in xfs_fs_remount we should just break
->out of the switch and not return because otherwise we may skip clearing
->the xfs-internal read-only flag.  This will only show up on some
->operations like touch because most read-only checks are done by the VFS
->which thinks this filesystem is r/w.  Eventually we should replace the
->XFS read-only flag with a helper that always checks the VFS flag to make
->sure they can never get out of sync.
->
->Bug reported and fix verified by Marcel Beister on #xfs.
->Bug fix verified by updated xfstests/189.
->
->Signed-off-by: Christoph Hellwig <hch@lst.de>
->Acked-by: Eric Sandeen <sandeen@sandeen.net>
->Signed-off-by: Timothy Shimmin <tes@sgi.com>
->
->Index: mainline/fs/xfs/linux-2.6/xfs_super.c
->===================================================================
->--- mainline.orig/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:26.542652847 +1100
->+++ mainline/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:45.376217172 +1100
->@@ -1323,7 +1323,7 @@ xfs_fs_remount(
-> 	"XFS: mount option \"%s\" not supported for remount\n", p);
-> 			return -EINVAL;
-> #else
->-			return 0;
->+			break;
-> #endif
-> 		}
-> 	}
+Le mercredi 15 octobre 2008 à 09:43 -0500, Eric Sandeen a écrit :
+> Andrey Borzenkov wrote:
+> > On Wednesday 15 October 2008, Eric Sandeen wrote:
+> 
+> 
+> >> My kingdom for a testcase... does anyone have simple steps to reproduce
+> >> this?  Or do they all start with "install mandriva on a 1k block size
+> >> system?"  :)
+> >>
+> > 
+> > May be RH will do? :)
+> 
+> I did try a 1k-block root fs Fedora install, and didn't see any problems...
+> 
+> > As indicated by last comment, Pascal has some ways to trigger it; I
+> > forgot to Cc to him initially; doing it now.
+> 
+> Ok, good deal.
+> 
 
+On my test machine I reproduce it easily : rpm --rebuilddb and if the db
+is not detected to be corrupted yet it will be after installing a few
+packages (tested again with 2.6.27).
 
-And the code above "return 0" can not be executed, so delete them.
-__________________________________________
-#if 0
-                        printk(KERN_INFO
-        "XFS: mount option \"%s\" not supported for remount\n", p);
-                        return -EINVAL;
-#else                                                                                                            
-                        return 0;
------------------------------------------
+If I do the rebuilddb on a 2.6.17 and then reboot on a recent kernel,
+then I can install/uninstall thousands of packages without any
+corruption.
 
+I wanted to try a few things including copying the partition to a file
+and trying to reproduce in a vm.
 
-Signed-off-by: Jianjun Kong <kongjianjun@gmail.com>
----
- fs/xfs/linux-2.6/xfs_super.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+Given how I can reproduce and repair it i can even write a bisecting
+script which would basically be an initscript which would do
 
-diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
-index e390136..bd5ec81 100644
---- a/fs/xfs/linux-2.6/xfs_super.c
-+++ b/fs/xfs/linux-2.6/xfs_super.c
-@@ -1318,12 +1318,7 @@ xfs_fs_remount(
- 			 * every remount request, and silently ignore all
- 			 * options that we can't actually change.
- 			 */
--#if 0
--			printk(KERN_INFO
--	"XFS: mount option \"%s\" not supported for remount\n", p);
--			return -EINVAL;
--#else
--			break;
-+			break 0;
- #endif
- 		}
- 	}
--- 
-1.5.2.5
+if on test kernel
+- rebuild the db
+- install 10 rpm
+- remove the 10 rpm
+- check the db
+- do the good/bad
+- reboot onto 2.6.17
+else if on 2.6.17
+- rebuild the db
+- build the kernel
+- reboot on test kernel
 
+and let it run :)
 
+All I need is to find some time with nothing more urgent...
 
