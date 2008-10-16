@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbYJPSBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbYJPSCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756854AbYJPSBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbYJPSAf
+	id S1756727AbYJPSCa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbYJPSAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:00:35 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36057 "EHLO mx1.suse.de"
+	Thu, 16 Oct 2008 14:00:42 -0400
+Received: from mx2.suse.de ([195.135.220.15]:46743 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755254AbYJPSAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:00:34 -0400
-Date: Thu, 16 Oct 2008 10:56:28 -0700
+	id S1755679AbYJPSAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:00:40 -0400
+Date: Thu, 16 Oct 2008 10:56:32 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Christoph Hellwig <hch@lst.de>,
-       Tim Shimmin <tes@sgi.com>
-Subject: [patch 04/14] Fix barrier fail detection in XFS
-Message-ID: <20081016175628.GE12850@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
+       Steve French <sfrench@us.ibm.com>
+Subject: [patch 06/14] CIFS: make sure we have the right resume info before
+	calling CIFSFindNext
+Message-ID: <20081016175632.GG12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-barrier-fail-detection-in-xfs.patch"
+Content-Disposition: inline; filename="cifs-make-sure-we-have-the-right-resume-info-before-calling-cifsfindnext.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,88 +41,213 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Christoph Hellwig <hch@lst.de>
+From: Steve French <sfrench@us.ibm.com>
 
-commit 73f6aa4d44ab6157badc456ddfa05b31e58de5f0 upstream.
+commit 0752f1522a9120f731232919f7ad904e9e22b8ce upstream
 
-Currently we disable barriers as soon as we get a buffer in xlog_iodone
-that has the XBF_ORDERED flag cleared.  But this can be the case not only
-for buffers where the barrier failed, but also the first buffer of a
-split log write in case of a log wraparound.  Due to the disabled
-barriers we can easily get directory corruption on unclean shutdowns.
-So instead of using this check add a new buffer flag for failed barrier
-writes.
+When we do a seekdir() or equivalent, we usually end up doing a
+FindFirst call and then call FindNext until we get to the offset that we
+want. The problem is that when we call FindNext, the code usually
+doesn't have the proper info (mostly, the filename of the entry from the
+last search) to resume the search.
 
-This is a regression vs 2.6.26 caused by patch to use the right macro
-to check for the ORDERED flag, as we previously got true returned for
-every buffer.
+Add a "last_entry" field to the cifs_search_info that points to the last
+entry in the search. We calculate this pointer by using the
+LastNameOffset field from the search parms that are returned. We then
+use that info to do a cifs_save_resume_key before we call CIFSFindNext.
 
-Thanks to Toei Rei for reporting the bug.
+This patch allows CIFS to reliably pass the "telldir" connectathon test.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
-Reviewed-by: David Chinner <david@fromorbit.com>
-Signed-off-by: Tim Shimmin <tes@sgi.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/xfs/linux-2.6/xfs_buf.c |    3 ++-
- fs/xfs/linux-2.6/xfs_buf.h |    8 ++++++++
- fs/xfs/xfs_log.c           |    7 ++++---
- 3 files changed, 14 insertions(+), 4 deletions(-)
+ fs/cifs/cifsglob.h |    1 
+ fs/cifs/cifssmb.c  |    4 +
+ fs/cifs/readdir.c  |  128 ++++++++++++++++++++++++++---------------------------
+ 3 files changed, 70 insertions(+), 63 deletions(-)
 
---- a/fs/xfs/linux-2.6/xfs_buf.c
-+++ b/fs/xfs/linux-2.6/xfs_buf.c
-@@ -1001,12 +1001,13 @@ xfs_buf_iodone_work(
- 	 * We can get an EOPNOTSUPP to ordered writes.  Here we clear the
- 	 * ordered flag and reissue them.  Because we can't tell the higher
- 	 * layers directly that they should not issue ordered I/O anymore, they
--	 * need to check if the ordered flag was cleared during I/O completion.
-+	 * need to check if the _XFS_BARRIER_FAILED flag was set during I/O completion.
- 	 */
- 	if ((bp->b_error == EOPNOTSUPP) &&
- 	    (bp->b_flags & (XBF_ORDERED|XBF_ASYNC)) == (XBF_ORDERED|XBF_ASYNC)) {
- 		XB_TRACE(bp, "ordered_retry", bp->b_iodone);
- 		bp->b_flags &= ~XBF_ORDERED;
-+		bp->b_flags |= _XFS_BARRIER_FAILED;
- 		xfs_buf_iorequest(bp);
- 	} else if (bp->b_iodone)
- 		(*(bp->b_iodone))(bp);
---- a/fs/xfs/linux-2.6/xfs_buf.h
-+++ b/fs/xfs/linux-2.6/xfs_buf.h
-@@ -85,6 +85,14 @@ typedef enum {
- 	 * modifications being lost.
- 	 */
- 	_XBF_PAGE_LOCKED = (1 << 22),
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -309,6 +309,7 @@ struct cifs_search_info {
+ 	__u32 resume_key;
+ 	char *ntwrk_buf_start;
+ 	char *srch_entries_start;
++	char *last_entry;
+ 	char *presume_name;
+ 	unsigned int resume_name_len;
+ 	bool endOfSearch:1;
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -3636,6 +3636,8 @@ findFirstRetry:
+ 					le16_to_cpu(parms->SearchCount);
+ 			psrch_inf->index_of_last_entry = 2 /* skip . and .. */ +
+ 				psrch_inf->entries_in_buffer;
++			psrch_inf->last_entry = psrch_inf->srch_entries_start +
++					le16_to_cpu(parms->LastNameOffset);
+ 			*pnetfid = parms->SearchHandle;
+ 		} else {
+ 			cifs_buf_release(pSMB);
+@@ -3751,6 +3753,8 @@ int CIFSFindNext(const int xid, struct c
+ 						le16_to_cpu(parms->SearchCount);
+ 			psrch_inf->index_of_last_entry +=
+ 				psrch_inf->entries_in_buffer;
++			psrch_inf->last_entry = psrch_inf->srch_entries_start +
++					le16_to_cpu(parms->LastNameOffset);
+ /*  cFYI(1,("fnxt2 entries in buf %d index_of_last %d",
+ 	    psrch_inf->entries_in_buffer, psrch_inf->index_of_last_entry)); */
+ 
+--- a/fs/cifs/readdir.c
++++ b/fs/cifs/readdir.c
+@@ -640,6 +640,70 @@ static int is_dir_changed(struct file *f
+ 
+ }
+ 
++static int cifs_save_resume_key(const char *current_entry,
++	struct cifsFileInfo *cifsFile)
++{
++	int rc = 0;
++	unsigned int len = 0;
++	__u16 level;
++	char *filename;
 +
-+	/*
-+	 * If we try a barrier write, but it fails we have to communicate
-+	 * this to the upper layers.  Unfortunately b_error gets overwritten
-+	 * when the buffer is re-issued so we have to add another flag to
-+	 * keep this information.
-+	 */
-+	_XFS_BARRIER_FAILED = (1 << 23),
- } xfs_buf_flags_t;
++	if ((cifsFile == NULL) || (current_entry == NULL))
++		return -EINVAL;
++
++	level = cifsFile->srch_inf.info_level;
++
++	if (level == SMB_FIND_FILE_UNIX) {
++		FILE_UNIX_INFO *pFindData = (FILE_UNIX_INFO *)current_entry;
++
++		filename = &pFindData->FileName[0];
++		if (cifsFile->srch_inf.unicode) {
++			len = cifs_unicode_bytelen(filename);
++		} else {
++			/* BB should we make this strnlen of PATH_MAX? */
++			len = strnlen(filename, PATH_MAX);
++		}
++		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
++	} else if (level == SMB_FIND_FILE_DIRECTORY_INFO) {
++		FILE_DIRECTORY_INFO *pFindData =
++			(FILE_DIRECTORY_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_FULL_DIRECTORY_INFO) {
++		FILE_FULL_DIRECTORY_INFO *pFindData =
++			(FILE_FULL_DIRECTORY_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_ID_FULL_DIR_INFO) {
++		SEARCH_ID_FULL_DIR_INFO *pFindData =
++			(SEARCH_ID_FULL_DIR_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_BOTH_DIRECTORY_INFO) {
++		FILE_BOTH_DIRECTORY_INFO *pFindData =
++			(FILE_BOTH_DIRECTORY_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_INFO_STANDARD) {
++		FIND_FILE_STANDARD_INFO *pFindData =
++			(FIND_FILE_STANDARD_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		/* one byte length, no name conversion */
++		len = (unsigned int)pFindData->FileNameLength;
++		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
++	} else {
++		cFYI(1, ("Unknown findfirst level %d", level));
++		return -EINVAL;
++	}
++	cifsFile->srch_inf.resume_name_len = len;
++	cifsFile->srch_inf.presume_name = filename;
++	return rc;
++}
++
+ /* find the corresponding entry in the search */
+ /* Note that the SMB server returns search entries for . and .. which
+    complicates logic here if we choose to parse for them and we do not
+@@ -703,6 +767,7 @@ static int find_cifs_entry(const int xid
+ 	while ((index_to_find >= cifsFile->srch_inf.index_of_last_entry) &&
+ 	      (rc == 0) && !cifsFile->srch_inf.endOfSearch) {
+ 		cFYI(1, ("calling findnext2"));
++		cifs_save_resume_key(cifsFile->srch_inf.last_entry, cifsFile);
+ 		rc = CIFSFindNext(xid, pTcon, cifsFile->netfid,
+ 				  &cifsFile->srch_inf);
+ 		if (rc)
+@@ -919,69 +984,6 @@ static int cifs_filldir(char *pfindEntry
+ 	return rc;
+ }
  
- typedef enum {
---- a/fs/xfs/xfs_log.c
-+++ b/fs/xfs/xfs_log.c
-@@ -1033,11 +1033,12 @@ xlog_iodone(xfs_buf_t *bp)
- 	l = iclog->ic_log;
+-static int cifs_save_resume_key(const char *current_entry,
+-	struct cifsFileInfo *cifsFile)
+-{
+-	int rc = 0;
+-	unsigned int len = 0;
+-	__u16 level;
+-	char *filename;
+-
+-	if ((cifsFile == NULL) || (current_entry == NULL))
+-		return -EINVAL;
+-
+-	level = cifsFile->srch_inf.info_level;
+-
+-	if (level == SMB_FIND_FILE_UNIX) {
+-		FILE_UNIX_INFO *pFindData = (FILE_UNIX_INFO *)current_entry;
+-
+-		filename = &pFindData->FileName[0];
+-		if (cifsFile->srch_inf.unicode) {
+-			len = cifs_unicode_bytelen(filename);
+-		} else {
+-			/* BB should we make this strnlen of PATH_MAX? */
+-			len = strnlen(filename, PATH_MAX);
+-		}
+-		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
+-	} else if (level == SMB_FIND_FILE_DIRECTORY_INFO) {
+-		FILE_DIRECTORY_INFO *pFindData =
+-			(FILE_DIRECTORY_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_FULL_DIRECTORY_INFO) {
+-		FILE_FULL_DIRECTORY_INFO *pFindData =
+-			(FILE_FULL_DIRECTORY_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_ID_FULL_DIR_INFO) {
+-		SEARCH_ID_FULL_DIR_INFO *pFindData =
+-			(SEARCH_ID_FULL_DIR_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_BOTH_DIRECTORY_INFO) {
+-		FILE_BOTH_DIRECTORY_INFO *pFindData =
+-			(FILE_BOTH_DIRECTORY_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_INFO_STANDARD) {
+-		FIND_FILE_STANDARD_INFO *pFindData =
+-			(FIND_FILE_STANDARD_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		/* one byte length, no name conversion */
+-		len = (unsigned int)pFindData->FileNameLength;
+-		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
+-	} else {
+-		cFYI(1, ("Unknown findfirst level %d", level));
+-		return -EINVAL;
+-	}
+-	cifsFile->srch_inf.resume_name_len = len;
+-	cifsFile->srch_inf.presume_name = filename;
+-	return rc;
+-}
  
- 	/*
--	 * If the ordered flag has been removed by a lower
--	 * layer, it means the underlyin device no longer supports
-+	 * If the _XFS_BARRIER_FAILED flag was set by a lower
-+	 * layer, it means the underlying device no longer supports
- 	 * barrier I/O. Warn loudly and turn off barriers.
- 	 */
--	if ((l->l_mp->m_flags & XFS_MOUNT_BARRIER) && !XFS_BUF_ISORDERED(bp)) {
-+	if (bp->b_flags & _XFS_BARRIER_FAILED) {
-+		bp->b_flags &= ~_XFS_BARRIER_FAILED;
- 		l->l_mp->m_flags &= ~XFS_MOUNT_BARRIER;
- 		xfs_fs_cmn_err(CE_WARN, l->l_mp,
- 				"xlog_iodone: Barriers are no longer supported"
+ int cifs_readdir(struct file *file, void *direntry, filldir_t filldir)
+ {
 
 -- 
