@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759188AbYJPXRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbYJPXRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759188AbYJPXRe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbYJPXRV
+	id S1759276AbYJPXRv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbYJPXRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:17:21 -0400
-Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:39649
-	"EHLO tadamune.kami.home" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759090AbYJPXRR (ORCPT
+	Thu, 16 Oct 2008 19:17:32 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:22858 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759184AbYJPXRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:17:17 -0400
-X-Greylist: delayed 1690 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 19:17:17 EDT
-Date: Fri, 17 Oct 2008 07:49:03 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Adam Jackson <ajax@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] sony-laptop: Ignore missing _DIS method on pic device
-Message-ID: <20081016224903.GD21963@inferi.kami.home>
-References: <1224192550-366-1-git-send-email-ajax@redhat.com>
-MIME-Version: 1.0
+	Thu, 16 Oct 2008 19:17:31 -0400
+Date: Thu, 16 Oct 2008 18:17:30 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>, adobriyan@gmail.com
+Subject: [PATCH 2/2] cciss: fix regression firmware version not displayed in procfs (again and again)
+Message-ID: <20081016231730.GA26824@roadking.ldev.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224192550-366-1-git-send-email-ajax@redhat.com>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.26-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 05:29:10PM -0400, Adam Jackson wrote:
-> From: Matthew Garrett <mjg59@srcf.ucam.org>
-> 
-> At least the Vaio VGN-Z540N doesn't have this method, so let's not fail
-> to suspend just because it doesn't exist.
+Patch 2 of 2
 
-Do you happen to have a DSDT dump for this model? I'd be glad to see it.
+The regression was introduced by commit
+6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
+This patch fixes a regression where the controller firmware version is not
+displayed in procfs. The previous patch would be called anytime something
+changed. This will get called only once for each controller.
 
-> Signed-off-by: Adam Jackson <ajax@redhat.com>
+This one addresses the un-needed initialization and the freeing of inq_buf.
 
-Acked-by: Mattia Dongili <malattia@linux.it>
+Please consider this for inclusion.
 
-> ---
->  drivers/misc/sony-laptop.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
-> index 60775be..b35eb92 100644
-> --- a/drivers/misc/sony-laptop.c
-> +++ b/drivers/misc/sony-laptop.c
-> @@ -2315,8 +2315,10 @@ end:
->   */
->  static int sony_pic_disable(struct acpi_device *device)
->  {
-> -	if (ACPI_FAILURE(acpi_evaluate_object(device->handle,
-> -			"_DIS", NULL, NULL)))
-> +	acpi_status ret = acpi_evaluate_object(device->handle, "_DIS", NULL,
-> +					       NULL);
-> +
-> +	if (ACPI_FAILURE(ret) && ret != AE_NOT_FOUND)
->  		return -ENXIO;
->  
->  	dprintk("Device disabled\n");
-> -- 
-> 1.6.0.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
--- 
-mattia
-:wq!
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 0f367b1..c3f0c17 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -3404,7 +3404,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	int i;
+ 	int j = 0;
+ 	int rc;
+-	int dac;
++	int dac, return_code;
++	InquiryData_struct *inq_buff;
+ 
+ 	i = alloc_cciss_hba();
+ 	if (i < 0)
+@@ -3510,6 +3511,25 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	/* Turn the interrupts on so we can service requests */
+ 	hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
+ 
++	/* Get the firmware version */
++	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
++	if (inq_buff == NULL) {
++		printk(KERN_ERR "cciss: out of memory\n");
++		return -ENOMEM;
++	}
++
++	return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
++		sizeof(InquiryData_struct), 0, 0 , 0, TYPE_CMD);
++	if (return_code == IO_OK) {
++		hba[i]->firm_ver[0] = inq_buff->data_byte[32];
++		hba[i]->firm_ver[1] = inq_buff->data_byte[33];
++		hba[i]->firm_ver[2] = inq_buff->data_byte[34];
++		hba[i]->firm_ver[3] = inq_buff->data_byte[35];
++	} else {	 /* send command failed */
++		printk(KERN_WARNING "cciss: unable to determine firmware"
++			" version of controller\n");
++	}
++
+ 	cciss_procinit(i);
+ 
+ 	hba[i]->cciss_max_sectors = 2048;
+@@ -3520,6 +3540,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	return 1;
+ 
+ clean4:
++	kfree(inq_buff);
+ #ifdef CONFIG_CISS_SCSI_TAPE
+ 	kfree(hba[i]->scsi_rejects.complete);
+ #endif
