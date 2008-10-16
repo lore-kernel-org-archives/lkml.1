@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYJPUwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbYJPUxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbYJPUwb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 16:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYJPUwX
+	id S1757284AbYJPUxj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 16:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbYJPUxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 16:52:23 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:43687 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755071AbYJPUwX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 16:52:23 -0400
-Message-ID: <48F7A971.3040500@nortel.com>
-Date: Thu, 16 Oct 2008 14:52:01 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Thu, 16 Oct 2008 16:53:32 -0400
+Received: from xenotime.net ([66.160.160.81]:39763 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755012AbYJPUxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 16:53:31 -0400
+Date: Thu, 16 Oct 2008 13:53:21 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: "Randy.Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2008-10-16-00-52 uploaded
+In-Reply-To: <20081016205125.GB2468@x200.localdomain>
+Message-ID: <Pine.LNX.4.64.0810161353030.14604@shark.he.net>
+References: <200810160758.m9G7wZmt018529@imap1.linux-foundation.org>
+ <Pine.LNX.4.64.0810161336510.14604@shark.he.net> <20081016205125.GB2468@x200.localdomain>
 MIME-Version: 1.0
-To: Bodo Eggert <7eggert@gmx.de>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       jeffschroeder@computer.org
-Subject: Re: [PATCH] use tmpfs for rootfs v2
-References: <alpine.LSU.0.999.0810161400160.5456@be1.lrz> <Pine.LNX.4.64.0810161507130.25933@anakin> <alpine.LSU.0.999.0810161936590.5051@be1.lrz>
-In-Reply-To: <alpine.LSU.0.999.0810161936590.5051@be1.lrz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Oct 2008 20:52:02.0945 (UTC) FILETIME=[0A9C3710:01C92FD1]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert wrote:
+On Fri, 17 Oct 2008, Alexey Dobriyan wrote:
 
-> Having tmpfs as the root filesystem allows you to get rid of the now unused 
-> ramfs and free some kernel memory. On my system, that's about 5198 bytes 
-> compared to having a ramfs root.
+> On Thu, Oct 16, 2008 at 01:38:13PM -0700, Randy.Dunlap wrote:
+> > On Thu, 16 Oct 2008, akpm@linux-foundation.org wrote:
+> > 
+> > > The mm-of-the-moment snapshot 2008-10-16-00-52 has been uploaded to
+> > > 
+> > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > 
+> > > It contains the following patches against 2.6.27:
+> > 
+> > 
+> > build-r9169.out:ksysfs.c:(.text+0x1a773): undefined reference to `create_proc_profile'
+> > 
+> > when CONFIG_PROC_FS=n and CONFIG_SYSFS=n
+> 
+> ksysfs.c is compiled if SYSFS=n?
+> 
+> what's up?
 
-If you're not using swap, I assume the memory usage of tmpfs and ramfs 
-would be identical?
+Yes, that's what Makefile says...  odd.
 
-Chris
+-- 
+~Randy
