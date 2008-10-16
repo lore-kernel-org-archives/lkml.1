@@ -1,52 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYJPSNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbYJPSOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYJPSNU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYJPSNL
+	id S1756570AbYJPSOg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbYJPSOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:13:11 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:14066 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752123AbYJPSNK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:13:10 -0400
-Date: Thu, 16 Oct 2008 12:13:08 -0600
-From: dougthompson@xmission.com
-To: benh@kernel.crashing.org, dougthompson@xmission.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 1/1] edac cell: fix incorrect edac_mode
-Message-ID: <48f78434.Hj5aU4wgiL/VVJvn%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 14:14:24 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49945 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753027AbYJPSOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:14:23 -0400
+Subject: [PATCH 1/9] Create syscalls: sys_checkpoint, sys_restart
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm <linux-mm@kvack.org>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+Date: Thu, 16 Oct 2008 11:14:15 -0700
+References: <20081016181414.934C4FCC@kernel>
+In-Reply-To: <20081016181414.934C4FCC@kernel>
+Message-Id: <20081016181415.B63AF0FA@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-The cell_edac driver is setting the edac_mode field of the
-csrow's to an incorrect value, causing the sysfs show routine
-for that field to go out of an array bound and Oopsing the kernel
-when used.
+From: Oren Laadan <orenl@cs.columbia.edu>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+Create trivial sys_checkpoint and sys_restore system calls. They will
+enable to checkpoint and restart an entire container, to and from a
+checkpoint image file descriptor.
+
+The syscalls take a file descriptor (for the image file) and flags as
+arguments. For sys_checkpoint the first argument identifies the target
+container; for sys_restart it will identify the checkpoint image.
+
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
 
- drivers/edac/cell_edac.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ linux-2.6.git-dave/arch/x86/kernel/syscall_table_32.S |    2 
+ linux-2.6.git-dave/checkpoint/Kconfig                 |   11 ++++
+ linux-2.6.git-dave/checkpoint/Makefile                |    5 ++
+ linux-2.6.git-dave/checkpoint/sys.c                   |   41 ++++++++++++++++++
+ linux-2.6.git-dave/include/asm-x86/unistd_32.h        |    2 
+ linux-2.6.git-dave/include/linux/syscalls.h           |    2 
+ linux-2.6.git-dave/init/Kconfig                       |    2 
+ linux-2.6.git-dave/kernel/sys_ni.c                    |    4 +
+ 8 files changed, 69 insertions(+)
 
---- linux-work.orig/drivers/edac/cell_edac.c	2008-10-15 15:35:21.000000000 +1100
-+++ linux-work/drivers/edac/cell_edac.c	2008-10-15 15:35:29.000000000 +1100
-@@ -142,7 +142,7 @@ static void __devinit cell_edac_init_csr
- 		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
- 		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
- 		csrow->mtype = MEM_XDR;
--		csrow->edac_mode = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+		csrow->edac_mode = EDAC_SECDED;
- 		dev_dbg(mci->dev,
- 			"Initialized on node %d, chanmask=0x%x,"
- 			" first_page=0x%lx, nr_pages=0x%x\n",
-
+diff -puN arch/x86/kernel/syscall_table_32.S~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart arch/x86/kernel/syscall_table_32.S
+--- linux-2.6.git/arch/x86/kernel/syscall_table_32.S~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart	2008-10-16 10:53:33.000000000 -0700
++++ linux-2.6.git-dave/arch/x86/kernel/syscall_table_32.S	2008-10-16 10:53:33.000000000 -0700
+@@ -332,3 +332,5 @@ ENTRY(sys_call_table)
+ 	.long sys_dup3			/* 330 */
+ 	.long sys_pipe2
+ 	.long sys_inotify_init1
++	.long sys_checkpoint
++	.long sys_restart
+diff -puN /dev/null checkpoint/Kconfig
+--- /dev/null	2008-09-02 09:40:19.000000000 -0700
++++ linux-2.6.git-dave/checkpoint/Kconfig	2008-10-16 10:53:33.000000000 -0700
+@@ -0,0 +1,11 @@
++config CHECKPOINT_RESTART
++	prompt "Enable checkpoint/restart (EXPERIMENTAL)"
++	def_bool n
++	depends on X86_32 && EXPERIMENTAL
++	help
++	  Application checkpoint/restart is the ability to save the
++	  state of a running application so that it can later resume
++	  its execution from the time at which it was checkpointed.
++
++	  Turning this option on will enable checkpoint and restart
++	  functionality in the kernel.
+diff -puN /dev/null checkpoint/Makefile
+--- /dev/null	2008-09-02 09:40:19.000000000 -0700
++++ linux-2.6.git-dave/checkpoint/Makefile	2008-10-16 10:53:33.000000000 -0700
+@@ -0,0 +1,5 @@
++#
++# Makefile for linux checkpoint/restart.
++#
++
++obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o
+diff -puN /dev/null checkpoint/sys.c
+--- /dev/null	2008-09-02 09:40:19.000000000 -0700
++++ linux-2.6.git-dave/checkpoint/sys.c	2008-10-16 10:53:33.000000000 -0700
+@@ -0,0 +1,41 @@
++/*
++ *  Generic container checkpoint-restart
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++
++/**
++ * sys_checkpoint - checkpoint a container
++ * @pid: pid of the container init(1) process
++ * @fd: file to which dump the checkpoint image
++ * @flags: checkpoint operation flags
++ *
++ * Returns positive identifier on success, 0 when returning from restart
++ * or negative value on error
++ */
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
++{
++	pr_debug("sys_checkpoint not implemented yet\n");
++	return -ENOSYS;
++}
++/**
++ * sys_restart - restart a container
++ * @crid: checkpoint image identifier
++ * @fd: file from which read the checkpoint image
++ * @flags: restart operation flags
++ *
++ * Returns negative value on error, or otherwise returns in the realm
++ * of the original checkpoint
++ */
++asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
++{
++	pr_debug("sys_restart not implemented yet\n");
++	return -ENOSYS;
++}
+diff -puN include/asm-x86/unistd_32.h~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart include/asm-x86/unistd_32.h
+--- linux-2.6.git/include/asm-x86/unistd_32.h~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart	2008-10-16 10:53:33.000000000 -0700
++++ linux-2.6.git-dave/include/asm-x86/unistd_32.h	2008-10-16 10:53:33.000000000 -0700
+@@ -338,6 +338,8 @@
+ #define __NR_dup3		330
+ #define __NR_pipe2		331
+ #define __NR_inotify_init1	332
++#define __NR_checkpoint		333
++#define __NR_restart		334
+ 
+ #ifdef __KERNEL__
+ 
+diff -puN include/linux/syscalls.h~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart include/linux/syscalls.h
+--- linux-2.6.git/include/linux/syscalls.h~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart	2008-10-16 10:53:33.000000000 -0700
++++ linux-2.6.git-dave/include/linux/syscalls.h	2008-10-16 10:53:33.000000000 -0700
+@@ -622,6 +622,8 @@ asmlinkage long sys_timerfd_gettime(int 
+ asmlinkage long sys_eventfd(unsigned int count);
+ asmlinkage long sys_eventfd2(unsigned int count, int flags);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
++asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+diff -puN init/Kconfig~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart init/Kconfig
+--- linux-2.6.git/init/Kconfig~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart	2008-10-16 10:53:33.000000000 -0700
++++ linux-2.6.git-dave/init/Kconfig	2008-10-16 10:53:33.000000000 -0700
+@@ -779,6 +779,8 @@ config MARKERS
+ 
+ source "arch/Kconfig"
+ 
++source "checkpoint/Kconfig"
++
+ endmenu		# General setup
+ 
+ config HAVE_GENERIC_DMA_COHERENT
+diff -puN kernel/sys_ni.c~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart kernel/sys_ni.c
+--- linux-2.6.git/kernel/sys_ni.c~v6_PATCH_1_9_Create_syscalls-_sys_checkpoint_sys_restart	2008-10-16 10:53:33.000000000 -0700
++++ linux-2.6.git-dave/kernel/sys_ni.c	2008-10-16 10:53:33.000000000 -0700
+@@ -169,3 +169,7 @@ cond_syscall(compat_sys_timerfd_settime)
+ cond_syscall(compat_sys_timerfd_gettime);
+ cond_syscall(sys_eventfd);
+ cond_syscall(sys_eventfd2);
++
++/* checkpoint/restart */
++cond_syscall(sys_checkpoint);
++cond_syscall(sys_restart);
+_
