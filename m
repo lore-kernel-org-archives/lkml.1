@@ -1,73 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYJPGMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYJPGMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287AbYJPGMN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 02:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYJPGLm
+	id S1755555AbYJPGMd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 02:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbYJPGL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 02:11:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56786 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826AbYJPGLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 02:11:37 -0400
-Message-ID: <48F6DA77.7090303@kernel.org>
-Date: Thu, 16 Oct 2008 15:08:55 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Elias Oltmanns <eo@nebensachen.de>
-CC: Alex Chiang <achiang@hp.com>, jeff@redhat.com, linux-ide@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] stop gcc warning about uninitialized 'dev' in	ata_scsi_scan_host
-References: <20081015232505.GB9272@ldl.fc.hp.com>	<48F6A2E7.5090005@kernel.org> <20081016034042.GA27621@ldl.fc.hp.com>	<48F6BAFE.6080106@kernel.org> <87r66hjcwv.fsf@denkblock.local>
-In-Reply-To: <87r66hjcwv.fsf@denkblock.local>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 16 Oct 2008 02:11:58 -0400
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:43139 "EHLO
+	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754982AbYJPGLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 02:11:53 -0400
+X-Authority-Analysis: v=1.0 c=1 a=1_itVgU-qY8A:10 a=IX0hwOJc-j8A:10
+ a=WJfgWLpVyee67jL_EXUA:9 a=hPz76RWG6cs6rnRzYOgA:7
+ a=WBlnbm85NGCNFkDfE5_0g9VJHbYA:4 a=T81ihCft0O8A:10
+Subject: [RFC PATCH 1/21] relay - Clean up relay_switch_subbuf() and make
+	waking up consumers optional.
+From: Tom Zanussi <zanussi@comcast.net>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Martin Bligh <mbligh@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       prasad@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+       David Wilder <dwilder@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Content-Type: text/plain
+Date: Thu, 16 Oct 2008 01:05:26 -0500
+Message-Id: <1224137126.16328.220.camel@charm-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Oct 2008 06:10:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elias Oltmanns wrote:
->> I think the current policy is blaming gcc but I also added quite a few
->> bogus NULL initializations here and there and caught several bugs thanks
->> to those warnings.  We can think about adding an additional annotation
->> with leading double underbars which indicate that certain pointer
->> arguments to functions expect (or are okay with) pointers to
->> uninitialized variables which should be able to remove many of those
->> spurious warnings (on the caller side, the compiler can ignore the
->> warning and on the callee side the compiler can check whether it's being
->> dereferenced without being written to).  Does anyone know whether gcc
->> already has that type of annotation?
-> 
-> Well, I don't know of this particular kind of annotation. However, I
-> don't quite see how that would solve the reported issue.
+Over time, relay_switch_subbuf() has accumulated some cruft - this
+patch cleans it up and at the same time makes available some of it
+available as common functions that any subbuf-switch implementor would
+need (this is partially in preparation for the next patch, which makes
+the subbuf-switch function completely replaceable).  It also removes
+the hard-coded reader wakeup and moves it into a replaceable callback
+called notify_consumers(); this allows any given tracer to implement
+consumer notification as it sees fit.
+---
+ include/linux/relay.h |   51 +++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/relay.c        |   43 +++++++++++++++++++++++------------------
+ 2 files changed, 75 insertions(+), 19 deletions(-)
 
-I was thinking about the warning in sata_via.c and for such cases the
-compiler doesn't have any other way of figuring out whether it's okay
-or not (the sata_via case, the compiler can actually do as the callee
-is in the same file but you know what I mean).
-
-> Here, dev is a local variable and the warning is generated due to
-> the line
-> 
-> 		if (dev != last_failed_dev) {
-> 
-> For this sort of thing we have:
-> 
-> 	struct ata_device *uninitialized_var(dev);
-
-Ah.. thanks.
-
-> Or is that precisely the thing you did *not* want?
-
-I don't know.  Later versions of gcc doesn't issue warning because it
-knows "if (!link)" always triggers if dev is not initialized.  I don't
-think we should be adding those annotations if the current gen
-compiler can already figure that out as it only decreases
-debuggability when something actually gets broken there.
-
-Thanks.
-
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 953fc05..17f0515 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -159,6 +159,15 @@ struct rchan_callbacks
+ 	 * The callback should return 0 if successful, negative if not.
+ 	 */
+ 	int (*remove_buf_file)(struct dentry *dentry);
++
++	/*
++	 * notify_consumers - new sub-buffer available, let consumers know
++	 * @buf: the channel buffer
++	 *
++	 * Called during sub-buffer switch.  Applications which don't
++	 * want to notify anyone should implement an empty version.
++	 */
++        void (*notify_consumers)(struct rchan_buf *buf);
+ };
+ 
+ /*
+@@ -186,6 +195,48 @@ extern size_t relay_switch_subbuf(struct rchan_buf *buf,
+ 				  size_t length);
+ 
+ /**
++ *	relay_event_toobig - is event too big to fit in a sub-buffer?
++ *	@buf: relay channel buffer
++ *	@length: length of event
++ *
++ *	Returns 1 if too big, 0 otherwise.
++ *
++ *	switch_subbuf() helper function.
++ */
++static inline int relay_event_toobig(struct rchan_buf *buf, size_t length)
++{
++	return length > buf->chan->subbuf_size;
++}
++
++/**
++ *	relay_update_filesize - increase relay file i_size by length
++ *	@buf: relay channel buffer
++ *	@length: length to add
++ *
++ *	switch_subbuf() helper function.
++ */
++static inline void relay_update_filesize(struct rchan_buf *buf, size_t length)
++{
++	if (buf->dentry)
++		buf->dentry->d_inode->i_size +=	length;
++	else
++		buf->early_bytes += length;
++
++	smp_mb();
++}
++
++/**
++ *	relay_inc_produced - increase number of sub-buffers produced by 1
++ *	@buf: relay channel buffer
++ *
++ *	switch_subbuf() helper function.
++ */
++static inline void relay_inc_produced(struct rchan_buf *buf)
++{
++	buf->subbufs_produced++;
++}
++
++/**
+  *	relay_write - write data into the channel
+  *	@chan: relay channel
+  *	@data: data to be written
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 8d13a78..53652f1 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -324,6 +324,21 @@ static int remove_buf_file_default_callback(struct dentry *dentry)
+ 	return -EINVAL;
+ }
+ 
++/*
++ * notify_consumers() default callback.
++ */
++static void notify_consumers_default_callback(struct rchan_buf *buf)
++{
++	if (waitqueue_active(&buf->read_wait))
++		/*
++		 * Calling wake_up_interruptible() from here
++		 * will deadlock if we happen to be logging
++		 * from the scheduler (trying to re-grab
++		 * rq->lock), so defer it.
++		 */
++		__mod_timer(&buf->timer, jiffies + 1);
++}
++
+ /* relay channel default callbacks */
+ static struct rchan_callbacks default_channel_callbacks = {
+ 	.subbuf_start = subbuf_start_default_callback,
+@@ -331,6 +346,7 @@ static struct rchan_callbacks default_channel_callbacks = {
+ 	.buf_unmapped = buf_unmapped_default_callback,
+ 	.create_buf_file = create_buf_file_default_callback,
+ 	.remove_buf_file = remove_buf_file_default_callback,
++	.notify_consumers = notify_consumers_default_callback,
+ };
+ 
+ /**
+@@ -508,6 +524,8 @@ static void setup_callbacks(struct rchan *chan,
+ 		cb->create_buf_file = create_buf_file_default_callback;
+ 	if (!cb->remove_buf_file)
+ 		cb->remove_buf_file = remove_buf_file_default_callback;
++	if (!cb->notify_consumers)
++		cb->notify_consumers = notify_consumers_default_callback;
+ 	chan->cb = cb;
+ }
+ 
+@@ -726,30 +744,17 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+ 	void *old, *new;
+ 	size_t old_subbuf, new_subbuf;
+ 
+-	if (unlikely(length > buf->chan->subbuf_size))
++	if (unlikely(relay_event_toobig(buf, length)))
+ 		goto toobig;
+ 
+ 	if (buf->offset != buf->chan->subbuf_size + 1) {
+ 		buf->prev_padding = buf->chan->subbuf_size - buf->offset;
+ 		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
+ 		buf->padding[old_subbuf] = buf->prev_padding;
+-		buf->subbufs_produced++;
+-		if (buf->dentry)
+-			buf->dentry->d_inode->i_size +=
+-				buf->chan->subbuf_size -
+-				buf->padding[old_subbuf];
+-		else
+-			buf->early_bytes += buf->chan->subbuf_size -
+-					    buf->padding[old_subbuf];
+-		smp_mb();
+-		if (waitqueue_active(&buf->read_wait))
+-			/*
+-			 * Calling wake_up_interruptible() from here
+-			 * will deadlock if we happen to be logging
+-			 * from the scheduler (trying to re-grab
+-			 * rq->lock), so defer it.
+-			 */
+-			__mod_timer(&buf->timer, jiffies + 1);
++		relay_inc_produced(buf);
++		relay_update_filesize(buf, buf->chan->subbuf_size -
++				      buf->padding[old_subbuf]);
++		buf->chan->cb->notify_consumers(buf);
+ 	}
+ 
+ 	old = buf->data;
+@@ -763,7 +768,7 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+ 	buf->data = new;
+ 	buf->padding[new_subbuf] = 0;
+ 
+-	if (unlikely(length + buf->offset > buf->chan->subbuf_size))
++	if (unlikely(relay_event_toobig(buf, length + buf->offset)))
+ 		goto toobig;
+ 
+ 	return length;
 -- 
-tejun
+1.5.3.5
+
+
+
