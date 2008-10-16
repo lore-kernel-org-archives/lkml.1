@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYJPSs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYJPS5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323AbYJPSs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYJPSsq
+	id S1754716AbYJPS5e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYJPS5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:48:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60625 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754146AbYJPSsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:48:45 -0400
-Date: Thu, 16 Oct 2008 11:47:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Jiri Kosina <jkosina@suse.cz>, Adrian Bunk <bunk@kernel.org>,
-       zippel@linux-m68k.org, sam@ravnborg.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: select validation (was: Re: [2.6 patch] HID: fix default building
- of all quirky devices)
-In-Reply-To: <Pine.LNX.4.64.0810161002240.25933@anakin>
-Message-ID: <alpine.LFD.2.00.0810161133150.3288@nehalem.linux-foundation.org>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz> <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
- <Pine.LNX.4.64.0810161002240.25933@anakin>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 16 Oct 2008 14:57:25 -0400
+Received: from willie.n0ano.com ([64.66.241.76]:33498 "EHLO xolotl.n0ano.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751142AbYJPS5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:57:25 -0400
+From: n0ano@n0ano.com
+Date: Thu, 16 Oct 2008 12:57:05 -0600
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: n0ano@n0ano.com, Paul Bolle <pebolle@tiscali.nl>,
+       donald.d.dugger@intel.com, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Enable console on PCI serial devices
+Message-ID: <20081016185705.GF14490@xolotl.n0ano.com>
+References: <86802c440810141539x97ceaa4meaab109fae3d9d4c@mail.gmail.com> <20081014233031.GB14490@xolotl.n0ano.com> <1224061999.25929.7.camel@test.thuisdomein> <20081015204850.GC14490@xolotl.n0ano.com> <1224153822.3587.23.camel@test.thuisdomein> <48F76A8B.6050306@kernel.org> <20081016171218.GD14490@xolotl.n0ano.com> <48F785B0.7000008@kernel.org> <20081016182556.GE14490@xolotl.n0ano.com> <86802c440810161130x304128faj6b1a1a6e1b90ed03@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440810161130x304128faj6b1a1a6e1b90ed03@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 16 Oct 2008, Geert Uytterhoeven wrote:
+On Thu, Oct 16, 2008 at 11:30:17AM -0700, Yinghai Lu wrote:
+>... 
+> but if someone don't need the switch from early console to normal console...
 > 
-> Would it be possible for kconfig to check for invalid usage of select?
-> 
-> Like you should not use select to enable something that has
-> dependencies. However, that would fail in case both the selector option
-> and the selected option depend on the same.
 
-Well, at least in theory you may actually want to select something that 
-has dependencies, even if you don't want to select the dependencies.
+Back to my original point, why would someone want just the
+early console output on serial but not want the normal console
+on serial?  I can't think of any use case where this makes
+sense.
 
-For example, some feature may be enabled by default on some architecture 
-or with some config. Example:
-
-	bool SUPPORT_FEATURE
-		default y
-		depends on EXPERIMENTAL
-		depends on !EMBEDDED
-		depends on X86
-
-which is just another way of saying
-
-	bool SUPPORT_FEATURE
-		default X86 && !EMBEDDED && EXPERIMENTAL
-
-and it's still possible that some code wants to do a
-
-	select SUPPORT_FEATURE
-
-because the dependency isn't a _code_ dependency, it's a default-value 
-dependency.
-
-Now, you could say that then you should use that second version (ie the 
-"default X86 && !EMBEDDED && EXPERIMENTAL" version), but the thing is, 
-"depends on" is actually a more powerful and can result in more readable 
-setup (because you can have multiple "depends on" lines and they are all 
-logically anded together.
-
-Do we do that? I dunno. But I wouldn't be surprised if we do.
-
-		Linus
+-- 
+Don Dugger
+"Censeo Toto nos in Kansa esse decisse." - D. Gale
+n0ano@n0ano.com
+Ph: 303/443-3786
