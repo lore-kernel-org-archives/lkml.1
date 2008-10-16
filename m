@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYJPMHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYJPMTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYJPMHk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 08:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYJPMHc
+	id S1755562AbYJPMTV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 08:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYJPMTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 08:07:32 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:5347 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751839AbYJPMHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 08:07:31 -0400
-X-BigFish: VPS-34(zz1432R98dR1805M936fO3117Kzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K8TZ06-01-29X-01
-Date: Thu, 16 Oct 2008 14:06:15 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Greg KH <greg@kroah.com>
-CC: stable@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH 0/2] x86: check correctness of IRQ0 override
-	on systems with ATI/AMD SB450/SB600 chipsets
-Message-ID: <20081016120615.GE29183@alberich.amd.com>
-References: <20081015104118.GA4706@alberich.amd.com> <20081015191720.GA7966@kroah.com>
+	Thu, 16 Oct 2008 08:19:12 -0400
+Received: from elvis.franken.de ([193.175.24.41]:55668 "EHLO elvis.franken.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751839AbYJPMTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 08:19:11 -0400
+Date: Thu, 16 Oct 2008 14:18:02 +0200
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rtc: rtc-ds1286 and rtc-m48t35 need <linux/io.h>
+Message-ID: <20081016121802.GA7248@alpha.franken.de>
+References: <Pine.LNX.4.64.0810160927340.25608@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081015191720.GA7966@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 16 Oct 2008 12:06:41.0122 (UTC) FILETIME=[A623BC20:01C92F87]
+In-Reply-To: <Pine.LNX.4.64.0810160927340.25608@anakin>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 12:17:20PM -0700, Greg KH wrote:
-> On Wed, Oct 15, 2008 at 12:41:18PM +0200, Andreas Herrmann wrote:
-> > Hi,
-> > 
-> > following patches should go into 2.6.27-stable tree.
-> > 
-> > They fix issues with HP Laptops that provide a wrong override for IRQ0
-> > and which change the thermal trip point as soon as Linux unmasks
-> > IOAPIC INT2.
+On Thu, Oct 16, 2008 at 09:28:47AM +0200, Geert Uytterhoeven wrote:
+> With m68k allmodconfig, I get:
 > 
-> Are these patches in the upstream Linus kernel already?
+> | drivers/rtc/rtc-ds1286.c: In function 'ds1286_rtc_read':
+> | drivers/rtc/rtc-ds1286.c:33: error: implicit declaration of function '__raw_readl'
+> | drivers/rtc/rtc-ds1286.c: In function 'ds1286_rtc_write':
+> | drivers/rtc/rtc-ds1286.c:38: error: implicit declaration of function '__raw_writel'
+> | drivers/rtc/rtc-ds1286.c: In function 'ds1286_probe':
+> | drivers/rtc/rtc-ds1286.c:345: error: implicit declaration of function 'ioremap'
+> | drivers/rtc/rtc-ds1286.c:345: warning: assignment makes pointer from integer without a cast
+> | drivers/rtc/rtc-ds1286.c:365: error: implicit declaration of function 'iounmap'
 > 
-> If so, can you please give us the git commit ids?
+> and
+> 
+> | drivers/rtc/rtc-m48t35.c: In function 'm48t35_read_time':
+> | drivers/rtc/rtc-m48t35.c:59: error: implicit declaration of function 'readb'
+> | drivers/rtc/rtc-m48t35.c:60: error: implicit declaration of function 'writeb'
+> | drivers/rtc/rtc-m48t35.c: In function 'm48t35_probe':
+> | drivers/rtc/rtc-m48t35.c:168: error: implicit declaration of function 'ioremap'
+> | drivers/rtc/rtc-m48t35.c:168: warning: assignment makes pointer from integer without a cast
+> | drivers/rtc/rtc-m48t35.c:188: error: implicit declaration of function 'iounmap'
+> 
+> Include <linux/io.h> to get access to the I/O API.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-The one for SB450 is upstream. It's commit
-33fb0e4eb53f16af312f9698f974e2e64af39c12
+Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 
-The second one was posted yesterday and it is not yet commited.
+Thanks for fixing and sorry for that. I'll do more build tests in
+the future to avoid that.
 
-BTW, I just posted another patch to remove superfluos DMI-quirks
-that are related to HP Laptops with SB450/SB600.
-IMHO this patch should go into stable as well. But first I'd like
-to get a response from Ingo here.
+Thomas.
 
-
-Regards,
-
-Andreas
-
-
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessary a
+good idea.                                                [ RFC1925, 2.3 ]
