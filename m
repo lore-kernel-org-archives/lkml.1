@@ -1,105 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYJPMuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYJPM6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYJPMuJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 08:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYJPMt4
+	id S1754880AbYJPM6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 08:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYJPM6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 08:49:56 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54400 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbYJPMt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 08:49:56 -0400
-Date: Thu, 16 Oct 2008 15:49:43 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081016124943.GE23630@cs181140183.pp.htv.fi>
-References: <20081016002509.GA25868@kroah.com>
+	Thu, 16 Oct 2008 08:58:12 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54200 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751497AbYJPM6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 08:58:11 -0400
+Date: Thu, 16 Oct 2008 07:58:08 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: [PATCH] NULL struct irq_desc's member 'name' in dynamic_irq_cleanup()
+Message-ID: <20081016125808.GA24347@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081016002509.GA25868@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 05:25:09PM -0700, Greg KH wrote:
-> Hi,
+If the member 'name' of the irq_desc structure happens to point to a character
+string that is resident within a kernel module, problems insue if that module
+is rmmod'd (at which time dynamic_irq_cleanup() is called) and then later
+show_interrupts() is called by someone. It is also not a good thing if the
+character string resided in kmalloc'd space that has been kfree'd (after
+having called dynamic_irq_cleanup()). dynamic_irq_cleanup() fails to NULL
+the 'name' member and show_interrupts() references it on a few architectures
+(like h8300, sh and x86).
 
-Hi Greg,
+Signed-off-by: Dean Nelson <dcn@sgi.com>
 
->...
-> Yes, we can handle the major/minor macros in the kernel to provide a
-> compatible number so that automated scripts will not break, that's not a
-> big deal.
-> 
-> Any thoughts?
->...
+---
 
-how much of userspace breaks when we suddenly "just for fun" change the 
-version numbering scheme in a very radical way?
+ kernel/irq/chip.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-I'm not thinking of scripts for building the kernel.
-
-I'm thinking of the fact that starting with glibc different pieces of 
-userspace software interpret the kernel version number they get from 
-various sources like e.g. <linux/version.h>, "uname -r" or an ioctl.
-
-As a random example, the "config" script of OpenSSL 0.9.8g contains the 
-following:
-
-<--  snip  -->
-
-...
-RELEASE=`(uname -r) 2>/dev/null` || RELEASE="unknown"
-...
-case "${SYSTEM}:${RELEASE}:${VERSION}:${MACHINE}" in
-...
-    Linux:[2-9].*)
-        echo "${MACHINE}-whatever-linux2"; exit 0
-        ;;
-
-    Linux:1.*)
-        echo "${MACHINE}-whatever-linux1"; exit 0
-        ;;
-...
-
-<--  snip  -->
-
-
-Change the version number of the kernel in the way you suggest, and 
-trying to build it will fail with:
-
-<--  snip  -->
-
-$ ./config
-Operating system: x86_64-whatever-Linux
-This system (Linux) is not supported. See file INSTALL for details.
-$ 
-
-<--  snip  -->
-
-
-If a distribution will try to autobuild an urgent OpenSSL security 
-update for their stable release in a chroot on a machine running
-kernel 2009.2.3 they will surely love you for being responsible
-for this...
-
-
-> thanks,
-> 
-> greg k-h
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Index: linux/kernel/irq/chip.c
+===================================================================
+--- linux.orig/kernel/irq/chip.c	2008-10-15 07:44:31.000000000 -0500
++++ linux/kernel/irq/chip.c	2008-10-16 06:55:56.000000000 -0500
+@@ -79,6 +79,7 @@ void dynamic_irq_cleanup(unsigned int ir
+ 	desc->chip_data = NULL;
+ 	desc->handle_irq = handle_bad_irq;
+ 	desc->chip = &no_irq_chip;
++	desc->name = NULL;
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ }
+ 
