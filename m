@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYJPQF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYJPQI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbYJPQF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 12:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbYJPQFT
+	id S1755350AbYJPQI2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 12:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYJPQIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 12:05:19 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:11448 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbYJPQFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 12:05:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=SIEckjLrzII5iuzlePSOSoy3dYH0vvlr4gX80wNNvcJnSnMMnMnCchMXE3yhwV8/ya
-         NGPVyCUXWyeveQsSsLJyAmlD3dQNnl3YS78ms998auCHRkFRiqxL3AxxAkLfPGMHariX
-         LxCPm6LX//GE04j+jUGWlPqVedZcuvt1PyDEc=
-Date: Thu, 16 Oct 2008 17:04:54 +0100
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>
-Subject: [Patch] kernel/configs.c: remove useless comments
-Message-ID: <20081016160454.GG13374@hack.voiplan.pt>
+	Thu, 16 Oct 2008 12:08:19 -0400
+Received: from kroah.org ([198.145.64.141]:42481 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751517AbYJPQIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 12:08:19 -0400
+Date: Thu, 16 Oct 2008 08:47:26 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081016154726.GA6331@kroah.com>
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016153053.GJ5834@nostromo.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081016153053.GJ5834@nostromo.devel.redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 16, 2008 at 11:30:53AM -0400, Bill Nottingham wrote:
+> Greg KH (greg@kroah.com) said: 
+> > Distros properly patch things and backport "urgent OpenSSL security
+> > updates" to older versions of packages, so they would not run into this
+> > problem.
+> > 
+> > Newer releases would run into this problem, but as almost all distros
+> > have huge, easy to run, build systems, a change like this would show up
+> > immediately and be fixed in a matter of hours, with the needed fixes
+> > being pushed upstream to the various packages as needed.
+> > 
+> > So I really don't think this is much of a problem.
+> > 
+> > It's interesting that openssl doesn't just check for Linux 1.x and
+> > assumes that Linux 9.23.12 will work just fine with what they are doing :)
+> 
+> Is it really worth the effort of having any such upstream have to
+> quickly patch and release, when the only benefit listed (earlier in
+> this thread) was to inform people how old their kernel is?
 
-These comments are useless, remove them.
+If we switch to a consecutive numbering scheme, which doesn't show the
+"age" of the kernel, we would still have to patch such packages, so I
+don't see the big difference.
 
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>
+thanks,
 
----
-diff --git a/kernel/configs.c b/kernel/configs.c
-index 4c34521..abaee68 100644
---- a/kernel/configs.c
-+++ b/kernel/configs.c
-@@ -54,9 +54,6 @@
- 
- #ifdef CONFIG_IKCONFIG_PROC
- 
--/**************************************************/
--/* globals and useful constants                   */
--
- static ssize_t
- ikconfig_read_current(struct file *file, char __user *buf,
- 		      size_t len, loff_t * offset)
-@@ -71,9 +68,6 @@ static const struct file_operations ikconfig_file_ops = {
- 	.read = ikconfig_read_current,
- };
- 
--/***************************************************/
--/* ikconfig_init: start up everything we need to */
--
- static int __init ikconfig_init(void)
- {
- 	struct proc_dir_entry *entry;
-@@ -89,9 +83,6 @@ static int __init ikconfig_init(void)
- 	return 0;
- }
- 
--/***************************************************/
--/* ikconfig_cleanup: clean up our mess           */
--
- static void __exit ikconfig_cleanup(void)
- {
- 	remove_proc_entry("config.gz", NULL);
-
-
+greg k-h
