@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbYJPRq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbYJPRrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759169AbYJPRq0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758448AbYJPRo7
+	id S1759551AbYJPRrW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758760AbYJPRpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:44:59 -0400
+	Thu, 16 Oct 2008 13:45:38 -0400
 Received: from ti-out-0910.google.com ([209.85.142.191]:21761 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758384AbYJPRo5 (ORCPT
+	with ESMTP id S1758595AbYJPRpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:44:57 -0400
+	Thu, 16 Oct 2008 13:45:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :sender;
-        b=JMqXJUH2BbZo67g177IfiHT6uJ2Iy0L4u1LjsMk8pTCou3pqEefCmiJGQ4DnScJyPS
-         WUwIUznKIvnrg+/dIoeCdaoeyRXEtbZB32PZSX0VY0Z8ORZf+FMLPZqVNCQqtDYdHLVv
-         D2s7oQ4iami100p1nZLgH1LeM01pFTR7pAOlc=
+        b=dRD8Xuvw33xJcVWrqOQy7pvwSODT9K2c0QAyjZ7Cs4nFJ86uifnCyfZickfuN9Jl1g
+         3/R4J4sKxGsRGzyFWf3G+tAT+4XytlS95qtTjXikkZ+G5njl53VfiNd3MODGeJgyajck
+         OmprmJqOLt00Y066NvrtZS9b60qrDCA8r0Zag=
 From: Bryan Wu <cooloney@kernel.org>
 To: alan@redhat.com
 Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
        Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 6/9] Blackfin Serial Driver: Fix bug - BF527-EZKIT unable to receive large files over UART in DMA mode
-Date: Fri, 17 Oct 2008 01:44:04 +0800
-Message-Id: <1224179047-13073-7-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 9/9] Blackfin Serial Driver: Change hardware flowcontrol from poll to interrupt driven.
+Date: Fri, 17 Oct 2008 01:44:07 +0800
+Message-Id: <1224179047-13073-10-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1224179047-13073-1-git-send-email-cooloney@kernel.org>
 References: <1224179047-13073-1-git-send-email-cooloney@kernel.org>
@@ -33,60 +33,448 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sonic Zhang <sonic.zhang@analog.com>
 
-Add spin_lock_irqsave() when receive and transfer data.
+Only CTS bit is affected.
 
 Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- drivers/serial/bfin_5xx.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ .../mach-bf527/include/mach/bfin_serial_5xx.h      |   26 ----
+ .../mach-bf533/include/mach/bfin_serial_5xx.h      |   20 ---
+ .../mach-bf537/include/mach/bfin_serial_5xx.h      |   27 ----
+ .../mach-bf548/include/mach/bfin_serial_5xx.h      |   45 -------
+ .../mach-bf561/include/mach/bfin_serial_5xx.h      |   20 ---
+ drivers/serial/bfin_5xx.c                          |  131 ++++++++++++--------
+ 6 files changed, 82 insertions(+), 187 deletions(-)
 
+diff --git a/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h
+index 75722d6..2934b57 100644
+--- a/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h
+@@ -167,29 +167,3 @@ struct bfin_serial_res bfin_serial_resource[] = {
+ };
+ 
+ #define DRIVER_NAME "bfin-uart"
+-
+-static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+-{
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART0
+-	peripheral_request(P_UART0_TX, DRIVER_NAME);
+-	peripheral_request(P_UART0_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART1
+-	peripheral_request(P_UART1_TX, DRIVER_NAME);
+-	peripheral_request(P_UART1_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	if (uart->cts_pin >= 0) {
+-		gpio_request(uart->cts_pin, DRIVER_NAME);
+-		gpio_direction_input(uart->cts_pin);
+-	}
+-
+-	if (uart->rts_pin >= 0) {
+-		gpio_request(uart->rts_pin, DRIVER_NAME);
+-		gpio_direction_output(uart->rts_pin, 0);
+-	}
+-#endif
+-}
+diff --git a/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h
+index f3d9e49..d730cab 100644
+--- a/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h
+@@ -142,23 +142,3 @@ struct bfin_serial_res bfin_serial_resource[] = {
+ };
+ 
+ #define DRIVER_NAME "bfin-uart"
+-
+-static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+-{
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART0
+-	peripheral_request(P_UART0_TX, DRIVER_NAME);
+-	peripheral_request(P_UART0_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	if (uart->cts_pin >= 0) {
+-		gpio_request(uart->cts_pin, DRIVER_NAME);
+-		gpio_direction_input(uart->cts_pin);
+-	}
+-	if (uart->rts_pin >= 0) {
+-		gpio_request(uart->rts_pin, DRIVER_NAME);
+-		gpio_direction_output(uart->rts_pin, 0);
+-	}
+-#endif
+-}
+diff --git a/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h
+index b3f87e1..559d8a6 100644
+--- a/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h
+@@ -99,7 +99,6 @@ struct bfin_serial_port {
+ 	struct work_struct	tx_dma_workqueue;
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	struct timer_list 	cts_timer;
+ 	int		cts_pin;
+ 	int 		rts_pin;
+ #endif
+@@ -167,29 +166,3 @@ struct bfin_serial_res bfin_serial_resource[] = {
+ };
+ 
+ #define DRIVER_NAME "bfin-uart"
+-
+-static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+-{
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART0
+-	peripheral_request(P_UART0_TX, DRIVER_NAME);
+-	peripheral_request(P_UART0_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART1
+-	peripheral_request(P_UART1_TX, DRIVER_NAME);
+-	peripheral_request(P_UART1_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	if (uart->cts_pin >= 0) {
+-		gpio_request(uart->cts_pin, DRIVER_NAME);
+-		gpio_direction_input(uart->cts_pin);
+-	}
+-
+-	if (uart->rts_pin >= 0) {
+-		gpio_request(uart->rts_pin, DRIVER_NAME);
+-		gpio_direction_output(uart->rts_pin, 0);
+-	}
+-#endif
+-}
+diff --git a/arch/blackfin/mach-bf548/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf548/include/mach/bfin_serial_5xx.h
+index e4cf35e..ff2298b 100644
+--- a/arch/blackfin/mach-bf548/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf548/include/mach/bfin_serial_5xx.h
+@@ -173,48 +173,3 @@ struct bfin_serial_res bfin_serial_resource[] = {
+ };
+ 
+ #define DRIVER_NAME "bfin-uart"
+-
+-static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+-{
+-#ifdef CONFIG_SERIAL_BFIN_UART0
+-	peripheral_request(P_UART0_TX, DRIVER_NAME);
+-	peripheral_request(P_UART0_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART1
+-	peripheral_request(P_UART1_TX, DRIVER_NAME);
+-	peripheral_request(P_UART1_RX, DRIVER_NAME);
+-
+-#ifdef CONFIG_BFIN_UART1_CTSRTS
+-	peripheral_request(P_UART1_RTS, DRIVER_NAME);
+-	peripheral_request(P_UART1_CTS, DRIVER_NAME);
+-#endif
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART2
+-	peripheral_request(P_UART2_TX, DRIVER_NAME);
+-	peripheral_request(P_UART2_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART3
+-	peripheral_request(P_UART3_TX, DRIVER_NAME);
+-	peripheral_request(P_UART3_RX, DRIVER_NAME);
+-
+-#ifdef CONFIG_BFIN_UART3_CTSRTS
+-	peripheral_request(P_UART3_RTS, DRIVER_NAME);
+-	peripheral_request(P_UART3_CTS, DRIVER_NAME);
+-#endif
+-#endif
+-	SSYNC();
+-#ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	if (uart->cts_pin >= 0) {
+-		gpio_request(uart->cts_pin, DRIVER_NAME);
+-		gpio_direction_input(uart->cts_pin);
+-	}
+-
+-	if (uart->rts_pin >= 0) {
+-		gpio_request(uart->rts_pin, DRIVER_NAME);
+-		gpio_direction_output(uart->rts_pin, 0);
+-	}
+-#endif
+-}
+diff --git a/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h
+index 043bfcf..f9ae3f6 100644
+--- a/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h
+@@ -142,23 +142,3 @@ struct bfin_serial_res bfin_serial_resource[] = {
+ };
+ 
+ #define DRIVER_NAME "bfin-uart"
+-
+-static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+-{
+-
+-#ifdef CONFIG_SERIAL_BFIN_UART0
+-	peripheral_request(P_UART0_TX, DRIVER_NAME);
+-	peripheral_request(P_UART0_RX, DRIVER_NAME);
+-#endif
+-
+-#ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	if (uart->cts_pin >= 0) {
+-		gpio_request(uart->cts_pin, DRIVER_NAME);
+-		gpio_direction_input(uart->cts_pin);
+-	}
+-	if (uart->rts_pin >= 0) {
+-		gpio_request(uart->rts_pin, DRIVER_NAME);
+-		gpio_direction_output(uart->rts_pin, 0);
+-	}
+-#endif
+-}
 diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 44a0855..82854d7 100644
+index 1e027e3..8d34ccd 100644
 --- a/drivers/serial/bfin_5xx.c
 +++ b/drivers/serial/bfin_5xx.c
-@@ -82,7 +82,9 @@ static void bfin_serial_reset_irda(struct uart_port *port);
- static void bfin_serial_stop_tx(struct uart_port *port)
+@@ -64,7 +64,6 @@ static int kgdboc_break_enabled;
+ #define DMA_RX_YCOUNT		(PAGE_SIZE / DMA_RX_XCOUNT)
+ 
+ #define DMA_RX_FLUSH_JIFFIES	(HZ / 50)
+-#define CTS_CHECK_JIFFIES	(HZ / 50)
+ 
+ #ifdef CONFIG_SERIAL_BFIN_DMA
+ static void bfin_serial_dma_tx_chars(struct bfin_serial_port *uart);
+@@ -72,8 +71,6 @@ static void bfin_serial_dma_tx_chars(struct bfin_serial_port *uart);
+ static void bfin_serial_tx_chars(struct bfin_serial_port *uart);
+ #endif
+ 
+-static void bfin_serial_mctrl_check(struct bfin_serial_port *uart);
+-
+ static void bfin_serial_reset_irda(struct uart_port *port);
+ 
+ /*
+@@ -265,12 +262,6 @@ static void bfin_serial_tx_chars(struct bfin_serial_port *uart)
  {
- 	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+#ifdef CONFIG_SERIAL_BFIN_DMA
  	struct circ_buf *xmit = &uart->port.info->xmit;
+ 
+-	/*
+-	 * Check the modem control lines before
+-	 * transmitting anything.
+-	 */
+-	bfin_serial_mctrl_check(uart);
+-
+ 	if (uart_circ_empty(xmit) || uart_tx_stopped(&uart->port)) {
+ #ifdef CONFIG_BF54x
+ 		/* Clear TFI bit */
+@@ -329,12 +320,6 @@ static void bfin_serial_dma_tx_chars(struct bfin_serial_port *uart)
+ 
+ 	uart->tx_done = 0;
+ 
+-	/*
+-	 * Check the modem control lines before
+-	 * transmitting anything.
+-	 */
+-	bfin_serial_mctrl_check(uart);
+-
+ 	if (uart_circ_empty(xmit) || uart_tx_stopped(&uart->port)) {
+ 		uart->tx_count = 0;
+ 		uart->tx_done = 1;
+@@ -524,29 +509,21 @@ static void bfin_serial_set_mctrl(struct uart_port *port, unsigned int mctrl)
+ #endif
+ }
+ 
++#ifdef CONFIG_SERIAL_BFIN_CTSRTS
+ /*
+- * Handle any change of modem status signal since we were last called.
++ * Handle any change of modem status signal.
+  */
+-static void bfin_serial_mctrl_check(struct bfin_serial_port *uart)
++static irqreturn_t bfin_serial_mctrl_cts_int(int irq, void *dev_id)
+ {
+-#ifdef CONFIG_SERIAL_BFIN_CTSRTS
++	struct bfin_serial_port *uart = dev_id;
+ 	unsigned int status;
+-	struct uart_info *info = uart->port.info;
+-	struct tty_struct *tty = info->port.tty;
+ 
+ 	status = bfin_serial_get_mctrl(&uart->port);
+ 	uart_handle_cts_change(&uart->port, status & TIOCM_CTS);
+-	if (!(status & TIOCM_CTS)) {
+-		tty->hw_stopped = 1;
+-		uart->cts_timer.data = (unsigned long)(uart);
+-		uart->cts_timer.function = (void *)bfin_serial_mctrl_check;
+-		uart->cts_timer.expires = jiffies + CTS_CHECK_JIFFIES;
+-		add_timer(&(uart->cts_timer));
+-	} else {
+-		tty->hw_stopped = 0;
+-	}
+-#endif
++
++	return IRQ_HANDLED;
+ }
 +#endif
  
- 	while (!(UART_GET_LSR(uart) & TEMT))
- 		cpu_relax();
-@@ -413,7 +415,9 @@ static void bfin_serial_dma_rx_chars(struct bfin_serial_port *uart)
- 
- void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
- {
--	int x_pos, pos;
-+	int x_pos, pos, flags;
-+
-+	spin_lock_irqsave(&uart->port.lock, flags);
- 
- 	uart->rx_dma_nrows = get_dma_curr_ycount(uart->rx_dma_channel);
- 	x_pos = get_dma_curr_xcount(uart->rx_dma_channel);
-@@ -431,6 +435,8 @@ void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
- 		uart->rx_dma_buf.tail = uart->rx_dma_buf.head;
+ /*
+  * Interrupts are always disabled.
+@@ -606,7 +583,7 @@ static int bfin_serial_startup(struct uart_port *port)
+ 	uart->rx_dma_timer.expires = jiffies + DMA_RX_FLUSH_JIFFIES;
+ 	add_timer(&(uart->rx_dma_timer));
+ #else
+-#if defined(CONFIG_KGDB_SERIAL_CONSOLE) || \
++# if defined(CONFIG_KGDB_SERIAL_CONSOLE) || \
+ 	defined(CONFIG_KGDB_SERIAL_CONSOLE_MODULE)
+ 	if (kgdboc_port_line == uart->port.line && kgdboc_break_enabled)
+ 		kgdboc_break_enabled = 0;
+@@ -661,11 +638,28 @@ static int bfin_serial_startup(struct uart_port *port)
+ 		}
  	}
- 
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
+ # endif
+-#if defined(CONFIG_KGDB_SERIAL_CONSOLE) || \
++# if defined(CONFIG_KGDB_SERIAL_CONSOLE) || \
+ 	defined(CONFIG_KGDB_SERIAL_CONSOLE_MODULE)
+ 	}
+ # endif
+ #endif
 +
- 	mod_timer(&(uart->rx_dma_timer), jiffies + DMA_RX_FLUSH_JIFFIES);
++#ifdef CONFIG_SERIAL_BFIN_CTSRTS
++	if (uart->cts_pin >= 0) {
++		if (request_irq(gpio_to_irq(uart->cts_pin),
++			bfin_serial_mctrl_cts_int,
++			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING |
++			IRQF_DISABLED, "BFIN_UART_CTS", uart)) {
++			uart->cts_pin = -1;
++			pr_info("Unable to attach BlackFin UART CTS interrupt.\
++				 So, disable it.\n");
++		}
++	}
++	if (uart->rts_pin >= 0) {
++		gpio_request(uart->rts_pin, DRIVER_NAME);
++		gpio_direction_output(uart->rts_pin, 0);
++	}
++#endif
+ 	UART_SET_IER(uart, ERBFI);
+ 	return 0;
+ }
+@@ -699,6 +693,13 @@ static void bfin_serial_shutdown(struct uart_port *port)
+ 	free_irq(uart->port.irq, uart);
+ 	free_irq(uart->port.irq+1, uart);
+ #endif
++
++# ifdef CONFIG_SERIAL_BFIN_CTSRTS
++	if (uart->cts_pin >= 0)
++		free_irq(gpio_to_irq(uart->cts_pin), uart);
++	if (uart->rts_pin >= 0)
++		gpio_free(uart->rts_pin);
++# endif
  }
  
-@@ -465,10 +471,9 @@ static irqreturn_t bfin_serial_dma_rx_int(int irq, void *dev_id)
- 	spin_lock(&uart->port.lock);
- 	irqstat = get_dma_curr_irqstat(uart->rx_dma_channel);
- 	clear_dma_irqstat(uart->rx_dma_channel);
-+	bfin_serial_dma_rx_chars(uart);
- 	spin_unlock(&uart->port.lock);
+ static void
+@@ -864,6 +865,20 @@ static void bfin_serial_set_ldisc(struct uart_port *port)
+ 	}
+ }
  
--	mod_timer(&(uart->rx_dma_timer), jiffies);
--
- 	return IRQ_HANDLED;
++static void bfin_serial_reset_irda(struct uart_port *port)
++{
++	int line = port->line;
++	unsigned short val;
++
++	val = UART_GET_GCTL(&bfin_serial_ports[line]);
++	val &= ~(IREN | RPOLC);
++	UART_PUT_GCTL(&bfin_serial_ports[line], val);
++	SSYNC();
++	val |= (IREN | RPOLC);
++	UART_PUT_GCTL(&bfin_serial_ports[line], val);
++	SSYNC();
++}
++
+ #ifdef CONFIG_CONSOLE_POLL
+ static void bfin_serial_poll_put_char(struct uart_port *port, unsigned char chr)
+ {
+@@ -909,20 +924,6 @@ static int bfin_kgdboc_port_startup(struct uart_port *port)
  }
  #endif
+ 
+-static void bfin_serial_reset_irda(struct uart_port *port)
+-{
+-	int line = port->line;
+-	unsigned short val;
+-
+-	val = UART_GET_GCTL(&bfin_serial_ports[line]);
+-	val &= ~(IREN | RPOLC);
+-	UART_PUT_GCTL(&bfin_serial_ports[line], val);
+-	SSYNC();
+-	val |= (IREN | RPOLC);
+-	UART_PUT_GCTL(&bfin_serial_ports[line], val);
+-	SSYNC();
+-}
+-
+ static struct uart_ops bfin_serial_pops = {
+ 	.tx_empty	= bfin_serial_tx_empty,
+ 	.set_mctrl	= bfin_serial_set_mctrl,
+@@ -952,6 +953,39 @@ static struct uart_ops bfin_serial_pops = {
+ #endif
+ };
+ 
++static void __init bfin_serial_hw_init(void)
++{
++#ifdef CONFIG_SERIAL_BFIN_UART0
++	peripheral_request(P_UART0_TX, DRIVER_NAME);
++	peripheral_request(P_UART0_RX, DRIVER_NAME);
++#endif
++
++#ifdef CONFIG_SERIAL_BFIN_UART1
++	peripheral_request(P_UART1_TX, DRIVER_NAME);
++	peripheral_request(P_UART1_RX, DRIVER_NAME);
++
++# if defined(CONFIG_BFIN_UART1_CTSRTS) && defined(CONFIG_BF54x)
++	peripheral_request(P_UART1_RTS, DRIVER_NAME);
++	peripheral_request(P_UART1_CTS, DRIVER_NAME);
++# endif
++#endif
++
++#ifdef CONFIG_SERIAL_BFIN_UART2
++	peripheral_request(P_UART2_TX, DRIVER_NAME);
++	peripheral_request(P_UART2_RX, DRIVER_NAME);
++#endif
++
++#ifdef CONFIG_SERIAL_BFIN_UART3
++	peripheral_request(P_UART3_TX, DRIVER_NAME);
++	peripheral_request(P_UART3_RX, DRIVER_NAME);
++
++# if defined(CONFIG_BFIN_UART3_CTSRTS) && defined(CONFIG_BF54x)
++	peripheral_request(P_UART3_RTS, DRIVER_NAME);
++	peripheral_request(P_UART3_CTS, DRIVER_NAME);
++# endif
++#endif
++}
++
+ static void __init bfin_serial_init_ports(void)
+ {
+ 	static int first = 1;
+@@ -961,6 +995,8 @@ static void __init bfin_serial_init_ports(void)
+ 		return;
+ 	first = 0;
+ 
++	bfin_serial_hw_init();
++
+ 	for (i = 0; i < nr_active_ports; i++) {
+ 		bfin_serial_ports[i].port.uartclk   = get_sclk();
+ 		bfin_serial_ports[i].port.fifosize  = BFIN_UART_TX_FIFO_SIZE;
+@@ -984,15 +1020,12 @@ static void __init bfin_serial_init_ports(void)
+ 		init_timer(&(bfin_serial_ports[i].rx_dma_timer));
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-		init_timer(&(bfin_serial_ports[i].cts_timer));
+ 		bfin_serial_ports[i].cts_pin	    =
+ 			bfin_serial_resource[i].uart_cts_pin;
+ 		bfin_serial_ports[i].rts_pin	    =
+ 			bfin_serial_resource[i].uart_rts_pin;
+ #endif
+-		bfin_serial_hw_init(&bfin_serial_ports[i]);
+ 	}
+-
+ }
+ 
+ #if defined(CONFIG_SERIAL_BFIN_CONSOLE) || defined(CONFIG_EARLY_PRINTK)
 -- 
 1.5.6
 
