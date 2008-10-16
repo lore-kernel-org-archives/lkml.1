@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYJPQ4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYJPQ4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbYJPQ4Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 12:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYJPQ4P
+	id S1754845AbYJPQ4j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 12:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYJPQ41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 12:56:15 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:44254 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751507AbYJPQ4P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 12:56:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=cOCPVMS1j8Z6LxVGHMwFstwWEI5wDBOJpfkVOqCxb/x5q8cZv6nG01bZJ2vnCV98ZvaemHP4F6CnDJVeGw3KkBC+RngiwpPLzjITgjGs0QUXuVbYEusn8tstTOKmaAK8L6+CnT3OsBoBDnle2/dxEIZBcEh86c8mkO66G8hLf+U=  ;
-X-YMail-OSG: _dh0xQ0VM1kTK3oN1hhyS46zP00qEvpkxRziXR6LY0LMiTrooVt6NAveLmrF.fRmH7ZLdzmBqhbjwWCyhHDnIn5wOyKOshulSXRXxVXI.UH4JOQML6LlzWCNTCv0OlRnGOQ-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] gpiolib: fix oops on reading sysfs exported GPIOs
-Date: Thu, 16 Oct 2008 09:56:12 -0700
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20081016144503.GA17455@oksana.dev.rtsoft.ru> <200810160843.08553.david-b@pacbell.net> <20081016163523.GA27938@oksana.dev.rtsoft.ru>
-In-Reply-To: <20081016163523.GA27938@oksana.dev.rtsoft.ru>
+	Thu, 16 Oct 2008 12:56:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57170 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753919AbYJPQ40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 12:56:26 -0400
+Date: Thu, 16 Oct 2008 18:57:27 +0200
+From: Oleg Nesterov <onestero@redhat.com>
+To: Jan Kiszka <jan.kiszka@siemens.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: SIGTRAP vs. sys_exit_group race
+Message-ID: <20081016165727.GA6442@redhat.com>
+References: <48EA1BE9.1030707@siemens.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810160956.12845.david-b@pacbell.net>
+In-Reply-To: <48EA1BE9.1030707@siemens.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 October 2008, Anton Vorontsov wrote:
-> > Not true; the API explicitly allows GPIOs to be treated
-> > as bidirectional, even when they're configured as outputs.
-> > That's because most GPIOs *are* bidirectional.
+Roland, what do you think?
+
+On 10/06, Jan Kiszka wrote:
 >
-> I just recalling somebody was speaking about not wasting cycles with
-> the checks in the gpio_{set,get}_value().
+> --- a/kernel/signal.c
+> +++ b/kernel/signal.c
+> @@ -1528,10 +1528,11 @@ static void ptrace_stop(int exit_code, i
+>  		spin_unlock_irq(&current->sighand->siglock);
+>  		arch_ptrace_stop(exit_code, info);
+>  		spin_lock_irq(&current->sighand->siglock);
+> -		if (sigkill_pending(current))
+> -			return;
+>  	}
+>
+> +	if (sigkill_pending(current))
+> +		return;
+> +
 
-void __gpio_set_value(unsigned gpio, int value)
-{
-        struct gpio_chip        *chip;
+Personally, I think this change is good anyway. The tracee shouldn't
+sleep in TASK_TRACED with the pending SIGKILL.
 
-        chip = gpio_to_chip(gpio);
-        WARN_ON(extra_checks && chip->can_sleep);
-        chip->set(chip, gpio - chip->base, value);
-}
-
-So not many checks there at all.  The get() path has one
-additional check -- is the method null? -- for the reason
-summarized above.  And if you're coming from userspace via
-sysfs, you won't even notice those checks.
+And the current code is confusing, imho. Why do we check sigkill_pending()
+under arch_ptrace_stop_needed() ? Yes, it unlocks ->siglock and can sleep,
+so SIGKILL can come in between. But it is quite possible that SIGKILL is
+already pending when we enter ptrace_stop().
 
 
-> And the solution was that 
-> before using the gpio_{set,get} one should always try to issue the
-> "direction" calls to ensure that gpio controller is capable of that
-> direction... 
+The only problem I can see this patch adds a user-visible change, even
+if this change looks good to me. For example, if we send SIGKILL to
+the thread group, the tracee will not send PTRACE_EVENT_EXIT.
 
-The reason to use gpio_direction_{output,input}() calls is
-mostly to turn the output drivers on/off.  Secondarily they
-do report errors when that particular GPIO can't do that.
+I think we need further changes. If the thread group group was killed
+by some fatal signal (but not SIGKILL) the tracee will sleep with
+SIGNAL_GROUP_EXIT, this is not nice too. But imho the patch makes
+sense anyway.
 
-If you really want GPIO operations to be two instructions
-with no subroutine calls, make sure your platform supports
-inlining the gpio_get_value() calls that have constant params
-that correspond to on-chip GPIOs.  (Can't be done over I2C...)
+Oleg.
 
-That *CAN* make a big difference in bitbang speed ... multiple
-megabits per second with SPI, for example, vs less than one.
-
-- Dave
