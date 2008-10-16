@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYJPXG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbYJPXHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbYJPXG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbYJPXGq
+	id S1758550AbYJPXHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbYJPXHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:06:46 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40250 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758199AbYJPXGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:06:45 -0400
-Subject: Re: [git pull] core kernel updates for v2.6.28
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Kumar Gala <galak@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Becky Bruce <becky.bruce@freescale.com>
-In-Reply-To: <alpine.LFD.2.00.0810161518320.3288@nehalem.linux-foundation.org>
-References: <20081015125023.GA6702@elte.hu>
-	 <alpine.LFD.2.00.0810161518320.3288@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 10:05:02 +1100
-Message-Id: <1224198302.7654.26.camel@pasglop>
+	Thu, 16 Oct 2008 19:07:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36646 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758651AbYJPXG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 19:06:59 -0400
+Date: Thu, 16 Oct 2008 16:06:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Miller <mike.miller@hp.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 2/2] cciss: fix regression firmware version not
+ displayed in procfs (again)
+Message-Id: <20081016160600.685e53cd.akpm@linux-foundation.org>
+In-Reply-To: <20081016224858.GB26564@roadking.ldev.net>
+References: <20081016224858.GB26564@roadking.ldev.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-16 at 15:32 -0700, Linus Torvalds wrote:
+On Thu, 16 Oct 2008 17:48:58 -0500
+Mike Miller <mike.miller@hp.com> wrote:
+
+> Patch 2 of 2
 > 
-> On Wed, 15 Oct 2008, Ingo Molnar wrote:
-> > 
-> > Please pull the latest core-v28-for-linus git tree from:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-v28-for-linus
-> > 
-> > this is a combination of the following topics:
-> >    ...
-> >    core/resources
+> The regression was introduced by commit
+> 6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
+> This patch fixes a regression where the controller firmware version is not
+> displayed in procfs. The previous patch would be called anytime something
+> changed. This will get called only once for each controller.
+> Please consider this for inclusion.
 > 
-> Ok, the resource_size_t -> generic phys_addr_t changes conflicted with the 
-> PowerPC changes I had merged yesterday. The resolution wasn't overly 
-> complex, but I'm sure I screwed something up anyway. Can the involved 
-> Power people take a look (looks like BenH, Kumar, Becky to me), and 
-> Jeremy/Ingo on the generic resource side?
+> Signed-off-by: Mike Miller <mike.miller@hp.com>
+> 
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> index 0f367b1..1c830bd 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -3404,7 +3404,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+>  	int i;
+>  	int j = 0;
+>  	int rc;
+> -	int dac;
+> +	int dac, return_code;
+> +	InquiryData_struct *inq_buff = NULL;
 
-Will do as soon as I manage to get off meetings...
+unneeded initialisation is still there.
 
-Cheers,
-Ben.
+>  	i = alloc_cciss_hba();
+>  	if (i < 0)
+> @@ -3510,6 +3511,25 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+>  	/* Turn the interrupts on so we can service requests */
+>  	hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
+>  
+> +	/* Get the firmware version */
+> +	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
 
+Does this ever get freed?
 
+> +	if (inq_buff == NULL) {
+> +		printk(KERN_ERR "cciss: out of memory\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
+> +		sizeof(InquiryData_struct), 0, 0 , 0, TYPE_CMD);
+> +	if (return_code == IO_OK) {
+> +		hba[i]->firm_ver[0] = inq_buff->data_byte[32];
+> +		hba[i]->firm_ver[1] = inq_buff->data_byte[33];
+> +		hba[i]->firm_ver[2] = inq_buff->data_byte[34];
+> +		hba[i]->firm_ver[3] = inq_buff->data_byte[35];
+> +	} else {	 /* send command failed */
+> +		printk(KERN_WARNING "cciss: unable to determine firmware"
+> +			" version of controller\n");
+> +	}
+> +
+>  	cciss_procinit(i);
+>  
+>  	hba[i]->cciss_max_sectors = 2048;
