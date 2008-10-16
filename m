@@ -1,151 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbYJPP7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYJPQCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306AbYJPP7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 11:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYJPP6i
+	id S1755403AbYJPQCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 12:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYJPQCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 11:58:38 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:54184 "EHLO gir.skynet.ie"
+	Thu, 16 Oct 2008 12:02:32 -0400
+Received: from david.siemens.de ([192.35.17.14]:23230 "EHLO david.siemens.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754517AbYJPP6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 11:58:37 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux-MM <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 2/2] Report the MMU pagesize in /proc/pid/smaps
-Date: Thu, 16 Oct 2008 16:58:35 +0100
-Message-Id: <1224172715-17667-3-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1224172715-17667-1-git-send-email-mel@csn.ul.ie>
-References: <1224172715-17667-1-git-send-email-mel@csn.ul.ie>
+	id S1751226AbYJPQCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 12:02:32 -0400
+Message-ID: <48F766CB.3030603@siemens.com>
+Date: Thu, 16 Oct 2008 18:07:39 +0200
+From: "Hillier, Gernot" <gernot.hillier@siemens.com>
+Organization: Siemens AG, CT SE 2
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.9) Gecko/20070801 SUSE/2.0.0.9-0.1 Thunderbird/2.0.0.9 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: "Graham, David" <david.graham@intel.com>,
+       "Fodor, Zoltan" <zoltan.fodor@intel.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Hockert, Jeff W" <jeff.w.hockert@intel.com>
+Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro
+ X7DB3
+References: <EA929A9653AAE14F841771FB1DE5A1365F498F4EDC@rrsmsx501.amr.corp.intel.com> <E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com> <48EE04C0.6070504@siemens.com> <48F463D1.70605@siemens.com> <E3627BC91D010645BD262A1E8720005106B67989@orsmsx420.amr.corp.intel.com>
+In-Reply-To: <E3627BC91D010645BD262A1E8720005106B67989@orsmsx420.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The KernelPageSize entry in /proc/pid/smaps is the pagesize used by the
-kernel to back a VMA. This matches the size used by the MMU in the majority
-of cases. However, one counter-example occurs on PPC64 kernels whereby
-a kernel using 64K as a base pagesize may still use 4K pages for the MMU
-on older processor. To distinguish, this patch reports MMUPageSize as the
-pagesize used by the MMU in /proc/pid/smaps.
+Hi there!
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- arch/powerpc/include/asm/hugetlb.h |    6 ++++++
- arch/powerpc/mm/hugetlbpage.c      |    7 +++++++
- fs/proc/task_mmu.c                 |    6 ++++--
- include/linux/hugetlb.h            |    3 +++
- mm/hugetlb.c                       |   13 +++++++++++++
- 5 files changed, 33 insertions(+), 2 deletions(-)
+Graham, David wrote:
+> It would help if you could provide a little more information. Could you
+> provide (for one of each of the two configurations that you have - one
+> with the IPMI card, one without):
+> 
+> 	lspci -t
+> 	lspci -vvv -xxxx
+> 	ethtool -e eth0
 
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index 26f0d0a..2655146 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -18,6 +18,12 @@ pte_t huge_ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
- 			      pte_t *ptep);
- 
- /*
-+ * The version of vma_mmu_pagesize() in arch/powerpc/mm/hugetlbpage.c needs
-+ * to override the version in mm/hugetlb.c
-+ */
-+#define vma_mmu_pagesize vma_mmu_pagesize
-+
-+/*
-  * If the arch doesn't supply something else, assume that hugepage
-  * size aligned regions are ok without further preparation.
-  */
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index a117024..edc0c69 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -510,6 +510,13 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	return slice_get_unmapped_area(addr, len, flags, mmu_psize, 1, 0);
- }
- 
-+unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
-+{
-+	unsigned int psize = get_slice_psize(vma->vm_mm, vma->vm_start);
-+
-+	return 1UL << mmu_psize_to_shift(psize);
-+}
-+
- /*
-  * Called by asm hashtable.S for doing lazy icache flush
-  */
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 71c9868..3517892 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -392,7 +392,8 @@ static int show_smap(struct seq_file *m, void *v)
- 		   "Private_Dirty:  %8lu kB\n"
- 		   "Referenced:     %8lu kB\n"
- 		   "Swap:           %8lu kB\n"
--		   "KernelPageSize: %8lu kB\n",
-+		   "KernelPageSize: %8lu kB\n"
-+		   "MMUPageSize:    %8lu kB\n",
- 		   (vma->vm_end - vma->vm_start) >> 10,
- 		   mss.resident >> 10,
- 		   (unsigned long)(mss.pss >> (10 + PSS_SHIFT)),
-@@ -402,7 +403,8 @@ static int show_smap(struct seq_file *m, void *v)
- 		   mss.private_dirty >> 10,
- 		   mss.referenced >> 10,
- 		   mss.swap >> 10,
--		   vma_kernel_pagesize(vma) >> 10);
-+		   vma_kernel_pagesize(vma) >> 10,
-+		   vma_mmu_pagesize(vma) >> 10);
- 
- 	return ret;
- }
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index ace04a7..5056021 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -233,6 +233,8 @@ static inline unsigned long huge_page_size(struct hstate *h)
- 
- extern unsigned long vma_kernel_pagesize(struct vm_area_struct *vma);
- 
-+extern unsigned long vma_mmu_pagesize(struct vm_area_struct *vma);
-+
- static inline unsigned long huge_page_mask(struct hstate *h)
- {
- 	return h->mask;
-@@ -274,6 +276,7 @@ struct hstate {};
- #define huge_page_size(h) PAGE_SIZE
- #define huge_page_mask(h) PAGE_MASK
- #define vma_kernel_pagesize(v) PAGE_SIZE
-+#define vma_mmu_pagesize(v) PAGE_SIZE
- #define huge_page_order(h) 0
- #define huge_page_shift(h) PAGE_SHIFT
- static inline unsigned int pages_per_huge_page(struct hstate *h)
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 7cb27ec..fee3d1d 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -235,6 +235,19 @@ unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
- }
- 
- /*
-+ * Return the page size being used by the MMU to back a VMA. In the majority
-+ * of cases, the page size used by the kernel matches the MMU size. On
-+ * architectures where it differs, an architecture-specific version of this
-+ * function is required.
-+ */
-+#ifndef vma_mmu_pagesize
-+unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
-+{
-+	return vma_kernel_pagesize(vma);
-+}
-+#endif
-+
-+/*
-  * Flags for MAP_PRIVATE reservations.  These are stored in the bottom
-  * bits of the reservation map pointer, which are always clear due to
-  * alignment.
+Ok, it turned out that we still can reproduce the problem - even after the
+firmware upgrade. So I collected the information you requested from two
+machines:
+
+- BVSIM3 is the one with the IPMI card.
+- BVSIM5 the one without the IPMI card.
+
+As the output from the commands you requested is rather large, I uploaded
+it to the following URLs instead posting it to the list, hope that's ok:
+
+http://www.hillier.de/bvsim5-ethtool-e.txt
+http://www.hillier.de/bvsim5-lspci-t.txt
+http://www.hillier.de/bvsim5-lspci-vvv-xxxx.txt
+http://www.hillier.de/bvsim3-ethtool-e.txt
+http://www.hillier.de/bvsim3-lspci-t.txt
+http://www.hillier.de/bvsim3-lspci-vvv-xxxx.txt
+
+All commands were run in the error case, i.e. after e1000e said "Hardware
+error".
+
+> 	BIOS "IPMI" menus (I know you already gave us one, but both
+> would be good)
+
+BVSIM3 shows the IPMI menu I already provided
+BVSIM5 shows no IPMI menu
+
+Thanks in advance!
+
 -- 
-1.5.6.5
-
+With kind regards,
+Gernot Hillier
+Siemens AG, CT SE 2, Corporate Competence Center Embedded Linux
