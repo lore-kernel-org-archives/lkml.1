@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYJPRka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbYJPRlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbYJPRka (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYJPRkS
+	id S1757178AbYJPRlX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYJPRlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:40:18 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:21421 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbYJPRkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:40:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=aZIafE8vjk5Lz5xHpzEhvQ+mX0xhMdS5g3nfSJSIVupx4MArJOWrh5HUMgtSjaNADL
-         ylqyWHDEc+3ZbP4B2tsm1/cTalGWpqAs4N/yT8UHR/FNMHmUcugKoc2PJCPYqi3w/U/V
-         PA0dfCAYOPXVBvtqfoozs9Ye/IBK2MzrshwyA=
-From: Bryan Wu <cooloney@kernel.org>
-To: ben@simtec.co.uk, davem@davemloft.net, vapier.adi@gmail.com,
-       shemminger@vyatta.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] netdev: DM9000: remove BLACKFIN hacking in DM9000 netdev driver
-Date: Fri, 17 Oct 2008 01:40:44 +0800
-Message-Id: <1224178844-12496-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
+	Thu, 16 Oct 2008 13:41:13 -0400
+Received: from kroah.org ([198.145.64.141]:33447 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752744AbYJPRlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:41:12 -0400
+Date: Thu, 16 Oct 2008 10:35:29 -0700
+From: Greg KH <greg@kroah.com>
+To: Tim Shimmin <tes@sgi.com>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: [stable] [PATCH] XFS fix remount rw with unrecognized options
+Message-ID: <20081016173529.GA13038@kroah.com>
+References: <20081016002926.D912558FA22B@chook.melbourne.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081016002926.D912558FA22B@chook.melbourne.sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-remove integer casting in the read/write IO accessors,
-because Blackfin now provides those functions
+On Thu, Oct 16, 2008 at 11:29:26AM +1100, Tim Shimmin wrote:
+> Resending as I mangled sending the mail from home last time. Sorry.
+> 
+> Please include the following patch for 2.6.27.1 stable release as
+> suggested by Christoph Hellwig and Eric Sandeen.
+> It fixes a regression in the recent remount recoding
+> where remounting say from ro to rw allows the xfs flags to
+> be out of sync with the vfs flags, resulting
+> in failures for some programs such as touch (which end up calling xfs_setattr).
+> The fix is a very minor and clear.
 
-Tested-by: Javier Herrero <jherrero@hvsistemas.es>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/net/dm9000.c |    9 ---------
- 1 files changed, 0 insertions(+), 9 deletions(-)
+Is this patch already in Linus's tree?  If so, do you have a git commit
+id?
 
-diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
-index f42c23f..5a9083e 100644
---- a/drivers/net/dm9000.c
-+++ b/drivers/net/dm9000.c
-@@ -47,15 +47,6 @@
- #define CARDNAME	"dm9000"
- #define DRV_VERSION	"1.31"
- 
--#ifdef CONFIG_BLACKFIN
--#define readsb	insb
--#define readsw	insw
--#define readsl	insl
--#define writesb	outsb
--#define writesw	outsw
--#define writesl	outsl
--#endif
--
- /*
-  * Transmit timeout, default 5 seconds.
-  */
--- 
-1.5.6
+thanks,
 
+greg k-h
