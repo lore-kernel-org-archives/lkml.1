@@ -1,194 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbYJPLr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbYJPLsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756462AbYJPLr0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 07:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbYJPLrS
+	id S1756520AbYJPLsr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 07:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbYJPLsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 07:47:18 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:55672 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754191AbYJPLrR (ORCPT
+	Thu, 16 Oct 2008 07:48:39 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:48741 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754013AbYJPLsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 07:47:17 -0400
-Date: Thu, 16 Oct 2008 13:58:12 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] softpanic - halt booting, but allow reading why
-Message-ID: <alpine.LSU.0.999.0810161353100.5381@be1.lrz>
+	Thu, 16 Oct 2008 07:48:38 -0400
+Date: Thu, 16 Oct 2008 17:18:30 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org, arun@linux.vnet.ibm.com
+Subject: [RFC PATCH 2/4] timers: new framework for identifying cpu-pinned
+	timers
+Message-ID: <20081016114830.GC7641@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+	ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+	andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+	vatsa@linux.vnet.ibm.com, arjan@infradead.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While booting, certain panic()s have the purpose of just stopping the
-machnine. This has the unfortunate side effect of preventing the user
-from scrolling and looking at the cause.
+This patch creates the necessary framework for identifying cpu-pinned
+regular timers and hrtimers.
 
-This patch adds a softpanic() function, which behaves similar to panic()
-in stopping the boot and possibly rebooting after a timeout, but it
-does allow background activity.
+For regular timers a new flag called TBASE_PINNED_FLAG is created.
+Since the last 3 bits of the tvec_base is guaranteed to be 0, and
+since the last bit is being used to indicate deferrable timers, I'm
+using the second last bit to indicate cpu-pinned regular timers.
+The implementation of functions to manage the TBASE_PINNED_FLAG is
+similar to those which manage the TBASE_DEFERRABLE_FLAG.
 
-Signed-off-by: Bodo Eggert <7eggert@gmx.de>
+For hrtimers, there is no clear interface to queue a hrtimer as a
+per-cpu hrtimer. But there are instances where, if an hrtimer is queued
+on a particular cpu, it expects to run on the same cpu.
+The hrtimer hrtick_timer is one such example.
 
+So, in this regard, I've created a new interface called
+hrtimer_start_pinned which can be used to queue cpu-pinned hrtimer.
+In the hrtimer structure, there is a variable called *state* which
+is used to indicate the state of a hrtimer - inactive, enqueued,
+callback function running and callback pending. Currently, since only
+5 bits are being used in the state variable, I've used the 6th bit
+to represent the cpu-pinned state of the hrtimer
+
+
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
+ include/linux/hrtimer.h |   17 ++++++++++++++---
+ kernel/hrtimer.c        |   31 ++++++++++++++++++++++++++-----
+ kernel/timer.c          |   30 +++++++++++++++++++++++++++---
+ 3 files changed, 67 insertions(+), 11 deletions(-)
 
-I thought about merging both functions, but I don't think it would work out.
-
-diff -pruNXdontdiff linux-2.6.27/include/linux/kernel.h linux-2.6.27.softpanic/include/linux/kernel.h
---- linux-2.6.27/include/linux/kernel.h	2008-10-10 13:18:43.000000000 +0200
-+++ linux-2.6.27.softpanic/include/linux/kernel.h	2008-10-10 19:23:43.000000000 +0200
-@@ -144,6 +144,12 @@ extern struct atomic_notifier_head panic
- extern long (*panic_blink)(long time);
- NORET_TYPE void panic(const char * fmt, ...)
- 	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-+#ifdef CONFIG_SOFTPANIC
-+NORET_TYPE void softpanic(const char * fmt, ...)
-+	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-+#else
-+# define softpanic(...) do { panic(__VA_ARGS__); } while (0)
-+#endif
- extern void oops_enter(void);
- extern void oops_exit(void);
- extern int oops_may_print(void);
-diff -pruNXdontdiff linux-2.6.27/init/Kconfig linux-2.6.27.softpanic/init/Kconfig
---- linux-2.6.27/init/Kconfig	2008-10-10 13:18:44.000000000 +0200
-+++ linux-2.6.27.softpanic/init/Kconfig	2008-10-10 18:32:03.000000000 +0200
-@@ -618,6 +618,14 @@ config BUG
-           option for embedded systems with no facilities for reporting errors.
-           Just say Y.
+Index: linux-2.6.27/kernel/timer.c
+===================================================================
+--- linux-2.6.27.orig/kernel/timer.c
++++ linux-2.6.27/kernel/timer.c
+@@ -37,6 +37,7 @@
+ #include <linux/delay.h>
+ #include <linux/tick.h>
+ #include <linux/kallsyms.h>
++#include <linux/timer.h>
  
-+config SOFTPANIC
-+	bool "Enable softpanic for boot errors" if EMBEDDED
-+	default y
-+	help
-+		Enabling this option changes a hard panic on boot errors to a
-+		soft panic, which does not stop the system completely.
-+		You can still scroll the screen and read the messages.
-+
- config ELF_CORE
- 	default y
- 	bool "Enable ELF core dumps" if EMBEDDED
-diff -pruNXdontdiff linux-2.6.27/init/do_mounts.c linux-2.6.27.softpanic/init/do_mounts.c
---- linux-2.6.27/init/do_mounts.c	2008-10-10 13:18:44.000000000 +0200
-+++ linux-2.6.27.softpanic/init/do_mounts.c	2008-10-10 18:32:03.000000000 +0200
-@@ -263,7 +263,7 @@ retry:
- 		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -87,8 +88,12 @@ static DEFINE_PER_CPU(struct tvec_base *
+  * the new flag to indicate whether the timer is deferrable
+  */
+ #define TBASE_DEFERRABLE_FLAG		(0x1)
++#define TBASE_PINNED_FLAG               (0x2)
  
- 		printk_all_partitions();
--		panic("VFS: Unable to mount root fs on %s", b);
-+		softpanic("VFS: Unable to mount root fs on %s", b);
- 	}
+-/* Functions below help us manage 'deferrable' flag */
++/*
++ * Functions below help us manage
++ * 'deferrable' flag and 'cpu-pinned-timer' flag
++ */
+ static inline unsigned int tbase_get_deferrable(struct tvec_base *base)
+ {
+ 	return ((unsigned int)(unsigned long)base & TBASE_DEFERRABLE_FLAG);
+@@ -96,7 +101,8 @@ static inline unsigned int tbase_get_def
  
- 	printk("List of all partitions:\n");
-@@ -275,7 +275,7 @@ retry:
- #ifdef CONFIG_BLOCK
- 	__bdevname(ROOT_DEV, b);
- #endif
--	panic("VFS: Unable to mount root fs on %s", b);
-+	softpanic("VFS: Unable to mount root fs on %s", b);
- out:
- 	putname(fs_names);
- }
-diff -pruNXdontdiff linux-2.6.27/init/main.c linux-2.6.27.softpanic/init/main.c
---- linux-2.6.27/init/main.c	2008-10-10 13:18:44.000000000 +0200
-+++ linux-2.6.27.softpanic/init/main.c	2008-10-10 18:32:03.000000000 +0200
-@@ -621,7 +621,7 @@ asmlinkage void __init start_kernel(void
- 	 */
- 	console_init();
- 	if (panic_later)
--		panic(panic_later, panic_param);
-+		softpanic(panic_later, panic_param);
- 
- 	lockdep_info();
- 
-@@ -830,7 +830,7 @@ static int noinline init_post(void)
- 	run_init_process("/bin/init");
- 	run_init_process("/bin/sh");
- 
--	panic("No init found.  Try passing init= option to kernel.");
-+	softpanic("No init found.  Try passing init= option to kernel.");
+ static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
+ {
+-	return ((struct tvec_base *)((unsigned long)base & ~TBASE_DEFERRABLE_FLAG));
++	return (struct tvec_base *)((unsigned long)base &
++			~(TBASE_DEFERRABLE_FLAG | TBASE_PINNED_FLAG));
  }
  
- static int __init kernel_init(void * unused)
-diff -pruNXdontdiff linux-2.6.27/kernel/panic.c linux-2.6.27.softpanic/kernel/panic.c
---- linux-2.6.27/kernel/panic.c	2008-10-10 13:18:45.000000000 +0200
-+++ linux-2.6.27.softpanic/kernel/panic.c	2008-10-10 20:13:37.000000000 +0200
-@@ -140,9 +140,68 @@ NORET_TYPE void panic(const char * fmt, 
- 		i++;
- 	}
+ static inline void timer_set_deferrable(struct timer_list *timer)
+@@ -105,11 +111,28 @@ static inline void timer_set_deferrable(
+ 				       TBASE_DEFERRABLE_FLAG));
  }
--
- EXPORT_SYMBOL(panic);
  
-+#ifdef CONFIG_SOFTPANIC
-+NORET_TYPE void softpanic(const char * fmt, ...)
++static inline unsigned long tbase_get_pinned(struct tvec_base *base)
 +{
-+	long i;
-+	static char buf[1024];
-+	va_list args;
-+#if defined(CONFIG_S390)
-+        unsigned long caller = (unsigned long) __builtin_return_address(0);
-+#endif
-+
-+	va_start(args, fmt);
-+	vsnprintf(buf, sizeof(buf), fmt, args);
-+	va_end(args);
-+	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
-+
-+	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-+
-+	if (!panic_blink)
-+		panic_blink = no_blink;
-+
-+	if (panic_timeout > 0) {
-+		/*
-+	 	 * Delay timeout seconds before rebooting the machine. 
-+		 * We can't use the "normal" timers since we just panicked..
-+	 	 */
-+		printk(KERN_EMERG "Rebooting in %d seconds..",panic_timeout);
-+		for (i = 0; i < panic_timeout*1000; ) {
-+			touch_nmi_watchdog();
-+			i += panic_blink(i);
-+			mdelay(1);
-+			i++;
-+		}
-+		/*	This will not be a clean reboot, with everything
-+		 *	shutting down.  But if there is a chance of
-+		 *	rebooting the system it will be rebooted.
-+		 */
-+		kernel_restart(NULL);
-+	}
-+#ifdef __sparc__
-+	{
-+		extern int stop_a_enabled;
-+		/* Make sure the user can actually press Stop-A (L1-A) */
-+		stop_a_enabled = 1;
-+		printk(KERN_EMERG "Press Stop-A (L1-A) to return to the boot prom\n");
-+	}
-+#endif
-+#if defined(CONFIG_S390)
-+        disabled_wait(caller);
-+#endif
-+	for (i = 0;;) {
-+		touch_softlockup_watchdog();
-+		i += panic_blink(i);
-+		msleep(1);
-+		i++;
-+	}
++	return (unsigned long)base & TBASE_PINNED_FLAG;
 +}
-+EXPORT_SYMBOL(softpanic);
-+#endif
 +
++static inline unsigned long tbase_get_flag_bits(struct timer_list *timer)
++{
++	return tbase_get_deferrable(timer->base) |
++				tbase_get_pinned(timer->base);
++}
++
+ static inline void
+ timer_set_base(struct timer_list *timer, struct tvec_base *new_base)
+ {
+ 	timer->base = (struct tvec_base *)((unsigned long)(new_base) |
+-				      tbase_get_deferrable(timer->base));
++					tbase_get_flag_bits(timer));
++}
++
++static inline void timer_set_pinned(struct timer_list *timer)
++{
++	timer->base = ((struct tvec_base *)((unsigned long)(timer->base) |
++				TBASE_PINNED_FLAG));
+ }
+ 
+ /**
+@@ -579,6 +602,7 @@ void add_timer_on(struct timer_list *tim
+ 	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+ 	unsigned long flags;
+ 
++	timer_set_pinned(timer);
+ 	timer_stats_timer_set_start_info(timer);
+ 	BUG_ON(timer_pending(timer) || !timer->function);
+ 	spin_lock_irqsave(&base->lock, flags);
+Index: linux-2.6.27/kernel/hrtimer.c
+===================================================================
+--- linux-2.6.27.orig/kernel/hrtimer.c
++++ linux-2.6.27/kernel/hrtimer.c
+@@ -191,6 +191,14 @@ struct hrtimer_clock_base *lock_hrtimer_
+ }
+ 
+ /*
++ * Function to check whether the timer is pinned to cpu or not.
++ */
++static inline int is_hrtimer_pinned(struct hrtimer *timer)
++{
++	return timer->state & HRTIMER_CPU_PINNED;
++}
++
++/*
+  * Switch the timer base to the current CPU when possible.
+  */
+ static inline struct hrtimer_clock_base *
+@@ -690,7 +698,12 @@ static inline int hrtimer_enqueue_reprog
+ 			 */
+ 			list_add_tail(&timer->cb_entry,
+ 				      &base->cpu_base->cb_pending);
+-			timer->state = HRTIMER_STATE_PENDING;
++			/*
++			 * The hrtimer can be in pending state as well as be
++			 * pinned to a cpu.
++			 */
++			timer->state = HRTIMER_STATE_PENDING |
++					is_hrtimer_pinned(timer);
+ 			return 1;
+ 		default:
+ 			BUG();
+@@ -999,7 +1012,7 @@ hrtimer_start(struct hrtimer *timer, kti
+ 	 * list. We can not raise the softirq with base lock held due
+ 	 * to a possible deadlock with runqueue lock.
+ 	 */
+-	raise = timer->state == HRTIMER_STATE_PENDING;
++	raise = (get_hrtimer_state(timer) == HRTIMER_STATE_PENDING);
+ 
+ 	/*
+ 	 * We use preempt_disable to prevent this task from migrating after
+@@ -1018,6 +1031,14 @@ hrtimer_start(struct hrtimer *timer, kti
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
+ 
++int hrtimer_start_pinned(struct hrtimer *timer,
++		ktime_t tim, const enum hrtimer_mode mode)
++{
++	timer->state = timer->state | HRTIMER_CPU_PINNED;
++	return hrtimer_start(timer, tim, mode);
++}
++EXPORT_SYMBOL_GPL(hrtimer_start_pinned);
 +
  /**
-  *	print_tainted - return a string to represent the kernel taint state.
-  *
-
--- 
-Fun things to slip into your budget
-Half a million dollars for consultants to design a web site that was being
-done by an intern in his spare time.
+  * hrtimer_try_to_cancel - try to deactivate a timer
+  * @timer:	hrtimer to stop
+@@ -1267,7 +1288,7 @@ static void __run_hrtimer(struct hrtimer
+ 	 * function anyway.
+ 	 */
+ 	if (restart != HRTIMER_NORESTART) {
+-		BUG_ON(timer->state != HRTIMER_STATE_CALLBACK);
++		BUG_ON(get_hrtimer_state(timer)	!= HRTIMER_STATE_CALLBACK);
+ 		enqueue_hrtimer(timer, base, 0);
+ 	}
+ 	timer->state &= ~HRTIMER_STATE_CALLBACK;
+@@ -1639,8 +1660,8 @@ static int migrate_hrtimer_list(struct h
+ 		 * in the migration state, we need to do that
+ 		 * otherwise we end up with a stale timer.
+ 		 */
+-		if (timer->state == HRTIMER_STATE_MIGRATE) {
+-			timer->state = HRTIMER_STATE_PENDING;
++		if (get_hrtimer_state(timer) == HRTIMER_STATE_MIGRATE) {
++			timer->state |= HRTIMER_STATE_PENDING;
+ 			list_add_tail(&timer->cb_entry,
+ 				      &new_base->cpu_base->cb_pending);
+ 			raise = 1;
+Index: linux-2.6.27/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.27.orig/include/linux/hrtimer.h
++++ linux-2.6.27/include/linux/hrtimer.h
+@@ -74,7 +74,6 @@ enum hrtimer_cb_mode {
+  * 0x01		enqueued into rbtree
+  * 0x02		callback function running
+  * 0x04		callback pending (high resolution mode)
+- *
+  * Special cases:
+  * 0x03		callback function running and enqueued
+  *		(was requeued on another CPU)
+@@ -97,6 +96,7 @@ enum hrtimer_cb_mode {
+ #define HRTIMER_STATE_CALLBACK	0x02
+ #define HRTIMER_STATE_PENDING	0x04
+ #define HRTIMER_STATE_MIGRATE	0x08
++#define HRTIMER_CPU_PINNED	0X16
+ 
+ /**
+  * struct hrtimer - the basic hrtimer structure
+@@ -294,6 +294,8 @@ static inline void destroy_hrtimer_on_st
+ /* Basic timer operations: */
+ extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
+ 			 const enum hrtimer_mode mode);
++extern int hrtimer_start_pinned(struct hrtimer *timer, ktime_t tim,
++			const enum hrtimer_mode mode);
+ extern int hrtimer_cancel(struct hrtimer *timer);
+ extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+ 
+@@ -309,12 +311,21 @@ extern int hrtimer_get_res(const clockid
+ extern ktime_t hrtimer_get_next_event(void);
+ 
+ /*
++ * Helper function which masks the HRTIMER_CPU_PINNED flag and returns
++ * the state value without the overload.
++ */
++static inline long get_hrtimer_state(struct hrtimer *hrtimer)
++{
++	return hrtimer->state & ~HRTIMER_CPU_PINNED;
++}
++
++/*
+  * A timer is active, when it is enqueued into the rbtree or the callback
+  * function is running.
+  */
+-static inline int hrtimer_active(const struct hrtimer *timer)
++static inline int hrtimer_active(struct hrtimer *timer)
+ {
+-	return timer->state != HRTIMER_STATE_INACTIVE;
++	return get_hrtimer_state(timer)	!= HRTIMER_STATE_INACTIVE;
+ }
+ 
+ /*
