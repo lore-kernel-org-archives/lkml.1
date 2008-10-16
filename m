@@ -1,148 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbYJPK5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYJPLHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbYJPK5y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 06:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYJPK5q
+	id S1755711AbYJPLHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 07:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYJPLH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 06:57:46 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:21100 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752197AbYJPK5p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 06:57:45 -0400
-X-BigFish: VPS-4(zz4015Mzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K8TVRV-02-9PK-01
-Date: Thu, 16 Oct 2008 12:57:06 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: remove superfluous dmi_ignore_irq0_timer_override
-	quirks
-Message-ID: <20081016105706.GC29183@alberich.amd.com>
+	Thu, 16 Oct 2008 07:07:28 -0400
+Received: from bender.cm4all.net ([87.106.27.49]:44829 "EHLO bender.cm4all.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751757AbYJPLH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 07:07:27 -0400
+X-Greylist: delayed 1265 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 07:07:27 EDT
+From: Max Kellermann <mk@cm4all.com>
+Subject: [PATCH] linux/ratelimit.h: fixed "missing initializer" warning
+To: linux-kernel@vger.kernel.org
+Date: Thu, 16 Oct 2008 12:45:11 +0200
+Message-ID: <20081016104511.28037.13905.stgit@rabbit.intern.cm-ag>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 16 Oct 2008 10:57:31.0953 (UTC) FILETIME=[FD0ACA10:01C92F7D]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem should be solved with commits:
+When compiled with -Wmissing-field-initializers (-Wextra), gcc
+complains that there are uninitialized fields in the struct:
 
-x86: SB600: skip IRQ0 override if it is not routed to INT2 of IOAPIC
-x86: SB450: skip IRQ0 override if it is not routed to INT2 of IOAPIC
+ include/linux/ratelimit.h: In function 'ratelimit':
+ include/linux/ratelimit.h:23: warning: missing initializer
+ include/linux/ratelimit.h:23: warning: (near initialization for 'rs.printed')
 
-IMHO it does not make sense to check within a dmi-quirk
-whether an early-quirk was applied. Boot sequence is as follows:
+Work around this by using C99 initializers.  This seems more safe
+anyway, just in case someone changes the ratelimit_state struct.
 
-acpi_boot_table_init()   (it applies dmi-quirks)
-...
-early_quirks()           (detect bogus IRQ0 override)
-...
-acpi_boot_init()         (setup IO APIC)
-
-Thus with current code we will always get following warnings for
-Laptops that have this dmi_ignore_irq0_timer_override dmi quirk:
-
-  WARNING: at arch/x86/kernel/acpi/boot.c:1410
-  dmi_ignore_irq0_timer_override+0x30/0x60()
-  ati_ixp4x0 quirk not complete.
-
-... just because the early-quirk (ati_ixp4x0) was not yet executed.
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Signed-off-by: Max Kellermann <mk@cm4all.com>
 ---
- arch/x86/kernel/acpi/boot.c |   60 -------------------------------------------
- 1 files changed, 0 insertions(+), 60 deletions(-)
 
-Please apply.
+ include/linux/ratelimit.h |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-Thanks,
-Andreas
-
-
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index eb875cd..4835cf9 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1414,24 +1414,6 @@ static int __init force_acpi_ht(const struct dmi_system_id *d)
- }
- 
- /*
-- * Force ignoring BIOS IRQ0 pin2 override
-- */
--static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
--{
--	/*
--	 * The ati_ixp4x0_rev() early PCI quirk should have set
--	 * the acpi_skip_timer_override flag already:
--	 */
--	if (!acpi_skip_timer_override) {
--		WARN(1, KERN_ERR "ati_ixp4x0 quirk not complete.\n");
--		pr_notice("%s detected: Ignoring BIOS IRQ0 pin2 override\n",
--			d->ident);
--		acpi_skip_timer_override = 1;
--	}
--	return 0;
--}
--
--/*
-  * If your system is blacklisted here, but you find that acpi=force
-  * works for you, please contact acpi-devel@sourceforge.net
-  */
-@@ -1598,48 +1580,6 @@ static struct dmi_system_id __initdata acpi_dmi_table[] = {
- 		     DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 360"),
- 		     },
- 	 },
--	/*
--	 * HP laptops which use a DSDT reporting as HP/SB400/10000,
--	 * which includes some code which overrides all temperature
--	 * trip points to 16C if the INTIN2 input of the I/O APIC
--	 * is enabled.  This input is incorrectly designated the
--	 * ISA IRQ 0 via an interrupt source override even though
--	 * it is wired to the output of the master 8259A and INTIN0
--	 * is not connected at all.  Force ignoring BIOS IRQ0 pin2
--	 * override in that cases.
--	 */
--	{
--	 .callback = dmi_ignore_irq0_timer_override,
--	 .ident = "HP nx6115 laptop",
--	 .matches = {
--		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
--		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6115"),
--		     },
--	 },
--	{
--	 .callback = dmi_ignore_irq0_timer_override,
--	 .ident = "HP NX6125 laptop",
--	 .matches = {
--		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
--		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6125"),
--		     },
--	 },
--	{
--	 .callback = dmi_ignore_irq0_timer_override,
--	 .ident = "HP NX6325 laptop",
--	 .matches = {
--		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
--		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
--		     },
--	 },
--	{
--	 .callback = dmi_ignore_irq0_timer_override,
--	 .ident = "HP 6715b laptop",
--	 .matches = {
--		     DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
--		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq 6715b"),
--		     },
--	 },
- 	{}
+diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
+index 18a5b9b..cb29b0c 100644
+--- a/include/linux/ratelimit.h
++++ b/include/linux/ratelimit.h
+@@ -13,8 +13,11 @@ struct ratelimit_state {
+ 	unsigned long begin;
  };
  
--- 
-1.6.0.2
-
-
+-#define DEFINE_RATELIMIT_STATE(name, interval, burst)		\
+-		struct ratelimit_state name = {interval, burst,}
++#define DEFINE_RATELIMIT_STATE(name, _interval, _burst) \
++		struct ratelimit_state name = { \
++			.interval = _interval, \
++			.burst = _burst, \
++		}
+ 
+ extern int __ratelimit(struct ratelimit_state *rs);
+ 
 
