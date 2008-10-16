@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbYJPR1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYJPR12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759277AbYJPR1A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbYJPROw
+	id S1759330AbYJPR12 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbYJPROx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:52 -0400
-Received: from kroah.org ([198.145.64.141]:47010 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:53 -0400
+Received: from kroah.org ([198.145.64.141]:47013 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755319AbYJPROu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:50 -0400
+	id S1756414AbYJPROw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:52 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@linux.intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 32/46] debug: use dev_WARN() rather than WARN_ON() in device_pm_add()
-Date: Thu, 16 Oct 2008 10:10:33 -0700
-Message-Id: <1224177047-11859-32-git-send-email-gregkh@suse.de>
+Subject: [PATCH 33/46] usb: turn dev_warn+WARN_ON combos into dev_WARN
+Date: Thu, 16 Oct 2008 10:10:34 -0700
+Message-Id: <1224177047-11859-33-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -25,34 +25,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arjan van de Ven <arjan@linux.intel.com>
 
-device_pm_add() has a WARN_ON that is showing relatively high on
-kerneloops.org, but unfortunately the WARN_ON is less than useful
-in that it doesn't print any information about what device is causing
-the issue.
-
-This patch fixes this by turning the WARN_ON() into the newly
-introduces dev_WARN() which will print information about the
-device in question.
+dev_WARN is both compacter and gives better debug information
+than just a WARN_ON, since people and tools will copy the device
+information message together with the WARN_ON in bug reports.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/power/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/usb/host/uhci-q.c |   24 ++++++++----------------
+ 1 files changed, 8 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 273a944..b0eb6af 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -83,7 +83,7 @@ void device_pm_add(struct device *dev)
- 		 * transition is in progress in order to avoid leaving them
- 		 * unhandled down the road
- 		 */
--		WARN_ON(true);
-+		dev_WARN(dev, "Parentless device registered during a PM transaction\n");
- 	}
+diff --git a/drivers/usb/host/uhci-q.c b/drivers/usb/host/uhci-q.c
+index db64593..1f0c2cf 100644
+--- a/drivers/usb/host/uhci-q.c
++++ b/drivers/usb/host/uhci-q.c
+@@ -123,14 +123,10 @@ static struct uhci_td *uhci_alloc_td(struct uhci_hcd *uhci)
  
- 	list_add_tail(&dev->power.entry, &dpm_list);
+ static void uhci_free_td(struct uhci_hcd *uhci, struct uhci_td *td)
+ {
+-	if (!list_empty(&td->list)) {
+-		dev_warn(uhci_dev(uhci), "td %p still in list!\n", td);
+-		WARN_ON(1);
+-	}
+-	if (!list_empty(&td->fl_list)) {
+-		dev_warn(uhci_dev(uhci), "td %p still in fl_list!\n", td);
+-		WARN_ON(1);
+-	}
++	if (!list_empty(&td->list))
++		dev_WARN(uhci_dev(uhci), "td %p still in list!\n", td);
++	if (!list_empty(&td->fl_list))
++		dev_WARN(uhci_dev(uhci), "td %p still in fl_list!\n", td);
+ 
+ 	dma_pool_free(uhci->td_pool, td, td->dma_handle);
+ }
+@@ -295,10 +291,8 @@ static struct uhci_qh *uhci_alloc_qh(struct uhci_hcd *uhci,
+ static void uhci_free_qh(struct uhci_hcd *uhci, struct uhci_qh *qh)
+ {
+ 	WARN_ON(qh->state != QH_STATE_IDLE && qh->udev);
+-	if (!list_empty(&qh->queue)) {
+-		dev_warn(uhci_dev(uhci), "qh %p list not empty!\n", qh);
+-		WARN_ON(1);
+-	}
++	if (!list_empty(&qh->queue))
++		dev_WARN(uhci_dev(uhci), "qh %p list not empty!\n", qh);
+ 
+ 	list_del(&qh->node);
+ 	if (qh->udev) {
+@@ -746,11 +740,9 @@ static void uhci_free_urb_priv(struct uhci_hcd *uhci,
+ {
+ 	struct uhci_td *td, *tmp;
+ 
+-	if (!list_empty(&urbp->node)) {
+-		dev_warn(uhci_dev(uhci), "urb %p still on QH's list!\n",
++	if (!list_empty(&urbp->node))
++		dev_WARN(uhci_dev(uhci), "urb %p still on QH's list!\n",
+ 				urbp->urb);
+-		WARN_ON(1);
+-	}
+ 
+ 	list_for_each_entry_safe(td, tmp, &urbp->td_list, list) {
+ 		uhci_remove_td_from_urbp(td);
 -- 
 1.6.0.2
 
