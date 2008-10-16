@@ -1,101 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYJPCrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYJPCvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbYJPCrw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 22:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYJPCrk
+	id S1754716AbYJPCvx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 22:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYJPCvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 22:47:40 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:40792 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbYJPCrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 22:47:40 -0400
-Message-Id: <6.0.0.20.2.20081016112735.04a68e70@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Thu, 16 Oct 2008 11:44:39 +0900
-To: Andrew Morton <akpm@linux-foundation.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] vmscan: set try_to_release_page's gfp_mask to 0
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, cmm@us.ibm.com
-In-Reply-To: <20081015153641.afcc94e5.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
- <20080812202127.b88e8250.akpm@linux-foundation.org>
- <6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
- <20081015153641.afcc94e5.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 15 Oct 2008 22:51:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53552 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752046AbYJPCvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 22:51:45 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-TM-AS-Product-Ver: IMSS-7.0.0.1640-5.5.0.1026-16220.002
-X-TM-AS-Result: No--21.592-5.0-31-1
-X-imss-scan-details: No--21.592-5.0-31-1;No--21.592-5.0-31-1
+From: Roland McGrath <roland@redhat.com>
+To: prasad@linux.vnet.ibm.com
+X-Fcc: ~/Mail/linus
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
+       mingo@elte.hu, jason.wessel@windriver.com, avi@qumranet.com,
+       richardj_moore@uk.ibm.com
+Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
+	interfaces
+In-Reply-To: K.Prasad's message of  Thursday, 9 October 2008 00:53:00 +0530 <20081008192300.GA4989@in.ibm.com>
+References: <20081008192044.GA4510@in.ibm.com>
+	<20081008192300.GA4989@in.ibm.com>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20081016024956.602C61544CB@magilla.localdomain>
+Date: Wed, 15 Oct 2008 19:49:56 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
+The "sstep_reason" hair in the x86 patch is the perfect example of exactly
+what I wanted to avoid by keeping the hw_breakpoint layer simpler.  (Also I
+strongly doubt that the x86 patch's single-step magic is correct in all the
+corner cases.  But that discussion is the very rat hole that I want to
+defer, is my point in this here discussion.)
 
->Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
->
->> At 12:21 08/08/13, Andrew Morton wrote:
->> >On Wed, 13 Aug 2008 11:21:16 +0900 Hisashi Hifumi 
->> ><hifumi.hisashi@oss.ntt.co.jp> wrote:
+I think the role of the hw_breakpoint layer ought to be an arch-neutral API
+for accessing and multiplexing the breakpoint functionality of the hardware.
+I don't think its role ought to include enhancing the facilities beyond
+what the actual hardware has (just the multiplexing).
 
->> >> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
->> >> 
->> >> diff -Nrup linux-2.6.27-rc2.org/mm/vmscan.c 
->linux-2.6.27-rc2.vmscan/mm/vmscan.c
->> >> --- linux-2.6.27-rc2.org/mm/vmscan.c	2008-08-11 14:33:24.000000000 +0900
->> >> +++ linux-2.6.27-rc2.vmscan/mm/vmscan.c	2008-08-12 18:57:05.000000000 +0900
->> >> @@ -614,7 +614,7 @@ static unsigned long shrink_page_list(st
->> >>  		* Otherwise, leave the page on the LRU so it is swappable.
->> >>  		*/
->> >>  		if (PagePrivate(page)) {
->> >> -			if (!try_to_release_page(page, sc->gfp_mask))
->> >> +			if (!try_to_release_page(page, 0))
->> >>  				goto activate_locked;
->> >>  			if (!mapping && page_count(page) == 1) {
->> >>  				unlock_page(page);
->> >
->> >I think the change makes sense.
->> >
->> >Has this change been shown to improve any workloads?  If so, please
->> >provide full information for the changelog.  If not, please mention
->> >this and explain why benefits were not demonstrable.  This information
->> >should _always_ be present in a "performance" patch's changelog!
->> 
->> Sorry, I do not have performance number yet. I'll try this.
->> 
->
+AFAIK no hardware's facility delivers two separate exceptions for a single
+hit of a single breakpoint slot.  There is just one hit, and it's either
+before the instruction or after it.  So you only need one handler function,
+and one pointer slot for it.
 
-Unfortunately, I did not succeed to get good performance number that
-prove this patch had some benefit.
+Each given type of breakpoint on a given arch is either a fire-before or a
+fire-after type.  The *_supported() functions are enough to make it clear.
+Those really should be inlines in an arch header, since they will be
+constants or type==CONST tests that are probably entirely optimized away
+(and let a big dead fork of the caller's code get optimized away).
 
->This patch remains in a stalled state...
->
->And then there's this:
->
+For fire-before types, there are two flavors.  On powerpc, data breakpoints
+are fire-before, and to actually complete the triggering load/store you
+have to clear the dabr (disable the breakpoint) before resuming (and then
+potentially deal with step-then-reenable, etc).  On x86, instruction
+breakpoints are fire-before, but there is the option of using the magic RF
+bit to suppress the hit without disabling the breakpoint.  So you need
+another inline a la *_supported() to indicate what's possible.  (Possibly
+the handler should be able to control this with its return value,
+i.e. allow returning with RF clear for some reason.)
 
->: 
->: Really, I think what this patch tells us is that 3f31fddf ("jbd: fix
->: race between free buffer and commit transaction") was an unpleasant
->: hack which had undesirable and unexpected side-effects.  I think - that
->: depends upon your as-yet-undisclosed testing results?
->: 
->: Perhaps we should revert 3f31fddf and have another think about how to
->: fix the direct-io -EIO problem.  One option would be to hold our noses
->: and add a new gfp_t flag for this specific purpose?
->:
+The sequence of suppress-and-single-step (x86 insn) or
+disable-and-single-step-and-reenable (powerpc data) will of course be
+desireable for high-level uses.  But that doesn't mean they need to be
+built into hw_breakpoint.  Make the hw_breakpoint layer clearly expose what
+the options are on the hardware, and the rest can be built up from
+hw_breakpoint along with other components managing the stepping part.
+(For user-mode stepping, the building blocks are already there.  For the
+kernel side, we can attack that windmill another day.)
 
-direct-io -EIO problem was already fixed by following patch.
 
-commit 6ccfa806a9cfbbf1cd43d5b6aa47ef2c0eb518fd
-Author: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Date:   Tue Sep 2 14:35:40 2008 -0700
-
-    VFS: fix dio write returning EIO when try_to_release_page fails
-
-Dio falls back to buffered write when dio write gets EIO due to failure of try_to_release_page
-by above patch. So I think just reverting the patch 3f31fddf ("jbd: fix race between 
-free buffer and commit transaction") is good approach.
-
+Thanks,
+Roland
