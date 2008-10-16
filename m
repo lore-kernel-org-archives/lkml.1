@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYJPRPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYJPRPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755693AbYJPRPL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYJPRNN
+	id S1756616AbYJPRPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbYJPRNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:13:13 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:7155 "EHLO
+	Thu, 16 Oct 2008 13:13:14 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:7156 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755170AbYJPRNL (ORCPT
+	by vger.kernel.org with ESMTP id S1752920AbYJPRNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:13:11 -0400
-Date: Thu, 16 Oct 2008 21:13:06 +0400
+	Thu, 16 Oct 2008 13:13:12 -0400
+Date: Thu, 16 Oct 2008 21:13:09 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linux-kernel@vger.kernel.org
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
@@ -18,9 +18,9 @@ Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Grant Likely <grant.likely@secretlab.ca>,
        Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
        i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/7] gpio/pca953x: convert to dev_gpiochip_add and make it
-	work with the OF
-Message-ID: <20081016171306.GF5515@oksana.dev.rtsoft.ru>
+Subject: [PATCH 7/7] i2c/mcu_mpc8349emitx: convert to the new I2C/OF/GPIO
+	infrastructure
+Message-ID: <20081016171309.GG5515@oksana.dev.rtsoft.ru>
 References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
@@ -31,94 +31,124 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With OpenFirmware we can't handle platform data for the devices, so let's
-not strictly depend on it. That way we can't set polarity invertion for
-this controller, but we'll handle this with active-low/high GPIO flags in
-the OF tree.
-
-Also switch the driver to dev_gpiochip calls, so that OF subsystem would
-know about the newly registered chips.
+With the new subsystem it's much easier to handle I2C GPIO controllers.
+Now drivers don't need to deal with the OF-specific bits.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/gpio/pca953x.c |   24 +++++++++++++-----------
- 1 files changed, 13 insertions(+), 11 deletions(-)
+ drivers/i2c/chips/mcu_mpc8349emitx.c |   65 ++++++---------------------------
+ 1 files changed, 12 insertions(+), 53 deletions(-)
 
-diff --git a/drivers/gpio/pca953x.c b/drivers/gpio/pca953x.c
-index cc84686..6e51fda 100644
---- a/drivers/gpio/pca953x.c
-+++ b/drivers/gpio/pca953x.c
-@@ -188,7 +188,6 @@ static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
- 	gc->base = chip->gpio_start;
- 	gc->ngpio = gpios;
- 	gc->label = chip->client->name;
--	gc->dev = &chip->client->dev;
- 	gc->owner = THIS_MODULE;
+diff --git a/drivers/i2c/chips/mcu_mpc8349emitx.c b/drivers/i2c/chips/mcu_mpc8349emitx.c
+index 82a9bcb..985a1a4 100644
+--- a/drivers/i2c/chips/mcu_mpc8349emitx.c
++++ b/drivers/i2c/chips/mcu_mpc8349emitx.c
+@@ -18,8 +18,6 @@
+ #include <linux/mutex.h>
+ #include <linux/i2c.h>
+ #include <linux/gpio.h>
+-#include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+ 
+@@ -36,7 +34,7 @@ struct mcu {
+ 	struct mutex lock;
+ 	struct device_node *np;
+ 	struct i2c_client *client;
+-	struct of_gpio_chip of_gc;
++	struct gpio_chip gc;
+ 	u8 reg_ctrl;
+ };
+ 
+@@ -55,8 +53,7 @@ static void mcu_power_off(void)
+ 
+ static void mcu_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+-	struct of_gpio_chip *of_gc = to_of_gpio_chip(gc);
+-	struct mcu *mcu = container_of(of_gc, struct mcu, of_gc);
++	struct mcu *mcu = container_of(gc, struct mcu, gc);
+ 	u8 bit = 1 << (4 + gpio);
+ 
+ 	mutex_lock(&mcu->lock);
+@@ -75,52 +72,6 @@ static int mcu_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	return 0;
  }
  
-@@ -200,8 +199,6 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 	int ret;
- 
- 	pdata = client->dev.platform_data;
--	if (pdata == NULL)
+-static int mcu_gpiochip_add(struct mcu *mcu)
+-{
+-	struct device_node *np;
+-	struct of_gpio_chip *of_gc = &mcu->of_gc;
+-	struct gpio_chip *gc = &of_gc->gc;
+-	int ret;
+-
+-	np = of_find_compatible_node(NULL, NULL, "fsl,mcu-mpc8349emitx");
+-	if (!np)
 -		return -ENODEV;
- 
- 	chip = kzalloc(sizeof(struct pca953x_chip), GFP_KERNEL);
- 	if (chip == NULL)
-@@ -209,7 +206,10 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 
- 	chip->client = client;
- 
--	chip->gpio_start = pdata->gpio_base;
-+	if (pdata)
-+		chip->gpio_start = pdata->gpio_base;
-+	else
-+		chip->gpio_start = -1;
- 
- 	/* initialize cached registers from their original values.
- 	 * we can't share this chip with another i2c master.
-@@ -225,16 +225,18 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 		goto out_failed;
- 
- 	/* set platform specific polarity inversion */
--	ret = pca953x_write_reg(chip, PCA953X_INVERT, pdata->invert);
+-
+-	gc->owner = THIS_MODULE;
+-	gc->label = np->full_name;
+-	gc->can_sleep = 1;
+-	gc->ngpio = MCU_NUM_GPIO;
+-	gc->base = -1;
+-	gc->set = mcu_gpio_set;
+-	gc->direction_output = mcu_gpio_dir_out;
+-	of_gc->gpio_cells = 2;
+-	of_gc->xlate = of_gpio_simple_xlate;
+-
+-	np->data = of_gc;
+-	mcu->np = np;
+-
+-	/*
+-	 * We don't want to lose the node, its ->data and ->full_name...
+-	 * So, if succeeded, we don't put the node here.
+-	 */
+-	ret = gpiochip_add(gc);
 -	if (ret)
--		goto out_failed;
-+	if (pdata) {
-+		ret = pca953x_write_reg(chip, PCA953X_INVERT, pdata->invert);
-+		if (ret)
-+			goto out_failed;
-+	}
+-		of_node_put(np);
+-	return ret;
+-}
+-
+-static int mcu_gpiochip_remove(struct mcu *mcu)
+-{
+-	int ret;
+-
+-	ret = gpiochip_remove(&mcu->of_gc.gc);
+-	if (ret)
+-		return ret;
+-	of_node_put(mcu->np);
+-
+-	return 0;
+-}
+-
+ static int __devinit mcu_probe(struct i2c_client *client,
+ 			       const struct i2c_device_id *id)
+ {
+@@ -140,7 +91,15 @@ static int __devinit mcu_probe(struct i2c_client *client,
+ 		goto err;
+ 	mcu->reg_ctrl = ret;
  
- 
--	ret = gpiochip_add(&chip->gpio_chip);
-+	ret = dev_gpiochip_add(&client->dev, &chip->gpio_chip);
+-	ret = mcu_gpiochip_add(mcu);
++	mcu->gc.owner = THIS_MODULE;
++	mcu->gc.label = client->dev.bus_id;
++	mcu->gc.can_sleep = 1;
++	mcu->gc.ngpio = MCU_NUM_GPIO;
++	mcu->gc.base = -1;
++	mcu->gc.set = mcu_gpio_set;
++	mcu->gc.direction_output = mcu_gpio_dir_out;
++
++	ret = dev_gpiochip_add(&client->dev, &mcu->gc);
  	if (ret)
- 		goto out_failed;
+ 		goto err;
  
--	if (pdata->setup) {
-+	if (pdata && pdata->setup) {
- 		ret = pdata->setup(client, chip->gpio_chip.base,
- 				chip->gpio_chip.ngpio, pdata->context);
- 		if (ret < 0)
-@@ -255,7 +257,7 @@ static int pca953x_remove(struct i2c_client *client)
- 	struct pca953x_chip *chip = i2c_get_clientdata(client);
- 	int ret = 0;
- 
--	if (pdata->teardown) {
-+	if (pdata && pdata->teardown) {
- 		ret = pdata->teardown(client, chip->gpio_chip.base,
- 				chip->gpio_chip.ngpio, pdata->context);
- 		if (ret < 0) {
-@@ -265,7 +267,7 @@ static int pca953x_remove(struct i2c_client *client)
- 		}
+@@ -167,7 +126,7 @@ static int __devexit mcu_remove(struct i2c_client *client)
+ 		glob_mcu = NULL;
  	}
  
--	ret = gpiochip_remove(&chip->gpio_chip);
-+	ret = dev_gpiochip_remove(&client->dev, &chip->gpio_chip);
- 	if (ret) {
- 		dev_err(&client->dev, "%s failed, %d\n",
- 				"gpiochip_remove()", ret);
+-	ret = mcu_gpiochip_remove(mcu);
++	ret = dev_gpiochip_remove(&client->dev, &mcu->gc);
+ 	if (ret)
+ 		return ret;
+ 	i2c_set_clientdata(client, NULL);
 -- 
 1.5.6.3
-
