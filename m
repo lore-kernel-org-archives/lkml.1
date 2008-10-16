@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYJPP4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbYJPP6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbYJPP4M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 11:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYJPPz5
+	id S1755631AbYJPP6A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 11:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYJPP5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 11:55:57 -0400
-Received: from xenotime.net ([66.160.160.81]:41636 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751507AbYJPPz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 11:55:57 -0400
-Date: Thu, 16 Oct 2008 08:55:54 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Prabhu Chawandi <prabhu.chavandi@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: CONFIG Symbol
-In-Reply-To: <241b8f7b0810152356o62bd86eclfa4e0027e41ca563@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0810160847230.16496@shark.he.net>
-References: <241b8f7b0810152356o62bd86eclfa4e0027e41ca563@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 16 Oct 2008 11:57:52 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43471 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbYJPP5w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 11:57:52 -0400
+To: torvalds@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [git pull] fuse changes for 2.6.28
+Message-Id: <E1KqVES-0007mC-FJ@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 16 Oct 2008 17:57:48 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, Prabhu Chawandi wrote:
+Linus,
 
-> Hi All,
-> 
->   I have added a symobol in thr config file, freshely ... eg.
-> CONFIG_USB_SERIAL_CONSOLE
+Please pull from:
 
-What kind of config file?  Is it in a Kconfig* file?
-If so, then the CONFIG_ prefix is implicit and you should just
-use "USB_SERIAL_CONSOLE" as the symbol name.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/fuse.git for-linus
 
-> i.e. there was no symbol at all ... but in the source code a check is
-> made for that symbol...
-> 
->  So I have added that symbol in the config file,,,
-> unfortunately I am not getting that  flag value reflected,,,,
+These are small bug fixes and improvements to fuse.
 
-Maybe now it's CONFIG_CONFIG_USB_SERIAL_CONSOLE.
+ fs/Kconfig           |    2 +-
+ fs/fuse/file.c       |    5 +++++
+ fs/fuse/fuse_i.h     |    5 +++++
+ fs/fuse/inode.c      |    3 ++-
+ include/linux/fuse.h |   12 +++++++++++-
+ 5 files changed, 24 insertions(+), 3 deletions(-)
 
-> What I thought ,, Is there any other place where to identify this symbol...
-> 
-> as we export any symbol...
+Julia Lawall (1):
+      fuse: add missing fuse_request_free
 
-Config symbols are produced as include/linux/autoconf.h at build time,
-so you can look at that file to see what was produced/generated.
+Miklos Szeredi (1):
+      fuse: fix SEEK_END incorrectness
 
--- 
-~Randy
+Robert P. J. Day (1):
+      fuse: config description improvement
+
+Tejun Heo (2):
+      fuse: add include protectors
+      fuse: implement nonseekable open
+
