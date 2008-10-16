@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYJPW56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbYJPW6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYJPW56 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbYJPW5r
+	id S1758471AbYJPW6e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYJPW6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:57:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52782 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754233AbYJPW5r (ORCPT
+	Thu, 16 Oct 2008 18:58:23 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:7693 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754950AbYJPW6W convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:57:47 -0400
-Date: Thu, 16 Oct 2008 15:57:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [git pull] core kernel updates for v2.6.28
-In-Reply-To: <c62985530810161543q23f9ae75jb08ff986a214da0@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0810161548520.3288@nehalem.linux-foundation.org>
-References: <20081015125023.GA6702@elte.hu>  <alpine.LFD.2.00.0810161518320.3288@nehalem.linux-foundation.org> <c62985530810161543q23f9ae75jb08ff986a214da0@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+	Thu, 16 Oct 2008 18:58:22 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Date: Thu, 16 Oct 2008 22:56:58 +0000
+Subject: RE: [PATCH 2/2] cciss: fix regression in procfs display fw	version,
+ obsoletes previous patch 2 of 2
+Thread-Topic: [PATCH 2/2] cciss: fix regression in procfs display fw
+	version, obsoletes previous patch 2 of 2
+Thread-Index: Ackv3rSNMq4ekoo+TD6YPQ7m8dH+gQAA5fmA
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884C019B4CEF@GVW0547EXC.americas.hpqcorp.net>
+References: <20081016215016.GB25704@roadking.ldev.net>
+ <20081016145642.2ba2adba.akpm@linux-foundation.org>
+ <0F5B06BAB751E047AB5C87D1F77A77884C019B4CBE@GVW0547EXC.americas.hpqcorp.net>
+ <20081016223251.GA10270@x200.localdomain>
+In-Reply-To: <20081016223251.GA10270@x200.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 17 Oct 2008, Frédéric Weisbecker wrote:
+> > > +     return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
+> > > > +             sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
+> > > > +     if (return_code == IO_OK) {
+> > > > +             hba[i]->firm_ver[0] = inq_buff->data_byte[32];
+> > > > +             hba[i]->firm_ver[1] = inq_buff->data_byte[33];
+> > > > +             hba[i]->firm_ver[2] = inq_buff->data_byte[34];
+> > > > +             hba[i]->firm_ver[3] = inq_buff->data_byte[35];
+> > > > +     } else {         /* send command failed */
+> > > > +             printk(KERN_WARNING "cciss: unable to
+> > > determine firmware"
+> > > > +                     " version of controller\n");
+> > > > +     }
+> > > > +
+> > > >       cciss_procinit(i);
+> > > >
+> > > >       hba[i]->cciss_max_sectors = 2048;
+> >
+> > Sorry, in too much of a hurry. I'll fix (again).
 >
-> 2008/10/17 Linus Torvalds <torvalds@linux-foundation.org>:
-> > The fact is, that second argument was a "ptrdiff_t", which is neither
-> > "int" nor "long".  It should be "%td" I think. But the thing is, when you
-> > fix a warning, you should damn well know what the hell you're doing, not
-> > just shut it up.
-> 
-> Sorry, I made some falses assumptions about the printed type I guess...
-
-Well, the thing is, on 32-bit x86, ptrdiff_t is "int". And on 64-bit, it's 
-"long". And on some (most?) other architectures, it's "long" regardless of 
-whether it's 32-bit or 64-bit.
-
-So you fixed a warnign on x86-32, but you introduced it just about 
-everywhere else.
-
-And it so happens that the old use of "%ld" was better than "%d", because 
-regardless of the exact type of ptrdiff_t, with gcc it is essentially 
-always going to be at least the same _size_ as "long". IOW, even when it's 
-"int", it will always print out correctly with "%ld", despite the format 
-warning. IOW, the type may be "wrong" from a C standards standpoint, but 
-it will work in practice.
-
-In contrast, using "%d" can actually print it out wrong, because it will 
-be literally the wrong physical size, not just a type issue on a C level. 
-So depending on calling conventions, you might end up with the upper bits 
-cleared, or even the wrong bits printed out.
-
-Using "%td" is always right, assuming the underlying printing library is 
-recent enough to know about it. And the kernel has known about %td for the 
-last three years.
-
-			Linus
+> And inq_buff is leaked, if I'm not missing simething.
+>
+Sorry, Alexy, I can't see the leak. Is it in the failure case?
