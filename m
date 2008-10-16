@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYJPRe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbYJPRgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYJPRe6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYJPRet
+	id S1757177AbYJPRgZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYJPRgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:34:49 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:61908 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014AbYJPRes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:34:48 -0400
-Date: Fri, 17 Oct 2008 02:34:54 +0900 (JST)
-Message-Id: <20081017.023454.115932752.anemo@mba.ocn.ne.jp>
-To: linux-kernel@vger.kernel.org
-Cc: sshtylyov@ru.mvista.com, akpm@linux-foundation.org, ralf@linux-mips.org
-Subject: [PATCH] serial_txx9: Use %lx for iobase
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 13:36:15 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:21079 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbYJPRgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:36:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:sender;
+        b=khQSIEMQ8tpiRezMmeZ5lAQsdXiryeYEXeaNcNnSa5e90DVW+PF0+oR7BNVEIECKrT
+         XecyHsvXTdXZIeerOZRRHxKs8+GHyjUByFvQBgrgGaUXhHQ8awRpWMTkyKHQn7Vhy29L
+         cB8EyluiA87lukm24v7L4DEUkujuUK3zYf/oI=
+From: Bryan Wu <cooloney@kernel.org>
+To: linux@dominikbrodowski.net
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Robin Getz <rgetz@blackfin.uclinux.org>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] cpu-freq/Documentation: Add Blackfin to list of supported processors
+Date: Fri, 17 Oct 2008 01:36:43 +0800
+Message-Id: <1224178603-12070-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a warning caused by commit 0c8946d97ae7d2d6691f8290a10faa63453b63f8
-(serial: Make uart_port's ioport "unsigned long".)
+From: Robin Getz <rgetz@blackfin.uclinux.org>
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
-diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
-index 8fcb4c5..7313c2e 100644
---- a/drivers/serial/serial_txx9.c
-+++ b/drivers/serial/serial_txx9.c
-@@ -1039,7 +1039,7 @@ static int __devinit serial_txx9_probe(struct platform_device *dev)
- 		ret = serial_txx9_register_port(&port);
- 		if (ret < 0) {
- 			dev_err(&dev->dev, "unable to register port at index %d "
--				"(IO%x MEM%llx IRQ%d): %d\n", i,
-+				"(IO%lx MEM%llx IRQ%d): %d\n", i,
- 				p->iobase, (unsigned long long)p->mapbase,
- 				p->irq, ret);
- 		}
+ Documentation/cpu-freq/user-guide.txt |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
+index 6c442d8..4f3f384 100644
+--- a/Documentation/cpu-freq/user-guide.txt
++++ b/Documentation/cpu-freq/user-guide.txt
+@@ -23,6 +23,7 @@ Contents:
+ 1.3 sparc64
+ 1.4 ppc
+ 1.5 SuperH
++1.6 Blackfin
+ 
+ 2. "Policy" / "Governor"?
+ 2.1 Policy
+@@ -97,6 +98,17 @@ The following SuperH processors are supported by cpufreq:
+ SH-3
+ SH-4
+ 
++1.6 Blackfin
++------------
++
++The following Blackfin processors are supported by cpufreq:
++
++BF522, BF523, BF524, BF525, BF526, BF527, Rev 0.1 or higher
++BF531, BF532, BF533, Rev 0.3 or higher
++BF534, BF536, BF537, Rev 0.2 or higher
++BF561, Rev 0.3 or higher
++BF542, BF544, BF547, BF548, BF549, Rev 0.1 or higher
++
+ 
+ 2. "Policy" / "Governor" ?
+ ==========================
+-- 
+1.5.6
+
