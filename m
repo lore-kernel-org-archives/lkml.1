@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbYJPWhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbYJPWhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbYJPWhS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756979AbYJPWhA
+	id S1758093AbYJPWhj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbYJPWhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:37:00 -0400
-Received: from CPE-124-189-54-71.nsw.bigpond.net.au ([124.189.54.71]:49765
-	"EHLO bunyip.billabong.weebeastie.net" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754708AbYJPWg7 (ORCPT
+	Thu, 16 Oct 2008 18:37:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37036
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757917AbYJPWhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:36:59 -0400
-X-Greylist: delayed 2735 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 18:36:58 EDT
-Date: Fri, 17 Oct 2008 08:51:12 +1100
-From: CaT <cat@zip.com.au>
-To: "Yang, Bo" <Bo.Yang@lsi.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Patro, Sumant" <Sumant.Patro@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Kolli, Neela" <Neela.Kolli@lsi.com>
-Subject: Re: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl processing
-Message-ID: <20081016215112.GX19077@zip.com.au>
-References: <20081016001721.GW19077@zip.com.au> <4B6A08C587958942AA3002690DD4F8C32D24DF36@cosmail02.lsi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C32D24DF36@cosmail02.lsi.com>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 16 Oct 2008 18:37:04 -0400
+Date: Thu, 16 Oct 2008 15:36:41 -0700 (PDT)
+Message-Id: <20081016.153641.32547403.davem@davemloft.net>
+To: avorontsov@ru.mvista.com
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       sfalco@harris.com, grant.likely@secretlab.ca, khali@linux-fr.org,
+       i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/7] powerpc and sparc: introduce dev_archdata node
+ accessors
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081016171251.GA5515@oksana.dev.rtsoft.ru>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	<20081016171251.GA5515@oksana.dev.rtsoft.ru>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 07:54:07AM -0600, Yang, Bo wrote:
-> What MegaCli cmds did you using (DCMD or DCDB?).
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Thu, 16 Oct 2008 21:12:51 +0400
 
-MegaCli -LdPdInfo -a0 -NoLog
+> The name of the device_node field differ across the platforms, so we
+> have to implement inlined accessors. This is needed to avoid ugly
+> #ifdef in the generic code.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Forgot to mention that this is the 64bit version of the command.
+I'm happy to just change this member name on sparc to match
+powerpc's choice.
 
--- 
-  "Police noticed some rustling sounds from Linn's bottom area
-  and on closer inspection a roll of cash was found protruding
-  from Linn's anus, the full amount of cash taken in the robbery."
-    - http://www.smh.com.au/news/world/robber-hides-loot-up-his-booty/2008/05/09/1210131248617.html
+That being said, this abstraction still has value and I'd
+like to let you merge this now and make forward progress
+so:
+
+Acked-by: David S. Miller <davem@davemloft.net>
