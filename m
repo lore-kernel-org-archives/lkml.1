@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYJPRtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYJPRur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbYJPRtq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYJPRti
+	id S1756318AbYJPRur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYJPRui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:49:38 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:40985 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752187AbYJPRth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:49:37 -0400
-Date: Thu, 16 Oct 2008 20:00:31 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Use PC-BIOS NUMLOCK flag
-In-Reply-To: <20081016143856.GD5071@const.bordeaux.inria.fr>
-Message-ID: <alpine.LSU.0.999.0810161958450.5051@be1.lrz>
-References: <alpine.LSU.0.999.0810161358540.5404@be1.lrz>
- <20081016143856.GD5071@const.bordeaux.inria.fr>
+	Thu, 16 Oct 2008 13:50:38 -0400
+Received: from kroah.org ([198.145.64.141]:33681 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752892AbYJPRuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:50:37 -0400
+Date: Thu, 16 Oct 2008 10:46:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: stable@kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH 0/2] x86: check correctness of IRQ0 override
+	on systems with ATI/AMD SB450/SB600 chipsets
+Message-ID: <20081016174614.GA11120@kroah.com>
+References: <20081015104118.GA4706@alberich.amd.com> <20081015191720.GA7966@kroah.com> <20081016120615.GE29183@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1389964400-1224180031=:5051"
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081016120615.GE29183@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, Oct 16, 2008 at 02:06:15PM +0200, Andreas Herrmann wrote:
+> On Wed, Oct 15, 2008 at 12:17:20PM -0700, Greg KH wrote:
+> > On Wed, Oct 15, 2008 at 12:41:18PM +0200, Andreas Herrmann wrote:
+> > > Hi,
+> > > 
+> > > following patches should go into 2.6.27-stable tree.
+> > > 
+> > > They fix issues with HP Laptops that provide a wrong override for IRQ0
+> > > and which change the thermal trip point as soon as Linux unmasks
+> > > IOAPIC INT2.
+> > 
+> > Are these patches in the upstream Linus kernel already?
+> > 
+> > If so, can you please give us the git commit ids?
+> 
+> The one for SB450 is upstream. It's commit
+> 33fb0e4eb53f16af312f9698f974e2e64af39c12
 
---8323584-1389964400-1224180031=:5051
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+That one is already added to the tree.
 
-On Thu, 16 Oct 2008, Samuel Thibault wrote:
-> Bodo Eggert, le Thu 16 Oct 2008 13:59:49 +0200, a =E9crit :
+> The second one was posted yesterday and it is not yet commited.
 
-> > +=09  If you have an alternative firmware like OpenFirmware or LinuxBio=
-s,
-> > +=09  this flag might not be set correctly, which results in a random s=
-tate
-> > +=09  of the Numlock key.
->=20
-> That's an issue. That means that distributions will just not enable,
-> and thus the flag is not really useful, since people who would
-> compile their own kernel would very likely have already setup their
-> initialization scripts into calling setleds +num (or just set LEDS=3D+num
-> in /etc/console-tools/config on a debian machine).
+Please let us know when it makes it upstream.
 
-I hope somebody will pop up and say "Hey, those will create an IBM PC data=
-=20
-area, because they run DOS" ...
---=20
-"Try to look unimportant; they may be low on ammo."
--Infantry Journal
---8323584-1389964400-1224180031=:5051--
+> BTW, I just posted another patch to remove superfluos DMI-quirks
+> that are related to HP Laptops with SB450/SB600.
+> IMHO this patch should go into stable as well. But first I'd like
+> to get a response from Ingo here.
+
+Sure, just let us know when it goes upstream if you want it in -stable.
+
+thanks,
+
+greg k-h
