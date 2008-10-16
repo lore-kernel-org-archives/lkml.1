@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbYJPA0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYJPA2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbYJPA0s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 20:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbYJPA0k
+	id S1755868AbYJPA2g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 20:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYJPA23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 20:26:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60784 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753992AbYJPA0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 20:26:39 -0400
+	Wed, 15 Oct 2008 20:28:29 -0400
+Received: from kroah.org ([198.145.64.141]:37338 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752269AbYJPA22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 20:28:28 -0400
+Date: Wed, 15 Oct 2008 17:25:09 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC] Kernel version numbering scheme change
+Message-ID: <20081016002509.GA25868@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: prasad@linux.vnet.ibm.com
-X-Fcc: ~/Mail/linus
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
-       mingo@elte.hu, jason.wessel@windriver.com, avi@qumranet.com,
-       richardj_moore@uk.ibm.com
-Subject: Re: [RFC Patch 3/9] Modifying generic debug exception to use virtual
-	debug registers
-In-Reply-To: K.Prasad's message of  Thursday, 9 October 2008 00:54:20 +0530 <20081008192420.GC4989@in.ibm.com>
-References: <20081008192044.GA4510@in.ibm.com>
-	<20081008192420.GC4989@in.ibm.com>
-X-Zippy-Says: Gee, I feel kind of LIGHT in the head now, knowing I can't make my
-    satellite dish PAYMENTS!
-Message-Id: <20081016002555.808EF1544CB@magilla.localdomain>
-Date: Wed, 15 Oct 2008 17:25:55 -0700 (PDT)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You need to redo this (and the whole set) for the post-2.6.27 tree.
-e.g. traps.c has been unified.
+Hi,
 
-+	/* Store the virtualized DR6 value */
-+	tsk->thread.vdr6 = dr6;
-+
-+	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
-+			SIGTRAP) == NOTIFY_STOP)
- 		return;
+You brought this topic up a few months ago, and passed it off as
+something we would discuss at the kernel summit.  But that never
+happened, so I figured I'd bring it up again here.
 
-I'm not sure you should change vdr6 when notify_die returns NOTIFY_STOP.
-Maybe Alan and I hashed out the logic of this before, I don't recall.
-If the notifier is eating the event, then it should not affect the
-thread-virtualized view of %db6.  That would be consistent with the
-existing code, where ->thread.debugreg6 is only set later when all the
-intercepted or spurious exceptions have been filtered out.
+So, as someone who constantly is dealing with kernel version numbers all
+the time with the -stable trees, our current numbering scheme is a pain
+a times.  How about this proposal instead?
 
+We number the kernel based on the year, and the numbers of releases we
+have done this year:
+	YEAR.NUMBER.MINOR_RELEASE
 
-Thanks,
-Roland
+For example, the first release in 2009 would be called:
+	2009.0.0
+The second:
+	2009.1.0
+
+If we want to be a bit more "non-zero-counting" friendly: we can start
+at "1" for the number:
+	2009.1.0 for the first release
+	2009.2.0 for the second.
+
+Then the stable releases can increment the minor number:
+	2009.1.1 for the first stable release
+	2009.1.2 for the second.
+	and so on.
+
+Benefits of this is it more accuratly represents to people just how old
+the kernel they are currently running is (2.6.9 would be have been
+2004.9.0 on this naming scheme.)
+
+Yes, we can handle the major/minor macros in the kernel to provide a
+compatible number so that automated scripts will not break, that's not a
+big deal.
+
+Any thoughts?
+
+Let the bike-shedding begin!
+
+thanks,
+
+greg k-h
