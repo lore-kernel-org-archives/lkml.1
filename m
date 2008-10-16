@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbYJPW4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYJPW56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbYJPW4f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYJPW4Q
+	id S1758094AbYJPW56 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbYJPW5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:56:16 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:43713 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756257AbYJPW4P (ORCPT
+	Thu, 16 Oct 2008 18:57:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52782 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754233AbYJPW5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:56:15 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEALth90h5LF1j/2dsb2JhbADER4Ns
-X-IronPort-AV: E=Sophos;i="4.33,427,1220193000"; 
-   d="scan'208";a="232273138"
-Date: Fri, 17 Oct 2008 09:56:11 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Sean Purdy <sean-kernel@purdy.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: BUG: XFS internal error xfs_trans_cancel in 2.6.27
-Message-ID: <20081016225611.GC31761@disturbed>
-Mail-Followup-To: Sean Purdy <sean-kernel@purdy.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	xfs@oss.sgi.com
-References: <20081009113610.F13062@moloch.hellmouth.net> <20081009230227.GL9597@disturbed> <20081016151752.F30919@moloch.hellmouth.net>
+	Thu, 16 Oct 2008 18:57:47 -0400
+Date: Thu, 16 Oct 2008 15:57:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: [git pull] core kernel updates for v2.6.28
+In-Reply-To: <c62985530810161543q23f9ae75jb08ff986a214da0@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0810161548520.3288@nehalem.linux-foundation.org>
+References: <20081015125023.GA6702@elte.hu>  <alpine.LFD.2.00.0810161518320.3288@nehalem.linux-foundation.org> <c62985530810161543q23f9ae75jb08ff986a214da0@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081016151752.F30919@moloch.hellmouth.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 03:17:52PM +0100, Sean Purdy wrote:
-> On Fri, 10 Oct 2008, Dave Chinner said:
-> > On Thu, Oct 09, 2008 at 11:36:10AM +0100, Sean Purdy wrote:
-> > > Hi,
-> > > 
-> > > Further to the discussion (and patching) of an xfs_trans_cancel
-> > > issue in June, in kernel < 2.6.26
-> > > 
-> > > A similar issue came up on one disk of a 4 x 750GiB machine
-> > > with a 2.6.24 kernel.  So I installed 2.6.27-6 and gave it another try.
-> > > But I'm still seeing the same problem.  Remounting the drive each time
-> > > is fine, and xfs_check shows no errors.
-> > 
-> > 2.6.27-6? You mean 2.6.27-rc6?
+
+
+On Fri, 17 Oct 2008, Frédéric Weisbecker wrote:
+>
+> 2008/10/17 Linus Torvalds <torvalds@linux-foundation.org>:
+> > The fact is, that second argument was a "ptrdiff_t", which is neither
+> > "int" nor "long".  It should be "%td" I think. But the thing is, when you
+> > fix a warning, you should damn well know what the hell you're doing, not
+> > just shut it up.
 > 
-> I meant rc9 as it happens, but never mind.
->  
-> > Anyway, you need to try this patch:
-> > 
-> > http://oss.sgi.com/archives/xfs/2008-10/msg00105.html
-> > 
-> > which I posted a few days ago that fixes the latest reproducable
-> > case of this shutdown that I know of.
-> 
-> This patch worked fine, thanks very much!
+> Sorry, I made some falses assumptions about the printed type I guess...
 
-Great. It's good to know that mutliple people Ø¥ve been hitting
-this specific problem.
+Well, the thing is, on 32-bit x86, ptrdiff_t is "int". And on 64-bit, it's 
+"long". And on some (most?) other architectures, it's "long" regardless of 
+whether it's 32-bit or 64-bit.
 
-> Can we get it into
-> some stable version of 2.6.27?  Maybe I can put in a bug request
-> for the next Ubuntu kernel.
+So you fixed a warnign on x86-32, but you introduced it just about 
+everywhere else.
 
-We haven't pushed it upstream for .28-rc1 yet as it is still being
-QA'd. Once it is pushed we can consider it for .27-stable.
+And it so happens that the old use of "%ld" was better than "%d", because 
+regardless of the exact type of ptrdiff_t, with gcc it is essentially 
+always going to be at least the same _size_ as "long". IOW, even when it's 
+"int", it will always print out correctly with "%ld", despite the format 
+warning. IOW, the type may be "wrong" from a C standards standpoint, but 
+it will work in practice.
 
-Cheers,
+In contrast, using "%d" can actually print it out wrong, because it will 
+be literally the wrong physical size, not just a type issue on a C level. 
+So depending on calling conventions, you might end up with the upper bits 
+cleared, or even the wrong bits printed out.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Using "%td" is always right, assuming the underlying printing library is 
+recent enough to know about it. And the kernel has known about %td for the 
+last three years.
+
+			Linus
