@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYJPIWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYJPI2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbYJPIWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 04:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYJPIWK
+	id S1755194AbYJPI2G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 04:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYJPI1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 04:22:10 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:55777 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754920AbYJPIWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 04:22:07 -0400
-Date: Thu, 16 Oct 2008 11:21:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dan Williams <dan.j.williams@intel.com>, linux-ext4@vger.kernel.org,
-       netdev@vger.kernel.org, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, marek.vasut@gmail.com,
-       David Woodhouse <dwmw2@infradead.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: powerpc allmodconfig
-Message-ID: <20081016082157.GC23630@cs181140183.pp.htv.fi>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org> <s5h1vyhrsja.wl%tiwai@suse.de> <20081016073836.GB23630@cs181140183.pp.htv.fi> <s5hiqrtq8fc.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <s5hiqrtq8fc.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Oct 2008 04:27:55 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50014 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753243AbYJPI1z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 04:27:55 -0400
+Subject: Re: no way to swapoff a deleted swap file?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Peter Cordes <peter@cordes.ca>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       hugh <hugh@veritas.com>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20081015202141.GX26067@cordes.ca>
+References: <20081015202141.GX26067@cordes.ca>
+Content-Type: text/plain
+Date: Thu, 16 Oct 2008 10:28:04 +0200
+Message-Id: <1224145684.28131.25.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 09:57:11AM +0200, Takashi Iwai wrote:
-> At Thu, 16 Oct 2008 10:38:36 +0300,
-> Adrian Bunk wrote:
-> > 
-> > On Thu, Oct 16, 2008 at 07:57:29AM +0200, Takashi Iwai wrote:
-> > > At Wed, 15 Oct 2008 21:33:37 -0700,
-> > > Andrew Morton wrote:
-> > > > 
-> > > > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
-> > > > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
-> > > 
-> > > These are definitions of deprecated interfaces.
-> > > We can remove it in 2.6.29.  If we don't want to be conservative, it
-> > > can be removed in 2.6.28, too.
-> > >...
-> > 
-> > Since it's an in-kernel API there's no reason to keep it once there are 
-> > no users left.
+On Wed, 2008-10-15 at 17:21 -0300, Peter Cordes wrote:
+> I unlinked a swapfile without realizing I was still swapping on it.
+> Now my /proc/swaps looks like this:
+> Filename                                Type            Size    Used	Priority
+> /var/tmp/EXP/cache/swap/1\040(deleted)  file            1288644 1448	-1
+> /var/tmp/EXP/cache/swap/2\040(deleted)  file            1433368 0	-2
 > 
-> Right.  But, IMO, now is no suitable time.
-> A thing like API removal should have been tested in linux-next, and we
-> had plenty of time indeed for 2.6.28.
->...
-
-A grep through the tree and one test compile that covers 
-sound/soc/soc-dapm.c should be enough testing.
-
-And having it then in -next once should be enough to discover if someone 
-wrongly added a new user.
-
-I have removed many functions in the kernel, and there isn't much that 
-can go wrong - even adding a PCI ID to a driver has a bigger risk of 
-introducing a regression.
-
-> thanks,
+>  AFAICT, there's nothing I can pass to swapoff(2) that will make the
+> kernel let go of them.  If that's the case, please consider this a
+> feature request for a way to do this.  Now I'm going to have to reboot
+> before I can mkfs that partition.
 > 
-> Takashi
+>  If kswapd0 had a fd open on the swap files, swapoff /proc/$PID/fd/3
+> could possibly work.  But it looks like the files are open but with no
+> user-space accessable file descriptors to them.  Which makes sense,
+> except for this case.
 
-cu
-Adrian
+Right, except that kswapd is per node, so we'd either have to add it to
+all kswapd instances or a random one. Also, kthreads don't seem to have
+a files table afaict.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+But yes, I see your problem and it makes sense to look for a nice
+solution.
 
