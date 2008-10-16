@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYJPHjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYJPHvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479AbYJPHjI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 03:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYJPHit
+	id S1754579AbYJPHvj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 03:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbYJPHv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 03:38:49 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:60775 "EHLO smtp4.pp.htv.fi"
+	Thu, 16 Oct 2008 03:51:29 -0400
+Received: from mga11.intel.com ([192.55.52.93]:57311 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbYJPHis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 03:38:48 -0400
-Date: Thu, 16 Oct 2008 10:38:36 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dan Williams <dan.j.williams@intel.com>, linux-ext4@vger.kernel.org,
-       netdev@vger.kernel.org, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, marek.vasut@gmail.com,
-       David Woodhouse <dwmw2@infradead.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: powerpc allmodconfig
-Message-ID: <20081016073836.GB23630@cs181140183.pp.htv.fi>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org> <s5h1vyhrsja.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <s5h1vyhrsja.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752578AbYJPHv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 03:51:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,422,1220252400"; 
+   d="scan'208";a="627799010"
+Subject: Suspend/resume regression between 2.6.26 and 2.6.27-rc1
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>, mingo@elte.hu
+In-Reply-To: <200810101441.14123.rjw@sisk.pl>
+References: <1223625973.2735.142.camel@rzhang-dt>
+	 <200810101441.14123.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 16 Oct 2008 15:56:58 +0800
+Message-Id: <1224143818.3944.68.camel@yakui_zhao.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 07:57:29AM +0200, Takashi Iwai wrote:
-> At Wed, 15 Oct 2008 21:33:37 -0700,
-> Andrew Morton wrote:
+On Fri, 2008-10-10 at 14:41 +0200, Rafael J. Wysocki wrote:
+> On Friday, 10 of October 2008, Zhang Rui wrote:
+> > Hi, len,
 > > 
-> > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
-> > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
+> > this is the ACPI regression test result based on the latest ACPI test branch.
+> > 
+> > 1. on ﻿Acer:(AMD CPU, VIA chipset. 64 bit kernel)
+> > ﻿When doing S3 test, after pressing the power button, the system
+> > reboots instead of resuming. But if S3 is done after S4, the system can
+> > resume very well after pressing power button or using the RTC
+> > alarm.
+> > Note that this is an upstream regression as it can be reproduced on
+> > linus' tree.
+> > Yakui is investigating this issue.
 > 
-> These are definitions of deprecated interfaces.
-> We can remove it in 2.6.29.  If we don't want to be conservative, it
-> can be removed in 2.6.28, too.
->...
+> We had some reports of the second suspend (S3) failure too, where the second
+> attempt to suspend to RAM (or to resume from it) failed after a successful
+> one.  I wonder if that's related.
+Some suspend/resume tests are done on one Acer laptop(AMD CPU, VIA
+chipset, 64-bit kernel).
+   The system will be rebooted when pressing power button after the box
+enters S3 state. But if S3 is done after doing S4, the system can be
+resumed very well after pressing power button.This issue can be
+reproduced on the upstream kernel.
 
-Since it's an in-kernel API there's no reason to keep it once there are 
-no users left.
+After the further test we can confirm that this is a regression. The
+2.6.26 kernel can work well on this box. But the 2.6.27-rc1 will fail.
 
-But currently sound/soc/at32/playpaq_wm8510.c still seems to use it.
+After using the git-bisect it is confirmed that the commit
+736f12bff9d9e7b4e895c64f73b190c8383fc2a1 is good. 
+    >commit 736f12bff9d9e7b4e895c64f73b190c8383fc2a1
+    >Author: Glauber Costa <gcosta@redhat.com>
+    > Date:   Tue May 27 20:14:51 2008 -0700
+       >x86: don't use gdt_page openly.
 
-> thanks,
-> 
-> Takashi
+And the commit 
+55f262391a2365d657a00ed68edd1a51bca66af5 is bad. 
+   >commit 55f262391a2365d657a00ed68edd1a51bca66af5
+   >Author: Yinghai Lu <yhlu.kernel@gmail.com>
+   >Date:   Wed Jun 25 17:54:23 2008 -0700
+    >x86: rename setup_32.c to setup.c
 
-cu
-Adrian
+  The patches between the above two commits are related with X86. When
+using git-bisect between the above two commits, we will get the
+compiling errors(For example: some files don't exist) or the kernel
+panic. So we can't continue using git-bisect to identify which commit
+the regression is caused by.
 
--- 
+Best regards.
+   Yakui.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> >
 
