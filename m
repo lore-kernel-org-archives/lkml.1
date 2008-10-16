@@ -1,84 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbYJPAHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYJPAMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754960AbYJPAHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 20:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbYJPAHf
+	id S1755255AbYJPAMa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 20:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYJPAMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 20:07:35 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:52571 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753829AbYJPAHe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 20:07:34 -0400
-Message-ID: <48F685A3.1060804@cs.columbia.edu>
-Date: Wed, 15 Oct 2008 20:06:59 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Wed, 15 Oct 2008 20:12:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46951 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751757AbYJPAMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 20:12:20 -0400
+Message-ID: <48F68688.9060408@kernel.org>
+Date: Thu, 16 Oct 2008 09:10:48 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>, jeremy@goop.org, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrey Mirkin <major@openvz.org>
-Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
-References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu> <1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu> <1223571036.11830.32.camel@nimitz>	<20081010153951.GD28977@elte.hu> <48F30315.1070909@fr.ibm.com>	<1223916223.29877.14.camel@nimitz> <48F6092D.6050400@fr.ibm.com>
-In-Reply-To: <48F6092D.6050400@fr.ibm.com>
+To: Peter Alfredsen <loki_val@gentoo.org>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: SATA Burner Pioneer DVR-216-DBK won't burn
+References: <200810052005.04920.loki_val@gentoo.org> <48F44706.7060701@kernel.org> <200810151647.04059.loki_val@gentoo.org>
+In-Reply-To: <200810151647.04059.loki_val@gentoo.org>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Oct 2008 00:12:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Alfredsen wrote:
+> I've tried to burn other things in the meantime. Some things, I'm
+> actually able to burn. But when I can't burn something, I have so far
+> been able to reproduce the failure. Very strange.
 
-Cedric Le Goater wrote:
-> Dave Hansen wrote:
->> On Mon, 2008-10-13 at 10:13 +0200, Cedric Le Goater wrote:
->>> hmm, that's rather complex, because we have to take into account the 
->>> kernel stack, no ? This is what Andrey was trying to solve in his patchset 
->>> back in September :
->>>
->>>         http://lkml.org/lkml/2008/9/3/96
->>>
->>> the restart phase simulates a clone and switch_to to (not) restore the kernel 
->>> stack. right ? 
->> Do we ever have to worry about the kernel stack if we simply say that
->> tasks have to be *in* userspace when we checkpoint them. 
-> 
-> at a syscall boundary for example. that would make our life easier 
-> definitely. 
-> 
+Eh... is it dependent on the specific media or content you're trying
+to burn?
 
-The ideal situation is never worry about kernel stack: either we catch
-the task in user space or at a syscall boundary. This is taken care of
-by freezing the tasks prior to checkpoint.
+Thanks.
 
-The one exception (and it is a tedious one !) are states in which the
-task is already frozen by definition: any ptrace blocking point where
-the tracee waits for the tracer to grant permission to proceed with
-its execution. Another example is in vfork(), waiting for completion.
-
-In both cases, there will be a kernel stack and we cannot avoid it.
-The bad news is that it may be a bit tedious to restart these cases.
-The good news, however, is that they are very well defined locations
-with well defined semantics. So upon restart all that is needed is
-to emulate the expected behavior had we not been checkpointed. This,
-luckily, does not require rebuilding the kernel stack, but instead
-some smart glue code for a finite set of special cases.
-
-Oren.
-
-
-> C.
-> 
->> If a task is
->> in an uninterruptable wait state, I'm not sure it's safe to checkpoint
->> it anyway.
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+-- 
+tejun
