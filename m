@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbYJPVaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYJPVfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757838AbYJPVaf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 17:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbYJPV37
+	id S1757341AbYJPVfO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 17:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYJPVfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 17:29:59 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:20670 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754694AbYJPV35 (ORCPT
+	Thu, 16 Oct 2008 17:35:00 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47338 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753799AbYJPVfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 17:29:57 -0400
-Date: Thu, 16 Oct 2008 16:29:56 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>, JensAxboejens.axboe@oracle.com
-Cc: alan.brunelle@hp.com, LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH 1/2] cciss: fix sysfs regression, obsoletes previous patch
-Message-ID: <20081016212956.GA25704@roadking.ldev.net>
+	Thu, 16 Oct 2008 17:35:00 -0400
+Subject: Re: tracepoints for kernel/mutex.c
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, compudj@krystal.dyndns.org, fche@redhat.com,
+       fweisbec@gmail.com, edwintorok@gmail.com, mingo@elte.hu,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20081016210430.GC25738@redhat.com>
+References: <20081016210430.GC25738@redhat.com>
+Content-Type: text/plain
+Date: Thu, 16 Oct 2008 23:34:38 +0200
+Message-Id: <1224192879.16038.82.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-10-16 at 17:04 -0400, Jason Baron wrote:
 
-Patch 1 of 2
+> Below are 3 tracepoints I've been playing with in kernel/mutex.c using
+> a SystemTap script. The idea is to detect and determine the cause of
+> lock contention. Currently I get the following output:
+> 
+> <contended mutex nam> <process name and pid of the contention> <time of
+> contention> <pid that woke me up(caused the contention?)>
 
-This patch obsoletes the one I sent yesterday. It fixes a broken symlink in
-sysfs. The previous patch appeared to work but was wrong as reported by Alan
-Brunelle.
-Please consider this for inclusion.
+> I think this approach has a number of advantages. It has low
+> overhead in the off case, since its based on tracepoints. It is
+> minimally invasive in the code path (3 tracepoints). It also allows me
+> to explore data structures and parts of the kernel by simply modifying
+> the SystemTap script. I do not need to re-compile the kernel and reboot.
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
+*sigh* this is why I hate markers and all related things...
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 1e1f915..0f367b1 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -1365,6 +1365,7 @@ static void cciss_add_disk(ctlr_info_t *h, struct gendisk *disk,
- 	disk->first_minor = drv_index << NWD_SHIFT;
- 	disk->fops = &cciss_fops;
- 	disk->private_data = &h->drv[drv_index];
-+	disk->driverfs_dev = &h->pdev->dev;
- 
- 	/* Set up queue information */
- 	blk_queue_bounce_limit(disk->queue, h->pdev->dma_mask);
+_IFF_ you want to place tracepoints, get them in the same place as the
+lock-dep/stat hooks, that way you get all the locks, not only mutexes.
+
+This is the same reason I absolutely _hate_ Edwin's rwsem tracer.
+
+Folks, lets please start by getting the tracing infrastructure in and
+those few high-level trace-points google proposed.
+
+Until we get the basics in, I think I'm going to NAK any and all
+tracepoint/marker patches.
+
