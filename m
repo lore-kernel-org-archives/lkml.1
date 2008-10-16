@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYJPXMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYJPXOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758778AbYJPXMV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbYJPXMJ
+	id S1758560AbYJPXOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbYJPXOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:12:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35002 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756250AbYJPXMI (ORCPT
+	Thu, 16 Oct 2008 19:14:37 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:46241 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755996AbYJPXOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:12:08 -0400
-Date: Thu, 16 Oct 2008 16:11:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dean Nelson <dcn@sgi.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] NULL struct irq_desc's member 'name' in
- dynamic_irq_cleanup()
-Message-Id: <20081016161145.58bbe635.akpm@linux-foundation.org>
-In-Reply-To: <20081016125808.GA24347@sgi.com>
-References: <20081016125808.GA24347@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 19:14:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=veR1MyWQB8VVh8Zm26MrfXAWIkyxZgUuwTFlVFcN4GE5pZbF189JW+P1Z/U/ztaKH9
+         LP2TWsJW+gzisBhzXzYgoMBDajpdBCzDpdfNYj1J6wnoOBq39ApKSU8yGwV9PZNDK88l
+         Ua2h+gpRpRjMVVpZO6UW3F3/usosIbs6qBeG0=
+Date: Fri, 17 Oct 2008 03:17:36 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH 2/2] cciss: fix regression in procfs display fw version,
+	obsoletes previous patch 2 of 2
+Message-ID: <20081016231736.GA7876@x200.localdomain>
+References: <20081016215016.GB25704@roadking.ldev.net> <20081016145642.2ba2adba.akpm@linux-foundation.org> <0F5B06BAB751E047AB5C87D1F77A77884C019B4CBE@GVW0547EXC.americas.hpqcorp.net> <20081016223251.GA10270@x200.localdomain> <0F5B06BAB751E047AB5C87D1F77A77884C019B4CEF@GVW0547EXC.americas.hpqcorp.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77884C019B4CEF@GVW0547EXC.americas.hpqcorp.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008 07:58:08 -0500
-Dean Nelson <dcn@sgi.com> wrote:
+On Thu, Oct 16, 2008 at 10:56:58PM +0000, Miller, Mike (OS Dev) wrote:
+> > > > +     return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
+> > > > > +             sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
+> > > > > +     if (return_code == IO_OK) {
+> > > > > +             hba[i]->firm_ver[0] = inq_buff->data_byte[32];
+> > > > > +             hba[i]->firm_ver[1] = inq_buff->data_byte[33];
+> > > > > +             hba[i]->firm_ver[2] = inq_buff->data_byte[34];
+> > > > > +             hba[i]->firm_ver[3] = inq_buff->data_byte[35];
+> > > > > +     } else {         /* send command failed */
+> > > > > +             printk(KERN_WARNING "cciss: unable to
+> > > > determine firmware"
+> > > > > +                     " version of controller\n");
+> > > > > +     }
+> > > > > +
+> > > > >       cciss_procinit(i);
+> > > > >
+> > > > >       hba[i]->cciss_max_sectors = 2048;
+> > >
+> > > Sorry, in too much of a hurry. I'll fix (again).
+> >
+> > And inq_buff is leaked, if I'm not missing simething.
+> >
+> Sorry, Alexy, I can't see the leak. Is it in the failure case?
 
-> If the member 'name' of the irq_desc structure happens to point to a character
-> string that is resident within a kernel module, problems insue if that module
-> is rmmod'd (at which time dynamic_irq_cleanup() is called) and then later
-> show_interrupts() is called by someone.
-
-It would be nice to spell out what the "problems" are.
-
-> It is also not a good thing if the
-> character string resided in kmalloc'd space that has been kfree'd (after
-> having called dynamic_irq_cleanup()). dynamic_irq_cleanup() fails to NULL
-> the 'name' member and show_interrupts() references it on a few architectures
-> (like h8300, sh and x86).
-> 
-> Signed-off-by: Dean Nelson <dcn@sgi.com>
-> 
-> ---
-> 
->  kernel/irq/chip.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux/kernel/irq/chip.c
-> ===================================================================
-> --- linux.orig/kernel/irq/chip.c	2008-10-15 07:44:31.000000000 -0500
-> +++ linux/kernel/irq/chip.c	2008-10-16 06:55:56.000000000 -0500
-> @@ -79,6 +79,7 @@ void dynamic_irq_cleanup(unsigned int ir
->  	desc->chip_data = NULL;
->  	desc->handle_irq = handle_bad_irq;
->  	desc->chip = &no_irq_chip;
-> +	desc->name = NULL;
->  	spin_unlock_irqrestore(&desc->lock, flags);
->  }
->  
-
-Because we should work out whether this should be backported into
--stable.  And if so, how far back it should go.
-
+Where "inq_buff" is freed?
