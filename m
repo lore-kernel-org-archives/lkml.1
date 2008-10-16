@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYJPHAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYJPHJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbYJPHAR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 03:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYJPHAB
+	id S1755022AbYJPHJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 03:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYJPHJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 03:00:01 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51873 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbYJPHAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 03:00:00 -0400
-Date: Thu, 16 Oct 2008 07:59:57 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [git pull] agp patches for 2.6.28-rc1.
-Message-ID: <alpine.DEB.0.82.0810160758320.16504@skynet.skynet.ie>
+	Thu, 16 Oct 2008 03:09:13 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:44490 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752895AbYJPHJM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 03:09:12 -0400
+Date: Thu, 16 Oct 2008 09:09:07 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Hans Schou <linux@schou.dk>
+cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SiS55x, another x86 CPU
+In-Reply-To: <Pine.LNX.4.64.0810160027150.7873@sko.w0.dk>
+Message-ID: <Pine.LNX.4.64.0810160907330.25933@anakin>
+References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org>
+ <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk> <20081015100637.GS12131@one.firstfloor.org>
+ <Pine.LNX.4.64.0810152150070.25933@anakin> <Pine.LNX.4.64.0810160027150.7873@sko.w0.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 16 Oct 2008, Hans Schou wrote:
+> On Wed, 15 Oct 2008, Geert Uytterhoeven wrote:
+> > On Wed, 15 Oct 2008, Andi Kleen wrote:
+> > > > If any CR/LF in your file you must have added them yourself.
+> > > 
+> > > There were definitely CR/LFs in the patch attachment you sent.
+> > > And no my mailer doesn't add them.
+> > 
+> > Interesting. I didn't see any CR/LFs neither, after exporting the
+> > attachment to a file (I'm using pine).
+> 
+> As far as I could see, Pine does this:
+> 
+> 1. If file has not extension like: .zip .jpg .exe, see it as ASCII
+> 2. Add CR/LF to the file
+> 3. Encode file as base64
+> 
+> On reception of the file:
+> 
+> 1. Decode file as specified (in this case base64)
+> 2. If it looks like a text file, convert CR/LF to LF.
+> 
+> > However, when doing a base64 decode on the raw attachment data, the
+> > CR/LFs did pop up.
+> 
+> I think time is up for getting rid of Pine and there stupid license. I'll
+> check if "nail" can handle attachment correctly.
 
-Hi Linus,
+alpine?
 
-Please pull the 'agp-next' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-next
+But, why do you send patches as attachments in the first place?
+It's recommended to _not_ do that, for easier review.
+Pine can handle that fine since ages (I switched from elm to pine 13 or
+so years ago).
 
-This just contains some suspend/resume fixes for the SiS, Intel memory 
-sizing fix for new hw, and support for more memory types on the nvidia 
-AGP.
+Gr{oetje,eeting}s,
 
-Dave.
+						Geert
 
- drivers/char/agp/amd-k7-agp.c |   38 ++++++++++++++++++++++++++++++++------
- drivers/char/agp/intel-agp.c  |   18 ++++++++++--------
- drivers/char/agp/nvidia-agp.c |   22 ++++++++++++++++++----
- 3 files changed, 60 insertions(+), 18 deletions(-)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-commit a64d2b37c2259e169759c1701ac565f0a11dc0ea
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Wed Sep 10 14:13:33 2008 +0200
-
-    agp/nvidia: Support agp user-memory on nvidia agp.
-    
-    This adds user memory support required for TTM to the nvidia AGP driver.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 2a32c3c894bcd3b3f8cc7e23f5ecbebca4a9f8e8
-Author: Stuart Bennett <stuart@freedesktop.org>
-Date:   Tue Aug 12 15:19:18 2008 +0100
-
-    agp/amd-k7: Suspend support for AMD K7 GART driver
-    
-    Reinitialize bridge registers after suspend, but avoid repeating the ioremap
-    
-    Tested and works on AMD761
-    
-    Signed-off-by: Stuart Bennett <stuart@freedesktop.org>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 44d494417278e49f5b42bd3ded1801b6d2254db8
-Author: Keith Packard <keithp@keithp.com>
-Date:   Tue Oct 14 17:18:45 2008 -0700
-
-    agp/intel: Reduce extraneous PCI posting reads during init
-    
-    Instead of doing a posting read after each GTT entry update, do a single one
-    at the end of the writes. This should reduce boot time a tiny amount by
-    avoiding a lot of extra uncached reads.
-    
-    Signed-off-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 82e14a6215cbc9804ecc35281e973c6c8ce22fe7
-Author: Eric Anholt <eric@anholt.net>
-Date:   Tue Oct 14 11:28:58 2008 -0700
-
-    agp: Fix stolen memory counting on G4X.
-    
-    On the GM45, the amount of stolen memory mapped to the GTT was underestimated,
-    even though we had 508KB more available since the GTT doesn't take from
-    stolen memory. On the non-GM45 G4X, we overestimated how much stolen was
-    mapped to the GTT by 4KB, resulting in GPU page faults when that page was
-    accessed.
-    
-    This update requires a corresponding update to xf86-video-intel to work
-    correctly.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
