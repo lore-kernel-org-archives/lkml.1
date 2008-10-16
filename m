@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYJPRQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYJPRRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756280AbYJPRQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYJPROF
+	id S1755886AbYJPRRj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbYJPROJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:05 -0400
-Received: from kroah.org ([198.145.64.141]:46922 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:09 -0400
+Received: from kroah.org ([198.145.64.141]:46926 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756046AbYJPROD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:03 -0400
+	id S1754911AbYJPROH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:07 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 03/46] device create: block: convert device_create_drvdata to device_create
-Date: Thu, 16 Oct 2008 10:10:04 -0700
-Message-Id: <1224177047-11859-3-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Ben Collins <ben.collins@ubuntu.com>
+Subject: [PATCH 05/46] device create: ieee1394: convert device_create_drvdata to device_create
+Date: Thu, 16 Oct 2008 10:10:06 -0700
+Message-Id: <1224177047-11859-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -25,99 +25,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Now that device_create() has been audited, rename things back to the
 original call to be sane.
 
+Cc: Ben Collins <ben.collins@ubuntu.com>
+Acked-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- block/bsg.c                |    3 +--
- drivers/block/aoe/aoechr.c |    6 +++---
- drivers/block/paride/pg.c  |    5 ++---
- drivers/block/paride/pt.c  |   10 ++++------
- drivers/block/pktcdvd.c    |    5 ++---
- 5 files changed, 12 insertions(+), 17 deletions(-)
+ drivers/ieee1394/dv1394.c    |    8 ++++----
+ drivers/ieee1394/raw1394.c   |    8 ++++----
+ drivers/ieee1394/video1394.c |    5 ++---
+ 3 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/block/bsg.c b/block/bsg.c
-index 56cb343..034112b 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -1024,8 +1024,7 @@ int bsg_register_queue(struct request_queue *q, struct device *parent,
- 	bcd->release = release;
- 	kref_init(&bcd->ref);
- 	dev = MKDEV(bsg_major, bcd->minor);
--	class_dev = device_create_drvdata(bsg_class, parent, dev, NULL,
--					  "%s", devname);
-+	class_dev = device_create(bsg_class, parent, dev, NULL, "%s", devname);
- 	if (IS_ERR(class_dev)) {
- 		ret = PTR_ERR(class_dev);
- 		goto put_dev;
-diff --git a/drivers/block/aoe/aoechr.c b/drivers/block/aoe/aoechr.c
-index 1f56d2c..200efc4 100644
---- a/drivers/block/aoe/aoechr.c
-+++ b/drivers/block/aoe/aoechr.c
-@@ -284,9 +284,9 @@ aoechr_init(void)
- 		return PTR_ERR(aoe_class);
- 	}
- 	for (i = 0; i < ARRAY_SIZE(chardevs); ++i)
--		device_create_drvdata(aoe_class, NULL,
--				      MKDEV(AOE_MAJOR, chardevs[i].minor),
--				      NULL, chardevs[i].name);
-+		device_create(aoe_class, NULL,
-+			      MKDEV(AOE_MAJOR, chardevs[i].minor), NULL,
-+			      chardevs[i].name);
+diff --git a/drivers/ieee1394/dv1394.c b/drivers/ieee1394/dv1394.c
+index b6eb2cf..9236c0d 100644
+--- a/drivers/ieee1394/dv1394.c
++++ b/drivers/ieee1394/dv1394.c
+@@ -2296,10 +2296,10 @@ static void dv1394_add_host(struct hpsb_host *host)
  
- 	return 0;
+ 	ohci = (struct ti_ohci *)host->hostdata;
+ 
+-	device_create_drvdata(hpsb_protocol_class, NULL,
+-			      MKDEV(IEEE1394_MAJOR,
+-				    IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id<<2)), NULL,
+-			      "dv1394-%d", id);
++	device_create(hpsb_protocol_class, NULL,
++		      MKDEV(IEEE1394_MAJOR,
++			    IEEE1394_MINOR_BLOCK_DV1394 * 16 + (id<<2)),
++		      NULL, "dv1394-%d", id);
+ 
+ 	dv1394_init(ohci, DV1394_NTSC, MODE_RECEIVE);
+ 	dv1394_init(ohci, DV1394_NTSC, MODE_TRANSMIT);
+diff --git a/drivers/ieee1394/raw1394.c b/drivers/ieee1394/raw1394.c
+index 6fa9e4a..c7833bb 100644
+--- a/drivers/ieee1394/raw1394.c
++++ b/drivers/ieee1394/raw1394.c
+@@ -3010,10 +3010,10 @@ static int __init init_raw1394(void)
+ 	hpsb_register_highlevel(&raw1394_highlevel);
+ 
+ 	if (IS_ERR
+-	    (device_create_drvdata(
+-	      hpsb_protocol_class, NULL,
+-	      MKDEV(IEEE1394_MAJOR, IEEE1394_MINOR_BLOCK_RAW1394 * 16),
+-	      NULL, RAW1394_DEVICE_NAME))) {
++	    (device_create(hpsb_protocol_class, NULL,
++			   MKDEV(IEEE1394_MAJOR,
++				 IEEE1394_MINOR_BLOCK_RAW1394 * 16),
++			   NULL, RAW1394_DEVICE_NAME))) {
+ 		ret = -EFAULT;
+ 		goto out_unreg;
+ 	}
+diff --git a/drivers/ieee1394/video1394.c b/drivers/ieee1394/video1394.c
+index 25db6e6..6e73b06 100644
+--- a/drivers/ieee1394/video1394.c
++++ b/drivers/ieee1394/video1394.c
+@@ -1341,9 +1341,8 @@ static void video1394_add_host (struct hpsb_host *host)
+ 	hpsb_set_hostinfo_key(&video1394_highlevel, host, ohci->host->id);
+ 
+ 	minor = IEEE1394_MINOR_BLOCK_VIDEO1394 * 16 + ohci->host->id;
+-	device_create_drvdata(hpsb_protocol_class, NULL,
+-			      MKDEV(IEEE1394_MAJOR, minor), NULL,
+-			      "%s-%d", VIDEO1394_DRIVER_NAME, ohci->host->id);
++	device_create(hpsb_protocol_class, NULL, MKDEV(IEEE1394_MAJOR, minor),
++		      NULL, "%s-%d", VIDEO1394_DRIVER_NAME, ohci->host->id);
  }
-diff --git a/drivers/block/paride/pg.c b/drivers/block/paride/pg.c
-index d731ca4..9dfa271 100644
---- a/drivers/block/paride/pg.c
-+++ b/drivers/block/paride/pg.c
-@@ -686,9 +686,8 @@ static int __init pg_init(void)
- 	for (unit = 0; unit < PG_UNITS; unit++) {
- 		struct pg *dev = &devices[unit];
- 		if (dev->present)
--			device_create_drvdata(pg_class, NULL,
--					      MKDEV(major, unit), NULL,
--					      "pg%u", unit);
-+			device_create(pg_class, NULL, MKDEV(major, unit), NULL,
-+				      "pg%u", unit);
- 	}
- 	err = 0;
- 	goto out;
-diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
-index 673b8b2..5ae2296 100644
---- a/drivers/block/paride/pt.c
-+++ b/drivers/block/paride/pt.c
-@@ -979,12 +979,10 @@ static int __init pt_init(void)
  
- 	for (unit = 0; unit < PT_UNITS; unit++)
- 		if (pt[unit].present) {
--			device_create_drvdata(pt_class, NULL,
--					      MKDEV(major, unit), NULL,
--					      "pt%d", unit);
--			device_create_drvdata(pt_class, NULL,
--					      MKDEV(major, unit + 128), NULL,
--					      "pt%dn", unit);
-+			device_create(pt_class, NULL, MKDEV(major, unit), NULL,
-+				      "pt%d", unit);
-+			device_create(pt_class, NULL, MKDEV(major, unit + 128),
-+				      NULL, "pt%dn", unit);
- 		}
- 	goto out;
  
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index 0e07715..195ca7c 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -302,9 +302,8 @@ static struct kobj_type kobj_pkt_type_wqueue = {
- static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
- {
- 	if (class_pktcdvd) {
--		pd->dev = device_create_drvdata(class_pktcdvd, NULL,
--						pd->pkt_dev, NULL,
--						"%s", pd->name);
-+		pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, NULL,
-+					"%s", pd->name);
- 		if (IS_ERR(pd->dev))
- 			pd->dev = NULL;
- 	}
 -- 
 1.6.0.2
 
