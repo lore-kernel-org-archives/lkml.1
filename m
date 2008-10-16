@@ -1,105 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYJPTbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbYJPTbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYJPTbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYJPTbP
+	id S1756967AbYJPTbj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757810AbYJPTbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:31:15 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:39016 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751886AbYJPTbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:31:14 -0400
-Date: Thu, 16 Oct 2008 22:31:03 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Jiri Kosina <jkosina@suse.cz>,
-       zippel@linux-m68k.org, sam@ravnborg.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: select validation (was: Re: [2.6 patch] HID: fix default
-	building of all quirky devices)
-Message-ID: <20081016193103.GC22554@cs181140183.pp.htv.fi>
-References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz> <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org> <Pine.LNX.4.64.0810161002240.25933@anakin> <alpine.LFD.2.00.0810161133150.3288@nehalem.linux-foundation.org>
+	Thu, 16 Oct 2008 15:31:19 -0400
+Received: from piggy.rz.tu-ilmenau.de ([141.24.4.8]:50855 "EHLO
+	piggy.rz.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756792AbYJPTbS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 15:31:18 -0400
+Date: Thu, 16 Oct 2008 21:31:13 +0200
+From: "Mario 'BitKoenig' Holbe" <Mario.Holbe@TU-Ilmenau.DE>
+To: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: bttv: video grabbing via v4l1 does not work since 2.6.25
+Message-ID: <20081016193113.GA7015@darkside.22.kls.lan>
+Mail-Followup-To: Mario 'BitKoenig' Holbe <Mario.Holbe@TU-Ilmenau.DE>,
+	video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+References: <20080804111654.GA14074@darkside.22.kls.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810161133150.3288@nehalem.linux-foundation.org>
+In-Reply-To: <20080804111654.GA14074@darkside.22.kls.lan>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 11:47:55AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 16 Oct 2008, Geert Uytterhoeven wrote:
-> > 
-> > Would it be possible for kconfig to check for invalid usage of select?
-> > 
-> > Like you should not use select to enable something that has
-> > dependencies. However, that would fail in case both the selector option
-> > and the selected option depend on the same.
-> 
-> Well, at least in theory you may actually want to select something that 
-> has dependencies, even if you don't want to select the dependencies.
-> 
-> For example, some feature may be enabled by default on some architecture 
-> or with some config. Example:
-> 
-> 	bool SUPPORT_FEATURE
-> 		default y
-> 		depends on EXPERIMENTAL
-> 		depends on !EMBEDDED
-> 		depends on X86
-> 
-> which is just another way of saying
-> 
-> 	bool SUPPORT_FEATURE
-> 		default X86 && !EMBEDDED && EXPERIMENTAL
 
-Such constructs without a prompt are for a different usecase than what 
-you have in mind, there wouldn't be EXPERIMENTAL or EMBEDDED in the 
-dependencies, this is used for stuff like
+--RnlQjJ0d97Da+TV1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-config X86_HT
-        bool
-        depends on SMP
-        depends on (X86_32 && !X86_VOYAGER) || X86_64
-        default y
+Hello again,
 
-And that's usually not the kind of symbol that should get selected.
+even though I doubt somebody cares, I tried to collect some more
+information in the vague hope to get previously working features back,
+maybe in two years or three...
+
+On Mon, Aug 04, 2008 at 01:16:54PM +0200, Mario 'BitKoenig' Holbe wrote:
+> with 2.6.25 bttv video grabbing via vlc stopped working.
+> vlc is stable version 0.8.6.h which uses v4l(1) interface only.
+> Up to 2.6.24 everything was working well.
+
+With the release of vlc 0.9 I can confirm that grabbing over V4L2 works,
+V4L, of course, is still broken.
+
+> Please also note the changed vlc device recognition from "1 audios" to
+> "0 audios" in .26.
+
+The reason for this is probably that the volume control disappeared
+(which was there and working in .24, of course). mute, balance, bass and
+trebble controls are still there and working in .26 and to some extent
+the driver seems to have some knowledge about a "volume" as well, as
+v4l2-dbg --log-status shows. And some applications are somehow able to
+set it to 0 from time to time - re-adjusting it is quite hard without
+the volume control mentioned above.
 
 
-In reality your example would be:
+Mario
+--=20
+Doing it right is no excuse for not meeting the schedule.
+                                -- Plant Manager, Delphi Corporation
 
-config SUPPORT_FEATURE
-        bool "support feature" if EMBEDDED
-        default y
-        depends on X86 && EXPERIMENTAL
+--RnlQjJ0d97Da+TV1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> and it's still possible that some code wants to do a
-> 
-> 	select SUPPORT_FEATURE
-> 
-> because the dependency isn't a _code_ dependency, it's a default-value 
-> dependency.
->...
+iQEVAwUBSPeWgRS+e2HeSPbpAQKregf/UCYwCWtnDmgcrN/q4AvqQObZb08jMjQH
+yl3JXFnW11At1r4aB76cmHcYRxQxbfKg6uoDwu7Nv7nrWRuAsaV9BWnPVrM//JD5
+DnN7nUrF2hBxC8DQ4Nr60UfpqDN1pyLS87Xd2//3vpDF0Cq02/1A8IXHH8pgXjsk
+1EG/kVDDgDU0gViMK2TTHbxWINs6yUwSIvYJ/MlGxsaa5R4Xll4nMpxjMi9IA56/
+2slChSw2N4c3CeZWgtKKhnbOe6fAl6aIQ1wN3hzOSdebN67jfPo9QW7ON3EDyqpb
+8ZzyFOABTbG9fah7Ls9LvJgZSf6iFaAxM5Xi3xByje1EATYP6UTVxg==
+=IBQX
+-----END PGP SIGNATURE-----
 
-I'd be more concerned about dependencies that are used to make the 
-kconfig UI better.
-
-Dependencies on options like NETDEV_1000 are not code dependencies.
-
-> 		Linus
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--RnlQjJ0d97Da+TV1--
