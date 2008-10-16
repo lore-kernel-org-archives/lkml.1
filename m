@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbYJPRq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYJPRtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbYJPRq4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757412AbYJPRpX
+	id S1755909AbYJPRtq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYJPRti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:45:23 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:20082 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758565AbYJPRpU (ORCPT
+	Thu, 16 Oct 2008 13:49:38 -0400
+Received: from mail-in-03.arcor-online.net ([151.189.21.43]:40985 "EHLO
+	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752187AbYJPRth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:45:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=Rn2BjQEaryY4RrJydgI9o0M3MnKiz9XIAKxf/3M5pCkFRwGt6AAPPY1ozPu5dMWgiw
-         pZx9wkJlcRu+IbE5waE/WTJRQ3mNATHzVHNxf3bAJYayfQP2BcuBzQqi3wrPRSCiaJCe
-         r6tACSDDivBxqsEfb92aNOBoyFntSNXoe1jXM=
-From: Bryan Wu <cooloney@kernel.org>
-To: alan@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 8/9] Blackfin Serial Driver: fix a in dma circle rx buffer handling
-Date: Fri, 17 Oct 2008 01:44:06 +0800
-Message-Id: <1224179047-13073-9-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1224179047-13073-1-git-send-email-cooloney@kernel.org>
-References: <1224179047-13073-1-git-send-email-cooloney@kernel.org>
+	Thu, 16 Oct 2008 13:49:37 -0400
+Date: Thu, 16 Oct 2008 20:00:31 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Use PC-BIOS NUMLOCK flag
+In-Reply-To: <20081016143856.GD5071@const.bordeaux.inria.fr>
+Message-ID: <alpine.LSU.0.999.0810161958450.5051@be1.lrz>
+References: <alpine.LSU.0.999.0810161358540.5404@be1.lrz>
+ <20081016143856.GD5071@const.bordeaux.inria.fr>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1389964400-1224180031=:5051"
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Reported-by: Qian Zhang <zhangq@sansitech.com>
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/serial/bfin_5xx.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+--8323584-1389964400-1224180031=:5051
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 350bfc4..1e027e3 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -402,9 +402,11 @@ static void bfin_serial_dma_rx_chars(struct bfin_serial_port *uart)
- 	else
- 		flg = TTY_NORMAL;
- 
--	for (i = uart->rx_dma_buf.tail; i != uart->rx_dma_buf.head; i++) {
-+	for (i = uart->rx_dma_buf.tail; ; i++) {
- 		if (i >= UART_XMIT_SIZE)
- 			i = 0;
-+		if (i == uart->rx_dma_buf.head)
-+			break;
- 		if (!uart_handle_sysrq_char(&uart->port, uart->rx_dma_buf.buf[i]))
- 			uart_insert_char(&uart->port, status, OE,
- 				uart->rx_dma_buf.buf[i], flg);
--- 
-1.5.6
+On Thu, 16 Oct 2008, Samuel Thibault wrote:
+> Bodo Eggert, le Thu 16 Oct 2008 13:59:49 +0200, a =E9crit :
 
+> > +=09  If you have an alternative firmware like OpenFirmware or LinuxBio=
+s,
+> > +=09  this flag might not be set correctly, which results in a random s=
+tate
+> > +=09  of the Numlock key.
+>=20
+> That's an issue. That means that distributions will just not enable,
+> and thus the flag is not really useful, since people who would
+> compile their own kernel would very likely have already setup their
+> initialization scripts into calling setleds +num (or just set LEDS=3D+num
+> in /etc/console-tools/config on a debian machine).
+
+I hope somebody will pop up and say "Hey, those will create an IBM PC data=
+=20
+area, because they run DOS" ...
+--=20
+"Try to look unimportant; they may be low on ammo."
+-Infantry Journal
+--8323584-1389964400-1224180031=:5051--
