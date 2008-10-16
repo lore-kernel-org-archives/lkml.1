@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbYJPSCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYJPSCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbYJPSCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbYJPSAm
+	id S1756542AbYJPSCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbYJPSAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:00:42 -0400
-Received: from mx2.suse.de ([195.135.220.15]:46743 "EHLO mx2.suse.de"
+	Thu, 16 Oct 2008 14:00:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:46768 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755679AbYJPSAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:00:40 -0400
-Date: Thu, 16 Oct 2008 10:56:32 -0700
+	id S1754146AbYJPSAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:00:44 -0400
+Date: Thu, 16 Oct 2008 10:56:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
-       Steve French <sfrench@us.ibm.com>
-Subject: [patch 06/14] CIFS: make sure we have the right resume info before
-	calling CIFSFindNext
-Message-ID: <20081016175632.GG12850@suse.de>
+       alan@lxorguk.ukuu.org.uk, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 07/14] rfkill: update LEDs for all state changes
+Message-ID: <20081016175635.GH12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-make-sure-we-have-the-right-resume-info-before-calling-cifsfindnext.patch"
+Content-Disposition: inline; filename="rfkill-update-leds-for-all-state-changes.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,213 +41,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Steve French <sfrench@us.ibm.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit 0752f1522a9120f731232919f7ad904e9e22b8ce upstream
+commit 417bd25ac4c6f76c8aafe8a584f3620f4a936b72 upstream
 
-When we do a seekdir() or equivalent, we usually end up doing a
-FindFirst call and then call FindNext until we get to the offset that we
-want. The problem is that when we call FindNext, the code usually
-doesn't have the proper info (mostly, the filename of the entry from the
-last search) to resume the search.
+The LED state was not being updated by rfkill_force_state(), which
+will cause regressions in wireless drivers that had old-style rfkill
+support and are updated to use rfkill_force_state().
 
-Add a "last_entry" field to the cifs_search_info that points to the last
-entry in the search. We calculate this pointer by using the
-LastNameOffset field from the search parms that are returned. We then
-use that info to do a cifs_save_resume_key before we call CIFSFindNext.
+The LED state was not being updated when a change was detected through
+the rfkill->get_state() hook, either.
 
-This patch allows CIFS to reliably pass the "telldir" connectathon test.
+Move the LED trigger update calls into notify_rfkill_state_change(),
+where it should have been in the first place.  This takes care of both
+issues above.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/cifsglob.h |    1 
- fs/cifs/cifssmb.c  |    4 +
- fs/cifs/readdir.c  |  128 ++++++++++++++++++++++++++---------------------------
- 3 files changed, 70 insertions(+), 63 deletions(-)
+ net/rfkill/rfkill.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- a/fs/cifs/cifsglob.h
-+++ b/fs/cifs/cifsglob.h
-@@ -309,6 +309,7 @@ struct cifs_search_info {
- 	__u32 resume_key;
- 	char *ntwrk_buf_start;
- 	char *srch_entries_start;
-+	char *last_entry;
- 	char *presume_name;
- 	unsigned int resume_name_len;
- 	bool endOfSearch:1;
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -3636,6 +3636,8 @@ findFirstRetry:
- 					le16_to_cpu(parms->SearchCount);
- 			psrch_inf->index_of_last_entry = 2 /* skip . and .. */ +
- 				psrch_inf->entries_in_buffer;
-+			psrch_inf->last_entry = psrch_inf->srch_entries_start +
-+					le16_to_cpu(parms->LastNameOffset);
- 			*pnetfid = parms->SearchHandle;
- 		} else {
- 			cifs_buf_release(pSMB);
-@@ -3751,6 +3753,8 @@ int CIFSFindNext(const int xid, struct c
- 						le16_to_cpu(parms->SearchCount);
- 			psrch_inf->index_of_last_entry +=
- 				psrch_inf->entries_in_buffer;
-+			psrch_inf->last_entry = psrch_inf->srch_entries_start +
-+					le16_to_cpu(parms->LastNameOffset);
- /*  cFYI(1,("fnxt2 entries in buf %d index_of_last %d",
- 	    psrch_inf->entries_in_buffer, psrch_inf->index_of_last_entry)); */
+--- a/net/rfkill/rfkill.c
++++ b/net/rfkill/rfkill.c
+@@ -117,6 +117,7 @@ static void rfkill_led_trigger_activate(
  
---- a/fs/cifs/readdir.c
-+++ b/fs/cifs/readdir.c
-@@ -640,6 +640,70 @@ static int is_dir_changed(struct file *f
- 
- }
- 
-+static int cifs_save_resume_key(const char *current_entry,
-+	struct cifsFileInfo *cifsFile)
-+{
-+	int rc = 0;
-+	unsigned int len = 0;
-+	__u16 level;
-+	char *filename;
-+
-+	if ((cifsFile == NULL) || (current_entry == NULL))
-+		return -EINVAL;
-+
-+	level = cifsFile->srch_inf.info_level;
-+
-+	if (level == SMB_FIND_FILE_UNIX) {
-+		FILE_UNIX_INFO *pFindData = (FILE_UNIX_INFO *)current_entry;
-+
-+		filename = &pFindData->FileName[0];
-+		if (cifsFile->srch_inf.unicode) {
-+			len = cifs_unicode_bytelen(filename);
-+		} else {
-+			/* BB should we make this strnlen of PATH_MAX? */
-+			len = strnlen(filename, PATH_MAX);
-+		}
-+		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
-+	} else if (level == SMB_FIND_FILE_DIRECTORY_INFO) {
-+		FILE_DIRECTORY_INFO *pFindData =
-+			(FILE_DIRECTORY_INFO *)current_entry;
-+		filename = &pFindData->FileName[0];
-+		len = le32_to_cpu(pFindData->FileNameLength);
-+		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
-+	} else if (level == SMB_FIND_FILE_FULL_DIRECTORY_INFO) {
-+		FILE_FULL_DIRECTORY_INFO *pFindData =
-+			(FILE_FULL_DIRECTORY_INFO *)current_entry;
-+		filename = &pFindData->FileName[0];
-+		len = le32_to_cpu(pFindData->FileNameLength);
-+		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
-+	} else if (level == SMB_FIND_FILE_ID_FULL_DIR_INFO) {
-+		SEARCH_ID_FULL_DIR_INFO *pFindData =
-+			(SEARCH_ID_FULL_DIR_INFO *)current_entry;
-+		filename = &pFindData->FileName[0];
-+		len = le32_to_cpu(pFindData->FileNameLength);
-+		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
-+	} else if (level == SMB_FIND_FILE_BOTH_DIRECTORY_INFO) {
-+		FILE_BOTH_DIRECTORY_INFO *pFindData =
-+			(FILE_BOTH_DIRECTORY_INFO *)current_entry;
-+		filename = &pFindData->FileName[0];
-+		len = le32_to_cpu(pFindData->FileNameLength);
-+		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
-+	} else if (level == SMB_FIND_FILE_INFO_STANDARD) {
-+		FIND_FILE_STANDARD_INFO *pFindData =
-+			(FIND_FILE_STANDARD_INFO *)current_entry;
-+		filename = &pFindData->FileName[0];
-+		/* one byte length, no name conversion */
-+		len = (unsigned int)pFindData->FileNameLength;
-+		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
-+	} else {
-+		cFYI(1, ("Unknown findfirst level %d", level));
-+		return -EINVAL;
-+	}
-+	cifsFile->srch_inf.resume_name_len = len;
-+	cifsFile->srch_inf.presume_name = filename;
-+	return rc;
-+}
-+
- /* find the corresponding entry in the search */
- /* Note that the SMB server returns search entries for . and .. which
-    complicates logic here if we choose to parse for them and we do not
-@@ -703,6 +767,7 @@ static int find_cifs_entry(const int xid
- 	while ((index_to_find >= cifsFile->srch_inf.index_of_last_entry) &&
- 	      (rc == 0) && !cifsFile->srch_inf.endOfSearch) {
- 		cFYI(1, ("calling findnext2"));
-+		cifs_save_resume_key(cifsFile->srch_inf.last_entry, cifsFile);
- 		rc = CIFSFindNext(xid, pTcon, cifsFile->netfid,
- 				  &cifsFile->srch_inf);
- 		if (rc)
-@@ -919,69 +984,6 @@ static int cifs_filldir(char *pfindEntry
- 	return rc;
- }
- 
--static int cifs_save_resume_key(const char *current_entry,
--	struct cifsFileInfo *cifsFile)
--{
--	int rc = 0;
--	unsigned int len = 0;
--	__u16 level;
--	char *filename;
--
--	if ((cifsFile == NULL) || (current_entry == NULL))
--		return -EINVAL;
--
--	level = cifsFile->srch_inf.info_level;
--
--	if (level == SMB_FIND_FILE_UNIX) {
--		FILE_UNIX_INFO *pFindData = (FILE_UNIX_INFO *)current_entry;
--
--		filename = &pFindData->FileName[0];
--		if (cifsFile->srch_inf.unicode) {
--			len = cifs_unicode_bytelen(filename);
--		} else {
--			/* BB should we make this strnlen of PATH_MAX? */
--			len = strnlen(filename, PATH_MAX);
--		}
--		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
--	} else if (level == SMB_FIND_FILE_DIRECTORY_INFO) {
--		FILE_DIRECTORY_INFO *pFindData =
--			(FILE_DIRECTORY_INFO *)current_entry;
--		filename = &pFindData->FileName[0];
--		len = le32_to_cpu(pFindData->FileNameLength);
--		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
--	} else if (level == SMB_FIND_FILE_FULL_DIRECTORY_INFO) {
--		FILE_FULL_DIRECTORY_INFO *pFindData =
--			(FILE_FULL_DIRECTORY_INFO *)current_entry;
--		filename = &pFindData->FileName[0];
--		len = le32_to_cpu(pFindData->FileNameLength);
--		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
--	} else if (level == SMB_FIND_FILE_ID_FULL_DIR_INFO) {
--		SEARCH_ID_FULL_DIR_INFO *pFindData =
--			(SEARCH_ID_FULL_DIR_INFO *)current_entry;
--		filename = &pFindData->FileName[0];
--		len = le32_to_cpu(pFindData->FileNameLength);
--		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
--	} else if (level == SMB_FIND_FILE_BOTH_DIRECTORY_INFO) {
--		FILE_BOTH_DIRECTORY_INFO *pFindData =
--			(FILE_BOTH_DIRECTORY_INFO *)current_entry;
--		filename = &pFindData->FileName[0];
--		len = le32_to_cpu(pFindData->FileNameLength);
--		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
--	} else if (level == SMB_FIND_FILE_INFO_STANDARD) {
--		FIND_FILE_STANDARD_INFO *pFindData =
--			(FIND_FILE_STANDARD_INFO *)current_entry;
--		filename = &pFindData->FileName[0];
--		/* one byte length, no name conversion */
--		len = (unsigned int)pFindData->FileNameLength;
--		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
--	} else {
--		cFYI(1, ("Unknown findfirst level %d", level));
--		return -EINVAL;
--	}
--	cifsFile->srch_inf.resume_name_len = len;
--	cifsFile->srch_inf.presume_name = filename;
--	return rc;
--}
- 
- int cifs_readdir(struct file *file, void *direntry, filldir_t filldir)
+ static void notify_rfkill_state_change(struct rfkill *rfkill)
  {
++	rfkill_led_trigger(rfkill, rfkill->state);
+ 	blocking_notifier_call_chain(&rfkill_notifier_list,
+ 			RFKILL_STATE_CHANGED,
+ 			rfkill);
+@@ -204,10 +205,8 @@ static int rfkill_toggle_radio(struct rf
+ 			rfkill->state = state;
+ 	}
+ 
+-	if (force || rfkill->state != oldstate) {
+-		rfkill_led_trigger(rfkill, rfkill->state);
++	if (force || rfkill->state != oldstate)
+ 		notify_rfkill_state_change(rfkill);
+-	}
+ 
+ 	return retval;
+ }
 
 -- 
