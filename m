@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbYJPOiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYJPOi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbYJPOiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 10:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYJPOhz
+	id S1755977AbYJPOi4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 10:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYJPOiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 10:37:55 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:46250 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753924AbYJPOhy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:37:54 -0400
-X-BigFish: VPS-36(z21eWz1432R98dR936eQ1805M179dRzzzzz32i6bh87il43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K8U5YP-01-511-01
-Date: Thu, 16 Oct 2008 08:39:10 -0600
-From: Jordan Crouse <jordan.crouse@amd.com>
-To: Dmitry Antipov <dmantipov@yandex.ru>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27: 0 MHz CPU and wrong system time on AMD Geode system
-Message-ID: <20081016143910.GF19397@cosmic.amd.com>
-References: <414861224052797@webmail58.yandex.ru> <20081015162143.GA19397@cosmic.amd.com> <48F725FF.6000709@yandex.ru>
+	Thu, 16 Oct 2008 10:38:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58560 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753893AbYJPOip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 10:38:45 -0400
+Message-ID: <48F751E9.8070705@redhat.com>
+Date: Thu, 16 Oct 2008 09:38:33 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <48F725FF.6000709@yandex.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 16 Oct 2008 14:37:42.0279 (UTC) FILETIME=[BF029170:01C92F9C]
+To: Pascal Terjan <pterjan@mandriva.com>
+CC: Andrey Borzenkov <arvidjaar@mail.ru>, pterjan@mandriva.org,
+       linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Possible ext3 corruption with 1K block size
+References: <200810150724.42180.arvidjaar@mail.ru>	 <48F5E6D4.8080603@redhat.com> <200810151824.36119.arvidjaar@mail.ru>	 <48F601A5.1050405@redhat.com> <1224164860.11578.14.camel@plop>
+In-Reply-To: <1224164860.11578.14.camel@plop>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/10/08 15:31 +0400, Dmitry Antipov wrote:
-> Jordan Crouse wrote:
+Pascal Terjan wrote:
+> Le mercredi 15 octobre 2008 à 09:43 -0500, Eric Sandeen a écrit :
+>> Andrey Borzenkov wrote:
+>>> On Wednesday 15 October 2008, Eric Sandeen wrote:
+>>
+>>>> My kingdom for a testcase... does anyone have simple steps to reproduce
+>>>> this?  Or do they all start with "install mandriva on a 1k block size
+>>>> system?"  :)
+>>>>
+>>> May be RH will do? :)
+>> I did try a 1k-block root fs Fedora install, and didn't see any problems...
+>>
+>>> As indicated by last comment, Pascal has some ways to trigger it; I
+>>> forgot to Cc to him initially; doing it now.
+>> Ok, good deal.
+>>
 > 
-> > Hmmm - this is an interesting regression.  Please remove
-> > CONFIG_GEODE_MFGPT_TIMER=y from your 2.6.27 kernel and see if the
-> > problem goes away. 
+> On my test machine I reproduce it easily : rpm --rebuilddb and if the db
+> is not detected to be corrupted yet it will be after installing a few
+> packages (tested again with 2.6.27).
 > 
-> Unfortunately it doesn't help.
+> If I do the rebuilddb on a 2.6.17 and then reboot on a recent kernel,
+> then I can install/uninstall thousands of packages without any
+> corruption.
 
-Okay - that has been the reason for breakage in the past, so you can't
-blame me for trying. :)
+so it seems to be the database rebuilding, under a recent kernel, which
+causes the problem?  installing under a recent kernel is ok, as long as
+the db was created on an older kernel?
 
-Could you try a 2.6.26 kernel?  That will confirm that this is a new
-addition to 2.6.27.
+Ok that's a good clue...
 
-> > I have been running 2.6.26.5 on my system with no problems, but I'm
->  > embarrassed to admit that I haven't run anything newer in a while.
-> 
-> What system do you have?
-
-I have a wide variety of platforms available.  The good (or bad?) thing
-about Geode is that the hardware generally looks the same, give or take
-a superIO here and there.  If this is really a problem with the PIT or
-TSC, then it should break easily.
-
-Jordan
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
+-Eric
