@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbYJPRgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYJPRka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbYJPRgZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYJPRgP
+	id S1756428AbYJPRka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYJPRkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:36:15 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:21079 "EHLO
+	Thu, 16 Oct 2008 13:40:18 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:21421 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbYJPRgN (ORCPT
+	with ESMTP id S1752536AbYJPRkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:36:13 -0400
+	Thu, 16 Oct 2008 13:40:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=khQSIEMQ8tpiRezMmeZ5lAQsdXiryeYEXeaNcNnSa5e90DVW+PF0+oR7BNVEIECKrT
-         XecyHsvXTdXZIeerOZRRHxKs8+GHyjUByFvQBgrgGaUXhHQ8awRpWMTkyKHQn7Vhy29L
-         cB8EyluiA87lukm24v7L4DEUkujuUK3zYf/oI=
+        b=aZIafE8vjk5Lz5xHpzEhvQ+mX0xhMdS5g3nfSJSIVupx4MArJOWrh5HUMgtSjaNADL
+         ylqyWHDEc+3ZbP4B2tsm1/cTalGWpqAs4N/yT8UHR/FNMHmUcugKoc2PJCPYqi3w/U/V
+         PA0dfCAYOPXVBvtqfoozs9Ye/IBK2MzrshwyA=
 From: Bryan Wu <cooloney@kernel.org>
-To: linux@dominikbrodowski.net
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] cpu-freq/Documentation: Add Blackfin to list of supported processors
-Date: Fri, 17 Oct 2008 01:36:43 +0800
-Message-Id: <1224178603-12070-1-git-send-email-cooloney@kernel.org>
+To: ben@simtec.co.uk, davem@davemloft.net, vapier.adi@gmail.com,
+       shemminger@vyatta.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] netdev: DM9000: remove BLACKFIN hacking in DM9000 netdev driver
+Date: Fri, 17 Oct 2008 01:40:44 +0800
+Message-Id: <1224178844-12496-1-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Getz <rgetz@blackfin.uclinux.org>
+remove integer casting in the read/write IO accessors,
+because Blackfin now provides those functions
 
-Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+Tested-by: Javier Herrero <jherrero@hvsistemas.es>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- Documentation/cpu-freq/user-guide.txt |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/net/dm9000.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
-index 6c442d8..4f3f384 100644
---- a/Documentation/cpu-freq/user-guide.txt
-+++ b/Documentation/cpu-freq/user-guide.txt
-@@ -23,6 +23,7 @@ Contents:
- 1.3 sparc64
- 1.4 ppc
- 1.5 SuperH
-+1.6 Blackfin
+diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
+index f42c23f..5a9083e 100644
+--- a/drivers/net/dm9000.c
++++ b/drivers/net/dm9000.c
+@@ -47,15 +47,6 @@
+ #define CARDNAME	"dm9000"
+ #define DRV_VERSION	"1.31"
  
- 2. "Policy" / "Governor"?
- 2.1 Policy
-@@ -97,6 +98,17 @@ The following SuperH processors are supported by cpufreq:
- SH-3
- SH-4
- 
-+1.6 Blackfin
-+------------
-+
-+The following Blackfin processors are supported by cpufreq:
-+
-+BF522, BF523, BF524, BF525, BF526, BF527, Rev 0.1 or higher
-+BF531, BF532, BF533, Rev 0.3 or higher
-+BF534, BF536, BF537, Rev 0.2 or higher
-+BF561, Rev 0.3 or higher
-+BF542, BF544, BF547, BF548, BF549, Rev 0.1 or higher
-+
- 
- 2. "Policy" / "Governor" ?
- ==========================
+-#ifdef CONFIG_BLACKFIN
+-#define readsb	insb
+-#define readsw	insw
+-#define readsl	insl
+-#define writesb	outsb
+-#define writesw	outsw
+-#define writesl	outsl
+-#endif
+-
+ /*
+  * Transmit timeout, default 5 seconds.
+  */
 -- 
 1.5.6
 
