@@ -1,128 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYJPWaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbYJPWae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbYJPWaH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYJPW3x
+	id S1757572AbYJPWae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756964AbYJPWaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:29:53 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:7244 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754924AbYJPW3w (ORCPT
+	Thu, 16 Oct 2008 18:30:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34456 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756415AbYJPWaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:29:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nkYFbrhvnypcVFTWVsuLT4zruSx3O91PZl5HTcnooIGG5c7gkz/yAnJ2f7ZBmJGZKf
-         4tQYOf2TU+gD26Q4KGx1vioZ7lV7joVRldgGe0dnOYCODW/Dep7Pjr2S4PKBxjVEM6oD
-         4ToAH6DHwJEO82t/klCh3k44ltdMI/pCuE4jY=
-Date: Fri, 17 Oct 2008 02:32:51 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH 2/2] cciss: fix regression in procfs display fw
-	version, obsoletes previous patch 2 of 2
-Message-ID: <20081016223251.GA10270@x200.localdomain>
-References: <20081016215016.GB25704@roadking.ldev.net> <20081016145642.2ba2adba.akpm@linux-foundation.org> <0F5B06BAB751E047AB5C87D1F77A77884C019B4CBE@GVW0547EXC.americas.hpqcorp.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77884C019B4CBE@GVW0547EXC.americas.hpqcorp.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Oct 2008 18:30:13 -0400
+Date: Thu, 16 Oct 2008 15:29:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       hirofumi@mail.parknet.co.jp, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH vfs-2.6 6/6] vfs: add LOOKUP_RENAME_TARGET intent
+Message-Id: <20081016152933.ec52ceba.akpm@linux-foundation.org>
+In-Reply-To: <11d623e93e848f673b5620397.ps@mail.parknet.co.jp>
+References: <e86c95d83e848f673b3120397.ps@mail.parknet.co.jp>
+	<ef1e4d933e848f673b4220397.ps@mail.parknet.co.jp>
+	<4e71a4b03e848f673b4320397.ps@mail.parknet.co.jp>
+	<f5d2a7043e848f673b5420397.ps@mail.parknet.co.jp>
+	<e8c7efff3e848f673b5520397.ps@mail.parknet.co.jp>
+	<11d623e93e848f673b5620397.ps@mail.parknet.co.jp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 10:21:22PM +0000, Miller, Mike (OS Dev) wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> > Sent: Thursday, October 16, 2008 4:57 PM
-> > To: Miller, Mike (OS Dev)
-> > Cc: JensAxboejens.axboe@oracle.com;
-> > linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
-> > Subject: Re: [PATCH 2/2] cciss: fix regression in procfs
-> > display fw version, obsoletes previous patch 2 of 2
-> >
-> > On Thu, 16 Oct 2008 16:50:16 -0500
-> > Mike Miller <mike.miller@hp.com> wrote:
-> >
-> > >
-> > > Patch 2 of 2
-> > >
-> > > This patch obsoletes patch 2/2 from yesterday. It fixes a
-> > regression
-> > > in procfs where the controller firmware version is not
-> > displayed. The
-> > > previous patch also addressed the problem but the code
-> > would be called
-> > > whenever anything changed on the array such as the number
-> > of logical volumes, etc.
-> > > This patch only gets called once for each controller.
-> > > Please consider this for inclusion.
-> > >
-> >
-> > Again, this description doesn't contain enough information
-> > for us to work out which kernels need patching.
-> >
-> > >
-> > > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c index
-> > > 0f367b1..efa5414 100644
-> > > --- a/drivers/block/cciss.c
-> > > +++ b/drivers/block/cciss.c
-> > > @@ -3404,7 +3404,8 @@ static int __devinit
-> > cciss_init_one(struct pci_dev *pdev,
-> > >       int i;
-> > >       int j = 0;
-> > >       int rc;
-> > > -     int dac;
-> > > +     int dac, return_code;
-> > > +     InquiryData_struct *inq_buff = NULL;
-> >
-> > This initialisation is not needed.
-> >
-> > >       i = alloc_cciss_hba();
-> > >       if (i < 0)
-> > > @@ -3510,6 +3511,25 @@ static int __devinit
-> > cciss_init_one(struct pci_dev *pdev,
-> > >       /* Turn the interrupts on so we can service requests */
-> > >       hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
-> > >
-> > > +     /* Get the firmware version */
-> > > +     inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
-> > > +        if (inq_buff == NULL) {
-> > > +                printk(KERN_ERR "cciss: out of memory\n");
-> >
-> > Whitespace is all screwed up.
-> >
-> > > +                return ENOMEM;
-> >
-> > Should be -ENOMEM.
-> >
-> > > +        }
-> > > +
-> > > +     return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
-> > > +             sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
-> > > +     if (return_code == IO_OK) {
-> > > +             hba[i]->firm_ver[0] = inq_buff->data_byte[32];
-> > > +             hba[i]->firm_ver[1] = inq_buff->data_byte[33];
-> > > +             hba[i]->firm_ver[2] = inq_buff->data_byte[34];
-> > > +             hba[i]->firm_ver[3] = inq_buff->data_byte[35];
-> > > +     } else {         /* send command failed */
-> > > +             printk(KERN_WARNING "cciss: unable to
-> > determine firmware"
-> > > +                     " version of controller\n");
-> > > +     }
-> > > +
-> > >       cciss_procinit(i);
-> > >
-> > >       hba[i]->cciss_max_sectors = 2048;
-> 
-> Sorry, in too much of a hurry. I'll fix (again).
 
-And inq_buff is leaked, if I'm not missing simething.
+I put these six patches into my tree for sending to Al when he
+resurfaces.
+
+We're near the end of the merge window and a lot of trees (including
+git-vfs) have a lot of outstanding material:
+
+-rw-r----- 1 akpm src  2168830 Oct 15 14:24 patches/git-firmware.patch
+-rw-r----- 1 akpm src  1999274 Oct 15 14:24 patches/git-bdev.patch
+-rw-r----- 1 akpm src  1643851 Oct 15 14:24 patches/git-tip.patch
+-rw-r----- 1 akpm src  1137163 Oct 15 14:24 patches/git-uwb.patch
+-rw-r----- 1 akpm src  1003617 Oct 15 14:24 patches/git-kvm.patch
+-rw-r----- 1 akpm src   992495 Oct 15 14:24 patches/git-v4l-dvb.patch
+-rw-r----- 1 akpm src   849673 Oct 15 14:24 patches/git-parisc.patch
+-rw-r----- 1 akpm src   661519 Oct 15 14:24 patches/git-scsi-post-merge.patch
+-rw-r----- 1 akpm src   652920 Oct 15 14:23 patches/git-arm.patch
+-rw-r----- 1 akpm src   589596 Oct 15 14:24 patches/git-creds.patch
+-rw-r----- 1 akpm src   568498 Oct 15 14:24 patches/git-scsi.patch
+-rw-r----- 1 akpm src   410896 Oct 15 14:24 patches/git-drm.patch
+-rw-r----- 1 akpm src   404578 Oct 15 14:24 patches/git-ftrace.patch
+-rw-r----- 1 akpm src   352603 Oct 15 14:23 patches/git-acpi.patch
+-rw-r----- 1 akpm src   314552 Oct 15 14:24 patches/git-sh.patch
+-rw-r----- 1 akpm src   254238 Oct 15 14:24 patches/git-mtd.patch
+-rw-r----- 1 akpm src   203336 Oct 15 14:24 patches/git-tests.patch
+-rw-r----- 1 akpm src   199476 Oct 15 14:24 patches/git-timers.patch
+-rw-r----- 1 akpm src   192928 Oct 15 14:24 patches/git-v9fs.patch
+-rw-r----- 1 akpm src   158605 Oct 15 14:23 patches/git-avr32.patch
+-rw-r----- 1 akpm src   152326 Oct 15 14:24 patches/git-input.patch
+-rw-r----- 1 akpm src   138826 Oct 15 14:24 patches/git-pci.patch
+-rw-r----- 1 akpm src   135356 Oct 15 14:24 patches/git-slab.patch
+-rw-r----- 1 akpm src   125258 Oct 15 14:24 patches/git-vfs.patch
+-rw-r----- 1 akpm src   122588 Oct 15 14:24 patches/git-nfs.patch
+-rw-r----- 1 akpm src   120826 Oct 15 14:24 patches/git-sparseirq.patch
+-rw-r----- 1 akpm src   120746 Oct 15 14:24 patches/git-cris.patch
+-rw-r----- 1 akpm src   105868 Oct 15 14:24 patches/git-kmemcheck.patch
+-rw-r----- 1 akpm src   101011 Oct 15 14:24 patches/git-mfd.patch
+-rw-r----- 1 akpm src    93335 Oct 15 14:24 patches/git-tip-core.patch
+-rw-r----- 1 akpm src    84488 Oct 15 14:24 patches/git-ubifs.patch
+-rw-r----- 1 akpm src    46595 Oct 15 14:24 patches/git-net-current.patch
+-rw-r----- 1 akpm src    30945 Oct 15 14:24 patches/git-stackprotector.patch
+-rw-r----- 1 akpm src    30415 Oct 15 14:24 patches/git-crypto.patch
+-rw-r----- 1 akpm src    30354 Oct 15 14:24 patches/git-x86.patch
+-rw-r----- 1 akpm src    29001 Oct 15 14:24 patches/git-fastboot.patch
+-rw-r----- 1 akpm src    28915 Oct 15 14:24 patches/git-hid.patch
+-rw-r----- 1 akpm src    26872 Oct 15 14:24 patches/git-wireless-current.patch
+-rw-r----- 1 akpm src    25944 Oct 15 14:23 patches/git-backlight.patch
+-rw-r----- 1 akpm src    23001 Oct 15 14:24 patches/git-block.patch
+-rw-r----- 1 akpm src    20753 Oct 15 14:24 patches/git-sound-current.patch
+-rw-r----- 1 akpm src    20752 Oct 15 14:24 patches/git-sound.patch
+-rw-r----- 1 akpm src    20616 Oct 15 14:24 patches/git-semaphore-removal.patch
+-rw-r----- 1 akpm src    19849 Oct 15 14:24 patches/git-trivial.patch
+-rw-r----- 1 akpm src    17854 Oct 15 14:24 patches/git-genirq.patch
+-rw-r----- 1 akpm src    17689 Oct 15 14:24 patches/git-gfs2.patch
+-rw-r----- 1 akpm src    17135 Oct 15 14:23 patches/git-battery.patch
+-rw-r----- 1 akpm src    13923 Oct 15 14:24 patches/git-s390.patch
+-rw-r----- 1 akpm src    12604 Oct 15 14:24 patches/git-nfsd.patch
+-rw-r----- 1 akpm src    12151 Oct 15 14:24 patches/git-leds.patch
+-rw-r----- 1 akpm src     8330 Oct 15 14:24 patches/git-cpus4096.patch
+-rw-r----- 1 akpm src     6612 Oct 15 14:24 patches/git-infiniband.patch
+-rw-r----- 1 akpm src     4421 Oct 15 14:16 patches/git-tests-git-rejects.patch
+-rw-r----- 1 akpm src     4270 Oct 15 14:24 patches/git-kgdb.patch
+-rw-r----- 1 akpm src     3898 Oct 15 14:24 patches/git-ubi.patch
+-rw-r----- 1 akpm src     3855 Oct 15 14:24 patches/git-safe-poison-pointers.patch
+-rw-r----- 1 akpm src     3402 Oct 15 14:24 patches/git-xtensa.patch
+-rw-r----- 1 akpm src     3326 Oct 15 14:24 patches/git-oprofile.patch
+
