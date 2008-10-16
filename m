@@ -1,77 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYJPCvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYJPCwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbYJPCvx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 22:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYJPCvq
+	id S1755251AbYJPCwd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 22:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYJPCwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 22:51:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53552 "EHLO mx1.redhat.com"
+	Wed, 15 Oct 2008 22:52:25 -0400
+Received: from colo.lackof.org ([198.49.126.79]:34616 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752046AbYJPCvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 22:51:45 -0400
+	id S1752893AbYJPCwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 22:52:24 -0400
+Date: Wed, 15 Oct 2008 20:52:11 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: dwmw2@infradead.org, mgross@linux.intel.com, mingo@elte.hu,
+       grundler@parisc-linux.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] intel-iommu: use coherent_dma_mask in alloc_coherent
+Message-ID: <20081016025211.GB31457@colo.lackof.org>
+References: <20081015160732K.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: prasad@linux.vnet.ibm.com
-X-Fcc: ~/Mail/linus
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
-       mingo@elte.hu, jason.wessel@windriver.com, avi@qumranet.com,
-       richardj_moore@uk.ibm.com
-Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
-	interfaces
-In-Reply-To: K.Prasad's message of  Thursday, 9 October 2008 00:53:00 +0530 <20081008192300.GA4989@in.ibm.com>
-References: <20081008192044.GA4510@in.ibm.com>
-	<20081008192300.GA4989@in.ibm.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20081016024956.602C61544CB@magilla.localdomain>
-Date: Wed, 15 Oct 2008 19:49:56 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20081015160732K.fujita.tomonori@lab.ntt.co.jp>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "sstep_reason" hair in the x86 patch is the perfect example of exactly
-what I wanted to avoid by keeping the hw_breakpoint layer simpler.  (Also I
-strongly doubt that the x86 patch's single-step magic is correct in all the
-corner cases.  But that discussion is the very rat hole that I want to
-defer, is my point in this here discussion.)
+On Wed, Oct 15, 2008 at 04:08:28PM +0900, FUJITA Tomonori wrote:
+> This patch fixes intel-iommu to use dev->coherent_dma_mask in
+> alloc_coherent. Currently, intel-iommu uses dev->dma_mask in
+> alloc_coherent but alloc_coherent is supposed to use
+> coherent_dma_mask. It could break drivers that uses smaller
+> coherent_dma_mask than dma_mask (though the current code works for the
+> majority that use the same mask for coherent_dma_mask and dma_mask).
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-I think the role of the hw_breakpoint layer ought to be an arch-neutral API
-for accessing and multiplexing the breakpoint functionality of the hardware.
-I don't think its role ought to include enhancing the facilities beyond
-what the actual hardware has (just the multiplexing).
+Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
 
-AFAIK no hardware's facility delivers two separate exceptions for a single
-hit of a single breakpoint slot.  There is just one hit, and it's either
-before the instruction or after it.  So you only need one handler function,
-and one pointer slot for it.
-
-Each given type of breakpoint on a given arch is either a fire-before or a
-fire-after type.  The *_supported() functions are enough to make it clear.
-Those really should be inlines in an arch header, since they will be
-constants or type==CONST tests that are probably entirely optimized away
-(and let a big dead fork of the caller's code get optimized away).
-
-For fire-before types, there are two flavors.  On powerpc, data breakpoints
-are fire-before, and to actually complete the triggering load/store you
-have to clear the dabr (disable the breakpoint) before resuming (and then
-potentially deal with step-then-reenable, etc).  On x86, instruction
-breakpoints are fire-before, but there is the option of using the magic RF
-bit to suppress the hit without disabling the breakpoint.  So you need
-another inline a la *_supported() to indicate what's possible.  (Possibly
-the handler should be able to control this with its return value,
-i.e. allow returning with RF clear for some reason.)
-
-The sequence of suppress-and-single-step (x86 insn) or
-disable-and-single-step-and-reenable (powerpc data) will of course be
-desireable for high-level uses.  But that doesn't mean they need to be
-built into hw_breakpoint.  Make the hw_breakpoint layer clearly expose what
-the options are on the hardware, and the rest can be built up from
-hw_breakpoint along with other components managing the stepping part.
-(For user-mode stepping, the building blocks are already there.  For the
-kernel side, we can attack that windmill another day.)
+Thanks!
+grant
 
 
-Thanks,
-Roland
+> ---
+>  drivers/pci/intel-iommu.c |   30 ++++++++++++++++++++----------
+>  1 files changed, 20 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+> index 389fdd6..68a97bc 100644
+> --- a/drivers/pci/intel-iommu.c
+> +++ b/drivers/pci/intel-iommu.c
+> @@ -1759,14 +1759,14 @@ iommu_alloc_iova(struct dmar_domain *domain, size_t size, u64 end)
+>  
+>  static struct iova *
+>  __intel_alloc_iova(struct device *dev, struct dmar_domain *domain,
+> -		size_t size)
+> +		   size_t size, unsigned long dma_mask)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+>  	struct iova *iova = NULL;
+>  
+> -	if ((pdev->dma_mask <= DMA_32BIT_MASK) || (dmar_forcedac)) {
+> -		iova = iommu_alloc_iova(domain, size, pdev->dma_mask);
+> -	} else  {
+> +	if (dma_mask <= DMA_32BIT_MASK || dmar_forcedac)
+> +		iova = iommu_alloc_iova(domain, size, dma_mask);
+> +	else {
+>  		/*
+>  		 * First try to allocate an io virtual address in
+>  		 * DMA_32BIT_MASK and if that fails then try allocating
+> @@ -1774,7 +1774,7 @@ __intel_alloc_iova(struct device *dev, struct dmar_domain *domain,
+>  		 */
+>  		iova = iommu_alloc_iova(domain, size, DMA_32BIT_MASK);
+>  		if (!iova)
+> -			iova = iommu_alloc_iova(domain, size, pdev->dma_mask);
+> +			iova = iommu_alloc_iova(domain, size, dma_mask);
+>  	}
+>  
+>  	if (!iova) {
+> @@ -1813,8 +1813,9 @@ get_valid_domain_for_dev(struct pci_dev *pdev)
+>  	return domain;
+>  }
+>  
+> -static dma_addr_t
+> -intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
+> +static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
+> +				     size_t size, int dir,
+> +				     unsigned long dma_mask)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(hwdev);
+>  	struct dmar_domain *domain;
+> @@ -1833,7 +1834,7 @@ intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
+>  
+>  	size = aligned_size((u64)paddr, size);
+>  
+> -	iova = __intel_alloc_iova(hwdev, domain, size);
+> +	iova = __intel_alloc_iova(hwdev, domain, size, pdev->dma_mask);
+>  	if (!iova)
+>  		goto error;
+>  
+> @@ -1879,6 +1880,13 @@ error:
+>  	return 0;
+>  }
+>  
+> +static dma_addr_t
+> +intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
+> +{
+> +	return __intel_map_single(hwdev, paddr, size, dir,
+> +				  to_pci_dev(hwdev)->dma_mask);
+> +}
+> +
+>  static void flush_unmaps(void)
+>  {
+>  	int i, j;
+> @@ -1993,7 +2001,9 @@ static void * intel_alloc_coherent(struct device *hwdev, size_t size,
+>  		return NULL;
+>  	memset(vaddr, 0, size);
+>  
+> -	*dma_handle = intel_map_single(hwdev, virt_to_bus(vaddr), size, DMA_BIDIRECTIONAL);
+> +	*dma_handle = __intel_map_single(hwdev, virt_to_bus(vaddr), size,
+> +					 DMA_BIDIRECTIONAL,
+> +					 hwdev->coherent_dma_mask);
+>  	if (*dma_handle)
+>  		return vaddr;
+>  	free_pages((unsigned long)vaddr, order);
+> @@ -2096,7 +2106,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist,
+>  		size += aligned_size((u64)addr, sg->length);
+>  	}
+>  
+> -	iova = __intel_alloc_iova(hwdev, domain, size);
+> +	iova = __intel_alloc_iova(hwdev, domain, size, pdev->dma_mask);
+>  	if (!iova) {
+>  		sglist->dma_length = 0;
+>  		return 0;
+> -- 
+> 1.5.5.GIT
