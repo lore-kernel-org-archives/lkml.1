@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYJPSEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYJPSFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757780AbYJPSEa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbYJPSBH
+	id S1757471AbYJPSFJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYJPSBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:01:07 -0400
-Received: from ns2.suse.de ([195.135.220.15]:46902 "EHLO mx2.suse.de"
+	Thu, 16 Oct 2008 14:01:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46940 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754557AbYJPSBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:01:06 -0400
-Date: Thu, 16 Oct 2008 10:56:46 -0700
+	id S1755615AbYJPSBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:01:15 -0400
+Date: Thu, 16 Oct 2008 10:56:52 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 12/14] x86: improve UP kernel when CPU-hotplug and SMP is
-	enabled
-Message-ID: <20081016175646.GM12850@suse.de>
+       alan@lxorguk.ukuu.org.uk, Matthew Wilcox <willy@linux.intel.com>,
+       Jay Cliburn <jacliburn@bellsouth.net>, Jeff Garzik <jgarzik@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 14/14] netdrvr: atl1e: Dont take the mdio_lock in
+	atl1e_probe
+Message-ID: <20081016175652.GO12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-improve-up-kernel-when-cpu-hotplug-and-smp-is-enabled.patch"
+Content-Disposition: inline; filename="netdrvr-atl1e-don-t-take-the-mdio_lock-in-atl1e_probe.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,34 +42,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Matthew Wilcox <matthew@wil.cx>
 
-commit 649c6653fa94ec8f3ea32b19c97b790ec4e8e4ac upstream
+commit f382a0a8e9403c6d7f8b2cfa21e41fefb5d0c9bd upstream
 
-num_possible_cpus() can be > 1 when disabled CPUs have been accounted.
+Lockdep warns about the mdio_lock taken with interrupts enabled then later
+taken from interrupt context.  Initially, I considered changing these
+to spin_lock_irq/spin_unlock_irq, but then I looked at atl1e_phy_init()
+and saw that it calls msleep().  Sleeping while holding a spinlock is
+not allowed either.
 
-Disabled CPUs are not in the cpu_present_map, so we can use
-num_present_cpus() as a safe indicator to switch to UP alternatives.
+In the probe path, we haven't registered the interrupt handler, so
+it can't poke at this card yet.  It's before we call register_netdev(),
+so I don't think any other threads can reach this card either.  If I'm
+right, we don't need a spinlock at all.
 
-Reported-by: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+Cc: Jay Cliburn <jacliburn@bellsouth.net>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/alternative.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/atl1e/atl1e_main.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -444,7 +444,7 @@ void __init alternative_instructions(voi
- 					    _text, _etext);
- 
- 		/* Only switch to UP mode if we don't immediately boot others */
--		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
-+		if (num_present_cpus() == 1 || setup_max_cpus <= 1)
- 			alternatives_smp_switch(0);
+--- a/drivers/net/atl1e/atl1e_main.c
++++ b/drivers/net/atl1e/atl1e_main.c
+@@ -2390,9 +2390,7 @@ static int __devinit atl1e_probe(struct 
  	}
- #endif
+ 
+ 	/* Init GPHY as early as possible due to power saving issue  */
+-	spin_lock(&adapter->mdio_lock);
+ 	atl1e_phy_init(&adapter->hw);
+-	spin_unlock(&adapter->mdio_lock);
+ 	/* reset the controller to
+ 	 * put the device in a known good starting state */
+ 	err = atl1e_reset_hw(&adapter->hw);
 
 -- 
