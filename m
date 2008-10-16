@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbYJPVVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYJPVWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbYJPVVd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 17:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYJPVVY
+	id S1757403AbYJPVWz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 17:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYJPVWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 17:21:24 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:35043 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754512AbYJPVVX (ORCPT
+	Thu, 16 Oct 2008 17:22:46 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:18892 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbYJPVWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 17:21:23 -0400
-Date: Thu, 16 Oct 2008 15:21:22 -0600
+	Thu, 16 Oct 2008 17:22:45 -0400
+Date: Thu, 16 Oct 2008 15:22:44 -0600
 From: Alex Chiang <achiang@hp.com>
 To: Adrian Bunk <bunk@kernel.org>
 Cc: Tejun Heo <tj@kernel.org>, jeff@redhat.com, linux-ide@vger.kernel.org,
        linux-kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] stop gcc warning about uninitialized 'dev' in
 	ata_scsi_scan_host
-Message-ID: <20081016212122.GA18274@ldl.fc.hp.com>
+Message-ID: <20081016212244.GB18274@ldl.fc.hp.com>
 Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Adrian Bunk <bunk@kernel.org>, Tejun Heo <tj@kernel.org>,
 	jeff@redhat.com, linux-ide@vger.kernel.org,
@@ -62,18 +62,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 
 > We have an annotation for these kinds of warnings in the kernel.
 
-What is the annotation?
+Oh, is it this?
 
-> But we'll never get a warning-free compilation with all seven (sic) 
-> supported gcc release series.
-> 
-> A warning-free compilation with gcc 4.3 is worth some efforts, but 
-> cluttering our code to fix bogus warnings with older gcc versions
-> is not a good thing.
-
-Ok, I already agree with this point.
-
-Thanks.
+from linux/compiler-gcc3.h
+#define uninitialized_var(x) x = x
 
 /ac
 
