@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYJPRS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbYJPRTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbYJPRS5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbYJPROQ
+	id S1756788AbYJPRTm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbYJPROT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:16 -0400
-Received: from kroah.org ([198.145.64.141]:46940 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:19 -0400
+Received: from kroah.org ([198.145.64.141]:46946 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756121AbYJPRON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:13 -0400
+	id S1756123AbYJPROQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:16 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 09/46] device create: s390: convert device_create_drvdata to device_create
-Date: Thu, 16 Oct 2008 10:10:10 -0700
-Message-Id: <1224177047-11859-9-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jaroslav Kysela <perex@perex.cz>
+Subject: [PATCH 11/46] device create: sound: convert device_create_drvdata to device_create
+Date: Thu, 16 Oct 2008 10:10:12 -0700
+Message-Id: <1224177047-11859-11-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -27,98 +25,95 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Now that device_create() has been audited, rename things back to the
 original call to be sane.
 
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/s390/char/raw3270.c    |   14 ++++++--------
- drivers/s390/char/tape_class.c |    6 +++---
- drivers/s390/char/vmlogrdr.c   |    8 ++++----
- drivers/s390/char/vmur.c       |    5 ++---
- 4 files changed, 15 insertions(+), 18 deletions(-)
+ sound/core/init.c     |    6 +++---
+ sound/core/sound.c    |    5 ++---
+ sound/oss/soundcard.c |   15 +++++++--------
+ sound/sound_core.c    |    5 ++---
+ 4 files changed, 14 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/s390/char/raw3270.c b/drivers/s390/char/raw3270.c
-index 1792b2c..0b15cf1 100644
---- a/drivers/s390/char/raw3270.c
-+++ b/drivers/s390/char/raw3270.c
-@@ -1168,19 +1168,17 @@ static int raw3270_create_attributes(struct raw3270 *rp)
- 	if (rc)
- 		goto out;
+diff --git a/sound/core/init.c b/sound/core/init.c
+index 8af467d..ef2352c 100644
+--- a/sound/core/init.c
++++ b/sound/core/init.c
+@@ -549,9 +549,9 @@ int snd_card_register(struct snd_card *card)
+ 		return -EINVAL;
+ #ifndef CONFIG_SYSFS_DEPRECATED
+ 	if (!card->card_dev) {
+-		card->card_dev = device_create_drvdata(sound_class, card->dev,
+-						       MKDEV(0, 0), NULL,
+-						       "card%i", card->number);
++		card->card_dev = device_create(sound_class, card->dev,
++					       MKDEV(0, 0), NULL,
++					       "card%i", card->number);
+ 		if (IS_ERR(card->card_dev))
+ 			card->card_dev = NULL;
+ 	}
+diff --git a/sound/core/sound.c b/sound/core/sound.c
+index c0685e2..44a69bb 100644
+--- a/sound/core/sound.c
++++ b/sound/core/sound.c
+@@ -274,9 +274,8 @@ int snd_register_device_for_dev(int type, struct snd_card *card, int dev,
+ 		return minor;
+ 	}
+ 	snd_minors[minor] = preg;
+-	preg->dev = device_create_drvdata(sound_class, device,
+-					  MKDEV(major, minor),
+-					  private_data, "%s", name);
++	preg->dev = device_create(sound_class, device, MKDEV(major, minor),
++				  private_data, "%s", name);
+ 	if (IS_ERR(preg->dev)) {
+ 		snd_minors[minor] = NULL;
+ 		mutex_unlock(&sound_mutex);
+diff --git a/sound/oss/soundcard.c b/sound/oss/soundcard.c
+index 7d89c08..61aaeda 100644
+--- a/sound/oss/soundcard.c
++++ b/sound/oss/soundcard.c
+@@ -560,19 +560,18 @@ static int __init oss_init(void)
+ 	sound_dmap_flag = (dmabuf > 0 ? 1 : 0);
  
--	rp->clttydev = device_create_drvdata(class3270, &rp->cdev->dev,
--					     MKDEV(IBM_TTY3270_MAJOR, rp->minor),
--					     NULL,
--					     "tty%s", dev_name(&rp->cdev->dev));
-+	rp->clttydev = device_create(class3270, &rp->cdev->dev,
-+				     MKDEV(IBM_TTY3270_MAJOR, rp->minor), NULL,
-+				     "tty%s", dev_name(&rp->cdev->dev));
- 	if (IS_ERR(rp->clttydev)) {
- 		rc = PTR_ERR(rp->clttydev);
- 		goto out_ttydev;
+ 	for (i = 0; i < ARRAY_SIZE(dev_list); i++) {
+-		device_create_drvdata(sound_class, NULL,
+-				      MKDEV(SOUND_MAJOR, dev_list[i].minor),
+-				      NULL, "%s", dev_list[i].name);
++		device_create(sound_class, NULL,
++			      MKDEV(SOUND_MAJOR, dev_list[i].minor), NULL,
++			      "%s", dev_list[i].name);
+ 
+ 		if (!dev_list[i].num)
+ 			continue;
+ 
+ 		for (j = 1; j < *dev_list[i].num; j++)
+-			device_create_drvdata(sound_class, NULL,
+-					      MKDEV(SOUND_MAJOR,
+-						    dev_list[i].minor + (j*0x10)),
+-					      NULL,
+-					      "%s%d", dev_list[i].name, j);
++			device_create(sound_class, NULL,
++				      MKDEV(SOUND_MAJOR,
++					    dev_list[i].minor + (j*0x10)),
++				      NULL, "%s%d", dev_list[i].name, j);
  	}
  
--	rp->cltubdev = device_create_drvdata(class3270, &rp->cdev->dev,
--					     MKDEV(IBM_FS3270_MAJOR, rp->minor),
--					     NULL,
--					     "tub%s", dev_name(&rp->cdev->dev));
-+	rp->cltubdev = device_create(class3270, &rp->cdev->dev,
-+				     MKDEV(IBM_FS3270_MAJOR, rp->minor), NULL,
-+				     "tub%s", dev_name(&rp->cdev->dev));
- 	if (!IS_ERR(rp->cltubdev))
- 		goto out;
+ 	if (sound_nblocks >= 1024)
+diff --git a/sound/sound_core.c b/sound/sound_core.c
+index 4ae07e2..faef87a 100644
+--- a/sound/sound_core.c
++++ b/sound/sound_core.c
+@@ -220,9 +220,8 @@ static int sound_insert_unit(struct sound_unit **list, const struct file_operati
+ 	else
+ 		sprintf(s->name, "sound/%s%d", name, r / SOUND_STEP);
  
-diff --git a/drivers/s390/char/tape_class.c b/drivers/s390/char/tape_class.c
-index 12c2a5a..ddc914c 100644
---- a/drivers/s390/char/tape_class.c
-+++ b/drivers/s390/char/tape_class.c
-@@ -69,9 +69,9 @@ struct tape_class_device *register_tape_dev(
- 	if (rc)
- 		goto fail_with_cdev;
+-	device_create_drvdata(sound_class, dev,
+-			      MKDEV(SOUND_MAJOR, s->unit_minor),
+-			      NULL, s->name+6);
++	device_create(sound_class, dev, MKDEV(SOUND_MAJOR, s->unit_minor),
++		      NULL, s->name+6);
+ 	return r;
  
--	tcd->class_device = device_create_drvdata(tape_class, device,
--						  tcd->char_device->dev,
--						  NULL, "%s", tcd->device_name);
-+	tcd->class_device = device_create(tape_class, device,
-+					  tcd->char_device->dev, NULL,
-+					  "%s", tcd->device_name);
- 	rc = IS_ERR(tcd->class_device) ? PTR_ERR(tcd->class_device) : 0;
- 	if (rc)
- 		goto fail_with_cdev;
-diff --git a/drivers/s390/char/vmlogrdr.c b/drivers/s390/char/vmlogrdr.c
-index 42173cc..2476272 100644
---- a/drivers/s390/char/vmlogrdr.c
-+++ b/drivers/s390/char/vmlogrdr.c
-@@ -747,10 +747,10 @@ static int vmlogrdr_register_device(struct vmlogrdr_priv_t *priv)
- 		device_unregister(dev);
- 		return ret;
- 	}
--	priv->class_device = device_create_drvdata(vmlogrdr_class, dev,
--						   MKDEV(vmlogrdr_major,
--							 priv->minor_num),
--						   priv, "%s", dev_name(dev));
-+	priv->class_device = device_create(vmlogrdr_class, dev,
-+					   MKDEV(vmlogrdr_major,
-+						 priv->minor_num),
-+					   priv, "%s", dev_name(dev));
- 	if (IS_ERR(priv->class_device)) {
- 		ret = PTR_ERR(priv->class_device);
- 		priv->class_device=NULL;
-diff --git a/drivers/s390/char/vmur.c b/drivers/s390/char/vmur.c
-index 6fdfa5d..9020eba 100644
---- a/drivers/s390/char/vmur.c
-+++ b/drivers/s390/char/vmur.c
-@@ -896,9 +896,8 @@ static int ur_set_online(struct ccw_device *cdev)
- 		goto fail_free_cdev;
- 	}
- 
--	urd->device = device_create_drvdata(vmur_class, NULL,
--					    urd->char_device->dev, NULL,
--					    "%s", node_id);
-+	urd->device = device_create(vmur_class, NULL, urd->char_device->dev,
-+				    NULL, "%s", node_id);
- 	if (IS_ERR(urd->device)) {
- 		rc = PTR_ERR(urd->device);
- 		TRACE("ur_set_online: device_create rc=%d\n", rc);
+  fail:
 -- 
 1.6.0.2
 
