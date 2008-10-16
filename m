@@ -1,98 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYJPWcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbYJPWef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757387AbYJPWcx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYJPWcq
+	id S1757692AbYJPWef (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYJPWe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:32:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60078 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755107AbYJPWcp (ORCPT
+	Thu, 16 Oct 2008 18:34:27 -0400
+Received: from mail-in-02.arcor-online.net ([151.189.21.42]:49318 "EHLO
+	mail-in-02.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754964AbYJPWe0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:32:45 -0400
-Date: Thu, 16 Oct 2008 15:32:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kumar Gala <galak@kernel.crashing.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [git pull] core kernel updates for v2.6.28
-In-Reply-To: <20081015125023.GA6702@elte.hu>
-Message-ID: <alpine.LFD.2.00.0810161518320.3288@nehalem.linux-foundation.org>
-References: <20081015125023.GA6702@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 16 Oct 2008 18:34:26 -0400
+Date: Fri, 17 Oct 2008 00:45:22 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Chris Friesen <cfriesen@nortel.com>
+cc: Bodo Eggert <7eggert@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-kernel@vger.kernel.org, jeffschroeder@computer.org
+Subject: Re: [PATCH] use tmpfs for rootfs v2
+In-Reply-To: <48F7A971.3040500@nortel.com>
+Message-ID: <alpine.LSU.0.999.0810170025090.14480@be1.lrz>
+References: <alpine.LSU.0.999.0810161400160.5456@be1.lrz>
+ <Pine.LNX.4.64.0810161507130.25933@anakin> <alpine.LSU.0.999.0810161936590.5051@be1.lrz>
+ <48F7A971.3040500@nortel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 16 Oct 2008, Chris Friesen wrote:
+> Bodo Eggert wrote:
 
-
-On Wed, 15 Oct 2008, Ingo Molnar wrote:
+> > Having tmpfs as the root filesystem allows you to get rid of the now unused
+> > ramfs and free some kernel memory. On my system, that's about 5198 bytes
+> > compared to having a ramfs root.
 > 
-> Please pull the latest core-v28-for-linus git tree from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-v28-for-linus
-> 
-> this is a combination of the following topics:
->    ...
->    core/resources
+> If you're not using swap, I assume the memory usage of tmpfs and ramfs would
+> be identical?
 
-Ok, the resource_size_t -> generic phys_addr_t changes conflicted with the 
-PowerPC changes I had merged yesterday. The resolution wasn't overly 
-complex, but I'm sure I screwed something up anyway. Can the involved 
-Power people take a look (looks like BenH, Kumar, Becky to me), and 
-Jeremy/Ingo on the generic resource side?
-
-> Frederic Weisbecker (1):
->       softirq, warning fix: correct a format to avoid a warning
-
-Ingo, stop dicking around with this crap. You apparently fixed some 
-warning that I never saw by turning it into a warning that I _do_ see:
-
-  kernel/softirq.c: In function ¡__do_softirq¢:
-  kernel/softirq.c:216: warning: format ¡%d¢ expects type ¡int¢, but argument 2 has type ¡long int¢
-
-and as far as I can tell, you damn well should have seen it if you ever 
-compile a 64-bit kernel!
-
-The fact is, that second argument was a "ptrdiff_t", which is neither 
-"int" nor "long".  It should be "%td" I think. But the thing is, when you 
-fix a warning, you should damn well know what the hell you're doing, not 
-just shut it up.
-
-Fixing warnings without knowing what is going on is WORSE than leaving the 
-warning alone. Leaving it alone at least keeps the status quo. Fixing it 
-without looking deeply enough at it has the potential to change a known 
-issue to a new issue and just moves bugs around, making the whole process 
-irritating and harder to handle/debug.
-
-So PLEASE don't take even 'trivial' warning fixes unless you actually know 
-what is going on, or you trust the person very deeply to know.
-
-Anyway, the correct fix is appended, but I haven't actually tested it.
-
-		Linus
-
----
- kernel/softirq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index be7a829..37d67aa 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -210,7 +210,7 @@ restart:
- 			h->action(h);
- 
- 			if (unlikely(prev_count != preempt_count())) {
--				printk(KERN_ERR "huh, entered softirq %d %p"
-+				printk(KERN_ERR "huh, entered softirq %td %p"
- 				       "with preempt_count %08x,"
- 				       " exited with %08x?\n", h - softirq_vec,
- 				       h->action, prev_count, preempt_count());
+I'd rather think having ACL, security labels etc. pp. will make tmpfs use 
+more memory per file or directory. If you have no use for tmpfs' features,
+you should use ramfs. But if you do want to use tmpfs in your system,
+my guess is you'll be most likely be better off using no ramfs.
+-- 
+Good programming is 99% sweat and 1% coffee.
