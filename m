@@ -1,84 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbYJPRcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbYJPRdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbYJPRcn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbYJPRS5
+	id S1760743AbYJPRdZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbYJPR3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:18:57 -0400
-Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:35894 "EHLO
-	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757452AbYJPRS4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:18:56 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAOsU90hR9dva/2dsb2JhbACBcsJIg2w
-Date: Thu, 16 Oct 2008 19:18:49 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Zvonimir Rakamaric <zrakamar@cs.ubc.ca>
-Subject: [WATCHDOG] v2.6.28-rc1 watchdog patches - part 2
-Message-ID: <20081016171849.GH30246@infomag.infomag.iguana.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Thu, 16 Oct 2008 13:29:22 -0400
+Received: from mail.lang.hm ([64.81.33.126]:43864 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756105AbYJPR3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:29:20 -0400
+Date: Thu, 16 Oct 2008 10:30:04 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: el es <el_es_cr@yahoo.co.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-Reply-To: <loom.20081016T092338-594@post.gmane.org>
+Message-ID: <alpine.DEB.1.10.0810161027590.9226@asgard.lang.hm>
+References: <20081016002509.GA25868@kroah.com> <loom.20081016T075618-911@post.gmane.org> <48F704E6.2010409@zytor.com> <loom.20081016T092338-594@post.gmane.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 16 Oct 2008, el es wrote:
 
-Please pull from 'master' branch of
-	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
-or if master.kernel.org hasn't synced up yet:
-	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+> H. Peter Anvin <hpa <at> zytor.com> writes:
+>> el es wrote:
+> [snip]
+>>> - informative : the ww and tt numbers are the week numbers of when the actual
+>>>
+>>> release HAPPENED, not when it is predicted.
+>>>
+>>
+>> Which really sucks for dealing with future releases.
+>>
+>
+> Why ?
+> What do you mean by 'future releases' ?
+> Can you predict exactly when the next release will happen ? The current practice
+> of -rcX shows clearly you cannot.
 
-This will update the following files:
+that's the point
 
- drivers/watchdog/ib700wdt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Moreover, with my idea you could easily say, which stable release is still
+> supported (and how old its mainline really was) up to the week, which IMHO is
+> granular enough.
 
-with these Changes:
+huh?? kernels are not supported for X amount of time, so this isn't 
+relevant information for support. kernels are 'supported' until some time 
+after the next kernel is released.
 
-Author: Wim Van Sebroeck <wim@iguana.be>
-Date:   Wed Oct 15 08:53:06 2008 +0000
+> Also you could for sure say, that e.g. a device/software that hit market in say
+> December this year, will be compatible with e.g. 2.09.XX+ - look at users POV.
 
-    [WATCHDOG] ib700wdt.c - fix buffer_underflow bug
-    
-    This fixes Bug 11399:
-    if ibwdt_set_heartbeat(int t) is called with value 30 then
-    the check "if ((t < 0) || (t > 30))" in ibwdt_set_heartbeat
-    is not going to fail because t == 30, but in the loop, the
-    check wd_times[i] > t is never going to be true because
-    none of the wd_times are greater than the value of t (i.e. 30).
-    So we are exiting the loop with i == -1 and therefore setting
-    wd_margin to -1 which is wrong.
-    
-    Reported-by: Zvonimir Rakamaric <zrakamar@cs.ubc.ca>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+no you can't, the fact that a kernel was released in December and the 
+product was released in November tells you nothing about the probability 
+that that hardware is supported by that kernel.
 
-The Changes can also be looked at on:
-	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+you can't even say that a kernel released in 2009 supports hardware 
+released in 2007.
 
-For completeness, I added the overal diff below.
+David Lang
 
-Greetings,
-Wim.
-
-================================================================================
-diff --git a/drivers/watchdog/ib700wdt.c b/drivers/watchdog/ib700wdt.c
-index 05a2810..8782ec1 100644
---- a/drivers/watchdog/ib700wdt.c
-+++ b/drivers/watchdog/ib700wdt.c
-@@ -154,7 +154,7 @@ static int ibwdt_set_heartbeat(int t)
- 		return -EINVAL;
- 
- 	for (i = 0x0F; i > -1; i--)
--		if (wd_times[i] > t)
-+		if (wd_times[i] >= t)
- 			break;
- 	wd_margin = i;
- 	return 0;
+> Current scheme is great, established and understandable, but sucks at this
+> point : for any product, be it hardware or software, you need to print both its
+> date of creation AND the minimum kernel that supports it. With my idea, it is
+> only the date you need.
+>
+>> 	-hpa
+>>
+>
+> Lukasz
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
