@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbYJPG33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbYJPGai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142AbYJPG33 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 02:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYJPG3V
+	id S1755395AbYJPGai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 02:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbYJPGaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 02:29:21 -0400
-Received: from cnmailgate04.alcatel-sbell.com.cn ([211.144.215.47]:54830 "EHLO
-	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752397AbYJPG3V (ORCPT
+	Thu, 16 Oct 2008 02:30:30 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:6701 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751750AbYJPGa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 02:29:21 -0400
-X-AuditID: ac189297-a8f7dbb000000fe5-2e-48f6df1254ca
-Message-ID: <48F6DF22.6070009@alcatel-lucent.com>
-Date: Thu, 16 Oct 2008 14:28:50 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 16 Oct 2008 02:30:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=wBQAJbDd2qfKzTvBaXHLoGp55+rSMe0dLbgxhg/g2xr0q9+dNbn/Vu9P58S3L5+Z+a
+         XVk47qxx13mpx5T8uIXLPbaw9AoxFfQz/E7Fdz8aXWSl01eUPxzVP0PN5EIoDISgETrU
+         ERbmBk0gweMYmA66B9o+cmOHx3b7b8NNjJYVU=
+Message-ID: <df9815e70810152330h7886c77arb01e1fd308b4a7ae@mail.gmail.com>
+Date: Thu, 16 Oct 2008 14:30:25 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: gcosta@redhat.com
+Subject: questions about rd{msr|tsc|pmc} instruction with x86-64
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, bzolnier@gmail.com
-Subject: Re: how to limit number of sectors each time
-References: <48F6B51B.2000408@alcatel-lucent.com> <20081016054400.GN19428@kernel.dk> <48F6DA7A.9080003@alcatel-lucent.com> <20081016061808.GS19428@kernel.dk> <48F6DD54.70004@alcatel-lucent.com> <20081016062503.GT19428@kernel.dk>
-In-Reply-To: <20081016062503.GT19428@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Oct 2008 06:28:37.0994 (UTC) FILETIME=[6C7404A0:01C92F58]
-X-Brightmail-Tracker: AAAAAA==
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi experts,
 
->> I'm using IDE driver instead of HD driver.
->>     
-I dumped out IO registers and PRD table. Note that
-maxinum allowed sector number has been decreased
-from 256 to 32.
+commit c210d24986dc19e387c10508c0bc2faadadc1a2e  introduced such codes
+and comments in include/asm-x86/msr.h:
 
-hdc: dma_timer_expiry: dma status == 0x21
-========IDE Register DUmp========
-DMA start sector: 0x007d5fb5
-DMA sectors     : 0x0020
-Data Reg        : 0x00
-Error Reg       : 0x00
-Nsector Reg     : 0x19
-Sector Reg      : 0xbc
-LCYL Reg        : 0x5f
-HCYL Reg        : 0x7d
-Select Reg      : 0xe0
-Status Reg      : 0x58
-Control Reg     : 0x58
-IRQ Reg         : 0x58
-======Physical Region Descriptor=======
-Base_PRD: 0x0189f000  Current_PRD: 0x0189f008  Entries:3
-index=0  base=0x00204d1c lengh=0x00100000
-index=1  base=0x00604c1c lengh=0x00200000
-index=2  base=0x00304d1c lengh=0x00100080
+/*
+ * i386 calling convention returns 64-bit value in edx:eax, while
+ * x86_64 returns at rax. Also, the "A" constraint does not really
+ * mean rdx:rax in x86_64, so we need specialized behaviour for each
+ * architecture
+ */
+#ifdef CONFIG_X86_64
+#define DECLARE_ARGS(val, low, high)	unsigned low, high
+#define EAX_EDX_VAL(val, low, high)	((low) | ((u64)(high) << 32))
+#define EAX_EDX_ARGS(val, low, high)	"a" (low), "d" (high)
+#define EAX_EDX_RET(val, low, high)	"=a" (low), "=d" (high)
+#else
+#define DECLARE_ARGS(val, low, high)	unsigned long long val
+#define EAX_EDX_VAL(val, low, high)	(val)
+#define EAX_EDX_ARGS(val, low, high)	"A" (val)
+#define EAX_EDX_RET(val, low, high)	"=A" (val)
+#endif
 
+By my reading of Intel & AMD manuals, this comment is wrong.  rdmsr of
+x86-64 has the same behavior as i386, namely the high 32bit returns in
+edx and the low 32bit in eax, not "returns at rax".  And the gcc
+constraint "A" does mean edx:eax in x86-64 also, at least when testing
+on my AMD Turion 64 processor.
+
+So the question is, do we really need these macros? Why a single "A"
+won't work?  Or do I have anything misunderstood?
+
+-- 
+Thanks,
+Jike
