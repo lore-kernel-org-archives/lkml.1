@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYJPIbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbYJPIek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbYJPIbH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 04:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYJPIa4
+	id S1755017AbYJPIek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 04:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYJPIec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 04:30:56 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:47887 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753375AbYJPIaz (ORCPT
+	Thu, 16 Oct 2008 04:34:32 -0400
+Received: from mga09.intel.com ([134.134.136.24]:12003 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752269AbYJPIeb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 04:30:55 -0400
-Date: Thu, 16 Oct 2008 10:30:52 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Miller <davem@davemloft.net>
-cc: hpa@zytor.com, benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, yhlu.kernel@gmail.com
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-In-Reply-To: <20081013.223811.174710738.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0810161030120.9022@vixen.sonytel.be>
-References: <48F3F014.3050406@zytor.com> <1223948488.8157.309.camel@pasglop>
- <48F409E9.3030501@zytor.com> <20081013.223811.174710738.davem@davemloft.net>
+	Thu, 16 Oct 2008 04:34:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,422,1220252400"; 
+   d="scan'208";a="452016846"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-10248566-1224145852=:9022"
+Subject: RE: Is Debug Store supposed to default to Y?
+Date: Thu, 16 Oct 2008 09:34:26 +0100
+Message-ID: <029E5BE7F699594398CA44E3DDF554440290A9AA@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <200810161021.25572.elendil@planet.nl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Is Debug Store supposed to default to Y?
+Thread-Index: AckvaDF2VkYK6C/hQlWLtT/PcLqRPgAAJVDg
+References: <200810161021.25572.elendil@planet.nl>
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: "Frans Pop" <elendil@planet.nl>, <linux-kernel@vger.kernel.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       <markus.t.metzger@gmail.com>
+X-OriginalArrivalTime: 16 Oct 2008 08:34:29.0795 (UTC) FILETIME=[01AD6730:01C92F6A]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+>-----Original Message-----
+>From: Frans Pop [mailto:elendil@planet.nl] 
+>Sent: Donnerstag, 16. Oktober 2008 10:21
 
----584349381-10248566-1224145852=:9022
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 
-On Mon, 13 Oct 2008, David Miller wrote:
-> From: "H. Peter Anvin" <hpa@zytor.com>
-> Date: Mon, 13 Oct 2008 19:54:33 -0700
-> 
-> > I pointed out that we should use the flags to determine formatting
-> > options, e.g. I/O space is only 16 bits on x86.
-> 
-> It's 64-bit on sparc64 :-)
-> 
-> There's also the bit where we use a 32-bit resource_t on sparc32
-> but encode the top 4-bits of the 36 bit physical I/O address in
-> the resource flags member.
+>Both CONFIG_X86_DS and X86_PTRACE_BTS currently default to yes.
+>Is that intended?
+>
+>The help text is a bit short on info to help users determine if they 
+>really need/want these options. What will I be missing if I 
+>don't enable 
+>them on a regular desktop system? What is their cost?
 
-So wouldn't it be better to switch those sparc32 configs to a 64-bit
-resource_t? I think all other platforms with 36-bit physical addresses went
-that way.
+I sent an rfc for an improved help text yesterday:
+http://lkml.org/lkml/2008/10/15/192.
+I hope this answeres your questions.
 
-With kind regards,
+See also the discussion with Roland Dreier on the same topic:
+http://lkml.org/lkml/2008/10/16/56
+http://lkml.org/lkml/2008/10/16/61
 
-Geert Uytterhoeven
-Software Architect
+regards,
+markus.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-10248566-1224145852=:9022--
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
