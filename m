@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYJPMgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYJPMuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYJPMgm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 08:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYJPMge
+	id S1754674AbYJPMuJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 08:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYJPMt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 08:36:34 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:44061 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYJPMgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 08:36:33 -0400
-Message-ID: <48F7352F.3020700@fr.ibm.com>
-Date: Thu, 16 Oct 2008 14:35:59 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 16 Oct 2008 08:49:56 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54400 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751719AbYJPMt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 08:49:56 -0400
+Date: Thu, 16 Oct 2008 15:49:43 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <greg@kroah.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081016124943.GE23630@cs181140183.pp.htv.fi>
+References: <20081016002509.GA25868@kroah.com>
 MIME-Version: 1.0
-To: Oren Laadan <orenl@cs.columbia.edu>
-CC: Cedric Le Goater <clg@fr.ibm.com>, jeremy@goop.org, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrey Mirkin <major@openvz.org>
-Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
-References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu> <1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu> <1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu> <1223571036.11830.32.camel@nimitz>	<20081010153951.GD28977@elte.hu> <48F30315.1070909@fr.ibm.com>	<1223916223.29877.14.camel@nimitz> <48F6092D.6050400@fr.ibm.com> <48F685A3.1060804@cs.columbia.edu>
-In-Reply-To: <48F685A3.1060804@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20081016002509.GA25868@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan wrote:
-> Cedric Le Goater wrote:
->> Dave Hansen wrote:
->>> On Mon, 2008-10-13 at 10:13 +0200, Cedric Le Goater wrote:
->>>> hmm, that's rather complex, because we have to take into account the 
->>>> kernel stack, no ? This is what Andrey was trying to solve in his patchset 
->>>> back in September :
->>>>
->>>>         http://lkml.org/lkml/2008/9/3/96
->>>>
->>>> the restart phase simulates a clone and switch_to to (not) restore the kernel 
->>>> stack. right ? 
->>> Do we ever have to worry about the kernel stack if we simply say that
->>> tasks have to be *in* userspace when we checkpoint them. 
->> at a syscall boundary for example. that would make our life easier 
->> definitely. 
->>
-> 
-> The ideal situation is never worry about kernel stack: either we catch
-> the task in user space or at a syscall boundary. This is taken care of
-> by freezing the tasks prior to checkpoint.
-> 
-> The one exception (and it is a tedious one !) are states in which the
-> task is already frozen by definition: any ptrace blocking point where
-> the tracee waits for the tracer to grant permission to proceed with
-> its execution. Another example is in vfork(), waiting for completion.
+On Wed, Oct 15, 2008 at 05:25:09PM -0700, Greg KH wrote:
+> Hi,
 
-I would say these are perfect places for "may be non-checkpointable" :)
+Hi Greg,
 
-> In both cases, there will be a kernel stack and we cannot avoid it.
-> The bad news is that it may be a bit tedious to restart these cases.
-> The good news, however, is that they are very well defined locations
-> with well defined semantics. So upon restart all that is needed is
-> to emulate the expected behavior had we not been checkpointed. This,
-> luckily, does not require rebuilding the kernel stack, but instead
-> some smart glue code for a finite set of special cases.
+>...
+> Yes, we can handle the major/minor macros in the kernel to provide a
+> compatible number so that automated scripts will not break, that's not a
+> big deal.
+> 
+> Any thoughts?
+>...
+
+how much of userspace breaks when we suddenly "just for fun" change the 
+version numbering scheme in a very radical way?
+
+I'm not thinking of scripts for building the kernel.
+
+I'm thinking of the fact that starting with glibc different pieces of 
+userspace software interpret the kernel version number they get from 
+various sources like e.g. <linux/version.h>, "uname -r" or an ioctl.
+
+As a random example, the "config" script of OpenSSL 0.9.8g contains the 
+following:
+
+<--  snip  -->
+
+...
+RELEASE=`(uname -r) 2>/dev/null` || RELEASE="unknown"
+...
+case "${SYSTEM}:${RELEASE}:${VERSION}:${MACHINE}" in
+...
+    Linux:[2-9].*)
+        echo "${MACHINE}-whatever-linux2"; exit 0
+        ;;
+
+    Linux:1.*)
+        echo "${MACHINE}-whatever-linux1"; exit 0
+        ;;
+...
+
+<--  snip  -->
+
+
+Change the version number of the kernel in the way you suggest, and 
+trying to build it will fail with:
+
+<--  snip  -->
+
+$ ./config
+Operating system: x86_64-whatever-Linux
+This system (Linux) is not supported. See file INSTALL for details.
+$ 
+
+<--  snip  -->
+
+
+If a distribution will try to autobuild an urgent OpenSSL security 
+update for their stable release in a chroot on a machine running
+kernel 2009.2.3 they will surely love you for being responsible
+for this...
+
+
+> thanks,
+> 
+> greg k-h
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
