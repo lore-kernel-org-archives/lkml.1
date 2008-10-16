@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYJPH6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbYJPIHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755358AbYJPH6w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 03:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbYJPH6n
+	id S1754910AbYJPIHF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 04:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYJPIGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 03:58:43 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:33445 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752913AbYJPH6m (ORCPT
+	Thu, 16 Oct 2008 04:06:47 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:46961 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750989AbYJPIGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 03:58:42 -0400
-Date: Thu, 16 Oct 2008 09:58:36 +0200 (CEST)
+	Thu, 16 Oct 2008 04:06:46 -0400
+Date: Thu, 16 Oct 2008 10:06:41 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: David Miller <davem@davemloft.net>
-cc: akpm@linux-foundation.org, dan.j.williams@intel.com, tiwai@suse.de,
-       linux-ext4@vger.kernel.org, netdev@vger.kernel.org,
-       linux-ide@vger.kernel.org, bzolnier@gmail.com, marek.vasut@gmail.com,
-       dwmw2@infradead.org, mark.fasheh@oracle.com, ralf@linux-mips.org,
-       mchehab@infradead.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: powerpc allmodconfig
-In-Reply-To: <20081016.003644.74134312.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0810160958000.25933@anakin>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org>
- <20081015.220247.262683261.davem@davemloft.net> <Pine.LNX.4.64.0810160930300.25933@anakin>
- <20081016.003644.74134312.davem@davemloft.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Jiri Kosina <jkosina@suse.cz>, Adrian Bunk <bunk@kernel.org>,
+       zippel@linux-m68k.org, sam@ravnborg.org, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: select validation (was: Re: [2.6 patch] HID: fix default building
+ of all quirky devices)
+In-Reply-To: <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0810161002240.25933@anakin>
+References: <20081015041346.GE4710@cs181140183.pp.htv.fi>
+ <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi>
+ <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz>
+ <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, David Miller wrote:
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> Date: Thu, 16 Oct 2008 09:31:29 +0200 (CEST)
+On Wed, 15 Oct 2008, Linus Torvalds wrote:
+> On Wed, 15 Oct 2008, Jiri Kosina wrote:
+> > Hmm ... I am not really sure, isn't this a bug in Kconfig?
 > 
-> > On Wed, 15 Oct 2008, David Miller wrote:
-> > > > kernel/resource.c: In function '__reserve_region_with_split':
-> > > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
-> > > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
-> > > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 6 has type 'resource_size_t'
-> > > > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'resource_size_t'
-> > > 
-> > > Known issue, Ben wants to add a new variant of %pX in order to print resources so that
-> > > resource_size_t vs. unsigned long stuff doesn't matter like this any more.
-> > 
-> > Will still give a warning, as resource_size_t is not a pointer.
+> Not really, more of a misfeature.
 > 
-> The idea is to pass in a pointer to the resource struct,
-> and the %pX variant specified says what part to print.
+> That said, even if we were to consider it a bug, Adrian's patch is 
+> obviously the better way to do it. You shouldn't do non-local dependencies 
+> (have one config option select fifty other ones), when the local ones are 
+> clearer and more readable (have one config option just describe its *own* 
+> dependencies).
+> 
+> Don't get me wrong - select is very useful, but not for "should I ask this 
+> question or not". The point to use select is when you have some library or 
+> other common infrastructure that isn't worth a question of its own (eg 
+> "Why the hell would the user want to care whether he needs CRC32 
+> routines?"), and some code says "I will need this infrastructure" by just 
+> saying "select CRC32" to let the build system know that it needs that 
+> particular piece of functionality.
+> 
+> In other words, "select" is kind of a "depends on", but for things that it 
+> is insane to ask. It would be totally _idiotic_ to ask a user "do you want 
+> to have CRC32 routines in the kernel?" and then based on that say "ok, you 
+> didn't ask for CRC32, so now you cannot use the AX88796 network driver".
+> 
+> See? THAT is what "select" is for. And when you use select, the way we do 
+> things now, you have to select everything you need. You cannot assume that 
+> it will recursively select whatever it needs.
+> 
+> And notice how you mis-use select. That's not how to disable a question. A 
+> question gets disabled by just doing an "if xyz" on the question itself, 
+> like Adrian did.
 
-Neat! So we can also have a separate variant to print the resource
-range.
+Would it be possible for kconfig to check for invalid usage of select?
+
+Like you should not use select to enable something that has
+dependencies. However, that would fail in case both the selector option
+and the selected option depend on the same.
+
+And doing it dynamically (you should not use select to enable something that
+has dependencies that are (currently) not fulfilled) wouldn't find all
+incorrect usages.
 
 Gr{oetje,eeting}s,
 
