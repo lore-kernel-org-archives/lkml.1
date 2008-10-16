@@ -1,96 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYJPRMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYJPRNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbYJPRMd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYJPRMY
+	id S1755082AbYJPRNF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYJPRMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:12:24 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:7076 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751507AbYJPRMY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:12:24 -0400
-Date: Thu, 16 Oct 2008 21:12:22 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       "Steven A. Falco" <sfalco@harris.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
-       i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/7 RFC] Handle I2C GPIO controllers with the OF (was:
-	pca9539 I2C gpio expander)
-Message-ID: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+	Thu, 16 Oct 2008 13:12:52 -0400
+Received: from willie.n0ano.com ([64.66.241.76]:41318 "EHLO xolotl.n0ano.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751507AbYJPRMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:12:51 -0400
+From: n0ano@n0ano.com
+Date: Thu, 16 Oct 2008 11:12:18 -0600
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Paul Bolle <pebolle@tiscali.nl>, n0ano@n0ano.com,
+       donald.d.dugger@intel.com, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Enable console on PCI serial devices
+Message-ID: <20081016171218.GD14490@xolotl.n0ano.com>
+References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <86802c440810141539x97ceaa4meaab109fae3d9d4c@mail.gmail.com> <20081014233031.GB14490@xolotl.n0ano.com> <1224061999.25929.7.camel@test.thuisdomein> <20081015204850.GC14490@xolotl.n0ano.com> <1224153822.3587.23.camel@test.thuisdomein> <48F76A8B.6050306@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <48F76A8B.6050306@kernel.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, Oct 16, 2008 at 09:23:39AM -0700, Yinghai Lu wrote:
+>... 
+> earlycon= and conole= share uart[8250]...
+> 
+> the difference console= will start from early console and switch normal console automatically if the ttyS come out with same io/mmio address etc.
+> 
 
-Recently there was a question about I2C GPIO controllers and how should
-we handle them with the OpenFirmware and such.
+But there is no advantage to `earlycon' given that you can accomplish
+the same thing with `console'.  The only use that I can see is if
+you specify `earlycon' without specifying `console' and then all
+you get are the initial kernel messages, after the serial drivers
+intializes all further messages go to the VGA.  If makes much more
+sense to me to just use the `console' parameter to get all kernel
+messages on the serial port, and then there is no need for
+`earlycon'.
 
-Here is the attempt to "connect" I2C GPIO controllers to the
-"OpenFirmware" device tree, without writing an OF-specific bindings
-for each driver.
-
-The salt is in these two patches:
-
-[PATCH 3/7] of: fill the archdata for I2C devices
-^ Here we're storing the device tree node into the I2C device.
-
-[PATCH 5/7] of/gpio: implement of_dev_gpiochip_{add,remove} calls
-^ And here we extracting the the stored node to put the registered
-  of_gpio_chip into that node.
-
-
-How does it look?
-
-p.s. The original question:
-
------ Forwarded message from "Steven A. Falco" <sfalco@harris.com> -----
-
-Date: Tue, 14 Oct 2008 14:10:25 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: pca9539 I2C gpio expander
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-
-I am attempting to use a pca9539 I2C gpio driver on a PPC440EPx board.  The
-driver is "drivers/gpio/pca953x.c".  I've added an entry to the .dts file:
-
-IIC0: i2c@ef600700 {
-	compatible = "ibm,iic-440epx", "ibm,iic";
-	...
-	pca9539@76 {
-		compatible = "ti,pca9539";
-		reg = <76>;
-	};
-};
-
-of_register_i2c_devices sees this entry and calls i2c_new_device.
-i2c_new_device copies info->platform_data to client->dev.platform_data, but
-I think that this structure is empty (at least I don't see where
-of_register_i2c_devices would set it).
-
-pca953x_probe is eventually called, but it expects to find its "lowest gpio
-number" in client->dev.platform_data->gpio_base, which has not been set.  So
-pca953x_probe returns -ENODEV.
-
-I don't understand where the disconnect is.  Should I be able to use the
-pca953x.c driver, or is it somehow incompatible?
-
-If it is incompatible, is there a strategy for making it compatible?
-
-	Steve
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
------ End forwarded message -----
+-- 
+Don Dugger
+"Censeo Toto nos in Kansa esse decisse." - D. Gale
+n0ano@n0ano.com
+Ph: 303/443-3786
