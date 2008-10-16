@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbYJPWtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbYJPWuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758350AbYJPWtS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYJPWs7
+	id S1758401AbYJPWuL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbYJPWt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:48:59 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:44493 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755924AbYJPWs7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:48:59 -0400
-Date: Thu, 16 Oct 2008 17:48:58 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH 2/2] cciss: fix regression firmware version not displayed in procfs (again)
-Message-ID: <20081016224858.GB26564@roadking.ldev.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Thu, 16 Oct 2008 18:49:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58295 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755065AbYJPWt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 18:49:57 -0400
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX1+1sG1XmbW1bMoiWmbL4PBEH4iXYueDwdhBVQPvap
+	x8crnt0KQMoBua
+From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 00/14] 2.6.27-stable review
+Date: Fri, 17 Oct 2008 00:49:52 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20081016175525.GA12850@suse.de>
+In-Reply-To: <20081016175525.GA12850@suse.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart4571615.4TbOUy7oYI";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200810170049.54106.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 2 of 2
+--nextPart4571615.4TbOUy7oYI
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The regression was introduced by commit
-6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
-This patch fixes a regression where the controller firmware version is not
-displayed in procfs. The previous patch would be called anytime something
-changed. This will get called only once for each controller.
-Please consider this for inclusion.
+Hi
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
+On Donnerstag, 16. Oktober 2008, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.27.2 release.
+[...]
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.2-rc1.gz
+[...]
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 0f367b1..1c830bd 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3404,7 +3404,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	int i;
- 	int j = 0;
- 	int rc;
--	int dac;
-+	int dac, return_code;
-+	InquiryData_struct *inq_buff = NULL;
- 
- 	i = alloc_cciss_hba();
- 	if (i < 0)
-@@ -3510,6 +3511,25 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	/* Turn the interrupts on so we can service requests */
- 	hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
- 
-+	/* Get the firmware version */
-+	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
-+	if (inq_buff == NULL) {
-+		printk(KERN_ERR "cciss: out of memory\n");
-+		return -ENOMEM;
-+	}
-+
-+	return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
-+		sizeof(InquiryData_struct), 0, 0 , 0, TYPE_CMD);
-+	if (return_code == IO_OK) {
-+		hba[i]->firm_ver[0] = inq_buff->data_byte[32];
-+		hba[i]->firm_ver[1] = inq_buff->data_byte[33];
-+		hba[i]->firm_ver[2] = inq_buff->data_byte[34];
-+		hba[i]->firm_ver[3] = inq_buff->data_byte[35];
-+	} else {	 /* send command failed */
-+		printk(KERN_WARNING "cciss: unable to determine firmware"
-+			" version of controller\n");
-+	}
-+
- 	cciss_procinit(i);
- 
- 	hba[i]->cciss_max_sectors = 2048;
+This file doesn't appear to have reached the server yet.
+
+Thanks
+	Stefan Lippers-Hollmann
+
+--nextPart4571615.4TbOUy7oYI
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkj3xRIACgkQORbEMfgJlPZAagCfR/vCu908cFdlyyFU+2Ku8R1+
+ZfcAn3Xky72yPv9BhQYYzpcbCYDDeKWl
+=SzXD
+-----END PGP SIGNATURE-----
+
+--nextPart4571615.4TbOUy7oYI--
