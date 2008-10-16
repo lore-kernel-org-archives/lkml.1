@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYJPXz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbYJPXzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbYJPXz0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYJPXzN
+	id S1753267AbYJPXzp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYJPXzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:55:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38038 "EHLO mx2.redhat.com"
+	Thu, 16 Oct 2008 19:55:24 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:48735 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972AbYJPXzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:55:12 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081016224641.GA17413@us.ibm.com>
-References: <20081016224641.GA17413@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: dhowells@redhat.com, James Morris <jmorris@namei.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Michael Halcrow <mhalcrow@us.ibm.com>
-Subject: Re: [PATCH] User namespaces: set of cleanups (eventually for linux-next?)
-Date: Fri, 17 Oct 2008 00:54:59 +0100
-Message-ID: <758.1224201299@redhat.com>
+	id S1754233AbYJPXzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 19:55:23 -0400
+Message-Id: <20081016234656.889753679@polymtl.ca>
+References: <20081016232729.699004293@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Thu, 16 Oct 2008 19:27:38 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: David Miller <davem@davemloft.net>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: [RFC patch 09/15] LTTng mips export hpt frequency
+Content-Disposition: inline; filename=lttng-mips-export-hpt-frequency.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Thu, 16 Oct 2008 23:54:45 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+LTTng needs it from modules.
 
-Serge E. Hallyn <serue@us.ibm.com> wrote:
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ralf Baechle <ralf@linux-mips.org>
+---
+ arch/mips/kernel/time.c  |    1 +
+ include/asm-mips/timex.h |    2 ++
+ 2 files changed, 3 insertions(+)
 
-> David, since this consumes your patch, I wasn't sure whether it was
-> appropriate to put your signed-off-by on here or not.  I decided
-> doing so was the worse of the potential offenses...
+Index: linux-2.6-lttng/include/asm-mips/timex.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-mips/timex.h	2008-10-16 18:16:37.000000000 -0400
++++ linux-2.6-lttng/include/asm-mips/timex.h	2008-10-16 18:16:44.000000000 -0400
+@@ -63,6 +63,8 @@ static inline cycles_t get_cycles(void)
+ }
+ #endif
+ 
++extern unsigned int mips_hpt_frequency;
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /*  _ASM_TIMEX_H */
+Index: linux-2.6-lttng/arch/mips/kernel/time.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/mips/kernel/time.c	2008-10-16 18:16:32.000000000 -0400
++++ linux-2.6-lttng/arch/mips/kernel/time.c	2008-10-16 18:16:44.000000000 -0400
+@@ -70,6 +70,7 @@ EXPORT_SYMBOL(perf_irq);
+  */
+ 
+ unsigned int mips_hpt_frequency;
++EXPORT_SYMBOL(mips_hpt_frequency);
+ 
+ void __init clocksource_set_clock(struct clocksource *cs, unsigned int clock)
+ {
 
-The way I think I'd've done it is to include my patch description and
-signed-off-by then list your additional changes (just keep on incrementing the
-point numbers) and your signed-off-by.
-
-> -	new_user = alloc_uid(current->nsproxy->user_ns, new->uid);
-> +	new_user = alloc_uid(current_user()->user_ns, new->uid);
-
-That should be current_user_ns() rather than current_user()->user_ns.  I made
-this change before adding the macro.
-
-> +	key_put(new->thread_keyring);
-> +	new->thread_keyring = NULL;
-
-Superfluous.  copy_creds() does this immediately upon return.
-
-Also, in copy_creds(), should the session and process keyrings be discarded if
-CLONE_NEWUSER is set?  Actually, I think that should be dealt with by a patch
-to deal with namespacing keyrings as the user-default keyrings need to be
-namespaced rather than here.
-
-David
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
