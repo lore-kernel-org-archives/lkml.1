@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYJPXL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbYJPXMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758712AbYJPXL3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbYJPXLS
+	id S1758778AbYJPXMV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbYJPXMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:11:18 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:24851 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756440AbYJPXLR (ORCPT
+	Thu, 16 Oct 2008 19:12:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35002 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756250AbYJPXMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:11:17 -0400
-X-YMail-OSG: FPQXVnoVM1nIB4hsZp7EK7WWXPIGYpeAcDCHvAJWBDZJSF37TMB.QnxAbD.J2YJ1.6aplAaycOygVzBwn8Vq4zAhzE0zsWC0pWggoQOmEDVEWoRHYMKATFysAvb7mRiQsfRrBsnegZLmEfBe98XfluQEM8orfqU4dx3.nyrph61IEChGKlQP7X4HVdY-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [ANNOUNCE]: LIO-Target/ConfigFS for v2.6.27
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       dm-devel <dm-devel@redhat.com>,
-       OpenFabrics-General <general@lists.openfabrics.org>
-Cc: Jerome Martin <tramjoe.merin@gmail.com>, Greg KH <greg@kroah.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alasdair G Kergon <agk@redhat.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Pete Wyckoff <pw@osc.edu>
-Content-Type: text/plain
-Date: Thu, 16 Oct 2008 16:11:13 -0700
-Message-Id: <1224198674.5556.255.camel@haakon2.linux-iscsi.org>
+	Thu, 16 Oct 2008 19:12:08 -0400
+Date: Thu, 16 Oct 2008 16:11:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dean Nelson <dcn@sgi.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] NULL struct irq_desc's member 'name' in
+ dynamic_irq_cleanup()
+Message-Id: <20081016161145.58bbe635.akpm@linux-foundation.org>
+In-Reply-To: <20081016125808.GA24347@sgi.com>
+References: <20081016125808.GA24347@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+On Thu, 16 Oct 2008 07:58:08 -0500
+Dean Nelson <dcn@sgi.com> wrote:
 
-I am happy to announce the release of LIO-Target/ConfigFS for v2.6.27.
+> If the member 'name' of the irq_desc structure happens to point to a character
+> string that is resident within a kernel module, problems insue if that module
+> is rmmod'd (at which time dynamic_irq_cleanup() is called) and then later
+> show_interrupts() is called by someone.
 
-http://linux-iscsi.org/index.php/LIO-Target/ConfigFS
+It would be nice to spell out what the "problems" are.
 
-Using ConfigFS it is now possible to create generic storage objects from
-Linux/SCSI using struct scsi_device, Linux/BLOCK using struct
-block_device and Linux/VFS using struct file into a generic target
-infrastructure under /sys/kernel/config/target/core (target_core_mod).
->From there, one can create ConfigFS symbolic links to destinations
-under /sys/kernel/config/target/iscsi/ (iscsi_target_mod).  The idea is
-that any $FABRIC module can access the same storage objects under the
-generic target_core_mod configfs infrastracture.
+> It is also not a good thing if the
+> character string resided in kmalloc'd space that has been kfree'd (after
+> having called dynamic_irq_cleanup()). dynamic_irq_cleanup() fails to NULL
+> the 'name' member and show_interrupts() references it on a few architectures
+> (like h8300, sh and x86).
+> 
+> Signed-off-by: Dean Nelson <dcn@sgi.com>
+> 
+> ---
+> 
+>  kernel/irq/chip.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: linux/kernel/irq/chip.c
+> ===================================================================
+> --- linux.orig/kernel/irq/chip.c	2008-10-15 07:44:31.000000000 -0500
+> +++ linux/kernel/irq/chip.c	2008-10-16 06:55:56.000000000 -0500
+> @@ -79,6 +79,7 @@ void dynamic_irq_cleanup(unsigned int ir
+>  	desc->chip_data = NULL;
+>  	desc->handle_irq = handle_bad_irq;
+>  	desc->chip = &no_irq_chip;
+> +	desc->name = NULL;
+>  	spin_unlock_irqrestore(&desc->lock, flags);
+>  }
+>  
 
-I have primarly been working on completing the configfs conversion for
-iscsi_target_mod, and as that work wraps up, I will next be focusing on
-target_core_mod and the generic kernel target infrastructure in Linux.
-This involves quite a few different things, merging existing in-tree
-STGT code into so it can use /sys/kernel/config/target/core, merging out
-of tree SCST code for multiple existing fabric modules and hardware
-target mode drivers, the Target API, etc.  This work will definately
-take lots of time and effort, but the end result will be a complete
-target infrastructure under Linux that all manner of folks can use and
-take advantage of and to build upon.
-
-Thanks to the many folks you have made suggestions and comments in order
-to get packets across the network and blocks down to storage up as
-quickly as possible.  It was only ~7 weeks ago that Ming Zhang made the
-recommendation to start using configfs, and now 6k new lines of code in
-target_core_config.[c,h] and iscsi_target_configfs.[c.h]..  Wow..
-
-As work continues on both fronts:  making iscsi_target_mod upstream
-ready, and creating a generic target engine using configfs for
-iscsi_target_mod and *ALL* fabric modules, the Linux-iSCSI.org team
-invites anyone who is interested to start looking at the code.  You can
-do this online at:
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=tree;f=drivers/lio-core;hb=HEAD
-
-or checkout your own git tree and start posting patching to the
-LIO-Target devleopment list.  Instructions for git clone can be found
-on:
-
-http://linux-iscsi.org/index.php/LIO-Target
-
-Please feel free to ask questions!
-
---nab
+Because we should work out whether this should be backported into
+-stable.  And if so, how far back it should go.
 
