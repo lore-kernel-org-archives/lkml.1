@@ -1,126 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYJPLqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbYJPLr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbYJPLqZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 07:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYJPLqR
+	id S1756462AbYJPLr0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 07:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbYJPLrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 07:46:17 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:60712 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754191AbYJPLqQ (ORCPT
+	Thu, 16 Oct 2008 07:47:18 -0400
+Received: from mail-in-10.arcor-online.net ([151.189.21.50]:55672 "EHLO
+	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754191AbYJPLrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 07:46:16 -0400
-Date: Thu, 16 Oct 2008 17:15:58 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org, arun@linux.vnet.ibm.com
-Subject: [RFC PATCH 1/4] timers: Sysfs hook to enable timer migration
-Message-ID: <20081016114558.GB7641@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
-	ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
-	andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-	vatsa@linux.vnet.ibm.com, arjan@infradead.org
+	Thu, 16 Oct 2008 07:47:17 -0400
+Date: Thu, 16 Oct 2008 13:58:12 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] softpanic - halt booting, but allow reading why
+Message-ID: <alpine.LSU.0.999.0810161353100.5381@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch creates the necessary sysfs interface for timer migration.
+While booting, certain panic()s have the purpose of just stopping the
+machnine. This has the unfortunate side effect of preventing the user
+from scrolling and looking at the cause.
 
-The interface is located at /sys/devices/system/cpu/cpuX/timer_migration
+This patch adds a softpanic() function, which behaves similar to panic()
+in stopping the boot and possibly rebooting after a timeout, but it
+does allow background activity.
 
-These sysfs entries are initialized to their respective cpu ids.
-This represents the no timer migration state.
-By echoing a target cpu number we can enable migration for that cpu.
+Signed-off-by: Bodo Eggert <7eggert@gmx.de>
 
-Echo a target cpu number to the per-cpu sysfs entry and all timers
-are migrated to that cpu, instead of choosing cpu0 by default.
-
-e.g. echo 4 > /sys/devices/system/cpu/cpu1/timer_migration
-
-this would move all regular and hrtimers from cpu1 to cpu4.
-
-
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- drivers/base/cpu.c    |   42 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/timer.h |    2 ++
- 2 files changed, 44 insertions(+)
 
-Index: linux-2.6.27/drivers/base/cpu.c
-===================================================================
---- linux-2.6.27.orig/drivers/base/cpu.c
-+++ linux-2.6.27/drivers/base/cpu.c
-@@ -20,6 +20,43 @@ EXPORT_SYMBOL(cpu_sysdev_class);
+I thought about merging both functions, but I don't think it would work out.
+
+diff -pruNXdontdiff linux-2.6.27/include/linux/kernel.h linux-2.6.27.softpanic/include/linux/kernel.h
+--- linux-2.6.27/include/linux/kernel.h	2008-10-10 13:18:43.000000000 +0200
++++ linux-2.6.27.softpanic/include/linux/kernel.h	2008-10-10 19:23:43.000000000 +0200
+@@ -144,6 +144,12 @@ extern struct atomic_notifier_head panic
+ extern long (*panic_blink)(long time);
+ NORET_TYPE void panic(const char * fmt, ...)
+ 	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
++#ifdef CONFIG_SOFTPANIC
++NORET_TYPE void softpanic(const char * fmt, ...)
++	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
++#else
++# define softpanic(...) do { panic(__VA_ARGS__); } while (0)
++#endif
+ extern void oops_enter(void);
+ extern void oops_exit(void);
+ extern int oops_may_print(void);
+diff -pruNXdontdiff linux-2.6.27/init/Kconfig linux-2.6.27.softpanic/init/Kconfig
+--- linux-2.6.27/init/Kconfig	2008-10-10 13:18:44.000000000 +0200
++++ linux-2.6.27.softpanic/init/Kconfig	2008-10-10 18:32:03.000000000 +0200
+@@ -618,6 +618,14 @@ config BUG
+           option for embedded systems with no facilities for reporting errors.
+           Just say Y.
  
- static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
++config SOFTPANIC
++	bool "Enable softpanic for boot errors" if EMBEDDED
++	default y
++	help
++		Enabling this option changes a hard panic on boot errors to a
++		soft panic, which does not stop the system completely.
++		You can still scroll the screen and read the messages.
++
+ config ELF_CORE
+ 	default y
+ 	bool "Enable ELF core dumps" if EMBEDDED
+diff -pruNXdontdiff linux-2.6.27/init/do_mounts.c linux-2.6.27.softpanic/init/do_mounts.c
+--- linux-2.6.27/init/do_mounts.c	2008-10-10 13:18:44.000000000 +0200
++++ linux-2.6.27.softpanic/init/do_mounts.c	2008-10-10 18:32:03.000000000 +0200
+@@ -263,7 +263,7 @@ retry:
+ 		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
  
-+DEFINE_PER_CPU(int, enable_timer_migration);
-+
-+/* This function initializes sysfs entries for enabling timer migration.
-+ * Each per_cpu enable_timer_migration is initialized to its cpu_id.
-+ * By echo-ing a value other than its cpu_id will set that as the target cpu
-+ * to which the timers are to be migrated to.
-+ */
-+void initialize_timer_migration_sysfs(void)
-+{
-+	int cpu;
-+	for_each_possible_cpu(cpu)
-+		per_cpu(enable_timer_migration, cpu) = cpu;
-+}
-+
-+static ssize_t timer_migration_show(struct sys_device *dev, char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	return sprintf(buf, "%u\n", per_cpu(enable_timer_migration,
-+		cpu->sysdev.id));
-+}
-+static ssize_t
-+timer_migration_store(struct sys_device *dev, const char *buf, size_t count)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	ssize_t ret = -EINVAL;
-+	int target_cpu;
-+	sscanf(buf, "%d", &target_cpu);
-+	if (cpu_online(target_cpu)) {
-+		ret = count;
-+		per_cpu(enable_timer_migration, cpu->sysdev.id) = target_cpu;
-+	}
-+
-+	return ret;
-+}
-+static SYSDEV_ATTR(timer_migration, 0644,
-+		timer_migration_show, timer_migration_store);
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static ssize_t show_online(struct sys_device *dev, struct sysdev_attribute *attr,
- 			   char *buf)
-@@ -177,6 +214,11 @@ int __cpuinit register_cpu(struct cpu *c
- 	if (!error)
- 		error = sysdev_create_file(&cpu->sysdev, &attr_crash_notes);
+ 		printk_all_partitions();
+-		panic("VFS: Unable to mount root fs on %s", b);
++		softpanic("VFS: Unable to mount root fs on %s", b);
+ 	}
+ 
+ 	printk("List of all partitions:\n");
+@@ -275,7 +275,7 @@ retry:
+ #ifdef CONFIG_BLOCK
+ 	__bdevname(ROOT_DEV, b);
  #endif
-+
-+	if (!error) {
-+		error = sysdev_create_file(&cpu->sysdev, &attr_timer_migration);
-+		initialize_timer_migration_sysfs();
-+	}
- 	return error;
+-	panic("VFS: Unable to mount root fs on %s", b);
++	softpanic("VFS: Unable to mount root fs on %s", b);
+ out:
+ 	putname(fs_names);
+ }
+diff -pruNXdontdiff linux-2.6.27/init/main.c linux-2.6.27.softpanic/init/main.c
+--- linux-2.6.27/init/main.c	2008-10-10 13:18:44.000000000 +0200
++++ linux-2.6.27.softpanic/init/main.c	2008-10-10 18:32:03.000000000 +0200
+@@ -621,7 +621,7 @@ asmlinkage void __init start_kernel(void
+ 	 */
+ 	console_init();
+ 	if (panic_later)
+-		panic(panic_later, panic_param);
++		softpanic(panic_later, panic_param);
+ 
+ 	lockdep_info();
+ 
+@@ -830,7 +830,7 @@ static int noinline init_post(void)
+ 	run_init_process("/bin/init");
+ 	run_init_process("/bin/sh");
+ 
+-	panic("No init found.  Try passing init= option to kernel.");
++	softpanic("No init found.  Try passing init= option to kernel.");
  }
  
-Index: linux-2.6.27/include/linux/timer.h
-===================================================================
---- linux-2.6.27.orig/include/linux/timer.h
-+++ linux-2.6.27/include/linux/timer.h
-@@ -187,3 +187,5 @@ unsigned long round_jiffies(unsigned lon
- unsigned long round_jiffies_relative(unsigned long j);
+ static int __init kernel_init(void * unused)
+diff -pruNXdontdiff linux-2.6.27/kernel/panic.c linux-2.6.27.softpanic/kernel/panic.c
+--- linux-2.6.27/kernel/panic.c	2008-10-10 13:18:45.000000000 +0200
++++ linux-2.6.27.softpanic/kernel/panic.c	2008-10-10 20:13:37.000000000 +0200
+@@ -140,9 +140,68 @@ NORET_TYPE void panic(const char * fmt, 
+ 		i++;
+ 	}
+ }
+-
+ EXPORT_SYMBOL(panic);
  
- #endif
++#ifdef CONFIG_SOFTPANIC
++NORET_TYPE void softpanic(const char * fmt, ...)
++{
++	long i;
++	static char buf[1024];
++	va_list args;
++#if defined(CONFIG_S390)
++        unsigned long caller = (unsigned long) __builtin_return_address(0);
++#endif
 +
-+DECLARE_PER_CPU(int, enable_timer_migration);
++	va_start(args, fmt);
++	vsnprintf(buf, sizeof(buf), fmt, args);
++	va_end(args);
++	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
++
++	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
++
++	if (!panic_blink)
++		panic_blink = no_blink;
++
++	if (panic_timeout > 0) {
++		/*
++	 	 * Delay timeout seconds before rebooting the machine. 
++		 * We can't use the "normal" timers since we just panicked..
++	 	 */
++		printk(KERN_EMERG "Rebooting in %d seconds..",panic_timeout);
++		for (i = 0; i < panic_timeout*1000; ) {
++			touch_nmi_watchdog();
++			i += panic_blink(i);
++			mdelay(1);
++			i++;
++		}
++		/*	This will not be a clean reboot, with everything
++		 *	shutting down.  But if there is a chance of
++		 *	rebooting the system it will be rebooted.
++		 */
++		kernel_restart(NULL);
++	}
++#ifdef __sparc__
++	{
++		extern int stop_a_enabled;
++		/* Make sure the user can actually press Stop-A (L1-A) */
++		stop_a_enabled = 1;
++		printk(KERN_EMERG "Press Stop-A (L1-A) to return to the boot prom\n");
++	}
++#endif
++#if defined(CONFIG_S390)
++        disabled_wait(caller);
++#endif
++	for (i = 0;;) {
++		touch_softlockup_watchdog();
++		i += panic_blink(i);
++		msleep(1);
++		i++;
++	}
++}
++EXPORT_SYMBOL(softpanic);
++#endif
++
++
+ /**
+  *	print_tainted - return a string to represent the kernel taint state.
+  *
+
+-- 
+Fun things to slip into your budget
+Half a million dollars for consultants to design a web site that was being
+done by an intern in his spare time.
