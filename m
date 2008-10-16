@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYJPWgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbYJPWhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbYJPWgt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYJPWgm
+	id S1757982AbYJPWhS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756979AbYJPWhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:36:42 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:6192 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753102AbYJPWgl (ORCPT
+	Thu, 16 Oct 2008 18:37:00 -0400
+Received: from CPE-124-189-54-71.nsw.bigpond.net.au ([124.189.54.71]:49765
+	"EHLO bunyip.billabong.weebeastie.net" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754708AbYJPWg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:36:41 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAJJe90h5LF1j/2dsb2JhbADEJINs
-X-IronPort-AV: E=Sophos;i="4.33,426,1220193000"; 
-   d="scan'208";a="232258871"
-Date: Fri, 17 Oct 2008 09:36:37 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Jianjun Kong <jianjun@zeuux.org>
-Cc: Tim Shimmin <tes@sgi.com>, stable@kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH] XFS fix remount rw with unrecognized options
-Message-ID: <20081016223637.GB31761@disturbed>
-Mail-Followup-To: Jianjun Kong <jianjun@zeuux.org>,
-	Tim Shimmin <tes@sgi.com>, stable@kernel.org,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <20081016002926.D912558FA22B@chook.melbourne.sgi.com> <20081016134112.GA8773@ubuntu>
+	Thu, 16 Oct 2008 18:36:59 -0400
+X-Greylist: delayed 2735 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 18:36:58 EDT
+Date: Fri, 17 Oct 2008 08:51:12 +1100
+From: CaT <cat@zip.com.au>
+To: "Yang, Bo" <Bo.Yang@lsi.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+Subject: Re: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl processing
+Message-ID: <20081016215112.GX19077@zip.com.au>
+References: <20081016001721.GW19077@zip.com.au> <4B6A08C587958942AA3002690DD4F8C32D24DF36@cosmail02.lsi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081016134112.GA8773@ubuntu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C32D24DF36@cosmail02.lsi.com>
+Organisation: Furball Inc.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 09:41:12PM +0800, Jianjun Kong wrote:
-> 
-> And the code above "return 0" can not be executed, so delete them.
-> __________________________________________
-> #if 0
->                         printk(KERN_INFO
->         "XFS: mount option \"%s\" not supported for remount\n", p);
->                         return -EINVAL;
-> #else                                                                                                            
->                         return 0;
-> -----------------------------------------
+On Thu, Oct 16, 2008 at 07:54:07AM -0600, Yang, Bo wrote:
+> What MegaCli cmds did you using (DCMD or DCDB?).
 
-That ifdef was added to stub out the behaviour we *actually want*
-remount to have when it encounters an invalid remount option.
-The reason for leaving it is in the next release we should have all
-the other problems we discovered by doing this fixed, so that
-code will be re-enabled. Hence the temporary #if 0 around it.
+MegaCli -LdPdInfo -a0 -NoLog
 
-So at this point, don't remove it.
+Forgot to mention that this is the 64bit version of the command.
 
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+  "Police noticed some rustling sounds from Linn's bottom area
+  and on closer inspection a roll of cash was found protruding
+  from Linn's anus, the full amount of cash taken in the robbery."
+    - http://www.smh.com.au/news/world/robber-hides-loot-up-his-booty/2008/05/09/1210131248617.html
