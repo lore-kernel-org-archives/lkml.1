@@ -1,149 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYJPU6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYJPU65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbYJPU6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 16:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbYJPU6M
+	id S1757370AbYJPU65 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 16:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbYJPU6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 16:58:12 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:48282 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753635AbYJPU6M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 16:58:12 -0400
-Date: Thu, 16 Oct 2008 14:57:54 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove completion from struct klist_node
-Message-ID: <20081016205754.GR15064@parisc-linux.org>
-References: <20081002214308.GP13822@parisc-linux.org> <20081002221745.GC10485@kroah.com> <20081003140618.GQ13822@parisc-linux.org> <20081003204124.GA3269@kroah.com>
+	Thu, 16 Oct 2008 16:58:49 -0400
+Received: from hobbit.corpit.ru ([81.13.33.150]:24733 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754276AbYJPU6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 16:58:48 -0400
+Message-ID: <48F7AB05.50103@msgid.tls.msk.ru>
+Date: Fri, 17 Oct 2008 00:58:45 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081003204124.GA3269@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Harald Dunkel <harald.dunkel@t-online.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27.1: install conflict about /lib/firmware
+References: <48F78C5C.8080907@t-online.de>
+In-Reply-To: <48F78C5C.8080907@t-online.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 03, 2008 at 01:41:24PM -0700, Greg KH wrote:
-> Care to respin this?
+Harald Dunkel wrote:
+> Hi folks,
+> 
+> Seems that there is an installation conflict about
+> /lib/firmware/ess/maestro3_assp_kernel.fw (and probably
+> others) between 2.6.27 and 2.6.27.1. Using dpkg I get
 
-Done:
+Since 2.6.27, firmware binaries are placed into /lib/firmware
+directory.  The reason is that firmware is not kernel-dependent.
+Or, rather, the firmware stored here is not kernel-dependent
+(when it is, it's stored in /lib/modules/$version/).
 
---------
+[]
+> Probably other package managers get a similar problem.
 
-Removing the completion from klist_node reduces its size from 64 bytes
-to 28 on x86-64.  To maintain the semantics of klist_remove(), we add
-a single list of klist nodes which are pending deletion and scan them.
+A package build script should be updated to create separate
+package with the firmware, and to add proper reguiriments
+and/or dependencies.
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> Wouldn't it be more consistent to put the firmware files in a
+> kernel specific directory, e.g. in /lib/firmware/2.6.27.1 or
+> /lib/modules/2.6.27.1/firmware ?
 
-diff --git a/include/linux/klist.h b/include/linux/klist.h
-index 06c338e..989a335 100644
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -13,7 +13,6 @@
- #define _LINUX_KLIST_H
- 
- #include <linux/spinlock.h>
--#include <linux/completion.h>
- #include <linux/kref.h>
- #include <linux/list.h>
- 
-@@ -41,7 +40,6 @@ struct klist_node {
- 	struct klist		*n_klist;
- 	struct list_head	n_node;
- 	struct kref		n_ref;
--	struct completion	n_removed;
- };
- 
- extern void klist_add_tail(struct klist_node *n, struct klist *k);
-diff --git a/lib/klist.c b/lib/klist.c
-index cca37f9..50a6b30 100644
---- a/lib/klist.c
-+++ b/lib/klist.c
-@@ -36,7 +36,7 @@
- 
- #include <linux/klist.h>
- #include <linux/module.h>
--
-+#include <linux/sched.h>
- 
- /**
-  * klist_init - Initialize a klist structure.
-@@ -77,7 +77,6 @@ static void add_tail(struct klist *k, struct klist_node *n)
- static void klist_node_init(struct klist *k, struct klist_node *n)
- {
- 	INIT_LIST_HEAD(&n->n_node);
--	init_completion(&n->n_removed);
- 	kref_init(&n->n_ref);
- 	n->n_klist = k;
- 	if (k->get)
-@@ -140,12 +139,33 @@ void klist_add_before(struct klist_node *n, struct klist_node *pos)
- }
- EXPORT_SYMBOL_GPL(klist_add_before);
- 
-+struct klist_waiter {
-+	struct list_head list;
-+	struct klist_node *node;
-+	struct task_struct *process;
-+	int woken;
-+};
-+
-+static DEFINE_SPINLOCK(klist_remove_lock);
-+static LIST_HEAD(klist_remove_waiters);
-+
- static void klist_release(struct kref *kref)
- {
-+	struct klist_waiter *waiter, *tmp;
- 	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
- 
- 	list_del(&n->n_node);
--	complete(&n->n_removed);
-+	spin_lock(&klist_remove_lock);
-+	list_for_each_entry_safe(waiter, tmp, &klist_remove_waiters, list) {
-+		if (waiter->node != n)
-+			continue;
-+
-+		waiter->woken = 1;
-+		mb();
-+		wake_up_process(waiter->process);
-+		list_del(&waiter->list);
-+	}
-+	spin_unlock(&klist_remove_lock);
- 	n->n_klist = NULL;
- }
- 
-@@ -178,8 +198,24 @@ EXPORT_SYMBOL_GPL(klist_del);
-  */
- void klist_remove(struct klist_node *n)
- {
-+	struct klist_waiter waiter;
-+
-+	waiter.node = n;
-+	waiter.process = current;
-+	waiter.woken = 0;
-+	spin_lock(&klist_remove_lock);
-+	list_add(&waiter.list, &klist_remove_waiters);
-+	spin_unlock(&klist_remove_lock);
-+
- 	klist_del(n);
--	wait_for_completion(&n->n_removed);
-+
-+	for (;;) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		if (waiter.woken)
-+			break;
-+		schedule();
-+	}
-+	__set_current_state(TASK_RUNNING);
- }
- EXPORT_SYMBOL_GPL(klist_remove);
- 
+No, because the firmware is not kernel-dependent, but device-dependent.
+It were deliberate choice.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+/mjt
