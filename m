@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbYJPR0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759107AbYJPR00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757657AbYJPR0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756380AbYJPROr
+	id S1759107AbYJPR00 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYJPROu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:47 -0400
-Received: from kroah.org ([198.145.64.141]:46999 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:50 -0400
+Received: from kroah.org ([198.145.64.141]:47003 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756360AbYJPROq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:46 -0400
+	id S1756387AbYJPROs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:48 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
+Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 29/46] device model: Do a quickcheck for driver binding before doing an expensive check
-Date: Thu, 16 Oct 2008 10:10:30 -0700
-Message-Id: <1224177047-11859-29-git-send-email-gregkh@suse.de>
+Subject: [PATCH 30/46] sysfs: fix deadlock
+Date: Thu, 16 Oct 2008 10:10:31 -0700
+Message-Id: <1224177047-11859-30-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -24,51 +23,194 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
+From: Nick Piggin <npiggin@suse.de>
 
-This patch adds a quick check for the driver<->device match before
-taking the locks and doin gthe expensive checks. Taking the lock hurts
-in asynchronous boot context where the device lock gets hit; one of the
-init functions takes the lock and goes to do an expensive hardware init;
-the other init functions walk the same PCI list and get stuck on the
-lock as a result.
+On Thu, Sep 11, 2008 at 10:27:10AM +0200, Ingo Molnar wrote:
 
-For the common case, we can know there's no chance whatsoever of a match
-if the device isn't in the drivers ID table... so this patch does that
-check as a best-effort-avoid-the-lock approach.
+> and it's working fine on most boxes. One testbox found this new locking
+> scenario:
+>
+> PM: Adding info for No Bus:vcsa7
+> EDAC DEBUG: MC0: i82860_check()
+>
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.27-rc6-tip #1
+> -------------------------------------------------------
+> X/4873 is trying to acquire lock:
+>  (&bb->mutex){--..}, at: [<c020ba20>] mmap+0x40/0xa0
+>
+> but task is already holding lock:
+>  (&mm->mmap_sem){----}, at: [<c0125a1e>] sys_mmap2+0x8e/0xc0
+>
+> which lock already depends on the new lock.
+>
+>
+> the existing dependency chain (in reverse order) is:
+>
+> -> #1 (&mm->mmap_sem){----}:
+>        [<c017dc96>] validate_chain+0xa96/0xf50
+>        [<c017ef2b>] __lock_acquire+0x2cb/0x5b0
+>        [<c017f299>] lock_acquire+0x89/0xc0
+>        [<c01aa8fb>] might_fault+0x6b/0x90
+>        [<c040b618>] copy_to_user+0x38/0x60
+>        [<c020bcfb>] read+0xfb/0x170
+>        [<c01c09a5>] vfs_read+0x95/0x110
+>        [<c01c1443>] sys_pread64+0x63/0x80
+>        [<c012146f>] sysenter_do_call+0x12/0x43
+>        [<ffffffff>] 0xffffffff
+>
+> -> #0 (&bb->mutex){--..}:
+>        [<c017d8b7>] validate_chain+0x6b7/0xf50
+>        [<c017ef2b>] __lock_acquire+0x2cb/0x5b0
+>        [<c017f299>] lock_acquire+0x89/0xc0
+>        [<c0d6f2ab>] __mutex_lock_common+0xab/0x3c0
+>        [<c0d6f698>] mutex_lock_nested+0x38/0x50
+>        [<c020ba20>] mmap+0x40/0xa0
+>        [<c01b111e>] mmap_region+0x14e/0x450
+>        [<c01b170f>] do_mmap_pgoff+0x2ef/0x310
+>        [<c0125a3d>] sys_mmap2+0xad/0xc0
+>        [<c012146f>] sysenter_do_call+0x12/0x43
+>        [<ffffffff>] 0xffffffff
+>
+> other info that might help us debug this:
+>
+> 1 lock held by X/4873:
+>  #0:  (&mm->mmap_sem){----}, at: [<c0125a1e>] sys_mmap2+0x8e/0xc0
+>
+> stack backtrace:
+> Pid: 4873, comm: X Not tainted 2.6.27-rc6-tip #1
+>  [<c017cd09>] print_circular_bug_tail+0x79/0xc0
+>  [<c017d8b7>] validate_chain+0x6b7/0xf50
+>  [<c017a5b5>] ? trace_hardirqs_off_caller+0x15/0xb0
+>  [<c017ef2b>] __lock_acquire+0x2cb/0x5b0
+>  [<c017f299>] lock_acquire+0x89/0xc0
+>  [<c020ba20>] ? mmap+0x40/0xa0
+>  [<c0d6f2ab>] __mutex_lock_common+0xab/0x3c0
+>  [<c020ba20>] ? mmap+0x40/0xa0
+>  [<c0d6f698>] mutex_lock_nested+0x38/0x50
+>  [<c020ba20>] ? mmap+0x40/0xa0
+>  [<c020ba20>] mmap+0x40/0xa0
+>  [<c01b111e>] mmap_region+0x14e/0x450
+>  [<c01afb88>] ? arch_get_unmapped_area_topdown+0xf8/0x160
+>  [<c01b170f>] do_mmap_pgoff+0x2ef/0x310
+>  [<c0125a3d>] sys_mmap2+0xad/0xc0
+>  [<c012146f>] sysenter_do_call+0x12/0x43
+>  [<c0120000>] ? __switch_to+0x130/0x220
+>  =======================
+> evbug.c: Event. Dev: input3, Type: 20, Code: 0, Value: 500
+> warning: `sudo' uses deprecated v2 capabilities in a way that may be insecure.
+>
+> i've attached the config.
+>
+> at first sight it looks like a genuine bug in fs/sysfs/bin.c?
 
-Bootcharts for before and after can be seen at
-http://www.fenrus.org/before.svg
-http://www.fenrus.org/after.svg
+Yes, it is a real bug by the looks. bin.c takes bb->mutex under mmap_sem
+when it is mmapped, and then does its copy_*_user under bb->mutex too.
 
-Note the long time "agp_ali_init" takes in the first graph; my laptop
-doesn't even have an ALI chip in it!  (the bootgraphs look a bit
-dissimilar, but that's the point, the first one has a bunch of arbitrary
-delays in it that cause it to look very different)
+Here is a basic fix for the sysfs lor.
 
-This reduces my kernel boot time by about 20%
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
+From: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/dd.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ fs/sysfs/bin.c |   42 +++++++++++++++++++++++++++++++-----------
+ 1 files changed, 31 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 3ac443b..20febc0 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -257,6 +257,9 @@ static int __driver_attach(struct device *dev, void *data)
- 	 * is an error.
- 	 */
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index 006fc64..66f6e58 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -61,6 +61,7 @@ read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
+ 	int size = dentry->d_inode->i_size;
+ 	loff_t offs = *off;
+ 	int count = min_t(size_t, bytes, PAGE_SIZE);
++	char *temp;
  
-+	if (drv->bus->match && !drv->bus->match(dev, drv))
-+		return 0;
+ 	if (size) {
+ 		if (offs > size)
+@@ -69,23 +70,33 @@ read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
+ 			count = size - offs;
+ 	}
+ 
++	temp = kmalloc(count, GFP_KERNEL);
++	if (!temp)
++		return -ENOMEM;
 +
- 	if (dev->parent)	/* Needed for USB */
- 		down(&dev->parent->sem);
- 	down(&dev->sem);
+ 	mutex_lock(&bb->mutex);
+ 
+ 	count = fill_read(dentry, bb->buffer, offs, count);
+-	if (count < 0)
+-		goto out_unlock;
++	if (count < 0) {
++		mutex_unlock(&bb->mutex);
++		goto out_free;
++	}
+ 
+-	if (copy_to_user(userbuf, bb->buffer, count)) {
++	memcpy(temp, bb->buffer, count);
++
++	mutex_unlock(&bb->mutex);
++
++	if (copy_to_user(userbuf, temp, count)) {
+ 		count = -EFAULT;
+-		goto out_unlock;
++		goto out_free;
+ 	}
+ 
+ 	pr_debug("offs = %lld, *off = %lld, count = %d\n", offs, *off, count);
+ 
+ 	*off = offs + count;
+ 
+- out_unlock:
+-	mutex_unlock(&bb->mutex);
++ out_free:
++	kfree(temp);
+ 	return count;
+ }
+ 
+@@ -118,6 +129,7 @@ static ssize_t write(struct file *file, const char __user *userbuf,
+ 	int size = dentry->d_inode->i_size;
+ 	loff_t offs = *off;
+ 	int count = min_t(size_t, bytes, PAGE_SIZE);
++	char *temp;
+ 
+ 	if (size) {
+ 		if (offs > size)
+@@ -126,19 +138,27 @@ static ssize_t write(struct file *file, const char __user *userbuf,
+ 			count = size - offs;
+ 	}
+ 
+-	mutex_lock(&bb->mutex);
++	temp = kmalloc(count, GFP_KERNEL);
++	if (!temp)
++		return -ENOMEM;
+ 
+-	if (copy_from_user(bb->buffer, userbuf, count)) {
++	if (copy_from_user(temp, userbuf, count)) {
+ 		count = -EFAULT;
+-		goto out_unlock;
++		goto out_free;
+ 	}
+ 
++	mutex_lock(&bb->mutex);
++
++	memcpy(bb->buffer, temp, count);
++
+ 	count = flush_write(dentry, bb->buffer, offs, count);
++	mutex_unlock(&bb->mutex);
++
+ 	if (count > 0)
+ 		*off = offs + count;
+ 
+- out_unlock:
+-	mutex_unlock(&bb->mutex);
++out_free:
++	kfree(temp);
+ 	return count;
+ }
+ 
 -- 
 1.6.0.2
 
