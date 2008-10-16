@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbYJPIaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYJPIbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127AbYJPIaA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 04:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYJPI3w
+	id S1755529AbYJPIbH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 04:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYJPIa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 04:29:52 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36126 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752121AbYJPI3v (ORCPT
+	Thu, 16 Oct 2008 04:30:56 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:47887 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753375AbYJPIaz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 04:29:51 -0400
-Subject: Re: sched: only update rq->clock while holding rq->lock
-From: Peter Zijlstra <peterz@infradead.org>
-To: vatsa@in.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, shaggy@linux.vnet.ibm.com,
-       brking@linux.vnet.ibm.com
-In-Reply-To: <20081016023252.GA25969@linux.vnet.ibm.com>
-References: <1224095843.28131.13.camel@twins>
-	 <20081016023252.GA25969@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 16 Oct 2008 10:29:42 +0200
-Message-Id: <1224145782.28131.27.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 04:30:55 -0400
+Date: Thu, 16 Oct 2008 10:30:52 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: David Miller <davem@davemloft.net>
+cc: hpa@zytor.com, benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, yhlu.kernel@gmail.com
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+In-Reply-To: <20081013.223811.174710738.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0810161030120.9022@vixen.sonytel.be>
+References: <48F3F014.3050406@zytor.com> <1223948488.8157.309.camel@pasglop>
+ <48F409E9.3030501@zytor.com> <20081013.223811.174710738.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-10248566-1224145852=:9022"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-16 at 08:02 +0530, Srivatsa Vaddagiri wrote:
-> On Wed, Oct 15, 2008 at 08:37:23PM +0200, Peter Zijlstra wrote:
-> > Vatsa noticed rq->clock going funny and tracked it down to an update_rq_clock()
-> > outside a rq->lock section.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584349381-10248566-1224145852=:9022
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Mon, 13 Oct 2008, David Miller wrote:
+> From: "H. Peter Anvin" <hpa@zytor.com>
+> Date: Mon, 13 Oct 2008 19:54:33 -0700
 > 
-> For the records, actually Brian King and David Kleikamp noticed this!
+> > I pointed out that we should use the flags to determine formatting
+> > options, e.g. I/O space is only 16 bits on x86.
+> 
+> It's 64-bit on sparc64 :-)
+> 
+> There's also the bit where we use a 32-bit resource_t on sparc32
+> but encode the top 4-bits of the 36 bit physical I/O address in
+> the resource flags member.
 
-Thanks Brian and Shaggy!
+So wouldn't it be better to switch those sparc32 configs to a 64-bit
+resource_t? I think all other platforms with 36-bit physical addresses went
+that way.
 
+With kind regards,
 
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-10248566-1224145852=:9022--
