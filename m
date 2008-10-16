@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbYJPTXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbYJPTZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbYJPTXm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYJPTXd
+	id S1757531AbYJPTZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYJPTZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:23:33 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:50791 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753042AbYJPTXc (ORCPT
+	Thu, 16 Oct 2008 15:25:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49686 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751226AbYJPTZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:23:32 -0400
-Date: Fri, 17 Oct 2008 00:53:20 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       benh@kernel.crashing.org, jwboyer@linux.vnet.ibm.com, apw@shadowen.org
-Subject: [PATCH] linux-next: Tree for October 16 - build failure at MAL
-	support on powerpc
-Message-ID: <20081016192320.GA7534@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20081016211811.a523c8f2.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081016211811.a523c8f2.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 16 Oct 2008 15:25:17 -0400
+Date: Thu, 16 Oct 2008 12:25:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Jackson <mpfj@mimc.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add support for Dallas DS28CM00 Unique ID chip
+Message-Id: <20081016122502.3ad6e958.akpm@linux-foundation.org>
+In-Reply-To: <48EB5FA7.4080701@mimc.co.uk>
+References: <48EB5FA7.4080701@mimc.co.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Tue, 07 Oct 2008 14:09:59 +0100
+Mark Jackson <mpfj@mimc.co.uk> wrote:
 
-        next-20081016 kernel build fails on powerpc, with build error
+> This patch adds support for the (I2C based) DS28CM00 ID chip.
 
-drivers/net/ibm_newemac/mal.c: In function 'mal_txeob':
-drivers/net/ibm_newemac/mal.c:284: error: implicit declaration of function 'mtdcri'
-drivers/net/ibm_newemac/mal.c:284: error: 'SDR0' undeclared (first use in this function)
-drivers/net/ibm_newemac/mal.c:284: error: (Each undeclared identifier is reported only once
-drivers/net/ibm_newemac/mal.c:284: error: for each function it appears in.)
-drivers/net/ibm_newemac/mal.c:285: error: implicit declaration of function 'mfdcri'
-drivers/net/ibm_newemac/mal.c: In function 'mal_rxeob':
-drivers/net/ibm_newemac/mal.c:302: error: 'SDR0' undeclared (first use in this function)
-make[3]: *** [drivers/net/ibm_newemac/mal.o] Error 1
+Please run scritps/checkpatch.pl across the diff and consider the
+various things which it reports.  Many of them are minor layout issues.
+The lack of printk facility levels is a should-fix thing.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
----
- drivers/net/ibm_newemac/mal.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
-index 1839d3f..c5f91a6 100644
---- a/drivers/net/ibm_newemac/mal.c
-+++ b/drivers/net/ibm_newemac/mal.c
-@@ -29,6 +29,7 @@
- 
- #include "core.h"
- #include <asm/dcr-regs.h>
-+#include <asm/dcr-native.h>
- 
- static int mal_count;
- 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+>        printk("adding ds28cm00 driver !!\n");
+
+Remove the " !!" :)
+
+Please also cc i2c@lm-sensors.org on version 2.
+
+Thanks.
