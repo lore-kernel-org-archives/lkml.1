@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYJPSBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYJPSBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYJPSBJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbYJPSAZ
+	id S1756705AbYJPSBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbYJPSA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:00:25 -0400
-Received: from mail.suse.de ([195.135.220.2]:36011 "EHLO mx1.suse.de"
+	Thu, 16 Oct 2008 14:00:29 -0400
+Received: from mx1.suse.de ([195.135.220.2]:36033 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754671AbYJPSAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:00:24 -0400
-Date: Thu, 16 Oct 2008 10:56:22 -0700
+	id S1754911AbYJPSA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:00:27 -0400
+Date: Thu, 16 Oct 2008 10:56:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stefan Bader <stefan.bader@canonical.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 02/14] x86: Reserve FIRST_DEVICE_VECTOR in used_vectors
-	bitmap.
-Message-ID: <20081016175622.GC12850@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       John Linville <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: [patch 03/14] mac80211: fix two issues in debugfs
+Message-ID: <20081016175625.GD12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-reserve-first_device_vector-in-used_vectors-bitmap.patch"
+Content-Disposition: inline; filename="mac80211-fix-two-issues-in-debugfs.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,43 +42,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Stefan Bader <stefan.bader@canonical.com>
+From: Johannes Berg <johannes@sipsolutions.net>
 
-Not in upstream above 2.6.27 due to change in the way this code works
-(has been fixed differently there.)
+Not in trees above 2.6.27 as it is fixed differently in .28.
 
-Someone from the community found out, that after repeatedly unloading
-and loading a device driver that uses MSI IRQs, the system eventually
-assigned the vector initially reserved for IRQ0 to the device driver.
+This fixes RHBZ 466264, whenever the master interface is
+renamed this code would BUG_ON. Also fixes a separately
+reported bug with the debugfs dir being NULL.
 
-The reason for this is, that although IRQ0 is tied to the
-FIRST_DEVICE_VECTOR when declaring the irq_vector table, the
-corresponding bit in the used_vectors map is not set. So, if vectors are
-released and assigned often enough, the vector will get assigned to
-another interrupt. This happens more often with MSI interrupts as those
-are exclusively using a vector.
+This patch is not applicable to the next kernel version
+because both these issues have been fixed, the first one
+by not having the master interface have a ieee80211_ptr
+at all, and the second one by also leaving the function
+early.
 
-Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
-
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: John Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/io_apic_32.c |    3 +++
- 1 file changed, 3 insertions(+)
+ net/mac80211/debugfs_netdev.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -2314,6 +2314,9 @@ void __init setup_IO_APIC(void)
- 	for (i = first_system_vector; i < NR_VECTORS; i++)
- 		set_bit(i, used_vectors);
+--- a/net/mac80211/debugfs_netdev.c
++++ b/net/mac80211/debugfs_netdev.c
+@@ -537,6 +537,7 @@ static int netdev_notify(struct notifier
+ {
+ 	struct net_device *dev = ndev;
+ 	struct dentry *dir;
++	struct ieee80211_local *local;
+ 	struct ieee80211_sub_if_data *sdata;
+ 	char buf[10+IFNAMSIZ];
  
-+	/* Mark FIRST_DEVICE_VECTOR which is assigned to IRQ0 as used. */
-+	set_bit(FIRST_DEVICE_VECTOR, used_vectors);
+@@ -549,10 +550,19 @@ static int netdev_notify(struct notifier
+ 	if (dev->ieee80211_ptr->wiphy->privid != mac80211_wiphy_privid)
+ 		return 0;
+ 
+-	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	/*
++	 * Do not use IEEE80211_DEV_TO_SUB_IF because that
++	 * BUG_ONs for the master netdev which we need to
++	 * handle here.
++	 */
++	sdata = netdev_priv(dev);
+ 
+-	sprintf(buf, "netdev:%s", dev->name);
+ 	dir = sdata->debugfsdir;
 +
- 	enable_IO_APIC();
- 
- 	io_apic_irqs = ~PIC_IRQS;
++	if (!dir)
++		return 0;
++
++	sprintf(buf, "netdev:%s", dev->name);
+ 	if (!debugfs_rename(dir->d_parent, dir, dir->d_parent, buf))
+ 		printk(KERN_ERR "mac80211: debugfs: failed to rename debugfs "
+ 		       "dir to %s\n", buf);
 
 -- 
