@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbYJPTRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYJPTSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbYJPTRZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbYJPTRM
+	id S1757420AbYJPTSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbYJPTSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:17:12 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:36984 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756733AbYJPTRL (ORCPT
+	Thu, 16 Oct 2008 15:18:11 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:48898 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756361AbYJPTSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:17:11 -0400
-Subject: Re: [PATCH] disable CPU side GART accesses
-From: Bob Montgomery <bob.montgomery@hp.com>
-Reply-To: bob.montgomery@hp.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "vojtech@suse.cz" <vojtech@suse.cz>,
-       "chandru@in.ibm.com" <chandru@in.ibm.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <alpine.LFD.2.00.0810151630050.3288@nehalem.linux-foundation.org>
-References: <1224107317.2215.238.camel@amd.troyhebe>
-	 <alpine.LFD.2.00.0810151630050.3288@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Organization: Contractor at HP
-Date: Thu, 16 Oct 2008 13:17:20 -0600
-Message-Id: <1224184640.2215.293.camel@amd.troyhebe>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 15:18:10 -0400
+Date: Thu, 16 Oct 2008 20:18:04 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Hans Schou <linux@schou.dk>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SiS55x, another x86 CPU
+In-Reply-To: <Pine.LNX.4.64.0810162050150.7314@sko.w0.dk>
+Message-ID: <alpine.LFD.1.10.0810162014590.21444@ftp.linux-mips.org>
+References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org> <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org> <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk> <20081015100637.GS12131@one.firstfloor.org>
+ <Pine.LNX.4.64.0810152150070.25933@anakin> <Pine.LNX.4.64.0810160027150.7873@sko.w0.dk> <Pine.LNX.4.64.0810160907330.25933@anakin> <Pine.LNX.4.64.0810162050150.7314@sko.w0.dk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-15 at 23:40 +0000, Linus Torvalds wrote:
+On Thu, 16 Oct 2008, Hans Schou wrote:
+
+> > But, why do you send patches as attachments in the first place?
 > 
-> On Wed, 15 Oct 2008, Bob Montgomery wrote:
-> >
-> > This patch changes the initialization of the GART to set the DISGARTCPU
-> > bit in the GART Aperture Control Register (AMD64_GARTAPERTURECTL).
-> > Setting the bit prevents requests from the CPUs from accessing the
-> > GART.  In other words, CPU memory accesses to the aperture address
-> > range will not cause the GART to perform an address translation.
-> > The aperture area is currently being unmapped at the kernel level
-> > with set_memory_np() in gart_iommu_init to prevent accesses from the
-> > CPU [...]
-> 
-> Would this allow us to get rid of that particular hackup code sequence
-> entirely? Or do we still need them for other chip versions etc?
+> Ingo said I could do so when it was something to do with x86 patches.
+> Anyway, it looks like ^R in Pine did work correctly.
 
-Short answer: I don't know.  Here's some of what I don't know enough
-about:
+ You've got:
 
-The GART aperture is typically overlaid over a real memory area, so it
-effectively wastes the 64MB (or whatever) of RAM underneath it.  When
-you disable CPU side access in the GART itself, the kernel once again
-should "see" that RAM and presumably use it.  But, it wouldn't be
-general purpose RAM, because it couldn't be used for DMA (since any
-accesses from the IO side would be GART'd off to somewhere else).
-Would that make it overly hacky?
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
-It appears to be possible for a BIOS to set up a valid aperture that
-does not overlay real memory.   Mine never does, so I get dmesgs like:
+in your headers -- it may be good for poetry, but will guarantee you 
+breakage with inline patches.  There's an option to disable it.
 
-[    0.000999] Node 0: aperture @ 20000000 size 32 MB
-[    0.000999] Aperture pointing to e820 RAM. Ignoring.
-[    0.000999] Your BIOS doesn't leave a aperture memory hole
-[    0.000999] Please enable the IOMMU option in the BIOS setup
-[    0.000999] This costs you 64 MB of RAM
-[    0.000999] Mapping aperture over 65536 KB of RAM @ 20000000
-
-But if it did set up over a hole, would the current code still call
-set_memory_np for an address that wasn't RAM in the e820 map?  Would
-that be a problem or a NOP?   
-
-> 
-> I get the feeling that the people cc'd are kdump people, not iommu/gart
-> people, which is a bit sad.
-
-Noted. Thanks to Ingo for the cc's.   Chandru was cc'd because he was
-the only other person I knew who had seen the problem, and he tested the
-fix first on 2.6.27-rc8.
-
-> 
->                 Linus
-
-Bob Montgomery
-
+  Maciej
