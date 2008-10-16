@@ -1,62 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbYJPTwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbYJPTxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbYJPTwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbYJPTwb
+	id S1757679AbYJPTxK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757817AbYJPTwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:52:31 -0400
-Received: from kludge.physics.uiowa.edu ([128.255.33.129]:55783 "EHLO
-	kludge.physics.uiowa.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757486AbYJPTw3 (ORCPT
+	Thu, 16 Oct 2008 15:52:38 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:13864 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757710AbYJPTwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:52:29 -0400
-X-Greylist: delayed 1597 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 15:52:29 EDT
-Date: Thu, 16 Oct 2008 14:52:22 -0500
-From: Joseph Pingenot <trelane@digitasaru.net>
-To: Arjan Opmeer <arjan@opmeer.net>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20081016195222.GB7631@digitasaru.net>
-Reply-To: trelane@digitasaru.net
-Mail-Followup-To: Arjan Opmeer <arjan@opmeer.net>,
-	linux-kernel@vger.kernel.org
-References: <20081016192517.GA7631@digitasaru.net> <20081016194902.GA5109@adopmeer.homeip.net>
+	Thu, 16 Oct 2008 15:52:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=MfS6H7w+KMFJuDySORATkFlx2wBZBAII+xRbKaPSn4ZAL8+2YCOvTmc/DIOWqV3T8A
+         ChJng91Y2zXcAqSrVmTFIC63+27T4ua3WfDcopnNl2UFGlOhdD1Iw8hi2XPUMKZnb/DY
+         tnwj5TW4QkhjZDCoL6XY0kcWpwPV8pcCPefqQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] delkin_cb: add PM support
+Date: Thu, 16 Oct 2008 21:27:39 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, bumble.bee@xs4all.nl,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081016194902.GA5109@adopmeer.homeip.net>
-X-School: University of Iowa
-X-vi-or-emacs: vi *and* emacs!
-X-MS-TNEF-Correlator: <AFJAUFHRUOGRESULWAOIHFEAUIOFBVHSHNRAIU.monkey@spamcen
-	tral.invalid>
-X-MimeOLE: Not Produced By Microsoft MimeOLE V5.50.4522.1200
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Subject: Re: elantech driver status
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+Message-Id: <200810162127.40790.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From Arjan Opmeer on Thursday, 16 October, 2008:
->Hi Joseph,
->On Thu, Oct 16, 2008 at 02:25:18PM -0500, Joseph Pingenot wrote:
->> I was wondering what the status of the elantech touchpad driver is.
->> Particularly, when we can expect it'll be incorporated into the main tree.
->Just today Dmitry Torokhov, the Linux input system maintainer, mailed me
->about how he was looking into that. To quote: 
->  "I am attaching the version of Elantech driver that I want to apply (there
->   were some tiny changes)..."
->where applying means adding it to his input system source tree ready to be
->sent on to Linus. So despair not, things are still moving forward! :)
->>   What's keeping it from being in 2.6.28?
->Now that the driver is cleaned up, not much anymore :)
+* Factor out chipset initialization code from delkin_cb_probe()
+  to delkin_cb_init_chipset().
 
-Awesome.  Looking forward to in-tree support.
+* Assign ->init_chipset in struct delkin_cb_port_info.
 
-Thanks for all your hard work!
+* Add delkin_cb_{suspend,resume}() (->suspend/->resume methods).
 
--Joseph
+Fixes kernel bugzilla bug #11735:
 
->
->
->Arjan
->
+http://bugzilla.kernel.org/show_bug.cgi?id=11735
+
+Tested-by: bumble.bee@xs4all.nl
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/pci/delkin_cb.c |   63 +++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 56 insertions(+), 7 deletions(-)
+
+Index: b/drivers/ide/pci/delkin_cb.c
+===================================================================
+--- a/drivers/ide/pci/delkin_cb.c
++++ b/drivers/ide/pci/delkin_cb.c
+@@ -46,10 +46,27 @@ static const struct ide_port_ops delkin_
+ 	.quirkproc		= ide_undecoded_slave,
+ };
+ 
++static unsigned int delkin_cb_init_chipset(struct pci_dev *dev)
++{
++	unsigned long base = pci_resource_start(dev, 0);
++	int i;
++
++	outb(0x02, base + 0x1e);	/* set nIEN to block interrupts */
++	inb(base + 0x17);		/* read status to clear interrupts */
++
++	for (i = 0; i < sizeof(setup); ++i) {
++		if (setup[i])
++			outb(setup[i], base + i);
++	}
++
++	return 0;
++}
++
+ static const struct ide_port_info delkin_cb_port_info = {
+ 	.port_ops		= &delkin_cb_port_ops,
+ 	.host_flags		= IDE_HFLAG_IO_32BIT | IDE_HFLAG_UNMASK_IRQS |
+ 				  IDE_HFLAG_NO_DMA,
++	.init_chipset		= delkin_cb_init_chipset,
+ };
+ 
+ static int __devinit
+@@ -57,7 +74,7 @@ delkin_cb_probe (struct pci_dev *dev, co
+ {
+ 	struct ide_host *host;
+ 	unsigned long base;
+-	int i, rc;
++	int rc;
+ 	hw_regs_t hw, *hws[] = { &hw, NULL, NULL, NULL };
+ 
+ 	rc = pci_enable_device(dev);
+@@ -72,12 +89,8 @@ delkin_cb_probe (struct pci_dev *dev, co
+ 		return rc;
+ 	}
+ 	base = pci_resource_start(dev, 0);
+-	outb(0x02, base + 0x1e);	/* set nIEN to block interrupts */
+-	inb(base + 0x17);		/* read status to clear interrupts */
+-	for (i = 0; i < sizeof(setup); ++i) {
+-		if (setup[i])
+-			outb(setup[i], base + i);
+-	}
++
++	delkin_cb_init_chipset(dev);
+ 
+ 	memset(&hw, 0, sizeof(hw));
+ 	ide_std_init_ports(&hw, base + 0x10, base + 0x1e);
+@@ -110,6 +123,40 @@ delkin_cb_remove (struct pci_dev *dev)
+ 	pci_disable_device(dev);
+ }
+ 
++#ifdef CONFIG_PM
++static int delkin_cb_suspend(struct pci_dev *dev, pm_message_t state)
++{
++	pci_save_state(dev);
++	pci_disable_device(dev);
++	pci_set_power_state(dev, pci_choose_state(dev, state));
++
++	return 0;
++}
++
++static int delkin_cb_resume(struct pci_dev *dev)
++{
++	struct ide_host *host = pci_get_drvdata(dev);
++	int rc;
++
++	pci_set_power_state(dev, PCI_D0);
++
++	rc = pci_enable_device(dev);
++	if (rc)
++		return rc;
++
++	pci_restore_state(dev);
++	pci_set_master(dev);
++
++	if (host->init_chipset)
++		host->init_chipset(dev);
++
++	return 0;
++}
++#else
++#define delkin_cb_suspend NULL
++#define delkin_cb_resume NULL
++#endif
++
+ static struct pci_device_id delkin_cb_pci_tbl[] __devinitdata = {
+ 	{ 0x1145, 0xf021, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{ 0x1145, 0xf024, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+@@ -122,6 +169,8 @@ static struct pci_driver delkin_cb_pci_d
+ 	.id_table	= delkin_cb_pci_tbl,
+ 	.probe		= delkin_cb_probe,
+ 	.remove		= delkin_cb_remove,
++	.suspend	= delkin_cb_suspend,
++	.resume		= delkin_cb_resume,
+ };
+ 
+ static int __init delkin_cb_init(void)
