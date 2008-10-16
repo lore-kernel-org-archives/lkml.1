@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYJPTBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbYJPTLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbYJPTBu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbYJPTB1
+	id S1756830AbYJPTLY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529AbYJPTLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:01:27 -0400
-Received: from 0x55512ece.adsl.cybercity.dk ([85.81.46.206]:23019 "EHLO
-	sko.w0.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754350AbYJPTB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:01:26 -0400
-Date: Thu, 16 Oct 2008 21:01:23 +0200 (CEST)
-From: Hans Schou <linux@schou.dk>
-X-X-Sender: linux@sko.w0.dk
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SiS55x, another x86 CPU
-In-Reply-To: <Pine.LNX.4.64.0810160907330.25933@anakin>
-Message-ID: <Pine.LNX.4.64.0810162050150.7314@sko.w0.dk>
-References: <Pine.LNX.4.64.0810111143210.23344@sko.w0.dk> <87d4i5rq7i.fsf@basil.nowhere.org>
- <Pine.LNX.4.64.0810132240010.8901@sko.w0.dk> <20081014060616.GO12131@one.firstfloor.org>
- <Pine.LNX.4.64.0810140828220.11184@sko.w0.dk> <20081015100637.GS12131@one.firstfloor.org>
- <Pine.LNX.4.64.0810152150070.25933@anakin> <Pine.LNX.4.64.0810160027150.7873@sko.w0.dk>
- <Pine.LNX.4.64.0810160907330.25933@anakin>
+	Thu, 16 Oct 2008 15:11:10 -0400
+Received: from solo.fdn.fr ([80.67.169.19]:45019 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756460AbYJPTLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 15:11:09 -0400
+Date: Thu, 16 Oct 2008 21:11:06 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Use PC-BIOS NUMLOCK flag
+Message-ID: <20081016191106.GB4988@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+References: <alpine.LSU.0.999.0810161358540.5404@be1.lrz> <20081016143856.GD5071@const.bordeaux.inria.fr> <alpine.LSU.0.999.0810161958450.5051@be1.lrz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LSU.0.999.0810161958450.5051@be1.lrz>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, Geert Uytterhoeven wrote:
+Bodo Eggert, le Thu 16 Oct 2008 20:00:31 +0200, a écrit :
+> On Thu, 16 Oct 2008, Samuel Thibault wrote:
+> > Bodo Eggert, le Thu 16 Oct 2008 13:59:49 +0200, a écrit :
+> 
+> > > +	  If you have an alternative firmware like OpenFirmware or LinuxBios,
+> > > +	  this flag might not be set correctly, which results in a random state
+> > > +	  of the Numlock key.
+> > 
+> > That's an issue. That means that distributions will just not enable,
+> > and thus the flag is not really useful, since people who would
+> > compile their own kernel would very likely have already setup their
+> > initialization scripts into calling setleds +num (or just set LEDS=+num
+> > in /etc/console-tools/config on a debian machine).
+> 
+> I hope somebody will pop up and say "Hey, those will create an IBM PC data 
+> area, because they run DOS" ...
 
->> I think time is up for getting rid of Pine and there stupid license. I'll
->> check if "nail" can handle attachment correctly.
->
-> alpine?
+Mmm, or rather "hey, here are the patches to fix those BIOSes" :)
 
-Well, Gentoo didn't have it and it is probably a "wrong" license.
-
-> But, why do you send patches as attachments in the first place?
-
-Ingo said I could do so when it was something to do with x86 patches.
-Anyway, it looks like ^R in Pine did work correctly.
-
-> It's recommended to _not_ do that, for easier review.
-
-OK.
-
-> Pine can handle that fine since ages (I switched from elm to pine 13 or
-> so years ago).
-
-Yes, my so called friends have been bullying me for that long with the Pine 
-license. Mutt is not an option either.
-
-/hans
+Samuel
