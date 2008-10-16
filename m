@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759107AbYJPR00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYJPR0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759107AbYJPR00 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbYJPROu
+	id S1759206AbYJPR0p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbYJPROv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:14:50 -0400
-Received: from kroah.org ([198.145.64.141]:47003 "EHLO coco.kroah.org"
+	Thu, 16 Oct 2008 13:14:51 -0400
+Received: from kroah.org ([198.145.64.141]:47006 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756387AbYJPROs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:14:48 -0400
+	id S1756402AbYJPROt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:14:49 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 30/46] sysfs: fix deadlock
-Date: Thu, 16 Oct 2008 10:10:31 -0700
-Message-Id: <1224177047-11859-30-git-send-email-gregkh@suse.de>
+Subject: [PATCH 31/46] debug: Introduce a dev_WARN() function
+Date: Thu, 16 Oct 2008 10:10:32 -0700
+Message-Id: <1224177047-11859-31-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081016170954.GA11824@kroah.com>
 References: <20081016170954.GA11824@kroah.com>
@@ -23,194 +23,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <npiggin@suse.de>
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-On Thu, Sep 11, 2008 at 10:27:10AM +0200, Ingo Molnar wrote:
+in the line of dev_printk(), this patch introduces a dev_WARN() function,
+that takes a struct device and then a printk format/args set of arguments.
+Unlike dev_printk(), the effect is that of WARN() in that a full warning
+message (including filename/line, module list, versions and a backtrace)
+is printed in addition to the device name and the arguments.
 
-> and it's working fine on most boxes. One testbox found this new locking
-> scenario:
->
-> PM: Adding info for No Bus:vcsa7
-> EDAC DEBUG: MC0: i82860_check()
->
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.27-rc6-tip #1
-> -------------------------------------------------------
-> X/4873 is trying to acquire lock:
->  (&bb->mutex){--..}, at: [<c020ba20>] mmap+0x40/0xa0
->
-> but task is already holding lock:
->  (&mm->mmap_sem){----}, at: [<c0125a1e>] sys_mmap2+0x8e/0xc0
->
-> which lock already depends on the new lock.
->
->
-> the existing dependency chain (in reverse order) is:
->
-> -> #1 (&mm->mmap_sem){----}:
->        [<c017dc96>] validate_chain+0xa96/0xf50
->        [<c017ef2b>] __lock_acquire+0x2cb/0x5b0
->        [<c017f299>] lock_acquire+0x89/0xc0
->        [<c01aa8fb>] might_fault+0x6b/0x90
->        [<c040b618>] copy_to_user+0x38/0x60
->        [<c020bcfb>] read+0xfb/0x170
->        [<c01c09a5>] vfs_read+0x95/0x110
->        [<c01c1443>] sys_pread64+0x63/0x80
->        [<c012146f>] sysenter_do_call+0x12/0x43
->        [<ffffffff>] 0xffffffff
->
-> -> #0 (&bb->mutex){--..}:
->        [<c017d8b7>] validate_chain+0x6b7/0xf50
->        [<c017ef2b>] __lock_acquire+0x2cb/0x5b0
->        [<c017f299>] lock_acquire+0x89/0xc0
->        [<c0d6f2ab>] __mutex_lock_common+0xab/0x3c0
->        [<c0d6f698>] mutex_lock_nested+0x38/0x50
->        [<c020ba20>] mmap+0x40/0xa0
->        [<c01b111e>] mmap_region+0x14e/0x450
->        [<c01b170f>] do_mmap_pgoff+0x2ef/0x310
->        [<c0125a3d>] sys_mmap2+0xad/0xc0
->        [<c012146f>] sysenter_do_call+0x12/0x43
->        [<ffffffff>] 0xffffffff
->
-> other info that might help us debug this:
->
-> 1 lock held by X/4873:
->  #0:  (&mm->mmap_sem){----}, at: [<c0125a1e>] sys_mmap2+0x8e/0xc0
->
-> stack backtrace:
-> Pid: 4873, comm: X Not tainted 2.6.27-rc6-tip #1
->  [<c017cd09>] print_circular_bug_tail+0x79/0xc0
->  [<c017d8b7>] validate_chain+0x6b7/0xf50
->  [<c017a5b5>] ? trace_hardirqs_off_caller+0x15/0xb0
->  [<c017ef2b>] __lock_acquire+0x2cb/0x5b0
->  [<c017f299>] lock_acquire+0x89/0xc0
->  [<c020ba20>] ? mmap+0x40/0xa0
->  [<c0d6f2ab>] __mutex_lock_common+0xab/0x3c0
->  [<c020ba20>] ? mmap+0x40/0xa0
->  [<c0d6f698>] mutex_lock_nested+0x38/0x50
->  [<c020ba20>] ? mmap+0x40/0xa0
->  [<c020ba20>] mmap+0x40/0xa0
->  [<c01b111e>] mmap_region+0x14e/0x450
->  [<c01afb88>] ? arch_get_unmapped_area_topdown+0xf8/0x160
->  [<c01b170f>] do_mmap_pgoff+0x2ef/0x310
->  [<c0125a3d>] sys_mmap2+0xad/0xc0
->  [<c012146f>] sysenter_do_call+0x12/0x43
->  [<c0120000>] ? __switch_to+0x130/0x220
->  =======================
-> evbug.c: Event. Dev: input3, Type: 20, Code: 0, Value: 500
-> warning: `sudo' uses deprecated v2 capabilities in a way that may be insecure.
->
-> i've attached the config.
->
-> at first sight it looks like a genuine bug in fs/sysfs/bin.c?
-
-Yes, it is a real bug by the looks. bin.c takes bb->mutex under mmap_sem
-when it is mmapped, and then does its copy_*_user under bb->mutex too.
-
-Here is a basic fix for the sysfs lor.
-
-
-From: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/bin.c |   42 +++++++++++++++++++++++++++++++-----------
- 1 files changed, 31 insertions(+), 11 deletions(-)
+ include/linux/device.h |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 006fc64..66f6e58 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -61,6 +61,7 @@ read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
- 	int size = dentry->d_inode->i_size;
- 	loff_t offs = *off;
- 	int count = min_t(size_t, bytes, PAGE_SIZE);
-+	char *temp;
+diff --git a/include/linux/device.h b/include/linux/device.h
+index fb03446..ec90e79 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -570,6 +570,14 @@ extern const char *dev_driver_string(const struct device *dev);
+ 	({ if (0) dev_printk(KERN_DEBUG, dev, format, ##arg); 0; })
+ #endif
  
- 	if (size) {
- 		if (offs > size)
-@@ -69,23 +70,33 @@ read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
- 			count = size - offs;
- 	}
- 
-+	temp = kmalloc(count, GFP_KERNEL);
-+	if (!temp)
-+		return -ENOMEM;
++/*
++ * dev_WARN() acts like dev_printk(), but with the key difference
++ * of using a WARN/WARN_ON to get the message out, including the
++ * file/line information and a backtrace.
++ */
++#define dev_WARN(dev, format, arg...) \
++	WARN(1, "Device: %s\n" format, dev_driver_string(dev), ## arg);
 +
- 	mutex_lock(&bb->mutex);
- 
- 	count = fill_read(dentry, bb->buffer, offs, count);
--	if (count < 0)
--		goto out_unlock;
-+	if (count < 0) {
-+		mutex_unlock(&bb->mutex);
-+		goto out_free;
-+	}
- 
--	if (copy_to_user(userbuf, bb->buffer, count)) {
-+	memcpy(temp, bb->buffer, count);
-+
-+	mutex_unlock(&bb->mutex);
-+
-+	if (copy_to_user(userbuf, temp, count)) {
- 		count = -EFAULT;
--		goto out_unlock;
-+		goto out_free;
- 	}
- 
- 	pr_debug("offs = %lld, *off = %lld, count = %d\n", offs, *off, count);
- 
- 	*off = offs + count;
- 
-- out_unlock:
--	mutex_unlock(&bb->mutex);
-+ out_free:
-+	kfree(temp);
- 	return count;
- }
- 
-@@ -118,6 +129,7 @@ static ssize_t write(struct file *file, const char __user *userbuf,
- 	int size = dentry->d_inode->i_size;
- 	loff_t offs = *off;
- 	int count = min_t(size_t, bytes, PAGE_SIZE);
-+	char *temp;
- 
- 	if (size) {
- 		if (offs > size)
-@@ -126,19 +138,27 @@ static ssize_t write(struct file *file, const char __user *userbuf,
- 			count = size - offs;
- 	}
- 
--	mutex_lock(&bb->mutex);
-+	temp = kmalloc(count, GFP_KERNEL);
-+	if (!temp)
-+		return -ENOMEM;
- 
--	if (copy_from_user(bb->buffer, userbuf, count)) {
-+	if (copy_from_user(temp, userbuf, count)) {
- 		count = -EFAULT;
--		goto out_unlock;
-+		goto out_free;
- 	}
- 
-+	mutex_lock(&bb->mutex);
-+
-+	memcpy(bb->buffer, temp, count);
-+
- 	count = flush_write(dentry, bb->buffer, offs, count);
-+	mutex_unlock(&bb->mutex);
-+
- 	if (count > 0)
- 		*off = offs + count;
- 
-- out_unlock:
--	mutex_unlock(&bb->mutex);
-+out_free:
-+	kfree(temp);
- 	return count;
- }
- 
+ /* Create alias, so I can be autoloaded. */
+ #define MODULE_ALIAS_CHARDEV(major,minor) \
+ 	MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
 -- 
 1.6.0.2
 
