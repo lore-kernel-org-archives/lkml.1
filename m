@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbYJPI2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbYJPIaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbYJPI2G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 04:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYJPI1z
+	id S1755127AbYJPIaA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 04:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYJPI3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 04:27:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50014 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753243AbYJPI1z (ORCPT
+	Thu, 16 Oct 2008 04:29:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36126 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYJPI3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 04:27:55 -0400
-Subject: Re: no way to swapoff a deleted swap file?
+	Thu, 16 Oct 2008 04:29:51 -0400
+Subject: Re: sched: only update rq->clock while holding rq->lock
 From: Peter Zijlstra <peterz@infradead.org>
-To: Peter Cordes <peter@cordes.ca>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       hugh <hugh@veritas.com>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20081015202141.GX26067@cordes.ca>
-References: <20081015202141.GX26067@cordes.ca>
+To: vatsa@in.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, shaggy@linux.vnet.ibm.com,
+       brking@linux.vnet.ibm.com
+In-Reply-To: <20081016023252.GA25969@linux.vnet.ibm.com>
+References: <1224095843.28131.13.camel@twins>
+	 <20081016023252.GA25969@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Thu, 16 Oct 2008 10:28:04 +0200
-Message-Id: <1224145684.28131.25.camel@twins>
+Date: Thu, 16 Oct 2008 10:29:42 +0200
+Message-Id: <1224145782.28131.27.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -27,27 +30,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-15 at 17:21 -0300, Peter Cordes wrote:
-> I unlinked a swapfile without realizing I was still swapping on it.
-> Now my /proc/swaps looks like this:
-> Filename                                Type            Size    Used	Priority
-> /var/tmp/EXP/cache/swap/1\040(deleted)  file            1288644 1448	-1
-> /var/tmp/EXP/cache/swap/2\040(deleted)  file            1433368 0	-2
+On Thu, 2008-10-16 at 08:02 +0530, Srivatsa Vaddagiri wrote:
+> On Wed, Oct 15, 2008 at 08:37:23PM +0200, Peter Zijlstra wrote:
+> > Vatsa noticed rq->clock going funny and tracked it down to an update_rq_clock()
+> > outside a rq->lock section.
 > 
->  AFAICT, there's nothing I can pass to swapoff(2) that will make the
-> kernel let go of them.  If that's the case, please consider this a
-> feature request for a way to do this.  Now I'm going to have to reboot
-> before I can mkfs that partition.
-> 
->  If kswapd0 had a fd open on the swap files, swapoff /proc/$PID/fd/3
-> could possibly work.  But it looks like the files are open but with no
-> user-space accessable file descriptors to them.  Which makes sense,
-> except for this case.
+> For the records, actually Brian King and David Kleikamp noticed this!
 
-Right, except that kswapd is per node, so we'd either have to add it to
-all kswapd instances or a random one. Also, kthreads don't seem to have
-a files table afaict.
+Thanks Brian and Shaggy!
 
-But yes, I see your problem and it makes sense to look for a nice
-solution.
 
