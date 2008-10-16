@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYJPT6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYJPT6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbYJPT6b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 15:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYJPT6W
+	id S1755886AbYJPT6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 15:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbYJPT6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 15:58:22 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:51167 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753093AbYJPT6V (ORCPT
+	Thu, 16 Oct 2008 15:58:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57149 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756703AbYJPT6h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 15:58:21 -0400
-Date: Fri, 17 Oct 2008 01:28:12 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
-       apw@shadowen.org
-Subject: Re: [PATCH] linux-next: Tree for October 16 - build failure at MAL
-	support on powerpc
-Message-ID: <20081016195812.GB7534@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20081016211811.a523c8f2.sfr@canb.auug.org.au> <20081016192320.GA7534@linux.vnet.ibm.com> <20081016152755.2b95f80c@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081016152755.2b95f80c@zod.rchland.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 16 Oct 2008 15:58:37 -0400
+Date: Thu, 16 Oct 2008 12:58:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: adobriyan@gmail.com, menage@google.com, pj@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] seq_file: Add seq_cpumask_list(),
+ seq_nodemask_list()
+Message-Id: <20081016125827.d72c52c8.akpm@linux-foundation.org>
+In-Reply-To: <48F1C375.5020105@cn.fujitsu.com>
+References: <48F1C375.5020105@cn.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Josh Boyer <jwboyer@linux.vnet.ibm.com> [2008-10-16 15:27:55]:
+On Sun, 12 Oct 2008 17:29:25 +0800
+Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-> On Fri, 17 Oct 2008 00:53:20 +0530
-> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
-> > Hi Stephen,
-> > 
-> >         next-20081016 kernel build fails on powerpc, with build error
-> > 
-> > drivers/net/ibm_newemac/mal.c: In function 'mal_txeob':
-> > drivers/net/ibm_newemac/mal.c:284: error: implicit declaration of function 'mtdcri'
-> > drivers/net/ibm_newemac/mal.c:284: error: 'SDR0' undeclared (first use in this function)
-> > drivers/net/ibm_newemac/mal.c:284: error: (Each undeclared identifier is reported only once
-> > drivers/net/ibm_newemac/mal.c:284: error: for each function it appears in.)
-> > drivers/net/ibm_newemac/mal.c:285: error: implicit declaration of function 'mfdcri'
-> > drivers/net/ibm_newemac/mal.c: In function 'mal_rxeob':
-> > drivers/net/ibm_newemac/mal.c:302: error: 'SDR0' undeclared (first use in this function)
-> > make[3]: *** [drivers/net/ibm_newemac/mal.o] Error 1
-> > 
-> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> 
-> I sent a more complete fix earlier today.
-> 
-> http://patchwork.ozlabs.org/patch/4708/
-> 
-> josh
-Hi Josh,
+> +static inline int seq_cpumask_list(struct seq_file *m, cpumask_t *mask)
+> +{
+> +	return seq_bitmap_list(m, mask->bits, NR_CPUS);
+> +}
 
-Thanks, I missed your earlier posting today. The patch fixes the build failure
-for me.
+Is it possible to avoid using NR_CPUS?  In some situations it'd be much
+more efficient to use the runtime-determined max possible cpu index.
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+But I don't immediately recall how to get at that number. 
+num_possible_cpus() assumes that there are no holes in the CPU
+identifier list.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
