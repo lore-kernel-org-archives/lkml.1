@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYJPSXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYJPS0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYJPSXA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbYJPSWv
+	id S1756858AbYJPS0Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYJPS0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:22:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48861 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbYJPSWu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:22:50 -0400
-Date: Thu, 16 Oct 2008 14:22:48 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-In-Reply-To: <20081016181452.GA29739@yoda.jdub.homelinux.org>
-Message-ID: <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
-References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu> <20081016181452.GA29739@yoda.jdub.homelinux.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 16 Oct 2008 14:26:16 -0400
+Received: from willie.n0ano.com ([64.66.241.76]:57554 "EHLO xolotl.n0ano.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753243AbYJPS0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:26:16 -0400
+From: n0ano@n0ano.com
+Date: Thu, 16 Oct 2008 12:25:56 -0600
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: n0ano@n0ano.com, Paul Bolle <pebolle@tiscali.nl>,
+       donald.d.dugger@intel.com, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Enable console on PCI serial devices
+Message-ID: <20081016182556.GE14490@xolotl.n0ano.com>
+References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <86802c440810141539x97ceaa4meaab109fae3d9d4c@mail.gmail.com> <20081014233031.GB14490@xolotl.n0ano.com> <1224061999.25929.7.camel@test.thuisdomein> <20081015204850.GC14490@xolotl.n0ano.com> <1224153822.3587.23.camel@test.thuisdomein> <48F76A8B.6050306@kernel.org> <20081016171218.GD14490@xolotl.n0ano.com> <48F785B0.7000008@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F785B0.7000008@kernel.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 16 Oct 2008, Josh Boyer wrote:
-
-> On Sat, Sep 06, 2008 at 02:03:47PM +0200, Ingo Molnar wrote:
-> >
-> >* Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> >> I spent the day chasing a bug that would hang PPC on boot up when 
-> >> ftrace is configured in. I found that it was simply a stupid bug I did 
-> >> to handle the non MCOUNT_RECORD case. Since I was testing only on x86, 
-> >> and the MCOUNT_RECORD is automatically set for dynamic ftrace if it is 
-> >> available, I did not test the case where MCOUNT_RECORD was not set.
-> >> 
-> >> I have not finished porting MCOUNT_RECORD to PPC, but have found that 
-> >> it has caused some issues for archs that do not support it yet.
-> >> 
-> >> This patch series handles these cases.
-> >
-> >applied to tip/tracing/ftrace, thanks Steve.
+On Thu, Oct 16, 2008 at 11:19:28AM -0700, Yinghai Lu wrote:
+>... 
+>                 if ((p->early && strcmp(param, p->str) == 0) ||
+>                     (strcmp(param, "console") == 0 &&          
+>                      strcmp(p->str, "earlycon") == 0)
+>...
+> we need that holder in console sections to compare with console and earlycon.
 > 
-> Are these two merged yet?  I just spent the better part of the morning
-> trying to figure out why various Fedora kernels based on 2.6.27-rcX and
-> 2.6.27 final hung on my G5 and finally got one booting with FTRACE
-> disabled.
 
-My powerbook does not boot with ftrace enabled. I'm currently debugging 
-it. When I get it working, you'll see patches.
+I have no problem with keeping the code associated with early
+prints, as you say we need that holder.  I'm saying the `console'
+parameter serves this purpose, we only need to remove the `earlycon'
+portion of that if statement.
 
-They will be to linux-tip though, and not for the current mainline (unless 
-the code in linux-tip gets merged).
-
--- Steve
-
+-- 
+Don Dugger
+"Censeo Toto nos in Kansa esse decisse." - D. Gale
+n0ano@n0ano.com
+Ph: 303/443-3786
