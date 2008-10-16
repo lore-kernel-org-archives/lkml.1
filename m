@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbYJPSQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYJPSQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbYJPSQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYJPSOo
+	id S1758073AbYJPSQi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756286AbYJPSOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:14:44 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:46733 "EHLO e6.ny.us.ibm.com"
+	Thu, 16 Oct 2008 14:14:34 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50396 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756762AbYJPSOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:14:42 -0400
-Subject: [PATCH 5/9] Restore memory address space
+	id S1755862AbYJPSOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:14:32 -0400
+Subject: [PATCH 9/9] Restore open file descriprtors
 To: Linus Torvalds <torvalds@osdl.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        linux-mm <linux-mm@kvack.org>,
@@ -19,10 +19,10 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        Oren Laadan <orenl@cs.columbia.edu>,
        Dave Hansen <dave@linux.vnet.ibm.com>
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Thu, 16 Oct 2008 11:14:21 -0700
+Date: Thu, 16 Oct 2008 11:14:27 -0700
 References: <20081016181414.934C4FCC@kernel>
 In-Reply-To: <20081016181414.934C4FCC@kernel>
-Message-Id: <20081016181421.3BA319FA@kernel>
+Message-Id: <20081016181427.1E5C5472@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,199 +30,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Oren Laadan <orenl@cs.columbia.edu>
 
-Restoring the memory address space begins with nuking the existing one
-of the current process, and then reading the VMA state and contents.
-Call do_mmap_pgoffset() for each VMA and then read in the data.
+Restore open file descriptors: for each FD read 'struct cr_hdr_fd_ent'
+and lookup objref in the hash table; if not found (first occurence), read
+in 'struct cr_hdr_fd_data', create a new FD and register in the hash.
+Otherwise attach the file pointer from the hash as an FD.
+
+This patch only handles basic FDs - regular files, directories and also
+symbolic links.
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
 
- linux-2.6.git-dave/arch/x86/mm/restart.c            |   64 +++
- linux-2.6.git-dave/checkpoint/Makefile              |    2 
- linux-2.6.git-dave/checkpoint/checkpoint_arch.h     |    2 
- linux-2.6.git-dave/checkpoint/checkpoint_mem.h      |    5 
- linux-2.6.git-dave/checkpoint/restart.c             |   42 ++
- linux-2.6.git-dave/checkpoint/rstr_mem.c            |  384 ++++++++++++++++++++
- linux-2.6.git-dave/include/asm-x86/checkpoint_hdr.h |    4 
- linux-2.6.git-dave/include/linux/checkpoint.h       |    3 
- 8 files changed, 503 insertions(+), 3 deletions(-)
+ linux-2.6.git-dave/checkpoint/Makefile        |    2 
+ linux-2.6.git-dave/checkpoint/restart.c       |    4 
+ linux-2.6.git-dave/checkpoint/rstr_file.c     |  246 ++++++++++++++++++++++++++
+ linux-2.6.git-dave/include/linux/checkpoint.h |    1 
+ 4 files changed, 252 insertions(+), 1 deletion(-)
 
-diff -puN arch/x86/mm/restart.c~v6_PATCH_5_9_Restore_memory_address_space arch/x86/mm/restart.c
---- linux-2.6.git/arch/x86/mm/restart.c~v6_PATCH_5_9_Restore_memory_address_space	2008-10-16 10:53:36.000000000 -0700
-+++ linux-2.6.git-dave/arch/x86/mm/restart.c	2008-10-16 10:53:36.000000000 -0700
-@@ -53,8 +53,10 @@ int cr_read_thread(struct cr_ctx *ctx)
- 
- 		size = sizeof(*desc) * GDT_ENTRY_TLS_ENTRIES;
- 		desc = kmalloc(size, GFP_KERNEL);
--		if (!desc)
--			return -ENOMEM;
-+		if (!desc) {
-+			ret = -ENOMEM;
-+			goto out;
-+		}
- 
- 		ret = cr_kread(ctx, desc, size);
- 		if (ret >= 0) {
-@@ -189,3 +191,61 @@ int cr_read_cpu(struct cr_ctx *ctx)
- 	cr_hbuf_put(ctx, sizeof(*hh));
- 	return ret;
- }
-+
-+int cr_read_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int parent)
-+{
-+	struct cr_hdr_mm_context *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	int n, rparent, ret = -EINVAL;
-+
-+	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_MM_CONTEXT);
-+	cr_debug("parent %d rparent %d nldt %d\n", parent, rparent, hh->nldt);
-+	if (rparent < 0) {
-+		ret = rparent;
-+		goto out;
-+	}
-+	if (rparent != parent)
-+		goto out;
-+
-+	if (hh->nldt < 0 || hh->ldt_entry_size != LDT_ENTRY_SIZE)
-+		goto out;
-+
-+	/*
-+	 * to utilize the syscall modify_ldt() we first convert the data
-+	 * in the checkpoint image from 'struct desc_struct' to 'struct
-+	 * user_desc' with reverse logic of include/asm/desc.h:fill_ldt()
-+	 */
-+
-+	for (n = 0; n < hh->nldt; n++) {
-+		struct user_desc info;
-+		struct desc_struct desc;
-+		mm_segment_t old_fs;
-+
-+		ret = cr_kread(ctx, &desc, LDT_ENTRY_SIZE);
-+		if (ret < 0)
-+			goto out;
-+
-+		info.entry_number = n;
-+		info.base_addr = desc.base0 | (desc.base1 << 16);
-+		info.limit = desc.limit0;
-+		info.seg_32bit = desc.d;
-+		info.contents = desc.type >> 2;
-+		info.read_exec_only = (desc.type >> 1) ^ 1;
-+		info.limit_in_pages = desc.g;
-+		info.seg_not_present = desc.p ^ 1;
-+		info.useable = desc.avl;
-+
-+		old_fs = get_fs();
-+		set_fs(get_ds());
-+		ret = sys_modify_ldt(1, (struct user_desc __user *) &info,
-+				     sizeof(info));
-+		set_fs(old_fs);
-+
-+		if (ret < 0)
-+			goto out;
-+	}
-+
-+	ret = 0;
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret;
-+}
-diff -puN checkpoint/checkpoint_arch.h~v6_PATCH_5_9_Restore_memory_address_space checkpoint/checkpoint_arch.h
---- linux-2.6.git/checkpoint/checkpoint_arch.h~v6_PATCH_5_9_Restore_memory_address_space	2008-10-16 10:53:36.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/checkpoint_arch.h	2008-10-16 10:53:36.000000000 -0700
-@@ -7,3 +7,5 @@ extern int cr_write_mm_context(struct cr
- 
- extern int cr_read_thread(struct cr_ctx *ctx);
- extern int cr_read_cpu(struct cr_ctx *ctx);
-+extern int cr_read_mm_context(struct cr_ctx *ctx,
-+			      struct mm_struct *mm, int parent);
-diff -puN checkpoint/checkpoint_mem.h~v6_PATCH_5_9_Restore_memory_address_space checkpoint/checkpoint_mem.h
---- linux-2.6.git/checkpoint/checkpoint_mem.h~v6_PATCH_5_9_Restore_memory_address_space	2008-10-16 10:53:36.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/checkpoint_mem.h	2008-10-16 10:53:36.000000000 -0700
-@@ -38,4 +38,9 @@ static inline int cr_pgarr_is_full(struc
- 	return (pgarr->nr_used == CR_PGARR_TOTAL);
- }
- 
-+static inline int cr_pgarr_nr_free(struct cr_pgarr *pgarr)
-+{
-+	return CR_PGARR_TOTAL - pgarr->nr_used;
-+}
-+
- #endif /* _CHECKPOINT_CKPT_MEM_H_ */
-diff -puN checkpoint/Makefile~v6_PATCH_5_9_Restore_memory_address_space checkpoint/Makefile
---- linux-2.6.git/checkpoint/Makefile~v6_PATCH_5_9_Restore_memory_address_space	2008-10-16 10:53:36.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/Makefile	2008-10-16 10:53:36.000000000 -0700
+diff -puN checkpoint/Makefile~v6_PATCH_9_9_Restore_open_file_descriprtors checkpoint/Makefile
+--- linux-2.6.git/checkpoint/Makefile~v6_PATCH_9_9_Restore_open_file_descriprtors	2008-10-16 10:53:39.000000000 -0700
++++ linux-2.6.git-dave/checkpoint/Makefile	2008-10-16 10:53:39.000000000 -0700
 @@ -3,4 +3,4 @@
  #
  
- obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o \
--		ckpt_mem.o
-+		ckpt_mem.o rstr_mem.o
-diff -puN checkpoint/restart.c~v6_PATCH_5_9_Restore_memory_address_space checkpoint/restart.c
---- linux-2.6.git/checkpoint/restart.c~v6_PATCH_5_9_Restore_memory_address_space	2008-10-16 10:53:36.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/restart.c	2008-10-16 10:53:36.000000000 -0700
-@@ -78,6 +78,44 @@ int cr_read_string(struct cr_ctx *ctx, v
- 	return cr_read_obj_type(ctx, str, len, CR_HDR_STRING);
- }
- 
-+/**
-+ * cr_read_fname - read a file name
-+ * @ctx: checkpoint context
-+ * @fname: buffer
-+ * @n: buffer length
-+ */
-+int cr_read_fname(struct cr_ctx *ctx, void *fname, int flen)
-+{
-+	return cr_read_obj_type(ctx, fname, flen, CR_HDR_FNAME);
-+}
-+
-+/**
-+ * cr_read_open_fname - read a file name and open a file
-+ * @ctx: checkpoint context
-+ * @flags: file flags
-+ * @mode: file mode
-+ */
-+struct file *cr_read_open_fname(struct cr_ctx *ctx, int flags, int mode)
-+{
-+	struct file *file;
-+	char *fname;
-+	int ret;
-+
-+	fname = kmalloc(PATH_MAX, GFP_KERNEL);
-+	if (!fname)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ret = cr_read_fname(ctx, fname, PATH_MAX);
-+	cr_debug("fname '%s' flags %#x mode %#x\n", fname, flags, mode);
-+	if (ret >= 0)
-+		file = filp_open(fname, flags, mode);
-+	else
-+		file = ERR_PTR(ret);
-+
-+	kfree(fname);
-+	return file;
-+}
-+
- /* read the checkpoint header */
- static int cr_read_head(struct cr_ctx *ctx)
- {
-@@ -177,6 +215,10 @@ static int cr_read_task(struct cr_ctx *c
- 	cr_debug("task_struct: ret %d\n", ret);
+ obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
+-		ckpt_mem.o rstr_mem.o ckpt_file.o
++		ckpt_mem.o rstr_mem.o ckpt_file.o rstr_file.o
+diff -puN checkpoint/restart.c~v6_PATCH_9_9_Restore_open_file_descriprtors checkpoint/restart.c
+--- linux-2.6.git/checkpoint/restart.c~v6_PATCH_9_9_Restore_open_file_descriprtors	2008-10-16 10:53:39.000000000 -0700
++++ linux-2.6.git-dave/checkpoint/restart.c	2008-10-16 10:53:39.000000000 -0700
+@@ -219,6 +219,10 @@ static int cr_read_task(struct cr_ctx *c
+ 	cr_debug("memory: ret %d\n", ret);
  	if (ret < 0)
  		goto out;
-+	ret = cr_read_mm(ctx);
-+	cr_debug("memory: ret %d\n", ret);
++	ret = cr_read_files(ctx);
++	cr_debug("files: ret %d\n", ret);
 +	if (ret < 0)
 +		goto out;
  	ret = cr_read_thread(ctx);
  	cr_debug("thread: ret %d\n", ret);
  	if (ret < 0)
-diff -puN /dev/null checkpoint/rstr_mem.c
+diff -puN /dev/null checkpoint/rstr_file.c
 --- /dev/null	2008-09-02 09:40:19.000000000 -0700
-+++ linux-2.6.git-dave/checkpoint/rstr_mem.c	2008-10-16 10:53:36.000000000 -0700
-@@ -0,0 +1,384 @@
++++ linux-2.6.git-dave/checkpoint/rstr_file.c	2008-10-16 10:53:39.000000000 -0700
+@@ -0,0 +1,246 @@
 +/*
-+ *  Restart memory contents
++ *  Checkpoint file descriptors
 + *
 + *  Copyright (C) 2008 Oren Laadan
 + *
@@ -233,326 +88,205 @@ diff -puN /dev/null checkpoint/rstr_mem.c
 +
 +#include <linux/kernel.h>
 +#include <linux/sched.h>
-+#include <linux/fcntl.h>
-+#include <linux/file.h>
 +#include <linux/fs.h>
-+#include <linux/pagemap.h>
-+#include <linux/mm_types.h>
-+#include <linux/mman.h>
-+#include <linux/mm.h>
-+#include <linux/err.h>
++#include <linux/file.h>
++#include <linux/fdtable.h>
++#include <linux/fsnotify.h>
++#include <linux/syscalls.h>
 +#include <linux/checkpoint.h>
 +#include <linux/checkpoint_hdr.h>
 +
-+#include "checkpoint_arch.h"
-+#include "checkpoint_mem.h"
++#include "checkpoint_file.h"
 +
-+/*
-+ * Unlike checkpoint, restart is executed in the context of each restarting
-+ * process: vma regions are restored via a call to mmap(), and the data is
-+ * read into the address space of the current process.
-+ */
-+
-+
-+/**
-+ * cr_read_pages_vaddrs - read addresses of pages to page-array chain
-+ * @ctx - restart context
-+ * @nr_pages - number of address to read
-+ */
-+static int cr_read_pages_vaddrs(struct cr_ctx *ctx, unsigned long nr_pages)
++static int cr_close_all_fds(struct files_struct *files)
 +{
-+	struct cr_pgarr *pgarr;
-+	unsigned long *vaddrp;
-+	int nr, ret;
++	int *fdtable;
++	int nfds;
 +
-+	while (nr_pages) {
-+		pgarr = cr_pgarr_current(ctx);
-+		if (!pgarr)
-+			return -ENOMEM;
-+		nr = cr_pgarr_nr_free(pgarr);
-+		if (nr > nr_pages)
-+			nr = nr_pages;
-+		vaddrp = &pgarr->vaddrs[pgarr->nr_used];
-+		ret = cr_kread(ctx, vaddrp, nr * sizeof(unsigned long));
-+		if (ret < 0)
-+			return ret;
-+		pgarr->nr_used += nr;
-+		nr_pages -= nr;
-+	}
-+	return 0;
-+}
-+
-+static int cr_page_read(struct cr_ctx *ctx, struct page *page, char *buf)
-+{
-+	void *ptr;
-+	int ret;
-+
-+	ret = cr_kread(ctx, buf, PAGE_SIZE);
-+	if (ret < 0)
-+		return ret;
-+
-+	ptr = kmap_atomic(page, KM_USER1);
-+	memcpy(ptr, buf, PAGE_SIZE);
-+	kunmap_atomic(page, KM_USER1);
-+
++	nfds = cr_scan_fds(files, &fdtable);
++	if (nfds < 0)
++		return nfds;
++	while (nfds--)
++		sys_close(fdtable[nfds]);
++	kfree(fdtable);
 +	return 0;
 +}
 +
 +/**
-+ * cr_read_pages_contents - read in data of pages in page-array chain
-+ * @ctx - restart context
++ * cr_attach_file - attach a lonely file ptr to a file descriptor
++ * @file: lonely file pointer
 + */
-+static int cr_read_pages_contents(struct cr_ctx *ctx)
++static int cr_attach_file(struct file *file)
 +{
-+	struct mm_struct *mm = current->mm;
-+	struct cr_pgarr *pgarr;
-+	unsigned long *vaddrs;
-+	char *buf;
-+	int i, ret = 0;
++	int fd = get_unused_fd_flags(0);
 +
-+	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	down_read(&mm->mmap_sem);
-+	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
-+		vaddrs = pgarr->vaddrs;
-+		for (i = 0; i < pgarr->nr_used; i++) {
-+			struct page *page;
-+
-+			ret = get_user_pages(current, mm, vaddrs[i],
-+					     1, 1, 1, &page, NULL);
-+			if (ret < 0)
-+				goto out;
-+
-+			ret = cr_page_read(ctx, page, buf);
-+			page_cache_release(page);
-+
-+			if (ret < 0)
-+				goto out;
-+		}
++	if (fd >= 0) {
++		fsnotify_open(file->f_path.dentry);
++		fd_install(fd, file);
 +	}
-+
-+ out:
-+	up_read(&mm->mmap_sem);
-+	kfree(buf);
-+	return 0;
++	return fd;
 +}
 +
 +/**
-+ * cr_read_private_vma_contents - restore contents of a VMA with private memory
-+ * @ctx - restart context
-+ *
-+ * Reads a header that specifies how many pages will follow, then reads
-+ * a list of virtual addresses into ctx->pgarr_list page-array chain,
-+ * followed by the actual contents of the corresponding pages. Iterates
-+ * these steps until reaching a header specifying "0" pages, which marks
-+ * the end of the contents.
++ * cr_attach_get_file - attach (and get) lonely file ptr to a file descriptor
++ * @file: lonely file pointer
 + */
-+static int cr_read_private_vma_contents(struct cr_ctx *ctx)
++static int cr_attach_get_file(struct file *file)
 +{
-+	struct cr_hdr_pgarr *hh;
-+	unsigned long nr_pages;
-+	int parent, ret = 0;
++	int fd = get_unused_fd_flags(0);
 +
-+	while (1) {
-+		hh = cr_hbuf_get(ctx, sizeof(*hh));
-+		parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_PGARR);
-+		if (parent != 0) {
-+			if (parent < 0)
-+				ret = parent;
-+			else
-+				ret = -EINVAL;
-+			cr_hbuf_put(ctx, sizeof(*hh));
-+			break;
-+		}
-+
-+		cr_debug("nr_pages %ld\n", (unsigned long) hh->nr_pages);
-+
-+		nr_pages = hh->nr_pages;
-+		cr_hbuf_put(ctx, sizeof(*hh));
-+
-+		if (!nr_pages)
-+			break;
-+
-+		ret = cr_read_pages_vaddrs(ctx, nr_pages);
-+		if (ret < 0)
-+			break;
-+		ret = cr_read_pages_contents(ctx);
-+		if (ret < 0)
-+			break;
-+		cr_pgarr_reset_all(ctx);
++	if (fd >= 0) {
++		fsnotify_open(file->f_path.dentry);
++		fd_install(fd, file);
++		get_file(file);
 +	}
-+
-+	return ret;
++	return fd;
 +}
 +
-+/**
-+ * cr_calc_map_prot_bits - convert vm_flags to mmap protection
-+ * orig_vm_flags: source vm_flags
-+ */
-+static unsigned long cr_calc_map_prot_bits(unsigned long orig_vm_flags)
++#define CR_SETFL_MASK (O_APPEND|O_NONBLOCK|O_NDELAY|FASYNC|O_DIRECT|O_NOATIME)
++
++/* cr_read_fd_data - restore the state of a given file pointer */
++static int
++cr_read_fd_data(struct cr_ctx *ctx, struct files_struct *files, int parent)
 +{
-+	unsigned long vm_prot = 0;
++	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	struct file *file;
++	int rparent, ret;
++	int fd = 0;	/* pacify gcc warning */
 +
-+	if (orig_vm_flags & VM_READ)
-+		vm_prot |= PROT_READ;
-+	if (orig_vm_flags & VM_WRITE)
-+		vm_prot |= PROT_WRITE;
-+	if (orig_vm_flags & VM_EXEC)
-+		vm_prot |= PROT_EXEC;
-+	if (orig_vm_flags & PROT_SEM)   /* only (?) with IPC-SHM  */
-+		vm_prot |= PROT_SEM;
-+
-+	return vm_prot;
-+}
-+
-+/**
-+ * cr_calc_map_flags_bits - convert vm_flags to mmap flags
-+ * orig_vm_flags: source vm_flags
-+ */
-+static unsigned long cr_calc_map_flags_bits(unsigned long orig_vm_flags)
-+{
-+	unsigned long vm_flags = 0;
-+
-+	vm_flags = MAP_FIXED;
-+	if (orig_vm_flags & VM_GROWSDOWN)
-+		vm_flags |= MAP_GROWSDOWN;
-+	if (orig_vm_flags & VM_DENYWRITE)
-+		vm_flags |= MAP_DENYWRITE;
-+	if (orig_vm_flags & VM_EXECUTABLE)
-+		vm_flags |= MAP_EXECUTABLE;
-+	if (orig_vm_flags & VM_MAYSHARE)
-+		vm_flags |= MAP_SHARED;
-+	else
-+		vm_flags |= MAP_PRIVATE;
-+
-+	return vm_flags;
-+}
-+
-+static int cr_read_vma(struct cr_ctx *ctx, struct mm_struct *mm)
-+{
-+	struct cr_hdr_vma *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	unsigned long vm_size, vm_start, vm_flags, vm_prot, vm_pgoff;
-+	unsigned long addr;
-+	struct file *file = NULL;
-+	int parent, ret = -EINVAL;
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_VMA);
-+	if (parent < 0) {
++	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_DATA);
++	cr_debug("rparent %d parent %d flags %#x mode %#x how %d\n",
++		 rparent, parent, hh->f_flags, hh->f_mode, hh->fd_type);
++	if (rparent < 0) {
 +		ret = parent;
-+		goto err;
-+	} else if (parent != 0)
-+		goto err;
++		goto out;
++	}
 +
-+	cr_debug("vma %#lx-%#lx type %d\n", (unsigned long) hh->vm_start,
-+		 (unsigned long) hh->vm_end, (int) hh->vma_type);
++	ret = -EINVAL;
 +
-+	if (hh->vm_end < hh->vm_start)
-+		goto err;
++	if (rparent != parent)
++		goto out;
 +
-+	vm_start = hh->vm_start;
-+	vm_pgoff = hh->vm_pgoff;
-+	vm_size = hh->vm_end - hh->vm_start;
-+	vm_prot = cr_calc_map_prot_bits(hh->vm_flags);
-+	vm_flags = cr_calc_map_flags_bits(hh->vm_flags);
++	/* FIX: more sanity checks on f_flags, f_mode etc */
 +
-+	switch (hh->vma_type) {
-+
-+	case CR_VMA_ANON:		/* anonymous private mapping */
-+		if (vm_flags & VM_SHARED)
-+			goto err;
-+		/*
-+		 * vm_pgoff for anonymous mapping is the "global" page
-+		 * offset (namely from addr 0x0), so we force a zero
-+		 */
-+		vm_pgoff = 0;
++	switch (hh->fd_type) {
++	case CR_FD_FILE:
++	case CR_FD_DIR:
++	case CR_FD_LINK:
++		file = cr_read_open_fname(ctx, hh->f_flags, hh->f_mode);
 +		break;
-+
-+	case CR_VMA_FILE:		/* private mapping from a file */
-+		if (vm_flags & VM_SHARED)
-+			goto err;
-+		/*
-+		 * for private mapping using 'read-only' is sufficient
-+		 */
-+		file = cr_read_open_fname(ctx, O_RDONLY, 0);
-+		if (IS_ERR(file)) {
-+			ret = PTR_ERR(file);
-+			goto err;
-+		}
-+		break;
-+
 +	default:
-+		goto err;
-+
++		goto out;
 +	}
 +
-+	cr_hbuf_put(ctx, sizeof(*hh));
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++		goto out;
++	}
 +
-+	down_write(&mm->mmap_sem);
-+	addr = do_mmap_pgoff(file, vm_start, vm_size,
-+			     vm_prot, vm_flags, vm_pgoff);
-+	up_write(&mm->mmap_sem);
-+	cr_debug("size %#lx prot %#lx flag %#lx pgoff %#lx => %#lx\n",
-+		 vm_size, vm_prot, vm_flags, vm_pgoff, addr);
++	/* FIX: need to restore uid, gid, owner etc */
 +
-+	/* the file (if opened) is now referenced by the vma */
-+	if (file)
++	fd = cr_attach_file(file);	/* no need to cleanup 'file' below */
++	if (fd < 0) {
 +		filp_close(file, NULL);
-+
-+	if (IS_ERR((void *) addr))
-+		return PTR_ERR((void *) addr);
-+
-+	/*
-+	 * CR_VMA_ANON: read in memory as is
-+	 * CR_VMA_FILE: read in memory as is
-+	 * (more to follow ...)
-+	 */
-+
-+	switch (hh->vma_type) {
-+	case CR_VMA_ANON:
-+	case CR_VMA_FILE:
-+		/* standard case: read the data into the memory */
-+		ret = cr_read_private_vma_contents(ctx);
-+		break;
++		ret = fd;
++		goto out;
 +	}
 +
++	/* register new <objref, file> tuple in hash table */
++	ret = cr_obj_add_ref(ctx, (void *) file, parent, CR_OBJ_FILE, 0);
 +	if (ret < 0)
-+		return ret;
++		goto out;
++	ret = sys_fcntl(fd, F_SETFL, hh->f_flags & CR_SETFL_MASK);
++	if (ret < 0)
++		goto out;
++	ret = vfs_llseek(file, hh->f_pos, SEEK_SET);
++	if (ret == -ESPIPE)	/* ignore error on non-seekable files */
++		ret = 0;
 +
-+	cr_debug("vma retval %d\n", ret);
-+	return 0;
++	ret = 0;
++ out:
++	cr_hbuf_put(ctx, sizeof(*hh));
++	return ret < 0 ? ret : fd;
++}
 +
-+ err:
++/**
++ * cr_read_fd_ent - restore the state of a given file descriptor
++ * @ctx: checkpoint context
++ * @files: files_struct pointer
++ * @parent: parent objref
++ *
++ * Restores the state of a file descriptor; looks up the objref (in the
++ * header) in the hash table, and if found picks the matching file and
++ * use it; otherwise calls cr_read_fd_data to restore the file too.
++ */
++static int
++cr_read_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int parent)
++{
++	struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	struct file *file;
++	int newfd, rparent, ret;
++
++	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_ENT);
++	cr_debug("rparent %d parent %d ref %d fd %d c.o.e %d\n",
++		 rparent, parent, hh->objref, hh->fd, hh->close_on_exec);
++	if (rparent < 0) {
++		ret = rparent;
++		goto out;
++	}
++
++	ret = -EINVAL;
++
++	if (rparent != parent)
++		goto out;
++	if (hh->objref <= 0)
++		goto out;
++
++	file = cr_obj_get_by_ref(ctx, hh->objref, CR_OBJ_FILE);
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++		goto out;
++	}
++
++	if (file) {
++		/* reuse file descriptor found in the hash table */
++		newfd = cr_attach_get_file(file);
++	} else {
++		/* create new file pointer (and register in hash table) */
++		newfd = cr_read_fd_data(ctx, files, hh->objref);
++	}
++
++	if (newfd < 0) {
++		ret = newfd;
++		goto out;
++	}
++
++	cr_debug("newfd got %d wanted %d\n", newfd, hh->fd);
++
++	/* if newfd isn't desired fd then reposition it */
++	if (newfd != hh->fd) {
++		ret = sys_dup2(newfd, hh->fd);
++		if (ret < 0)
++			goto out;
++		sys_close(newfd);
++	}
++
++	if (hh->close_on_exec)
++		set_close_on_exec(hh->fd, 1);
++
++	ret = 0;
++ out:
 +	cr_hbuf_put(ctx, sizeof(*hh));
 +	return ret;
 +}
 +
-+static int cr_destroy_mm(struct mm_struct *mm)
++int cr_read_files(struct cr_ctx *ctx)
 +{
-+	struct vm_area_struct *vmnext = mm->mmap;
-+	struct vm_area_struct *vma;
-+	int ret;
++	struct cr_hdr_files *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	struct files_struct *files = current->files;
++	int i, parent, ret;
 +
-+	while (vmnext) {
-+		vma = vmnext;
-+		vmnext = vmnext->vm_next;
-+		ret = do_munmap(mm, vma->vm_start, vma->vm_end-vma->vm_start);
-+		if (ret < 0) {
-+			pr_debug("CR: restart failed do_munmap (%d)\n", ret);
-+			return ret;
-+		}
-+	}
-+	return 0;
-+}
-+
-+int cr_read_mm(struct cr_ctx *ctx)
-+{
-+	struct cr_hdr_mm *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct mm_struct *mm;
-+	int nr, parent, ret;
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_MM);
++	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FILES);
 +	if (parent < 0) {
 +		ret = parent;
 +		goto out;
@@ -563,71 +297,40 @@ diff -puN /dev/null checkpoint/rstr_mem.c
 +	if (parent != task_pid_vnr(current))
 +		goto out;
 +#endif
-+	cr_debug("map_count %d\n", hh->map_count);
-+
-+	/* XXX need more sanity checks */
-+	if (hh->start_code > hh->end_code ||
-+	    hh->start_data > hh->end_data || hh->map_count < 0)
++	cr_debug("objref %d nfds %d\n", hh->objref, hh->nfds);
++	if (hh->objref < 0 || hh->nfds < 0)
 +		goto out;
 +
-+	mm = current->mm;
-+
-+	/* point of no return -- destruct current mm */
-+	down_write(&mm->mmap_sem);
-+	ret = cr_destroy_mm(mm);
-+	if (ret < 0) {
-+		up_write(&mm->mmap_sem);
++	if (hh->nfds > sysctl_nr_open) {
++		ret = -EMFILE;
 +		goto out;
 +	}
-+	mm->start_code = hh->start_code;
-+	mm->end_code = hh->end_code;
-+	mm->start_data = hh->start_data;
-+	mm->end_data = hh->end_data;
-+	mm->start_brk = hh->start_brk;
-+	mm->brk = hh->brk;
-+	mm->start_stack = hh->start_stack;
-+	mm->arg_start = hh->arg_start;
-+	mm->arg_end = hh->arg_end;
-+	mm->env_start = hh->env_start;
-+	mm->env_end = hh->env_end;
-+	up_write(&mm->mmap_sem);
 +
-+	/* FIX: need also mm->flags */
++	/* point of no return -- close all file descriptors */
++	ret = cr_close_all_fds(files);
++	if (ret < 0)
++		goto out;
 +
-+	for (nr = hh->map_count; nr; nr--) {
-+		ret = cr_read_vma(ctx, mm);
++	for (i = 0; i < hh->nfds; i++) {
++		ret = cr_read_fd_ent(ctx, files, hh->objref);
 +		if (ret < 0)
-+			goto out;
++			break;
 +	}
 +
-+	ret = cr_read_mm_context(ctx, mm, hh->objref);
++	ret = 0;
 + out:
 +	cr_hbuf_put(ctx, sizeof(*hh));
 +	return ret;
 +}
-diff -puN include/asm-x86/checkpoint_hdr.h~v6_PATCH_5_9_Restore_memory_address_space include/asm-x86/checkpoint_hdr.h
---- linux-2.6.git/include/asm-x86/checkpoint_hdr.h~v6_PATCH_5_9_Restore_memory_address_space	2008-10-16 10:53:36.000000000 -0700
-+++ linux-2.6.git-dave/include/asm-x86/checkpoint_hdr.h	2008-10-16 10:53:36.000000000 -0700
-@@ -74,4 +74,8 @@ struct cr_hdr_mm_context {
- 	__s16 nldt;
- } __attribute__((aligned(8)));
+diff -puN include/linux/checkpoint.h~v6_PATCH_9_9_Restore_open_file_descriprtors include/linux/checkpoint.h
+--- linux-2.6.git/include/linux/checkpoint.h~v6_PATCH_9_9_Restore_open_file_descriprtors	2008-10-16 10:53:39.000000000 -0700
++++ linux-2.6.git-dave/include/linux/checkpoint.h	2008-10-16 10:53:39.000000000 -0700
+@@ -85,6 +85,7 @@ extern int cr_write_files(struct cr_ctx 
  
-+
-+/* misc prototypes from kernel (not defined elsewhere) */
-+asmlinkage int sys_modify_ldt(int func, void __user *ptr, unsigned long bytecount);
-+
- #endif /* __ASM_X86_CKPT_HDR__H */
-diff -puN include/linux/checkpoint.h~v6_PATCH_5_9_Restore_memory_address_space include/linux/checkpoint.h
---- linux-2.6.git/include/linux/checkpoint.h~v6_PATCH_5_9_Restore_memory_address_space	2008-10-16 10:53:36.000000000 -0700
-+++ linux-2.6.git-dave/include/linux/checkpoint.h	2008-10-16 10:53:36.000000000 -0700
-@@ -55,6 +55,9 @@ extern int cr_write_fname(struct cr_ctx 
- extern int cr_read_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf, int n);
- extern int cr_read_obj_type(struct cr_ctx *ctx, void *buf, int n, int type);
- extern int cr_read_string(struct cr_ctx *ctx, void *str, int len);
-+extern int cr_read_fname(struct cr_ctx *ctx, void *fname, int n);
-+extern struct file *cr_read_open_fname(struct cr_ctx *ctx,
-+				       int flags, int mode);
- 
- extern int cr_write_mm(struct cr_ctx *ctx, struct task_struct *t);
+ extern int do_restart(struct cr_ctx *ctx);
  extern int cr_read_mm(struct cr_ctx *ctx);
++extern int cr_read_files(struct cr_ctx *ctx);
+ 
+ /* there are from fs/read_write.c, not exported otherwise in a header */
+ extern loff_t file_pos_read(struct file *file);
 _
