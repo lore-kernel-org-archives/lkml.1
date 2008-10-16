@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbYJPRdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYJPRc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbYJPRdZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbYJPR3W
+	id S1758681AbYJPRc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758814AbYJPRYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:29:22 -0400
-Received: from mail.lang.hm ([64.81.33.126]:43864 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756105AbYJPR3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:29:20 -0400
-Date: Thu, 16 Oct 2008 10:30:04 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: el es <el_es_cr@yahoo.co.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <loom.20081016T092338-594@post.gmane.org>
-Message-ID: <alpine.DEB.1.10.0810161027590.9226@asgard.lang.hm>
-References: <20081016002509.GA25868@kroah.com> <loom.20081016T075618-911@post.gmane.org> <48F704E6.2010409@zytor.com> <loom.20081016T092338-594@post.gmane.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 16 Oct 2008 13:24:44 -0400
+Received: from mail-in-06.arcor-online.net ([151.189.21.46]:55153 "EHLO
+	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758810AbYJPRYn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:24:43 -0400
+Date: Thu, 16 Oct 2008 19:35:37 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use tmpfs for rootfs
+In-Reply-To: <Pine.LNX.4.64.0810161507130.25933@anakin>
+Message-ID: <alpine.LSU.0.999.0810161922290.5051@be1.lrz>
+References: <alpine.LSU.0.999.0810161400160.5456@be1.lrz>
+ <Pine.LNX.4.64.0810161507130.25933@anakin>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, el es wrote:
+On Thu, 16 Oct 2008, Geert Uytterhoeven wrote:
+> On Thu, 16 Oct 2008, Bodo Eggert wrote:
 
-> H. Peter Anvin <hpa <at> zytor.com> writes:
->> el es wrote:
-> [snip]
->>> - informative : the ww and tt numbers are the week numbers of when the actual
->>>
->>> release HAPPENED, not when it is predicted.
->>>
->>
->> Which really sucks for dealing with future releases.
->>
->
-> Why ?
-> What do you mean by 'future releases' ?
-> Can you predict exactly when the next release will happen ? The current practice
-> of -rcX shows clearly you cannot.
+> > +config TMPFS_ROOT
+> > +	bool "Use tmpfs instrad of ramfs for initramfs"
+> > +	depends on TMPFS && SHMEM
+> > +	default n
+> > +	help
+> > +	  This replaces the ramfs used for unpacking the cpio images
+> > +	  with tmpfs.
+> > +	  
+> > +	  If unsure, say N
+> > +
+> > +config RAMFS
+> > + 	bool "Ramfs file system support" if TMPFS_ROOT
+> > +  	default y
+> > +  	---help---
+> > +  	  Ramfs is a file system which keeps all files in RAM. Unlike tmpfs,
+> > +  	  it cannot be swapped to disk, and it has the risk of deadlocking
+> > +  	  the system by using all memory.
+> > +
+> > +  	  Ramfs is used for booting the system and unpacking the cpio if
+> > +  	  TMPFS_ROOT is not set.
+> 
+> Something seems to be missing, as you add CONFIG_RAMFS, but it's nowhere used?
+> 
+> Gr{oetje,eeting}s,
 
-that's the point
-
-> Moreover, with my idea you could easily say, which stable release is still
-> supported (and how old its mainline really was) up to the week, which IMHO is
-> granular enough.
-
-huh?? kernels are not supported for X amount of time, so this isn't 
-relevant information for support. kernels are 'supported' until some time 
-after the next kernel is released.
-
-> Also you could for sure say, that e.g. a device/software that hit market in say
-> December this year, will be compatible with e.g. 2.09.XX+ - look at users POV.
-
-no you can't, the fact that a kernel was released in December and the 
-product was released in November tells you nothing about the probability 
-that that hardware is supported by that kernel.
-
-you can't even say that a kernel released in 2009 supports hardware 
-released in 2007.
-
-David Lang
-
-> Current scheme is great, established and understandable, but sucks at this
-> point : for any product, be it hardware or software, you need to print both its
-> date of creation AND the minimum kernel that supports it. With my idea, it is
-> only the date you need.
->
->> 	-hpa
->>
->
-> Lukasz
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Yes. I managed to edit the wrong Makefile. Since there seems no way of 
+sensibly appending a patch to a mail, I'll reply with the corrected patch.
+-- 
+Never stand when you can sit, never sit when you can lie down, never stay
+awake when you can sleep.
