@@ -1,23 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYJPFU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbYJPFX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbYJPFU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 01:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYJPFUV
+	id S1754120AbYJPFX3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 01:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbYJPFXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 01:20:21 -0400
-Received: from mirror.looking-glass.spherevision.org ([70.85.129.236]:36983
-	"EHLO octagon.spherevision.org" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750920AbYJPFUV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 01:20:21 -0400
-X-Greylist: delayed 1698 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 01:20:21 EDT
-Subject: [2.6.27] constant early exception on boot
-From: Rodney Gordon II <meff@spherevision.org>
-To: linux-kernel@vger.kernel.org
-Cc: meff@spherevision.org
+	Thu, 16 Oct 2008 01:23:15 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56369 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750882AbYJPFXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 01:23:14 -0400
+Subject: Re: powerpc allmodconfig
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, bzolnier@gmail.com, marek.vasut@gmail.com,
+       tiwai@suse.de, netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+       mark.fasheh@oracle.com, linuxppc-dev@ozlabs.org,
+       linux-ide@vger.kernel.org, dan.j.williams@intel.com,
+       linux-ext4@vger.kernel.org, dwmw2@infradead.org, mchehab@infradead.org
+In-Reply-To: <20081015.220247.262683261.davem@davemloft.net>
+References: <20081015213337.a99a9595.akpm@linux-foundation.org>
+	 <20081015.220247.262683261.davem@davemloft.net>
 Content-Type: text/plain
-Date: Wed, 15 Oct 2008 23:52:22 -0500
-Message-Id: <1224132742.7417.1.camel@ghreen.sphere>
+Date: Thu, 16 Oct 2008 16:21:47 +1100
+Message-Id: <1224134507.8157.551.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -25,40 +32,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 2008-10-15 at 22:02 -0700, David Miller wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Wed, 15 Oct 2008 21:33:37 -0700
+> 
+> > kernel/resource.c: In function '__reserve_region_with_split':
+> > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 3 has type 'resource_size_t'
+> > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'resource_size_t'
+> > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 6 has type 'resource_size_t'
+> > kernel/resource.c:554: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'resource_size_t'
+> 
+> Known issue, Ben wants to add a new variant of %pX in order to print resources so that
+> resource_size_t vs. unsigned long stuff doesn't matter like this any more.
 
-Recently with the release of 2.6.27 I have tried this on my main machine
-(in the form of vanilla 2.6.27 final, Ubuntu Intrepid Beta 2.6.27-rc,
-and RIPLinux 6.9 2.6.27 final  ----  all AMD64) and I have been getting
-a pretty regular early exception on my hardware. I will include as much
-information as I have collected.
+Actually, I was told Linus had one and I've been trying to dig it out...
 
-System:
-Asus P5QL-PRO
-Intel Q6600
-4GB RAM (memtest'ed)
-GeForce 8800GT 512M
+Oh well, I may as well dig my own old one.
 
-Panic:
-Kernel alive
-Kernel really alive
-PANIC: early exception 0e rip 10:ffffffff8072f305 error 0 cr2
-ffffffffff341000
+Cheers,
+Ben.
 
-Working boot dmesg:
-http://spherevision.org/sync/kernel/ubuntu-8.04-working-dmesg.log
-
-lspci
-http://spherevision.org/sync/kernel/lspci-vvnn.log
-
-I am available for details/testing/etc for whatever it takes to clean
-this error up and get it to boot on my hardware. 
-
-Similar page off launchpad.net of error on boot of Intrepid Beta on some
-with similar outputs of early exceptions: 
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/54020
-
-Please CC me as I am off list.
-
-Thanks
 
