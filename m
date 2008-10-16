@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbYJPSCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYJPSDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbYJPSCI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYJPSAg
+	id S1756210AbYJPSDJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbYJPSAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:00:36 -0400
-Received: from ns2.suse.de ([195.135.220.15]:46721 "EHLO mx2.suse.de"
+	Thu, 16 Oct 2008 14:00:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46795 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755338AbYJPSAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:00:35 -0400
-Date: Thu, 16 Oct 2008 10:56:30 -0700
+	id S1755783AbYJPSAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 14:00:48 -0400
+Date: Thu, 16 Oct 2008 10:56:37 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Cox <alan@redhat.com>
-Subject: [patch 05/14] tty: Termios locking - sort out real_tty confusions
-	and lock reads
-Message-ID: <20081016175630.GF12850@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dan Williams <dcbw@redhat.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 08/14] libertas: clear current command on card removal
+Message-ID: <20081016175637.GI12850@suse.de>
 References: <20081016174814.734527827@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tty-termios-locking-sort-out-real_tty-confusions-and-lock-reads.patch"
+Content-Disposition: inline; filename="libertas-clear-current-command-on-card-removal.patch"
 In-Reply-To: <20081016175525.GA12850@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,33 +40,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Cox <alan@redhat.com>
+From: Dan Williams <dcbw@redhat.com>
 
-commit 8f520021837d45c47d0ab57e7271f8d88bf7f3a4 upstream
+commit 71b35f3abeb8f7f7e0afd7573424540cc5aae2d5 upstream
 
-(only the tty_io.c portion of this commit)
+If certain commands were in-flight when the card was pulled or the
+driver rmmod-ed, cleanup would block on the work queue stopping, but the
+work queue was in turn blocked on the current command being canceled,
+which didn't happen.  Fix that.
 
-This moves us towards sanity and should mean our termios locking is now
-complete and comprehensive.
-
-Signed-off-by: Alan Cox <alan@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Dan Williams <dcbw@redhat.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/tty_io.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/wireless/libertas/main.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -2996,7 +2996,7 @@ long tty_ioctl(struct file *file, unsign
- 	case TIOCSTI:
- 		return tiocsti(tty, p);
- 	case TIOCGWINSZ:
--		return tiocgwinsz(tty, p);
-+		return tiocgwinsz(real_tty, p);
- 	case TIOCSWINSZ:
- 		return tiocswinsz(tty, real_tty, p);
- 	case TIOCCONS:
+--- a/drivers/net/wireless/libertas/main.c
++++ b/drivers/net/wireless/libertas/main.c
+@@ -1196,7 +1196,13 @@ void lbs_remove_card(struct lbs_private 
+ 	cancel_delayed_work_sync(&priv->scan_work);
+ 	cancel_delayed_work_sync(&priv->assoc_work);
+ 	cancel_work_sync(&priv->mcast_work);
++
++	/* worker thread destruction blocks on the in-flight command which
++	 * should have been cleared already in lbs_stop_card().
++	 */
++	lbs_deb_main("destroying worker thread\n");
+ 	destroy_workqueue(priv->work_thread);
++	lbs_deb_main("done destroying worker thread\n");
+ 
+ 	if (priv->psmode == LBS802_11POWERMODEMAX_PSP) {
+ 		priv->psmode = LBS802_11POWERMODECAM;
+@@ -1314,14 +1320,26 @@ void lbs_stop_card(struct lbs_private *p
+ 		device_remove_file(&dev->dev, &dev_attr_lbs_rtap);
+ 	}
+ 
+-	/* Flush pending command nodes */
++	/* Delete the timeout of the currently processing command */
+ 	del_timer_sync(&priv->command_timer);
++
++	/* Flush pending command nodes */
+ 	spin_lock_irqsave(&priv->driver_lock, flags);
++	lbs_deb_main("clearing pending commands\n");
+ 	list_for_each_entry(cmdnode, &priv->cmdpendingq, list) {
+ 		cmdnode->result = -ENOENT;
+ 		cmdnode->cmdwaitqwoken = 1;
+ 		wake_up_interruptible(&cmdnode->cmdwait_q);
+ 	}
++
++	/* Flush the command the card is currently processing */
++	if (priv->cur_cmd) {
++		lbs_deb_main("clearing current command\n");
++		priv->cur_cmd->result = -ENOENT;
++		priv->cur_cmd->cmdwaitqwoken = 1;
++		wake_up_interruptible(&priv->cur_cmd->cmdwait_q);
++	}
++	lbs_deb_main("done clearing commands\n");
+ 	spin_unlock_irqrestore(&priv->driver_lock, flags);
+ 
+ 	unregister_netdev(dev);
 
 -- 
