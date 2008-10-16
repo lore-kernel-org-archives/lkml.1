@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbYJPXHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbYJPXIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758550AbYJPXHd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbYJPXHD
+	id S1758704AbYJPXIe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbYJPXIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:07:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36646 "EHLO
+	Thu, 16 Oct 2008 19:08:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46294 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758651AbYJPXG7 (ORCPT
+	by vger.kernel.org with ESMTP id S1755789AbYJPXIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:06:59 -0400
-Date: Thu, 16 Oct 2008 16:06:00 -0700
+	Thu, 16 Oct 2008 19:08:25 -0400
+Date: Thu, 16 Oct 2008 16:08:13 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Miller <mike.miller@hp.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 2/2] cciss: fix regression firmware version not
- displayed in procfs (again)
-Message-Id: <20081016160600.685e53cd.akpm@linux-foundation.org>
-In-Reply-To: <20081016224858.GB26564@roadking.ldev.net>
-References: <20081016224858.GB26564@roadking.ldev.net>
+To: Mike Travis <travis@sgi.com>
+Cc: laijs@cn.fujitsu.com, adobriyan@gmail.com, menage@google.com, pj@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] seq_file: Add seq_cpumask_list(),
+ seq_nodemask_list()
+Message-Id: <20081016160813.b7ee423f.akpm@linux-foundation.org>
+In-Reply-To: <48F7C69E.3060509@sgi.com>
+References: <48F1C375.5020105@cn.fujitsu.com>
+	<20081016125827.d72c52c8.akpm@linux-foundation.org>
+	<48F7C69E.3060509@sgi.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,62 +30,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008 17:48:58 -0500
-Mike Miller <mike.miller@hp.com> wrote:
+On Thu, 16 Oct 2008 15:56:30 -0700
+Mike Travis <travis@sgi.com> wrote:
 
-> Patch 2 of 2
+> Andrew Morton wrote:
+> > On Sun, 12 Oct 2008 17:29:25 +0800
+> > Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> > 
+> >> +static inline int seq_cpumask_list(struct seq_file *m, cpumask_t *mask)
+> >> +{
+> >> +	return seq_bitmap_list(m, mask->bits, NR_CPUS);
+> >> +}
+> > 
+> > Is it possible to avoid using NR_CPUS?  In some situations it'd be much
+> > more efficient to use the runtime-determined max possible cpu index.
+> > 
+> > But I don't immediately recall how to get at that number. 
+> > num_possible_cpus() assumes that there are no holes in the CPU
+> > identifier list.
+> > 
 > 
-> The regression was introduced by commit
-> 6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
-> This patch fixes a regression where the controller firmware version is not
-> displayed in procfs. The previous patch would be called anytime something
-> changed. This will get called only once for each controller.
-> Please consider this for inclusion.
-> 
-> Signed-off-by: Mike Miller <mike.miller@hp.com>
-> 
-> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> index 0f367b1..1c830bd 100644
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -3404,7 +3404,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
->  	int i;
->  	int j = 0;
->  	int rc;
-> -	int dac;
-> +	int dac, return_code;
-> +	InquiryData_struct *inq_buff = NULL;
+> nr_cpu_ids represents the max index +1 of the possible cpus.  (Usually the
+> same as num_possible_cpus() except a.) it doesn't need to do the cpus_weight()
+> op, and b.) *if* (a big if) the cpu indices are sparse, then they wouldn't
+> be the same values.)
 
-unneeded initialisation is still there.
+OK, thanks.  I was foggily looking for max_possible_cpus(), to match
+num_online_cpus(), num_possible_cpus(), num_present_cpus().  Silly me.
 
->  	i = alloc_cciss_hba();
->  	if (i < 0)
-> @@ -3510,6 +3511,25 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
->  	/* Turn the interrupts on so we can service requests */
->  	hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
->  
-> +	/* Get the firmware version */
-> +	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
-
-Does this ever get freed?
-
-> +	if (inq_buff == NULL) {
-> +		printk(KERN_ERR "cciss: out of memory\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
-> +		sizeof(InquiryData_struct), 0, 0 , 0, TYPE_CMD);
-> +	if (return_code == IO_OK) {
-> +		hba[i]->firm_ver[0] = inq_buff->data_byte[32];
-> +		hba[i]->firm_ver[1] = inq_buff->data_byte[33];
-> +		hba[i]->firm_ver[2] = inq_buff->data_byte[34];
-> +		hba[i]->firm_ver[3] = inq_buff->data_byte[35];
-> +	} else {	 /* send command failed */
-> +		printk(KERN_WARNING "cciss: unable to determine firmware"
-> +			" version of controller\n");
-> +	}
-> +
->  	cciss_procinit(i);
->  
->  	hba[i]->cciss_max_sectors = 2048;
