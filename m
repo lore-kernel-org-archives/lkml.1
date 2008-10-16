@@ -1,76 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYJPOFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYJPOIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbYJPOFm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 10:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbYJPOFe
+	id S1753902AbYJPOIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 10:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbYJPOHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 10:05:34 -0400
-Received: from www.tglx.de ([62.245.132.106]:34751 "EHLO www.tglx.de"
+	Thu, 16 Oct 2008 10:07:51 -0400
+Received: from smtp.zeuux.org ([210.51.160.52]:58736 "EHLO z.billxu.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751942AbYJPOFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:05:33 -0400
-Date: Thu, 16 Oct 2008 16:03:37 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: arun@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, ego@in.ibm.com, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org
-Subject: Re: [RFC PATCH 2/4] timers: new framework for identifying cpu-pinned
- timers
-In-Reply-To: <1224157982.28131.49.camel@twins>
-Message-ID: <alpine.LFD.2.00.0810161601410.6848@apollo>
-References: <20081016114830.GC7641@linux.vnet.ibm.com> <1224157982.28131.49.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753921AbYJPOHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 10:07:50 -0400
+Date: Thu, 16 Oct 2008 22:07:44 +0800
+From: Jianjun Kong <jianjun@zeuux.org>
+To: Klaus Strebel <klaus.strebel@gmx.net>
+Cc: Tim Shimmin <tes@sgi.com>, stable@kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH] XFS fix remount rw with unrecognized options
+Message-ID: <20081016140744.GA10412@ubuntu>
+References: <20081016002926.D912558FA22B@chook.melbourne.sgi.com> <20081016134112.GA8773@ubuntu> <48F747E5.3090007@gmx.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F747E5.3090007@gmx.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, Peter Zijlstra wrote:
-> On Thu, 2008-10-16 at 17:18 +0530, Arun R Bharadwaj wrote:
-> > This patch creates the necessary framework for identifying cpu-pinned
-> > regular timers and hrtimers.
-> > 
-> > For regular timers a new flag called TBASE_PINNED_FLAG is created.
-> > Since the last 3 bits of the tvec_base is guaranteed to be 0, and
-> > since the last bit is being used to indicate deferrable timers, I'm
-> > using the second last bit to indicate cpu-pinned regular timers.
-> > The implementation of functions to manage the TBASE_PINNED_FLAG is
-> > similar to those which manage the TBASE_DEFERRABLE_FLAG.
-> > 
-> > For hrtimers, there is no clear interface to queue a hrtimer as a
-> > per-cpu hrtimer. But there are instances where, if an hrtimer is queued
-> > on a particular cpu, it expects to run on the same cpu.
-> > The hrtimer hrtick_timer is one such example.
-> > 
-> > So, in this regard, I've created a new interface called
-> > hrtimer_start_pinned which can be used to queue cpu-pinned hrtimer.
-> > In the hrtimer structure, there is a variable called *state* which
-> > is used to indicate the state of a hrtimer - inactive, enqueued,
-> > callback function running and callback pending. Currently, since only
-> > 5 bits are being used in the state variable, I've used the 6th bit
-> > to represent the cpu-pinned state of the hrtimer
-> > 
-> > 
-> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> 
-> Thomas recently created HRTIMER_CB_IRQSAFE_PERCPU which serves this
-> purpose to close some cpu-hotplug timer races.
-> 
-> > @@ -97,6 +96,7 @@ enum hrtimer_cb_mode {
-> >  #define HRTIMER_STATE_CALLBACK	0x02
-> >  #define HRTIMER_STATE_PENDING	0x04
-> >  #define HRTIMER_STATE_MIGRATE	0x08
-> > +#define HRTIMER_CPU_PINNED	0X16
-> 
-> Hehe, may I suggest 0x10 :-)
+On Thu, Oct 16, 2008 at 03:55:49PM +0200, Klaus Strebel wrote:
+>Jianjun Kong schrieb:
+>> On Thu, Oct 16, 2008 at 11:29:26AM +1100, Tim Shimmin wrote:
+>>> Resending as I mangled sending the mail from home last time. Sorry.
+>>>
+>>> Please include the following patch for 2.6.27.1 stable release as
+>>> suggested by Christoph Hellwig and Eric Sandeen.
+>>> It fixes a regression in the recent remount recoding
+>>> where remounting say from ro to rw allows the xfs flags to
+>>> be out of sync with the vfs flags, resulting
+>>> in failures for some programs such as touch (which end up calling xfs_setattr).
+>>> The fix is a very minor and clear.
+>>>
+>>> Thanks,
+>>> Tim.
+>>>
+>>> Date: Sun, 12 Oct 2008 14:30:44 +0200
+>>> From: Christoph Hellwig <hch@lst.de>
+>>> To: xfs@oss.sgi.com
+>>> Subject: [PATCH] fix remount rw with unrecognized options
+>>>
+>>> When we skip unrecognized options in xfs_fs_remount we should just break
+>>> out of the switch and not return because otherwise we may skip clearing
+>>> the xfs-internal read-only flag.  This will only show up on some
+>>> operations like touch because most read-only checks are done by the VFS
+>>> which thinks this filesystem is r/w.  Eventually we should replace the
+>>> XFS read-only flag with a helper that always checks the VFS flag to make
+>>> sure they can never get out of sync.
+>>>
+>>> Bug reported and fix verified by Marcel Beister on #xfs.
+>>> Bug fix verified by updated xfstests/189.
+>>>
+>>> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>>> Acked-by: Eric Sandeen <sandeen@sandeen.net>
+>>> Signed-off-by: Timothy Shimmin <tes@sgi.com>
+>>>
+>>> Index: mainline/fs/xfs/linux-2.6/xfs_super.c
+>>> ===================================================================
+>>> --- mainline.orig/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:26.542652847 +1100
+>>> +++ mainline/fs/xfs/linux-2.6/xfs_super.c	2008-10-15 17:59:45.376217172 +1100
+>>> @@ -1323,7 +1323,7 @@ xfs_fs_remount(
+>>> 	"XFS: mount option \"%s\" not supported for remount\n", p);
+>>> 			return -EINVAL;
+>>> #else
+>>> -			return 0;
+>>> +			break;
+>>> #endif
 
-Well, either way. Adding this to the state is horrible. The state
-tracking is complex enough already, we do not need some extra non
-state information for this.
+<....>
+>> Signed-off-by: Jianjun Kong <kongjianjun@gmail.com>
+>> ---
+>>  fs/xfs/linux-2.6/xfs_super.c |    7 +------
+>>  1 files changed, 1 insertions(+), 6 deletions(-)
+>> 
+>> diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
+>> index e390136..bd5ec81 100644
+>> --- a/fs/xfs/linux-2.6/xfs_super.c
+>> +++ b/fs/xfs/linux-2.6/xfs_super.c
+>> @@ -1318,12 +1318,7 @@ xfs_fs_remount(
+>>  			 * every remount request, and silently ignore all
+>>  			 * options that we can't actually change.
+>>  			 */
+>> -#if 0
+>> -			printk(KERN_INFO
+>> -	"XFS: mount option \"%s\" not supported for remount\n", p);
+>> -			return -EINVAL;
+>> -#else
+>> -			break;
+>> +			break 0;
+>>  #endif
+>>  		}
+>>  	}
+>I see my compilers error message '"#endif" without corresponding "#if"'
+>and i think he'll also dislike the 'break 0;' ... 'missing ";" before
+>"0" in line xxx' ;-).
 
-Thanks,
+Sorry. another one :)
 
-	tglx
+Signed-off-by: Jianjun Kong <kongjianjun@gmail.com>
+---
+ fs/xfs/linux-2.6/xfs_super.c |    8 +-------
+ 1 files changed, 1 insertions(+), 7 deletions(-)
+
+diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
+index e390136..c019f78 100644
+--- a/fs/xfs/linux-2.6/xfs_super.c
++++ b/fs/xfs/linux-2.6/xfs_super.c
+@@ -1318,13 +1318,7 @@ xfs_fs_remount(
+ 			 * every remount request, and silently ignore all
+ 			 * options that we can't actually change.
+ 			 */
+-#if 0
+-			printk(KERN_INFO
+-	"XFS: mount option \"%s\" not supported for remount\n", p);
+-			return -EINVAL;
+-#else
+-			break;
+-#endif
++			break ;
+ 		}
+ 	}
+ 
+-- 
+1.5.2.5
+
+
+
+-- 
+Jianjun Kong | Happy Hacking
+HomePage: http://kongove.cn
+Gtalk: kongjianjun@gmail.com
