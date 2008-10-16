@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbYJPWsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbYJPWtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbYJPWsa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbYJPWsW
+	id S1758350AbYJPWtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYJPWs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:48:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:41244 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756203AbYJPWsV (ORCPT
-	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:48:21 -0400
-Message-ID: <48F7C4A7.5090708@sgi.com>
-Date: Fri, 17 Oct 2008 09:48:07 +1100
-From: Timothy Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Jianjun Kong <jianjun@zeuux.org>, Dave Chinner <david@fromorbit.com>,
-       stable@kernel.org, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: [PATCH] XFS fix remount rw with unrecognized options
-References: <20081016002926.D912558FA22B@chook.melbourne.sgi.com> <20081016134112.GA8773@ubuntu> <20081016223637.GB31761@disturbed>
-In-Reply-To: <20081016223637.GB31761@disturbed>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 18:48:59 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:44493 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755924AbYJPWs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 18:48:59 -0400
+Date: Thu, 16 Oct 2008 17:48:58 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 2/2] cciss: fix regression firmware version not displayed in procfs (again)
+Message-ID: <20081016224858.GB26564@roadking.ldev.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner wrote:
-> On Thu, Oct 16, 2008 at 09:41:12PM +0800, Jianjun Kong wrote:
->> And the code above "return 0" can not be executed, so delete them.
->> __________________________________________
->> #if 0
->>                         printk(KERN_INFO
->>         "XFS: mount option \"%s\" not supported for remount\n", p);
->>                         return -EINVAL;
->> #else                                                                                                            
->>                         return 0;
->> -----------------------------------------
-> 
-> That ifdef was added to stub out the behaviour we *actually want*
-> remount to have when it encounters an invalid remount option.
-> The reason for leaving it is in the next release we should have all
-> the other problems we discovered by doing this fixed, so that
-> code will be re-enabled. Hence the temporary #if 0 around it.
-> 
-> So at this point, don't remove it.
-> 
-> Cheers,
-> 
-> Dave.
+Patch 2 of 2
 
-Exactly.
-I don't want it removed.
-Extra code for comparing existing mount state with new mount state
-needs to be done and this code can be reactivated when we sort
-this stuff out later.
-This patch should be just the fix for the current regression.
+The regression was introduced by commit
+6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
+This patch fixes a regression where the controller firmware version is not
+displayed in procfs. The previous patch would be called anytime something
+changed. This will get called only once for each controller.
+Please consider this for inclusion.
 
-Thanks,
---Tim
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 0f367b1..1c830bd 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -3404,7 +3404,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	int i;
+ 	int j = 0;
+ 	int rc;
+-	int dac;
++	int dac, return_code;
++	InquiryData_struct *inq_buff = NULL;
+ 
+ 	i = alloc_cciss_hba();
+ 	if (i < 0)
+@@ -3510,6 +3511,25 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	/* Turn the interrupts on so we can service requests */
+ 	hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
+ 
++	/* Get the firmware version */
++	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
++	if (inq_buff == NULL) {
++		printk(KERN_ERR "cciss: out of memory\n");
++		return -ENOMEM;
++	}
++
++	return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
++		sizeof(InquiryData_struct), 0, 0 , 0, TYPE_CMD);
++	if (return_code == IO_OK) {
++		hba[i]->firm_ver[0] = inq_buff->data_byte[32];
++		hba[i]->firm_ver[1] = inq_buff->data_byte[33];
++		hba[i]->firm_ver[2] = inq_buff->data_byte[34];
++		hba[i]->firm_ver[3] = inq_buff->data_byte[35];
++	} else {	 /* send command failed */
++		printk(KERN_WARNING "cciss: unable to determine firmware"
++			" version of controller\n");
++	}
++
+ 	cciss_procinit(i);
+ 
+ 	hba[i]->cciss_max_sectors = 2048;
