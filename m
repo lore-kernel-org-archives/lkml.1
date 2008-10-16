@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbYJPXca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYJPXdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbYJPXca (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYJPXcW
+	id S1757042AbYJPXdW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYJPXdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:32:22 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:34386 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751004AbYJPXcV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:32:21 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: no way to swapoff a deleted swap file?
-To: Hugh Dickins <hugh@veritas.com>, Peter Zijlstra <peterz@infradead.org>,
-       Peter Cordes <peter@cordes.ca>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, linux-mm <linux-mm@kvack.org>
-Reply-To: 7eggert@gmx.de
-Date: Fri, 17 Oct 2008 01:43:15 +0200
-References: <bnlDw-5vQ-7@gated-at.bofh.it> <bnwpg-2EA-17@gated-at.bofh.it> <bnJFK-3bu-7@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Thu, 16 Oct 2008 19:33:04 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37642 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752029AbYJPXdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 19:33:01 -0400
+Date: Thu, 16 Oct 2008 16:23:40 -0700
+From: Greg KH <gregkh@suse.de>
+To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [patch 00/14] 2.6.27-stable review
+Message-ID: <20081016232340.GA26661@suse.de>
+References: <20081016175525.GA12850@suse.de> <200810170049.54106.s.L-H@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1KqcUt-0003vU-ES@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Disposition: inline
+In-Reply-To: <200810170049.54106.s.L-H@gmx.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins <hugh@veritas.com> wrote:
-> On Thu, 16 Oct 2008, Peter Zijlstra wrote:
->> On Wed, 2008-10-15 at 17:21 -0300, Peter Cordes wrote:
-
->> > I unlinked a swapfile without realizing I was still swapping on it.
->> > Now my /proc/swaps looks like this:
->> > Filename                                Type            Size    Used
->> > Priority
->> > /var/tmp/EXP/cache/swap/1\040(deleted)  file            1288644 1448       -1
->> > /var/tmp/EXP/cache/swap/2\040(deleted)  file            1433368 0  -2
-
->> >  If kswapd0 had a fd open on the swap files, swapoff /proc/$PID/fd/3
->> > could possibly work.  But it looks like the files are open but with no
->> > user-space accessable file descriptors to them.  Which makes sense,
->> > except for this case.
->> 
->> Right, except that kswapd is per node, so we'd either have to add it to
->> all kswapd instances or a random one. Also, kthreads don't seem to have
->> a files table afaict.
->> 
->> But yes, I see your problem and it makes sense to look for a nice
->> solution.
+On Fri, Oct 17, 2008 at 12:49:52AM +0200, Stefan Lippers-Hollmann wrote:
+> Hi
 > 
-> No immediate answer springs to my mind.
+> On Donnerstag, 16. Oktober 2008, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.27.2 release.
+> [...]
+> > The whole patch series can be found in one patch at:
+> > 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.2-rc1.gz
+> [...]
 > 
-> It's not something I'd want to add a new system call for.
-> I guess we could put a magic file for each swap area
-> somewhere down in /sys, and allow swapoff to act upon that.
+> This file doesn't appear to have reached the server yet.
 
-I think the original idea of something like /proc/$PID/fd/ is not too bad.
-I don't know if it's possible to have the same mechanism in sysfs. I guess
-not, but with the rest of the vm knobs being in /proc, I would not be too sad.
+Doh!  My bad, it will be there soon, forgot to move it to the correct
+directory.
 
-Maybe it's possible to clone(CLONE_FILES) the kswapds. This would allow to
-have /proc/sys/vm/swapfiles point to one of the correct /proc/$kwapd/fd/.
+thanks,
 
+greg k-h
