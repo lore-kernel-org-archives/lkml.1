@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYJPXOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758812AbYJPXPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758560AbYJPXOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 19:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbYJPXOh
+	id S1758812AbYJPXPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 19:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbYJPXPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 19:14:37 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:46241 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755996AbYJPXOg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 19:14:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=veR1MyWQB8VVh8Zm26MrfXAWIkyxZgUuwTFlVFcN4GE5pZbF189JW+P1Z/U/ztaKH9
-         LP2TWsJW+gzisBhzXzYgoMBDajpdBCzDpdfNYj1J6wnoOBq39ApKSU8yGwV9PZNDK88l
-         Ua2h+gpRpRjMVVpZO6UW3F3/usosIbs6qBeG0=
-Date: Fri, 17 Oct 2008 03:17:36 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH 2/2] cciss: fix regression in procfs display fw version,
-	obsoletes previous patch 2 of 2
-Message-ID: <20081016231736.GA7876@x200.localdomain>
-References: <20081016215016.GB25704@roadking.ldev.net> <20081016145642.2ba2adba.akpm@linux-foundation.org> <0F5B06BAB751E047AB5C87D1F77A77884C019B4CBE@GVW0547EXC.americas.hpqcorp.net> <20081016223251.GA10270@x200.localdomain> <0F5B06BAB751E047AB5C87D1F77A77884C019B4CEF@GVW0547EXC.americas.hpqcorp.net>
+	Thu, 16 Oct 2008 19:15:33 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60607 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755146AbYJPXPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 19:15:32 -0400
+Date: Fri, 17 Oct 2008 01:15:30 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: mmotm 2008-10-16-00-52 uploaded (HID)
+In-Reply-To: <Pine.LNX.4.64.0810161558341.14604@shark.he.net>
+Message-ID: <alpine.LNX.1.10.0810170113570.28536@jikos.suse.cz>
+References: <200810160758.m9G7wZmt018529@imap1.linux-foundation.org> <Pine.LNX.4.64.0810161558341.14604@shark.he.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77884C019B4CEF@GVW0547EXC.americas.hpqcorp.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 10:56:58PM +0000, Miller, Mike (OS Dev) wrote:
-> > > > +     return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
-> > > > > +             sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
-> > > > > +     if (return_code == IO_OK) {
-> > > > > +             hba[i]->firm_ver[0] = inq_buff->data_byte[32];
-> > > > > +             hba[i]->firm_ver[1] = inq_buff->data_byte[33];
-> > > > > +             hba[i]->firm_ver[2] = inq_buff->data_byte[34];
-> > > > > +             hba[i]->firm_ver[3] = inq_buff->data_byte[35];
-> > > > > +     } else {         /* send command failed */
-> > > > > +             printk(KERN_WARNING "cciss: unable to
-> > > > determine firmware"
-> > > > > +                     " version of controller\n");
-> > > > > +     }
-> > > > > +
-> > > > >       cciss_procinit(i);
-> > > > >
-> > > > >       hba[i]->cciss_max_sectors = 2048;
-> > >
-> > > Sorry, in too much of a hurry. I'll fix (again).
-> >
-> > And inq_buff is leaked, if I'm not missing simething.
-> >
-> Sorry, Alexy, I can't see the leak. Is it in the failure case?
+On Thu, 16 Oct 2008, Randy.Dunlap wrote:
 
-Where "inq_buff" is freed?
+> > The mm-of-the-moment snapshot 2008-10-16-00-52 has been uploaded to
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > It contains the following patches against 2.6.27:
+> mmotm has several various build failures when
+> HID=y and USB=n
+> or
+> HID=y and USB_HID=m.
+> These are (mostly) caused by drivers/hid/Kconfig doing lots of "select"s
+> when EMBEDDED=n, such as
+> config HID
+> 	tristate "Generic HID support"
+> 	depends on INPUT
+> 	default y
+>         select HID_A4TECH if !EMBEDDED
+[ ... ]
+> Build failure examples:
+> 9168:
+> HID=y, USB=n
+> hid-bright.c:(.text+0x1013f0): undefined reference to `usbhid_set_leds'
+> hid-dell.c:(.text+0x1019bc): undefined reference to `usbhid_set_leds'
+> hid-lg.c:(.text+0x102310): undefined reference to `usbhid_set_leds'
+> hid-lgff.c:(.text+0x102509): undefined reference to `usbhid_submit_report'
+> hid-lgff.c:(.text+0x102566): undefined reference to `usbhid_submit_report'
+> hid-pl.c:(.text+0x102bbb): undefined reference to `usbhid_submit_report'
+> hid-pl.c:(.text+0x102ddf): undefined reference to `usbhid_submit_report'
+> hid-sony.c:(.text+0x103339): undefined reference to `usb_control_msg'
+
+Hi Randy,
+
+yes, that's my bug, and it is already fixed in Linus' tree (commit 
+b36299bcc0f).
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
