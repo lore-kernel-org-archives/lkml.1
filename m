@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbYJPWhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYJPWio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758093AbYJPWhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbYJPWhG
+	id S1757912AbYJPWio (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYJPWif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:37:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37036
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757917AbYJPWhE (ORCPT
+	Thu, 16 Oct 2008 18:38:35 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51076 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752930AbYJPWif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:37:04 -0400
-Date: Thu, 16 Oct 2008 15:36:41 -0700 (PDT)
-Message-Id: <20081016.153641.32547403.davem@davemloft.net>
-To: avorontsov@ru.mvista.com
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       sfalco@harris.com, grant.likely@secretlab.ca, khali@linux-fr.org,
-       i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/7] powerpc and sparc: introduce dev_archdata node
- accessors
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081016171251.GA5515@oksana.dev.rtsoft.ru>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
-	<20081016171251.GA5515@oksana.dev.rtsoft.ru>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 18:38:35 -0400
+Date: Thu, 16 Oct 2008 23:38:09 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Peter Cordes <peter@cordes.ca>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: no way to swapoff a deleted swap file?
+In-Reply-To: <1224145684.28131.25.camel@twins>
+Message-ID: <Pine.LNX.4.64.0810162313570.26758@blonde.site>
+References: <20081015202141.GX26067@cordes.ca> <1224145684.28131.25.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Thu, 16 Oct 2008 21:12:51 +0400
-
-> The name of the device_node field differ across the platforms, so we
-> have to implement inlined accessors. This is needed to avoid ugly
-> #ifdef in the generic code.
+On Thu, 16 Oct 2008, Peter Zijlstra wrote:
+> On Wed, 2008-10-15 at 17:21 -0300, Peter Cordes wrote:
+> > I unlinked a swapfile without realizing I was still swapping on it.
+> > Now my /proc/swaps looks like this:
+> > Filename                                Type            Size    Used	Priority
+> > /var/tmp/EXP/cache/swap/1\040(deleted)  file            1288644 1448	-1
+> > /var/tmp/EXP/cache/swap/2\040(deleted)  file            1433368 0	-2
+> > 
+> >  AFAICT, there's nothing I can pass to swapoff(2) that will make the
+> > kernel let go of them.  If that's the case, please consider this a
+> > feature request for a way to do this.  Now I'm going to have to reboot
+> > before I can mkfs that partition.
+> > 
+> >  If kswapd0 had a fd open on the swap files, swapoff /proc/$PID/fd/3
+> > could possibly work.  But it looks like the files are open but with no
+> > user-space accessable file descriptors to them.  Which makes sense,
+> > except for this case.
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Right, except that kswapd is per node, so we'd either have to add it to
+> all kswapd instances or a random one. Also, kthreads don't seem to have
+> a files table afaict.
+> 
+> But yes, I see your problem and it makes sense to look for a nice
+> solution.
 
-I'm happy to just change this member name on sparc to match
-powerpc's choice.
+No immediate answer springs to my mind.
 
-That being said, this abstraction still has value and I'd
-like to let you merge this now and make forward progress
-so:
+It's not something I'd want to add a new system call for.
+I guess we could put a magic file for each swap area
+somewhere down in /sys, and allow swapoff to act upon that.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+If there were other good reasons to add such files, that
+could make sense.  But although I'll willingly admit it's a
+lacuna, I don't think it's one worth bloating the kernel for.
+
+(I would suggest that Peter keep a second link to his swapfiles
+somewhere safer; but that's then open to the converse complaint,
+that when he unlinks intentionally but forgets the safe link,
+the disk space remains mysteriously in use.)
+
+Sorry for being unhelpful!
+Hugh
