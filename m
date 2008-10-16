@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYJPKDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbYJPKF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbYJPKDj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 06:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbYJPKDS
+	id S1756115AbYJPKF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 06:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYJPKFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 06:03:18 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:58126 "EHLO smtp6.pp.htv.fi"
+	Thu, 16 Oct 2008 06:05:48 -0400
+Received: from main.gmane.org ([80.91.229.2]:40299 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755491AbYJPKDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 06:03:15 -0400
-Date: Thu, 16 Oct 2008 13:03:06 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dan Williams <dan.j.williams@intel.com>, linux-ext4@vger.kernel.org,
-       netdev@vger.kernel.org, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, marek.vasut@gmail.com,
-       David Woodhouse <dwmw2@infradead.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: powerpc allmodconfig
-Message-ID: <20081016100306.GD23630@cs181140183.pp.htv.fi>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org> <s5h1vyhrsja.wl%tiwai@suse.de> <20081016073836.GB23630@cs181140183.pp.htv.fi> <s5hiqrtq8fc.wl%tiwai@suse.de> <20081016082157.GC23630@cs181140183.pp.htv.fi> <s5hod1lorpm.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <s5hod1lorpm.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753235AbYJPKFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 06:05:48 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: el es <el_es_cr@yahoo.co.uk>
+Subject: Re: [RFC] Kernel version numbering scheme change
+Date: Thu, 16 Oct 2008 10:05:32 +0000 (UTC)
+Message-ID: <loom.20081016T094113-612@post.gmane.org>
+References: <20081016002509.GA25868@kroah.com> <loom.20081016T075618-911@post.gmane.org> <48F704E6.2010409@zytor.com> <loom.20081016T092338-594@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 86.166.207.29 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 10:43:33AM +0200, Takashi Iwai wrote:
-> At Thu, 16 Oct 2008 11:21:57 +0300,
-> Adrian Bunk wrote:
-> > 
-> > On Thu, Oct 16, 2008 at 09:57:11AM +0200, Takashi Iwai wrote:
-> > > At Thu, 16 Oct 2008 10:38:36 +0300,
-> > > Adrian Bunk wrote:
-> > > > 
-> > > > On Thu, Oct 16, 2008 at 07:57:29AM +0200, Takashi Iwai wrote:
-> > > > > At Wed, 15 Oct 2008 21:33:37 -0700,
-> > > > > Andrew Morton wrote:
-> > > > > > 
-> > > > > > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
-> > > > > > sound/soc/soc-dapm.c:1029: warning: 'snd_soc_dapm_connect_input' is deprecated (declared at sound/soc/soc-dapm.c:1026)
-> > > > > 
-> > > > > These are definitions of deprecated interfaces.
-> > > > > We can remove it in 2.6.29.  If we don't want to be conservative, it
-> > > > > can be removed in 2.6.28, too.
-> > > > >...
-> > > > 
-> > > > Since it's an in-kernel API there's no reason to keep it once there are 
-> > > > no users left.
-> > > 
-> > > Right.  But, IMO, now is no suitable time.
-> > > A thing like API removal should have been tested in linux-next, and we
-> > > had plenty of time indeed for 2.6.28.
-> > >...
-> > 
-> > A grep through the tree and one test compile that covers 
-> > sound/soc/soc-dapm.c should be enough testing.
-> > 
-> > And having it then in -next once should be enough to discover if someone 
-> > wrongly added a new user.
+el es <el_es_cr <at> yahoo.co.uk> writes:
+
 > 
-> My point is the time for removal.  The API changes should have been
-> done in the merge window, and it should have been tested *before* the
-> merge window.
->...
-
-My point is simply that compared to many other patches that weren't 
-tested before the merge window, and that still get (for various reasons) 
-into the tree, the removal of unused functions is extremely low-risk 
-(assuming the patch creator knows what grep is and does a test compile 
-of the changed code).
-
-> thanks,
+> H. Peter Anvin <hpa <at> zytor.com> writes:
 > 
-> Takashi
+> > 
+> > el es wrote:
+> [snip]
+> > > - informative : the ww and tt numbers are the week numbers of when the 
+> > > actual release HAPPENED, not when it is predicted.
 
-cu
-Adrian
+> > Which really sucks for dealing with future releases.
+> > 
+> 
+> Why ? 
+> What do you mean by 'future releases' ? 
 
--- 
+Oh, I just read your suggestion to move on with 3, 4 and so on. To keep it 
+simple.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+How about adopting your scheme (simple counter) with mine (yy.ww.tt) ?
+
+Speaking on my own, I think that some indication of WHEN the release actually
+happened, encoded in the version number, IS desirable. I'm not a developer (my
+field is far, far away) but personally I find the suggestions to put full year
+figure in front, grossly disturbing everything we accustomed to ;)
+
+OR.
+If in my idea, we drop the .tt bit, hence, we declare, that the stable team just
+continues the work on the released version, like
+
+- 2.08.41 is the currently released 2.6.27,
+- developers continue on 2.08.41-rcX, which gets promoted to 3.yy.ww when 
+released and so on,
+- meanwhile the stable team releases 2.08.[42..52], 2.09.[01..52] and so on. 
+
+Being an indication of continuity.
+As well as a revolution too ;)
+> > 
+> 
+> Lukasz
+> 
+> 
+
+
+
 
