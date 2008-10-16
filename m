@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbYJPSpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYJPSpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbYJPSpB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYJPSot
+	id S1756669AbYJPSpb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYJPSpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:44:49 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:39147 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbYJPSos (ORCPT
+	Thu, 16 Oct 2008 14:45:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41956 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbYJPSpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:44:48 -0400
-Date: Thu, 16 Oct 2008 19:44:39 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: ben@simtec.co.uk, davem@davemloft.net, vapier.adi@gmail.com,
-       shemminger@vyatta.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] netdev: DM9000: remove BLACKFIN hacking in DM9000 netdev driver
-Message-ID: <20081016184439.GL31627@trinity.fluff.org>
-References: <1224178844-12496-1-git-send-email-cooloney@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224178844-12496-1-git-send-email-cooloney@kernel.org>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+	Thu, 16 Oct 2008 14:45:16 -0400
+Date: Thu, 16 Oct 2008 14:45:15 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+In-Reply-To: <20081016183529.GB29739@yoda.jdub.homelinux.org>
+Message-ID: <alpine.DEB.1.10.0810161444050.11042@gandalf.stny.rr.com>
+References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu> <20081016181452.GA29739@yoda.jdub.homelinux.org> <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com> <20081016183529.GB29739@yoda.jdub.homelinux.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 01:40:44AM +0800, Bryan Wu wrote:
-> remove integer casting in the read/write IO accessors,
-> because Blackfin now provides those functions
-> 
-> Tested-by: Javier Herrero <jherrero@hvsistemas.es>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Acked-by: Ben Dooks <ben-linux@fluff.org>
-> ---
->  drivers/net/dm9000.c |    9 ---------
->  1 files changed, 0 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
-> index f42c23f..5a9083e 100644
-> --- a/drivers/net/dm9000.c
-> +++ b/drivers/net/dm9000.c
-> @@ -47,15 +47,6 @@
->  #define CARDNAME	"dm9000"
->  #define DRV_VERSION	"1.31"
->  
-> -#ifdef CONFIG_BLACKFIN
-> -#define readsb	insb
-> -#define readsw	insw
-> -#define readsl	insl
-> -#define writesb	outsb
-> -#define writesw	outsw
-> -#define writesl	outsl
-> -#endif
-> -
->  /*
->   * Transmit timeout, default 5 seconds.
->   */
-> -- 
-> 1.5.6
-> 
 
--- 
--- 
-Ben
+On Thu, 16 Oct 2008, Josh Boyer wrote:
+> 
+> Well, that's why I asked.  You sent 2 patches out over a month ago that
+> don't appear to have shown up in any Linus or PowerPC tree.
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+Oh, the patches I sent on here, are not to solve this issue. It was 
+actually solving issues in linux-tip itself.
 
+I'm still looking into the cause for ftrace not to boot on PPC.
+
+-- Steve
