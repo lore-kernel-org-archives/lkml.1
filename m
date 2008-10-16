@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbYJPUfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYJPUi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbYJPUfq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 16:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbYJPUfi
+	id S1756733AbYJPUi0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 16:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbYJPUiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 16:35:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42257 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752259AbYJPUfh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 16:35:37 -0400
-Date: Thu, 16 Oct 2008 13:35:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SYSFS: Fix return values for sysdev_store_{ulong,int}
-Message-Id: <20081016133530.1024528d.akpm@linux-foundation.org>
-In-Reply-To: <20081013100303.GA32199@basil.nowhere.org>
-References: <20081013100303.GA32199@basil.nowhere.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Oct 2008 16:38:18 -0400
+Received: from xenotime.net ([66.160.160.81]:49000 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752259AbYJPUiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 16:38:17 -0400
+Date: Thu, 16 Oct 2008 13:38:13 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: linux-kernel@vger.kernel.org
+cc: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: mmotm 2008-10-16-00-52 uploaded
+In-Reply-To: <200810160758.m9G7wZmt018529@imap1.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0810161336510.14604@shark.he.net>
+References: <200810160758.m9G7wZmt018529@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Oct 2008 12:03:03 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+On Thu, 16 Oct 2008, akpm@linux-foundation.org wrote:
 
-> SYSFS: Fix return values for sysdev_store_{ulong,int}
+> The mm-of-the-moment snapshot 2008-10-16-00-52 has been uploaded to
 > 
-> Always return the full size instead of the consumed
-> length of the string in sysdev_store_{ulong,int}
+>    http://userweb.kernel.org/~akpm/mmotm/
 > 
-> This avoids EINVAL errors in some echo versions.
+> It contains the following patches against 2.6.27:
 
-That sounds fairly serious.  Is this a regression or are those versions
-of echo really ancient, or...?
+
+build-r9169.out:ksysfs.c:(.text+0x1a773): undefined reference to `create_proc_profile'
+
+when CONFIG_PROC_FS=n and CONFIG_SYSFS=n
+
+-- 
+~Randy
