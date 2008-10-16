@@ -1,128 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbYJPWW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYJPWWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbYJPWW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 18:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYJPWWP
+	id S1755942AbYJPWWp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 18:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYJPWWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 18:22:15 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:16314 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752194AbYJPWWO convert rfc822-to-8bit (ORCPT
+	Thu, 16 Oct 2008 18:22:34 -0400
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:25461 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757315AbYJPWWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 18:22:14 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Date: Thu, 16 Oct 2008 22:21:22 +0000
-Subject: RE: [PATCH 2/2] cciss: fix regression in procfs display fw version,
- obsoletes previous patch 2 of 2
-Thread-Topic: [PATCH 2/2] cciss: fix regression in procfs display fw
- version, obsoletes previous patch 2 of 2
-Thread-Index: Ackv2hTieF1Z0N3gRfm8FfiV1kop3wAA1Fbg
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884C019B4CBE@GVW0547EXC.americas.hpqcorp.net>
-References: <20081016215016.GB25704@roadking.ldev.net>
- <20081016145642.2ba2adba.akpm@linux-foundation.org>
-In-Reply-To: <20081016145642.2ba2adba.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 16 Oct 2008 18:22:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=E2EeOaBM1kv2PSPsVCsS2hiBA9piB0kzapSHEKg8ObjiHci2ZJM3X9m58Y4MIUuRSBY0l0fne9y3juVisi4qvrZfKe1vOfrda4BOtEWyYIrM3AVdwtJbFILBJDrkJsF8r5YI0hCsBN1rHSroFrQQaLmQOebaS3q3lPRYCEjN7PQ=  ;
+X-YMail-OSG: 0WQMGTcVM1nwXDgE45iHh4JWmBjb3yJ4O65xOjGs9ChPgJkpuWFw8h2df4xGJzPsgF2pStFuTuu4TE.UPA4wmBPbrox4ZhYwYdEKpKpoZhvWaVDgaFzcHiGCAiHZ3TvBUpU_7wZUtIoNBOG3fRJdApOC
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       =?iso-8859-1?q?J=FCri_Reitel?= <juri.reitel@liewenthal.ee>
+Subject: Re: [rtc-linux] Re: invalid default values in RTC chip
+Date: Thu, 16 Oct 2008 15:22:25 -0700
+User-Agent: KMail/1.9.9
+Cc: rtc-linux@googlegroups.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>,
+       Rodolfo Giometti <giometti@linux.it>
+References: <48F45FA5.6040308@liewenthal.ee> <20081016135846.8b06d9f8.akpm@linux-foundation.org> <20081016234108.1268f65c@i1501.lan.towertech.it>
+In-Reply-To: <20081016234108.1268f65c@i1501.lan.towertech.it>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200810161522.26098.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 16 October 2008, Alessandro Zummo wrote:
+> On Tue, 14 Oct 2008 12:00:21 +0300
+> Jüri Reitel <juri.reitel@liewenthal.ee> wrote:
+>
+> > > My question relates to RTC driver linux/drivers/rtc/rtc-ds1307.c for 
+> > > device m41t00. Driver probe function will fail if some of the chip's 
+> > > registers contain invalid date time values i.e. if month register is 32 
+> > > or minutes is 61.
+
+This stuff?
+
+        tmp = ds1307->regs[DS1307_REG_SECS];
+        tmp = BCD2BIN(tmp & 0x7f);
+        if (tmp > 60)
+                goto exit_bad;
+        tmp = BCD2BIN(ds1307->regs[DS1307_REG_MIN] & 0x7f);
+        if (tmp > 60)
+                goto exit_bad;
+
+        tmp = BCD2BIN(ds1307->regs[DS1307_REG_MDAY] & 0x3f);
+        if (tmp == 0 || tmp > 31)
+                goto exit_bad;
+
+        tmp = BCD2BIN(ds1307->regs[DS1307_REG_MONTH] & 0x1f);
+        if (tmp == 0 || tmp > 12)
+                goto exit_bad;
 
 
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> Sent: Thursday, October 16, 2008 4:57 PM
-> To: Miller, Mike (OS Dev)
-> Cc: JensAxboejens.axboe@oracle.com;
-> linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
-> Subject: Re: [PATCH 2/2] cciss: fix regression in procfs
-> display fw version, obsoletes previous patch 2 of 2
->
-> On Thu, 16 Oct 2008 16:50:16 -0500
-> Mike Miller <mike.miller@hp.com> wrote:
->
-> >
-> > Patch 2 of 2
-> >
-> > This patch obsoletes patch 2/2 from yesterday. It fixes a
-> regression
-> > in procfs where the controller firmware version is not
-> displayed. The
-> > previous patch also addressed the problem but the code
-> would be called
-> > whenever anything changed on the array such as the number
-> of logical volumes, etc.
-> > This patch only gets called once for each controller.
-> > Please consider this for inclusion.
-> >
->
-> Again, this description doesn't contain enough information
-> for us to work out which kernels need patching.
->
-> >
-> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c index
-> > 0f367b1..efa5414 100644
-> > --- a/drivers/block/cciss.c
-> > +++ b/drivers/block/cciss.c
-> > @@ -3404,7 +3404,8 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
-> >       int i;
-> >       int j = 0;
-> >       int rc;
-> > -     int dac;
-> > +     int dac, return_code;
-> > +     InquiryData_struct *inq_buff = NULL;
->
-> This initialisation is not needed.
->
-> >       i = alloc_cciss_hba();
-> >       if (i < 0)
-> > @@ -3510,6 +3511,25 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
-> >       /* Turn the interrupts on so we can service requests */
-> >       hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
-> >
-> > +     /* Get the firmware version */
-> > +     inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
-> > +        if (inq_buff == NULL) {
-> > +                printk(KERN_ERR "cciss: out of memory\n");
->
-> Whitespace is all screwed up.
->
-> > +                return ENOMEM;
->
-> Should be -ENOMEM.
->
-> > +        }
-> > +
-> > +     return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
-> > +             sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
-> > +     if (return_code == IO_OK) {
-> > +             hba[i]->firm_ver[0] = inq_buff->data_byte[32];
-> > +             hba[i]->firm_ver[1] = inq_buff->data_byte[33];
-> > +             hba[i]->firm_ver[2] = inq_buff->data_byte[34];
-> > +             hba[i]->firm_ver[3] = inq_buff->data_byte[35];
-> > +     } else {         /* send command failed */
-> > +             printk(KERN_WARNING "cciss: unable to
-> determine firmware"
-> > +                     " version of controller\n");
-> > +     }
-> > +
-> >       cciss_procinit(i);
-> >
-> >       hba[i]->cciss_max_sectors = 2048;
+> > > Is this correct behavior? Probe function's purpose is  
+> > > to check if the device is as was assumed (this time RTC and it is). The 
+> > > chip's values are incorrect but the chip works, even the m41t00 chip 
+> > > manual states that after initial powerup (RTC battery power applied) 
+> > > internal registers will contain random data.
+> > > 
+> > > There are two solutions first is driver patch and another is i2c-dev and 
+> > > i2cset tool to use from user space during bootup. Whitch one should be used?
+> 
+>  Given we transitioned to the new i2c model, which mandates
+>  a platform device to be declared,
 
-Sorry, in too much of a hurry. I'll fix (again).
+Actually "i2c_board_info", not a "platform_device" ...
 
-mikem
->
+
+>  there's no more the need 
+>  to check for the device in the probing function.
+> 
+>  this should be fixed in the driver.
+
+Right.  The code I snipped above dates from the old
+drivers/i2c/chips/ds1337.c code, as I recall, which
+was trying to defend against some random non-RTC chip
+sitting at the relevant address.  As pretty much all
+legacy I2C drivers needed to do.
+
+With "new style" I2C drivers, no guessing is needed
+and such defenses are superfluos.  It's fair to notice
+that no chip is actually present ... but if there's
+a chip there, it should be assumed to match the
+declaration Linux was given.
+
+
+>  however, a driver may still return a failure when reading
+>  the time if there are inappropriate values in the registers.
+
+In this driver, ds1307_get_time() already has a
+
+        return rtc_valid_tm(t);
+
+But in the just-merged alarm support, ds1307_read_alarm()
+doesn't do that.  Actually that function should use a name
+like ds1337_read_alarm(), since the 1307 has no alarm!
+
+
+>  the solution is to patch the driver for detection and then
+>  use a recent hwclock on bootup to write the time if required.
+
+Exactly.  Feel free to submit a patch removing those
+probe() checks, and fixing the code returning the alarm
+setting too.
+
+- Dave
