@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYJPQfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYJPQnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbYJPQfd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 12:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYJPQf0
+	id S1753946AbYJPQnl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 12:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYJPQnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 12:35:26 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:6909 "EHLO
+	Thu, 16 Oct 2008 12:43:33 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:6962 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751132AbYJPQfZ (ORCPT
+	by vger.kernel.org with ESMTP id S1751957AbYJPQnc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 12:35:25 -0400
-Date: Thu, 16 Oct 2008 20:35:23 +0400
+	Thu, 16 Oct 2008 12:43:32 -0400
+Date: Thu, 16 Oct 2008 20:43:30 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] gpiolib: fix oops on reading sysfs exported GPIOs
-Message-ID: <20081016163523.GA27938@oksana.dev.rtsoft.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] gpiolib: fix oops in gpio_get_value_cansleep()
+Message-ID: <20081016164330.GB27938@oksana.dev.rtsoft.ru>
 Reply-To: avorontsov@ru.mvista.com
-References: <20081016144503.GA17455@oksana.dev.rtsoft.ru> <200810160843.08553.david-b@pacbell.net>
+References: <200810160845.22281.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <200810160843.08553.david-b@pacbell.net>
+In-Reply-To: <200810160845.22281.david-b@pacbell.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 08:43:08AM -0700, David Brownell wrote:
+On Thu, Oct 16, 2008 at 08:45:22AM -0700, David Brownell wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
 [...]
-> > GPIO users should always issue the gpio_direction_input() call and
-> > check its return value prior to trying gpio_get_value().
+> So the problem is that gpio_get_value_cansleep() isn't making
+> the same sanity check that gpio_get_value() does:  making sure
+> this GPIO isn't one of the atypical "no input logic" cases.
 > 
-> Not true; the API explicitly allows GPIOs to be treated
-> as bidirectional, even when they're configured as outputs.
-> That's because most GPIOs *are* bidirectional.
+> Reported-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  drivers/gpio/gpiolib.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/drivers/gpio/gpiolib.c
+> +++ b/drivers/gpio/gpiolib.c
+> @@ -1056,7 +1056,7 @@ int gpio_get_value_cansleep(unsigned gpi
+>  
+>  	might_sleep_if(extra_checks);
+>  	chip = gpio_to_chip(gpio);
+> -	return chip->get(chip, gpio - chip->base);
+> +	return chip->get ? chip->get(chip, gpio - chip->base) : 0;
 
-I just recalling somebody was speaking about not wasting cycles with
-the checks in the gpio_{set,get}_value(). And the solution was that
-before using the gpio_{set,get} one should always try to issue the
-"direction" calls to ensure that gpio controller is capable of that
-direction... That way gpio_{set,get}_value() don't have to check
-anything.
-
-Though I can't find the discussion now, maybe it was a dream... :-)
-
-
-Thanks,
+Why don't we check the .set in the gpio_set_value? Because
+we must always call gpio_direction_output()? It is not exactly the
+same we work with the input direction.. is this documented anywhere?
 
 -- 
 Anton Vorontsov
