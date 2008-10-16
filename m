@@ -1,64 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbYJPRb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbYJPRbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760236AbYJPRb3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 13:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbYJPRPK
+	id S1753243AbYJPRbp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 13:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbYJPRPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 13:15:10 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:7181 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753325AbYJPRPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 13:15:07 -0400
-Date: Thu, 16 Oct 2008 21:15:05 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] gpiolib: fix oops in gpio_get_value_cansleep()
-Message-ID: <20081016171505.GA5722@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <200810160845.22281.david-b@pacbell.net> <20081016164330.GB27938@oksana.dev.rtsoft.ru> <200810161006.21276.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200810161006.21276.david-b@pacbell.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Oct 2008 13:15:11 -0400
+Received: from kroah.org ([198.145.64.141]:47051 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755693AbYJPRPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 13:15:09 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: John Ogness <john.ogness@linutronix.de>,
+       "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 45/46] UIO: add automata sercos3 pci card support
+Date: Thu, 16 Oct 2008 10:10:46 -0700
+Message-Id: <1224177047-11859-45-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <20081016170954.GA11824@kroah.com>
+References: <20081016170954.GA11824@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 10:06:21AM -0700, David Brownell wrote:
-> On Thursday 16 October 2008, Anton Vorontsov wrote:
-> > > -     return chip->get(chip, gpio - chip->base);
-> > > +     return chip->get ? chip->get(chip, gpio - chip->base) : 0;
-> > 
-> > Why don't we check the .set in the gpio_set_value? Because
-> > we must always call gpio_direction_output()?
-> 
-> Yes.  The output driver needs to be explicitly enabled,
-> to avoid misbehaving electic circuitry.
-> 
-> 
-> > It is not exactly the 
-> > same we work with the input direction.. is this documented anywhere?
-> 
-> In Documentation/gpio.txt since the very first versions.
-> 
-> See the section on "Spinlock-Safe GPIO access", where
-> special cases for reading the value of output GPIOs are
-> desribed.  Other aspects are mentioned in other spots.
-> 
-> For example, open drain signals -- as used with I2C and
-> other protocols -- only drive the "low" signal level,
-> and if code wants a "high" level it's got to verify that
-> nobody else is driving that shared line to low.  By
-> reading it back, even though it's configured as output.
+From: John Ogness <john.ogness@linutronix.de>
 
-I see. Much thanks for the explanations.
+Here is a new version of the patch to support the Automata Sercos III
+PCI card driver. I now check that the IRQ is enabled before accepting
+the interrupt.
 
+I still use a logical OR to store the enabled interrupts and I've
+added a second use of a logical OR when restoring the enabled
+interrupts. I added an explanation of why I do this in comments at the
+top of the source file.
+
+Since I use a logical OR, I also removed the extra checks if the
+Interrupt Enable Register and ier0_cache are 0.
+
+Signed-off-by: John Ogness <john.ogness@linutronix.de>
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/uio/Kconfig       |   13 +++
+ drivers/uio/Makefile      |    1 +
+ drivers/uio/uio_sercos3.c |  243 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 257 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/uio/uio_sercos3.c
+
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index 4190be6..04b954c 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -58,4 +58,17 @@ config UIO_SMX
+ 
+ 	  If you compile this as a module, it will be called uio_smx.
+ 
++config UIO_SERCOS3
++	tristate "Automata Sercos III PCI card driver"
++	default n
++	help
++	  Userspace I/O interface for the Sercos III PCI card from
++	  Automata GmbH. The userspace part of this driver will be
++	  available for download from the Automata GmbH web site.
++
++	  Automata GmbH:        http://www.automataweb.com
++	  Sercos III interface: http://www.sercos.com
++
++	  If you compile this as a module, it will be called uio_sercos3.
++
+ endif
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index 8667bbd..e695581 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -3,3 +3,4 @@ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+ obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+ obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+ obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
++obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
+diff --git a/drivers/uio/uio_sercos3.c b/drivers/uio/uio_sercos3.c
+new file mode 100644
+index 0000000..a6d1b2b
+--- /dev/null
++++ b/drivers/uio/uio_sercos3.c
+@@ -0,0 +1,243 @@
++/* sercos3: UIO driver for the Automata Sercos III PCI card
++
++   Copyright (C) 2008 Linutronix GmbH
++     Author: John Ogness <john.ogness@linutronix.de>
++
++   This is a straight-forward UIO driver, where interrupts are disabled
++   by the interrupt handler and re-enabled via a write to the UIO device
++   by the userspace-part.
++
++   The only part that may seem odd is the use of a logical OR when
++   storing and restoring enabled interrupts. This is done because the
++   userspace-part could directly modify the Interrupt Enable Register
++   at any time. To reduce possible conflicts, the kernel driver uses
++   a logical OR to make more controlled changes (rather than blindly
++   overwriting previous values).
++
++   Race conditions exist if the userspace-part directly modifies the
++   Interrupt Enable Register while in operation. The consequences are
++   that certain interrupts would fail to be enabled or disabled. For
++   this reason, the userspace-part should only directly modify the
++   Interrupt Enable Register at the beginning (to get things going).
++   The userspace-part can safely disable interrupts at any time using
++   a write to the UIO device.
++*/
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/uio_driver.h>
++#include <linux/io.h>
++
++/* ID's for SERCOS III PCI card (PLX 9030) */
++#define SERCOS_SUB_VENDOR_ID  0x1971
++#define SERCOS_SUB_SYSID_3530 0x3530
++#define SERCOS_SUB_SYSID_3535 0x3535
++#define SERCOS_SUB_SYSID_3780 0x3780
++
++/* Interrupt Enable Register */
++#define IER0_OFFSET 0x08
++
++/* Interrupt Status Register */
++#define ISR0_OFFSET 0x18
++
++struct sercos3_priv {
++	u32 ier0_cache;
++	spinlock_t ier0_cache_lock;
++};
++
++/* this function assumes ier0_cache_lock is locked! */
++static void sercos3_disable_interrupts(struct uio_info *info,
++				       struct sercos3_priv *priv)
++{
++	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
++
++	/* add enabled interrupts to cache */
++	priv->ier0_cache |= ioread32(ier0);
++
++	/* disable interrupts */
++	iowrite32(0, ier0);
++}
++
++/* this function assumes ier0_cache_lock is locked! */
++static void sercos3_enable_interrupts(struct uio_info *info,
++				      struct sercos3_priv *priv)
++{
++	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
++
++	/* restore previously enabled interrupts */
++	iowrite32(ioread32(ier0) | priv->ier0_cache, ier0);
++	priv->ier0_cache = 0;
++}
++
++static irqreturn_t sercos3_handler(int irq, struct uio_info *info)
++{
++	struct sercos3_priv *priv = info->priv;
++	void __iomem *isr0 = info->mem[3].internal_addr + ISR0_OFFSET;
++	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
++
++	if (!(ioread32(isr0) & ioread32(ier0)))
++		return IRQ_NONE;
++
++	spin_lock(&priv->ier0_cache_lock);
++	sercos3_disable_interrupts(info, priv);
++	spin_unlock(&priv->ier0_cache_lock);
++
++	return IRQ_HANDLED;
++}
++
++static int sercos3_irqcontrol(struct uio_info *info, s32 irq_on)
++{
++	struct sercos3_priv *priv = info->priv;
++
++	spin_lock_irq(&priv->ier0_cache_lock);
++	if (irq_on)
++		sercos3_enable_interrupts(info, priv);
++	else
++		sercos3_disable_interrupts(info, priv);
++	spin_unlock_irq(&priv->ier0_cache_lock);
++
++	return 0;
++}
++
++static int sercos3_setup_iomem(struct pci_dev *dev, struct uio_info *info,
++			       int n, int pci_bar)
++{
++	info->mem[n].addr = pci_resource_start(dev, pci_bar);
++	if (!info->mem[n].addr)
++		return -1;
++	info->mem[n].internal_addr = ioremap(pci_resource_start(dev, pci_bar),
++					     pci_resource_len(dev, pci_bar));
++	if (!info->mem[n].internal_addr)
++		return -1;
++	info->mem[n].size = pci_resource_len(dev, pci_bar);
++	info->mem[n].memtype = UIO_MEM_PHYS;
++	return 0;
++}
++
++static int __devinit sercos3_pci_probe(struct pci_dev *dev,
++				       const struct pci_device_id *id)
++{
++	struct uio_info *info;
++	struct sercos3_priv *priv;
++	int i;
++
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	priv = kzalloc(sizeof(struct sercos3_priv), GFP_KERNEL);
++	if (!priv)
++		goto out_free;
++
++	if (pci_enable_device(dev))
++		goto out_free_priv;
++
++	if (pci_request_regions(dev, "sercos3"))
++		goto out_disable;
++
++	/* we only need PCI BAR's 0, 2, 3, 4, 5 */
++	if (sercos3_setup_iomem(dev, info, 0, 0))
++		goto out_unmap;
++	if (sercos3_setup_iomem(dev, info, 1, 2))
++		goto out_unmap;
++	if (sercos3_setup_iomem(dev, info, 2, 3))
++		goto out_unmap;
++	if (sercos3_setup_iomem(dev, info, 3, 4))
++		goto out_unmap;
++	if (sercos3_setup_iomem(dev, info, 4, 5))
++		goto out_unmap;
++
++	spin_lock_init(&priv->ier0_cache_lock);
++	info->priv = priv;
++	info->name = "Sercos_III_PCI";
++	info->version = "0.0.1";
++	info->irq = dev->irq;
++	info->irq_flags = IRQF_DISABLED | IRQF_SHARED;
++	info->handler = sercos3_handler;
++	info->irqcontrol = sercos3_irqcontrol;
++
++	pci_set_drvdata(dev, info);
++
++	if (uio_register_device(&dev->dev, info))
++		goto out_unmap;
++
++	return 0;
++
++out_unmap:
++	for (i = 0; i < 5; i++) {
++		if (info->mem[i].internal_addr)
++			iounmap(info->mem[i].internal_addr);
++	}
++	pci_release_regions(dev);
++out_disable:
++	pci_disable_device(dev);
++out_free_priv:
++	kfree(priv);
++out_free:
++	kfree(info);
++	return -ENODEV;
++}
++
++static void sercos3_pci_remove(struct pci_dev *dev)
++{
++	struct uio_info *info = pci_get_drvdata(dev);
++	int i;
++
++	uio_unregister_device(info);
++	pci_release_regions(dev);
++	pci_disable_device(dev);
++	pci_set_drvdata(dev, NULL);
++	for (i = 0; i < 5; i++) {
++		if (info->mem[i].internal_addr)
++			iounmap(info->mem[i].internal_addr);
++	}
++	kfree(info->priv);
++	kfree(info);
++}
++
++static struct pci_device_id sercos3_pci_ids[] __devinitdata = {
++	{
++		.vendor =       PCI_VENDOR_ID_PLX,
++		.device =       PCI_DEVICE_ID_PLX_9030,
++		.subvendor =    SERCOS_SUB_VENDOR_ID,
++		.subdevice =    SERCOS_SUB_SYSID_3530,
++	},
++	{
++		.vendor =       PCI_VENDOR_ID_PLX,
++		.device =       PCI_DEVICE_ID_PLX_9030,
++		.subvendor =    SERCOS_SUB_VENDOR_ID,
++		.subdevice =    SERCOS_SUB_SYSID_3535,
++	},
++	{
++		.vendor =       PCI_VENDOR_ID_PLX,
++		.device =       PCI_DEVICE_ID_PLX_9030,
++		.subvendor =    SERCOS_SUB_VENDOR_ID,
++		.subdevice =    SERCOS_SUB_SYSID_3780,
++	},
++	{ 0, }
++};
++
++static struct pci_driver sercos3_pci_driver = {
++	.name = "sercos3",
++	.id_table = sercos3_pci_ids,
++	.probe = sercos3_pci_probe,
++	.remove = sercos3_pci_remove,
++};
++
++static int __init sercos3_init_module(void)
++{
++	return pci_register_driver(&sercos3_pci_driver);
++}
++
++static void __exit sercos3_exit_module(void)
++{
++	pci_unregister_driver(&sercos3_pci_driver);
++}
++
++module_init(sercos3_init_module);
++module_exit(sercos3_exit_module);
++
++MODULE_DESCRIPTION("UIO driver for the Automata Sercos III PCI card");
++MODULE_AUTHOR("John Ogness <john.ogness@linutronix.de>");
++MODULE_LICENSE("GPL v2");
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.0.2
+
