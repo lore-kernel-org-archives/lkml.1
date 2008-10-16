@@ -1,138 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYJPCwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbYJPCz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYJPCwd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Oct 2008 22:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYJPCwZ
+	id S1755063AbYJPCz0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Oct 2008 22:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYJPCzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Oct 2008 22:52:25 -0400
-Received: from colo.lackof.org ([198.49.126.79]:34616 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbYJPCwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Oct 2008 22:52:24 -0400
-Date: Wed, 15 Oct 2008 20:52:11 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: dwmw2@infradead.org, mgross@linux.intel.com, mingo@elte.hu,
-       grundler@parisc-linux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-iommu: use coherent_dma_mask in alloc_coherent
-Message-ID: <20081016025211.GB31457@colo.lackof.org>
-References: <20081015160732K.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081015160732K.fujita.tomonori@lab.ntt.co.jp>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 15 Oct 2008 22:55:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38357 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753424AbYJPCzL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Oct 2008 22:55:11 -0400
+Date: Wed, 15 Oct 2008 19:54:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, cmm@us.ibm.com
+Subject: Re: [PATCH] vmscan: set try_to_release_page's gfp_mask to 0
+Message-Id: <20081015195458.cc203dd5.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20081016112735.04a68e70@172.19.0.2>
+References: <6.0.0.20.2.20080813111835.03d345b0@172.19.0.2>
+	<20080812202127.b88e8250.akpm@linux-foundation.org>
+	<6.0.0.20.2.20080813150454.03b13e30@172.19.0.2>
+	<20081015153641.afcc94e5.akpm@linux-foundation.org>
+	<6.0.0.20.2.20081016112735.04a68e70@172.19.0.2>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 04:08:28PM +0900, FUJITA Tomonori wrote:
-> This patch fixes intel-iommu to use dev->coherent_dma_mask in
-> alloc_coherent. Currently, intel-iommu uses dev->dma_mask in
-> alloc_coherent but alloc_coherent is supposed to use
-> coherent_dma_mask. It could break drivers that uses smaller
-> coherent_dma_mask than dma_mask (though the current code works for the
-> majority that use the same mask for coherent_dma_mask and dma_mask).
+On Thu, 16 Oct 2008 11:44:39 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
+
+> Hi Andrew.
 > 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-
-Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
-
-Thanks!
-grant
-
-
-> ---
->  drivers/pci/intel-iommu.c |   30 ++++++++++++++++++++----------
->  1 files changed, 20 insertions(+), 10 deletions(-)
+> >Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
+> >
+> >> At 12:21 08/08/13, Andrew Morton wrote:
+> >> >On Wed, 13 Aug 2008 11:21:16 +0900 Hisashi Hifumi 
+> >> ><hifumi.hisashi@oss.ntt.co.jp> wrote:
 > 
-> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-> index 389fdd6..68a97bc 100644
-> --- a/drivers/pci/intel-iommu.c
-> +++ b/drivers/pci/intel-iommu.c
-> @@ -1759,14 +1759,14 @@ iommu_alloc_iova(struct dmar_domain *domain, size_t size, u64 end)
->  
->  static struct iova *
->  __intel_alloc_iova(struct device *dev, struct dmar_domain *domain,
-> -		size_t size)
-> +		   size_t size, unsigned long dma_mask)
->  {
->  	struct pci_dev *pdev = to_pci_dev(dev);
->  	struct iova *iova = NULL;
->  
-> -	if ((pdev->dma_mask <= DMA_32BIT_MASK) || (dmar_forcedac)) {
-> -		iova = iommu_alloc_iova(domain, size, pdev->dma_mask);
-> -	} else  {
-> +	if (dma_mask <= DMA_32BIT_MASK || dmar_forcedac)
-> +		iova = iommu_alloc_iova(domain, size, dma_mask);
-> +	else {
->  		/*
->  		 * First try to allocate an io virtual address in
->  		 * DMA_32BIT_MASK and if that fails then try allocating
-> @@ -1774,7 +1774,7 @@ __intel_alloc_iova(struct device *dev, struct dmar_domain *domain,
->  		 */
->  		iova = iommu_alloc_iova(domain, size, DMA_32BIT_MASK);
->  		if (!iova)
-> -			iova = iommu_alloc_iova(domain, size, pdev->dma_mask);
-> +			iova = iommu_alloc_iova(domain, size, dma_mask);
->  	}
->  
->  	if (!iova) {
-> @@ -1813,8 +1813,9 @@ get_valid_domain_for_dev(struct pci_dev *pdev)
->  	return domain;
->  }
->  
-> -static dma_addr_t
-> -intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
-> +static dma_addr_t __intel_map_single(struct device *hwdev, phys_addr_t paddr,
-> +				     size_t size, int dir,
-> +				     unsigned long dma_mask)
->  {
->  	struct pci_dev *pdev = to_pci_dev(hwdev);
->  	struct dmar_domain *domain;
-> @@ -1833,7 +1834,7 @@ intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
->  
->  	size = aligned_size((u64)paddr, size);
->  
-> -	iova = __intel_alloc_iova(hwdev, domain, size);
-> +	iova = __intel_alloc_iova(hwdev, domain, size, pdev->dma_mask);
->  	if (!iova)
->  		goto error;
->  
-> @@ -1879,6 +1880,13 @@ error:
->  	return 0;
->  }
->  
-> +static dma_addr_t
-> +intel_map_single(struct device *hwdev, phys_addr_t paddr, size_t size, int dir)
-> +{
-> +	return __intel_map_single(hwdev, paddr, size, dir,
-> +				  to_pci_dev(hwdev)->dma_mask);
-> +}
-> +
->  static void flush_unmaps(void)
->  {
->  	int i, j;
-> @@ -1993,7 +2001,9 @@ static void * intel_alloc_coherent(struct device *hwdev, size_t size,
->  		return NULL;
->  	memset(vaddr, 0, size);
->  
-> -	*dma_handle = intel_map_single(hwdev, virt_to_bus(vaddr), size, DMA_BIDIRECTIONAL);
-> +	*dma_handle = __intel_map_single(hwdev, virt_to_bus(vaddr), size,
-> +					 DMA_BIDIRECTIONAL,
-> +					 hwdev->coherent_dma_mask);
->  	if (*dma_handle)
->  		return vaddr;
->  	free_pages((unsigned long)vaddr, order);
-> @@ -2096,7 +2106,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist,
->  		size += aligned_size((u64)addr, sg->length);
->  	}
->  
-> -	iova = __intel_alloc_iova(hwdev, domain, size);
-> +	iova = __intel_alloc_iova(hwdev, domain, size, pdev->dma_mask);
->  	if (!iova) {
->  		sglist->dma_length = 0;
->  		return 0;
-> -- 
-> 1.5.5.GIT
+> >> >> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> >> >> 
+> >> >> diff -Nrup linux-2.6.27-rc2.org/mm/vmscan.c 
+> >linux-2.6.27-rc2.vmscan/mm/vmscan.c
+> >> >> --- linux-2.6.27-rc2.org/mm/vmscan.c	2008-08-11 14:33:24.000000000 +0900
+> >> >> +++ linux-2.6.27-rc2.vmscan/mm/vmscan.c	2008-08-12 18:57:05.000000000 +0900
+> >> >> @@ -614,7 +614,7 @@ static unsigned long shrink_page_list(st
+> >> >>  		* Otherwise, leave the page on the LRU so it is swappable.
+> >> >>  		*/
+> >> >>  		if (PagePrivate(page)) {
+> >> >> -			if (!try_to_release_page(page, sc->gfp_mask))
+> >> >> +			if (!try_to_release_page(page, 0))
+> >> >>  				goto activate_locked;
+> >> >>  			if (!mapping && page_count(page) == 1) {
+> >> >>  				unlock_page(page);
+> >> >
+> >> >I think the change makes sense.
+> >> >
+> >> >Has this change been shown to improve any workloads?  If so, please
+> >> >provide full information for the changelog.  If not, please mention
+> >> >this and explain why benefits were not demonstrable.  This information
+> >> >should _always_ be present in a "performance" patch's changelog!
+> >> 
+> >> Sorry, I do not have performance number yet. I'll try this.
+> >> 
+> >
+> 
+> Unfortunately, I did not succeed to get good performance number that
+> prove this patch had some benefit.
+
+OK, thanks, I dropped it.
+
+> >This patch remains in a stalled state...
+> >
+> >And then there's this:
+> >
+> 
+> >: 
+> >: Really, I think what this patch tells us is that 3f31fddf ("jbd: fix
+> >: race between free buffer and commit transaction") was an unpleasant
+> >: hack which had undesirable and unexpected side-effects.  I think - that
+> >: depends upon your as-yet-undisclosed testing results?
+> >: 
+> >: Perhaps we should revert 3f31fddf and have another think about how to
+> >: fix the direct-io -EIO problem.  One option would be to hold our noses
+> >: and add a new gfp_t flag for this specific purpose?
+> >:
+> 
+> direct-io -EIO problem was already fixed by following patch.
+> 
+> commit 6ccfa806a9cfbbf1cd43d5b6aa47ef2c0eb518fd
+> Author: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> Date:   Tue Sep 2 14:35:40 2008 -0700
+> 
+>     VFS: fix dio write returning EIO when try_to_release_page fails
+> 
+> Dio falls back to buffered write when dio write gets EIO due to failure of try_to_release_page
+> by above patch. So I think just reverting the patch 3f31fddf ("jbd: fix race between 
+> free buffer and commit transaction") is good approach.
+
+Fair enough.  Could I ask that you (or someone) send a suitable patch
+sometime?
+
+I could generate the patch, but I'd never get around to testing it. 
+Too busy fixing rejects and compile errors :(
+
