@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbYJPSsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYJPSs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbYJPSsd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 14:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbYJPSsX
+	id S1757323AbYJPSs6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 14:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYJPSsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 14:48:23 -0400
-Received: from mailout04.t-online.de ([194.25.134.18]:59860 "EHLO
-	mailout04.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753690AbYJPSsW (ORCPT
+	Thu, 16 Oct 2008 14:48:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60625 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754146AbYJPSsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 14:48:22 -0400
-Message-ID: <48F78C5C.8080907@t-online.de>
-Date: Thu, 16 Oct 2008 20:47:56 +0200
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080926)
+	Thu, 16 Oct 2008 14:48:45 -0400
+Date: Thu, 16 Oct 2008 11:47:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Jiri Kosina <jkosina@suse.cz>, Adrian Bunk <bunk@kernel.org>,
+       zippel@linux-m68k.org, sam@ravnborg.org, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: select validation (was: Re: [2.6 patch] HID: fix default building
+ of all quirky devices)
+In-Reply-To: <Pine.LNX.4.64.0810161002240.25933@anakin>
+Message-ID: <alpine.LFD.2.00.0810161133150.3288@nehalem.linux-foundation.org>
+References: <20081015041346.GE4710@cs181140183.pp.htv.fi> <20081015050557.GB20183@cs181140183.pp.htv.fi> <20081015073011.GE20183@cs181140183.pp.htv.fi> <alpine.LNX.1.10.0810150931350.26779@jikos.suse.cz> <alpine.LFD.2.00.0810151002120.3288@nehalem.linux-foundation.org>
+ <Pine.LNX.4.64.0810161002240.25933@anakin>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.27.1: install conflict about /lib/firmware
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ID: SUGvRMZUYhPD4jcAyARqefxfu72ioyx4N7RTkjrHLkxpSBNo09G7cZ97LrDDtXjQbv
-X-TOI-MSGID: f80ed143-87c7-4df4-acc7-96daa479e80c
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
-
-Seems that there is an installation conflict about
-/lib/firmware/ess/maestro3_assp_kernel.fw (and probably
-others) between 2.6.27 and 2.6.27.1. Using dpkg I get
-
-:
-Unpacking raw-kernel-2.6.27.1 (from .../raw-kernel-2.6.27.1_2.6.27.1-0_amd64.deb) ...
-dpkg: error processing /var/cache/apt/archives/raw-kernel-2.6.27.1_2.6.27.1-0_amd64.deb (--unpack):
- trying to overwrite `/lib/firmware/ess/maestro3_assp_kernel.fw', which is also in package raw-kernel-2.6.27
-dpkg-deb: subprocess paste killed by signal (Broken pipe)
-Errors were encountered while processing:
- /var/cache/apt/archives/raw-kernel-2.6.27.1_2.6.27.1-0_amd64.deb
-E: Sub-process /usr/bin/dpkg returned an error code (1)
-A package failed to install.  Trying to recover:
 
 
-Probably other package managers get a similar problem.
+On Thu, 16 Oct 2008, Geert Uytterhoeven wrote:
+> 
+> Would it be possible for kconfig to check for invalid usage of select?
+> 
+> Like you should not use select to enable something that has
+> dependencies. However, that would fail in case both the selector option
+> and the selected option depend on the same.
 
-Wouldn't it be more consistent to put the firmware files in a
-kernel specific directory, e.g. in /lib/firmware/2.6.27.1 or
-/lib/modules/2.6.27.1/firmware ?
+Well, at least in theory you may actually want to select something that 
+has dependencies, even if you don't want to select the dependencies.
 
+For example, some feature may be enabled by default on some architecture 
+or with some config. Example:
 
-Regards
+	bool SUPPORT_FEATURE
+		default y
+		depends on EXPERIMENTAL
+		depends on !EMBEDDED
+		depends on X86
 
-Harri
+which is just another way of saying
 
+	bool SUPPORT_FEATURE
+		default X86 && !EMBEDDED && EXPERIMENTAL
+
+and it's still possible that some code wants to do a
+
+	select SUPPORT_FEATURE
+
+because the dependency isn't a _code_ dependency, it's a default-value 
+dependency.
+
+Now, you could say that then you should use that second version (ie the 
+"default X86 && !EMBEDDED && EXPERIMENTAL" version), but the thing is, 
+"depends on" is actually a more powerful and can result in more readable 
+setup (because you can have multiple "depends on" lines and they are all 
+logically anded together.
+
+Do we do that? I dunno. But I wouldn't be surprised if we do.
+
+		Linus
