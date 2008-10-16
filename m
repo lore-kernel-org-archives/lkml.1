@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYJPOpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYJPO4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbYJPOpT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 10:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYJPOpH
+	id S1754917AbYJPO4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 10:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYJPO4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 10:45:07 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:6638 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752536AbYJPOpG (ORCPT
+	Thu, 16 Oct 2008 10:56:23 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:63953 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752683AbYJPO4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:45:06 -0400
-Date: Thu, 16 Oct 2008 18:45:03 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] gpiolib: fix oops on reading sysfs exported GPIOs
-Message-ID: <20081016144503.GA17455@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Oct 2008 10:56:23 -0400
+X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 10:56:22 EDT
+Date: Thu, 16 Oct 2008 16:26:19 +0200
+From: markus reichelt <ml@mareichelt.de>
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-reply-to: <20081016002509.GA25868@kroah.com>
+To: linux-kernel@vger.kernel.org
+Mail-followup-to: linux-kernel@vger.kernel.org
+Message-id: <20081016142619.GA3756@tatooine.rebelbase.local>
+Organization: still stuck in reorganization mode
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=cWoXeonUoKmBZSoM
+Content-disposition: inline
+X-IronPort-AV: E=Sophos;i="4.33,423,1220220000";   d="scan'208";a="86906092"
+X-PGP-Key: 0xC2A3FEE4
+X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
+X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
+References: <20081016002509.GA25868@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can get the following oops when a GPIO controller doesn't provide
-.direction_input and .get callbacks:
 
-root@b1:~# cat /sys/class/gpio/gpio255/value
-Unable to handle kernel paging request for instruction fetch
-Faulting instruction address: 0x00000000
-Oops: Kernel access of bad area, sig: 11 [#1]
-[...]
-NIP [00000000] 0x0
-LR [c0182fb0] gpio_get_value_cansleep+0x40/0x50
-Call Trace:
-[c7b79e80] [c0183f28] gpio_value_show+0x5c/0x94
-[c7b79ea0] [c01a584c] dev_attr_show+0x30/0x7c
-[c7b79eb0] [c00d6b48] fill_read_buffer+0x68/0xe0
-[c7b79ed0] [c00d6c54] sysfs_read_file+0x94/0xbc
-[c7b79ef0] [c008f24c] vfs_read+0xb4/0x16c
-[c7b79f10] [c008f580] sys_read+0x4c/0x90
-[c7b79f40] [c0013a14] ret_from_syscall+0x0/0x38
+--cWoXeonUoKmBZSoM
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-GPIO users should always issue the gpio_direction_input() call and
-check its return value prior to trying gpio_get_value().
+* Greg KH <greg@kroah.com> wrote:
 
-For sysfs users there are few ways to solve the problem:
+> So, as someone who constantly is dealing with kernel version
+> numbers all the time with the -stable trees, our current numbering
+> scheme is a pain a times.  How about this proposal instead?
 
-1. Call gpio_direction_input() in the gpio_value_show(). This isn't
-   good because some GPIO controllers provide capability to read-back
-   output pins. Using the FLAG_IS_OUT isn't good for the same reason.
+Why not just keep it? It has worked so far, and from a strictly
+end-user point of view I cannot see any advantages at all with a new
+scheme. The ideas mentioned so far don't cut it either.
 
-2. Call gpio_direction_input() at the export time, if succeeded, set
-   FLAG_CAN_INPUT. Then check that flag in the gpio_value_show().
-   Viable.
+Just my heretic 2 cents,
+S.
 
-3. Just check for .get != NULL in the gpio_value_show(). Most
-   straightforward. This is implemented in the patch.
+PS: Nice timing, thunderstorm approaching.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/gpio/gpiolib.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+--=20
+In Russia, President kills Financial Crisis
 
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 8d29405..4e4a498 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -236,6 +236,8 @@ static ssize_t gpio_value_show(struct device *dev,
- 
- 	if (!test_bit(FLAG_EXPORT, &desc->flags))
- 		status = -EIO;
-+	else if (!desc->chip->get)
-+		status = -EINVAL;
- 	else
- 		status = sprintf(buf, "%d\n", gpio_get_value_cansleep(gpio));
- 
--- 
-1.5.6.3
+--cWoXeonUoKmBZSoM
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj3TwsACgkQLMyTO8Kj/uQ86wCfVPZHTqFe3RHuvoaixCEE4E4g
+ffkAoIdk2NfFnC1J/FnHN8UCjTktLm4x
+=GKLb
+-----END PGP SIGNATURE-----
+
+--cWoXeonUoKmBZSoM--
