@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYJQTmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbYJQTpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbYJQTmG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYJQTlw
+	id S1756971AbYJQTpx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbYJQTpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:41:52 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:64111 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755513AbYJQTlv (ORCPT
+	Fri, 17 Oct 2008 15:45:45 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56453 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750943AbYJQTpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:41:51 -0400
-Date: Fri, 17 Oct 2008 12:39:47 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-Message-ID: <20081017193947.GC5633@mail.oracle.com>
-Mail-Followup-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-	Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-	Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-	linux-scsi <linux-scsi@vger.kernel.org>,
-	"Linux-iSCSI.org Target Dev" <linux-iscsi-target-dev@googlegroups.com>,
-	SCST-Devel <scst-devel@lists.sourceforge.net>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Andrew Morton <akpm@osdl.org>,
-	Christoph Hellwig <hch@infradead.org>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 17 Oct 2008 15:45:45 -0400
+Date: Fri, 17 Oct 2008 20:45:06 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081017204506.0bce46e5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081017174127.GE2221@kroah.com>
+References: <20081016002509.GA25868@kroah.com>
+	<20081016124943.GE23630@cs181140183.pp.htv.fi>
+	<20081016151748.GA31075@kroah.com>
+	<20081016153053.GJ5834@nostromo.devel.redhat.com>
+	<20081016154726.GA6331@kroah.com>
+	<20081016171626.GB22554@cs181140183.pp.htv.fi>
+	<20081017040239.GB28188@kroah.com>
+	<20081017103138.1ca68d17@lxorguk.ukuu.org.uk>
+	<20081017174127.GE2221@kroah.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
-> Hi Joel, Greg and Co,
+On Fri, 17 Oct 2008 10:41:27 -0700
+Greg KH <greg@kroah.com> wrote:
+
+> On Fri, Oct 17, 2008 at 10:31:38AM +0100, Alan Cox wrote:
+> > > So I proposed an alternative, YEAR.NUMBER.  The year is easy to keep
+> > 
+> > Which calendaring system ?
 > 
-> Here is the the first working code for allowing configfs to handle
-> symlinks from sysfs struct kobject based code.  Here is the commit:
-> passing struct kobject into generic target_core_mod subsystem plugins
-> for locating struct block_device and struct scsi_device..  
+> I'm almost afraid to ask, but "which one would you prefer"? :)
 
-NAK.
+The standard one shipped and supported by util-linux for the past 15 or
+more years
 
-As Greg said, this just doesn't work.  Don't go down this path.
+$ ddate
+Today is Setting Orange, the 71st day of Bureaucracy in the YOLD 3174
 
-Joel
-
--- 
-
-"I always thought the hardest questions were those I could not answer.
- Now I know they are the ones I can never ask."
-			- Charlie Watkins
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
