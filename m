@@ -1,119 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbYJQWsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbYJQWsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbYJQWsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 18:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYJQWrx
+	id S1757274AbYJQWsg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 18:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYJQWs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 18:47:53 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:33479 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbYJQWrw (ORCPT
+	Fri, 17 Oct 2008 18:48:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60009 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753474AbYJQWs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 18:47:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=OAyRN6RlMMvgxrahmCT64wNch9lLCW2pzAIZxPhLDiY2qKJpdsf1TSsYSyx/w08xab
-         2yR4UXGw/nZ134NlfLaEKpZ9MhegC/aSvdUtPEzS6MI52ElHEU2GToygtlnRnwnWDxEs
-         NM8FUozrdHTQqI/Dn1Yd4VtVnGB6utaYiVqyE=
-Message-ID: <48F91612.5020901@gmail.com>
-Date: Sat, 18 Oct 2008 00:47:46 +0200
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 17 Oct 2008 18:48:26 -0400
+Date: Fri, 17 Oct 2008 15:47:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [GIT PATCH] USB patches for 2.6-git
+In-Reply-To: <20081017220027.GA3659@kroah.com>
+Message-ID: <alpine.LFD.2.00.0810171544320.3438@nehalem.linux-foundation.org>
+References: <20081017220027.GA3659@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [Slightly off topic] A question about R/B trees.
-References: <48F904FA.6090102@gmail.com> <48F90E96.3060800@redhat.com>
-In-Reply-To: <48F90E96.3060800@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
-> Maxim Levitsky wrote:
->> I am working on my small project, and I need a fast container to hold 
->> a large sparse array.
->> Balanced trees seem to fit perfectly.
-> 
-> Balanced trees take O(log n) to perform a great many operations, and 
-> traversing a binary tree is a particularly bad case for branch 
-> prediction.  Hash tables will perform much better, unless you get them 
-> horribly wrong.
-Let me explain.
-
-I am writing a userspace packet writing application.
-
-One of things I need is to have a cache of the disk.
-
-I need an 'array' that will hold cache of written blocks in ascending order,
-I need to be able to insert a block anywhere in the array, and be able to read it
-from lowest block to highest.
-
-Hash tables can't be read this way, right?
-
-I could use a linked list, but insertion will be slower.
 
 
-> 
->> I decided to implement a red/black tree, and took a look at kernel rb 
->> tree for reference,
->> and I noticed that tree item has no parent pointer, while it seems 
->> that it should have it.
->>
->> I know now that it has parent pointer, but it is mixed with current 
->> and parent node colour.
->> Thus it is assumed that last two bits of this pointer are zero.
-> 
-> Not quite.  Read this:
-> 
-> http://lwn.net/Articles/184495/
+On Fri, 17 Oct 2008, Greg KH wrote:
+>
+> Here is the big batch of USB patches for your 2.6-git tree.
 
-What do you mean?
+I really wish I were to get the occasional _clean_ pull for a change.
 
-I have read this article, I haven't yet spotted anything suspicious about parent pointer there yet.
-> 
->> I can see anywhere that this restriction is applied.
->> I see that structure is "aligned" but that I think only ensures that 
->> compiler places it
->> aligned in static data, does the alignment ensures that it will always 
->> place it on aligned address in a structure?
->> But then, the whole container structure can be misaligned, can't it?
-> 
-> GCC will only misalign the contents of a struct if you explicitly tell 
-> it to pack the struct.  That's one of those things you only do if you're 
-> 100% certain it's the right thing, and you're prepared to accept the 
-> consequences if you screw it up.
+f*ck me, but why do people keep adding more and more warnings, and 
+apparently not even bother to write clean code? The merge window is no 
+excuse for badly written crap.
 
-Why gcc?
+  drivers/usb/host/ehci-hcd.c: In function ¡ehci_hcd_init¢:
+  drivers/usb/host/ehci-hcd.c:1115: warning: label ¡err_debug¢ defined but not used
 
-Say you allocate a piece of memory using kmalloc, and write there, a structure that contains a r/b tree item.
-I agree that gcc will ensure that offset from start of that structure to first byte of the tree item will be aligned.
+That particular function is just about the ugliest thing I've ever seen, 
+and now it's adding annoying warnings too!
 
-But what if malloc returned a misaligned pointer?
-This will ensure that virtual address of the tree item won't be aligned.
-(I know it doesn't, but this isn't a assumption about gcc anymore)
+Yeah, I'm grumpy. The quality control during this merge window has been 
+absolutely disgusting. I feel like I have to complain about every other 
+pull I do, because people feel like another new warning isn't a problem. 
+And every single time, the new warning is due to some total crap code.
 
-
-
-> 
->> Besides a comment there states that alignment is only for CRIS
-> 
-> I'm not sure this check is still necessary, but CRIS is a rather niche 
-> architecture.  On most architectures, word-aligning structures boosts 
-> performance at negligible memory cost, so compilers do it automatically.
-> 
->> How about a check for misalignment?
-> 
-> The kernel is written in a dialect of C that makes several assumptions 
-> about the compiler, among them that the compiler won't screw this up 
-> unless you tell it to.  Any compiler that has alignment problems with 
-> the rbtree code is going to have similar problems in lots of other 
-> places too.  We don't support those compilers.
-> 
-
-Best regards,
-	Maxim Levitsky
+		Linus
