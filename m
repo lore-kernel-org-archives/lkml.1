@@ -1,105 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYJQTMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbYJQTSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbYJQTMn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYJQTMf
+	id S1756758AbYJQTSP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbYJQTR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:12:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46877 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754812AbYJQTMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:12:34 -0400
-Date: Fri, 17 Oct 2008 21:12:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+	Fri, 17 Oct 2008 15:17:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41892 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754711AbYJQTR6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 15:17:58 -0400
+X-Greylist: delayed 6760 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 15:17:58 EDT
+Date: Fri, 17 Oct 2008 15:17:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: "Luck, Tony" <tony.luck@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
-Message-ID: <20081017191202.GA5396@elte.hu>
-References: <20081017171139.GA1792@elte.hu> <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com>
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC patch 15/15] LTTng timestamp x86
+In-Reply-To: <20081017184215.GB9874@Krystal>
+Message-ID: <alpine.DEB.1.10.0810171513480.22097@gandalf.stny.rr.com>
+References: <20081016232729.699004293@polymtl.ca> <20081016234657.837704867@polymtl.ca> <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org> <20081017012835.GA30195@Krystal> <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
+ <20081017172515.GA9639@goodmis.org> <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com> <20081017184215.GB9874@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <adatzbbrrcf.fsf@cisco.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Roland Dreier <rdreier@cisco.com> wrote:
 
-> However I worry about warnings produced by gcc bugs forcing us to 
-> tinker with correct code.  Maybe it just makes sense to wait and see 
-> if we ever hit a case where a gcc bug forces us to make too many 
-> stupid changes, and figure out what to do if and when that happens.
 
-i certainly have a found a couple of such cases, see tip/warnings/ugly - 
-for example see the one below where gcc is not able to see through type 
-width.
+On Fri, 17 Oct 2008, Mathieu Desnoyers wrote:
 
-the threshold i'm using is: "does the code get worse". Another question 
-is the rate of really ugly patches. Had i ended up with a lot of them 
-i'd be worried - but right now they are in the low single digits, for a 
-full 9 MLOC kernel - which seems manageable.
+> * Luck, Tony (tony.luck@intel.com) wrote:
+> > > I agree that one cache line bouncer is devastating to performance. But
+> > > as Mathieu said, it is better than a global tracer with lots of bouncing
+> > > going on.
+> > 
+> > Scale up enough, and it becomes more than just a performance problem.
+> > When SGI first tried to boot on 512 cpus they found the kernel hung
+> > completely because of a single global atomic counter for how many
+> > interrupts there were.  With HZ=1024 and 512 cpus the ensuing cache
+> > line bouncing storm from each interrupt took longer to resolve than
+> > the interval between interrupts.
+> > 
+> > With higher event rates (1KHz seems relatively low) this wall will
+> > be a problem for smaller systems too.
+> > 
+> 
+> Hrm, on such systems
+> - *large* amount of cpus
+> - no synchronized TSCs
 
-the drivers/net/mlx4/mcg.c commit you pointed out is one of the very few 
-borderline cases: the code gets neither better, nor worse. If you look 
-at the totality of fixes they are not common at all. (and almost by 
-definition the 100-200 unfixed warnings that we have piled up in -git 
-are the _problematic_ cases - clear-cut cases tend to be fixed.)
+What about selective counting? Or have counters per nodes? If you are
+dealing with a race, most cases, the race is not happening against CPUs
+not sharing a node. Those not sharing will try hard not to ever use the
+same cache lines.
 
-	Ingo
 
-------------->
->From fbf03326a16b29f8d34a5a3883a267bac4d38fc2 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 27 Aug 2008 12:44:00 +0200
-Subject: [PATCH] hack, workaround for warning drivers/acpi/tables/tbfadt.c
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+> 
+> What would be the best approach to order events ? Do you think we should
+> consider using HPET, event though it's painfully slow ? Would it be
+> faster than cache-line bouncing on such large boxes ? With a frequency
+> around 10MHz, that would give a 100ns precision, which should be enough
+> to order events. However, HPET is known for its poor performances, which
+> I doubt will do better than the cache-line bouncing alternative.
+> 
+> > > ftrace does not have a global counter, but on some boxes with out of
+> > > sync TSCs, it could not find race conditions. I had to pull in logdev,
+> > > which found the race right away, because of this atomic counter.
+> > 
+> > Perhaps this needs to be optional (and run-time switchable).  Some
+> > users (tracking performance issues) will want the  tracer to have
+> > the minumum possible effect on the system.  Others (chasing race
+> > conditions) will want the best possible ordering of events between
+> > cpus[*].
+> > 
+> 
+> Yup, I think this solution would work. The user could specify the time
+> source for a specific set of buffers (a trace) through debugfs files.
+> 
+> > -Tony
+> > 
+> > [*] I'd still be concerned that a heavyweight strict ordering might
+> > perturb the system enough to make the race disappear when tracing
+> > is enabled.
+> > 
+> 
+> Yes, it's true that it may make the race disappear, but what has been
+> seen in the field (Steven could confirm that) is that it usually makes
+> the race more likely to appear due to an enlarged race window. But I
+> guess it all depends on where the activated instrumentation is.
 
-ugly workaround for this warning:
+I've seen both. 9 out of 10 times, the tracer helps induce the race. But 
+I've had that 1 out of 10 where it makes the race go away.
 
-  drivers/acpi/tables/tbfadt.c: In function ‘acpi_tb_create_local_fadt’:
-  include/asm/string_32.h:75: warning: array subscript is above array bounds
+Actually, what happens is that I'll start adding trace markers (printk 
+like traces), and the race will happen quicker. Then I'll add a few more 
+markers and the race goes away. Those are the worst ;-)
 
-gcc 4.3.1 20080801 (Red Hat 4.3.1-6)
+-- Steve
 
-its array checks are borked. Switch the string_32.h code to short instead.
-
-NOT-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-x86/string_32.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-x86/string_32.h b/include/asm-x86/string_32.h
-index 487843e..419ab10 100644
---- a/include/asm-x86/string_32.h
-+++ b/include/asm-x86/string_32.h
-@@ -72,7 +72,7 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
- 		return to;
- 	case 5:
- 		*(int *)to = *(int *)from;
--		*((char *)to + 4) = *((char *)from + 4);
-+		*((short *)to + 3) = *((short *)from + 3);
- 		return to;
- 	case 6:
- 		*(int *)to = *(int *)from;
