@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbYJQAer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYJQAkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbYJQAer (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 20:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbYJQAeY
+	id S1755970AbYJQAkK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 20:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYJQAj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 20:34:24 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:44665 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbYJQAeX (ORCPT
+	Thu, 16 Oct 2008 20:39:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39513 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752029AbYJQAj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 20:34:23 -0400
-Date: Thu, 16 Oct 2008 18:33:34 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG][PATCH] cpqphp: fix kernel NULL pointer dereference
-Message-ID: <20081017003334.GA28723@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Yinghai Lu <yinghai@kernel.org>, stable@kernel.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <48F7DB17.9020302@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48F7DB17.9020302@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 16 Oct 2008 20:39:56 -0400
+Date: Thu, 16 Oct 2008 17:38:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: davem@davemloft.net, alan@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial: Make uart_port's ioport "resource_size_t"
+Message-Id: <20081016173811.b4fc7ba2.akpm@linux-foundation.org>
+In-Reply-To: <20081016194437.14c7604b@zod.rchland.ibm.com>
+References: <20081014162621.GA18166@yoda.jdub.homelinux.org>
+	<20081016144645.1c868fc0.akpm@linux-foundation.org>
+	<20081016194437.14c7604b@zod.rchland.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> 
-> The root cause of this problem seems that cpqphp driver calls
-> pci_hp_register() wrongly. In current implementation, cpqphp driver
-> passes 'ctrl->pci_dev->subordinate' as a second parameter for
-> pci_hp_register(). But because hotplug slots and it's hotplug
-> controller (exists as a pci funcion) are on the same bus, it should be
-> 'ctrl->pci_dev->bus' instead.
-> 
-> Cc: <stable@kernel.org>
+On Thu, 16 Oct 2008 19:44:37 -0400 Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-Acked-by: Alex Chiang <achiang@hp.com>
+> On Thu, 16 Oct 2008 14:46:45 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Tue, 14 Oct 2008 12:26:21 -0400
+> > Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > 
+> > > Recently uart_port's iobase was changed to be an 'unsigned
+> > > long' to avoid chopping off the upper 32-bits of the
+> > > address on 64-bit CPUs.  However, there are CPUs that are
+> > > 32-bit but have a 64-bit address space.  This changes
+> > > iobase to be 'resource_size_t' to accommodate those types
+> > > of systems.  This also matches what is done for the mapbase
+> > > member of uart_port.
+> > > 
+> > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > > 
+> > > ---
+> > > 
+> > > diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+> > > index e27f216..cb0185b 100644
+> > > --- a/include/linux/serial_core.h
+> > > +++ b/include/linux/serial_core.h
+> > > @@ -241,7 +241,7 @@ typedef unsigned int __bitwise__ upf_t;
+> > >  
+> > >  struct uart_port {
+> > >  	spinlock_t		lock;			/* port lock */
+> > > -	unsigned long		iobase;			/* in/out[bwl] */
+> > > +	resource_size_t		iobase;			/* in/out[bwl] */
+> > >  	unsigned char __iomem	*membase;		/* read/write[bwl] */
+> > >  	unsigned int		irq;			/* irq number */
+> > >  	unsigned int		uartclk;		/* base uart clock */
+> > 
+> > This will of course require that all now-broken printk()s be unbroken. 
+> > I spot two in serial_core.c alone.
+> 
+> Yes, I know that.  There's a patch, or at least a discussion, floating
+> around on how to fix this with a %pX thing right?  We can delay this
+> until that comes to fruition if you'd like.
+> 
 
-> Tested-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> 
-> ---
->  drivers/pci/hotplug/cpqphp_core.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
-> ===================================================================
-> --- linux-2.6-tip.orig/drivers/pci/hotplug/cpqphp_core.c
-> +++ linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
-> @@ -435,7 +435,7 @@ static int ctrl_slot_setup(struct contro
->  				slot->number, ctrl->slot_device_offset,
->  				slot_number);
->  		result = pci_hp_register(hotplug_slot,
-> -					 ctrl->pci_dev->subordinate,
-> +					 ctrl->pci_dev->bus,
->  					 slot->device);
->  		if (result) {
->  			err("pci_hp_register failed with error %d\n", result);
-> 
+Well.  It just got converted from uint to ulong and we're still fixing
+the bugs which that introduced.
