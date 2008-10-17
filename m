@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbYJQM5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYJQNFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756433AbYJQM5m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbYJQM5P
+	id S1753555AbYJQNFo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 09:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYJQNFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:57:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:61766 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbYJQM5O convert rfc822-to-8bit (ORCPT
+	Fri, 17 Oct 2008 09:05:35 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:41266 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbYJQNFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:57:14 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ibm_newemac: Fix new MAL feature handling
-Date: Fri, 17 Oct 2008 14:56:52 +0200
-User-Agent: KMail/1.9.9
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20081015213337.a99a9595.akpm@linux-foundation.org> <1224133010.8157.543.camel@pasglop> <20081016143840.GA29805@yoda.jdub.homelinux.org>
-In-Reply-To: <20081016143840.GA29805@yoda.jdub.homelinux.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 17 Oct 2008 09:05:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=BEDi0Ja5Jjy3iAqTJo/XpUjoDDpDI9qI8D8V6NQiJC1icSaqjn4DpYnY5lz3IJb5cU
+         6Cv4UaUH4oZFE6cdfKEfONjbAEosFTddLRT4XVaDF6Oa21rbzHOMUJBZUHRw7ZSF9pea
+         gPykhyj4KqIfa1WVv7V8j0HdCMLZvWbUNPgyQ=
+Message-ID: <b9df5fa10810170605t50e366e9nf62f8a18df37fc3c@mail.gmail.com>
+Date: Fri, 17 Oct 2008 19:05:32 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] init: Properly placing noinline keyword.
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810171456.53599.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+VwFaLhN2PBnAnH/4Iw03sVnWHCI7mZ2hLLay
- JYvOO51d/iLED3pw8LVusUUCkQ88ctln5wbIfPpR5q/N5mplrc
- gZJrqjB4ZGIcRGE4C0BaQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 October 2008, Josh Boyer wrote:
-> +#ifdef CONFIG_PPC_DCR_NATIVE
->         if (mal_has_feature(mal, MAL_FTR_CLEAR_ICINTSTAT))
->                 mtdcri(SDR0, DCRN_SDR_ICINTSTAT,
->                                 (mfdcri(SDR0, DCRN_SDR_ICINTSTAT) | ICINTSTAT_ICTX));
-> +#endif
->  
+Here, noinline keyword should be placed between storage class and type.
+Thanks.
 
-So what if you have a mmio based DRC implementation and still want to use
-this feature?
+Signed-off-by: Md.Rakib H. Mullick(rakib.mullick@gmail.com)
 
-I guess you really should use dcr_read/dcr_write here instead of mtdcr/mfdcr.
+--- linux-2.6-stable.orig/init/main.c	2008-10-16 20:04:15.000000000 +0600
++++ linux-2.6-stable/init/main.c	2008-10-16 20:59:29.562096784 +0600
+@@ -457,7 +457,7 @@ static void __init setup_command_line(ch
+  * gcc-3.4 accidentally inlines this function, so use noinline.
+  */
 
-	Arnd <><
+-static void noinline __init_refok rest_init(void)
++static noinline void __init_refok rest_init(void)
+ 	__releases(kernel_lock)
+ {
+ 	int pid;
+@@ -792,7 +792,7 @@ static void run_init_process(char *init_
+ /* This is a non __init function. Force it to be noinline otherwise gcc
+  * makes it inline to init() and it becomes part of init.text section
+  */
+-static int noinline init_post(void)
++static noinline int init_post(void)
+ {
+ 	free_initmem();
+ 	unlock_kernel();
