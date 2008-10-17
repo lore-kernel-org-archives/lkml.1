@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYJQKGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbYJQKIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbYJQKGr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 06:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYJQKGk
+	id S1753806AbYJQKIw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 06:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYJQKIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 06:06:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37394 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751456AbYJQKGj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 06:06:39 -0400
-Subject: Re: [RFC] Kernel version numbering scheme change
-From: Peter Zijlstra <peterz@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081017085604.GA20986@cs181140183.pp.htv.fi>
-References: <20081016002509.GA25868@kroah.com>
-	 <20081016124943.GE23630@cs181140183.pp.htv.fi>
-	 <20081016151748.GA31075@kroah.com>
-	 <20081016164602.GA22554@cs181140183.pp.htv.fi>
-	 <20081017034717.GA28188@kroah.com>
-	 <20081017064751.GE22554@cs181140183.pp.htv.fi>
-	 <20081017075544.GB4850@kroah.com>
-	 <20081017085604.GA20986@cs181140183.pp.htv.fi>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 12:06:30 +0200
-Message-Id: <1224237990.28131.84.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 17 Oct 2008 06:08:43 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60154 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbYJQKIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 06:08:43 -0400
+Message-ID: <48F863E3.3070003@cn.fujitsu.com>
+Date: Fri, 17 Oct 2008 18:07:31 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] Fix debugfs_create_*'s error checking method for arm/plat-omap
+References: <48F85976.4070609@cn.fujitsu.com>
+In-Reply-To: <48F85976.4070609@cn.fujitsu.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 11:56 +0300, Adrian Bunk wrote:
-> On Fri, Oct 17, 2008 at 12:55:44AM -0700, Greg KH wrote:
-> > On Fri, Oct 17, 2008 at 09:47:51AM +0300, Adrian Bunk wrote:
-> >...
-> > > Packages are built in a chroot with the correct release installed.
-> > 
-> > Then why would this break if they are being built against the correct,
-> > older, kernel?
-> 
-> How could you build userspace "against a kernel"?
-> 
-> sys_*uname() returns the version of the running kernel.
+debugfs_create_*() returns NULL if an error occurs, returns -ENODEV
+when debugfs is not enabled in the kernel.
 
-We have a uts namespace, you can make the thing return whatever well you
-please.
+Comparing to PATCH v1, because clk_debugfs_init is included in
+"#if defined CONFIG_DEBUG_FS", we only need to check NULL return.
+Thanks Li Zefan <lizf@cn.fujitsu.com>
 
+debugfs_create_u8() and other function's return value's checking method are
+also fixed in this patch.
+
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+---
+ arch/arm/plat-omap/clock.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
+index bf6a10c..be6aab9 100644
+--- a/arch/arm/plat-omap/clock.c
++++ b/arch/arm/plat-omap/clock.c
+@@ -428,23 +428,23 @@ static int clk_debugfs_register_one(struct clk *c)
+ 	if (c->id != 0)
+ 		sprintf(p, ":%d", c->id);
+ 	d = debugfs_create_dir(s, pa ? pa->dent : clk_debugfs_root);
+-	if (IS_ERR(d))
+-		return PTR_ERR(d);
++	if (!d)
++		return -ENOMEM;
+ 	c->dent = d;
+ 
+ 	d = debugfs_create_u8("usecount", S_IRUGO, c->dent, (u8 *)&c->usecount);
+-	if (IS_ERR(d)) {
+-		err = PTR_ERR(d);
++	if (!d) {
++		err = -ENOMEM;
+ 		goto err_out;
+ 	}
+ 	d = debugfs_create_u32("rate", S_IRUGO, c->dent, (u32 *)&c->rate);
+-	if (IS_ERR(d)) {
+-		err = PTR_ERR(d);
++	if (!d) {
++		err = -ENOMEM;
+ 		goto err_out;
+ 	}
+ 	d = debugfs_create_x32("flags", S_IRUGO, c->dent, (u32 *)&c->flags);
+-	if (IS_ERR(d)) {
+-		err = PTR_ERR(d);
++	if (!d) {
++		err = -ENOMEM;
+ 		goto err_out;
+ 	}
+ 	return 0;
+@@ -483,8 +483,8 @@ static int __init clk_debugfs_init(void)
+ 	int err;
+ 
+ 	d = debugfs_create_dir("clock", NULL);
+-	if (IS_ERR(d))
+-		return PTR_ERR(d);
++	if (!d)
++		return -ENOMEM;
+ 	clk_debugfs_root = d;
+ 
+ 	list_for_each_entry(c, &clocks, node) {
+-- 
+1.5.5.3
 
 
