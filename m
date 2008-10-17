@@ -1,91 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYJQGeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYJQGgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbYJQGeQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 02:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYJQGd7
+	id S1753088AbYJQGgt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 02:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYJQGgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 02:33:59 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:56357 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751502AbYJQGd6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 02:33:58 -0400
-Date: Fri, 17 Oct 2008 08:33:45 +0200
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] CRIS update for 2.6.28
-Message-ID: <20081017063345.GB24715@axis.com>
-References: <20081013213539.GT15259@axis.com> <alpine.LFD.2.00.0810141230310.3288@nehalem.linux-foundation.org> <20081014202140.GA4395@axis.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081014202140.GA4395@axis.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 17 Oct 2008 02:36:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55621 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751438AbYJQGgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 02:36:41 -0400
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, rdreier@cisco.com,
+       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
+       akpm@linux-foundation.org
+In-Reply-To: <20081016.222108.13382080.davem@davemloft.net>
+References: <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>
+	 <20081016.210404.151891223.davem@davemloft.net>
+	 <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
+	 <20081016.222108.13382080.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 17:36:05 +1100
+Message-Id: <1224225365.7654.88.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 10:21:40PM +0200, Jesper Nilsson wrote:
-
-...and it seems my mail config was not correct, causing most mail
-servers to treat the mail as spam... Third try is the charm?
-
-> On Mon, 13 Oct 2008, Jesper Nilsson wrote:
-> > Just some file moves in this pull-request.
-> > The following changes since commit d17ffb4c9d86194bb74cbc30f4b65de59c27f6cd:
-> >   Jesper Nilsson (1):
-> >         Merge branch 'cris_debug_port_fix' into cris
-> >
-> > are available in the git repository at:
-> >
-> >   /pub/scm/cris.git for-linus
+On Thu, 2008-10-16 at 22:21 -0700, David Miller wrote:
 > 
-> Umm. Ehh. Where?
+> I personally appreciate seeing the full 64-bit address on sparc64,
+> even for IORESOURCE_IO, and that's helped me debug resource
+> calculation bugs on more than one occasion in the past.
 
-Ah, right, much easier with an external repo. Sorry 'bout that.
+The latest patch I posted will do full size of resource_size_t unless
+you arch explicitely adds a #define to do it differently so that
+should work for you :-)
 
-The following changes since commit d17ffb4c9d86194bb74cbc30f4b65de59c27f6cd:
-  Jesper Nilsson (1):
-        Merge branch 'cris_debug_port_fix' into cris
+Cheers,
+Ben.
 
-are available in the git repository at:
 
-        git://www.jni.nu/cris.git for-linus
-
-Adrian Bunk (1):
-      CRIS: proper defconfig setup
-
-Jesper Nilsson (1):
-      [CRIS] Rename boot-linkscripts and fix the path to them.
-
- arch/cris/Makefile                                 |    2 ++
- arch/cris/arch-v10/boot/compressed/Makefile        |    2 +-
- .../compressed/{decompress.ld => decompress.lds}   |    0
- arch/cris/arch-v10/boot/rescue/Makefile            |    2 +-
- .../arch-v10/boot/rescue/{rescue.ld => rescue.lds} |    0
- arch/cris/arch-v32/boot/compressed/Makefile        |    2 +-
- .../compressed/{decompress.ld => decompress.lds}   |    0
- arch/cris/arch-v32/boot/rescue/Makefile            |    2 +-
- .../arch-v32/boot/rescue/{rescue.ld => rescue.lds} |    0
- arch/cris/{ => configs}/artpec_3_defconfig         |    0
- .../defconfig => configs/etrax-100lx_defconfig}    |    0
- .../etrax-100lx_v2_defconfig}                      |    0
- arch/cris/{ => configs}/etraxfs_defconfig          |    0
- 13 files changed, 6 insertions(+), 4 deletions(-)
- rename arch/cris/arch-v10/boot/compressed/{decompress.ld => decompress.lds} (100%)
- rename arch/cris/arch-v10/boot/rescue/{rescue.ld => rescue.lds} (100%)
- rename arch/cris/arch-v32/boot/compressed/{decompress.ld => decompress.lds} (100%)
- rename arch/cris/arch-v32/boot/rescue/{rescue.ld => rescue.lds} (100%)
- rename arch/cris/{ => configs}/artpec_3_defconfig (100%)
- rename arch/cris/{arch-v10/defconfig => configs/etrax-100lx_defconfig} (100%)
- rename arch/cris/{defconfig => configs/etrax-100lx_v2_defconfig} (100%)
- rename arch/cris/{ => configs}/etraxfs_defconfig (100%)
-
->                 Linus
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
