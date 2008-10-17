@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYJQXwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYJRAAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbYJQXwu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 19:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYJQXwm
+	id S1756884AbYJRAAp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 20:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbYJRAAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 19:52:42 -0400
-Received: from mga01.intel.com ([192.55.52.88]:19465 "EHLO mga01.intel.com"
+	Fri, 17 Oct 2008 20:00:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42133 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752859AbYJQXwl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 19:52:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,435,1220252400"; 
-   d="scan'208";a="628549711"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>
-Date: Fri, 17 Oct 2008 16:52:16 -0700
-Subject: RE: [RFC patch 15/15] LTTng timestamp x86
-Thread-Topic: [RFC patch 15/15] LTTng timestamp x86
-Thread-Index: AckwljJCD/pjX0QyRuWDfjTPYTzWpwAGzzcw
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA353345B9B@orsmsx505.amr.corp.intel.com>
-References: <20081016232729.699004293@polymtl.ca>
- <20081016234657.837704867@polymtl.ca>
- <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
- <20081017012835.GA30195@Krystal>
- <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
- <20081017172515.GA9639@goodmis.org>
- <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com>
- <20081017184215.GB9874@Krystal>
- <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com>
- <20081017202313.GA13597@Krystal>
-In-Reply-To: <20081017202313.GA13597@Krystal>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1755875AbYJRAAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 20:00:34 -0400
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/linus
+Cc: prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
+ interfaces
+In-Reply-To: Alan Stern's message of  Thursday, 16 October 2008 10:38:44 -0400 <Pine.LNX.4.44L0.0810161027100.2487-100000@iolanthe.rowland.org>
+References: <20081016024956.602C61544CB@magilla.localdomain>
+	<Pine.LNX.4.44L0.0810161027100.2487-100000@iolanthe.rowland.org>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20081017235838.7BD231544CB@magilla.localdomain>
+Date: Fri, 17 Oct 2008 16:58:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Complexity of dealing with all the random issues that have
-plagued TSC in different cpus over the years definitely
-seems to be a problem.
+> Hmm...  What happens on x86 if you have both an instruction breakpoint 
+> and a data breakpoint triggered for the same instruction?  My old 386 
+> manual seems to imply that you'll get two exceptions: a fault and a 
+> trap.
 
-I have one more idea on how we might be able to use
-TSC locally and still have confidence that we can
-merge local cpu buffers into a consistent stream.
+Yes, those are not really "the same instruction".  The instruction
+breakpoint gives you a fault-type debug exception, which means the
+instruction hasn't actually been executed yet.  You then might not execute
+it at all, if you change the PC in the trap frame.  To execute it, you have
+to either set RF or disable that breakpoint, and then execute it.  If it
+actually completes (doesn't have some other normal fault first like a page
+fault, or an external interrupt first, etc), then you get a single-step
+trap after it's executed.  As far as the hardware is concerned these two
+events are entirely separate.
 
-What if we read the HPET occasionally (once per
-second?) and add a record to our per-cpu buffer
-with the value of the HPET.  That would give us
-a periodic cross-check of each cpus TSC against
-real time so that a "smart" post-processor can
-sanity check the log entries at regular intervals.
+> There's another RF-related issue which the patch currently ignores.  
+> Namely, what should happen if a new user breakpoint is registered at
+> the current PC address?  We should force the RF flag to 0 so that the
+> breakpoint will be triggered when execution resumes.  The problem is
+> that it's not easy to tell whether the current PC corresponds to the
+> same linear address as that registered for the breakpoint -- i.e., I
+> don't know how the code should go about translating from virtual
+> addresses to linear addresses.  Would this in fact always be the
+> identity mapping?  Presumably not if we're in VM86 mode.
 
-It doesn't deal with the truly insane TSC behaivours
-(like stopping completely in certain C states, or
-varying frequency) ... but it would at least be able
-to reliably detect these forms of insanity.
+Um, punt?  There is the hair in step.c:convert_ip_to_linear, but, bah.
+Well, I can see doing it, and it would integrate with the whole handling of
+changes to ->ip, etc.  But here we have another fine example of the new can
+of worms involved in getting RF handling correct.  I'm thoroughly convinced
+we should drop instruction breakpoint support from the initial version of
+the x86 patch and hash out this whole RF picture separately after we've got
+the rest of hw_breakpoint somewhat more settled.
 
-We need periodic entries added to the buffer anyway
-to make sure we can detect rollover since we don't
-want waste space in log records with a full width
-TSC value.
 
--Tony
+Thanks,
+Roland
