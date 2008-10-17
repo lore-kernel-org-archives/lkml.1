@@ -1,94 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbYJQLwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJQL4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbYJQLwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYJQLwe
+	id S1754031AbYJQL4A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 07:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYJQLzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:52:34 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:28001 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753341AbYJQLwe (ORCPT
+	Fri, 17 Oct 2008 07:55:49 -0400
+Received: from stinky.trash.net ([213.144.137.162]:62597 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbYJQLzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:52:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=bYbhmAzVRdTFKoiu9bVRLz6INpmPTrL6pAZgCIKSM9XSNsyijC2fSuituAaYM+Ss75
-         mqNiBpCCvzuenDkW+LpN8eWfe/KUpEUDj97VZe1vUp1SBMkIg59Y6un/TzLwByhE4rzv
-         ZpXhvoEbMToPOO8Mjv8in94sIdTZR8hg5QxYs=
-Date: Fri, 17 Oct 2008 15:55:35 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: proc_init_inodecache can't fail
-Message-ID: <20081017115535.GA19077@x200.localdomain>
+	Fri, 17 Oct 2008 07:55:48 -0400
+Message-ID: <48F87D3E.5020007@trash.net>
+Date: Fri, 17 Oct 2008 13:55:42 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
+Subject: Re: [GIT]: Networking
+References: <20081015.163817.193700221.davem@davemloft.net> <20081017082138.GA23155@elte.hu>
+In-Reply-To: <20081017082138.GA23155@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------050308010509050000040801"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added to proc.git]
+This is a multi-part message in MIME format.
+--------------050308010509050000040801
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-commit 7e19c847f7e748e8fbb2f4149d0d1dbde4c8b0b9
-Author: Alexey Dobriyan <adobriyan@gmail.com>
-Date:   Fri Oct 17 03:43:55 2008 +0400
+Ingo Molnar wrote:
+>> Pablo Neira Ayuso (1):
+>>       netfilter: ctnetlink: remove bogus module dependency between ctnetlink and nf_nat
+> 
+> FYI, got a common build failure with latest -git, and bisected it back 
+> to the commit above. Config attached, error log and bisect log below.
+> 
+> (The build failure output is at the bottom, it comes after dozens of 
+> build warnings all across the kernel.)
+>
+> net/netfilter/nf_conntrack_netlink.c:819: warning: ‘enum nf_nat_manip_type’ declared inside parameter list
+> net/netfilter/nf_conntrack_netlink.c:819: warning: its scope is only this definition or declaration, which is probably not what you want
+> net/netfilter/nf_conntrack_netlink.c:818: error: parameter 2 (‘manip’) has incomplete type
 
-    proc: proc_init_inodecache() can't fail
-    
-    kmem_cache creation code will panic, don't return anything.
-    
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Thanks Ingo. I just sent this patch to Benjamin Herrenschmidt
+for testing.
 
-diff --git a/fs/proc/inode.c b/fs/proc/inode.c
-index c6b4fa7..2543fd0 100644
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -106,14 +106,13 @@ static void init_once(void *foo)
- 	inode_init_once(&ei->vfs_inode);
- }
- 
--int __init proc_init_inodecache(void)
-+void __init proc_init_inodecache(void)
- {
- 	proc_inode_cachep = kmem_cache_create("proc_inode_cache",
- 					     sizeof(struct proc_inode),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD|SLAB_PANIC),
- 					     init_once);
--	return 0;
- }
- 
- static const struct super_operations proc_sops = {
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 3bfb7b8..d5bf4de 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -66,7 +66,7 @@ extern const struct inode_operations proc_net_inode_operations;
- 
- void free_proc_entry(struct proc_dir_entry *de);
- 
--int proc_init_inodecache(void);
-+void proc_init_inodecache(void);
- 
- static inline struct pid *proc_pid(struct inode *inode)
- {
-diff --git a/fs/proc/root.c b/fs/proc/root.c
-index 9511753..2a3abd2 100644
---- a/fs/proc/root.c
-+++ b/fs/proc/root.c
-@@ -104,9 +104,9 @@ static struct file_system_type proc_fs_type = {
- 
- void __init proc_root_init(void)
- {
--	int err = proc_init_inodecache();
--	if (err)
--		return;
-+	int err;
-+
-+	proc_init_inodecache();
- 	err = register_filesystem(&proc_fs_type);
- 	if (err)
- 		return;
+
+--------------050308010509050000040801
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="x"
+
+Y29tbWl0IGNmYmI5NjZlMGE4NGViNzVlOGU3YzE5Mjk1M2VjZjNjYTQ4YTk0MjAKQXV0aG9y
+OiBQYXRyaWNrIE1jSGFyZHkgPGthYmVyQHRyYXNoLm5ldD4KRGF0ZTogICBGcmkgT2N0IDE3
+IDEzOjUwOjM1IDIwMDggKzAyMDAKCiAgICBuZXRmaWx0ZXI6IGN0bmV0bGluazogZml4IGNv
+bXBpbGF0aW9uIGVycm9yCiAgICAKICAgIEZpeCBjb21waWxhdGlvbiBlcnJvciBvbiAoYXQg
+bGVhc3QpIHBwYzoKICAgIAogICAgL2hvbWUvYmVuaC9rZXJuZWxzL2xpbnV4LXBvd2VycGMv
+bmV0L25ldGZpbHRlci9uZl9jb25udHJhY2tfbmV0bGluay5jOjgxOTogd2FybmluZzogXHUy
+MDE4ZW51bSBuZl9uYXRfbWFuaXBfdHlwZVx1MjAxOSBkZWNsYXJlZCBpbnNpZGUgcGFyYW1l
+dGVyIGxpc3QKICAgIC9ob21lL2Jlbmgva2VybmVscy9saW51eC1wb3dlcnBjL25ldC9uZXRm
+aWx0ZXIvbmZfY29ubnRyYWNrX25ldGxpbmsuYzo4MTk6IHdhcm5pbmc6IGl0cyBzY29wZSBp
+cyBvbmx5IHRoaXMgZGVmaW5pdGlvbiBvciBkZWNsYXJhdGlvbiwgd2hpY2ggaXMgcHJvYmFi
+bHkgbm90IHdoYXQgeW91IHdhbnQKICAgIAogICAgU2lnbmVkLW9mZi1ieTogUGF0cmljayBN
+Y0hhcmR5IDxrYWJlckB0cmFzaC5uZXQ+CgpkaWZmIC0tZ2l0IGEvbmV0L25ldGZpbHRlci9u
+Zl9jb25udHJhY2tfbmV0bGluay5jIGIvbmV0L25ldGZpbHRlci9uZl9jb25udHJhY2tfbmV0
+bGluay5jCmluZGV4IDA4ZTgyZDYuLmRlYWNlMDYgMTAwNjQ0Ci0tLSBhL25ldC9uZXRmaWx0
+ZXIvbmZfY29ubnRyYWNrX25ldGxpbmsuYworKysgYi9uZXQvbmV0ZmlsdGVyL25mX2Nvbm50
+cmFja19uZXRsaW5rLmMKQEAgLTM5LDYgKzM5LDcgQEAKICNpbmNsdWRlIDxuZXQvbmV0Zmls
+dGVyL25mX2Nvbm50cmFja190dXBsZS5oPgogI2luY2x1ZGUgPG5ldC9uZXRmaWx0ZXIvbmZf
+Y29ubnRyYWNrX2FjY3QuaD4KICNpZmRlZiBDT05GSUdfTkZfTkFUX05FRURFRAorI2luY2x1
+ZGUgPG5ldC9uZXRmaWx0ZXIvbmZfbmF0Lmg+CiAjaW5jbHVkZSA8bmV0L25ldGZpbHRlci9u
+Zl9uYXRfY29yZS5oPgogI2luY2x1ZGUgPG5ldC9uZXRmaWx0ZXIvbmZfbmF0X3Byb3RvY29s
+Lmg+CiAjZW5kaWYK
+--------------050308010509050000040801--
