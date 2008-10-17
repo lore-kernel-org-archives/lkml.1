@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbYJQRzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbYJQRzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757459AbYJQRzU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 13:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbYJQRzI
+	id S1757846AbYJQRzn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 13:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985AbYJQRzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 13:55:08 -0400
+	Fri, 17 Oct 2008 13:55:33 -0400
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:60745 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755521AbYJQRzH (ORCPT
+	with ESMTP id S1755592AbYJQRzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 13:55:07 -0400
-Date: Fri, 17 Oct 2008 20:55:03 +0300 (EEST)
+	Fri, 17 Oct 2008 13:55:33 -0400
+Date: Fri, 17 Oct 2008 20:55:32 +0300 (EEST)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 cc: david@rowetel.com, steveu@coppice.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] echo: fix kmalloc()/kfree() uses
-Message-ID: <Pine.LNX.4.64.0810172053490.23852@melkki.cs.Helsinki.FI>
+Subject: [PATCH 2/4] echo: remove dead code
+Message-ID: <Pine.LNX.4.64.0810172055050.23852@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -25,139 +25,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch removes the malloc()/free() macro wrappers and converts call-sites
-to use kcalloc() and kzalloc() where appropriate. I also fixed up out-of-memory
-error handling in couple of places where it was broken.
+This patch removes dead code that is wrapped in #ifndef __KERNEL__.
 
 Cc: David Rowe <david@rowetel.com>
 Cc: Steve Underwood <steveu@coppice.org>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/echo/echo.c |   36 +++++++++++++++++-------------------
- drivers/staging/echo/fir.h  |   14 +++++---------
- 2 files changed, 22 insertions(+), 28 deletions(-)
+ drivers/staging/echo/fir.h |   45 --------------------------------------------
+ 1 files changed, 0 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
-index 4a281b1..8c0a707 100644
---- a/drivers/staging/echo/echo.c
-+++ b/drivers/staging/echo/echo.c
-@@ -109,8 +109,6 @@
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/slab.h>
--#define malloc(a) kmalloc((a), GFP_KERNEL)
--#define free(a) kfree(a)
- 
- #include "bit_operations.h"
- #include "echo.h"
-@@ -238,27 +236,19 @@ echo_can_state_t *echo_can_create(int len, int adaption_mode)
- {
-     echo_can_state_t *ec;
-     int i;
--    int j;
- 
--    ec = kmalloc(sizeof(*ec), GFP_KERNEL);
--    if (ec == NULL)
--        return  NULL;
--    memset(ec, 0, sizeof(*ec));
-+    ec = kzalloc(sizeof(*ec), GFP_KERNEL);
-+    if (!ec)
-+        return NULL;
- 
-     ec->taps = len;
-     ec->log2taps = top_bit(len);
-     ec->curr_pos = ec->taps - 1;
- 
--    for (i = 0;  i < 2;  i++)
--    {
--        if ((ec->fir_taps16[i] = (int16_t *) malloc((ec->taps)*sizeof(int16_t))) == NULL)
--        {
--            for (j = 0;  j < i;  j++)
--                kfree(ec->fir_taps16[j]);
--            kfree(ec);
--            return  NULL;
--        }
--        memset(ec->fir_taps16[i], 0, (ec->taps)*sizeof(int16_t));
-+    for (i = 0; i < 2; i++) {
-+        ec->fir_taps16[i] = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
-+        if (!ec->fir_taps16[i])
-+	    goto error_oom;
-     }
- 
-     fir16_create(&ec->fir_state,
-@@ -275,8 +265,9 @@ echo_can_state_t *echo_can_create(int len, int adaption_mode)
-     ec->cng_level = 1000;
-     echo_can_adaption_mode(ec, adaption_mode);
- 
--    ec->snapshot = (int16_t*)malloc(ec->taps*sizeof(int16_t));
--    memset(ec->snapshot, 0, sizeof(int16_t)*ec->taps);
-+    ec->snapshot = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
-+    if (!ec->snapshot)
-+        goto error_oom;
- 
-     ec->cond_met = 0;
-     ec->Pstates = 0;
-@@ -288,6 +279,13 @@ echo_can_state_t *echo_can_create(int len, int adaption_mode)
-     ec->Lbgn_upper_acc = ec->Lbgn_upper << 13;
- 
-     return  ec;
-+
-+error_oom:
-+    for (i = 0; i < 2; i++)
-+        kfree(ec->fir_taps16[i]);
-+
-+    kfree(ec);
-+    return NULL;
- }
- /*- End of function --------------------------------------------------------*/
- 
 diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
-index e1bfc49..ef87491 100644
+index ef87491..42d900d 100644
 --- a/drivers/staging/echo/fir.h
 +++ b/drivers/staging/echo/fir.h
-@@ -117,11 +117,9 @@ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
- 	fir->curr_pos = taps - 1;
- 	fir->coeffs = coeffs;
- #if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__BLACKFIN_ASM__)
--	if ((fir->history = malloc(2*taps*sizeof(int16_t))))
--		memset(fir->history, 0, 2*taps*sizeof(int16_t));
-+	fir->history = kcalloc(2*taps, sizeof(int16_t), GFP_KERNEL);
- #else
--	if ((fir->history = (int16_t *) malloc(taps*sizeof(int16_t))))
--		memset(fir->history, 0, taps*sizeof(int16_t));
-+	fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
- #endif
- 	return fir->history;
- }
-@@ -139,7 +137,7 @@ static __inline__ void fir16_flush(fir16_state_t *fir)
- 
- static __inline__ void fir16_free(fir16_state_t *fir)
- {
--	free(fir->history);
-+	kfree(fir->history);
+@@ -312,51 +312,6 @@ static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
  }
  /*- End of function --------------------------------------------------------*/
  
-@@ -275,9 +273,7 @@ static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
-     fir->taps = taps;
-     fir->curr_pos = taps - 1;
-     fir->coeffs = coeffs;
--    fir->history = (int16_t *) malloc(taps*sizeof(int16_t));
+-#ifndef __KERNEL__
+-static __inline__ const float *fir_float_create(fir_float_state_t *fir,
+-                                                const float *coeffs,
+-    	    	    	                        int taps)
+-{
+-    fir->taps = taps;
+-    fir->curr_pos = taps - 1;
+-    fir->coeffs = coeffs;
+-    fir->history = (float *) malloc(taps*sizeof(float));
 -    if (fir->history)
--    	memset(fir->history, '\0', taps*sizeof(int16_t));
-+    fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
-     return fir->history;
- }
- /*- End of function --------------------------------------------------------*/
-@@ -290,7 +286,7 @@ static __inline__ void fir32_flush(fir32_state_t *fir)
- 
- static __inline__ void fir32_free(fir32_state_t *fir)
- {
+-        memset(fir->history, '\0', taps*sizeof(float));
+-    return fir->history;
+-}
+-/*- End of function --------------------------------------------------------*/
+-
+-static __inline__ void fir_float_free(fir_float_state_t *fir)
+-{
 -    free(fir->history);
-+    kfree(fir->history);
+-}
+-/*- End of function --------------------------------------------------------*/
+-
+-static __inline__ int16_t fir_float(fir_float_state_t *fir, int16_t sample)
+-{
+-    int i;
+-    float y;
+-    int offset1;
+-    int offset2;
+-
+-    fir->history[fir->curr_pos] = sample;
+-
+-    offset2 = fir->curr_pos;
+-    offset1 = fir->taps - offset2;
+-    y = 0;
+-    for (i = fir->taps - 1;  i >= offset1;  i--)
+-        y += fir->coeffs[i]*fir->history[i - offset1];
+-    for (  ;  i >= 0;  i--)
+-        y += fir->coeffs[i]*fir->history[i + offset2];
+-    if (fir->curr_pos <= 0)
+-    	fir->curr_pos = fir->taps;
+-    fir->curr_pos--;
+-    return  (int16_t) y;
+-}
+-/*- End of function --------------------------------------------------------*/
+-#endif
+-
+ #ifdef __cplusplus
  }
- /*- End of function --------------------------------------------------------*/
- 
+ #endif
 -- 
 1.5.3.7
 
