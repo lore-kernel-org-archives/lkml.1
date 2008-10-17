@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbYJQSsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYJQStP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbYJQSsz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 14:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYJQSsp
+	id S1757921AbYJQStP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 14:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYJQSsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 14:48:45 -0400
-Received: from kroah.org ([198.145.64.141]:38521 "EHLO coco.kroah.org"
+	Fri, 17 Oct 2008 14:48:47 -0400
+Received: from kroah.org ([198.145.64.141]:38527 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754748AbYJQSsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 14:48:43 -0400
-Date: Fri, 17 Oct 2008 10:39:59 -0700
+	id S1754399AbYJQSsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 14:48:45 -0400
+Date: Fri, 17 Oct 2008 10:40:52 -0700
 From: Greg KH <greg@kroah.com>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Joel Becker <joel.becker@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-Message-ID: <20081017173959.GC2221@kroah.com>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org> <20081017074453.GA4850@kroah.com> <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
+To: "Giacomo A. Catenazzi" <cate@cateee.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081017174052.GD2221@kroah.com>
+References: <20081016002509.GA25868@kroah.com> <48F88923.30109@cateee.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <48F88923.30109@cateee.net>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
-> > On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
-> > > Hi Joel, Greg and Co,
-> > > 
-> > > Here is the the first working code for allowing configfs to handle
-> > > symlinks from sysfs struct kobject based code.  Here is the commit:
-> > > passing struct kobject into generic target_core_mod subsystem plugins
-> > > for locating struct block_device and struct scsi_device..  
-> > 
-> > Um, no.
-> > 
-> > You are trying to create symlinks dynamically across superblocks and
-> > mount points?  As one of your #warning states, this isn't possible to do
-> > correctly, nor is it even a good idea.
-> > 
-> > So I'd have to reject this patch, sorry.
-> > 
-> > What is the problem you are attempting to solve here?
-> > 
-> 
-> So, the generic target_core_mod engine that lives
-> under /sys/kernel/config/target/core needs a method to locate struct
-> block_device and struct scsi_device for access via bio_submit() and
-> scsi_execute_() respectively.
+On Fri, Oct 17, 2008 at 02:46:27PM +0200, Giacomo A. Catenazzi wrote:
+> Greg KH wrote:
+>> We number the kernel based on the year, and the numbers of releases we
+>> have done this year:
+>> 	YEAR.NUMBER.MINOR_RELEASE
+>> For example, the first release in 2009 would be called:
+>> 	2009.0.0
+>> The second:
+>> 	2009.1.0
+>> If we want to be a bit more "non-zero-counting" friendly: we can start
+>> at "1" for the number:
+>> 	2009.1.0 for the first release
+>> 	2009.2.0 for the second.
+>> Then the stable releases can increment the minor number:
+>> 	2009.1.1 for the first stable release
+>> 	2009.1.2 for the second.
+>> 	and so on.
+>> Benefits of this is it more accuratly represents to people just how old
+>> the kernel they are currently running is (2.6.9 would be have been
+>> 2004.9.0 on this naming scheme.)
+>> Yes, we can handle the major/minor macros in the kernel to provide a
+>> compatible number so that automated scripts will not break, that's not a
+>> big deal.
+>> Any thoughts?
+>
+> What about:
+> - rc releases: a 2009.5.0-rc4 become suddenly 2010.0.0-rc5 ?
 
-Then just pass the "name" of the block device into a configfs file,
-nothing more is needed, right?
+Sure, what's the big deal?
 
-> Originally, target_core_mod used key echoed through configfs attributes
-> like so:
-> 
-> export TARGET=/sys/kernel/config/target/core/
-> 
-> # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
-> mkdir -p $TARGET/iblock_0/lvm_test0
-> # OLD METHOD to reference struct block_device
-> echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
-> echo 1 > $TARGET/iblock_0/lvm_test0/enable
-> # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
-> ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
+> - a stable version in January of a kernel released in December
+>   still has the old year? (I hope yes, but it could confuse users.)
 
-No, you can't do a symlink across superblocks and expect it to work like
-you are thinking internally.
+stable versions would not modify the year.
 
-> The other point is that since configfs is based on sysfs code, it only
-> makes sense to provide a API through configfs to take advantage of
-> kernel data structures that can be referenced using wrappers to
-> container_of() in include/linux/ in a common way.
+> - when (if) we need a big innovative (or incompatible) kernel
+>   change, how to mark old and new kernels?
 
-No, just because configfs looks like sysfs internally, does not mean
-they are related in any manner.  We have been down this argument many
-times in the past, please don't bring it up again, it has no bearing on
-this at all.
+Based on our current development model, this isn't an issue.
 
 thanks,
 
