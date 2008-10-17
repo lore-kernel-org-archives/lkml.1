@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYJQMsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756974AbYJQMtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbYJQMsm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbYJQMsV
+	id S1756974AbYJQMtA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbYJQMsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:48:21 -0400
-Received: from [165.204.77.10] ([165.204.77.10]:58446 "EHLO elemente.amd.com"
+	Fri, 17 Oct 2008 08:48:23 -0400
+Received: from [165.204.77.10] ([165.204.77.10]:58449 "EHLO elemente.amd.com"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755592AbYJQMsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:48:20 -0400
-Message-Id: <20081017133137.733236242@amd.com>
+	id S1756679AbYJQMsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 08:48:22 -0400
+Message-Id: <20081017133137.437261110@amd.com>
 References: <20081017133035.331392689@amd.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 17 Oct 2008 15:30:38 +0200
+Date: Fri, 17 Oct 2008 15:30:36 +0200
 From: Peter Oruba <peter.oruba@amd.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>, Peter Oruba <peter.oruba@amd.com>
-Subject: [patch 3/3] x86: AMD microcode patch loader author update
-Content-Disposition: inline; filename=patches2/0003-x86-AMD-microcode-patch-loader-author-update.patch
+Subject: [patch 1/3] mailmap: Add Peter Oruba
+Content-Disposition: inline; filename=patches2/0001-mailmap-Add-Peter-Oruba.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed author's email address from MODULE_AUTHOR.
-
 Signed-off-by: Peter Oruba <peter.oruba@amd.com>
 ---
- arch/x86/kernel/microcode_amd.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ .mailmap |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 7a1f8ee..5f8e5d7 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -39,7 +39,7 @@
- #include <asm/microcode.h>
- 
- MODULE_DESCRIPTION("AMD Microcode Update Driver");
--MODULE_AUTHOR("Peter Oruba <peter.oruba@amd.com>");
-+MODULE_AUTHOR("Peter Oruba");
- MODULE_LICENSE("GPL v2");
- 
- #define UCODE_MAGIC                0x00414d44
+diff --git a/.mailmap b/.mailmap
+index dfab12f..1751c0e 100644
+--- a/.mailmap
++++ b/.mailmap
+@@ -79,6 +79,8 @@ Nguyen Anh Quynh <aquynh@gmail.com>
+ Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+ Patrick Mochel <mochel@digitalimplant.org>
+ Peter A Jonsson <pj@ludd.ltu.se>
++Peter Oruba <peter@oruba.de>
++Peter Oruba <peter.oruba@amd.com>
+ Praveen BP <praveenbp@ti.com>
+ Rajesh Shah <rajesh.shah@intel.com>
+ Ralf Baechle <ralf@linux-mips.org>
 -- 
 1.5.4.1
 
 -- 
-
-
 
