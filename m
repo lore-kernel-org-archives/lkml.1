@@ -1,202 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYJQSJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYJQSKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbYJQSJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 14:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbYJQSJN
+	id S1757420AbYJQSKb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 14:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYJQSKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 14:09:13 -0400
-Received: from qmta07.emeryville.ca.mail.comcast.net ([76.96.30.64]:43164 "EHLO
-	QMTA07.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753424AbYJQSJL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 14:09:11 -0400
-X-Authority-Analysis: v=1.0 c=1 a=BKlk4C1kfyIA:10 a=JkGP7ZSYhkMA:10
- a=h73PsGLEXvajRiNfxw0A:9 a=h1lWPgihY6Vfvd2zG6AA:7
- a=vySzteNK0Wh0m0h2BQiSYGOLom0A:4 a=SLyJqc_wJIIA:10 a=dGJ0OcVc7YAA:10
- a=eqxxFxNu-gsA:10
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH] igb: add IGB_DCA instead of selecting INTEL_IOATDMA
-To: jeff@garzik.org, davem@davemloft.net
-Cc: netdev@vger.kernel.org, brice@myri.com, dan.j.williams@intel.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       apw@shadowen.org, linuxppc-dev@ozlabs.org, sam@ravnborg.org,
-       e1000-devel@lists.sourceforge.net, maciej.sosnowski@intel.com,
-       bunk@kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 17 Oct 2008 11:08:31 -0700
-Message-ID: <20081017180831.15639.50705.stgit@gitlost.lost>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 17 Oct 2008 14:10:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47032 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbYJQSKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 14:10:20 -0400
+Date: Fri, 17 Oct 2008 14:10:13 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: "Steve French" <smfrench@gmail.com>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-cifs-client] Re: unlink behavior when file is open by
+ other process
+Message-ID: <20081017141013.3aecc88a@tleilax.poochiereds.net>
+In-Reply-To: <524f69650810171041i57ab4466s8cecbdf0268f8417@mail.gmail.com>
+References: <524f69650810170809u2df1a309o2f357dc8489c06c6@mail.gmail.com>
+	<524f69650810170824x4f9ff975qb03d687c8d3557ff@mail.gmail.com>
+	<20081017132714.111e33f9@tleilax.poochiereds.net>
+	<524f69650810171041i57ab4466s8cecbdf0268f8417@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a bool IGB_DCA defined to y if IGB and DCA are enabled, but IGB isn't y while DCA=m.  And thus remove the need to select INTEL_IOATDMA when IGB is enabled, so that non-x86 architectures can build the igb driver.
-Based on work/patch from Brice Goglin <brice@myri.com>
+On Fri, 17 Oct 2008 12:41:07 -0500
+"Steve French" <smfrench@gmail.com> wrote:
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
+> On Fri, Oct 17, 2008 at 12:27 PM, Jeff Layton <jlayton@redhat.com> wrote:
+> > On Fri, 17 Oct 2008 10:24:29 -0500
+> > "Steve French" <smfrench@gmail.com> wrote:
+> >
+> >> On Fri, Oct 17, 2008 at 10:09 AM, Steve French <smfrench@gmail.com> wrote:
+> >> > Even when a file is open by another process, posix allows the file to
+> >> > be deleted (the file is removed from the namespace and eventually the
+> >> > data is removed from disk).   Unfortunately due to problems in some
+> >> > NAS filers/servers this can be hard to implement, and I am not sure
+> >> > what the "best" behavior is in that case.
+> >
+> > My argument is that the primary function of unlink() is to remove a
+> > filename from the filesystem. If we return success from such a call
+> > without actually having freed up that filename, then that's a bug. It's
+> > unfortunate that some servers don't support the calls we need to make
+> > this work all the time.
+> The filename will be freed - and the trade off is which breaks fewer apps.
+> Both open and unlink man pages list plausible return codes but I
+> am worried that the sequence of file operations open/unlink/close
+> (I think we see both dbench and connectathon do this IIRC)
+> is as common a a sequence as open/unlink/create/close
+> thus we could break more apps your way than leaving it as is.
+> 
 
- drivers/net/Kconfig        |    5 +++++
- drivers/net/igb/igb_main.c |   32 ++++++++++++++++----------------
- 2 files changed, 21 insertions(+), 16 deletions(-)
+I think we have to shoot for mimicking POSIX as closely as we can. If
+we can't do it, I don't think we have any option other than to return
+error. We also have to consider that the existing behavior is racy and
+unreliable. Suppose we have 2 processes:
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index ad301ac..588ef13 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2003,6 +2003,11 @@ config IGB_LRO
- 
- 	  If in doubt, say N.
- 
-+config IGB_DCA
-+	bool "Enable DCA"
-+	default y
-+	depends on IGB && DCA && !(IGB=y && DCA=m)
-+
- source "drivers/net/ixp2000/Kconfig"
- 
- config MYRI_SBUS
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index 53cbeae..2bd3629 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -41,7 +41,7 @@
- #include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/if_ether.h>
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- #include <linux/dca.h>
- #endif
- #include "igb.h"
-@@ -106,11 +106,11 @@ static irqreturn_t igb_msix_other(int irq, void *);
- static irqreturn_t igb_msix_rx(int irq, void *);
- static irqreturn_t igb_msix_tx(int irq, void *);
- static int igb_clean_rx_ring_msix(struct napi_struct *, int);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- static void igb_update_rx_dca(struct igb_ring *);
- static void igb_update_tx_dca(struct igb_ring *);
- static void igb_setup_dca(struct igb_adapter *);
--#endif /* CONFIG_DCA */
-+#endif /* CONFIG_IGB_DCA */
- static bool igb_clean_tx_irq(struct igb_ring *);
- static int igb_poll(struct napi_struct *, int);
- static bool igb_clean_rx_irq_adv(struct igb_ring *, int *, int);
-@@ -131,7 +131,7 @@ static int igb_suspend(struct pci_dev *, pm_message_t);
- static int igb_resume(struct pci_dev *);
- #endif
- static void igb_shutdown(struct pci_dev *);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- static int igb_notify_dca(struct notifier_block *, unsigned long, void *);
- static struct notifier_block dca_notifier = {
- 	.notifier_call	= igb_notify_dca,
-@@ -207,7 +207,7 @@ static int __init igb_init_module(void)
- 	global_quad_port_a = 0;
- 
- 	ret = pci_register_driver(&igb_driver);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	dca_register_notify(&dca_notifier);
- #endif
- 	return ret;
-@@ -223,7 +223,7 @@ module_init(igb_init_module);
-  **/
- static void __exit igb_exit_module(void)
- {
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	dca_unregister_notify(&dca_notifier);
- #endif
- 	pci_unregister_driver(&igb_driver);
-@@ -1260,7 +1260,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_register;
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if ((adapter->flags & IGB_FLAG_HAS_DCA) &&
- 	    (dca_add_requester(&pdev->dev) == 0)) {
- 		adapter->flags |= IGB_FLAG_DCA_ENABLED;
-@@ -1334,7 +1334,7 @@ static void __devexit igb_remove(struct pci_dev *pdev)
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct igb_adapter *adapter = netdev_priv(netdev);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	struct e1000_hw *hw = &adapter->hw;
- #endif
- 
-@@ -1346,7 +1346,7 @@ static void __devexit igb_remove(struct pci_dev *pdev)
- 
- 	flush_scheduled_work();
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
- 		dev_info(&pdev->dev, "DCA disabled\n");
- 		dca_remove_requester(&pdev->dev);
-@@ -3294,7 +3294,7 @@ static irqreturn_t igb_msix_tx(int irq, void *data)
- 	struct igb_adapter *adapter = tx_ring->adapter;
- 	struct e1000_hw *hw = &adapter->hw;
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_tx_dca(tx_ring);
- #endif
-@@ -3346,14 +3346,14 @@ static irqreturn_t igb_msix_rx(int irq, void *data)
- 	if (netif_rx_schedule_prep(adapter->netdev, &rx_ring->napi))
- 		__netif_rx_schedule(adapter->netdev, &rx_ring->napi);
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_rx_dca(rx_ring);
- #endif
- 		return IRQ_HANDLED;
- }
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- static void igb_update_rx_dca(struct igb_ring *rx_ring)
- {
- 	u32 dca_rxctrl;
-@@ -3473,7 +3473,7 @@ static int igb_notify_dca(struct notifier_block *nb, unsigned long event,
- 
- 	return ret_val ? NOTIFY_BAD : NOTIFY_DONE;
- }
--#endif /* CONFIG_DCA */
-+#endif /* CONFIG_IGB_DCA */
- 
- /**
-  * igb_intr_msi - Interrupt Handler
-@@ -3552,13 +3552,13 @@ static int igb_poll(struct napi_struct *napi, int budget)
- 	int tx_clean_complete, work_done = 0;
- 
- 	/* this poll routine only supports one tx and one rx queue */
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_tx_dca(&adapter->tx_ring[0]);
- #endif
- 	tx_clean_complete = igb_clean_tx_irq(&adapter->tx_ring[0]);
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_rx_dca(&adapter->rx_ring[0]);
- #endif
-@@ -3586,7 +3586,7 @@ static int igb_clean_rx_ring_msix(struct napi_struct *napi, int budget)
- 	struct net_device *netdev = adapter->netdev;
- 	int work_done = 0;
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_rx_dca(rx_ring);
- #endif
+Process 1		Process 2
+======================================
+creates file
+			opens file
+unlinks file
+closes file
+			closes file
+creates file
 
+So this will work against a server that doesn't support rename by
+filehandle, but what happens if the second create comes in before
+process 2 closes the file? The create will fail. The problem is that we
+can't predict this. It all depends on the timing.
+
+Someone may QA their application and have it work great, then all of a
+sudden when they move to a big load, this sort of thing starts failing
+because the timing has changed.
+
+I would *much* prefer to have an application fail reliably than work 90%
+of the time, and fail unpredictably the other 10%. Consistency is key.
+
+> > We can't however make assumptions about what applications want. We
+> > could, in principle, fix up the situation where a server does
+> > open->unlink->create by truncating the old file and pretending that
+> > it's a new one.
+> That could corrupt data - the original opener may need that data up
+> to the moment they close that handle.
+> 
+
+Good point, all the more reason not do this.
+
+> > All we can reasonably do is try to have each syscall give us the
+> > expected end result or an error if it can't be done.
+> The open syscall is allowed to fail with ETXTBUSY (or even access
+> denied among other).
+> Although this type of situation is not common on open, it more common in
+> open (and create) than on unlink and thus A likely that an app could deal with
+> an open error than on the unlink that preceeded it.   The other argument
+> here is that whether or not we allow unlink (when it can be marked for deletion
+> but not silly renamed) - we have apps that will get the same error on open due
+> to Windows, MacOS and other non-Linux clients setting the flag (ie open/create
+> failures for a filename that was marked delete-on-close can still
+> happen even if we aren't the
+> ones who set the flag on the file since Windows and various other OS can and do
+> set this file on the server or remotely)
+> 
+> 
+
+Sure, I'm not disputing whether returning an error on open is right or
+wrong. The problem is that it's not expected. We've just unlinked the
+filename and returned success -- there is *no* reason that the create
+should fail here. An application programmer will (rightfully) consider
+this a bug.
+
+Again, I think we have to try and mimic POSIX to the best of our
+ability and just return error on anything else.
+-- 
+Jeff Layton <jlayton@redhat.com>
