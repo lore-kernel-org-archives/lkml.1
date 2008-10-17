@@ -1,147 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYJQP3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbYJQP3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbYJQP3V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbYJQP3D
+	id S1754820AbYJQP3f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756301AbYJQP3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:29:03 -0400
-Received: from mga07.intel.com ([143.182.124.22]:19645 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755014AbYJQP3A (ORCPT
+	Fri, 17 Oct 2008 11:29:11 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:39836 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756253AbYJQP3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:29:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,432,1220252400"; 
-   d="scan'208";a="61458917"
-Message-ID: <48F8AF3A.1040306@linux.intel.com>
-Date: Fri, 17 Oct 2008 08:28:58 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 17 Oct 2008 11:29:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=usYnN2u9v8BHnGG5zoAq90QsKveBnpg0kHEeBnqu9YZF7VcKBeQlQBHFvA32J38/YyiWNuPk9bBZThnLNc6B0pPZgsTbLPRXBlhl/9oIPvpLkcdaa8HWB9ll/duAUvWJXYLj9vAJk+AJBsVwTkvuEPyuy1MOyrfc3ORNok7QufM=  ;
+X-YMail-OSG: 6PyFC84VM1kSz4kPPzRFsx3prJyX8v9zavSMrFrK7GH1wMwP2x_hZre7cJfRLMjAsRWjZzQpOBujUYfcXJ9nmbDPhin6S0293iT2X9ZLRAXUmhAJBe_pCwSH23Da6NOFVAzltZNy9ZPgyQVTkWTzlIr1_4AR59mNo9DID2A-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Jackson <mpfj@mimc.co.uk>
+Subject: Re: [PATCH] Add Dallas DS1390 RTC chip
+Date: Fri, 17 Oct 2008 08:29:06 -0700
+User-Agent: KMail/1.9.9
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, lkml <linux-kernel@vger.kernel.org>,
+       spi-devel-general@lists.sourceforge.net
+References: <48F452BE.2030901@mimc.co.uk> <20081014101703.1ded0259@i1501.lan.towertech.it> <48F8467C.5010902@mimc.co.uk>
+In-Reply-To: <48F8467C.5010902@mimc.co.uk>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>, tglx@tglx.de,
-       "Theodore Ts'o" <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Oops/Warning report for the week October 17th, 2008
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200810170829.06699.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This week, a total of 2786 oopses and warnings have been reported,
-compared to 2955 reports in the previous week.
-(Reports from 2.6.25 or earlier are ignored for this report)
+On Friday 17 October 2008, Mark Jackson wrote:
+> >> +    /* Can tx_buf and rx_buf be equal? The doc in spi.h is not sure... */
+> >> +    xfer.tx_buf = chip->tx_buf;
+> >> +    xfer.rx_buf = chip->rx_buf;
+> > 
+> >  you use the same buffer a few functions below. either
+> >  one way or the other. please investigate with the spi subsystem maintainer.
+> 
+> David,
+> 
+> Just to double check (as per Alessandro's suggestion), is this okay use of the 
+> spi buffers ?
 
+Yes.  That comment deserves to be updated.
 
-Per file statistics
-159	net/sched/sch_generic.c
-41	fs/jbd/journal.c
-28	drivers/base/power/main.c
-26	kernel/timer.c
-22	drivers/parport/procfs.c
-19	arch/x86/mm/pageattr.c
-15	drivers/usb/serial/usb-serial.c
-15	mm/memory.c
-15	drivers/net/wireless/ath5k/hw.c
-14	external/utrace
-13	fs/ext3/super.c
-13	external/fireglx/binary (P)
+SPI does bi-directional I/O, and the underlying controller
+should be able to just replace the contents of a buffer
+with a spi_transfer that uses the same rx and tx buffers.
 
-
-Rank 1: dev_watchdog() (warning)
-	Reported 391 times (1881 total reports)
-	[These are the reports we can't map back to a driver yet]
-	Top 10 of identified issues is:
-  count |          guilty
--------+---------------------------
-    575 | dev_watchdog(sis900)
-    154 | dev_watchdog(usbnet)
-    131 | dev_watchdog(via-rhine)
-    113 | dev_watchdog(8390)
-     73 | dev_watchdog(r8169)
-     64 | dev_watchdog(orinoco)
-     57 | dev_watchdog(8139too)
-     44 | dev_watchdog(via_rhine)
-     33 | dev_watchdog(3c59x)
-     27 | dev_watchdog(fealnx)
-
-	This warning was last seen in version 2.6.27-rc6-git2, and first seen in 2.6.26-rc3.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog()
-
-Rank 2: journal_update_superblock (warning)
-	Reported 181 times (4869 total reports)
-	Likely caused by the user removing a USB stick while mounted
-	Ted has a fix, it's in -mm and on route to 2.6.28-rc1
-	This warning was last seen in version 2.6.27, and first seen in 2.6.24-rc6-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
-
-Rank 4: dev_watchdog(sis900) (warning)
-	Reported 136 times (575 total reports)
-	This warning was last seen in version 2.6.27, and first seen in 2.6.26-rc4-git2.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(sis900)
-
-Rank 5: device_pm_add (warning)
-	Reported 91 times (445 total reports)
-	2.6.28-rc will be able to tell us which drivers cause this
-	This warning was last seen in version 2.6.27-rc4, and first seen in 2.6.26-rc5.
-	More info: http://www.kerneloops.org/searchweek.php?search=device_pm_add
-
-Rank 6: run_timer_softirq (oops)
-	Reported 86 times (428 total reports)
-	softlockup.. mostly seen before Thomas fixed the hpet/timer code.
-	This oops was last seen in version 2.6.27-rc8, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=run_timer_softirq
-
-Rank 7: ext3_commit_super (warning)
-	Reported 54 times (1251 total reports)
-	Likely caused by the user removing a USB stick while mounted
-	Ted has a fix, it's in -mm and on route to 2.6.28-rc1	
-	This warning was last seen in version 2.6.27, and first seen in 2.6.24.
-	More info: http://www.kerneloops.org/searchweek.php?search=ext3_commit_super
-
-Rank 9: suspend_test_finish (warning)
-	Reported 50 times (173 total reports)
-	The automatic suspend/resume test
-	This warning was last seen in version 2.6.27, and first seen in 2.6.27-rc0-git14.
-	More info: http://www.kerneloops.org/searchweek.php?search=suspend_test_finish
-
-Rank 10: kas_GetExecutionLevel (warning)
-	Reported 46 times (125 total reports)
-	[external] Bug in the proprietary fireglx driver
-	warning only shows up in tainted kernels
-	This warning was last seen in version 2.6.27, and first seen in 2.6.26.
-	More info: http://www.kerneloops.org/searchweek.php?search=kas_GetExecutionLevel
-
-Rank 11: dev_watchdog(via_rhine) (warning)
-	Reported 44 times
-	This warning was last seen in version 2.6.26.5, and first seen in 2.6.26.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(via_rhine)
-
-Rank 14: rs_get_rate (warning)
-	Reported 34 times (478 total reports)
-	Bug in the Intel IWL wireless drivers
-	This warning was last seen in version 2.6.27, and first seen in 2.6.25-rc2-git5.
-	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
-
-Fixed issues
-============
-Rank 8: sg_copy_buffer (warning)
-	Reported 51 times (165 total reports)
-	[fixed] by making the locks _irqsave (and backported to -stable)
-	This warning was last seen in version 2.6.26.5, and first seen in 2.6.26-rc6.
-	More info: http://www.kerneloops.org/searchweek.php?search=sg_copy_buffer
-
-Rank 12: lock_page (warning)
-	Reported 37 times (211 total reports)
-	The hwclock program causes a pagefault with interrupts off (done from userspace)
-	This warning was last seen in version 2.6.27, and first seen in 2.6.27-rc1-git2.
-	More info: http://www.kerneloops.org/searchweek.php?search=lock_page
-
-Rank 13: ata_sff_hsm_move (oops)
-	Reported 37 times (1199 total reports)
-	[fixed] redundant WARN_ON; fixed in 9c2676b61a5a4b6d99e65fb2f438fb3914302eda
-	This oops was last seen in version 2.6.27-rc2-git1, and first seen in 2.6.25.4.
-	More info: http://www.kerneloops.org/searchweek.php?search=ata_sff_hsm_move
+- Dave
