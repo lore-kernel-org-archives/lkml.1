@@ -1,136 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYJQE74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYJQFA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbYJQE74 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 00:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYJQE7s
+	id S1754009AbYJQFA7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 01:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYJQFAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 00:59:48 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57387 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750963AbYJQE7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 00:59:47 -0400
-Message-ID: <48F81BBF.7050801@us.ibm.com>
-Date: Thu, 16 Oct 2008 23:59:43 -0500
-From: Jon Tollefson <kniht@us.ibm.com>
-Reply-To: kniht@linux.vnet.ibm.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adam Litke <agl@us.ibm.com>, Kumar Gala <galak@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v3] powerpc: properly reserve in bootmem the lmb reserved
- regions that cross NUMA nodes
-References: <48EE6720.6010601@linux.vnet.ibm.com> <1223614516.8157.154.camel@pasglop>
-In-Reply-To: <1223614516.8157.154.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 17 Oct 2008 01:00:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50654 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750963AbYJQFAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 01:00:50 -0400
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, rdreier@cisco.com,
+       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
+       akpm@linux-foundation.org
+In-Reply-To: <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
+References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>
+	 <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>
+	 <20081016.210404.151891223.davem@davemloft.net>
+	 <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 16:00:27 +1100
+Message-Id: <1224219627.7654.80.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2008-10-09 at 15:18 -0500, Jon Tollefson wrote:
->   
->> If there are multiple reserved memory blocks via lmb_reserve() that are
->> contiguous addresses and on different NUMA nodes we are losing track of which 
->> address ranges to reserve in bootmem on which node.  I discovered this 
->> when I recently got to try 16GB huge pages on a system with more then 2 nodes.
->>     
->
-> I'm going to apply it, however, could you double check something for
-> me ? A cursory glance of the new version makes me wonder, what if the
-> first call to get_node_active_region() ends up with the work_fn never
-> hitting the if () case ? I think in that case, node_ar->end_pfn never
-> gets initialized right ? Can that happen in practice ? I suspect that
-> isn't the case but better safe than sorry...
->   
-I have tested this on a few machines and it hasn't been a problem.  But 
-I don't see anything in lmb_reserve() that would prevent reserving a 
-block that was outside of valid memory.  So to be safe I have attached a 
-patch that checks for an empty active range.
+On Thu, 2008-10-16 at 21:18 -0700, Linus Torvalds wrote:
+> 
+> Sure, but I don't think we agree on what it would be. And quite frankly, 
+> it might depend on the resource.
+> 
+> For example, in traditional PCI, PIO resources would easily want to use 
+> %04x, which MMIO would use %08x. Sure, Linux _allows_ for bigger resources 
+> (ie you can have even PIO resources with the full 64-bit data), but it's 
+> not what you'd expect for any traditional stuff, and so it makes sense to 
+> make PIO resources show as %04x to get the old-fashioned resources shown 
+> in an expected manner.
 
-I also noticed that the size to reserve for subsequent nodes for a 
-reserve that spans nodes wasn't taking into account the amount reserved 
-on previous nodes so the patch addresses that too.  If you would prefer 
-this be a separate patch let me know.
+Well, I was proposing that in the patch comments I think :-) We can do
+some more specific formatting details in there based on the resource
+flags, though we might also need some arch ifdef's in there.
 
-> If there's indeed a potential problem, please send a fixup patch.
->
-> Cheers,
-> Ben.
->   
-Adjust amount to reserve based on previous nodes for reserves spanning
-multiple nodes. Check if the node active range is empty before attempting
-to pass the reserve to bootmem.  In practice the range shouldn't be empty,
-but to be sure we check.
+It's better I think than having callers get it wrong in hundreds of
+different ways.
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
----
+> We can do it inside the %pR code itself (just look at IORESOURCE_IO vs 
+> IORESOURCE_MEM), and maybe that's even the right approach. Maybe we want 
+> to even add flag bits, and show things like "IORESOURCE_PREFETCH" as a 
+> small marking automatically. But maybe people want to make it explicit.
 
- 
- arch/powerpc/mm/numa.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+I've been going on/off about the flags and decided to leave them alone
+for now unless somebody comes up with a nice way to handle them. But
+that doesn't mean we can't -use- the flags as you suggested to adjust
+the format of the output.
 
+The only little nit here is that the amount of digits needed for PIO is
+fairly arch specific. So I might just stick an few ifdef's for the 4
+possible cases (4, 8 and 16 digits) and let arch maintainers fix them up
+(I'll default to 16 for everybody except x86 -> 4 and ppc -> 8).
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 6cf5c71..195bfcd 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -116,6 +116,7 @@ static int __init get_active_region_work_fn(unsigned long start_pfn,
- 
- /*
-  * get_node_active_region - Return active region containing start_pfn
-+ * Active range returned is empty if none found.
-  * @start_pfn: The page to return the region for.
-  * @node_ar: Returned set to the active region containing start_pfn
-  */
-@@ -126,6 +127,7 @@ static void __init get_node_active_region(unsigned long start_pfn,
- 
- 	node_ar->nid = nid;
- 	node_ar->start_pfn = start_pfn;
-+	node_ar->end_pfn = start_pfn;
- 	work_with_active_regions(nid, get_active_region_work_fn, node_ar);
- }
- 
-@@ -933,18 +935,20 @@ void __init do_init_bootmem(void)
- 		struct node_active_region node_ar;
- 
- 		get_node_active_region(start_pfn, &node_ar);
--		while (start_pfn < end_pfn) {
-+		while (start_pfn < end_pfn &&
-+			node_ar.start_pfn < node_ar.end_pfn) {
-+			unsigned long reserve_size = size;
- 			/*
- 			 * if reserved region extends past active region
- 			 * then trim size to active region
- 			 */
- 			if (end_pfn > node_ar.end_pfn)
--				size = (node_ar.end_pfn << PAGE_SHIFT)
-+				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
- 					- (start_pfn << PAGE_SHIFT);
--			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
--				node_ar.nid);
-+			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase,
-+				reserve_size, node_ar.nid);
- 			reserve_bootmem_node(NODE_DATA(node_ar.nid), physbase,
--						size, BOOTMEM_DEFAULT);
-+						reserve_size, BOOTMEM_DEFAULT);
- 			/*
- 			 * if reserved region is contained in the active region
- 			 * then done.
-@@ -959,6 +963,7 @@ void __init do_init_bootmem(void)
- 			 */
- 			start_pfn = node_ar.end_pfn;
- 			physbase = start_pfn << PAGE_SHIFT;
-+			size = size - reserve_size;
- 			get_node_active_region(start_pfn, &node_ar);
- 		}
- 
+As for the 36 bits trick of sparc32, I'll let DaveM do another arch hack
+in there for now until he sorts it out.
 
+I'll do a patch in a minute...
 
+Cheers,
+Ben.
 
 
