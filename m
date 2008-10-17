@@ -1,43 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYJQAPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYJQAZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbYJQAPs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 20:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYJQAPk
+	id S1755533AbYJQAZY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 20:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYJQAZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 20:15:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36005 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752606AbYJQAPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 20:15:39 -0400
-Subject: Re: [PATCH] sony-laptop: Ignore missing _DIS method on pic device
-From: Adam Jackson <ajax@redhat.com>
-To: Mattia Dongili <malattia@linux.it>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <20081016224903.GD21963@inferi.kami.home>
-References: <1224192550-366-1-git-send-email-ajax@redhat.com>
-	 <20081016224903.GD21963@inferi.kami.home>
-Content-Type: text/plain
-Date: Thu, 16 Oct 2008 21:03:20 -0400
-Message-Id: <1224205400.29257.67.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Thu, 16 Oct 2008 20:25:10 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44257 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752683AbYJQAZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 20:25:08 -0400
+Message-ID: <48F7DB17.9020302@jp.fujitsu.com>
+Date: Fri, 17 Oct 2008 09:23:51 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Alex Chiang <achiang@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [BUG][PATCH] cpqphp: fix kernel NULL pointer dereference
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 07:49 +0900, Mattia Dongili wrote:
-> On Thu, Oct 16, 2008 at 05:29:10PM -0400, Adam Jackson wrote:
-> > From: Matthew Garrett <mjg59@srcf.ucam.org>
-> > 
-> > At least the Vaio VGN-Z540N doesn't have this method, so let's not fail
-> > to suspend just because it doesn't exist.
+Hi,
+
+The following patch fixes the regression in 2.6.27 that causes
+kernel NULL pointer dereference at cpqphp driver probe time.
+This patch should be backported to the .27 stable series.
+
+Thanks,
+Kenji Kaneshige
+
+
+Fix the following kernel panic problem reported by Ingo Molnar. This
+seems to be introduced by f46753c5e354b857b20ab8e0fe7b2579831dc369.
+
+> [   10.212026] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> [   10.220030] initcall pci_hotplug_init+0x0/0x60 returned 0 after 7812
+> usecs [   10.224030] calling  cpqhpc_init+0x0/0x70 @ 1
+> [   10.228026] cpqphp: Compaq Hot Plug PCI Controller Driver version: 0.9.8
+> [   10.236101] bus: 'pci': add driver compaq_pci_hotplug
+> [   10.240123] bus: 'pci': driver_probe_device: matched device 0000:00:0b.0
+> with driver compaq_pci_hotplug [   10.252026] bus: 'pci': really_probe:
+> probing driver compaq_pci_hotplug with device 0000:00:0b.0 [   10.260156]
+> compaq_pci_hotplug 0000:00:0b.0: PCI INT A -> GSI 26 (level, low) -> IRQ 26
+> [   10.268064] cpqphp: Hot Plug Subsystem Device ID: a2f8
+> [   10.276033] cpqphp: Initializing the PCI hot plug controller residing on
+> PCI bus 0 [   10.280073] PCI: Using BIOS Interrupt Routing Table
+> [   10.289396] PCI: Using BIOS Interrupt Routing Table
+> [   10.294181] BUG: unable to handle kernel NULL pointer dereference at
+> 00000020 [   10.302497] IP: [<c04ce708>] pci_create_slot+0x28/0x170
+> [   10.308022] *pde = 00000000
+> [   10.311199] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+> [   10.312000] Dumping ftrace buffer:
+> [   10.312000]    (ftrace buffer empty)
+> [   10.312000]
+> [   10.312000] Pid: 1, comm: swapper Not tainted
+> (2.6.27-tip-03538-g2075f6f-dirty #2) ProLiant [   10.312000] EIP:
+> 0060:[<c04ce708>] EFLAGS: 00010213 CPU: 1
+> [   10.312000] EIP is at pci_create_slot+0x28/0x170
+> [   10.312000] EAX: 00000246 EBX: 00000001 ECX: 03eb1000 EDX: c0f1396c
+> [   10.312000] ESI: 00000001 EDI: 00000000 EBP: f705bcac ESP: f705bc80
+> [   10.312000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> [   10.312000] Process swapper (pid: 1, ti=f705a000 task=f7060000
+> task.ti=f705a000) [   10.312000] Stack:
+> [   10.312000]  f705bc8c c04bf996 c0f13ae0 f705bc98 c0b296e2 c0f13b00
+> f5a97040 c04d1cbb [   10.312000]  00000001 00000000 ffffffef f705bcd4
+> c04d2194 c04d61fd f620caf0 f6057e60 [   10.312000]  f6069a10 f6057e60
+> 00000001 00000000 f6069a10 f705bdbc c04d6439 f5a97040 [   10.312000] Call
+> Trace:
+> [   10.312000]  [<c04bf996>] ? _raw_spin_unlock+0x46/0x80
+> [   10.312000]  [<c0b296e2>] ? _spin_unlock+0x22/0x30
+> [   10.312000]  [<c04d1cbb>] ? get_slot_from_name+0x5b/0x70
+> [   10.312000]  [<c04d2194>] ? pci_hp_register+0x74/0x330
+> [   10.312000]  [<c04d61fd>] ? cpqhpc_probe+0x112d/0x1b90
+> [   10.312000]  [<c04d6439>] ? cpqhpc_probe+0x1369/0x1b90
+> [   10.312000]  [<c04ce859>] ? pci_match_id+0x9/0x90
+> [   10.312000]  [<c04ceb1e>] ? pci_device_probe+0x5e/0x80
+> [   10.312000]  [<c056bee0>] ? driver_probe_device+0xe0/0x1f0
+> [   10.312000]  [<c056c06a>] ? __driver_attach+0x7a/0x80
+> [   10.312000]  [<c056b459>] ? bus_for_each_dev+0x49/0x70
+> [   10.312000]  [<c056bc6e>] ? driver_attach+0x1e/0x20
+> [   10.312000]  [<c056bff0>] ? __driver_attach+0x0/0x80
+> [   10.312000]  [<c056ba13>] ? bus_add_driver+0x1c3/0x240
+> [   10.312000]  [<c04cea60>] ? pci_device_remove+0x0/0x40
+> [   10.312000]  [<c056c224>] ? driver_register+0x54/0x130
+> [   10.312000]  [<c04bfa62>] ? __spin_lock_init+0x32/0x60
+> [   10.312000]  [<c0ffb1f0>] ? cpqhpc_init+0x0/0x70
+> [   10.312000]  [<c04ced53>] ? __pci_register_driver+0x63/0xa0
+> [   10.312000]  [<c0ffb1f0>] ? cpqhpc_init+0x0/0x70
+> [   10.312000]  [<c0ffb22b>] ? cpqhpc_init+0x3b/0x70
+> [   10.312000]  [<c0ffb1f0>] ? cpqhpc_init+0x0/0x70
+> [   10.312000]  [<c0101032>] ? _stext+0x32/0x170
+> [   10.312000]  [<c0ffb1f0>] ? cpqhpc_init+0x0/0x70
+> [   10.312000]  [<c0109bf5>] ? native_sched_clock+0xd5/0x110
+> [   10.312000]  [<c015acac>] ? lock_release_holdtime+0x7c/0xb0
+> [   10.312000]  [<c04bf996>] ? _raw_spin_unlock+0x46/0x80
+> [   10.312000]  [<c0b296e2>] ? _spin_unlock+0x22/0x30
+> [   10.312000]  [<c01efe17>] ? proc_register+0x107/0x1c0
+> [   10.312000]  [<c01efcb9>] ? __proc_create+0xe9/0x100
+> [   10.312000]  [<c0176994>] ? register_irq_proc+0x14/0xd0
+> [   10.312000]  [<c0fdb68d>] ? kernel_init+0x10d/0x170
+> [   10.312000]  [<c0fdb580>] ? kernel_init+0x0/0x170
+> [   10.312000]  [<c0104c3b>] ? kernel_thread_helper+0x7/0x10
+> [   10.312000] Code: 5b 5d c3 55 89 e5 57 56 53 83 ec 20 e8 56 65 c3 ff 89
+> d6 89 c7 b8 40 39 f1 c0 89 4d ec e8 91 9f 65 00 83 fe ff 0f 84 7e 00 00 00
+> <8b> 5f 20 83 eb 04 8b 53 04 0f 18 02 90 8d 4f 20 8d 43 04 39 c8 [  
+> 10.312000] EIP: [<c04ce708>] pci_create_slot+0x28/0x170 SS:ESP
 > 
-> Do you happen to have a DSDT dump for this model? I'd be glad to see it.
 
-'iasl -d' output:
+The root cause of this problem seems that cpqphp driver calls
+pci_hp_register() wrongly. In current implementation, cpqphp driver
+passes 'ctrl->pci_dev->subordinate' as a second parameter for
+pci_hp_register(). But because hotplug slots and it's hotplug
+controller (exists as a pci funcion) are on the same bus, it should be
+'ctrl->pci_dev->bus' instead.
 
-http://people.freedesktop.org/~ajax/synephrine-dsdt.dsl
+Cc: <stable@kernel.org>
+Tested-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
-- ajax
+---
+ drivers/pci/hotplug/cpqphp_core.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
+===================================================================
+--- linux-2.6-tip.orig/drivers/pci/hotplug/cpqphp_core.c
++++ linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
+@@ -435,7 +435,7 @@ static int ctrl_slot_setup(struct contro
+ 				slot->number, ctrl->slot_device_offset,
+ 				slot_number);
+ 		result = pci_hp_register(hotplug_slot,
+-					 ctrl->pci_dev->subordinate,
++					 ctrl->pci_dev->bus,
+ 					 slot->device);
+ 		if (result) {
+ 			err("pci_hp_register failed with error %d\n", result);
 
