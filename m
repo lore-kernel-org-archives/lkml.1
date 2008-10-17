@@ -1,115 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYJQIXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYJQIX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYJQIXH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 04:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYJQIW3
+	id S1754767AbYJQIX0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 04:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYJQIWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 04:22:29 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:20960 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752449AbYJQIWW (ORCPT
+	Fri, 17 Oct 2008 04:22:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49014 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752671AbYJQIWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 04:22:22 -0400
-X-YMail-OSG: 7jbyOasVM1n6gYyQWJd2AtZmwCOeMtvNhiOyf2rvQ5PzmYx58dxh_ZnEHB._SflIxVYZFfOtfNWFCS93R5WLlYr4o_KM2kB9Sn0taB9YZP1uacpXXlAv5DNGXD.VPIT81zAxhxJl9A7zXpcs_RhdPbzZPH9wUOjVDzp2FEU-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Greg KH <greg@kroah.com>
-Cc: Joel Becker <joel.becker@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20081017074453.GA4850@kroah.com>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-	 <20081017074453.GA4850@kroah.com>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 01:22:18 -0700
-Message-Id: <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 17 Oct 2008 04:22:23 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: tracepoints for kernel/mutex.c
+Cc: kosaki.motohiro@jp.fujitsu.com, Jason Baron <jbaron@redhat.com>,
+       linux-kernel@vger.kernel.org, compudj@krystal.dyndns.org,
+       fche@redhat.com, fweisbec@gmail.com, edwintorok@gmail.com,
+       mingo@elte.hu, Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1224231311.28131.67.camel@twins>
+References: <20081017140841.FAA3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1224231311.28131.67.camel@twins>
+Message-Id: <20081017171718.E236.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri, 17 Oct 2008 17:22:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
-> On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
-> > Hi Joel, Greg and Co,
+> On Fri, 2008-10-17 at 14:09 +0900, KOSAKI Motohiro wrote:
+> > Hi
 > > 
-> > Here is the the first working code for allowing configfs to handle
-> > symlinks from sysfs struct kobject based code.  Here is the commit:
-> > passing struct kobject into generic target_core_mod subsystem plugins
-> > for locating struct block_device and struct scsi_device..  
+> > > Folks, lets please start by getting the tracing infrastructure in and
+> > > those few high-level trace-points google proposed.
+> > > 
+> > > Until we get the basics in, I think I'm going to NAK any and all
+> > > tracepoint/marker patches.
+> > 
+> > Could you please tell me how to get these patches?
+> > I'd like to review it.
 > 
-> Um, no.
-> 
-> You are trying to create symlinks dynamically across superblocks and
-> mount points?  As one of your #warning states, this isn't possible to do
-> correctly, nor is it even a good idea.
-> 
-> So I'd have to reject this patch, sorry.
-> 
-> What is the problem you are attempting to solve here?
-> 
+> I think writing is more the issue than reviewing here ;-)
 
-So, the generic target_core_mod engine that lives
-under /sys/kernel/config/target/core needs a method to locate struct
-block_device and struct scsi_device for access via bio_submit() and
-scsi_execute_() respectively.
+yup. I understand Jason's patch issue.
+therefore, I interest to alternative googler approach as you said :)
 
-Originally, target_core_mod used key echoed through configfs attributes
-like so:
 
-export TARGET=/sys/kernel/config/target/core/
-
-# Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
-mkdir -p $TARGET/iblock_0/lvm_test0
-# OLD METHOD to reference struct block_device
-echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
-echo 1 > $TARGET/iblock_0/lvm_test0/enable
-# NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
-ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
-
-# Create $STORAGE_OBJET of type Linux/SCSI in generic target_core_mod
-mkdir -p $TARGET/pscsi_0/sdd
-# OLD METHOD to reference struct scsi_device
-echo scsi_channel_id=0,scsi_target_id=3,scsi_lun_id=0 > $TARGET/pscsi_0/sdd/control
-echo 1 > $TARGET/pscsi_0/sdd/enable
-# NEW METHOD using sysfs -> configfs symlinks to reference struct scsi_device
-ln -s /sys/block/sdd/device $TARGET/pscsi_0/sdd/passthrough
-
-This of course means that non TYPE_DISK of struct scsi_device would need
-to appear under /sys/ to be referenced using the symlink method..  I
-know that drivers/scsi/sr.c currently does not show up under /sys..
-
-Anyways, the idea is that its *ONLY* this special case for struct
-kobject as symlink source to struct config_item as symlink destination
-through the config struct config_item_operations API..  For the generic
-target_core_mod engine case, it seems like a good method to reference
-block and scsi related data structures for struct devices that folks
-want to use for target export across one or more $FABRIC modules (iSCSI,
-SAS, FC, PSCSI, etc)..
-
-I am more than happy to change the patch if there is a better way to get
-the same functionality for target_core_mod  I would really not prefer
-having to do targetfs, when configfs + sysfs symlinks seems to work in
-my first few hours of testing, unless there is something huge that I am
-missing..?.
-
-The other point is that since configfs is based on sysfs code, it only
-makes sense to provide a API through configfs to take advantage of
-kernel data structures that can be referenced using wrappers to
-container_of() in include/linux/ in a common way.
-
---nab
-
-> thanks,
-> 
-> greg k-h
-> 
 
