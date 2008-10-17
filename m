@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYJQOPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYJQORo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbYJQOPw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 10:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbYJQOPo
+	id S1755324AbYJQORo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 10:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYJQORh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 10:15:44 -0400
-Received: from sandeen.net ([209.173.210.139]:10270 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754443AbYJQOPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 10:15:44 -0400
-Message-ID: <48F89E0F.6030307@sandeen.net>
-Date: Fri, 17 Oct 2008 09:15:43 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Fri, 17 Oct 2008 10:17:37 -0400
+Received: from gv-out-0910.google.com ([216.239.58.189]:49679 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754287AbYJQORg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 10:17:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TZ4mqZS2Uy/uU1o+52cXisiNJHNVTvtmFpDtMoWHHq3tI+mi/xYWBXVif2kueGdK8P
+         z1g6mLIZiTiDDVUKbhaqjYRODNEcEHSnWqciNO8AVnvN9hh+pFebfaAIBmJD5+Z+ddbM
+         unjCHMgUkgNC7XNW74SHZOwlQaFAVoS5L/57o=
+Message-ID: <b9df5fa10810170717p36dcb4a9y4e74089069dea03c@mail.gmail.com>
+Date: Fri, 17 Oct 2008 20:17:33 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [PATCH] init: Properly placing noinline keyword.
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20081017141354.GA9242@x200.localdomain>
 MIME-Version: 1.0
-To: Martin Michlmayr <tbm@cyrius.com>
-CC: Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
-       debian-arm@lists.debian.org, xfs@oss.sgi.com
-Subject: Re: XFS filesystem corruption on the arm(el) architecture
-References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com>
-In-Reply-To: <20081017070109.GA30726@deprecation.cyrius.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b9df5fa10810170605t50e366e9nf62f8a18df37fc3c@mail.gmail.com>
+	 <20081017141354.GA9242@x200.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Michlmayr wrote:
-> * Eric Sandeen <sandeen@sandeen.net> [2008-10-16 17:13]:
->> So is this a regression?  did it used to work?  If so, when? :)
-> 
-> The original report was with 2.6.18 but that was with the old ABI:
-> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=423562
-> I just installed a 2.6.22 kernel with EABI and I can also trigger
-> the bug.  So it's not a (recent) regression.
-> 
->> What's a little odd is that the buffer it dumped out looks like the
->> beginning of a perfectly valid superblock for your filesystem
->> (magic, block size, and block count all match).   If you printk the
->> "bno" variable right around line 2106 in xfs_da_btree.c, can you see
->> what you get?
-> 
-> bno is 0.
-
-Ok, that's a little odd.  (correlates with the "bad" magic that was
-seen, because block 0 is the superblock, but doesn't make sense because
-we were trying to read a directory leaf block, in theory)
-
-If you unmount & remount, does the ls work then?
-
->> creating an xfs_metadump of the filesystem for examination on a
->> non-arm box might also be interesting.
-> 
-> http://www.cyrius.com/tmp/dump5
-> (11 MB)
-
-Thanks.
-
-xfs_repair on x86 shows no errors; however it won't mount normally (bad
-log clientid) - but mount -o norecovery,ro and subsequent ls works fine
-(at first I thought filenames were badly scrambled but then remembered
-that xfs_metadump does this by default ;))
-
-The remaining problem that I know of on some arm architectures is a vmap
-cache aliasing problem that usually shows up as log corruption; that may
-explain the bad clientid thing but not sure why we're reading block 0 above.
-
-Do you know what cachepolicy you're booted with?  If it's writeallocate,
-you might try cachepolicy=writeback, otherwise try cachepolicy=uncached
-(which will be horribly slow) and see if the problem goes away or not;
-it'd be a clue.
-
--Eric
+On 10/17/08, Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> On Fri, Oct 17, 2008 at 07:05:32PM +0600, Rakib Mullick wrote:
+>  > Here, noinline keyword should be placed between storage class and type.
+>
+>
+> Why?
+Because, scripts/checkpatch.pl warned with following warning:
+     ERROR: inline keyword should sit between storage class and type
+>
+>
+>  > --- linux-2.6-stable.orig/init/main.c
+>
+> > +++ linux-2.6-stable/init/main.c
+>
+> > @@ -457,7 +457,7 @@ static void __init setup_command_line(ch
+>  >   * gcc-3.4 accidentally inlines this function, so use noinline.
+>  >   */
+>  >
+>  > -static void noinline __init_refok rest_init(void)
+>  > +static noinline void __init_refok rest_init(void)
+>  >       __releases(kernel_lock)
+>  >  {
+>  >       int pid;
+>  > @@ -792,7 +792,7 @@ static void run_init_process(char *init_
+>  >  /* This is a non __init function. Force it to be noinline otherwise gcc
+>  >   * makes it inline to init() and it becomes part of init.text section
+>  >   */
+>  > -static int noinline init_post(void)
+>  > +static noinline int init_post(void)
+>
