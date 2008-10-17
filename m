@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbYJQFVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbYJQFXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752955AbYJQFVl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 01:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYJQFVc
+	id S1753875AbYJQFXK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 01:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYJQFW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 01:21:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49257
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751010AbYJQFVb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 01:21:31 -0400
-Date: Thu, 16 Oct 2008 22:21:08 -0700 (PDT)
-Message-Id: <20081016.222108.13382080.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: benh@kernel.crashing.org, rdreier@cisco.com,
+	Fri, 17 Oct 2008 01:22:56 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56329 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbYJQFWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 01:22:55 -0400
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, rdreier@cisco.com,
        Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
        linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
        akpm@linux-foundation.org
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>
-	<20081016.210404.151891223.davem@davemloft.net>
-	<alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+In-Reply-To: <1224220339.7654.84.camel@pasglop>
+References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>
+	 <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>
+	 <20081016.210404.151891223.davem@davemloft.net>
+	 <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
+	 <1224220339.7654.84.camel@pasglop>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 16:21:38 +1100
+Message-Id: <1224220898.7654.86.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 16 Oct 2008 21:18:08 -0700 (PDT)
+On Fri, 2008-10-17 at 16:12 +1100, Benjamin Herrenschmidt wrote:
+> +#ifdef CONFIG_X86
+> +#define IO_RSRC_SIZE   4
+> +#elif CONFIG_PPC
+> +#define IO_RSRC_SIZE   8
+> +#else
+> +#define IO_RSRC_SIZE   MEM_RSRC_SIZE
+> +#endif
 
-> I dunno. I'd certainly be perfectly happy with having the flags and 
-> field_width be specified by the resource flags. eg
-> 
-> 	flags = ZEROPAD | SMALL;
-> 	fieldwidth = (res->flags & IORESOURCE_IO) ? 4 : 8;
-> 
-> or something like that. But would it be acceptable to everybody?
+And I'm obviously tired, the #elif CONFIG_PPC is bogus, feel free to fix
+it up, else I'll send a new patch tomorrow or next week. No big deal.
 
-I personally appreciate seeing the full 64-bit address on sparc64,
-even for IORESOURCE_IO, and that's helped me debug resource
-calculation bugs on more than one occasion in the past.
+Cheers,
+Ben.
 
-But that's just me :)
+
