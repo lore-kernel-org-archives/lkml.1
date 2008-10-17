@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYJQLOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYJQLQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbYJQLOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYJQLNu
+	id S1753947AbYJQLQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 07:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYJQLP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:13:50 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59339 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbYJQLNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:13:49 -0400
-Message-ID: <48F87323.6020303@cn.fujitsu.com>
-Date: Fri, 17 Oct 2008 19:12:35 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 17 Oct 2008 07:15:57 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:10554 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbYJQLP5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 07:15:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uNjli/wlWnHKNJv/CpcuFgW6qlXfc/9YGJphzhe9kqGCY6GtHi0D+rj+4857rakPrG
+         lQAR1Zk3y4jaWuZcwFDAiB0+IuZLMPAWTMMGezoCqVqIqmK5lECGXVE85hbzkX5S9cKK
+         TCKPFwzpn6/u+jSwHtL6eDZMsHTS0C9UEaHc0=
+Date: Fri, 17 Oct 2008 15:18:57 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081017111857.GB18284@x200.localdomain>
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <20081017085604.GA20986@cs181140183.pp.htv.fi> <1224237990.28131.84.camel@twins>
 MIME-Version: 1.0
-To: ralf@linux-mips.org
-CC: linux-mips@linux-mips.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix debugfs_create_*'s error checking method for mips/kernel/
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224237990.28131.84.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Fri, Oct 17, 2008 at 12:06:30PM +0200, Peter Zijlstra wrote:
+> On Fri, 2008-10-17 at 11:56 +0300, Adrian Bunk wrote:
+> > On Fri, Oct 17, 2008 at 12:55:44AM -0700, Greg KH wrote:
+> > > On Fri, Oct 17, 2008 at 09:47:51AM +0300, Adrian Bunk wrote:
+> > >...
+> > > > Packages are built in a chroot with the correct release installed.
+> > > 
+> > > Then why would this break if they are being built against the correct,
+> > > older, kernel?
+> > 
+> > How could you build userspace "against a kernel"?
+> > 
+> > sys_*uname() returns the version of the running kernel.
+> 
+> We have a uts namespace, you can make the thing return whatever well you
+> please.
 
-debugfs_create_*() returns NULL if an error occurs, returns -ENODEV
-when debugfs is not enabled in the kernel.
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- arch/mips/kernel/setup.c     |    4 ++--
- arch/mips/kernel/unaligned.c |    8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-index 16f8edf..4430a1f 100644
---- a/arch/mips/kernel/setup.c
-+++ b/arch/mips/kernel/setup.c
-@@ -601,8 +601,8 @@ static int __init debugfs_mips(void)
- 	struct dentry *d;
- 
- 	d = debugfs_create_dir("mips", NULL);
--	if (IS_ERR(d))
--		return PTR_ERR(d);
-+	if (!d)
-+		return -ENOMEM;
- 	mips_debugfs_dir = d;
- 	return 0;
- }
-diff --git a/arch/mips/kernel/unaligned.c b/arch/mips/kernel/unaligned.c
-index c327b21..2070966 100644
---- a/arch/mips/kernel/unaligned.c
-+++ b/arch/mips/kernel/unaligned.c
-@@ -560,12 +560,12 @@ static int __init debugfs_unaligned(void)
- 		return -ENODEV;
- 	d = debugfs_create_u32("unaligned_instructions", S_IRUGO,
- 			       mips_debugfs_dir, &unaligned_instructions);
--	if (IS_ERR(d))
--		return PTR_ERR(d);
-+	if (!d)
-+		return -ENOMEM;
- 	d = debugfs_create_u32("unaligned_action", S_IRUGO | S_IWUSR,
- 			       mips_debugfs_dir, &unaligned_action);
--	if (IS_ERR(d))
--		return PTR_ERR(d);
-+	if (!d)
-+		return -ENOMEM;
- 	return 0;
- }
- __initcall(debugfs_unaligned);
--- 
-1.5.5.3
-
-
+Hostname, domainname, what else?
