@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYJQSr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbYJQSsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYJQSr4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 14:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYJQSrr
+	id S1757355AbYJQSsz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 14:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYJQSsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 14:47:47 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:50625 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753445AbYJQSrq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 14:47:46 -0400
-X-IronPort-AV: E=Sophos;i="4.33,433,1220227200"; 
-   d="scan'208";a="177432917"
-From: Roland Dreier <rdreier@cisco.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
-References: <20081017171139.GA1792@elte.hu> <ada3aiv9k6j.fsf@cisco.com>
-	<20081017180523.GA11590@elte.hu>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 17 Oct 2008 11:47:44 -0700
-In-Reply-To: <20081017180523.GA11590@elte.hu> (Ingo Molnar's message of "Fri,
-	17 Oct 2008 20:05:23 +0200")
-Message-ID: <adatzbbrrcf.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 17 Oct 2008 14:48:45 -0400
+Received: from kroah.org ([198.145.64.141]:38521 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754748AbYJQSsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 14:48:43 -0400
+Date: Fri, 17 Oct 2008 10:39:59 -0700
+From: Greg KH <greg@kroah.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: Joel Becker <joel.becker@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
+	kobject source.
+Message-ID: <20081017173959.GC2221@kroah.com>
+References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org> <20081017074453.GA4850@kroah.com> <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Oct 2008 18:47:45.0224 (UTC) FILETIME=[D7E00C80:01C93088]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > OTOH, there should be a well-defined work flow to keep this all 
- > manageable: once we know why a warning triggers and it has been 
- > categorized by a human, we should get rid of the warning in some way. 
- > 
- > Applying this patch as-is would be one option. Annotating it with a 
- > specific gcc version would be overkill i think. Ignoring it would be 
- > bad, because there's real value in standardizing on a "no warnings" 
- > build output. Many new warnings get introduced because people do not 
- > notice new warnings amongst the very high baseline noise of the kernel 
- > build.
+On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
+> On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
+> > On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
+> > > Hi Joel, Greg and Co,
+> > > 
+> > > Here is the the first working code for allowing configfs to handle
+> > > symlinks from sysfs struct kobject based code.  Here is the commit:
+> > > passing struct kobject into generic target_core_mod subsystem plugins
+> > > for locating struct block_device and struct scsi_device..  
+> > 
+> > Um, no.
+> > 
+> > You are trying to create symlinks dynamically across superblocks and
+> > mount points?  As one of your #warning states, this isn't possible to do
+> > correctly, nor is it even a good idea.
+> > 
+> > So I'd have to reject this patch, sorry.
+> > 
+> > What is the problem you are attempting to solve here?
+> > 
+> 
+> So, the generic target_core_mod engine that lives
+> under /sys/kernel/config/target/core needs a method to locate struct
+> block_device and struct scsi_device for access via bio_submit() and
+> scsi_execute_() respectively.
 
-The specific change I noticed:
+Then just pass the "name" of the block device into a configfs file,
+nothing more is needed, right?
 
- > -						       (1 << MGM_BLCK_LB_BIT));
- > +						       (1U << MGM_BLCK_LB_BIT));
+> Originally, target_core_mod used key echoed through configfs attributes
+> like so:
+> 
+> export TARGET=/sys/kernel/config/target/core/
+> 
+> # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
+> mkdir -p $TARGET/iblock_0/lvm_test0
+> # OLD METHOD to reference struct block_device
+> echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
+> echo 1 > $TARGET/iblock_0/lvm_test0/enable
+> # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
+> ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
 
-is not a problem to me -- the code is fine either way, and if we're
-making an effort to kill all warnings, then I'm OK with merging it.
-It's a little unfortunate to add churn due to a gcc bug that is only in
-certain 4.3 releases, but this particular case doesn't seem to trigger
-in many places, so the cost is low.
+No, you can't do a symlink across superblocks and expect it to work like
+you are thinking internally.
 
-However I worry about warnings produced by gcc bugs forcing us to tinker
-with correct code.  Maybe it just makes sense to wait and see if we ever
-hit a case where a gcc bug forces us to make too many stupid changes,
-and figure out what to do if and when that happens.
+> The other point is that since configfs is based on sysfs code, it only
+> makes sense to provide a API through configfs to take advantage of
+> kernel data structures that can be referenced using wrappers to
+> container_of() in include/linux/ in a common way.
 
- - R.
+No, just because configfs looks like sysfs internally, does not mean
+they are related in any manner.  We have been down this argument many
+times in the past, please don't bring it up again, it has no bearing on
+this at all.
+
+thanks,
+
+greg k-h
