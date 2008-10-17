@@ -1,296 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbYJQBmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYJQBn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756035AbYJQBmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 21:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYJQBmh
+	id S1756213AbYJQBn0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 21:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYJQBnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 21:42:37 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:56153 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751013AbYJQBmf (ORCPT
+	Thu, 16 Oct 2008 21:43:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41404
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752828AbYJQBnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 21:42:35 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH, RFC] ext4: Replace hackish ext4_mb_poll_new_transaction with commit callback
-Date: Thu, 16 Oct 2008 20:02:43 -0400
-Message-Id: <1224201763-9637-1-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 16 Oct 2008 21:43:16 -0400
+Date: Thu, 16 Oct 2008 18:42:52 -0700 (PDT)
+Message-Id: <20081016.184252.193691889.davem@davemloft.net>
+To: mathieu.desnoyers@polymtl.ca
+Cc: paulus@samba.org, torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       rostedt@goodmis.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       benh@kernel.crashing.org, mingo@redhat.com
+Subject: Re: [RFC patch 04/15] get_cycles() : powerpc64 HAVE_GET_CYCLES
+ (update)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081017004328.GA29768@Krystal>
+References: <20081016234656.055839676@polymtl.ca>
+	<18679.56239.74999.534588@cargo.ozlabs.ibm.com>
+	<20081017004328.GA29768@Krystal>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The multiblock allocator needs to be able to release blocks (and issue
-a blkdev discard request) when the transaction which freed those
-blocks is committed.  Previously this was done via a polling mechanism
-when blocks are allocated or freed.  A much better way of doing things
-is to create a jbd2 callback function and attaching the list of blocks
-to be freed directly to the transaction structure.
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Thu, 16 Oct 2008 20:43:28 -0400
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- fs/ext4/ext4_sb.h     |    3 --
- fs/ext4/mballoc.c     |   85 +++++++++----------------------------------------
- fs/ext4/mballoc.h     |    3 +-
- fs/jbd2/commit.c      |    3 ++
- fs/jbd2/transaction.c |    1 +
- include/linux/jbd2.h  |    9 +++++
- 6 files changed, 29 insertions(+), 75 deletions(-)
+> * Paul Mackerras (paulus@samba.org) wrote:
+> > Mathieu Desnoyers writes:
+> > 
+> > > This patch selects HAVE_GET_CYCLES and makes sure get_cycles_barrier() and
+> > > get_cycles_rate() are implemented.
+> > 
+> > [snip]
+> > 
+> > > +static inline cycles_t get_cycles_rate(void)
+> > > +{
+> > > +	return CLOCK_TICK_RATE;
+> > > +}
+> > 
+> > CLOCK_TICK_RATE is certainly wrong.  You want ppc_tb_freq (declared in
+> > asm/time.h).  Or tb_ticks_per_sec, since we seem to have two variables
+> > for exactly the same thing, for some reason. :)
+> > 
+> > Paul.
+> 
+> Ok, this should work better. Thanks !
+> 
+> Do you know if mtfb implies an instruction synchronization (isync) ? I
+> think that if it does not, the new get_cycles_barrier() might have to be
+> used at some locations in the kernel code if more precise timestamp
+> order is required.
 
-diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-index 6a0b40d..445fde6 100644
---- a/fs/ext4/ext4_sb.h
-+++ b/fs/ext4/ext4_sb.h
-@@ -99,9 +99,6 @@ struct ext4_sb_info {
- 	struct inode *s_buddy_cache;
- 	long s_blocks_reserved;
- 	spinlock_t s_reserve_lock;
--	struct list_head s_active_transaction;
--	struct list_head s_closed_transaction;
--	struct list_head s_committed_transaction;
- 	spinlock_t s_md_lock;
- 	tid_t s_last_transaction;
- 	unsigned short *s_mb_offsets, *s_mb_maxs;
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index da1da1f..dfe17a1 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -2523,9 +2523,6 @@ int ext4_mb_init(struct super_block *sb, int needs_recovery)
- 	}
- 
- 	spin_lock_init(&sbi->s_md_lock);
--	INIT_LIST_HEAD(&sbi->s_active_transaction);
--	INIT_LIST_HEAD(&sbi->s_closed_transaction);
--	INIT_LIST_HEAD(&sbi->s_committed_transaction);
- 	spin_lock_init(&sbi->s_bal_lock);
- 
- 	sbi->s_mb_max_to_scan = MB_DEFAULT_MAX_TO_SCAN;
-@@ -2554,6 +2551,8 @@ int ext4_mb_init(struct super_block *sb, int needs_recovery)
- 	ext4_mb_init_per_dev_proc(sb);
- 	ext4_mb_history_init(sb);
- 
-+	sbi->s_journal->j_commit_callback = release_blocks_on_commit;
-+
- 	printk(KERN_INFO "EXT4-fs: mballoc enabled\n");
- 	return 0;
- }
-@@ -2583,15 +2582,6 @@ int ext4_mb_release(struct super_block *sb)
- 	struct ext4_group_info *grinfo;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 
--	/* release freed, non-committed blocks */
--	spin_lock(&sbi->s_md_lock);
--	list_splice_init(&sbi->s_closed_transaction,
--			&sbi->s_committed_transaction);
--	list_splice_init(&sbi->s_active_transaction,
--			&sbi->s_committed_transaction);
--	spin_unlock(&sbi->s_md_lock);
--	ext4_mb_free_committed_blocks(sb);
--
- 	if (sbi->s_group_info) {
- 		for (i = 0; i < sbi->s_groups_count; i++) {
- 			grinfo = ext4_get_group_info(sb, i);
-@@ -2645,36 +2635,25 @@ int ext4_mb_release(struct super_block *sb)
- 	return 0;
- }
- 
--static noinline_for_stack void
--ext4_mb_free_committed_blocks(struct super_block *sb)
-+/*
-+ * This function is called by the jbd2 layer once the commit has finished,
-+ * so we know we can free the blocks that were released with that commit.
-+ */
-+static void release_blocks_on_commit(journal_t *journal, transaction_t *txn)
- {
-+	struct super_block *sb = journal->j_private;
- 	struct ext4_buddy e4b;
- 	struct ext4_group_info *db;
--	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	int err, count = 0, count2 = 0;
- 	struct ext4_free_data *entry;
- 	ext4_fsblk_t discard_block;
-+	struct list_head *l, *ltmp;
- 
--	if (list_empty(&sbi->s_committed_transaction))
--		return;
--
--	/* there is committed blocks to be freed yet */
--	do {
--		/* get next array of blocks */
--		entry = NULL;
--		spin_lock(&sbi->s_md_lock);
--		if (!list_empty(&sbi->s_committed_transaction)) {
--			entry = list_entry(sbi->s_committed_transaction.next,
--					struct ext4_free_data, list);
--			list_del(&entry->list);
--		}
--		spin_unlock(&sbi->s_md_lock);
--
--		if (entry == NULL)
--			break;
-+	list_for_each_safe(l, ltmp, &txn->t_private_list) {
-+		entry = list_entry(l, struct ext4_free_data, list);
- 
- 		mb_debug("gonna free %u blocks in group %lu (0x%p):",
--				entry->count, entry->group, entry);
-+			 entry->count, entry->group, entry);
- 
- 		err = ext4_mb_load_buddy(sb, entry->group, &e4b);
- 		/* we expect to find existing buddy because it's pinned */
-@@ -2706,7 +2685,7 @@ ext4_mb_free_committed_blocks(struct super_block *sb)
- 
- 		kmem_cache_free(ext4_free_ext_cachep, entry);
- 		ext4_mb_release_desc(&e4b);
--	} while (1);
-+	}
- 
- 	mb_debug("freed %u blocks in %u structures\n", count, count2);
- }
-@@ -4348,8 +4327,6 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t *handle,
- 		goto out1;
- 	}
- 
--	ext4_mb_poll_new_transaction(sb, handle);
--
- 	*errp = ext4_mb_initialize_context(ac, ar);
- 	if (*errp) {
- 		ar->len = 0;
-@@ -4408,36 +4385,6 @@ out1:
- 
- 	return block;
- }
--static void ext4_mb_poll_new_transaction(struct super_block *sb,
--						handle_t *handle)
--{
--	struct ext4_sb_info *sbi = EXT4_SB(sb);
--
--	if (sbi->s_last_transaction == handle->h_transaction->t_tid)
--		return;
--
--	/* new transaction! time to close last one and free blocks for
--	 * committed transaction. we know that only transaction can be
--	 * active, so previos transaction can be being logged and we
--	 * know that transaction before previous is known to be already
--	 * logged. this means that now we may free blocks freed in all
--	 * transactions before previous one. hope I'm clear enough ... */
--
--	spin_lock(&sbi->s_md_lock);
--	if (sbi->s_last_transaction != handle->h_transaction->t_tid) {
--		mb_debug("new transaction %lu, old %lu\n",
--				(unsigned long) handle->h_transaction->t_tid,
--				(unsigned long) sbi->s_last_transaction);
--		list_splice_init(&sbi->s_closed_transaction,
--				&sbi->s_committed_transaction);
--		list_splice_init(&sbi->s_active_transaction,
--				&sbi->s_closed_transaction);
--		sbi->s_last_transaction = handle->h_transaction->t_tid;
--	}
--	spin_unlock(&sbi->s_md_lock);
--
--	ext4_mb_free_committed_blocks(sb);
--}
- 
- /*
-  * We can merge two free data extents only if the physical blocks
-@@ -4531,9 +4478,9 @@ ext4_mb_free_metadata(handle_t *handle, struct ext4_buddy *e4b,
- 			kmem_cache_free(ext4_free_ext_cachep, entry);
- 		}
- 	}
--	/* Add the extent to active_transaction list */
-+	/* Add the extent to transaction's private list */
- 	spin_lock(&sbi->s_md_lock);
--	list_add(&new_entry->list, &sbi->s_active_transaction);
-+	list_add(&new_entry->list, &handle->h_transaction->t_private_list);
- 	spin_unlock(&sbi->s_md_lock);
- 	ext4_unlock_group(sb, group);
- 	return 0;
-@@ -4562,8 +4509,6 @@ void ext4_mb_free_blocks(handle_t *handle, struct inode *inode,
- 
- 	*freed = 0;
- 
--	ext4_mb_poll_new_transaction(sb, handle);
--
- 	sbi = EXT4_SB(sb);
- 	es = EXT4_SB(sb)->s_es;
- 	if (block < le32_to_cpu(es->s_first_data_block) ||
-diff --git a/fs/ext4/mballoc.h b/fs/ext4/mballoc.h
-index 94cb7b9..b5dff1f 100644
---- a/fs/ext4/mballoc.h
-+++ b/fs/ext4/mballoc.h
-@@ -269,8 +269,6 @@ struct buffer_head *read_block_bitmap(struct super_block *, ext4_group_t);
- 
- static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap,
- 					ext4_group_t group);
--static void ext4_mb_poll_new_transaction(struct super_block *, handle_t *);
--static void ext4_mb_free_committed_blocks(struct super_block *);
- static void ext4_mb_return_to_preallocation(struct inode *inode,
- 					struct ext4_buddy *e4b, sector_t block,
- 					int count);
-@@ -278,6 +276,7 @@ static void ext4_mb_put_pa(struct ext4_allocation_context *,
- 			struct super_block *, struct ext4_prealloc_space *pa);
- static int ext4_mb_init_per_dev_proc(struct super_block *sb);
- static int ext4_mb_destroy_per_dev_proc(struct super_block *sb);
-+static void release_blocks_on_commit(journal_t *journal, transaction_t *txn);
- 
- 
- static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index 0abe02c..8b119e1 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -995,6 +995,9 @@ restart_loop:
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 
-+	if (journal->j_commit_callback)
-+		journal->j_commit_callback(journal, commit_transaction);
-+
- 	trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
- 		   journal->j_devname, commit_transaction->t_tid,
- 		   journal->j_tail_sequence);
-diff --git a/fs/jbd2/transaction.c b/fs/jbd2/transaction.c
-index e5d5405..39b7805 100644
---- a/fs/jbd2/transaction.c
-+++ b/fs/jbd2/transaction.c
-@@ -52,6 +52,7 @@ jbd2_get_transaction(journal_t *journal, transaction_t *transaction)
- 	transaction->t_expires = jiffies + journal->j_commit_interval;
- 	spin_lock_init(&transaction->t_handle_lock);
- 	INIT_LIST_HEAD(&transaction->t_inode_list);
-+	INIT_LIST_HEAD(&transaction->t_private_list);
- 
- 	/* Set up the commit timer for the new transaction. */
- 	journal->j_commit_timer.expires = round_jiffies(transaction->t_expires);
-diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
-index d2e91ea..3018583 100644
---- a/include/linux/jbd2.h
-+++ b/include/linux/jbd2.h
-@@ -641,6 +641,11 @@ struct transaction_s
- 	 */
- 	int t_handle_count;
- 
-+	/*
-+	 * For use by the filesystem to store fs-specific data
-+	 * structures associated with the transaction
-+	 */
-+	struct list_head	t_private_list;
- };
- 
- struct transaction_run_stats_s {
-@@ -935,6 +940,10 @@ struct journal_s
- 
- 	pid_t			j_last_sync_writer;
- 
-+	/* This function is called when a transaction is closed */
-+	void			(*j_commit_callback)(journal_t *,
-+						     transaction_t *);
-+
- 	/*
- 	 * Journal statistics
- 	 */
--- 
-1.5.6.1.205.ge2c7.dirty
-
+You'll need to make a similar fix on sparc64.
