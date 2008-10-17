@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbYJQI5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbYJQJEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbYJQI5r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 04:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYJQI5f
+	id S1753672AbYJQJEp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 05:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYJQJEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 04:57:35 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63711 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbYJQI5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 04:57:34 -0400
-Message-ID: <48F852FD.7070108@cn.fujitsu.com>
-Date: Fri, 17 Oct 2008 16:55:25 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 17 Oct 2008 05:04:36 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:61373 "EHLO
+	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbYJQJEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 05:04:35 -0400
+X-BigFish: VPS-47(zz62a3L1432R98dR936eQ4015M1805M936fOzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K8VL78-02-55U-01
+Date: Fri, 17 Oct 2008 11:04:05 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Chris J Arges <arges@linux.vnet.ibm.com>
+CC: oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Maynard Johnson <maynardj@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] oprofile: hotplug cpu fix
+Message-ID: <20081017090405.GP1029@erda.amd.com>
+References: <48F631E9.1010707@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/proc: fix /proc/cpuinfo cpu offline bug
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <48F631E9.1010707@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Oct 2008 09:04:21.0496 (UTC) FILETIME=[58070780:01C93037]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 15.10.08 12:09:45, Chris J Arges wrote:
+> From 60f07301d3c387a0405becccbdc0cfb7e99ecf39 Mon Sep 17 00:00:00 2001
+> From: Chris J Arges <arges@linux.vnet.ibm.com>
+> Date: Wed, 15 Oct 2008 11:03:39 -0500
+> Subject: [PATCH] oprofile: hotplug cpu fix
+>  This patch addresses problems when hotplugging cpus while profiling.
+>  Instead of allocating only online cpus, all possible cpu buffers are
+>  allocated, which allows cpus to be onlined during operation. If a cpu is
+>  offlined before profiling is shutdown wq_sync_buffer checks for this
+>  condition then cancels this work and does not sync this buffer.
+> 
 
-In my test, I found that if a cpu has been offline,
-the next cpus may not be shown in the /proc/cpuinfo.
+Applied to oprofile/oprofile-for-tip. Thanks, Chris.
 
-trivially reproduce this bug:
+-Robert
 
-1) add these lines in the end of show_cpuinfo()
-	if (m->size - m->count - 20 > 0)
-		seq_printf(m, "%*s", (int)(m->size - m->count - 20), "show bug\n");
-
-2) rebuilt kernel & reboot
-3) offline cpu#1
-4) cat /proc/cpuinfo
-   cpu#2 and cpu#3 .... cannot be shown in /proc/cpuinfo
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index a26c480..01b1244 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -160,14 +160,16 @@ static void *c_start(struct seq_file *m, loff_t *pos)
- {
- 	if (*pos == 0)	/* just in case, cpu 0 is not the first */
- 		*pos = first_cpu(cpu_online_map);
--	if ((*pos) < nr_cpu_ids && cpu_online(*pos))
-+	else
-+		*pos = next_cpu_nr(*pos - 1, cpu_online_map);
-+	if ((*pos) < nr_cpu_ids)
- 		return &cpu_data(*pos);
- 	return NULL;
- }
- 
- static void *c_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	*pos = next_cpu(*pos, cpu_online_map);
-+	(*pos)++;
- 	return c_start(m, pos);
- }
- 
-
-
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
