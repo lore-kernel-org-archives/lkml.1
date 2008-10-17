@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYJQPTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbYJQPU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804AbYJQPTc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYJQPTX
+	id S1756899AbYJQPU5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbYJQPUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:19:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:33387 "EHLO mail.goop.org"
+	Fri, 17 Oct 2008 11:20:47 -0400
+Received: from gw.goop.org ([64.81.55.164]:45681 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754830AbYJQPTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:19:22 -0400
-Message-ID: <48F8ACF7.6050905@goop.org>
-Date: Fri, 17 Oct 2008 08:19:19 -0700
+	id S1752763AbYJQPUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 11:20:46 -0400
+Message-ID: <48F8AD4D.30706@goop.org>
+Date: Fri, 17 Oct 2008 08:20:45 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       Chris Lalancette <clalance@redhat.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Xen-devel] [PATCH]: Fix Xen domU boot with batched			 mprotect
-References: <48F5CE10.3060403@redhat.com> <48F6274D.76E4.0078.0@novell.com> <48F61919.2050005@goop.org> <48F72C7A.76E4.0078.0@novell.com> <48F76773.2090700@goop.org> <48F85711.76E4.0078.0@novell.com>
-In-Reply-To: <48F85711.76E4.0078.0@novell.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb <linux-usb@vger.kernel.org>
+Subject: Re: Oops in UHCI when encountering "host controller process error"
+References: <Pine.LNX.4.44L0.0810171046530.2178-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0810171046530.2178-100000@iolanthe.rowland.org>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -28,43 +27,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>> Jeremy Fitzhardinge <jeremy@goop.org> 16.10.08 18:10 >>>
->>>>         
->> The current x86-64 implementation is:
->>
->> bool __virt_addr_valid(unsigned long x)
->> {
->> 	if (x >= __START_KERNEL_map) {
->> 		x -= __START_KERNEL_map;
->> 		if (x >= KERNEL_IMAGE_SIZE)
->> 			return false;
+Alan Stern wrote:
+>> ------------[ cut here ]------------
+>> WARNING: at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/host/uhci-q.c:1744 uhci_scan_schedule+0xb7/0x9a3()
+>> uhci->skelqh[1]->node.next is NULL
 >>     
 >
-> This, imo, is still broken (i.e. the name of the function still isn't matched
-> by the implementation): KERNEL_IMAGE_SIZE is a constant and doesn't
-> account for the fact that only the real kernel image can be relied upon
-> to be mapped.
+> Odd.  Is skelqh[1] the only entry whose node.next is NULL?  Not 
+> skelqh[2] or others?
 >   
 
-Perhaps, but I don't think it matters too much.  Unless you have a tiny 
-amount of physical memory, locations in the kernel mapping beyond the 
-actual kernel will still resolve to proper locations in the linear map.
+No, the others too, but all the WARN_ON backtraces got very verbose and 
+I had to rush home at the end of the day.
 
->> and 32-bit is similar (but simpler, since it doesn't need to worry about a separate kernel mapping).
->>     
->
-> This continues to be broken, but not as badly as it used to be - while it
-> now covers user space and the vmalloc area (I'm unclear why this is
-> excluded only after booting completed, though), hypervisor space
-> continues to not be considered here.
->
-> But as mentioned before - excluding the vmalloc area seems bogus wrt
-> the name of the function, but as I take it the confusion here is intended.
+> The node is initialized during uhci_start() in uhci-hcd.c -- there's a
+> loop which initializes all the uhci->skelqh[i] entries by calling
+> uhci_alloc_qh().  You should check inside that loop to see whether
+> uhci->skelqh[i]->node.next is NULL to begin with.  If it is then
+> something about the DMA-coherent memory is funny; if not then the
+> linked list pointer gets corrupted somewhere.
 >   
 
-I think a strictly correct name for the function would be 
-can_i_use___pa_on_this_address(vaddr).  It isn't 
-is_this_really_an_addressable_location(vaddr).
+OK, will check it out.
 
     J
