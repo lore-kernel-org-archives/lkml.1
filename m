@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYJQMvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYJQMvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbYJQMvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbYJQMui
+	id S1757527AbYJQMvx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbYJQMvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:50:38 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:44229 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757277AbYJQMug (ORCPT
+	Fri, 17 Oct 2008 08:51:21 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:4884 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757399AbYJQMvT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:50:36 -0400
+	Fri, 17 Oct 2008 08:51:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=ksj0eRI0uRg3Uqes8RHzIlN3aCdEA3bl3vV6xiAIwt0SUDd2fynv3P3AoGdr9VDpG1
-         q8ZjcpGF6Xleso2VePJQoar3wLHsv52DeYP1r7VL0JUhnKw4iu0at/xw5/sR86pb7DlR
-         SEZotaDJfaZSMRjpCOLRq+WIkqd6DUMIIXIBs=
-Date: Fri, 17 Oct 2008 16:53:37 +0400
+        b=dVIhR1GMGZuoeocE6zh29DM2xAcn2gMnb6urjJMBfTGY2C8Qo1VS0gknQfl9i2bh1Q
+         pCV+3Nl8dQS1qizPXZzNB+gN8jKjp7gTbsUuXljV6kvxj1s9SWjjiRFSntH7z2Za8Wf4
+         Y5CG11EfPzzFRYB4A0nx4qIqzuT01HhOUVS5o=
+Date: Fri, 17 Oct 2008 16:54:20 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: mpm@selenic.com
-Subject: [PATCH 29/31] proc: move pagecount stuff to fs/proc/page.c
-Message-ID: <20081017125337.GD22653@x200.localdomain>
+Cc: vgoyal@in.ibm.com
+Subject: [PATCH 30/31] proc: move /proc/vmcore creation to fs/proc/vmcore.c
+Message-ID: <20081017125420.GE22653@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,332 +32,74 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 10ede3dc6c1a235d0d51e9f08c9d7c176120337e Mon Sep 17 00:00:00 2001
+>From 6c6dd71532e42437146e938afbba34471deba04f Mon Sep 17 00:00:00 2001
 From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Mon, 6 Oct 2008 14:26:12 +0400
-Subject: [PATCH 29/31] proc: move pagecount stuff to fs/proc/page.c
+Date: Mon, 6 Oct 2008 14:36:31 +0400
+Subject: [PATCH 30/31] proc: move /proc/vmcore creation to fs/proc/vmcore.c
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- fs/proc/Makefile    |    1 +
- fs/proc/page.c      |  147 +++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/proc/proc_misc.c |  135 ----------------------------------------------
- 3 files changed, 148 insertions(+), 135 deletions(-)
- create mode 100644 fs/proc/page.c
+ fs/proc/proc_misc.c        |    3 ---
+ fs/proc/vmcore.c           |    6 +++---
+ include/linux/crash_dump.h |    2 --
+ 3 files changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/fs/proc/Makefile b/fs/proc/Makefile
-index b921f44..fef5244 100644
---- a/fs/proc/Makefile
-+++ b/fs/proc/Makefile
-@@ -24,3 +24,4 @@ proc-$(CONFIG_PROC_KCORE)	+= kcore.o
- proc-$(CONFIG_PROC_VMCORE)	+= vmcore.o
- proc-$(CONFIG_PROC_DEVICETREE)	+= proc_devtree.o
- proc-$(CONFIG_PRINTK)	+= kmsg.o
-+proc-$(CONFIG_PROC_PAGE_MONITOR)	+= page.o
-diff --git a/fs/proc/page.c b/fs/proc/page.c
-new file mode 100644
-index 0000000..767d95a
---- /dev/null
-+++ b/fs/proc/page.c
-@@ -0,0 +1,147 @@
-+#include <linux/bootmem.h>
-+#include <linux/compiler.h>
-+#include <linux/fs.h>
-+#include <linux/init.h>
-+#include <linux/mm.h>
-+#include <linux/mmzone.h>
-+#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
-+#include <asm/uaccess.h>
-+#include "internal.h"
-+
-+#define KPMSIZE sizeof(u64)
-+#define KPMMASK (KPMSIZE - 1)
-+/* /proc/kpagecount - an array exposing page counts
-+ *
-+ * Each entry is a u64 representing the corresponding
-+ * physical page count.
-+ */
-+static ssize_t kpagecount_read(struct file *file, char __user *buf,
-+			     size_t count, loff_t *ppos)
-+{
-+	u64 __user *out = (u64 __user *)buf;
-+	struct page *ppage;
-+	unsigned long src = *ppos;
-+	unsigned long pfn;
-+	ssize_t ret = 0;
-+	u64 pcount;
-+
-+	pfn = src / KPMSIZE;
-+	count = min_t(size_t, count, (max_pfn * KPMSIZE) - src);
-+	if (src & KPMMASK || count & KPMMASK)
-+		return -EINVAL;
-+
-+	while (count > 0) {
-+		ppage = NULL;
-+		if (pfn_valid(pfn))
-+			ppage = pfn_to_page(pfn);
-+		pfn++;
-+		if (!ppage)
-+			pcount = 0;
-+		else
-+			pcount = page_mapcount(ppage);
-+
-+		if (put_user(pcount, out++)) {
-+			ret = -EFAULT;
-+			break;
-+		}
-+
-+		count -= KPMSIZE;
-+	}
-+
-+	*ppos += (char __user *)out - buf;
-+	if (!ret)
-+		ret = (char __user *)out - buf;
-+	return ret;
-+}
-+
-+static const struct file_operations proc_kpagecount_operations = {
-+	.llseek = mem_lseek,
-+	.read = kpagecount_read,
-+};
-+
-+/* /proc/kpageflags - an array exposing page flags
-+ *
-+ * Each entry is a u64 representing the corresponding
-+ * physical page flags.
-+ */
-+
-+/* These macros are used to decouple internal flags from exported ones */
-+
-+#define KPF_LOCKED     0
-+#define KPF_ERROR      1
-+#define KPF_REFERENCED 2
-+#define KPF_UPTODATE   3
-+#define KPF_DIRTY      4
-+#define KPF_LRU        5
-+#define KPF_ACTIVE     6
-+#define KPF_SLAB       7
-+#define KPF_WRITEBACK  8
-+#define KPF_RECLAIM    9
-+#define KPF_BUDDY     10
-+
-+#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
-+
-+static ssize_t kpageflags_read(struct file *file, char __user *buf,
-+			     size_t count, loff_t *ppos)
-+{
-+	u64 __user *out = (u64 __user *)buf;
-+	struct page *ppage;
-+	unsigned long src = *ppos;
-+	unsigned long pfn;
-+	ssize_t ret = 0;
-+	u64 kflags, uflags;
-+
-+	pfn = src / KPMSIZE;
-+	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
-+	if (src & KPMMASK || count & KPMMASK)
-+		return -EINVAL;
-+
-+	while (count > 0) {
-+		ppage = NULL;
-+		if (pfn_valid(pfn))
-+			ppage = pfn_to_page(pfn);
-+		pfn++;
-+		if (!ppage)
-+			kflags = 0;
-+		else
-+			kflags = ppage->flags;
-+
-+		uflags = kpf_copy_bit(KPF_LOCKED, PG_locked, kflags) |
-+			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
-+			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
-+			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
-+			kpf_copy_bit(kflags, KPF_DIRTY, PG_dirty) |
-+			kpf_copy_bit(kflags, KPF_LRU, PG_lru) |
-+			kpf_copy_bit(kflags, KPF_ACTIVE, PG_active) |
-+			kpf_copy_bit(kflags, KPF_SLAB, PG_slab) |
-+			kpf_copy_bit(kflags, KPF_WRITEBACK, PG_writeback) |
-+			kpf_copy_bit(kflags, KPF_RECLAIM, PG_reclaim) |
-+			kpf_copy_bit(kflags, KPF_BUDDY, PG_buddy);
-+
-+		if (put_user(uflags, out++)) {
-+			ret = -EFAULT;
-+			break;
-+		}
-+
-+		count -= KPMSIZE;
-+	}
-+
-+	*ppos += (char __user *)out - buf;
-+	if (!ret)
-+		ret = (char __user *)out - buf;
-+	return ret;
-+}
-+
-+static const struct file_operations proc_kpageflags_operations = {
-+	.llseek = mem_lseek,
-+	.read = kpageflags_read,
-+};
-+
-+static int __init proc_page_init(void)
-+{
-+	proc_create("kpagecount", S_IRUSR, NULL, &proc_kpagecount_operations);
-+	proc_create("kpageflags", S_IRUSR, NULL, &proc_kpageflags_operations);
-+	return 0;
-+}
-+module_init(proc_page_init);
 diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 69c8244..32a80b7 100644
+index 32a80b7..b0d3b34 100644
 --- a/fs/proc/proc_misc.c
 +++ b/fs/proc/proc_misc.c
-@@ -56,146 +56,11 @@
- #include <asm/div64.h>
- #include "internal.h"
- 
--#ifdef CONFIG_PROC_PAGE_MONITOR
--#define KPMSIZE sizeof(u64)
--#define KPMMASK (KPMSIZE - 1)
--/* /proc/kpagecount - an array exposing page counts
-- *
-- * Each entry is a u64 representing the corresponding
-- * physical page count.
-- */
--static ssize_t kpagecount_read(struct file *file, char __user *buf,
--			     size_t count, loff_t *ppos)
--{
--	u64 __user *out = (u64 __user *)buf;
--	struct page *ppage;
--	unsigned long src = *ppos;
--	unsigned long pfn;
--	ssize_t ret = 0;
--	u64 pcount;
--
--	pfn = src / KPMSIZE;
--	count = min_t(size_t, count, (max_pfn * KPMSIZE) - src);
--	if (src & KPMMASK || count & KPMMASK)
--		return -EINVAL;
--
--	while (count > 0) {
--		ppage = NULL;
--		if (pfn_valid(pfn))
--			ppage = pfn_to_page(pfn);
--		pfn++;
--		if (!ppage)
--			pcount = 0;
--		else
--			pcount = page_mapcount(ppage);
--
--		if (put_user(pcount, out++)) {
--			ret = -EFAULT;
--			break;
--		}
--
--		count -= KPMSIZE;
--	}
--
--	*ppos += (char __user *)out - buf;
--	if (!ret)
--		ret = (char __user *)out - buf;
--	return ret;
--}
--
--static struct file_operations proc_kpagecount_operations = {
--	.llseek = mem_lseek,
--	.read = kpagecount_read,
--};
--
--/* /proc/kpageflags - an array exposing page flags
-- *
-- * Each entry is a u64 representing the corresponding
-- * physical page flags.
-- */
--
--/* These macros are used to decouple internal flags from exported ones */
--
--#define KPF_LOCKED     0
--#define KPF_ERROR      1
--#define KPF_REFERENCED 2
--#define KPF_UPTODATE   3
--#define KPF_DIRTY      4
--#define KPF_LRU        5
--#define KPF_ACTIVE     6
--#define KPF_SLAB       7
--#define KPF_WRITEBACK  8
--#define KPF_RECLAIM    9
--#define KPF_BUDDY     10
--
--#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
--
--static ssize_t kpageflags_read(struct file *file, char __user *buf,
--			     size_t count, loff_t *ppos)
--{
--	u64 __user *out = (u64 __user *)buf;
--	struct page *ppage;
--	unsigned long src = *ppos;
--	unsigned long pfn;
--	ssize_t ret = 0;
--	u64 kflags, uflags;
--
--	pfn = src / KPMSIZE;
--	count = min_t(unsigned long, count, (max_pfn * KPMSIZE) - src);
--	if (src & KPMMASK || count & KPMMASK)
--		return -EINVAL;
--
--	while (count > 0) {
--		ppage = NULL;
--		if (pfn_valid(pfn))
--			ppage = pfn_to_page(pfn);
--		pfn++;
--		if (!ppage)
--			kflags = 0;
--		else
--			kflags = ppage->flags;
--
--		uflags = kpf_copy_bit(KPF_LOCKED, PG_locked, kflags) |
--			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
--			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
--			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
--			kpf_copy_bit(kflags, KPF_DIRTY, PG_dirty) |
--			kpf_copy_bit(kflags, KPF_LRU, PG_lru) |
--			kpf_copy_bit(kflags, KPF_ACTIVE, PG_active) |
--			kpf_copy_bit(kflags, KPF_SLAB, PG_slab) |
--			kpf_copy_bit(kflags, KPF_WRITEBACK, PG_writeback) |
--			kpf_copy_bit(kflags, KPF_RECLAIM, PG_reclaim) |
--			kpf_copy_bit(kflags, KPF_BUDDY, PG_buddy);
--
--		if (put_user(uflags, out++)) {
--			ret = -EFAULT;
--			break;
--		}
--
--		count -= KPMSIZE;
--	}
--
--	*ppos += (char __user *)out - buf;
--	if (!ret)
--		ret = (char __user *)out - buf;
--	return ret;
--}
--
--static struct file_operations proc_kpageflags_operations = {
--	.llseek = mem_lseek,
--	.read = kpageflags_read,
--};
--#endif /* CONFIG_PROC_PAGE_MONITOR */
--
- void __init proc_misc_init(void)
- {
+@@ -61,7 +61,4 @@ void __init proc_misc_init(void)
  	proc_symlink("mounts", NULL, "self/mounts");
  
  	/* And now for trickier ones */
--#ifdef CONFIG_PROC_PAGE_MONITOR
--	proc_create("kpagecount", S_IRUSR, NULL, &proc_kpagecount_operations);
--	proc_create("kpageflags", S_IRUSR, NULL, &proc_kpageflags_operations);
+-#ifdef CONFIG_PROC_VMCORE
+-	proc_vmcore = proc_create("vmcore", S_IRUSR, NULL, &proc_vmcore_operations);
 -#endif
- #ifdef CONFIG_PROC_VMCORE
- 	proc_vmcore = proc_create("vmcore", S_IRUSR, NULL, &proc_vmcore_operations);
- #endif
+ }
+diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
+index 841368b..9074762 100644
+--- a/fs/proc/vmcore.c
++++ b/fs/proc/vmcore.c
+@@ -35,7 +35,7 @@ static u64 vmcore_size;
+ /* Stores the physical address of elf header of crash image. */
+ unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
+ 
+-struct proc_dir_entry *proc_vmcore = NULL;
++static struct proc_dir_entry *proc_vmcore = NULL;
+ 
+ /* Reads a page from the oldmem device from given offset. */
+ static ssize_t read_from_oldmem(char *buf, size_t count,
+@@ -165,7 +165,7 @@ static ssize_t read_vmcore(struct file *file, char __user *buffer,
+ 	return acc;
+ }
+ 
+-const struct file_operations proc_vmcore_operations = {
++static const struct file_operations proc_vmcore_operations = {
+ 	.read		= read_vmcore,
+ };
+ 
+@@ -655,7 +655,7 @@ static int __init vmcore_init(void)
+ 		return rc;
+ 	}
+ 
+-	/* Initialize /proc/vmcore size if proc is already up. */
++	proc_vmcore = proc_create("vmcore", S_IRUSR, NULL, &proc_vmcore_operations);
+ 	if (proc_vmcore)
+ 		proc_vmcore->size = vmcore_size;
+ 	return 0;
+diff --git a/include/linux/crash_dump.h b/include/linux/crash_dump.h
+index 025e4f5..0f60b58 100644
+--- a/include/linux/crash_dump.h
++++ b/include/linux/crash_dump.h
+@@ -17,8 +17,6 @@ static const unsigned long long elfcorehdr_addr = ELFCORE_ADDR_MAX;
+ 
+ extern ssize_t copy_oldmem_page(unsigned long, char *, size_t,
+ 						unsigned long, int);
+-extern const struct file_operations proc_vmcore_operations;
+-extern struct proc_dir_entry *proc_vmcore;
+ 
+ /* Architecture code defines this if there are other possible ELF
+  * machine types, e.g. on bi-arch capable hardware. */
 -- 
 1.5.6.5
 
