@@ -1,79 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYJQU3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbYJQUaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYJQU3u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYJQU3m
+	id S1753769AbYJQUaZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYJQUaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:29:42 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26189 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbYJQU3l (ORCPT
+	Fri, 17 Oct 2008 16:30:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41924 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752543AbYJQUaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:29:41 -0400
-Date: Fri, 17 Oct 2008 13:27:21 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Theodore Tso <tytso@mit.edu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext4: Replace hackish
-	ext4_mb_poll_new_transaction with commit callback
-Message-ID: <20081017202721.GE5633@mail.oracle.com>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1224201763-9637-1-git-send-email-tytso@mit.edu> <20081017060424.GA26192@skywalker> <20081017100214.GB11557@mit.edu> <20081017122552.GC21503@mit.edu>
+	Fri, 17 Oct 2008 16:30:00 -0400
+Date: Fri, 17 Oct 2008 13:29:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Matt Mackall <mpm@selenic.com>, Hugh Dickins <hugh@veritas.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc] SLOB memory ordering issue
+In-Reply-To: <200810160506.14261.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.2.00.0810171235310.3438@nehalem.linux-foundation.org>
+References: <200810160334.13082.nickpiggin@yahoo.com.au> <1224089658.3316.218.camel@calx> <200810160410.49894.nickpiggin@yahoo.com.au> <200810160506.14261.nickpiggin@yahoo.com.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081017122552.GC21503@mit.edu>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 08:25:52AM -0400, Theodore Tso wrote:
-> On Fri, Oct 17, 2008 at 06:02:14AM -0400, Theodore Tso wrote:
-> > Thanks for reminding me about that; I had completely forgotten about
-> > Andreas' patch.  Sure, I'll respin the patch to use his extension.
-> 
-> I looked more closely at Andreas' patch, and it's really not a good
-> fit for what we want to do.  The problem is that it is designed to
-> attach arbitrary callbacks on a per transaction basis.  Each time you
-> add a callback you need to allocate a stucture, and then it gets
-> chained onto a inked list.
 
-	Yeah, I looked at a similar scheme for the buffer commit
-callbacks, and I realized that it would be a total pain.  So I went with
-a static callback.
+Ok, finally looked at this.
 
-> What I added was a dead-simple per-journal commit callback, with no
-> additional memory allocations (and requirement to do error handling if
-> the memory allocation fails), no need to take a spinlock before
-> manually adding the call back to each transaction handle, no need to
-> search the linked list to see if we have an entry on the linked list
-> already, etc.
+There is indeed a locking bug there. "anon_vma_prepare()" optimistically 
+looks at vma->anon_vma without taking the &mm->page_table_lock. That's not 
+right.
 
-	And this simple callback can used by a jbd2 client to build
-the machinery for per-transaction callbacks if they want.
+Of course, we could just take the lock, but in this case it's probably ok 
+to just admit that we have a lockless algorithm. But that implies that we 
+need to do the right memory ordering.
 
-Joel
+And that, in turn, doesn't just imply a "smp_wmb()" - if you do memory 
+ordering, you need to do it on *both* sides, so now the other side needs 
+to also do a matching smp_rmb(). Or, in this case, smp_rmb_depends(), I 
+guess.
 
--- 
+That, btw, is an important part of memory ordering. You can never do 
+ordering on just one side. A "smp_wmb()" on its own is always nonsensical. 
+It always needs to be paired with a "smp_rmb()" variant.
 
-"We will have to repent in this generation not merely for the
- vitriolic words and actions of the bad people, but for the 
- appalling silence of the good people."
-	- Rev. Dr. Martin Luther King, Jr.
+Something like the appended may fix it.
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+But I do think we have a potential independent issue with the new page 
+table lookup code now that it's lock-free. We have the smp_rmb() calls in 
+gup_get_pte() (at least on x86), when we look things up, but we don't 
+actually have a lot of smp_wmb()'s there when we insert the page.
+
+For the anonymous page case, we end up doing a
+
+	page_add_new_anon_rmap();
+
+before we do the set_pte_at() that actually exposes it, and that does the 
+whole
+
+	page->mapping = (struct address_space *) anon_vma;
+	page->index = linear_page_index(vma, address);
+
+thing, but there is no write barrier between those and the actual write to 
+the page tables, so when GUP looks up the page, it can't actually depend 
+on page->mappign or anything else!
+
+Now, this really isn't an issue on x86, since smp_wmb() is a no-op, and 
+the compiler won't be re-ordering the writes, but in general I do think 
+that now that we do lockless lookup of pages from the page tables, we 
+probably do need smp_wmb()'s there just in front of the "set_pte_at()" 
+calls.
+
+NOTE NOTE! The patch below is only about "page->anon_vma", not about the 
+GUP lookup and page->mapping/index fields. That's an independent issue.
+
+And notice? This has _nothing_ to do with constructors or allocators.
+
+And of course - this patch is totally untested, and may well need some 
+thinking about.
+
+			Linus
+
+---
+ mm/rmap.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
+
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 0383acf..21d09bb 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -81,6 +81,13 @@ int anon_vma_prepare(struct vm_area_struct *vma)
+ 		/* page_table_lock to protect against threads */
+ 		spin_lock(&mm->page_table_lock);
+ 		if (likely(!vma->anon_vma)) {
++			/*
++			 * We hold the mm->page_table_lock, but another
++			 * CPU may be doing an optimistic load (the one
++			 * at the top), and we want to make sure that
++			 * the anon_vma changes are visible.
++			 */
++			smp_wmb();
+ 			vma->anon_vma = anon_vma;
+ 			list_add_tail(&vma->anon_vma_node, &anon_vma->head);
+ 			allocated = NULL;
+@@ -92,6 +99,17 @@ int anon_vma_prepare(struct vm_area_struct *vma)
+ 		if (unlikely(allocated))
+ 			anon_vma_free(allocated);
+ 	}
++	/*
++	 * Subtle: we looked up anon_vma without any locking
++	 * (in the comon case), and are going to look at the
++	 * spinlock etc behind it. In order to know that it's
++	 * initialized, we need to do a read barrier here.
++	 *
++	 * We can use the cheaper "depends" version, since we
++	 * are following a pointer, and only on alpha may that
++	 * give a stale value.
++	 */
++	smp_read_barrier_depends();
+ 	return 0;
+ }
+ 
