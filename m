@@ -1,126 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbYJQWQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757075AbYJQWRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbYJQWQc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 18:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYJQWQY
+	id S1757075AbYJQWRt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 18:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYJQWRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 18:16:24 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37949 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbYJQWQX (ORCPT
+	Fri, 17 Oct 2008 18:17:41 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:40146 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbYJQWRk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 18:16:23 -0400
-Date: Fri, 17 Oct 2008 23:14:57 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Nick Piggin <npiggin@suse.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch] mm: fix anon_vma races
-In-Reply-To: <20081016041033.GB10371@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0810172300280.30871@blonde.site>
-References: <20081016041033.GB10371@wotan.suse.de>
+	Fri, 17 Oct 2008 18:17:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=NNPkBbz60CRoH97WS1KtIZaIPctSTzvChnbtXo8U+qcG5In9YprDLLFMV29hxgJZNC
+         kvT+EP75BWuNyEZojpjVWWQIaeyyRGWyld0ax9eJAw8Fwij2cr32qqafkg97C1jJ0NN9
+         mpsOUE+vyhQIx9ic7SlMiaKEwVdps8PbDOomo=
+Message-ID: <35f686220810171517y6632b4b2p3d251d43753eb3d6@mail.gmail.com>
+Date: Fri, 17 Oct 2008 15:17:39 -0700
+From: "Alok Kataria" <alokkataria1@gmail.com>
+To: "Antipov Dmitry" <dmantipov@yandex.ru>
+Subject: Re: 2.6.27: 0 MHz CPU and wrong system time on AMD Geode system
+Cc: linux-kernel@vger.kernel.org, "Jordan Crouse" <jordan.crouse@amd.com>,
+       akataria@vmware.com
+In-Reply-To: <673951224218937@webmail87.yandex.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_39216_11925978.1224281859773"
+References: <673951224218937@webmail87.yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added Linus and LKML to the Cc now I see that he's suggesting
-a similar but not identical patch under that other thread.
+------=_Part_39216_11925978.1224281859773
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Thu, 16 Oct 2008, Nick Piggin wrote:
+On Thu, Oct 16, 2008 at 9:48 PM, Antipov Dmitry <dmantipov@yandex.ru> wrote:
+> Jordan Crouse wrote:
+>
+>> Could you try a 2.6.26 kernel? That will confirm that this is a new
+>> addition to 2.6.27.
+>
+> Both 2.6.26 and 2.6.26.6 looks good (with CONFIG_GEODE_MFGPT_TIMER=y).
 
-> Hi,
-> 
-> Still would like independent confirmation of these problems and the fix, but
-> it still looks buggy to me...
-> 
-> ---
-> 
-> There are some races in the anon_vma code.
-> 
-> The race comes about because adding our vma to the tail of anon_vma->head comes
-> after the assignment of vma->anon_vma to a new anon_vma pointer. In the case
-> where this is a new anon_vma, this is done without holding any locks.  So a
-> parallel anon_vma_prepare might see the vma already has an anon_vma, so it
-> won't serialise on the page_table_lock. It may proceed and the anon_vma to a
-> page in the page fault path. Another thread may then pick up the page from the
-> LRU list, find its mapcount incremented, and attempt to iterate over the
-> anon_vma's list concurrently with the first thread (because the first one is
-> not holding the anon_vma lock). This is a fairly subtle race, and only likely
-> to be hit in kernels where the spinlock is preemptible and the first thread is
-> preempted at the right time... but OTOH it is _possible_ to hit here; on bigger
-> SMP systems cacheline transfer latencies could be very large, or we could take
-> an NMI inside the lock or something. Fix this by initialising the list before
-> adding the anon_vma to vma.
-> 
-> After that, there is a similar data-race with memory ordering where the store
-> to make the anon_vma visible passes previous stores to initialize the anon_vma.
-> This race also includes stores to initialize the anon_vma spinlock by the
-> slab constructor. Add and comment appropriate barriers to solve this.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
+Can you try the attached debug patch, it puts a printk message and
+will let us know what exaclty is failing during the calibration
+process.
+There were some major changes in the 2.6.27 cycle related to tsc calibration.
+Apart from the unification for 32 and 64bit, some checks were added in
+the code to make the calibration process more robust, maybe this
+specific machine is more prone to SMI's than other, as a result the
+checks are a little to harsh for this one.
 
-Ow, you do break my head with these things.
+Along with the dmesg with this patch, could you also let us know how
+much is the frequency that the (2.6.26) kernel calibrates and what the
+actual freuqency is on that box ?
 
-I'm pretty sure you're on to something here, it certainly looks
-suspicious.  But I've not yet convinced myself that what you (or
-Linus) propose is the right answer - I was going to think through
-some more, but spotting the other from Linus thought I ought at
-least to introduce you to each other ;)
+Thanks,
+Alok
+>
+> Dmitry
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-My problem is really with the smp_read_barrier_depends() you each
-have in anon_vma_prepare().  But the only thing which its CPU
-does with the anon_vma is put its address into a struct page
-(or am I forgetting more?).  Wouldn't the smp_read_barrier_depends()
-need to be, not there in anon_vma_prepare(), but over on the third
-CPU, perhaps in page_lock_anon_vma()?
+------=_Part_39216_11925978.1224281859773
+Content-Type: text/x-patch; name=debug_tsc_calibrate.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fmfdq6gc0
+Content-Disposition: attachment; filename=debug_tsc_calibrate.patch
 
-I've also been toying with the idea of taking the newly alloc'ed
-anon_vma's lock here in the !vma->anon_vma case, instead of having
-that "locked = NULL" business.  That might be a good idea, but I'm
-rather thinking it doesn't quite address the issue at hand.
-
-Taking a break...
-
-Hugh
-
-> ---
-> Index: linux-2.6/mm/rmap.c
-> ===================================================================
-> --- linux-2.6.orig/mm/rmap.c
-> +++ linux-2.6/mm/rmap.c
-> @@ -81,8 +81,15 @@ int anon_vma_prepare(struct vm_area_stru
->  		/* page_table_lock to protect against threads */
->  		spin_lock(&mm->page_table_lock);
->  		if (likely(!vma->anon_vma)) {
-> -			vma->anon_vma = anon_vma;
->  			list_add_tail(&vma->anon_vma_node, &anon_vma->head);
-> +			/*
-> +			 * This smp_wmb() is required to order all previous
-> +			 * stores to initialize the anon_vma (by the slab
-> +			 * ctor) and add this vma, with the store to make it
-> +			 * visible to other CPUs via vma->anon_vma.
-> +			 */
-> +			smp_wmb();
-> +			vma->anon_vma = anon_vma;
->  			allocated = NULL;
->  		}
->  		spin_unlock(&mm->page_table_lock);
-> @@ -91,6 +98,15 @@ int anon_vma_prepare(struct vm_area_stru
->  			spin_unlock(&locked->lock);
->  		if (unlikely(allocated))
->  			anon_vma_free(allocated);
-> +	} else {
-> +		/*
-> +		 * This smp_read_barrier_depends is required to order the data
-> +		 * dependent loads of fields in anon_vma, with the load of the
-> +		 * anon_vma pointer vma->anon_vma. This complements the above
-> +		 * smp_wmb, and prevents a CPU from loading uninitialized
-> +		 * contents of anon_vma.
-> +		 */
-> +		smp_read_barrier_depends();
->  	}
->  	return 0;
->  }
+SW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvdHNjLmMKPT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGlu
+dXgtMi42Lm9yaWcvYXJjaC94ODYva2VybmVsL3RzYy5jCTIwMDgtMTAtMTcgMTQ6NTY6MjMuMDAw
+MDAwMDAwIC0wNzAwCisrKyBsaW51eC0yLjYvYXJjaC94ODYva2VybmVsL3RzYy5jCTIwMDgtMTAt
+MTcgMTU6MDE6MzguMDAwMDAwMDAwIC0wNzAwCkBAIC0xNjMsNiArMTYzLDggQEAKIAkJcGl0Y250
+Kys7CiAJfQogCisJcHJpbnRrKCJERUJVRzogcGl0Y250ICVkLCB0c2NtaW4gJWx1LCB0c2NtYXgg
+JWx1XG4iLAorCQkJCXBpdGNudCwgdHNjbWluLCB0c2NtYXgpOwogCS8qCiAJICogU2FuaXR5IGNo
+ZWNrczoKIAkgKgo=
+------=_Part_39216_11925978.1224281859773--
