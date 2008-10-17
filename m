@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYJQUSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYJQUS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbYJQUSO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYJQUR5
+	id S1754691AbYJQUS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYJQUSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:17:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32974 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543AbYJQUR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:17:56 -0400
-Date: Fri, 17 Oct 2008 16:17:49 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: jim owens <jowens@hp.com>
-Cc: Steve French <smfrench@gmail.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-cifs-client] Re: unlink behavior when file is open by
- other process
-Message-ID: <20081017161749.1fcbb214@tleilax.poochiereds.net>
-In-Reply-To: <48F8ED0E.1060102@hp.com>
-References: <524f69650810170809u2df1a309o2f357dc8489c06c6@mail.gmail.com>
-	<524f69650810170824x4f9ff975qb03d687c8d3557ff@mail.gmail.com>
-	<20081017132714.111e33f9@tleilax.poochiereds.net>
-	<524f69650810171041i57ab4466s8cecbdf0268f8417@mail.gmail.com>
-	<20081017141013.3aecc88a@tleilax.poochiereds.net>
-	<48F8ED0E.1060102@hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 16:18:11 -0400
+Received: from kroah.org ([198.145.64.141]:47395 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753989AbYJQUSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 16:18:09 -0400
+Date: Fri, 17 Oct 2008 13:10:17 -0700
+From: Greg KH <greg@kroah.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: Joel Becker <joel.becker@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
+	kobject source.
+Message-ID: <20081017201017.GA10613@kroah.com>
+References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org> <20081017074453.GA4850@kroah.com> <1224231739.5556.303.camel@haakon2.linux-iscsi.org> <20081017173959.GC2221@kroah.com> <1224271173.5556.349.camel@haakon2.linux-iscsi.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224271173.5556.349.camel@haakon2.linux-iscsi.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008 15:52:46 -0400
-jim owens <jowens@hp.com> wrote:
-
-> Jeff Layton wrote:
+On Fri, Oct 17, 2008 at 12:19:33PM -0700, Nicholas A. Bellinger wrote:
+> On Fri, 2008-10-17 at 10:39 -0700, Greg KH wrote:
+> > On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
+> > > On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
+> > > > On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
+> > > > > Hi Joel, Greg and Co,
+> > > > > 
+> > > > > Here is the the first working code for allowing configfs to handle
+> > > > > symlinks from sysfs struct kobject based code.  Here is the commit:
+> > > > > passing struct kobject into generic target_core_mod subsystem plugins
+> > > > > for locating struct block_device and struct scsi_device..  
+> > > > 
+> > > > Um, no.
+> > > > 
+> > > > You are trying to create symlinks dynamically across superblocks and
+> > > > mount points?  As one of your #warning states, this isn't possible to do
+> > > > correctly, nor is it even a good idea.
+> > > > 
+> > > > So I'd have to reject this patch, sorry.
+> > > > 
+> > > > What is the problem you are attempting to solve here?
+> > > > 
+> > > 
+> > > So, the generic target_core_mod engine that lives
+> > > under /sys/kernel/config/target/core needs a method to locate struct
+> > > block_device and struct scsi_device for access via bio_submit() and
+> > > scsi_execute_() respectively.
+> > 
+> > Then just pass the "name" of the block device into a configfs file,
+> > nothing more is needed, right?
+> > 
 > 
-> > Sure, I'm not disputing whether returning an error on open is right or
-> > wrong. The problem is that it's not expected. We've just unlinked the
-> > filename and returned success -- there is *no* reason that the create
-> > should fail here. An application programmer will (rightfully) consider
-> > this a bug.
+> What are the preferred methods for accessing struct block_device and
+> struct scsi_device from "name"..?
+
+call "find_by_name" for a type (this would be block type) and get the
+return value?  Can't remember the actual function call, but it's obvious
+if you look at device.h.
+
+> > > Originally, target_core_mod used key echoed through configfs attributes
+> > > like so:
+> > > 
+> > > export TARGET=/sys/kernel/config/target/core/
+> > > 
+> > > # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
+> > > mkdir -p $TARGET/iblock_0/lvm_test0
+> > > # OLD METHOD to reference struct block_device
+> > > echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
+> > > echo 1 > $TARGET/iblock_0/lvm_test0/enable
+> > > # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
+> > > ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
+> > 
+> > No, you can't do a symlink across superblocks and expect it to work like
+> > you are thinking internally.
+> > 
 > 
-> I agree that failing the unlink if you can not do it is
-> "the right thing to do"... but unless you have some magic
-> to prevent anyone else from creating the file between that
-> unlink and the create then in fact there is a reason the
-> application can see the create fail after unlink succeeds :)
+> <nod>  As I am coding configfs_follow_symlink() to work with sysfs
+> source symlinks I am starting to see that.. :-)  I am still going to
+> hack on it for a bit and see if I can get it running so that it works..
 
-It's all about expectations. If you have your environment set up in
-such a way that you allow other processes or clients to race in and
-create a file or directory here, then you should be expecting that
-the create can fail, when it occurs :)
+Even if you get it "to work", it's not going to be able to be accepted,
+sorry.
 
-I just think that we have to strive for _consistent_ behavior from the
-kernel. If we allow unlink to return without actually removing the
-link, then it may "just work" in most cases. The problem is that it
-won't work in some cases and it'll be very hard to predict when that
-will be. IMO, that's far worse than just failing the unlink outright.
+thanks,
 
--- 
-Jeff Layton <jlayton@redhat.com>
+greg k-h
