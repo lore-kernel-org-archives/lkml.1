@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYJQVsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757866AbYJQVs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbYJQVsc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 17:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbYJQVsL
+	id S1757866AbYJQVs7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 17:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbYJQVsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 17:48:11 -0400
-Received: from kroah.org ([198.145.64.141]:56383 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752194AbYJQVsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 17:48:10 -0400
-Date: Fri, 17 Oct 2008 14:44:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081017214409.GB3585@kroah.com>
-References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk>
+	Fri, 17 Oct 2008 17:48:20 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:1998 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756944AbYJQVsT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 17:48:19 -0400
+Message-ID: <13c67e2c0810171448o6858827ei1ccc9e0ddf487f8@mail.gmail.com>
+Date: Fri, 17 Oct 2008 14:48:18 -0700
+From: "Ani Sinha" <kernel@anirban.org>
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: panic() logic
+Cc: kernel@anirban.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081017204723.15114eaa@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 08:47:23PM +0100, Alan Cox wrote:
-> > And that's my point here, do we want to change the current numbering
-> > scheme as people have expressed annoyances of the current one.
-> 
-> But any new scheme will be just as annoying to someone and it messes up
-> existing documentation, understanding and risks breaking third party
-> tools.
-> 
-> Is it really worth the hassle, plus we'll have to change again if we use
-> date/times because once we are shipping Linux out to Alpha Centauri with
-> colonists there will be serious problems trying to compute the effect of
-> tau on release numbering ...
+Hi All:
 
-Sure, but by then, the 2.6.521 release will be out and we could fix it
-up by finally going to 3.0 :)
+I noticed an issue with the panic() firing on a back core in SMP
+lately. We are mostly working on mips architectures but it might
+effect other archs as well. Therefore, I am putting forward my
+thoughts and comments to the whole linux community. In the following,
+by front core I mean core#0 and by back core I mean other cores.
 
-Seriously, am I the only one that is getting annoyed by our version
-numbers?  If so, I can live with it, but I got the feeling that I wasn't
-alone here.
+The panic() call does a smp_send_stop() pretty early in the call
+process. There is an issue with this:
 
-thanks,
+smp_send_stop basically marks all the other cores as 'down' and
+updates the cpu bitmap. One implication of this is that you can not do
+an IPI later on to other cores (smp_send_function() does a
+'for_earch_online_cpu'). This makes sense since you should not be
+allowed to do anything on a down cpu. But what if a particular
+architecture had logic to do specific things for the front core and
+other things on the back cores as a part of 'graceful reboot' process?
+For example, the arch dependent emergency_restart() might try to do
+send IPI to the front core to do a graceful reboot and simply place
+the others on an infinite loop? As a concrete example, mips sibyte
+processor has logic in arch dependent restart code to call cfe_exit()
+on front core and an infinite loop on the back cores. It does this
+through an IPI which obviously does not succeed because of the early
+smp_send_stop().
 
-greg k-h
+So, my proposal is, can we just run panic on the front core and put
+the back cores in loop right away. I mean, can we do this in pseudo
+code?
+
+panic()
+{
+
+/* do stuff that must be done on the current core */
+    on_each_cpu(continue_panic, ...);
+
+}
+
+continue_panic()
+{
+ if (!smp_processor_id()) {
+        smp_send_stop();
+        /* rest of existing panic() logic */
+ }else
