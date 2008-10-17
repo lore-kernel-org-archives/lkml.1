@@ -1,100 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbYJQGDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYJQGEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752733AbYJQGDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 02:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYJQGDH
+	id S1753425AbYJQGEJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 02:04:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYJQGD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 02:03:07 -0400
-Received: from avexch2.qlogic.com ([198.70.193.116]:14825 "EHLO
-	avexch2.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbYJQGDG (ORCPT
+	Fri, 17 Oct 2008 02:03:56 -0400
+Received: from smtpauth.net4india.com ([202.71.129.41]:35977 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbYJQGD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 02:03:06 -0400
-X-Greylist: delayed 849 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 02:03:06 EDT
-Cc: "Dong, Eddie" <eddie.dong@intel.com>, "Zhao, Yu" <yu.zhao@intel.com>,
-       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Alex Chiang <achiang@hp.com>, Roland Dreier <rdreier@cisco.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
-Message-Id: <5F847B2D-D033-4A40-B132-A900E28EB36A@qlogic.com>
-From: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-To: Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <20081014044626.GB25780@parisc-linux.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 6/6 v3] PCI: document the change
-Date: Thu, 16 Oct 2008 22:48:56 -0700
-References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F6@pdsmsx502.ccr.corp.intel.com> <20081001160706.GI13822@parisc-linux.org> <08DF4D958216244799FC84F3514D70F00235CC69@pdsmsx415.ccr.corp.intel.com> <20081014010827.GX25780@parisc-linux.org> <08DF4D958216244799FC84F3514D70F00235CE27@pdsmsx415.ccr.corp.intel.com> <20081014021435.GA1482@yzhao12-linux.sh.intel.com> <20081014040105.GA25780@parisc-linux.org> <08DF4D958216244799FC84F3514D70F00235CF5E@pdsmsx415.ccr.corp.intel.com> <20081014044626.GB25780@parisc-linux.org>
-X-Mailer: Apple Mail (2.929.2)
-X-OriginalArrivalTime: 17 Oct 2008 05:48:53.0322 (UTC) FILETIME=[097DB2A0:01C9301C]
+	Fri, 17 Oct 2008 02:03:56 -0400
+From: David John <davidjon@xenontk.org>
+To: mingo@elte.hu
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       a.zummo@towertech.it, rtc-linux@googlegroups.com
+Subject: [PATCH] RTC: Remove the BKL.
+Date: Fri, 17 Oct 2008 11:33:35 +0530
+Message-Id: <1224223415-2578-1-git-send-email-davidjon@xenontk.org>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove calls to the BKL since concurrent access is protected
+by the spin lock rtc_lock.
 
-On Oct 13, 2008, at 9:46 PM, Matthew Wilcox wrote:
+Signed-off-by: David John <davidjon@xenontk.org>
+---
+ drivers/char/rtc.c |   17 ++++-------------
+ 1 files changed, 4 insertions(+), 13 deletions(-)
 
-> On Tue, Oct 14, 2008 at 12:18:40PM +0800, Dong, Eddie wrote:
->> Matthew Wilcox wrote:
->>> On Tue, Oct 14, 2008 at 10:14:35AM +0800, Yu Zhao wrote:
->>>> As Eddie said, we have two problems here:
->>>> 1) User has to set device specific parameters of a VF
->>>> when he wants to use this VF with KVM (assign this
->>>> device to KVM guest). In this case,
->>>> VF driver is not loaded in the host environment. So
->>>> operations which
->>>> are implemented as driver callback (e.g.
->>>> set_mac_address()) are not supported.
->>>
->>> I suspect what you want to do is create, then configure
->>> the device in the host, then assign it to the guest.
->>
->> That is not true. Rememver the created VFs will be destroyed no  
->> matter
->> for PF power event or error recovery conducted reset.
->> So what we want is:
->>
->> Config, create, assign, and then deassign and destroy and then
->> recreate...
->
-> Yes, but my point is this all happens in the _host_, not in the  
-> _guest_.
->
->> Sorry can u explain a little bit more? The SR-IOV patch won't define
->> what kind of entries should be created or not, we leave network
->> subsystem to decide what to do. Same for disk subsstem etc.
->
-> No entries should be created.  This needs to be not SR-IOV specific.
-
-I think we need to cover both the scenarios here, virtualization and  
-non virtualization. In the absence of virtualization, the VF and PF  
-driver should be identical. In this context, how does the PF driver  
-allocates a VF? Is dynamic allocation of VFs possible, or does it have  
-to allocate all the VFs that the device supports when the PF driver  
-loads? Also, will the probe function be called for the VFs, or does  
-the PF driver handle only the probe for the physical function? In  
-virtualization context things get bit more complex as the the VF  
-driver in guest would like to treat the VF as a physical function but  
-that may not be possible from the device perspective as the control  
-registers may well be shared between VF and PF.
-I would think that the VF allocation is the job of SR PCIM. PCIM may  
-well ask the PF driver to configure a VF upon user request.
-
-Thanks much,
-Anirban Chakraborty
-
-> -- 
-> Matthew Wilcox				Intel Open Source Technology Centre
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index f53d4d0..05b9d3c 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -48,9 +48,10 @@
+  *		CONFIG_HPET_EMULATE_RTC
+  *	1.12a	Maciej W. Rozycki: Handle memory-mapped chips properly.
+  *	1.12ac	Alan Cox: Allow read access to the day of week register
++ *	1.12b	David John: Remove calls to the BKL.
+  */
+ 
+-#define RTC_VERSION		"1.12ac"
++#define RTC_VERSION		"1.12b"
+ 
+ /*
+  *	Note that *all* calls to CMOS_READ and CMOS_WRITE are done with
+@@ -73,7 +74,6 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/spinlock.h>
+-#include <linux/smp_lock.h>
+ #include <linux/sysctl.h>
+ #include <linux/wait.h>
+ #include <linux/bcd.h>
+@@ -182,8 +182,8 @@ static int rtc_proc_open(struct inode *inode, struct file *file);
+ 
+ /*
+  * rtc_status is never changed by rtc_interrupt, and ioctl/open/close is
+- * protected by the big kernel lock. However, ioctl can still disable the timer
+- * in rtc_status and then with del_timer after the interrupt has read
++ * protected by the spin lock rtc_lock. However, ioctl can still disable the
++ * timer in rtc_status and then with del_timer after the interrupt has read
+  * rtc_status but before mod_timer is called, which would then reenable the
+  * timer (but you would need to have an awful timing before you'd trip on it)
+  */
+@@ -720,9 +720,7 @@ static int rtc_do_ioctl(unsigned int cmd, unsigned long arg, int kernel)
+ static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	long ret;
+-	lock_kernel();
+ 	ret = rtc_do_ioctl(cmd, arg, 0);
+-	unlock_kernel();
+ 	return ret;
+ }
+ 
+@@ -731,12 +729,8 @@ static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+  *	Also clear the previous interrupt data on an open, and clean
+  *	up things on a close.
+  */
+-
+-/* We use rtc_lock to protect against concurrent opens. So the BKL is not
+- * needed here. Or anywhere else in this driver. */
+ static int rtc_open(struct inode *inode, struct file *file)
+ {
+-	lock_kernel();
+ 	spin_lock_irq(&rtc_lock);
+ 
+ 	if (rtc_status & RTC_IS_OPEN)
+@@ -746,12 +740,10 @@ static int rtc_open(struct inode *inode, struct file *file)
+ 
+ 	rtc_irq_data = 0;
+ 	spin_unlock_irq(&rtc_lock);
+-	unlock_kernel();
+ 	return 0;
+ 
+ out_busy:
+ 	spin_unlock_irq(&rtc_lock);
+-	unlock_kernel();
+ 	return -EBUSY;
+ }
+ 
+@@ -802,7 +794,6 @@ no_irq:
+ }
+ 
+ #ifdef RTC_IRQ
+-/* Called without the kernel lock - fine */
+ static unsigned int rtc_poll(struct file *file, poll_table *wait)
+ {
+ 	unsigned long l;
