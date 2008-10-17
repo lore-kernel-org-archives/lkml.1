@@ -1,356 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbYJQP5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbYJQP4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbYJQP5G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbYJQPz7
+	id S1758574AbYJQP4s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbYJQPzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:55:59 -0400
-Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:3606 "EHLO
-	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758200AbYJQPz4 (ORCPT
+	Fri, 17 Oct 2008 11:55:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37942 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758118AbYJQPzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:55:56 -0400
-To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Subject: [PATCH 01/16] Squashfs: inode operations
-Message-Id: <E1KqrTW-0001xC-9M@dylan>
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Fri, 17 Oct 2008 16:42:50 +0100
+	Fri, 17 Oct 2008 11:55:40 -0400
+Date: Fri, 17 Oct 2008 08:54:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: David Miller <davem@davemloft.net>, rdreier@cisco.com,
+       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+In-Reply-To: <1224220339.7654.84.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
+References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>  <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>  <20081016.210404.151891223.davem@davemloft.net>  <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
+ <1224220339.7654.84.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
----
- fs/squashfs/inode.c |  318 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 318 insertions(+), 0 deletions(-)
 
-diff --git a/fs/squashfs/inode.c b/fs/squashfs/inode.c
-new file mode 100644
-index 0000000..4782e1d
---- /dev/null
-+++ b/fs/squashfs/inode.c
-@@ -0,0 +1,318 @@
-+/*
-+ * Squashfs - a compressed read only filesystem for Linux
-+ *
-+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
-+ * Phillip Lougher <phillip@lougher.demon.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2,
-+ * or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-+ *
-+ * inode.c
-+ */
-+
-+/*
-+ * This file implements code to create and read inodes from disk.
-+ *
-+ * Inodes in Squashfs are identified by a 48-bit inode which encodes the
-+ * location of the compressed metadata block containing the inode, and the byte
-+ * offset into that block where the inode is placed (<block, offset>).
-+ *
-+ * To maximise compression there are different inodes for each file type
-+ * (regular file, directory, device, etc.), the inode contents and length
-+ * varying with the type.
-+ *
-+ * To further maximise compression, two types of regular file inode and
-+ * directory inode are defined: inodes optimised for frequently occurring
-+ * regular files and directories, and extended types where extra
-+ * information has to be stored.
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/vfs.h>
-+#include <linux/zlib.h>
-+#include <linux/squashfs_fs.h>
-+#include <linux/squashfs_fs_sb.h>
-+#include <linux/squashfs_fs_i.h>
-+
-+#include "squashfs.h"
-+
-+/*
-+ * Initialise VFS inode with the base inode information common to all
-+ * Squashfs inode types.  Inodeb contains the unswapped base inode
-+ * off disk.
-+ */
-+static int squashfs_new_inode(struct super_block *s, struct inode *i,
-+				struct squashfs_base_inode *inodeb)
-+{
-+	if (squashfs_get_id(s, le16_to_cpu(inodeb->uid), &i->i_uid) == 0)
-+		goto out;
-+	if (squashfs_get_id(s, le16_to_cpu(inodeb->guid), &i->i_gid) == 0)
-+		goto out;
-+
-+	i->i_ino = le32_to_cpu(inodeb->inode_number);
-+	i->i_mtime.tv_sec = le32_to_cpu(inodeb->mtime);
-+	i->i_atime.tv_sec = i->i_mtime.tv_sec;
-+	i->i_ctime.tv_sec = i->i_mtime.tv_sec;
-+	i->i_mode = le16_to_cpu(inodeb->mode);
-+	i->i_size = 0;
-+
-+	return 1;
-+
-+out:
-+	return 0;
-+}
-+
-+
-+struct inode *squashfs_iget(struct super_block *s, long long inode,
-+				unsigned int inode_number)
-+{
-+	struct inode *i = iget_locked(s, inode_number);
-+
-+	TRACE("Entered squashfs_iget\n");
-+
-+	if (i && (i->i_state & I_NEW)) {
-+		squashfs_read_inode(i, inode);
-+		unlock_new_inode(i);
-+	}
-+
-+	return i;
-+}
-+
-+
-+/*
-+ * Initialise VFS inode by reading inode from inode table (compressed
-+ * metadata).  The format and amount of data read depends on type.
-+ */
-+int squashfs_read_inode(struct inode *i, long long inode)
-+{
-+	struct super_block *s = i->i_sb;
-+	struct squashfs_sb_info *msblk = s->s_fs_info;
-+	long long block = SQUASHFS_INODE_BLK(inode) + msblk->inode_table_start;
-+	unsigned int offset = SQUASHFS_INODE_OFFSET(inode);
-+	long long next_block;
-+	unsigned int next_offset;
-+	int type;
-+	union squashfs_inode id;
-+	struct squashfs_base_inode *inodeb = &id.base;
-+
-+	TRACE("Entered squashfs_read_inode\n");
-+
-+	/*
-+	 * Read inode base common to all inode types.
-+	 */
-+	if (!squashfs_read_metadata(s, inodeb, block, offset, sizeof(*inodeb),
-+			&next_block, &next_offset))
-+		goto failed_read;
-+
-+	if (squashfs_new_inode(s, i, inodeb) == 0)
-+			goto failed_read;
-+
-+	type = le16_to_cpu(inodeb->inode_type);
-+	switch (type) {
-+	case SQUASHFS_FILE_TYPE: {
-+		unsigned int frag_offset, frag_size, frag;
-+		long long frag_blk;
-+		struct squashfs_reg_inode *inodep = &id.reg;
-+
-+		if (!squashfs_read_metadata(s, inodep, block, offset,
-+				sizeof(*inodep), &next_block, &next_offset))
-+			goto failed_read;
-+
-+		frag = le32_to_cpu(inodep->fragment);
-+		if (frag != SQUASHFS_INVALID_FRAG) {
-+			frag_offset = le32_to_cpu(inodep->offset);
-+			frag_size = get_fragment_location(s, frag, &frag_blk);
-+			if (frag_size == 0)
-+				goto failed_read;
-+		} else {
-+			frag_blk = SQUASHFS_INVALID_BLK;
-+			frag_size = 0;
-+			frag_offset = 0;
-+		}
-+
-+		i->i_nlink = 1;
-+		i->i_size = le32_to_cpu(inodep->file_size);
-+		i->i_fop = &generic_ro_fops;
-+		i->i_mode |= S_IFREG;
-+		i->i_blocks = ((i->i_size - 1) >> 9) + 1;
-+		SQUASHFS_I(i)->fragment_block = frag_blk;
-+		SQUASHFS_I(i)->fragment_size = frag_size;
-+		SQUASHFS_I(i)->fragment_offset = frag_offset;
-+		SQUASHFS_I(i)->start_block = le32_to_cpu(inodep->start_block);
-+		SQUASHFS_I(i)->block_list_start = next_block;
-+		SQUASHFS_I(i)->offset = next_offset;
-+		i->i_data.a_ops = &squashfs_aops;
-+
-+		TRACE("File inode %x:%x, start_block %llx, block_list_start "
-+				"%llx, offset %x\n", SQUASHFS_INODE_BLK(inode),
-+				offset, SQUASHFS_I(i)->start_block, next_block,
-+				next_offset);
-+		break;
-+	}
-+	case SQUASHFS_LREG_TYPE: {
-+		unsigned int frag_offset, frag_size, frag;
-+		long long frag_blk;
-+		struct squashfs_lreg_inode *inodep = &id.lreg;
-+
-+		if (!squashfs_read_metadata(s, inodep, block, offset,
-+				sizeof(*inodep), &next_block, &next_offset))
-+			goto failed_read;
-+
-+		frag = le32_to_cpu(inodep->fragment);
-+		if (frag != SQUASHFS_INVALID_FRAG) {
-+			frag_offset = le32_to_cpu(inodep->offset);
-+			frag_size = get_fragment_location(s, frag, &frag_blk);
-+			if (frag_size == 0)
-+				goto failed_read;
-+		} else {
-+			frag_blk = SQUASHFS_INVALID_BLK;
-+			frag_size = 0;
-+			frag_offset = 0;
-+		}
-+
-+		i->i_nlink = le32_to_cpu(inodep->nlink);
-+		i->i_size = le64_to_cpu(inodep->file_size);
-+		i->i_fop = &generic_ro_fops;
-+		i->i_mode |= S_IFREG;
-+		i->i_blocks = ((i->i_size - le64_to_cpu(inodep->sparse) - 1)
-+				>> 9) + 1;
-+
-+		SQUASHFS_I(i)->fragment_block = frag_blk;
-+		SQUASHFS_I(i)->fragment_size = frag_size;
-+		SQUASHFS_I(i)->fragment_offset = frag_offset;
-+		SQUASHFS_I(i)->start_block = le64_to_cpu(inodep->start_block);
-+		SQUASHFS_I(i)->block_list_start = next_block;
-+		SQUASHFS_I(i)->offset = next_offset;
-+		i->i_data.a_ops = &squashfs_aops;
-+
-+		TRACE("File inode %x:%x, start_block %llx, block_list_start "
-+				"%llx, offset %x\n", SQUASHFS_INODE_BLK(inode),
-+				offset, SQUASHFS_I(i)->start_block, next_block,
-+				next_offset);
-+		break;
-+	}
-+	case SQUASHFS_DIR_TYPE: {
-+		struct squashfs_dir_inode *inodep = &id.dir;
-+
-+		if (!squashfs_read_metadata(s, inodep, block, offset,
-+				sizeof(*inodep), &next_block, &next_offset))
-+			goto failed_read;
-+
-+		i->i_nlink = le32_to_cpu(inodep->nlink);
-+		i->i_size = le16_to_cpu(inodep->file_size);
-+		i->i_op = &squashfs_dir_inode_ops;
-+		i->i_fop = &squashfs_dir_ops;
-+		i->i_mode |= S_IFDIR;
-+		SQUASHFS_I(i)->start_block = le32_to_cpu(inodep->start_block);
-+		SQUASHFS_I(i)->offset = le16_to_cpu(inodep->offset);
-+		SQUASHFS_I(i)->dir_index_count = 0;
-+		SQUASHFS_I(i)->parent_inode = le32_to_cpu(inodep->parent_inode);
-+
-+		TRACE("Directory inode %x:%x, start_block %llx, offset %x\n",
-+				SQUASHFS_INODE_BLK(inode), offset,
-+				SQUASHFS_I(i)->start_block,
-+				le16_to_cpu(inodep->offset));
-+		break;
-+	}
-+	case SQUASHFS_LDIR_TYPE: {
-+		struct squashfs_ldir_inode *inodep = &id.ldir;
-+
-+		if (!squashfs_read_metadata(s, inodep, block, offset,
-+				sizeof(*inodep), &next_block, &next_offset))
-+			goto failed_read;
-+
-+		i->i_nlink = le32_to_cpu(inodep->nlink);
-+		i->i_size = le32_to_cpu(inodep->file_size);
-+		i->i_op = &squashfs_dir_inode_ops;
-+		i->i_fop = &squashfs_dir_ops;
-+		i->i_mode |= S_IFDIR;
-+		SQUASHFS_I(i)->start_block = le32_to_cpu(inodep->start_block);
-+		SQUASHFS_I(i)->offset = le16_to_cpu(inodep->offset);
-+		SQUASHFS_I(i)->dir_index_start = next_block;
-+		SQUASHFS_I(i)->dir_index_offset = next_offset;
-+		SQUASHFS_I(i)->dir_index_count = le16_to_cpu(inodep->i_count);
-+		SQUASHFS_I(i)->parent_inode = le32_to_cpu(inodep->parent_inode);
-+
-+		TRACE("Long directory inode %x:%x, start_block %llx, offset "
-+				"%x\n", SQUASHFS_INODE_BLK(inode), offset,
-+				SQUASHFS_I(i)->start_block,
-+				le16_to_cpu(inodep->offset));
-+		break;
-+	}
-+	case SQUASHFS_SYMLINK_TYPE: {
-+		struct squashfs_symlink_inode *inodep = &id.symlink;
-+
-+		if (!squashfs_read_metadata(s, inodep, block, offset,
-+				sizeof(*inodep), &next_block, &next_offset))
-+			goto failed_read;
-+
-+		i->i_nlink = le32_to_cpu(inodep->nlink);
-+		i->i_size = le32_to_cpu(inodep->symlink_size);
-+		i->i_op = &page_symlink_inode_operations;
-+		i->i_data.a_ops = &squashfs_symlink_aops;
-+		i->i_mode |= S_IFLNK;
-+		SQUASHFS_I(i)->start_block = next_block;
-+		SQUASHFS_I(i)->offset = next_offset;
-+
-+		TRACE("Symbolic link inode %x:%x, start_block %llx, offset "
-+				"%x\n", SQUASHFS_INODE_BLK(inode), offset,
-+				next_block, next_offset);
-+		break;
-+	}
-+	case SQUASHFS_BLKDEV_TYPE:
-+	case SQUASHFS_CHRDEV_TYPE: {
-+		struct squashfs_dev_inode *inodep = &id.dev;
-+		unsigned int rdev;
-+
-+		if (!squashfs_read_metadata(s, inodep, block, offset,
-+				sizeof(*inodep), &next_block, &next_offset))
-+			goto failed_read;
-+
-+		i->i_nlink = le32_to_cpu(inodep->nlink);
-+		i->i_mode |= (type == SQUASHFS_CHRDEV_TYPE) ? S_IFCHR : S_IFBLK;
-+		rdev = le32_to_cpu(inodep->rdev);
-+		init_special_inode(i, le16_to_cpu(i->i_mode),
-+					new_decode_dev(rdev));
-+
-+		TRACE("Device inode %x:%x, rdev %x\n",
-+				SQUASHFS_INODE_BLK(inode), offset, rdev);
-+		break;
-+	}
-+	case SQUASHFS_FIFO_TYPE:
-+	case SQUASHFS_SOCKET_TYPE: {
-+		struct squashfs_ipc_inode *inodep = &id.ipc;
-+
-+		if (!squashfs_read_metadata(s, inodep, block, offset,
-+				sizeof(*inodep), &next_block, &next_offset))
-+			goto failed_read;
-+
-+		i->i_nlink = le32_to_cpu(inodep->nlink);
-+		i->i_mode |= (type == SQUASHFS_FIFO_TYPE) ? S_IFIFO : S_IFSOCK;
-+		init_special_inode(i, le16_to_cpu(i->i_mode), 0);
-+		break;
-+	}
-+	default:
-+		ERROR("Unknown inode type %d in squashfs_iget!\n", type);
-+		goto failed_read1;
-+	}
-+
-+	return 1;
-+
-+failed_read:
-+	ERROR("Unable to read inode [%llx:%x]\n", block, offset);
-+
-+failed_read1:
-+	make_bad_inode(i);
-+	return 0;
-+}
--- 
-1.5.2.5
+On Fri, 17 Oct 2008, Benjamin Herrenschmidt wrote:
+>
+> +#ifdef CONFIG_PHYS_ADDR_T_64BIT
+> +#define MEM_RSRC_SIZE	16
+> +#else
+> +#define MEM_RSRC_SIZE	8
+> +#endif
+> +
+> +#ifdef CONFIG_X86
+> +#define IO_RSRC_SIZE	4
+> +#elif CONFIG_PPC
+> +#define IO_RSRC_SIZE	8
+> +#else
+> +#define IO_RSRC_SIZE	MEM_RSRC_SIZE
+> +#endif
 
+Why?
+
+Do you think alpha wants to see its PIO resources shown as
+
+	[00000000000001f0-00000000000001f7]
+
+or
+
+	[01f0-01f7]
+
+and which do you think is more readable?
+
+And even on sparc, with the full 64 bits in use, it's not like we'd be 
+*truncating* to 4 hex digits with %04x.
+
+		Linus
