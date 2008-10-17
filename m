@@ -1,111 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYJQGEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYJQGEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbYJQGEJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 02:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYJQGD4
+	id S1753922AbYJQGEl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 02:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYJQGEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 02:03:56 -0400
-Received: from smtpauth.net4india.com ([202.71.129.41]:35977 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbYJQGD4 (ORCPT
+	Fri, 17 Oct 2008 02:04:31 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49008 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751013AbYJQGEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 02:03:56 -0400
-From: David John <davidjon@xenontk.org>
-To: mingo@elte.hu
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       a.zummo@towertech.it, rtc-linux@googlegroups.com
-Subject: [PATCH] RTC: Remove the BKL.
-Date: Fri, 17 Oct 2008 11:33:35 +0530
-Message-Id: <1224223415-2578-1-git-send-email-davidjon@xenontk.org>
-X-Mailer: git-send-email 1.6.0.2
+	Fri, 17 Oct 2008 02:04:30 -0400
+Date: Fri, 17 Oct 2008 11:34:25 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Replace hackish
+	ext4_mb_poll_new_transaction with commit callback
+Message-ID: <20081017060424.GA26192@skywalker>
+References: <1224201763-9637-1-git-send-email-tytso@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224201763-9637-1-git-send-email-tytso@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove calls to the BKL since concurrent access is protected
-by the spin lock rtc_lock.
+On Thu, Oct 16, 2008 at 08:02:43PM -0400, Theodore Ts'o wrote:
+> The multiblock allocator needs to be able to release blocks (and issue
+> a blkdev discard request) when the transaction which freed those
+> blocks is committed.  Previously this was done via a polling mechanism
+> when blocks are allocated or freed.  A much better way of doing things
+> is to create a jbd2 callback function and attaching the list of blocks
+> to be freed directly to the transaction structure.
 
-Signed-off-by: David John <davidjon@xenontk.org>
----
- drivers/char/rtc.c |   17 ++++-------------
- 1 files changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
-index f53d4d0..05b9d3c 100644
---- a/drivers/char/rtc.c
-+++ b/drivers/char/rtc.c
-@@ -48,9 +48,10 @@
-  *		CONFIG_HPET_EMULATE_RTC
-  *	1.12a	Maciej W. Rozycki: Handle memory-mapped chips properly.
-  *	1.12ac	Alan Cox: Allow read access to the day of week register
-+ *	1.12b	David John: Remove calls to the BKL.
-  */
- 
--#define RTC_VERSION		"1.12ac"
-+#define RTC_VERSION		"1.12b"
- 
- /*
-  *	Note that *all* calls to CMOS_READ and CMOS_WRITE are done with
-@@ -73,7 +74,6 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/spinlock.h>
--#include <linux/smp_lock.h>
- #include <linux/sysctl.h>
- #include <linux/wait.h>
- #include <linux/bcd.h>
-@@ -182,8 +182,8 @@ static int rtc_proc_open(struct inode *inode, struct file *file);
- 
- /*
-  * rtc_status is never changed by rtc_interrupt, and ioctl/open/close is
-- * protected by the big kernel lock. However, ioctl can still disable the timer
-- * in rtc_status and then with del_timer after the interrupt has read
-+ * protected by the spin lock rtc_lock. However, ioctl can still disable the
-+ * timer in rtc_status and then with del_timer after the interrupt has read
-  * rtc_status but before mod_timer is called, which would then reenable the
-  * timer (but you would need to have an awful timing before you'd trip on it)
-  */
-@@ -720,9 +720,7 @@ static int rtc_do_ioctl(unsigned int cmd, unsigned long arg, int kernel)
- static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	long ret;
--	lock_kernel();
- 	ret = rtc_do_ioctl(cmd, arg, 0);
--	unlock_kernel();
- 	return ret;
- }
- 
-@@ -731,12 +729,8 @@ static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-  *	Also clear the previous interrupt data on an open, and clean
-  *	up things on a close.
-  */
--
--/* We use rtc_lock to protect against concurrent opens. So the BKL is not
-- * needed here. Or anywhere else in this driver. */
- static int rtc_open(struct inode *inode, struct file *file)
- {
--	lock_kernel();
- 	spin_lock_irq(&rtc_lock);
- 
- 	if (rtc_status & RTC_IS_OPEN)
-@@ -746,12 +740,10 @@ static int rtc_open(struct inode *inode, struct file *file)
- 
- 	rtc_irq_data = 0;
- 	spin_unlock_irq(&rtc_lock);
--	unlock_kernel();
- 	return 0;
- 
- out_busy:
- 	spin_unlock_irq(&rtc_lock);
--	unlock_kernel();
- 	return -EBUSY;
- }
- 
-@@ -802,7 +794,6 @@ no_irq:
- }
- 
- #ifdef RTC_IRQ
--/* Called without the kernel lock - fine */
- static unsigned int rtc_poll(struct file *file, poll_table *wait)
- {
- 	unsigned long l;
+Why not use journal commit callback patch from andreas 
+(MID:20080929201752.GN10950@webber.adilger.int
+http://article.gmane.org/gmane.comp.file-systems.ext4/9148)
+
+The patch you sent will allows only one call back to be registered.
+
+-aneesh
