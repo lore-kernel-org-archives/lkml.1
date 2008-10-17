@@ -1,94 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYJQUg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYJQUh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbYJQUg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYJQUgS
+	id S1756106AbYJQUh1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYJQUhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:36:18 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:60323 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751483AbYJQUgR (ORCPT
+	Fri, 17 Oct 2008 16:37:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56322 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483AbYJQUhL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:36:17 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] additional ext4 updates for 2.6.28
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1Kqw3S-0004f6-Jm@closure.thunk.org>
-Date: Fri, 17 Oct 2008 16:36:14 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 17 Oct 2008 16:37:11 -0400
+Date: Fri, 17 Oct 2008 16:37:10 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: sleeping function called from invalid context at
+	kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
+Message-ID: <20081017203710.GA27187@infradead.org>
+References: <a4423d670810170543vd6b4c39p44bf125610d8540@mail.gmail.com> <20081017164116.GA17375@infradead.org> <a4423d670810170954h7ca130aaw8895380a4c6b125@mail.gmail.com> <20081017165738.GA20818@infradead.org> <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+I just ran the xfs testsuite over linux-next on qemu (i386), and I can't
+find anything at all.  Really strange.  Let's see if this still there
+with mondays linux-next, and if yes can you just try the xfs patch from
+the splitout linux-next patches and see if that alone causes it?
 
-Please pull from:
-
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
-
-This patch set set contains contains bug fixes which could crashes,
-performance enhancements especially for large streaming writes (thanks
-to Chris Mason for pointing this out), blkdev discard support (for trim
-commands for SSD's), and updates to documentation.
-
-Note; the changes to mm/page-writeback have been reviewed by
-linux-fsdevel and by Christoph Hellwig specifically.  Christoph believes
-(and I agree) that we probably can get rid of the new control flag
-(no_nrwrite_index_update) and make the changes in behavior of
-write_cached_pages() conditionally, but that would require auditing and
-updating all of the other filesystems that use that function.  So for
-now we just make the change for ext4, which increases streaming write
-speed to large files by a factor of five or more, so that a write to 3GB
-file now proceeds at raw disk speeds.
-
-						- Ted
-
-Aneesh Kumar K.V (8):
-      ext4: Free ext4_prealloc_space using kmem_cache_free
-      ext4: Do mballoc init before doing filesystem recovery
-      ext4: Use an rbtree for tracking blocks freed during transaction.
-      ext4: Don't reuse released data blocks until transaction commits
-      ext4: Use tag dirty lookup during mpage_da_submit_io
-      vfs: Remove the range_cont writeback mode.
-      vfs: Add no_nrwrite_index_update writeback control flag
-      ext4: Fix file fragmentation during large file write.
-
-Diego Calleja (1):
-      ext4: Update Documentation/filesystems/ext4.txt
-
-Eric Sesterhenn (1):
-      ext4: Add missing newlines to printk messages
-
-Manish Katiyar (2):
-      ext4: Fix Kconfig typo for ext4dev
-      ext4: Remove compile warnings when building w/o CONFIG_PROC_FS
-
-Martin Michlmayr (1):
-      ext4: Remove an old reference to ext4dev in Makefile comment
-
-Theodore Ts'o (4):
-      ext4: let the block device know when unused blocks can be discarded
-      ext4: Remove unused mount options: nomballoc, mballoc, nocheck
-      ext4: Replace hackish ext4_mb_poll_new_transaction with commit callback
-      ext4: Remove automatic enabling of the HUGE_FILE feature flag
-
- Documentation/filesystems/ext4.txt |   32 ++---
- fs/Kconfig                         |    2 +-
- fs/Makefile                        |    2 +-
- fs/ext4/balloc.c                   |   12 ++-
- fs/ext4/ext4.h                     |    1 -
- fs/ext4/ext4_sb.h                  |    3 -
- fs/ext4/inode.c                    |  143 +++++++++++---------
- fs/ext4/mballoc.c                  |  263 ++++++++++++++++++-----------------
- fs/ext4/mballoc.h                  |   31 +++--
- fs/ext4/super.c                    |  132 +++++-------------
- fs/jbd2/commit.c                   |    3 +
- fs/jbd2/transaction.c              |    1 +
- include/linux/jbd2.h               |    9 ++
- include/linux/writeback.h          |   10 ++-
- mm/page-writeback.c                |   12 +-
- 15 files changed, 320 insertions(+), 336 deletions(-)
+In fact that might be useful for todays linux-next, too.
