@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYJQPbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYJQPdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbYJQPbJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYJQPa4
+	id S1756184AbYJQPdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbYJQPdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:30:56 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:39497 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754758AbYJQPaz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:30:55 -0400
-Message-ID: <48F8AF9F.4000303@nortel.com>
-Date: Fri, 17 Oct 2008 09:30:39 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Fri, 17 Oct 2008 11:33:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43762 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754353AbYJQPdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 11:33:09 -0400
+Date: Fri, 17 Oct 2008 11:31:51 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@elte.hu, yhlu.kernel@gmail.com, tglx@linutronix.de
+Subject: Re: [GIT PATCH] driver core patches for your 2.6-git tree
+Message-ID: <20081017153151.GB3167@redhat.com>
+References: <20081016170954.GA11824@kroah.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <20081017085604.GA20986@cs181140183.pp.htv.fi>
-In-Reply-To: <20081017085604.GA20986@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Oct 2008 15:30:40.0653 (UTC) FILETIME=[4FE1B3D0:01C9306D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081016170954.GA11824@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Fri, Oct 17, 2008 at 12:55:44AM -0700, Greg KH wrote:
->> On Fri, Oct 17, 2008 at 09:47:51AM +0300, Adrian Bunk wrote:
->> ...
->>> Packages are built in a chroot with the correct release installed.
->> Then why would this break if they are being built against the correct,
->> older, kernel?
+On Thu, Oct 16, 2008 at 10:09:55AM -0700, Greg KH wrote:
+> Here is the driver core patchset for your 2.6-git tree.
 > 
-> How could you build userspace "against a kernel"?
+> Highlights include:
 
-I imagine many embedded products regularly build (or even cross-build) a 
-kernel and a matching userspace against that kernel, independent of the 
-running kernel on the build machine.  I know that we do it every day...
+> 	- dynamic dev_printk() patch, allows debugging to be turned on
+> 	  the fly, instead of at build time.  This is very good and has
+> 	  been in the opensuse beta releases already with much success.
 
-Chris
+while I think this is a good feature b/c it allows dynamically turning debug
+information on/off at runtime, and it creates a standard framework for
+all the DEBUGP, dprintk, DEBUG, calls that each subsystems defines for
+itself, there was some resistance to this approach in another thread,
+see: http://marc.info/?l=linux-kernel&m=122164181331567&w=2
+I am adding the relevant parties to the 'cc here in the interest of making sure
+interested parties are aware of this patch proposal.
+
+One concern, raised in the other thread was that subsystems might want
+to use their own defined tags, as opposed to KBUILD_MODNAME, which is
+used by default to group together debugging control. Layering this tag
+ability on top of this patchset is not hard, and I already have patches
+which begin to do that...Also, this patch allows passing one command
+line argument to enable all debugging which can later be turn on/off
+as desired. This patch already stands on its own in enabling all pr_debug and 
+dev_dbg calls to be dynamically enabled.
+
+thanks,
+
+-Jason
