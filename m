@@ -1,66 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYJQLdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYJQLeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbYJQLdX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYJQLdL
+	id S1754481AbYJQLeI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 07:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYJQLd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:33:11 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:38296 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752780AbYJQLdK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:33:10 -0400
-Date: Fri, 17 Oct 2008 05:32:52 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Greg KH <greg@kroah.com>, Joel Becker <joel.becker@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct kobject source.
-Message-ID: <20081017113252.GV15064@parisc-linux.org>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org> <20081017074453.GA4850@kroah.com> <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
+	Fri, 17 Oct 2008 07:33:56 -0400
+Received: from iona.labri.fr ([147.210.8.143]:60214 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752954AbYJQLdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 07:33:55 -0400
+Message-ID: <48F87885.5000606@inria.fr>
+Date: Fri, 17 Oct 2008 13:35:33 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nathalie Furmento <nathalie.furmento@labri.fr>
+Subject: [RESEND][PATCH] mm: rework do_pages_move() to work on page_sized
+ chunks
+References: <48F3AD47.1050301@inria.fr> <48F3AE1D.3060208@inria.fr> <48F79B42.3070106@linux-foundation.org>
+In-Reply-To: <48F79B42.3070106@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> This of course means that non TYPE_DISK of struct scsi_device would need
-> to appear under /sys/ to be referenced using the symlink method..  I
-> know that drivers/scsi/sr.c currently does not show up under /sys..
+Rework do_pages_move() to work by page-sized chunks of struct page_to_node
+that are passed to do_move_page_to_node_array(). We now only have to
+allocate a single page instead a possibly very large vmalloc area to store
+all page_to_node entries.
 
-Hmm?
+As a result, new_page_node() will now have a very small lookup, hidding
+much of the overall sys_move_pages() overhead.
 
-$ ls -l /sys/block/sr0/
-total 0
-lrwxrwxrwx 1 root root    0 2008-10-17 07:30 bdi -> ../../class/bdi/11:0
--r--r--r-- 1 root root 4096 2008-10-17 07:30 capability
--r--r--r-- 1 root root 4096 2008-10-17 07:30 dev
-lrwxrwxrwx 1 root root    0 2008-10-17 07:30 device -> ../../devices/pci0000:00/0000:00:1f.1/host3/target3:0:0/3:0:0:0
-drwxr-xr-x 2 root root    0 2008-10-17 07:30 holders
-drwxr-xr-x 2 root root    0 2008-10-17 07:30 power
-drwxr-xr-x 3 root root    0 2008-10-17 07:30 queue
--r--r--r-- 1 root root 4096 2008-10-17 07:30 range
--r--r--r-- 1 root root 4096 2008-10-17 07:30 removable
--r--r--r-- 1 root root 4096 2008-10-17 07:30 ro
--r--r--r-- 1 root root 4096 2008-10-17 07:30 size
-drwxr-xr-x 2 root root    0 2008-10-17 07:30 slaves
--r--r--r-- 1 root root 4096 2008-10-17 07:30 stat
-lrwxrwxrwx 1 root root    0 2008-10-17 07:30 subsystem -> ../../block
--rw-r--r-- 1 root root 4096 2008-10-17 07:30 uevent
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+Signed-off-by: Nathalie Furmento <Nathalie.Furmento@labri.fr>
+---
+ mm/migrate.c |   79 ++++++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 44 insertions(+), 35 deletions(-)
 
+diff --git a/mm/migrate.c b/mm/migrate.c
+index dffc98b..678589c 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -947,41 +947,43 @@ static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
+ 			 const int __user *nodes,
+ 			 int __user *status, int flags)
+ {
+-	struct page_to_node *pm = NULL;
++	struct page_to_node *pm;
+ 	nodemask_t task_nodes;
+-	int err = 0;
+-	int i;
++	unsigned long chunk_nr_pages;
++	unsigned long chunk_start;
++	int err;
+ 
+ 	task_nodes = cpuset_mems_allowed(task);
+ 
+-	/* Limit nr_pages so that the multiplication may not overflow */
+-	if (nr_pages >= ULONG_MAX / sizeof(struct page_to_node) - 1) {
+-		err = -E2BIG;
+-		goto out;
+-	}
+-
+-	pm = vmalloc((nr_pages + 1) * sizeof(struct page_to_node));
+-	if (!pm) {
+-		err = -ENOMEM;
++	err = -ENOMEM;
++	pm = (struct page_to_node *)__get_free_page(GFP_KERNEL);
++	if (!pm)
+ 		goto out;
+-	}
+-
+ 	/*
+-	 * Get parameters from user space and initialize the pm
+-	 * array. Return various errors if the user did something wrong.
++	 * Store a chunk of page_to_node array in a page,
++	 * but keep the last one as a marker
+ 	 */
+-	for (i = 0; i < nr_pages; i++) {
+-		const void __user *p;
++	chunk_nr_pages = (PAGE_SIZE / sizeof(struct page_to_node)) - 1;
+ 
+-		err = -EFAULT;
+-		if (get_user(p, pages + i))
+-			goto out_pm;
++	for (chunk_start = 0;
++	     chunk_start < nr_pages;
++	     chunk_start += chunk_nr_pages) {
++		int j;
++
++		if (chunk_start + chunk_nr_pages > nr_pages)
++			chunk_nr_pages = nr_pages - chunk_start;
+ 
+-		pm[i].addr = (unsigned long)p;
+-		if (nodes) {
++		/* fill the chunk pm with addrs and nodes from user-space */
++		for (j = 0; j < chunk_nr_pages; j++) {
++			const void __user *p;
+ 			int node;
+ 
+-			if (get_user(node, nodes + i))
++			err = -EFAULT;
++			if (get_user(p, pages + j + chunk_start))
++				goto out_pm;
++			pm[j].addr = (unsigned long) p;
++
++			if (get_user(node, nodes + j + chunk_start))
+ 				goto out_pm;
+ 
+ 			err = -ENODEV;
+@@ -992,22 +994,29 @@ static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
+ 			if (!node_isset(node, task_nodes))
+ 				goto out_pm;
+ 
+-			pm[i].node = node;
+-		} else
+-			pm[i].node = 0;	/* anything to not match MAX_NUMNODES */
+-	}
+-	/* End marker */
+-	pm[nr_pages].node = MAX_NUMNODES;
++			pm[j].node = node;
++		}
++
++		/* End marker for this chunk */
++		pm[chunk_nr_pages].node = MAX_NUMNODES;
++
++		/* Migrate this chunk */
++		err = do_move_page_to_node_array(mm, pm,
++						 flags & MPOL_MF_MOVE_ALL);
++		if (err < 0)
++			goto out_pm;
+ 
+-	err = do_move_page_to_node_array(mm, pm, flags & MPOL_MF_MOVE_ALL);
+-	if (err >= 0)
+ 		/* Return status information */
+-		for (i = 0; i < nr_pages; i++)
+-			if (put_user(pm[i].status, status + i))
++		for (j = 0; j < chunk_nr_pages; j++)
++			if (put_user(pm[j].status, status + j + chunk_start)) {
+ 				err = -EFAULT;
++				goto out_pm;
++			}
++	}
++	err = 0;
+ 
+ out_pm:
+-	vfree(pm);
++	free_page((unsigned long)pm);
+ out:
+ 	return err;
+ }
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+1.5.6.5
+
+
