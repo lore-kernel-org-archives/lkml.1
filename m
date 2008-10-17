@@ -1,36 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbYJQEza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYJQE74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbYJQEza (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 00:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYJQEzW
+	id S1753324AbYJQE74 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 00:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYJQE7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 00:55:22 -0400
-Received: from webmail87.yandex.ru ([77.88.47.161]:43114 "EHLO
-	webmail87.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751217AbYJQEzW (ORCPT
+	Fri, 17 Oct 2008 00:59:48 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:57387 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbYJQE7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 00:55:22 -0400
-X-Greylist: delayed 378 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 00:55:22 EDT
-X-Yandex-Spam: 1
-From: Antipov Dmitry <dmantipov@yandex.ru>
-To: linux-kernel@vger.kernel.org
-Cc: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: Re: 2.6.27: 0 MHz CPU and wrong system time on AMD Geode system
+	Fri, 17 Oct 2008 00:59:47 -0400
+Message-ID: <48F81BBF.7050801@us.ibm.com>
+Date: Thu, 16 Oct 2008 23:59:43 -0500
+From: Jon Tollefson <kniht@us.ibm.com>
+Reply-To: kniht@linux.vnet.ibm.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Message-Id: <673951224218937@webmail87.yandex.ru>
-Date: Fri, 17 Oct 2008 08:48:57 +0400
-X-Mailer: Yamail [ http://yandex.ru ] 5.0
+To: benh@kernel.crashing.org
+CC: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adam Litke <agl@us.ibm.com>, Kumar Gala <galak@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v3] powerpc: properly reserve in bootmem the lmb reserved
+ regions that cross NUMA nodes
+References: <48EE6720.6010601@linux.vnet.ibm.com> <1223614516.8157.154.camel@pasglop>
+In-Reply-To: <1223614516.8157.154.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse wrote:
+Benjamin Herrenschmidt wrote:
+> On Thu, 2008-10-09 at 15:18 -0500, Jon Tollefson wrote:
+>   
+>> If there are multiple reserved memory blocks via lmb_reserve() that are
+>> contiguous addresses and on different NUMA nodes we are losing track of which 
+>> address ranges to reserve in bootmem on which node.  I discovered this 
+>> when I recently got to try 16GB huge pages on a system with more then 2 nodes.
+>>     
+>
+> I'm going to apply it, however, could you double check something for
+> me ? A cursory glance of the new version makes me wonder, what if the
+> first call to get_node_active_region() ends up with the work_fn never
+> hitting the if () case ? I think in that case, node_ar->end_pfn never
+> gets initialized right ? Can that happen in practice ? I suspect that
+> isn't the case but better safe than sorry...
+>   
+I have tested this on a few machines and it hasn't been a problem.  But 
+I don't see anything in lmb_reserve() that would prevent reserving a 
+block that was outside of valid memory.  So to be safe I have attached a 
+patch that checks for an empty active range.
 
-> Could you try a 2.6.26 kernel? That will confirm that this is a new
-> addition to 2.6.27.
+I also noticed that the size to reserve for subsequent nodes for a 
+reserve that spans nodes wasn't taking into account the amount reserved 
+on previous nodes so the patch addresses that too.  If you would prefer 
+this be a separate patch let me know.
 
-Both 2.6.26 and 2.6.26.6 looks good (with CONFIG_GEODE_MFGPT_TIMER=y).
+> If there's indeed a potential problem, please send a fixup patch.
+>
+> Cheers,
+> Ben.
+>   
+Adjust amount to reserve based on previous nodes for reserves spanning
+multiple nodes. Check if the node active range is empty before attempting
+to pass the reserve to bootmem.  In practice the range shouldn't be empty,
+but to be sure we check.
 
-Dmitry
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+---
+
+ 
+ arch/powerpc/mm/numa.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 6cf5c71..195bfcd 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -116,6 +116,7 @@ static int __init get_active_region_work_fn(unsigned long start_pfn,
+ 
+ /*
+  * get_node_active_region - Return active region containing start_pfn
++ * Active range returned is empty if none found.
+  * @start_pfn: The page to return the region for.
+  * @node_ar: Returned set to the active region containing start_pfn
+  */
+@@ -126,6 +127,7 @@ static void __init get_node_active_region(unsigned long start_pfn,
+ 
+ 	node_ar->nid = nid;
+ 	node_ar->start_pfn = start_pfn;
++	node_ar->end_pfn = start_pfn;
+ 	work_with_active_regions(nid, get_active_region_work_fn, node_ar);
+ }
+ 
+@@ -933,18 +935,20 @@ void __init do_init_bootmem(void)
+ 		struct node_active_region node_ar;
+ 
+ 		get_node_active_region(start_pfn, &node_ar);
+-		while (start_pfn < end_pfn) {
++		while (start_pfn < end_pfn &&
++			node_ar.start_pfn < node_ar.end_pfn) {
++			unsigned long reserve_size = size;
+ 			/*
+ 			 * if reserved region extends past active region
+ 			 * then trim size to active region
+ 			 */
+ 			if (end_pfn > node_ar.end_pfn)
+-				size = (node_ar.end_pfn << PAGE_SHIFT)
++				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
+ 					- (start_pfn << PAGE_SHIFT);
+-			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
+-				node_ar.nid);
++			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase,
++				reserve_size, node_ar.nid);
+ 			reserve_bootmem_node(NODE_DATA(node_ar.nid), physbase,
+-						size, BOOTMEM_DEFAULT);
++						reserve_size, BOOTMEM_DEFAULT);
+ 			/*
+ 			 * if reserved region is contained in the active region
+ 			 * then done.
+@@ -959,6 +963,7 @@ void __init do_init_bootmem(void)
+ 			 */
+ 			start_pfn = node_ar.end_pfn;
+ 			physbase = start_pfn << PAGE_SHIFT;
++			size = size - reserve_size;
+ 			get_node_active_region(start_pfn, &node_ar);
+ 		}
+ 
+
+
+
+
