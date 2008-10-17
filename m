@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYJQOL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYJQOPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbYJQOL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 10:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbYJQOLQ
+	id S1755326AbYJQOPw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 10:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbYJQOPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 10:11:16 -0400
-Received: from willie.n0ano.com ([64.66.241.76]:59727 "EHLO xolotl.n0ano.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755269AbYJQOLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 10:11:15 -0400
-From: n0ano@n0ano.com
-Date: Fri, 17 Oct 2008 08:11:02 -0600
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: n0ano@n0ano.com, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       donald.d.dugger@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Enable console on PCI serial devices
-Message-ID: <20081017141102.GG14490@xolotl.n0ano.com>
-References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <200810161716.47620.bjorn.helgaas@hp.com> <20081017023912.GA9378@xolotl.n0ano.com> <20081017102858.1f1d77f7@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081017102858.1f1d77f7@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 17 Oct 2008 10:15:44 -0400
+Received: from sandeen.net ([209.173.210.139]:10270 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754443AbYJQOPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 10:15:44 -0400
+Message-ID: <48F89E0F.6030307@sandeen.net>
+Date: Fri, 17 Oct 2008 09:15:43 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Martin Michlmayr <tbm@cyrius.com>
+CC: Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
+       debian-arm@lists.debian.org, xfs@oss.sgi.com
+Subject: Re: XFS filesystem corruption on the arm(el) architecture
+References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com>
+In-Reply-To: <20081017070109.GA30726@deprecation.cyrius.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 10:28:58AM +0100, Alan Cox wrote:
-> Different discussion and different patches. We can get patches in for the
-> crystal frequency stuff and then debate the rest later
+Martin Michlmayr wrote:
+> * Eric Sandeen <sandeen@sandeen.net> [2008-10-16 17:13]:
+>> So is this a regression?  did it used to work?  If so, when? :)
+> 
+> The original report was with 2.6.18 but that was with the old ABI:
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=423562
+> I just installed a 2.6.22 kernel with EABI and I can also trigger
+> the bug.  So it's not a (recent) regression.
+> 
+>> What's a little odd is that the buffer it dumped out looks like the
+>> beginning of a perfectly valid superblock for your filesystem
+>> (magic, block size, and block count all match).   If you printk the
+>> "bno" variable right around line 2106 in xfs_da_btree.c, can you see
+>> what you get?
+> 
+> bno is 0.
 
-In that case, here is the crystal frequency patch (typos fixed and
-proper sign off line).
+Ok, that's a little odd.  (correlates with the "bad" magic that was
+seen, because block 0 is the superblock, but doesn't make sense because
+we were trying to read a directory leaf block, in theory)
 
-Signed-off-by: Don Dugger <donald.d.dugger@intel.com>
+If you unmount & remount, does the ls work then?
 
- Documentation/kernel-parameters.txt |   13 ++++++++-----
- drivers/serial/8250_early.c         |    5 +++++
- 2 files changed, 13 insertions(+), 5 deletions(-)
+>> creating an xfs_metadump of the filesystem for examination on a
+>> non-arm box might also be interesting.
+> 
+> http://www.cyrius.com/tmp/dump5
+> (11 MB)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 2443f5b..bf6dd6f 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -505,12 +505,15 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Documentation/networking/netconsole.txt for an
- 			alternative.
- 
--		uart[8250],io,<addr>[,options]
--		uart[8250],mmio,<addr>[,options]
-+		uart[8250],io,<addr>[,options[,clk]]
-+		uart[8250],mmio,<addr>[,options[,clk]]
- 			Start an early, polled-mode console on the 8250/16550
- 			UART at the specified I/O port or MMIO address,
- 			switching to the matching ttyS device later.  The
--			options are the same as for ttyS, above.
-+			"options" are the same as for ttyS, above.  "clk"
-+			is the crystal frequency which defaults to 115200
-+			(typically the fastest baud rate supported by the
-+			uart) but some hardware use different crystals.
- 
-                 If the device connected to the port is not a TTY but a braille
-                 device, prepend "brl," before the device type, for instance
-@@ -518,8 +521,8 @@ and is between 256 and 4096 characters. It is defined in the file
- 		For now, only VisioBraille is supported.
- 
- 	earlycon=	[KNL] Output early console device and options.
--		uart[8250],io,<addr>[,options]
--		uart[8250],mmio,<addr>[,options]
-+		uart[8250],io,<addr>[,options,[clk]]
-+		uart[8250],mmio,<addr>[,options,[clk]]
- 			Start an early, polled-mode console on the 8250/16550
- 			UART at the specified I/O port or MMIO address.
- 			The options are the same as for ttyS, above.
-diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
-index f279745..edd5803 100644
---- a/drivers/serial/8250_early.c
-+++ b/drivers/serial/8250_early.c
-@@ -180,6 +180,11 @@ static int __init parse_options(struct early_serial8250_device *device,
- 		snprintf(device->options, sizeof(device->options), "%u",
- 			device->baud);
- 	}
-+	options = strchr(options, ',');
-+	if (options) {
-+		options++;
-+		port->uartclk = simple_strtoul(options, NULL, 0) * 16;
-+	}
- 
- 	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
- 		mmio ? "MMIO" : "I/O port",
+Thanks.
+
+xfs_repair on x86 shows no errors; however it won't mount normally (bad
+log clientid) - but mount -o norecovery,ro and subsequent ls works fine
+(at first I thought filenames were badly scrambled but then remembered
+that xfs_metadump does this by default ;))
+
+The remaining problem that I know of on some arm architectures is a vmap
+cache aliasing problem that usually shows up as log corruption; that may
+explain the bad clientid thing but not sure why we're reading block 0 above.
+
+Do you know what cachepolicy you're booted with?  If it's writeallocate,
+you might try cachepolicy=writeback, otherwise try cachepolicy=uncached
+(which will be horribly slow) and see if the problem goes away or not;
+it'd be a clue.
+
+-Eric
