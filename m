@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbYJQEEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbYJQEEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191AbYJQEEe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 00:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbYJQEEZ
+	id S1751386AbYJQEEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 00:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYJQEE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 00:04:25 -0400
-Received: from kroah.org ([198.145.64.141]:42896 "EHLO coco.kroah.org"
+	Fri, 17 Oct 2008 00:04:26 -0400
+Received: from kroah.org ([198.145.64.141]:42898 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750801AbYJQEEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 00:04:24 -0400
-Date: Thu, 16 Oct 2008 20:47:17 -0700
+	id S1750912AbYJQEEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 00:04:25 -0400
+Date: Thu, 16 Oct 2008 21:02:39 -0700
 From: Greg KH <greg@kroah.com>
 To: Adrian Bunk <bunk@kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081017034717.GA28188@kroah.com>
-References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016164602.GA22554@cs181140183.pp.htv.fi>
+Message-ID: <20081017040239.GB28188@kroah.com>
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016153053.GJ5834@nostromo.devel.redhat.com> <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081016164602.GA22554@cs181140183.pp.htv.fi>
+In-Reply-To: <20081016171626.GB22554@cs181140183.pp.htv.fi>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 07:46:02PM +0300, Adrian Bunk wrote:
-> On Thu, Oct 16, 2008 at 08:17:48AM -0700, Greg KH wrote:
-> > On Thu, Oct 16, 2008 at 03:49:43PM +0300, Adrian Bunk wrote:
-> >...
-> > > If a distribution will try to autobuild an urgent OpenSSL security 
-> > > update for their stable release in a chroot on a machine running
-> > > kernel 2009.2.3 they will surely love you for being responsible
-> > > for this...
-> > 
-> > Distros properly patch things and backport "urgent OpenSSL security
-> > updates" to older versions of packages, so they would not run into this
-> > problem.
+On Thu, Oct 16, 2008 at 08:16:26PM +0300, Adrian Bunk wrote:
+> On Thu, Oct 16, 2008 at 08:47:26AM -0700, Greg KH wrote:
+> You miss the best alternative:
 > 
-> You didn't get my point.
-> 
-> Let me make an example:
-> 
-> The current Debian release will be supported until one year after the
-> next release gets released.
-> 
-> Someone from the Debian security team send a fixed package to the
-> buildds.
-> 
-> The buildds build packages in chroots.
-> 
-> A buildd may run any Debian release.
-> 
-> And it's perfectly normal that a buildd runs a more recent release of 
-> Debian than the one a package gets built for in a chroot.
+> Simply keep the status quo.
 
-So you are saying the Debian build system would build a package for an
-older release, on a system that is newer, and that build would be
-determining things based on the system it is built on, not what it is
-being built for?
+I'd argue that is is a pain.  Linus has expressed frustration with the
+current numbering scheme, and as someone who deals with kernel version
+numbers every single day, I too am mildly frustrated.
 
-If so, then something is very broken already in the Debian build system
-and I think you have much bigger problems to worry about right now.
+I think the main reason why is just that small numbers are easier to
+keep track of in your mind.  As we are ever increasing the version
+number, the release numbers feel like they are getting closer together,
+making them less distinguishable.
 
-For all other "sane" build systems that I know of, you build against the
-libraries/kernel/gcc/glibc/etc that you are wanting to support it for,
-not against some random-whatever-happened-to-be-installed-on-the-box.
+For example, think of the following:
+	2.6.5 vs. 2.6.9
+Your mind focuses on the 5 and 9, and in thinking about them, it is much
+easier to keep them apart.
 
-> No matter what you claim, you suggest to break currently working setups.
+Now, try the same with:
+	2.6.24 vs. 2.6.27
+You are repeating the tens digit, the "two", so it is a bit harder to
+distinguish things.  After a few years of this, it gets more difficult
 
-No, you have described a broken setup.
+So I proposed an alternative, YEAR.NUMBER.  The year is easy to keep
+track of, and the release number is a small one, making it too easier to
+track and distinguish from each other:
+	2009.1 vs. 2009.5
+or
+	2010.2 vs. 2011.5
+It also means something that lets you remember back to what was going on
+for that release better, if you can easily place it within a specific
+time frame, which is important for those of us who work with different
+kernel versions all the time for different projects and backports and
+stable releases.
 
-Now for new releases, yes, something might have to be changed, but that
-is when a sane distro would move to the newly named kernel, not
-affecting any old releases at all.
+If the number stays the same, my feeble brain will survive and I'll just
+rely on my huge spreadsheet of when specific kernels were released when
+to get along, and hopefully I will not make any more .26.5 releases when
+I mean .25.5 and such like I have in the past :)
 
-Hope this helps,
+thanks,
 
 greg k-h
