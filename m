@@ -1,105 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbYJQMpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbYJQMpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756368AbYJQMpb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbYJQMox
+	id S1756299AbYJQMpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYJQMop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:44:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:53693 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756226AbYJQMow (ORCPT
+	Fri, 17 Oct 2008 08:44:45 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:3922 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756178AbYJQMoo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:44:52 -0400
+	Fri, 17 Oct 2008 08:44:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DVgCON3Q2tZnobXYvViLq+YbeqwaUcKVHb9Ak0EFM5jS8BlE3IiLBlu9p1+cYYSpem
-         S/EsgcwGQ/2zobf1WNQ/vAAbGzSQplHUi2tXR4ywMs1Gcsmenv4jw6nbVMr++EbgB/7D
-         SsyYKtHU26qeH7Oja5JCmIdJFR6YJ7pHjtUmY=
-Message-ID: <e7baa9c80810170544q1eaec469vc3a1ad2cba8e4ee0@mail.gmail.com>
-Date: Fri, 17 Oct 2008 20:44:51 +0800
-From: "Lai Jiangshan" <eag0628@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [PATCH] x86/proc: fix /proc/cpuinfo cpu offline bug
-Cc: "Lai Jiangshan" <laijs@cn.fujitsu.com>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081017114132.GA18994@x200.localdomain>
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=ALuW5mL70GAmwL31wNpfyq8s7ddioge2xPhibp5hQYHkpZqh5EMQIO/IrCJ5zKIXq+
+         Q4Va4ywe7oC+mfY4D5v/TyI5f896AI0Z1qt5qCdn9QVwt2ZiDfQNIsdyJSGaLL3Lz5sj
+         KiL3obZRSuyAAUa6fxJcYwiA6pt4WGiPrqvTg=
+Date: Fri, 17 Oct 2008 16:47:47 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 17/31] proc: move /proc/interrupts boilerplate code to
+	fs/proc/interrupts.c
+Message-ID: <20081017124747.GR22653@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48F852FD.7070108@cn.fujitsu.com>
-	 <20081017114132.GA18994@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 7:41 PM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Fri, Oct 17, 2008 at 04:55:25PM +0800, Lai Jiangshan wrote:
->> In my test, I found that if a cpu has been offline,
->> the next cpus may not be shown in the /proc/cpuinfo.
->>
->> trivially reproduce this bug:
->>
->> 1) add these lines in the end of show_cpuinfo()
->>       if (m->size - m->count - 20 > 0)
->>               seq_printf(m, "%*s", (int)(m->size - m->count - 20), "show bug\n");
->
-> What is it?
->
-> Can you just show wrong /proc/cpuinfo ?
->
-> Can someone with at least 4-way box please do so?
 
-this is not wrong /proc/cpuinfo, this is an enlarged /proc/cpuinfo
-this trivial example just use "show bug\n" as the enlarged content.
+>From 749e0c5f82318acc1332cd41e043bdb41a8759ad Mon Sep 17 00:00:00 2001
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Sun, 5 Oct 2008 00:08:44 +0400
+Subject: [PATCH 17/31] proc: move /proc/interrupts boilerplate code to fs/proc/interrupts.c
 
-if you boot your machine with enough cpu, your /proc/cpuinfo
-have been enlarged too, please use this:
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+ fs/proc/Makefile     |    1 +
+ fs/proc/interrupts.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/proc/proc_misc.c  |   42 ---------------------------------------
+ 3 files changed, 54 insertions(+), 42 deletions(-)
+ create mode 100644 fs/proc/interrupts.c
 
-#!/bin/sh
-nr_cpus=16 #  i386
-for ((i=1; i<nr_cpus; i++))
-do
-    echo 0 > /sys/devices/system/cpu/cpu$i/online
-    cpus=$(grep processor /proc/cpuinfo | wc -l)
-    (( cpus == nr_cpus -1 )) || break; # bug eccur
-    echo 1 > /sys/devices/system/cpu/cpu$i/online
-done
-cat /proc/cpuinfo  # it shows this bug.
+diff --git a/fs/proc/Makefile b/fs/proc/Makefile
+index 13ffa7b..b921f44 100644
+--- a/fs/proc/Makefile
++++ b/fs/proc/Makefile
+@@ -12,6 +12,7 @@ proc-y       += inode.o root.o base.o generic.o array.o \
+ proc-y	+= cmdline.o
+ proc-y	+= cpuinfo.o
+ proc-y	+= devices.o
++proc-y	+= interrupts.o
+ proc-y	+= loadavg.o
+ proc-y	+= meminfo.o
+ proc-y	+= stat.o
+diff --git a/fs/proc/interrupts.c b/fs/proc/interrupts.c
+new file mode 100644
+index 0000000..bb492f0
+--- /dev/null
++++ b/fs/proc/interrupts.c
+@@ -0,0 +1,53 @@
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++#include <asm/irq.h>
++
++/*
++ * /proc/interrupts
++ */
++static void *int_seq_start(struct seq_file *f, loff_t *pos)
++{
++	return (*pos <= NR_IRQS) ? pos : NULL;
++}
++
++static void *int_seq_next(struct seq_file *f, void *v, loff_t *pos)
++{
++	(*pos)++;
++	if (*pos > NR_IRQS)
++		return NULL;
++	return pos;
++}
++
++static void int_seq_stop(struct seq_file *f, void *v)
++{
++	/* Nothing to do */
++}
++
++static const struct seq_operations int_seq_ops = {
++	.start = int_seq_start,
++	.next  = int_seq_next,
++	.stop  = int_seq_stop,
++	.show  = show_interrupts
++};
++
++static int interrupts_open(struct inode *inode, struct file *filp)
++{
++	return seq_open(filp, &int_seq_ops);
++}
++
++static const struct file_operations proc_interrupts_operations = {
++	.open		= interrupts_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
++static int __init proc_interrupts_init(void)
++{
++	proc_create("interrupts", 0, NULL, &proc_interrupts_operations);
++	return 0;
++}
++module_init(proc_interrupts_init);
+diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index d49b956..1b46976 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -197,47 +197,6 @@ static const struct file_operations proc_vmalloc_operations = {
+ };
+ #endif
+ 
+-/*
+- * /proc/interrupts
+- */
+-static void *int_seq_start(struct seq_file *f, loff_t *pos)
+-{
+-	return (*pos <= NR_IRQS) ? pos : NULL;
+-}
+-
+-static void *int_seq_next(struct seq_file *f, void *v, loff_t *pos)
+-{
+-	(*pos)++;
+-	if (*pos > NR_IRQS)
+-		return NULL;
+-	return pos;
+-}
+-
+-static void int_seq_stop(struct seq_file *f, void *v)
+-{
+-	/* Nothing to do */
+-}
+-
+-
+-static const struct seq_operations int_seq_ops = {
+-	.start = int_seq_start,
+-	.next  = int_seq_next,
+-	.stop  = int_seq_stop,
+-	.show  = show_interrupts
+-};
+-
+-static int interrupts_open(struct inode *inode, struct file *filp)
+-{
+-	return seq_open(filp, &int_seq_ops);
+-}
+-
+-static const struct file_operations proc_interrupts_operations = {
+-	.open		= interrupts_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= seq_release,
+-};
+-
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ #define KPMSIZE sizeof(u64)
+ #define KPMMASK (KPMSIZE - 1)
+@@ -376,7 +335,6 @@ void __init proc_misc_init(void)
+ 	proc_symlink("mounts", NULL, "self/mounts");
+ 
+ 	/* And now for trickier ones */
+-	proc_create("interrupts", 0, NULL, &proc_interrupts_operations);
+ #ifdef CONFIG_SLABINFO
+ 	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+ #ifdef CONFIG_DEBUG_SLAB_LEAK
+-- 
+1.5.6.5
 
-Lai
-
->
->> 3) offline cpu#1
->> 4) cat /proc/cpuinfo
->>    cpu#2 and cpu#3 .... cannot be shown in /proc/cpuinfo
->
->> --- a/arch/x86/kernel/cpu/proc.c
->> +++ b/arch/x86/kernel/cpu/proc.c
->> @@ -160,14 +160,16 @@ static void *c_start(struct seq_file *m, loff_t *pos)
->>  {
->>       if (*pos == 0)  /* just in case, cpu 0 is not the first */
->>               *pos = first_cpu(cpu_online_map);
->> -     if ((*pos) < nr_cpu_ids && cpu_online(*pos))
->> +     else
->> +             *pos = next_cpu_nr(*pos - 1, cpu_online_map);
->> +     if ((*pos) < nr_cpu_ids)
->>               return &cpu_data(*pos);
->>       return NULL;
->>  }
->>
->>  static void *c_next(struct seq_file *m, void *v, loff_t *pos)
->>  {
->> -     *pos = next_cpu(*pos, cpu_online_map);
->> +     (*pos)++;
->>       return c_start(m, pos);
->>  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
