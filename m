@@ -1,68 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYJQTI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYJQTMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbYJQTI3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYJQTIU
+	id S1757255AbYJQTMn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYJQTMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:08:20 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:18204 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbYJQTIT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:08:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=oL5yIcf61hKBkcDt2yo1bbv0ugix9cpGKPOplLrCk2BN14zWqM00jm2MpDYQWC8wnd
-         gCMCgEY+Ei4m7dKFH6ztc5G/P7q2+ak8MewZqM8xf/HXP6U4cveEnonJDOxMRsTHufeb
-         kZ4Y6eFOjUW81sT6/duMDv/elisGa06t77TL4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [RFC] Kernel version numbering scheme change
-Date: Fri, 17 Oct 2008 21:06:28 +0200
-User-Agent: KMail/1.9.10
-Cc: Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20081016002509.GA25868@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com>
-In-Reply-To: <20081017174657.GH2221@kroah.com>
+	Fri, 17 Oct 2008 15:12:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46877 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754812AbYJQTMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 15:12:34 -0400
+Date: Fri, 17 Oct 2008 21:12:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+Message-ID: <20081017191202.GA5396@elte.hu>
+References: <20081017171139.GA1792@elte.hu> <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200810172106.29154.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <adatzbbrrcf.fsf@cisco.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 October 2008, Greg KH wrote:
-> On Fri, Oct 17, 2008 at 01:16:38AM -0700, Steven Noonan wrote:
-> > I believe some of Adrian's concerns are valid. Userspace programs will
-> > indeed break, largely because some depend on build-time and run-time
-> > checks for the kernel version being >=2.6.0 or >=2.4.0 and so forth. I
-> > suspect the best way to prove userspace breakage would be to make a
-> > branch of the kernel with a new versioning scheme (8.10, 2008.10,
-> > whatever) and use that as the installed kernel while building a Gentoo
-> > system. I suspect you'd see massive breakage.
-> 
-> That would be trivial for me to test, IFF we want to do something like
-> this.
-> 
-> But again, that's a technical thing, that can be solved _IFF_ we want to
-> change things.
-> 
-> And that's my point here, do we want to change the current numbering
-> scheme as people have expressed annoyances of the current one.
 
-Numbering scheme?  I thought we should all be using the official
-kernel version NAME after the -final release?  Was I mistaken?
+* Roland Dreier <rdreier@cisco.com> wrote:
 
-PS1 seems like somebody forgot to update it for 2.6.27...
+> However I worry about warnings produced by gcc bugs forcing us to 
+> tinker with correct code.  Maybe it just makes sense to wait and see 
+> if we ever hit a case where a gcc bug forces us to make too many 
+> stupid changes, and figure out what to do if and when that happens.
 
-PS2 current numbering scheme is OK
+i certainly have a found a couple of such cases, see tip/warnings/ugly - 
+for example see the one below where gcc is not able to see through type 
+width.
 
-Thanks,
-Bart
+the threshold i'm using is: "does the code get worse". Another question 
+is the rate of really ugly patches. Had i ended up with a lot of them 
+i'd be worried - but right now they are in the low single digits, for a 
+full 9 MLOC kernel - which seems manageable.
+
+the drivers/net/mlx4/mcg.c commit you pointed out is one of the very few 
+borderline cases: the code gets neither better, nor worse. If you look 
+at the totality of fixes they are not common at all. (and almost by 
+definition the 100-200 unfixed warnings that we have piled up in -git 
+are the _problematic_ cases - clear-cut cases tend to be fixed.)
+
+	Ingo
+
+------------->
+>From fbf03326a16b29f8d34a5a3883a267bac4d38fc2 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 27 Aug 2008 12:44:00 +0200
+Subject: [PATCH] hack, workaround for warning drivers/acpi/tables/tbfadt.c
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+ugly workaround for this warning:
+
+  drivers/acpi/tables/tbfadt.c: In function ‘acpi_tb_create_local_fadt’:
+  include/asm/string_32.h:75: warning: array subscript is above array bounds
+
+gcc 4.3.1 20080801 (Red Hat 4.3.1-6)
+
+its array checks are borked. Switch the string_32.h code to short instead.
+
+NOT-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-x86/string_32.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-x86/string_32.h b/include/asm-x86/string_32.h
+index 487843e..419ab10 100644
+--- a/include/asm-x86/string_32.h
++++ b/include/asm-x86/string_32.h
+@@ -72,7 +72,7 @@ static __always_inline void *__constant_memcpy(void *to, const void *from,
+ 		return to;
+ 	case 5:
+ 		*(int *)to = *(int *)from;
+-		*((char *)to + 4) = *((char *)from + 4);
++		*((short *)to + 3) = *((short *)from + 3);
+ 		return to;
+ 	case 6:
+ 		*(int *)to = *(int *)from;
