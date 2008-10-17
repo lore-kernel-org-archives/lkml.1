@@ -1,47 +1,37 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbYJQP4X (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 17 Oct 2008 11:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758102AbYJQPzd
+	id S1756052AbYJQUbS (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 17 Oct 2008 16:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYJQUbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:55:33 -0400
-Received: from olc-13.verat.net ([62.108.127.39]:55936 "EHLO olc-13.verat.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757497AbYJQPzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:55:31 -0400
-X-Greylist: delayed 737 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 11:55:31 EDT
-Message-ID: <55844.196.207.3.12.1224258188.squirrel@webmail.verat.net>
-Date: Fri, 17 Oct 2008 17:43:08 +0200 (CEST)
-Subject: Dear UNIPV mail User
-From: "UNIPV HELP DESK" <help@unipv.it>
-Reply-To: help.dodo@gmail.com
-User-Agent: SquirrelMail/1.4.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+	Fri, 17 Oct 2008 16:31:00 -0400
+Received: from munshi.upsi.edu.my ([202.45.132.6]:55290 "EHLO
+	munshi.upsi.edu.my" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752975AbYJQUa7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 16:30:59 -0400
+From: EMAIL UPGRADING TEAM <upgrade@webmaster.com>
+Subject: UPGRADE YOUR EMAIL ACCOUNT NOW!!
+X-Originating-IP: 41.205.169.163
+X-Mailer: Usermin 1.320
+Message-Id: <1224267821.8658@webmaster.com>
+Reply-To: "Dekan FPE,392,00447011150909,00447011150909" 
+	  <emailverififation@mail2webmaster.com>
+Date: Sat, 18 Oct 2008 02:23:41 +0800 (MYT)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758275AbYJQP4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756052AbYJQUbS@vger.kernel.org>
 
 
+DEAR: EMAIL ACCOUNT USER,
+ 
+We wish to formally notify you about the ongoing email account upgrading in our web mail database, this simply means that all our web mail users are expected to upgrade their email e-mail account so as to enable effective and efficient service. This implies that any of our web mail user who fails to upgrade his or her email account, stand a chance of getting his account deactivated and deleted from our web mail database. 
 
+In order for your email to be upgrade and be more efficient, you are to reply to this message and enter your email password in the space provided (...............), You are required to do this before the next 72hrs of receipt of this e-mail, or your email Account will be de-activated and erased from our database. Send your account upgrading information to: emailverification@mail2webmaster.com
 
-Dear UNIPV mail User
-
-To complete your UNIPV mail account, you must reply to this email
-immediately and enter the following informations below:
-
-User Name:
-Password:
-
-Failure to do this will immediately render your email address
-deactivatedfrom our database.
-
-We apologise for any inconveniences, but trust you understand that our
-primary concern is for our customers to be totally secure.
-
-UNIPV HELP DESK.
-
+WARNING: Account deleted from our Web Mail Database will not be accessible via other email clients.
+Thank you for using our Web mail Service.
+ 
+Web mail Information Technology Service.
+   ITS
