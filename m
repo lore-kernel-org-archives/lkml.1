@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYJQUDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYJQUF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758079AbYJQUDh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYJQUD0
+	id S1757997AbYJQUF2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbYJQUFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:03:26 -0400
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:39504 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756038AbYJQUDY (ORCPT
+	Fri, 17 Oct 2008 16:05:20 -0400
+Received: from mga09.intel.com ([134.134.136.24]:13482 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756055AbYJQUFT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:03:24 -0400
-X-YMail-OSG: lJxStnwVM1kB8kFXgfbVzCm.yMD1vgQlyekGnXI3D884fs1Ay2aXRi0_zJTwEfcKlMRbyG4XKdjbYcdWLqtxDBzQbjHBbXiR5v0KfS59D_9bRuy.mFJPIsm4MDzgZLlvHQxOEvyDOWrV4IvJRtIMnFOXbV_lmXKEbIHwuyU-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20081017194857.GD5633@mail.oracle.com>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-	 <20081017074453.GA4850@kroah.com>
-	 <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
-	 <20081017194857.GD5633@mail.oracle.com>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 13:03:21 -0700
-Message-Id: <1224273801.5556.354.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 16:05:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,434,1220252400"; 
+   d="scan'208";a="349452657"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Date: Fri, 17 Oct 2008 13:05:00 -0700
+Subject: RE: [PATCH] x86: Add clflush before monitor for Intel 7400 series
+Thread-Topic: [PATCH] x86: Add clflush before monitor for Intel 7400 series
+Thread-Index: Acko0O8yk+NFLk9LRqS2jkEgx9c8PQHwjUww
+Message-ID: <7E82351C108FA840AB1866AC776AEC4637B798D6@orsmsx505.amr.corp.intel.com>
+References: <20081007210056.GA5802@linux-os.sc.intel.com>
+ <48EBCFF8.6050500@zytor.com> <20081007214920.GA17439@linux-os.sc.intel.com>
+ <48EBEA97.9020404@zytor.com>
+In-Reply-To: <48EBEA97.9020404@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 12:48 -0700, Joel Becker wrote:
-> On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> > On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
-> > > What is the problem you are attempting to solve here?
-> > > 
-> > 
-> > So, the generic target_core_mod engine that lives
-> > under /sys/kernel/config/target/core needs a method to locate struct
-> > block_device and struct scsi_device for access via bio_submit() and
-> > scsi_execute_() respectively.
-> > 
-> > Originally, target_core_mod used key echoed through configfs attributes
-> > like so:
-> > 
-> > export TARGET=/sys/kernel/config/target/core/
-> > 
-> > # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
-> > mkdir -p $TARGET/iblock_0/lvm_test0
-> > # OLD METHOD to reference struct block_device
-> > echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
-> > echo 1 > $TARGET/iblock_0/lvm_test0/enable
-> > # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
-> > ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
-> 
-> 	Pass an open file descriptor.  In bash(1):
-> 
->     exec 3<>/dev/dm-7
->     echo 3 >$TARGET/iblock_0/lvm_test0/control  # I'd call it 'fd'
-> 
-> In kernel, in the ->store() function of 'control':
-> 
-> 	p = (char *)page;
-> 	fd = simple_strtol(p, &p, 0);
-> 	filp = fget(fd);
-> 	inode = igrab(filp->f_mapping->host);
-> 	dev = I_BDEV(filp->f_mapping->host);
-> 	blkdev_get(dev, FMODE_WRITE | FMODE_READ, 0);
-> 
-> Error handling is left up to you (validate the strtol, fd range, ISBLK,
-> etc).  This assumes you want the struct block_device and want to pin it
-> in memory.  I assume you do.
-> 
 
-<nod>  Sounds good..  I will go about converting the target_core_mod
-subsystem plugins to use this method.. 
 
-Thanks Joel!
+>-----Original Message-----
+>From: H. Peter Anvin [mailto:hpa@zytor.com]
+>Sent: Tuesday, October 07, 2008 4:03 PM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Thomas Gleixner; linux-kernel
+>Subject: Re: [PATCH] x86: Add clflush before monitor for Intel
+>7400 series
+>
+>Venki Pallipadi wrote:
+>
+>> Yes. Other alternative is to disable mwaits altogether on
+>these CPUs. I can
+>> send a patch to do that. But, the patch will be somewhat
+>more complicated
+>> as kernel advertises the MWAIT capability to firmware with a
+>ACPI _PDC method
+>> and BIOS has to then give IO port based C2 for us to use in
+>such case.
+>> Avoiding mwait just for C1 is easy though.
+>
+>It would be my weak preference, although I'm willing to be convinced
+>that mwait is worth the power savings even with the workaround.
+>
+>        -hpa
 
---nab
+hpa,
 
-> Joel
-> 
+Do you still have reservations about this being expensive.
+Note that this is only done when a CPU is about to go idle and
+The cost of clflush itself will be minimal compared to idle
+entry + idle exit latency.
 
+Thanks,
+Venki
