@@ -1,120 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYJQTTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbYJQTUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757422AbYJQTTu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYJQTTk
+	id S1757707AbYJQTUm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbYJQTUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:19:40 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:25118 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755093AbYJQTTj (ORCPT
+	Fri, 17 Oct 2008 15:20:31 -0400
+Received: from rn-out-0910.google.com ([64.233.170.189]:64794 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755172AbYJQTU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:19:39 -0400
-X-YMail-OSG: A_SWmH8VM1lO6kL5tu_cM_IFZkoPujWookPXbN54xlVhq1_g.MgOqsWGb9.2n1IHd.kcWWUWcNQQwvNrO.obJKuS742BQtf4oCkxEhQtvkqNVPopKrwA8Z9yb_au374knxJ9c7anllhMIKqKHXxmm1DZvBIARfXWDW_yWuc-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Greg KH <greg@kroah.com>
-Cc: Joel Becker <joel.becker@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20081017173959.GC2221@kroah.com>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-	 <20081017074453.GA4850@kroah.com>
-	 <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
-	 <20081017173959.GC2221@kroah.com>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 12:19:33 -0700
-Message-Id: <1224271173.5556.349.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 17 Oct 2008 15:20:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=OumnaQwJlsg+Vr1IWBXj0OSoWNBADIcs/x2OGwzyDqG5nqXR4pGWZbQpyHXIkr2llJ
+         rC60HDLMWk+iPiXKqoJhepJoZ0seVyK5oM3JNepdzK6R8B8TTVk9cGV/uuamyI3GtFoQ
+         m1xTnm78zEioHNLlh1XQk9RLfYvcADLx6t36o=
+Message-ID: <a4423d670810171220t4d5602fekcb66e18758149925@mail.gmail.com>
+Date: Fri, 17 Oct 2008 23:20:28 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: 2.6.27-05178-g2e532d6: list_add corruption
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 10:39 -0700, Greg KH wrote:
-> On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> > On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
-> > > On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
-> > > > Hi Joel, Greg and Co,
-> > > > 
-> > > > Here is the the first working code for allowing configfs to handle
-> > > > symlinks from sysfs struct kobject based code.  Here is the commit:
-> > > > passing struct kobject into generic target_core_mod subsystem plugins
-> > > > for locating struct block_device and struct scsi_device..  
-> > > 
-> > > Um, no.
-> > > 
-> > > You are trying to create symlinks dynamically across superblocks and
-> > > mount points?  As one of your #warning states, this isn't possible to do
-> > > correctly, nor is it even a good idea.
-> > > 
-> > > So I'd have to reject this patch, sorry.
-> > > 
-> > > What is the problem you are attempting to solve here?
-> > > 
-> > 
-> > So, the generic target_core_mod engine that lives
-> > under /sys/kernel/config/target/core needs a method to locate struct
-> > block_device and struct scsi_device for access via bio_submit() and
-> > scsi_execute_() respectively.
-> 
-> Then just pass the "name" of the block device into a configfs file,
-> nothing more is needed, right?
-> 
+I am afraid I do not know how to reproduce this.
 
-What are the preferred methods for accessing struct block_device and
-struct scsi_device from "name"..?
+WARNING: at lib/list_debug.c:30 __list_add+0x44/0x5c()
+list_add corruption. prev->next should be next (f6638448), but was
+f26f078c. (prev=f26f078c).
+Modules linked in: w83627hf hwmon_vid i2c_nforce2
+Pid: 1933, comm: rtorrent Not tainted 2.6.27-05178-g2e532d6 #6
+Call Trace:
+ [<c011de4b>] warn_slowpath+0x4b/0x69
+ [<c0137a03>] ? trace_hardirqs_off+0xb/0xd
+ [<c01070ab>] ? native_sched_clock+0x76/0x88
+ [<c0138cc5>] ? trace_hardirqs_on+0xb/0xd
+ [<c0138c93>] ? trace_hardirqs_on_caller+0xe6/0x10d
+ [<c031aa43>] ? release_sock+0xac/0xb4
+ [<c0138cc5>] ? trace_hardirqs_on+0xb/0xd
+ [<c0139d4e>] ? __lock_acquire+0xaeb/0xafa
+ [<c0139d4e>] ? __lock_acquire+0xaeb/0xafa
+ [<c0137a39>] ? put_lock_stats+0xd/0x21
+ [<c026a404>] __list_add+0x44/0x5c
+ [<c0186be0>] ep_poll_callback+0x5b/0xb4
+ [<c011735b>] __wake_up_common+0x35/0x5b
+ [<c0117c6d>] __wake_up_sync+0x31/0x44
+ [<c031ae39>] sock_def_readable+0x38/0x63
+ [<c03467eb>] tcp_rcv_established+0x37c/0x49d
+ [<c034c2cc>] tcp_v4_do_rcv+0x25/0x151
+ [<c0386269>] ? _spin_lock_nested+0x51/0x59
+ [<c034c6e9>] tcp_v4_rcv+0x2f1/0x4a2
+ [<c0336a65>] ip_local_deliver+0x86/0xd6
+ [<c03369c1>] ip_rcv+0x361/0x37f
+ [<c0322ad7>] netif_receive_skb+0x1af/0x1cf
+ [<c02e5892>] nv_napi_poll+0x201/0x4f8
+ [<c0138cc5>] ? trace_hardirqs_on+0xb/0xd
+ [<c03217f0>] net_rx_action+0x98/0x155
+ [<c0121d94>] __do_softirq+0x6a/0xf1
+ [<c0121e4a>] do_softirq+0x2f/0x47
+ [<c0121fb9>] irq_exit+0x3b/0x84
+ [<c01046fb>] do_IRQ+0x6d/0x82
+ [<c01038d0>] common_interrupt+0x28/0x30
+---[ end trace 71f919bde0b515ac ]---
+------------[ cut here ]------------
+WARNING: at lib/list_debug.c:30 __list_add+0x44/0x5c()
+list_add corruption. prev->next should be next (f6638448), but was
+f26f078c. (prev=f26f078c).
+Modules linked in: w83627hf hwmon_vid i2c_nforce2
+Pid: 1933, comm: rtorrent Tainted: G        W 2.6.27-05178-g2e532d6 #6
+Call Trace:
+ [<c011de4b>] warn_slowpath+0x4b/0x69
+ [<c0160063>] ? shmem_writepage+0x147/0x1ad
+ [<c0139de8>] ? print_lock_contention_bug+0x14/0xd7
+ [<c0138cc5>] ? trace_hardirqs_on+0xb/0xd
+ [<c0137a39>] ? put_lock_stats+0xd/0x21
+ [<c026a404>] __list_add+0x44/0x5c
+ [<c0187600>] sys_epoll_ctl+0x36f/0x405
+ [<c0137a03>] ? trace_hardirqs_off+0xb/0xd
+ [<c0102ea9>] sysenter_do_call+0x12/0x35
+---[ end trace 71f919bde0b515ac ]---
+------------[ cut here ]------------
+WARNING: at lib/list_debug.c:30 __list_add+0x44/0x5c()
+list_add corruption. prev->next should be next (f6638448), but was
+f26e4a8c. (prev=f26e4a8c).
+Modules linked in: w83627hf hwmon_vid i2c_nforce2
+Pid: 1933, comm: rtorrent Tainted: G        W 2.6.27-05178-g2e532d6 #6
+Call Trace:
+ [<c011de4b>] warn_slowpath+0x4b/0x69
+ [<c0138cc5>] ? trace_hardirqs_on+0xb/0xd
+ [<c0321890>] ? net_rx_action+0x138/0x155
+ [<c0121d28>] ? _local_bh_enable+0x86/0x88
+ [<c0137a39>] ? put_lock_stats+0xd/0x21
+ [<c026a404>] __list_add+0x44/0x5c
+ [<c0187600>] sys_epoll_ctl+0x36f/0x405
+ [<c0102ea9>] sysenter_do_call+0x12/0x35
+---[ end trace 71f919bde0b515ac ]---
+------------[ cut here ]------------
+WARNING: at lib/list_debug.c:30 __list_add+0x44/0x5c()
+list_add corruption. prev->next should be next (f6638448), but was
+f26e4a8c. (prev=f26e4a8c).
+Modules linked in: w83627hf hwmon_vid i2c_nforce2
+Pid: 1933, comm: rtorrent Tainted: G        W 2.6.27-05178-g2e532d6 #6
+Call Trace:
+ [<c011de4b>] warn_slowpath+0x4b/0x69
+ [<c0138cc5>] ? trace_hardirqs_on+0xb/0xd
+ [<c0321890>] ? net_rx_action+0x138/0x155
+ [<c0121d28>] ? _local_bh_enable+0x86/0x88
+ [<c0137a39>] ? put_lock_stats+0xd/0x21
+ [<c026a404>] __list_add+0x44/0x5c
+ [<c0187600>] sys_epoll_ctl+0x36f/0x405
+ [<c0102ea9>] sysenter_do_call+0x12/0x35
+---[ end trace 71f919bde0b515ac ]---
+BUG: unable to handle kernel paging request at 6b6b6b7b
+IP: [<c0187068>] sys_epoll_wait+0x24c/0x3c2
+*pde = 00000000
+Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+last sysfs file: /sys/devices/platform/w83627hf.656/name
+Modules linked in: w83627hf hwmon_vid i2c_nforce2
 
-> > Originally, target_core_mod used key echoed through configfs attributes
-> > like so:
-> > 
-> > export TARGET=/sys/kernel/config/target/core/
-> > 
-> > # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
-> > mkdir -p $TARGET/iblock_0/lvm_test0
-> > # OLD METHOD to reference struct block_device
-> > echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
-> > echo 1 > $TARGET/iblock_0/lvm_test0/enable
-> > # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
-> > ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
-> 
-> No, you can't do a symlink across superblocks and expect it to work like
-> you are thinking internally.
-> 
-
-<nod>  As I am coding configfs_follow_symlink() to work with sysfs
-source symlinks I am starting to see that.. :-)  I am still going to
-hack on it for a bit and see if I can get it running so that it works..
-
-> > The other point is that since configfs is based on sysfs code, it only
-> > makes sense to provide a API through configfs to take advantage of
-> > kernel data structures that can be referenced using wrappers to
-> > container_of() in include/linux/ in a common way.
-> 
-> No, just because configfs looks like sysfs internally, does not mean
-> they are related in any manner.  We have been down this argument many
-> times in the past, please don't bring it up again, it has no bearing on
-> this at all.
-> 
-
-Well, the goal is to use as much existing infrastructure as possible for
-the generic target_core_mod when referencing Linux $STORAGE_OBJECTs, be
-they struct scsi_device, struct block_device or struct file.. :-)
-
-Having *SOME* type of communication between sysfs and configfs so that
-those kernel data structures mentioned above can be accessed through
-configfs still does seem like it could be useful..
-
-Thanks for your comments,
-
---nab
-
-
+Pid: 1933, comm: rtorrent Tainted: G        W (2.6.27-05178-g2e532d6 #6)
+EIP: 0060:[<c0187068>] EFLAGS: 00010246 CPU: 0
+EIP is at sys_epoll_wait+0x24c/0x3c2
+EAX: 6b6b6b6b EBX: f26e4a8c ECX: f673e000 EDX: 00000000
+ESI: f26e4a80 EDI: f6638390 EBP: f673ffb0 ESP: f673ff4c
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process rtorrent (pid: 1933, ti=f673e000 task=f6735100 task.ti=f673e000)
+Stack:
+ f673ff9c c0176bda 00000000 f670ef00 f6638418 0000000b f6638448 f6638440
+ f26e4a8c f6638420 f66383f8 00000008 f66383b0 f673ff94 c025db74 f673ff9c
+ bfbed370 00000000 f673ffb0 bfbed370 f673ff9c f673ff9c 00000006 00000022
+Call Trace:
+ [<c0176bda>] ? mntput_no_expire+0x16/0xb4
+ [<c025db74>] ? copy_to_user+0x36/0x106
+ [<c0102ea9>] ? sysenter_do_call+0x12/0x35
+Code: c7 45 a4 00 00 00 00 e9 8e 00 00 00 8b 75 bc 83 ee 0c 8b 56 0c
+8b 46 10 89 42 04 89 10 8b 55 bc 8b 46 18 89 56 0c 89 56 10 31 d2 <8b>
+48 10 ff 51 1c 8b 5e 38 21 d8 89 5d c8 89 45 d0 74 3f 6b 45
+EIP: [<c0187068>] sys_epoll_wait+0x24c/0x3c2 SS:ESP 0068:f673ff4c
