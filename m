@@ -1,264 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYJQP51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbYJQP7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbYJQP51 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYJQP4I
+	id S1756842AbYJQP7T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbYJQP7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:56:08 -0400
-Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:3669 "EHLO
-	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757515AbYJQP4F (ORCPT
+	Fri, 17 Oct 2008 11:59:07 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:42801 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754280AbYJQP7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:56:05 -0400
-To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Subject: [PATCH 02/16] Squashfs: directory lookup operations
-Message-Id: <E1KqrTW-0001xG-Cl@dylan>
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Fri, 17 Oct 2008 16:42:50 +0100
+	Fri, 17 Oct 2008 11:59:06 -0400
+Date: Fri, 17 Oct 2008 17:58:55 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: [PATCH] hwmon updates for 2.6.28
+Message-ID: <20081017175855.4fc377ed@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
----
- fs/squashfs/namei.c |  226 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 226 insertions(+), 0 deletions(-)
+Please pull hwmon subsystem updates for Linux 2.6.28 from:
 
-diff --git a/fs/squashfs/namei.c b/fs/squashfs/namei.c
-new file mode 100644
-index 0000000..fdc1b03
---- /dev/null
-+++ b/fs/squashfs/namei.c
-@@ -0,0 +1,226 @@
-+/*
-+ * Squashfs - a compressed read only filesystem for Linux
-+ *
-+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
-+ * Phillip Lougher <phillip@lougher.demon.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2,
-+ * or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-+ *
-+ * namei.c
-+ */
-+
-+/*
-+ * This file implements code to do filename lookup in directories.
-+ *
-+ * Like inodes, directories are packed into compressed metadata blocks, stored
-+ * in a directory table.  Directories are accessed using the start address of
-+ * the metablock containing the directory and the offset into the
-+ * decompressed block (<block, offset>).
-+ *
-+ * Directories are organised in a slightly complex way, and are not simply
-+ * a list of file names.  The organisation takes advantage of the
-+ * fact that (in most cases) the inodes of the files will be in the same
-+ * compressed metadata block, and therefore, can share the start block.
-+ * Directories are therefore organised in a two level list, a directory
-+ * header containing the shared start block value, and a sequence of directory
-+ * entries, each of which share the shared start block.  A new directory header
-+ * is written once/if the inode start block changes.  The directory
-+ * header/directory entry list is repeated as many times as necessary.
-+ *
-+ * Directories are sorted, and can contain a directory index to speed up
-+ * file lookup.  Directory indexes store one entry per metablock, each entry
-+ * storing the index/filename mapping to the first directory header
-+ * in each metadata block.  Directories are sorted in alphabetical order,
-+ * and at lookup the index is scanned linearly looking for the first filename
-+ * alphabetically larger than the filename being looked up.  At this point the
-+ * location of the metadata block the filename is in has been found.
-+ * The general idea of the index is ensure only one metadata block needs to be
-+ * decompressed to do a lookup irrespective of the length of the directory.
-+ * This scheme has the advantage that it doesn't require extra memory overhead
-+ * and doesn't require much extra storage on disk.
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/vfs.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/dcache.h>
-+#include <linux/zlib.h>
-+#include <linux/squashfs_fs.h>
-+#include <linux/squashfs_fs_sb.h>
-+#include <linux/squashfs_fs_i.h>
-+
-+#include "squashfs.h"
-+
-+/*
-+ * Lookup name in the directory index, returning the location of the metadata
-+ * block containing it, and the directory index this represents.
-+ */
-+static int get_dir_index_using_name(struct super_block *s,
-+			long long *next_block, unsigned int *next_offset,
-+			long long index_start, unsigned int index_offset,
-+			int i_count, const char *name, int len)
-+{
-+	struct squashfs_sb_info *msblk = s->s_fs_info;
-+	int i, size, length = 0;
-+	struct squashfs_dir_index *index;
-+	char *str;
-+
-+	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
-+
-+	str = kmalloc(sizeof(*index) + (SQUASHFS_NAME_LEN + 1) * 2, GFP_KERNEL);
-+	if (str == NULL) {
-+		ERROR("Failed to allocate squashfs_dir_index\n");
-+		goto out;
-+	}
-+
-+	index = (struct squashfs_dir_index *) (str + SQUASHFS_NAME_LEN + 1);
-+	strncpy(str, name, len);
-+	str[len] = '\0';
-+
-+	for (i = 0; i < i_count; i++) {
-+		squashfs_read_metadata(s, index, index_start, index_offset,
-+					sizeof(*index), &index_start,
-+					&index_offset);
-+
-+		size = le32_to_cpu(index->size) + 1;
-+
-+		squashfs_read_metadata(s, index->name, index_start,
-+					index_offset, size, &index_start,
-+					&index_offset);
-+
-+		index->name[size] = '\0';
-+
-+		if (strcmp(index->name, str) > 0)
-+			break;
-+
-+		length = le32_to_cpu(index->index);
-+		*next_block = le32_to_cpu(index->start_block) +
-+					msblk->directory_table_start;
-+	}
-+
-+	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
-+	kfree(str);
-+
-+out:
-+	/*
-+	 * Return index (f_pos) of the looked up metadata block.  Translate
-+	 * from internal f_pos to external f_pos which is offset by 3 because
-+	 * we invent "." and ".." entries which are not actually stored in the
-+	 * directory.
-+	 */
-+	return length + 3;
-+}
-+
-+
-+static struct dentry *squashfs_lookup(struct inode *i, struct dentry *dentry,
-+				struct nameidata *nd)
-+{
-+	const unsigned char *name = dentry->d_name.name;
-+	int len = dentry->d_name.len;
-+	struct inode *inode = NULL;
-+	struct squashfs_sb_info *msblk = i->i_sb->s_fs_info;
-+	long long next_block = SQUASHFS_I(i)->start_block +
-+				msblk->directory_table_start;
-+	int next_offset = SQUASHFS_I(i)->offset, length = 0, dir_count, size;
-+	struct squashfs_dir_header dirh;
-+	struct squashfs_dir_entry *dire;
-+	unsigned int start_block, offset, ino_number;
-+	long long ino;
-+
-+	TRACE("Entered squashfs_lookup [%llx:%x]\n", next_block, next_offset);
-+
-+	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
-+	if (dire == NULL) {
-+		ERROR("Failed to allocate squashfs_dir_entry\n");
-+		goto exit_lookup;
-+	}
-+
-+	if (len > SQUASHFS_NAME_LEN)
-+		goto exit_lookup;
-+
-+	length = get_dir_index_using_name(i->i_sb, &next_block, &next_offset,
-+				SQUASHFS_I(i)->dir_index_start,
-+				SQUASHFS_I(i)->dir_index_offset,
-+				SQUASHFS_I(i)->dir_index_count, name, len);
-+
-+	while (length < i_size_read(i)) {
-+		/*
-+		 * Read directory header.
-+		 */
-+		if (!squashfs_read_metadata(i->i_sb, &dirh, next_block,
-+				next_offset, sizeof(dirh), &next_block,
-+				&next_offset))
-+			goto failed_read;
-+
-+		length += sizeof(dirh);
-+
-+		dir_count = le32_to_cpu(dirh.count) + 1;
-+		while (dir_count--) {
-+			/*
-+			 * Read directory entry.
-+			 */
-+			if (!squashfs_read_metadata(i->i_sb, dire,
-+					next_block, next_offset, sizeof(*dire),
-+					&next_block, &next_offset))
-+				goto failed_read;
-+
-+			size = le16_to_cpu(dire->size) + 1;
-+
-+			if (!squashfs_read_metadata(i->i_sb, dire->name,
-+					next_block, next_offset, size,
-+					&next_block, &next_offset))
-+				goto failed_read;
-+
-+			length += sizeof(*dire) + size;
-+
-+			if (name[0] < dire->name[0])
-+				goto exit_lookup;
-+
-+			if (len == size && !strncmp(name, dire->name, len)) {
-+				start_block = le32_to_cpu(dirh.start_block);
-+				offset = le16_to_cpu(dire->offset);
-+				ino_number = le32_to_cpu(dirh.inode_number) +
-+					(short) le16_to_cpu(dire->inode_number);
-+				ino = SQUASHFS_MKINODE(start_block, offset);
-+
-+				TRACE("calling squashfs_iget for directory "
-+					"entry %s, inode  %x:%x, %d\n", name,
-+					start_block, offset, ino_number);
-+
-+				inode = squashfs_iget(i->i_sb, ino, ino_number);
-+
-+				goto exit_lookup;
-+			}
-+		}
-+	}
-+
-+exit_lookup:
-+	kfree(dire);
-+	if (inode)
-+		return d_splice_alias(inode, dentry);
-+	d_add(dentry, inode);
-+	return ERR_PTR(0);
-+
-+failed_read:
-+	ERROR("Unable to read directory block [%llx:%x]\n", next_block,
-+		next_offset);
-+	goto exit_lookup;
-+}
-+
-+
-+const struct inode_operations squashfs_dir_inode_ops = {
-+	.lookup = squashfs_lookup
-+};
+git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
+
+In the absence of a maintainer for the hwmon subsystem, I have gathered
+a number of patches which have been posted to the lm-sensors mailing
+list over the past few months and reviewed publicly. This will ensure
+that these patches, which I consider ready for upstream, aren't lost,
+so developers can spend their time to something else than resending
+these patches over and over again. This will also make an hypothetical
+future hwmon subsystem maintainer's job easier by limiting the backlog
+he or she would have to go through.
+
+I've also added a few patches I wrote myself and which haven't been
+reviewed, but which are so trivial that delaying them would be stupid.
+
+ Documentation/hwmon/adt7470       |   76 +++
+ Documentation/hwmon/it87          |    4 +-
+ Documentation/hwmon/lm85          |   10 -
+ Documentation/hwmon/lm87          |    9 +-
+ Documentation/hwmon/lm90          |   45 ++-
+ Documentation/hwmon/pc87360       |    7 +-
+ Documentation/hwmon/pc87427       |    2 +-
+ Documentation/hwmon/w83781d       |   37 ++-
+ Documentation/hwmon/w83791d       |   43 ++-
+ drivers/hwmon/Kconfig             |    8 +-
+ drivers/hwmon/adm1026.c           |   17 +-
+ drivers/hwmon/adm1029.c           |    5 +-
+ drivers/hwmon/ams/ams-core.c      |   82 ++--
+ drivers/hwmon/ams/ams-i2c.c       |   60 +--
+ drivers/hwmon/ams/ams-input.c     |   63 ++-
+ drivers/hwmon/ams/ams-pmu.c       |   18 +-
+ drivers/hwmon/ams/ams.h           |    4 +-
+ drivers/hwmon/ibmaem.c            |    7 +
+ drivers/hwmon/ibmpex.c            |    6 +
+ drivers/hwmon/it87.c              |   11 +-
+ drivers/hwmon/lm78.c              |  270 ++++++-----
+ drivers/hwmon/lm85.c              |  352 +++++++-------
+ drivers/hwmon/lm87.c              |   33 +-
+ drivers/hwmon/lm90.c              |  444 ++++++++++++-----
+ drivers/hwmon/max1619.c           |   17 +-
+ drivers/hwmon/w83781d.c           |  976 ++++++++++++++++++++-----------------
+ drivers/hwmon/w83791d.c           |  324 ++++++++++++-
+ drivers/i2c/busses/i2c-powermac.c |   29 ++
+ 28 files changed, 1864 insertions(+), 1095 deletions(-)
+ create mode 100644 Documentation/hwmon/adt7470
+
+---------------
+
+Andrew Morton (1):
+      hwmon: (max1619) Use inline functions instead of macros
+
+Ben Hutchings (5):
+      hwmon: (lm90) Rename temperature conversion functions to match usage
+      hwmon: (lm90) Support MAX6646, MAX6647 and MAX6649
+      hwmon: (lm87) Fix masking of config register in lm87_init_client()
+      hwmon: (lm87) Restore original configuration register on removal
+      hwmon: (lm87) Add support for configuration through platform_data
+
+Corentin Labbe (1):
+      hwmon: (adm1029) Use mask for fan_div value
+
+Darrick J. Wong (3):
+      hwmon: (ibmpex) Automatically load on IBM systems via DMI
+      hwmon: (ibmaem) Automatically load on IBM systems via DMI
+      hwmon: (adt7470) Add documentation
+
+Dmitry Torokhov (3):
+      hwmon: (ams) Fix permissions on 'joystick' module parameter
+      hwmon: (ams) Fix locking issues
+      hwmon: (ams) Simplify IRQ handling routine
+
+Jean Delvare (26):
+      hwmon: (lm90) Move 16-bit value read to a separate function
+      hwmon: (lm90) Support the extra resolution bits of MAX6657
+      hwmon: (lm90) Don't access nonexistent registers on Maxim chips
+      hwmon: (lm90) Update datasheet links
+      hwmon: (lm90) Don't spam the kernel log
+      hwmon: (ams) Convert to a new-style i2c driver
+      hwmon: (lm85) Rework the device detection
+      hwmon: (lm85) Implement the standard PWM frequency interface
+      hwmon: (lm85) Select the closest PWM frequency
+      hwmon: (lm85) Support different PWM frequency tables
+      hwmon: (lm85) Convert to a new-style i2c driver
+      hwmon: (lm85) Simplify RANGE_TO_REG
+      hwmon: (lm85) Better label names
+      hwmon: (lm78) Fix I/O resource conflict with PNP
+      hwmon: (lm78) Detect alias chips
+      hwmon: (lm78) Prevent misdetection of Winbond chips
+      hwmon: (lm78) Stop abusing struct i2c_client for ISA devices
+      hwmon: (lm78) Convert to a new-style i2c driver
+      hwmon: (it87) Fix thermal sensor type values
+      hwmon: Drop dead links to old National Semiconductor chip datasheets
+      hwmon: (w83781d) Refactor beep enable handling
+      hwmon: (w83781d) Detect alias chips
+      hwmon: (w83781d) Additional information about AS99127F PWM
+      hwmon: (w83781d) Stop abusing struct i2c_client for ISA devices
+      hwmon: (adm1026) Fix debug messages
+      hwmon: (adm1026) Prevent log spamming
+
+Marc Hulsman (4):
+      hwmon: (w83791d) fan 4/5 pins can also be used for gpio
+      hwmon: (w83791d) add manual PWM support
+      hwmon: (w83791d) add pwm_enable support
+      hwmon: (w83791d) add support for thermal cruise mode
+
+Nate Case (2):
+      hwmon: (lm90) Convert some macros to static functions
+      hwmon: (lm90) Support ADT7461 in extended mode
+
+Wolfgang Grandegger (2):
+      hwmon: (w83781d) Make ISA interface depend on CONFIG_ISA
+      hwmon: (w83781d) Use new style driver binding
+
+Thanks,
 -- 
-1.5.2.5
-
+Jean Delvare
