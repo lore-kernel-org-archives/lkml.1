@@ -1,126 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbYJQUaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbYJQUb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbYJQUaZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYJQUaE
+	id S1756325AbYJQUb5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYJQUbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:30:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752543AbYJQUaA (ORCPT
+	Fri, 17 Oct 2008 16:31:48 -0400
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:34623 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752569AbYJQUbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:30:00 -0400
-Date: Fri, 17 Oct 2008 13:29:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Matt Mackall <mpm@selenic.com>, Hugh Dickins <hugh@veritas.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc] SLOB memory ordering issue
-In-Reply-To: <200810160506.14261.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.2.00.0810171235310.3438@nehalem.linux-foundation.org>
-References: <200810160334.13082.nickpiggin@yahoo.com.au> <1224089658.3316.218.camel@calx> <200810160410.49894.nickpiggin@yahoo.com.au> <200810160506.14261.nickpiggin@yahoo.com.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 17 Oct 2008 16:31:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Vr17/Kdg/Njcpsywbp5TE7UVJrddfUH9Mv5adxCp9nwn+UIJc4WKhRcTVZxDE3j49eClAJfb0PBhyabAI+MYGsN/cjai7hi78zejA91bHh6uEELBExRtdURzcP/hIDUm4gBeTnBmCM6vu62v/p6T24/d0XthfhYEuUoIaRrSmJw=  ;
+X-YMail-OSG: .NVSMQoVM1lhaBUa8pv83jp5F6DXT5er3DDUOeCJ7_CjOtuqvFCK2zbM3dSteNbJRkR6QQNEz1wvlDQWKMLtuoJgXHbdvqIWS.wX3UZWKyI3kZNCJklW9GRhYifpfHzyZ0rwsGy37dhoPoKrc_Df_n8rFZp_NVWqNIBToGs-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Date: Fri, 17 Oct 2008 13:24:42 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       "Steven A. Falco" <sfalco@harris.com>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
+       i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081016171259.GD5515@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081016171259.GD5515@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200810171324.42650.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 16 October 2008, Anton Vorontsov wrote:
+> +/*
+> + * Platforms can define their own __dev_ versions to glue gpio_chips with the
+> + * architecture-specific code.
+> + */
+> +#ifndef __dev_gpiochip_add
+> +#define __dev_gpiochip_add __dev_gpiochip_add
+> +static inline int __dev_gpiochip_add(struct device *dev,
+> +                                    struct gpio_chip *chip)
+> +{
+> +       chip->dev = dev;
+> +       return gpiochip_add(chip);
+> +}
+> +#endif /* __dev_gpiochip_add */
 
-Ok, finally looked at this.
+This is pretty ugly, especially the implication that *EVERY* gpio_chip
+provider needs modification to use these calls.
 
-There is indeed a locking bug there. "anon_vma_prepare()" optimistically 
-looks at vma->anon_vma without taking the &mm->page_table_lock. That's not 
-right.
+Surely it would be a lot simpler to just add platform-specific hooks
+to gpiochip_{add,remove}(), so that no providers need to be changed??
 
-Of course, we could just take the lock, but in this case it's probably ok 
-to just admit that we have a lockless algorithm. But that implies that we 
-need to do the right memory ordering.
 
-And that, in turn, doesn't just imply a "smp_wmb()" - if you do memory 
-ordering, you need to do it on *both* sides, so now the other side needs 
-to also do a matching smp_rmb(). Or, in this case, smp_rmb_depends(), I 
-guess.
+> +#ifndef __dev_gpiochip_remove
+> +#define __dev_gpiochip_remove __dev_gpiochip_remove
+> +static inline int __dev_gpiochip_remove(struct device *dev,
+> +                                       struct gpio_chip *chip)
+> +{
+> +       return gpiochip_remove(chip);
+> +}
+> +#endif /* __dev_gpiochip_remove */
 
-That, btw, is an important part of memory ordering. You can never do 
-ordering on just one side. A "smp_wmb()" on its own is always nonsensical. 
-It always needs to be paired with a "smp_rmb()" variant.
 
-Something like the appended may fix it.
-
-But I do think we have a potential independent issue with the new page 
-table lookup code now that it's lock-free. We have the smp_rmb() calls in 
-gup_get_pte() (at least on x86), when we look things up, but we don't 
-actually have a lot of smp_wmb()'s there when we insert the page.
-
-For the anonymous page case, we end up doing a
-
-	page_add_new_anon_rmap();
-
-before we do the set_pte_at() that actually exposes it, and that does the 
-whole
-
-	page->mapping = (struct address_space *) anon_vma;
-	page->index = linear_page_index(vma, address);
-
-thing, but there is no write barrier between those and the actual write to 
-the page tables, so when GUP looks up the page, it can't actually depend 
-on page->mappign or anything else!
-
-Now, this really isn't an issue on x86, since smp_wmb() is a no-op, and 
-the compiler won't be re-ordering the writes, but in general I do think 
-that now that we do lockless lookup of pages from the page tables, we 
-probably do need smp_wmb()'s there just in front of the "set_pte_at()" 
-calls.
-
-NOTE NOTE! The patch below is only about "page->anon_vma", not about the 
-GUP lookup and page->mapping/index fields. That's an independent issue.
-
-And notice? This has _nothing_ to do with constructors or allocators.
-
-And of course - this patch is totally untested, and may well need some 
-thinking about.
-
-			Linus
-
----
- mm/rmap.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
-
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 0383acf..21d09bb 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -81,6 +81,13 @@ int anon_vma_prepare(struct vm_area_struct *vma)
- 		/* page_table_lock to protect against threads */
- 		spin_lock(&mm->page_table_lock);
- 		if (likely(!vma->anon_vma)) {
-+			/*
-+			 * We hold the mm->page_table_lock, but another
-+			 * CPU may be doing an optimistic load (the one
-+			 * at the top), and we want to make sure that
-+			 * the anon_vma changes are visible.
-+			 */
-+			smp_wmb();
- 			vma->anon_vma = anon_vma;
- 			list_add_tail(&vma->anon_vma_node, &anon_vma->head);
- 			allocated = NULL;
-@@ -92,6 +99,17 @@ int anon_vma_prepare(struct vm_area_struct *vma)
- 		if (unlikely(allocated))
- 			anon_vma_free(allocated);
- 	}
-+	/*
-+	 * Subtle: we looked up anon_vma without any locking
-+	 * (in the comon case), and are going to look at the
-+	 * spinlock etc behind it. In order to know that it's
-+	 * initialized, we need to do a read barrier here.
-+	 *
-+	 * We can use the cheaper "depends" version, since we
-+	 * are following a pointer, and only on alpha may that
-+	 * give a stale value.
-+	 */
-+	smp_read_barrier_depends();
- 	return 0;
- }
- 
