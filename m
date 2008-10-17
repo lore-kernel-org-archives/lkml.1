@@ -1,162 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYJQLeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYJQLik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754481AbYJQLeI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYJQLd4
+	id S1754109AbYJQLik (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 07:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYJQLic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:33:56 -0400
-Received: from iona.labri.fr ([147.210.8.143]:60214 "EHLO iona.labri.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752954AbYJQLdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:33:55 -0400
-Message-ID: <48F87885.5000606@inria.fr>
-Date: Fri, 17 Oct 2008 13:35:33 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 17 Oct 2008 07:38:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:17754 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752977AbYJQLib (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 07:38:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iXt1KwgcsNkbJtCvVxruJphiP0yKGBHsc2U6SCsDTV/R6TQn0mAe0MjttnqNUGA1T3
+         eiTJ8CzCqxGtVBftA/IWXcmToQiK4frBTfdmtzD7G/6TjIcmDBlw/KaUBojskh1CxQ5q
+         LlPJxmrT99IYjAl83YsM8LbPSIDJv/o+AnbuA=
+Date: Fri, 17 Oct 2008 15:41:32 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86/proc: fix /proc/cpuinfo cpu offline bug
+Message-ID: <20081017114132.GA18994@x200.localdomain>
+References: <48F852FD.7070108@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nathalie Furmento <nathalie.furmento@labri.fr>
-Subject: [RESEND][PATCH] mm: rework do_pages_move() to work on page_sized
- chunks
-References: <48F3AD47.1050301@inria.fr> <48F3AE1D.3060208@inria.fr> <48F79B42.3070106@linux-foundation.org>
-In-Reply-To: <48F79B42.3070106@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F852FD.7070108@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rework do_pages_move() to work by page-sized chunks of struct page_to_node
-that are passed to do_move_page_to_node_array(). We now only have to
-allocate a single page instead a possibly very large vmalloc area to store
-all page_to_node entries.
+On Fri, Oct 17, 2008 at 04:55:25PM +0800, Lai Jiangshan wrote:
+> In my test, I found that if a cpu has been offline,
+> the next cpus may not be shown in the /proc/cpuinfo.
+> 
+> trivially reproduce this bug:
+> 
+> 1) add these lines in the end of show_cpuinfo()
+> 	if (m->size - m->count - 20 > 0)
+> 		seq_printf(m, "%*s", (int)(m->size - m->count - 20), "show bug\n");
 
-As a result, new_page_node() will now have a very small lookup, hidding
-much of the overall sys_move_pages() overhead.
+What is it?
 
-Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
-Signed-off-by: Nathalie Furmento <Nathalie.Furmento@labri.fr>
----
- mm/migrate.c |   79 ++++++++++++++++++++++++++++++++-------------------------
- 1 files changed, 44 insertions(+), 35 deletions(-)
+Can you just show wrong /proc/cpuinfo ?
 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index dffc98b..678589c 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -947,41 +947,43 @@ static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
- 			 const int __user *nodes,
- 			 int __user *status, int flags)
- {
--	struct page_to_node *pm = NULL;
-+	struct page_to_node *pm;
- 	nodemask_t task_nodes;
--	int err = 0;
--	int i;
-+	unsigned long chunk_nr_pages;
-+	unsigned long chunk_start;
-+	int err;
- 
- 	task_nodes = cpuset_mems_allowed(task);
- 
--	/* Limit nr_pages so that the multiplication may not overflow */
--	if (nr_pages >= ULONG_MAX / sizeof(struct page_to_node) - 1) {
--		err = -E2BIG;
--		goto out;
--	}
--
--	pm = vmalloc((nr_pages + 1) * sizeof(struct page_to_node));
--	if (!pm) {
--		err = -ENOMEM;
-+	err = -ENOMEM;
-+	pm = (struct page_to_node *)__get_free_page(GFP_KERNEL);
-+	if (!pm)
- 		goto out;
--	}
--
- 	/*
--	 * Get parameters from user space and initialize the pm
--	 * array. Return various errors if the user did something wrong.
-+	 * Store a chunk of page_to_node array in a page,
-+	 * but keep the last one as a marker
- 	 */
--	for (i = 0; i < nr_pages; i++) {
--		const void __user *p;
-+	chunk_nr_pages = (PAGE_SIZE / sizeof(struct page_to_node)) - 1;
- 
--		err = -EFAULT;
--		if (get_user(p, pages + i))
--			goto out_pm;
-+	for (chunk_start = 0;
-+	     chunk_start < nr_pages;
-+	     chunk_start += chunk_nr_pages) {
-+		int j;
-+
-+		if (chunk_start + chunk_nr_pages > nr_pages)
-+			chunk_nr_pages = nr_pages - chunk_start;
- 
--		pm[i].addr = (unsigned long)p;
--		if (nodes) {
-+		/* fill the chunk pm with addrs and nodes from user-space */
-+		for (j = 0; j < chunk_nr_pages; j++) {
-+			const void __user *p;
- 			int node;
- 
--			if (get_user(node, nodes + i))
-+			err = -EFAULT;
-+			if (get_user(p, pages + j + chunk_start))
-+				goto out_pm;
-+			pm[j].addr = (unsigned long) p;
-+
-+			if (get_user(node, nodes + j + chunk_start))
- 				goto out_pm;
- 
- 			err = -ENODEV;
-@@ -992,22 +994,29 @@ static int do_pages_move(struct mm_struct *mm, struct task_struct *task,
- 			if (!node_isset(node, task_nodes))
- 				goto out_pm;
- 
--			pm[i].node = node;
--		} else
--			pm[i].node = 0;	/* anything to not match MAX_NUMNODES */
--	}
--	/* End marker */
--	pm[nr_pages].node = MAX_NUMNODES;
-+			pm[j].node = node;
-+		}
-+
-+		/* End marker for this chunk */
-+		pm[chunk_nr_pages].node = MAX_NUMNODES;
-+
-+		/* Migrate this chunk */
-+		err = do_move_page_to_node_array(mm, pm,
-+						 flags & MPOL_MF_MOVE_ALL);
-+		if (err < 0)
-+			goto out_pm;
- 
--	err = do_move_page_to_node_array(mm, pm, flags & MPOL_MF_MOVE_ALL);
--	if (err >= 0)
- 		/* Return status information */
--		for (i = 0; i < nr_pages; i++)
--			if (put_user(pm[i].status, status + i))
-+		for (j = 0; j < chunk_nr_pages; j++)
-+			if (put_user(pm[j].status, status + j + chunk_start)) {
- 				err = -EFAULT;
-+				goto out_pm;
-+			}
-+	}
-+	err = 0;
- 
- out_pm:
--	vfree(pm);
-+	free_page((unsigned long)pm);
- out:
- 	return err;
- }
--- 
-1.5.6.5
+Can someone with at least 4-way box please do so?
 
+> 3) offline cpu#1
+> 4) cat /proc/cpuinfo
+>    cpu#2 and cpu#3 .... cannot be shown in /proc/cpuinfo
 
+> --- a/arch/x86/kernel/cpu/proc.c
+> +++ b/arch/x86/kernel/cpu/proc.c
+> @@ -160,14 +160,16 @@ static void *c_start(struct seq_file *m, loff_t *pos)
+>  {
+>  	if (*pos == 0)	/* just in case, cpu 0 is not the first */
+>  		*pos = first_cpu(cpu_online_map);
+> -	if ((*pos) < nr_cpu_ids && cpu_online(*pos))
+> +	else
+> +		*pos = next_cpu_nr(*pos - 1, cpu_online_map);
+> +	if ((*pos) < nr_cpu_ids)
+>  		return &cpu_data(*pos);
+>  	return NULL;
+>  }
+>  
+>  static void *c_next(struct seq_file *m, void *v, loff_t *pos)
+>  {
+> -	*pos = next_cpu(*pos, cpu_online_map);
+> +	(*pos)++;
+>  	return c_start(m, pos);
+>  }
