@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYJQDCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbYJQDG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbYJQDCo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 23:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYJQDCg
+	id S1753724AbYJQDG6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 23:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYJQDGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 23:02:36 -0400
-Received: from gate.crashing.org ([63.228.1.57]:34580 "EHLO gate.crashing.org"
+	Thu, 16 Oct 2008 23:06:50 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36190 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752164AbYJQDCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 23:02:35 -0400
+	id S1752105AbYJQDGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 23:06:49 -0400
 Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
@@ -17,14 +17,15 @@ Cc: Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
        linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
        David Miller <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20081016.013850.85183428.davem@davemloft.net>
+In-Reply-To: <1224212533.7654.60.camel@pasglop>
 References: <48F409E9.3030501@zytor.com>
 	 <20081013.223811.174710738.davem@davemloft.net>
 	 <Pine.LNX.4.64.0810161030120.9022@vixen.sonytel.be>
 	 <20081016.013850.85183428.davem@davemloft.net>
+	 <1224212533.7654.60.camel@pasglop>
 Content-Type: text/plain
-Date: Fri, 17 Oct 2008 14:02:13 +1100
-Message-Id: <1224212533.7654.60.camel@pasglop>
+Date: Fri, 17 Oct 2008 14:06:31 +1100
+Message-Id: <1224212791.7654.63.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -43,20 +44,12 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Time that we sort that out once for all. I have patches for converting
-some of PCI that I'll send later, and doing more as we speak.
-
-I took Linus variant, added 0x and made it print lowercase. There's
-still the question of whether we want to also make it pad with zeros
-(the number of zeros being based on the size of resource_size_t,
-maybe with hacks to limit IO size on x86 ?)
-
-Let me know and I'll respin if necessary.
+And this one has updated comments.
 
 Index: linux-work/lib/vsprintf.c
 ===================================================================
 --- linux-work.orig/lib/vsprintf.c	2008-10-17 13:30:18.000000000 +1100
-+++ linux-work/lib/vsprintf.c	2008-10-17 13:55:25.000000000 +1100
++++ linux-work/lib/vsprintf.c	2008-10-17 14:04:58.000000000 +1100
 @@ -24,6 +24,7 @@
  #include <linux/kernel.h>
  #include <linux/kallsyms.h>
@@ -65,7 +58,7 @@ Index: linux-work/lib/vsprintf.c
  
  #include <asm/page.h>		/* for PAGE_SIZE */
  #include <asm/div64.h>
-@@ -550,6 +551,22 @@ static char *symbol_string(char *buf, ch
+@@ -550,18 +551,38 @@ static char *symbol_string(char *buf, ch
  #endif
  }
  
@@ -88,7 +81,30 @@ Index: linux-work/lib/vsprintf.c
  /*
   * Show a '%p' thing.  A kernel extension is that the '%p' is followed
   * by an extra set of alphanumeric characters that are extended format
-@@ -571,6 +588,8 @@ static char *pointer(const char *fmt, ch
+  * specifiers.
+  *
+- * Right now we just handle 'F' (for symbolic Function descriptor pointers)
+- * and 'S' (for Symbolic direct pointers), but this can easily be
+- * extended in the future (network address types etc).
+- *
+- * The difference between 'S' and 'F' is that on ia64 and ppc64 function
+- * pointers are really function descriptors, which contain a pointer the
+- * real address. 
++ * Right now we handle:
++ *
++ * - 'F' For symbolic Function descriptor pointers
++ * - 'S' For Symbolic direct pointers), but this can easily be
++ *       extended in the future (network address types etc).
++ * - 'R' For a struct resouce pointer, it prints the range of
++ *       addresses (not the name nor the flags)
++ *
++ * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
++ * function pointers are really function descriptors, which contain a
++ * pointer the real address.
+  */
+ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+ {
+@@ -571,6 +592,8 @@ static char *pointer(const char *fmt, ch
  		/* Fallthrough */
  	case 'S':
  		return symbol_string(buf, end, ptr, field_width, precision, flags);
@@ -97,5 +113,13 @@ Index: linux-work/lib/vsprintf.c
  	}
  	flags |= SMALL;
  	if (field_width == -1) {
+@@ -590,6 +613,7 @@ static char *pointer(const char *fmt, ch
+  * This function follows C99 vsnprintf, but has some extensions:
+  * %pS output the name of a text symbol
+  * %pF output the name of a function pointer
++ * %pR output the address range in a struct resource
+  *
+  * The return value is the number of characters which would
+  * be generated for the given input, excluding the trailing
 
 
