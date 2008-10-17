@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYJQMOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbYJQMRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYJQMOX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYJQMOL
+	id S1754168AbYJQMRx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYJQMRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:14:11 -0400
-Received: from mail.us.es ([193.147.175.20]:33876 "EHLO us.es"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753061AbYJQMOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:14:09 -0400
-Message-ID: <48F883D4.8050809@netfilter.org>
-Date: Fri, 17 Oct 2008 14:23:48 +0200
-From: Pablo Neira Ayuso <pablo@netfilter.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+	Fri, 17 Oct 2008 08:17:46 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:57750 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753410AbYJQMRp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 08:17:45 -0400
+Date: Fri, 17 Oct 2008 13:17:17 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Bodo Eggert <7eggert@gmx.de>
+cc: David Newall <davidn@davidnewall.com>,
+       Peter Zijlstra <peterz@infradead.org>, Peter Cordes <peter@cordes.ca>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: no way to swapoff a deleted swap file?
+In-Reply-To: <E1KqkZK-0001HO-WF@be1.7eggert.dyndns.org>
+Message-ID: <Pine.LNX.4.64.0810171250410.22374@blonde.site>
+References: <bnlDw-5vQ-7@gated-at.bofh.it> <bnwpg-2EA-17@gated-at.bofh.it>
+ <bnJFK-3bu-7@gated-at.bofh.it> <bnR0A-4kq-1@gated-at.bofh.it>
+ <E1KqkZK-0001HO-WF@be1.7eggert.dyndns.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-References: <20081015.163817.193700221.davem@davemloft.net> <20081017082138.GA23155@elte.hu> <48F87D3E.5020007@trash.net> <20081017120408.GA20030@elte.hu>
-In-Reply-To: <20081017120408.GA20030@elte.hu>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Patrick McHardy <kaber@trash.net> wrote:
+On Fri, 17 Oct 2008, Bodo Eggert wrote:
 > 
->>> net/netfilter/nf_conntrack_netlink.c:819: warning: ‘enum nf_nat_manip_type’ declared inside parameter list
->>> net/netfilter/nf_conntrack_netlink.c:819: warning: its scope is only this definition or declaration, which is probably not what you want
->>> net/netfilter/nf_conntrack_netlink.c:818: error: parameter 2 (‘manip’) has incomplete type
->> Thanks Ingo. I just sent this patch to Benjamin Herrenschmidt
->> for testing.
-> 
-> build still fails with the attached config.
+> Somebody might want their swapfiles to have zero links,
+> _and_ the possibility of doing swapoff.
 
-We have to wrap ctnetlink_parse_nat_setup with CONFIG_NF_NAT_NEEDED, 
-I'll send you a patch asap. Sorry for the breakage.
+You're right, they might, and it's not an unreasonable wish.
+But we've not supported it in the past, and I still don't
+think it's worth adding special kernel support for it now.
 
--- 
-"Los honestos son inadaptados sociales" -- Les Luthiers
+> If you can do it by keeping some fds open to let
+> /proc/pid/fd point to the files, I think it's OK.
+
+I've a very strong aversion to adding strange code to abuse the
+/proc/<pid>/fd space of some random kernel thread - a "kswapd"
+because its name contains the substring "swap"?
+
+Hugh
