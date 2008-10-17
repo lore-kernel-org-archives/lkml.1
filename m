@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYJQHH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbYJQHJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753198AbYJQHH1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 03:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbYJQHHR
+	id S1753243AbYJQHJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 03:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJQHJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 03:07:17 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:26395 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYJQHHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 03:07:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=hMWSZpxmDh5eNARVkKBFPY9ZeYmzfBv0t+g/PAMCSOqDkfm6q61C53jctMmEuIpqWe
-         lLROY3OD2ijqcyz7Z/f4F5lDCzv4eeHPwpvlEM/Sq6BrkMwO1vmzIURfjXeQZQLPJvNX
-         MNgkoY/J75dcAkK7EAIf2sn+8L9yBo2bdxlWU=
-Message-ID: <804dabb00810170007hacb0e97rdbd251664bb06de4@mail.gmail.com>
-Date: Fri, 17 Oct 2008 15:07:13 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: How to get the PTE pointer for a linear address?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 03:09:39 -0400
+Received: from mga09.intel.com ([134.134.136.24]:64782 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751207AbYJQHJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 03:09:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,430,1220252400"; 
+   d="scan'208";a="452429837"
+Date: Fri, 17 Oct 2008 09:09:27 +0200
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
+       akpm@linux-foundation.org
+Subject: [patch] x86, bts: improve help text for BTS config
+Message-ID: <20081017090927.A5454@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If I allocate kernel memory via alloc_page(GFP_KERNEL),  and convert
-that struct page pointer to linear address via page_address(), how do
-I derive the PTE pointer of that page?
+Improve the help text of the X86_PTRACE_BTS config.
+Make X86_DS invisible and depend on X86_PTRACE_BTS.
 
-Following the source code, I did the following:
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-        pgd_t *pgd = pgd_offset_k(address);
+Index: gits/arch/x86/Kconfig.cpu
+===================================================================
+--- gits.orig/arch/x86/Kconfig.cpu	2008-10-15 09:02:47.000000000 +0200
++++ gits/arch/x86/Kconfig.cpu	2008-10-15 12:59:21.000000000 +0200
+@@ -513,19 +513,19 @@
+ 	  If unsure, say N.
+ 
+ config X86_DS
+-	bool "Debug Store support"
+-	default y
+-	help
+-	  Add support for Debug Store.
+-	  This allows the kernel to provide a memory buffer to the hardware
+-	  to store various profiling and tracing events.
++	def_bool X86_PTRACE_BTS
++	depends on X86_DEBUGCTLMSR
+ 
+ config X86_PTRACE_BTS
+-	bool "ptrace interface to Branch Trace Store"
++	bool "Branch Trace Store"
+ 	default y
+-	depends on (X86_DS && X86_DEBUGCTLMSR)
++	depends on X86_DEBUGCTLMSR
+ 	help
+-	  Add a ptrace interface to allow collecting an execution trace
+-	  of the traced task.
+-	  This collects control flow changes in a (cyclic) buffer and allows
+-	  debuggers to fill in the gaps and show an execution trace of the debuggee.
++	  This adds a ptrace interface to the hardware's branch trace store.
++
++	  Debuggers may use it to collect an execution trace of the debugged
++	  application in order to answer the question 'how did I get here?'.
++	  Debuggers may trace user mode as well as kernel mode.
++
++	  Say Y unless there is no application development on this machine
++	  and you want to save a small amount of code size.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-        if (pgd_none(*pgd)) {
-                printk("no pgd ");
-                return 0;
-        }
-        pud = pud_offset(pgd, address);
-        if (pud_none(*pud)) {
-                printk("no pud ");
-                return 0;
-        }
-        pmd = pmd_offset(pud, address);
-        if (pmd_none(*pmd)) {
-                printk("no pmd ");
-                return 0;
-        }
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-        pte = pte_offset_map(pmd, address);
-
-===============> and in between here, the PTE pointer is returned
-(from pte_offset_map())?   And so the PTE structure (pte_t) should be
-*pte?
-
-        pte_unmap(pte);
-
-I suspect something is not right?
-
-Thanks.
--- 
-Regards,
-Peter Teoh
