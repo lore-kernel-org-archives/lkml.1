@@ -1,48 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYJQO6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYJQO7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbYJQO6j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 10:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYJQO6a
+	id S1755917AbYJQO7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 10:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbYJQO7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 10:58:30 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44412 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754045AbYJQO6a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 10:58:30 -0400
-Date: Fri, 17 Oct 2008 10:58:28 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb <linux-usb@vger.kernel.org>
-Subject: Re: Oops in UHCI when encountering "host controller process error"
-In-Reply-To: <48F7E3B8.2090106@goop.org>
-Message-ID: <Pine.LNX.4.44L0.0810171046530.2178-100000@iolanthe.rowland.org>
+	Fri, 17 Oct 2008 10:59:01 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:58841 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754613AbYJQO7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 10:59:00 -0400
+Date: Fri, 17 Oct 2008 07:58:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] rcupdate: fix bug of rcu_barrier*()
+Message-ID: <20081017145854.GD6706@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <48F8335E.5060401@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F8335E.5060401@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Oct 2008, Jeremy Fitzhardinge wrote:
+On Fri, Oct 17, 2008 at 02:40:30PM +0800, Lai Jiangshan wrote:
+> 
+> current rcu_barrier_bh() is like this:
+> 
+> void rcu_barrier_bh(void)
+> {
+> 	BUG_ON(in_interrupt());
+> 	/* Take cpucontrol mutex to protect against CPU hotplug */
+> 	mutex_lock(&rcu_barrier_mutex);
+> 	init_completion(&rcu_barrier_completion);
+> 	atomic_set(&rcu_barrier_cpu_count, 0);
+> 	/*
+> 	 * The queueing of callbacks in all CPUs must be atomic with
+> 	 * respect to RCU, otherwise one CPU may queue a callback,
+> 	 * wait for a grace period, decrement barrier count and call
+> 	 * complete(), while other CPUs have not yet queued anything.
+> 	 * So, we need to make sure that grace periods cannot complete
+> 	 * until all the callbacks are queued.
+> 	 */
+> 	rcu_read_lock();
+> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
+> 	rcu_read_unlock();
+> 	wait_for_completion(&rcu_barrier_completion);
+> 	mutex_unlock(&rcu_barrier_mutex);
+> }
+> 
+> The inconsistency of the code and the comments show a bug here.
+> rcu_read_lock() cannot make sure that "grace periods for RCU_BH
+> cannot complete until all the callbacks are queued".
+> it only make sure that race periods for RCU cannot complete
+> until all the callbacks are queued.
+> 
+> so we must use rcu_read_lock_bh() for rcu_barrier_bh().
+> like this:
+> 
+> void rcu_barrier_bh(void)
+> {
+> 	......
+> 	rcu_read_lock_bh();
+> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
+> 	rcu_read_unlock_bh();
+> 	......
+> }
+> 
+> and also rcu_barrier() rcu_barrier_sched() are implemented like this.
+> it will bring a lot of duplicate code. My patch uses another way to
+> fix this bug, please see the comment of my patch.
+> Thank Paul E. McKenney for he rewrote the comment.
 
-> Looks like this is the relevent detail: "uhci->skelqh[1]->node.next is 
-> NULL" for all the queues.  Haven't looked into it yet.
+Still looks good to me!  Thank you again, Jiangshan, for finding and
+fixing this one!!!
 
-> ------------[ cut here ]------------
-> WARNING: at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/host/uhci-q.c:1744 uhci_scan_schedule+0xb7/0x9a3()
-> uhci->skelqh[1]->node.next is NULL
+							Thanx, Paul
 
-Odd.  Is skelqh[1] the only entry whose node.next is NULL?  Not 
-skelqh[2] or others?
-
-The node is initialized during uhci_start() in uhci-hcd.c -- there's a
-loop which initializes all the uhci->skelqh[i] entries by calling
-uhci_alloc_qh().  You should check inside that loop to see whether
-uhci->skelqh[i]->node.next is NULL to begin with.  If it is then
-something about the DMA-coherent memory is funny; if not then the
-linked list pointer gets corrupted somewhere.
-
-Alan Stern
-
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> index 467d594..ad63af8 100644
+> --- a/kernel/rcupdate.c
+> +++ b/kernel/rcupdate.c
+> @@ -119,18 +119,19 @@ static void _rcu_barrier(enum rcu_barrier type)
+>  	/* Take cpucontrol mutex to protect against CPU hotplug */
+>  	mutex_lock(&rcu_barrier_mutex);
+>  	init_completion(&rcu_barrier_completion);
+> -	atomic_set(&rcu_barrier_cpu_count, 0);
+>  	/*
+> -	 * The queueing of callbacks in all CPUs must be atomic with
+> -	 * respect to RCU, otherwise one CPU may queue a callback,
+> -	 * wait for a grace period, decrement barrier count and call
+> -	 * complete(), while other CPUs have not yet queued anything.
+> -	 * So, we need to make sure that grace periods cannot complete
+> -	 * until all the callbacks are queued.
+> +	 * Initialize rcu_barrier_cpu_count to 1, then invoke
+> +	 * rcu_barrier_func() on each CPU, so that each CPU also has
+> +	 * incremented rcu_barrier_cpu_count.  Only then is it safe to
+> +	 * decrement rcu_barrier_cpu_count -- otherwise the first CPU
+> +	 * might complete its grace period before all of the other CPUs
+> +	 * did their increment, causing this function to return too
+> +	 * early.
+>  	 */
+> -	rcu_read_lock();
+> +	atomic_set(&rcu_barrier_cpu_count, 1);
+>  	on_each_cpu(rcu_barrier_func, (void *)type, 1);
+> -	rcu_read_unlock();
+> +	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
+> +		complete(&rcu_barrier_completion);
+>  	wait_for_completion(&rcu_barrier_completion);
+>  	mutex_unlock(&rcu_barrier_mutex);
+>  }
+> 
+> 
+> 
+> 
+> 
