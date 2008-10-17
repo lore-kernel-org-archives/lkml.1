@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYJQLSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYJQLTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbYJQLSh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbYJQLS3
+	id S1753534AbYJQLTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 07:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbYJQLTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:18:29 -0400
-Received: from smtp.zeuux.org ([210.51.160.52]:53513 "EHLO z.billxu.com"
+	Fri, 17 Oct 2008 07:19:11 -0400
+Received: from bu3sch.de ([62.75.166.246]:56733 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbYJQLS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:18:29 -0400
-Date: Fri, 17 Oct 2008 19:18:29 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: mingo@elte.hu
-Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] arch/x86: Fix waring when build on x86_32
-Message-ID: <20081017111829.GA20328@ubuntu>
+	id S1751772AbYJQLTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 07:19:10 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Magnus Damm" <magnus.damm@gmail.com>
+Subject: Re: [PATCH v3] Add SPI over GPIO driver
+Date: Fri, 17 Oct 2008 13:18:32 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "David Brownell" <david-b@pacbell.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Piot Skamruk" <piotr.skamruk@gmail.com>
+References: <200807202146.12759.mb@bu3sch.de> <200810171052.54823.mb@bu3sch.de> <aec7e5c30810170252t5790af36hfc754d28e69f5159@mail.gmail.com>
+In-Reply-To: <aec7e5c30810170252t5790af36hfc754d28e69f5159@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200810171318.32306.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 17 October 2008 11:52:32 Magnus Damm wrote:
+> [removed closed openwrt-devel list]
+> 
+> On Fri, Oct 17, 2008 at 5:52 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> > On Friday 17 October 2008 05:14:26 Magnus Damm wrote:
+> >> On Mon, Jul 21, 2008 at 4:46 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> >> > This adds a driver that lets you drive an SPI bus over
+> >> > generic GPIO pins.
+> >> >
+> >> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> >>
+> >> Very useful. Fits my shiny new GPIO implementation for SuperH like a glove.
+> >>
+> >> Michael, as you know, I have some SuperH board code that makes use of
+> >> this driver. Are there any outstanding issues with this driver that I
+> >> can help resolving?
+> >
+> > bool cs_activelow should probably be removed from struct spi_gpio_platform_data.
+> >
+> > I think cs always is activelow, so we can simply hardcode this in spi_gpio_chipselect()
+> 
+> Really? There _must_ be chips out there that want active high CS!
+> I'd rather keep the activelow option or maybe turn in into activehigh instead.
 
-Fix the waring When I buile the Linux-2.6 kernel on x86_32.
-arch/x86/kernel/io_apic_32.c: In function 'print_local_APIC':
-arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
-arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type 'unsigned int', but argument 2 has type 'u64'
+Ok, I dunno. I never saw one. All of my SPI stuff is activelow.
+So well, let's keep it.
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- arch/x86/kernel/io_apic_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> > If you want to do this, please feel free to do so.
+> > I currently don't have the time for this.
+> > The rest of the driver is fine with me.
+> 
+> Ok, thank you.
+> 
+> David or Andrew, any change of getting this merged as-is somehow? Thanks!
 
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index e710289..f678d12 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -1536,8 +1536,8 @@ __apicdebuginit(void) print_local_APIC(void *dummy)
- 	}
- 
- 	icr = apic_icr_read();
--	printk(KERN_DEBUG "... APIC ICR: %08x\n", icr);
--	printk(KERN_DEBUG "... APIC ICR2: %08x\n", icr >> 32);
-+	printk(KERN_DEBUG "... APIC ICR: %08x\n", (unsigned int)icr);
-+	printk(KERN_DEBUG "... APIC ICR2: %08x\n", (unsigned int)(icr >> 32));
- 
- 	v = apic_read(APIC_LVTT);
- 	printk(KERN_DEBUG "... APIC LVTT: %08x\n", v);
+Yes, please merge it.
+
 -- 
-1.5.2.5
-
--- 
-Jianjun Kong | Happy Hacking
-HomePage: http://kongove.cn
-Gtalk: kongjianjun@gmail.com
+Greetings Michael.
