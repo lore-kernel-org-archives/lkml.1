@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYJQPjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYJQPka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYJQPjv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbYJQPjn
+	id S1756725AbYJQPka (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbYJQPkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:39:43 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49377 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754855AbYJQPjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:39:41 -0400
-Subject: Re: [PATCH 5/9] Restore memory address space
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Linus Torvalds <torvalds@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1224233070.2634.114.camel@frecb000730.frec.bull.fr>
-References: <20081016181414.934C4FCC@kernel>
-	 <20081016181421.3BA319FA@kernel>
-	 <1224233070.2634.114.camel@frecb000730.frec.bull.fr>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 08:39:34 -0700
-Message-Id: <1224257974.1848.49.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 11:40:22 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:32801 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754847AbYJQPkV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 11:40:21 -0400
+From: Viktor Rosendahl <viktor.rosendahl@nokia.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] RFC: Pass process information to userspace coredump
+Date: Fri, 17 Oct 2008 18:46:25 +0300
+Message-Id: <1224258385-12984-1-git-send-email-viktor.rosendahl@nokia.com>
+X-Mailer: git-send-email 1.5.6.5
+X-OriginalArrivalTime: 17 Oct 2008 15:37:46.0915 (UTC) FILETIME=[4DF41F30:01C9306E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 10:44 +0200, Nadia Derbey wrote:
-> On Thu, 2008-10-16 at 11:14 -0700, Dave Hansen wrote:
-> > +static int cr_page_read(struct cr_ctx *ctx, struct page *page, char *buf)
-> > +{
-> > +	void *ptr;
-> > +	int ret;
-> > +
-> > +	ret = cr_kread(ctx, buf, PAGE_SIZE);
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	ptr = kmap_atomic(page, KM_USER1);
-> > +	memcpy(ptr, buf, PAGE_SIZE);
-> > +	kunmap_atomic(page, KM_USER1);
-> 
-> Here too, I think this should be changed to 
-> kunmap_atomic(ptr, KM_USER1);
+When dumping core to pipe, set CORE_{EXE,PID,SIG,UID,GID} environment
+variables. The userspace helper can then use them or look in
+/proc/${CORE_PID} for more information.
 
-Thanks, Nadia.
+This code is from the Nokia N810 kernel; I did not write it.
 
-These fixes will show up in the git tree shortly:
+Signed-off-by: Viktor Rosendahl <viktor.rosendahl@nokia.com>
+---
+ fs/exec.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
 
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/daveh/linux-2.6-cr.git;a=summary
-
-I just created it, so it may take a few moments for the gitweb script to
-find it.
-
--- Dave
+diff --git a/fs/exec.c b/fs/exec.c
+index a41e790..3a9625d 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1771,6 +1771,14 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+ 		goto fail_unlock;
+ 
+  	if (ispipe) {
++		char env_exe[64];
++		char env_pid[16], env_sig[16];
++		char env_uid[16], env_gid[16];
++		char *envp[] = { env_exe,
++				 env_pid, env_sig,
++				 env_uid, env_gid,
++				 NULL };
++
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		/* Terminate the string before the first option */
+ 		delimit = strchr(corename, ' ');
+@@ -1789,8 +1797,16 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+ 
+ 		core_limit = RLIM_INFINITY;
+ 
++		snprintf(env_exe, sizeof(env_exe), "CORE_EXE=%s",
++			current->comm);
++		snprintf(env_pid, sizeof(env_pid), "CORE_PID=%d",
++			current->tgid);
++		snprintf(env_sig, sizeof(env_sig), "CORE_SIG=%ld", signr);
++		snprintf(env_uid, sizeof(env_uid), "CORE_UID=%u", current->uid);
++		snprintf(env_gid, sizeof(env_gid), "CORE_GID=%u", current->gid);
++
+ 		/* SIGPIPE can happen, but it's just never processed */
+- 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
++		if (call_usermodehelper_pipe(corename+1, helper_argv, envp,
+ 				&file)) {
+  			printk(KERN_INFO "Core dump to %s pipe failed\n",
+ 			       corename);
+-- 
+1.5.6.5
 
