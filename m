@@ -1,125 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYJQUHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbYJQUHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbYJQUHm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbYJQUHM
+	id S1758519AbYJQUHz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbYJQUHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:07:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45814 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754939AbYJQUHL (ORCPT
+	Fri, 17 Oct 2008 16:07:21 -0400
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:21440 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756548AbYJQUHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:07:11 -0400
-Date: Fri, 17 Oct 2008 13:07:14 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: tglx@tglx.de
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: updated range-hrtimers tree uploaded
-Message-ID: <20081017130714.6c32a39d@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Fri, 17 Oct 2008 16:07:19 -0400
+X-YMail-OSG: wJkzbVMVM1lHqklhAeoKKT9Q6Ivfj0ceArfJLlyHUiXOF8OEoWcr8e6lRZ8GsIQ1RF6HPcIXtxgpTaGfUHEW7bI23vZmTlsjOh9bygG6p_qUiGfnkN2UKNWKbaYsOa.BT1eB10JQHTZL94hXGr7U_H12FKQdkqI6.kdpceQ-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
+	kobject source.
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20081017194857.GD5633@mail.oracle.com>
+References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
+	 <20081017074453.GA4850@kroah.com>
+	 <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
+	 <20081017194857.GD5633@mail.oracle.com>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 13:07:16 -0700
+Message-Id: <1224274036.5556.358.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+On Fri, 2008-10-17 at 12:48 -0700, Joel Becker wrote:
+> On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
+> > On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
+> > > What is the problem you are attempting to solve here?
+> > > 
+> > 
+> > So, the generic target_core_mod engine that lives
+> > under /sys/kernel/config/target/core needs a method to locate struct
+> > block_device and struct scsi_device for access via bio_submit() and
+> > scsi_execute_() respectively.
+> > 
+> > Originally, target_core_mod used key echoed through configfs attributes
+> > like so:
+> > 
+> > export TARGET=/sys/kernel/config/target/core/
+> > 
+> > # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
+> > mkdir -p $TARGET/iblock_0/lvm_test0
+> > # OLD METHOD to reference struct block_device
+> > echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
+> > echo 1 > $TARGET/iblock_0/lvm_test0/enable
+> > # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
+> > ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
+> 
+> 	Pass an open file descriptor.  In bash(1):
+> 
+>     exec 3<>/dev/dm-7
+>     echo 3 >$TARGET/iblock_0/lvm_test0/control  # I'd call it 'fd'
+> 
+> In kernel, in the ->store() function of 'control':
+> 
+> 	p = (char *)page;
+> 	fd = simple_strtol(p, &p, 0);
+> 	filp = fget(fd);
+> 	inode = igrab(filp->f_mapping->host);
+> 	dev = I_BDEV(filp->f_mapping->host);
+> 	blkdev_get(dev, FMODE_WRITE | FMODE_READ, 0);
+> 
+> Error handling is left up to you (validate the strtol, fd range, ISBLK,
+> etc).  This assumes you want the struct block_device and want to pin it
+> in memory.  I assume you do.
+> 
 
-I've merged the latest Linus tree into the range-hrtimer tree (there
-were a few trivial conflicts due to the many patches in the first part
-of the merge window) and pushed it to the git-repo.
+Btw, ideally I would like to do the same type of thing for accessing
+drivers/scsi for both TYPE_DISK and non TYPE_DISK..  I will have a look
+and see if something is possible to access struct scsi_device in all
+device type cases..
 
+--nab
 
-
-The following changes since commit 2e532d68a2b3e2aa6b19731501222069735c741c:
-  Linus Torvalds (1):
-        {pci,pnp} quirks.c: don't use deprecated print_fn_descriptor_symbol()
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-hrtimer.git for-linus
-
-The range-hrtimer series significantly improves the quality of behavior of the select()
-and poll() system calls, as well as using timer ranges to optimize the power impact
-of these timers.
-
-Arjan van de Ven (29):
-      select: Introduce a hrtimeout function
-      select: switch select() and poll() over to hrtimers
-      hrtimer: add abstraction functions for accessing the "expires" member
-      hrtimer: convert kvm to the new hrtimer apis
-      hrtimer: convert timerfd to the new hrtimer apis
-      hrtimer: convert net::sched_cbq to the new hrtimer apis
-      hrtimer: convert kernel/* to the new hrtimer apis
-      hrtimer: convert powerpc/oprofile to the new hrtimer apis
-      hrtimer: convert kvm-ia64 to the new hrtimer apis
-      hrtimer: convert s390 to the new hrtimer apis
-      hrtimer: convert sound/ to the new hrtimer apis
-      hrtimer: rename the "expires" struct member to avoid accidental usage
-      hrtimer: turn hrtimers into range timers
-      hrtimer: create a "timer_slack" field in the task struct
-      hrtimer: make select() and poll() use the hrtimer range feature
-      hrtimer: fix build bug found by Ingo
-      hrtimer: another build fix
-      hrtimer: add a hrtimer_start_range() function
-      hrtimer: incorporate feedback from Peter Zijlstra
-      hrtimer: show the timer ranges in /proc/timer_list
-      hrtimer: fix signed/unsigned bug in slack estimator
-      hrtimer: make the nanosleep() syscall use the per process slack
-      hrtimer: make the futex() system call use the per process slack value
-      hrtimer: peek at the timer queue just before going idle
-      select: fix alpha OSF wrapper
-      rangetimer: fix x86 build failure for the !HRTIMERS case
-      rangetimer: fix BUG_ON reported by Ingo
-      rangetimers: fix the bug reported by Ingo for real
-      Merge commit 'linus/master' into merge-linus
-
-Stephen Rothwell (1):
-      DECLARE_PER_CPU needs linux/percpu.h
-
-Thomas Gleixner (3):
-      select: add a timespec_add_safe() function
-      select: add poll_select_set_timeout() and poll_select_copy_remaining() helpers
-      select: add a poll specific struct to the restart_block union
-
- arch/alpha/kernel/osf_sys.c               |   13 +-
- arch/ia64/kvm/kvm-ia64.c                  |    2 +-
- arch/powerpc/oprofile/cell/spu_profiler.c |    2 +-
- arch/x86/kvm/i8254.c                      |    8 +-
- arch/x86/kvm/lapic.c                      |    6 +-
- drivers/cpuidle/cpuidle.c                 |    7 +
- drivers/s390/crypto/ap_bus.c              |    6 +-
- fs/compat.c                               |  187 +++++---------
- fs/select.c                               |  396 ++++++++++++++++-------------
- fs/timerfd.c                              |    8 +-
- include/linux/hrtimer.h                   |   96 +++++++-
- include/linux/init_task.h                 |    1 +
- include/linux/poll.h                      |    8 +-
- include/linux/prctl.h                     |    7 +
- include/linux/sched.h                     |    6 +
- include/linux/thread_info.h               |    8 +
- include/linux/time.h                      |    4 +
- kernel/fork.c                             |    2 +
- kernel/futex.c                            |   11 +-
- kernel/hrtimer.c                          |  212 ++++++++++++++--
- kernel/posix-timers.c                     |   10 +-
- kernel/rtmutex.c                          |    3 +-
- kernel/sched.c                            |    7 +-
- kernel/sys.c                              |   10 +
- kernel/time.c                             |   18 ++
- kernel/time/ntp.c                         |    3 +-
- kernel/time/tick-sched.c                  |   21 +-
- kernel/time/timer_list.c                  |    8 +-
- net/sched/sch_cbq.c                       |    7 +-
- sound/drivers/pcsp/pcsp_lib.c             |    5 +-
- 30 files changed, 706 insertions(+), 376 deletions(-)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
