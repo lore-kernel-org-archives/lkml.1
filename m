@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbYJQMZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYJQM0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754332AbYJQMZW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbYJQMZC
+	id S1754615AbYJQM0K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYJQMZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:25:02 -0400
-Received: from mail.us.es ([193.147.175.20]:43128 "EHLO us.es"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753557AbYJQMZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:25:00 -0400
-Message-ID: <48F88660.7080204@netfilter.org>
-Date: Fri, 17 Oct 2008 14:34:40 +0200
-From: Pablo Neira Ayuso <pablo@netfilter.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+	Fri, 17 Oct 2008 08:25:56 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:55678 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753628AbYJQMZz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 08:25:55 -0400
+Date: Fri, 17 Oct 2008 08:25:52 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Replace hackish
+	ext4_mb_poll_new_transaction with commit callback
+Message-ID: <20081017122552.GC21503@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1224201763-9637-1-git-send-email-tytso@mit.edu> <20081017060424.GA26192@skywalker> <20081017100214.GB11557@mit.edu>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [GIT]: Networking
-References: <20081015.163817.193700221.davem@davemloft.net> <20081017082138.GA23155@elte.hu> <48F87D3E.5020007@trash.net> <20081017120408.GA20030@elte.hu>
-In-Reply-To: <20081017120408.GA20030@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------000706050806010703080304"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081017100214.GB11557@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000706050806010703080304
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Ingo Molnar wrote:
-> * Patrick McHardy <kaber@trash.net> wrote:
+On Fri, Oct 17, 2008 at 06:02:14AM -0400, Theodore Tso wrote:
+> > 
+> > Why not use journal commit callback patch from andreas 
+> > (MID:20080929201752.GN10950@webber.adilger.int
+> > http://article.gmane.org/gmane.comp.file-systems.ext4/9148)
+> > 
+> > The patch you sent will allows only one call back to be registered.
 > 
->>> net/netfilter/nf_conntrack_netlink.c:819: warning: ‘enum nf_nat_manip_type’ declared inside parameter list
->>> net/netfilter/nf_conntrack_netlink.c:819: warning: its scope is only this definition or declaration, which is probably not what you want
->>> net/netfilter/nf_conntrack_netlink.c:818: error: parameter 2 (‘manip’) has incomplete type
->> Thanks Ingo. I just sent this patch to Benjamin Herrenschmidt
->> for testing.
-> 
-> build still fails with the attached config.
+> Thanks for reminding me about that; I had completely forgotten about
+> Andreas' patch.  Sure, I'll respin the patch to use his extension.
 
-This should fix it. I have slightly tested it here with your config.
+I looked more closely at Andreas' patch, and it's really not a good
+fit for what we want to do.  The problem is that it is designed to
+attach arbitrary callbacks on a per transaction basis.  Each time you
+add a callback you need to allocate a stucture, and then it gets
+chained onto a inked list.
 
--- 
-"Los honestos son inadaptados sociales" -- Les Luthiers
+For what we need for mballoc, not only is it massive overkill, but
+every single time we try to free blocks, we would have to and then
+search the list to see the remove_committed_blocks() callback was or
+wasn't on the list yet, and if it wasn't then allocate a chunk of
+memory to hold the struct journal_callback data structure and call
+journal_callback_set() function.   
 
---------------000706050806010703080304
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
+Furthermore, to get the locking right and to avoid race conditions,
+we'd have to add a _journal_callback_set() function which doesn't take
+the spinlock, and then take the spinlock ourselves, search the linked
+list, allocate the memory, call _journal_callback_set(), and then
+release the spinlock.
 
-netfilter: ctnetlink: fix compilation without NAT support
+It was at about this point that I decided it Just Wasn't Worth It.
 
-This patch fixes the compilation of ctnetlink when the NAT support
-is not enabled.
+What I added was a dead-simple per-journal commit callback, with no
+additional memory allocations (and requirement to do error handling if
+the memory allocation fails), no need to take a spinlock before
+manually adding the call back to each transaction handle, no need to
+search the linked list to see if we have an entry on the linked list
+already, etc.
 
-/home/benh/kernels/linux-powerpc/net/netfilter/nf_conntrack_netlink.c:819: warning: enum nf_nat_manip_type\u2019 declared inside parameter list
-/home/benh/kernels/linux-powerpc/net/netfilter/nf_conntrack_netlink.c:819: warning: its scope is only this definition or declaration, which is probably not what you want
+If in the future we need a true per-transaction handle commit
+callback, we can add this; but I think it still makes more sense to
+keep the per-journal commit callback.  After all, as it stands the
+current patch results in a net reduction of 46 lines of code.  Adding
+all of this machinery would erase take far more than the savings by
+removing ext4_mb_poll_new_transaction().
 
-Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
-
-Index: net-next-2.6/net/netfilter/nf_conntrack_netlink.c
-===================================================================
---- net-next-2.6.orig/net/netfilter/nf_conntrack_netlink.c	2008-10-17 14:15:26.000000000 +0200
-+++ net-next-2.6/net/netfilter/nf_conntrack_netlink.c	2008-10-17 14:17:12.000000000 +0200
-@@ -814,6 +814,7 @@
- 	return err;
- }
- 
-+#ifdef CONFIG_NF_NAT_NEEDED
- static int
- ctnetlink_parse_nat_setup(struct nf_conn *ct,
- 			  enum nf_nat_manip_type manip,
-@@ -841,6 +842,7 @@
- 
- 	return parse_nat_setup(ct, manip, attr);
- }
-+#endif
- 
- static int
- ctnetlink_change_status(struct nf_conn *ct, struct nlattr *cda[])
-
---------------000706050806010703080304--
+							- Ted
