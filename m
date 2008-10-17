@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYJQOwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbYJQOzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbYJQOwY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 10:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYJQOwP
+	id S1755280AbYJQOzp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 10:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYJQOzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 10:52:15 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:42905 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752913AbYJQOwP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 10:52:15 -0400
+	Fri, 17 Oct 2008 10:55:35 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:48278 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754082AbYJQOze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 10:55:34 -0400
 From: Madhu Chikkature <madhu.cr@ti.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-omap@vger.kernel.org
-Cc: Madhusudhan Chikkature <madhu.cr@ti.com>
-Subject: [Resending PATCH 1/4] W1: export w1_read_8 function
-Date: Fri, 17 Oct 2008 20:21:55 +0530
-Message-Id: <1224255115-21614-1-git-send-email-madhu.cr@ti.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>
+Subject: [Resending PATCH 3/4] HDQ: BQ27000 HDQ Slave Interface Driver
+Date: Fri, 17 Oct 2008 20:25:02 +0530
+Message-Id: <1224255302-22131-1-git-send-email-madhu.cr@ti.com>
 X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -24,49 +24,167 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Madhusudhan Chikkature <madhu.cr@ti.com>
 
-This patch exports the w1_read_8 function for use of drivers.
-The OMAP HDQ driver(drivers/w1/masters/omap_hdq.c) uses this function.
+This patch provides the BQ27000 slave interface driver.
 
 Signed-off-by: Madhusudhan Chikkature<madhu.cr@ti.com>
 Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
-The OMAP HDQ add device patch is dropped from the series
-as it has already gone upstream through the linux omap tree
+ drivers/w1/slaves/Kconfig      |    7 ++
+ drivers/w1/slaves/Makefile     |    2 
+ drivers/w1/slaves/w1_bq27000.c |  123 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 131 insertions(+), 1 deletion(-)
 
- drivers/w1/w1.h    |    1 +
- drivers/w1/w1_io.c |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/w1/w1_io.c
+Index: linux-2.6/drivers/w1/slaves/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/w1/w1_io.c	2008-10-17 08:14:23.000000000 +0530
-+++ linux-2.6/drivers/w1/w1_io.c	2008-10-17 17:59:13.021464129 +0530
-@@ -217,7 +217,7 @@ u8 w1_triplet(struct w1_master *dev, int
-  * @param dev     the master device
-  * @return        the byte read
-  */
--static u8 w1_read_8(struct w1_master * dev)
-+u8 w1_read_8(struct w1_master * dev)
- {
- 	int i;
- 	u8 res = 0;
-@@ -230,6 +230,7 @@ static u8 w1_read_8(struct w1_master * d
+--- linux-2.6.orig/drivers/w1/slaves/Kconfig	2008-10-17 17:26:37.005264023 +0530
++++ linux-2.6/drivers/w1/slaves/Kconfig	2008-10-17 17:27:35.418525961 +0530
+@@ -44,4 +44,11 @@ config W1_SLAVE_DS2760
  
- 	return res;
- }
-+EXPORT_SYMBOL_GPL(w1_read_8);
+ 	  If you are unsure, say N.
  
- /**
-  * Writes a series of bytes.
-Index: linux-2.6/drivers/w1/w1.h
++config W1_SLAVE_BQ27000
++	tristate "BQ27000 slave support"
++	depends on W1
++	help
++	  Say Y here if you want to use a hdq
++	  bq27000 slave support.
++
+ endmenu
+Index: linux-2.6/drivers/w1/slaves/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/w1/w1.h	2008-10-17 08:14:23.000000000 +0530
-+++ linux-2.6/drivers/w1/w1.h	2008-10-17 17:59:13.022464098 +0530
-@@ -206,6 +206,7 @@ void w1_slave_detach(struct w1_slave *sl
- 
- u8 w1_triplet(struct w1_master *dev, int bdir);
- void w1_write_8(struct w1_master *, u8);
-+u8 w1_read_8(struct w1_master *);
- int w1_reset_bus(struct w1_master *);
- u8 w1_calc_crc8(u8 *, int);
- void w1_write_block(struct w1_master *, const u8 *, int);
+--- linux-2.6.orig/drivers/w1/slaves/Makefile	2008-10-17 17:26:37.005264023 +0530
++++ linux-2.6/drivers/w1/slaves/Makefile	2008-10-17 17:27:35.418525961 +0530
+@@ -6,4 +6,4 @@ obj-$(CONFIG_W1_SLAVE_THERM)	+= w1_therm
+ obj-$(CONFIG_W1_SLAVE_SMEM)	+= w1_smem.o
+ obj-$(CONFIG_W1_SLAVE_DS2433)	+= w1_ds2433.o
+ obj-$(CONFIG_W1_SLAVE_DS2760)	+= w1_ds2760.o
+-
++obj-$(CONFIG_W1_SLAVE_BQ27000)	+= w1_bq27000.o
+Index: linux-2.6/drivers/w1/slaves/w1_bq27000.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/drivers/w1/slaves/w1_bq27000.c	2008-10-17 17:34:45.031604027 +0530
+@@ -0,0 +1,123 @@
++/*
++ * drivers/w1/slaves/w1_bq27000.c
++ *
++ * Copyright (C) 2007 Texas Instruments, Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/device.h>
++#include <linux/types.h>
++#include <linux/platform_device.h>
++#include <linux/mutex.h>
++
++#include "../w1.h"
++#include "../w1_int.h"
++#include "../w1_family.h"
++
++#define HDQ_CMD_READ	(0)
++#define HDQ_CMD_WRITE	(1<<7)
++
++static int F_ID;
++
++void w1_bq27000_write(struct device *dev, u8 buf, u8 reg)
++{
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++
++	if (!dev) {
++		pr_info("Could not obtain slave dev ptr\n");
++		return;
++	}
++
++	w1_write_8(sl->master, HDQ_CMD_WRITE | reg);
++	w1_write_8(sl->master, buf);
++}
++EXPORT_SYMBOL(w1_bq27000_write);
++
++int w1_bq27000_read(struct device *dev, u8 reg)
++{
++	u8 val;
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++
++	if (!dev)
++		return 0;
++
++	w1_write_8(sl->master, HDQ_CMD_READ | reg);
++	val = w1_read_8(sl->master);
++
++	return val;
++}
++EXPORT_SYMBOL(w1_bq27000_read);
++
++static int w1_bq27000_add_slave(struct w1_slave *sl)
++{
++	int ret;
++	int id = 1;
++	struct platform_device *pdev;
++
++	pdev = platform_device_alloc("bq27000-battery", id);
++	if (!pdev) {
++		ret = -ENOMEM;
++		return ret;
++	}
++	pdev->dev.parent = &sl->dev;
++
++	ret = platform_device_add(pdev);
++	if (ret)
++		goto pdev_add_failed;
++
++	dev_set_drvdata(&sl->dev, pdev);
++
++	goto success;
++
++pdev_add_failed:
++	platform_device_unregister(pdev);
++success:
++	return ret;
++}
++
++static void w1_bq27000_remove_slave(struct w1_slave *sl)
++{
++	struct platform_device *pdev = dev_get_drvdata(&sl->dev);
++
++	platform_device_unregister(pdev);
++}
++
++static struct w1_family_ops w1_bq27000_fops = {
++	.add_slave	= w1_bq27000_add_slave,
++	.remove_slave	= w1_bq27000_remove_slave,
++};
++
++static struct w1_family w1_bq27000_family = {
++	.fid = 1,
++	.fops = &w1_bq27000_fops,
++};
++
++static int __init w1_bq27000_init(void)
++{
++	if (F_ID)
++		w1_bq27000_family.fid = F_ID;
++
++	return w1_register_family(&w1_bq27000_family);
++}
++
++static void __exit w1_bq27000_exit(void)
++{
++	w1_unregister_family(&w1_bq27000_family);
++}
++
++
++module_init(w1_bq27000_init);
++module_exit(w1_bq27000_exit);
++
++module_param(F_ID, int, S_IRUSR);
++MODULE_PARM_DESC(F_ID, "1-wire slave FID for BQ device");
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Texas Instruments Ltd");
++MODULE_DESCRIPTION("HDQ/1-wire slave driver bq27000 battery monitor chip");
