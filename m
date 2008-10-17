@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYJQXs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYJQXwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYJQXs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 19:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYJQXsV
+	id S1757095AbYJQXwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 19:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYJQXwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 19:48:21 -0400
-Received: from kroah.org ([198.145.64.141]:37869 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752859AbYJQXsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 19:48:20 -0400
-Date: Fri, 17 Oct 2008 16:43:07 -0700
-From: Greg KH <greg@kroah.com>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.25.17
-Message-ID: <20081017234307.GA5270@kroah.com>
-References: <20080908143516.GA7311@suse.de> <200810142319.33603.caglar@pardus.org.tr>
+	Fri, 17 Oct 2008 19:52:42 -0400
+Received: from mga01.intel.com ([192.55.52.88]:19465 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752859AbYJQXwl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 19:52:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,435,1220252400"; 
+   d="scan'208";a="628549711"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>
+Date: Fri, 17 Oct 2008 16:52:16 -0700
+Subject: RE: [RFC patch 15/15] LTTng timestamp x86
+Thread-Topic: [RFC patch 15/15] LTTng timestamp x86
+Thread-Index: AckwljJCD/pjX0QyRuWDfjTPYTzWpwAGzzcw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA353345B9B@orsmsx505.amr.corp.intel.com>
+References: <20081016232729.699004293@polymtl.ca>
+ <20081016234657.837704867@polymtl.ca>
+ <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
+ <20081017012835.GA30195@Krystal>
+ <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
+ <20081017172515.GA9639@goodmis.org>
+ <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com>
+ <20081017184215.GB9874@Krystal>
+ <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com>
+ <20081017202313.GA13597@Krystal>
+In-Reply-To: <20081017202313.GA13597@Krystal>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200810142319.33603.caglar@pardus.org.tr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 14, 2008 at 11:19:25PM +0300, S.Çağlar Onur wrote:
-> Hi;
-> 
-> 08 Eyl 2008 Pts tarihinde, Greg KH şunları yazmıştı: 
-> > We (the -stable team) are announcing the release of the 2.6.25.17
-> > kernel.
-> > 
-> > It contains lots of bugfixes, all over the map.  Any users of the 2.6.25
-> > kernel series should upgrade to this version.  For details on the fixes,
-> > see the changelog entries and the diffstat below.
-> [...]
-> 
-> > Yinghai Lu (1):
-> >       x86: work around MTRR mask setting
-> 
-> That particular patch causes _lots_ of WARN_ON messages on one of our servers and following commit in Linus's tree solved that problem. If -stable team will release another .25 update maybe following patch can be considered to solve that sitation introduced with 2.6.2.5.17
-> 
-> commit 9754a5b840a209bc1f192d59f63e81b698a55ac8
+Complexity of dealing with all the random issues that have
+plagued TSC in different cpus over the years definitely
+seems to be a problem.
 
-Now queued up, thanks for letting us know.
+I have one more idea on how we might be able to use
+TSC locally and still have confidence that we can
+merge local cpu buffers into a consistent stream.
 
-greg k-h
+What if we read the HPET occasionally (once per
+second?) and add a record to our per-cpu buffer
+with the value of the HPET.  That would give us
+a periodic cross-check of each cpus TSC against
+real time so that a "smart" post-processor can
+sanity check the log entries at regular intervals.
+
+It doesn't deal with the truly insane TSC behaivours
+(like stopping completely in certain C states, or
+varying frequency) ... but it would at least be able
+to reliably detect these forms of insanity.
+
+We need periodic entries added to the buffer anyway
+to make sure we can detect rollover since we don't
+want waste space in log records with a full width
+TSC value.
+
+-Tony
