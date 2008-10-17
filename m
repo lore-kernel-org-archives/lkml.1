@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYJQStP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbYJQStd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbYJQStP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 14:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYJQSsr
+	id S1757774AbYJQStd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 14:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbYJQSss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 14:48:47 -0400
-Received: from kroah.org ([198.145.64.141]:38527 "EHLO coco.kroah.org"
+	Fri, 17 Oct 2008 14:48:48 -0400
+Received: from kroah.org ([198.145.64.141]:38535 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754399AbYJQSsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 14:48:45 -0400
-Date: Fri, 17 Oct 2008 10:40:52 -0700
+	id S1755042AbYJQSsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 14:48:47 -0400
+Date: Fri, 17 Oct 2008 10:42:26 -0700
 From: Greg KH <greg@kroah.com>
-To: "Giacomo A. Catenazzi" <cate@cateee.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081017174052.GD2221@kroah.com>
-References: <20081016002509.GA25868@kroah.com> <48F88923.30109@cateee.net>
+Message-ID: <20081017174226.GF2221@kroah.com>
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016153053.GJ5834@nostromo.devel.redhat.com> <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi> <20081017040239.GB28188@kroah.com> <20081017103138.1ca68d17@lxorguk.ukuu.org.uk> <48F8C000.8030003@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48F88923.30109@cateee.net>
+In-Reply-To: <48F8C000.8030003@kernel.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 02:46:27PM +0200, Giacomo A. Catenazzi wrote:
-> Greg KH wrote:
->> We number the kernel based on the year, and the numbers of releases we
->> have done this year:
->> 	YEAR.NUMBER.MINOR_RELEASE
->> For example, the first release in 2009 would be called:
->> 	2009.0.0
->> The second:
->> 	2009.1.0
->> If we want to be a bit more "non-zero-counting" friendly: we can start
->> at "1" for the number:
->> 	2009.1.0 for the first release
->> 	2009.2.0 for the second.
->> Then the stable releases can increment the minor number:
->> 	2009.1.1 for the first stable release
->> 	2009.1.2 for the second.
->> 	and so on.
->> Benefits of this is it more accuratly represents to people just how old
->> the kernel they are currently running is (2.6.9 would be have been
->> 2004.9.0 on this naming scheme.)
->> Yes, we can handle the major/minor macros in the kernel to provide a
->> compatible number so that automated scripts will not break, that's not a
->> big deal.
->> Any thoughts?
+On Fri, Oct 17, 2008 at 09:40:32AM -0700, H. Peter Anvin wrote:
+> Alan Cox wrote:
+>>> So I proposed an alternative, YEAR.NUMBER.  The year is easy to keep
+>> Which calendaring system ?
 >
-> What about:
-> - rc releases: a 2009.5.0-rc4 become suddenly 2010.0.0-rc5 ?
+> Presumably the Gregorian one, rooted in the Common Era, but that's sort of 
+> irrelevant.
+>
+> I think it's both visually cumbersome and has the problem that it is harder 
+> to predict future releases.  The first problem can be dealt with by simply 
+> subtracting 2000 from the year (Altera uses this scheme for their EDA 
+> tools, and I didn't realize it for quite a while because it looked so 
+> natural), but the second is still a problem.
 
-Sure, what's the big deal?
-
-> - a stable version in January of a kernel released in December
->   still has the old year? (I hope yes, but it could confuse users.)
-
-stable versions would not modify the year.
-
-> - when (if) we need a big innovative (or incompatible) kernel
->   change, how to mark old and new kernels?
-
-Based on our current development model, this isn't an issue.
+What is the "problem" of predicting future releases?  What relies on the
+actual number being "correct" some random time in the future?
 
 thanks,
 
