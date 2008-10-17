@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbYJQPxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbYJQPya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbYJQPxI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbYJQPwM
+	id S1757052AbYJQPya (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbYJQPwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:52:12 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:3205 "EHLO
-	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755258AbYJQPwI (ORCPT
+	Fri, 17 Oct 2008 11:52:37 -0400
+Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:2498 "EHLO
+	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755046AbYJQPwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:52:08 -0400
+	Fri, 17 Oct 2008 11:52:33 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: Subject: [PATCH 03/16] Squashfs: directory readdir operations
-Message-Id: <E1KqrTW-0001xL-HQ@dylan>
+Subject: Subject: [PATCH 09/16] Squashfs: uid/gid lookup operations
+Message-Id: <E1KqrTX-0001xo-4N@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Fri, 17 Oct 2008 16:42:50 +0100
+Date: Fri, 17 Oct 2008 16:42:51 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -24,15 +24,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/dir.c |  230 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 230 insertions(+), 0 deletions(-)
+ fs/squashfs/id.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 84 insertions(+), 0 deletions(-)
 
-diff --git a/fs/squashfs/dir.c b/fs/squashfs/dir.c
+diff --git a/fs/squashfs/id.c b/fs/squashfs/id.c
 new file mode 100644
-index 0000000..c27c9c4
+index 0000000..b4881d7
 --- /dev/null
-+++ b/fs/squashfs/dir.c
-@@ -0,0 +1,230 @@
++++ b/fs/squashfs/id.c
+@@ -0,0 +1,84 @@
 +/*
 + * Squashfs - a compressed read only filesystem for Linux
 + *
@@ -53,13 +53,17 @@ index 0000000..c27c9c4
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 + *
-+ * dir.c
++ * id.c
 + */
 +
 +/*
-+ * This file implements code to read directories from disk.
++ * This file implements code to handle uids and gids.
 + *
-+ * See namei.c for a description of directory organisation on disk.
++ * For space efficiency inodes store uid and gid indexes, which are
++ * converted to 32-bit uids/gids using an id look up table.  This table is
++ * stored compressed into metadata blocks.  A second index table is used to
++ * locate these.  This second index table for speed of access (and because it
++ * is small) is read at mount time and cached in memory.
 + */
 +
 +#include <linux/fs.h>
@@ -72,197 +76,47 @@ index 0000000..c27c9c4
 +
 +#include "squashfs.h"
 +
-+static const unsigned char squashfs_filetype_table[] = {
-+	DT_UNKNOWN, DT_DIR, DT_REG, DT_LNK, DT_BLK, DT_CHR, DT_FIFO, DT_SOCK
-+};
-+
-+/*
-+ * Lookup offset (f_pos) in the directory index, returning the
-+ * metadata block containing it.
-+ */
-+static int get_dir_index_using_offset(struct super_block *s,
-+	long long *next_block, unsigned int *next_offset,
-+	long long index_start, unsigned int index_offset, int i_count,
-+	long long f_pos)
++int squashfs_get_id(struct super_block *s, unsigned int index, unsigned int *id)
 +{
 +	struct squashfs_sb_info *msblk = s->s_fs_info;
-+	int i, index, length = 0;
-+	struct squashfs_dir_index dir_index;
++	int block = SQUASHFS_ID_BLOCK(index);
++	int offset = SQUASHFS_ID_BLOCK_OFFSET(index);
++	long long start_block = le64_to_cpu(msblk->id_table[block]);
++	__le32 disk_id;
 +
-+	TRACE("Entered get_dir_index_using_offset, i_count %d, f_pos %lld\n",
-+					i_count, f_pos);
++	if (!squashfs_read_metadata(s, &disk_id, start_block, offset,
++				 sizeof(disk_id), &start_block, &offset))
++		return 0;
 +
-+	/*
-+	 * Translate from external f_pos to the internal f_pos.  This
-+	 * is offset by 3 because we invent "." and ".." entries which are
-+	 * not actually stored in the directory.
-+	 */
-+	f_pos -= 3;
-+	if (f_pos == 0)
-+		goto finish;
-+
-+	for (i = 0; i < i_count; i++) {
-+		squashfs_read_metadata(s, &dir_index, index_start,
-+					index_offset, sizeof(dir_index),
-+					&index_start, &index_offset);
-+
-+		index = le32_to_cpu(dir_index.index);
-+		if (index > f_pos)
-+			break;
-+
-+		squashfs_read_metadata(s, NULL, index_start, index_offset,
-+					le32_to_cpu(dir_index.size) + 1,
-+					&index_start, &index_offset);
-+
-+		length = index;
-+		*next_block = le32_to_cpu(dir_index.start_block) +
-+					msblk->directory_table_start;
-+	}
-+
-+	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
-+
-+finish:
-+	/*
-+	 * Translate back from internal f_pos to external f_pos.
-+	 */
-+	return length + 3;
++	*id = le32_to_cpu(disk_id);
++	return 1;
 +}
 +
 +
-+static int squashfs_readdir(struct file *file, void *dirent, filldir_t filldir)
++__le64 *read_id_index_table(struct super_block *s, long long id_table_start,
++	unsigned short no_ids)
 +{
-+	struct inode *i = file->f_dentry->d_inode;
-+	struct squashfs_sb_info *msblk = i->i_sb->s_fs_info;
-+	long long next_block = SQUASHFS_I(i)->start_block +
-+				msblk->directory_table_start;
-+	int next_offset = SQUASHFS_I(i)->offset, length = 0, dir_count, size,
-+				type;
-+	unsigned int inode_number;
-+	struct squashfs_dir_header dirh;
-+	struct squashfs_dir_entry *dire;
++	unsigned int length = SQUASHFS_ID_BLOCK_BYTES(no_ids);
++	__le64 *id_table;
 +
-+	TRACE("Entered squashfs_readdir [%llx:%x]\n", next_block, next_offset);
++	TRACE("In read_id_index_table, length %d\n", length);
 +
-+	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
-+	if (dire == NULL) {
-+		ERROR("Failed to allocate squashfs_dir_entry\n");
-+		goto finish;
++	/* Allocate id index table */
++	id_table = kmalloc(length, GFP_KERNEL);
++	if (id_table == NULL) {
++		ERROR("Failed to allocate id index table\n");
++		return NULL;
 +	}
 +
-+	/*
-+	 * Return "." and  ".." entries as the first two filenames in the
-+	 * directory.  To maximise compression these two entries are not
-+	 * stored in the directory, and so we invent them here.
-+	 *
-+	 * It also means that the external f_pos is offset by 3 from the
-+	 * on-disk directory f_pos.
-+	 */
-+	while (file->f_pos < 3) {
-+		char *name;
-+		int size, i_ino;
-+
-+		if (file->f_pos == 0) {
-+			name = ".";
-+			size = 1;
-+			i_ino = i->i_ino;
-+		} else {
-+			name = "..";
-+			size = 2;
-+			i_ino = SQUASHFS_I(i)->parent_inode;
-+		}
-+
-+		TRACE("Calling filldir(%p, %s, %d, %lld, %d, %d)\n",
-+				dirent, name, size, file->f_pos, i_ino,
-+				squashfs_filetype_table[1]);
-+
-+		if (filldir(dirent, name, size, file->f_pos, i_ino,
-+				squashfs_filetype_table[1]) < 0) {
-+				TRACE("Filldir returned less than 0\n");
-+			goto finish;
-+		}
-+
-+		file->f_pos += size;
++	if (!squashfs_read_data(s, id_table, id_table_start, length |
++			SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length)) {
++		ERROR("unable to read id index table\n");
++		kfree(id_table);
++		return NULL;
 +	}
 +
-+	length = get_dir_index_using_offset(i->i_sb, &next_block, &next_offset,
-+				SQUASHFS_I(i)->dir_index_start,
-+				SQUASHFS_I(i)->dir_index_offset,
-+				SQUASHFS_I(i)->dir_index_count,
-+				file->f_pos);
-+
-+	while (length < i_size_read(i)) {
-+		/*
-+		 * Read directory header
-+		 */
-+		if (!squashfs_read_metadata(i->i_sb, &dirh, next_block,
-+				next_offset, sizeof(dirh), &next_block,
-+				&next_offset))
-+			goto failed_read;
-+
-+		length += sizeof(dirh);
-+
-+		dir_count = le32_to_cpu(dirh.count) + 1;
-+		while (dir_count--) {
-+			/*
-+			 * Read directory entry.
-+			 */
-+			if (!squashfs_read_metadata(i->i_sb, dire, next_block,
-+					next_offset, sizeof(*dire),
-+					&next_block, &next_offset))
-+				goto failed_read;
-+
-+			size = le16_to_cpu(dire->size) + 1;
-+
-+			if (!squashfs_read_metadata(i->i_sb, dire->name,
-+					next_block, next_offset, size,
-+					&next_block, &next_offset))
-+				goto failed_read;
-+
-+			length += sizeof(*dire) + size;
-+
-+			if (file->f_pos >= length)
-+				continue;
-+
-+			dire->name[size] = '\0';
-+			inode_number = le32_to_cpu(dirh.inode_number) +
-+				((short) le16_to_cpu(dire->inode_number));
-+			type = le16_to_cpu(dire->type);
-+
-+			TRACE("Calling filldir(%p, %s, %d, %lld, %x:%x, %d, %d)"
-+					"\n", dirent, dire->name, size,
-+					file->f_pos,
-+					le32_to_cpu(dirh.start_block),
-+					le16_to_cpu(dire->offset),
-+					inode_number,
-+					squashfs_filetype_table[type]);
-+
-+			if (filldir(dirent, dire->name, size, file->f_pos,
-+					inode_number,
-+					squashfs_filetype_table[type]) < 0) {
-+				TRACE("Filldir returned less than 0\n");
-+				goto finish;
-+			}
-+
-+			file->f_pos = length;
-+		}
-+	}
-+
-+finish:
-+	kfree(dire);
-+	return 0;
-+
-+failed_read:
-+	ERROR("Unable to read directory block [%llx:%x]\n", next_block,
-+		next_offset);
-+	kfree(dire);
-+	return 0;
++	return id_table;
 +}
-+
-+
-+const struct file_operations squashfs_dir_ops = {
-+	.read = generic_read_dir,
-+	.readdir = squashfs_readdir
-+};
 -- 
 1.5.2.5
 
