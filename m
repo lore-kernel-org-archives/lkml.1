@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbYJQSus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbYJQS7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbYJQSus (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 14:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbYJQStb
+	id S1756625AbYJQS7T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 14:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbYJQS7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 14:49:31 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50473 "EHLO mx2.suse.de"
+	Fri, 17 Oct 2008 14:59:05 -0400
+Received: from mga09.intel.com ([134.134.136.24]:23300 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758006AbYJQSta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 14:49:30 -0400
-Date: Fri, 17 Oct 2008 11:01:33 -0700
-From: Greg KH <gregkh@suse.de>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@elte.hu, yhlu.kernel@gmail.com, tglx@linutronix.de
-Subject: Re: [GIT PATCH] driver core patches for your 2.6-git tree
-Message-ID: <20081017180133.GB2429@suse.de>
-References: <20081016170954.GA11824@kroah.com> <20081017153151.GB3167@redhat.com>
+	id S1754266AbYJQS7D convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 14:59:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,433,1220252400"; 
+   d="scan'208";a="452613092"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Date: Fri, 17 Oct 2008 11:58:31 -0700
+Subject: RE: [RFC patch 15/15] LTTng timestamp x86
+Thread-Topic: [RFC patch 15/15] LTTng timestamp x86
+Thread-Index: AckwiBkOFQ0tCPtySiK2HW8RgJyYXgAAFiew
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com>
+References: <20081016232729.699004293@polymtl.ca>
+ <20081016234657.837704867@polymtl.ca>
+ <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
+ <20081017012835.GA30195@Krystal>
+ <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
+ <20081017172515.GA9639@goodmis.org>
+ <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com>
+ <20081017184215.GB9874@Krystal>
+In-Reply-To: <20081017184215.GB9874@Krystal>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081017153151.GB3167@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 11:31:51AM -0400, Jason Baron wrote:
-> 
-> One concern, raised in the other thread was that subsystems might want
-> to use their own defined tags, as opposed to KBUILD_MODNAME, which is
-> used by default to group together debugging control. Layering this tag
-> ability on top of this patchset is not hard, and I already have patches
-> which begin to do that.
+> Hrm, on such systems
+> - *large* amount of cpus
+> - no synchronized TSCs
+>
+> What would be the best approach to order events ?
 
-That sounds like a useful thing to have.
+There isn't a perfect solution for this.  My feeling is
+that your best hope is with per-cpu buffers logged with
+the local TSC ... together with some fancy heuristics to
+post-process the logs to come up with the best approximation
+to the actual ordering.
 
-> Also, this patch allows passing one command line argument to enable
-> all debugging which can later be turn on/off as desired. This patch
-> already stands on its own in enabling all pr_debug and dev_dbg calls
-> to be dynamically enabled.
+If you have a tight upper bound estimate for the
+errors in converting from "per-cpu" TSC values to "global
+system time" then the post processing tool will be able
+to identify events for which the order is uncertain.
 
-I tried turning everything on once.  The output was almost unusable, you
-pretty much always want to be able to pick and choose what you want
-enabled otherwise you drown in irrelevant data :)
+> Do you think we should consider using HPET, event though it's
+> painfully slow ? Would it be faster than cache-line bouncing
+> on such large boxes ? With a frequency around 10MHz, that
+> would give a 100ns precision, which should be enough
+> to order events.
 
-thanks,
+This sounds like a poor choice.  Makes all traces very
+slow.  100ns precision isn't all that good ... we can
+probably do almost as well estimating the delta between
+TSC on different cpus.
 
-greg k-h
+-Tony
