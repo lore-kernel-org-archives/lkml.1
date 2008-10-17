@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757866AbYJQVs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbYJQVsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757866AbYJQVs7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 17:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbYJQVsU
+	id S1757588AbYJQVsp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 17:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbYJQVsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 17:48:20 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:1998 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756944AbYJQVsT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 17:48:19 -0400
-Message-ID: <13c67e2c0810171448o6858827ei1ccc9e0ddf487f8@mail.gmail.com>
-Date: Fri, 17 Oct 2008 14:48:18 -0700
-From: "Ani Sinha" <kernel@anirban.org>
-To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: panic() logic
-Cc: kernel@anirban.org
+	Fri, 17 Oct 2008 17:48:12 -0400
+Received: from kroah.org ([198.145.64.141]:56387 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752194AbYJQVsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 17:48:11 -0400
+Date: Fri, 17 Oct 2008 14:44:49 -0700
+From: Greg KH <greg@kroah.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081017214449.GC3585@kroah.com>
+References: <20081016002509.GA25868@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com> <200810172106.29154.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200810172106.29154.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All:
+On Fri, Oct 17, 2008 at 09:06:28PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Friday 17 October 2008, Greg KH wrote:
+> > On Fri, Oct 17, 2008 at 01:16:38AM -0700, Steven Noonan wrote:
+> > > I believe some of Adrian's concerns are valid. Userspace programs will
+> > > indeed break, largely because some depend on build-time and run-time
+> > > checks for the kernel version being >=2.6.0 or >=2.4.0 and so forth. I
+> > > suspect the best way to prove userspace breakage would be to make a
+> > > branch of the kernel with a new versioning scheme (8.10, 2008.10,
+> > > whatever) and use that as the installed kernel while building a Gentoo
+> > > system. I suspect you'd see massive breakage.
+> > 
+> > That would be trivial for me to test, IFF we want to do something like
+> > this.
+> > 
+> > But again, that's a technical thing, that can be solved _IFF_ we want to
+> > change things.
+> > 
+> > And that's my point here, do we want to change the current numbering
+> > scheme as people have expressed annoyances of the current one.
+> 
+> Numbering scheme?  I thought we should all be using the official
+> kernel version NAME after the -final release?  Was I mistaken?
+> 
+> PS1 seems like somebody forgot to update it for 2.6.27...
 
-I noticed an issue with the panic() firing on a back core in SMP
-lately. We are mostly working on mips architectures but it might
-effect other archs as well. Therefore, I am putting forward my
-thoughts and comments to the whole linux community. In the following,
-by front core I mean core#0 and by back core I mean other cores.
+Cool, that means I get to do it :)
 
-The panic() call does a smp_send_stop() pretty early in the call
-process. There is an issue with this:
+thanks,
 
-smp_send_stop basically marks all the other cores as 'down' and
-updates the cpu bitmap. One implication of this is that you can not do
-an IPI later on to other cores (smp_send_function() does a
-'for_earch_online_cpu'). This makes sense since you should not be
-allowed to do anything on a down cpu. But what if a particular
-architecture had logic to do specific things for the front core and
-other things on the back cores as a part of 'graceful reboot' process?
-For example, the arch dependent emergency_restart() might try to do
-send IPI to the front core to do a graceful reboot and simply place
-the others on an infinite loop? As a concrete example, mips sibyte
-processor has logic in arch dependent restart code to call cfe_exit()
-on front core and an infinite loop on the back cores. It does this
-through an IPI which obviously does not succeed because of the early
-smp_send_stop().
-
-So, my proposal is, can we just run panic on the front core and put
-the back cores in loop right away. I mean, can we do this in pseudo
-code?
-
-panic()
-{
-
-/* do stuff that must be done on the current core */
-    on_each_cpu(continue_panic, ...);
-
-}
-
-continue_panic()
-{
- if (!smp_processor_id()) {
-        smp_send_stop();
-        /* rest of existing panic() logic */
- }else
+greg k-h
