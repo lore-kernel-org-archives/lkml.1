@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYJQP15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYJQP2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbYJQP15 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbYJQP1s
+	id S1756170AbYJQP2u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbYJQP2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:27:48 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:57749 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754203AbYJQP1r (ORCPT
+	Fri, 17 Oct 2008 11:28:42 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3115 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754970AbYJQP2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:27:47 -0400
-Message-ID: <48F8AEF1.5030603@scherping.de>
-Date: Fri, 17 Oct 2008 17:27:45 +0200
-From: Richard Scherping <richard@scherping.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 17 Oct 2008 11:28:41 -0400
+Date: Fri, 17 Oct 2008 16:28:36 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, alsa-devel@alsa-project.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       lrg@slimlogic.co.uk
+Subject: Re: [alsa-devel] [PATCH] Fix debugfs_create_dir's error checking	method for sound/soc/
+Message-ID: <20081017152833.GI2546@sirena.org.uk>
+References: <48F88D77.2080106@cn.fujitsu.com> <20081017132340.GF2546@sirena.org.uk> <s5hfxmvw8lq.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Frederik Himpe <fhimpe@telenet.be>
-CC: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: iwlagn: associating with AP causes kernel hiccup
-References: <gd5gs4$abi$1@ger.gmane.org> <1224104363.19219.30.camel@rc-desk>	<gd9v3f$3ft$1@ger.gmane.org> <gd9vpo$5ql$1@ger.gmane.org>
-In-Reply-To: <gd9vpo$5ql$1@ger.gmane.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/e4pqqw08Milwvj0Z+ulY/CQIhQ/pqT4itZiS
- yyE9OfHsKrhFNtbRT6TBgfL83xUnObDvUFDiBFdzd/kTdiIrAX
- ZDmPSdwTqN72eHnf4nyK+ow1siYO2Wo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hfxmvw8lq.wl%tiwai@suse.de>
+X-Cookie: Monitor not included.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> When I associate with an AP, Linux 2.6.27 seems to "hang" for a few
->>>> seconds. During that time, all sound stops playing and keyboard and
->>>> mouse input is impossible.
->>
->> I'm using Mandriva 2009.0 x86_64 with wpa_supplicant and Mandriva's
->> wireless network configuration tool (drakroam).
->>
->> Actually I just found out that running # ifconfig wlan0 down
->> is enough to trigger the sound and mouse hanging for a few seconds.
-> 
-> And shortly after I wrote that, while associating while getting an IP 
-> with dhclient when associating with a WPA encrypted AP, I got this 
-> backtrace in my logs:
-> [...]
+On Fri, Oct 17, 2008 at 05:21:21PM +0200, Takashi Iwai wrote:
 
-I have a similar problem here. No crash up to now, but the very same "hang" for a few seconds on "ifconfig wlan0 down". Interestingly this does only happen after a normal boot - once I did a suspend and resume (S3), there is no hang anymore.
+> This looks like a design.  In linux/debugfs.h:
 
-Hardware: Thinkpad T61p with Intel 4965 agn
-Software: Debian Lenny x86_64 with vanilla 2.6.27 kernel
+Yeah, so my grovelling through the code after I wrote that e-mail
+showed.
 
-I remember having the same "hang" with older kernels, too.
+> /* 
+>  * We do not return NULL from these functions if CONFIG_DEBUG_FS is not enabled
+>  * so users have a chance to detect if there was a real error or not.  We don't
+>  * want to duplicate the design decision mistakes of procfs and devfs again.
+>  */
 
-Richard
+> Though, I agree that the detailed error information is lost by
+> returning NULL...
+
+Yes, not to mention the fact that using both error reporting interfaces
+makes writing client code more error prone.  Looking at the users most
+seem to only check one kind of error code is returned.  
+
+For ASoC checking only for null would actually be good enough - even if
+-ENODEV is returned we only ever pass the pointers into other debugfs
+functions so the fact that the pointer is bogus makes no odds, it'll
+never actually be dereferenced.
