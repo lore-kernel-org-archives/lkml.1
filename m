@@ -1,75 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbYJQXGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbYJQXL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbYJQXGF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 19:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbYJQXFr
+	id S1757770AbYJQXL7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 19:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbYJQXLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 19:05:47 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59651 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757464AbYJQXFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 19:05:46 -0400
-Date: Sat, 18 Oct 2008 01:05:30 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com, milan@ucw.cz
-Subject: 2.6.27-git6: max1111_read_channel and corgi_ssp_ads7846_putget
-	missing
-Message-ID: <20081017230529.GB1467@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 17 Oct 2008 19:11:48 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:16508 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756198AbYJQXLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 19:11:47 -0400
+From: Andrey Mirkin <major@openvz.org>
+To: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Pavel Emelyanov <xemul@openvz.org>, Andrey Mirkin <major@openvz.org>
+Subject: [PATCH 01/10] Introduce trivial sys_checkpoint and sys_restore system calls
+Date: Sat, 18 Oct 2008 03:11:29 +0400
+Message-Id: <1224285098-573-2-git-send-email-major@openvz.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1224285098-573-1-git-send-email-major@openvz.org>
+References: <1224285098-573-1-git-send-email-major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Right now they just return -ENOSYS. Later they will provide functionality
+to checkpoint and restart a container.
 
-2.6.27 compiled okay, rc6 gives:
+Both syscalls take as arguments a file descriptor and flags.
+Also sys_checkpoint take as the first argument a PID of container's init
+(later it will be container ID); sys_restart takes as the first argument
+a container ID (right now it will not be used).
 
-  CHK     include/linux/version.h
-make[1]: `include/asm-arm/mach-types.h' is up to date.
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-<stdin>:1097:2: warning: #warning syscall fadvise64 not implemented
-<stdin>:1265:2: warning: #warning syscall migrate_pages not implemented
-<stdin>:1321:2: warning: #warning syscall pselect6 not implemented
-<stdin>:1325:2: warning: #warning syscall ppoll not implemented
-<stdin>:1365:2: warning: #warning syscall epoll_pwait not implemented
-  CHK     include/linux/compile.h
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-arch/arm/mach-pxa/built-in.o: In function `sharpsl_pm_pxa_read_max1111':
-spitz_pm.c:(.text+0x3100): undefined reference to `max1111_read_channel'
-drivers/built-in.o: In function `corgits_resume':
-ledtrig-ide-disk.c:(.text+0x5f694): undefined reference to `corgi_ssp_ads7846_putget'
-drivers/built-in.o: In function `corgits_suspend':
-ledtrig-ide-disk.c:(.text+0x5f7a0): undefined reference to `corgi_ssp_ads7846_putget'
-drivers/built-in.o: In function `sync_receive_data_send_cmd':
-ledtrig-ide-disk.c:(.text+0x5f868): undefined reference to `corgi_ssp_ads7846_get'
-ledtrig-ide-disk.c:(.text+0x5f884): undefined reference to `corgi_ssp_ads7846_put'
-ledtrig-ide-disk.c:(.text+0x5f888): undefined reference to `corgi_ssp_ads7846_get'
-ledtrig-ide-disk.c:(.text+0x5f8d4): undefined reference to `corgi_ssp_ads7846_put'
-drivers/built-in.o: In function `ts_interrupt_main':
-ledtrig-ide-disk.c:(.text+0x5f990): undefined reference to `corgi_ssp_ads7846_lock'
-ledtrig-ide-disk.c:(.text+0x5fa68): undefined reference to `corgi_ssp_ads7846_put'
-ledtrig-ide-disk.c:(.text+0x5fa6c): undefined reference to `corgi_ssp_ads7846_get'
-ledtrig-ide-disk.c:(.text+0x5fa70): undefined reference to `corgi_ssp_ads7846_unlock'
-drivers/built-in.o: In function `corgits_probe':
-ledtrig-ide-disk.c:(.init.text+0x2a7c): undefined reference to `corgi_ssp_ads7846_putget'
-ledtrig-ide-disk.c:(.init.text+0x2aac): undefined reference to `corgi_ssp_ads7846_putget'
-ledtrig-ide-disk.c:(.init.text+0x2adc): undefined reference to `corgi_ssp_ads7846_putget'
-ledtrig-ide-disk.c:(.init.text+0x2b0c): undefined reference to `corgi_ssp_ads7846_putget'
-make: *** [.tmp_vmlinux1] Error 1
+Signed-off-by: Andrey Mirkin <major@openvz.org>
+---
+ Makefile                           |    2 +-
+ arch/x86/kernel/syscall_table_32.S |    2 +
+ checkpoint/Makefile                |    1 +
+ checkpoint/sys_core.c              |   38 ++++++++++++++++++++++++++++++++++++
+ include/asm-x86/unistd_32.h        |    2 +
+ 5 files changed, 44 insertions(+), 1 deletions(-)
+ create mode 100644 checkpoint/Makefile
+ create mode 100644 checkpoint/sys_core.c
 
+diff --git a/Makefile b/Makefile
+index ea413fa..ce49afd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -619,7 +619,7 @@ export mod_strip_cmd
+ 
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+-core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
++core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ checkpoint/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index fd9d4f4..4a0d7fb 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -333,3 +333,5 @@ ENTRY(sys_call_table)
+ 	.long sys_pipe2
+ 	.long sys_inotify_init1
+ 	.long sys_hijack
++	.long sys_checkpoint
++	.long sys_restart		/* 335 */
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+new file mode 100644
+index 0000000..2276fb1
+--- /dev/null
++++ b/checkpoint/Makefile
+@@ -0,0 +1 @@
++obj-y += sys_core.o
+diff --git a/checkpoint/sys_core.c b/checkpoint/sys_core.c
+new file mode 100644
+index 0000000..1a97fb6
+--- /dev/null
++++ b/checkpoint/sys_core.c
+@@ -0,0 +1,38 @@
++/*
++ *  Copyright (C) 2008 Parallels, Inc.
++ *
++ *  Author: Andrey Mirkin <major@openvz.org>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License as
++ *  published by the Free Software Foundation, version 2 of the
++ *  License.
++ *
++ */
++
++#include <linux/sched.h>
++#include <linux/fs.h>
++#include <linux/file.h>
++
++/**
++ * sys_checkpoint - checkpoint a container from outside
++ * @pid: pid of the container init(1) process
++ * TODO: should switch to container id later
++ * @fd: file to which save the checkpoint image
++ * @flags: checkpoint operation flags
++ */
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
++{
++	return -ENOSYS;
++}
++
++/**
++ * sys_restart - restart a container
++ * @ctid: container id which should be used to restart a container
++ * @fd: file from which read the checkpoint image
++ * @flags: restart operation flags
++ */
++asmlinkage long sys_restart(int ctid, int fd, unsigned long flags)
++{
++	return -ENOSYS;
++}
+diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
+index 70280da..1a09604 100644
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -339,6 +339,8 @@
+ #define __NR_pipe2		331
+ #define __NR_inotify_init1	332
+ #define __NR_hijack		333
++#define __NR_checkpoint		334
++#define __NR_restart		335
+ 
+ #ifdef __KERNEL__
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.6
+
