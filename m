@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYJQTsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYJQTu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbYJQTsR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbYJQTsE
+	id S1757447AbYJQTu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbYJQTur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:48:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56459 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755561AbYJQTsC (ORCPT
+	Fri, 17 Oct 2008 15:50:47 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:42609 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754731AbYJQTur (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:48:02 -0400
-Date: Fri, 17 Oct 2008 20:47:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081017204723.15114eaa@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081017174657.GH2221@kroah.com>
-References: <20081016002509.GA25868@kroah.com>
-	<20081016124943.GE23630@cs181140183.pp.htv.fi>
-	<20081016151748.GA31075@kroah.com>
-	<20081016164602.GA22554@cs181140183.pp.htv.fi>
-	<20081017034717.GA28188@kroah.com>
-	<20081017064751.GE22554@cs181140183.pp.htv.fi>
-	<20081017075544.GB4850@kroah.com>
-	<f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com>
-	<20081017174657.GH2221@kroah.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 17 Oct 2008 15:50:47 -0400
+X-YMail-OSG: vfw0mHUVM1mGA_QoN2llgLJVA1pTMr9LRN7kQGfDbd3HdMqSiMVVaSh8nH0H.2JREmGDvdYsu0R3JB56ONWvAavHIZVz6HPZ7RXgjWmuCWBIbapPmygKcJ5RSEGGT9VZuPXrmpEhYCi7tQ8Bzs8s2di9wbm6HsxyrX13L7g-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
+	kobject source.
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20081017193947.GC5633@mail.oracle.com>
+References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
+	 <20081017193947.GC5633@mail.oracle.com>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 12:50:44 -0700
+Message-Id: <1224273044.5556.353.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And that's my point here, do we want to change the current numbering
-> scheme as people have expressed annoyances of the current one.
+On Fri, 2008-10-17 at 12:39 -0700, Joel Becker wrote:
+> On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
+> > Hi Joel, Greg and Co,
+> > 
+> > Here is the the first working code for allowing configfs to handle
+> > symlinks from sysfs struct kobject based code.  Here is the commit:
+> > passing struct kobject into generic target_core_mod subsystem plugins
+> > for locating struct block_device and struct scsi_device..  
+> 
+> NAK.
+> 
+> As Greg said, this just doesn't work.  Don't go down this path.
+> 
 
-But any new scheme will be just as annoying to someone and it messes up
-existing documentation, understanding and risks breaking third party
-tools.
+Fair enough, I will kill it from my tree. :-)
 
-Is it really worth the hassle, plus we'll have to change again if we use
-date/times because once we are shipping Linux out to Alpha Centauri with
-colonists there will be serious problems trying to compute the effect of
-tau on release numbering ...
+Thanks for your comments!
 
-(Ducks)
+--nab
 
-Alan
+
+
