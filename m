@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYJQLN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYJQLOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYJQLN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYJQLNs
+	id S1753102AbYJQLOS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 07:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYJQLNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:13:48 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60663 "EHLO song.cn.fujitsu.com"
+	Fri, 17 Oct 2008 07:13:50 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59339 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752569AbYJQLNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:13:47 -0400
-Message-ID: <48F8731E.40100@cn.fujitsu.com>
-Date: Fri, 17 Oct 2008 19:12:30 +0800
+	id S1752744AbYJQLNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 07:13:49 -0400
+Message-ID: <48F87323.6020303@cn.fujitsu.com>
+Date: Fri, 17 Oct 2008 19:12:35 +0800
 From: Zhaolei <zhaolei@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
 To: ralf@linux-mips.org
 CC: linux-mips@linux-mips.org,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix debugfs_create_*'s error checking method for mips/math-emu/
+Subject: [PATCH] Fix debugfs_create_*'s error checking method for mips/kernel/
 Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,30 +31,46 @@ when debugfs is not enabled in the kernel.
 
 Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 ---
- arch/mips/math-emu/cp1emu.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/mips/kernel/setup.c     |    4 ++--
+ arch/mips/kernel/unaligned.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/mips/math-emu/cp1emu.c b/arch/mips/math-emu/cp1emu.c
-index b08fc65..7ec0b21 100644
---- a/arch/mips/math-emu/cp1emu.c
-+++ b/arch/mips/math-emu/cp1emu.c
-@@ -1299,12 +1299,12 @@ static int __init debugfs_fpuemu(void)
- 	if (!mips_debugfs_dir)
- 		return -ENODEV;
- 	dir = debugfs_create_dir("fpuemustats", mips_debugfs_dir);
--	if (IS_ERR(dir))
--		return PTR_ERR(dir);
-+	if (!dir)
+diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
+index 16f8edf..4430a1f 100644
+--- a/arch/mips/kernel/setup.c
++++ b/arch/mips/kernel/setup.c
+@@ -601,8 +601,8 @@ static int __init debugfs_mips(void)
+ 	struct dentry *d;
+ 
+ 	d = debugfs_create_dir("mips", NULL);
+-	if (IS_ERR(d))
+-		return PTR_ERR(d);
++	if (!d)
 +		return -ENOMEM;
- 	for (i = 0; i < ARRAY_SIZE(vars); i++) {
- 		d = debugfs_create_u32(vars[i].name, S_IRUGO, dir, vars[i].v);
--		if (IS_ERR(d))
--			return PTR_ERR(d);
-+		if (!d)
-+			return -ENOMEM;
- 	}
+ 	mips_debugfs_dir = d;
  	return 0;
  }
+diff --git a/arch/mips/kernel/unaligned.c b/arch/mips/kernel/unaligned.c
+index c327b21..2070966 100644
+--- a/arch/mips/kernel/unaligned.c
++++ b/arch/mips/kernel/unaligned.c
+@@ -560,12 +560,12 @@ static int __init debugfs_unaligned(void)
+ 		return -ENODEV;
+ 	d = debugfs_create_u32("unaligned_instructions", S_IRUGO,
+ 			       mips_debugfs_dir, &unaligned_instructions);
+-	if (IS_ERR(d))
+-		return PTR_ERR(d);
++	if (!d)
++		return -ENOMEM;
+ 	d = debugfs_create_u32("unaligned_action", S_IRUGO | S_IWUSR,
+ 			       mips_debugfs_dir, &unaligned_action);
+-	if (IS_ERR(d))
+-		return PTR_ERR(d);
++	if (!d)
++		return -ENOMEM;
+ 	return 0;
+ }
+ __initcall(debugfs_unaligned);
 -- 
 1.5.5.3
 
