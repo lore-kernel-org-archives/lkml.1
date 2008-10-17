@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbYJQUHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYJQUMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbYJQUHz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbYJQUHV
+	id S1757924AbYJQUMm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbYJQUMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:07:21 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:21440 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756548AbYJQUHT (ORCPT
+	Fri, 17 Oct 2008 16:12:35 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:9429 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090AbYJQUMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:07:19 -0400
-X-YMail-OSG: wJkzbVMVM1lHqklhAeoKKT9Q6Ivfj0ceArfJLlyHUiXOF8OEoWcr8e6lRZ8GsIQ1RF6HPcIXtxgpTaGfUHEW7bI23vZmTlsjOh9bygG6p_qUiGfnkN2UKNWKbaYsOa.BT1eB10JQHTZL94hXGr7U_H12FKQdkqI6.kdpceQ-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20081017194857.GD5633@mail.oracle.com>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-	 <20081017074453.GA4850@kroah.com>
-	 <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
-	 <20081017194857.GD5633@mail.oracle.com>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 13:07:16 -0700
-Message-Id: <1224274036.5556.358.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 17 Oct 2008 16:12:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=jKubJ5da0FLQeaT0k3XFiFkiWJTOTr2QhOaMPb5NvMsML81RPD1DcWCRLmZxDxxm8O
+         2UMosfMSiMvZv2G5k12mAtNYACpfUnS2ey+thjeTfmOR1Tu1brpBUEGTX/s6cYUasj9l
+         DHPDZLlN7nxg+Gu883yFhQI/j2H3yqtSX1u9g=
+Message-ID: <b637ec0b0810171312y2bc88085o7973c257713b0d5c@mail.gmail.com>
+Date: Fri, 17 Oct 2008 22:12:33 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Latest GIT section mismatches
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 12:48 -0700, Joel Becker wrote:
-> On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> > On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
-> > > What is the problem you are attempting to solve here?
-> > > 
-> > 
-> > So, the generic target_core_mod engine that lives
-> > under /sys/kernel/config/target/core needs a method to locate struct
-> > block_device and struct scsi_device for access via bio_submit() and
-> > scsi_execute_() respectively.
-> > 
-> > Originally, target_core_mod used key echoed through configfs attributes
-> > like so:
-> > 
-> > export TARGET=/sys/kernel/config/target/core/
-> > 
-> > # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
-> > mkdir -p $TARGET/iblock_0/lvm_test0
-> > # OLD METHOD to reference struct block_device
-> > echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
-> > echo 1 > $TARGET/iblock_0/lvm_test0/enable
-> > # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
-> > ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
-> 
-> 	Pass an open file descriptor.  In bash(1):
-> 
->     exec 3<>/dev/dm-7
->     echo 3 >$TARGET/iblock_0/lvm_test0/control  # I'd call it 'fd'
-> 
-> In kernel, in the ->store() function of 'control':
-> 
-> 	p = (char *)page;
-> 	fd = simple_strtol(p, &p, 0);
-> 	filp = fget(fd);
-> 	inode = igrab(filp->f_mapping->host);
-> 	dev = I_BDEV(filp->f_mapping->host);
-> 	blkdev_get(dev, FMODE_WRITE | FMODE_READ, 0);
-> 
-> Error handling is left up to you (validate the strtol, fd range, ISBLK,
-> etc).  This assumes you want the struct block_device and want to pin it
-> in memory.  I assume you do.
-> 
+Linus ' GIT  2.6.27-05323-g26e9a39 (pulled less than one hour ago) gives:
 
-Btw, ideally I would like to do the same type of thing for accessing
-drivers/scsi for both TYPE_DISK and non TYPE_DISK..  I will have a look
-and see if something is possible to access struct scsi_device in all
-device type cases..
+WARNING: vmlinux.o(.text+0x1cde2): Section mismatch in reference from
+the function reserve_region_with_split() to the function
+.init.text:__reserve_region_with_split()
+The function reserve_region_with_split() references
+the function __init __reserve_region_with_split().
+This is often because reserve_region_with_split lacks a __init
+annotation or the annotation of __reserve_region_with_split is wrong.
 
---nab
+WARNING: vmlinux.o(.cpuinit.text+0xeec): Section mismatch in reference
+from the function cpu_init() to the function
+.init.text:init_thread_xstate()
+The function __cpuinit cpu_init() references
+a function __init init_thread_xstate().
+If init_thread_xstate is only used by cpu_init then
+annotate init_thread_xstate with a matching annotation.
 
+WARNING: vmlinux.o(.cpuinit.data+0x0): Section mismatch in reference
+from the variable initial_code to the function
+.init.text:i386_start_kernel()
+The variable __cpuinitdata initial_code references
+a function __init i386_start_kernel().
+If i386_start_kernel is only used by initial_code then
+annotate i386_start_kernel with a matching annotation.
+
+I'll send .config on request.
