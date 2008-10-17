@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbYJQVEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbYJQVKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756269AbYJQVEX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 17:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYJQVEQ
+	id S1755594AbYJQVKz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 17:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbYJQVKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 17:04:16 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37032 "EHLO gate.crashing.org"
+	Fri, 17 Oct 2008 17:10:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50692 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753659AbYJQVEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 17:04:15 -0400
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, rdreier@cisco.com,
-       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
-       akpm@linux-foundation.org
-In-Reply-To: <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
-References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>
-	 <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>
-	 <20081016.210404.151891223.davem@davemloft.net>
-	 <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
-	 <1224220339.7654.84.camel@pasglop>
-	 <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 18 Oct 2008 08:03:33 +1100
-Message-Id: <1224277413.7654.95.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1753769AbYJQVKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 17:10:46 -0400
+Date: Fri, 17 Oct 2008 17:08:54 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, hbabu@us.ibm.com
+Subject: Re: [PATCH] add additional symbols to /sys/kernel/vmcoreinfo data
+	for ppc(64)
+Message-ID: <20081017210854.GB10013@redhat.com>
+References: <20081009151408.GA25268@hmsendeavour.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081009151408.GA25268@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Do you think alpha wants to see its PIO resources shown as
+On Thu, Oct 09, 2008 at 11:20:27AM -0400, Neil Horman wrote:
+> Hey-
+> 	The makdumpdile dump filtering program, in some modes of operation needs
+> the node_data and/or contig_page_data symbols to function properly.  These
+> symbols are missing from the powerpc kernel.  This patch adds those symbols in
+> properly.  Tested successfully by myself and the reporter.
 > 
-> 	[00000000000001f0-00000000000001f7]
+> Regards
+> Neil
 > 
-> or
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 > 
-> 	[01f0-01f7]
 > 
-> and which do you think is more readable?
+>  machine_kexec.c |   10 ++++++++++
+>  1 file changed, 10 insertions(+)
 > 
-> And even on sparc, with the full 64 bits in use, it's not like we'd be 
-> *truncating* to 4 hex digits with %04x.
+> 
+> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> index aab7688..2f9b5aa 100644
+> --- a/arch/powerpc/kernel/machine_kexec.c
+> +++ b/arch/powerpc/kernel/machine_kexec.c
+> @@ -44,6 +44,16 @@ void machine_kexec_cleanup(struct kimage *image)
+>  		ppc_md.machine_kexec_cleanup(image);
+>  }
+>  
+> +void arch_crash_save_vmcoreinfo(void)
+> +{
+> +#ifdef CONFIG_NEED_MULTIPLE_NODES
+> +	VMCOREINFO_SYMBOL(node_data);
+> +	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
+> +#else
+> +	VMCOREINFO_SYMBOL(contig_page_data);
+> +#endif
+> +}
+> +
 
-I said archs could add themselves to the list who wants smaller
-resources. I don't know which arch wants what here, I just provided
-some defaults. Maybe we could move those define to asm/*.h tho.
+Hi Neil,
 
-Cheers,
-Ben.
+Looks like contig_page_data is already being saved in arch independent
+portion of kexec (crash_save_vmcoreinfo_init()). We probably don't need
+to save it here again?
 
+#ifndef CONFIG_NEED_MULTIPLE_NODES
+        VMCOREINFO_SYMBOL(mem_map);
+        VMCOREINFO_SYMBOL(contig_page_data);
+#endif
 
+Thanks
+Vivek
