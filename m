@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbYJQUfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYJQUfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbYJQUfQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYJQUfE
+	id S1756577AbYJQUfl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbYJQUfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:35:04 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38233 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbYJQUfC (ORCPT
+	Fri, 17 Oct 2008 16:35:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47838 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755277AbYJQUfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:35:02 -0400
-Message-ID: <48F8F5F9.1050506@zytor.com>
-Date: Fri, 17 Oct 2008 13:30:49 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 17 Oct 2008 16:35:16 -0400
+Date: Fri, 17 Oct 2008 13:34:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] STAGING patches for 2.6.28
+In-Reply-To: <20081013213651.GA8338@kroah.com>
+Message-ID: <alpine.LFD.2.00.0810171332240.3438@nehalem.linux-foundation.org>
+References: <20081010224130.GA30117@kroah.com> <20081013213651.GA8338@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, rdreier@cisco.com,
-       Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, yhlu.kernel@gmail.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>  <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>  <20081016.210404.151891223.davem@davemloft.net>  <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org> <1224220339.7654.84.camel@pasglop> <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> And even on sparc, with the full 64 bits in use, it's not like we'd be 
-> *truncating* to 4 hex digits with %04x.
-> 
 
-This reminds me to add support for the ' modifier in the kernel printk...
 
-	-hpa
+On Mon, 13 Oct 2008, Greg KH wrote:
+> 
+> I've now added 2 more patches to this tree, fixing a build error if you
+> did not build any staging drivers into your tree (the normal mode of
+> building), and added an additional wireless driver that came from the
+> Fedora kernel trees.
+
+Greg - I finally got around to merging this tree, and it got some 
+conflicts with the changes/cleanups to taint handling (and due to the 
+MAINTAINERS file cleanups/alphasort). They conflicts weren't all that 
+nasty, and I think they're all resolved correctly, but it might be worth 
+testing the TAINT_CRAP flag in particular. I tested the build in the 
+normal config, but didn't actually bother to test any tainted drivers.
+
+		Linus
