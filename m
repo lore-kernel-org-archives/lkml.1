@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbYJQQtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYJQQtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756010AbYJQQtX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 12:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbYJQQtP
+	id S1755825AbYJQQtf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 12:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbYJQQtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 12:49:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56339 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbYJQQtO (ORCPT
+	Fri, 17 Oct 2008 12:49:17 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:33357 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754913AbYJQQtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 12:49:14 -0400
-Subject: Re: tracepoints for kernel/mutex.c
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, compudj@krystal.dyndns.org, fche@redhat.com,
-       fweisbec@gmail.com, edwintorok@gmail.com, mingo@elte.hu,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20081017144820.GA3167@redhat.com>
-References: <20081016210430.GC25738@redhat.com>
-	 <1224192879.16038.82.camel@lappy.programming.kicks-ass.net>
-	 <20081017144820.GA3167@redhat.com>
+	Fri, 17 Oct 2008 12:49:16 -0400
+Subject: Re: [GIT PULL] UWB, WUSB, and WLP subsystems for 2.6.28
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Vrabel <david.vrabel@csr.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081014130251.aa008a5e.akpm@linux-foundation.org>
+References: <48EF45BC.1020805@csr.com>
+	 <20081014130251.aa008a5e.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Fri, 17 Oct 2008 18:48:38 +0200
-Message-Id: <1224262119.16038.87.camel@lappy.programming.kicks-ass.net>
+Date: Fri, 17 Oct 2008 18:50:00 +0200
+Message-Id: <1224262200.9386.9.camel@californication>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -30,58 +28,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 10:48 -0400, Jason Baron wrote:
-> On Thu, Oct 16, 2008 at 11:34:38PM +0200, Peter Zijlstra wrote:
-> > On Thu, 2008-10-16 at 17:04 -0400, Jason Baron wrote:
+Hi Andrew,
+
+> > Please pull the new UWB, WUSB and WLP subsystems from
 > > 
-> > > Below are 3 tracepoints I've been playing with in kernel/mutex.c using
-> > > a SystemTap script. The idea is to detect and determine the cause of
-> > > lock contention. Currently I get the following output:
-> > > 
-> > > <contended mutex nam> <process name and pid of the contention> <time of
-> > > contention> <pid that woke me up(caused the contention?)>
-> > 
-> > > I think this approach has a number of advantages. It has low
-> > > overhead in the off case, since its based on tracepoints. It is
-> > > minimally invasive in the code path (3 tracepoints). It also allows me
-> > > to explore data structures and parts of the kernel by simply modifying
-> > > the SystemTap script. I do not need to re-compile the kernel and reboot.
-> > 
-> > *sigh* this is why I hate markers and all related things...
-> > 
-> > _IFF_ you want to place tracepoints, get them in the same place as the
-> > lock-dep/stat hooks, that way you get all the locks, not only mutexes.
+> > git://git.kernel.org/pub/scm/linux/kernel/git/dvrabel/uwb.git for-upstream
 > 
-> makes sense. So we could layer lock-dep/stat on top of tracepoints? That
-> would potentially also make lock-dep/stat more dynamic.
-
-I'm afraid that won't work. Both lockdep and lockstat rely on added data
-to the lock structure. But what you can do is expose the hooks as
-tracepoints when lockdep/lockstat is configured.
-
-> > 
-> > This is the same reason I absolutely _hate_ Edwin's rwsem tracer.
-> > 
+> didn't happen?
 > 
-> i'm trying to get some consensus on these types of patches. Do we
-> want to create a new tracer for each thing we want to trace, or add
-> tracepoints?
+> What is the review status of this work?  I don't remember seeing it on any
+> of the lists where I lurk - perhaps a full resend will help things along.
 
-The only thing I'd consider is one lock-tracer that exposes all
-lockdep/lockstat hooks. Any half-assed partial solution won't fly.
+actually the original plan was to already merge this for 2.6.27 since
+the code base has been around for a long time now and has gotten
+multiple reviews.
 
-> > Folks, lets please start by getting the tracing infrastructure in and
-> > those few high-level trace-points google proposed.
-> > 
-> > Until we get the basics in, I think I'm going to NAK any and all
-> > tracepoint/marker patches.
-> > 
-> 
-> I think that core locking functions are pretty basic...
+Regards
 
-For kernel developers, yes. For userspace stuff like latencytop should
-be good enough to notice something is up.
+Marcel
 
-And kernel developers can recompile their kernel - that's the only way
-you're going to do anything about lock contention anyway.
 
