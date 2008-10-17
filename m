@@ -1,65 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbYJQP4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYJQP51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574AbYJQP4s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbYJQPzl
+	id S1757938AbYJQP51 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYJQP4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:55:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37942 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758118AbYJQPzk (ORCPT
+	Fri, 17 Oct 2008 11:56:08 -0400
+Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:3669 "EHLO
+	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757515AbYJQP4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:55:40 -0400
-Date: Fri, 17 Oct 2008 08:54:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: David Miller <davem@davemloft.net>, rdreier@cisco.com,
-       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-In-Reply-To: <1224220339.7654.84.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
-References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>  <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>  <20081016.210404.151891223.davem@davemloft.net>  <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
- <1224220339.7654.84.camel@pasglop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 17 Oct 2008 11:56:05 -0400
+To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Subject: Subject: [PATCH 02/16] Squashfs: directory lookup operations
+Message-Id: <E1KqrTW-0001xG-Cl@dylan>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Fri, 17 Oct 2008 16:42:50 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/namei.c |  226 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 226 insertions(+), 0 deletions(-)
 
-On Fri, 17 Oct 2008, Benjamin Herrenschmidt wrote:
->
-> +#ifdef CONFIG_PHYS_ADDR_T_64BIT
-> +#define MEM_RSRC_SIZE	16
-> +#else
-> +#define MEM_RSRC_SIZE	8
-> +#endif
-> +
-> +#ifdef CONFIG_X86
-> +#define IO_RSRC_SIZE	4
-> +#elif CONFIG_PPC
-> +#define IO_RSRC_SIZE	8
-> +#else
-> +#define IO_RSRC_SIZE	MEM_RSRC_SIZE
-> +#endif
+diff --git a/fs/squashfs/namei.c b/fs/squashfs/namei.c
+new file mode 100644
+index 0000000..fdc1b03
+--- /dev/null
++++ b/fs/squashfs/namei.c
+@@ -0,0 +1,226 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * namei.c
++ */
++
++/*
++ * This file implements code to do filename lookup in directories.
++ *
++ * Like inodes, directories are packed into compressed metadata blocks, stored
++ * in a directory table.  Directories are accessed using the start address of
++ * the metablock containing the directory and the offset into the
++ * decompressed block (<block, offset>).
++ *
++ * Directories are organised in a slightly complex way, and are not simply
++ * a list of file names.  The organisation takes advantage of the
++ * fact that (in most cases) the inodes of the files will be in the same
++ * compressed metadata block, and therefore, can share the start block.
++ * Directories are therefore organised in a two level list, a directory
++ * header containing the shared start block value, and a sequence of directory
++ * entries, each of which share the shared start block.  A new directory header
++ * is written once/if the inode start block changes.  The directory
++ * header/directory entry list is repeated as many times as necessary.
++ *
++ * Directories are sorted, and can contain a directory index to speed up
++ * file lookup.  Directory indexes store one entry per metablock, each entry
++ * storing the index/filename mapping to the first directory header
++ * in each metadata block.  Directories are sorted in alphabetical order,
++ * and at lookup the index is scanned linearly looking for the first filename
++ * alphabetically larger than the filename being looked up.  At this point the
++ * location of the metadata block the filename is in has been found.
++ * The general idea of the index is ensure only one metadata block needs to be
++ * decompressed to do a lookup irrespective of the length of the directory.
++ * This scheme has the advantage that it doesn't require extra memory overhead
++ * and doesn't require much extra storage on disk.
++ */
++
++#include <linux/fs.h>
++#include <linux/vfs.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/dcache.h>
++#include <linux/zlib.h>
++#include <linux/squashfs_fs.h>
++#include <linux/squashfs_fs_sb.h>
++#include <linux/squashfs_fs_i.h>
++
++#include "squashfs.h"
++
++/*
++ * Lookup name in the directory index, returning the location of the metadata
++ * block containing it, and the directory index this represents.
++ */
++static int get_dir_index_using_name(struct super_block *s,
++			long long *next_block, unsigned int *next_offset,
++			long long index_start, unsigned int index_offset,
++			int i_count, const char *name, int len)
++{
++	struct squashfs_sb_info *msblk = s->s_fs_info;
++	int i, size, length = 0;
++	struct squashfs_dir_index *index;
++	char *str;
++
++	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
++
++	str = kmalloc(sizeof(*index) + (SQUASHFS_NAME_LEN + 1) * 2, GFP_KERNEL);
++	if (str == NULL) {
++		ERROR("Failed to allocate squashfs_dir_index\n");
++		goto out;
++	}
++
++	index = (struct squashfs_dir_index *) (str + SQUASHFS_NAME_LEN + 1);
++	strncpy(str, name, len);
++	str[len] = '\0';
++
++	for (i = 0; i < i_count; i++) {
++		squashfs_read_metadata(s, index, index_start, index_offset,
++					sizeof(*index), &index_start,
++					&index_offset);
++
++		size = le32_to_cpu(index->size) + 1;
++
++		squashfs_read_metadata(s, index->name, index_start,
++					index_offset, size, &index_start,
++					&index_offset);
++
++		index->name[size] = '\0';
++
++		if (strcmp(index->name, str) > 0)
++			break;
++
++		length = le32_to_cpu(index->index);
++		*next_block = le32_to_cpu(index->start_block) +
++					msblk->directory_table_start;
++	}
++
++	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
++	kfree(str);
++
++out:
++	/*
++	 * Return index (f_pos) of the looked up metadata block.  Translate
++	 * from internal f_pos to external f_pos which is offset by 3 because
++	 * we invent "." and ".." entries which are not actually stored in the
++	 * directory.
++	 */
++	return length + 3;
++}
++
++
++static struct dentry *squashfs_lookup(struct inode *i, struct dentry *dentry,
++				struct nameidata *nd)
++{
++	const unsigned char *name = dentry->d_name.name;
++	int len = dentry->d_name.len;
++	struct inode *inode = NULL;
++	struct squashfs_sb_info *msblk = i->i_sb->s_fs_info;
++	long long next_block = SQUASHFS_I(i)->start_block +
++				msblk->directory_table_start;
++	int next_offset = SQUASHFS_I(i)->offset, length = 0, dir_count, size;
++	struct squashfs_dir_header dirh;
++	struct squashfs_dir_entry *dire;
++	unsigned int start_block, offset, ino_number;
++	long long ino;
++
++	TRACE("Entered squashfs_lookup [%llx:%x]\n", next_block, next_offset);
++
++	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
++	if (dire == NULL) {
++		ERROR("Failed to allocate squashfs_dir_entry\n");
++		goto exit_lookup;
++	}
++
++	if (len > SQUASHFS_NAME_LEN)
++		goto exit_lookup;
++
++	length = get_dir_index_using_name(i->i_sb, &next_block, &next_offset,
++				SQUASHFS_I(i)->dir_index_start,
++				SQUASHFS_I(i)->dir_index_offset,
++				SQUASHFS_I(i)->dir_index_count, name, len);
++
++	while (length < i_size_read(i)) {
++		/*
++		 * Read directory header.
++		 */
++		if (!squashfs_read_metadata(i->i_sb, &dirh, next_block,
++				next_offset, sizeof(dirh), &next_block,
++				&next_offset))
++			goto failed_read;
++
++		length += sizeof(dirh);
++
++		dir_count = le32_to_cpu(dirh.count) + 1;
++		while (dir_count--) {
++			/*
++			 * Read directory entry.
++			 */
++			if (!squashfs_read_metadata(i->i_sb, dire,
++					next_block, next_offset, sizeof(*dire),
++					&next_block, &next_offset))
++				goto failed_read;
++
++			size = le16_to_cpu(dire->size) + 1;
++
++			if (!squashfs_read_metadata(i->i_sb, dire->name,
++					next_block, next_offset, size,
++					&next_block, &next_offset))
++				goto failed_read;
++
++			length += sizeof(*dire) + size;
++
++			if (name[0] < dire->name[0])
++				goto exit_lookup;
++
++			if (len == size && !strncmp(name, dire->name, len)) {
++				start_block = le32_to_cpu(dirh.start_block);
++				offset = le16_to_cpu(dire->offset);
++				ino_number = le32_to_cpu(dirh.inode_number) +
++					(short) le16_to_cpu(dire->inode_number);
++				ino = SQUASHFS_MKINODE(start_block, offset);
++
++				TRACE("calling squashfs_iget for directory "
++					"entry %s, inode  %x:%x, %d\n", name,
++					start_block, offset, ino_number);
++
++				inode = squashfs_iget(i->i_sb, ino, ino_number);
++
++				goto exit_lookup;
++			}
++		}
++	}
++
++exit_lookup:
++	kfree(dire);
++	if (inode)
++		return d_splice_alias(inode, dentry);
++	d_add(dentry, inode);
++	return ERR_PTR(0);
++
++failed_read:
++	ERROR("Unable to read directory block [%llx:%x]\n", next_block,
++		next_offset);
++	goto exit_lookup;
++}
++
++
++const struct inode_operations squashfs_dir_inode_ops = {
++	.lookup = squashfs_lookup
++};
+-- 
+1.5.2.5
 
-Why?
-
-Do you think alpha wants to see its PIO resources shown as
-
-	[00000000000001f0-00000000000001f7]
-
-or
-
-	[01f0-01f7]
-
-and which do you think is more readable?
-
-And even on sparc, with the full 64 bits in use, it's not like we'd be 
-*truncating* to 4 hex digits with %04x.
-
-		Linus
