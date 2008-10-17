@@ -1,126 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYJQO7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYJQO7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbYJQO7R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 10:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbYJQO7B
+	id S1756054AbYJQO7a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 10:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbYJQO7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 10:59:01 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58841 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754613AbYJQO7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 10:59:00 -0400
-Date: Fri, 17 Oct 2008 07:58:54 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] rcupdate: fix bug of rcu_barrier*()
-Message-ID: <20081017145854.GD6706@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <48F8335E.5060401@cn.fujitsu.com>
+	Fri, 17 Oct 2008 10:59:06 -0400
+Received: from h4.dl5rb.org.uk ([81.2.74.4]:49807 "EHLO
+	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754759AbYJQO7F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 10:59:05 -0400
+Date: Fri, 17 Oct 2008 15:58:22 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: linux-mips@linux-mips.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix debugfs_create_*'s error checking method for
+	mips/math-emu/
+Message-ID: <20081017145807.GA15932@linux-mips.org>
+References: <48F8731E.40100@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48F8335E.5060401@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <48F8731E.40100@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 02:40:30PM +0800, Lai Jiangshan wrote:
-> 
-> current rcu_barrier_bh() is like this:
-> 
-> void rcu_barrier_bh(void)
-> {
-> 	BUG_ON(in_interrupt());
-> 	/* Take cpucontrol mutex to protect against CPU hotplug */
-> 	mutex_lock(&rcu_barrier_mutex);
-> 	init_completion(&rcu_barrier_completion);
-> 	atomic_set(&rcu_barrier_cpu_count, 0);
-> 	/*
-> 	 * The queueing of callbacks in all CPUs must be atomic with
-> 	 * respect to RCU, otherwise one CPU may queue a callback,
-> 	 * wait for a grace period, decrement barrier count and call
-> 	 * complete(), while other CPUs have not yet queued anything.
-> 	 * So, we need to make sure that grace periods cannot complete
-> 	 * until all the callbacks are queued.
-> 	 */
-> 	rcu_read_lock();
-> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
-> 	rcu_read_unlock();
-> 	wait_for_completion(&rcu_barrier_completion);
-> 	mutex_unlock(&rcu_barrier_mutex);
-> }
-> 
-> The inconsistency of the code and the comments show a bug here.
-> rcu_read_lock() cannot make sure that "grace periods for RCU_BH
-> cannot complete until all the callbacks are queued".
-> it only make sure that race periods for RCU cannot complete
-> until all the callbacks are queued.
-> 
-> so we must use rcu_read_lock_bh() for rcu_barrier_bh().
-> like this:
-> 
-> void rcu_barrier_bh(void)
-> {
-> 	......
-> 	rcu_read_lock_bh();
-> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
-> 	rcu_read_unlock_bh();
-> 	......
-> }
-> 
-> and also rcu_barrier() rcu_barrier_sched() are implemented like this.
-> it will bring a lot of duplicate code. My patch uses another way to
-> fix this bug, please see the comment of my patch.
-> Thank Paul E. McKenney for he rewrote the comment.
+On Fri, Oct 17, 2008 at 07:12:30PM +0800, Zhaolei wrote:
 
-Still looks good to me!  Thank you again, Jiangshan, for finding and
-fixing this one!!!
+> debugfs_create_*() returns NULL if an error occurs, returns -ENODEV
+> when debugfs is not enabled in the kernel.
 
-							Thanx, Paul
+Thanks, applied.
 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> index 467d594..ad63af8 100644
-> --- a/kernel/rcupdate.c
-> +++ b/kernel/rcupdate.c
-> @@ -119,18 +119,19 @@ static void _rcu_barrier(enum rcu_barrier type)
->  	/* Take cpucontrol mutex to protect against CPU hotplug */
->  	mutex_lock(&rcu_barrier_mutex);
->  	init_completion(&rcu_barrier_completion);
-> -	atomic_set(&rcu_barrier_cpu_count, 0);
->  	/*
-> -	 * The queueing of callbacks in all CPUs must be atomic with
-> -	 * respect to RCU, otherwise one CPU may queue a callback,
-> -	 * wait for a grace period, decrement barrier count and call
-> -	 * complete(), while other CPUs have not yet queued anything.
-> -	 * So, we need to make sure that grace periods cannot complete
-> -	 * until all the callbacks are queued.
-> +	 * Initialize rcu_barrier_cpu_count to 1, then invoke
-> +	 * rcu_barrier_func() on each CPU, so that each CPU also has
-> +	 * incremented rcu_barrier_cpu_count.  Only then is it safe to
-> +	 * decrement rcu_barrier_cpu_count -- otherwise the first CPU
-> +	 * might complete its grace period before all of the other CPUs
-> +	 * did their increment, causing this function to return too
-> +	 * early.
->  	 */
-> -	rcu_read_lock();
-> +	atomic_set(&rcu_barrier_cpu_count, 1);
->  	on_each_cpu(rcu_barrier_func, (void *)type, 1);
-> -	rcu_read_unlock();
-> +	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
-> +		complete(&rcu_barrier_completion);
->  	wait_for_completion(&rcu_barrier_completion);
->  	mutex_unlock(&rcu_barrier_mutex);
->  }
-> 
-> 
-> 
-> 
-> 
+  Ralf
