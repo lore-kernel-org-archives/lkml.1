@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751755AbYJQHKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYJQHKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751755AbYJQHKH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 03:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYJQHJw
+	id S1753287AbYJQHKa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 03:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbYJQHKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 03:09:52 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:35949 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753604AbYJQHJv (ORCPT
+	Fri, 17 Oct 2008 03:10:07 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:62203 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751946AbYJQHKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 03:09:51 -0400
-Date: Fri, 17 Oct 2008 16:09:50 +0900 (JST)
-Message-Id: <20081017.160950.71109894.ryov@valinux.co.jp>
-To: agk@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Cc: fernando@oss.ntt.co.jp
-Subject: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.8.0:
- Introduction
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 17 Oct 2008 03:10:04 -0400
+Message-ID: <48F839D9.9090201@cs.columbia.edu>
+Date: Fri, 17 Oct 2008 03:08:09 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Peter Chubb <peterc@gelato.unsw.edu.au>
+CC: Daniel Lezcano <dlezcano@fr.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       jeremy@goop.org, arnd@arndb.de, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Andrey Mirkin <major@openvz.org>
+Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
+References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu>	<1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu>	<1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu>	<1223571036.11830.32.camel@nimitz>	<20081010153951.GD28977@elte.hu>	<48F30315.1070909@fr.ibm.com>	<1223916223.29877.14.camel@nimitz>	<48F6092D.6050400@fr.ibm.com>	<48F685A3.1060804@cs.columbia.edu>	<48F7352F.3020700@fr.ibm.com>	<48F74674.20202@cs.columbia.edu> <87r66g8875.wl%peter@chubb.wattle.id.au>
+In-Reply-To: <87r66g8875.wl%peter@chubb.wattle.id.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alasdair and all,
 
-This is the dm-ioband version 1.8.0 release.
 
-Dm-ioband is an I/O bandwidth controller implemented as a device-mapper
-driver, which gives specified bandwidth to each job running on the same
-physical device.
+Peter Chubb wrote:
+>>>>>> "Oren" == Oren Laadan <orenl@cs.columbia.edu> writes:
+> 
+> Oren> Daniel Lezcano wrote:
+> 
+>>>> The one exception (and it is a tedious one !) are states in which
+>>>> the task is already frozen by definition: any ptrace blocking
+>>>> point where the tracee waits for the tracer to grant permission to
+>>>> proceed with its execution. Another example is in vfork(), waiting
+>>>> for completion.
+>>> I would say these are perfect places for "may be
+>>> non-checkpointable" :)
+> 
+> Oren> For now, yes. But we definitely want this capability in the long
+> Oren> run; otherwise we won't be able to checkpoint a kernel compile
+> Oren> ('make' uses vfork), or anything with 'gdb' running inside, or
+> Oren> 'strace', and other goodies.
+> 
+> The strace/gdb example is *really* hard; but for vfork, you just wait
+> until it's over. The interval between vfork and exec/exit should be
+> short enough not to affect the overall time for a checkpoint (and
+> checkpoint can be fairly slow anyway --- on the HPC machines we used
+> to do it on, writing half a terabyte of checkpoint image to disc could take
+> many minutes.  In hindsight, we should have multithreaded it).
+> Waiting for a vforked process to exec is less than a millisecond.
 
-This release is a minor bug fix and confirmed running on the latest
-stable kernel 2.6.27.1.
+Your observation is correct. On the other hand, it is fairly easy to
+add the necessary glue for the vfork() case, and it's important to do
+it because:
+(a) as noted, a malicious user can exploit that.
+(b) if you run 'make -j 32' you are likely to have an on-going vfork.
+(c) vfork() is the easy case (compared to ptrace) and easy to solve.
 
-- Can be applied to the kernel 2.6.27.1 and 2.6.27-rc5-mm1.
-- Changes from 1.7.0 (posted on Oct 3, 2008):
-  - Fix a minor bug in io_limit setting that causes dm-ioband to stop
-    issuing I/O requests when a large value is set to io_limit.
+Oren.
 
-Alasdair, could you please review this patch and give me any comments?
-
-Thanks,
-Ryo Tsuruta
+> --
+> Dr Peter Chubb  http://www.gelato.unsw.edu.au  peterc AT gelato.unsw.edu.au
+> http://www.ertos.nicta.com.au           ERTOS within National ICT Australia
