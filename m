@@ -1,111 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbYJQMlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYJQMmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755730AbYJQMlv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYJQMlk
+	id S1755775AbYJQMmc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYJQMmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:41:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:22042 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754443AbYJQMlj (ORCPT
+	Fri, 17 Oct 2008 08:42:22 -0400
+Received: from vs162167.vserver.de ([62.75.162.167]:39217 "EHLO
+	unmaintained-free-software.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753729AbYJQMmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:41:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=oBuREY7yS3c/PjTQ6HPJSAc1MTOpqxLgaCiXts/kYiwBvoPbnb3U1K7TWWnz5fsAyN
-         nKUQDtXiqNUY+7gh/mibLAS4TYFCpbC2DPVJRdPyekEKQltiU03HfHnndKvQ/lK+DqKE
-         +O5NQgPcf2X9KsW8XeqI0PYlcECS+BHN+kmr0=
-Date: Fri, 17 Oct 2008 16:44:41 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 11/31] proc: move /proc/kmsg creation to fs/proc/kmsg.c
-Message-ID: <20081017124441.GL22653@x200.localdomain>
+	Fri, 17 Oct 2008 08:42:20 -0400
+Date: Fri, 17 Oct 2008 14:42:16 +0200
+From: Uwe Hermann <uwe@hermann-uwe.de>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       mtk.manpages@gmail.com, linux-doc@vger.kernel.org
+Subject: Re: [PATCH] doc: Fix broken references to Documentation/x86 files
+Message-ID: <20081017124216.GA4470@greenwood>
+References: <20081003160825.GA26167@greenwood> <Pine.LNX.4.64.0810031027070.18240@shark.he.net> <20081003175857.GA32504@greenwood>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081003175857.GA32504@greenwood>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
->From cc7092760336b7886f9e96631675ff934d9f1e01 Mon Sep 17 00:00:00 2001
-From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Sat, 4 Oct 2008 14:39:12 +0400
-Subject: [PATCH 11/31] proc: move /proc/kmsg creation to fs/proc/kmsg.c
+has this patch been merged into some repository? It doesn't seem to be
+in Linus' linux-2.6 tree at least.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
- fs/proc/internal.h  |    1 -
- fs/proc/kmsg.c      |   12 +++++++++---
- fs/proc/proc_misc.c |    3 ---
- 3 files changed, 9 insertions(+), 7 deletions(-)
+On Fri, Oct 03, 2008 at 07:58:57PM +0200, Uwe Hermann wrote:
+> The Documentation/i386 and Documentation/x86_64 directories and their
+> contents have been moved into Documentation/x86. Fix references to
+> those files accordingly.
+> 
+> Signed-off-by: Uwe Hermann <uwe@hermann-uwe.de>
+> Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+> 
+> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+> index 5b5aba4..84ae622 100644
+> --- a/Documentation/00-INDEX
+> +++ b/Documentation/00-INDEX
+> @@ -171,7 +171,7 @@ i2c/
+>  	- directory with info about the I2C bus/protocol (2 wire, kHz speed).
+>  i2o/
+>  	- directory with info about the Linux I2O subsystem.
+> -i386/
+> +x86/i386/
+>  	- directory with info about Linux on Intel 32 bit architecture.
+>  ia64/
+>  	- directory with info about Linux on Intel 64 bit architecture.
+> @@ -383,7 +383,7 @@ w1/
+>  	- directory with documents regarding the 1-wire (w1) subsystem.
+>  watchdog/
+>  	- how to auto-reboot Linux if it has "fallen and can't get up". ;-)
+> -x86_64/
+> +x86/x86_64/
+>  	- directory with info on Linux support for AMD x86-64 (Hammer) machines.
+>  zorro.txt
+>  	- info on writing drivers for Zorro bus devices found on Amigas.
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 1150444..5af144c 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -100,7 +100,7 @@ parameter is applicable:
+>  	X86-32	X86-32, aka i386 architecture is enabled.
+>  	X86-64	X86-64 architecture is enabled.
+>  			More X86-64 boot options can be found in
+> -			Documentation/x86_64/boot-options.txt .
+> +			Documentation/x86/x86_64/boot-options.txt .
+>  
+>  In addition, the following text indicates that the option:
+>  
+> @@ -111,10 +111,10 @@ In addition, the following text indicates that the option:
+>  Parameters denoted with BOOT are actually interpreted by the boot
+>  loader, and have no meaning to the kernel directly.
+>  Do not modify the syntax of boot loader parameters without extreme
+> -need or coordination with <Documentation/i386/boot.txt>.
+> +need or coordination with <Documentation/x86/i386/boot.txt>.
+>  
+>  There are also arch-specific kernel-parameters not documented here.
+> -See for example <Documentation/x86_64/boot-options.txt>.
+> +See for example <Documentation/x86/x86_64/boot-options.txt>.
+>  
+>  Note that ALL kernel parameters listed below are CASE SENSITIVE, and that
+>  a trailing = on the name of any parameter states that that parameter will
+> @@ -1187,7 +1187,7 @@ and is between 256 and 4096 characters. It is defined in the file
+>  
+>  	mce		[X86-32] Machine Check Exception
+>  
+> -	mce=option	[X86-64] See Documentation/x86_64/boot-options.txt
+> +	mce=option	[X86-64] See Documentation/x86/x86_64/boot-options.txt
+>  
+>  	md=		[HW] RAID subsystems devices and level
+>  			See Documentation/md.txt.
+> @@ -1650,7 +1650,7 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			See Documentation/paride.txt.
+>  
+>  	pirq=		[SMP,APIC] Manual mp-table setup
+> -			See Documentation/i386/IO-APIC.txt.
+> +			See Documentation/x86/i386/IO-APIC.txt.
+>  
+>  	plip=		[PPT,NET] Parallel port network link
+>  			Format: { parport<nr> | timid | 0 }
+> @@ -2231,7 +2231,7 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			See Documentation/fb/modedb.txt.
+>  
+>  	vga=		[BOOT,X86-32] Select a particular video mode
+> -			See Documentation/i386/boot.txt and
+> +			See Documentation/x86/i386/boot.txt and
+>  			Documentation/svga.txt.
+>  			Use vga=ask for menu.
+>  			This is actually a boot loader parameter; the value is
+> diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
+> index 7228369..da86fd5 100644
+> --- a/Documentation/lguest/lguest.c
+> +++ b/Documentation/lguest/lguest.c
+> @@ -402,7 +402,7 @@ static unsigned long load_bzimage(int fd)
+>  	void *p = from_guest_phys(0x100000);
+>  
+>  	/* Go back to the start of the file and read the header.  It should be
+> -	 * a Linux boot header (see Documentation/i386/boot.txt) */
+> +	 * a Linux boot header (see Documentation/x86/i386/boot.txt) */
+>  	lseek(fd, 0, SEEK_SET);
+>  	read(fd, &boot, sizeof(boot));
+>  
+> diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
+> index b0c7b6c..89a2141 100644
+> --- a/Documentation/x86/x86_64/boot-options.txt
+> +++ b/Documentation/x86/x86_64/boot-options.txt
+> @@ -35,7 +35,7 @@ APICs
+>  
+>     nolapic	 Don't use the local APIC (alias for i386 compatibility)
+>  
+> -   pirq=...	 See Documentation/i386/IO-APIC.txt
+> +   pirq=...	 See Documentation/x86/i386/IO-APIC.txt
+>  
+>     noapictimer	 Don't set up the APIC timer
+>  
+> @@ -143,7 +143,7 @@ Non Executable Mappings
+>  SMP
+>  
+>    additional_cpus=NUM Allow NUM more CPUs for hotplug
+> -		 (defaults are specified by the BIOS, see Documentation/x86_64/cpu-hotplug-spec)
+> +		 (defaults are specified by the BIOS, see Documentation/x86/x86_64/cpu-hotplug-spec)
+>  
+>  NUMA
+>  
+> diff --git a/Documentation/x86/x86_64/fake-numa-for-cpusets b/Documentation/x86/x86_64/fake-numa-for-cpusets
+> index d1a985c..33bb566 100644
+> --- a/Documentation/x86/x86_64/fake-numa-for-cpusets
+> +++ b/Documentation/x86/x86_64/fake-numa-for-cpusets
+> @@ -10,7 +10,7 @@ amount of system memory that are available to a certain class of tasks.
+>  For more information on the features of cpusets, see Documentation/cpusets.txt.
+>  There are a number of different configurations you can use for your needs.  For
+>  more information on the numa=fake command line option and its various ways of
+> -configuring fake nodes, see Documentation/x86_64/boot-options.txt.
+> +configuring fake nodes, see Documentation/x86/x86_64/boot-options.txt.
+>  
+>  For the purposes of this introduction, we'll assume a very primitive NUMA
+>  emulation setup of "numa=fake=4*512,".  This will split our system memory into
+> 
+> 
+> ---
+> 
+> On Fri, Oct 03, 2008 at 10:30:33AM -0700, Randy.Dunlap wrote:
+> > On Fri, 3 Oct 2008, Uwe Hermann wrote:
+> > 
+> > > The Documentation/i386 and Documentation/x86_64 directories and their
+> > > contents have been moved into Documentation/x86. Fix references to
+> > > those files accordingly.
+> > > 
+> > > Signed-off-by: Uwe Hermann <uwe@hermann-uwe.de>
+> > > 
+> > > diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
+> > > index b0c7b6c..1b1512f 100644
+> > > --- a/Documentation/x86/x86_64/boot-options.txt
+> > > +++ b/Documentation/x86/x86_64/boot-options.txt
+> > > @@ -143,7 +143,7 @@ Non Executable Mappings
+> > >  SMP
+> > >  
+> > >    additional_cpus=NUM Allow NUM more CPUs for hotplug
+> > > -		 (defaults are specified by the BIOS, see Documentation/x86_64/cpu-hotplug-spec)
+> > > +		 (defaults are specified by the BIOS, see Documentation/x86/x86_64/cpu-hotplug-spec)
+> > 
+> > This file needs one more line patched.  It still contains this:
+> > 
+> >    pirq=...	 See Documentation/i386/IO-APIC.txt
+> > 
+> > so change that one also and then you can add
+> >   Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+> > to it if you want to.
+> 
+> Done, thanks. Updated patch above.
+> 
+> 
+> Uwe.
+> -- 
+> http://www.hermann-uwe.de  | http://www.holsham-traders.de
+> http://www.crazy-hacks.org | http://www.unmaintained-free-software.org
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index d5bf4de..3e8aeb8 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -61,7 +61,6 @@ extern const struct file_operations proc_smaps_operations;
- extern const struct file_operations proc_clear_refs_operations;
- extern const struct file_operations proc_pagemap_operations;
- extern const struct file_operations proc_net_operations;
--extern const struct file_operations proc_kmsg_operations;
- extern const struct inode_operations proc_net_inode_operations;
- 
- void free_proc_entry(struct proc_dir_entry *de);
-diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
-index 9fd5df3..7ca7834 100644
---- a/fs/proc/kmsg.c
-+++ b/fs/proc/kmsg.c
-@@ -10,13 +10,12 @@
- #include <linux/time.h>
- #include <linux/kernel.h>
- #include <linux/poll.h>
-+#include <linux/proc_fs.h>
- #include <linux/fs.h>
- 
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
--#include "internal.h"
--
- extern wait_queue_head_t log_wait;
- 
- extern int do_syslog(int type, char __user *bug, int count);
-@@ -49,9 +48,16 @@ static unsigned int kmsg_poll(struct file *file, poll_table *wait)
- }
- 
- 
--const struct file_operations proc_kmsg_operations = {
-+static const struct file_operations proc_kmsg_operations = {
- 	.read		= kmsg_read,
- 	.poll		= kmsg_poll,
- 	.open		= kmsg_open,
- 	.release	= kmsg_release,
- };
-+
-+static int __init proc_kmsg_init(void)
-+{
-+	proc_create("kmsg", S_IRUSR, NULL, &proc_kmsg_operations);
-+	return 0;
-+}
-+module_init(proc_kmsg_init);
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 2dbe0aa..8ae7d38 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -607,9 +607,6 @@ void __init proc_misc_init(void)
- 	proc_symlink("mounts", NULL, "self/mounts");
- 
- 	/* And now for trickier ones */
--#ifdef CONFIG_PRINTK
--	proc_create("kmsg", S_IRUSR, NULL, &proc_kmsg_operations);
--#endif
- #ifdef CONFIG_FILE_LOCKING
- 	proc_create("locks", 0, NULL, &proc_locks_operations);
- #endif
 -- 
-1.5.6.5
-
+http://www.hermann-uwe.de  | http://www.holsham-traders.de
+http://www.crazy-hacks.org | http://www.unmaintained-free-software.org
