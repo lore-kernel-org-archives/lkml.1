@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJQL4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJQMBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYJQL4A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYJQLzt
+	id S1754031AbYJQMBf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYJQMB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:55:49 -0400
-Received: from stinky.trash.net ([213.144.137.162]:62597 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbYJQLzs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:55:48 -0400
-Message-ID: <48F87D3E.5020007@trash.net>
-Date: Fri, 17 Oct 2008 13:55:42 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 17 Oct 2008 08:01:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35099 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753223AbYJQMBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 08:01:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Zhao Yakui <yakui.zhao@intel.com>
+Subject: Re: Suspend/resume regression between 2.6.26 and 2.6.27-rc1
+Date: Fri, 17 Oct 2008 14:05:45 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <lenb@kernel.org>, "linux-acpi" <linux-acpi@vger.kernel.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>, mingo@elte.hu
+References: <1223625973.2735.142.camel@rzhang-dt> <200810161621.54864.rjw@sisk.pl> <1224206865.3944.141.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1224206865.3944.141.camel@yakui_zhao.sh.intel.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>
-Subject: Re: [GIT]: Networking
-References: <20081015.163817.193700221.davem@davemloft.net> <20081017082138.GA23155@elte.hu>
-In-Reply-To: <20081017082138.GA23155@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------050308010509050000040801"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810171405.46523.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050308010509050000040801
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Ingo Molnar wrote:
->> Pablo Neira Ayuso (1):
->>       netfilter: ctnetlink: remove bogus module dependency between ctnetlink and nf_nat
+On Friday, 17 of October 2008, Zhao Yakui wrote:
+> On Thu, 2008-10-16 at 16:21 +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 16 of October 2008, Zhao Yakui wrote:
+> > > On Fri, 2008-10-10 at 14:41 +0200, Rafael J. Wysocki wrote:
 > 
-> FYI, got a common build failure with latest -git, and bisected it back 
-> to the commit above. Config attached, error log and bisect log below.
-> 
-> (The build failure output is at the bottom, it comes after dozens of 
-> build warnings all across the kernel.)
->
-> net/netfilter/nf_conntrack_netlink.c:819: warning: ‘enum nf_nat_manip_type’ declared inside parameter list
-> net/netfilter/nf_conntrack_netlink.c:819: warning: its scope is only this definition or declaration, which is probably not what you want
-> net/netfilter/nf_conntrack_netlink.c:818: error: parameter 2 (‘manip’) has incomplete type
+> > > 
+> > >   The patches between the above two commits are related with X86. When
+> > > using git-bisect between the above two commits, we will get the
+> > > compiling errors(For example: some files don't exist) or the kernel
+> > > panic. So we can't continue using git-bisect to identify which commit
+> > > the regression is caused by.
+> > 
+> > If you test SMP kernels on a non-SMP box, that may be
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11568.  In which case, please test
+> > the patch from http://bugzilla.kernel.org/show_bug.cgi?id=11568#c46 .
+> > 
+> Thanks for so quick response. The smp kernel is tested on the non-SMP
+> box.
+> After applying the patch in
+> http://bugzilla.kernel.org/show_bug.cgi?id=11568#c46, 
+> the box can be resumed very well on the latest kernel.
 
-Thanks Ingo. I just sent this patch to Benjamin Herrenschmidt
-for testing.
+Thanks for testing.
 
+The patch has been posted for mainline inclusion:
+http://marc.info/?l=linux-kernel&m=122419938208201&w=4
 
---------------050308010509050000040801
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="x"
-
-Y29tbWl0IGNmYmI5NjZlMGE4NGViNzVlOGU3YzE5Mjk1M2VjZjNjYTQ4YTk0MjAKQXV0aG9y
-OiBQYXRyaWNrIE1jSGFyZHkgPGthYmVyQHRyYXNoLm5ldD4KRGF0ZTogICBGcmkgT2N0IDE3
-IDEzOjUwOjM1IDIwMDggKzAyMDAKCiAgICBuZXRmaWx0ZXI6IGN0bmV0bGluazogZml4IGNv
-bXBpbGF0aW9uIGVycm9yCiAgICAKICAgIEZpeCBjb21waWxhdGlvbiBlcnJvciBvbiAoYXQg
-bGVhc3QpIHBwYzoKICAgIAogICAgL2hvbWUvYmVuaC9rZXJuZWxzL2xpbnV4LXBvd2VycGMv
-bmV0L25ldGZpbHRlci9uZl9jb25udHJhY2tfbmV0bGluay5jOjgxOTogd2FybmluZzogXHUy
-MDE4ZW51bSBuZl9uYXRfbWFuaXBfdHlwZVx1MjAxOSBkZWNsYXJlZCBpbnNpZGUgcGFyYW1l
-dGVyIGxpc3QKICAgIC9ob21lL2Jlbmgva2VybmVscy9saW51eC1wb3dlcnBjL25ldC9uZXRm
-aWx0ZXIvbmZfY29ubnRyYWNrX25ldGxpbmsuYzo4MTk6IHdhcm5pbmc6IGl0cyBzY29wZSBp
-cyBvbmx5IHRoaXMgZGVmaW5pdGlvbiBvciBkZWNsYXJhdGlvbiwgd2hpY2ggaXMgcHJvYmFi
-bHkgbm90IHdoYXQgeW91IHdhbnQKICAgIAogICAgU2lnbmVkLW9mZi1ieTogUGF0cmljayBN
-Y0hhcmR5IDxrYWJlckB0cmFzaC5uZXQ+CgpkaWZmIC0tZ2l0IGEvbmV0L25ldGZpbHRlci9u
-Zl9jb25udHJhY2tfbmV0bGluay5jIGIvbmV0L25ldGZpbHRlci9uZl9jb25udHJhY2tfbmV0
-bGluay5jCmluZGV4IDA4ZTgyZDYuLmRlYWNlMDYgMTAwNjQ0Ci0tLSBhL25ldC9uZXRmaWx0
-ZXIvbmZfY29ubnRyYWNrX25ldGxpbmsuYworKysgYi9uZXQvbmV0ZmlsdGVyL25mX2Nvbm50
-cmFja19uZXRsaW5rLmMKQEAgLTM5LDYgKzM5LDcgQEAKICNpbmNsdWRlIDxuZXQvbmV0Zmls
-dGVyL25mX2Nvbm50cmFja190dXBsZS5oPgogI2luY2x1ZGUgPG5ldC9uZXRmaWx0ZXIvbmZf
-Y29ubnRyYWNrX2FjY3QuaD4KICNpZmRlZiBDT05GSUdfTkZfTkFUX05FRURFRAorI2luY2x1
-ZGUgPG5ldC9uZXRmaWx0ZXIvbmZfbmF0Lmg+CiAjaW5jbHVkZSA8bmV0L25ldGZpbHRlci9u
-Zl9uYXRfY29yZS5oPgogI2luY2x1ZGUgPG5ldC9uZXRmaWx0ZXIvbmZfbmF0X3Byb3RvY29s
-Lmg+CiAjZW5kaWYK
---------------050308010509050000040801--
+Thanks,
+Rafael
