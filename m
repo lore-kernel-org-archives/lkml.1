@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYJQRtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbYJQRxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbYJQRtT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 13:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbYJQRtD
+	id S1757054AbYJQRxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 13:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbYJQRxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 13:49:03 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:10485 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755841AbYJQRtB (ORCPT
+	Fri, 17 Oct 2008 13:53:43 -0400
+Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:28485 "HELO
+	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755920AbYJQRxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 13:49:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=FaRflHivPh0rmvsp0gTHBQWe4jETqydDjvOGm2UeOay3kz/9nPoAOhdSahDRO/9v/r
-         GaqNkUlMf2Bg6AG30lqRpHTayq/NduDGZ4MMirRJ6m4Rdj/nwIKdHVzkO+yhhGyxSuVs
-         3HlB0OSV7dey2+7v2+wEuU3IN9kYTIUPCBZBc=
-Message-ID: <a4e6962a0810171049n29fb3136vba5e130cee33a3fd@mail.gmail.com>
-Date: Fri, 17 Oct 2008 12:49:00 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [GIT PULL] 9p patches for 2.6.28 merge window
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Fri, 17 Oct 2008 13:53:43 -0400
+X-YMail-OSG: gMwU0qMVM1nlODp2daIRDZP77OmkDmtrN0W1fgUSC056Tl2dgZhE79l6KzZf6SvCj5eipQuVfHhhOTk6.x9fcA7m0L9IEotq20x_b.kcXbcbamMzmHOQMUWucge37olIJT0-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <48F8D122.3010105@schaufler-ca.com>
+Date: Fri, 17 Oct 2008 10:53:38 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tilman Baumann <tilman.baumann@collax.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: SMACK netfilter smacklabel socket match
+References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com> <48DDBE2E.3010006@schaufler-ca.com> <48E1007F.4000400@collax.com> <48E19D01.9050809@schaufler-ca.com> <48E35F36.4030203@collax.com> <48E3957A.7040201@schaufler-ca.com> <48E3AB97.8020305@collax.com> <48E3BFDE.7010300@schaufler-ca.com> <48EA0B30.6080907@collax.com> <48EACC91.8040008@schaufler-ca.com> <48F8C3EC.1030607@collax.com>
+In-Reply-To: <48F8C3EC.1030607@collax.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 2e532d68a2b3e2aa6b19731501222069735c741c:
-  Linus Torvalds (1):
-        {pci,pnp} quirks.c: don't use deprecated print_fn_descriptor_symbol()
+Tilman Baumann wrote:
+> Hi Casey,
+>
+> the last weeks I tried to come up with some way to circumvent my 
+> problems by aimlessly poking around in the code. Did not work though. 
+> Not yet at least. :)
+> Maybe it makes more sense for me to wait until you have a solution.
+> My whole project is stalled right now because of this and I'm not sure 
+> what next.
+> Do you plan to change something there soon? If so I would stop wasting 
+> my time with hopeless attempts.
+>
+> My problem is at the moment that I don't really know what to do. If 
+> you can give some aim I would be glad if I could do something.
 
-are available in the git repository at:
+Well, the good news is that I have a change under test that will address
+your needs, allowing a host or set of hosts to be generally accessible
+from the Smack system. The bad news is that it uses a set of netlabel
+apis that are not going to get released in favor of a redesigned set of
+apis which are not available yet. The good news is that those apis will
+handle Smack's needs just fine, but again the bad news is that I don't
+have them to use yet.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-next
+If you're up to trying out something that you know is going to get
+rewhacked before it goes in anywhere let me know.
 
-Eric Van Hensbergen (23):
-      9p: consolidate transport structure
-      9p: remove duplicate client state
-      9p: remove unnecessary prototypes
-      9p: consolidate mux_rpc and request structure
-      9p: eliminate callback complexity
-      9p: move request management to client code
-      9p: apply common tagpool handling to trans_fd
-      9p: apply common request code to trans_fd
-      9p: use the rcall structure passed in the request in trans_fd read_work
-      9p: make rpc code common and rework flush code
-      9p: consolidate read/write functions
-      9p: move readn meta-function from client to fs layer
-      9p: adjust 9p vfs write operation
-      9p: move dirread to fs layer
-      9p: encapsulate version function
-      9p: add new protocol support code
-      9p: remove 9p fcall debug prints
-      9p: remove unnecessary tag field from p9_req_t structure
-      9p: rework client code to use new protocol support functions
-      9p: eliminate depricated conv functions
-      9p: Improve debug support
-      9p: fix oops in protocol stat parsing error path.
-      9p: add more conservative locking
-
-Magnus Deininger (1):
-      9p: fix device file handling
-
-Tejun Heo (2):
-      9p-trans_fd: use single poller
-      9p: drop broken unused error path from p9_conn_create()
-
- fs/9p/v9fs.c               |    4 +-
- fs/9p/v9fs_vfs.h           |    6 +-
- fs/9p/vfs_addr.c           |    5 +-
- fs/9p/vfs_dir.c            |   60 ++-
- fs/9p/vfs_file.c           |   93 +++-
- fs/9p/vfs_inode.c          |   39 +-
- fs/9p/vfs_super.c          |    6 +-
- include/net/9p/9p.h        |  116 +---
- include/net/9p/client.h    |  124 ++++-
- include/net/9p/transport.h |   55 +--
- net/9p/Makefile            |    3 +-
- net/9p/client.c            | 1467 +++++++++++++++++++++++++-------------------
- net/9p/conv.c              | 1054 -------------------------------
- net/9p/fcprint.c           |  366 -----------
- net/9p/mod.c               |    1 +
- net/9p/protocol.c          |  558 +++++++++++++++++
- net/9p/protocol.h          |   34 +
- net/9p/trans_fd.c          | 1431 ++++++++++++++-----------------------------
- net/9p/trans_virtio.c      |  246 ++-------
- net/9p/util.c              |    4 +
- 20 files changed, 2223 insertions(+), 3449 deletions(-)
- delete mode 100644 net/9p/conv.c
- delete mode 100644 net/9p/fcprint.c
- create mode 100644 net/9p/protocol.c
- create mode 100644 net/9p/protocol.h
