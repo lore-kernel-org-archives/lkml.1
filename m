@@ -1,72 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbYJQRb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbYJQRdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757625AbYJQRb7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 13:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbYJQRbu
+	id S1757518AbYJQRdR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 13:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbYJQRdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 13:31:50 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:51547 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754891AbYJQRbt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 13:31:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=le1BY+6w01a9wh3kn4ms5Xvs8SfYjZpwnNmLGA5LvW/7m1dLfJIxTzeO3+tQAemeqZ
-         1ZmuCROiN+ecj1HgejwB56rPkj0ZEmIov6Z7VGiI/71TauawT7XovbH+yfj1a0t1T3fU
-         uhc2zb6EA8Ry7b1USvHIjD0GUPERYxC7aViBQ=
-Date: Fri, 17 Oct 2008 18:31:23 +0100
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] init: Properly placing noinline keyword.
-Message-ID: <20081017173123.GC19832@hack.voiplan.pt>
-References: <b9df5fa10810170605t50e366e9nf62f8a18df37fc3c@mail.gmail.com> <20081017141354.GA9242@x200.localdomain> <b9df5fa10810170717p36dcb4a9y4e74089069dea03c@mail.gmail.com> <20081017142610.GA19832@hack.voiplan.pt> <b9df5fa10810170810x4d3e385n3a2284dd8b2600df@mail.gmail.com>
+	Fri, 17 Oct 2008 13:33:03 -0400
+Received: from nat-warsl417-01.aon.at ([195.3.96.119]:36213 "EHLO email.aon.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754942AbYJQRdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 13:33:01 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 13:33:00 EDT
+Message-ID: <48F8CC48.5040202@aon.at>
+Date: Fri, 17 Oct 2008 19:32:56 +0200
+From: Wolfgang Beiter <w.beiter@aon.at>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+To: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Lior Dotan <liodot@gmail.com>
+CC: Wolfgang Beiter <w.beiter@aon.at>,
+       =?ISO-8859-15?Q?G=FCnter_Gebhard?= =?ISO-8859-15?Q?t?= 
+	<g.gebhardt@meilhaus.de>
+Subject: Staging: Fixes for me4000 pci data collection driver
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <b9df5fa10810170810x4d3e385n3a2284dd8b2600df@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 09:10:07PM +0600, Rakib Mullick wrote:
->On 10/17/08, Am√©rico Wang <xiyou.wangcong@gmail.com> wrote:
->> On Fri, Oct 17, 2008 at 08:17:33PM +0600, Rakib Mullick wrote:
->>  >On 10/17/08, Alexey Dobriyan <adobriyan@gmail.com> wrote:
->>  >> On Fri, Oct 17, 2008 at 07:05:32PM +0600, Rakib Mullick wrote:
->>  >>  > Here, noinline keyword should be placed between storage class and type.
->>  >>
->>  >>
->>  >> Why?
->>  >Because, scripts/checkpatch.pl warned with following warning:
->>  >     ERROR: inline keyword should sit between storage class and type
->>
->>
->> Well, 'noinline' is different from 'inline'.
->>
->>  'noinline' is defined as:
->>
->>  #define  noinline                       __attribute__((noinline))
->>
->>  in include/linux/compiler-gcc.h. But 'inline' is a _keyword_ defined
->>  by C standard. If checkpatch.pl complains about 'noinline', you should
->>  fix checkpatch.pl. :)
->Thanks, for explanation. But isn't it nice to place it between storage
->class and type ?
+Dear linux team,
 
-I don't think so, I don't know why checkpatch.pl prefers that style.
-I think probably only because that is more readable?
+try to give some contribution on merging me4000.c driver into linux 
+kernel. Please be kind on reading mail, as Im not skilled in
+English conversation.
 
-Anyway, gcc attribute is another different thing.
 
--- 
-"Sometimes the only way to stay sane is to go a little crazy."
+
+|TODO:
+
+
+|> 	- checkpatch.pl cleanups
+
+
+|> 	- sparse cleanups
+
+
+|> 	- possible /proc interaction cleanups
+
+
+|> 	- more info needed for Kconfig entry
+according to the hardware vendor, several I/O cards (me4000 family) 
+are supported by the "me4000" driver.
+∞) ME-4610 alias ME-JekyII: low cost 16 bit A/D converter.
+                             16channels,500 kSsamples/s (about 400 US$)
+∞) ME-46xx alias ME-FoXX:   several flavours with additional I/O
+                             (e.g. 16 bit D/A, isolated inputs ...)
+                             (about 1000 to 2000 US$)
+Please, for spezific information about the hardware (ME-4610, ME-46xx)
+take a look at the vendors web presentation as an English edition is
+also offered.
+The hardware is up to date (ME-46xx are available also as PCI express).
+Applications are: Analog signal aquisition (e.g. sound, acoustic...)
+                   Data Logging (temperature, preasure, position ...)
+                   Signal Analysis (Digital Oszilloskop, FFT ...)
+                   Real Time Applications.
+Hardware vendor:  meilhaus
+Linux Driver support for customer: meilhaus/sourceforge.net
+                                    (support broken since middle 2006)
+
+
+
+|> 	- real device id?
+File "me4000.h" defines a section "PCI vendor and device ID" for
+different me4000 hardware. Maybe thats what you need ?
+
+
+
+|> 	- module parameter cleanup
+
+
+
+|erm.  Exactly what is the userspace interface which this driver is
+|implementing?
+Up to now, userspace programs are simple konsole test programs in C.
+They are supplied by the "me4000-2.0.7.tar.gz" tarball, downloadable
+from www.sourceforge.net/projects/meilhaus.
+For each hardware section on the PCI board a simple C testprogram is 
+provided. The hardware sections are...
+ai... analog input (testing the A/D converter, data written to
+       console or file).
+ao... analog output (testing the D/A converter if available on PCI
+       board).
+dio... digital I/O (reading/writing to one of the 4 8Bit ports)
+ext_int... extern interrupt (a signal transition e.g. 0V to 5V on a
+            dedicated PIN will cause text output on console).
+cnt... counter (counting signal transitions on a didcated PIN)
+
+All me4000 testprograms uses System Calls me4000.c implements.
+fd = open(me4000-device-node,...)), read(fd,...), write(fd,...)
+                                    ioctl(fd,...), close(fd).
+device-nodes are created by the "rc.me4000" bash script.
+
+"me4000-2.0.7.tar.gz" provides also a C library, that customizes
+the sys Calls to a more proper API for software application developers.
+The API is documented in "meilhaus electronic handbook", downloadable
+on the vendors web site.
+Id never used the library, want to keep thinks easy as possible.
+(Im no C nor linux kernel specialist).
+
+The latest patch tested successfully is 
+"add-me4000-pci-data-collection-driver.patch" applied to the
+"2.6.25-rc6" linux kernel and running on a ME4610 PCI card installed 
+on my computer. (analog output not tested, not supported by ME4610).
+
+
+So, please feel free to send me another patch for testing purpose.
+
+
+
+Best regards,
+Wolfgang Beiter, Austria.
+
+
+
+
 
