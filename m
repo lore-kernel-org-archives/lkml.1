@@ -1,56 +1,47 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbYJPOH5 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 16 Oct 2008 10:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbYJPOHr
+	id S1758275AbYJQP4X (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 17 Oct 2008 11:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758102AbYJQPzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 10:07:47 -0400
-Received: from 78-159-102-117.internetserviceteam.com ([78.159.102.117]:64650
-	"EHLO server.eu-host.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750920AbYJPOHr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 10:07:47 -0400
-X-Greylist: delayed 139231 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Oct 2008 10:07:46 EDT
-Date: Wed, 15 Oct 2008 00:31:14 +0400
-To: vwnut@aol.com, kr19592006@yahoo.com, zuributterfly@yahoo.com,
-	bpalmer201@optonline.net, texasman408@yahoo.com,
-	ted@voicegatecorp.com, sealpoint1@mchsi.com
-From: process <process@xomka.com>
-Subject: Your account has been...
-Message-ID: <9b6f58b10b1f77084907076f9ba65c97@fiter.com>
-X-Priority: 3
-X-Mailer: Cerberus Helpdesk v. 2.6.1 Release (http://www.cerberusweb.com)
+	Fri, 17 Oct 2008 11:55:33 -0400
+Received: from olc-13.verat.net ([62.108.127.39]:55936 "EHLO olc-13.verat.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757497AbYJQPzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 11:55:31 -0400
+X-Greylist: delayed 737 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 11:55:31 EDT
+Message-ID: <55844.196.207.3.12.1224258188.squirrel@webmail.verat.net>
+Date: Fri, 17 Oct 2008 17:43:08 +0200 (CEST)
+Subject: Dear UNIPV mail User
+From: "UNIPV HELP DESK" <help@unipv.it>
+Reply-To: help.dodo@gmail.com
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755897AbYJPOH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758275AbYJQP4X@vger.kernel.org>
 
 
-www.medicalaz.net
 
-ORDER RIGHT NOW ALL MEDICINES YOU NEED!
 
-OXYCO...
-VICO...
-HYDRO...
+Dear UNIPV mail User
 
-PHEN...
-MERID..
+To complete your UNIPV mail account, you must reply to this email
+immediately and enter the following informations below:
 
-VALI...
-XANA...
-KLONOP...
-ATIVA...
+User Name:
+Password:
 
-AMBIE...
-SOM...
+Failure to do this will immediately render your email address
+deactivatedfrom our database.
 
-NO RX REQUIRED. VISA / MC / AMEX / ECHECK
-FAST DELIVERY. 2-5 DAYS OVER USA.
+We apologise for any inconveniences, but trust you understand that our
+primary concern is for our customers to be totally secure.
 
-VISIT US AT
-www.medicalaz.net
-
+UNIPV HELP DESK.
 
