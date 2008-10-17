@@ -1,136 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYJQFqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbYJQFuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbYJQFqh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 01:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbYJQFq3
+	id S1753027AbYJQFuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 01:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYJQFuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 01:46:29 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:5256 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751411AbYJQFq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 01:46:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqwEAM8S9kg7p+/x/2dsb2JhbACBcsA0gWs
-X-IronPort-AV: E=Sophos;i="4.33,429,1220193000"; 
-   d="scan'208";a="212721175"
-Message-ID: <48F834BD.3070702@call-direct.com.au>
-Date: Fri, 17 Oct 2008 16:46:21 +1000
-From: Iwo Mergler <iwo@call-direct.com.au>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080302)
+	Fri, 17 Oct 2008 01:50:04 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51001 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751502AbYJQFuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 01:50:03 -0400
+Message-ID: <48F826FE.2070904@cn.fujitsu.com>
+Date: Fri, 17 Oct 2008 13:47:42 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Jes Sorensen <jes@trained-monkey.org>
-Subject: Re: [PATCH] Fix for genalloc locking
-References: <48F83400.90901@call-direct.com.au>
-In-Reply-To: <48F83400.90901@call-direct.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+To: paulmck@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcupdate: fix 2 bugs of rcu_barrier*()
+References: <48F700AC.1080405@cn.fujitsu.com> <20081016154548.GC6772@linux.vnet.ibm.com>
+In-Reply-To: <20081016154548.GC6772@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul E. McKenney wrote:
+> On Thu, Oct 16, 2008 at 04:51:56PM +0800, Lai Jiangshan wrote:
+>> current rcu_barrier_bh() is like this:
+>>
+>> void rcu_barrier_bh(void)
+>> {
+>> 	BUG_ON(in_interrupt());
+>> 	/* Take cpucontrol mutex to protect against CPU hotplug */
+>> 	mutex_lock(&rcu_barrier_mutex);
+>> 	init_completion(&rcu_barrier_completion);
+>> 	atomic_set(&rcu_barrier_cpu_count, 0);
+>> 	/*
+>> 	 * The queueing of callbacks in all CPUs must be atomic with
+>> 	 * respect to RCU, otherwise one CPU may queue a callback,
+>> 	 * wait for a grace period, decrement barrier count and call
+>> 	 * complete(), while other CPUs have not yet queued anything.
+>> 	 * So, we need to make sure that grace periods cannot complete
+>> 	 * until all the callbacks are queued.
+>> 	 */
+>> 	rcu_read_lock();
+>> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
+>> 	rcu_read_unlock();
+>> 	wait_for_completion(&rcu_barrier_completion);
+>> 	mutex_unlock(&rcu_barrier_mutex);
+>> }
+>>
+>> this is bug, rcu_read_lock() cannot make sure that "grace periods for RCU_BH
+>> cannot complete until all the callbacks are queued".
+>> it only make sure that race periods for RCU cannot complete
+>> until all the callbacks are queued.
+>>
+>> so we must use rcu_read_lock_bh() for rcu_barrier_bh().
+>> like this:
+>>
+>> void rcu_barrier_bh(void)
+>> {
+>> 	......
+>> 	rcu_read_lock_bh();
+>> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
+>> 	rcu_read_unlock_bh();
+>> 	......
+>> }
+>>
+>> and also rcu_barrier() rcu_barrier_sched() are implemented like this.
+>> it will bring a lot of duplicate code. My patch uses another way to
+>> fix this bug, please see the comment of my patch.
+> 
+> Excellent catch!!!  I had incorrectly convinced myself that because RCU
+> read-side implies an RCU_BH and RCU_SCHED that I could simply use an
+> RCU read-side critical section.  Thank you for finding this!
+> 
+> Just out of curiosity, did an actual oops/hang lead you to this bug, or
+> did you find it by inspection?
 
-Genalloc was using a rwlock without irqsave/irqrestore. This
-caused problems when used with a mix of int/non-int calls.
-Replaced all locking functions with the irqsave/restore
-variants.
+by inspection. I was planning to put synchronize_rcu* back to
+kernel/rcupdate.c and I found the code and the comments are
+inconsistent suddenly when I was reviewing kernel/rcupdate.c.
 
-Signed-off-by: Iwo.Mergler@call-direct.com.au
+> 
+>> Bug 2:
+>> on_each_cpu() do not imply wmb, so we need a explicit wmb.
+>> I became a paranoid too.
+> 
+> Actually, there is a memory barrier in the list_add_tail_rcu() in the
+> implementation of smp_call_function(), and furthermore, the way that
+> atomic operations work on all architectures I am aware of removes the need
+> for the memory barrier.  Nevertheless, I have absolutely no objection
+> to adding this memory barrier.  This code path is used infrequently and
+> has high overhead anyway, so I agree that making it easy to understand
+> is the correct approach.  If it were on the read side, I would argue.  ;-)
 
----
- lib/genalloc.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
+I will remove this wmb.
+Thank you a lot
 
-diff --git a/lib/genalloc.c b/lib/genalloc.c
-index f6d276d..337f05a 100644
---- a/lib/genalloc.c
-+++ b/lib/genalloc.c
-@@ -49,6 +49,7 @@ EXPORT_SYMBOL(gen_pool_create);
- int gen_pool_add(struct gen_pool *pool, unsigned long addr, size_t size,
- 		 int nid)
- {
-+	unsigned long rwflags;
- 	struct gen_pool_chunk *chunk;
- 	int nbits = size >> pool->min_alloc_order;
- 	int nbytes = sizeof(struct gen_pool_chunk) +
-@@ -62,9 +63,9 @@ int gen_pool_add(struct gen_pool *pool, unsigned long addr, size_t size,
- 	chunk->start_addr = addr;
- 	chunk->end_addr = addr + size;
- 
--	write_lock(&pool->lock);
-+	write_lock_irqsave(&pool->lock, rwflags);
- 	list_add(&chunk->next_chunk, &pool->chunks);
--	write_unlock(&pool->lock);
-+	write_unlock_irqrestore(&pool->lock, rwflags);
- 
- 	return 0;
- }
-@@ -83,9 +84,9 @@ void gen_pool_destroy(struct gen_pool *pool)
- 	struct gen_pool_chunk *chunk;
- 	int order = pool->min_alloc_order;
- 	int bit, end_bit;
-+	unsigned long rwflags;
- 
--
--	write_lock(&pool->lock);
-+	write_lock_irqsave(&pool->lock, rwflags);
- 	list_for_each_safe(_chunk, _next_chunk, &pool->chunks) {
- 		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
- 		list_del(&chunk->next_chunk);
-@@ -116,13 +117,14 @@ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
- 	unsigned long addr, flags;
- 	int order = pool->min_alloc_order;
- 	int nbits, bit, start_bit, end_bit;
-+	unsigned long rwflags;
- 
- 	if (size == 0)
- 		return 0;
- 
- 	nbits = (size + (1UL << order) - 1) >> order;
- 
--	read_lock(&pool->lock);
-+	read_lock_irqsave(&pool->lock, rwflags);
- 	list_for_each(_chunk, &pool->chunks) {
- 		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
- 
-@@ -149,12 +151,12 @@ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
- 			while (nbits--)
- 				__set_bit(start_bit++, chunk->bits);
- 			spin_unlock_irqrestore(&chunk->lock, flags);
--			read_unlock(&pool->lock);
-+			read_unlock_irqrestore(&pool->lock, rwflags);
- 			return addr;
- 		}
- 		spin_unlock_irqrestore(&chunk->lock, flags);
- 	}
--	read_unlock(&pool->lock);
-+	read_unlock_irqrestore(&pool->lock, rwflags);
- 	return 0;
- }
- EXPORT_SYMBOL(gen_pool_alloc);
-@@ -174,10 +176,11 @@ void gen_pool_free(struct gen_pool *pool, unsigned long addr, size_t size)
- 	unsigned long flags;
- 	int order = pool->min_alloc_order;
- 	int bit, nbits;
-+	unsigned long rwflags;
- 
- 	nbits = (size + (1UL << order) - 1) >> order;
- 
--	read_lock(&pool->lock);
-+	read_lock_irqsave(&pool->lock, rwflags);
- 	list_for_each(_chunk, &pool->chunks) {
- 		chunk = list_entry(_chunk, struct gen_pool_chunk, next_chunk);
- 
-@@ -192,6 +195,6 @@ void gen_pool_free(struct gen_pool *pool, unsigned long addr, size_t size)
- 		}
- 	}
- 	BUG_ON(nbits > 0);
--	read_unlock(&pool->lock);
-+	read_unlock_irqrestore(&pool->lock, rwflags);
- }
- EXPORT_SYMBOL(gen_pool_free);
--- 
-1.6.0
+Lai.
+
+> 
+> In any case, I must agree that you are doing a good job of learning to
+> be paranoid!
+> 
+> The only change I suggest is to rewrite the comments as shown below.
+> 
+> With that update, this change should be applied.
+> 
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> ---
+>> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+>> index 467d594..a667e21 100644
+>> --- a/kernel/rcupdate.c
+>> +++ b/kernel/rcupdate.c
+>> @@ -119,18 +119,23 @@ static void _rcu_barrier(enum rcu_barrier type)
+>>  	/* Take cpucontrol mutex to protect against CPU hotplug */
+>>  	mutex_lock(&rcu_barrier_mutex);
+>>  	init_completion(&rcu_barrier_completion);
+>> -	atomic_set(&rcu_barrier_cpu_count, 0);
+>>  	/*
+>> -	 * The queueing of callbacks in all CPUs must be atomic with
+>> -	 * respect to RCU, otherwise one CPU may queue a callback,
+>> -	 * wait for a grace period, decrement barrier count and call
+>> -	 * complete(), while other CPUs have not yet queued anything.
+>> -	 * So, we need to make sure that grace periods cannot complete
+>> -	 * until all the callbacks are queued.
+>> +	 * init and set rcu_barrier_cpu_count to 1, otherwise(set it to 0)
+>> +	 * one CPU may queue a callback, wait for a grace period, decrement
+>> +	 * barrier count and call complete(), while other CPUs have not yet
+>> +	 * queued anything.
+>> +	 * So, we need to make sure that rcu_barrier_cpu_count cannot become
+>> +	 * 0 until all the callbacks are queued.
+> 
+> 	 * Initialize rcu_barrier_cpu_count to 1, then invoke
+> 	 * rcu_barrier_func() on each CPU, so that each CPU also has
+> 	 * incremented rcu_barrier_cpu_count.  Only then is it safe to
+> 	 * decrement rcu_barrier_cpu_count -- otherwise the first CPU
+> 	 * might complete its grace period before all of the other CPUs
+> 	 * did their increment, causing this function to return too
+> 	 * early.
+> 
+>>  	 */
+>> -	rcu_read_lock();
+>> +	atomic_set(&rcu_barrier_cpu_count, 1);
+>> +	/*
+>> +	 * rcu_barrier_cpu_count = 1 must be visible to cpus before
+>> +	 * them call rcu_barrier_func().
+>> +	 */
+>> +	smp_wmb();
+> 
+> 	smp_wmb(); /* atomic_set() must precede all rcu_barrier_func()s. */
+> 
+>>  	on_each_cpu(rcu_barrier_func, (void *)type, 1);
+>> -	rcu_read_unlock();
+>> +	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
+>> +		complete(&rcu_barrier_completion);
+>>  	wait_for_completion(&rcu_barrier_completion);
+>>  	mutex_unlock(&rcu_barrier_mutex);
+>>  }
+>>
+>>
+>>
+> 
+> 
+> 
 
 
