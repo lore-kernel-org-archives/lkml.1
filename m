@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYJQMjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYJQMkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbYJQMjc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYJQMjV
+	id S1755403AbYJQMkI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:40:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbYJQMjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:39:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:3906 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754943AbYJQMjT (ORCPT
+	Fri, 17 Oct 2008 08:39:53 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:40929 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753829AbYJQMjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:39:19 -0400
+	Fri, 17 Oct 2008 08:39:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=PBN/TiyPO1RoHi2vvemu6jWyYVra8YxE3azV07HgrFNprSOl3iMWSH3CIh35M6MaGE
-         JgojZcH7QD4i9gQkO0u06NrB9dvWwn6swyIjjACGp2UZGAuEPW3bVwGiFFPgWi9faXWO
-         pEwTC36Zg2uOf1BpmVzBIGQ/4otlOhvoVjbes=
-Date: Fri, 17 Oct 2008 16:42:22 +0400
+        b=Lr1mShPMTBaFdPyUTnRR+kJzoFBK1Q0GdPLPHtqTHPA80GJ0Zh88933IlfN91kuOPr
+         EU828mTh2ipY0uoR+YVnFCdoXb47DpkkubnvZPRV9vwvs87Q/uSkF8/0+5dlDv8AqrxD
+         AbcfvN17DxO56HVyfLEA5FepkipPoMv4IoZy0=
+Date: Fri, 17 Oct 2008 16:42:54 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org
-Subject: [PATCH 06/31] proc: move /proc/stram to m68k-specific code
-Message-ID: <20081017124222.GG22653@x200.localdomain>
+Cc: viro@zeniv.linux.org.uk
+Subject: [PATCH 07/31] proc: move /proc/filesystems to fs/filesystems.c
+Message-ID: <20081017124254.GH22653@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,118 +32,100 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 0b0306563d7b79ad215c62499ed538d15372f574 Mon Sep 17 00:00:00 2001
+>From 92375a6ec7f042657dc5661f0b887dc4c2dbdbc5 Mon Sep 17 00:00:00 2001
 From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Sat, 4 Oct 2008 13:49:34 +0400
-Subject: [PATCH 06/31] proc: move /proc/stram to m68k-specific code
+Date: Sat, 4 Oct 2008 14:08:37 +0400
+Subject: [PATCH 07/31] proc: move /proc/filesystems to fs/filesystems.c
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- arch/m68k/atari/stram.c |   28 ++++++++++++++++++++++------
- fs/proc/proc_misc.c     |   13 -------------
- 2 files changed, 22 insertions(+), 19 deletions(-)
+ fs/filesystems.c    |   39 +++++++++++++++++++++++++++++++++++++++
+ fs/proc/proc_misc.c |    8 --------
+ 2 files changed, 39 insertions(+), 8 deletions(-)
 
-diff --git a/arch/m68k/atari/stram.c b/arch/m68k/atari/stram.c
-index 04c69ff..6ec3b7f 100644
---- a/arch/m68k/atari/stram.c
-+++ b/arch/m68k/atari/stram.c
-@@ -42,6 +42,7 @@
- /* abbrev for the && above... */
- #define DO_PROC
- #include <linux/proc_fs.h>
+diff --git a/fs/filesystems.c b/fs/filesystems.c
+index f37f872..d0e20ce 100644
+--- a/fs/filesystems.c
++++ b/fs/filesystems.c
+@@ -8,6 +8,8 @@
+ 
+ #include <linux/syscalls.h>
+ #include <linux/fs.h>
++#include <linux/proc_fs.h>
 +#include <linux/seq_file.h>
- #endif
+ #include <linux/slab.h>
+ #include <linux/kmod.h>
+ #include <linux/init.h>
+@@ -214,6 +216,43 @@ int get_filesystem_list(char * buf)
+ 	return len;
+ }
  
- /*
-@@ -323,19 +324,16 @@ static int remove_region( BLOCK *block )
- 
- #ifdef DO_PROC
- 
--#define	PRINT_PROC(fmt,args...) len += sprintf( buf+len, fmt, ##args )
-+#define	PRINT_PROC(fmt,args...) seq_printf( m, fmt, ##args )
- 
--int get_stram_list( char *buf )
-+static int stram_proc_show(struct seq_file *m, void *v)
- {
--	int len = 0;
- 	BLOCK *p;
- 
- 	PRINT_PROC("Total ST-RAM:      %8u kB\n",
- 			   (stram_end - stram_start) >> 10);
- 	PRINT_PROC( "Allocated regions:\n" );
- 	for( p = alloc_list; p; p = p->next ) {
--		if (len + 50 >= PAGE_SIZE)
--			break;
- 		PRINT_PROC("0x%08lx-0x%08lx: %s (",
- 			   virt_to_phys(p->start),
- 			   virt_to_phys(p->start+p->size-1),
-@@ -346,9 +344,27 @@ int get_stram_list( char *buf )
- 			PRINT_PROC( "??)\n" );
- 	}
- 
--	return( len );
++#ifdef CONFIG_PROC_FS
++static int filesystems_proc_show(struct seq_file *m, void *v)
++{
++	struct file_system_type * tmp;
++
++	read_lock(&file_systems_lock);
++	tmp = file_systems;
++	while (tmp) {
++		seq_printf(m, "%s\t%s\n",
++			(tmp->fs_flags & FS_REQUIRES_DEV) ? "" : "nodev",
++			tmp->name);
++		tmp = tmp->next;
++	}
++	read_unlock(&file_systems_lock);
 +	return 0;
 +}
 +
-+static int stram_proc_open(struct inode *inode, struct file *file)
++static int filesystems_proc_open(struct inode *inode, struct file *file)
 +{
-+	return single_open(file, stram_proc_show, NULL);
- }
- 
-+static const struct file_operations stram_proc_fops = {
-+	.open		= stram_proc_open,
++	return single_open(file, filesystems_proc_show, NULL);
++}
++
++static const struct file_operations filesystems_proc_fops = {
++	.open		= filesystems_proc_open,
 +	.read		= seq_read,
 +	.llseek		= seq_lseek,
 +	.release	= single_release,
 +};
 +
-+static int __init proc_stram_init(void)
++static int __init proc_filesystems_init(void)
 +{
-+	proc_create("stram", 0, NULL, &stram_proc_fops);
++	proc_create("filesystems", 0, NULL, &filesystems_proc_fops);
 +	return 0;
 +}
-+module_init(proc_stram_init);
- #endif
- 
- 
++module_init(proc_filesystems_init);
++#endif
++
+ struct file_system_type *get_fs_type(const char *name)
+ {
+ 	struct file_system_type *fs;
 diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 8a9fc90..c70e2f5 100644
+index c70e2f5..3bedbd2 100644
 --- a/fs/proc/proc_misc.c
 +++ b/fs/proc/proc_misc.c
-@@ -62,7 +62,6 @@
-  * have a way to deal with that gracefully. Right now I used straightforward
-  * wrappers, but this needs further analysis wrt potential overflows.
-  */
--extern int get_stram_list(char *);
- extern int get_exec_domain_list(char *);
- 
- static int proc_calc_metrics(char *page, char **start, off_t off,
-@@ -196,15 +195,6 @@ static const struct file_operations proc_vmstat_file_operations = {
+@@ -474,13 +474,6 @@ static const struct file_operations proc_interrupts_operations = {
  	.release	= seq_release,
  };
  
--#ifdef CONFIG_STRAM_PROC
--static int stram_read_proc(char *page, char **start, off_t off,
+-static int filesystems_read_proc(char *page, char **start, off_t off,
 -				 int count, int *eof, void *data)
 -{
--	int len = get_stram_list(page);
+-	int len = get_filesystem_list(page);
 -	return proc_calc_metrics(page, start, off, count, eof, len);
 -}
--#endif
 -
- #ifdef CONFIG_BLOCK
- static int partitions_open(struct inode *inode, struct file *file)
+ static int cmdline_read_proc(char *page, char **start, off_t off,
+ 				 int count, int *eof, void *data)
  {
-@@ -660,9 +650,6 @@ void __init proc_misc_init(void)
+@@ -650,7 +643,6 @@ void __init proc_misc_init(void)
  		char *name;
  		int (*read_proc)(char*,char**,off_t,int,int*,void*);
  	} *p, simple_ones[] = {
--#ifdef CONFIG_STRAM_PROC
--		{"stram",	stram_read_proc},
--#endif
- 		{"filesystems",	filesystems_read_proc},
+-		{"filesystems",	filesystems_read_proc},
  		{"cmdline",	cmdline_read_proc},
  		{"execdomains",	execdomains_read_proc},
+ 		{NULL,}
 -- 
 1.5.6.5
 
