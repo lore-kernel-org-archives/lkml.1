@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYJQUF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbYJQUH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbYJQUF2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbYJQUFU
+	id S1756774AbYJQUH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYJQUHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:05:20 -0400
-Received: from mga09.intel.com ([134.134.136.24]:13482 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756055AbYJQUFT convert rfc822-to-8bit (ORCPT
+	Fri, 17 Oct 2008 16:07:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47686
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754934AbYJQUHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:05:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,434,1220252400"; 
-   d="scan'208";a="349452657"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Fri, 17 Oct 2008 13:05:00 -0700
-Subject: RE: [PATCH] x86: Add clflush before monitor for Intel 7400 series
-Thread-Topic: [PATCH] x86: Add clflush before monitor for Intel 7400 series
-Thread-Index: Acko0O8yk+NFLk9LRqS2jkEgx9c8PQHwjUww
-Message-ID: <7E82351C108FA840AB1866AC776AEC4637B798D6@orsmsx505.amr.corp.intel.com>
-References: <20081007210056.GA5802@linux-os.sc.intel.com>
- <48EBCFF8.6050500@zytor.com> <20081007214920.GA17439@linux-os.sc.intel.com>
- <48EBEA97.9020404@zytor.com>
-In-Reply-To: <48EBEA97.9020404@zytor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 17 Oct 2008 16:07:10 -0400
+Date: Fri, 17 Oct 2008 13:06:46 -0700 (PDT)
+Message-Id: <20081017.130646.92681361.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: benh@kernel.crashing.org, rdreier@cisco.com,
+       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0810170850240.3438@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
+	<20081016.222108.13382080.davem@davemloft.net>
+	<alpine.LFD.2.00.0810170850240.3438@nehalem.linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 17 Oct 2008 08:51:58 -0700 (PDT)
 
+> Why do you think %08x wouldn't do that?
+> 
+> The "8" part is the _minimal_ part. If there really are more digits than 
+> that, then you'll see them.
 
->-----Original Message-----
->From: H. Peter Anvin [mailto:hpa@zytor.com]
->Sent: Tuesday, October 07, 2008 4:03 PM
->To: Pallipadi, Venkatesh
->Cc: Ingo Molnar; Thomas Gleixner; linux-kernel
->Subject: Re: [PATCH] x86: Add clflush before monitor for Intel
->7400 series
->
->Venki Pallipadi wrote:
->
->> Yes. Other alternative is to disable mwaits altogether on
->these CPUs. I can
->> send a patch to do that. But, the patch will be somewhat
->more complicated
->> as kernel advertises the MWAIT capability to firmware with a
->ACPI _PDC method
->> and BIOS has to then give IO port based C2 for us to use in
->such case.
->> Avoiding mwait just for C1 is easy though.
->
->It would be my weak preference, although I'm willing to be convinced
->that mwait is worth the power savings even with the workaround.
->
->        -hpa
+You probably mean "%08lx"  since plain "x" expects an "int" which is
+32-bit.  At least that's my understanding.
 
-hpa,
-
-Do you still have reservations about this being expensive.
-Note that this is only done when a CPU is about to go idle and
-The cost of clflush itself will be minimal compared to idle
-entry + idle exit latency.
-
-Thanks,
-Venki
+But sure, that would work too.
