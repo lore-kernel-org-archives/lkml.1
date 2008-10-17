@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYJQCdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbYJQCj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbYJQCdp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 22:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYJQCdf
+	id S1753367AbYJQCj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 22:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYJQCjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 22:33:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53978
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751751AbYJQCde (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 22:33:34 -0400
-Date: Thu, 16 Oct 2008 19:33:11 -0700 (PDT)
-Message-Id: <20081016.193310.47274971.davem@davemloft.net>
-To: mathieu.desnoyers@polymtl.ca
-Cc: paulus@samba.org, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       rostedt@goodmis.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       benh@kernel.crashing.org, mingo@redhat.com
-Subject: Re: [RFC patch 04/15] get_cycles() : powerpc64 HAVE_GET_CYCLES
- (update)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081017020813.GA32468@Krystal>
-References: <20081017004328.GA29768@Krystal>
-	<20081016.184252.193691889.davem@davemloft.net>
-	<20081017020813.GA32468@Krystal>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 16 Oct 2008 22:39:18 -0400
+Received: from willie.n0ano.com ([64.66.241.76]:47403 "EHLO xolotl.n0ano.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752074AbYJQCjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 22:39:18 -0400
+From: n0ano@n0ano.com
+Date: Thu, 16 Oct 2008 20:39:12 -0600
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: donald.d.dugger@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Enable console on PCI serial devices
+Message-ID: <20081017023912.GA9378@xolotl.n0ano.com>
+References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <200810161716.47620.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810161716.47620.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Thu, 16 Oct 2008 22:08:13 -0400
-
-> * David Miller (davem@davemloft.net) wrote:
-> > Date: Thu, 16 Oct 2008 20:43:28 -0400
-> > 
-> > You'll need to make a similar fix on sparc64.
+On Thu, Oct 16, 2008 at 05:16:47PM -0600, Bjorn Helgaas wrote:
+>... 
+> Did you play with "console=uart,io,0xe880,115200n8" at all?
 > 
-> I guess you are talking about using sparc64_get_clock_tick rather than
-> CLOCK_TICK_RATE ? I assume sparc64_get_clock_tick() done on any CPU will
-> return the same rate ?
+> That gives you early serial console output and automatically switches
+> to the matching ttyS device when it is discovered.
+> 
+> "console=uart" doesn't have support for crystal frequency, but that
+> could be added in drivers/serial/8250_early.c.
+> 
 
-You'll need to use tb_ticks_per_usec or similar.
+Yep, that was pointed out and my latest patch does just that, use the
+`uart' syntax to specify I/O address and enhance it to control crystal
+frequency.
 
-The ->get_tick() thing you are using uses a TICK source which is
-synchronized across the entire system and advances at a non-changing
-rate.
+We're arguing now about what to do about the `earlycon' and `earlyprintk'
+parameters, I contend we should remove those as the `console=uart' is
+a superset of their capabilities but there are some dissenting opinions.
 
-sparc64_get_clock_tick() returns something different.
+-- 
+Don Dugger
+"Censeo Toto nos in Kansa esse decisse." - D. Gale
+n0ano@n0ano.com
+Ph: 303/443-3786
