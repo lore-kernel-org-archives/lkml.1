@@ -1,83 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYJQQgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbYJQQkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbYJQQgl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 12:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYJQQgd
+	id S1756147AbYJQQkY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 12:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbYJQQkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 12:36:33 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:63390 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754545AbYJQQgc (ORCPT
+	Fri, 17 Oct 2008 12:40:12 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:30693 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754402AbYJQQkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 12:36:32 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAERW+EhMQWq+/2dsb2JhbACBcr8Fg2w
-Date: Fri, 17 Oct 2008 12:36:30 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, fche@redhat.com, fweisbec@gmail.com,
-       edwintorok@gmail.com, mingo@elte.hu,
-       Steven Rostedt <rostedt@goodmis.org>, mbligh@google.com,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: Re: tracepoints for kernel/mutex.c
-Message-ID: <20081017163630.GE5696@Krystal>
-References: <20081016210430.GC25738@redhat.com> <1224192879.16038.82.camel@lappy.programming.kicks-ass.net> <20081017140841.FAA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 17 Oct 2008 12:40:10 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: n0ano@n0ano.com
+Subject: Re: [PATCH] Enable console on PCI serial devices
+Date: Fri, 17 Oct 2008 10:39:52 -0600
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, donald.d.dugger@intel.com,
+       linux-kernel@vger.kernel.org
+References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <200810170846.41032.bjorn.helgaas@hp.com> <20081017153652.GH14490@xolotl.n0ano.com>
+In-Reply-To: <20081017153652.GH14490@xolotl.n0ano.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081017140841.FAA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:30:20 up 134 days, 21:10,  9 users,  load average: 0.69, 0.59,
-	0.95
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200810171039.53395.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
-> Hi
+On Friday 17 October 2008 09:36:52 am n0ano@n0ano.com wrote:
+> On Fri, Oct 17, 2008 at 08:46:40AM -0600, Bjorn Helgaas wrote:
+> >... 
+> > this text is a little confusing.  Since you multiply by 16 below, the
+> > number specified by the user isn't really the crystal frequency, is it?
 > 
-> > Folks, lets please start by getting the tracing infrastructure in and
-> > those few high-level trace-points google proposed.
-> > 
-> > Until we get the basics in, I think I'm going to NAK any and all
-> > tracepoint/marker patches.
+> Can't argue with that.  How about this patch which describes the
+> parameter more acurately as a multiplier.
+
+Here's another possibility, maybe too wordy, but maybe more straightforward:
+
++		uart[8250],mmio,<addr>[,options[,clock]]
+
++			"clock" is the frequency of the crystal driving
++			the UART clock (typically sixteen times the
++			fastest baud rate supported by the UART).
+
++		port->uartclk = simple_strtoul(options, NULL, 0);
+
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 82c561f..6e5334d 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -505,12 +505,15 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			Documentation/networking/netconsole.txt for an
+>  			alternative.
+>  
+> -		uart[8250],io,<addr>[,options]
+> -		uart[8250],mmio,<addr>[,options]
+> +		uart[8250],io,<addr>[,options[,mult]]
+> +		uart[8250],mmio,<addr>[,options[,mult]]
+>  			Start an early, polled-mode console on the 8250/16550
+>  			UART at the specified I/O port or MMIO address,
+>  			switching to the matching ttyS device later.  The
+> -			options are the same as for ttyS, above.
+> +			"options" are the same as for ttyS, above.  "mult"
+> +			is a multiplier defining the crystal frequency which
+> +			defaults to 115200 (typically the fastest baud rate
+> +			supported by the uart).
+>  
+>                  If the device connected to the port is not a TTY but a braille
+>                  device, prepend "brl," before the device type, for instance
+> @@ -518,8 +521,8 @@ and is between 256 and 4096 characters. It is defined in the file
+>  		For now, only VisioBraille is supported.
+>  
+>  	earlycon=	[KNL] Output early console device and options.
+> -		uart[8250],io,<addr>[,options]
+> -		uart[8250],mmio,<addr>[,options]
+> +		uart[8250],io,<addr>[,options,[mult]]
+> +		uart[8250],mmio,<addr>[,options,[mult]]
+>  			Start an early, polled-mode console on the 8250/16550
+>  			UART at the specified I/O port or MMIO address.
+>  			The options are the same as for ttyS, above.
+> diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
+> index f279745..edd5803 100644
+> --- a/drivers/serial/8250_early.c
+> +++ b/drivers/serial/8250_early.c
+> @@ -180,6 +180,11 @@ static int __init parse_options(struct early_serial8250_device *device,
+>  		snprintf(device->options, sizeof(device->options), "%u",
+>  			device->baud);
+>  	}
+> +	options = strchr(options, ',');
+> +	if (options) {
+> +		options++;
+> +		port->uartclk = simple_strtoul(options, NULL, 0) * 16;
+> +	}
+>  
+>  	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
+>  		mmio ? "MMIO" : "I/O port",
 > 
-> Could you please tell me how to get these patches?
-> I'd like to review it.
-> 
 
-Hi Kosaki,
 
-I am focusing on the timestamping/data relay/tracing control
-infrastructure for now, so I think it is too soon to post the
-instrumentation patches selelected from LTTng which correspond to the
-Google instrumentation before we get something that makes that data
-useful within the kernel, but if you still want to have a look, comments
-are welcome.
-
-See
-git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
-or
-http://www.kernel.org/pub/linux/kernel/people/compudj/patches/2.6/2.6.27/patch-2.6.27-lttng-0.43.tar.bz2
-
-Commits :
-
-irq-handle-prepare-for-instrumentation.patch
-lttng-instrumentation-irq.patch
-lttng-instrumentation-scheduler.patch
-lttng-instrumentation-timer.patch
-lttng-instrumentation-kernel.patch
-lttng-instrumentation-filemap.patch
-lttng-instrumentation-swap.patch
-lttng-instrumentation-socket.patch
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
