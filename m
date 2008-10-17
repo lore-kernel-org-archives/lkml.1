@@ -1,233 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbYJQPqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbYJQPwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbYJQPqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYJQPqY
+	id S1755730AbYJQPwV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYJQPv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:46:24 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:56063 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754700AbYJQPqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:46:24 -0400
-Date: Fri, 17 Oct 2008 08:46:20 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-Message-ID: <20081017154620.GH6706@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <20081017083452.GA23228@in.ibm.com> <20081017153513.GC23228@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081017153513.GC23228@in.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 17 Oct 2008 11:51:58 -0400
+Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:3167 "EHLO
+	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753898AbYJQPv5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 11:51:57 -0400
+X-Greylist: delayed 542 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 11:51:56 EDT
+To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Subject: Subject: [PATCH 07/16] Squashfs: export operations
+Message-Id: <E1KqrTW-0001xe-UG@dylan>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Fri, 17 Oct 2008 16:42:50 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 09:05:13PM +0530, Gautham R Shenoy wrote:
-> On Fri, Oct 17, 2008 at 02:04:52PM +0530, Gautham R Shenoy wrote:
-> > On Fri, Oct 10, 2008 at 09:09:30AM -0700, Paul E. McKenney wrote:
-> > > Hello!
-> > Hi Paul,
-> > 
-> > Looks interesting. Couple of minor nits. Comments interspersed. Search for "=>"
-> Search is too tedius, even for me. Trimming it down.
 
-The "/" command in "vi" works pretty well for me.  ;-)
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/export.c |  146 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 146 insertions(+), 0 deletions(-)
 
-These are the same as the ones in your earlier note, correct?
+diff --git a/fs/squashfs/export.c b/fs/squashfs/export.c
+new file mode 100644
+index 0000000..0a7a98a
+--- /dev/null
++++ b/fs/squashfs/export.c
+@@ -0,0 +1,146 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * export.c
++ */
++
++/*
++ * This file implements code to make Squashfs filesystems exportable (NFS etc.)
++ *
++ * The export code uses an inode lookup table to map inode numbers passed in
++ * filehandles to an inode location on disk.  This table is stored compressed
++ * into metadata blocks.  A second index table is used to locate these.  This
++ * second index table for speed of access (and because it is small) is read at
++ * mount time and cached in memory.
++ *
++ * The inode lookup table is used only by the export code, inode disk
++ * locations are directly encoded in directories, enabling direct access
++ * without an intermediate lookup for all operations except the export ops.
++ */
++
++#include <linux/fs.h>
++#include <linux/vfs.h>
++#include <linux/dcache.h>
++#include <linux/exportfs.h>
++#include <linux/zlib.h>
++#include <linux/squashfs_fs.h>
++#include <linux/squashfs_fs_sb.h>
++#include <linux/squashfs_fs_i.h>
++
++#include "squashfs.h"
++
++/*
++ * Look-up inode number (ino) in table, returning the inode location.
++ */
++static long long squashfs_inode_lookup(struct super_block *s, int ino)
++{
++	struct squashfs_sb_info *msblk = s->s_fs_info;
++	int blk = SQUASHFS_LOOKUP_BLOCK(ino - 1);
++	int offset = SQUASHFS_LOOKUP_BLOCK_OFFSET(ino - 1);
++	long long start = le64_to_cpu(msblk->inode_lookup_table[blk]);
++	__le64 inode;
++
++	TRACE("Entered squashfs_inode_lookup, inode_number = %d\n", ino);
++
++	if (!squashfs_read_metadata(s, &inode, start, offset,
++					sizeof(inode), &start, &offset))
++		return SQUASHFS_INVALID_BLK;
++
++	TRACE("squashfs_inode_lookup, inode = 0x%llx\n", le64_to_cpu(inode));
++	return le64_to_cpu(inode);
++}
++
++
++static struct dentry *squashfs_export_iget(struct super_block *s,
++	unsigned int inode_number)
++{
++	long long inode;
++	struct dentry *dentry = ERR_PTR(-ENOENT);
++
++	TRACE("Entered squashfs_export_iget\n");
++
++	inode = squashfs_inode_lookup(s, inode_number);
++	if (inode != SQUASHFS_INVALID_BLK)
++		dentry = d_obtain_alias(squashfs_iget(s, inode, inode_number));
++
++	return dentry;
++}
++
++
++static struct dentry *squashfs_fh_to_dentry(struct super_block *s,
++		struct fid *fid, int fh_len, int fh_type)
++{
++	if ((fh_type != FILEID_INO32_GEN && fh_type != FILEID_INO32_GEN_PARENT)
++			|| fh_len < 2)
++		return NULL;
++
++	return squashfs_export_iget(s, fid->i32.ino);
++}
++
++
++static struct dentry *squashfs_fh_to_parent(struct super_block *s,
++		struct fid *fid, int fh_len, int fh_type)
++{
++	if (fh_type != FILEID_INO32_GEN_PARENT || fh_len < 4)
++		return NULL;
++
++	return squashfs_export_iget(s, fid->i32.parent_ino);
++}
++
++
++static struct dentry *squashfs_get_parent(struct dentry *child)
++{
++	struct inode *i = child->d_inode;
++
++	return squashfs_export_iget(i->i_sb, SQUASHFS_I(i)->parent_inode);
++}
++
++
++__le64 *read_inode_lookup_table(struct super_block *s,
++		long long lookup_table_start, unsigned int inodes)
++{
++	unsigned int length = SQUASHFS_LOOKUP_BLOCK_BYTES(inodes);
++	__le64 *inode_lookup_table;
++
++	TRACE("In read_inode_lookup_table, length %d\n", length);
++
++	/* Allocate inode lookup table */
++	inode_lookup_table = kmalloc(length, GFP_KERNEL);
++	if (inode_lookup_table == NULL) {
++		ERROR("Failed to allocate inode lookup table\n");
++		return NULL;
++	}
++
++	if (!squashfs_read_data(s, inode_lookup_table, lookup_table_start,
++			length | SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length)) {
++		ERROR("unable to read inode lookup table\n");
++		kfree(inode_lookup_table);
++		return NULL;
++	}
++
++	return inode_lookup_table;
++}
++
++
++const struct export_operations squashfs_export_ops = {
++	.fh_to_dentry = squashfs_fh_to_dentry,
++	.fh_to_parent = squashfs_fh_to_parent,
++	.get_parent = squashfs_get_parent
++};
+-- 
+1.5.2.5
 
-							Thanx, Paul
-
-> > > +};
-> > > +
-> > > +/* Values for signaled field in struc rcu_data. */
-> 				   ^^^^^^^^^^^^^^^^^^
-> 			   should be struct rcu_state.
-> > > +#define RCU_SAVE_DYNTICK	0	/* Need to scan dyntick state. */
-> > > +#define RCU_FORCE_QS		1	/* Need to force quiescent state. */
-> > > +#ifdef CONFIG_NO_HZ
-> > > +#define RCU_SIGNAL_INIT		RCU_SAVE_DYNTICK
-> > > +#else /* #ifdef CONFIG_NO_HZ */
-> > > +#define RCU_SIGNAL_INIT		RCU_FORCE_QS
-> > > +#endif /* #else #ifdef CONFIG_NO_HZ */
-> > > +
-> > > +}
-> > > +
-> 
-> 
-> 
-> > > +#ifdef CONFIG_SMP
-> > > +
-> > > +/*
-> > > + * If the specified CPU is offline, tell the caller that it is in
-> > > + * a quiescent state.  Otherwise, whack it with a reschedule IPI.
-> > > + * Grace periods can end up waiting on an offline CPU when that
-> > > + * CPU is in the process of coming online -- it will be added to the
-> > > + * rcu_node bitmasks before it actually makes it online.
-> 
->         This can also happen when a CPU has just gone offline,
->         but RCU hasn't yet marked it as offline. However, it's impact
->         on delaying the grace period may not be high as in the
->         CPU-online case.
-> > 
-> > > + * Because this
-> > > + * race is quite rare, we check for it after detecting that the grace
-> > > + * period has been delayed rather than checking each and every CPU
-> > > + * each and every time we start a new grace period.
-> > > + */
-> > > +static int rcu_implicit_offline_qs(struct rcu_data *rdp)
-> > > +{
-> > > +	/*
-> > > +	 * If the CPU is offline, it is in a quiescent state.  We can
-> > > +	 * trust its state not to change because interrupts are disabled.
-> > > +	 */
-> > > +	if (cpu_is_offline(rdp->cpu)) {
-> > > +		rdp->offline_fqs++;
-> > > +		return 1;
-> > > +	}
-> > > +
-> > > +	/* The CPU is online, so send it a reschedule IPI. */
-> > > +	if (rdp->cpu != smp_processor_id())
-> 
-> 	This check is safe here since this callpath is invoked
-> 	from a softirq, and thus the system cannot do a stop_machine()
-> 	as yet. This implies that the cpu in question cannot go offline
-> 	until we're done.
-> 
-> > > +		smp_send_reschedule(rdp->cpu);
-> > > +	else
-> > > +		set_need_resched();
-> > > +	rdp->resched_ipi++;
-> > > +	return 0;
-> > > +}
-> > > +
-> > > +#endif /* #ifdef CONFIG_SMP */
-> > > +/*
-> 
-> > > + * Record the specified "completed" value, which is later used to validate
-> > > + * dynticks counter manipulations.  Specify "rsp->complete - 1" to
-> 					       ^^^^^^^^^^^^^^^^^^^
-> 					       "rsp->completed - 1" ?
-> 
-> 
-> > > + * unconditionally invalidate any future dynticks manipulations (which is
-> > > + * useful at the beginning of a grace period).
-> 
-> 
-> > > +
-> > > +static void print_other_cpu_stall(struct rcu_state *rsp)
-> > > +{
-> > > +	int cpu;
-> > > +	long delta;
-> > > +	unsigned long flags;
-> > > +	struct rcu_node *rnp = rcu_get_root(rsp);
-> > > +	struct rcu_node *rnp_cur = rsp->level[NUM_RCU_LVLS - 1];
-> > > +	struct rcu_node *rnp_end = &rsp->node[NUM_RCU_NODES];
-> > > +
-> > > +	/* Only let one CPU complain about others per time interval. */
-> > > +
-> > > +	spin_lock_irqsave(&rnp->lock, flags);
-> > > +	delta = jiffies - rsp->jiffies_stall;
-> > > +	if (delta < RCU_STALL_RAT_DELAY || rsp->gpnum != rsp->completed) {
-> 	----------------> [1]
-> 	See comment in check_cpu_stall()
-> 
-> > > +		spin_unlock_irqrestore(&rnp->lock, flags);
-> > > +		return;
-> > > +	}
-> > > +	rsp->jiffies_stall = jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
-> > > +	spin_unlock_irqrestore(&rnp->lock, flags);
-> > > +
-> > > +	/* OK, time to rat on our buddy... */
-> > > +
-> > > +	printk(KERN_ERR "RCU detected CPU stalls:");
-> > > +	for (; rnp_cur < rnp_end; rnp_cur++) {
-> > > +		if (rnp_cur->qsmask == 0)
-> > > +			continue;
-> > > +		for (cpu = 0; cpu <= rnp_cur->grphi - rnp_cur->grplo; cpu++)
-> > > +			if (rnp_cur->qsmask & (1UL << cpu))
-> > > +				printk(" %d", rnp_cur->grplo + cpu);
-> > > +	}
-> > > +	printk(" (detected by %d, t=%ld jiffies)\n",
-> > > +	       smp_processor_id(), (long)(jiffies - rsp->gp_start));
-> > > +	force_quiescent_state(rsp, 0);  /* Kick them all. */
-> > > +}
-> > > +
-> > > +static void print_cpu_stall(struct rcu_state *rsp)
-> > > +{
-> > > +	unsigned long flags;
-> > > +	struct rcu_node *rnp = rcu_get_root(rsp);
-> > > +
-> > > +	printk(KERN_ERR "RCU detected CPU %d stall (t=%lu jiffies)\n",
-> > > +			smp_processor_id(), jiffies - rsp->gp_start);
-> > > +	dump_stack();
-> > > +	spin_lock_irqsave(&rnp->lock, flags);
-> > > +	if ((long)(jiffies - rsp->jiffies_stall) >= 0)
-> > > +		rsp->jiffies_stall =
-> > > +			jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
-> > > +	spin_unlock_irqrestore(&rnp->lock, flags);
-> > > +	set_need_resched();  /* kick ourselves to get things going. */
-> > > +}
-> > > +
-> > > +static void check_cpu_stall(struct rcu_state *rsp, struct rcu_data *rdp)
-> > > +{
-> > > +	long delta;
-> > > +	struct rcu_node *rnp;
-> > > +
-> > > +	delta = jiffies - rsp->jiffies_stall;
-> > > +	rnp = rdp->mynode;
-> > > +	if ((rnp->qsmask & rdp->grpmask) && delta >= 0) {
-> > > +
-> > > +		/* We haven't checked in, so go dump stack. */
-> > > +		print_cpu_stall(rsp);
-> > > +
-> > > +	} else if (rsp->gpnum != rsp->completed &&
-> > > +		   delta >= RCU_STALL_RAT_DELAY) {
-> > 
-> 		If this condition is true, then,
-> 		rsp->gpnum != rsp->completed. Hence, we will always enter
-> 		the if() condition in print_other_cpu_stall() at
-> 		[1] (See above), and return without ratting our buddy.
-> 
-> 		That defeats the purpose of the stall check or I am
-> 		missing the obvious, which is quite possible :-)
-> > > +
-> > > +		/* They had two time units to dump stack, so complain. */
-> > > +		print_other_cpu_stall(rsp);
-> > > +	}
-> > > +}
-> > > +
-> > > +#else /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-> > > +
-> > > +static void record_gp_stall_check_time(struct rcu_state *rsp)
-> > > +{
-> > > +}
-> 
-> 
-> > > +
-> > > +static void __cpuinit rcu_online_cpu(int cpu)
-> > > +{
-> > > +#ifdef CONFIG_NO_HZ
-> > > +	struct rcu_dynticks *rdtp = &per_cpu(rcu_dynticks, cpu);
-> > > +
-> > > +	rdtp->dynticks_nesting = 1;
-> > > +	rdtp->dynticks |= 1; 	/* need consecutive #s even for hotplug. */
-> > > +	rdtp->dynticks_nmi = (rdtp->dynticks + 1) & ~0x1;
-> 	rdtp->dynticks is odd. Hence rdtp->dynticks + 1 should be even.
-> 	Why is the additional & ~0x1 ?
-> 
-> 
-> > 
-> > > +#endif /* #ifdef CONFIG_NO_HZ */
-> > > +	rcu_init_percpu_data(cpu, &rcu_state);
-> -- 
-> Thanks and Regards
-> gautham
