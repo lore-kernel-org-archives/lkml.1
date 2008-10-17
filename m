@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYJQMhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbYJQMhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbYJQMhN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYJQMg6
+	id S1753871AbYJQMhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733AbYJQMhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:36:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:3625 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753749AbYJQMg5 (ORCPT
+	Fri, 17 Oct 2008 08:37:15 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:30437 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754711AbYJQMhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:36:57 -0400
+	Fri, 17 Oct 2008 08:37:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=FGCS8gpFXXE5b2ZPUD49+1eBVAEQ4XX8ZhCRlNsEEIDoe4oerRQXLWtv1rgul143Au
-         XM1+tigBwplU+y809kjIqZGNVqyETv3YQA+2eGuqatBU4urSD40MqX5XIGvRCnoqQBKd
-         XcMyzPBA5rpPlnVJ7M4BBrko1FqpEi+eX2fgk=
-Date: Fri, 17 Oct 2008 16:39:58 +0400
+        b=O8bsDVb+DBhtrGrpPF+2a8rApa7PlEw7ggePnvGvEeUKvtoy6OZLsEkU4TJnYXPV+X
+         XBVguLs9N2lvat/gHK5jNiu0cQ8J60uXI9L+lE3O2w03giIsTVtCTuNuInI8hB0guEP2
+         Ar3KnrQDTCaFcbUUZv1jS+jN5r+coS9UOlD34=
+Date: Fri, 17 Oct 2008 16:40:15 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/31] proc: switch /proc/loadavg to seq_file
-Message-ID: <20081017123958.GB22653@x200.localdomain>
+Subject: [PATCH 02/31] proc: switch /proc/uptime to seq_file
+Message-ID: <20081017124015.GC22653@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,142 +31,121 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From bbcdd0fc20fa0d13983f3d4ffb7e5e98c12d2791 Mon Sep 17 00:00:00 2001
+>From ca4e424af8016656de18ac7c39f65cbc081d7643 Mon Sep 17 00:00:00 2001
 From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Fri, 3 Oct 2008 02:21:47 +0400
-Subject: [PATCH 01/31] proc: switch /proc/loadavg to seq_file
+Date: Fri, 3 Oct 2008 02:38:18 +0400
+Subject: [PATCH 02/31] proc: switch /proc/uptime to seq_file
 
-and move it to fs/proc/loadavg.c while I'm at it.
+and move it to fs/proc/uptime.c while I'm at it.
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- fs/proc/Makefile    |    2 +-
- fs/proc/loadavg.c   |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/proc/proc_misc.c |   26 --------------------------
- 3 files changed, 52 insertions(+), 27 deletions(-)
- create mode 100644 fs/proc/loadavg.c
+ fs/proc/Makefile    |    1 +
+ fs/proc/proc_misc.c |   21 ---------------------
+ fs/proc/uptime.c    |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+), 21 deletions(-)
+ create mode 100644 fs/proc/uptime.c
 
 diff --git a/fs/proc/Makefile b/fs/proc/Makefile
-index ebaba02..bf2ab4d 100644
+index bf2ab4d..27efa14 100644
 --- a/fs/proc/Makefile
 +++ b/fs/proc/Makefile
-@@ -9,7 +9,7 @@ proc-$(CONFIG_MMU)	:= mmu.o task_mmu.o
- 
+@@ -10,6 +10,7 @@ proc-$(CONFIG_MMU)	:= mmu.o task_mmu.o
  proc-y       += inode.o root.o base.o generic.o array.o \
  		proc_tty.o proc_misc.o
--
-+proc-y	+= loadavg.o
+ proc-y	+= loadavg.o
++proc-y	+= uptime.o
  proc-$(CONFIG_PROC_SYSCTL)	+= proc_sysctl.o
  proc-$(CONFIG_NET)		+= proc_net.o
  proc-$(CONFIG_PROC_KCORE)	+= kcore.o
-diff --git a/fs/proc/loadavg.c b/fs/proc/loadavg.c
+diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index 67bbab8..6c520f4 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -77,26 +77,6 @@ static int proc_calc_metrics(char *page, char **start, off_t off,
+ 	return len;
+ }
+ 
+-static int uptime_read_proc(char *page, char **start, off_t off,
+-				 int count, int *eof, void *data)
+-{
+-	struct timespec uptime;
+-	struct timespec idle;
+-	int len;
+-	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
+-
+-	do_posix_clock_monotonic_gettime(&uptime);
+-	monotonic_to_bootbased(&uptime);
+-	cputime_to_timespec(idletime, &idle);
+-	len = sprintf(page,"%lu.%02lu %lu.%02lu\n",
+-			(unsigned long) uptime.tv_sec,
+-			(uptime.tv_nsec / (NSEC_PER_SEC / 100)),
+-			(unsigned long) idle.tv_sec,
+-			(idle.tv_nsec / (NSEC_PER_SEC / 100)));
+-
+-	return proc_calc_metrics(page, start, off, count, eof, len);
+-}
+-
+ int __attribute__((weak)) arch_report_meminfo(char *page)
+ {
+ 	return 0;
+@@ -817,7 +797,6 @@ void __init proc_misc_init(void)
+ 		char *name;
+ 		int (*read_proc)(char*,char**,off_t,int,int*,void*);
+ 	} *p, simple_ones[] = {
+-		{"uptime",	uptime_read_proc},
+ 		{"meminfo",	meminfo_read_proc},
+ 		{"version",	version_read_proc},
+ #ifdef CONFIG_PROC_HARDWARE
+diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
 new file mode 100644
-index 0000000..9bca39c
+index 0000000..0c10a0b
 --- /dev/null
-+++ b/fs/proc/loadavg.c
-@@ -0,0 +1,51 @@
++++ b/fs/proc/uptime.c
+@@ -0,0 +1,43 @@
 +#include <linux/fs.h>
 +#include <linux/init.h>
-+#include <linux/pid_namespace.h>
 +#include <linux/proc_fs.h>
 +#include <linux/sched.h>
 +#include <linux/seq_file.h>
-+#include <linux/seqlock.h>
 +#include <linux/time.h>
++#include <asm/cputime.h>
 +
-+#define LOAD_INT(x) ((x) >> FSHIFT)
-+#define LOAD_FRAC(x) LOAD_INT(((x) & (FIXED_1-1)) * 100)
-+
-+static int loadavg_proc_show(struct seq_file *m, void *v)
++static int uptime_proc_show(struct seq_file *m, void *v)
 +{
-+	int a, b, c;
-+	unsigned long seq;
++	struct timespec uptime;
++	struct timespec idle;
++	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
 +
-+	do {
-+		seq = read_seqbegin(&xtime_lock);
-+		a = avenrun[0] + (FIXED_1/200);
-+		b = avenrun[1] + (FIXED_1/200);
-+		c = avenrun[2] + (FIXED_1/200);
-+	} while (read_seqretry(&xtime_lock, seq));
-+
-+	seq_printf(m, "%d.%02d %d.%02d %d.%02d %ld/%d %d\n",
-+		LOAD_INT(a), LOAD_FRAC(a),
-+		LOAD_INT(b), LOAD_FRAC(b),
-+		LOAD_INT(c), LOAD_FRAC(c),
-+		nr_running(), nr_threads,
-+		task_active_pid_ns(current)->last_pid);
++	do_posix_clock_monotonic_gettime(&uptime);
++	monotonic_to_bootbased(&uptime);
++	cputime_to_timespec(idletime, &idle);
++	seq_printf(m, "%lu.%02lu %lu.%02lu\n",
++			(unsigned long) uptime.tv_sec,
++			(uptime.tv_nsec / (NSEC_PER_SEC / 100)),
++			(unsigned long) idle.tv_sec,
++			(idle.tv_nsec / (NSEC_PER_SEC / 100)));
 +	return 0;
 +}
 +
-+static int loadavg_proc_open(struct inode *inode, struct file *file)
++static int uptime_proc_open(struct inode *inode, struct file *file)
 +{
-+	return single_open(file, loadavg_proc_show, NULL);
++	return single_open(file, uptime_proc_show, NULL);
 +}
 +
-+static const struct file_operations loadavg_proc_fops = {
-+	.open		= loadavg_proc_open,
++static const struct file_operations uptime_proc_fops = {
++	.open		= uptime_proc_open,
 +	.read		= seq_read,
 +	.llseek		= seq_lseek,
 +	.release	= single_release,
 +};
 +
-+static int __init proc_loadavg_init(void)
++static int __init proc_uptime_init(void)
 +{
-+	proc_create("loadavg", 0, NULL, &loadavg_proc_fops);
++	proc_create("uptime", 0, NULL, &uptime_proc_fops);
 +	return 0;
 +}
-+module_init(proc_loadavg_init);
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 59ea42e..67bbab8 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -56,8 +56,6 @@
- #include <asm/div64.h>
- #include "internal.h"
- 
--#define LOAD_INT(x) ((x) >> FSHIFT)
--#define LOAD_FRAC(x) LOAD_INT(((x) & (FIXED_1-1)) * 100)
- /*
-  * Warning: stuff below (imported functions) assumes that its output will fit
-  * into one page. For some of those functions it may be wrong. Moreover, we
-@@ -79,29 +77,6 @@ static int proc_calc_metrics(char *page, char **start, off_t off,
- 	return len;
- }
- 
--static int loadavg_read_proc(char *page, char **start, off_t off,
--				 int count, int *eof, void *data)
--{
--	int a, b, c;
--	int len;
--	unsigned long seq;
--
--	do {
--		seq = read_seqbegin(&xtime_lock);
--		a = avenrun[0] + (FIXED_1/200);
--		b = avenrun[1] + (FIXED_1/200);
--		c = avenrun[2] + (FIXED_1/200);
--	} while (read_seqretry(&xtime_lock, seq));
--
--	len = sprintf(page,"%d.%02d %d.%02d %d.%02d %ld/%d %d\n",
--		LOAD_INT(a), LOAD_FRAC(a),
--		LOAD_INT(b), LOAD_FRAC(b),
--		LOAD_INT(c), LOAD_FRAC(c),
--		nr_running(), nr_threads,
--		task_active_pid_ns(current)->last_pid);
--	return proc_calc_metrics(page, start, off, count, eof, len);
--}
--
- static int uptime_read_proc(char *page, char **start, off_t off,
- 				 int count, int *eof, void *data)
- {
-@@ -842,7 +817,6 @@ void __init proc_misc_init(void)
- 		char *name;
- 		int (*read_proc)(char*,char**,off_t,int,int*,void*);
- 	} *p, simple_ones[] = {
--		{"loadavg",     loadavg_read_proc},
- 		{"uptime",	uptime_read_proc},
- 		{"meminfo",	meminfo_read_proc},
- 		{"version",	version_read_proc},
++module_init(proc_uptime_init);
 -- 
 1.5.6.5
 
