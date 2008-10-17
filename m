@@ -1,173 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbYJQFuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbYJQGDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbYJQFuR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 01:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYJQFuE
+	id S1752733AbYJQGDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 02:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYJQGDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 01:50:04 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51001 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbYJQFuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 01:50:03 -0400
-Message-ID: <48F826FE.2070904@cn.fujitsu.com>
-Date: Fri, 17 Oct 2008 13:47:42 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcupdate: fix 2 bugs of rcu_barrier*()
-References: <48F700AC.1080405@cn.fujitsu.com> <20081016154548.GC6772@linux.vnet.ibm.com>
-In-Reply-To: <20081016154548.GC6772@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 17 Oct 2008 02:03:07 -0400
+Received: from avexch2.qlogic.com ([198.70.193.116]:14825 "EHLO
+	avexch2.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbYJQGDG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 02:03:06 -0400
+X-Greylist: delayed 849 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 02:03:06 EDT
+Cc: "Dong, Eddie" <eddie.dong@intel.com>, "Zhao, Yu" <yu.zhao@intel.com>,
+       linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Alex Chiang <achiang@hp.com>, Roland Dreier <rdreier@cisco.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
+Message-Id: <5F847B2D-D033-4A40-B132-A900E28EB36A@qlogic.com>
+From: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+To: Matthew Wilcox <matthew@wil.cx>
+In-Reply-To: <20081014044626.GB25780@parisc-linux.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 6/6 v3] PCI: document the change
+Date: Thu, 16 Oct 2008 22:48:56 -0700
+References: <D8078B8B3B09934AA9F8F2D5FB3F28CE088751B5F6@pdsmsx502.ccr.corp.intel.com> <20081001160706.GI13822@parisc-linux.org> <08DF4D958216244799FC84F3514D70F00235CC69@pdsmsx415.ccr.corp.intel.com> <20081014010827.GX25780@parisc-linux.org> <08DF4D958216244799FC84F3514D70F00235CE27@pdsmsx415.ccr.corp.intel.com> <20081014021435.GA1482@yzhao12-linux.sh.intel.com> <20081014040105.GA25780@parisc-linux.org> <08DF4D958216244799FC84F3514D70F00235CF5E@pdsmsx415.ccr.corp.intel.com> <20081014044626.GB25780@parisc-linux.org>
+X-Mailer: Apple Mail (2.929.2)
+X-OriginalArrivalTime: 17 Oct 2008 05:48:53.0322 (UTC) FILETIME=[097DB2A0:01C9301C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Oct 16, 2008 at 04:51:56PM +0800, Lai Jiangshan wrote:
->> current rcu_barrier_bh() is like this:
->>
->> void rcu_barrier_bh(void)
->> {
->> 	BUG_ON(in_interrupt());
->> 	/* Take cpucontrol mutex to protect against CPU hotplug */
->> 	mutex_lock(&rcu_barrier_mutex);
->> 	init_completion(&rcu_barrier_completion);
->> 	atomic_set(&rcu_barrier_cpu_count, 0);
->> 	/*
->> 	 * The queueing of callbacks in all CPUs must be atomic with
->> 	 * respect to RCU, otherwise one CPU may queue a callback,
->> 	 * wait for a grace period, decrement barrier count and call
->> 	 * complete(), while other CPUs have not yet queued anything.
->> 	 * So, we need to make sure that grace periods cannot complete
->> 	 * until all the callbacks are queued.
->> 	 */
->> 	rcu_read_lock();
->> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
->> 	rcu_read_unlock();
->> 	wait_for_completion(&rcu_barrier_completion);
->> 	mutex_unlock(&rcu_barrier_mutex);
->> }
->>
->> this is bug, rcu_read_lock() cannot make sure that "grace periods for RCU_BH
->> cannot complete until all the callbacks are queued".
->> it only make sure that race periods for RCU cannot complete
->> until all the callbacks are queued.
->>
->> so we must use rcu_read_lock_bh() for rcu_barrier_bh().
->> like this:
->>
->> void rcu_barrier_bh(void)
->> {
->> 	......
->> 	rcu_read_lock_bh();
->> 	on_each_cpu(rcu_barrier_func, (void *)RCU_BARRIER_BH, 1);
->> 	rcu_read_unlock_bh();
->> 	......
->> }
->>
->> and also rcu_barrier() rcu_barrier_sched() are implemented like this.
->> it will bring a lot of duplicate code. My patch uses another way to
->> fix this bug, please see the comment of my patch.
-> 
-> Excellent catch!!!  I had incorrectly convinced myself that because RCU
-> read-side implies an RCU_BH and RCU_SCHED that I could simply use an
-> RCU read-side critical section.  Thank you for finding this!
-> 
-> Just out of curiosity, did an actual oops/hang lead you to this bug, or
-> did you find it by inspection?
 
-by inspection. I was planning to put synchronize_rcu* back to
-kernel/rcupdate.c and I found the code and the comments are
-inconsistent suddenly when I was reviewing kernel/rcupdate.c.
+On Oct 13, 2008, at 9:46 PM, Matthew Wilcox wrote:
 
-> 
->> Bug 2:
->> on_each_cpu() do not imply wmb, so we need a explicit wmb.
->> I became a paranoid too.
-> 
-> Actually, there is a memory barrier in the list_add_tail_rcu() in the
-> implementation of smp_call_function(), and furthermore, the way that
-> atomic operations work on all architectures I am aware of removes the need
-> for the memory barrier.  Nevertheless, I have absolutely no objection
-> to adding this memory barrier.  This code path is used infrequently and
-> has high overhead anyway, so I agree that making it easy to understand
-> is the correct approach.  If it were on the read side, I would argue.  ;-)
-
-I will remove this wmb.
-Thank you a lot
-
-Lai.
-
-> 
-> In any case, I must agree that you are doing a good job of learning to
-> be paranoid!
-> 
-> The only change I suggest is to rewrite the comments as shown below.
-> 
-> With that update, this change should be applied.
-> 
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
->> index 467d594..a667e21 100644
->> --- a/kernel/rcupdate.c
->> +++ b/kernel/rcupdate.c
->> @@ -119,18 +119,23 @@ static void _rcu_barrier(enum rcu_barrier type)
->>  	/* Take cpucontrol mutex to protect against CPU hotplug */
->>  	mutex_lock(&rcu_barrier_mutex);
->>  	init_completion(&rcu_barrier_completion);
->> -	atomic_set(&rcu_barrier_cpu_count, 0);
->>  	/*
->> -	 * The queueing of callbacks in all CPUs must be atomic with
->> -	 * respect to RCU, otherwise one CPU may queue a callback,
->> -	 * wait for a grace period, decrement barrier count and call
->> -	 * complete(), while other CPUs have not yet queued anything.
->> -	 * So, we need to make sure that grace periods cannot complete
->> -	 * until all the callbacks are queued.
->> +	 * init and set rcu_barrier_cpu_count to 1, otherwise(set it to 0)
->> +	 * one CPU may queue a callback, wait for a grace period, decrement
->> +	 * barrier count and call complete(), while other CPUs have not yet
->> +	 * queued anything.
->> +	 * So, we need to make sure that rcu_barrier_cpu_count cannot become
->> +	 * 0 until all the callbacks are queued.
-> 
-> 	 * Initialize rcu_barrier_cpu_count to 1, then invoke
-> 	 * rcu_barrier_func() on each CPU, so that each CPU also has
-> 	 * incremented rcu_barrier_cpu_count.  Only then is it safe to
-> 	 * decrement rcu_barrier_cpu_count -- otherwise the first CPU
-> 	 * might complete its grace period before all of the other CPUs
-> 	 * did their increment, causing this function to return too
-> 	 * early.
-> 
->>  	 */
->> -	rcu_read_lock();
->> +	atomic_set(&rcu_barrier_cpu_count, 1);
->> +	/*
->> +	 * rcu_barrier_cpu_count = 1 must be visible to cpus before
->> +	 * them call rcu_barrier_func().
->> +	 */
->> +	smp_wmb();
-> 
-> 	smp_wmb(); /* atomic_set() must precede all rcu_barrier_func()s. */
-> 
->>  	on_each_cpu(rcu_barrier_func, (void *)type, 1);
->> -	rcu_read_unlock();
->> +	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
->> +		complete(&rcu_barrier_completion);
->>  	wait_for_completion(&rcu_barrier_completion);
->>  	mutex_unlock(&rcu_barrier_mutex);
->>  }
+> On Tue, Oct 14, 2008 at 12:18:40PM +0800, Dong, Eddie wrote:
+>> Matthew Wilcox wrote:
+>>> On Tue, Oct 14, 2008 at 10:14:35AM +0800, Yu Zhao wrote:
+>>>> As Eddie said, we have two problems here:
+>>>> 1) User has to set device specific parameters of a VF
+>>>> when he wants to use this VF with KVM (assign this
+>>>> device to KVM guest). In this case,
+>>>> VF driver is not loaded in the host environment. So
+>>>> operations which
+>>>> are implemented as driver callback (e.g.
+>>>> set_mac_address()) are not supported.
+>>>
+>>> I suspect what you want to do is create, then configure
+>>> the device in the host, then assign it to the guest.
 >>
+>> That is not true. Rememver the created VFs will be destroyed no  
+>> matter
+>> for PF power event or error recovery conducted reset.
+>> So what we want is:
 >>
->>
-> 
-> 
-> 
+>> Config, create, assign, and then deassign and destroy and then
+>> recreate...
+>
+> Yes, but my point is this all happens in the _host_, not in the  
+> _guest_.
+>
+>> Sorry can u explain a little bit more? The SR-IOV patch won't define
+>> what kind of entries should be created or not, we leave network
+>> subsystem to decide what to do. Same for disk subsstem etc.
+>
+> No entries should be created.  This needs to be not SR-IOV specific.
 
+I think we need to cover both the scenarios here, virtualization and  
+non virtualization. In the absence of virtualization, the VF and PF  
+driver should be identical. In this context, how does the PF driver  
+allocates a VF? Is dynamic allocation of VFs possible, or does it have  
+to allocate all the VFs that the device supports when the PF driver  
+loads? Also, will the probe function be called for the VFs, or does  
+the PF driver handle only the probe for the physical function? In  
+virtualization context things get bit more complex as the the VF  
+driver in guest would like to treat the VF as a physical function but  
+that may not be possible from the device perspective as the control  
+registers may well be shared between VF and PF.
+I would think that the VF allocation is the job of SR PCIM. PCIM may  
+well ask the PF driver to configure a VF upon user request.
+
+Thanks much,
+Anirban Chakraborty
+
+> -- 
+> Matthew Wilcox				Intel Open Source Technology Centre
+> "Bill, look, we understand that you're interested in selling us this
+> operating system, but compare it to ours.  We can't possibly take such
+> a retrograde step."
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
