@@ -1,93 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYJQQxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYJQQyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbYJQQxa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 12:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbYJQQxU
+	id S1756889AbYJQQyT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 12:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbYJQQyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 12:53:20 -0400
-Received: from lazybastard.de ([212.112.238.170]:50741 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754688AbYJQQxT (ORCPT
+	Fri, 17 Oct 2008 12:54:09 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:64695 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754815AbYJQQyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 12:53:19 -0400
-Date: Fri, 17 Oct 2008 18:53:00 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Re: Subject: [PATCH 01/16] Squashfs: inode operations
-Message-ID: <20081017165300.GA8076@logfs.org>
-References: <E1KqrTW-0001xC-9M@dylan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 17 Oct 2008 12:54:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugEADdd+EhMQWq+/2dsb2JhbACBcr8fg2w
+Date: Fri, 17 Oct 2008 12:54:06 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       fche@redhat.com, fweisbec@gmail.com, edwintorok@gmail.com,
+       mingo@elte.hu, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: tracepoints for kernel/mutex.c
+Message-ID: <20081017165406.GH5696@Krystal>
+References: <20081016210430.GC25738@redhat.com> <1224192879.16038.82.camel@lappy.programming.kicks-ass.net> <20081017144820.GA3167@redhat.com> <1224262119.16038.87.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E1KqrTW-0001xC-9M@dylan>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1224262119.16038.87.camel@lappy.programming.kicks-ass.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:52:22 up 134 days, 21:32,  9 users,  load average: 1.42, 0.99,
+	0.89
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-None of the comments below are a reason against mainline inclusion, imo.
-They should get handled, but whether that happens before or after a
-merge doesn't really matter.
-
-On Fri, 17 October 2008 16:42:50 +0100, Phillip Lougher wrote:
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Fri, 2008-10-17 at 10:48 -0400, Jason Baron wrote:
+> > On Thu, Oct 16, 2008 at 11:34:38PM +0200, Peter Zijlstra wrote:
+> > > On Thu, 2008-10-16 at 17:04 -0400, Jason Baron wrote:
+> > > 
+> > > > Below are 3 tracepoints I've been playing with in kernel/mutex.c using
+> > > > a SystemTap script. The idea is to detect and determine the cause of
+> > > > lock contention. Currently I get the following output:
+> > > > 
+> > > > <contended mutex nam> <process name and pid of the contention> <time of
+> > > > contention> <pid that woke me up(caused the contention?)>
+> > > 
+> > > > I think this approach has a number of advantages. It has low
+> > > > overhead in the off case, since its based on tracepoints. It is
+> > > > minimally invasive in the code path (3 tracepoints). It also allows me
+> > > > to explore data structures and parts of the kernel by simply modifying
+> > > > the SystemTap script. I do not need to re-compile the kernel and reboot.
+> > > 
+> > > *sigh* this is why I hate markers and all related things...
+> > > 
+> > > _IFF_ you want to place tracepoints, get them in the same place as the
+> > > lock-dep/stat hooks, that way you get all the locks, not only mutexes.
+> > 
+> > makes sense. So we could layer lock-dep/stat on top of tracepoints? That
+> > would potentially also make lock-dep/stat more dynamic.
 > 
-> +#include <linux/squashfs_fs.h>
-> +#include <linux/squashfs_fs_sb.h>
-> +#include <linux/squashfs_fs_i.h>
+> I'm afraid that won't work. Both lockdep and lockstat rely on added data
+> to the lock structure. But what you can do is expose the hooks as
+> tracepoints when lockdep/lockstat is configured.
+> 
+> > > 
+> > > This is the same reason I absolutely _hate_ Edwin's rwsem tracer.
+> > > 
+> > 
+> > i'm trying to get some consensus on these types of patches. Do we
+> > want to create a new tracer for each thing we want to trace, or add
+> > tracepoints?
+> 
+> The only thing I'd consider is one lock-tracer that exposes all
+> lockdep/lockstat hooks. Any half-assed partial solution won't fly.
+> 
+> > > Folks, lets please start by getting the tracing infrastructure in and
+> > > those few high-level trace-points google proposed.
+> > > 
+> > > Until we get the basics in, I think I'm going to NAK any and all
+> > > tracepoint/marker patches.
+> > > 
+> > 
+> > I think that core locking functions are pretty basic...
+> 
+> For kernel developers, yes. For userspace stuff like latencytop should
+> be good enough to notice something is up.
+> 
+> And kernel developers can recompile their kernel - that's the only way
+> you're going to do anything about lock contention anyway.
+> 
 
-Current verdict seems to be that these files should live in fs/squashfs/,
-not include/linux/.  No kernel code beside squashfs needs the headers
-and userspace tools should have a private copy.
+We also have to consider if a less specific instrumentation can extract
+this kind of data. Scheduler instrumentation can do a big part of that
+job, namely identifying the wakeup cause. We would not have the
+information about it being mutex-related unless we activate lockdep
+tracing, potentially with tracepoints in the lockdep handlers. I think
+this would fly. But let's keep this for later.
 
-> +static int squashfs_new_inode(struct super_block *s, struct inode *i,
-> +				struct squashfs_base_inode *inodeb)
-> +{
-> +	if (squashfs_get_id(s, le16_to_cpu(inodeb->uid), &i->i_uid) == 0)
-> +		goto out;
-> +	if (squashfs_get_id(s, le16_to_cpu(inodeb->guid), &i->i_gid) == 0)
-> +		goto out;
-> +
-> +	i->i_ino = le32_to_cpu(inodeb->inode_number);
-> +	i->i_mtime.tv_sec = le32_to_cpu(inodeb->mtime);
-> +	i->i_atime.tv_sec = i->i_mtime.tv_sec;
-> +	i->i_ctime.tv_sec = i->i_mtime.tv_sec;
-> +	i->i_mode = le16_to_cpu(inodeb->mode);
-> +	i->i_size = 0;
-> +
-> +	return 1;
-> +
-> +out:
-> +	return 0;
-> +}
+Mathieu
 
-Most code uses "sb" and "inode", which I consider easier to read - if
-only for consistency.
-
-> +int squashfs_read_inode(struct inode *i, long long inode)
-
-Is your "long long inode" what most filesystems call "inode->i_ino"?  It
-seems to be.
-
-> +	if (squashfs_new_inode(s, i, inodeb) == 0)
-> +			goto failed_read;
-
-Most linux functions return 0 on success and -ESOMETHING on error.  You
-return 0 on error and 1 on success.  That makes it likely for someone
-else to do something like
-
-	err = squashfs_foo(bar);
-	if (err)
-		goto fail;
-
-Oops.
-
-Jörn
 
 -- 
-Measure. Don't tune for speed until you've measured, and even then
-don't unless one part of the code overwhelms the rest.
--- Rob Pike
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
