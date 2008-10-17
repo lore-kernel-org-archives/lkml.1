@@ -1,119 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbYJPLMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbYJPLMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbYJPLMZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 07:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYJPLMP
+	id S1756562AbYJPLMi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 07:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYJPLMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 07:12:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:46637 "EHLO ozlabs.org"
+	Thu, 16 Oct 2008 07:12:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:46635 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbYJPLMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752269AbYJPLMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 16 Oct 2008 07:12:15 -0400
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Thu Oct 16 22:10:38 EST 2008
 CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/5] remove CONFIG_KMOD from fs
+Subject: [PATCH 1/5] remove CONFIG_KMOD from drivers
 Cc: Johannes Berg <johannes@sipsolutions.net>
-Message-Id: <20081016111213.57575DDFA2@ozlabs.org>
+Cc: video4linux-list@redhat.com
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-ppp@vger.kernel.org
+Cc: dm-devel@redhat.com
+Message-Id: <20081016111212.6F127DDFA1@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Johannes Berg <johannes@sipsolutions.net>
 
-Just always compile the code when the kernel is modular.
-Convert load_nls to use try_then_request_module to tidy
-up the code.
+Straight forward conversions to CONFIG_MODULE; many drivers
+include <linux/kmod.h> conditionally and then don't have any
+other conditional code so remove it from those.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: video4linux-list@redhat.com
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-ppp@vger.kernel.org
+Cc: dm-devel@redhat.com
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- fs/char_dev.c     |    3 ---
- fs/exec.c         |    9 +++------
- fs/nls/nls_base.c |   21 +--------------------
- 3 files changed, 4 insertions(+), 29 deletions(-)
+ drivers/md/md.c                                 |    7 -------
+ drivers/media/video/cpia.c                      |    4 ----
+ drivers/media/video/usbvision/usbvision-core.c  |    4 ----
+ drivers/media/video/usbvision/usbvision-video.c |    4 ----
+ drivers/media/video/v4l1-compat.c               |    4 ----
+ drivers/media/video/v4l2-common.c               |    4 ----
+ drivers/media/video/vino.c                      |    5 +----
+ drivers/media/video/w9968cf.c                   |    4 ++--
+ drivers/mtd/mtdpart.c                           |    2 --
+ drivers/net/irda/sir_dongle.c                   |    2 --
+ drivers/net/ppp_generic.c                       |   10 +++-------
+ drivers/net/pppox.c                             |    9 ++-------
+ drivers/video/fbmem.c                           |   17 ++---------------
+ 13 files changed, 10 insertions(+), 66 deletions(-)
 
-diff -r 544fa53943a0 fs/char_dev.c
---- a/fs/char_dev.c	Mon Aug 25 14:27:33 2008 +1000
-+++ b/fs/char_dev.c	Mon Aug 25 14:27:58 2008 +1000
-@@ -22,9 +22,6 @@
+diff -r 6251a9fdf8f9 drivers/md/md.c
+--- a/drivers/md/md.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/md/md.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -44,14 +44,9 @@
  #include <linux/mutex.h>
- #include <linux/backing-dev.h>
- 
--#ifdef CONFIG_KMOD
--#include <linux/kmod.h>
--#endif
- #include "internal.h"
- 
- /*
-diff -r 544fa53943a0 fs/exec.c
---- a/fs/exec.c	Mon Aug 25 14:27:33 2008 +1000
-+++ b/fs/exec.c	Mon Aug 25 14:27:58 2008 +1000
-@@ -50,14 +50,11 @@
- #include <linux/cn_proc.h>
- #include <linux/audit.h>
- #include <linux/tracehook.h>
-+#include <linux/kmod.h>
- 
- #include <asm/uaccess.h>
- #include <asm/mmu_context.h>
- #include <asm/tlb.h>
+ #include <linux/ctype.h>
+ #include <linux/freezer.h>
 -
--#ifdef CONFIG_KMOD
--#include <linux/kmod.h>
--#endif
- 
- #ifdef __alpha__
- /* for /sbin/loader handling in search_binary_handler() */
-@@ -1247,8 +1244,8 @@ int search_binary_handler(struct linux_b
- 		read_unlock(&binfmt_lock);
- 		if (retval != -ENOEXEC || bprm->mm == NULL) {
- 			break;
--#ifdef CONFIG_KMOD
--		}else{
-+#ifdef CONFIG_MODULES
-+		} else {
- #define printable(c) (((c)=='\t') || ((c)=='\n') || (0x20<=(c) && (c)<=0x7e))
- 			if (printable(bprm->buf[0]) &&
- 			    printable(bprm->buf[1]) &&
-diff -r 544fa53943a0 fs/nls/nls_base.c
---- a/fs/nls/nls_base.c	Mon Aug 25 14:27:33 2008 +1000
-+++ b/fs/nls/nls_base.c	Mon Aug 25 14:27:58 2008 +1000
-@@ -13,9 +13,7 @@
- #include <linux/nls.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
+ #include <linux/init.h>
+-
+ #include <linux/file.h>
+-
 -#ifdef CONFIG_KMOD
  #include <linux/kmod.h>
 -#endif
- #include <linux/spinlock.h>
  
- static struct nls_table default_table;
-@@ -215,24 +213,7 @@ static struct nls_table *find_nls(char *
+ #include <asm/unaligned.h>
  
- struct nls_table *load_nls(char *charset)
- {
--	struct nls_table *nls;
+@@ -3558,12 +3553,10 @@ static int do_md_run(mddev_t * mddev)
+ 		}
+ 	}
+ 
 -#ifdef CONFIG_KMOD
--	int ret;
+ 	if (mddev->level != LEVEL_NONE)
+ 		request_module("md-level-%d", mddev->level);
+ 	else if (mddev->clevel[0])
+ 		request_module("md-%s", mddev->clevel);
 -#endif
--
--	nls = find_nls(charset);
--	if (nls)
--		return nls;
+ 
+ 	/*
+ 	 * Drop all container device buffers, from now on
+diff -r 6251a9fdf8f9 drivers/media/video/cpia.c
+--- a/drivers/media/video/cpia.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/media/video/cpia.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -38,10 +38,6 @@
+ #include <linux/delay.h>
+ #include <asm/io.h>
+ #include <linux/mutex.h>
 -
 -#ifdef CONFIG_KMOD
--	ret = request_module("nls_%s", charset);
--	if (ret != 0) {
--		printk("Unable to load NLS charset %s\n", charset);
--		return NULL;
+-#include <linux/kmod.h>
+-#endif
+ 
+ #include "cpia.h"
+ 
+diff -r 6251a9fdf8f9 drivers/media/video/usbvision/usbvision-core.c
+--- a/drivers/media/video/usbvision/usbvision-core.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/media/video/usbvision/usbvision-core.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -44,10 +44,6 @@
+ #include <media/tuner.h>
+ 
+ #include <linux/workqueue.h>
+-
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+ 
+ #include "usbvision.h"
+ 
+diff -r 6251a9fdf8f9 drivers/media/video/usbvision/usbvision-video.c
+--- a/drivers/media/video/usbvision/usbvision-video.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/media/video/usbvision/usbvision-video.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -68,10 +68,6 @@
+ #include <media/tuner.h>
+ 
+ #include <linux/workqueue.h>
+-
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+ 
+ #include "usbvision.h"
+ #include "usbvision-cards.h"
+diff -r 6251a9fdf8f9 drivers/media/video/v4l1-compat.c
+--- a/drivers/media/video/v4l1-compat.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/media/video/v4l1-compat.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -35,10 +35,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+-
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+ 
+ static unsigned int debug;
+ module_param(debug, int, 0644);
+diff -r 6251a9fdf8f9 drivers/media/video/v4l2-common.c
+--- a/drivers/media/video/v4l2-common.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/media/video/v4l2-common.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -59,10 +59,6 @@
+ #define __OLD_VIDIOC_ /* To allow fixing old calls*/
+ #include <media/v4l2-common.h>
+ #include <media/v4l2-chip-ident.h>
+-
+-#ifdef CONFIG_KMOD
+-#include <linux/kmod.h>
+-#endif
+ 
+ #include <linux/videodev2.h>
+ 
+diff -r 6251a9fdf8f9 drivers/media/video/vino.c
+--- a/drivers/media/video/vino.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/media/video/vino.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -30,10 +30,7 @@
+ #include <linux/mm.h>
+ #include <linux/time.h>
+ #include <linux/version.h>
+-
+-#ifdef CONFIG_KMOD
+ #include <linux/kmod.h>
+-#endif
+ 
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-sgi.h>
+@@ -4641,7 +4638,7 @@ static int __init vino_module_init(void)
+ 	}
+ 	vino_init_stage++;
+ 
+-#if defined(CONFIG_KMOD) && defined(MODULE)
++#ifdef MODULE
+ 	request_module("saa7191");
+ 	request_module("indycam");
+ #endif
+diff -r 6251a9fdf8f9 drivers/media/video/w9968cf.c
+--- a/drivers/media/video/w9968cf.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/media/video/w9968cf.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -111,7 +111,7 @@ static int specific_debug = W9968CF_SPEC
+ 
+ static unsigned int param_nv[24]; /* number of values per parameter */
+ 
+-#ifdef CONFIG_KMOD
++#ifdef CONFIG_MODULES
+ module_param(ovmod_load, bool, 0644);
+ #endif
+ module_param(simcams, ushort, 0644);
+@@ -144,7 +144,7 @@ module_param(specific_debug, bool, 0644)
+ module_param(specific_debug, bool, 0644);
+ #endif
+ 
+-#ifdef CONFIG_KMOD
++#ifdef CONFIG_MODULES
+ MODULE_PARM_DESC(ovmod_load,
+ 		 "\n<0|1> Automatic 'ovcamchip' module loading."
+ 		 "\n0 disabled, 1 enabled."
+diff -r 6251a9fdf8f9 drivers/mtd/mtdpart.c
+--- a/drivers/mtd/mtdpart.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/mtd/mtdpart.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -564,10 +564,8 @@ int parse_mtd_partitions(struct mtd_info
+ 
+ 	for ( ; ret <= 0 && *types; types++) {
+ 		parser = get_partition_parser(*types);
+-#ifdef CONFIG_KMOD
+ 		if (!parser && !request_module("%s", *types))
+ 				parser = get_partition_parser(*types);
+-#endif
+ 		if (!parser) {
+ 			printk(KERN_NOTICE "%s partition parsing not available\n",
+ 			       *types);
+diff -r 6251a9fdf8f9 drivers/net/irda/sir_dongle.c
+--- a/drivers/net/irda/sir_dongle.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/net/irda/sir_dongle.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -67,9 +67,7 @@ int sirdev_get_dongle(struct sir_dev *de
+ 	const struct dongle_driver *drv = NULL;
+ 	int err = -EINVAL;
+ 
+-#ifdef CONFIG_KMOD
+ 	request_module("irda-dongle-%d", type);
+-#endif
+ 
+ 	if (dev->dongle_drv != NULL)
+ 		return -EBUSY;
+diff -r 6251a9fdf8f9 drivers/net/ppp_generic.c
+--- a/drivers/net/ppp_generic.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/net/ppp_generic.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -2124,13 +2124,9 @@ ppp_set_compress(struct ppp *ppp, unsign
+ 	    || ccp_option[1] < 2 || ccp_option[1] > data.length)
+ 		goto out;
+ 
+-	cp = find_compressor(ccp_option[0]);
+-#ifdef CONFIG_KMOD
+-	if (!cp) {
+-		request_module("ppp-compress-%d", ccp_option[0]);
+-		cp = find_compressor(ccp_option[0]);
 -	}
--	nls = find_nls(charset);
+-#endif /* CONFIG_KMOD */
++	cp = try_then_request_module(
++		find_compressor(ccp_option[0]),
++		"ppp-compress-%d", ccp_option[0]);
+ 	if (!cp)
+ 		goto out;
+ 
+diff -r 6251a9fdf8f9 drivers/net/pppox.c
+--- a/drivers/net/pppox.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/net/pppox.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -115,13 +115,8 @@ static int pppox_create(struct net *net,
+ 		goto out;
+ 
+ 	rc = -EPROTONOSUPPORT;
+-#ifdef CONFIG_KMOD
+-	if (!pppox_protos[protocol]) {
+-		char buffer[32];
+-		sprintf(buffer, "pppox-proto-%d", protocol);
+-		request_module(buffer);
+-	}
 -#endif
--	return nls;
-+	return try_then_request_module(find_nls(charset), "nls_%s", charset);
++	if (!pppox_protos[protocol])
++		request_module("pppox-proto-%d", protocol);
+ 	if (!pppox_protos[protocol] ||
+ 	    !try_module_get(pppox_protos[protocol]->owner))
+ 		goto out;
+diff -r 6251a9fdf8f9 drivers/video/fbmem.c
+--- a/drivers/video/fbmem.c	Mon Aug 25 14:22:06 2008 +1000
++++ b/drivers/video/fbmem.c	Mon Aug 25 14:27:32 2008 +1000
+@@ -28,9 +28,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/console.h>
+-#ifdef CONFIG_KMOD
+ #include <linux/kmod.h>
+-#endif
+ #include <linux/err.h>
+ #include <linux/device.h>
+ #include <linux/efi.h>
+@@ -837,13 +835,6 @@ fb_write(struct file *file, const char _
+ 	return (cnt) ? cnt : err;
  }
  
- void unload_nls(struct nls_table *nls)
+-#ifdef CONFIG_KMOD
+-static void try_to_load(int fb)
+-{
+-	request_module("fb%d", fb);
+-}
+-#endif /* CONFIG_KMOD */
+-
+ int
+ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
+ {
+@@ -1085,10 +1076,8 @@ fb_ioctl(struct inode *inode, struct fil
+ 		    return -EINVAL;
+ 		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
+ 		    return -EINVAL;
+-#ifdef CONFIG_KMOD
+ 		if (!registered_fb[con2fb.framebuffer])
+-		    try_to_load(con2fb.framebuffer);
+-#endif /* CONFIG_KMOD */
++		    request_module("fb%d", con2fb.framebuffer);
+ 		if (!registered_fb[con2fb.framebuffer])
+ 		    return -EINVAL;
+ 		event.info = info;
+@@ -1326,10 +1315,8 @@ fb_open(struct inode *inode, struct file
+ 	if (fbidx >= FB_MAX)
+ 		return -ENODEV;
+ 	lock_kernel();
+-#ifdef CONFIG_KMOD
+ 	if (!(info = registered_fb[fbidx]))
+-		try_to_load(fbidx);
+-#endif /* CONFIG_KMOD */
++		request_module("fb%d", fbidx);
+ 	if (!(info = registered_fb[fbidx])) {
+ 		res = -ENODEV;
+ 		goto out;
 
