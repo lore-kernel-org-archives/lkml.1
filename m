@@ -1,52 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbYJQM4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbYJQM51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbYJQM4Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYJQM4O
+	id S1755755AbYJQM51 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbYJQM5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:56:14 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52372 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbYJQM4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:56:12 -0400
-Message-ID: <48F88B22.6010102@cn.fujitsu.com>
-Date: Fri, 17 Oct 2008 20:54:58 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 17 Oct 2008 08:57:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:39458 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753631AbYJQM5N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 08:57:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=XJn5VooQ/dwekrPnX/iQM4zbiO5+l1qy78haPcgh7z7N7hhNngJTYAbeCdNpVjrtjS
+         L2LZsH3UA1fM4/egNLVmj5SOFT8uQ8hkSX106gsjNZgT0VqdxFRMPftDFXmiqDCvbImg
+         zgd6JHu4IyGhLeY9QLMSSXwo5k0XnNtuOWzBI=
+Message-ID: <84144f020810170557j4459790fk6a29e863d83dd340@mail.gmail.com>
+Date: Fri, 17 Oct 2008 15:57:11 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [PATCH 19/31] proc: move /proc/slabinfo boilerplate to mm/slub.c, mm/slab.c
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, cl@linux-foundation.org
+In-Reply-To: <20081017124919.GT22653@x200.localdomain>
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org
-Subject: [PATCH] Fix debugfs_create_file's error checking method for usb/gadget/
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081017124919.GT22653@x200.localdomain>
+X-Google-Sender-Auth: cc0704b426e12867
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Oct 17, 2008 at 3:49 PM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> From c0bc1527456ef7c255098e3647eefc7420822c63 Mon Sep 17 00:00:00 2001
+> From: Alexey Dobriyan <adobriyan@gmail.com>
+> Date: Mon, 6 Oct 2008 02:42:17 +0400
+> Subject: [PATCH 19/31] proc: move /proc/slabinfo boilerplate to mm/slub.c, mm/slab.c
+>
+> Lose dummy ->write hook in case of SLUB, it's possible now.
+>
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-debugfs_create_file() returns NULL if an error occurs, returns -ENODEV
-when debugfs is not enabled in the kernel.
+Looks good to me.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- drivers/usb/gadget/s3c2410_udc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
-index 29d13eb..4ba50ef 100644
---- a/drivers/usb/gadget/s3c2410_udc.c
-+++ b/drivers/usb/gadget/s3c2410_udc.c
-@@ -1894,7 +1894,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
- 		udc->regs_info = debugfs_create_file("registers", S_IRUGO,
- 				s3c2410_udc_debugfs_root,
- 				udc, &s3c2410_udc_debugfs_fops);
--		if (IS_ERR(udc->regs_info)) {
-+		if (IS_ERR(udc->regs_info) || !udc->regs_info) {
- 			dev_warn(dev, "debugfs file creation failed %ld\n",
- 				 PTR_ERR(udc->regs_info));
- 			udc->regs_info = NULL;
--- 
-1.5.5.3
-
-
+> ---
+>  fs/proc/proc_misc.c  |   17 -----------------
+>  include/linux/slab.h |    5 -----
+>  mm/slab.c            |   16 +++++++++++++++-
+>  mm/slub.c            |   29 ++++++++++++++++++++---------
+>  4 files changed, 35 insertions(+), 32 deletions(-)
+>
+> diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+> index 4fb05d1..911a2d3 100644
+> --- a/fs/proc/proc_misc.c
+> +++ b/fs/proc/proc_misc.c
+> @@ -131,20 +131,6 @@ static const struct file_operations proc_modules_operations = {
+>  };
+>  #endif
+>
+> -#ifdef CONFIG_SLABINFO
+> -static int slabinfo_open(struct inode *inode, struct file *file)
+> -{
+> -       return seq_open(file, &slabinfo_op);
+> -}
+> -static const struct file_operations proc_slabinfo_operations = {
+> -       .open           = slabinfo_open,
+> -       .read           = seq_read,
+> -       .write          = slabinfo_write,
+> -       .llseek         = seq_lseek,
+> -       .release        = seq_release,
+> -};
+> -#endif
+> -
+>  #ifdef CONFIG_MMU
+>  static int vmalloc_open(struct inode *inode, struct file *file)
+>  {
+> @@ -308,9 +294,6 @@ void __init proc_misc_init(void)
+>        proc_symlink("mounts", NULL, "self/mounts");
+>
+>        /* And now for trickier ones */
+> -#ifdef CONFIG_SLABINFO
+> -       proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+> -#endif
+>  #ifdef CONFIG_MMU
+>        proc_create("vmallocinfo", S_IRUSR, NULL, &proc_vmalloc_operations);
+>  #endif
+> diff --git a/include/linux/slab.h b/include/linux/slab.h
+> index 5ff9676..ba965c8 100644
+> --- a/include/linux/slab.h
+> +++ b/include/linux/slab.h
+> @@ -288,9 +288,4 @@ static inline void *kzalloc_node(size_t size, gfp_t flags, int node)
+>        return kmalloc_node(size, flags | __GFP_ZERO, node);
+>  }
+>
+> -#ifdef CONFIG_SLABINFO
+> -extern const struct seq_operations slabinfo_op;
+> -ssize_t slabinfo_write(struct file *, const char __user *, size_t, loff_t *);
+> -#endif
+> -
+>  #endif /* _LINUX_SLAB_H */
+> diff --git a/mm/slab.c b/mm/slab.c
+> index d53ac9c..0918751 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -4259,7 +4259,7 @@ static int s_show(struct seq_file *m, void *p)
+>  * + further values on SMP and with statistics enabled
+>  */
+>
+> -const struct seq_operations slabinfo_op = {
+> +static const struct seq_operations slabinfo_op = {
+>        .start = s_start,
+>        .next = s_next,
+>        .stop = s_stop,
+> @@ -4316,6 +4316,19 @@ ssize_t slabinfo_write(struct file *file, const char __user * buffer,
+>        return res;
+>  }
+>
+> +static int slabinfo_open(struct inode *inode, struct file *file)
+> +{
+> +       return seq_open(file, &slabinfo_op);
+> +}
+> +
+> +static const struct file_operations proc_slabinfo_operations = {
+> +       .open           = slabinfo_open,
+> +       .read           = seq_read,
+> +       .write          = slabinfo_write,
+> +       .llseek         = seq_lseek,
+> +       .release        = seq_release,
+> +};
+> +
+>  #ifdef CONFIG_DEBUG_SLAB_LEAK
+>
+>  static void *leaks_start(struct seq_file *m, loff_t *pos)
+> @@ -4478,6 +4491,7 @@ static const struct file_operations proc_slabstats_operations = {
+>
+>  static int __init slab_proc_init(void)
+>  {
+> +       proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+>  #ifdef CONFIG_DEBUG_SLAB_LEAK
+>        proc_create("slab_allocators", 0, NULL, &proc_slabstats_operations);
+>  #endif
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 0c83e6a..7ad489a 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/bitops.h>
+>  #include <linux/slab.h>
+> +#include <linux/proc_fs.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpuset.h>
+> @@ -4417,14 +4418,6 @@ __initcall(slab_sysfs_init);
+>  * The /proc/slabinfo ABI
+>  */
+>  #ifdef CONFIG_SLABINFO
+> -
+> -ssize_t slabinfo_write(struct file *file, const char __user *buffer,
+> -                      size_t count, loff_t *ppos)
+> -{
+> -       return -EINVAL;
+> -}
+> -
+> -
+>  static void print_slabinfo_header(struct seq_file *m)
+>  {
+>        seq_puts(m, "slabinfo - version: 2.1\n");
+> @@ -4492,11 +4485,29 @@ static int s_show(struct seq_file *m, void *p)
+>        return 0;
+>  }
+>
+> -const struct seq_operations slabinfo_op = {
+> +static const struct seq_operations slabinfo_op = {
+>        .start = s_start,
+>        .next = s_next,
+>        .stop = s_stop,
+>        .show = s_show,
+>  };
+>
+> +static int slabinfo_open(struct inode *inode, struct file *file)
+> +{
+> +       return seq_open(file, &slabinfo_op);
+> +}
+> +
+> +static const struct file_operations proc_slabinfo_operations = {
+> +       .open           = slabinfo_open,
+> +       .read           = seq_read,
+> +       .llseek         = seq_lseek,
+> +       .release        = seq_release,
+> +};
+> +
+> +static int __init slab_proc_init(void)
+> +{
+> +       proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+> +       return 0;
+> +}
+> +module_init(slab_proc_init);
+>  #endif /* CONFIG_SLABINFO */
+> --
+> 1.5.6.5
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
