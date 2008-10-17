@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbYJQOu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYJQOwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbYJQOu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 10:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbYJQOuR
+	id S1755443AbYJQOwY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 10:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYJQOwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 10:50:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:58997 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754654AbYJQOuP (ORCPT
+	Fri, 17 Oct 2008 10:52:15 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:42905 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbYJQOwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 10:50:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=OLWiD0+x+uUkyUcX+dbsKps5dTzRdfGdgdeRDdNZ1K60ADp+db1L7kSL75w5Ay0LgF
-         YRtz6rLbA4mjb1sBBaVDv723gtCvN5Kd6e4LDsyNEuEbkpcKmVYiRoITudHFe1CG72Kt
-         6+LtK0IKgjZ7jg5VbBIxwj7z6sCwB4lQLbMso=
-Message-ID: <c49e66200810170750s2d06d035m28ce5da3e6ca9c38@mail.gmail.com>
-Date: Fri, 17 Oct 2008 16:50:13 +0200
-From: "Pieter Steyn" <pieterste@gmail.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: r6080 driver not working.
-Cc: tech@dmp.com.tw
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Fri, 17 Oct 2008 10:52:15 -0400
+From: Madhu Chikkature <madhu.cr@ti.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Cc: Madhusudhan Chikkature <madhu.cr@ti.com>
+Subject: [Resending PATCH 1/4] W1: export w1_read_8 function
+Date: Fri, 17 Oct 2008 20:21:55 +0530
+Message-Id: <1224255115-21614-1-git-send-email-madhu.cr@ti.com>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Madhusudhan Chikkature <madhu.cr@ti.com>
 
-I cannot get the r6080 driver working properly in either 2.6.26 or
-2.6.27.  It compiles, and loads fine enough, but as soon as I try and
-bring up the device I get a 'resource is in use and busy' message.
+This patch exports the w1_read_8 function for use of drivers.
+The OMAP HDQ driver(drivers/w1/masters/omap_hdq.c) uses this function.
 
-I've tried using both the driver supplied by the kernel and the one
-linked on their website (with some modifications to make it compile :
-
-r6040# diff r6040.c r6040.orig
-277a278
->       SET_MODULE_OWNER(dev);
-380c381
-<       i = request_irq(dev->irq, &r6040_interrupt, IRQF_SHARED,
-dev->name, dev);
+Signed-off-by: Madhusudhan Chikkature<madhu.cr@ti.com>
+Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
->       i = request_irq(dev->irq, &r6040_interrupt, SA_SHIRQ, dev->name, dev);
-1079c1080
-<       return pci_register_driver (&r6040_driver);
----
->       return pci_module_init (&r6040_driver);
+The OMAP HDQ add device patch is dropped from the series
+as it has already gone upstream through the linux omap tree
 
-Networking works with 2.6.21 using the driver from their website and
-the above patch.
+ drivers/w1/w1.h    |    1 +
+ drivers/w1/w1_io.c |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-I've cc'ed in tech support to the manufacturer.
-
-Thanks, and sorry if the information isn't much to work with...but
-since I don't get any errors other than device being busy I'm not sure
-what to do from here.
+Index: linux-2.6/drivers/w1/w1_io.c
+===================================================================
+--- linux-2.6.orig/drivers/w1/w1_io.c	2008-10-17 08:14:23.000000000 +0530
++++ linux-2.6/drivers/w1/w1_io.c	2008-10-17 17:59:13.021464129 +0530
+@@ -217,7 +217,7 @@ u8 w1_triplet(struct w1_master *dev, int
+  * @param dev     the master device
+  * @return        the byte read
+  */
+-static u8 w1_read_8(struct w1_master * dev)
++u8 w1_read_8(struct w1_master * dev)
+ {
+ 	int i;
+ 	u8 res = 0;
+@@ -230,6 +230,7 @@ static u8 w1_read_8(struct w1_master * d
+ 
+ 	return res;
+ }
++EXPORT_SYMBOL_GPL(w1_read_8);
+ 
+ /**
+  * Writes a series of bytes.
+Index: linux-2.6/drivers/w1/w1.h
+===================================================================
+--- linux-2.6.orig/drivers/w1/w1.h	2008-10-17 08:14:23.000000000 +0530
++++ linux-2.6/drivers/w1/w1.h	2008-10-17 17:59:13.022464098 +0530
+@@ -206,6 +206,7 @@ void w1_slave_detach(struct w1_slave *sl
+ 
+ u8 w1_triplet(struct w1_master *dev, int bdir);
+ void w1_write_8(struct w1_master *, u8);
++u8 w1_read_8(struct w1_master *);
+ int w1_reset_bus(struct w1_master *);
+ u8 w1_calc_crc8(u8 *, int);
+ void w1_write_block(struct w1_master *, const u8 *, int);
