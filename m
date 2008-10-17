@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYJQRm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYJQRqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbYJQRm0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 13:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYJQRmS
+	id S1756908AbYJQRqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 13:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbYJQRqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 13:42:18 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60914 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754701AbYJQRmR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 13:42:17 -0400
-Date: Fri, 17 Oct 2008 18:41:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: alan@redhat.com, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH 1/9] Blackfin Serial Driver: updates kgdb over Blackfin
- serial driver with kgdb framework
-Message-ID: <20081017184155.4143a88a@lxorguk.ukuu.org.uk>
-In-Reply-To: <1224179047-13073-2-git-send-email-cooloney@kernel.org>
-References: <1224179047-13073-1-git-send-email-cooloney@kernel.org>
-	<1224179047-13073-2-git-send-email-cooloney@kernel.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 17 Oct 2008 13:46:40 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:44170 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755548AbYJQRqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 13:46:40 -0400
+Subject: 2.6.27-git7 compile error (ppc)
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 10:47:14 -0700
+Message-Id: <1224265634.15582.3.camel@badari-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The previous set are already merged/reviewed in the ttydev tree (barring
-the cpu_relax mystery item) so I'd much rather get patches versus the
-ttydev tree so I can see what has actually changed this time not
-re-review the entire collection again.
+Hi,
 
-Alan
+I get this following compile error on my ppc box.
+
+Let me know if its a known issue. Otherwise, I can figure out
+whats happening.
+
+Thanks,
+Badari
+
+  CC      arch/powerpc/mm/slb.o
+In file included from /usr/src/linux-2.6.27/arch/powerpc/include/asm/mmu-hash64.h:16,
+                 from /usr/src/linux-2.6.27/arch/powerpc/include/asm/mmu.h:7,
+                 from /usr/src/linux-2.6.27/arch/powerpc/include/asm/pgtable.h:7,
+                 from arch/powerpc/mm/slb.c:19:
+/usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: error: parse error before "memstart_addr"
+/usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning: type defaults to `int' in declaration of `memstart_addr'
+/usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning: data definition has no type or storage class
+/usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: error: parse error before "kernstart_addr"
+/usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning: type defaults to `int' in declaration of `kernstart_addr'
+/usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning: data definition has no type or storage class
+  AS      arch/powerpc/lib/string.o
+  CC      arch/powerpc/lib/alloc.o
+  CALL    arch/powerpc/kernel/systbl_chk.sh
+  CC      arch/powerpc/kernel/sysfs.o
+make[1]: *** [arch/powerpc/mm/slb.o] Error 1
+make: *** [arch/powerpc/mm] Error 2
+make: *** Waiting for unfinished jobs....
+
+
