@@ -1,115 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYJQNhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbYJQNiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbYJQNhy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 09:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYJQNhq
+	id S1755733AbYJQNiu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 09:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYJQNij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 09:37:46 -0400
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:65089 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754438AbYJQNhq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 09:37:46 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+4fD630pcmsbXFwYCGzgls
-Date: Fri, 17 Oct 2008 06:37:32 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] Fix debugfs_create_*'s error checking method for
-	arm/plat-omap
-Message-ID: <20081017133732.GG15820@atomide.com>
-References: <48F85976.4070609@cn.fujitsu.com> <48F863E3.3070003@cn.fujitsu.com>
+	Fri, 17 Oct 2008 09:38:39 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56801 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754186AbYJQNii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 09:38:38 -0400
+Date: Fri, 17 Oct 2008 15:37:50 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: Re: [BUG] linux-next: Tree for October 16 - softlockup detected at blk_invoke_request_fn
+Message-ID: <20081017133750.GL19428@kernel.dk>
+References: <20081016211811.a523c8f2.sfr@canb.auug.org.au> <20081016204212.GC7534@linux.vnet.ibm.com> <20081017065558.GD19428@kernel.dk> <20081017102456.GA8115@linux.vnet.ibm.com> <20081017105753.GG19428@kernel.dk> <20081018001533.06ec0d1b.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48F863E3.3070003@cn.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20081018001533.06ec0d1b.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Zhaolei <zhaolei@cn.fujitsu.com> [081017 03:08]:
-> debugfs_create_*() returns NULL if an error occurs, returns -ENODEV
-> when debugfs is not enabled in the kernel.
+On Sat, Oct 18 2008, Stephen Rothwell wrote:
+> Hi Jens,
 > 
-> Comparing to PATCH v1, because clk_debugfs_init is included in
-> "#if defined CONFIG_DEBUG_FS", we only need to check NULL return.
-> Thanks Li Zefan <lizf@cn.fujitsu.com>
+> On Fri, 17 Oct 2008 12:57:55 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> >
+> > OK, I'm guessing it's a merge mess in linux-next. I tried to look at the
+> > diff, but it was pretty much impossible to read and even included lots
+> > of things in -git already.
 > 
-> debugfs_create_u8() and other function's return value's checking method are
-> also fixed in this patch.
-
-Thanks, I've added this into omap-fixes queue for Russell (assuming
-Russell did not pick it up yet). I've also pushed it into the
-linux-omap tree.
-
-Regards,
-
-Tony
-
-
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  arch/arm/plat-omap/clock.c |   20 ++++++++++----------
->  1 files changed, 10 insertions(+), 10 deletions(-)
+> If you are looking at the linux-next patch on kernel.org, then it is
+> relative to 2.6.27, so will contain a lot of stuff in Linus' tree.  Its
+> purpose is to allow people to recreate the linux-next tree from a kernel
+> tarball.
 > 
-> diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
-> index bf6a10c..be6aab9 100644
-> --- a/arch/arm/plat-omap/clock.c
-> +++ b/arch/arm/plat-omap/clock.c
-> @@ -428,23 +428,23 @@ static int clk_debugfs_register_one(struct clk *c)
->  	if (c->id != 0)
->  		sprintf(p, ":%d", c->id);
->  	d = debugfs_create_dir(s, pa ? pa->dent : clk_debugfs_root);
-> -	if (IS_ERR(d))
-> -		return PTR_ERR(d);
-> +	if (!d)
-> +		return -ENOMEM;
->  	c->dent = d;
->  
->  	d = debugfs_create_u8("usecount", S_IRUGO, c->dent, (u8 *)&c->usecount);
-> -	if (IS_ERR(d)) {
-> -		err = PTR_ERR(d);
-> +	if (!d) {
-> +		err = -ENOMEM;
->  		goto err_out;
->  	}
->  	d = debugfs_create_u32("rate", S_IRUGO, c->dent, (u32 *)&c->rate);
-> -	if (IS_ERR(d)) {
-> -		err = PTR_ERR(d);
-> +	if (!d) {
-> +		err = -ENOMEM;
->  		goto err_out;
->  	}
->  	d = debugfs_create_x32("flags", S_IRUGO, c->dent, (u32 *)&c->flags);
-> -	if (IS_ERR(d)) {
-> -		err = PTR_ERR(d);
-> +	if (!d) {
-> +		err = -ENOMEM;
->  		goto err_out;
->  	}
->  	return 0;
-> @@ -483,8 +483,8 @@ static int __init clk_debugfs_init(void)
->  	int err;
->  
->  	d = debugfs_create_dir("clock", NULL);
-> -	if (IS_ERR(d))
-> -		return PTR_ERR(d);
-> +	if (!d)
-> +		return -ENOMEM;
->  	clk_debugfs_root = d;
->  
->  	list_for_each_entry(c, &clocks, node) {
-> -- 
-> 1.5.5.3
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> In the linux-next git tree, the point in Linus' tree that it is based on
+> the the "stable" branch.  If necessary, people should be able to bisect
+> between the "stabel" and "master" branches of a linux-next tree.  Or, I
+> am told, between one linux-next tree and another (but that sounds painful
+> to me).
+
+OK, I'll try the -git tree next time I have to lookup changes in -next.
+Thanks for the explanation!
+
+-- 
+Jens Axboe
+
