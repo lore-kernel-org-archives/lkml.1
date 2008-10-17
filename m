@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYJQLTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbYJQL0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbYJQLTU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 07:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbYJQLTL
+	id S1753623AbYJQL0X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 07:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYJQL0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 07:19:11 -0400
-Received: from bu3sch.de ([62.75.166.246]:56733 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbYJQLTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 07:19:10 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: [PATCH v3] Add SPI over GPIO driver
-Date: Fri, 17 Oct 2008 13:18:32 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Piot Skamruk" <piotr.skamruk@gmail.com>
-References: <200807202146.12759.mb@bu3sch.de> <200810171052.54823.mb@bu3sch.de> <aec7e5c30810170252t5790af36hfc754d28e69f5159@mail.gmail.com>
-In-Reply-To: <aec7e5c30810170252t5790af36hfc754d28e69f5159@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 17 Oct 2008 07:26:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38556 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbYJQL0O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 07:26:14 -0400
+Subject: Re: [RFC] Kernel version numbering scheme change
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081017111857.GB18284@x200.localdomain>
+References: <20081016002509.GA25868@kroah.com>
+	 <20081016124943.GE23630@cs181140183.pp.htv.fi>
+	 <20081016151748.GA31075@kroah.com>
+	 <20081016164602.GA22554@cs181140183.pp.htv.fi>
+	 <20081017034717.GA28188@kroah.com>
+	 <20081017064751.GE22554@cs181140183.pp.htv.fi>
+	 <20081017075544.GB4850@kroah.com>
+	 <20081017085604.GA20986@cs181140183.pp.htv.fi>
+	 <1224237990.28131.84.camel@twins> <20081017111857.GB18284@x200.localdomain>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 13:26:27 +0200
+Message-Id: <1224242787.28131.97.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810171318.32306.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 October 2008 11:52:32 Magnus Damm wrote:
-> [removed closed openwrt-devel list]
+On Fri, 2008-10-17 at 15:18 +0400, Alexey Dobriyan wrote:
+> On Fri, Oct 17, 2008 at 12:06:30PM +0200, Peter Zijlstra wrote:
+> > On Fri, 2008-10-17 at 11:56 +0300, Adrian Bunk wrote:
+> > > On Fri, Oct 17, 2008 at 12:55:44AM -0700, Greg KH wrote:
+> > > > On Fri, Oct 17, 2008 at 09:47:51AM +0300, Adrian Bunk wrote:
+> > > >...
+> > > > > Packages are built in a chroot with the correct release installed.
+> > > > 
+> > > > Then why would this break if they are being built against the correct,
+> > > > older, kernel?
+> > > 
+> > > How could you build userspace "against a kernel"?
+> > > 
+> > > sys_*uname() returns the version of the running kernel.
+> > 
+> > We have a uts namespace, you can make the thing return whatever well you
+> > please.
 > 
-> On Fri, Oct 17, 2008 at 5:52 PM, Michael Buesch <mb@bu3sch.de> wrote:
-> > On Friday 17 October 2008 05:14:26 Magnus Damm wrote:
-> >> On Mon, Jul 21, 2008 at 4:46 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> >> > This adds a driver that lets you drive an SPI bus over
-> >> > generic GPIO pins.
-> >> >
-> >> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
-> >>
-> >> Very useful. Fits my shiny new GPIO implementation for SuperH like a glove.
-> >>
-> >> Michael, as you know, I have some SuperH board code that makes use of
-> >> this driver. Are there any outstanding issues with this driver that I
-> >> can help resolving?
-> >
-> > bool cs_activelow should probably be removed from struct spi_gpio_platform_data.
-> >
-> > I think cs always is activelow, so we can simply hardcode this in spi_gpio_chipselect()
-> 
-> Really? There _must_ be chips out there that want active high CS!
-> I'd rather keep the activelow option or maybe turn in into activehigh instead.
+> Hostname, domainname, what else?
 
-Ok, I dunno. I never saw one. All of my SPI stuff is activelow.
-So well, let's keep it.
+Can't it fake the version number? - sounds like a useful feature :-)
 
-> > If you want to do this, please feel free to do so.
-> > I currently don't have the time for this.
-> > The rest of the driver is fine with me.
-> 
-> Ok, thank you.
-> 
-> David or Andrew, any change of getting this merged as-is somehow? Thanks!
-
-Yes, please merge it.
-
--- 
-Greetings Michael.
