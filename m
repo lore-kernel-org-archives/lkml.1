@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbYJQDOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbYJQDc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753935AbYJQDOi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 23:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYJQDO3
+	id S1753440AbYJQDc2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 23:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYJQDcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 23:14:29 -0400
-Received: from hs-out-0708.google.com ([64.233.178.250]:60249 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752237AbYJQDO3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 23:14:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UKHQEFQCLtXhrNHlGNlZ20rCeVocqmZ/WX1oXIdahixXfJBIei/LPAcxq9/2+6MdWW
-         kbUqBqwH2Bhh8whfbRFeoLFyvGpMnOWnCNKDtpzBEtKGqE+DlNyBG47HWZWFIrYnoReP
-         DE0zvh+Sd0uuWPJNObhlhV58UXmXGIZTyZaHc=
-Message-ID: <aec7e5c30810162014w33fe08f2ta2b05cb187770e3a@mail.gmail.com>
-Date: Fri, 17 Oct 2008 12:14:26 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: [PATCH v3] Add SPI over GPIO driver
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "David Brownell" <david-b@pacbell.net>,
-       "Piot Skamruk" <piotr.skamruk@gmail.com>,
-       openwrt-devel@lists.openwrt.org
-In-Reply-To: <200807202146.12759.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 16 Oct 2008 23:32:19 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53366 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752105AbYJQDcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 23:32:19 -0400
+Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <adatzbbap8a.fsf@cisco.com>
+References: <48F409E9.3030501@zytor.com>
+	 <20081013.223811.174710738.davem@davemloft.net>
+	 <Pine.LNX.4.64.0810161030120.9022@vixen.sonytel.be>
+	 <20081016.013850.85183428.davem@davemloft.net>
+	 <1224212533.7654.60.camel@pasglop> <1224212791.7654.63.camel@pasglop>
+	 <adatzbbap8a.fsf@cisco.com>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 14:31:54 +1100
+Message-Id: <1224214314.7654.65.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200807202146.12759.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 21, 2008 at 4:46 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> This adds a driver that lets you drive an SPI bus over
-> generic GPIO pins.
->
-> Signed-off-by: Michael Buesch <mb@bu3sch.de>
+On Thu, 2008-10-16 at 20:13 -0700, Roland Dreier wrote:
+> > + * Right now we handle:
+>  > + *
+>  > + * - 'F' For symbolic Function descriptor pointers
+>  > + * - 'S' For Symbolic direct pointers), but this can easily be
+>  > + *       extended in the future (network address types etc).
+>  > + * - 'R' For a struct resouce pointer, it prints the range of
+>  > + *       addresses (not the name nor the flags)
+> 
+> A little too much cut and paste -- the "easily be extended" bit at 'S'
+> doesn't really make sense in the middle of the list.
 
-Very useful. Fits my shiny new GPIO implementation for SuperH like a glove.
+Right :-)
 
-Michael, as you know, I have some SuperH board code that makes use of
-this driver. Are there any outstanding issues with this driver that I
-can help resolving?
+>  > + * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
+>  > + * function pointers are really function descriptors, which contain a
+>  > + * pointer the real address.
+> 
+> you cut and pasted Linus's typo too -- "a pointer the real address"
+> should probably be "a pointer *TO* the real address"
 
-Andrew, is this driver still in -mm? Any chance of getting it included
-in 2.6.28?
+Ok, I'll wait for more comments before a respin to :-) I'm mostly
+wondering whether to use fixed sized format rather than the current
+variable size (and pad with zeros).
 
 Cheers,
+Ben.
 
-/ magnus
+
