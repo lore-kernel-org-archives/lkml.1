@@ -1,53 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYJQBbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYJQBhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYJQBbt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 21:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYJQBbk
+	id S1754350AbYJQBhZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 21:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYJQBhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 21:31:40 -0400
-Received: from web32407.mail.mud.yahoo.com ([68.142.207.200]:32147 "HELO
-	web32407.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751013AbYJQBbk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 21:31:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=WXq5iR2JOk33cPs/UaMrxaIQv56wKOBB8YmX31eh5RBJsMlcWnm0xvj0elSI36KXWXf5Z0IPSFNX8JSbJzHEYhSEfLwYcvNP3+Eh/dPF8alaRn1gctFk8fg50KLeyDPM43+u+cYZDwsHA4lT+7SDNoQeTm7k37YyLU0WEPGqveg=;
-X-YMail-OSG: vad8vywVM1n6_YZnhOrwR7kVndpzCaMIDNMi0dWrx1mtg7tA5aOnVpSPGV4lzKCP3Chn0p7FgUJ_VhuiOyI3mK8ehSazkRJGhAggrjruXVhfz1MwxbqMmyrfTdRbrergRLyfAk3jTKox3thGEoFf5DTUBikgJtEZNrWQe9A-
-X-Mailer: YahooMailWebService/0.7.218.2
-Date: Thu, 16 Oct 2008 18:31:38 -0700 (PDT)
-From: Anil kumar <anils_r@yahoo.com>
-Reply-To: anils_r@yahoo.com
-Subject: MSI-X msix_entry.vector population
-To: linux-kernel@vger.kernel.org
+	Thu, 16 Oct 2008 21:37:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57300 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751013AbYJQBhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 21:37:11 -0400
+Message-ID: <48F7EBCA.40606@kernel.org>
+Date: Thu, 16 Oct 2008 18:35:06 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <886149.56834.qm@web32407.mail.mud.yahoo.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH] x86: fix es7000 compiling
+References: <86802c440810141017q1e99e98sc824441bafc0cd7a@mail.gmail.com> <20081014175318.GA6521@elte.hu> <48F7890F.9040703@kernel.org> <20081016193345.GA15043@elte.hu> <48F7A838.4040908@kernel.org>
+In-Reply-To: <48F7A838.4040908@kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+es7000 is broken...
 
-In the driver, during interrupt registration for MSIX we get the vector numbers assigned from the kernel and we associate the entry and interrupt handlers with this vector.
+  CC      arch/x86/kernel/es7000_32.o
+arch/x86/kernel/es7000_32.c: In function ‘find_unisys_acpi_oem_table’:
+arch/x86/kernel/es7000_32.c:255: error: implicit declaration of function ‘acpi_get_table_with_size’
+arch/x86/kernel/es7000_32.c:261: error: implicit declaration of function ‘early_acpi_os_unmap_memory’
+arch/x86/kernel/es7000_32.c: In function ‘unmap_unisys_acpi_oem_table’:
+arch/x86/kernel/es7000_32.c:277: error: implicit declaration of function ‘__acpi_unmap_table’
+make[1]: *** [arch/x86/kernel/es7000_32.o] Error 1
 
-I want to achieve the following logic in the driver:
-In the queuecommand I assign MSIX vector for each command before sending it down. The reason why I want to do this is I want to get the response back in that particular MSIX vector entry interrupt handler only. For example If I am sending two commands down, command1 will have MSIX_vector_1 and command2 will have MSIX_vector_2. The interrupt handlers registered are MSIX_vector_1_Int1 and MSIX_vector_2_Int2. When command is complete the response should come back in the respective interrupt handlers registered for MSIX_vector_1 and MSIX_vector_2 only. 
+we applied one patch out of order...
+| commit a73aaedd95703bd49f4c3f9df06fb7b7373ba905
+| Author: Yinghai Lu <yhlu.kernel@gmail.com>
+| Date:   Sun Sep 14 02:33:14 2008 -0700
+|
+|    x86: check dsdt before find oem table for es7000, v2
+|
+|    v2: use __acpi_unmap_table()
 
-To achieve this, I will take msix_entries.[1].vector and assign it to command1 in queuecommand and msix_entries.[2].vector and assign it to command2.
+that patch need 
+	x86: use early_ioremap in __acpi_map_table
+	x86: always explicitly map acpi memory
+	acpi: remove final __acpi_map_table mapping before setting acpi_gbl_permanent_mmap
+	acpi/x86: introduce __apci_map_table, v4
 
-Question:
-Now if I have a Dual core CPU, CORE1 and CORE2 each with vectors 0 to 4 on them. When I shoot a command with msix_entries[1].vector will the completion for this command come from CORE1 core vector1 or it can come from CORE2 vector1. Is it okay if we get response(triggered interrupt handler) back from CORE2. Will I have any routing issues here?
+workaround it here
 
--or- 
+after those patches applied, need to revert this one
 
-Is there a way wherein I can call some function to make sure that let the kernel assign MSIX.vector for my command in proper distributed way in my queuecommand.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-with regards,
-  Anil
-
+diff --git a/arch/x86/kernel/es7000_32.c b/arch/x86/kernel/es7000_32.c
+index f454c78..0aa2c44 100644
+--- a/arch/x86/kernel/es7000_32.c
++++ b/arch/x86/kernel/es7000_32.c
+@@ -250,31 +250,24 @@ int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
+ {
+ 	struct acpi_table_header *header = NULL;
+ 	int i = 0;
+-	acpi_size tbl_size;
  
-
-
-      
+-	while (ACPI_SUCCESS(acpi_get_table_with_size("OEM1", i++, &header, &tbl_size))) {
++	while (ACPI_SUCCESS(acpi_get_table("OEM1", i++, &header))) {
+ 		if (!memcmp((char *) &header->oem_id, "UNISYS", 6)) {
+ 			struct oem_table *t = (struct oem_table *)header;
+ 
+ 			oem_addrX = t->OEMTableAddr;
+ 			oem_size = t->OEMTableSize;
+-			early_acpi_os_unmap_memory(header, tbl_size);
+ 
+ 			*oem_addr = (unsigned long)__acpi_map_table(oem_addrX,
+ 								    oem_size);
+ 			return 0;
+ 		}
+-		early_acpi_os_unmap_memory(header, tbl_size);
+ 	}
+ 	return -1;
+ }
+ 
+ void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
+ {
+-	if (!oem_addr)
+-		return;
+-
+-	__acpi_unmap_table((char *)oem_addr, oem_size);
+ }
+ #endif
+ 
