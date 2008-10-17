@@ -1,101 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYJQUS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYJQU23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbYJQUS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 16:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYJQUSL
+	id S1754203AbYJQU23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 16:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYJQU2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:18:11 -0400
-Received: from kroah.org ([198.145.64.141]:47395 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753989AbYJQUSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:18:09 -0400
-Date: Fri, 17 Oct 2008 13:10:17 -0700
-From: Greg KH <greg@kroah.com>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Joel Becker <joel.becker@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-Message-ID: <20081017201017.GA10613@kroah.com>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org> <20081017074453.GA4850@kroah.com> <1224231739.5556.303.camel@haakon2.linux-iscsi.org> <20081017173959.GC2221@kroah.com> <1224271173.5556.349.camel@haakon2.linux-iscsi.org>
+	Fri, 17 Oct 2008 16:28:18 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:35733 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbYJQU2R convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 16:28:17 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugEALGO+EhMQWq+/2dsb2JhbACBcrdiCIcMgmkIew
+Date: Fri, 17 Oct 2008 16:23:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [RFC patch 15/15] LTTng timestamp x86
+Message-ID: <20081017202313.GA13597@Krystal>
+References: <20081016232729.699004293@polymtl.ca> <20081016234657.837704867@polymtl.ca> <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org> <20081017012835.GA30195@Krystal> <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com> <20081017172515.GA9639@goodmis.org> <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com> <20081017184215.GB9874@Krystal> <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224271173.5556.349.camel@haakon2.linux-iscsi.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:11:15 up 134 days, 23:51,  9 users,  load average: 0.37, 0.60,
+	0.67
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 12:19:33PM -0700, Nicholas A. Bellinger wrote:
-> On Fri, 2008-10-17 at 10:39 -0700, Greg KH wrote:
-> > On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> > > On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
-> > > > On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
-> > > > > Hi Joel, Greg and Co,
-> > > > > 
-> > > > > Here is the the first working code for allowing configfs to handle
-> > > > > symlinks from sysfs struct kobject based code.  Here is the commit:
-> > > > > passing struct kobject into generic target_core_mod subsystem plugins
-> > > > > for locating struct block_device and struct scsi_device..  
-> > > > 
-> > > > Um, no.
-> > > > 
-> > > > You are trying to create symlinks dynamically across superblocks and
-> > > > mount points?  As one of your #warning states, this isn't possible to do
-> > > > correctly, nor is it even a good idea.
-> > > > 
-> > > > So I'd have to reject this patch, sorry.
-> > > > 
-> > > > What is the problem you are attempting to solve here?
-> > > > 
-> > > 
-> > > So, the generic target_core_mod engine that lives
-> > > under /sys/kernel/config/target/core needs a method to locate struct
-> > > block_device and struct scsi_device for access via bio_submit() and
-> > > scsi_execute_() respectively.
-> > 
-> > Then just pass the "name" of the block device into a configfs file,
-> > nothing more is needed, right?
-> > 
+* Luck, Tony (tony.luck@intel.com) wrote:
+> > Hrm, on such systems
+> > - *large* amount of cpus
+> > - no synchronized TSCs
+> >
+> > What would be the best approach to order events ?
 > 
-> What are the preferred methods for accessing struct block_device and
-> struct scsi_device from "name"..?
-
-call "find_by_name" for a type (this would be block type) and get the
-return value?  Can't remember the actual function call, but it's obvious
-if you look at device.h.
-
-> > > Originally, target_core_mod used key echoed through configfs attributes
-> > > like so:
-> > > 
-> > > export TARGET=/sys/kernel/config/target/core/
-> > > 
-> > > # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
-> > > mkdir -p $TARGET/iblock_0/lvm_test0
-> > > # OLD METHOD to reference struct block_device
-> > > echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
-> > > echo 1 > $TARGET/iblock_0/lvm_test0/enable
-> > > # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
-> > > ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
-> > 
-> > No, you can't do a symlink across superblocks and expect it to work like
-> > you are thinking internally.
-> > 
+> There isn't a perfect solution for this.  My feeling is
+> that your best hope is with per-cpu buffers logged with
+> the local TSC ... together with some fancy heuristics to
+> post-process the logs to come up with the best approximation
+> to the actual ordering.
 > 
-> <nod>  As I am coding configfs_follow_symlink() to work with sysfs
-> source symlinks I am starting to see that.. :-)  I am still going to
-> hack on it for a bit and see if I can get it running so that it works..
+> If you have a tight upper bound estimate for the
+> errors in converting from "per-cpu" TSC values to "global
+> system time" then the post processing tool will be able
+> to identify events for which the order is uncertain.
+>
 
-Even if you get it "to work", it's not going to be able to be accepted,
-sorry.
+The only problem I see with "fancy heuristics" regarding the time base
+is that when we detect that something is going wrong in the kernel or in
+a userspace program, the *very last* thing we want to do is to doubt
+about the reliability of the time source. When a problematic situation
+is detected, it makes a huge difference whether this information can be
+trusted or not. I've seen much simpler algorithms in the past (I'm
+referring to the original LTT heartbeat here) which were told to be
+plain simple but ended up being buggy and unreliable in rare
+corner-cases (it did not take into account interrupt latency). After
+fixing the main problems, I decided to start all over from scratch,
+because unreliable timestamps means unreliable traces and this is not
+something I am willing to provide.
 
-thanks,
 
-greg k-h
+> > Do you think we should consider using HPET, event though it's
+> > painfully slow ? Would it be faster than cache-line bouncing
+> > on such large boxes ? With a frequency around 10MHz, that
+> > would give a 100ns precision, which should be enough
+> > to order events.
+> 
+> This sounds like a poor choice.  Makes all traces very
+> slow.  100ns precision isn't all that good ... we can
+> probably do almost as well estimating the delta between
+> TSC on different cpus.
+> 
+> -Tony
+> 
+
+100ns is not bad at all actually, especially given we don't plan to
+require a memory barrier to be issued around the timestamp counter
+reads. Memory read/writes can easily be reordered so they cause timing
+skew in the order of 100ns. Also, just the TSC frequency drift and
+imprecision of the TSC synchronization even when they are synchronized
+(which is typically one cache line transfer delay when the TSCs are not
+synchronized by the BIOS/mobo) is also in the order of 100ns. So sorry, I
+disagree and think 100ns is actually the kind of precision we can expect
+even from TSC reads.
+
+Having read a lot about the subtle timestamp counter bugs one can find
+in Intel and AMD boxes (gross summary of my findings here : 
+http://ltt.polymtl.ca/svn/trunk/lttv/doc/developer/tsc.txt), I think
+there is no reliable way to give an upper bound on the timing
+inaccurary, even with heroic measures trying to map the specific bugs of
+each of those CPUs, when you have stuff like the southbridge temperature
+throttling slowing down your CPU clock without notifying the kernel. And
+as a said above, the timestamping code should be _very_ _very_ simple,
+given that the first thing a kernel developer will point his finger at
+when a tracer discovers a bug in his code is the tracer itself. So let's
+save everyone precious time and make this code easy to review. :-)
+
+So we are talking about performance impact of time base reads. Let's
+look at some interesting numbers :
+
+On my x86_64 box
+model name  : Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
+stepping  : 6
+cpu MHz   : 2000.060
+(dual quad-core, *not* NUMA)
+
+Cycles to read (from 10000 loops, on a single CPU) :
+
+get_cycles :                                                         60
+cpuid + get_cycles + cpuid (with rdtsc_barrier) :                    77
+ltt_get_timestamp_64() with synchronized TSC :                       79
+ltt_get_timestamp_64() with non-synchronized TSC (cache-hot) :      163
+ltt_get_timestamp_64() with non-synchronized TSC (after clflush) :  310
+   (just doing the clflush takes 68 cycles, has been substracted from
+   the previous result)
+HPET :                                                              945
+
+So if we have 512 processors doing timestamp reads like crazy, we can
+suppose the execution to be serialized by cacheline transfer operations
+from cpu to cpu. Therefore, assuming a worse-case scenario where all the
+timestamp reads cause a cache line transfer, the 310 cycles (upper
+bound) it takes to do the cmpxchg, with CPUs running at 2.0GHz, means
+that we can do 6 451 612 timestamp reads per second on the overall
+system. On 512 nodes, that means we can do 12 600 timestamp
+reads/second/cpu.
+
+Compared to this, HPET would offer a slower time base read (945 cycles
+per read is fairly slow, which gives 2 116 402 time stamp read per
+second), but if this mmio read is done in parallel across CPUs (I
+don't see any reason why it should hold the bus exclusively for a simple
+read.. ?), then it would scale much better so we could expect about 2.1M
+timestamp read/second/cpu.
+
+I guess the cache-line bouncing approach would get much worse with NUMA
+systems, and in that case HPET could become increasingly interesting.
+
+To give an order of magnitude, I expect some worse-case scenarios to be
+around 8MB/s/cpu when tracing stuff like lockdep in circular per-cpu
+memory buffers. With an average of, say, 16 bytes per event, including
+the event header and payload, that would mean 524 288 events/second/cpu.
+In that case, using the cache-line bouncing approach on a 512 nodes box
+would simply kill the system, but if the HPET reads does not imply
+serialization, time base reads would add a 25% performance loss in this
+utterly extreme case, which is acceptable given this is a best-effort.
+Compared to this, the TSC-based solution (given we have synchronized
+TSCs) would add a 2% performance hit.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
