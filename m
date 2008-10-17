@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbYJQMnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYJQMoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbYJQMnu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbYJQMnP
+	id S1755046AbYJQMoX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbYJQMoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:43:15 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:43358 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755878AbYJQMnN (ORCPT
+	Fri, 17 Oct 2008 08:44:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:22421 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbYJQMoK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:43:13 -0400
+	Fri, 17 Oct 2008 08:44:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=tewV46YHLLkq2jEBts+Dc4NPUaUCEBfvDS5t3NLjHG4goQTsE1sfSr6QGxsW9XIRNy
-         jsJH2sSqxXlUPc6ialKREe4hxMjMDjSDbkIsxJjaroWERhVnVauB3S2NQh82IXmZetn1
-         3LuQrQr669xbPDrSVaEv+EYyi+XDKgvYqIq1I=
-Date: Fri, 17 Oct 2008 16:46:15 +0400
+        b=l7U5RjxNDSzVBHhWFkb/88moWo+vORIjPzM0Xhs9LHGXVSI6tRkOPeTMfWR8kW5xB/
+         Ee3R11MJXGHavtmWYQtixGcN2AqEWBu1A66pnzWYy9TGRt2dpwipl0SOOZuJT9FKLJOr
+         1dGXcow5cgz5Q0RdKB+9YcgcET+PDn3Ixa3qY=
+Date: Fri, 17 Oct 2008 16:47:11 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 14/31] proc: move /proc/cpuinfo code to fs/proc/cpuinfo.c
-Message-ID: <20081017124615.GO22653@x200.localdomain>
+Cc: jens.axboe@oracle.com
+Subject: [PATCH 15/31] proc: move rest of /proc/partitions code to
+	block/genhd.c
+Message-ID: <20081017124711.GP22653@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,93 +33,114 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From fe9d1f429e3b66c6e7b71a5370316d58fa4ceec6 Mon Sep 17 00:00:00 2001
+>From de5824cba6d479dc525cb24810582e3606e3d166 Mon Sep 17 00:00:00 2001
 From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Sat, 4 Oct 2008 23:40:23 +0400
-Subject: [PATCH 14/31] proc: move /proc/cpuinfo code to fs/proc/cpuinfo.c
+Date: Sat, 4 Oct 2008 23:53:21 +0400
+Subject: [PATCH 15/31] proc: move rest of /proc/partitions code to block/genhd.c
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- fs/proc/Makefile    |    1 +
- fs/proc/cpuinfo.c   |   24 ++++++++++++++++++++++++
- fs/proc/proc_misc.c |   14 --------------
- 3 files changed, 25 insertions(+), 14 deletions(-)
- create mode 100644 fs/proc/cpuinfo.c
+ block/genhd.c         |   22 +++++++++++++++++++++-
+ fs/proc/proc_misc.c   |   14 --------------
+ include/linux/genhd.h |    1 -
+ 3 files changed, 21 insertions(+), 16 deletions(-)
 
-diff --git a/fs/proc/Makefile b/fs/proc/Makefile
-index f24ebfd..c91cc9c 100644
---- a/fs/proc/Makefile
-+++ b/fs/proc/Makefile
-@@ -10,6 +10,7 @@ proc-$(CONFIG_MMU)	:= mmu.o task_mmu.o
- proc-y       += inode.o root.o base.o generic.o array.o \
- 		proc_tty.o proc_misc.o
- proc-y	+= cmdline.o
-+proc-y	+= cpuinfo.o
- proc-y	+= devices.o
- proc-y	+= loadavg.o
- proc-y	+= meminfo.o
-diff --git a/fs/proc/cpuinfo.c b/fs/proc/cpuinfo.c
-new file mode 100644
-index 0000000..5a1e539
---- /dev/null
-+++ b/fs/proc/cpuinfo.c
-@@ -0,0 +1,24 @@
-+#include <linux/fs.h>
-+#include <linux/init.h>
+diff --git a/block/genhd.c b/block/genhd.c
+index 4cd3433..7a7f823 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -10,6 +10,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/init.h>
+ #include <linux/spinlock.h>
 +#include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
+ #include <linux/seq_file.h>
+ #include <linux/slab.h>
+ #include <linux/kmod.h>
+@@ -728,12 +729,24 @@ static int show_partition(struct seq_file *seqf, void *v)
+ 	return 0;
+ }
+ 
+-const struct seq_operations partitions_op = {
++static const struct seq_operations partitions_op = {
+ 	.start	= show_partition_start,
+ 	.next	= disk_seqf_next,
+ 	.stop	= disk_seqf_stop,
+ 	.show	= show_partition
+ };
 +
-+extern const struct seq_operations cpuinfo_op;
-+static int cpuinfo_open(struct inode *inode, struct file *file)
++static int partitions_open(struct inode *inode, struct file *file)
 +{
-+	return seq_open(file, &cpuinfo_op);
++	return seq_open(file, &partitions_op);
 +}
 +
-+static const struct file_operations proc_cpuinfo_operations = {
-+	.open		= cpuinfo_open,
++static const struct file_operations proc_partitions_operations = {
++	.open		= partitions_open,
 +	.read		= seq_read,
 +	.llseek		= seq_lseek,
 +	.release	= seq_release,
 +};
+ #endif
+ 
+ 
+@@ -999,6 +1012,13 @@ const struct seq_operations diskstats_op = {
+ 	.stop	= disk_seqf_stop,
+ 	.show	= diskstats_show
+ };
 +
-+static int __init proc_cpuinfo_init(void)
++static int __init proc_genhd_init(void)
 +{
-+	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
++	proc_create("partitions", 0, NULL, &proc_partitions_operations);
 +	return 0;
 +}
-+module_init(proc_cpuinfo_init);
++module_init(proc_genhd_init);
+ #endif /* CONFIG_PROC_FS */
+ 
+ static void media_change_notify_thread(struct work_struct *work)
 diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 8018979..916ed4d 100644
+index 916ed4d..24c4f8d 100644
 --- a/fs/proc/proc_misc.c
 +++ b/fs/proc/proc_misc.c
-@@ -93,19 +93,6 @@ static const struct file_operations proc_zoneinfo_file_operations = {
- 	.release	= seq_release,
+@@ -105,17 +105,6 @@ static const struct file_operations proc_vmstat_file_operations = {
  };
  
--extern const struct seq_operations cpuinfo_op;
--static int cpuinfo_open(struct inode *inode, struct file *file)
+ #ifdef CONFIG_BLOCK
+-static int partitions_open(struct inode *inode, struct file *file)
 -{
--	return seq_open(file, &cpuinfo_op);
+-	return seq_open(file, &partitions_op);
 -}
--
--static const struct file_operations proc_cpuinfo_operations = {
--	.open		= cpuinfo_open,
+-static const struct file_operations proc_partitions_operations = {
+-	.open		= partitions_open,
 -	.read		= seq_read,
 -	.llseek		= seq_lseek,
 -	.release	= seq_release,
 -};
 -
- static int vmstat_open(struct inode *inode, struct file *file)
+ static int diskstats_open(struct inode *inode, struct file *file)
  {
- 	return seq_open(file, &vmstat_op);
-@@ -534,7 +521,6 @@ void __init proc_misc_init(void)
+ 	return seq_open(file, &diskstats_op);
+@@ -521,9 +510,6 @@ void __init proc_misc_init(void)
  	proc_symlink("mounts", NULL, "self/mounts");
  
  	/* And now for trickier ones */
--	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
- #ifdef CONFIG_BLOCK
- 	proc_create("partitions", 0, NULL, &proc_partitions_operations);
- #endif
+-#ifdef CONFIG_BLOCK
+-	proc_create("partitions", 0, NULL, &proc_partitions_operations);
+-#endif
+ 	proc_create("stat", 0, NULL, &proc_stat_operations);
+ 	proc_create("interrupts", 0, NULL, &proc_interrupts_operations);
+ #ifdef CONFIG_SLABINFO
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 206cdf9..074a4fd 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -25,7 +25,6 @@ extern struct device_type part_type;
+ extern struct kobject *block_depr;
+ extern struct class block_class;
+ 
+-extern const struct seq_operations partitions_op;
+ extern const struct seq_operations diskstats_op;
+ 
+ enum {
 -- 
 1.5.6.5
 
