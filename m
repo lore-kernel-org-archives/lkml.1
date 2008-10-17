@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYJQT2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbYJQT2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYJQT2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757401AbYJQT2O
+	id S1758047AbYJQT2q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbYJQT2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:28:14 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50688 "EHLO
+	Fri, 17 Oct 2008 15:28:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50691 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755407AbYJQT2O (ORCPT
+	with ESMTP id S1755545AbYJQT2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:28:14 -0400
+	Fri, 17 Oct 2008 15:28:36 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 0/3] Small series of further hardware updates
+Subject: [PATCH 1/3] epca: Add infinite break support
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Fri, 17 Oct 2008 20:27:53 +0100
-Message-ID: <20081017192309.9308.74370.stgit@localhost.localdomain>
+Date: Fri, 17 Oct 2008 20:28:25 +0100
+Message-ID: <20081017192758.9308.94462.stgit@localhost.localdomain>
+In-Reply-To: <20081017192309.9308.74370.stgit@localhost.localdomain>
+References: <20081017192309.9308.74370.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -23,28 +25,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for break on/off to the EPCA driver, thanks to Digi providing
-the needed firmware info. It also adds a pile of OxSemi devices to the 8250_pci
-drivers, these being the 'Tornado' series adapters. They actually have a pile
-of additional functionality it would be nice to support but this simply teaches
-the kernel to recognize them and identify them nicely.
+From: Alan Cox <alan@redhat.com>
+
+The EPCA can support indefinte break lengths and with info from digi that
+can now be added
+
+Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
-Alan Cox (1):
-      epca: Add infinite break support
-
-Lee Howard (2):
-      8250: Add more OxSemi devices
-      8250: Oxford Semiconductor Devices
+ drivers/char/epca.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
 
- drivers/char/epca.c          |    6 +
- drivers/parport/parport_pc.c |   20 +++-
- drivers/serial/8250_pci.c    |  231 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci_ids.h      |    8 +
- 4 files changed, 263 insertions(+), 2 deletions(-)
-
--- 
-"Intel sued Cyrix five times and they never won. Intel they just love lawsuits"
-		--  Wen Chi Chen, Via's CEO
+diff --git a/drivers/char/epca.c b/drivers/char/epca.c
+index 4998b27..cf2461d 100644
+--- a/drivers/char/epca.c
++++ b/drivers/char/epca.c
+@@ -2477,7 +2477,11 @@ static int pc_send_break(struct tty_struct *tty, int msec)
+ 	unsigned long flags;
+ 
+ 	if (msec == -1)
+-		return -EOPNOTSUPP;
++		msec = 0xFFFF;
++	else if (msec > 0xFFFE)
++		msec = 0xFFFE;
++	else if (msec < 1)
++		msec = 1;
+ 
+ 	spin_lock_irqsave(&epca_lock, flags);
+ 	globalwinon(ch);
 
