@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYJQGEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYJQGSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbYJQGEl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 02:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYJQGEb
+	id S1752782AbYJQGSu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 02:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYJQGSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 02:04:31 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49008 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751013AbYJQGEa (ORCPT
+	Fri, 17 Oct 2008 02:18:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36929 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbYJQGSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 02:04:30 -0400
-Date: Fri, 17 Oct 2008 11:34:25 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext4: Replace hackish
-	ext4_mb_poll_new_transaction with commit callback
-Message-ID: <20081017060424.GA26192@skywalker>
-References: <1224201763-9637-1-git-send-email-tytso@mit.edu>
-MIME-Version: 1.0
+	Fri, 17 Oct 2008 02:18:41 -0400
+Date: Fri, 17 Oct 2008 08:25:33 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SYSFS: Fix return values for sysdev_store_{ulong,int}
+Message-ID: <20081017062533.GZ12131@one.firstfloor.org>
+References: <20081013100303.GA32199@basil.nowhere.org> <20081016133530.1024528d.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224201763-9637-1-git-send-email-tytso@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081016133530.1024528d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 08:02:43PM -0400, Theodore Ts'o wrote:
-> The multiblock allocator needs to be able to release blocks (and issue
-> a blkdev discard request) when the transaction which freed those
-> blocks is committed.  Previously this was done via a polling mechanism
-> when blocks are allocated or freed.  A much better way of doing things
-> is to create a jbd2 callback function and attaching the list of blocks
-> to be freed directly to the transaction structure.
+On Thu, Oct 16, 2008 at 01:35:30PM -0700, Andrew Morton wrote:
+> On Mon, 13 Oct 2008 12:03:03 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > SYSFS: Fix return values for sysdev_store_{ulong,int}
+> > 
+> > Always return the full size instead of the consumed
+> > length of the string in sysdev_store_{ulong,int}
+> > 
+> > This avoids EINVAL errors in some echo versions.
+> 
+> That sounds fairly serious.  Is this a regression or are those versions
+> of echo really ancient, or...?
 
+It's a regression, but it currently only affects the mce sysfs files,
+which are the only ones using it. Also the EINVAL is more a cosmetic
+issue because the first write will already change the value successfully,
+only the second one will fail but not change anything.
 
-Why not use journal commit callback patch from andreas 
-(MID:20080929201752.GN10950@webber.adilger.int
-http://article.gmane.org/gmane.comp.file-systems.ext4/9148)
+-Andi
 
-The patch you sent will allows only one call back to be registered.
-
--aneesh
+-- 
+ak@linux.intel.com
