@@ -1,79 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbYJQSIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYJQSJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756944AbYJQSIr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 14:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbYJQSIj
+	id S1757535AbYJQSJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 14:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbYJQSJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 14:08:39 -0400
-Received: from mga01.intel.com ([192.55.52.88]:14032 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754658AbYJQSIh convert rfc822-to-8bit (ORCPT
+	Fri, 17 Oct 2008 14:09:13 -0400
+Received: from qmta07.emeryville.ca.mail.comcast.net ([76.96.30.64]:43164 "EHLO
+	QMTA07.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753424AbYJQSJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 14:08:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,433,1220252400"; 
-   d="scan'208";a="392868682"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Date: Fri, 17 Oct 2008 11:08:13 -0700
-Subject: RE: [RFC patch 15/15] LTTng timestamp x86
-Thread-Topic: [RFC patch 15/15] LTTng timestamp x86
-Thread-Index: AckwfVdfd0BQShseR+WE1PM/OOHCHQAAzwjg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com>
-References: <20081016232729.699004293@polymtl.ca>
- <20081016234657.837704867@polymtl.ca>
- <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
- <20081017012835.GA30195@Krystal>
- <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
- <20081017172515.GA9639@goodmis.org>
-In-Reply-To: <20081017172515.GA9639@goodmis.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 17 Oct 2008 14:09:11 -0400
+X-Authority-Analysis: v=1.0 c=1 a=BKlk4C1kfyIA:10 a=JkGP7ZSYhkMA:10
+ a=h73PsGLEXvajRiNfxw0A:9 a=h1lWPgihY6Vfvd2zG6AA:7
+ a=vySzteNK0Wh0m0h2BQiSYGOLom0A:4 a=SLyJqc_wJIIA:10 a=dGJ0OcVc7YAA:10
+ a=eqxxFxNu-gsA:10
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH] igb: add IGB_DCA instead of selecting INTEL_IOATDMA
+To: jeff@garzik.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, brice@myri.com, dan.j.williams@intel.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
+       apw@shadowen.org, linuxppc-dev@ozlabs.org, sam@ravnborg.org,
+       e1000-devel@lists.sourceforge.net, maciej.sosnowski@intel.com,
+       bunk@kernel.org, Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 17 Oct 2008 11:08:31 -0700
+Message-ID: <20081017180831.15639.50705.stgit@gitlost.lost>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I agree that one cache line bouncer is devastating to performance. But
-> as Mathieu said, it is better than a global tracer with lots of bouncing
-> going on.
+Add a bool IGB_DCA defined to y if IGB and DCA are enabled, but IGB isn't y while DCA=m.  And thus remove the need to select INTEL_IOATDMA when IGB is enabled, so that non-x86 architectures can build the igb driver.
+Based on work/patch from Brice Goglin <brice@myri.com>
 
-Scale up enough, and it becomes more than just a performance problem.
-When SGI first tried to boot on 512 cpus they found the kernel hung
-completely because of a single global atomic counter for how many
-interrupts there were.  With HZ=1024 and 512 cpus the ensuing cache
-line bouncing storm from each interrupt took longer to resolve than
-the interval between interrupts.
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
 
-With higher event rates (1KHz seems relatively low) this wall will
-be a problem for smaller systems too.
+ drivers/net/Kconfig        |    5 +++++
+ drivers/net/igb/igb_main.c |   32 ++++++++++++++++----------------
+ 2 files changed, 21 insertions(+), 16 deletions(-)
 
-> ftrace does not have a global counter, but on some boxes with out of
-> sync TSCs, it could not find race conditions. I had to pull in logdev,
-> which found the race right away, because of this atomic counter.
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index ad301ac..588ef13 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2003,6 +2003,11 @@ config IGB_LRO
+ 
+ 	  If in doubt, say N.
+ 
++config IGB_DCA
++	bool "Enable DCA"
++	default y
++	depends on IGB && DCA && !(IGB=y && DCA=m)
++
+ source "drivers/net/ixp2000/Kconfig"
+ 
+ config MYRI_SBUS
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index 53cbeae..2bd3629 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -41,7 +41,7 @@
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/if_ether.h>
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ #include <linux/dca.h>
+ #endif
+ #include "igb.h"
+@@ -106,11 +106,11 @@ static irqreturn_t igb_msix_other(int irq, void *);
+ static irqreturn_t igb_msix_rx(int irq, void *);
+ static irqreturn_t igb_msix_tx(int irq, void *);
+ static int igb_clean_rx_ring_msix(struct napi_struct *, int);
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ static void igb_update_rx_dca(struct igb_ring *);
+ static void igb_update_tx_dca(struct igb_ring *);
+ static void igb_setup_dca(struct igb_adapter *);
+-#endif /* CONFIG_DCA */
++#endif /* CONFIG_IGB_DCA */
+ static bool igb_clean_tx_irq(struct igb_ring *);
+ static int igb_poll(struct napi_struct *, int);
+ static bool igb_clean_rx_irq_adv(struct igb_ring *, int *, int);
+@@ -131,7 +131,7 @@ static int igb_suspend(struct pci_dev *, pm_message_t);
+ static int igb_resume(struct pci_dev *);
+ #endif
+ static void igb_shutdown(struct pci_dev *);
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ static int igb_notify_dca(struct notifier_block *, unsigned long, void *);
+ static struct notifier_block dca_notifier = {
+ 	.notifier_call	= igb_notify_dca,
+@@ -207,7 +207,7 @@ static int __init igb_init_module(void)
+ 	global_quad_port_a = 0;
+ 
+ 	ret = pci_register_driver(&igb_driver);
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	dca_register_notify(&dca_notifier);
+ #endif
+ 	return ret;
+@@ -223,7 +223,7 @@ module_init(igb_init_module);
+  **/
+ static void __exit igb_exit_module(void)
+ {
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	dca_unregister_notify(&dca_notifier);
+ #endif
+ 	pci_unregister_driver(&igb_driver);
+@@ -1260,7 +1260,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto err_register;
+ 
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	if ((adapter->flags & IGB_FLAG_HAS_DCA) &&
+ 	    (dca_add_requester(&pdev->dev) == 0)) {
+ 		adapter->flags |= IGB_FLAG_DCA_ENABLED;
+@@ -1334,7 +1334,7 @@ static void __devexit igb_remove(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	struct e1000_hw *hw = &adapter->hw;
+ #endif
+ 
+@@ -1346,7 +1346,7 @@ static void __devexit igb_remove(struct pci_dev *pdev)
+ 
+ 	flush_scheduled_work();
+ 
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
+ 		dev_info(&pdev->dev, "DCA disabled\n");
+ 		dca_remove_requester(&pdev->dev);
+@@ -3294,7 +3294,7 @@ static irqreturn_t igb_msix_tx(int irq, void *data)
+ 	struct igb_adapter *adapter = tx_ring->adapter;
+ 	struct e1000_hw *hw = &adapter->hw;
+ 
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
+ 		igb_update_tx_dca(tx_ring);
+ #endif
+@@ -3346,14 +3346,14 @@ static irqreturn_t igb_msix_rx(int irq, void *data)
+ 	if (netif_rx_schedule_prep(adapter->netdev, &rx_ring->napi))
+ 		__netif_rx_schedule(adapter->netdev, &rx_ring->napi);
+ 
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
+ 		igb_update_rx_dca(rx_ring);
+ #endif
+ 		return IRQ_HANDLED;
+ }
+ 
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ static void igb_update_rx_dca(struct igb_ring *rx_ring)
+ {
+ 	u32 dca_rxctrl;
+@@ -3473,7 +3473,7 @@ static int igb_notify_dca(struct notifier_block *nb, unsigned long event,
+ 
+ 	return ret_val ? NOTIFY_BAD : NOTIFY_DONE;
+ }
+-#endif /* CONFIG_DCA */
++#endif /* CONFIG_IGB_DCA */
+ 
+ /**
+  * igb_intr_msi - Interrupt Handler
+@@ -3552,13 +3552,13 @@ static int igb_poll(struct napi_struct *napi, int budget)
+ 	int tx_clean_complete, work_done = 0;
+ 
+ 	/* this poll routine only supports one tx and one rx queue */
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
+ 		igb_update_tx_dca(&adapter->tx_ring[0]);
+ #endif
+ 	tx_clean_complete = igb_clean_tx_irq(&adapter->tx_ring[0]);
+ 
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
+ 		igb_update_rx_dca(&adapter->rx_ring[0]);
+ #endif
+@@ -3586,7 +3586,7 @@ static int igb_clean_rx_ring_msix(struct napi_struct *napi, int budget)
+ 	struct net_device *netdev = adapter->netdev;
+ 	int work_done = 0;
+ 
+-#ifdef CONFIG_DCA
++#ifdef CONFIG_IGB_DCA
+ 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
+ 		igb_update_rx_dca(rx_ring);
+ #endif
 
-Perhaps this needs to be optional (and run-time switchable).  Some
-users (tracking performance issues) will want the  tracer to have
-the minumum possible effect on the system.  Others (chasing race
-conditions) will want the best possible ordering of events between
-cpus[*].
-
--Tony
-
-[*] I'd still be concerned that a heavyweight strict ordering might
-perturb the system enough to make the race disappear when tracing
-is enabled.
