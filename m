@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYJQPS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYJQPTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbYJQPS2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 11:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYJQPSR
+	id S1756804AbYJQPTc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 11:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbYJQPTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 11:18:17 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46679 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754177AbYJQPSQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 11:18:16 -0400
-Date: Fri, 17 Oct 2008 11:18:15 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>, <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for
- usb/gadget/
-In-Reply-To: <48F88B22.6010102@cn.fujitsu.com>
-Message-ID: <Pine.LNX.4.44L0.0810171114500.2178-100000@iolanthe.rowland.org>
+	Fri, 17 Oct 2008 11:19:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:33387 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754830AbYJQPTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 11:19:22 -0400
+Message-ID: <48F8ACF7.6050905@goop.org>
+Date: Fri, 17 Oct 2008 08:19:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Beulich <jbeulich@novell.com>
+CC: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Chris Lalancette <clalance@redhat.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Xen-devel] [PATCH]: Fix Xen domU boot with batched			 mprotect
+References: <48F5CE10.3060403@redhat.com> <48F6274D.76E4.0078.0@novell.com> <48F61919.2050005@goop.org> <48F72C7A.76E4.0078.0@novell.com> <48F76773.2090700@goop.org> <48F85711.76E4.0078.0@novell.com>
+In-Reply-To: <48F85711.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008, Zhaolei wrote:
+Jan Beulich wrote:
+>>>> Jeremy Fitzhardinge <jeremy@goop.org> 16.10.08 18:10 >>>
+>>>>         
+>> The current x86-64 implementation is:
+>>
+>> bool __virt_addr_valid(unsigned long x)
+>> {
+>> 	if (x >= __START_KERNEL_map) {
+>> 		x -= __START_KERNEL_map;
+>> 		if (x >= KERNEL_IMAGE_SIZE)
+>> 			return false;
+>>     
+>
+> This, imo, is still broken (i.e. the name of the function still isn't matched
+> by the implementation): KERNEL_IMAGE_SIZE is a constant and doesn't
+> account for the fact that only the real kernel image can be relied upon
+> to be mapped.
+>   
 
-> Hi,
-> 
-> debugfs_create_file() returns NULL if an error occurs, returns -ENODEV
-> when debugfs is not enabled in the kernel.
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  drivers/usb/gadget/s3c2410_udc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
-> index 29d13eb..4ba50ef 100644
-> --- a/drivers/usb/gadget/s3c2410_udc.c
-> +++ b/drivers/usb/gadget/s3c2410_udc.c
-> @@ -1894,7 +1894,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
->  		udc->regs_info = debugfs_create_file("registers", S_IRUGO,
->  				s3c2410_udc_debugfs_root,
->  				udc, &s3c2410_udc_debugfs_fops);
-> -		if (IS_ERR(udc->regs_info)) {
-> +		if (IS_ERR(udc->regs_info) || !udc->regs_info) {
->  			dev_warn(dev, "debugfs file creation failed %ld\n",
->  				 PTR_ERR(udc->regs_info));
->  			udc->regs_info = NULL;
+Perhaps, but I don't think it matters too much.  Unless you have a tiny 
+amount of physical memory, locations in the kernel mapping beyond the 
+actual kernel will still resolve to proper locations in the linear map.
 
-In fact the original code and your patch are both wrong.  The test 
-should simply be:
+>> and 32-bit is similar (but simpler, since it doesn't need to worry about a separate kernel mapping).
+>>     
+>
+> This continues to be broken, but not as badly as it used to be - while it
+> now covers user space and the vmalloc area (I'm unclear why this is
+> excluded only after booting completed, though), hypervisor space
+> continues to not be considered here.
+>
+> But as mentioned before - excluding the vmalloc area seems bogus wrt
+> the name of the function, but as I take it the confusion here is intended.
+>   
 
-		if (!udc->regs_info) {
-			dev_warn(dev, "debugfs file creation failed\n");
+I think a strictly correct name for the function would be 
+can_i_use___pa_on_this_address(vaddr).  It isn't 
+is_this_really_an_addressable_location(vaddr).
 
-(The line setting udc->regs_info to NULL can then be removed.)
-
-The driver should be able to work even if debugfs isn't enabled in the 
-kernel.
-
-Alan Stern
-
+    J
