@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbYJQGbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYJQGeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbYJQGbS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 02:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbYJQGbH
+	id S1753497AbYJQGeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 02:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYJQGd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 02:31:07 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:42742 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbYJQGbG (ORCPT
+	Fri, 17 Oct 2008 02:33:59 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:56357 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbYJQGd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 02:31:06 -0400
-Message-ID: <48F83121.7070705@davidnewall.com>
-Date: Fri, 17 Oct 2008 17:00:57 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Fri, 17 Oct 2008 02:33:58 -0400
+Date: Fri, 17 Oct 2008 08:33:45 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] CRIS update for 2.6.28
+Message-ID: <20081017063345.GB24715@axis.com>
+References: <20081013213539.GT15259@axis.com> <alpine.LFD.2.00.0810141230310.3288@nehalem.linux-foundation.org> <20081014202140.GA4395@axis.com>
 MIME-Version: 1.0
-To: Peter Chubb <peterc@gelato.unsw.edu.au>
-CC: Oren Laadan <orenl@cs.columbia.edu>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, jeremy@goop.org, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrey Mirkin <major@openvz.org>
-Subject: Re: [RFC v6][PATCH 0/9] Kernel based checkpoint/restart
-References: <1223461197-11513-1-git-send-email-orenl@cs.columbia.edu>	<20081009124658.GE2952@elte.hu>	<1223557122.11830.14.camel@nimitz>	<20081009131701.GA21112@elte.hu>	<1223559246.11830.23.camel@nimitz>	<20081009134415.GA12135@elte.hu>	<1223571036.11830.32.camel@nimitz>	<20081010153951.GD28977@elte.hu>	<48F30315.1070909@fr.ibm.com>	<1223916223.29877.14.camel@nimitz>	<48F6092D.6050400@fr.ibm.com>	<48F685A3.1060804@cs.columbia.edu>	<48F7352F.3020700@fr.ibm.com>	<48F74674.20202@cs.columbia.edu> <87r66g8875.wl%peter@chubb.wattle.id.au>
-In-Reply-To: <87r66g8875.wl%peter@chubb.wattle.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081014202140.GA4395@axis.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Chubb wrote:
->>>>>> "Oren" == Oren Laadan <orenl@cs.columbia.edu> writes:
->>>>>>             
->
-> Oren> Daniel Lezcano wrote:
->
->   
->>>> The one exception (and it is a tedious one !) are states in which
->>>> the task is already frozen by definition: any ptrace blocking
->>>> point where the tracee waits for the tracer to grant permission to
->>>> proceed with its execution. Another example is in vfork(), waiting
->>>> for completion.
->>>>         
->>> I would say these are perfect places for "may be
->>> non-checkpointable" :)
->>>       
->
-> Oren> For now, yes. But we definitely want this capability in the long
-> Oren> run; otherwise we won't be able to checkpoint a kernel compile
-> Oren> ('make' uses vfork), or anything with 'gdb' running inside, or
-> Oren> 'strace', and other goodies.
->
-> The strace/gdb example is *really* hard; but for vfork, you just wait
-> until it's over. The interval between vfork and exec/exit should be
-> short enough not to affect the overall time for a checkpoint
+On Tue, Oct 14, 2008 at 10:21:40PM +0200, Jesper Nilsson wrote:
 
-A malicious user could trivially exploit that.
+...and it seems my mail config was not correct, causing most mail
+servers to treat the mail as spam... Third try is the charm?
+
+> On Mon, 13 Oct 2008, Jesper Nilsson wrote:
+> > Just some file moves in this pull-request.
+> > The following changes since commit d17ffb4c9d86194bb74cbc30f4b65de59c27f6cd:
+> >   Jesper Nilsson (1):
+> >         Merge branch 'cris_debug_port_fix' into cris
+> >
+> > are available in the git repository at:
+> >
+> >   /pub/scm/cris.git for-linus
+> 
+> Umm. Ehh. Where?
+
+Ah, right, much easier with an external repo. Sorry 'bout that.
+
+The following changes since commit d17ffb4c9d86194bb74cbc30f4b65de59c27f6cd:
+  Jesper Nilsson (1):
+        Merge branch 'cris_debug_port_fix' into cris
+
+are available in the git repository at:
+
+        git://www.jni.nu/cris.git for-linus
+
+Adrian Bunk (1):
+      CRIS: proper defconfig setup
+
+Jesper Nilsson (1):
+      [CRIS] Rename boot-linkscripts and fix the path to them.
+
+ arch/cris/Makefile                                 |    2 ++
+ arch/cris/arch-v10/boot/compressed/Makefile        |    2 +-
+ .../compressed/{decompress.ld => decompress.lds}   |    0
+ arch/cris/arch-v10/boot/rescue/Makefile            |    2 +-
+ .../arch-v10/boot/rescue/{rescue.ld => rescue.lds} |    0
+ arch/cris/arch-v32/boot/compressed/Makefile        |    2 +-
+ .../compressed/{decompress.ld => decompress.lds}   |    0
+ arch/cris/arch-v32/boot/rescue/Makefile            |    2 +-
+ .../arch-v32/boot/rescue/{rescue.ld => rescue.lds} |    0
+ arch/cris/{ => configs}/artpec_3_defconfig         |    0
+ .../defconfig => configs/etrax-100lx_defconfig}    |    0
+ .../etrax-100lx_v2_defconfig}                      |    0
+ arch/cris/{ => configs}/etraxfs_defconfig          |    0
+ 13 files changed, 6 insertions(+), 4 deletions(-)
+ rename arch/cris/arch-v10/boot/compressed/{decompress.ld => decompress.lds} (100%)
+ rename arch/cris/arch-v10/boot/rescue/{rescue.ld => rescue.lds} (100%)
+ rename arch/cris/arch-v32/boot/compressed/{decompress.ld => decompress.lds} (100%)
+ rename arch/cris/arch-v32/boot/rescue/{rescue.ld => rescue.lds} (100%)
+ rename arch/cris/{ => configs}/artpec_3_defconfig (100%)
+ rename arch/cris/{arch-v10/defconfig => configs/etrax-100lx_defconfig} (100%)
+ rename arch/cris/{defconfig => configs/etrax-100lx_v2_defconfig} (100%)
+ rename arch/cris/{ => configs}/etraxfs_defconfig (100%)
+
+>                 Linus
+
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
