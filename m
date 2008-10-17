@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbYJQTCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYJQTI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756952AbYJQTCV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYJQTCM
+	id S1756756AbYJQTI3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYJQTIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:02:12 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:47207 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754491AbYJQTCK (ORCPT
+	Fri, 17 Oct 2008 15:08:20 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:18204 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753547AbYJQTIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:02:10 -0400
-X-YMail-OSG: wdVZ6UwVM1nxN6Ww3HFebUp2u1EqiZmrYLn69nRQL3r_vkVrVLbqSBKMVCSDQM8MksVWurBlrCTe5R0bg02MvRMKCsAeFwD_e9BHMowMxDv2HJXEqaZTLs4EqE_Ym1PuDZ7C1YzC6lZWPBsEv6.HlRvfVeUBeOdXeg8Ctrk-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Greg KH <greg@kroah.com>, Joel Becker <joel.becker@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20081017113252.GV15064@parisc-linux.org>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-	 <20081017074453.GA4850@kroah.com>
-	 <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
-	 <20081017113252.GV15064@parisc-linux.org>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 12:02:07 -0700
-Message-Id: <1224270127.5556.331.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 17 Oct 2008 15:08:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=oL5yIcf61hKBkcDt2yo1bbv0ugix9cpGKPOplLrCk2BN14zWqM00jm2MpDYQWC8wnd
+         gCMCgEY+Ei4m7dKFH6ztc5G/P7q2+ak8MewZqM8xf/HXP6U4cveEnonJDOxMRsTHufeb
+         kZ4Y6eFOjUW81sT6/duMDv/elisGa06t77TL4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [RFC] Kernel version numbering scheme change
+Date: Fri, 17 Oct 2008 21:06:28 +0200
+User-Agent: KMail/1.9.10
+Cc: Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20081016002509.GA25868@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com>
+In-Reply-To: <20081017174657.GH2221@kroah.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200810172106.29154.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 05:32 -0600, Matthew Wilcox wrote:
-> On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> > This of course means that non TYPE_DISK of struct scsi_device would need
-> > to appear under /sys/ to be referenced using the symlink method..  I
-> > know that drivers/scsi/sr.c currently does not show up under /sys..
+On Friday 17 October 2008, Greg KH wrote:
+> On Fri, Oct 17, 2008 at 01:16:38AM -0700, Steven Noonan wrote:
+> > I believe some of Adrian's concerns are valid. Userspace programs will
+> > indeed break, largely because some depend on build-time and run-time
+> > checks for the kernel version being >=2.6.0 or >=2.4.0 and so forth. I
+> > suspect the best way to prove userspace breakage would be to make a
+> > branch of the kernel with a new versioning scheme (8.10, 2008.10,
+> > whatever) and use that as the installed kernel while building a Gentoo
+> > system. I suspect you'd see massive breakage.
 > 
-> Hmm?
+> That would be trivial for me to test, IFF we want to do something like
+> this.
 > 
-> $ ls -l /sys/block/sr0/
-> total 0
-> lrwxrwxrwx 1 root root    0 2008-10-17 07:30 bdi -> ../../class/bdi/11:0
-> -r--r--r-- 1 root root 4096 2008-10-17 07:30 capability
-> -r--r--r-- 1 root root 4096 2008-10-17 07:30 dev
-> lrwxrwxrwx 1 root root    0 2008-10-17 07:30 device -> ../../devices/pci0000:00/0000:00:1f.1/host3/target3:0:0/3:0:0:0
-> drwxr-xr-x 2 root root    0 2008-10-17 07:30 holders
-> drwxr-xr-x 2 root root    0 2008-10-17 07:30 power
-> drwxr-xr-x 3 root root    0 2008-10-17 07:30 queue
-> -r--r--r-- 1 root root 4096 2008-10-17 07:30 range
-> -r--r--r-- 1 root root 4096 2008-10-17 07:30 removable
-> -r--r--r-- 1 root root 4096 2008-10-17 07:30 ro
-> -r--r--r-- 1 root root 4096 2008-10-17 07:30 size
-> drwxr-xr-x 2 root root    0 2008-10-17 07:30 slaves
-> -r--r--r-- 1 root root 4096 2008-10-17 07:30 stat
-> lrwxrwxrwx 1 root root    0 2008-10-17 07:30 subsystem -> ../../block
-> -rw-r--r-- 1 root root 4096 2008-10-17 07:30 uevent
+> But again, that's a technical thing, that can be solved _IFF_ we want to
+> change things.
 > 
+> And that's my point here, do we want to change the current numbering
+> scheme as people have expressed annoyances of the current one.
 
-Oh good, I guess I missed that this has been added a while ago for
-TYPE_CDROM.  I had been looking at trying to change something with sr0 a
-while back, I think it was an incorrectly set max_sectors on the
-Playstation3, but I could not find the was to do this with TYPE_CDROM as
-is possible with TYPE_DISK.
+Numbering scheme?  I thought we should all be using the official
+kernel version NAME after the -final release?  Was I mistaken?
 
-So now that those two work, what about other SCSI device types that
-appear as character devices?  The most obvious ones that come to mind
-are TYPE_MEDIUM_CHANGER and TYPE_TAPE.  As they do not appear
-under /sys/block, to enable the SCSI passthrough for target_core_mod
-using symlinks from sysfs -> configfs using the patch, the sysfs source
-needs to point to struct device..  For example, with the current code,
-the export of sr0 would now look like:
+PS1 seems like somebody forgot to update it for 2.6.27...
 
-# Enable sr0 for DVD target passthrough access
-mkdir $TARGET/core/pscsi_0/dvd_rom
-ln -s /sys/block/sr0/device $TARGET/core/pscsi_0/dvd_rom/dvd_passthrough
+PS2 current numbering scheme is OK
 
-So what about for TYPE_TYPE..?  I am guessing you would need to grab the
-struct device (to reference the struct scsi_device by struct kobject
-using the configfs patch) through /sys/class/$SCSI_HCTL/device, for the
-SCSI passthrough case, right..?
-
-# Also enable a SCSI tape for target passthrough access..?
-mkdir $TARGET/core/pscsi_1/my_superturbotapearray
-ln -s /sys/class/1:0:0:0/device $TARGET/core/pscsi_1/my_superturbotapearray/tape_passthrough
-
-# MEDIUM_CHANGER too..?
-mkdir $TARGET/core/pscsi_1/my_superturbomc
-ln -s /sys/class/1:0:1:0/device $TARGET/core/pscsi_1/my_superturbomc/mc_passthrough
-
-I don't have real MEDIUM_CHANGER onsite, so if anyone wanted to test
-this with my current patches in lio-core-2.6.git please let me know.
-I will try hooking up my old SCSI tape drive this weekend and see if
-TYPE_TAPE works. :-)
-
-The idea is through the change to allow sysfs source symlinks (the patch
-still needs to handle follow_link() correctly) to pass any struct
-kobject through the configfs struct config_item_operations API while
-calling kobject_get() and kobject_put() to protect/release the reference
-to struct kobject inside of fs/configfs/symlink.c.
-
---nab
-
+Thanks,
+Bart
