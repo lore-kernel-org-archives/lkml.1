@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYJQSKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYJQSTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbYJQSKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 14:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbYJQSKj
+	id S1756167AbYJQSTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 14:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYJQSTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 14:10:39 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46380 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756778AbYJQSKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 14:10:39 -0400
-Subject: Re: 2.6.27-git7 compile error (ppc)
-From: Badari Pulavarty <pbadari@gmail.com>
-To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1224265634.15582.3.camel@badari-desktop>
-References: <1224265634.15582.3.camel@badari-desktop>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 11:11:13 -0700
-Message-Id: <1224267073.15582.8.camel@badari-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 17 Oct 2008 14:19:09 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:20534 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbYJQSTI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 14:19:08 -0400
+Message-ID: <48F8D6F6.2050701@oracle.com>
+Date: Fri, 17 Oct 2008 11:18:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Subject: Re: [Bug #11404] BUG: in 2.6.23-rc3-git7 in do_cciss_intr
+References: <0pOgGB.A.uLG.E475IB@wind> <yWwteD.A.0r.j675IB@wind> <48F2718E.6010803@oracle.com>
+In-Reply-To: <48F2718E.6010803@oracle.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 10:47 -0700, Badari Pulavarty wrote:
-> Hi,
+Randy Dunlap wrote:
+> Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.26.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11404
+>> Subject		: BUG: in 2.6.23-rc3-git7 in do_cciss_intr
+>> Submitter	: rdunlap <randy.dunlap@oracle.com>
+>> Date		: 2008-08-21 5:52 (45 days old)
+>> References	: http://marc.info/?l=linux-kernel&m=121929819616273&w=4
+>> 		  http://marc.info/?l=linux-kernel&m=121932889105368&w=4
+>> Handled-By	: Miller, Mike (OS Dev) <Mike.Miller@hp.com>
+>> 		  James Bottomley <James.Bottomley@hansenpartnership.com>
 > 
-> I get this following compile error on my ppc box.
-> 
-> Let me know if its a known issue. Otherwise, I can figure out
-> whats happening.
-> 
-> Thanks,
-> Badari
+> Also happened with 2.6.27-git2.
 
-This is due to recent changes to move phys_add_t definition from
-arch/powerpc/include/asm/types.h to include/linux/types.h.
-
-arch/powerpc/include/asm/page.h needs phys_addr_t for
-CONFIG_RELOCATABLE. Needs fixing..
-
-Thanks,
-Badari
-
-> 
->   CC      arch/powerpc/mm/slb.o
-> In file included from /usr/src/linux-2.6.27/arch/powerpc/include/asm/mmu-hash64.h:16,
->                  from /usr/src/linux-2.6.27/arch/powerpc/include/asm/mmu.h:7,
->                  from /usr/src/linux-2.6.27/arch/powerpc/include/asm/pgtable.h:7,
->                  from arch/powerpc/mm/slb.c:19:
-> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: error: parse error before "memstart_addr"
-> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning: type defaults to `int' in declaration of `memstart_addr'
-> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:76: warning: data definition has no type or storage class
-> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: error: parse error before "kernstart_addr"
-> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning: type defaults to `int' in declaration of `kernstart_addr'
-> /usr/src/linux-2.6.27/arch/powerpc/include/asm/page.h:77: warning: data definition has no type or storage class
->   AS      arch/powerpc/lib/string.o
->   CC      arch/powerpc/lib/alloc.o
->   CALL    arch/powerpc/kernel/systbl_chk.sh
->   CC      arch/powerpc/kernel/sysfs.o
-> make[1]: *** [arch/powerpc/mm/slb.o] Error 1
-> make: *** [arch/powerpc/mm] Error 2
-> make: *** Waiting for unfinished jobs....
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+and on 2.6.27-git7.
