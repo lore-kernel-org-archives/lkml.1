@@ -1,212 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYJQMmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYJQMmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbYJQMmc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 08:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYJQMmW
+	id S1755859AbYJQMmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 08:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbYJQMmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 08:42:22 -0400
-Received: from vs162167.vserver.de ([62.75.162.167]:39217 "EHLO
-	unmaintained-free-software.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753729AbYJQMmU (ORCPT
+	Fri, 17 Oct 2008 08:42:39 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:65193 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754404AbYJQMmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 08:42:20 -0400
-Date: Fri, 17 Oct 2008 14:42:16 +0200
-From: Uwe Hermann <uwe@hermann-uwe.de>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
-       mtk.manpages@gmail.com, linux-doc@vger.kernel.org
-Subject: Re: [PATCH] doc: Fix broken references to Documentation/x86 files
-Message-ID: <20081017124216.GA4470@greenwood>
-References: <20081003160825.GA26167@greenwood> <Pine.LNX.4.64.0810031027070.18240@shark.he.net> <20081003175857.GA32504@greenwood>
+	Fri, 17 Oct 2008 08:42:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=AERyS/B1AsZsX1eVTsmp/7l2IVvXqmO7dEGXG5yzU+x19MpfVmfaw7mFycKwCgyz7s
+         CNiKwZqnX4I77OEgynmlGGjsrBx+sR0sgbXUhu/F+OCfb+hEvRU7C7m7z3eIVCzk6tnr
+         DA00fkkDBvk1bceTuJj9Na+67Wb2FGVehpdyg=
+Date: Fri, 17 Oct 2008 16:45:40 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: bfields@citi.umich.edu
+Subject: [PATCH 12/31] proc: move rest of /proc/locks to fs/locks.c
+Message-ID: <20081017124540.GM22653@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081003175857.GA32504@greenwood>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-has this patch been merged into some repository? It doesn't seem to be
-in Linus' linux-2.6 tree at least.
+>From 09a3878c4ba92dc906e6573245fb18bef5d760ff Mon Sep 17 00:00:00 2001
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Sat, 4 Oct 2008 22:34:18 +0400
+Subject: [PATCH 12/31] proc: move rest of /proc/locks to fs/locks.c
 
-On Fri, Oct 03, 2008 at 07:58:57PM +0200, Uwe Hermann wrote:
-> The Documentation/i386 and Documentation/x86_64 directories and their
-> contents have been moved into Documentation/x86. Fix references to
-> those files accordingly.
-> 
-> Signed-off-by: Uwe Hermann <uwe@hermann-uwe.de>
-> Acked-by: Randy Dunlap <rdunlap@xenotime.net>
-> 
-> diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
-> index 5b5aba4..84ae622 100644
-> --- a/Documentation/00-INDEX
-> +++ b/Documentation/00-INDEX
-> @@ -171,7 +171,7 @@ i2c/
->  	- directory with info about the I2C bus/protocol (2 wire, kHz speed).
->  i2o/
->  	- directory with info about the Linux I2O subsystem.
-> -i386/
-> +x86/i386/
->  	- directory with info about Linux on Intel 32 bit architecture.
->  ia64/
->  	- directory with info about Linux on Intel 64 bit architecture.
-> @@ -383,7 +383,7 @@ w1/
->  	- directory with documents regarding the 1-wire (w1) subsystem.
->  watchdog/
->  	- how to auto-reboot Linux if it has "fallen and can't get up". ;-)
-> -x86_64/
-> +x86/x86_64/
->  	- directory with info on Linux support for AMD x86-64 (Hammer) machines.
->  zorro.txt
->  	- info on writing drivers for Zorro bus devices found on Amigas.
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 1150444..5af144c 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -100,7 +100,7 @@ parameter is applicable:
->  	X86-32	X86-32, aka i386 architecture is enabled.
->  	X86-64	X86-64 architecture is enabled.
->  			More X86-64 boot options can be found in
-> -			Documentation/x86_64/boot-options.txt .
-> +			Documentation/x86/x86_64/boot-options.txt .
->  
->  In addition, the following text indicates that the option:
->  
-> @@ -111,10 +111,10 @@ In addition, the following text indicates that the option:
->  Parameters denoted with BOOT are actually interpreted by the boot
->  loader, and have no meaning to the kernel directly.
->  Do not modify the syntax of boot loader parameters without extreme
-> -need or coordination with <Documentation/i386/boot.txt>.
-> +need or coordination with <Documentation/x86/i386/boot.txt>.
->  
->  There are also arch-specific kernel-parameters not documented here.
-> -See for example <Documentation/x86_64/boot-options.txt>.
-> +See for example <Documentation/x86/x86_64/boot-options.txt>.
->  
->  Note that ALL kernel parameters listed below are CASE SENSITIVE, and that
->  a trailing = on the name of any parameter states that that parameter will
-> @@ -1187,7 +1187,7 @@ and is between 256 and 4096 characters. It is defined in the file
->  
->  	mce		[X86-32] Machine Check Exception
->  
-> -	mce=option	[X86-64] See Documentation/x86_64/boot-options.txt
-> +	mce=option	[X86-64] See Documentation/x86/x86_64/boot-options.txt
->  
->  	md=		[HW] RAID subsystems devices and level
->  			See Documentation/md.txt.
-> @@ -1650,7 +1650,7 @@ and is between 256 and 4096 characters. It is defined in the file
->  			See Documentation/paride.txt.
->  
->  	pirq=		[SMP,APIC] Manual mp-table setup
-> -			See Documentation/i386/IO-APIC.txt.
-> +			See Documentation/x86/i386/IO-APIC.txt.
->  
->  	plip=		[PPT,NET] Parallel port network link
->  			Format: { parport<nr> | timid | 0 }
-> @@ -2231,7 +2231,7 @@ and is between 256 and 4096 characters. It is defined in the file
->  			See Documentation/fb/modedb.txt.
->  
->  	vga=		[BOOT,X86-32] Select a particular video mode
-> -			See Documentation/i386/boot.txt and
-> +			See Documentation/x86/i386/boot.txt and
->  			Documentation/svga.txt.
->  			Use vga=ask for menu.
->  			This is actually a boot loader parameter; the value is
-> diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
-> index 7228369..da86fd5 100644
-> --- a/Documentation/lguest/lguest.c
-> +++ b/Documentation/lguest/lguest.c
-> @@ -402,7 +402,7 @@ static unsigned long load_bzimage(int fd)
->  	void *p = from_guest_phys(0x100000);
->  
->  	/* Go back to the start of the file and read the header.  It should be
-> -	 * a Linux boot header (see Documentation/i386/boot.txt) */
-> +	 * a Linux boot header (see Documentation/x86/i386/boot.txt) */
->  	lseek(fd, 0, SEEK_SET);
->  	read(fd, &boot, sizeof(boot));
->  
-> diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-> index b0c7b6c..89a2141 100644
-> --- a/Documentation/x86/x86_64/boot-options.txt
-> +++ b/Documentation/x86/x86_64/boot-options.txt
-> @@ -35,7 +35,7 @@ APICs
->  
->     nolapic	 Don't use the local APIC (alias for i386 compatibility)
->  
-> -   pirq=...	 See Documentation/i386/IO-APIC.txt
-> +   pirq=...	 See Documentation/x86/i386/IO-APIC.txt
->  
->     noapictimer	 Don't set up the APIC timer
->  
-> @@ -143,7 +143,7 @@ Non Executable Mappings
->  SMP
->  
->    additional_cpus=NUM Allow NUM more CPUs for hotplug
-> -		 (defaults are specified by the BIOS, see Documentation/x86_64/cpu-hotplug-spec)
-> +		 (defaults are specified by the BIOS, see Documentation/x86/x86_64/cpu-hotplug-spec)
->  
->  NUMA
->  
-> diff --git a/Documentation/x86/x86_64/fake-numa-for-cpusets b/Documentation/x86/x86_64/fake-numa-for-cpusets
-> index d1a985c..33bb566 100644
-> --- a/Documentation/x86/x86_64/fake-numa-for-cpusets
-> +++ b/Documentation/x86/x86_64/fake-numa-for-cpusets
-> @@ -10,7 +10,7 @@ amount of system memory that are available to a certain class of tasks.
->  For more information on the features of cpusets, see Documentation/cpusets.txt.
->  There are a number of different configurations you can use for your needs.  For
->  more information on the numa=fake command line option and its various ways of
-> -configuring fake nodes, see Documentation/x86_64/boot-options.txt.
-> +configuring fake nodes, see Documentation/x86/x86_64/boot-options.txt.
->  
->  For the purposes of this introduction, we'll assume a very primitive NUMA
->  emulation setup of "numa=fake=4*512,".  This will split our system memory into
-> 
-> 
-> ---
-> 
-> On Fri, Oct 03, 2008 at 10:30:33AM -0700, Randy.Dunlap wrote:
-> > On Fri, 3 Oct 2008, Uwe Hermann wrote:
-> > 
-> > > The Documentation/i386 and Documentation/x86_64 directories and their
-> > > contents have been moved into Documentation/x86. Fix references to
-> > > those files accordingly.
-> > > 
-> > > Signed-off-by: Uwe Hermann <uwe@hermann-uwe.de>
-> > > 
-> > > diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-> > > index b0c7b6c..1b1512f 100644
-> > > --- a/Documentation/x86/x86_64/boot-options.txt
-> > > +++ b/Documentation/x86/x86_64/boot-options.txt
-> > > @@ -143,7 +143,7 @@ Non Executable Mappings
-> > >  SMP
-> > >  
-> > >    additional_cpus=NUM Allow NUM more CPUs for hotplug
-> > > -		 (defaults are specified by the BIOS, see Documentation/x86_64/cpu-hotplug-spec)
-> > > +		 (defaults are specified by the BIOS, see Documentation/x86/x86_64/cpu-hotplug-spec)
-> > 
-> > This file needs one more line patched.  It still contains this:
-> > 
-> >    pirq=...	 See Documentation/i386/IO-APIC.txt
-> > 
-> > so change that one also and then you can add
-> >   Acked-by: Randy Dunlap <rdunlap@xenotime.net>
-> > to it if you want to.
-> 
-> Done, thanks. Updated patch above.
-> 
-> 
-> Uwe.
-> -- 
-> http://www.hermann-uwe.de  | http://www.holsham-traders.de
-> http://www.crazy-hacks.org | http://www.unmaintained-free-software.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+ fs/locks.c          |   22 +++++++++++++++++++++-
+ fs/proc/proc_misc.c |   17 -----------------
+ include/linux/fs.h  |    1 -
+ 3 files changed, 21 insertions(+), 19 deletions(-)
 
+diff --git a/fs/locks.c b/fs/locks.c
+index 5eb259e..90e87f5 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -2078,6 +2078,7 @@ int vfs_cancel_lock(struct file *filp, struct file_lock *fl)
+ EXPORT_SYMBOL_GPL(vfs_cancel_lock);
+ 
+ #ifdef CONFIG_PROC_FS
++#include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ 
+ static void lock_get_status(struct seq_file *f, struct file_lock *fl,
+@@ -2183,12 +2184,31 @@ static void locks_stop(struct seq_file *f, void *v)
+ 	unlock_kernel();
+ }
+ 
+-struct seq_operations locks_seq_operations = {
++static const struct seq_operations locks_seq_operations = {
+ 	.start	= locks_start,
+ 	.next	= locks_next,
+ 	.stop	= locks_stop,
+ 	.show	= locks_show,
+ };
++
++static int locks_open(struct inode *inode, struct file *filp)
++{
++	return seq_open(filp, &locks_seq_operations);
++}
++
++static const struct file_operations proc_locks_operations = {
++	.open		= locks_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
++static int __init proc_locks_init(void)
++{
++	proc_create("locks", 0, NULL, &proc_locks_operations);
++	return 0;
++}
++module_init(proc_locks_init);
+ #endif
+ 
+ /**
+diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index 8ae7d38..19cf7a0 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -455,20 +455,6 @@ static const struct file_operations proc_interrupts_operations = {
+ 	.release	= seq_release,
+ };
+ 
+-#ifdef CONFIG_FILE_LOCKING
+-static int locks_open(struct inode *inode, struct file *filp)
+-{
+-	return seq_open(filp, &locks_seq_operations);
+-}
+-
+-static const struct file_operations proc_locks_operations = {
+-	.open		= locks_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= seq_release,
+-};
+-#endif /* CONFIG_FILE_LOCKING */
+-
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ #define KPMSIZE sizeof(u64)
+ #define KPMMASK (KPMSIZE - 1)
+@@ -607,9 +593,6 @@ void __init proc_misc_init(void)
+ 	proc_symlink("mounts", NULL, "self/mounts");
+ 
+ 	/* And now for trickier ones */
+-#ifdef CONFIG_FILE_LOCKING
+-	proc_create("locks", 0, NULL, &proc_locks_operations);
+-#endif
+ 	proc_create("devices", 0, NULL, &proc_devinfo_operations);
+ 	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
+ #ifdef CONFIG_BLOCK
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a6a625b..0240495 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1037,7 +1037,6 @@ extern int vfs_setlease(struct file *, long, struct file_lock **);
+ extern int lease_modify(struct file_lock **, int);
+ extern int lock_may_read(struct inode *, loff_t start, unsigned long count);
+ extern int lock_may_write(struct inode *, loff_t start, unsigned long count);
+-extern struct seq_operations locks_seq_operations;
+ #else /* !CONFIG_FILE_LOCKING */
+ #define fcntl_getlk(a, b) ({ -EINVAL; })
+ #define fcntl_setlk(a, b, c, d) ({ -EACCES; })
 -- 
-http://www.hermann-uwe.de  | http://www.holsham-traders.de
-http://www.crazy-hacks.org | http://www.unmaintained-free-software.org
+1.5.6.5
+
