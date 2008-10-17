@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYJQKTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbYJQKWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbYJQKTG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 06:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYJQKSy
+	id S1754327AbYJQKWJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 06:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYJQKV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 06:18:54 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49791 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751039AbYJQKSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 06:18:53 -0400
-Date: Fri, 17 Oct 2008 12:18:44 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: raz ben yehuda <razb@bitband.com>
-Cc: lenb@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: Subject: [PATCH 1/2] linux-acpi: sos documentation
-Message-ID: <20081017101844.GB10850@ucw.cz>
-References: <1223941094.5437.17.camel@raz>
+	Fri, 17 Oct 2008 06:21:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60506 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbYJQKV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 06:21:56 -0400
+Message-ID: <48F8664A.2000205@cn.fujitsu.com>
+Date: Fri, 17 Oct 2008 18:17:46 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1223941094.5437.17.camel@raz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: fix the wrong mask_len
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-10-14 01:38:13, raz ben yehuda wrote:
-> From: Raz Ben Yehuda <razb@bitband.com>
-> 
-> Signed-off-by: Raz Ben Yehuda <razb@bitband.com>
-> ---
+If the NR_CPUS isn't a multiple of 32, we get a truncated string of sched
+domains by catting /proc/schedstat. This is caused by the wrong mask_len.
 
-No changelog, useful...
+This patch fix it.
 
-> diff -urpN linux-2.6.27/Documentation/SOS.txt linux-2.6.27-dbg/Documentation/SOS.txt
-> --- linux-2.6.27/Documentation/SOS.txt	1970-01-01 02:00:00.000000000 +0200
-> +++ linux-2.6.27-dbg/Documentation/SOS.txt	2008-10-14 00:29:32.000000000 +0200
-> @@ -0,0 +1,14 @@
-> +				SOS
-> +
-> +SOS is a service oriented scheduler. SOS is a method of relating one or more
-> +distinct services to a processor.In other words, a core(s) is assigned to
-> +a chore, not a chore to a core.
-> +Technically speaking, by virtually removing a processor from the operating
-> +system, using Linux ACPI facility one can bind processors to services.
-> +SOS management and control is done by sosctl.
-> +To fully understand what is SOS, when should it be used it and for which
-> +puprose,please refer to http://sos-linux.cvs.sourceforge.net/sos-linux/sos/Documentation/.
-> +
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
 
-I don't think this should be acpi specific... and you should provide
-real doc, not pointer to web page.
+---
+ kernel/sched_stats.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Plus select some better acronym.
-									Pavel
-
+diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
+index 8385d43..81365b3 100644
+--- a/kernel/sched_stats.h
++++ b/kernel/sched_stats.h
+@@ -9,7 +9,7 @@
+ static int show_schedstat(struct seq_file *seq, void *v)
+ {
+ 	int cpu;
+-	int mask_len = NR_CPUS/32 * 9;
++	int mask_len = (NR_CPUS/32 + 1) * 9;
+ 	char *mask_str = kmalloc(mask_len, GFP_KERNEL);
+ 
+ 	if (mask_str == NULL)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.4.rc3
+
