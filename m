@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYJQANs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYJQAPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041AbYJQANs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 20:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYJQANj
+	id S1756210AbYJQAPs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 20:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYJQAPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 20:13:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751145AbYJQANi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 20:13:38 -0400
-Date: Thu, 16 Oct 2008 17:12:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC patch 15/15] LTTng timestamp x86
-In-Reply-To: <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0810161709230.3288@nehalem.linux-foundation.org>
-References: <20081016232729.699004293@polymtl.ca> <20081016234657.837704867@polymtl.ca> <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 16 Oct 2008 20:15:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36005 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752606AbYJQAPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Oct 2008 20:15:39 -0400
+Subject: Re: [PATCH] sony-laptop: Ignore missing _DIS method on pic device
+From: Adam Jackson <ajax@redhat.com>
+To: Mattia Dongili <malattia@linux.it>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <20081016224903.GD21963@inferi.kami.home>
+References: <1224192550-366-1-git-send-email-ajax@redhat.com>
+	 <20081016224903.GD21963@inferi.kami.home>
+Content-Type: text/plain
+Date: Thu, 16 Oct 2008 21:03:20 -0400
+Message-Id: <1224205400.29257.67.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 16 Oct 2008, Linus Torvalds wrote:
+On Fri, 2008-10-17 at 07:49 +0900, Mattia Dongili wrote:
+> On Thu, Oct 16, 2008 at 05:29:10PM -0400, Adam Jackson wrote:
+> > From: Matthew Garrett <mjg59@srcf.ucam.org>
+> > 
+> > At least the Vaio VGN-Z540N doesn't have this method, so let's not fail
+> > to suspend just because it doesn't exist.
 > 
-> Perhaps more importantly - if the TSC really are out of whack, that just 
-> means that now all your timestamps are worthless, because the value you 
-> calculate ends up having NOTHING to do with the timestamp. So you cannot 
-> even use it to see how long something took, because it may be that you're 
-> running on the CPU that runs behind, and all you ever see is the value of 
-> LTT_MIN_PROBE_DURATION.
+> Do you happen to have a DSDT dump for this model? I'd be glad to see it.
 
-If it isn't clear: the alternative is to just always use local timestamps.
+'iasl -d' output:
 
-At least that way the timestamps mean _something_. You can get the 
-difference between two events when they happen on the same CPU, and it is 
-about as meaningful as it can be.
+http://people.freedesktop.org/~ajax/synephrine-dsdt.dsl
 
-Don't even _try_ to make a global clock.
+- ajax
 
-Yes, to be able to compare across CPU's you'd need to have extra 
-synchronization information (eg offset and frequency things), but quite 
-frankly, the "global TSC" thing is already worse than even a totally 
-non-synchronized TSC for the above reasons. 
-
-			Linus
