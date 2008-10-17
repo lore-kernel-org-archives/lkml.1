@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYJQAop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYJQAsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbYJQAop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 20:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYJQAoh
+	id S1756280AbYJQAsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 20:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYJQAsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 20:44:37 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:40393 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753482AbYJQAog (ORCPT
+	Thu, 16 Oct 2008 20:48:09 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41049 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbYJQAsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 20:44:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0D/eY5A1sf25cBA4IInW2mMSTHfkCsNukCZ8eR8k52MEj55LPwUAUIEGJbVcNlwYtGIGGJdm+VF27cYJ08kePiGstlD+Dw4bIquxmIHzZHZ46SL67UHEFZe2sR2osrKYMnGFwAgKtewhZYhs+vvSnhIqIciAPYDeOvLFx9n1HSw=  ;
-X-YMail-OSG: pcvNxpQVM1nVGTmZi1U4nJRd.DQ.W2.OLvF03MlsvANAaGs8nKFr3Uj8As_diO3T5Lw89Uu_ub9jBkU3avK8SeZrC9781x0vktVxReEJIHl1HxEQTvOrPURjaDIOLseHm611iU0DmldueHOmY7pvwao2
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] gpiolib: fix oops in gpio_get_value_cansleep()
-Date: Thu, 16 Oct 2008 17:44:33 -0700
-User-Agent: KMail/1.9.9
-Cc: avorontsov@ru.mvista.com, linux-kernel@vger.kernel.org, stable@kernel.org
-References: <200810160845.22281.david-b@pacbell.net> <20081016161718.e05864da.akpm@linux-foundation.org>
-In-Reply-To: <20081016161718.e05864da.akpm@linux-foundation.org>
+	Thu, 16 Oct 2008 20:48:08 -0400
+Date: Thu, 16 Oct 2008 20:48:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ftrace: powerpc: remove startup functions from tracing
+In-Reply-To: <20081016181452.GA29739@yoda.jdub.homelinux.org>
+Message-ID: <alpine.DEB.1.10.0810162046570.20570@gandalf.stny.rr.com>
+References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu> <20081016181452.GA29739@yoda.jdub.homelinux.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810161744.34005.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 October 2008, Andrew Morton wrote:
-> > From: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > We can get the following oops from gpio_get_value_cansleep()
-> > when a GPIO controller doesn't provide a get() callback:
-> 
-> We can, but do we? ;)
 
-I think it's unlikely without the sysfs interface.
+[
+  Josh, can you see if this allows you to boot on PowerPC?
+  It worked on my powerbook.
+]
 
+The early init code in PowerPC is not mapped to their final locations
+and all jumps and memory references must be done with relative jumps
+and accesses.
 
-> iow: is this needed in any -stable release?
+The lib files in the powerpc directory are called in early boot, and
+since mcount will perform direct access to memory, the lib files need
+not be traced.
 
-The bug has been there since 2.6.25 but nobody else seems
-to have reported it.  Is the general policy to fix all
-oopses that *could* appear?  I'd send it for 2.6.27-stable,
-since that's got the sysfs hooks.  And older kernels if
-bug likelihood isn't a major concern.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/powerpc/lib/Makefile |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-- Dave
+Index: linux-compile.git/arch/powerpc/lib/Makefile
+===================================================================
+--- linux-compile.git.orig/arch/powerpc/lib/Makefile	2008-10-16 19:26:39.000000000 -0400
++++ linux-compile.git/arch/powerpc/lib/Makefile	2008-10-16 19:26:49.000000000 -0400
+@@ -2,6 +2,11 @@
+ # Makefile for ppc-specific library files..
+ #
  
++ifdef CONFIG_FTRACE
++ORIG_CFLAGS := $(KBUILD_CFLAGS)
++KBUILD_CFLAGS = $(subst -pg,,$(ORIG_CFLAGS))
++endif
++
+ ifeq ($(CONFIG_PPC64),y)
+ EXTRA_CFLAGS		+= -mno-minimal-toc
+ endif
 
 
