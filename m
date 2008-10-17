@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbYJQIdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbYJQIfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbYJQIdB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 04:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYJQIcv
+	id S1753779AbYJQIfn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 04:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYJQIfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 04:32:51 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:45905 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbYJQIcu (ORCPT
+	Fri, 17 Oct 2008 04:35:32 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38234 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbYJQIfb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 04:32:50 -0400
-Message-ID: <48F84DAB.4060002@nttdata.co.jp>
-Date: Fri, 17 Oct 2008 17:32:43 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+	Fri, 17 Oct 2008 04:35:31 -0400
+Date: Fri, 17 Oct 2008 10:37:00 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] x86 ACPI: Fix breakage of resume on 64-bit UP systems
+	with SMP kernel
+Message-ID: <20081017083646.GA25445@elf.ucw.cz>
+References: <200810170126.27890.rjw@sisk.pl>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, serue@us.ibm.com,
-       sds@tycho.nsa.gov, jmorris@namei.org, chrisw@sous-sol.org,
-       dhowells@redhat.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, haradats@nttdata.co.jp,
-       akpm@linux-foundation.org
-Subject: Re: [TOMOYO #10 (linux-next) 7/8] File operation restriction part.
-References: <20081009042814.398846861@nttdata.co.jp> <20081009042922.939610141@nttdata.co.jp> <20081009164836.GA5480@us.ibm.com> <200810120909.GDF95392.SQOFFFHVtOMOJL@I-love.SAKURA.ne.jp> <20081015012916.GF6874@linux.vnet.ibm.com> <48F6BD8E.4050402@nttdata.co.jp> <20081016151003.GA6772@linux.vnet.ibm.com>
-In-Reply-To: <20081016151003.GA6772@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Oct 2008 08:32:44.0368 (UTC) FILETIME=[ED404500:01C93032]
+Content-Disposition: inline
+In-Reply-To: <200810170126.27890.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting from http://lkml.org/lkml/2008/2/2/255
-> Similarly, the smp_read_barrier_depends() is only for initialization
-> of something that is about to enter the list.  As with the smp_wmb()
-> primitive, smp_read_barrier_depends() also is not to protect against
-> freeing.  Instead, it is rcu_read_lock() and rcu_read_unlock() that
-> protect against freeing.
-We don't need to use rcu_read_lock() and rcu_read_unlock() because 
-we don't free elements in a list. I see.
-
-However, to ensure the reader gets up-to-date value, we need to use 
-smp_read_barrier_depends() (which is expanded to "mb()" for SMP on 
-Alpha, "read_barrier_depends()" for SMP on H8300, "((void)0)" for SMP 
-on M68K-nommu, "((void)0)" for M68K, "do { } while (0)" otherwise) 
-whenever the reader fetches an element in a list.
-
-Paul E. McKenney wrote:
-> But fair enough.  How about the following?
+On Fri 2008-10-17 01:26:27, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> 	#define worm_dereference()	rcu_dereference()
-> 	#define worm_assign_pointer()	rcu_assign_pointer()
+> x86 ACPI: Fix breakage of resume on 64-bit UP systems with SMP kernel
 > 
-So, I understood that the rcu_dereference() and rcu_assign_pointer() 
-are not only for RCU. They are needed to ensure the reader gets 
-up-to-date value. Then, their names should be var_dereference() and 
-var_assign_pointer() or something, shouldn't they? The "rcu_" prefix 
-and comments on rcu_dereference in include/linux/rcupdate.h sound for 
-me that they are used for variables protected by RCU locking 
-mechanism only...
+> We are now using per CPU GDT tables in head_64.S and the original
+> early_gdt_descr.address is invalidated after boot by 
+> setup_per_cpu_areas().  This breaks resume from suspend to RAM on
+> x86_64 UP systems using SMP kernels, because this part of head_64.S
+> is also executed during the resume and the invalid GDT address
+> causes the system to crash.  It doesn't break on 'true' SMP systems,
+> because early_gdt_descr.address is modified every time
+> native_cpu_up() runs.  However, during resume it should point to the
+> GDT of the boot CPU rather than to another CPU's GDT.
+> 
+> For this reason, during suspend to RAM always make
+> early_gdt_descr.address point to the boot CPU's GDT.
+> 
+> This fixes http://bugzilla.kernel.org/show_bug.cgi?id=11568, which
+> is a regression from 2.6.26.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Reported-and-tested-by: Andy Wettstein <ajw1980@gmail.com>
 
-You are suggesting to explicitly call rcu_assign_pointer() (which 
-will call smp_wmb()) and rcu_dereference() (which will call 
-smp_read_barrier_depends()). But I think that the various cache 
-invalidations driven by the workload will call rcu_assign_pointer() 
-and rcu_dereference() sooner or later. So, if the reader can tolerate 
-reading non-up-to-date value (in fact, TOMOYO can), isn't there a 
-choice to omit rcu_assign_pointer() and rcu_dereference() (which will 
-cost "mb()" for SMP on Alpha)?
+Acked-by: Pavel Machek <pavel@suse.cz>
+									Pavel
 
-Regards,
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
