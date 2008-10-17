@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbYJQBxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYJQCIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbYJQBxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Oct 2008 21:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbYJQBxH
+	id S1753803AbYJQCIk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Oct 2008 22:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJQCI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Oct 2008 21:53:07 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:9472 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbYJQBxF (ORCPT
+	Thu, 16 Oct 2008 22:08:29 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:56530 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751145AbYJQCI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Oct 2008 21:53:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XJ8qyJGK9MwKjoV6KaR2RI6xOjWBvMjQ4UL+44wBWNLggvA2TGVyQ+fAFz3AE5i0nb
-         Bfnl72MxesnpXLm65u75lLIKHaKdHd7TafEjLbMmEjBXyt1ADnMPMPB1JO+lgBsIdtiI
-         zCIvT9iM2aNZu1qKw35Mhz96xeQrm760wPdEY=
-Message-ID: <a8e1da0810161853m3bbd8c1hf7c2ed5adf4cc4d6@mail.gmail.com>
-Date: Fri, 17 Oct 2008 09:53:04 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Theodore Tso" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <20081016153512.GE12962@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 16 Oct 2008 22:08:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAN+M90hMQWq+/2dsb2JhbACBcsF/g2w
+Date: Thu, 16 Oct 2008 22:08:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: David Miller <davem@davemloft.net>
+Cc: paulus@samba.org, torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       rostedt@goodmis.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       benh@kernel.crashing.org, mingo@redhat.com
+Subject: Re: [RFC patch 04/15] get_cycles() : powerpc64 HAVE_GET_CYCLES
+	(update)
+Message-ID: <20081017020813.GA32468@Krystal>
+References: <20081016234656.055839676@polymtl.ca> <18679.56239.74999.534588@cargo.ozlabs.ibm.com> <20081017004328.GA29768@Krystal> <20081016.184252.193691889.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081016002509.GA25868@kroah.com>
-	 <20081016142619.GA3756@tatooine.rebelbase.local>
-	 <20081016153512.GE12962@mit.edu>
+In-Reply-To: <20081016.184252.193691889.davem@davemloft.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:06:04 up 134 days,  6:46, 10 users,  load average: 0.47, 0.43,
+	0.52
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 11:35 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Thu, Oct 16, 2008 at 04:26:19PM +0200, markus reichelt wrote:
->> Why not just keep it? It has worked so far, and from a strictly
->> end-user point of view I cannot see any advantages at all with a new
->> scheme. The ideas mentioned so far don't cut it either.
->
-> I'd cast a vote for keeping it as well.  "2.6" is actually a great
-> marker so that people know that it's highly likely the version number
-> is for the Linux kernel.  Contrast "I'm running 2.6.27" versus "I'm
-> running 27" (huh, what does that mean?) or "I'm running the 27 kernel"
-> or "I'm running Linux kernel version 27" or worse yet "I'm running
-> 2008-03".  Something like "2.6.27" is just easier to say, and less
-> prone to misunderstanding/confusion.
->
-> Let's just leave things the way they are.
+* David Miller (davem@davemloft.net) wrote:
+> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Date: Thu, 16 Oct 2008 20:43:28 -0400
+> 
+> > * Paul Mackerras (paulus@samba.org) wrote:
+> > > Mathieu Desnoyers writes:
+> > > 
+> > > > This patch selects HAVE_GET_CYCLES and makes sure get_cycles_barrier() and
+> > > > get_cycles_rate() are implemented.
+> > > 
+> > > [snip]
+> > > 
+> > > > +static inline cycles_t get_cycles_rate(void)
+> > > > +{
+> > > > +	return CLOCK_TICK_RATE;
+> > > > +}
+> > > 
+> > > CLOCK_TICK_RATE is certainly wrong.  You want ppc_tb_freq (declared in
+> > > asm/time.h).  Or tb_ticks_per_sec, since we seem to have two variables
+> > > for exactly the same thing, for some reason. :)
+> > > 
+> > > Paul.
+> > 
+> > Ok, this should work better. Thanks !
+> > 
+> > Do you know if mtfb implies an instruction synchronization (isync) ? I
+> > think that if it does not, the new get_cycles_barrier() might have to be
+> > used at some locations in the kernel code if more precise timestamp
+> > order is required.
+> 
+> You'll need to make a similar fix on sparc64.
 
-Agree.
+I guess you are talking about using sparc64_get_clock_tick rather than
+CLOCK_TICK_RATE ? I assume sparc64_get_clock_tick() done on any CPU will
+return the same rate ?
 
-Additionally, we can add some range to x.y.z
+Thanks,
 
-such as:
-
-x: 1-9
-y: 1-9
-z: 1-30
-
-so we can jumo to 2.7.1 after 2.6.30
+Mathieu
 
 -- 
-Regards
-dave
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
