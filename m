@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYJQT2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYJQT2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbYJQT2A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 15:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbYJQT1x
+	id S1755987AbYJQT2X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 15:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757401AbYJQT2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 15:27:53 -0400
-Received: from pih-relay08.plus.net ([212.159.14.20]:52014 "EHLO
-	pih-relay08.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754965AbYJQT1w (ORCPT
+	Fri, 17 Oct 2008 15:28:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50688 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755407AbYJQT2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 15:27:52 -0400
-X-Greylist: delayed 1814 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 15:27:52 EDT
-Message-ID: <48F8E019.20600@mimc.co.uk>
-Date: Fri, 17 Oct 2008 19:57:29 +0100
-From: Mark Jackson <mpfj@mimc.co.uk>
-Organization: Mercury IMC Ltd
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 17 Oct 2008 15:28:14 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 0/3] Small series of further hardware updates
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Fri, 17 Oct 2008 20:27:53 +0100
+Message-ID: <20081017192309.9308.74370.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, lkml <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH] Add Dallas DS1390 RTC chip
-References: <48F452BE.2030901@mimc.co.uk> <20081014101703.1ded0259@i1501.lan.towertech.it> <48F8467C.5010902@mimc.co.uk> <200810170829.06699.david-b@pacbell.net>
-In-Reply-To: <200810170829.06699.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: eb6151a6c486075017e7a9bfe0914a4a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> On Friday 17 October 2008, Mark Jackson wrote:
->>>> +    /* Can tx_buf and rx_buf be equal? The doc in spi.h is not sure... */
->>>> +    xfer.tx_buf = chip->tx_buf;
->>>> +    xfer.rx_buf = chip->rx_buf;
->>>  you use the same buffer a few functions below. either
->>>  one way or the other. please investigate with the spi subsystem maintainer.
->> David,
->>
->> Just to double check (as per Alessandro's suggestion), is this okay use of the 
->> spi buffers ?
-> 
-> Yes.  That comment deserves to be updated.
-> 
-> SPI does bi-directional I/O, and the underlying controller
-> should be able to just replace the contents of a buffer
-> with a spi_transfer that uses the same rx and tx buffers.
+This adds support for break on/off to the EPCA driver, thanks to Digi providing
+the needed firmware info. It also adds a pile of OxSemi devices to the 8250_pci
+drivers, these being the 'Tornado' series adapters. They actually have a pile
+of additional functionality it would be nice to support but this simply teaches
+the kernel to recognize them and identify them nicely.
+---
 
-Excellent.  Thanks for the confirmation.
+Alan Cox (1):
+      epca: Add infinite break support
 
-Regards
-Mark
+Lee Howard (2):
+      8250: Add more OxSemi devices
+      8250: Oxford Semiconductor Devices
+
+
+ drivers/char/epca.c          |    6 +
+ drivers/parport/parport_pc.c |   20 +++-
+ drivers/serial/8250_pci.c    |  231 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h      |    8 +
+ 4 files changed, 263 insertions(+), 2 deletions(-)
+
+-- 
+"Intel sued Cyrix five times and they never won. Intel they just love lawsuits"
+		--  Wen Chi Chen, Via's CEO
+
