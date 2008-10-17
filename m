@@ -1,332 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbYJQIJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbYJQIJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbYJQIJM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 04:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYJQIIl
+	id S1754271AbYJQIJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 04:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYJQIIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 04:08:41 -0400
-Received: from mercuryimc.plus.com ([80.229.200.144]:53120 "EHLO
-	mimc.mimc.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751902AbYJQIIh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 04:08:37 -0400
-Message-ID: <48F8467C.5010902@mimc.co.uk>
-Date: Fri, 17 Oct 2008 09:02:04 +0100
-From: Mark Jackson <mpfj@mimc.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 17 Oct 2008 04:08:49 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:40482 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752945AbYJQIIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 04:08:45 -0400
+Date: Fri, 17 Oct 2008 10:08:40 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+Message-ID: <20081017080840.GB21671@anita.doom>
+Mail-Followup-To: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+References: <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com> <20081008080848.GA20525@anita.doom> <48F3088C.9010002@kernel.org> <48F308E8.4030503@kernel.org> <20081013142951.GB23124@anita.doom> <48F58A96.8040406@kernel.org>
 MIME-Version: 1.0
-To: dbrownell@users.sourceforge.net
-CC: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, lkml <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH] Add Dallas DS1390 RTC chip
-References: <48F452BE.2030901@mimc.co.uk> <20081014101703.1ded0259@i1501.lan.towertech.it>
-In-Reply-To: <20081014101703.1ded0259@i1501.lan.towertech.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F58A96.8040406@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David ... please see comments below regarding spi buffers ...
+Hello!
 
-Regards
-Mark
+The patch before, I told it always boots but the last two days I had
+much difficulties to boot. It was hard resetting and waiting a couple of
+times before bailing out with no mountable root FS. 
 
-Alessandro Zummo wrote:
-> On Tue, 14 Oct 2008 09:05:18 +0100
-> Mark Jackson <mpfj@mimc.co.uk> wrote:
-> 
->  Hi Mark,
-> 
->    a few notes below:
-> 
->> +#include <linux/module.h>
->> +#include <linux/version.h>
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/init.h>
->> +#include <linux/rtc.h>
->> +#include <linux/spi/spi.h>
->> +#include <linux/bcd.h>
->> +#include <linux/delay.h>
-> 
->  Please check that you require all of those includes.
-> 
-> 
->> +struct ds1390
->> +{
->> +	struct rtc_device *rtc;
->> +	u8 buf[9];	/* cmd + 8 registers */
->> +	u8 tx_buf[2];
->> +	u8 rx_buf[2];
->> +};
->> +
->> +static void ds1390_set_reg(struct device *dev, unsigned char address,
->> +				unsigned char data)
->> +{
->> +	struct spi_device *spi = to_spi_device(dev);
->> +	unsigned char buf[2];
->> +
->> +	/* MSB must be '1' to write */
->> +	buf[0] = address | 0x80;
->> +	buf[1] = data;
->> +
->> +	spi_write(spi, buf, 2);
->> +}
->> +
->> +static int ds1390_get_reg(struct device *dev, unsigned char address,
->> +				unsigned char *data)
->> +{
->> +	struct spi_device *spi = to_spi_device(dev);
->> +	struct ds1390 *chip = dev_get_drvdata(dev);
->> +	struct spi_message message;
->> +	struct spi_transfer xfer;
->> +	int status;
->> +
->> +	if (!data)
->> +		return -EINVAL;
->> +
->> +	/* Build our spi message */
->> +	spi_message_init(&message);
->> +	memset(&xfer, 0, sizeof(xfer));
->> +	xfer.len = 2;
->> +	/* Can tx_buf and rx_buf be equal? The doc in spi.h is not sure... */
->> +	xfer.tx_buf = chip->tx_buf;
->> +	xfer.rx_buf = chip->rx_buf;
-> 
->  you use the same buffer a few functions below. either
->  one way or the other. please investigate with the spi subsystem maintainer.
+One time it was switched off three hours and the next time overnight, I
+powercyced a couple of times. If I am the only one experiencing this
+difficulties (am I the only one with this chipset/revision reporting?),
+shouldn't we consider this machine... broken? I change SATA cables from
+time to time, but these seem all to be okay. I mean, if it is really
+_that_ strange...
 
-David,
+Am 2008-10-15 15:15 +0900 schrieb Tejun Heo:
+> Hmm... this is proving to be much more difficult than I expected. :-(
 
-Just to double check (as per Alessandro's suggestion), is this okay use of the 
-spi buffers ?
+:-(
 
-I took the code from an existing RTC driver (rtc-max6902), so I am assuming that
-this code has already passed judgement.
+> Can you please try the attached patch?
 
-> 
-> 
->> +
->> +	/* Clear MSB to indicate read */
->> +	chip->tx_buf[0] = address & 0x7f;
->> +
->> +	spi_message_add_tail(&xfer, &message);
->> +
->> +	/* do the i/o */
->> +	status = spi_sync(spi, &message);
->> +	if (status == 0)
->> +	{
->> +		status = message.status;
->> +	}
->> +	else
->> +	{
->> +		return status;
->> +	}
-> 
->  should be cleaner in this way:
-> 
->  if (status != 0)
-> 	return status;
-> 
->  *data = chip->rx_buf[1];
-> 
->  return message.status;
-> 
-> 
->> +static int ds1390_get_datetime(struct device *dev, struct rtc_time *dt)
->> +{
->> +	struct spi_device *spi = to_spi_device(dev);
->> +	struct ds1390 *chip = dev_get_drvdata(dev);
->> +	struct spi_message message;
->> +	struct spi_transfer xfer;
->> +	int status;
->> +
->> +	/* build the message */
->> +	spi_message_init(&message);
->> +	memset(&xfer, 0, sizeof(xfer));
->> +	xfer.len = 1 + 7;	/* read command + 7 registers */
->> +	xfer.tx_buf = chip->buf;
->> +	xfer.rx_buf = chip->buf;
-> 
->  the buffer mentioned above.
+I fetched 2.6.27 now and tried this patch. A short powercycle, reboot
+wasn't a problem yesterday, this morning also not, so looks well so far,
+tihs is how /var/log/messages looks now:
 
-... see text above ...
+Oct 17 07:24:49 zappa sata_nv 0000:00:0a.0: version 3.5
+Oct 17 07:24:49 zappa ACPI: PCI Interrupt Link [LTID] enabled at IRQ 21
+Oct 17 07:24:49 zappa sata_nv 0000:00:0a.0: PCI INT A -> Link[LTID] -> GSI 21 (level, low) -> IRQ 21
+Oct 17 07:24:49 zappa sata_nv 0000:00:0a.0: setting latency timer to 64
+Oct 17 07:24:49 zappa scsi0 : sata_nv
+Oct 17 07:24:49 zappa scsi1 : sata_nv
+Oct 17 07:24:49 zappa ata1: SATA max UDMA/133 cmd 0xf80 ctl 0xf00 bmdma 0xd800 irq 21
+Oct 17 07:24:49 zappa ata2: SATA max UDMA/133 cmd 0xe80 ctl 0xe00 bmdma 0xd808 irq 21
+Oct 17 07:24:49 zappa ata1: hard resetting link
+Oct 17 07:24:49 zappa ata1: SATA link down (SStatus 0 SControl 300)
+Oct 17 07:24:49 zappa ata1: EH complete
+Oct 17 07:24:49 zappa ata2: hard resetting link
+Oct 17 07:24:49 zappa XXX CLASSIFY 01:00:00
+Oct 17 07:24:49 zappa ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+Oct 17 07:24:49 zappa ata2.00: ATA-7: SAMSUNG HD753LJ, 1AA01106, max UDMA7
+Oct 17 07:24:49 zappa ata2.00: 1465149168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+Oct 17 07:24:49 zappa ata2.00: configured for UDMA/133
+Oct 17 07:24:49 zappa ata2: EH complete
+Oct 17 07:24:49 zappa isa bounce pool size: 16 pages
+Oct 17 07:24:49 zappa scsi 1:0:0:0: Direct-Access     ATA      SAMSUNG HD753LJ  1AA0 PQ: 0 ANSI: 5
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] Write Protect is off
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] 1465149168 512-byte hardware sectors (750156 MB)
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] Write Protect is off
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+Oct 17 07:24:49 zappa sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
+Oct 17 07:24:49 zappa sd 1:0:0:0: [sda] Attached SCSI disk
 
-> 
-> 
->> +	chip->buf[0] = DS1390_REG_SECONDS;
->> +	spi_message_add_tail(&xfer, &message);
->> +
->> +	/* do the i/o */
->> +	status = spi_sync(spi, &message);
->> +	if (status == 0)
->> +	{
->> +		status = message.status;
->> +	}
->> +	else
->> +	{
->> +		return status;
->> +	}
-> 
->  ditto.
-> 
->> +	/* The chip sends data in this order:
->> +	 * Seconds, Minutes, Hours, Day, Date, Month / Century, Year */
->> +	dt->tm_sec	= BCD2BIN(chip->buf[1]);
->> +	dt->tm_min	= BCD2BIN(chip->buf[2]);
->> +	dt->tm_hour	= BCD2BIN(chip->buf[3]);
->> +	dt->tm_wday	= BCD2BIN(chip->buf[4]);
->> +	dt->tm_mday	= BCD2BIN(chip->buf[5]);
->> +	/* mask off century bit */
->> +	dt->tm_mon	= BCD2BIN(chip->buf[6] & 0x7f) - 1;
->> +	/* adjust for century bit */
->> +	dt->tm_year = BCD2BIN(chip->buf[7]) + ((chip->buf[6] & 0x80) ? 100 : 0);
->> +
->> +	return 0;
->> +}
->> +
->> +static int ds1390_set_datetime(struct device *dev, struct rtc_time *dt)
->> +{
->> +	struct spi_device *spi = to_spi_device(dev);
->> +	struct ds1390 *chip = dev_get_drvdata(dev);
->> +	struct spi_message message;
->> +	struct spi_transfer xfer;
->> +	int status;
->> +
->> +	/* build the message */
->> +	spi_message_init(&message);
->> +	memset(&xfer, 0, sizeof(xfer));
->> +	xfer.len = 1 + 8;	/* write command + 8 registers */
->> +	xfer.tx_buf = chip->buf;
->> +	xfer.rx_buf = chip->buf;
+Kind Regards, Konsti
 
-... and I guess here as well ... ???
-
->> +	chip->buf[0] = DS1390_REG_SECONDS | 0x80;
->> +	chip->buf[1] = BIN2BCD(dt->tm_sec);
->> +	chip->buf[2] = BIN2BCD(dt->tm_min);
->> +	chip->buf[3] = BIN2BCD(dt->tm_hour);
->> +	chip->buf[4] = BIN2BCD(dt->tm_wday);
->> +	chip->buf[5] = BIN2BCD(dt->tm_mday);
->> +	chip->buf[6] = BIN2BCD(dt->tm_mon + 1) | ((dt->tm_year > 99) ? 0x80 : 0x00);
->> +	chip->buf[7] = BIN2BCD(dt->tm_year % 100);
->> +	spi_message_add_tail(&xfer, &message);
->> +
->> +	/* do the i/o */
->> +	status = spi_sync(spi, &message);
->> +	if (status == 0)
->> +	{
->> +		status = message.status;
->> +	}
->> +	else
->> +	{
->> +		return status;
->> +	}
-> 
->  if status == 0, status is not used anymore, so you can
->  just return if != 0;
-> 
->> +	return 0;
->> +}
->> +
->> +static int ds1390_read_time(struct device *dev, struct rtc_time *tm)
->> +{
->> +	return ds1390_get_datetime(dev, tm);
->> +}
->> +
->> +static int ds1390_set_time(struct device *dev, struct rtc_time *tm)
->> +{
->> +	return ds1390_set_datetime(dev, tm);
->> +}
->> +
->> +static const struct rtc_class_ops ds1390_rtc_ops = {
->> +	.read_time	= ds1390_read_time,
->> +	.set_time	= ds1390_set_time,
->> +};
->> +
->> +static int __devinit ds1390_probe(struct spi_device *spi)
->> +{
->> +	struct rtc_device *rtc;
->> +	unsigned char tmp;
->> +	struct ds1390 *chip;
->> +	int res;
->> +
->> +	printk("DS1390 SPI RTC driver\n");
->> +
->> +	rtc = rtc_device_register("ds1390",
->> +				&spi->dev, &ds1390_rtc_ops, THIS_MODULE);
->> +	if (IS_ERR(rtc))
->> +	{
->> +		printk("RTC : unable to register device\n");
->> +		return PTR_ERR(rtc);
->> +	}
->> +
->> +	spi->mode = SPI_MODE_3;
->> +	spi->bits_per_word = 8;
->> +	spi_setup(spi);
->> +
->> +	chip = kzalloc(sizeof *chip, GFP_KERNEL);
->> +	if (!chip) {
->> +		printk("RTC : unable to allocate device memory\n");
->> +		rtc_device_unregister(rtc);
->> +		return -ENOMEM;
->> +	}
->> +	chip->rtc = rtc;
->> +	dev_set_drvdata(&spi->dev, chip);
->> +
->> +	res = ds1390_get_reg(&spi->dev, DS1390_REG_SECONDS, &tmp);
->> +	if (res) {
->> +		printk("RTC : unable to read device\n");
->> +		rtc_device_unregister(rtc);
->> +		return res;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static int __devexit ds1390_remove(struct spi_device *spi)
->> +{
->> +	struct ds1390 *chip = platform_get_drvdata(spi);
->> +	struct rtc_device *rtc = chip->rtc;
->> +
->> +	if (rtc)
->> +		rtc_device_unregister(rtc);
->> +
->> +	kfree(chip);
->> +
->> +	return 0;
->> +}
->> +
->> +static struct spi_driver ds1390_driver = {
->> +	.driver = {
->> +		.name	= "rtc-ds1390",
->> +		.bus	= &spi_bus_type,
->> +		.owner	= THIS_MODULE,
->> +	},
->> +	.probe	= ds1390_probe,
->> +	.remove = __devexit_p(ds1390_remove),
->> +};
->> +
->> +static __init int ds1390_init(void)
->> +{
->> +	return spi_register_driver(&ds1390_driver);
->> +}
->> +module_init(ds1390_init);
->> +
->> +static __exit void ds1390_exit(void)
->> +{
->> +	spi_unregister_driver(&ds1390_driver);
->> +}
->> +module_exit(ds1390_exit);
->> +
->> +MODULE_DESCRIPTION ("DS1390 SPI RTC driver");
->> +MODULE_AUTHOR ("Mark Jackson");
-> 
->  you email here please.
-> 
->> +MODULE_LICENSE ("GPL");
-> 
-> 
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
