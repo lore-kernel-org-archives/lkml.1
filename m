@@ -1,34 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbYJQNL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYJQNPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754967AbYJQNL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 09:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYJQNLS
+	id S1754819AbYJQNPy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 09:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYJQNPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 09:11:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53450 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751789AbYJQNLS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 09:11:18 -0400
-Message-ID: <48F88EC2.3090601@linux-foundation.org>
-Date: Fri, 17 Oct 2008 08:10:26 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Brice Goglin <Brice.Goglin@inria.fr>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nathalie Furmento <nathalie.furmento@labri.fr>
-Subject: Re: [RESEND][PATCH] mm: rework do_pages_move() to work on page_sized
- chunks
-References: <48F3AD47.1050301@inria.fr> <48F3AE1D.3060208@inria.fr> <48F79B42.3070106@linux-foundation.org> <48F87885.5000606@inria.fr>
-In-Reply-To: <48F87885.5000606@inria.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 09:15:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43948 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752744AbYJQNPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 09:15:43 -0400
+Date: Sat, 18 Oct 2008 00:15:33 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: Re: [BUG] linux-next: Tree for October 16 - softlockup detected at
+ blk_invoke_request_fn
+Message-Id: <20081018001533.06ec0d1b.sfr@canb.auug.org.au>
+In-Reply-To: <20081017105753.GG19428@kernel.dk>
+References: <20081016211811.a523c8f2.sfr@canb.auug.org.au>
+	<20081016204212.GC7534@linux.vnet.ibm.com>
+	<20081017065558.GD19428@kernel.dk>
+	<20081017102456.GA8115@linux.vnet.ibm.com>
+	<20081017105753.GG19428@kernel.dk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__18_Oct_2008_00_15_33_+1100_rA+J70Sxcs+wtYxl"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Sat__18_Oct_2008_00_15_33_+1100_rA+J70Sxcs+wtYxl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Christoph Lameter <cl@linux-foundation.org>
+Hi Jens,
 
+On Fri, 17 Oct 2008 12:57:55 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> OK, I'm guessing it's a merge mess in linux-next. I tried to look at the
+> diff, but it was pretty much impossible to read and even included lots
+> of things in -git already.
+
+If you are looking at the linux-next patch on kernel.org, then it is
+relative to 2.6.27, so will contain a lot of stuff in Linus' tree.  Its
+purpose is to allow people to recreate the linux-next tree from a kernel
+tarball.
+
+In the linux-next git tree, the point in Linus' tree that it is based on
+the the "stable" branch.  If necessary, people should be able to bisect
+between the "stabel" and "master" branches of a linux-next tree.  Or, I
+am told, between one linux-next tree and another (but that sounds painful
+to me).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__18_Oct_2008_00_15_33_+1100_rA+J70Sxcs+wtYxl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj4j/UACgkQjjKRsyhoI8zjEACfdkb2u8Qj4If0z7qWmpm4n9/q
+f5IAoJHV9olNDzepaNvY8CrCSJrIk18I
+=uN4x
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__18_Oct_2008_00_15_33_+1100_rA+J70Sxcs+wtYxl--
