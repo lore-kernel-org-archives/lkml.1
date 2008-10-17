@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbYJQKBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYJQKC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbYJQKBr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 06:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYJQKBg
+	id S1754581AbYJQKC3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 06:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYJQKCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 06:01:36 -0400
-Received: from ping.pong.ch ([212.103.71.101]:59201 "EHLO ping.pong.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754120AbYJQKBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 06:01:34 -0400
-X-Greylist: delayed 1110 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 06:01:34 EDT
-Date: Fri, 17 Oct 2008 11:46:15 +0200
-From: Gaudenz Steinlin <gaudenz@debian.org>
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: Eric Sandeen <sandeen@sandeen.net>, Tobias Frost <tobi@coldtobi.de>,
-       linux-kernel@vger.kernel.org, debian-arm@lists.debian.org,
-       xfs@oss.sgi.com
-Subject: Re: XFS filesystem corruption on the arm(el) architecture
-Message-ID: <20081017094615.GT4504@soziologie.ch>
-Mail-Followup-To: Martin Michlmayr <tbm@cyrius.com>,
-	Eric Sandeen <sandeen@sandeen.net>, Tobias Frost <tobi@coldtobi.de>,
-	linux-kernel@vger.kernel.org, debian-arm@lists.debian.org,
-	xfs@oss.sgi.com
-References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com>
+	Fri, 17 Oct 2008 06:02:19 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:35057 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752036AbYJQKCS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 06:02:18 -0400
+Date: Fri, 17 Oct 2008 06:02:14 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Replace hackish
+	ext4_mb_poll_new_transaction with commit callback
+Message-ID: <20081017100214.GB11557@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1224201763-9637-1-git-send-email-tytso@mit.edu> <20081017060424.GA26192@skywalker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081017070109.GA30726@deprecation.cyrius.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081017060424.GA26192@skywalker>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 09:01:09AM +0200, Martin Michlmayr wrote:
-> * Eric Sandeen <sandeen@sandeen.net> [2008-10-16 17:13]:
-> > So is this a regression?  did it used to work?  If so, when? :)
+On Fri, Oct 17, 2008 at 11:34:25AM +0530, Aneesh Kumar K.V wrote:
 > 
-> The original report was with 2.6.18 but that was with the old ABI:
-> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=423562
-> I just installed a 2.6.22 kernel with EABI and I can also trigger
-> the bug.  So it's not a (recent) regression.
+> Why not use journal commit callback patch from andreas 
+> (MID:20080929201752.GN10950@webber.adilger.int
+> http://article.gmane.org/gmane.comp.file-systems.ext4/9148)
+> 
+> The patch you sent will allows only one call back to be registered.
+> 
 
-As far as I can remember (I only used old ABI arm) this is not a 
-regression. XFS never worked on arm for me.
+Thanks for reminding me about that; I had completely forgotten about
+Andreas' patch.  Sure, I'll respin the patch to use his extension.
 
-If you need tests on old ABI just tell me.
-
--- 
-Ever tried. Ever failed. No matter.
-Try again. Fail again. Fail better.
-~ Samuel Beckett ~
+	 	       	    	       	     	- Ted
