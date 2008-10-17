@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbYJQKC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYJQKGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbYJQKC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 06:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYJQKCT
+	id S1753994AbYJQKGr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 06:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYJQKGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 06:02:19 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:35057 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752036AbYJQKCS (ORCPT
+	Fri, 17 Oct 2008 06:06:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37394 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbYJQKGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 06:02:18 -0400
-Date: Fri, 17 Oct 2008 06:02:14 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext4: Replace hackish
-	ext4_mb_poll_new_transaction with commit callback
-Message-ID: <20081017100214.GB11557@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1224201763-9637-1-git-send-email-tytso@mit.edu> <20081017060424.GA26192@skywalker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081017060424.GA26192@skywalker>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 17 Oct 2008 06:06:39 -0400
+Subject: Re: [RFC] Kernel version numbering scheme change
+From: Peter Zijlstra <peterz@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081017085604.GA20986@cs181140183.pp.htv.fi>
+References: <20081016002509.GA25868@kroah.com>
+	 <20081016124943.GE23630@cs181140183.pp.htv.fi>
+	 <20081016151748.GA31075@kroah.com>
+	 <20081016164602.GA22554@cs181140183.pp.htv.fi>
+	 <20081017034717.GA28188@kroah.com>
+	 <20081017064751.GE22554@cs181140183.pp.htv.fi>
+	 <20081017075544.GB4850@kroah.com>
+	 <20081017085604.GA20986@cs181140183.pp.htv.fi>
+Content-Type: text/plain
+Date: Fri, 17 Oct 2008 12:06:30 +0200
+Message-Id: <1224237990.28131.84.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 11:34:25AM +0530, Aneesh Kumar K.V wrote:
+On Fri, 2008-10-17 at 11:56 +0300, Adrian Bunk wrote:
+> On Fri, Oct 17, 2008 at 12:55:44AM -0700, Greg KH wrote:
+> > On Fri, Oct 17, 2008 at 09:47:51AM +0300, Adrian Bunk wrote:
+> >...
+> > > Packages are built in a chroot with the correct release installed.
+> > 
+> > Then why would this break if they are being built against the correct,
+> > older, kernel?
 > 
-> Why not use journal commit callback patch from andreas 
-> (MID:20080929201752.GN10950@webber.adilger.int
-> http://article.gmane.org/gmane.comp.file-systems.ext4/9148)
+> How could you build userspace "against a kernel"?
 > 
-> The patch you sent will allows only one call back to be registered.
-> 
+> sys_*uname() returns the version of the running kernel.
 
-Thanks for reminding me about that; I had completely forgotten about
-Andreas' patch.  Sure, I'll respin the patch to use his extension.
+We have a uts namespace, you can make the thing return whatever well you
+please.
 
-	 	       	    	       	     	- Ted
+
+
