@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYJQVqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYJQVsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYJQVqw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 17:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYJQVqo
+	id S1756908AbYJQVsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 17:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYJQVsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 17:46:44 -0400
-Received: from gate.crashing.org ([63.228.1.57]:51999 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515AbYJQVqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 17:46:44 -0400
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, rdreier@cisco.com,
-       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
-       akpm@linux-foundation.org
-In-Reply-To: <alpine.LFD.2.00.0810171410020.3438@nehalem.linux-foundation.org>
-References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>
-	 <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>
-	 <20081016.210404.151891223.davem@davemloft.net>
-	 <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
-	 <1224220339.7654.84.camel@pasglop>
-	 <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
-	 <1224277413.7654.95.camel@pasglop>
-	 <alpine.LFD.2.00.0810171410020.3438@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 18 Oct 2008 08:45:47 +1100
-Message-Id: <1224279947.7654.106.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 17:48:09 -0400
+Received: from kroah.org ([198.145.64.141]:56377 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752194AbYJQVsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 17:48:08 -0400
+Date: Fri, 17 Oct 2008 14:42:22 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Message-ID: <20081017214222.GA3585@kroah.com>
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016153053.GJ5834@nostromo.devel.redhat.com> <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi> <20081017040239.GB28188@kroah.com> <20081017103138.1ca68d17@lxorguk.ukuu.org.uk> <20081017174127.GE2221@kroah.com> <20081017204506.0bce46e5@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081017204506.0bce46e5@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 14:11 -0700, Linus Torvalds wrote:
+On Fri, Oct 17, 2008 at 08:45:06PM +0100, Alan Cox wrote:
+> On Fri, 17 Oct 2008 10:41:27 -0700
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > On Fri, Oct 17, 2008 at 10:31:38AM +0100, Alan Cox wrote:
+> > > > So I proposed an alternative, YEAR.NUMBER.  The year is easy to keep
+> > > 
+> > > Which calendaring system ?
+> > 
+> > I'm almost afraid to ask, but "which one would you prefer"? :)
+> 
+> The standard one shipped and supported by util-linux for the past 15 or
+> more years
+> 
+> $ ddate
+> Today is Setting Orange, the 71st day of Bureaucracy in the YOLD 3174
 
-> So the default is all the wrong way around. Make the defaults the sane 
-> ones: 04x for IO, and 08x for MMIO, and then see if anybody wants anything 
-> else. I seriously doubt they do. The whole ".. but but sparc" argument 
-> seems to be entirely based on the total mis-conception of truncation that 
-> has no relevance.
-
-Well, I definitely want 08x for IO on powerpc and I suspect anything
-non-x86 or alpha does as well... So I'm fine but I'd like to keep
-the default for IO at 08x unless you really have a strong opinion
-against it.
-
-Cheers,
-Ben.
-
-
+Fine with me :)
