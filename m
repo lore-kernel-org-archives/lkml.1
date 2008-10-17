@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbYJQQSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbYJQQTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbYJQQSs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 12:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYJQQSk
+	id S1756333AbYJQQTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 12:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYJQQS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 12:18:40 -0400
-Received: from xenotime.net ([66.160.160.81]:48102 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753806AbYJQQSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 12:18:39 -0400
-Date: Fri, 17 Oct 2008 09:18:36 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Eric Van Hensbergen <ericvh@gmail.com>,
-       Ron Minnich <rminnich@sandia.gov>, Latchesar Ionkov <lucho@ionkov.net>
-Subject: Re: linux-next: Tree for October 17
-In-Reply-To: <19f34abd0810170230s755aa0e4vea38c26e093e173c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0810170917200.685@shark.he.net>
-References: <20081017194045.202e6271.sfr@canb.auug.org.au>
- <19f34abd0810170230s755aa0e4vea38c26e093e173c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 17 Oct 2008 12:18:59 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:54964 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753883AbYJQQS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 12:18:57 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugEAIdR+EhMQWq+/2dsb2JhbACBcr8Tg2w
+Date: Fri, 17 Oct 2008 12:18:52 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "William L. Irwin" <wli@holomorphy.com>
+Subject: Re: [RFC patch 06/15] LTTng build
+Message-ID: <20081017161852.GB5696@Krystal>
+References: <20081016232729.699004293@polymtl.ca> <20081016234656.385520321@polymtl.ca> <20081017170830.E22D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081017170830.E22D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:18:35 up 134 days, 20:59,  9 users,  load average: 0.43, 0.91,
+	1.43
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008, Vegard Nossum wrote:
-
-> On Fri, Oct 17, 2008 at 10:40 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > Hi all,
-> >
-> > Today's tree will not build for powerpc allyesconfig (libc aborts the
-> > link due to a free() problem), sparc(32) defconfig and probably some
-> > other configurations.
+* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
+> Hi
 > 
-> Hi, I ran into this with slightly modified fedora config:
+> just nit
 > 
->   CC      net/9p/protocol.o
-> net/9p/protocol.c: In function 'p9pdu_finalize':
-> net/9p/protocol.c:545: error: 'p9_debug_level' undeclared (first use
-> in this function)
-> net/9p/protocol.c:545: error: (Each undeclared identifier is reported only once
-> net/9p/protocol.c:545: error: for each function it appears in.)
-> net/9p/protocol.c:545: error: 'P9_DEBUG_PKT' undeclared (first use in
-> this function)
-> make[2]: *** [net/9p/protocol.o] Error 1
-> make[1]: *** [net/9p] Error 2
-> make: *** [net] Error 2
+> > Index: linux-2.6-lttng/Makefile
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/Makefile	2008-10-16 18:16:33.000000000 -0400
+> > +++ linux-2.6-lttng/Makefile	2008-10-16 18:16:38.000000000 -0400
+> > @@ -619,7 +619,7 @@ export mod_strip_cmd
+> >  
+> >  
+> >  ifeq ($(KBUILD_EXTMOD),)
+> > -core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
+> > +core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ ltt/
+> >  
+> >  vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+> >  		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
 > 
-> ...and couldn't find it in the automatic build test results either. 9P
-> maintainers Cced.
+> This patch depend on 07/15. it seems wrong patch order.
+> Then it cause following build error.
+> 
 
-This build failure happened with 20081016 also.
+Will fix in the next release, thanks !
 
-There are plenty of randconfig build failures and not enough time
-in the day to fix all of them before Stephen produces the next next.
+Mathieu
+
+> 
+> ~/linux/linux-2.6.27-lttng% make
+> make
+> make[1]: `include/asm-ia64/nr-irqs.h' is up to date.
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+> scripts/Makefile.build:41: /mnt/sdb1/kosaki/linux/linux-2.6.27-lttng/ltt/Makefile: No such file or directory
+> make[1]: *** No rule to make target `/mnt/sdb1/kosaki/linux/linux-2.6.27-lttng/ltt/Makefile'.  Stop.
+> make: *** [ltt] Error 2
+> 
+> 
+> 
+> 
 
 -- 
-~Randy
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
