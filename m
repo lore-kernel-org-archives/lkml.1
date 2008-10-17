@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYJQFhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbYJQFit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYJQFhj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 01:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYJQFhc
+	id S1754136AbYJQFit (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 01:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYJQFik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 01:37:32 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:42106 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbYJQFhb (ORCPT
+	Fri, 17 Oct 2008 01:38:40 -0400
+Received: from sineb-mail-1.sun.com ([192.18.19.6]:64144 "EHLO
+	sineb-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbYJQFik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 01:37:31 -0400
-Message-ID: <48F82481.8070201@nortel.com>
-Date: Thu, 16 Oct 2008 23:37:05 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu> <20081016181452.GA29739@yoda.jdub.homelinux.org>
-In-Reply-To: <20081016181452.GA29739@yoda.jdub.homelinux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Oct 2008 05:37:07.0123 (UTC) FILETIME=[64904830:01C9301A]
+	Fri, 17 Oct 2008 01:38:40 -0400
+X-Greylist: delayed 619 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 01:38:34 EDT
+Date: Fri, 17 Oct 2008 13:25:07 +0800
+From: Jike Song <albcamus@gmail.com>
+Subject: Re: questions about rd{msr|tsc|pmc} instruction with x86-64
+In-reply-to: <48F76FA3.1000602@zytor.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Message-id: <48F821B3.2060300@gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=UTF-8
+Content-transfer-encoding: 7BIT
+References: <df9815e70810152330h7886c77arb01e1fd308b4a7ae@mail.gmail.com>
+ <48F6E1A7.2070602@zytor.com>
+ <df9815e70810160931s86c9058rc18d426ce278aa30@mail.gmail.com>
+ <48F76FA3.1000602@zytor.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josh Boyer wrote:
+H. Peter Anvin wrote:
+>  Jike Song wrote:
+> > Thanks, Peter!  So I misunderstood the gcc constraint 'A' for x86-64,
+> > but seems the comment "while x86_64 returns at rax" still wrong,
+> > should this be fixed?
+>
+>  Yes, feel free to submit a patch.
+>
+>     -hpa
+Here you go... CC trivial@kernel.org as well.
 
- > Are these two merged yet?  I just spent the better part of the morning
- > trying to figure out why various Fedora kernels based on 2.6.27-rcX and
- > 2.6.27 final hung on my G5 and finally got one booting with FTRACE
- > disabled.
+ From 6eed2948d41f959dc113eb3ff30927bcacf34d08 Mon Sep 17 00:00:00 2001
+From: Jike Song <albcamus@gmail.com>
+Date: Fri, 17 Oct 2008 10:51:13 +0800
+Subject: [PATCH] x86: correct wrong comment
 
-Until recently I could boot my G5 with FTRACE enabled, but it totally screwed 
-up load balancing.
+The rdmsr instruction(et al) for i386 and x86-64 are semantically same.
+The only difference is how gcc interpret constraint "A" for these targets.
 
-As of a couple days ago, -tip hung on boot due to the following genirq 
-issue:
+Signed-off-by: Jike Song <albcamus@gmail.com>
+---
+ include/asm-x86/msr.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/include/asm-x86/msr.h b/include/asm-x86/msr.h
+index 530af1f..fd0e1a1 100644
+--- a/include/asm-x86/msr.h
++++ b/include/asm-x86/msr.h
+@@ -22,10 +22,10 @@ static inline unsigned long long 
+native_read_tscp(unsigned int *aux)
+ }
+ 
+ /*
+- * i386 calling convention returns 64-bit value in edx:eax, while
+- * x86_64 returns at rax. Also, the "A" constraint does not really
+- * mean rdx:rax in x86_64, so we need specialized behaviour for each
+- * architecture
++ * both i386 and x86_64 returns 64-bit value in edx:eax, but gcc's "A"
++ * constraint has different meanings. For i386, "A" means exactly
++ * edx:eax, while for x86_64 it doesn't mean rdx:rax or edx:eax. Instead,
++ * it means rax *or* rdx.
+  */
+ #ifdef CONFIG_X86_64
+ #define DECLARE_ARGS(val, low, high)    unsigned low, high
+-- 
+1.6.0.1
 
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index 570d1ea..1c178ae 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -132,7 +132,7 @@ int set_irq_type(unsigned int irq, unsigned int type)
-    		return 0;
-
-    	spin_lock_irqsave(&desc->lock, flags);
--	ret = __irq_set_trigger(desc, irq, flags);
-+	ret = __irq_set_trigger(desc, irq, type);
-    	spin_unlock_irqrestore(&desc->lock, flags);
-    	return ret;
-    }
-
-
-
-Chris
 
