@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbYJRTEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbYJRTFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbYJRTEi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYJRTCy
+	id S1753061AbYJRTFW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYJRTDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:02:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47232 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:03:04 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47262 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbYJRTCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:02:53 -0400
-Date: Sat, 18 Oct 2008 11:34:04 -0700
+	id S1752536AbYJRTDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:03:01 -0400
+Date: Sat, 18 Oct 2008 11:34:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: [patch 04/17] Driver core: Clarify device cleanup.
-Message-ID: <20081018183404.GE14035@suse.de>
+       alan@lxorguk.ukuu.org.uk, Chris Webb <chris@arachsys.com>,
+       NeilBrown <neilb@suse.de>
+Subject: [patch 06/17] md: Fix rdev_size_store with size == 0
+Message-ID: <20081018183408.GG14035@suse.de>
 References: <20081018182721.521723254@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="driver-core-clarify-device-cleanup.patch"
+Content-Disposition: inline; filename="md-fix-rdev_size_store-with-size-0.patch"
 In-Reply-To: <20081018183334.GA14035@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,70 +40,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Chris Webb <chris@arachsys.com>
 
-commit 5739411acbaa63a6c22c91e340fdcdbcc7d82a51 upstream
+commit 7d3c6f8717ee6c2bf6cba5fa0bda3b28fbda6015 upstream
 
-Make the comments on how to use device_initialize(), device_add()
-and device_register() a bit clearer - in particular, explicitly
-note that put_device() must be used once we tried to add the device
-to the hierarchy.
+Fix rdev_size_store with size == 0.
+size == 0 means to use the largest size allowed by the
+underlying device and is used when modifying an active array.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+This fixes a regression introduced by
+ commit d7027458d68b2f1752a28016dcf2ffd0a7e8f567
+
+Signed-off-by: Chris Webb <chris@arachsys.com>
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/base/core.c |   23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+ drivers/md/md.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -523,11 +523,16 @@ static void klist_children_put(struct kl
-  * device_initialize - init device structure.
-  * @dev: device.
-  *
-- * This prepares the device for use by other layers,
-- * including adding it to the device hierarchy.
-+ * This prepares the device for use by other layers by initializing
-+ * its fields.
-  * It is the first half of device_register(), if called by
-- * that, though it can also be called separately, so one
-- * may use @dev's fields (e.g. the refcount).
-+ * that function, though it can also be called separately, so one
-+ * may use @dev's fields. In particular, get_device()/put_device()
-+ * may be used for reference counting of @dev after calling this
-+ * function.
-+ *
-+ * NOTE: Use put_device() to give up your reference instead of freeing
-+ * @dev directly once you have called this function.
-  */
- void device_initialize(struct device *dev)
- {
-@@ -836,9 +841,13 @@ static void device_remove_sys_dev_entry(
-  * This is part 2 of device_register(), though may be called
-  * separately _iff_ device_initialize() has been called separately.
-  *
-- * This adds it to the kobject hierarchy via kobject_add(), adds it
-+ * This adds @dev to the kobject hierarchy via kobject_add(), adds it
-  * to the global and sibling lists for the device, then
-  * adds it to the other relevant subsystems of the driver model.
-+ *
-+ * NOTE: _Never_ directly free @dev after calling this function, even
-+ * if it returned an error! Always use put_device() to give up your
-+ * reference instead.
-  */
- int device_add(struct device *dev)
- {
-@@ -965,6 +974,10 @@ done:
-  * I.e. you should only call the two helpers separately if
-  * have a clearly defined need to use and refcount the device
-  * before it is added to the hierarchy.
-+ *
-+ * NOTE: _Never_ directly free @dev after calling this function, even
-+ * if it returned an error! Always use put_device() to give up the
-+ * reference initialized in this function instead.
-  */
- int device_register(struct device *dev)
- {
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -2109,8 +2109,6 @@ rdev_size_store(mdk_rdev_t *rdev, const 
+ 
+ 	if (strict_strtoull(buf, 10, &size) < 0)
+ 		return -EINVAL;
+-	if (size < my_mddev->size)
+-		return -EINVAL;
+ 	if (my_mddev->pers && rdev->raid_disk >= 0) {
+ 		if (my_mddev->persistent) {
+ 			size = super_types[my_mddev->major_version].
+@@ -2121,9 +2119,9 @@ rdev_size_store(mdk_rdev_t *rdev, const 
+ 			size = (rdev->bdev->bd_inode->i_size >> 10);
+ 			size -= rdev->data_offset/2;
+ 		}
+-		if (size < my_mddev->size)
+-			return -EINVAL; /* component must fit device */
+ 	}
++	if (size < my_mddev->size)
++		return -EINVAL; /* component must fit device */
+ 
+ 	rdev->size = size;
+ 	if (size > oldsize && my_mddev->external) {
 
 -- 
