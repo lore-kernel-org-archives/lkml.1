@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbYJRXSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYJSAAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752113AbYJRXSm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 19:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYJRXSc
+	id S1752420AbYJSAAA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 20:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYJRX7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 19:18:32 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:54673 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751300AbYJRXSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 19:18:31 -0400
-Date: Sun, 19 Oct 2008 01:17:19 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Willy Tarreau <w@1wt.eu>
-cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <20081018084504.GQ24654@1wt.eu>
-Message-ID: <alpine.LRH.1.10.0810190114420.2000@twin.jikos.cz>
-References: <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com>
- <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com> <20081018084504.GQ24654@1wt.eu>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 18 Oct 2008 19:59:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42325 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752024AbYJRX7v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 19:59:51 -0400
+Date: Sat, 18 Oct 2008 16:59:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Parag Warudkar" <parag.lkml@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       htejun@gmail.com, gregkh@suse.de
+Subject: Re: [PATCH] x86: sysfs - kill owner field from attribute
+Message-Id: <20081018165939.7b557c2b.akpm@linux-foundation.org>
+In-Reply-To: <f7848160809091611w50270265hc149baeaf267775e@mail.gmail.com>
+References: <f7848160809091611w50270265hc149baeaf267775e@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Oct 2008, Willy Tarreau wrote:
+On Tue, 9 Sep 2008 19:11:02 -0400 "Parag Warudkar" <parag.lkml@gmail.com> wrote:
 
-> confusion between 2.4.37 and 2.6.27. I have already tagged kernels with 
-> wrong versions, having to fix by hand afterwards. It's really cumbersome 
-> some times.
+> Tejun's commit 7b595756ec1f49e0049a9e01a1298d53a7faaa15 made sysfs
+> attribute->owner unnecessary.
+> But the field was left in the structure to ease the merge. It's been
+> over a year since that change and it is now time to start killing
+> attribute->owner along with its users - one arch at a time!
+> 
+> This patch is attempt #1 to get rid of attribute->owner only for
+> CONFIG_X86_64 or CONFIG_X86_32 .
+> We will deal with other arches later on as and when possible - avr32
+> will be the next since that is something I can test.
+> Compile (make allyesconfig / make allmodconfig / custom config) and boot tested.
+> 
+> I would prefer to have this in -mm or one of the other trees for some
+> time before hitting mainline just to make sure there are no issues.
+> 
 
-But this is only because you are maintaining a source code that is several 
-years old, right? Would maintaining a series numbered 2002.x.y make your 
-situation a lot better? Do you think you'd never make typo '2002 instead 
-of 2006' any more?
+I'm about to send this in to Linus.
 
-Or how would you distingiush the kernel tree you are maintaing from the 
-one Linus is maintaining?
+> --- a/include/linux/sysfs.h
+> +++ b/include/linux/sysfs.h
+> @@ -21,12 +21,15 @@ struct kobject;
+>  struct module;
+> 
+>  /* FIXME
+> - * The *owner field is no longer used, but leave around
+> - * until the tree gets cleaned up fully.
+> + * The *owner field is no longer used.
+> + * x86 tree has been cleaned up. The owner
+> + * attribute is still left for other arches.
+>   */
+>  struct attribute {
+>  	const char		*name;
+> +#if !defined(CONFIG_X86_64) && !defined(CONFIG_X86_32)
+>  	struct module		*owner;
+> +#endif
+>  	mode_t			mode;
+>  };
 
--- 
-Jiri Kosina
-SUSE Labs
+But this part was dropped.  I did this a while ago because people kept
+on adding new code to linux-next which referenced module.owner and my
+tree kept on breaking.
 
+A good time to finish this off would be immediately after 2.6.28-rc1 is
+released.  Please do another pass over the whole tree and send a single
+patch which fixes up those recently-introdced usages of module.owner
+and which also adds the above #ifndef.
+
+Thanks.
