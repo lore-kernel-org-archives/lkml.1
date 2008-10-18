@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbYJRBhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYJRBiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbYJRBhx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 21:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJRBhn
+	id S1755544AbYJRBiX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYJRBiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 21:37:43 -0400
-Received: from fw.bitband.com ([213.8.50.174]:12655 "EHLO mail.bitband.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750972AbYJRBhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 21:37:43 -0400
-Subject: RE: 	Subject: [PATCH 1/2] linux-acpi: sos documentation
-From: raz ben yehuda <razb@bitband.com>
-To: pavel@suse.cz
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Content-Type: text/plain
+	Fri, 17 Oct 2008 21:38:04 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:35863 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752142AbYJRBiC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 21:38:02 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=f9LUouiCqv+0nnr1pulYma/JzC1ef7Cr2mJO2LlBOHdX9LJx3Y/jPTX+VXGviC3cILz1n+OdvbBygdGDageiKeVWx8wos8/XY9Dq8CH3eclWgK1elQdWyqVxQBeozp+IRf5kzk9LXtCZa8KeCHFFp12tgr1C0fBQDSNjv9RTgPw=  ;
+X-YMail-OSG: R035fQQVM1mJlk5fDMIOoJcgdxGv2OMLo0NGt3APGEQoh0LxIY4FSN10Lg0VrR1k2NDSHo.oWkhYSpRDyRV8xMM1_LF9_qXd2IdMygLKfuq6heIjFaoEkPdJzMW_V5bgbBsbtLgXit.lcoR9nugPXHK.7NLEGVSujKx.x4T7gGl8KTe8hR_U5dnlGZf6
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Dave Airlie <airlied@linux.ie>
+Subject: Re: [git pull] drm patches for 2.6.27-rc1
+Date: Sat, 18 Oct 2008 12:37:49 +1100
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+In-Reply-To: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date: Sat, 18 Oct 2008 03:37:35 +0200
-Message-Id: <1224293855.3652.36.camel@raz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Disposition: inline
+Message-Id: <200810181237.49784.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First , I really really thank you for replying, This is not the first post I made for sos.
-For some reason I did not get your reply.
+On Saturday 18 October 2008 08:29, Dave Airlie wrote:
+> Hi Linus,
+>
+> This is a new tree, I had a conflict with your latest tree due to some
+> trivial cleanups you merged. I've added the fix for CVE-2008-3831 which is
+> unembargoed.
+>
+> Please pull the 'drm-next' branch from
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+> drm-next
+>
+> This contains two patches outside the DRM git tree to add exports for GEM
+> functionality while we await Nick Piggins vmap and shmem changes.
 
-On Tue 2008-10-14 01:38:13, raz ben yehuda wrote:
-> From: Raz Ben Yehuda <razb@bitband.com>
-> 
-> Signed-off-by: Raz Ben Yehuda <razb@bitband.com>
-> ---
+OK. I was hoping that kmap_atomic_pfn thing *never* see the light of
+mainline ;) Because hopefully the vmap improvements should be OK for
+2.6.28 as well...
 
->>No changelog, useful...
-Do you mean diffstat ?  I added diffstat at the sos-api patch. . 
-Are you referring to Documentation/Changes ?  I am not sure I know what you mean.
+But it's already there. OK, if vmap patches go upstream, then it can
+be switched over and the export removed before the release...
 
-> diff -urpN linux-2.6.27/Documentation/SOS.txt linux-2.6.27-dbg/Documentation/SOS.txt
-> --- linux-2.6.27/Documentation/SOS.txt	1970-01-01 02:00:00.000000000 +0200
-> +++ linux-2.6.27-dbg/Documentation/SOS.txt	2008-10-14 00:29:32.000000000 +0200
-> @@ -0,0 +1,14 @@
-> +				SOS
-> +
-> +SOS is a service oriented scheduler. SOS is a method of relating one or more
-> +distinct services to a processor.In other words, a core(s) is assigned to
-> +a chore, not a chore to a core.
-> +Technically speaking, by virtually removing a processor from the operating
-> +system, using Linux ACPI facility one can bind processors to services.
-> +SOS management and control is done by sosctl.
-> +To fully understand what is SOS, when should it be used it and for which
-> +puprose,please refer to http://sos-linux.cvs.sourceforge.net/sos-linux/sos/Documentation/.
-> +
-
->>I don't think this should be acpi specific... and you should provide
->>real doc, not pointer to web page.
-1. I posted to lkml as well as acpi. is this what you mean ?
-2. At first, I posted a big text file , but I got zero replies so i thought that maybe people refrain from reading so much.
-   But I will fix it (I read SubmittingPatches). 
-
->>Plus select some better acronym.
->>									Pavel
-How about ops ( offload-processor scheduler ) ? any other suggestions ? well.. I am bad at names.   
- 
-raz
-
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Nick
