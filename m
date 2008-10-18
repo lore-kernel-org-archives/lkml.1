@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbYJRTF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbYJRTHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbYJRTF7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYJRTDH
+	id S1753003AbYJRTHG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYJRTDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:03:07 -0400
-Received: from ns.suse.de ([195.135.220.2]:38115 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:03:21 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47310 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752568AbYJRTDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:03:06 -0400
-Date: Sat, 18 Oct 2008 11:34:11 -0700
+	id S1751903AbYJRTDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:03:19 -0400
+Date: Sat, 18 Oct 2008 11:34:19 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Christoph Hellwig <hch@lst.de>,
-       Eric Sandeen <sandeen@sandeen.net>, Timothy Shimmin <tes@sgi.com>
-Subject: [patch 07/17] xfs: fix remount rw with unrecognized options
-Message-ID: <20081018183411.GH14035@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 10/17] USB: OHCI: fix endless polling behavior
+Message-ID: <20081018183418.GK14035@suse.de>
 References: <20081018182721.521723254@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="xfs-fix-remount-rw-with-unrecognized-options.patch"
+Content-Disposition: inline; filename="usb-ohci-fix-endless-polling-behavior.patch"
 In-Reply-To: <20081018183334.GA14035@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,41 +39,161 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Christoph Hellwig <hch@lst.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 6c5e51dae2c37127e00be392f40842e08077e96a upstream
+commit 71b7497c078a97e2afb774ad7c1f8ff5bdda8a60 upstream
 
-When we skip unrecognized options in xfs_fs_remount we should just break
-out of the switch and not return because otherwise we may skip clearing
-the xfs-internal read-only flag.  This will only show up on some
-operations like touch because most read-only checks are done by the VFS
-which thinks this filesystem is r/w.  Eventually we should replace the
-XFS read-only flag with a helper that always checks the VFS flag to make
-sure they can never get out of sync.
+This patch (as1149) fixes an obscure problem in OHCI polling.  In the
+current code, if the RHSC interrupt status flag turns on at a time
+when RHSC interrupts are disabled, it will remain on forever:
 
-Bug reported and fix verified by Marcel Beister on #xfs.
-Bug fix verified by updated xfstests/189.
+	The interrupt handler is the only place where RHSC status
+	gets turned back off;
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Eric Sandeen <sandeen@sandeen.net>
-Signed-off-by: Timothy Shimmin <tes@sgi.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+	The interrupt handler won't turn RHSC status off because it
+	doesn't turn off status flags if the corresponding interrupt
+	isn't enabled;
+
+	RHSC interrupts will never get enabled because
+	ohci_root_hub_state_changes() doesn't reenable RHSC if RHSC
+	status is on!
+
+As a result we will continue polling indefinitely instead of reverting
+to interrupt-driven operation, and the root hub will not autosuspend.
+This particular sequence of events is not at all unusual; in fact
+plugging a USB device into an OHCI controller will usually cause it to
+occur.
+
+Of course, this is a bug.  The proper thing to do is to turn off RHSC
+status just before reading the actual port status values.  That way
+either a port status change will be detected (if it occurs before the
+status read) or it will turn RHSC back on.  Possibly both, but that
+won't hurt anything.
+
+We can still check for systems in which RHSC is totally broken, by
+re-reading RHSC after clearing it and before reading the port
+statuses.  (This re-read has to be done anyway, to post the earlier
+write.)  If RHSC is on but no port-change statuses are set, then we
+know that RHSC is broken and we can avoid re-enabling it.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/xfs/linux-2.6/xfs_super.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/host/ohci-hub.c |   51 +++++++++++++++++++++++++++-----------------
+ 1 file changed, 32 insertions(+), 19 deletions(-)
 
---- a/fs/xfs/linux-2.6/xfs_super.c
-+++ b/fs/xfs/linux-2.6/xfs_super.c
-@@ -1323,7 +1323,7 @@ xfs_fs_remount(
- 	"XFS: mount option \"%s\" not supported for remount\n", p);
- 			return -EINVAL;
- #else
--			return 0;
-+			break;
- #endif
+--- a/drivers/usb/host/ohci-hub.c
++++ b/drivers/usb/host/ohci-hub.c
+@@ -359,17 +359,15 @@ static void ohci_finish_controller_resum
+ 
+ /* Carry out polling-, autostop-, and autoresume-related state changes */
+ static int ohci_root_hub_state_changes(struct ohci_hcd *ohci, int changed,
+-		int any_connected)
++		int any_connected, int rhsc_status)
+ {
+ 	int	poll_rh = 1;
+-	int	rhsc_status, rhsc_enable;
++	int	rhsc_enable;
+ 
+ 	/* Some broken controllers never turn off RHCS in the interrupt
+ 	 * status register.  For their sake we won't re-enable RHSC
+ 	 * interrupts if the interrupt bit is already active.
+ 	 */
+-	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
+-			OHCI_INTR_RHSC;
+ 	rhsc_enable = ohci_readl(ohci, &ohci->regs->intrenable) &
+ 			OHCI_INTR_RHSC;
+ 
+@@ -421,14 +419,23 @@ static int ohci_root_hub_state_changes(s
+ 				ohci_rh_resume(ohci);
+ 			else
+ 				usb_hcd_resume_root_hub(ohci_to_hcd(ohci));
++
++		/* If remote wakeup is disabled, stop polling */
++		} else if (!ohci->autostop &&
++				!ohci_to_hcd(ohci)->self.root_hub->
++					do_remote_wakeup) {
++			poll_rh = 0;
++
+ 		} else {
+-			if (!rhsc_enable && !rhsc_status && (ohci->autostop ||
+-					ohci_to_hcd(ohci)->self.root_hub->
+-						do_remote_wakeup)) {
++			/* If no status changes are pending,
++			 * enable RHSC interrupts
++			 */
++			if (!rhsc_enable && !rhsc_status) {
+ 				rhsc_enable = OHCI_INTR_RHSC;
+ 				ohci_writel(ohci, rhsc_enable,
+ 						&ohci->regs->intrenable);
+ 			}
++			/* Keep polling until RHSC is enabled */
+ 			if (rhsc_enable)
+ 				poll_rh = 0;
  		}
+@@ -448,22 +455,22 @@ static inline int ohci_rh_resume(struct 
+  * autostop isn't used when CONFIG_PM is turned off.
+  */
+ static int ohci_root_hub_state_changes(struct ohci_hcd *ohci, int changed,
+-		int any_connected)
++		int any_connected, int rhsc_status)
+ {
+-	int	rhsc_status;
+-
+ 	/* If RHSC is enabled, don't poll */
+ 	if (ohci_readl(ohci, &ohci->regs->intrenable) & OHCI_INTR_RHSC)
+ 		return 0;
+ 
+-	/* If no status changes are pending, enable RHSC interrupts */
+-	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
+-			OHCI_INTR_RHSC;
+-	if (!changed && !rhsc_status) {
+-		ohci_writel(ohci, OHCI_INTR_RHSC, &ohci->regs->intrenable);
+-		return 0;
+-	}
+-	return 1;
++	/* If status changes are pending, continue polling.
++	 * Conversely, if no status changes are pending but the RHSC
++	 * status bit was set, then RHSC may be broken so continue polling.
++	 */
++	if (changed || rhsc_status)
++		return 1;
++
++	/* It's safe to re-enable RHSC interrupts */
++	ohci_writel(ohci, OHCI_INTR_RHSC, &ohci->regs->intrenable);
++	return 0;
+ }
+ 
+ #endif	/* CONFIG_PM */
+@@ -478,6 +485,7 @@ ohci_hub_status_data (struct usb_hcd *hc
+ 	struct ohci_hcd	*ohci = hcd_to_ohci (hcd);
+ 	int		i, changed = 0, length = 1;
+ 	int		any_connected = 0;
++	int		rhsc_status;
+ 	unsigned long	flags;
+ 
+ 	spin_lock_irqsave (&ohci->lock, flags);
+@@ -503,6 +511,11 @@ ohci_hub_status_data (struct usb_hcd *hc
+ 		length++;
  	}
+ 
++	/* Clear the RHSC status flag before reading the port statuses */
++	ohci_writel(ohci, OHCI_INTR_RHSC, &ohci->regs->intrstatus);
++	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
++			OHCI_INTR_RHSC;
++
+ 	/* look at each port */
+ 	for (i = 0; i < ohci->num_ports; i++) {
+ 		u32	status = roothub_portstatus (ohci, i);
+@@ -521,7 +534,7 @@ ohci_hub_status_data (struct usb_hcd *hc
+ 	}
+ 
+ 	hcd->poll_rh = ohci_root_hub_state_changes(ohci, changed,
+-			any_connected);
++			any_connected, rhsc_status);
+ 
+ done:
+ 	spin_unlock_irqrestore (&ohci->lock, flags);
 
 -- 
