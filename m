@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752276AbYJRHPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbYJRHTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752276AbYJRHPx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 03:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYJRHPo
+	id S1752726AbYJRHTy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 03:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJRHTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 03:15:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48087 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbYJRHPo (ORCPT
+	Sat, 18 Oct 2008 03:19:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34040 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750871AbYJRHTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 03:15:44 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Add clflush before monitor for Intel 7400 series
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081007210056.GA5802@linux-os.sc.intel.com>
-	<48EBCFF8.6050500@zytor.com>
-	<20081007214920.GA17439@linux-os.sc.intel.com>
-	<48EBEA97.9020404@zytor.com>
-	<7E82351C108FA840AB1866AC776AEC4637B798D6@orsmsx505.amr.corp.intel.com>
-	<48F8F1DB.9030202@zytor.com>
-	<7E82351C108FA840AB1866AC776AEC4637B799FB@orsmsx505.amr.corp.intel.com>
-	<48F91673.6090901@zytor.com>
-Date: Sat, 18 Oct 2008 09:15:39 +0200
-In-Reply-To: <48F91673.6090901@zytor.com> (H. Peter Anvin's message of "Fri, 17 Oct 2008 15:49:23 -0700")
-Message-ID: <87vdvqjrvo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 18 Oct 2008 03:19:45 -0400
+Message-ID: <48F98DE2.8030205@kernel.org>
+Date: Sat, 18 Oct 2008 00:18:58 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Greg KH <greg@kroah.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016153053.GJ5834@nostromo.devel.redhat.com> <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi> <20081017040239.GB28188@kroah.com> <20081017103138.1ca68d17@lxorguk.ukuu.org.uk> <48F8C000.8030003@kernel.org> <20081017174226.GF2221@kroah.com>
+In-Reply-To: <20081017174226.GF2221@kroah.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
-
-> Pallipadi, Venkatesh wrote:
->>>>
->>> I guess I'm a bit confused about the tradeoff of CLFLUSH versus simply
->>> disabling MWAIT.  This is a relatively recent processor and so
->>> optimizing matters (if this was a P4 I would be more worried about what
->>> has least impact on the kernel as a whole.)
->> As of now this is only for a limited models of CPUs (MP CPUs)
->> and not a norm. It is a errata on this CPU and not
->> something that is going to become architectural.
+Greg KH wrote:
 >>
->
-> Yes, I understand.  However, there is still the option to disable
-> MWAIT, and the question is still open if it makes sense.
+>> I think it's both visually cumbersome and has the problem that it is harder 
+>> to predict future releases.  The first problem can be dealt with by simply 
+>> subtracting 2000 from the year (Altera uses this scheme for their EDA 
+>> tools, and I didn't realize it for quite a while because it looked so 
+>> natural), but the second is still a problem.
+> 
+> What is the "problem" of predicting future releases?  What relies on the
+> actual number being "correct" some random time in the future?
+> 
 
-This would mean falling back to the IO port interface for deeper 
-C states. Even with the CLFLUSH MWAIT is a much better (and I believe 
-faster) interface.
+We already have the 2.6.28-rc series; and we are already talking about 
+2.6.29 features.
 
--Andi
--- 
-ak@linux.intel.com
+We *really* don't want 2008.3-rc4 to be followed by 2009.1-rc5.  That is 
+the kind of stuff that make script makers want to strangle developers 
+alive with their own intestines.
+
+	-hpa
