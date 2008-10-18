@@ -1,125 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYJRANk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbYJRAU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbYJRANk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 20:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbYJRANd
+	id S1757211AbYJRAU1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 20:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbYJRAUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 20:13:33 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41155 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753404AbYJRANc (ORCPT
+	Fri, 17 Oct 2008 20:20:19 -0400
+Received: from charon.persephoneslair.org ([216.254.15.24]:36885 "EHLO
+	charon.persephoneslair.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755090AbYJRAUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 20:13:32 -0400
-Date: Sat, 18 Oct 2008 01:13:16 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch] mm: fix anon_vma races
-In-Reply-To: <alpine.LFD.2.00.0810171549310.3438@nehalem.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0810180045370.8995@blonde.site>
-References: <20081016041033.GB10371@wotan.suse.de> <Pine.LNX.4.64.0810172300280.30871@blonde.site>
- <alpine.LFD.2.00.0810171549310.3438@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 17 Oct 2008 20:20:18 -0400
+X-Greylist: delayed 820 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 20:20:18 EDT
+Date: Fri, 17 Oct 2008 17:06:35 -0700
+From: Andrea Shepard <andrea@persephoneslair.org>
+To: davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix race in arch/sparc64/kernel/trampoline.S
+Message-ID: <20081018000635.GA16445@charon.persephoneslair.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008, Linus Torvalds wrote:
-> On Fri, 17 Oct 2008, Hugh Dickins wrote:
-> > 
-> > My problem is really with the smp_read_barrier_depends() you each
-> > have in anon_vma_prepare().  But the only thing which its CPU
-> > does with the anon_vma is put its address into a struct page
-> > (or am I forgetting more?).  Wouldn't the smp_read_barrier_depends()
-> > need to be, not there in anon_vma_prepare(), but over on the third
-> > CPU, perhaps in page_lock_anon_vma()?
-> 
-> I thought about it, but it's a disaster from a maintenance standpoint to 
-> put it there, rather than make it all clear in the _one_ function that 
-> actually does things optimistically.
-> 
-> I agree that it's a bit subtle the way I did it (haven't seen Nick's 
-> patch, I assume he was upset at me for shouting at him), but that's part 
-> of why I put that comment in there and said things are subtle.
+Make arch/sparc64/kernel/trampoline.S in 2.6.27.1 lock prom_entry_lock
+when calling the PROM.  This prevents a race condition that I observed
+causing a hang on startup on a 12-CPU E4500.
 
-Nick's patch was below in the mail you're replying to - I expect
-it looked so much like yours, that at a glance you thought it was
-yours - though there are little differences.
+I am not subscribed to this list, so please CC me on replies.
 
-(Yes, I think he felt he'd make more progress by backing away from
-your harangues and taking cover with a patch to linux-mm - though
-surely you were right that his original ctor angle was mistaken.)
+Signed-off-by: Andrea Shepard <andrea@persephoneslair.org>
 
-> 
-> Anyway, technically you're right: the smp_read_barrier_depends() really 
-> would be more obvious in the place where we actually fetch that "anon_vma" 
-> pointer again and actually derefernce it.
-> 
-> HOWEVER:
-> 
->  - there are potentially multiple places that do that, and putting it in 
->    the anon_vma_prepare() thing not only matches things with the 
->    smp_wmb(), making that whole pairing much more obvious, but it also 
->    means that we're guaranteed that any anon_vma user will have done the 
->    smp_read_barrier_depends(), since they all have to do that prepare 
->    thing anyway.
+diff -Naur linux-2.6.27.1/arch/sparc64/kernel/trampoline.S linux-2.6.27.1.patched/arch/sparc64/kernel/trampoline.S
+--- linux-2.6.27.1/arch/sparc64/kernel/trampoline.S	2008-10-15 16:02:53.000000000 -0700
++++ linux-2.6.27.1.patched/arch/sparc64/kernel/trampoline.S	2008-10-17 13:17:09.401334338 -0700
+@@ -328,6 +328,12 @@
+ 
+ 	wrpr		%g0, 0, %wstate
+ 
++	sethi		%hi(prom_entry_lock), %g2
++1:	ldstub		[%g2 + %lo(prom_entry_lock)], %g1
++	membar		#StoreLoad | #StoreStore
++	brnz,pn		%g1, 1b
++	 nop
++
+ 	/* As a hack, put &init_thread_union into %g6.
+ 	 * prom_world() loads from here to restore the %asi
+ 	 * register.
+@@ -337,9 +343,9 @@
+ 
+ 	sethi		%hi(is_sun4v), %o0
+ 	lduw		[%o0 + %lo(is_sun4v)], %o0
+-	brz,pt		%o0, 1f
++	brz,pt		%o0, 2f
+ 	 nop
 
-No, it's not so that any anon_vma user would have done the
-smp_read_barrier_depends() placed in anon_vma_prepare().
+ 	TRAP_LOAD_TRAP_BLOCK(%g2, %g3)
+ 	add		%g2, TRAP_PER_CPU_FAULT_INFO, %g2
+ 	stxa		%g2, [%g0] ASI_SCRATCHPAD
+@@ -369,10 +375,10 @@
+ 	call		%o1
+ 	 add		%sp, (2047 + 128), %o0
+ 
+-	ba,pt		%xcc, 2f
++	ba,pt		%xcc, 3f
+ 	 nop
+ 
+-1:	sethi		%hi(sparc64_ttable_tl0), %o0
++2:	sethi		%hi(sparc64_ttable_tl0), %o0
+ 	set		prom_set_trap_table_name, %g2
+ 	stx		%g2, [%sp + 2047 + 128 + 0x00]
+ 	mov		1, %g2
+@@ -386,9 +392,13 @@
+ 	call		%o1
+ 	 add		%sp, (2047 + 128), %o0
+ 
+-2:	ldx		[%l0], %g6
++3:	sethi		%hi(prom_entry_lock), %g2
++	stb		%g0, [%g2 + %lo(prom_entry_lock)]
++	membar		#StoreStore | #StoreLoad
++
++	ldx		[%l0], %g6
+ 	ldx		[%g6 + TI_TASK], %g4
 
-Anyone faulting in a page would have done it (swapoff? that
-assumes it's been done, let's not worry about it right now).
-
-But they're doing it to make the page's ptes accessible to
-memory reclaim, and the CPU doing memory reclaim will not
-(unless by coincidence) have done that anon_vma_prepare() -
-it's just reading the links which the faulters are providing.
-
-But I've given up thought for the night, will leave digesting
-all you've written until morning, just wanted to point that
-out before sleeping.
-
-Hugh
-
-> 
->    So putting it there is simpler and gives better guarantees, and pairs 
->    up the barriers better.
-> 
->  - Now, "simpler" (etc) is no help if it doesn't work, so now I have to 
->    convince you that it's _sufficient_ to do that "read_barrier_depends()" 
->    early, even if we then end up re-doing the first read and thus the 
->    "depends" part doesn't work any more. So "simpler" is all good, but not 
->    if it's incorrect.
-> 
->    And I admit it, here my argument is one of implementation. The fact is, 
->    the only architecture where "read_barrier_depends()" exists at all as 
->    anything but a no-op is alpha, and there it's a full read barrier. On 
->    all other architectures, causality implies a read barrier anyway, so 
->    for them, placement (or non-placement) of the smp_read_barrier_depends 
->    is a total non-issue.
-> 
->    And so, since on the only architecture where it could possibly matter, 
->    that _depends thing turns into a full read barrier, and since 
->    "anon_vma" is actually stable since written, and since the only 
->    ordering constrain is that initial ordering of seeing the "anon_vma" 
->    turn non-NULL, you may as well think of that "read_barrier_depends()" 
->    as a full read barrier between the _original_ read of the anon_vma 
->    pointer and then the read of the lock data we want to protect.
-> 
->    Which it is, on alpha. And that is sufficient. IOW, think of it as a 
->    real read_barrier(), with no dependency thing, but that only happens 
->    when an architecture doesn't already guarantee the causality barrier.
-> 
->    And once you think of it as a "smp_rmb() for alpha", you realize that 
->    it's perfectly ok for it to be where it is.
-> 
-> Anyway, lockless is bad. It would certainly be a *lot* simpler to just 
-> take the page_table_lock around the whole thing, except I think we really 
-> *really* don't want to do that. That thing is solidly in a couple of 
-> *very* timing-critical routines. Doing another lock there is just not an 
-> option.
-> 
-> 		Linus
+ 	mov		1, %g5
+ 	sllx		%g5, THREAD_SHIFT, %g5
+ 	sub		%g5, (STACKFRAME_SZ + STACK_BIAS), %g5
