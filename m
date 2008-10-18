@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYJRBUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJRBVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYJRBUS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 21:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYJRBUG
+	id S1755915AbYJRBVl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJRBVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 21:20:06 -0400
-Received: from mail.lang.hm ([64.81.33.126]:42801 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbYJRBUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 21:20:05 -0400
-Date: Fri, 17 Oct 2008 18:20:35 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Steven Noonan <steven@uplinklabs.net>
-cc: Greg KH <greg@kroah.com>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0810171815220.11079@asgard.lang.hm>
-References: <20081016002509.GA25868@kroah.com>  <20081016124943.GE23630@cs181140183.pp.htv.fi>  <20081016151748.GA31075@kroah.com>  <20081016164602.GA22554@cs181140183.pp.htv.fi>  <20081017034717.GA28188@kroah.com>  <20081017064751.GE22554@cs181140183.pp.htv.fi>
-  <20081017075544.GB4850@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 17 Oct 2008 21:21:33 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:20000 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbYJRBVc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 21:21:32 -0400
+Message-ID: <48F93A19.9070007@ct.jp.nec.com>
+Date: Fri, 17 Oct 2008 18:21:29 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: [PATCH -rt] sched: remove unneeded #if directive
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008, Steven Noonan wrote:
-> I believe some of Adrian's concerns are valid. Userspace programs will
-> indeed break, largely because some depend on build-time and run-time
-> checks for the kernel version being >=2.6.0 or >=2.4.0 and so forth.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-things that do this sort of check would work just find with version 8.10.0 
-or 2008.10.0
+__cond_resched_spinlock() is in #ifdef CONFIG_PREEMPT_RT.
+So the following line always true.
+#if (defined(CONFIG_SMP) && defined(CONFIG_PREEMPT)) || defined(CONFIG_PREEMPT_RT)
 
-the ones that would fail would be ones that made assumptions about the 
-number (it can only have X digits in this position, I don't need to check 
-the '2', only the '4' vs '6', etc). anything that does this sort of thing 
-is broken already, and will fail at some point in the future, even without 
-a radical numbering change.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ kernel/sched.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-> I
-> suspect the best way to prove userspace breakage would be to make a
-> branch of the kernel with a new versioning scheme (8.10, 2008.10,
-> whatever) and use that as the installed kernel while building a Gentoo
-> system. I suspect you'd see massive breakage.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0d68e79..2b34f00 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5841,7 +5841,6 @@ EXPORT_SYMBOL(__cond_resched_raw_spinlock);
+ 
+ int __cond_resched_spinlock(spinlock_t *lock)
+ {
+-#if (defined(CONFIG_SMP) && defined(CONFIG_PREEMPT)) || defined(CONFIG_PREEMPT_RT)
+ 	if (lock->break_lock) {
+ 		lock->break_lock = 0;
+ 		spin_unlock_no_resched(lock);
+@@ -5849,7 +5848,7 @@ int __cond_resched_spinlock(spinlock_t *lock)
+ 		spin_lock(lock);
+ 		return 1;
+ 	}
+-#endif
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(__cond_resched_spinlock);
+-- 
+1.5.6
 
-I suspect that you won't see anything noticable. you don't need to make a 
-branch of the kernel, just edit the kernel source to change the version.
-
-> I think a version numbering system change would be OK (though I
-> wouldn't very much -like- it), so long as there was a way for
-> userspace software to be able to differentiate between a kernel with
-> the old versioning system and the new versioning system.
-
-one nice thing about the year-based numbering (be it 8.x or 2008.x) is 
-that all the numbers in the new numbering scheme are > any numbers in the 
-old numbering scheme. so all you need to do is to check for > whatever 
-version added the feature you need.
-
-> I think perhaps a better option in the long run is to start a v2.7
-> tree and figure out some Cool New Stuff(tm) to implement, keeping
-> consistency with the current versioning scheme.
-
-Red Herring, the Cool New Stuff is happening now, no 2.7 needed.
-
-David Lang
