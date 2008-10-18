@@ -1,120 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYJRCnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbYJRCre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbYJRCnZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 22:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYJRCnM
+	id S1753654AbYJRCre (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 22:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYJRCr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 22:43:12 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:34609 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751630AbYJRCnK (ORCPT
+	Fri, 17 Oct 2008 22:47:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751322AbYJRCr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 22:43:10 -0400
-X-YMail-OSG: 3u9Dt5MVM1lT_L.OF1TE7n7pm8iGE27lGPSwBwyV03HNVD2p4xk8D7GXh7myHMaqIIuSQyx.XlH_aQnzZMX8TSZjK.LYA5dVLk9Nt77XA4nuaEcas2IMq.Zw1QdbOrILtaMRSbFnX_7SuRarYptFr29i3oNW2PwTcufIQe0-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH] [ConfigFS]: Allow symbolic links from a SysFS struct
-	kobject source.
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Greg KH <greg@kroah.com>
-Cc: Joel Becker <joel.becker@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Andrew Morton <akpm@osdl.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20081017201017.GA10613@kroah.com>
-References: <1224226555.5556.279.camel@haakon2.linux-iscsi.org>
-	 <20081017074453.GA4850@kroah.com>
-	 <1224231739.5556.303.camel@haakon2.linux-iscsi.org>
-	 <20081017173959.GC2221@kroah.com>
-	 <1224271173.5556.349.camel@haakon2.linux-iscsi.org>
-	 <20081017201017.GA10613@kroah.com>
-Content-Type: text/plain
-Date: Fri, 17 Oct 2008 19:41:56 -0700
-Message-Id: <1224297716.5556.365.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 22:47:26 -0400
+Date: Fri, 17 Oct 2008 19:47:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Anholt <eric@anholt.net>
+cc: Dave Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm patches for 2.6.27-rc1
+In-Reply-To: <1224295858.4378.8.camel@vonnegut.anholt.net>
+Message-ID: <alpine.LFD.2.00.0810171941120.3438@nehalem.linux-foundation.org>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>  <alpine.LFD.2.00.0810171510170.3438@nehalem.linux-foundation.org> <1224295858.4378.8.camel@vonnegut.anholt.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 13:10 -0700, Greg KH wrote:
-> On Fri, Oct 17, 2008 at 12:19:33PM -0700, Nicholas A. Bellinger wrote:
-> > On Fri, 2008-10-17 at 10:39 -0700, Greg KH wrote:
-> > > On Fri, Oct 17, 2008 at 01:22:18AM -0700, Nicholas A. Bellinger wrote:
-> > > > On Fri, 2008-10-17 at 00:44 -0700, Greg KH wrote:
-> > > > > On Thu, Oct 16, 2008 at 11:55:55PM -0700, Nicholas A. Bellinger wrote:
-> > > > > > Hi Joel, Greg and Co,
-> > > > > > 
-> > > > > > Here is the the first working code for allowing configfs to handle
-> > > > > > symlinks from sysfs struct kobject based code.  Here is the commit:
-> > > > > > passing struct kobject into generic target_core_mod subsystem plugins
-> > > > > > for locating struct block_device and struct scsi_device..  
-> > > > > 
-> > > > > Um, no.
-> > > > > 
-> > > > > You are trying to create symlinks dynamically across superblocks and
-> > > > > mount points?  As one of your #warning states, this isn't possible to do
-> > > > > correctly, nor is it even a good idea.
-> > > > > 
-> > > > > So I'd have to reject this patch, sorry.
-> > > > > 
-> > > > > What is the problem you are attempting to solve here?
-> > > > > 
-> > > > 
-> > > > So, the generic target_core_mod engine that lives
-> > > > under /sys/kernel/config/target/core needs a method to locate struct
-> > > > block_device and struct scsi_device for access via bio_submit() and
-> > > > scsi_execute_() respectively.
-> > > 
-> > > Then just pass the "name" of the block device into a configfs file,
-> > > nothing more is needed, right?
-> > > 
-> > 
-> > What are the preferred methods for accessing struct block_device and
-> > struct scsi_device from "name"..?
+
+
+On Fri, 17 Oct 2008, Eric Anholt wrote:
 > 
-> call "find_by_name" for a type (this would be block type) and get the
-> return value?  Can't remember the actual function call, but it's obvious
-> if you look at device.h.
-> 
+> Yeah, none of us are on x86-64, so we missed those warnings in testing.
 
-Got it, thanks..
+Really? None of you use any modern CPU's, or you're _all_ running 32-bit 
+distros even though your cpu's could support 64-bit ones?
 
-> > > > Originally, target_core_mod used key echoed through configfs attributes
-> > > > like so:
-> > > > 
-> > > > export TARGET=/sys/kernel/config/target/core/
-> > > > 
-> > > > # Create $STORAGE_OBJECT of type Linux/BLOCK in generic target_core_mod
-> > > > mkdir -p $TARGET/iblock_0/lvm_test0
-> > > > # OLD METHOD to reference struct block_device
-> > > > echo iblock_major=254,iblock_minor=2 > $TARGET/iblock_0/lvm_test0/control
-> > > > echo 1 > $TARGET/iblock_0/lvm_test0/enable
-> > > > # NEW METHOD using sysfs ->configfs symlinks to reference struct block_device
-> > > > ln -s /sys/block/dm-2 $TARGET/iblock_0/lvm_test0/dm-2
-> > > 
-> > > No, you can't do a symlink across superblocks and expect it to work like
-> > > you are thinking internally.
-> > > 
-> > 
-> > <nod>  As I am coding configfs_follow_symlink() to work with sysfs
-> > source symlinks I am starting to see that.. :-)  I am still going to
-> > hack on it for a bit and see if I can get it running so that it works..
-> 
-> Even if you get it "to work", it's not going to be able to be accepted,
-> sorry.
-> 
+I would suggest at least _somebody_ in the intel graphics team try to get 
+with the times.. I realize that Otellini was saying "Nobody needs 64-bit 
+on the desktop" a few years ago, but he was full of sh*t then, and it's 
+certainly not remotely true now.
 
-<nod> not a problem, it was just something that I wanted to see if it
-was even possible.  I will refocus on using the method to locate what
-Linux storage objects can be used for target_core_mod that Joel
-mentioned and your recommendations.
+It's not being disloyal to your CEO, really. I'm pretty sure nobody will 
+be fired just for ignoring that whole "640kB^H^H^H^H^H32-bits should be 
+enough for everybody" idiocy.
 
-Thanks,
+> The change looks pretty good except for s/return 1/return 0/.
 
---nab
+oops, yes. Thinko. I reversed the meaning of the return value: at first I 
+just returned "unwritten", but decided that that was a really ugly 
+interface, and then when I prettied that up, I didn't fix the !HIGHMEM 
+case. And I obviously never _tested_ it.
 
+			Linus
