@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYJRTSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYJRTS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbYJRTSk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYJRTFl
+	id S1755028AbYJRTS4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYJRTFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:05:41 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47791 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:05:45 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38689 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751591AbYJRTFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:05:39 -0400
-Date: Sat, 18 Oct 2008 11:48:21 -0700
+	id S1753084AbYJRTFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:05:43 -0400
+Date: Sat, 18 Oct 2008 11:48:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,79 +22,54 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhao Yakui <yakui.zhao@intel.com>,
-       linux-acpi@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-       Andi Kleen <ak@linux.intel.com>, Len Brown <lenb@kernel.org>
-Subject: [patch 24/26] ACPI: Ignore _BQC object when registering backlight
-	device
-Message-ID: <20081018184821.GY301@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@redhat.com>
+Subject: [patch 25/26] drm/i915: fix ioremap of a user address for non-root
+	(CVE-2008-3831)
+Message-ID: <20081018184827.GZ301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-ignore-_bqc-object-when-registering-backlight-device.patch"
+Content-Disposition: inline; filename="drm-i915-fix-ioremap-of-a-user-address-for-non-root.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Matthias Hopf <mhopf@suse.de>
 
-upstream commmit: c2c789057f075022658b38b498755c29c1ba8055
+commit 4b40893918203ee1a1f6a114316c2a19c072e9bd upstream
 
-According to acpi spec , the objectes of  _BCL and _BCM are required if
-integrated LCD is present and supports brightness level and the _BQC is
-the optional object. So the _BQC object will be ignored when the backlight
-device is registered.
-At the same time when there is no _BQC object, the current brightness will be
-set to the maximum.
+Olaf Kirch noticed that the i915_set_status_page() function of the i915
+kernel driver calls ioremap with an address offset that is supplied by
+userspace via ioctl. The function zeroes the mapped memory via memset
+and tells the hardware about the address. Turns out that access to that
+ioctl is not restricted to root so users could probably exploit that to
+do nasty things. We haven't tried to write actual exploit code though.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10206
+It only affects the Intel G33 series and newer.
 
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Zhang Rui  <rui.zhang@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/video.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ drivers/char/drm/i915_dma.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -720,7 +720,7 @@ static void acpi_video_device_find_cap(s
+--- a/drivers/char/drm/i915_dma.c
++++ b/drivers/char/drm/i915_dma.c
+@@ -836,7 +836,7 @@ struct drm_ioctl_desc i915_ioctls[] = {
+ 	DRM_IOCTL_DEF(DRM_I915_SET_VBLANK_PIPE,  i915_vblank_pipe_set, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY ),
+ 	DRM_IOCTL_DEF(DRM_I915_GET_VBLANK_PIPE,  i915_vblank_pipe_get, DRM_AUTH ),
+ 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
+-	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
++	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+ };
  
- 	kfree(obj);
- 
--	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
-+	if (device->cap._BCL && device->cap._BCM && max_level > 0) {
- 		int result;
- 		static int count = 0;
- 		char *name;
-@@ -732,7 +732,17 @@ static void acpi_video_device_find_cap(s
- 		device->backlight = backlight_device_register(name,
- 			NULL, device, &acpi_backlight_ops);
- 		device->backlight->props.max_brightness = device->brightness->count-3;
--		device->backlight->props.brightness = acpi_video_get_brightness(device->backlight);
-+		/*
-+		 * If there exists the _BQC object, the _BQC object will be
-+		 * called to get the current backlight brightness. Otherwise
-+		 * the brightness will be set to the maximum.
-+		 */
-+		if (device->cap._BQC)
-+			device->backlight->props.brightness =
-+				acpi_video_get_brightness(device->backlight);
-+		else
-+			device->backlight->props.brightness =
-+				device->backlight->props.max_brightness;
- 		backlight_update_status(device->backlight);
- 		kfree(name);
- 
+ int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
 
 -- 
