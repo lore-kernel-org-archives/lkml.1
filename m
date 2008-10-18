@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbYJRCQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYJRCQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754988AbYJRCQn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 22:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYJRCQS
+	id S1755406AbYJRCQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 22:16:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbYJRCQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 22:16:18 -0400
-Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:30828 "HELO
+	Fri, 17 Oct 2008 22:16:19 -0400
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:30835 "HELO
 	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753477AbYJRCQM (ORCPT
+	by vger.kernel.org with SMTP id S1753530AbYJRCQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 22:16:12 -0400
+	Fri, 17 Oct 2008 22:16:13 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=XzOwuznXgOlRrE22nOWONaGZ8QgTUEFgLPvKGa+Z+fEIoZvLZHs21gx9pMOOQ6oX+/mQ8ViaAKTcm/4S5f4Lcw89a2w4/sDLxOQ8b06Nme6e0rzrramynL30+ubO75VkQcJHBEuk1fUVLWJgoG7FBbu17/KAsp9mc1EMQMBdN14=  ;
-X-YMail-OSG: rVViOHcVM1l7sY75p5jZ4oHr3EUo6SG36wIkEutHUC1n763F_SyrbhHlbH6SZjJ77UtrYZAit5uHkZ.TuaeRdeTPkdQC6ORmIWgfH1geYcx.eXZjTWAJgEZKS.u8WOdqxp32eX4HT_ZspE96ktr8Ya3o2qJX4vdvQMZPsKTMmMBYhpiMjCFTCC.7Emta
+  b=xkz5Qa1UpsxpaRIJm06XaqmwE0PDHSpsVbNSmUD2e5f9AZUIBnYnCgukKPLlVxbv7yGt7UeQ6N2p0WtmwbneFAJN/KgVmB5JABrEs679dzxqs7NyrIAXhtkPNt9Q1eLYKdyJKjcgFYW6QcNoeWmhRwvuy3lMpDdmJlaYmszLLKo=  ;
+X-YMail-OSG: DMro.BwVM1kNiXkqA6BHjyRleNxzhifxrkLr1ZWzgyZyvjddug_2M20JoPv7jgyetEtuPrdriAI5S4GF2ngLxAba_D8Fr.975hJjWpddLpjpmvDV.SDwLiz7PSirMidMJOK2TQle_zkmbVXnPPlay_RYlHsqqK4rBYqIfSbCpWGUYWxCwnR09Kt3_I.g454z3q4ezg9xGlYhhdxp6GlN3FIcCBiqNoKgwQ--
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
 To: Samuel Ortiz <sameo@openedhand.com>
-Subject: [patch 2/3] rtc-twl4030 driver
-Date: Fri, 17 Oct 2008 19:15:08 -0700
+Subject: [patch 3/3] twl4030-gpio driver
+Date: Fri, 17 Oct 2008 19:15:22 -0700
 User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com,
-       Tony Lindgren <tony@atomide.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200810171915.08290.david-b@pacbell.net>
+Message-Id: <200810171915.22830.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -35,618 +34,569 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <dbrownell@users.sourceforge.net>
 
-This adds a driver for the RTC inside the TWL4030 multi-function device.
-It's a fairly basic RTC, with a wake-capable alarm.
+This adds basic support for the GPIOs in the twl4030 power management
+chip.  That includes two open drain LED drivers, and the use of GPIO-0
+(and GPIO-1) as MMC/SD card detect switches which can control whether
+the VMMC1 (and VMMC2) regulators are active.
 
-Note that many of the pre-release Overo boards now in circulation can't
-effectively use this RTC, because of a wiring error that puts its TWL
-chip into "secure" mode.  (As in "secure yourself against tampering".)
-This isn't an issue on other OMAP3 boards now supported in mainline,
-such as Beagle and Labrador.
+This version of the code has a debounce call that will probably be
+replaced before long, when a more generic interface exists.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
 Patch depends on the twl4030-irq patch.
 
- drivers/rtc/Kconfig       |   10 
- drivers/rtc/Makefile      |    1 
- drivers/rtc/rtc-twl4030.c |  564 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 575 insertions(+)
+ drivers/gpio/Kconfig        |    7 
+ drivers/gpio/Makefile       |    1 
+ drivers/gpio/twl4030-gpio.c |  521 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 529 insertions(+)
 
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -246,6 +246,16 @@ config RTC_DRV_TWL92330
- 	  platforms.  The support is integrated with the rest of
- 	  the Menelaus driver; it's not separate module.
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -127,6 +127,13 @@ config GPIO_PCF857X
+ 	  This driver provides an in-kernel interface to those GPIOs using
+ 	  platform-neutral GPIO calls.
  
-+config RTC_DRV_TWL4030
-+	tristate "TI TWL4030/TWL5030/TPS659x0"
-+	depends on RTC_CLASS && TWL4030_CORE
++config GPIO_TWL4030
++	tristate "TWL4030, TWL5030, and TPS659x0 GPIOs"
++	depends on TWL4030_CORE
 +	help
-+	  If you say yes here you get support for the RTC on the
-+	  TWL4030 family chips, used mostly with OMAP3 platforms.
++	  Say yes here to access the GPIO signals of various multi-function
++	  power management chips from Texas Instruments.
 +
-+	  This driver can also be built as a module. If so, the module
-+	  will be called rtc-twl4030.
-+
- config RTC_DRV_S35390A
- 	tristate "Seiko Instruments S-35390A"
- 	select BITREVERSE
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -62,6 +62,7 @@ obj-$(CONFIG_RTC_DRV_SA1100)	+= rtc-sa11
- obj-$(CONFIG_RTC_DRV_SH)	+= rtc-sh.o
- obj-$(CONFIG_RTC_DRV_STK17TA8)	+= rtc-stk17ta8.o
- obj-$(CONFIG_RTC_DRV_TEST)	+= rtc-test.o
-+obj-$(CONFIG_RTC_DRV_TWL4030)	+= rtc-twl4030.o
- obj-$(CONFIG_RTC_DRV_V3020)	+= rtc-v3020.o
- obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
- obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
+ comment "PCI GPIO expanders:"
+ 
+ config GPIO_BT8XX
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -9,4 +9,5 @@ obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
+ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+ obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
++obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
 --- /dev/null
-+++ b/drivers/rtc/rtc-twl4030.c
-@@ -0,0 +1,564 @@
++++ b/drivers/gpio/twl4030-gpio.c
+@@ -0,0 +1,521 @@
 +/*
-+ * rtc-twl4030.c -- TWL4030 Real Time Clock interface
++ * twl4030_gpio.c -- access to GPIOs on TWL4030/TPS659x0 chips
 + *
-+ * Copyright (C) 2007 MontaVista Software, Inc
-+ * Author: Alexandre Rusev <source@mvista.com>
++ * Copyright (C) 2006-2007 Texas Instruments, Inc.
++ * Copyright (C) 2006 MontaVista Software, Inc.
 + *
-+ * Based on original TI driver twl4030-rtc.c
-+ *   Copyright (C) 2006 Texas Instruments, Inc.
++ * Code re-arranged and cleaned up by:
++ *	Syed Mohammed Khasim <x0khasim@ti.com>
 + *
-+ * Based on rtc-omap.c
-+ *   Copyright (C) 2003 MontaVista Software, Inc.
-+ *   Author: George G. Davis <gdavis@mvista.com> or <source@mvista.com>
-+ *   Copyright (C) 2006 David Brownell
++ * Initial Code:
++ *	Andy Lowe / Nishanth Menon
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/rtc.h>
-+#include <linux/bcd.h>
-+#include <linux/platform_device.h>
++#include <linux/init.h>
 +#include <linux/interrupt.h>
++#include <linux/kthread.h>
++#include <linux/irq.h>
++#include <linux/gpio.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
 +
 +#include <linux/i2c/twl4030.h>
 +
 +
 +/*
-+ * RTC block register offsets (use TWL_MODULE_RTC)
-+ */
-+#define REG_SECONDS_REG                          0x00
-+#define REG_MINUTES_REG                          0x01
-+#define REG_HOURS_REG                            0x02
-+#define REG_DAYS_REG                             0x03
-+#define REG_MONTHS_REG                           0x04
-+#define REG_YEARS_REG                            0x05
-+#define REG_WEEKS_REG                            0x06
-+
-+#define REG_ALARM_SECONDS_REG                    0x07
-+#define REG_ALARM_MINUTES_REG                    0x08
-+#define REG_ALARM_HOURS_REG                      0x09
-+#define REG_ALARM_DAYS_REG                       0x0A
-+#define REG_ALARM_MONTHS_REG                     0x0B
-+#define REG_ALARM_YEARS_REG                      0x0C
-+
-+#define REG_RTC_CTRL_REG                         0x0D
-+#define REG_RTC_STATUS_REG                       0x0E
-+#define REG_RTC_INTERRUPTS_REG                   0x0F
-+
-+#define REG_RTC_COMP_LSB_REG                     0x10
-+#define REG_RTC_COMP_MSB_REG                     0x11
-+
-+/* RTC_CTRL_REG bitfields */
-+#define BIT_RTC_CTRL_REG_STOP_RTC_M              0x01
-+#define BIT_RTC_CTRL_REG_ROUND_30S_M             0x02
-+#define BIT_RTC_CTRL_REG_AUTO_COMP_M             0x04
-+#define BIT_RTC_CTRL_REG_MODE_12_24_M            0x08
-+#define BIT_RTC_CTRL_REG_TEST_MODE_M             0x10
-+#define BIT_RTC_CTRL_REG_SET_32_COUNTER_M        0x20
-+#define BIT_RTC_CTRL_REG_GET_TIME_M              0x40
-+
-+/* RTC_STATUS_REG bitfields */
-+#define BIT_RTC_STATUS_REG_RUN_M                 0x02
-+#define BIT_RTC_STATUS_REG_1S_EVENT_M            0x04
-+#define BIT_RTC_STATUS_REG_1M_EVENT_M            0x08
-+#define BIT_RTC_STATUS_REG_1H_EVENT_M            0x10
-+#define BIT_RTC_STATUS_REG_1D_EVENT_M            0x20
-+#define BIT_RTC_STATUS_REG_ALARM_M               0x40
-+#define BIT_RTC_STATUS_REG_POWER_UP_M            0x80
-+
-+/* RTC_INTERRUPTS_REG bitfields */
-+#define BIT_RTC_INTERRUPTS_REG_EVERY_M           0x03
-+#define BIT_RTC_INTERRUPTS_REG_IT_TIMER_M        0x04
-+#define BIT_RTC_INTERRUPTS_REG_IT_ALARM_M        0x08
-+
-+
-+/* REG_SECONDS_REG through REG_YEARS_REG is how many registers? */
-+#define ALL_TIME_REGS		6
-+
-+/*----------------------------------------------------------------------*/
-+
-+/*
-+ * Supports 1 byte read from TWL4030 RTC register.
-+ */
-+static int twl4030_rtc_read_u8(u8 *data, u8 reg)
-+{
-+	int ret;
-+
-+	ret = twl4030_i2c_read_u8(TWL4030_MODULE_RTC, data, reg);
-+	if (ret < 0)
-+		pr_err("twl4030_rtc: Could not read TWL4030"
-+		       "register %X - error %d\n", reg, ret);
-+	return ret;
-+}
-+
-+/*
-+ * Supports 1 byte write to TWL4030 RTC registers.
-+ */
-+static int twl4030_rtc_write_u8(u8 data, u8 reg)
-+{
-+	int ret;
-+
-+	ret = twl4030_i2c_write_u8(TWL4030_MODULE_RTC, data, reg);
-+	if (ret < 0)
-+		pr_err("twl4030_rtc: Could not write TWL4030"
-+		       "register %X - error %d\n", reg, ret);
-+	return ret;
-+}
-+
-+/*
-+ * Cache the value for timer/alarm interrupts register; this is
-+ * only changed by callers holding rtc ops lock (or resume).
-+ */
-+static unsigned char rtc_irq_bits;
-+
-+/*
-+ * Enable timer and/or alarm interrupts.
-+ */
-+static int set_rtc_irq_bit(unsigned char bit)
-+{
-+	unsigned char val;
-+	int ret;
-+
-+	val = rtc_irq_bits | bit;
-+	ret = twl4030_rtc_write_u8(val, REG_RTC_INTERRUPTS_REG);
-+	if (ret == 0)
-+		rtc_irq_bits = val;
-+
-+	return ret;
-+}
-+
-+/*
-+ * Disable timer and/or alarm interrupts.
-+ */
-+static int mask_rtc_irq_bit(unsigned char bit)
-+{
-+	unsigned char val;
-+	int ret;
-+
-+	val = rtc_irq_bits & ~bit;
-+	ret = twl4030_rtc_write_u8(val, REG_RTC_INTERRUPTS_REG);
-+	if (ret == 0)
-+		rtc_irq_bits = val;
-+
-+	return ret;
-+}
-+
-+static inline int twl4030_rtc_alarm_irq_set_state(int enabled)
-+{
-+	int ret;
-+
-+	if (enabled)
-+		ret = set_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_ALARM_M);
-+	else
-+		ret = mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_ALARM_M);
-+
-+	return ret;
-+}
-+
-+static inline int twl4030_rtc_irq_set_state(int enabled)
-+{
-+	int ret;
-+
-+	if (enabled)
-+		ret = set_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_TIMER_M);
-+	else
-+		ret = mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_TIMER_M);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Gets current TWL4030 RTC time and date parameters.
++ * The GPIO "subchip" supports 18 GPIOs which can be configured as
++ * inputs or outputs, with pullups or pulldowns on each pin.  Each
++ * GPIO can trigger interrupts on either or both edges.
 + *
-+ * The RTC's time/alarm representation is not what gmtime(3) requires
-+ * Linux to use:
++ * GPIO interrupts can be fed to either of two IRQ lines; this is
++ * intended to support multiple hosts.
 + *
-+ *  - Months are 1..12 vs Linux 0-11
-+ *  - Years are 0..99 vs Linux 1900..N (we assume 21st century)
++ * There are also two LED pins used sometimes as output-only GPIOs.
 + */
-+static int twl4030_rtc_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	unsigned char rtc_data[ALL_TIME_REGS + 1];
-+	int ret;
-+	u8 save_control;
 +
-+	ret = twl4030_rtc_read_u8(&save_control, REG_RTC_CTRL_REG);
-+	if (ret < 0)
-+		return ret;
 +
-+	save_control |= BIT_RTC_CTRL_REG_GET_TIME_M;
++static struct gpio_chip twl_gpiochip;
++static int twl4030_gpio_irq_base;
 +
-+	ret = twl4030_rtc_write_u8(save_control, REG_RTC_CTRL_REG);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = twl4030_i2c_read(TWL4030_MODULE_RTC, rtc_data,
-+			       REG_SECONDS_REG, ALL_TIME_REGS);
-+
-+	if (ret < 0) {
-+		dev_err(dev, "rtc_read_time error %d\n", ret);
-+		return ret;
-+	}
-+
-+	tm->tm_sec = bcd2bin(rtc_data[0]);
-+	tm->tm_min = bcd2bin(rtc_data[1]);
-+	tm->tm_hour = bcd2bin(rtc_data[2]);
-+	tm->tm_mday = bcd2bin(rtc_data[3]);
-+	tm->tm_mon = bcd2bin(rtc_data[4]) - 1;
-+	tm->tm_year = bcd2bin(rtc_data[5]) + 100;
-+
-+	return ret;
-+}
-+
-+static int twl4030_rtc_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	unsigned char save_control;
-+	unsigned char rtc_data[ALL_TIME_REGS + 1];
-+	int ret;
-+
-+	rtc_data[1] = bin2bcd(tm->tm_sec);
-+	rtc_data[2] = bin2bcd(tm->tm_min);
-+	rtc_data[3] = bin2bcd(tm->tm_hour);
-+	rtc_data[4] = bin2bcd(tm->tm_mday);
-+	rtc_data[5] = bin2bcd(tm->tm_mon + 1);
-+	rtc_data[6] = bin2bcd(tm->tm_year - 100);
-+
-+	/* Stop RTC while updating the TC registers */
-+	ret = twl4030_rtc_read_u8(&save_control, REG_RTC_CTRL_REG);
-+	if (ret < 0)
-+		goto out;
-+
-+	save_control &= ~BIT_RTC_CTRL_REG_STOP_RTC_M;
-+	twl4030_rtc_write_u8(save_control, REG_RTC_CTRL_REG);
-+	if (ret < 0)
-+		goto out;
-+
-+	/* update all the time registers in one shot */
-+	ret = twl4030_i2c_write(TWL4030_MODULE_RTC, rtc_data,
-+			REG_SECONDS_REG, ALL_TIME_REGS);
-+	if (ret < 0) {
-+		dev_err(dev, "rtc_set_time error %d\n", ret);
-+		goto out;
-+	}
-+
-+	/* Start back RTC */
-+	save_control |= BIT_RTC_CTRL_REG_STOP_RTC_M;
-+	ret = twl4030_rtc_write_u8(save_control, REG_RTC_CTRL_REG);
-+
-+out:
-+	return ret;
-+}
-+
-+/*
-+ * Gets current TWL4030 RTC alarm time.
-+ */
-+static int twl4030_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alm)
-+{
-+	unsigned char rtc_data[ALL_TIME_REGS + 1];
-+	int ret;
-+
-+	ret = twl4030_i2c_read(TWL4030_MODULE_RTC, rtc_data,
-+			       REG_ALARM_SECONDS_REG, ALL_TIME_REGS);
-+	if (ret < 0) {
-+		dev_err(dev, "rtc_read_alarm error %d\n", ret);
-+		return ret;
-+	}
-+
-+	/* some of these fields may be wildcard/"match all" */
-+	alm->time.tm_sec = bcd2bin(rtc_data[0]);
-+	alm->time.tm_min = bcd2bin(rtc_data[1]);
-+	alm->time.tm_hour = bcd2bin(rtc_data[2]);
-+	alm->time.tm_mday = bcd2bin(rtc_data[3]);
-+	alm->time.tm_mon = bcd2bin(rtc_data[4]) - 1;
-+	alm->time.tm_year = bcd2bin(rtc_data[5]) + 100;
-+
-+	/* report cached alarm enable state */
-+	if (rtc_irq_bits & BIT_RTC_INTERRUPTS_REG_IT_ALARM_M)
-+		alm->enabled = 1;
-+
-+	return ret;
-+}
-+
-+static int twl4030_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
-+{
-+	unsigned char alarm_data[ALL_TIME_REGS + 1];
-+	int ret;
-+
-+	ret = twl4030_rtc_alarm_irq_set_state(0);
-+	if (ret)
-+		goto out;
-+
-+	alarm_data[1] = bin2bcd(alm->time.tm_sec);
-+	alarm_data[2] = bin2bcd(alm->time.tm_min);
-+	alarm_data[3] = bin2bcd(alm->time.tm_hour);
-+	alarm_data[4] = bin2bcd(alm->time.tm_mday);
-+	alarm_data[5] = bin2bcd(alm->time.tm_mon + 1);
-+	alarm_data[6] = bin2bcd(alm->time.tm_year - 100);
-+
-+	/* update all the alarm registers in one shot */
-+	ret = twl4030_i2c_write(TWL4030_MODULE_RTC, alarm_data,
-+			REG_ALARM_SECONDS_REG, ALL_TIME_REGS);
-+	if (ret) {
-+		dev_err(dev, "rtc_set_alarm error %d\n", ret);
-+		goto out;
-+	}
-+
-+	if (alm->enabled)
-+		ret = twl4030_rtc_alarm_irq_set_state(1);
-+out:
-+	return ret;
-+}
-+
-+#ifdef	CONFIG_RTC_INTF_DEV
-+
-+static int twl4030_rtc_ioctl(struct device *dev, unsigned int cmd,
-+			     unsigned long arg)
-+{
-+	switch (cmd) {
-+	case RTC_AIE_OFF:
-+		return twl4030_rtc_alarm_irq_set_state(0);
-+	case RTC_AIE_ON:
-+		return twl4030_rtc_alarm_irq_set_state(1);
-+	case RTC_UIE_OFF:
-+		return twl4030_rtc_irq_set_state(0);
-+	case RTC_UIE_ON:
-+		return twl4030_rtc_irq_set_state(1);
-+
-+	default:
-+		return -ENOIOCTLCMD;
-+	}
-+}
-+
++/* genirq interfaces are not available to modules */
++#ifdef MODULE
++#define is_module()	true
 +#else
-+#define	omap_rtc_ioctl	NULL
++#define is_module()	false
 +#endif
 +
-+static irqreturn_t twl4030_rtc_interrupt(int irq, void *rtc)
-+{
-+	unsigned long events = 0;
-+	int ret = IRQ_NONE;
-+	int res;
-+	u8 rd_reg;
++/* GPIO_CTRL Fields */
++#define MASK_GPIO_CTRL_GPIO0CD1		BIT(0)
++#define MASK_GPIO_CTRL_GPIO1CD2		BIT(1)
++#define MASK_GPIO_CTRL_GPIO_ON		BIT(2)
 +
-+#ifdef CONFIG_LOCKDEP
-+	/* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
-+	 * we don't want and can't tolerate.  Although it might be
-+	 * friendlier not to borrow this thread context...
-+	 */
-+	local_irq_enable();
-+#endif
++/* Mask for GPIO registers when aggregated into a 32-bit integer */
++#define GPIO_32_MASK			0x0003ffff
 +
-+	res = twl4030_rtc_read_u8(&rd_reg, REG_RTC_STATUS_REG);
-+	if (res)
-+		goto out;
-+	/*
-+	 * Figure out source of interrupt: ALARM or TIMER in RTC_STATUS_REG.
-+	 * only one (ALARM or RTC) interrupt source may be enabled
-+	 * at time, we also could check our results
-+	 * by reading RTS_INTERRUPTS_REGISTER[IT_TIMER,IT_ALARM]
-+	 */
-+	if (rd_reg & BIT_RTC_STATUS_REG_ALARM_M)
-+		events |= RTC_IRQF | RTC_AF;
-+	else
-+		events |= RTC_IRQF | RTC_UF;
++/* Data structures */
++static DEFINE_MUTEX(gpio_lock);
 +
-+	res = twl4030_rtc_write_u8(rd_reg | BIT_RTC_STATUS_REG_ALARM_M,
-+				   REG_RTC_STATUS_REG);
-+	if (res)
-+		goto out;
-+
-+	/* Clear on Read enabled. RTC_IT bit of TWL4030_INT_PWR_ISR1
-+	 * needs 2 reads to clear the interrupt. One read is done in
-+	 * do_twl4030_pwrirq(). Doing the second read, to clear
-+	 * the bit.
-+	 *
-+	 * FIXME the reason PWR_ISR1 needs an extra read is that
-+	 * RTC_IF retriggered until we cleared REG_ALARM_M above.
-+	 * But re-reading like this is a bad hack; by doing so we
-+	 * risk wrongly clearing status for some other IRQ (losing
-+	 * the interrupt).  Be smarter about handling RTC_UF ...
-+	 */
-+	res = twl4030_i2c_read_u8(TWL4030_MODULE_INT,
-+			&rd_reg, TWL4030_INT_PWR_ISR1);
-+	if (res)
-+		goto out;
-+
-+	/* Notify RTC core on event */
-+	rtc_update_irq(rtc, 1, events);
-+
-+	ret = IRQ_HANDLED;
-+out:
-+	return ret;
-+}
-+
-+static struct rtc_class_ops twl4030_rtc_ops = {
-+	.ioctl		= twl4030_rtc_ioctl,
-+	.read_time	= twl4030_rtc_read_time,
-+	.set_time	= twl4030_rtc_set_time,
-+	.read_alarm	= twl4030_rtc_read_alarm,
-+	.set_alarm	= twl4030_rtc_set_alarm,
-+};
++/* store usage of each GPIO. - each bit represents one GPIO */
++static unsigned int gpio_usage_count;
 +
 +/*----------------------------------------------------------------------*/
 +
-+static int __devinit twl4030_rtc_probe(struct platform_device *pdev)
++/*
++ * To configure TWL4030 GPIO module registers
++ */
++static inline int gpio_twl4030_write(u8 address, u8 data)
 +{
-+	struct rtc_device *rtc;
++	return twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, data, address);
++}
++
++/*----------------------------------------------------------------------*/
++
++/*
++ * LED register offsets (use TWL4030_MODULE_{LED,PWMA,PWMB}))
++ * PWMs A and B are dedicated to LEDs A and B, respectively.
++ */
++
++#define TWL4030_LED_LEDEN	0x0
++
++/* LEDEN bits */
++#define LEDEN_LEDAON		BIT(0)
++#define LEDEN_LEDBON		BIT(1)
++#define LEDEN_LEDAEXT		BIT(2)
++#define LEDEN_LEDBEXT		BIT(3)
++#define LEDEN_LEDAPWM		BIT(4)
++#define LEDEN_LEDBPWM		BIT(5)
++#define LEDEN_PWM_LENGTHA	BIT(6)
++#define LEDEN_PWM_LENGTHB	BIT(7)
++
++#define TWL4030_PWMx_PWMxON	0x0
++#define TWL4030_PWMx_PWMxOFF	0x1
++
++#define PWMxON_LENGTH		BIT(7)
++
++/*----------------------------------------------------------------------*/
++
++/*
++ * To read a TWL4030 GPIO module register
++ */
++static inline int gpio_twl4030_read(u8 address)
++{
++	u8 data;
 +	int ret = 0;
-+	int irq = platform_get_irq(pdev, 0);
-+	u8 rd_reg;
 +
-+	if (irq < 0)
-+		return irq;
++	ret = twl4030_i2c_read_u8(TWL4030_MODULE_GPIO, &data, address);
++	return (ret < 0) ? ret : data;
++}
 +
-+	rtc = rtc_device_register(pdev->name,
-+				  &pdev->dev, &twl4030_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(rtc)) {
-+		ret = -EINVAL;
-+		dev_err(&pdev->dev, "can't register RTC device, err %ld\n",
-+			PTR_ERR(rtc));
-+		goto out0;
++/*----------------------------------------------------------------------*/
 +
++static u8 cached_leden;		/* protected by gpio_lock */
++
++/* The LED lines are open drain outputs ... a FET pulls to GND, so an
++ * external pullup is needed.  We could also expose the integrated PWM
++ * as a LED brightness control; we initialize it as "always on".
++ */
++static void twl4030_led_set_value(int led, int value)
++{
++	u8 mask = LEDEN_LEDAON | LEDEN_LEDAPWM;
++	int status;
++
++	if (led)
++		mask <<= 1;
++
++	mutex_lock(&gpio_lock);
++	if (value)
++		cached_leden &= ~mask;
++	else
++		cached_leden |= mask;
++	status = twl4030_i2c_write_u8(TWL4030_MODULE_LED, cached_leden,
++			TWL4030_LED_LEDEN);
++	mutex_unlock(&gpio_lock);
++}
++
++static int twl4030_set_gpio_direction(int gpio, int is_input)
++{
++	u8 d_bnk = gpio >> 3;
++	u8 d_msk = BIT(gpio & 0x7);
++	u8 reg = 0;
++	u8 base = REG_GPIODATADIR1 + d_bnk;
++	int ret = 0;
++
++	mutex_lock(&gpio_lock);
++	ret = gpio_twl4030_read(base);
++	if (ret >= 0) {
++		if (is_input)
++			reg = ret & ~d_msk;
++		else
++			reg = ret | d_msk;
++
++		ret = gpio_twl4030_write(base, reg);
 +	}
-+
-+	platform_set_drvdata(pdev, rtc);
-+
-+	ret = twl4030_rtc_read_u8(&rd_reg, REG_RTC_STATUS_REG);
-+
-+	if (ret < 0)
-+		goto out1;
-+
-+	if (rd_reg & BIT_RTC_STATUS_REG_POWER_UP_M)
-+		dev_warn(&pdev->dev, "Power up reset detected.\n");
-+
-+	if (rd_reg & BIT_RTC_STATUS_REG_ALARM_M)
-+		dev_warn(&pdev->dev, "Pending Alarm interrupt detected.\n");
-+
-+	/* Clear RTC Power up reset and pending alarm interrupts */
-+	ret = twl4030_rtc_write_u8(rd_reg, REG_RTC_STATUS_REG);
-+	if (ret < 0)
-+		goto out1;
-+
-+	ret = request_irq(irq, twl4030_rtc_interrupt,
-+				IRQF_TRIGGER_RISING,
-+				rtc->dev.bus_id, rtc);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "IRQ is not free.\n");
-+		goto out1;
-+	}
-+
-+	/* Check RTC module status, Enable if it is off */
-+	ret = twl4030_rtc_read_u8(&rd_reg, REG_RTC_CTRL_REG);
-+	if (ret < 0)
-+		goto out2;
-+
-+	if (!(rd_reg & BIT_RTC_CTRL_REG_STOP_RTC_M)) {
-+		dev_info(&pdev->dev, "Enabling TWL4030-RTC.\n");
-+		rd_reg = BIT_RTC_CTRL_REG_STOP_RTC_M;
-+		ret = twl4030_rtc_write_u8(rd_reg, REG_RTC_CTRL_REG);
-+		if (ret < 0)
-+			goto out2;
-+	}
-+
-+	/* init cached IRQ enable bits */
-+	ret = twl4030_rtc_read_u8(&rtc_irq_bits, REG_RTC_INTERRUPTS_REG);
-+	if (ret < 0)
-+		goto out2;
-+
++	mutex_unlock(&gpio_lock);
 +	return ret;
++}
 +
++static int twl4030_set_gpio_dataout(int gpio, int enable)
++{
++	u8 d_bnk = gpio >> 3;
++	u8 d_msk = BIT(gpio & 0x7);
++	u8 base = 0;
 +
-+out2:
-+	free_irq(irq, rtc);
-+out1:
-+	rtc_device_unregister(rtc);
-+out0:
++	if (enable)
++		base = REG_SETGPIODATAOUT1 + d_bnk;
++	else
++		base = REG_CLEARGPIODATAOUT1 + d_bnk;
++
++	return gpio_twl4030_write(base, d_msk);
++}
++
++static int twl4030_get_gpio_datain(int gpio)
++{
++	u8 d_bnk = gpio >> 3;
++	u8 d_off = gpio & 0x7;
++	u8 base = 0;
++	int ret = 0;
++
++	if (unlikely((gpio >= TWL4030_GPIO_MAX)
++		|| !(gpio_usage_count & BIT(gpio))))
++		return -EPERM;
++
++	base = REG_GPIODATAIN1 + d_bnk;
++	ret = gpio_twl4030_read(base);
++	if (ret > 0)
++		ret = (ret >> d_off) & 0x1;
++
 +	return ret;
 +}
 +
 +/*
-+ * Disable all TWL4030 RTC module interrupts.
-+ * Sets status flag to free.
++ * Configure debounce timing value for a GPIO pin on TWL4030
 + */
-+static int __devexit twl4030_rtc_remove(struct platform_device *pdev)
++int twl4030_set_gpio_debounce(int gpio, int enable)
 +{
-+	/* leave rtc running, but disable irqs */
-+	struct rtc_device *rtc = platform_get_drvdata(pdev);
-+	int irq = platform_get_irq(pdev, 0);
++	u8 d_bnk = gpio >> 3;
++	u8 d_msk = BIT(gpio & 0x7);
++	u8 reg = 0;
++	u8 base = 0;
++	int ret = 0;
 +
-+	mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_ALARM_M);
-+	mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_TIMER_M);
++	if (unlikely((gpio >= TWL4030_GPIO_MAX)
++		|| !(gpio_usage_count & BIT(gpio))))
++		return -EPERM;
 +
-+	free_irq(irq, rtc);
++	base = REG_GPIO_DEBEN1 + d_bnk;
++	mutex_lock(&gpio_lock);
++	ret = gpio_twl4030_read(base);
++	if (ret >= 0) {
++		if (enable)
++			reg = ret | d_msk;
++		else
++			reg = ret & ~d_msk;
 +
-+	rtc_device_unregister(rtc);
-+	platform_set_drvdata(pdev, NULL);
-+	return 0;
++		ret = gpio_twl4030_write(base, reg);
++	}
++	mutex_unlock(&gpio_lock);
++	return ret;
++}
++EXPORT_SYMBOL(twl4030_set_gpio_debounce);
++
++/*----------------------------------------------------------------------*/
++
++static int twl_request(struct gpio_chip *chip, unsigned offset)
++{
++	int status = 0;
++
++	mutex_lock(&gpio_lock);
++
++	/* Support the two LED outputs as output-only GPIOs. */
++	if (offset >= TWL4030_GPIO_MAX) {
++		u8	ledclr_mask = LEDEN_LEDAON | LEDEN_LEDAEXT
++				| LEDEN_LEDAPWM | LEDEN_PWM_LENGTHA;
++		u8	module = TWL4030_MODULE_PWMA;
++
++		offset -= TWL4030_GPIO_MAX;
++		if (offset) {
++			ledclr_mask <<= 1;
++			module = TWL4030_MODULE_PWMB;
++		}
++
++		/* initialize PWM to always-drive */
++		status = twl4030_i2c_write_u8(module, 0x7f,
++				TWL4030_PWMx_PWMxOFF);
++		if (status < 0)
++			goto done;
++		status = twl4030_i2c_write_u8(module, 0x7f,
++				TWL4030_PWMx_PWMxON);
++		if (status < 0)
++			goto done;
++
++		/* init LED to not-driven (high) */
++		module = TWL4030_MODULE_LED;
++		status = twl4030_i2c_read_u8(module, &cached_leden,
++				TWL4030_LED_LEDEN);
++		if (status < 0)
++			goto done;
++		cached_leden &= ~ledclr_mask;
++		status = twl4030_i2c_write_u8(module, cached_leden,
++				TWL4030_LED_LEDEN);
++		if (status < 0)
++			goto done;
++
++		status = 0;
++		goto done;
++	}
++
++	/* on first use, turn GPIO module "on" */
++	if (!gpio_usage_count) {
++		struct twl4030_gpio_platform_data *pdata;
++		u8 value = MASK_GPIO_CTRL_GPIO_ON;
++
++		/* optionally have the first two GPIOs switch vMMC1
++		 * and vMMC2 power supplies based on card presence.
++		 */
++		pdata = chip->dev->platform_data;
++		value |= pdata->mmc_cd & 0x03;
++
++		status = gpio_twl4030_write(REG_GPIO_CTRL, value);
++	}
++
++	if (!status)
++		gpio_usage_count |= (0x1 << offset);
++
++done:
++	mutex_unlock(&gpio_lock);
++	return status;
 +}
 +
-+static void twl4030_rtc_shutdown(struct platform_device *pdev)
++static void twl_free(struct gpio_chip *chip, unsigned offset)
 +{
-+	mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_TIMER_M |
-+			 BIT_RTC_INTERRUPTS_REG_IT_ALARM_M);
++	if (offset >= TWL4030_GPIO_MAX) {
++		twl4030_led_set_value(offset - TWL4030_GPIO_MAX, 1);
++		return;
++	}
++
++	mutex_lock(&gpio_lock);
++
++	gpio_usage_count &= ~BIT(offset);
++
++	/* on last use, switch off GPIO module */
++	if (!gpio_usage_count)
++		gpio_twl4030_write(REG_GPIO_CTRL, 0x0);
++
++	mutex_unlock(&gpio_lock);
 +}
 +
-+#ifdef CONFIG_PM
-+
-+static unsigned char irqstat;
-+
-+static int twl4030_rtc_suspend(struct platform_device *pdev, pm_message_t state)
++static int twl_direction_in(struct gpio_chip *chip, unsigned offset)
 +{
-+	irqstat = rtc_irq_bits;
-+
-+	/* REVISIT alarm may need to wake us from sleep */
-+	mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_TIMER_M |
-+			 BIT_RTC_INTERRUPTS_REG_IT_ALARM_M);
-+	return 0;
++	return (offset < TWL4030_GPIO_MAX)
++		? twl4030_set_gpio_direction(offset, 1)
++		: -EINVAL;
 +}
 +
-+static int twl4030_rtc_resume(struct platform_device *pdev)
++static int twl_get(struct gpio_chip *chip, unsigned offset)
 +{
-+	set_rtc_irq_bit(irqstat);
-+	return 0;
++	int status = 0;
++
++	if (offset < TWL4030_GPIO_MAX)
++		status = twl4030_get_gpio_datain(offset);
++	else if (offset == TWL4030_GPIO_MAX)
++		status = cached_leden & LEDEN_LEDAON;
++	else
++		status = cached_leden & LEDEN_LEDBON;
++	return (status < 0) ? 0 : status;
 +}
 +
-+#else
-+#define twl4030_rtc_suspend NULL
-+#define twl4030_rtc_resume  NULL
-+#endif
++static int twl_direction_out(struct gpio_chip *chip, unsigned offset, int value)
++{
++	if (offset < TWL4030_GPIO_MAX) {
++		twl4030_set_gpio_dataout(offset, value);
++		return twl4030_set_gpio_direction(offset, 0);
++	} else {
++		twl4030_led_set_value(offset - TWL4030_GPIO_MAX, value);
++		return 0;
++	}
++}
 +
-+MODULE_ALIAS("platform:twl4030_rtc");
++static void twl_set(struct gpio_chip *chip, unsigned offset, int value)
++{
++	if (offset < TWL4030_GPIO_MAX)
++		twl4030_set_gpio_dataout(offset, value);
++	else
++		twl4030_led_set_value(offset - TWL4030_GPIO_MAX, value);
++}
 +
-+static struct platform_driver twl4030rtc_driver = {
-+	.probe		= twl4030_rtc_probe,
-+	.remove		= __devexit_p(twl4030_rtc_remove),
-+	.shutdown	= twl4030_rtc_shutdown,
-+	.suspend	= twl4030_rtc_suspend,
-+	.resume		= twl4030_rtc_resume,
-+	.driver		= {
-+		.owner	= THIS_MODULE,
-+		.name	= "twl4030_rtc",
-+	},
++static int twl_to_irq(struct gpio_chip *chip, unsigned offset)
++{
++	return (twl4030_gpio_irq_base && (offset < TWL4030_GPIO_MAX))
++		? (twl4030_gpio_irq_base + offset)
++		: -EINVAL;
++}
++
++static struct gpio_chip twl_gpiochip = {
++	.label			= "twl4030",
++	.owner			= THIS_MODULE,
++	.request		= twl_request,
++	.free			= twl_free,
++	.direction_input	= twl_direction_in,
++	.get			= twl_get,
++	.direction_output	= twl_direction_out,
++	.set			= twl_set,
++	.to_irq			= twl_to_irq,
++	.can_sleep		= 1,
 +};
 +
-+static int __init twl4030_rtc_init(void)
-+{
-+	return platform_driver_register(&twl4030rtc_driver);
-+}
-+module_init(twl4030_rtc_init);
++/*----------------------------------------------------------------------*/
 +
-+static void __exit twl4030_rtc_exit(void)
++static int __devinit gpio_twl4030_pulls(u32 ups, u32 downs)
 +{
-+	platform_driver_unregister(&twl4030rtc_driver);
-+}
-+module_exit(twl4030_rtc_exit);
++	u8		message[6];
++	unsigned	i, gpio_bit;
 +
-+MODULE_AUTHOR("Texas Instruments, MontaVista Software");
++	/* For most pins, a pulldown was enabled by default.
++	 * We should have data that's specific to this board.
++	 */
++	for (gpio_bit = 1, i = 1; i < 6; i++) {
++		u8		bit_mask;
++		unsigned	j;
++
++		for (bit_mask = 0, j = 0; j < 8; j += 2, gpio_bit <<= 1) {
++			if (ups & gpio_bit)
++				bit_mask |= 1 << (j + 1);
++			else if (downs & gpio_bit)
++				bit_mask |= 1 << (j + 0);
++		}
++		message[i] = bit_mask;
++	}
++
++	return twl4030_i2c_write(TWL4030_MODULE_GPIO, message,
++				REG_GPIOPUPDCTR1, 5);
++}
++
++static int gpio_twl4030_remove(struct platform_device *pdev);
++
++static int __devinit gpio_twl4030_probe(struct platform_device *pdev)
++{
++	struct twl4030_gpio_platform_data *pdata = pdev->dev.platform_data;
++	int ret;
++
++	/* maybe setup IRQs */
++	if (pdata->irq_base) {
++		if (is_module()) {
++			dev_err(&pdev->dev,
++				"can't dispatch IRQs from modules\n");
++			goto no_irqs;
++		}
++		ret = twl4030_sih_setup(TWL4030_MODULE_GPIO);
++		if (ret < 0)
++			return ret;
++		WARN_ON(ret != pdata->irq_base);
++		twl4030_gpio_irq_base = ret;
++	}
++
++no_irqs:
++	/*
++	 * NOTE:  boards may waste power if they don't set pullups
++	 * and pulldowns correctly ... default for non-ULPI pins is
++	 * pulldown, and some other pins may have external pullups
++	 * or pulldowns.  Careful!
++	 */
++	ret = gpio_twl4030_pulls(pdata->pullups, pdata->pulldowns);
++	if (ret)
++		dev_dbg(&pdev->dev, "pullups %.05x %.05x --> %d\n",
++				pdata->pullups, pdata->pulldowns,
++				ret);
++
++	twl_gpiochip.base = pdata->gpio_base;
++	twl_gpiochip.ngpio = TWL4030_GPIO_MAX;
++	twl_gpiochip.dev = &pdev->dev;
++
++	/* NOTE: we assume VIBRA_CTL.VIBRA_EN, in MODULE_AUDIO_VOICE,
++	 * is (still) clear if use_leds is set.
++	 */
++	if (pdata->use_leds)
++		twl_gpiochip.ngpio += 2;
++
++	ret = gpiochip_add(&twl_gpiochip);
++	if (ret < 0) {
++		dev_err(&pdev->dev,
++				"could not register gpiochip, %d\n",
++				ret);
++		twl_gpiochip.ngpio = 0;
++		gpio_twl4030_remove(pdev);
++	} else if (pdata->setup) {
++		int status;
++
++		status = pdata->setup(&pdev->dev,
++				pdata->gpio_base, TWL4030_GPIO_MAX);
++		if (status)
++			dev_dbg(&pdev->dev, "setup --> %d\n", status);
++	}
++
++	return ret;
++}
++
++static int __devexit gpio_twl4030_remove(struct platform_device *pdev)
++{
++	struct twl4030_gpio_platform_data *pdata = pdev->dev.platform_data;
++	int status;
++
++	if (pdata->teardown) {
++		status = pdata->teardown(&pdev->dev,
++				pdata->gpio_base, TWL4030_GPIO_MAX);
++		if (status) {
++			dev_dbg(&pdev->dev, "teardown --> %d\n", status);
++			return status;
++		}
++	}
++
++	status = gpiochip_remove(&twl_gpiochip);
++	if (status < 0)
++		return status;
++
++	if (is_module())
++		return 0;
++
++	/* REVISIT no support yet for deregistering all the IRQs */
++	WARN_ON(1);
++	return -EIO;
++}
++
++/* Note:  this hardware lives inside an I2C-based multi-function device. */
++MODULE_ALIAS("platform:twl4030_gpio");
++
++static struct platform_driver gpio_twl4030_driver = {
++	.driver.name	= "twl4030_gpio",
++	.driver.owner	= THIS_MODULE,
++	.probe		= gpio_twl4030_probe,
++	.remove		= __devexit_p(gpio_twl4030_remove),
++};
++
++static int __init gpio_twl4030_init(void)
++{
++	return platform_driver_register(&gpio_twl4030_driver);
++}
++subsys_initcall(gpio_twl4030_init);
++
++static void __exit gpio_twl4030_exit(void)
++{
++	platform_driver_unregister(&gpio_twl4030_driver);
++}
++module_exit(gpio_twl4030_exit);
++
++MODULE_AUTHOR("Texas Instruments, Inc.");
++MODULE_DESCRIPTION("GPIO interface for TWL4030");
 +MODULE_LICENSE("GPL");
