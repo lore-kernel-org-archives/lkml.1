@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYJRBX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYJRBbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbYJRBX6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 21:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJRBXu
+	id S1755074AbYJRBbx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYJRBbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 21:23:50 -0400
-Received: from mail.lang.hm ([64.81.33.126]:38568 "EHLO bifrost.lang.hm"
+	Fri, 17 Oct 2008 21:31:45 -0400
+Received: from mail.lang.hm ([64.81.33.126]:59641 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbYJRBXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 21:23:50 -0400
-Date: Fri, 17 Oct 2008 18:23:59 -0700 (PDT)
+	id S1751010AbYJRBbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 21:31:44 -0400
+Date: Fri, 17 Oct 2008 18:32:13 -0700 (PDT)
 From: david@lang.hm
 X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+To: "Giacomo A. Catenazzi" <cate@cateee.net>
+cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <200810180049.19014.rjw@sisk.pl>
-Message-ID: <alpine.DEB.1.10.0810171821500.11079@asgard.lang.hm>
-References: <20081016002509.GA25868@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com> <200810180049.19014.rjw@sisk.pl>
+In-Reply-To: <48F88923.30109@cateee.net>
+Message-ID: <alpine.DEB.1.10.0810171826480.11079@asgard.lang.hm>
+References: <20081016002509.GA25868@kroah.com> <48F88923.30109@cateee.net>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
@@ -28,48 +26,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Oct 2008, Rafael J. Wysocki wrote:
+On Fri, 17 Oct 2008, Giacomo A. Catenazzi wrote:
 
-> On Friday, 17 of October 2008, Greg KH wrote:
->> On Fri, Oct 17, 2008 at 08:47:23PM +0100, Alan Cox wrote:
->>>> And that's my point here, do we want to change the current numbering
->>>> scheme as people have expressed annoyances of the current one.
->>>
->>> But any new scheme will be just as annoying to someone and it messes up
->>> existing documentation, understanding and risks breaking third party
->>> tools.
->>>
->>> Is it really worth the hassle, plus we'll have to change again if we use
->>> date/times because once we are shipping Linux out to Alpha Centauri with
->>> colonists there will be serious problems trying to compute the effect of
->>> tau on release numbering ...
->>
->> Sure, but by then, the 2.6.521 release will be out and we could fix it
->> up by finally going to 3.0 :)
+> Greg KH wrote:
+>> We number the kernel based on the year, and the numbers of releases we
+>> have done this year:
+>> 	YEAR.NUMBER.MINOR_RELEASE
+>> 
+>> For example, the first release in 2009 would be called:
+>> 	2009.0.0
+>> The second:
+>> 	2009.1.0
+>> 
+>> If we want to be a bit more "non-zero-counting" friendly: we can start
+>> at "1" for the number:
+>> 	2009.1.0 for the first release
+>> 	2009.2.0 for the second.
+>> 
+>> Then the stable releases can increment the minor number:
+>> 	2009.1.1 for the first stable release
+>> 	2009.1.2 for the second.
+>> 	and so on.
+>> 
+>> Benefits of this is it more accuratly represents to people just how old
+>> the kernel they are currently running is (2.6.9 would be have been
+>> 2004.9.0 on this naming scheme.)
+>> 
+>> Yes, we can handle the major/minor macros in the kernel to provide a
+>> compatible number so that automated scripts will not break, that's not a
+>> big deal.
+>> 
+>> Any thoughts?
 >
-> Surely some scripts will start to break as soon as the third number gets
-> three digits.
+> What about:
+> - rc releases: a 2009.5.0-rc4 become suddenly 2010.0.0-rc5 ?
 
-we've had three digit numbers in the third position before (2.3 and 2.5 
-went well past three digits IIRC)
+three options
 
->> Seriously, am I the only one that is getting annoyed by our version
->> numbers?  If so, I can live with it, but I got the feeling that I wasn't
->> alone here.
->
-> Actually, I thought we could continue to use a w.x.y.z numbering scheme, but
-> in such a way that:
->
-> w = ($year - 2000) / 10 + 2 (so that we start from 2)
-> x = $year % 10
-> y = (number of major release in $year)
-> z = (number of stable version for major release w.x.y)
->
-> Then, the first major release in 2009 would be 2.9.1 and its first -stable
-> "child" would become 2.9.1.1.  In turn, the first major release in 2010 could
-> be 3.0.1 and so on.
+1. change it as you state based on it slipping
 
-if you want the part of the version number to increment based on the year, 
-just make it the year and don't complicate things.
+2. 2009.5.0-rc4 goes to 2009.5.0-rc5 in January and we just accept a minor 
+'oops' on the version number
+
+3. 2009.5.0-rc4 goes to 2009.5.0-rc5 in January becouse we base the number 
+on when the merge window opened, not when it's released.
+
+personally I think 3 is the clearest to explain to people, but I don't 
+like 1 (it's not that bad, but it leaves a lot of mail in archives and bug 
+reports listing the 2009.5.0 version number when no such version was ever 
+released)
+
+> - a stable version in January of a kernel released in December
+>  still has the old year? (I hope yes, but it could confuse users.)
+
+absolutly, the stable version is the Nth revision of the kernel that was 
+released in December, it doesn't matter when the stable release happened 
+(similar to the 2.6.16.X kernels that have been released)
+
+> - when (if) we need a big innovative (or incompatible) kernel
+>  change, how to mark old and new kernels?
+
+they are marked in the release announcemnts, and code that cares can do 
+'is version > 2009.5' logic.
+
+this sort of test is done today by software so that they can enable better 
+functionality on newer kernels, the size of the difference shouldn't 
+matter.
 
 David Lang
+
