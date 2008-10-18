@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbYJROtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbYJROxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbYJROtP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 10:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYJROs7
+	id S1752084AbYJROxi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 10:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYJROxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 10:48:59 -0400
-Received: from sandeen.net ([209.173.210.139]:25084 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbYJROs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 10:48:59 -0400
-Message-ID: <48F9F759.5070602@sandeen.net>
-Date: Sat, 18 Oct 2008 09:48:57 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Martin Michlmayr <tbm@cyrius.com>
-CC: Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
-       debian-arm@lists.debian.org, xfs@oss.sgi.com
-Subject: Re: XFS filesystem corruption on the arm(el) architecture
-References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <48F89E0F.6030307@sandeen.net> <20081018085752.GS25834@deprecation.cyrius.com>
-In-Reply-To: <20081018085752.GS25834@deprecation.cyrius.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 18 Oct 2008 10:53:31 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:25722 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910AbYJROxa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 10:53:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=t7TvxpCBB+ppxAJiMhbenw8Nimpub6QZIF51TS3znFW2pwAM15W3P40IAT7LXn/jex
+         5N/lsDL2Mk5URL88X/+fug/QBxAiQno+TbUN67agffbGdTpRnRPbnuliIEr3XdBT+uch
+         dF/5TCfusJ7IWIfWkfnpPFvnWP+853wRX9yZ4=
+Date: Sat, 18 Oct 2008 16:53:37 +0200
+From: dcg <diegocg@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix leak in drivers/staging/at76_usb.c
+Message-ID: <20081018165337.284f6307@diego-desktop>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Michlmayr wrote:
-> * Eric Sandeen <sandeen@sandeen.net> [2008-10-17 09:15]:
+Fix leak in at76_usb as reported in:
+http://bugzilla.kernel.org/show_bug.cgi?id=11778
 
->> Do you know what cachepolicy you're booted with?  If it's writeallocate,
->> you might try cachepolicy=writeback, otherwise try cachepolicy=uncached
->> (which will be horribly slow) and see if the problem goes away or not;
->> it'd be a clue.
-> 
-> I just tried with cachepolicy=writeback and cachepolicy=uncached but I
-> get the same problem.
 
-Oh, wow.  This sounds like a new problem then; not a cache problem, and
-not an alignment problem...  hrm.  I'll try to think of something else
-to try.
+Reported-by: Daniel Marjamäki <danielm77@spray.se>
+Signed-off-by: Diego Calleja <diegocg@gmail.com>
 
-Thanks,
--Eric
-
+Index: 2.6/drivers/staging/at76_usb/at76_usb.c
+===================================================================
+--- 2.6.orig/drivers/staging/at76_usb/at76_usb.c	2008-10-18 16:19:38.000000000 +0200
++++ 2.6/drivers/staging/at76_usb/at76_usb.c	2008-10-18 16:20:21.000000000 +0200
+@@ -2319,9 +2319,11 @@
+ 	if (!iwe)
+ 		return -ENOMEM;
+ 
+-	if (priv->scan_state != SCAN_COMPLETED)
++	if (priv->scan_state != SCAN_COMPLETED) {
+ 		/* scan not yet finished */
++		kfree(iwe);
+ 		return -EAGAIN;
++	}
+ 
+ 	spin_lock_irqsave(&priv->bss_list_spinlock, flags);
+ 
