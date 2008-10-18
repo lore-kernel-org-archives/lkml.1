@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751650AbYJRRux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751585AbYJRSQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751650AbYJRRux (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 13:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYJRRun
+	id S1751585AbYJRSQa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 14:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbYJRSQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 13:50:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53593 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbYJRRum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 13:50:42 -0400
-Date: Sat, 18 Oct 2008 19:50:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
-       Michael Davidson <md@google.com>
-Subject: Re: [RFC patch 15/15] LTTng timestamp x86
-Message-ID: <20081018175005.GA2211@elte.hu>
-References: <20081017012835.GA30195@Krystal> <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com> <20081017172515.GA9639@goodmis.org> <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com> <20081017184215.GB9874@Krystal> <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com> <20081017202313.GA13597@Krystal> <57C9024A16AD2D4C97DC78E552063EA353345B9B@orsmsx505.amr.corp.intel.com> <20081018170118.GA22243@Krystal> <alpine.LFD.2.00.0810181011310.3438@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810181011310.3438@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Sat, 18 Oct 2008 14:16:22 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:43243 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbYJRSQV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 14:16:21 -0400
+Date: Sat, 18 Oct 2008 18:46:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH] Re: pata_it821x in 2.6.27 - works but no LBA48 and
+ "hdparm -t" is slower
+Message-ID: <20081018184621.16ed1d0b@the-village.bc.nu>
+In-Reply-To: <200810181830.39023.linux@rainbow-software.org>
+References: <200810181342.50615.linux@rainbow-software.org>
+	<200810181830.39023.linux@rainbow-software.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 18 Oct 2008 18:30:37 +0200
+Ondrej Zary <linux@rainbow-software.org> wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> And if you make all these linear interpolations be per-CPU (so you 
-> have per-CPU offsets and frequencies) you never _ever_ need to touch 
-> any shared data at all, and you know you can scale basically 
-> perfectly.
+> This patch fixes LBA48 on pata_it821x RAID volumes - and to my surprise, also
+> increases the "hdparm -t" speed back. Haven't tested access to >128GB area.
 > 
-> Your linear interpolations may not be _perfect_, but you'll be able to 
-> get them pretty damn near. In fact, even if the TSC's aren't 
-> synchronized at all, if they are at least _individually_ stable (just 
-> running at slightly different frequencies because they are in 
-> different clock domains, and/or at different start points), you can 
-> basically perfect the precision over time.
+> ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
+> pata_it821x 0000:00:12.0: PCI INT A -> Link[LNKC] -> GSI 11 (level, low) -> IRQ 11
+> pata_it821x: controller in smart mode.
+> pata_it821x 0000:00:12.0: setting latency timer to 64
+> pata_it821x: Firmware 02/09/3030
+> 0: MWDMA2 RAID1RAID 0+1 Volume: 0 SAMSUNG HD400LD
+> 1: MWDMA2 RAID1RAID 0+1 Volume: 0 SAMSUNG HD400LD
+> scsi2 : pata_it821x
+> scsi3 : pata_it821x
+> ata3: PATA max UDMA/133 cmd 0x6800 ctl 0x6c00 bmdma 0x7800 irq 11
+> ata4: PATA max UDMA/133 cmd 0x7000 ctl 0x7400 bmdma 0x7808 irq 11
+> ata3.00: ATA-4: Integrated Technology Express Inc, , max MWDMA2
+> ata3.00: 781422766 sectors, multi 0: LBA48
+> ata3.00: RAID1 volume.
+> ata3.00: configured for DMA
+> scsi 2:0:0:0: Direct-Access     ATA      Integrated Techn n/a  PQ: 0 ANSI: 5
+> sd 2:0:0:0: [sdb] 781422766 512-byte hardware sectors (400088 MB)
+> sd 2:0:0:0: [sdb] Write Protect is off
+> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+> sd 2:0:0:0: [sdb] 781422766 512-byte hardware sectors (400088 MB)
+> sd 2:0:0:0: [sdb] Write Protect is off
+> sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+> sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+>  sdb: sdb1 sdb2 sdb3 sdb4
+> sd 2:0:0:0: [sdb] Attached SCSI disk
+> sd 2:0:0:0: Attached scsi generic sg2 type 0
+> 
+> 
+> /dev/sdb:
+>  Timing buffered disk reads:   60 MB in  3.01 seconds =  19.91 MB/sec
+> 
+> 
+> 
+> Fix LBA48 on pata_it821x RAID volumes.
+> 
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-there's been code submitted by Michael Davidson recently that looked 
-interesting, which turns the TSC into such an entity:
-
-    http://lkml.org/lkml/2008/9/25/451
-
-The periodic synchronization uses the hpet, but it thus allows lockless 
-and globally correct readouts of the TSC .
-
-And that would match the long term goal as well: the hw should do this 
-all automatically. So perhaps we should have a trace_clock() after all, 
-independent of sched_clock(), and derived straight from RDTSC.
-
-The approach as propoed has a couple of practical problems, but if we 
-could be one RDTSC+multiplication away from a pretty good timestamp that 
-would be rather useful, very fast and very robust ...
-
-	Ingo
+Acked-by: Alan Cox <alan@redhat.com>
