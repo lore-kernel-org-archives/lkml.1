@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbYJRTKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYJRTKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752735AbYJRTKh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYJRTEA
+	id S1754964AbYJRTKy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJRTEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:04:00 -0400
-Received: from ns2.suse.de ([195.135.220.15]:47455 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:04:05 -0400
+Received: from mail.suse.de ([195.135.220.2]:38311 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752449AbYJRTD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:03:59 -0400
-Date: Sat, 18 Oct 2008 11:47:25 -0700
+	id S1752585AbYJRTED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:04:03 -0400
+Date: Sat, 18 Oct 2008 11:47:27 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,63 +22,53 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stefan Bader <stefan.bader@canonical.com>,
+       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 01/26] x86: Reserve FIRST_DEVICE_VECTOR in used_vectors
-	bitmap.
-Message-ID: <20081018184725.GB301@suse.de>
+Subject: [patch 02/26] x86: improve UP kernel when CPU-hotplug and SMP is
+	enabled
+Message-ID: <20081018184727.GC301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-reserve-first_device_vector-in-used_vectors-bitmap.patch"
+Content-Disposition: inline; filename="x86-improve-up-kernel-when-cpu-hotplug-and-smp-is-enabled.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us
+2.6.26-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
+From: Thomas Gleixner <tglx@linutronix.de>
 
-From: Stefan Bader <stefan.bader@canonical.com>
+commit 649c6653fa94ec8f3ea32b19c97b790ec4e8e4ac upstream
 
-Not in upstream above 2.6.27 due to change in the way this code works
-(has been fixed differently there.)
+num_possible_cpus() can be > 1 when disabled CPUs have been accounted.
 
-Someone from the community found out, that after repeatedly unloading
-and loading a device driver that uses MSI IRQs, the system eventually
-assigned the vector initially reserved for IRQ0 to the device driver.
+Disabled CPUs are not in the cpu_present_map, so we can use
+num_present_cpus() as a safe indicator to switch to UP alternatives.
 
-The reason for this is, that although IRQ0 is tied to the
-FIRST_DEVICE_VECTOR when declaring the irq_vector table, the
-corresponding bit in the used_vectors map is not set. So, if vectors are
-released and assigned often enough, the vector will get assigned to
-another interrupt. This happens more often with MSI interrupts as those
-are exclusively using a vector.
-
-Fix this by setting the bit for the FIRST_DEVICE_VECTOR in the bitmap.
-
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Reported-by: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/io_apic_32.c |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/x86/kernel/alternative.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -2264,6 +2264,9 @@ void __init setup_IO_APIC(void)
- 	for (i = FIRST_SYSTEM_VECTOR; i < NR_VECTORS; i++)
- 		set_bit(i, used_vectors);
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -454,7 +454,7 @@ void __init alternative_instructions(voi
+ 					    _text, _etext);
  
-+	/* Mark FIRST_DEVICE_VECTOR which is assigned to IRQ0 as used. */
-+	set_bit(FIRST_DEVICE_VECTOR, used_vectors);
-+
- 	enable_IO_APIC();
- 
- 	if (acpi_ioapic)
+ 		/* Only switch to UP mode if we don't immediately boot others */
+-		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
++		if (num_present_cpus() == 1 || setup_max_cpus <= 1)
+ 			alternatives_smp_switch(0);
+ 	}
+ #endif
 
 -- 
