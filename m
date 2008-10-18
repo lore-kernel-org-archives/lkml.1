@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbYJRPwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbYJRQLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752198AbYJRPwV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 11:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYJRPwO
+	id S1751748AbYJRQLq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 12:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYJRQLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 11:52:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40452 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbYJRPwN (ORCPT
+	Sat, 18 Oct 2008 12:11:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:10492 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbYJRQLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 11:52:13 -0400
-Subject: Re: [ANNOUNCE] iommu-2.6.git tree
-From: David Woodhouse <dwmw2@infradead.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       joerg.roedel@amd.com, tglx@linutronix.de, mingo@elte.hu,
-       fujita.tomonori@lab.ntt.co.jp, andreas.herrmann3@amd.com,
-       joseph.cihula@intel.com, fenghua.yu@intel.com, jbarnes@virtuousgeek.org,
-       tony.luck@intel.com, suresh.b.siddha@intel.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
-In-Reply-To: <20081019024328.2cda973e.sfr@canb.auug.org.au>
-References: <1224343843.6770.1378.camel@macbook.infradead.org>
-	 <20081019024328.2cda973e.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Sat, 18 Oct 2008 16:51:37 +0100
-Message-Id: <1224345097.6770.1389.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sat, 18 Oct 2008 12:11:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=prwgYzeHA1U42pv0kIOrzydmxBhVpkH8QaQYFV2TNRUa2KJXDKTTCX0FUjxjDd0xix
+         /fkmUZ5GxZRRv3BkPuGWusGhFfL730ljrdfm0/iW0AzUxN0OZE0y5lY5kZTX5dO0eBAg
+         lY8goHvUcMmIneJwdMCnrSagHy9SFEy/0VE8o=
+Message-ID: <48FA0AB6.3060505@gmail.com>
+Date: Sat, 18 Oct 2008 18:11:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: "David S. Miller" <davem@davemloft.net>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sparc: correct section of apc_no_idle
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-19 at 02:43 +1100, Stephen Rothwell wrote:
-> Sure (I assume the "master" branch).
+The latest mainline gives this section mismatch on sparc:
 
-Yes. I don't use branches in public-facing repositories -- it's much
-better just to have separate trees. 
+The function __devinit apc_probe() references
+a variable __initdata apc_no_idle.
+If apc_no_idle is only used by apc_probe then
+annotate apc_no_idle with a matching annotation.
 
->  However, I already have a tree in -next called iommu.  It is one of the 
-> tip auto branches (auto-iommu-next) and is currently empty.  So do I name
-> this one dwmw2-iommu, or has Ingo finished with the other one?
+Since the commit 7e7e2f035663c5ceb029bfb9d91e75099b0a5625,
+apc_probe() is on __devinit so we have to correct apc_no_idle
+which is referenced by this function.
 
-I believe the plan is that Ingo has finished with the other one and we
-use the new one instead, yes.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff --git a/arch/sparc/kernel/apc.c b/arch/sparc/kernel/apc.c
+index 4dd1ba7..9c11582 100644
+--- a/arch/sparc/kernel/apc.c
++++ b/arch/sparc/kernel/apc.c
+@@ -31,7 +31,7 @@
+ #define APC_DEVNAME "apc"
+ 
+ static u8 __iomem *regs;
+-static int apc_no_idle __initdata = 0;
++static int apc_no_idle __devinitdata = 0;
+ 
+ #define apc_readb(offs)		(sbus_readb(regs+offs))
+ #define apc_writeb(val, offs) 	(sbus_writeb(val, regs+offs))
