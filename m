@@ -1,165 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbYJRNtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbYJROE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752059AbYJRNtA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 09:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbYJRNsx
+	id S1751986AbYJROE5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 10:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYJROEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 09:48:53 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40872 "EHLO smtp4.pp.htv.fi"
+	Sat, 18 Oct 2008 10:04:48 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63289 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750801AbYJRNsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 09:48:52 -0400
-Date: Sat, 18 Oct 2008 16:48:33 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081018134832.GC6535@cs181140183.pp.htv.fi>
-References: <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <20081017085604.GA20986@cs181140183.pp.htv.fi> <20081018090117.GR24654@1wt.eu> <20081018100401.GA6535@cs181140183.pp.htv.fi> <20081018110826.GA25503@1wt.eu> <20081018115038.GB6535@cs181140183.pp.htv.fi> <20081018122851.GB25503@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20081018122851.GB25503@1wt.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750819AbYJROEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 10:04:47 -0400
+To: paulmck@linux.vnet.ibm.com, serue@us.ibm.com
+Cc: sds@tycho.nsa.gov, jmorris@namei.org, chrisw@sous-sol.org,
+       dhowells@redhat.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       takedakn@nttdata.co.jp, haradats@nttdata.co.jp,
+       penguin-kernel@I-love.SAKURA.ne.jp
+Subject: Re: [TOMOYO #10 (linux-next) 7/8] File operation restriction part.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20081015012916.GF6874@linux.vnet.ibm.com>
+	<48F6BD8E.4050402@nttdata.co.jp>
+	<20081016151003.GA6772@linux.vnet.ibm.com>
+	<48F84DAB.4060002@nttdata.co.jp>
+	<20081017145630.GC6706@linux.vnet.ibm.com>
+In-Reply-To: <20081017145630.GC6706@linux.vnet.ibm.com>
+Message-Id: <200810182304.JDC12476.JFSHLVMOQFtOOF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sat, 18 Oct 2008 23:04:39 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 02:28:51PM +0200, Willy Tarreau wrote:
-> On Sat, Oct 18, 2008 at 02:50:38PM +0300, Adrian Bunk wrote:
->...
-> > > > Scratchbox [1], e.g. used for building the software in Nokias Internet 
-> > > > Tablets [2] or the ARM Linux Internet Platform [3], is a chrooted 
-> > > > cross-compilation environment.
-> > > > 
-> > > > Yes, it works.
+Hello.
+
+Paul E. McKenney wrote:
+> On Fri, Oct 17, 2008 at 05:32:43PM +0900, Kentaro Takeda wrote:
+> > However, to ensure the reader gets up-to-date value, we need to use 
+> > smp_read_barrier_depends() (which is expanded to "mb()" for SMP on 
+> > Alpha, "read_barrier_depends()" for SMP on H8300, "((void)0)" for SMP 
+> > on M68K-nommu, "((void)0)" for M68K, "do { } while (0)" otherwise) 
+> > whenever the reader fetches an element in a list.
+> 
+> Yep.  You will also need the ACCESS_ONCE() on the pointer fetch in order
+> to suppress aggressive compiler optimizations.  The rcu_dereference()
+> primitive packages them up nicely.
+
+So, I should use rcu_dereference() rather than smp_read_barrier_depends().
+I see.
+
+> > > But fair enough.  How about the following?
 > > > 
-> > > I'm not saying it does not work, I'm saying it's far from being practical
-> > > when you want to support multiple architectures or targets, and that it
-> > > will do nasty things under you without letting you know.
-> > 
-> > Scratchbox easily allows switching between targets, no matter which 
-> > architectures they are for.
-> > 
-> > Can you describe the problems you have experienced more precisely?
-> 
-> Adrian, don't try to make me look like dumb by asking for specific
-> problems. Problems range from auto-detection of kernel version to
-
-> enable or disable feature X or Y,
-
-Works inside Scratchbox.
-
-> to endian detection and bit width
-
-Works inside Scratchbox.
-
-> detection. If you don't believe me, it's just that you're used to
-> build completely OS-agnostic packages,
-
-That's completely wrong.
-
-> which is perfectly fine, but
-> that doesn't seem to be completely the case given that you're feeling
-> you will get annoyed by breaking the openssl BUILD environment if
-> you make it run on a different kernel. *That* is the funny part,
-> since this build environment should not even require to run on Linux
-> at all!
-
-10 years ago someone wrote his own version of config.guess, and assumed 
-kernel developers would always use sane versions.
-
-This doesn't make it Linux-specific.
-
->...
-> > > A build environment is what it is, a build environment. It contains
-> > > compilers, shells to run scripts, various interpreters and build tools,
-> > > possibily debuggers and editors, versionning systems, etc...
-> > 
-> > The build environment in the chroot is the correct release.    
-> 
-> No it isn't because you're saying that some of the packages check for
-> kernel version which is not the right one. So if you move your chroot
-> to another machine, it is susceptible to break because it relies on
-> the host's kernel version. So your chroot is not your build environment,
-> it's just part of it.
-
-The version is one of the few things the kernel leaks inside a chroot.
-
-> > > > Userspace ABIs of the kernel are usually stable.
+> > >         #define worm_dereference()        rcu_dereference()
+> > >         #define worm_assign_pointer()        rcu_assign_pointer()
 > > > 
-> > > Yes but they are not necessarily forward-compatible. If openssl believes
-> > > some feature is present in 2.6.521 because 521 is bigger than 233, you
-> > > will build a broken package which will not work with any distro running
-> > > your long-term 2.6.27 which does not have the feature introduced in .233.
-> > 
-> > I already addressed this previously in this thread:
-> > 
-> > I'm not even sure whether OpenSSL actually does anything with the 
-> > information: The script comes from the Apache foundation and
-> > claims to be "Similar to config.guess but much, much smaller."
+> > So, I understood that the rcu_dereference() and rcu_assign_pointer() 
+> > are not only for RCU. They are needed to ensure the reader gets 
+> > up-to-date value. Then, their names should be var_dereference() and 
+> > var_assign_pointer() or something, shouldn't they? The "rcu_" prefix 
+> > and comments on rcu_dereference in include/linux/rcupdate.h sound for 
+> > me that they are used for variables protected by RCU locking 
+> > mechanism only...
 > 
-> You addressed it only for openssl and apache 1.3, that you used as
-> examples to object to a change of changing kernel version numbering
-> scheme. So do you have other examples of packages like this which
-> might break and might be more sensible to build environment's kernel
-> version ? Because if only apache 1.3 and openssl 0.9.8g are sensible,
-> the fix will be really quick using something like this in your build
-> scripts and makefiles :
->...
-> And BTW, if your build environment mimmics so well the target except
-> for uname, let's fix its uname tool to reflect the target version !
-
-The problem has nothing to do with any build environments or chroots.
-
-A "just for fun" change of the version number will break existing 
-programs, and that will cause various problems for various people.
-
-> > > And when
-> > > you know how to fix packages so that chroot is not a problem, then you
-> > > know how to fix the package not to require a chroot.
-> > 
-> > That's complete bullshit:
-> > 
-> > Packages do not require fixes for being built inside a chroot.
-> > 
-> > Given:
-> > - some software package of a foobar program
-> > - Scratchbox on an x86 host
-> > - an ARM target that mounts the target filesystem from the host
-> > 
-> > host   # ./configure && make && make install
-> > target # foobar
-> > 
-> > The build system of the software thinks it gets built on the target 
-> > architecture.
+> Well, there are 200+ uses of rcu_dereference() for RCU, so it would
+> 99.5%+ accurate to retain the "rcu_" prefix.  ;-)
 > 
-> Quite cool stuff, but I'm really not interested. Having been beat by
-> a number of packages which try to run target environment commands
-> during the build when not set for cross-compile, I'd expect pretty
-> random results.
+> Once we have several non-RCU uses, we can probably do a much better
+> job of coming up with a good name for the underlying independent-of-RCU
+> primitive.  So we should stick with rcu_dereference() as the name of the
+> underlying primitive for now, and re-evaluate the naming in a year or
+> after another five non-RCU uses of rcu_dereference() appear, whichever
+> comes later.  (My current guess for names are "pointer_subscribe()"
+> for rcu_dereference() and "pointer_publish()" for rcu_assign_pointer(),
+> but who knows?)
+> 
+> Fair enough?
 
-The build system of the package thinks it gets compiled natively - that 
-avoids exactly the problems you describe.
+Agreed.
 
-And trying to run a target binary when building on the host *does work* 
-inside Scratchbox. Please *read* what I wrote directly below:
+> TOMOYO can tolerate reading the complete garbage that would appear if
+> the pointer was assigned before the pointed-to fields are initialized?
+> I must confess that I am having a hard time believing that.  Please
+> explain how this works.
 
-> > And due to transparent usage of qemu or sbrsh it also works when the 
-> > package uses a program built for the target during the build.
-> > No matter whether the build system of the package knows anything about
-> > cross-compilation.
->...
-> Willy
+Maybe I'm misunderstanding what "mb()" can do.
 
-cu
-Adrian
+I inserted "mb()" between the initialization of the pointed-to field and
+the assignment of the pointer like
 
--- 
+  static inline void list1_add_tail_mb(struct list1_head *new,
+                                       struct list1_head *head)
+  {
+          struct list1_head *pos = head;
+  
+          new->next = head;
+          mb(); /* Avoid out-of-order execution. */
+          while (pos->next != head)
+                  pos = pos->next;
+          pos->next = new;
+  }
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+to ensure that 'new->next' comes to point to 'head' before 'pos->next' comes to
+point to 'new', for arch/ia64/include/asm/system.h says:
 
+  /*
+   * Macros to force memory ordering.  In these descriptions, "previous"
+   * and "subsequent" refer to program order; "visible" means that all
+   * architecturally visible effects of a memory access have occurred
+   * (at a minimum, this means the memory has been read or written).
+   *
+   *   wmb():     Guarantees that all preceding stores to memory-
+   *              like regions are visible before any subsequent
+   *              stores and that all following stores will be
+   *              visible only after all previous stores.
+   *   rmb():     Like wmb(), but for reads.
+   *   mb():      wmb()/rmb() combo, i.e., all previous memory
+   *              accesses are visible before all subsequent
+   *              accesses and vice versa.  This is also known as
+   *              a "fence."
+   *
+   * Note: "mb()" and its variants cannot be used as a fence to order
+   * accesses to memory mapped I/O registers.  For that, mf.a needs to
+   * be used.  However, we don't want to always use mf.a because (a)
+   * it's (presumably) much slower than mf and (b) mf.a is supported for
+   * sequential memory pages only.
+   */
+
+But http://www.rdrop.com/users/paulmck/scalability/paper/ordering.2007.09.19a.pdf says:
+
+  On these systems, there are three orderings that must be accounted for:
+  1. Program order:
+     the order of the program's object code as seen by the CPU
+  2. Execution order:
+     The execution order can differ from program order due to both compiler and
+     CPU implementation optimizations.
+  3. Perceived order:
+
+And I noticed that the comment in arch/ia64/include/asm/system.h uses
+"program order", not "execution order".
+Therefore, I have to also care "execution order".
+
+I assumed that the "program order" == "execution order" and I thought:
+
+  The reader will read the appended element (i.e. 'new->next') only if
+  the reader can reach (i.e. 'pos->next' == 'new') the appended element.
+  The reader won't read the appended element (i.e. 'new->next') as long as
+  the reader can't reach (i.e. 'pos->next' == 'head') the appended element.
+
+However, since "execution order" != "program order", you are mentioning that
+I have to call smp_read_barrier_depends() which can control "execution order".
+Am I right?
+
+Regards.
