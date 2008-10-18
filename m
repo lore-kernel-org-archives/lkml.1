@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYJRA6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYJRBBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbYJRA6b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 20:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYJRA6V
+	id S1756080AbYJRBBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYJRBBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 20:58:21 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56989 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753224AbYJRA6V (ORCPT
+	Fri, 17 Oct 2008 21:01:46 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:51381 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753152AbYJRBBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 20:58:21 -0400
-Subject: Re: 2.6.26.6-rt11 boot failure on PREEMPT_DESKTOP
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <48F932B1.6020405@ct.jp.nec.com>
-References: <48F932B1.6020405@ct.jp.nec.com>
-Content-Type: text/plain
-Date: Sat, 18 Oct 2008 02:58:02 +0200
-Message-Id: <1224291482.10548.29.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Oct 2008 21:01:45 -0400
+Date: Fri, 17 Oct 2008 20:59:36 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, hbabu@us.ibm.com
+Subject: Re: [PATCH] add additional symbols to /sys/kernel/vmcoreinfo data
+	for ppc(64)
+Message-ID: <20081018005936.GC27254@localhost.localdomain>
+References: <20081009151408.GA25268@hmsendeavour.rdu.redhat.com> <20081017210854.GB10013@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081017210854.GB10013@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 17:49 -0700, Hiroshi Shimamoto wrote:
-> Hi,
+On Fri, Oct 17, 2008 at 05:08:54PM -0400, Vivek Goyal wrote:
+> On Thu, Oct 09, 2008 at 11:20:27AM -0400, Neil Horman wrote:
+> > Hey-
+> > 	The makdumpdile dump filtering program, in some modes of operation needs
+> > the node_data and/or contig_page_data symbols to function properly.  These
+> > symbols are missing from the powerpc kernel.  This patch adds those symbols in
+> > properly.  Tested successfully by myself and the reporter.
+> > 
+> > Regards
+> > Neil
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > 
+> > 
+> >  machine_kexec.c |   10 ++++++++++
+> >  1 file changed, 10 insertions(+)
+> > 
+> > 
+> > diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> > index aab7688..2f9b5aa 100644
+> > --- a/arch/powerpc/kernel/machine_kexec.c
+> > +++ b/arch/powerpc/kernel/machine_kexec.c
+> > @@ -44,6 +44,16 @@ void machine_kexec_cleanup(struct kimage *image)
+> >  		ppc_md.machine_kexec_cleanup(image);
+> >  }
+> >  
+> > +void arch_crash_save_vmcoreinfo(void)
+> > +{
+> > +#ifdef CONFIG_NEED_MULTIPLE_NODES
+> > +	VMCOREINFO_SYMBOL(node_data);
+> > +	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
+> > +#else
+> > +	VMCOREINFO_SYMBOL(contig_page_data);
+> > +#endif
+> > +}
+> > +
 > 
-> I got an issue, 2.6.26.6-rt11 PREEMPT_DESKTOP doesn't boot on my box.
-> Attached my .config.
+> Hi Neil,
 > 
-> The boot stopped the following point.
-> [    1.285988] Real Time Clock Driver v1.12ac
-> [    1.290816] intel_rng: FWH not detected
-> [    1.295992] Linux agpgart interface v0.103
-> [    1.300385] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-> [    1.308734] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> [    1.316818] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-> [    1.325397] 00:0a: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-> [    1.329632] 00:0b: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> [    1.336132] Floppy drive(s): fd0 is 1.44M
-> [    4.356923] floppy0: no floppy controllers found
+> Looks like contig_page_data is already being saved in arch independent
+> portion of kexec (crash_save_vmcoreinfo_init()). We probably don't need
+> to save it here again?
 > 
-> I've bisected, the patch
-> sched-properly-account-irq-and-rt-load.patch
-> causes this issue.
+> #ifndef CONFIG_NEED_MULTIPLE_NODES
+>         VMCOREINFO_SYMBOL(mem_map);
+>         VMCOREINFO_SYMBOL(contig_page_data);
+> #endif
 > 
-> I was looking for what's wrong, but couldn't find the root cause.
-> But tried to change load.weight to 1 instead of 0 for RT process,
-> the kernel booted fine.
-> This zero load weight causes rq load weight zero, I guess it might
-> make some badness. But I'm not sure about this.
-> I don't think this is correct fix.
-
-you're right, its not. but that patch is very likely busted anyway.
-totally forgot -rt was carrying it.
+> Thanks
+> Vivek
+> 
+Oops your right.  I fixed that in RHEL and must not have searched for it
+upstream.  I'll repost a corrected patch monday.
+Thanks!
+Neil
 
