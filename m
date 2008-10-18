@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbYJRPbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbYJRPfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751839AbYJRPbA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 11:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYJRPaw
+	id S1751735AbYJRPfM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 11:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJRPe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 11:30:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55653 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbYJRPav (ORCPT
+	Sat, 18 Oct 2008 11:34:59 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2349 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751115AbYJRPe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 11:30:51 -0400
-Subject: [ANNOUNCE] iommu-2.6.git tree
-From: David Woodhouse <dwmw2@infradead.org>
-To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: joerg.roedel@amd.com, tglx@linutronix.de, mingo@elte.hu,
-       fujita.tomonori@lab.ntt.co.jp, andreas.herrmann3@amd.com,
-       joseph.cihula@intel.com, fenghua.yu@intel.com, jbarnes@virtuousgeek.org,
-       tony.luck@intel.com, suresh.b.siddha@intel.com, sfr@canb.auug.org.au,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
-Content-Type: text/plain
-Date: Sat, 18 Oct 2008 16:30:43 +0100
-Message-Id: <1224343843.6770.1378.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 18 Oct 2008 11:34:58 -0400
+Date: Sat, 18 Oct 2008 11:34:56 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 6/9] Use virtual debug registers in process/thread
+ handling code
+In-Reply-To: <20081018000829.519111544CB@magilla.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0810181123220.1469-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As previously threatened, I've created an iommu-2.6.git tree:
-	git://git.infradead.org/iommu-2.6.git
-	http://git.infradead.org/iommu-2.6.git
+On Fri, 17 Oct 2008, Roland McGrath wrote:
 
-I've rounded up the patches which have been pending for a while and
-which would have been in linux-next if Stephen hadn't been away, and I'm
-planning to ask Linus to pull it early next week, before the merge
-window closes.
+> > There's a problem with moving the switch_to_thread_hw_breakpoint() call 
+> > before current is updated. [...]
+> 
+> I got this.  I'm just saying let's look for ways to do this better.
+> 
+> Hmm.  The 64-bit version of __switch_to does the current change much
+> earlier, before __switch_to_xtra and math_state_restore.  I wonder if the
+> 32-bit version could change to match.  I can't see what in __switch_to_xtra
+> would care either way, though I may be overlooking something.  Ingo?
 
-If there's anything missing which should be in 2.6.28, now is the time
-to shout. I don't want anything new and exciting yet though please; only
-patches which have already been posted and reviewed, or necessary fixes.
+Would it be better to move __switch_to_xtra down below the change to 
+current, rather than moving the change to current up above 
+__switch_to_xtra?
 
-Stephen, please could you add this tree to linux-next?
+> If this does not change, then __switch_to_xtra can pass prev,next to
+> switch_hw_breakpoint.  You can always do some slightly different
+> bookkeeping in there to know that prev->next is the switch happening,
+> so if there is a hit when current still == prev you can filter it out.
 
-Current contents:
+The cpu_hw_breakpoint structure would have to keep track of two tasks:  
+the one whose breakpoints are currently loaded and the task that
+preceded it.  When a breakpoint occurs and current is not equal to the
+first task, we would skip clearing the user-breakpoint registers if
+current was equal to the second.
 
-Andreas Herrmann (1):
-      amd_iommu: fix nasty bug that caused ILLEGAL_DEVICE_TABLE_ENTRY errors
+But then what happens when the system alternates between running two 
+tasks, one of which is being debugged and the other isn't?  The task 
+not being debugged would constantly encounter breakpoints meant for the 
+other task, because the breakpoint registers wouldn't get cleared.
 
-Cihula, Joseph (1):
-      intel-iommu: disable Protected Memory Regions when DMA remapping enabled
-
-David Woodhouse (2):
-      dmar: fix uninitialised 'ret' variable in dmar_parse_dev()
-      Admit to maintaining VT-d, for my sins.
-
-FUJITA Tomonori (1):
-      intel-iommu: use coherent_dma_mask in alloc_coherent
-
-Fenghua Yu (1):
-      intel-iommu: IA64 support
-
-Suresh Siddha (1):
-      dmar: use spin_lock_irqsave() in qi_submit_sync()
-
-Youquan Song (3):
-      dmar: context cache and IOTLB invalidation using queued invalidation
-      dmar: Use queued invalidation interface for IOTLB and context invalidation
-      dmar: remove the quirk which disables dma-remapping when intr-remapping enabled
-
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Alan Stern
 
