@@ -1,96 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816AbYJRMmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbYJRMw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751816AbYJRMmY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 08:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYJRMmQ
+	id S1751886AbYJRMw2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 08:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYJRMwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 08:42:16 -0400
-Received: from mirror.looking-glass.spherevision.org ([70.85.129.236]:36670
-	"EHLO octagon.spherevision.org" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750964AbYJRMmP (ORCPT
+	Sat, 18 Oct 2008 08:52:20 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:10141 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750994AbYJRMwT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 08:42:15 -0400
-Subject: Re: [2.6.27] constant early exception on boot
-From: Rodney Gordon II <meff@spherevision.org>
-To: linux-kernel@vger.kernel.org
-Cc: meff@spherevision.org
-In-Reply-To: <1224132742.7417.1.camel@ghreen.sphere>
-References: <1224132742.7417.1.camel@ghreen.sphere>
-Content-Type: text/plain
-Date: Sat, 18 Oct 2008 07:42:42 -0500
-Message-Id: <1224333762.7888.0.camel@ghreen.sphere>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 18 Oct 2008 08:52:19 -0400
+Message-ID: <f488382f0810180552w2078244eiaed1fa100ad4c4c6@mail.gmail.com>
+Date: Sat, 18 Oct 2008 05:52:18 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "kernel list" <linux-kernel@vger.kernel.org>, anders@anduras.de
+Subject: appletouch regression
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-15 at 23:52 -0500, Rodney Gordon II wrote:
-> Hi all,
-> 
-> Recently with the release of 2.6.27 I have tried this on my main machine
-> (in the form of vanilla 2.6.27 final, Ubuntu Intrepid Beta 2.6.27-rc,
-> and RIPLinux 6.9 2.6.27 final  ----  all AMD64) and I have been getting
-> a pretty regular early exception on my hardware. I will include as much
-> information as I have collected.
-> 
-> System:
-> Asus P5QL-PRO
-> Intel Q6600
-> 4GB RAM (memtest'ed)
-> GeForce 8800GT 512M
-> 
-> Panic:
-> Kernel alive
-> Kernel really alive
-> PANIC: early exception 0e rip 10:ffffffff8072f305 error 0 cr2
-> ffffffffff341000
-> 
-> Working boot dmesg:
-> http://spherevision.org/sync/kernel/ubuntu-8.04-working-dmesg.log
-> 
-> lspci
-> http://spherevision.org/sync/kernel/lspci-vvnn.log
-> 
-> I am available for details/testing/etc for whatever it takes to clean
-> this error up and get it to boot on my hardware. 
-> 
-> Similar page off launchpad.net of error on boot of Intrepid Beta on some
-> with similar outputs of early exceptions: 
-> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/54020
-> 
-> Please CC me as I am off list.
-> 
-> Thanks
+It seems that the appletouch driver is (sporadically) not detecting my
+Apple Trackpad anymore on Linus' current tree (2.6.27-05577-g0cfd810).
+When it is misbehaving, it doesn't have any /dev/input/event* entry
+that corresponds to the input from appletouch, and dmesg -should- show
+the following, as 2.6.27.1 does, but does not:
 
-More information from earlyprintk:
+appletouch: Geyser mode initialized.
+input: appletouch as /class/input/input4
+usbcore: registered new interface driver appletouch
+appletouch: 17" model detected
 
-( e820 maps scrolled mostly off screen )
-console [earlyvga0] enabled
-last_pfn = 0x140000 max_arch_pfn=0x3ffffffff
-last_pfn = 0xbff80 max_arch_pfn=0x3ffffffff
+On the current tree, occasionally all I get is:
 
-init_memory_mapping
-last_map_addr: bff80000 end: bff80000
-init_memory_mapping
-last_map_addr: 140000000 end: 140000000
+usbcore: registered new interface driver appletouch
 
-DMI present.
+It's unfortunately a touchy issue, as it only -occasionally- happens.
+A bisection will be a pain in the butt, but I'm starting it right now
+anyway.
 
-PANIC: early exception 0e rip 10:ffffffff8072 error 0 cr2 ffffffffff341000
-
-Pid: 0
-comm: swapper Not Tainted 2.6.27.1 #3
-
-Call trace:
-[<ffffffff80b52195>] early_idt_handler+0x55/0x69
-[<ffffffff8072c099>] dmi_table+0x45/0x77
-[<ffffffff8072c0a2>] dmi_table+0x4e/0x77
-[<ffffffff80b79db4>] dmi_scan_machine+0x12e/0x19c
-[<ffffffff80b58d58>] setup_arch+0x555/0x4dc
-[<ffffffff80b5285e>] start_kernel+0x5f/0x2dd
-[<ffffffff80b52393>] x86_64_start_kernel+0xe3/0xe7
-
-RIP 0x10
-
+- Steven
