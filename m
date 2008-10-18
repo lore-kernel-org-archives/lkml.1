@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751829AbYJRI6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbYJRI6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751829AbYJRI6T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 04:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYJRI6J
+	id S1752638AbYJRI6d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 04:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYJRI6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 04:58:09 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42645 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYJRI6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 04:58:07 -0400
-Message-ID: <48F9A441.3030400@cs.helsinki.fi>
-Date: Sat, 18 Oct 2008 11:54:25 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Sat, 18 Oct 2008 04:58:16 -0400
+Received: from sorrow.cyrius.com ([65.19.161.204]:3287 "EHLO sorrow.cyrius.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751466AbYJRI6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 04:58:15 -0400
+Date: Sat, 18 Oct 2008 10:57:56 +0200
+From: Martin Michlmayr <tbm@cyrius.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
+       debian-arm@lists.debian.org, xfs@oss.sgi.com
+Subject: Re: XFS filesystem corruption on the arm(el) architecture
+Message-ID: <20081018085752.GS25834@deprecation.cyrius.com>
+References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <48F89E0F.6030307@sandeen.net>
 MIME-Version: 1.0
-To: Tom Zanussi <zanussi@comcast.net>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [RFC PATCH 1/21] relay - Clean up relay_switch_subbuf() and make
- waking up consumers optional.
-References: <1224137126.16328.220.camel@charm-linux>
-In-Reply-To: <1224137126.16328.220.camel@charm-linux>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F89E0F.6030307@sandeen.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tom,
+* Eric Sandeen <sandeen@sandeen.net> [2008-10-17 09:15]:
+> If you unmount & remount, does the ls work then?
 
-Tom Zanussi wrote:
-> +static inline void relay_update_filesize(struct rchan_buf *buf, size_t length)
-> +{
-> +	if (buf->dentry)
-> +		buf->dentry->d_inode->i_size +=	length;
-> +	else
-> +		buf->early_bytes += length;
-> +
-> +	smp_mb();
-> +}
+I cannot even mount it:
 
-A minor nit: you should probably add a comment for that memory barrier. 
-That is, explain why it is needed. It makes a world of a difference to 
-anyone trying to understand what's going on here.
+debian:~# mkfs.xfs -f /dev/sda5
+meta-data=/dev/sda5              isize=256    agcount=4, agsize=94380 blks
+         =                       sectsz=512   attr=2
+data     =                       bsize=4096   blocks=377519, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=0
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+debian:~# mount /dev/sda5 /mnt
+[42949596.920000] XFS mounting filesystem sda5
+debian:~# cp /usr/bin/* /mnt/
+debian:~# umount /mnt
+debian:~# mount -t xfs /dev/sda5 /mnt
+[42949612.290000] XFS mounting filesystem sda5
+[42949612.460000] Starting XFS recovery on filesystem: sda5 (logdev: internal)
+[42949612.480000] XFS: xlog_recover_process_data: bad flag
+[42949612.500000] XFS: log mount/recovery failed: error 5
+[42949612.500000] XFS: log mount failed
+mount: /dev/sda5: can't read superblock
+debian:~#
+
+> Do you know what cachepolicy you're booted with?  If it's writeallocate,
+> you might try cachepolicy=writeback, otherwise try cachepolicy=uncached
+> (which will be horribly slow) and see if the problem goes away or not;
+> it'd be a clue.
+
+I just tried with cachepolicy=writeback and cachepolicy=uncached but I
+get the same problem.
+-- 
+Martin Michlmayr
+http://www.cyrius.com/
