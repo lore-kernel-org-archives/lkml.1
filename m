@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbYJRTIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbYJRTGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbYJRTIr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYJRTDl
+	id S1753820AbYJRTGq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbYJRTDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:03:41 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38238 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:03:17 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47284 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826AbYJRTDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:03:39 -0400
-Date: Sat, 18 Oct 2008 11:34:31 -0700
+	id S1751899AbYJRTDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:03:15 -0400
+Date: Sat, 18 Oct 2008 11:34:16 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@redhat.com>
-Subject: [patch 15/17] drm/i915: fix ioremap of a user address for non-root
-	(CVE-2008-3831)
-Message-ID: <20081018183431.GP14035@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 09/17] OHCI: Allow broken controllers to auto-stop
+Message-ID: <20081018183416.GJ14035@suse.de>
 References: <20081018182721.521723254@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="drm-i915-fix-ioremap-of-a-user-address-for-non-root.patch"
+Content-Disposition: inline; filename="ohci-allow-broken-controllers-to-auto-stop.patch"
 In-Reply-To: <20081018183334.GA14035@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,36 +39,152 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Matthias Hopf <mhopf@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 4b40893918203ee1a1f6a114316c2a19c072e9bd upstream
+commit 4a511bc3f5829bc18428bcf11c25417a79d09396 upstream
 
-Olaf Kirch noticed that the i915_set_status_page() function of the i915
-kernel driver calls ioremap with an address offset that is supplied by
-userspace via ioctl. The function zeroes the mapped memory via memset
-and tells the hardware about the address. Turns out that access to that
-ioctl is not restricted to root so users could probably exploit that to
-do nasty things. We haven't tried to write actual exploit code though.
+This patch (as1134) attempts to improve the way we handle OHCI
+controllers with broken Root Hub Status Change interrupt support.  In
+these controllers the RHSC interrupt bit essentially never turns off,
+making RHSC interrupts useless -- they have to remain permanently
+disabled.
 
-It only affects the Intel G33 series and newer.
+Such controllers should still be allowed to turn off their root hubs
+when no devices are attached.  Polling for new connections can
+continue while the root hub is suspended.  The patch implements this
+feature.  (It won't have much effect unless CONFIG_PM is enabled and
+CONFIG_USB_SUSPEND is disabled, but since the overhead is very small
+we may as well do it.)
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/host/ohci-hub.c |   60 +++++++++++++++++++++++---------------------
+ 1 file changed, 32 insertions(+), 28 deletions(-)
 
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -836,7 +836,7 @@ struct drm_ioctl_desc i915_ioctls[] = {
- 	DRM_IOCTL_DEF(DRM_I915_SET_VBLANK_PIPE,  i915_vblank_pipe_set, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY ),
- 	DRM_IOCTL_DEF(DRM_I915_GET_VBLANK_PIPE,  i915_vblank_pipe_get, DRM_AUTH ),
- 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
--	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
-+	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
- };
+--- a/drivers/usb/host/ohci-hub.c
++++ b/drivers/usb/host/ohci-hub.c
+@@ -362,18 +362,23 @@ static int ohci_root_hub_state_changes(s
+ 		int any_connected)
+ {
+ 	int	poll_rh = 1;
+-	int	rhsc;
++	int	rhsc_status, rhsc_enable;
  
- int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
+-	rhsc = ohci_readl(ohci, &ohci->regs->intrenable) & OHCI_INTR_RHSC;
+-	switch (ohci->hc_control & OHCI_CTRL_HCFS) {
++	/* Some broken controllers never turn off RHCS in the interrupt
++	 * status register.  For their sake we won't re-enable RHSC
++	 * interrupts if the interrupt bit is already active.
++	 */
++	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
++			OHCI_INTR_RHSC;
++	rhsc_enable = ohci_readl(ohci, &ohci->regs->intrenable) &
++			OHCI_INTR_RHSC;
+ 
++	switch (ohci->hc_control & OHCI_CTRL_HCFS) {
+ 	case OHCI_USB_OPER:
+-		/* If no status changes are pending, enable status-change
+-		 * interrupts.
+-		 */
+-		if (!rhsc && !changed) {
+-			rhsc = OHCI_INTR_RHSC;
+-			ohci_writel(ohci, rhsc, &ohci->regs->intrenable);
++		/* If no status changes are pending, enable RHSC interrupts. */
++		if (!rhsc_enable && !rhsc_status && !changed) {
++			rhsc_enable = OHCI_INTR_RHSC;
++			ohci_writel(ohci, rhsc_enable, &ohci->regs->intrenable);
+ 		}
+ 
+ 		/* Keep on polling until we know a device is connected
+@@ -383,7 +388,7 @@ static int ohci_root_hub_state_changes(s
+ 			if (any_connected ||
+ 					!device_may_wakeup(&ohci_to_hcd(ohci)
+ 						->self.root_hub->dev)) {
+-				if (rhsc)
++				if (rhsc_enable)
+ 					poll_rh = 0;
+ 			} else {
+ 				ohci->autostop = 1;
+@@ -396,34 +401,36 @@ static int ohci_root_hub_state_changes(s
+ 				ohci->autostop = 0;
+ 				ohci->next_statechange = jiffies +
+ 						STATECHANGE_DELAY;
+-			} else if (rhsc && time_after_eq(jiffies,
++			} else if (time_after_eq(jiffies,
+ 						ohci->next_statechange)
+ 					&& !ohci->ed_rm_list
+ 					&& !(ohci->hc_control &
+ 						OHCI_SCHED_ENABLES)) {
+ 				ohci_rh_suspend(ohci, 1);
+-				poll_rh = 0;
++				if (rhsc_enable)
++					poll_rh = 0;
+ 			}
+ 		}
+ 		break;
+ 
+-	/* if there is a port change, autostart or ask to be resumed */
+ 	case OHCI_USB_SUSPEND:
+ 	case OHCI_USB_RESUME:
++		/* if there is a port change, autostart or ask to be resumed */
+ 		if (changed) {
+ 			if (ohci->autostop)
+ 				ohci_rh_resume(ohci);
+ 			else
+ 				usb_hcd_resume_root_hub(ohci_to_hcd(ohci));
+ 		} else {
+-			if (!rhsc && (ohci->autostop ||
++			if (!rhsc_enable && !rhsc_status && (ohci->autostop ||
+ 					ohci_to_hcd(ohci)->self.root_hub->
+-						do_remote_wakeup))
+-				ohci_writel(ohci, OHCI_INTR_RHSC,
++						do_remote_wakeup)) {
++				rhsc_enable = OHCI_INTR_RHSC;
++				ohci_writel(ohci, rhsc_enable,
+ 						&ohci->regs->intrenable);
+-
+-			/* everything is idle, no need for polling */
+-			poll_rh = 0;
++			}
++			if (rhsc_enable)
++				poll_rh = 0;
+ 		}
+ 		break;
+ 	}
+@@ -443,12 +450,16 @@ static inline int ohci_rh_resume(struct 
+ static int ohci_root_hub_state_changes(struct ohci_hcd *ohci, int changed,
+ 		int any_connected)
+ {
++	int	rhsc_status;
++
+ 	/* If RHSC is enabled, don't poll */
+ 	if (ohci_readl(ohci, &ohci->regs->intrenable) & OHCI_INTR_RHSC)
+ 		return 0;
+ 
+-	/* If no status changes are pending, enable status-change interrupts */
+-	if (!changed) {
++	/* If no status changes are pending, enable RHSC interrupts */
++	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
++			OHCI_INTR_RHSC;
++	if (!changed && !rhsc_status) {
+ 		ohci_writel(ohci, OHCI_INTR_RHSC, &ohci->regs->intrenable);
+ 		return 0;
+ 	}
+@@ -492,13 +503,6 @@ ohci_hub_status_data (struct usb_hcd *hc
+ 		length++;
+ 	}
+ 
+-	/* Some broken controllers never turn off RHCS in the interrupt
+-	 * status register.  For their sake we won't re-enable RHSC
+-	 * interrupts if the flag is already set.
+-	 */
+-	if (ohci_readl(ohci, &ohci->regs->intrstatus) & OHCI_INTR_RHSC)
+-		changed = 1;
+-
+ 	/* look at each port */
+ 	for (i = 0; i < ohci->num_ports; i++) {
+ 		u32	status = roothub_portstatus (ohci, i);
 
 -- 
