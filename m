@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbYJRAU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYJRA1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbYJRAU1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 20:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbYJRAUT
+	id S1756861AbYJRA1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 20:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYJRA1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 20:20:19 -0400
-Received: from charon.persephoneslair.org ([216.254.15.24]:36885 "EHLO
-	charon.persephoneslair.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755090AbYJRAUS (ORCPT
+	Fri, 17 Oct 2008 20:27:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57509 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751789AbYJRA1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 20:20:18 -0400
-X-Greylist: delayed 820 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 20:20:18 EDT
-Date: Fri, 17 Oct 2008 17:06:35 -0700
-From: Andrea Shepard <andrea@persephoneslair.org>
-To: davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix race in arch/sparc64/kernel/trampoline.S
-Message-ID: <20081018000635.GA16445@charon.persephoneslair.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Fri, 17 Oct 2008 20:27:25 -0400
+Date: Fri, 17 Oct 2008 17:25:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch] mm: fix anon_vma races
+In-Reply-To: <Pine.LNX.4.64.0810180045370.8995@blonde.site>
+Message-ID: <alpine.LFD.2.00.0810171717470.3438@nehalem.linux-foundation.org>
+References: <20081016041033.GB10371@wotan.suse.de> <Pine.LNX.4.64.0810172300280.30871@blonde.site> <alpine.LFD.2.00.0810171549310.3438@nehalem.linux-foundation.org> <Pine.LNX.4.64.0810180045370.8995@blonde.site>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make arch/sparc64/kernel/trampoline.S in 2.6.27.1 lock prom_entry_lock
-when calling the PROM.  This prevents a race condition that I observed
-causing a hang on startup on a 12-CPU E4500.
 
-I am not subscribed to this list, so please CC me on replies.
 
-Signed-off-by: Andrea Shepard <andrea@persephoneslair.org>
+On Sat, 18 Oct 2008, Hugh Dickins wrote:
+> 
+> But they're doing it to make the page's ptes accessible to
+> memory reclaim, and the CPU doing memory reclaim will not
+> (unless by coincidence) have done that anon_vma_prepare() -
+> it's just reading the links which the faulters are providing.
 
-diff -Naur linux-2.6.27.1/arch/sparc64/kernel/trampoline.S linux-2.6.27.1.patched/arch/sparc64/kernel/trampoline.S
---- linux-2.6.27.1/arch/sparc64/kernel/trampoline.S	2008-10-15 16:02:53.000000000 -0700
-+++ linux-2.6.27.1.patched/arch/sparc64/kernel/trampoline.S	2008-10-17 13:17:09.401334338 -0700
-@@ -328,6 +328,12 @@
- 
- 	wrpr		%g0, 0, %wstate
- 
-+	sethi		%hi(prom_entry_lock), %g2
-+1:	ldstub		[%g2 + %lo(prom_entry_lock)], %g1
-+	membar		#StoreLoad | #StoreStore
-+	brnz,pn		%g1, 1b
-+	 nop
-+
- 	/* As a hack, put &init_thread_union into %g6.
- 	 * prom_world() loads from here to restore the %asi
- 	 * register.
-@@ -337,9 +343,9 @@
- 
- 	sethi		%hi(is_sun4v), %o0
- 	lduw		[%o0 + %lo(is_sun4v)], %o0
--	brz,pt		%o0, 1f
-+	brz,pt		%o0, 2f
- 	 nop
+Ahh. Good point. Then yes, those ones would really need the 
+smp_read_barrier_depends() too.
 
- 	TRAP_LOAD_TRAP_BLOCK(%g2, %g3)
- 	add		%g2, TRAP_PER_CPU_FAULT_INFO, %g2
- 	stxa		%g2, [%g0] ASI_SCRATCHPAD
-@@ -369,10 +375,10 @@
- 	call		%o1
- 	 add		%sp, (2047 + 128), %o0
- 
--	ba,pt		%xcc, 2f
-+	ba,pt		%xcc, 3f
- 	 nop
- 
--1:	sethi		%hi(sparc64_ttable_tl0), %o0
-+2:	sethi		%hi(sparc64_ttable_tl0), %o0
- 	set		prom_set_trap_table_name, %g2
- 	stx		%g2, [%sp + 2047 + 128 + 0x00]
- 	mov		1, %g2
-@@ -386,9 +392,13 @@
- 	call		%o1
- 	 add		%sp, (2047 + 128), %o0
- 
--2:	ldx		[%l0], %g6
-+3:	sethi		%hi(prom_entry_lock), %g2
-+	stb		%g0, [%g2 + %lo(prom_entry_lock)]
-+	membar		#StoreStore | #StoreLoad
-+
-+	ldx		[%l0], %g6
- 	ldx		[%g6 + TI_TASK], %g4
+Very annoying.
 
- 	mov		1, %g5
- 	sllx		%g5, THREAD_SHIFT, %g5
- 	sub		%g5, (STACKFRAME_SZ + STACK_BIAS), %g5
+Of course, we _could_ just admit that the situation is really *really* 
+unlikely, and there are probably something like five people running 
+Linux/alpha, and that we don't care enough. With just the smp_wmb(), we 
+cover all non-alpha people, since this is all through a pointer, so all 
+the readers will inevitably be of the smp_read_barrier_depends kind.
+
+If we want to guarantee the proper smp_read_barrier_depends() behaviour, 
+then we'd need to find them all. Possibly by renaming the whole field 
+(prepend an underscore like we usually do) and forcing all readers to use 
+some "get_anon_vma(vma)" helper function, aka
+
+  static inline struct anon_vma *get_anon_vma(struct vm_area_struct *vma)
+  {
+	struct anon_vma *anon_vma = vma->_anon_vma;
+	smp_read_barrier_depends();
+	return anon_vma;
+  }
+
+which would find them all.
+
+Ugh. I really would have preferred not having something like that. 
+Especially considering how limited that issue really is. Hmm. 
+
+		Linus
