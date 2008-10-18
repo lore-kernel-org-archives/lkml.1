@@ -1,60 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYJRBiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbYJRBvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYJRBiX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 21:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYJRBiE
+	id S1754986AbYJRBvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYJRBvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 21:38:04 -0400
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:35863 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752142AbYJRBiC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 21:38:02 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=f9LUouiCqv+0nnr1pulYma/JzC1ef7Cr2mJO2LlBOHdX9LJx3Y/jPTX+VXGviC3cILz1n+OdvbBygdGDageiKeVWx8wos8/XY9Dq8CH3eclWgK1elQdWyqVxQBeozp+IRf5kzk9LXtCZa8KeCHFFp12tgr1C0fBQDSNjv9RTgPw=  ;
-X-YMail-OSG: R035fQQVM1mJlk5fDMIOoJcgdxGv2OMLo0NGt3APGEQoh0LxIY4FSN10Lg0VrR1k2NDSHo.oWkhYSpRDyRV8xMM1_LF9_qXd2IdMygLKfuq6heIjFaoEkPdJzMW_V5bgbBsbtLgXit.lcoR9nugPXHK.7NLEGVSujKx.x4T7gGl8KTe8hR_U5dnlGZf6
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Dave Airlie <airlied@linux.ie>
-Subject: Re: [git pull] drm patches for 2.6.27-rc1
-Date: Sat, 18 Oct 2008 12:37:49 +1100
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+	Fri, 17 Oct 2008 21:51:09 -0400
+Received: from smtp.zeuux.org ([210.51.160.52]:56689 "EHLO z.billxu.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753052AbYJRBvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 21:51:08 -0400
+Date: Sat, 18 Oct 2008 09:51:12 +0800
+From: Jianjun Kong <jianjun@zeuux.org>
+To: Dotan Barak <dotanba@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] kernel/workqueue.c mm/sparse.c: fix some linux coding
+	style typos
+Message-ID: <20081018015112.GA6861@ubuntu>
+References: <200810180516.40060.dotanba@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810181237.49784.nickpiggin@yahoo.com.au>
+In-Reply-To: <200810180516.40060.dotanba@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 18 October 2008 08:29, Dave Airlie wrote:
-> Hi Linus,
+On Sat, Oct 18, 2008 at 05:16:39AM +0200, Dotan Barak wrote:
+>workqueues: fix some linux coding style typos:
 >
-> This is a new tree, I had a conflict with your latest tree due to some
-> trivial cleanups you merged. I've added the fix for CVE-2008-3831 which is
-> unembargoed.
+>* spaces were replaced with tabs
+>* "foo* bar" was replaced with "foo *bar"
 >
-> Please pull the 'drm-next' branch from
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git
-> drm-next
+>Signed-off-by: Dotan Barak <dotanba@gmail.com>
 >
-> This contains two patches outside the DRM git tree to add exports for GEM
-> functionality while we await Nick Piggins vmap and shmem changes.
+>---
+>
+>diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+>index 714afad..f9de8b5 100644
+>--- a/kernel/workqueue.c
+>+++ b/kernel/workqueue.c
+>@@ -300,7 +300,7 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
 
-OK. I was hoping that kmap_atomic_pfn thing *never* see the light of
-mainline ;) Because hopefully the vmap improvements should be OK for
-2.6.28 as well...
+The same problem is in mm/sparse.c .
 
-But it's already there. OK, if vmap patches go upstream, then it can
-be switched over and the export removed before the release...
+* spaces were replaced with tabs
+* "foo* bar" was replaced with "foo *bar"
 
-Thanks,
-Nick
+Signed-off-by: Dotan Barak <dotanba@gmail.com>
+Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
+---
+ kernel/workqueue.c |    6 +++---
+ mm/sparse.c        |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 714afad..f9de8b5 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -300,7 +300,7 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+ 			printk(KERN_ERR "BUG: workqueue leaked lock or atomic: "
+ 					"%s/0x%08x/%d\n",
+ 					current->comm, preempt_count(),
+-				       	task_pid_nr(current));
++					task_pid_nr(current));
+ 			printk(KERN_ERR "    last function: ");
+ 			print_symbol("%s\n", (unsigned long)f);
+ 			debug_show_held_locks(current);
+@@ -551,7 +551,7 @@ static void wait_on_work(struct work_struct *work)
+ }
+ 
+ static int __cancel_work_timer(struct work_struct *work,
+-				struct timer_list* timer)
++				struct timer_list *timer)
+ {
+ 	int ret;
+ 
+@@ -908,7 +908,7 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 
+ 	for_each_cpu_mask_nr(cpu, *cpu_map)
+ 		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
+- 	cpu_maps_update_done();
++	cpu_maps_update_done();
+ 
+ 	free_percpu(wq->cpu_wq);
+ 	kfree(wq);
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 39db301..47cb5c3 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -114,7 +114,7 @@ static inline int sparse_index_init(unsigned long section_nr, int nid)
+  * to also work for the flat array case because
+  * NR_SECTION_ROOTS==NR_MEM_SECTIONS.
+  */
+-int __section_nr(struct mem_section* ms)
++int __section_nr(struct mem_section *ms)
+ {
+ 	unsigned long root_nr;
+ 	struct mem_section* root;
+-- 
+1.5.2.5
+
+-- 
+Jianjun Kong | Happy Hacking
+HomePage: http://kongove.cn
+Gtalk: kongjianjun@gmail.com
