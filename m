@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbYJRUQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbYJRUVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751806AbYJRUQq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 16:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYJRUQi
+	id S1751806AbYJRUVP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 16:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbYJRUU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 16:16:38 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:11479 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbYJRUQh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 16:16:37 -0400
-Date: Sat, 18 Oct 2008 23:17:50 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Martin Michlmayr <tbm@cyrius.com>, Eric Sandeen <sandeen@sandeen.net>,
-       Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
-       debian-arm@lists.debian.org, xfs@oss.sgi.com
-Subject: Re: XFS filesystem corruption on the arm(el) architecture
-Message-ID: <20081018201747.GB2083@localhost.localdomain>
-References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <20081017094615.GT4504@soziologie.ch> <20081018194851.GA2083@localhost.localdomain> <20081018200939.GA3779@infradead.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3lcZGd9BuhuYXNfi"
-Content-Disposition: inline
-In-Reply-To: <20081018200939.GA3779@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+	Sat, 18 Oct 2008 16:20:59 -0400
+Received: from home.keithp.com ([63.227.221.253]:42834 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750938AbYJRUU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 16:20:58 -0400
+Subject: Re: [git pull] drm patches for 2.6.27-rc1
+From: Keith Packard <keithp@keithp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: keithp@keithp.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Airlie <airlied@linux.ie>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net
+In-Reply-To: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+	 <200810181237.49784.nickpiggin@yahoo.com.au>
+	 <1224357062.4384.72.camel@koto.keithp.com>
+	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lvwmiopHP5J6cd7OceuZ"
+Date: Sat, 18 Oct 2008 13:20:48 -0700
+Message-Id: <1224361248.4384.81.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---3lcZGd9BuhuYXNfi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-lvwmiopHP5J6cd7OceuZ
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Oct 18, 2008 at 04:09:39PM -0400, Christoph Hellwig wrote:
-> On Sat, Oct 18, 2008 at 10:48:53PM +0300, Kirill A. Shutemov wrote:
-> > Our team have experience with XFS on ARM OABI on NAS. It worked fine on
-> > 2.6.12, but got broken on 2.6.17.
->=20
-> So any chance to bisect it down to at least a kernel release where it
-> stopped working?
+On Sat, 2008-10-18 at 12:31 -0700, Linus Torvalds wrote:
 
-I'll try to do it.
+> The important thing is that mappings need to be per-CPU, so the above may=
+=20
+> work, but only if it's designed so that "io_reserve_pci_resource()" will=20
+> actually reserve space for 'nr_possible_cpu' page mappings, and then the=20
+> "io_[un]map_atomic()" functions do per-CPU mappings.
+
+Yes, of course. The goal is to make it look exactly like
+kmap_atomic_pfn, but work on non-memory pages even on non-HIGHMEM
+configs for x86 (we have to use ioremap on those systems today, which is
+a fairly significant performance problem).
+
+> And quite frankly, even so, we'd possibly still be _better_ off with just=
+=20
+> exposing the "kmap_atomic_pfn()" functionality even so. Because quite=20
+> frankly, your "io_reserve_pci_resource()" infrastructure is going to=20
+> inevitably be more complex and slower than the rather efficient=20
+> kmap_atomic_pfn() thing we have.
+
+I want it to work just like kmap_atomic_pfn; Venki wanted some way to
+"know" that no-one else was mapping the pages in non-WC mode. This
+seemed like a reasonable compromise; the 'mapping' object exists solely
+to hold the desired prot value to keep all PTEs consistent across the
+whole system.
+
+> One small detail: our we currently have "kmap_atomic_pfn()" and=20
+> "kmap_atomic_prot()", and we really should maek the fundamental core=20
+> operation be "kmap_atomic_pfn_prot()", and have everything be done in=20
+> terms of that. Looking at it, it also looks like kmap_atomic_prot() is=20
+> actually incorrect right now, and doesn't do a "prot" thing for=20
+> non-highmem pages, but just returns "page_address(page);"
+
+Fortunately, we use kmap_atomic_pfn only for our BAR, which is not a
+non-highmem page.
+
+Right now, we're counting on having our BAR covered by an MTRR register
+so that we get WC access here. I'd like to have the API expose this so
+that the driver will work on systems which don't have a spare MTRR for
+the graphics aperture.
 
 --=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
+keith.packard@intel.com
 
---3lcZGd9BuhuYXNfi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+--=-lvwmiopHP5J6cd7OceuZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkj6RGsACgkQbWYnhzC5v6oP+gCdG37HnYwqMJVvr6tMSa+N02WD
-EW8An2Ep/FRKxSb9D57ZjV+wUvf81gyI
-=iSPt
+iD8DBQBI+kUgQp8BWwlsTdMRAgaoAJwL301ASzk8j7Ds3+kL3x2VzXDiqQCgrdJU
+gxtBKu1opLxSHhQJjLDaITY=
+=AaRs
 -----END PGP SIGNATURE-----
 
---3lcZGd9BuhuYXNfi--
+--=-lvwmiopHP5J6cd7OceuZ--
+
