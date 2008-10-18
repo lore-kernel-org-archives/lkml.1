@@ -1,591 +1,485 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbYJREAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbYJREhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752168AbYJREAa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 00:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbYJREAW
+	id S1752120AbYJREhd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 00:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYJREhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 00:00:22 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:40579 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750712AbYJREAU (ORCPT
+	Sat, 18 Oct 2008 00:37:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45346 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751189AbYJREhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 00:00:20 -0400
-Date: Fri, 17 Oct 2008 22:00:03 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, ying.huang@intel.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, tglx@linutronix.de
-Subject: Re: [PATCH -mm -v5] Separate atomic_t declaration from asm/atomic.h into asm/atomic_def.h
-Message-ID: <20081018040002.GW15064@parisc-linux.org>
-References: <1223459070.5872.167.camel@yhuang-dev.sh.intel.com> <20081010144335.65d8153b.akpm@linux-foundation.org> <20081010214958.GA7708@elte.hu> <20081010155450.094288b4.akpm@linux-foundation.org> <20081014184718.GG15064@parisc-linux.org> <20081015151119.493ea13f.akpm@linux-foundation.org> <20081015221947.GN15064@parisc-linux.org> <20081015153124.c560e97e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081015153124.c560e97e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 18 Oct 2008 00:37:23 -0400
+Date: Fri, 17 Oct 2008 21:36:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: "Magnus Damm" <magnus.damm@gmail.com>,
+       "David Brownell" <david-b@pacbell.net>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Piot Skamruk" <piotr.skamruk@gmail.com>
+Subject: Re: [PATCH v3] Add SPI over GPIO driver
+Message-Id: <20081017213631.82c49b3a.akpm@linux-foundation.org>
+In-Reply-To: <200810171318.32306.mb@bu3sch.de>
+References: <200807202146.12759.mb@bu3sch.de>
+	<200810171052.54823.mb@bu3sch.de>
+	<aec7e5c30810170252t5790af36hfc754d28e69f5159@mail.gmail.com>
+	<200810171318.32306.mb@bu3sch.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 03:31:24PM -0700, Andrew Morton wrote:
-> Well we've been glacially fartarsing around with this for sufficiently
-> long that any such alterations will be too late for 2.6.28.
+On Fri, 17 Oct 2008 13:18:32 +0200 Michael Buesch <mb@bu3sch.de> wrote:
+
+> On Friday 17 October 2008 11:52:32 Magnus Damm wrote:
+> > [removed closed openwrt-devel list]
+> > 
+> > On Fri, Oct 17, 2008 at 5:52 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> > > On Friday 17 October 2008 05:14:26 Magnus Damm wrote:
+> > >> On Mon, Jul 21, 2008 at 4:46 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> > >> > This adds a driver that lets you drive an SPI bus over
+> > >> > generic GPIO pins.
+> > >> >
+> > >> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> > >>
+> > >> Very useful. Fits my shiny new GPIO implementation for SuperH like a glove.
+> > >>
+> > >> Michael, as you know, I have some SuperH board code that makes use of
+> > >> this driver. Are there any outstanding issues with this driver that I
+> > >> can help resolving?
+> > >
+> > > bool cs_activelow should probably be removed from struct spi_gpio_platform_data.
+> > >
+> > > I think cs always is activelow, so we can simply hardcode this in spi_gpio_chipselect()
+> > 
+> > Really? There _must_ be chips out there that want active high CS!
+> > I'd rather keep the activelow option or maybe turn in into activehigh instead.
 > 
-> I'll drop it all.  Again.
+> Ok, I dunno. I never saw one. All of my SPI stuff is activelow.
+> So well, let's keep it.
+> 
+> > > If you want to do this, please feel free to do so.
+> > > I currently don't have the time for this.
+> > > The rest of the driver is fine with me.
+> > 
+> > Ok, thank you.
+> > 
+> > David or Andrew, any change of getting this merged as-is somehow? Thanks!
+> 
+> Yes, please merge it.
 
-Here's an updated patch which uses linux/types.h as suggested by Roman.
-I started fresh rather than use the original patch.  I compared the
-diffstats afterwards and I caught one architecture the original didn't
-(parisc), plus the original was creating files in include/asm-*/ even
-for architectures that had migrated to arch/*/include/asm.
+This patch has some "issues" a month or so ago.  Current status is that
+I've pinged David to see if he's OK with a 2.6.28 merge and he hasn't
+yet replied.
 
+Let's not bust a gut to get this into 2.6.28-rc1 - let's get it right
+rather than fast.  If we end up deciding to merge it into, say,
+2.6.28-rc2 then that should be OK under the circumstances.
+
+
+From: Michael Buesch <mb@bu3sch.de>
+
+This adds a driver that lets you drive an SPI bus over generic GPIO pins.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
-The atomic_t type cannot currently be used in some header files because it
-would create an include loop with asm/atomic.h.  Move the type definition
-to linux/types.h to break the loop.
+ MAINTAINERS                  |    5 
+ drivers/spi/Kconfig          |   13 +
+ drivers/spi/Makefile         |    1 
+ drivers/spi/spi_gpio.c       |  252 +++++++++++++++++++++++++++++++++
+ include/linux/spi/spi_gpio.h |   73 +++++++++
+ 5 files changed, 344 insertions(+)
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
- arch/alpha/include/asm/atomic.h     |    9 +--------
- arch/arm/include/asm/atomic.h       |    3 +--
- arch/avr32/include/asm/atomic.h     |    2 +-
- arch/blackfin/include/asm/atomic.h  |    4 +---
- arch/h8300/include/asm/atomic.h     |    3 ++-
- arch/ia64/include/asm/atomic.h      |    6 ------
- arch/m68knommu/include/asm/atomic.h |    2 +-
- arch/mips/include/asm/atomic.h      |    5 +----
- arch/powerpc/include/asm/atomic.h   |    4 +---
- arch/s390/include/asm/atomic.h      |    7 +------
- arch/sh/include/asm/atomic.h        |    7 +++----
- arch/sparc/include/asm/atomic_32.h  |    2 --
- arch/sparc/include/asm/atomic_64.h  |    3 ---
- include/asm-cris/atomic.h           |    4 +---
- include/asm-frv/atomic.h            |    4 ----
- include/asm-m32r/atomic.h           |    8 +-------
- include/asm-m68k/atomic.h           |    3 +--
- include/asm-mn10300/atomic.h        |    9 ---------
- include/asm-parisc/atomic.h         |   11 +++--------
- include/asm-x86/atomic_32.h         |   10 +---------
- include/asm-x86/atomic_64.h         |   18 ++----------------
- include/asm-xtensa/atomic.h         |    3 +--
- include/linux/types.h               |   10 ++++++++++
- 23 files changed, 33 insertions(+), 104 deletions(-)
-
-diff --git a/arch/alpha/include/asm/atomic.h b/arch/alpha/include/asm/atomic.h
-index ca88e54..62b3635 100644
---- a/arch/alpha/include/asm/atomic.h
-+++ b/arch/alpha/include/asm/atomic.h
-@@ -1,6 +1,7 @@
- #ifndef _ALPHA_ATOMIC_H
- #define _ALPHA_ATOMIC_H
+diff -puN MAINTAINERS~spi-add-spi-over-gpio-driver MAINTAINERS
+--- a/MAINTAINERS~spi-add-spi-over-gpio-driver
++++ a/MAINTAINERS
+@@ -3911,6 +3911,11 @@ M:	jens@de.ibm.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
  
-+#include <linux/types.h>
- #include <asm/barrier.h>
- #include <asm/system.h>
- 
-@@ -13,14 +14,6 @@
-  */
- 
- 
--/*
-- * Counter is volatile to make sure gcc doesn't try to be clever
-- * and move things around on us. We need to use _exactly_ the address
-- * the user gave us, not some alias that contains the same information.
-- */
--typedef struct { volatile int counter; } atomic_t;
--typedef struct { volatile long counter; } atomic64_t;
--
- #define ATOMIC_INIT(i)		( (atomic_t) { (i) } )
- #define ATOMIC64_INIT(i)	( (atomic64_t) { (i) } )
- 
-diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
-index 325f881..ee99723 100644
---- a/arch/arm/include/asm/atomic.h
-+++ b/arch/arm/include/asm/atomic.h
-@@ -12,10 +12,9 @@
- #define __ASM_ARM_ATOMIC_H
- 
- #include <linux/compiler.h>
-+#include <linux/types.h>
- #include <asm/system.h>
- 
--typedef struct { volatile int counter; } atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #ifdef __KERNEL__
-diff --git a/arch/avr32/include/asm/atomic.h b/arch/avr32/include/asm/atomic.h
-index 7ef3862..3188151 100644
---- a/arch/avr32/include/asm/atomic.h
-+++ b/arch/avr32/include/asm/atomic.h
-@@ -14,9 +14,9 @@
- #ifndef __ASM_AVR32_ATOMIC_H
- #define __ASM_AVR32_ATOMIC_H
- 
-+#include <linux/types.h>
- #include <asm/system.h>
- 
--typedef struct { volatile int counter; } atomic_t;
- #define ATOMIC_INIT(i)  { (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff --git a/arch/blackfin/include/asm/atomic.h b/arch/blackfin/include/asm/atomic.h
-index 7cf5087..25776c1 100644
---- a/arch/blackfin/include/asm/atomic.h
-+++ b/arch/blackfin/include/asm/atomic.h
-@@ -1,6 +1,7 @@
- #ifndef __ARCH_BLACKFIN_ATOMIC__
- #define __ARCH_BLACKFIN_ATOMIC__
- 
-+#include <linux/types.h>
- #include <asm/system.h>	/* local_irq_XXX() */
- 
- /*
-@@ -13,9 +14,6 @@
-  * Tony Kou (tonyko@lineo.ca)   Lineo Inc.   2001
-  */
- 
--typedef struct {
--	int counter;
--} atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff --git a/arch/h8300/include/asm/atomic.h b/arch/h8300/include/asm/atomic.h
-index b4cf0ea..833186c 100644
---- a/arch/h8300/include/asm/atomic.h
-+++ b/arch/h8300/include/asm/atomic.h
-@@ -1,12 +1,13 @@
- #ifndef __ARCH_H8300_ATOMIC__
- #define __ARCH_H8300_ATOMIC__
- 
-+#include <linux/types.h>
++SPI GPIO MASTER DRIVER
++P:	Michael Buesch
++M:	mb@bu3sch.de
++S:	Maintained
 +
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-  * resource counting etc..
-  */
+ SPU FILE SYSTEM
+ P:	Jeremy Kerr
+ M:	jk@ozlabs.org
+diff -puN drivers/spi/Kconfig~spi-add-spi-over-gpio-driver drivers/spi/Kconfig
+--- a/drivers/spi/Kconfig~spi-add-spi-over-gpio-driver
++++ a/drivers/spi/Kconfig
+@@ -100,6 +100,19 @@ config SPI_BUTTERFLY
+ 	  inexpensive battery powered microcontroller evaluation board.
+ 	  This same cable can be used to flash new firmware.
  
--typedef struct { int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff --git a/arch/ia64/include/asm/atomic.h b/arch/ia64/include/asm/atomic.h
-index 50c2b83..d37292b 100644
---- a/arch/ia64/include/asm/atomic.h
-+++ b/arch/ia64/include/asm/atomic.h
-@@ -17,12 +17,6 @@
- #include <asm/intrinsics.h>
- #include <asm/system.h>
- 
--/*
-- * On IA-64, counter must always be volatile to ensure that that the
-- * memory accesses are ordered.
-- */
--typedef struct { volatile __s32 counter; } atomic_t;
--typedef struct { volatile __s64 counter; } atomic64_t;
- 
- #define ATOMIC_INIT(i)		((atomic_t) { (i) })
- #define ATOMIC64_INIT(i)	((atomic64_t) { (i) })
-diff --git a/arch/m68knommu/include/asm/atomic.h b/arch/m68knommu/include/asm/atomic.h
-index d5632a3..6bb6748 100644
---- a/arch/m68knommu/include/asm/atomic.h
-+++ b/arch/m68knommu/include/asm/atomic.h
-@@ -1,6 +1,7 @@
- #ifndef __ARCH_M68KNOMMU_ATOMIC__
- #define __ARCH_M68KNOMMU_ATOMIC__
- 
-+#include <linux/types.h>
- #include <asm/system.h>
- 
- /*
-@@ -12,7 +13,6 @@
-  * We do not have SMP m68k systems, so we don't have to deal with that.
-  */
- 
--typedef struct { int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff --git a/arch/mips/include/asm/atomic.h b/arch/mips/include/asm/atomic.h
-index 1232be3..c996c3b 100644
---- a/arch/mips/include/asm/atomic.h
-+++ b/arch/mips/include/asm/atomic.h
-@@ -15,13 +15,12 @@
- #define _ASM_ATOMIC_H
- 
- #include <linux/irqflags.h>
-+#include <linux/types.h>
- #include <asm/barrier.h>
- #include <asm/cpu-features.h>
- #include <asm/war.h>
- #include <asm/system.h>
- 
--typedef struct { volatile int counter; } atomic_t;
--
- #define ATOMIC_INIT(i)    { (i) }
- 
- /*
-@@ -404,8 +403,6 @@ static __inline__ int atomic_add_unless(atomic_t *v, int a, int u)
- 
- #ifdef CONFIG_64BIT
- 
--typedef struct { volatile long counter; } atomic64_t;
--
- #define ATOMIC64_INIT(i)    { (i) }
- 
- /*
-diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index f3fc733..9c74e6d 100644
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -5,7 +5,7 @@
-  * PowerPC atomic operations
-  */
- 
--typedef struct { int counter; } atomic_t;
-+#include <linux/types.h>
- 
- #ifdef __KERNEL__
- #include <linux/compiler.h>
-@@ -251,8 +251,6 @@ static __inline__ int atomic_dec_if_positive(atomic_t *v)
- 
- #ifdef __powerpc64__
- 
--typedef struct { long counter; } atomic64_t;
--
- #define ATOMIC64_INIT(i)	{ (i) }
- 
- static __inline__ long atomic64_read(const atomic64_t *v)
-diff --git a/arch/s390/include/asm/atomic.h b/arch/s390/include/asm/atomic.h
-index 2d18465..de432f2 100644
---- a/arch/s390/include/asm/atomic.h
-+++ b/arch/s390/include/asm/atomic.h
-@@ -2,6 +2,7 @@
- #define __ARCH_S390_ATOMIC__
- 
- #include <linux/compiler.h>
-+#include <linux/types.h>
- 
- /*
-  *  include/asm-s390/atomic.h
-@@ -23,9 +24,6 @@
-  * S390 uses 'Compare And Swap' for atomicity in SMP enviroment
-  */
- 
--typedef struct {
--	int counter;
--} __attribute__ ((aligned (4))) atomic_t;
- #define ATOMIC_INIT(i)  { (i) }
- 
- #ifdef __KERNEL__
-@@ -149,9 +147,6 @@ static __inline__ int atomic_add_unless(atomic_t *v, int a, int u)
- #undef __CS_LOOP
- 
- #ifdef __s390x__
--typedef struct {
--	long long counter;
--} __attribute__ ((aligned (8))) atomic64_t;
- #define ATOMIC64_INIT(i)  { (i) }
- 
- #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
-diff --git a/arch/sh/include/asm/atomic.h b/arch/sh/include/asm/atomic.h
-index c043ef0..6327ffb 100644
---- a/arch/sh/include/asm/atomic.h
-+++ b/arch/sh/include/asm/atomic.h
-@@ -7,16 +7,15 @@
-  *
-  */
- 
--typedef struct { volatile int counter; } atomic_t;
-+#include <linux/compiler.h>
-+#include <linux/types.h>
-+#include <asm/system.h>
- 
- #define ATOMIC_INIT(i)	( (atomic_t) { (i) } )
- 
- #define atomic_read(v)		((v)->counter)
- #define atomic_set(v,i)		((v)->counter = (i))
- 
--#include <linux/compiler.h>
--#include <asm/system.h>
--
- #if defined(CONFIG_GUSA_RB)
- #include <asm/atomic-grb.h>
- #elif defined(CONFIG_CPU_SH4A)
-diff --git a/arch/sparc/include/asm/atomic_32.h b/arch/sparc/include/asm/atomic_32.h
-index 5c944b5..ce46597 100644
---- a/arch/sparc/include/asm/atomic_32.h
-+++ b/arch/sparc/include/asm/atomic_32.h
-@@ -13,8 +13,6 @@
- 
- #include <linux/types.h>
- 
--typedef struct { volatile int counter; } atomic_t;
--
- #ifdef __KERNEL__
- 
- #define ATOMIC_INIT(i)  { (i) }
-diff --git a/arch/sparc/include/asm/atomic_64.h b/arch/sparc/include/asm/atomic_64.h
-index 2c71ec4..f432a4e 100644
---- a/arch/sparc/include/asm/atomic_64.h
-+++ b/arch/sparc/include/asm/atomic_64.h
-@@ -10,9 +10,6 @@
- #include <linux/types.h>
- #include <asm/system.h>
- 
--typedef struct { volatile int counter; } atomic_t;
--typedef struct { volatile __s64 counter; } atomic64_t;
--
- #define ATOMIC_INIT(i)		{ (i) }
- #define ATOMIC64_INIT(i)	{ (i) }
- 
-diff --git a/include/asm-cris/atomic.h b/include/asm-cris/atomic.h
-index 5fc8776..3293a6a 100644
---- a/include/asm-cris/atomic.h
-+++ b/include/asm-cris/atomic.h
-@@ -4,7 +4,7 @@
- #define __ASM_CRIS_ATOMIC__
- 
- #include <linux/compiler.h>
--
-+#include <linux/types.h>
- #include <asm/system.h>
- #include <asm/arch/atomic.h>
- 
-@@ -13,8 +13,6 @@
-  * resource counting etc..
-  */
- 
--typedef struct { volatile int counter; } atomic_t;
--
- #define ATOMIC_INIT(i)  { (i) }
- 
- #define atomic_read(v) ((v)->counter)
-diff --git a/include/asm-frv/atomic.h b/include/asm-frv/atomic.h
-index 46d696b..296c35c 100644
---- a/include/asm-frv/atomic.h
-+++ b/include/asm-frv/atomic.h
-@@ -35,10 +35,6 @@
- #define smp_mb__before_atomic_inc()	barrier()
- #define smp_mb__after_atomic_inc()	barrier()
- 
--typedef struct {
--	int counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)		{ (i) }
- #define atomic_read(v)		((v)->counter)
- #define atomic_set(v, i)	(((v)->counter) = (i))
-diff --git a/include/asm-m32r/atomic.h b/include/asm-m32r/atomic.h
-index 3a38ffe..2eed30f 100644
---- a/include/asm-m32r/atomic.h
-+++ b/include/asm-m32r/atomic.h
-@@ -9,6 +9,7 @@
-  *    Copyright (C) 2004  Hirokazu Takata <takata at linux-m32r.org>
-  */
- 
-+#include <linux/types.h>
- #include <asm/assembler.h>
- #include <asm/system.h>
- 
-@@ -17,13 +18,6 @@
-  * resource counting etc..
-  */
- 
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct { volatile int counter; } atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
- 
- /**
-diff --git a/include/asm-m68k/atomic.h b/include/asm-m68k/atomic.h
-index 4915294..eb0ab9d 100644
---- a/include/asm-m68k/atomic.h
-+++ b/include/asm-m68k/atomic.h
-@@ -1,7 +1,7 @@
- #ifndef __ARCH_M68K_ATOMIC__
- #define __ARCH_M68K_ATOMIC__
- 
--
-+#include <linux/types.h>
- #include <asm/system.h>
- 
- /*
-@@ -13,7 +13,6 @@
-  * We do not have SMP m68k systems, so we don't have to deal with that.
-  */
- 
--typedef struct { int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff --git a/include/asm-mn10300/atomic.h b/include/asm-mn10300/atomic.h
-index 27c9690..bc06482 100644
---- a/include/asm-mn10300/atomic.h
-+++ b/include/asm-mn10300/atomic.h
-@@ -20,15 +20,6 @@
-  * resource counting etc..
-  */
- 
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct {
--	int	counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #ifdef __KERNEL__
-diff --git a/include/asm-parisc/atomic.h b/include/asm-parisc/atomic.h
-index 57fcc4a..edbfe25 100644
---- a/include/asm-parisc/atomic.h
-+++ b/include/asm-parisc/atomic.h
-@@ -155,14 +155,11 @@ static inline unsigned long __cmpxchg_local(volatile void *ptr,
- #define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
- #endif
- 
--/* Note that we need not lock read accesses - aligned word writes/reads
-- * are atomic, so a reader never sees unconsistent values.
-- *
-- * Cache-line alignment would conflict with, for example, linux/module.h
++config SPI_GPIO
++	tristate "GPIO API based bitbanging SPI controller"
++	depends on SPI_MASTER && GENERIC_GPIO
++	select SPI_BITBANG
++	help
++	  This is a platform driver that can be used for bitbanging
++	  an SPI bus over GPIO pins.
++	  Select this if you have any SPI device that is connected via
++	  GPIO pins.
++	  The module will be called spi_gpio.
++
++	  If unsure, say N.
++
+ config SPI_IMX
+ 	tristate "Freescale iMX SPI controller"
+ 	depends on ARCH_IMX && EXPERIMENTAL
+diff -puN drivers/spi/Makefile~spi-add-spi-over-gpio-driver drivers/spi/Makefile
+--- a/drivers/spi/Makefile~spi-add-spi-over-gpio-driver
++++ a/drivers/spi/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_SPI_BFIN)			+= spi_bfin5xx.
+ obj-$(CONFIG_SPI_BITBANG)		+= spi_bitbang.o
+ obj-$(CONFIG_SPI_AU1550)		+= au1550_spi.o
+ obj-$(CONFIG_SPI_BUTTERFLY)		+= spi_butterfly.o
++obj-$(CONFIG_SPI_GPIO)			+= spi_gpio.o
+ obj-$(CONFIG_SPI_IMX)			+= spi_imx.o
+ obj-$(CONFIG_SPI_LM70_LLP)		+= spi_lm70llp.o
+ obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
+diff -puN /dev/null drivers/spi/spi_gpio.c
+--- /dev/null
++++ a/drivers/spi/spi_gpio.c
+@@ -0,0 +1,252 @@
 +/*
-+ * Note that we need not lock read accesses - aligned word writes/reads
-+ * are atomic, so a reader never sees inconsistent values.
-  */
- 
--typedef struct { volatile int counter; } atomic_t;
--
- /* It's possible to reduce all atomic operations to either
-  * __atomic_add_return, atomic_set and atomic_read (the latter
-  * is there only for consistency).
-@@ -260,8 +257,6 @@ static __inline__ int atomic_add_unless(atomic_t *v, int a, int u)
- 
- #ifdef CONFIG_64BIT
- 
--typedef struct { volatile s64 counter; } atomic64_t;
--
- #define ATOMIC64_INIT(i) ((atomic64_t) { (i) })
- 
- static __inline__ int
-diff --git a/include/asm-x86/atomic_32.h b/include/asm-x86/atomic_32.h
-index 14d3f0b..f3b37f8 100644
---- a/include/asm-x86/atomic_32.h
-+++ b/include/asm-x86/atomic_32.h
-@@ -2,6 +2,7 @@
- #define ASM_X86__ATOMIC_32_H
- 
- #include <linux/compiler.h>
-+#include <linux/types.h>
- #include <asm/processor.h>
- #include <asm/cmpxchg.h>
- 
-@@ -10,15 +11,6 @@
-  * resource counting etc..
-  */
- 
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct {
--	int counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
- 
- /**
-diff --git a/include/asm-x86/atomic_64.h b/include/asm-x86/atomic_64.h
-index 2cb218c..acd07a5 100644
---- a/include/asm-x86/atomic_64.h
-+++ b/include/asm-x86/atomic_64.h
-@@ -1,25 +1,15 @@
- #ifndef ASM_X86__ATOMIC_64_H
- #define ASM_X86__ATOMIC_64_H
- 
-+#include <linux/types.h>
- #include <asm/alternative.h>
- #include <asm/cmpxchg.h>
- 
--/* atomic_t should be 32 bit signed type */
--
- /*
-  * Atomic operations that C can't guarantee us.  Useful for
-  * resource counting etc..
-  */
- 
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct {
--	int counter;
--} atomic_t;
--
- #define ATOMIC_INIT(i)	{ (i) }
- 
- /**
-@@ -191,11 +181,7 @@ static inline int atomic_sub_return(int i, atomic_t *v)
- #define atomic_inc_return(v)  (atomic_add_return(1, v))
- #define atomic_dec_return(v)  (atomic_sub_return(1, v))
- 
--/* An 64bit atomic type */
--
--typedef struct {
--	long counter;
--} atomic64_t;
-+/* The 64-bit atomic type */
- 
- #define ATOMIC64_INIT(i)	{ (i) }
- 
-diff --git a/include/asm-xtensa/atomic.h b/include/asm-xtensa/atomic.h
-index b3b2354..67ad67b 100644
---- a/include/asm-xtensa/atomic.h
-+++ b/include/asm-xtensa/atomic.h
-@@ -14,8 +14,7 @@
- #define _XTENSA_ATOMIC_H
- 
- #include <linux/stringify.h>
--
--typedef struct { volatile int counter; } atomic_t;
-+#include <linux/types.h>
- 
- #ifdef __KERNEL__
- #include <asm/processor.h>
-diff --git a/include/linux/types.h b/include/linux/types.h
-index f24f7be..400df51 100644
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -199,6 +199,16 @@ typedef u32 phys_addr_t;
- 
- typedef phys_addr_t resource_size_t;
- 
-+typedef struct {
-+	volatile int counter;
-+} atomic_t;
++ * Bitbanging SPI bus driver using GPIO API
++ *
++ * Copyright (c) 2008 Piotr Skamruk
++ * Copyright (c) 2008 Michael Buesch
++ *
++ * based on spi_s3c2410_gpio.c
++ *   Copyright (c) 2006 Ben Dooks
++ *   Copyright (c) 2006 Simtec Electronics
++ * and on i2c-gpio.c
++ *   Copyright (C) 2007 Atmel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
 +
-+#ifdef CONFIG_64BIT
-+typedef struct {
-+	volatile long counter;
-+} atomic64_t;
-+#endif
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/spinlock.h>
++#include <linux/workqueue.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/spi_bitbang.h>
++#include <linux/spi/spi_gpio.h>
++#include <linux/gpio.h>
++#include <asm/atomic.h>
 +
- struct ustat {
- 	__kernel_daddr_t	f_tfree;
- 	__kernel_ino_t		f_tinode;
++
++struct spi_gpio {
++	struct spi_bitbang bitbang;
++	struct spi_gpio_platform_data *info;
++	struct platform_device *pdev;
++	struct spi_board_info bi;
++};
++
++
++static inline struct spi_gpio *spidev_to_sg(struct spi_device *dev)
++{
++	return dev->controller_data;
++}
++
++static inline void setsck(struct spi_device *dev, int val)
++{
++	struct spi_gpio *sp = spidev_to_sg(dev);
++	gpio_set_value(sp->info->pin_clk, val ? 1 : 0);
++}
++
++static inline void setmosi(struct spi_device *dev, int val)
++{
++	struct spi_gpio *sp = spidev_to_sg(dev);
++	gpio_set_value(sp->info->pin_mosi, val ? 1 : 0);
++}
++
++static inline u32 getmiso(struct spi_device *dev)
++{
++	struct spi_gpio *sp = spidev_to_sg(dev);
++	return gpio_get_value(sp->info->pin_miso) ? 1 : 0;
++}
++
++static inline void do_spidelay(struct spi_device *dev, unsigned nsecs)
++{
++	struct spi_gpio *sp = spidev_to_sg(dev);
++
++	if (!sp->info->no_spi_delay)
++		ndelay(nsecs);
++}
++
++#define spidelay(nsecs) do {					\
++	/* Steal the spi_device pointer from our caller.	\
++	 * The bitbang-API should probably get fixed here... */	\
++	do_spidelay(spi, nsecs);				\
++  } while (0)
++
++#define EXPAND_BITBANG_TXRX
++#include <linux/spi/spi_bitbang.h>
++
++static u32 spi_gpio_txrx_mode0(struct spi_device *spi,
++			       unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha0(spi, nsecs, 0, word, bits);
++}
++
++static u32 spi_gpio_txrx_mode1(struct spi_device *spi,
++			       unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha1(spi, nsecs, 0, word, bits);
++}
++
++static u32 spi_gpio_txrx_mode2(struct spi_device *spi,
++			       unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha0(spi, nsecs, 1, word, bits);
++}
++
++static u32 spi_gpio_txrx_mode3(struct spi_device *spi,
++			       unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha1(spi, nsecs, 1, word, bits);
++}
++
++static void spi_gpio_chipselect(struct spi_device *dev, int on)
++{
++	struct spi_gpio *sp = spidev_to_sg(dev);
++
++	if (sp->info->cs_activelow)
++		on = !on;
++	gpio_set_value(sp->info->pin_cs, on ? 1 : 0);
++}
++
++static int spi_gpio_probe(struct platform_device *pdev)
++{
++	struct spi_master *master;
++	struct spi_gpio_platform_data *pdata;
++	struct spi_gpio *sp;
++	struct spi_device *spidev;
++	int err;
++
++	pdata = pdev->dev.platform_data;
++	if (!pdata)
++		return -ENXIO;
++
++	err = -ENOMEM;
++	master = spi_alloc_master(&pdev->dev, sizeof(struct spi_gpio));
++	if (!master)
++		goto err_alloc_master;
++
++	sp = spi_master_get_devdata(master);
++	platform_set_drvdata(pdev, sp);
++	sp->info = pdata;
++
++	err = gpio_request(pdata->pin_clk, "spi_clock");
++	if (err)
++		goto err_request_clk;
++	err = gpio_request(pdata->pin_mosi, "spi_mosi");
++	if (err)
++		goto err_request_mosi;
++	err = gpio_request(pdata->pin_miso, "spi_miso");
++	if (err)
++		goto err_request_miso;
++	err = gpio_request(pdata->pin_cs, "spi_cs");
++	if (err)
++		goto err_request_cs;
++
++	sp->bitbang.master = spi_master_get(master);
++	sp->bitbang.master->bus_num = -1;
++	sp->bitbang.master->num_chipselect = 1;
++	sp->bitbang.chipselect = spi_gpio_chipselect;
++	sp->bitbang.txrx_word[SPI_MODE_0] = spi_gpio_txrx_mode0;
++	sp->bitbang.txrx_word[SPI_MODE_1] = spi_gpio_txrx_mode1;
++	sp->bitbang.txrx_word[SPI_MODE_2] = spi_gpio_txrx_mode2;
++	sp->bitbang.txrx_word[SPI_MODE_3] = spi_gpio_txrx_mode3;
++
++	gpio_direction_output(pdata->pin_clk, 0);
++	gpio_direction_output(pdata->pin_mosi, 0);
++	gpio_direction_output(pdata->pin_cs,
++			      pdata->cs_activelow ? 1 : 0);
++	gpio_direction_input(pdata->pin_miso);
++
++	err = spi_bitbang_start(&sp->bitbang);
++	if (err)
++		goto err_no_bitbang;
++	err = pdata->boardinfo_setup(&sp->bi, master,
++				     pdata->boardinfo_setup_data);
++	if (err)
++		goto err_bi_setup;
++	sp->bi.controller_data = sp;
++	err = -ENOMEM;
++	spidev = spi_new_device(master, &sp->bi);
++	if (!spidev)
++		goto err_new_dev;
++
++	return 0;
++
++err_new_dev:
++err_bi_setup:
++	spi_bitbang_stop(&sp->bitbang);
++err_no_bitbang:
++	spi_master_put(sp->bitbang.master);
++	gpio_free(pdata->pin_cs);
++err_request_cs:
++	gpio_free(pdata->pin_miso);
++err_request_miso:
++	gpio_free(pdata->pin_mosi);
++err_request_mosi:
++	gpio_free(pdata->pin_clk);
++err_request_clk:
++	kfree(master);
++
++err_alloc_master:
++	return err;
++}
++
++static int __devexit spi_gpio_remove(struct platform_device *pdev)
++{
++	struct spi_gpio *sp;
++	struct spi_gpio_platform_data *pdata;
++
++	pdata = pdev->dev.platform_data;
++	sp = platform_get_drvdata(pdev);
++
++	gpio_free(pdata->pin_clk);
++	gpio_free(pdata->pin_mosi);
++	gpio_free(pdata->pin_miso);
++	gpio_free(pdata->pin_cs);
++	spi_bitbang_stop(&sp->bitbang);
++	spi_master_put(sp->bitbang.master);
++
++	return 0;
++}
++
++static struct platform_driver spi_gpio_driver = {
++	.driver		= {
++		.name	= SPI_GPIO_PLATDEV_NAME,
++		.owner	= THIS_MODULE,
++	},
++	.probe		= spi_gpio_probe,
++	.remove		= __devexit_p(spi_gpio_remove),
++};
++
++int spi_gpio_next_id(void)
++{
++	static atomic_t counter = ATOMIC_INIT(-1);
++
++	return atomic_inc_return(&counter);
++}
++EXPORT_SYMBOL(spi_gpio_next_id);
++
++static int __init spi_gpio_init(void)
++{
++	int err;
++
++	err = platform_driver_register(&spi_gpio_driver);
++	if (err)
++		printk(KERN_ERR "spi-gpio: register failed: %d\n", err);
++
++	return err;
++}
++module_init(spi_gpio_init);
++
++static void __exit spi_gpio_exit(void)
++{
++	platform_driver_unregister(&spi_gpio_driver);
++}
++module_exit(spi_gpio_exit);
++
++MODULE_AUTHOR("Piot Skamruk <piotr.skamruk at gmail.com>");
++MODULE_AUTHOR("Michael Buesch");
++MODULE_DESCRIPTION("Platform independent GPIO bitbanging SPI driver");
++MODULE_LICENSE("GPL v2");
+diff -puN /dev/null include/linux/spi/spi_gpio.h
+--- /dev/null
++++ a/include/linux/spi/spi_gpio.h
+@@ -0,0 +1,73 @@
++/*
++ * spi_gpio interface to platform code
++ *
++ * Copyright (c) 2008 Piotr Skamruk
++ * Copyright (c) 2008 Michael Buesch
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef _LINUX_SPI_SPI_GPIO
++#define _LINUX_SPI_SPI_GPIO
++
++#include <linux/types.h>
++#include <linux/spi/spi.h>
++
++
++/**
++ * struct spi_gpio_platform_data - Data definitions for a SPI-GPIO device.
++ *
++ * This structure holds information about a GPIO-based SPI device.
++ *
++ * @pin_clk: The GPIO pin number of the CLOCK pin.
++ *
++ * @pin_miso: The GPIO pin number of the MISO pin.
++ *
++ * @pin_mosi: The GPIO pin number of the MOSI pin.
++ *
++ * @pin_cs: The GPIO pin number of the CHIPSELECT pin.
++ *
++ * @cs_activelow: If true, the chip is selected when the CS line is low.
++ *
++ * @no_spi_delay: If true, no delay is done in the lowlevel bitbanging.
++ *                Note that doing no delay is not standards compliant,
++ *                but it might be needed to speed up transfers on some
++ *                slow embedded machines.
++ *
++ * @boardinfo_setup: This callback is called after the
++ *                   SPI master device was registered, but before the
++ *                   device is registered.
++ * @boardinfo_setup_data: Data argument passed to boardinfo_setup().
++ */
++struct spi_gpio_platform_data {
++	unsigned int pin_clk;
++	unsigned int pin_miso;
++	unsigned int pin_mosi;
++	unsigned int pin_cs;
++	bool cs_activelow;
++	bool no_spi_delay;
++	int (*boardinfo_setup)(struct spi_board_info *bi,
++			       struct spi_master *master,
++			       void *data);
++	void *boardinfo_setup_data;
++};
++
++/**
++ * SPI_GPIO_PLATDEV_NAME - The platform device name string.
++ *
++ * The name string that has to be used for platform_device_alloc
++ * when allocating a spi-gpio device.
++ */
++#define SPI_GPIO_PLATDEV_NAME	"spi-gpio"
++
++/**
++ * spi_gpio_next_id - Get another platform device ID number.
++ *
++ * This returns the next platform device ID number that has to be used
++ * for platform_device_alloc. The ID is opaque and should not be used for
++ * anything else.
++ */
++int spi_gpio_next_id(void);
++
++#endif /* _LINUX_SPI_SPI_GPIO */
+_
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
