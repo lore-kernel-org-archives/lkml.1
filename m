@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYJRTYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751336AbYJRTYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbYJRTYX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYJRTGn
+	id S1751336AbYJRTYk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYJRTGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:06:43 -0400
-Received: from mx1.suse.de ([195.135.220.2]:38903 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:06:46 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48049 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbYJRTGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:06:41 -0400
-Date: Sat, 18 Oct 2008 11:57:43 -0700
+	id S1753878AbYJRTGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:06:45 -0400
+Date: Sat, 18 Oct 2008 11:57:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@redhat.com>
-Subject: [patch 13/14] drm/i915: fix ioremap of a user address for non-root
-	(CVE-2008-3831)
-Message-ID: <20081018185743.GN17196@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       =?iso-8859-1?B?Uy7DP2HEP2xhcg==?= Onur <caglar@pardus.org.tr>
+Subject: [patch 14/14] x86: work around MTRR mask setting, v2
+Message-ID: <20081018185745.GO17196@suse.de>
 References: <20081018185031.236868964@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="drm-i915-fix-ioremap-of-a-user-address-for-non-root.patch"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline; filename="x86-work-around-mtrr-mask-setting-v2.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20081018185658.GA17196@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,36 +41,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Matthias Hopf <mhopf@suse.de>
+From: Ingo Molnar <mingo@elte.hu>
 
-commit 4b40893918203ee1a1f6a114316c2a19c072e9bd upstream
+commit 9754a5b840a209bc1f192d59f63e81b698a55ac8 upstream
 
-Olaf Kirch noticed that the i915_set_status_page() function of the i915
-kernel driver calls ioremap with an address offset that is supplied by
-userspace via ioctl. The function zeroes the mapped memory via memset
-and tells the hardware about the address. Turns out that access to that
-ioctl is not restricted to root so users could probably exploit that to
-do nasty things. We haven't tried to write actual exploit code though.
+improve the debug printout:
 
-It only affects the Intel G33 series and newer.
+- make it actually display something
+- print it only once
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+would be nice to have a WARN_ONCE() facility, to feed such things to
+kerneloops.org.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: S.Çağlar Onur <caglar@pardus.org.tr>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/drm/i915_dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/cpu/mtrr/generic.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/char/drm/i915_dma.c
-+++ b/drivers/char/drm/i915_dma.c
-@@ -836,7 +836,7 @@ struct drm_ioctl_desc i915_ioctls[] = {
- 	DRM_IOCTL_DEF(DRM_I915_SET_VBLANK_PIPE,  i915_vblank_pipe_set, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY ),
- 	DRM_IOCTL_DEF(DRM_I915_GET_VBLANK_PIPE,  i915_vblank_pipe_get, DRM_AUTH ),
- 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
--	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
-+	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
- };
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -251,7 +251,12 @@ static void generic_get_mtrr(unsigned in
+ 		tmp |= ~((1<<(hi - 1)) - 1);
  
- int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
+ 		if (tmp != mask_lo) {
+-			WARN_ON("mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
++			static int once = 1;
++
++			if (once) {
++				printk(KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
++				once = 0;
++			}
+ 			mask_lo = tmp;
+ 		}
+ 	}
 
 -- 
