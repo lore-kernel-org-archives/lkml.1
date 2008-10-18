@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYJRTNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbYJRTOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbYJRTNw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYJRTEo
+	id S1755792AbYJRTOc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYJRTEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:04:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47581 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:04:55 -0400
+Received: from mx1.suse.de ([195.135.220.2]:38479 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbYJRTEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:04:42 -0400
-Date: Sat, 18 Oct 2008 11:47:48 -0700
+	id S1751699AbYJRTEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:04:53 -0400
+Date: Sat, 18 Oct 2008 11:47:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,56 +22,63 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 11/26] libata: fix EH action overwriting in ata_eh_reset()
-Message-ID: <20081018184748.GL301@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [patch 13/26] V4L: bttv: Prevent NULL pointer dereference in
+	radio_open
+Message-ID: <20081018184752.GN301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-fix-eh-action-overwriting-in-ata_eh_reset.patch"
+Content-Disposition: inline; filename="v4l-bttv-prevent-null-pointer-dereference-in-radio_open.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Tejun Heo <tj@kernel.org>
+From: Jean Delvare <khali@linux-fr.org>
 
-Commit a674050e068a2919908730279f0b731ae6d2e005 upstream
+(cherry picked from commit c37396c19403e249f12626187d51e92c915f2bc9)
 
-ehc->i.action got accidentally overwritten to ATA_EH_HARD/SOFTRESET in
-ata_eh_reset().  The original intention was to clear reset action
-which wasn't selected.  This can cause unexpected behavior when other
-EH actions are scheduled together with reset.  Fix it.
+Fix the following crash in the bttv driver:
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+BUG: unable to handle kernel NULL pointer dereference at 000000000000036c
+IP: [<ffffffffa037860a>] radio_open+0x3a/0x170 [bttv]
+
+This happens because radio_open assumes that all present bttv devices
+have a radio function. If a bttv device without radio and one with
+radio are installed on the same system, and the one without radio is
+registered first, then radio_open checks for the radio device number
+of a bttv device that has no radio function, and this breaks. All we
+have to do to fix it is to skip bttv devices without a radio function.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-eh.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/video/bt8xx/bttv-driver.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -2112,10 +2112,10 @@ int ata_eh_reset(struct ata_link *link, 
- 	ehc->i.action &= ~ATA_EH_RESET;
- 	if (hardreset) {
- 		reset = hardreset;
--		ehc->i.action = ATA_EH_HARDRESET;
-+		ehc->i.action |= ATA_EH_HARDRESET;
- 	} else if (softreset) {
- 		reset = softreset;
--		ehc->i.action = ATA_EH_SOFTRESET;
-+		ehc->i.action |= ATA_EH_SOFTRESET;
- 	}
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -3428,7 +3428,7 @@ static int radio_open(struct inode *inod
+ 	dprintk("bttv: open minor=%d\n",minor);
  
- 	if (prereset) {
+ 	for (i = 0; i < bttv_num; i++) {
+-		if (bttvs[i].radio_dev->minor == minor) {
++		if (bttvs[i].radio_dev && bttvs[i].radio_dev->minor == minor) {
+ 			btv = &bttvs[i];
+ 			break;
+ 		}
 
 -- 
