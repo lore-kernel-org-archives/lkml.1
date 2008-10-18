@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbYJRHiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbYJRHnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490AbYJRHiV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 03:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYJRHiN
+	id S1752726AbYJRHnk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 03:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYJRHnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 03:38:13 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:55679 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750994AbYJRHiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 03:38:12 -0400
-Date: Sat, 18 Oct 2008 09:38:10 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: 2.6.28-rc1 --> 2.8.0-rc1; 2.6.27.y --> 2.6.28 [Re: [RFC] Kernel version numbering scheme change]
-Message-ID: <20081018073810.GA7182@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	"H. Peter Anvin" <hpa@kernel.org>, Greg KH <greg@kroah.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016153053.GJ5834@nostromo.devel.redhat.com> <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi> <20081017040239.GB28188@kroah.com> <20081017103138.1ca68d17@lxorguk.ukuu.org.uk> <48F8C000.8030003@kernel.org> <20081017174226.GF2221@kroah.com> <48F98DE2.8030205@kernel.org>
+	Sat, 18 Oct 2008 03:43:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58089 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbYJRHnb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 03:43:31 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081017171139.GA1792@elte.hu>
+Date: Sat, 18 Oct 2008 09:43:29 +0200
+In-Reply-To: <20081017171139.GA1792@elte.hu> (Ingo Molnar's message of "Fri, 17 Oct 2008 19:11:39 +0200")
+Message-ID: <87r66ejqla.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48F98DE2.8030205@kernel.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 12:18:58AM -0700, H. Peter Anvin wrote:
-> Greg KH wrote:
-> >>
-> >>I think it's both visually cumbersome and has the problem that it is 
-> >>harder to predict future releases.  The first problem can be dealt with 
-> >>by simply subtracting 2000 from the year (Altera uses this scheme for 
-> >>their EDA tools, and I didn't realize it for quite a while because it 
-> >>looked so natural), but the second is still a problem.
-> >
-> >What is the "problem" of predicting future releases?  What relies on the
-> >actual number being "correct" some random time in the future?
-> >
-> 
-> We already have the 2.6.28-rc series; and we are already talking about 
-> 2.6.29 features.
+Ingo Molnar <mingo@elte.hu> writes:
+>  		if (battery->have_sysfs_alarm)
+> diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+> index d13194a..2276d75 100644
+> --- a/drivers/acpi/sleep/main.c
+> +++ b/drivers/acpi/sleep/main.c
+> @@ -63,7 +63,7 @@ void __init acpi_old_suspend_ordering(void)
+>  /**
+>   *	acpi_pm_disable_gpes - Disable the GPEs.
+>   */
+> -static int acpi_pm_disable_gpes(void)
+> +static inline int acpi_pm_disable_gpes(void)
 
-Well, Linus hasn't yet changed SUBLEVEL or EXTRAVERSION[*]. But Adrian has
-already stated that he will support what is known as 2.6.27 for a long time.
-What about Linus naming the next release 2.8.0 (and move on with 2.8.1,
-2.8.2, ... with no special meaning to the numbers), so instead of 2.6.28-rc1
-it's 2.8.0-rc1. And once Adrian takes over from the -stable team, he could
-release 2.6.28, 2.6.29 and so on when he thinks a new minor number is
-appropriate, such as Willy intends to release 2.4.37.
+Just to satisfy my curiosity, what compiler warning does marking functions inline 
+fix?
 
-Best,
-	Dominik
+Thanks.
 
+-Andi
 
-[*] Actually, it might be helpful if the very first commit after a
-release were to change SUBLEVEL to the next number and EXTRAVERSION to "pre"
-or something else, so that /lib/modules/2.6.y/ and the initramfs isn't then
-overwritten by the sometimes rough builds between 2.6.y and 2.6.(y+1)-rc1.
+-- 
+ak@linux.intel.com
