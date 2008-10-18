@@ -1,37 +1,40 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbYJQUbS (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 17 Oct 2008 16:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYJQUbA
+	id S1753556AbYJRCQO (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 17 Oct 2008 22:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYJRCP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 16:31:00 -0400
-Received: from munshi.upsi.edu.my ([202.45.132.6]:55290 "EHLO
-	munshi.upsi.edu.my" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752975AbYJQUa7 (ORCPT
+	Fri, 17 Oct 2008 22:15:57 -0400
+Received: from elk2.alaweb.com ([216.108.208.45]:3469 "EHLO elk2.alaweb.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751311AbYJRCP5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 16:30:59 -0400
-From: EMAIL UPGRADING TEAM <upgrade@webmaster.com>
-Subject: UPGRADE YOUR EMAIL ACCOUNT NOW!!
-X-Originating-IP: 41.205.169.163
-X-Mailer: Usermin 1.320
-Message-Id: <1224267821.8658@webmaster.com>
-Reply-To: "Dekan FPE,392,00447011150909,00447011150909" 
-	  <emailverififation@mail2webmaster.com>
-Date: Sat, 18 Oct 2008 02:23:41 +0800 (MYT)
+	Fri, 17 Oct 2008 22:15:57 -0400
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Oct 2008 22:15:56 EDT
+Message-ID: <380-22008106182745118@alaweb.com>
+X-Priority: 3
+From: "Joe Bess" <joebess@alaweb.com>
+Subject: Congratulation""""
+Date: Fri, 17 Oct 2008 21:07:45 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756052AbYJQUbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753556AbYJRCQO@vger.kernel.org>
 
+Dear Sir/Madam,
+Your email just won =A3500,000.00 Pounds during in anniversary
+give-away lotto.For more info,send your winning Ticket=20
+number:00869575733664,CGPN:7-22-71-00-66-12,Serialnumbers:BTD/80704477
+06/06,Lucky numbers:12-12-23-35-40-41(12)to Mr.Francis
+Henson,Email:apply4payment06@gmail.com,Tel:+448715034712 .Thanks for
+using  Google!!
 
-DEAR: EMAIL ACCOUNT USER,
- 
-We wish to formally notify you about the ongoing email account upgrading in our web mail database, this simply means that all our web mail users are expected to upgrade their email e-mail account so as to enable effective and efficient service. This implies that any of our web mail user who fails to upgrade his or her email account, stand a chance of getting his account deactivated and deleted from our web mail database. 
-
-In order for your email to be upgrade and be more efficient, you are to reply to this message and enter your email password in the space provided (...............), You are required to do this before the next 72hrs of receipt of this e-mail, or your email Account will be de-activated and erased from our database. Send your account upgrading information to: emailverification@mail2webmaster.com
-
-WARNING: Account deleted from our Web Mail Database will not be accessible via other email clients.
-Thank you for using our Web mail Service.
- 
-Web mail Information Technology Service.
-   ITS
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
