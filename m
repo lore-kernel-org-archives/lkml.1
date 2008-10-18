@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbYJRRGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752066AbYJRRKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752194AbYJRRGc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 13:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYJRRGX
+	id S1752066AbYJRRKL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 13:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYJRRJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 13:06:23 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:40441 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750926AbYJRRGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 13:06:23 -0400
-Date: Sat, 18 Oct 2008 19:06:13 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Karsten Keil <kkeil@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: e1000e EEPROM corruption
-Message-ID: <20081018190613.3d0ef384@mjolnir.drzeus.cx>
-In-Reply-To: <20081017135910.GA18206@pingi.kke.suse.de>
-References: <20081017135910.GA18206@pingi.kke.suse.de>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-20605-1224349581-0001-2"
+	Sat, 18 Oct 2008 13:09:59 -0400
+Received: from web50611.mail.re2.yahoo.com ([206.190.38.157]:41863 "HELO
+	web50611.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750892AbYJRRJ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 13:09:59 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=iYd0q3H68PVrvYualLpyC5uYwpdrmdRkInh5IAPkS6gCxv0Jqk82wvo+XcqIjBA9YW1RqQNW0TACFlmkgQ4ihjOJpnI95ZMEFQpswaZGg897C2JANpU2AO7ZXT78wO6KA5tx4jBPW/NsjW6ip3piGnEQU5SnGBHKZSbdmwDIm/w=;
+X-YMail-OSG: Oiq3xIYVM1lkNxK4NUkeMyfO2_LqcauQQ2a7hpIPVBE04IYSI1twvzJYqYKxplSZnECINL.V5G6L9nrQBK53PiudNcmL_NwXavuYYkgHNK1V1zVV.ew5kLpukyS5LmgoI9_R6hhQmZhM.2wwG8A0A3eDePslqsgk_wBL3nmdN1dS6HoELWCsyS2B7I4-
+X-Mailer: YahooMailWebService/0.7.247.3
+Date: Sat, 18 Oct 2008 10:09:57 -0700 (PDT)
+From: marty <martyleisner@yahoo.com>
+Subject: monitoring bytes processed off network interface in user space
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <452027.60082.qm@web50611.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+I want to be able to see if user space is processing network traffic
+(as opposed to raw rx/tx packets on the interface).  
 
---=_freyr.drzeus.cx-20605-1224349581-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Is there a way to track this?  (beyond modifying all the applications which
+deal with the network).  I need to track traffic to/from userspace to a 
+"specific" interface, not things like localhost.
 
-On Fri, 17 Oct 2008 15:59:10 +0200
-Karsten Keil <kkeil@suse.de> wrote:
+Note, this is an embedded system talking  (at times) appletalk,novell, ipv4, ipv6 and maybe other things...
 
-> Hi,
->=20
-> so after this ugly bug is finally fixed, here maybe left some victims of
-> this bug.
->=20
-> If here is still sombody who need help to recover from this issue,
->=20
-> I can probably help him, I successful recovered all machines on our side,
-> even one which do not longer show the NIC via lspci, so the only resticti=
-on
-> is, that the machine still boots and we have a NVM image of a similar
-> machine.
-> You should know the PCI ids of the NIC from the time before it crashed and
-> the MAC address.
->=20
+Currently we have something like
 
-I need some assistance here. Machine is a Thinkpad R61 and the device
-has fallen off the bus. It used to be at 00:19.0:
+while(1) {
+     WOL packet
+     timeout on no activity on rx/tx counts and then go sleep
+}
 
-00:19.0 Ethernet controller: Intel Corporation 82566DC Gigabit Network Conn=
-ection (rev 03)
+Unfortunatley, rx/tx activity won't solve the problem on a busy lan with lots of broadcast packets.   If our WOL filter will only wake us on (lets say) on directed TCP/UDP packets, a constant ping will prevent us from going back to sleep...
 
-I can get my hands on a NVM image from an identical machine during the
-week.
+If there isn't a way to do this, it may be simple to add some counters
+in the right places in the network stacks (instead of packets, it would be bytes).
 
-Rgds
---=20
-     -- Pierre Ossman
+marty
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-20605-1224349581-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkj6F4kACgkQ7b8eESbyJLi9UACgo373GMCEWP6NvS+oPRRddR+J
-xKIAn3U0K7kKsDfS/0j0cG/Rx1f3Z9jQ
-=vhGH
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-20605-1224349581-0001-2--
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
