@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYJRTW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYJRTWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbYJRTW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYJRTGY
+	id S1757271AbYJRTWq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYJRTG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:06:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47959 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:06:28 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47984 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372AbYJRTGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:06:22 -0400
-Date: Sat, 18 Oct 2008 11:57:31 -0700
+	id S1753483AbYJRTG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:06:26 -0400
+Date: Sat, 18 Oct 2008 11:57:33 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@tv-sign.ru>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [patch 08/14] fbcon_set_all_vcs: fix kernel crash when switching
-	the rotated consoles
-Message-ID: <20081018185731.GI17196@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>
+Subject: [patch 09/14] hwmon: (it87) Prevent power-off on Shuttle SN68PT
+Message-ID: <20081018185733.GJ17196@suse.de>
 References: <20081018185031.236868964@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fbcon_set_all_vcs-fix-kernel-crash-when-switching-the-rotated-consoles.patch"
+Content-Disposition: inline; filename="hwmon-prevent-power-off-on-shuttle-sn68pt.patch"
 In-Reply-To: <20081018185658.GA17196@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,88 +39,113 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Oleg Nesterov <oleg@tv-sign.ru>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit 232fb69a53a5ec3f22a8104d447abe4806848a8f upstream
+based on commit 98dd22c3e086d76058083432d4d8fb85f04bab90 upstream
 
-echo 3 >> /sys/class/graphics/fbcon/rotate_all, then switch to another
-console. Result:
+On the Shuttle SN68PT, FAN_CTL2 is apparently not connected to a fan,
+but to something else. One user has reported instant system power-off
+when changing the PWM2 duty cycle, so we disable it.
 
-	BUG: unable to handle kernel paging request at ffffc20005d00000
-	IP: [bitfill_aligned+149/265] bitfill_aligned+0x95/0x109
-	PGD 7e228067 PUD 7e229067 PMD 7bc1f067 PTE 0
-	Oops: 0002 [1] SMP
-	CPU 1
-	Modules linked in: [...a lot...]
-	Pid: 10, comm: events/1 Not tainted 2.6.26.5-45.fc9.x86_64 #1
-	RIP: 0010:[bitfill_aligned+149/265]  [bitfill_aligned+149/265] bitfill_aligned+0x95/0x109
-	RSP: 0018:ffff81007d811bc8  EFLAGS: 00010216
-	RAX: ffffc20005d00000 RBX: 0000000000000000 RCX: 0000000000000400
-	RDX: 0000000000000000 RSI: ffffc20005d00000 RDI: ffffffffffffffff
-	RBP: ffff81007d811be0 R08: 0000000000000400 R09: 0000000000000040
-	R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000010000
-	R13: ffffffff811632f0 R14: 0000000000000006 R15: ffff81007cb85400
-	FS:  0000000000000000(0000) GS:ffff81007e004780(0000) knlGS:0000000000000000
-	CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-	CR2: ffffc20005d00000 CR3: 0000000000201000 CR4: 00000000000006e0
-	DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-	DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-	Process events/1 (pid: 10, threadinfo ffff81007d810000, task ffff81007d808000)
-	Stack:  ffff81007c9d75a0 0000000000000000 0000000000000000 ffff81007d811c80
-	 ffffffff81163a61 ffff810000000000 ffffffff8115f9c8 0000001000000000
-	 0000000100aaaaaa 000000007cd0d4a0 fffffd8a00000800 0001000000000000
-	Call Trace:
-	 [cfb_fillrect+523/798] cfb_fillrect+0x20b/0x31e
-	 [soft_cursor+416/436] ? soft_cursor+0x1a0/0x1b4
-	 [ccw_clear_margins+205/263] ccw_clear_margins+0xcd/0x107
-	 [fbcon_clear_margins+59/61] fbcon_clear_margins+0x3b/0x3d
-	 [fbcon_switch+1291/1466] fbcon_switch+0x50b/0x5ba
-	 [redraw_screen+261/481] redraw_screen+0x105/0x1e1
-	 [ccw_cursor+0/1869] ? ccw_cursor+0x0/0x74d
-	 [complete_change_console+48/190] complete_change_console+0x30/0xbe
-	 [change_console+115/120] change_console+0x73/0x78
-	 [console_callback+0/292] ? console_callback+0x0/0x124
-	 [console_callback+97/292] console_callback+0x61/0x124
-	 [schedule_delayed_work+25/30] ? schedule_delayed_work+0x19/0x1e
-	 [run_workqueue+139/282] run_workqueue+0x8b/0x11a
-	 [worker_thread+221/238] worker_thread+0xdd/0xee
-	 [autoremove_wake_function+0/56] ? autoremove_wake_function+0x0/0x38
-	 [worker_thread+0/238] ? worker_thread+0x0/0xee
-	 [kthread+73/118] kthread+0x49/0x76
-	 [child_rip+10/18] child_rip+0xa/0x12
-	 [kthread+0/118] ? kthread+0x0/0x76
-	 [child_rip+0/18] ? child_rip+0x0/0x12
+I use the board name string as the trigger in case the same board is
+ever used in other systems.
 
-Because fbcon_set_all_vcs()->FBCON_SWAP() uses display->rotate == 0 instead
-of fbcon_ops->rotate, and vc_resize() has no effect because it is called with
-new_cols/rows == ->vc_cols/rows.
+This closes lm-sensors ticket #2349:
+pwmconfig causes a hard poweroff
+http://www.lm-sensors.org/ticket/2349
 
-Tested on 2.6.26.5-45.fc9.x86_64, but
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git seems to
-have the same problem.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/console/fbcon.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/hwmon/it87.c |   39 +++++++++++++++++++++++++++++++++------
+ 1 file changed, 33 insertions(+), 6 deletions(-)
 
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2974,8 +2974,8 @@ static void fbcon_set_all_vcs(struct fb_
- 		p = &fb_display[vc->vc_num];
- 		set_blitting_type(vc, info);
- 		var_to_display(p, &info->var, info);
--		cols = FBCON_SWAP(p->rotate, info->var.xres, info->var.yres);
--		rows = FBCON_SWAP(p->rotate, info->var.yres, info->var.xres);
-+		cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
-+		rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
- 		cols /= vc->vc_font.width;
- 		rows /= vc->vc_font.height;
- 		vc_resize(vc, cols, rows);
+--- a/drivers/hwmon/it87.c
++++ b/drivers/hwmon/it87.c
+@@ -46,6 +46,8 @@
+ #include <linux/err.h>
+ #include <linux/mutex.h>
+ #include <linux/sysfs.h>
++#include <linux/string.h>
++#include <linux/dmi.h>
+ #include <asm/io.h>
+ 
+ #define DRVNAME "it87"
+@@ -235,6 +237,8 @@ struct it87_sio_data {
+ 	enum chips type;
+ 	/* Values read from Super-I/O config space */
+ 	u8 vid_value;
++	/* Values set based on DMI strings */
++	u8 skip_pwm;
+ };
+ 
+ /* For each registered chip, we need to keep some data in memory.
+@@ -952,6 +956,7 @@ static int __init it87_find(unsigned sho
+ {
+ 	int err = -ENODEV;
+ 	u16 chip_type;
++	const char *board_vendor, *board_name;
+ 
+ 	superio_enter();
+ 	chip_type = force_id ? force_id : superio_inw(DEVID);
+@@ -1009,6 +1014,25 @@ static int __init it87_find(unsigned sho
+ 			pr_info("it87: in7 is VCCH (+5V Stand-By)\n");
+ 	}
+ 
++	sio_data->skip_pwm = 0;
++	/* Disable specific features based on DMI strings */
++	board_vendor = dmi_get_system_info(DMI_BOARD_VENDOR);
++	board_name = dmi_get_system_info(DMI_BOARD_NAME);
++	if (board_vendor && board_name) {
++		if (strcmp(board_vendor, "nVIDIA") == 0
++		 && strcmp(board_name, "FN68PT") == 0) {
++			/* On the Shuttle SN68PT, FAN_CTL2 is apparently not
++			   connected to a fan, but to something else. One user
++			   has reported instant system power-off when changing
++			   the PWM2 duty cycle, so we disable it.
++			   I use the board name string as the trigger in case
++			   the same board is ever used in other systems. */
++			pr_info("it87: Disabling pwm2 due to "
++				"hardware constraints\n");
++			sio_data->skip_pwm = (1 << 1);
++		}
++	}
++
+ exit:
+ 	superio_exit();
+ 	return err;
+@@ -1157,22 +1181,25 @@ static int __devinit it87_probe(struct p
+ 		if ((err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm1_enable.dev_attr))
+ 		 || (err = device_create_file(dev,
+-		     &sensor_dev_attr_pwm2_enable.dev_attr))
+-		 || (err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm3_enable.dev_attr))
+ 		 || (err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm1.dev_attr))
+ 		 || (err = device_create_file(dev,
+-		     &sensor_dev_attr_pwm2.dev_attr))
+-		 || (err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm3.dev_attr))
+ 		 || (err = device_create_file(dev,
+ 		     &dev_attr_pwm1_freq))
+ 		 || (err = device_create_file(dev,
+-		     &dev_attr_pwm2_freq))
+-		 || (err = device_create_file(dev,
+ 		     &dev_attr_pwm3_freq)))
+ 			goto ERROR4;
++		if (!(sio_data->skip_pwm & (1 << 1))) {
++			if ((err = device_create_file(dev,
++			     &sensor_dev_attr_pwm2_enable.dev_attr))
++			 || (err = device_create_file(dev,
++			     &sensor_dev_attr_pwm2.dev_attr))
++			 || (err = device_create_file(dev,
++			     &dev_attr_pwm2_freq)))
++				goto ERROR4;
++		}
+ 	}
+ 
+ 	if (data->type == it8712 || data->type == it8716
 
 -- 
