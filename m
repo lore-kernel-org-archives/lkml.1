@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbYJRUIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbYJRUJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752310AbYJRUIb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 16:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbYJRUIW
+	id S1751933AbYJRUJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 16:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbYJRUJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 16:08:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40055 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYJRUIV convert rfc822-to-8bit (ORCPT
+	Sat, 18 Oct 2008 16:09:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45335 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbYJRUJr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 16:08:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Renato S. Yamane" <yamane@diamondcut.com.br>
-Subject: Re: [Bug 10797] Battery is drained after poweroff
-Date: Sat, 18 Oct 2008 22:12:33 +0200
-User-Agent: KMail/1.9.9
-Cc: "Pavel Machek" <pavel@suse.cz>, linux-kernel@vger.kernel.org,
-       power-management_other@kernel-bugs.osdl.org
-References: <4199.200.180.173.111.1224358421.mandic:mail - neo@webmail.mandic.com.br>
-In-Reply-To: <4199.200.180.173.111.1224358421.mandic:mail - neo@webmail.mandic.com.br>
+	Sat, 18 Oct 2008 16:09:47 -0400
+Date: Sat, 18 Oct 2008 16:09:39 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Martin Michlmayr <tbm@cyrius.com>, Eric Sandeen <sandeen@sandeen.net>,
+       Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
+       debian-arm@lists.debian.org, xfs@oss.sgi.com
+Subject: Re: XFS filesystem corruption on the arm(el) architecture
+Message-ID: <20081018200939.GA3779@infradead.org>
+References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <20081017094615.GT4504@soziologie.ch> <20081018194851.GA2083@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810182212.34290.rjw@sisk.pl>
+In-Reply-To: <20081018194851.GA2083@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 18 of October 2008, Renato S. Yamane wrote:
-> Rafael J. Wysocki wrote:
-> > It follows from your reports that the problem is present in 2.6.22, although
-> > it wasn't present in 2.6.21.  If that's correct, you can do the following:
-> > 1) Clone the Linus' -git repository (if you have a copy already, you can use
-> > it)
-> > 2) Go to the directory containing your copy of the Linus' repo and do
-> > 	# git bisect start
-> > 	# git bisect good v2.6.21
-> > 	# git bisect bad v2.6.22
-> > 3) Wait for git to select a commit to test, build the kernel and test it.
-> 
-> $ git bisect good v2.6.22
-> $ git bisect bad v2.6.23
-> Bisecting: *3554* revisions left to test after this
-> 
-> This means that I need compile kernel *3554* times?
+On Sat, Oct 18, 2008 at 10:48:53PM +0300, Kirill A. Shutemov wrote:
+> Our team have experience with XFS on ARM OABI on NAS. It worked fine on
+> 2.6.12, but got broken on 2.6.17.
 
-No, you'll need to compile it approximately log_2(3554) times which is not
-that bad. :-)
+So any chance to bisect it down to at least a kernel release where it
+stopped working?
 
-Thanks,
-Rafael
