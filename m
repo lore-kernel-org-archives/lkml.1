@@ -1,58 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbYJRUlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbYJRUoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752520AbYJRUlv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 16:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJRUln
+	id S1752118AbYJRUoU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 16:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJRUoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 16:41:43 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:6139 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbYJRUlm (ORCPT
+	Sat, 18 Oct 2008 16:44:11 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:13304 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbYJRUoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 16:41:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gANa18KwN/kd5Q+xQmgNH5CK6mF0UhkkczL/5K8GcKVJLl2bgmBvhza/TYYs4cjWa5
-         ICuR0ghroTPvEgWbSekaTVyfcv9u16vO8LLHzU3Y1VoCbu48qSeeBD0ZnTi59J2cpuct
-         Q84pH8iquWBrNfRdWmqHn2IU3uw8Jpjdvb260=
-Message-ID: <6179c79b0810181341g584d0466s6a2abb68b786be38@mail.gmail.com>
-Date: Sat, 18 Oct 2008 22:41:41 +0200
-From: "Piotr Skamruk" <piotr.skamruk@gmail.com>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: [PATCH v3] Add SPI over GPIO driver
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Magnus Damm" <magnus.damm@gmail.com>,
-       "David Brownell" <david-b@pacbell.net>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200810181132.24233.mb@bu3sch.de>
+	Sat, 18 Oct 2008 16:44:11 -0400
+Message-ID: <f488382f0810181344v2eb4f5adn384aa0f905edf206@mail.gmail.com>
+Date: Sat, 18 Oct 2008 13:44:08 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "Justin Mattock" <justinmattock@gmail.com>
+Subject: Re: appletouch regression
+Cc: "Jiri Slaby" <jirislaby@gmail.com>, "Jiri Kosina" <jkosina@suse.cz>,
+       "Sven Anders" <anders@anduras.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <dd18b0c30810181332h709377bcjef180ba26abc8fb6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200807202146.12759.mb@bu3sch.de> <200810171318.32306.mb@bu3sch.de>
-	 <20081017213631.82c49b3a.akpm@linux-foundation.org>
-	 <200810181132.24233.mb@bu3sch.de>
+References: <f488382f0810181134h24ed5da8lc12e62816436bb5@mail.gmail.com>
+	 <1224359819-15152-1-git-send-email-jirislaby@gmail.com>
+	 <dd18b0c30810181332h709377bcjef180ba26abc8fb6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/18 Michael Buesch <mb@bu3sch.de>:
-> On Saturday 18 October 2008 06:36:31 Andrew Morton wrote:
->> This patch has some "issues" a month or so ago.  Current status is that
+On Sat, Oct 18, 2008 at 1:32 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+> On Sat, Oct 18, 2008 at 12:56 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>> Steven Noonan wrote:
+>>> On Sat, Oct 18, 2008 at 10:29 AM, Justin Mattock
+>>> <justinmattock@gmail.com> wrote:
+>>>> On Sat, Oct 18, 2008 at 9:44 AM, Steven Noonan <steven@uplinklabs.net> wrote:
+>>>>> 2008/10/18 Sven Anders <anders@anduras.de>:
+>>>>>> Steven Noonan schrieb:
+>>>>>>> It seems that the appletouch driver is (sporadically) not detecting my
+>>>>>>> Apple Trackpad anymore on Linus' current tree (2.6.27-05577-g0cfd810).
+>>>>>>> When it is misbehaving, it doesn't have any /dev/input/event* entry
+>>>>>>> that corresponds to the input from appletouch, and dmesg -should- show
+>>>>>>> the following, as 2.6.27.1 does, but does not:
+>>>>>>>
+>>>>>>> appletouch: Geyser mode initialized.
+>>>>>>> input: appletouch as /class/input/input4
+>>>>>>> usbcore: registered new interface driver appletouch
+>>>>>>> appletouch: 17" model detected
+>>>>>>>
+>>>>>>> On the current tree, occasionally all I get is:
+>>>>>>>
+>>>>>>> usbcore: registered new interface driver appletouch
+>> [...]
+>>> Any ideas, gentlemen?
+>>
+>> Yeah, I see the problem. The device is grabbed by the hid bus and not
+>> released even if apple driver says ENODEV (this is expected behaviour
+>> and noted in the driver).
+>>
+>> Could you try this patch? (Not ready for merge, it needs to be cleaned
+>> up.)
+>>
+>> ---
+>>  drivers/hid/hid-core.c |   34 ++++++++++++++++++++++++++++++++++
+>>  1 files changed, 34 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+>> index 8a7d9db..94cf1db 100644
+>> --- a/drivers/hid/hid-core.c
+>> +++ b/drivers/hid/hid-core.c
+>> @@ -1539,6 +1539,34 @@ static const struct hid_device_id hid_ignore_list[] = {
+>>        { }
+>>  };
+>>
+>> +static const struct hid_device_id hid_mouse_ignore_list[] = {
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_ANSI) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_ISO) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER_ANSI) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER_ISO) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER_JIS) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER3_ANSI) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER3_ISO) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER3_JIS) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_ANSI) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_ISO) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_JIS) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_ANSI) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_ISO) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_JIS) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
+>> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
+>> +       { }
+>> +};
+>> +
+>> +#include <linux/usb.h>
+>> +
+>>  static bool hid_ignore(struct hid_device *hdev)
+>>  {
+>>        switch (hdev->vendor) {
+>> @@ -1555,6 +1583,12 @@ static bool hid_ignore(struct hid_device *hdev)
+>>                break;
+>>        }
+>>
+>> +       if (hdev->bus == BUS_USB && to_usb_interface(hdev->dev.parent)->
+>> +                       cur_altsetting->desc.bInterfaceProtocol ==
+>> +                       USB_INTERFACE_PROTOCOL_MOUSE &&
+>> +                       hid_match_id(hdev, hid_mouse_ignore_list))
+>> +               return true;
+>> +
+>>        return !!hid_match_id(hdev, hid_ignore_list);
+>>  }
+>>
+>> --
+>> 1.6.0.2
+>>
+>>
 >
-> yeah, upstream maintainers don't like these patches.
-> Please drop this one and the "gpiommc" patch now.
+> Applied and can confirm
+> my appletouchpad is alive and reacting,
+> Thanks a lot man.
 >
-As i remember - David stands that these patches (or even
-functionality) are not usable for him, so he don't want to see them in
-mainstream kernel sources. It's his choice, he is maintainer of this
-subsystem.
+> regards;
+>
+> --
+> Justin P. Mattock
+>
 
-You have this on openwrt svn, I have it on my dev gittree - and as You
-can see on Magnus example - anybody interested can google for it.
-Maybe if there will be next few peoples - David will change his
-opinion on this subject...
+Works here.
+
+Tested-by: Steven Noonan <steven@uplinklabs.net>
