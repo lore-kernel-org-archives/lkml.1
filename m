@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbYJRPvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbYJRPwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751657AbYJRPvO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 11:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYJRPu6
+	id S1752198AbYJRPwV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 11:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYJRPwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 11:50:58 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:60314 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYJRPu6 (ORCPT
+	Sat, 18 Oct 2008 11:52:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40452 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbYJRPwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 11:50:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=dzvSnR6gKfmt1wU78tvadgR8y3n2kvAoZBlb92ALDlrf4X2Dz7M0JVq54sJ5emmGG6
-         aYkVBZW4ENO0U2JfZsSSmxWtqWZ1/248GByYmKvpkNASoUp6mhuxWx1Uwatx2f42A5LL
-         K6zxjtJPqISgq2bMOwiK5gZnKel7gUrt/LYnQ=
-Date: Sat, 18 Oct 2008 17:50:42 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: git.kernel.org feed problems
-Message-ID: <20081018175042.4ee5e372@diego-desktop>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-pc-linux-gnu)
+	Sat, 18 Oct 2008 11:52:13 -0400
+Subject: Re: [ANNOUNCE] iommu-2.6.git tree
+From: David Woodhouse <dwmw2@infradead.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com, tglx@linutronix.de, mingo@elte.hu,
+       fujita.tomonori@lab.ntt.co.jp, andreas.herrmann3@amd.com,
+       joseph.cihula@intel.com, fenghua.yu@intel.com, jbarnes@virtuousgeek.org,
+       tony.luck@intel.com, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+In-Reply-To: <20081019024328.2cda973e.sfr@canb.auug.org.au>
+References: <1224343843.6770.1378.camel@macbook.infradead.org>
+	 <20081019024328.2cda973e.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Sat, 18 Oct 2008 16:51:37 +0100
+Message-Id: <1224345097.6770.1389.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The feed system on git.kernel.org seems to be broken. Check:
+On Sun, 2008-10-19 at 02:43 +1100, Stephen Rothwell wrote:
+> Sure (I assume the "master" branch).
 
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=rss
-http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable.git;a=atom
+Yes. I don't use branches in public-facing repositories -- it's much
+better just to have separate trees. 
 
-The last entry on the atom feed is from 10 September, the rss feed seems to
-work fine.
+>  However, I already have a tree in -next called iommu.  It is one of the 
+> tip auto branches (auto-iommu-next) and is currently empty.  So do I name
+> this one dwmw2-iommu, or has Ingo finished with the other one?
+
+I believe the plan is that Ingo has finished with the other one and we
+use the new one instead, yes.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
