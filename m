@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbYJRTXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYJRTYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbYJRTXx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYJRTGj
+	id S1757434AbYJRTYX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYJRTGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:06:39 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38879 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:06:43 -0400
+Received: from mx1.suse.de ([195.135.220.2]:38903 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753820AbYJRTGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:06:38 -0400
-Date: Sat, 18 Oct 2008 11:57:41 -0700
+	id S1751785AbYJRTGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:06:41 -0400
+Date: Sat, 18 Oct 2008 11:57:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,56 +22,54 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Trent Piepho <xyzzy@speakeasy.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 12/14] V4L: zr36067: Fix RGBR pixel format
-Message-ID: <20081018185741.GM17196@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@redhat.com>
+Subject: [patch 13/14] drm/i915: fix ioremap of a user address for non-root
+	(CVE-2008-3831)
+Message-ID: <20081018185743.GN17196@suse.de>
 References: <20081018185031.236868964@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-zr36067-fix-rgbr-pixel-format.patch"
+Content-Disposition: inline; filename="drm-i915-fix-ioremap-of-a-user-address-for-non-root.patch"
 In-Reply-To: <20081018185658.GA17196@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: Matthias Hopf <mhopf@suse.de>
 
-(cherry picked from commit a30ee3c747728f9151664118ffcbdeefd202c332)
+commit 4b40893918203ee1a1f6a114316c2a19c072e9bd upstream
 
-The zr36067 driver is improperly declaring pixel format RGBP twice,
-once as "16-bit RGB LE" and once as "16-bit RGB BE". The latter is
-actually RGBR. Fix the code to properly map both pixel formats.
+Olaf Kirch noticed that the i915_set_status_page() function of the i915
+kernel driver calls ioremap with an address offset that is supplied by
+userspace via ioctl. The function zeroes the mapped memory via memset
+and tells the hardware about the address. Turns out that access to that
+ioctl is not restricted to root so users could probably exploit that to
+do nasty things. We haven't tried to write actual exploit code though.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Trent Piepho <xyzzy@speakeasy.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+It only affects the Intel G33 series and newer.
+
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/zoran_driver.c |    2 +-
+ drivers/char/drm/i915_dma.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/media/video/zoran_driver.c
-+++ b/drivers/media/video/zoran_driver.c
-@@ -139,7 +139,7 @@ const struct zoran_format zoran_formats[
- 	}, {
- 		.name = "16-bit RGB BE",
- 		ZFMT(-1,
--		     V4L2_PIX_FMT_RGB565, V4L2_COLORSPACE_SRGB),
-+		     V4L2_PIX_FMT_RGB565X, V4L2_COLORSPACE_SRGB),
- 		.depth = 16,
- 		.flags = ZORAN_FORMAT_CAPTURE |
- 			 ZORAN_FORMAT_OVERLAY,
+--- a/drivers/char/drm/i915_dma.c
++++ b/drivers/char/drm/i915_dma.c
+@@ -836,7 +836,7 @@ struct drm_ioctl_desc i915_ioctls[] = {
+ 	DRM_IOCTL_DEF(DRM_I915_SET_VBLANK_PIPE,  i915_vblank_pipe_set, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY ),
+ 	DRM_IOCTL_DEF(DRM_I915_GET_VBLANK_PIPE,  i915_vblank_pipe_get, DRM_AUTH ),
+ 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
+-	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
++	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+ };
+ 
+ int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
 
 -- 
