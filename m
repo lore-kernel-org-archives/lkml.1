@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYJRTMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYJRTMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYJRTMd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYJRTE2
+	id S1755407AbYJRTMs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYJRTEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:04:28 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38402 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:04:32 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47530 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753302AbYJRTE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:04:27 -0400
-Date: Sat, 18 Oct 2008 11:47:39 -0700
+	id S1753327AbYJRTEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:04:30 -0400
+Date: Sat, 18 Oct 2008 11:47:42 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 07/26] b43legacy: Fix failure in rate-adjustment mechanism
-Message-ID: <20081018184739.GH301@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [patch 08/26] modules: fix module "notes" kobject leak
+Message-ID: <20081018184742.GI301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="b43legacy-fix-failure-in-rate-adjustment-mechanism.patch"
+Content-Disposition: inline; filename="modules-fix-module-notes-kobject-leak.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,34 +39,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-commit c6a2afdacccd56cc0be8e9a7977f0ed1509069f6 upstream
-Date: Sat, 6 Sep 2008 16:51:22 -0500
-Subject: [patch 07/26] b43legacy: Fix failure in rate-adjustment mechanism
+commit e94320939f44e0cbaccc3f259a5778abced4949c upstream
 
-A coding error present since b43legacy was incorporated into the
-kernel has prevented the driver from using the rate-setting mechanism
-of mac80211. The driver has been forced to remain at a 1 Mb/s rate.
+Fix "notes" kobject leak
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+It happens every rmmod if KALLSYMS=y and SYSFS=y.
+
+	# modprobe foo
+
+kobject: 'foo' (ffffffffa00743d0): kobject_add_internal: parent: 'module', set: 'module'
+kobject: 'holders' (ffff88017e7c5770): kobject_add_internal: parent: 'foo', set: '<NULL>'
+kobject: 'foo' (ffffffffa00743d0): kobject_uevent_env
+kobject: 'foo' (ffffffffa00743d0): fill_kobj_path: path = '/module/foo'
+kobject: 'notes' (ffff88017fa9b668): kobject_add_internal: parent: 'foo', set: '<NULL>'
+	  ^^^^^
+
+	# rmmod foo
+
+kobject: 'holders' (ffff88017e7c5770): kobject_cleanup
+kobject: 'holders' (ffff88017e7c5770): auto cleanup kobject_del
+kobject: 'holders' (ffff88017e7c5770): calling ktype release
+kobject: (ffff88017e7c5770): dynamic_kobj_release
+kobject: 'holders': free name
+kobject: 'foo' (ffffffffa00743d0): kobject_cleanup
+kobject: 'foo' (ffffffffa00743d0): does not have a release() function, it is broken and must be fixed.
+kobject: 'foo' (ffffffffa00743d0): auto cleanup 'remove' event
+kobject: 'foo' (ffffffffa00743d0): kobject_uevent_env
+kobject: 'foo' (ffffffffa00743d0): fill_kobj_path: path = '/module/foo'
+kobject: 'foo' (ffffffffa00743d0): auto cleanup kobject_del
+kobject: 'foo': free name
+
+	[whooops]
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/b43legacy/xmit.c |    2 +-
+ kernel/module.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/wireless/b43legacy/xmit.c
-+++ b/drivers/net/wireless/b43legacy/xmit.c
-@@ -626,7 +626,7 @@ void b43legacy_handle_hwtxstatus(struct 
- 	tmp = hw->count;
- 	status.frame_count = (tmp >> 4);
- 	status.rts_count = (tmp & 0x0F);
--	tmp = hw->flags;
-+	tmp = hw->flags << 1;
- 	status.supp_reason = ((tmp & 0x1C) >> 2);
- 	status.pm_indicated = !!(tmp & 0x80);
- 	status.intermediate = !!(tmp & 0x40);
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1143,7 +1143,7 @@ static void free_notes_attrs(struct modu
+ 		while (i-- > 0)
+ 			sysfs_remove_bin_file(notes_attrs->dir,
+ 					      &notes_attrs->attrs[i]);
+-		kobject_del(notes_attrs->dir);
++		kobject_put(notes_attrs->dir);
+ 	}
+ 	kfree(notes_attrs);
+ }
 
 -- 
