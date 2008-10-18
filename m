@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYJRTRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbYJRTRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYJRTRu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYJRTFf
+	id S1756317AbYJRTRg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYJRTFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:05:35 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38649 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:05:33 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47748 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbYJRTFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:05:30 -0400
-Date: Sat, 18 Oct 2008 11:48:16 -0700
+	id S1753728AbYJRTF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:05:26 -0400
+Date: Sat, 18 Oct 2008 11:48:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,102 +22,58 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 22/26] Check mapped ranges on sysfs resource files
-Message-ID: <20081018184816.GW301@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       David Rientjes <rientjes@google.com>
+Subject: [patch 21/26] x86: avoid dereferencing beyond stack + THREAD_SIZE
+Message-ID: <20081018184813.GV301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="check-mapped-ranges-on-sysfs-resource-files.patch"
+Content-Disposition: inline; filename="x86-avoid-dereferencing-beyond-stack-thread_size.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: David Rientjes <rientjes@google.com>
 
-commit b5ff7df3df9efab511244d5a299fce706c71af48 upstream
+commit 60e6258cd43f9b06884f04f0f7cefb9c40f17a32 upstream
 
-Check mapped ranges on sysfs resource files
+It's possible for get_wchan() to dereference past task->stack + THREAD_SIZE
+while iterating through instruction pointers if fp equals the upper boundary,
+causing a kernel panic.
 
-This is loosely based on a patch by Jesse Barnes to check the user-space
-PCI mappings though the sysfs interfaces.  Quoting Jesse's original
-explanation:
-
-  It's fairly common for applications to map PCI resources through sysfs.
-  However, with the current implementation, it's possible for an application
-  to map far more than the range corresponding to the resourceN file it
-  opened.  This patch plugs that hole by checking the range at mmap time,
-  similar to what is done on platforms like sparc64 in their lower level
-  PCI remapping routines.
-
-  It was initially put together to help debug the e1000e NVRAM corruption
-  problem, since we initially thought an X driver might be walking past the
-  end of one of its mappings and clobbering the NVRAM.  It now looks like
-  that's not the case, but doing the check is still important for obvious
-  reasons.
-
-and this version of the patch differs in that it uses a helper function
-to clarify the code, and does all the checks in pages (instead of bytes)
-in order to avoid overflows when doing "<< PAGE_SHIFT" etc.
-
-[cebbert@redhat.com: backport, changing WARN() to printk()]
-
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: David Rientjes <rientjes@google.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pci-sysfs.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/x86/kernel/process_64.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -16,6 +16,7 @@
- 
- 
- #include <linux/kernel.h>
-+#include <linux/sched.h>
- #include <linux/pci.h>
- #include <linux/stat.h>
- #include <linux/topology.h>
-@@ -484,6 +485,21 @@ pci_mmap_legacy_mem(struct kobject *kobj
- #endif /* HAVE_PCI_LEGACY */
- 
- #ifdef HAVE_PCI_MMAP
-+
-+static int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vma)
-+{
-+	unsigned long nr, start, size;
-+
-+	nr = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-+	start = vma->vm_pgoff;
-+	size = pci_resource_len(pdev, resno) >> PAGE_SHIFT;
-+	if (start < size && size - start >= nr)
-+		return 1;
-+	printk(KERN_WARNING "WARNING: process \"%s\" tried to map 0x%08lx-0x%08lx on %s BAR %d (size 0x%08lx)\n",
-+		current->comm, start, start+nr, pci_name(pdev), resno, size);
-+	return 0;
-+}
-+
- /**
-  * pci_mmap_resource - map a PCI resource into user memory space
-  * @kobj: kobject for mapping
-@@ -510,6 +526,9 @@ pci_mmap_resource(struct kobject *kobj, 
- 	if (i >= PCI_ROM_RESOURCE)
- 		return -ENODEV;
- 
-+	if (!pci_mmap_fits(pdev, i, vma))
-+		return -EINVAL;
-+
- 	/* pci_mmap_page_range() expects the same kind of entry as coming
- 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
- 	 * different from the resource itself, arch will do necessary fixup.
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -740,12 +740,12 @@ unsigned long get_wchan(struct task_stru
+ 	if (!p || p == current || p->state==TASK_RUNNING)
+ 		return 0; 
+ 	stack = (unsigned long)task_stack_page(p);
+-	if (p->thread.sp < stack || p->thread.sp > stack+THREAD_SIZE)
++	if (p->thread.sp < stack || p->thread.sp >= stack+THREAD_SIZE)
+ 		return 0;
+ 	fp = *(u64 *)(p->thread.sp);
+ 	do { 
+ 		if (fp < (unsigned long)stack ||
+-		    fp > (unsigned long)stack+THREAD_SIZE)
++		    fp >= (unsigned long)stack+THREAD_SIZE)
+ 			return 0; 
+ 		ip = *(u64 *)(fp+8);
+ 		if (!in_sched_functions(ip))
 
 -- 
