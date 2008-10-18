@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbYJRHui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbYJRHxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbYJRHui (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 03:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYJRHu3
+	id S1753080AbYJRHxT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 03:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYJRHxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 03:50:29 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:50124 "EHLO
-	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751281AbYJRHu3 (ORCPT
+	Sat, 18 Oct 2008 03:53:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50487 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbYJRHxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 03:50:29 -0400
-Subject: Re: [git pull] drm patches for 2.6.27-rc1
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <alpine.LFD.2.00.0810171941120.3438@nehalem.linux-foundation.org>
-References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
-	 <alpine.LFD.2.00.0810171510170.3438@nehalem.linux-foundation.org>
-	 <1224295858.4378.8.camel@vonnegut.anholt.net>
-	 <alpine.LFD.2.00.0810171941120.3438@nehalem.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-oRxTAPOyBhDppQgu9B6i"
-Date: Sat, 18 Oct 2008 00:49:02 -0700
-Message-Id: <1224316142.4378.17.camel@vonnegut.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 18 Oct 2008 03:53:11 -0400
+To: Chris Snook <csnook@redhat.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Slightly off topic] A question about R/B trees.
+From: Andi Kleen <andi@firstfloor.org>
+References: <48F904FA.6090102@gmail.com> <48F90E96.3060800@redhat.com>
+Date: Sat, 18 Oct 2008 09:53:10 +0200
+In-Reply-To: <48F90E96.3060800@redhat.com> (Chris Snook's message of "Fri, 17 Oct 2008 18:15:50 -0400")
+Message-ID: <87myh2jq55.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Snook <csnook@redhat.com> writes:
 
---=-oRxTAPOyBhDppQgu9B6i
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Maxim Levitsky wrote:
+>> I am working on my small project, and I need a fast container to
+>> hold a large sparse array.
+>> Balanced trees seem to fit perfectly.
+>
+> Balanced trees take O(log n) to perform a great many operations, and
+> traversing a binary tree is a particularly bad case for branch
+> prediction.  Hash tables will perform much better, unless you get them
+> horribly wrong.
 
-On Fri, 2008-10-17 at 19:47 -0700, Linus Torvalds wrote:
->=20
-> On Fri, 17 Oct 2008, Eric Anholt wrote:
-> >=20
-> > Yeah, none of us are on x86-64, so we missed those warnings in testing.
->=20
-> Really? None of you use any modern CPU's, or you're _all_ running 32-bit=20
-> distros even though your cpu's could support 64-bit ones?
->=20
-> I would suggest at least _somebody_ in the intel graphics team try to get=
-=20
-> with the times.. I realize that Otellini was saying "Nobody needs 64-bit=20
-> on the desktop" a few years ago, but he was full of sh*t then, and it's=20
-> certainly not remotely true now.
->=20
-> It's not being disloyal to your CEO, really. I'm pretty sure nobody will=20
-> be fired just for ignoring that whole "640kB^H^H^H^H^H32-bits should be=20
-> enough for everybody" idiocy.
+That seems like a unfair generalization.
 
-Writing 3D drivers means running 3D games.  Running 3D games
-unfortunately means running a lot of 32-bit userland as the fun stuff is
-binary-only.  So I stick to a 32-bit system, becuase past experience
-trying to run both on the same system has been misery.
+The problem with hash tables is that if they're big enough
+or if the rest of the workload is memory intensive
+each hit will be a cache miss. And you can do a lot of branch
+mispredicts in the time of a single cache miss.
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+In general trees can be much better for cache usage, although
+it's generally better to use some tree that has nodes near 
+the cache line size. Binary trees like RB are too small for that.
+
+The other advantage of trees is that they scale naturally.
+For hash tables you either have it being sized for the worst
+case (usually wasting a lot of memory[1] and making the cache miss
+problem worse) or you need to do dynamic rehashing which 
+is complex and difficult to get right especially in multi threaded
+situations.
+
+That is why the trend in Linux at least is to move away from
+hash tables.
+
+[1] Just take a look at how much memory that various hash 
+tables in Linux use: dmesg | grep hash
+
+> The kernel is written in a dialect of C that makes several assumptions
+> about the compiler, among them that the compiler won't screw this up
+> unless you tell it to.  Any compiler that has alignment problems with
+> the rbtree code is going to have similar problems in lots of other
+> places too.  We don't support those compilers.
+
+At least upto 4 bytes or so it's generally a safe assumption
+that objects will be naturally aligned. Also except for tree 
+root the objects are typically allocated with malloc() (or
+equivalent kmalloc) anyways and malloc()s guarantee
+worst case alignment.
 
 
-
---=-oRxTAPOyBhDppQgu9B6i
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkj5lO4ACgkQHUdvYGzw6vfiyQCfQSnJLeXYrzvbQM7qK0zaL13W
-gqUAni82mqQdq57lxyPVmfus8C0BXrwa
-=rTXY
------END PGP SIGNATURE-----
-
---=-oRxTAPOyBhDppQgu9B6i--
+-Andi
+-- 
+ak@linux.intel.com
