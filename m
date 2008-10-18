@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbYJRTHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbYJRTIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbYJRTHc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYJRTDZ
+	id S1754329AbYJRTIK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYJRTDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:03:25 -0400
-Received: from mail.suse.de ([195.135.220.2]:38169 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:03:32 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47357 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752647AbYJRTDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:03:23 -0400
-Date: Sat, 18 Oct 2008 11:34:21 -0700
+	id S1752191AbYJRTDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:03:31 -0400
+Date: Sat, 18 Oct 2008 11:34:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yauhen Kharuzhy <jekhor@gmail.com>,
+       alan@lxorguk.ukuu.org.uk,
        David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 11/17] USB: Fix s3c2410_udc usb speed handling
-Message-ID: <20081018183421.GL14035@suse.de>
+Subject: [patch 13/17] usb gadget: cdc ethernet notification bugfix
+Message-ID: <20081018183426.GN14035@suse.de>
 References: <20081018182721.521723254@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-fix-s3c2410_udc-usb-speed-handling.patch"
+Content-Disposition: inline; filename="usb-gadget-cdc-ethernet-notification-bugfix.patch"
 In-Reply-To: <20081018183334.GA14035@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,35 +40,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Yauhen Kharuzhy <jekhor@gmail.com>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-commit f9e9cff613b8239ce9159735aa662c9c85b478bf upstream
+commit 29bac7b7661bbbdbbd32bc1e6cedca22f260da7f upstream
 
-The new composite framework revealed a weakness in the
-s3c2410_udc driver gadget register function. Instead of
-checking if speed asked for was USB_LOW_SPEED upon
-usb_gadget_register() to deny service, it checked only
-for USB_FULL_SPEED, thus denying service to usb high
-speed capable gadgets (like g_ether).
+Bugfix for the new CDC Ethernet code:  as part of activating the
+network interface's USB link, make sure its link management code
+knows whether the interface is open or not.
 
-Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
+Without this fix, the link won't work right when it's brought up
+before the link is active ... because the initial notification it
+sends will have the wrong link state (down, not up).  Makes it
+hard to bridge these links (on the host side), among other things.
+
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/gadget/s3c2410_udc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/gadget/u_ether.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/drivers/usb/gadget/s3c2410_udc.c
-+++ b/drivers/usb/gadget/s3c2410_udc.c
-@@ -1651,7 +1651,7 @@ int usb_gadget_register_driver(struct us
- 		return -EBUSY;
+--- a/drivers/usb/gadget/u_ether.c
++++ b/drivers/usb/gadget/u_ether.c
+@@ -873,6 +873,13 @@ struct net_device *gether_connect(struct
+ 		spin_lock(&dev->lock);
+ 		dev->port_usb = link;
+ 		link->ioport = dev;
++		if (netif_running(dev->net)) {
++			if (link->open)
++				link->open(link);
++		} else {
++			if (link->close)
++				link->close(link);
++		}
+ 		spin_unlock(&dev->lock);
  
- 	if (!driver->bind || !driver->setup
--			|| driver->speed != USB_SPEED_FULL) {
-+			|| driver->speed < USB_SPEED_FULL) {
- 		printk(KERN_ERR "Invalid driver: bind %p setup %p speed %d\n",
- 			driver->bind, driver->setup, driver->speed);
- 		return -EINVAL;
+ 		netif_carrier_on(dev->net);
 
 -- 
