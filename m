@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYJRTPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752329AbYJRTPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYJRTPM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJRTFG
+	id S1752329AbYJRTPn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYJRTFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:05:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47645 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:05:08 -0400
+Received: from mail.suse.de ([195.135.220.2]:38553 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753692AbYJRTFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:05:03 -0400
-Date: Sat, 18 Oct 2008 11:47:59 -0700
+	id S1752519AbYJRTFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:05:05 -0400
+Date: Sat, 18 Oct 2008 11:48:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jens Axboe <ens.axboe@oracle.com>
-Subject: [patch 15/26] Dont allow splice() to files opened with O_APPEND
-Message-ID: <20081018184759.GP301@suse.de>
+       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>
+Subject: [patch 16/26] V4L/DVB (8498): uvcvideo: Return sensible min and
+	max values when querying a boolean control.
+Message-ID: <20081018184801.GQ301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="don-t-allow-splice-to-files-opened-with-o_append.patch"
+Content-Disposition: inline; filename="v4l-dvb-uvcvideo-return-sensible-min-and-max-values-when-querying-a-boolean-control.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,45 +41,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
 
-commit efc968d450e013049a662d22727cf132618dcb2f upstream
+commit 54812c77bc830e2dbcb62b4c6d8a9c7f97cfdd1b upstream
 
-This is debatable, but while we're debating it, let's disallow the
-combination of splice and an O_APPEND destination.
+[required to get the following two patches to apply]
 
-It's not entirely clear what the semantics of O_APPEND should be, and
-POSIX apparently expects pwrite() to ignore O_APPEND, for example.  So
-we could make up any semantics we want, including the old ones.
+Although the V4L2 spec states that the minimum and maximum fields may not be
+valid for control types other than V4L2_CTRL_TYPE_INTEGER, it makes sense
+to set the bounds to 0 and 1 for boolean controls instead of returning
+uninitialized values.
 
-But Miklos convinced me that we should at least give it some thought,
-and that accepting writes at arbitrary offsets is wrong at least for
-IS_APPEND() files (which always have O_APPEND set, even if the reverse
-isn't true: you can obviously have O_APPEND set on a regular file).
-
-So disallow O_APPEND entirely for now.  I doubt anybody cares, and this
-way we have one less gray area to worry about.
-
-Reported-and-argued-for-by: Miklos Szeredi <miklos@szeredi.hu>
-Acked-by: Jens Axboe <ens.axboe@oracle.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@skynet.be>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/splice.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/media/video/uvc/uvc_ctrl.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -889,6 +889,9 @@ static long do_splice_from(struct pipe_i
- 	if (unlikely(!(out->f_mode & FMODE_WRITE)))
- 		return -EBADF;
+--- a/drivers/media/video/uvc/uvc_ctrl.c
++++ b/drivers/media/video/uvc/uvc_ctrl.c
+@@ -592,6 +592,7 @@ int uvc_query_v4l2_ctrl(struct uvc_video
+ 	if (ctrl == NULL)
+ 		return -EINVAL;
  
-+	if (unlikely(out->f_flags & O_APPEND))
-+		return -EINVAL;
++	memset(v4l2_ctrl, 0, sizeof *v4l2_ctrl);
+ 	v4l2_ctrl->id = mapping->id;
+ 	v4l2_ctrl->type = mapping->v4l2_type;
+ 	strncpy(v4l2_ctrl->name, mapping->name, sizeof v4l2_ctrl->name);
+@@ -608,7 +609,8 @@ int uvc_query_v4l2_ctrl(struct uvc_video
+ 		v4l2_ctrl->default_value = uvc_get_le_value(data, mapping);
+ 	}
+ 
+-	if (mapping->v4l2_type == V4L2_CTRL_TYPE_MENU) {
++	switch (mapping->v4l2_type) {
++	case V4L2_CTRL_TYPE_MENU:
+ 		v4l2_ctrl->minimum = 0;
+ 		v4l2_ctrl->maximum = mapping->menu_count - 1;
+ 		v4l2_ctrl->step = 1;
+@@ -622,6 +624,15 @@ int uvc_query_v4l2_ctrl(struct uvc_video
+ 		}
+ 
+ 		return 0;
 +
- 	ret = rw_verify_area(WRITE, out, ppos, len);
- 	if (unlikely(ret < 0))
- 		return ret;
++	case V4L2_CTRL_TYPE_BOOLEAN:
++		v4l2_ctrl->minimum = 0;
++		v4l2_ctrl->maximum = 1;
++		v4l2_ctrl->step = 1;
++		return 0;
++
++	default:
++		break;
+ 	}
+ 
+ 	if (ctrl->info->flags & UVC_CONTROL_GET_MIN) {
 
 -- 
