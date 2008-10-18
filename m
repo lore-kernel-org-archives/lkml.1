@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbYJREm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752086AbYJREyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752940AbYJREm3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 00:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbYJREmE
+	id S1752086AbYJREyg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 00:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYJREy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 00:42:04 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:42224 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYJREmB (ORCPT
+	Sat, 18 Oct 2008 00:54:28 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:30342 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbYJREy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 00:42:01 -0400
+	Sat, 18 Oct 2008 00:54:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:cc:message-id:mime-version:content-type
-         :content-transfer-encoding:x-mailer;
-        b=PQjhDszGcpJljIqaqD5NVXx5Pn+eqtDCRc4Ava6KWx93CxLFjOq1DRvAkvQuJG1lNT
-         2IbMz0TTuAoQtgDBsuGLhisSFN6z2uzlXi79wVF8ZsOtVO1pEEPk81MH8sS4SmWMnftZ
-         asAaMIhu2sadlsQ/wfn8StED2C7koaBNBf0bs=
-Date: Sat, 18 Oct 2008 12:41:57 +0800
-From: Huang Weiyi <weiyi.huang@gmail.com>
-To: gregkh@suse.de
-Subject: staging: SLICOSS: remove unused #include <version.h>
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <20081018123715.CD78.WEIYI.HUANG@gmail.com>
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mgv5/RcLGWx8XnqNh+JFLm/YK7vVB9+sZkXCzuUrLg/uydY7BevLsGTd9AwXov5NMw
+         6WGhjiJPA6DsaCic5jiP/HPMKJg4LLL/bWZau/EyxJf6/6bKQXsXMjasiR9NX3dEIzdr
+         WBjACJqrzt3Hbnho2W6HsWVCmgEQU/0MZ2aZs=
+Date: Sat, 18 Oct 2008 00:54:31 -0400
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Lindent and __user, etc.
+Message-ID: <20081018045431.GA9358@localhost>
+References: <3aaafc130810141027p660efb62p92c586b1c40a5e71@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.24.02 [en]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3aaafc130810141027p660efb62p92c586b1c40a5e71@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The file(s) below do not use LINUX_VERSION_CODE nor KERNEL_VERSION.
-  drivers/staging/slicoss/slicoss.c
-
-This patch removes the said #include <version.h>.
-
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
-
-diff --git a/drivers/staging/slicoss/slicoss.c b/drivers/staging/slicoss/slicoss.c
-index b61ac4b..7d23d9a 100644
---- a/drivers/staging/slicoss/slicoss.c
-+++ b/drivers/staging/slicoss/slicoss.c
-@@ -54,7 +54,6 @@
-  *       IS-NIC driver.
-  */
-
--#include <linux/version.h>
-
- #define SLIC_DUMP_ENABLED               0
- #define KLUDGE_FOR_4GB_BOUNDARY         1
+Here's a patch that outlines the basic idea. Obviously more types should
+be added to catch more things that Lindent currently misses if this change seems
+beneficial.
 
 
+Make Lindent aware of sparse annotations and integer declarations
 
+Signed-off by: J.R. Mauro <jrm8005@gmail.com>
+--
+
+--- Lindent	2008-10-17 18:16:56.000000000 -0400
++++ Lindent-mod	2008-10-18 00:37:49.000000000 -0400
+@@ -1,5 +1,7 @@
+ #!/bin/sh
+ PARAM="-npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1"
++CHECK="-T __user -T __kernel -T __safe -T __force -T __nocast -T __iomem"
++TYPES="-T s8 -T u8 -T s16 -T u16 -T s32 -T u32 -T s64 -T u64"
+ RES=`indent --version`
+ V1=`echo $RES | cut -d' ' -f3 | cut -d'.' -f1`
+ V2=`echo $RES | cut -d' ' -f3 | cut -d'.' -f2`
+@@ -15,4 +17,4 @@ elif [ $V1 -eq 2 ]; then
+     fi
+   fi
+ fi
+-indent $PARAM "$@"
++indent $PARAM $CHECK $TYPES "$@"
