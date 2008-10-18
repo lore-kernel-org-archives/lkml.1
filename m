@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbYJRTOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYJRTPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbYJRTOr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYJRTE7
+	id S1754014AbYJRTPM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJRTFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:04:59 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38520 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 15:05:06 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47645 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753631AbYJRTE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:04:58 -0400
-Date: Sat, 18 Oct 2008 11:47:56 -0700
+	id S1753692AbYJRTFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:05:03 -0400
+Date: Sat, 18 Oct 2008 11:47:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,56 +22,62 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Trent Piepho <xyzzy@speakeasy.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 14/26] V4L: zr36067: Fix RGBR pixel format
-Message-ID: <20081018184756.GO301@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jens Axboe <ens.axboe@oracle.com>
+Subject: [patch 15/26] Dont allow splice() to files opened with O_APPEND
+Message-ID: <20081018184759.GP301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-zr36067-fix-rgbr-pixel-format.patch"
+Content-Disposition: inline; filename="don-t-allow-splice-to-files-opened-with-o_append.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-cherry picked from commit a30ee3c747728f9151664118ffcbdeefd202c332
+commit efc968d450e013049a662d22727cf132618dcb2f upstream
 
-The zr36067 driver is improperly declaring pixel format RGBP twice,
-once as "16-bit RGB LE" and once as "16-bit RGB BE". The latter is
-actually RGBR. Fix the code to properly map both pixel formats.
+This is debatable, but while we're debating it, let's disallow the
+combination of splice and an O_APPEND destination.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Trent Piepho <xyzzy@speakeasy.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+It's not entirely clear what the semantics of O_APPEND should be, and
+POSIX apparently expects pwrite() to ignore O_APPEND, for example.  So
+we could make up any semantics we want, including the old ones.
+
+But Miklos convinced me that we should at least give it some thought,
+and that accepting writes at arbitrary offsets is wrong at least for
+IS_APPEND() files (which always have O_APPEND set, even if the reverse
+isn't true: you can obviously have O_APPEND set on a regular file).
+
+So disallow O_APPEND entirely for now.  I doubt anybody cares, and this
+way we have one less gray area to worry about.
+
+Reported-and-argued-for-by: Miklos Szeredi <miklos@szeredi.hu>
+Acked-by: Jens Axboe <ens.axboe@oracle.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/zoran_driver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/splice.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/media/video/zoran_driver.c
-+++ b/drivers/media/video/zoran_driver.c
-@@ -134,7 +134,7 @@ const struct zoran_format zoran_formats[
- 	}, {
- 		.name = "16-bit RGB BE",
- 		ZFMT(-1,
--		     V4L2_PIX_FMT_RGB565, V4L2_COLORSPACE_SRGB),
-+		     V4L2_PIX_FMT_RGB565X, V4L2_COLORSPACE_SRGB),
- 		.depth = 16,
- 		.flags = ZORAN_FORMAT_CAPTURE |
- 			 ZORAN_FORMAT_OVERLAY,
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -889,6 +889,9 @@ static long do_splice_from(struct pipe_i
+ 	if (unlikely(!(out->f_mode & FMODE_WRITE)))
+ 		return -EBADF;
+ 
++	if (unlikely(out->f_flags & O_APPEND))
++		return -EINVAL;
++
+ 	ret = rw_verify_area(WRITE, out, ppos, len);
+ 	if (unlikely(ret < 0))
+ 		return ret;
 
 -- 
