@@ -1,97 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYJRBbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbYJRBhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYJRBbx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 21:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYJRBbp
+	id S1755149AbYJRBhx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJRBhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 21:31:45 -0400
-Received: from mail.lang.hm ([64.81.33.126]:59641 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbYJRBbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 21:31:44 -0400
-Date: Fri, 17 Oct 2008 18:32:13 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Giacomo A. Catenazzi" <cate@cateee.net>
-cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <48F88923.30109@cateee.net>
-Message-ID: <alpine.DEB.1.10.0810171826480.11079@asgard.lang.hm>
-References: <20081016002509.GA25868@kroah.com> <48F88923.30109@cateee.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 17 Oct 2008 21:37:43 -0400
+Received: from fw.bitband.com ([213.8.50.174]:12655 "EHLO mail.bitband.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750972AbYJRBhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 21:37:43 -0400
+Subject: RE: 	Subject: [PATCH 1/2] linux-acpi: sos documentation
+From: raz ben yehuda <razb@bitband.com>
+To: pavel@suse.cz
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sat, 18 Oct 2008 03:37:35 +0200
+Message-Id: <1224293855.3652.36.camel@raz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008, Giacomo A. Catenazzi wrote:
+First , I really really thank you for replying, This is not the first post I made for sos.
+For some reason I did not get your reply.
 
-> Greg KH wrote:
->> We number the kernel based on the year, and the numbers of releases we
->> have done this year:
->> 	YEAR.NUMBER.MINOR_RELEASE
->> 
->> For example, the first release in 2009 would be called:
->> 	2009.0.0
->> The second:
->> 	2009.1.0
->> 
->> If we want to be a bit more "non-zero-counting" friendly: we can start
->> at "1" for the number:
->> 	2009.1.0 for the first release
->> 	2009.2.0 for the second.
->> 
->> Then the stable releases can increment the minor number:
->> 	2009.1.1 for the first stable release
->> 	2009.1.2 for the second.
->> 	and so on.
->> 
->> Benefits of this is it more accuratly represents to people just how old
->> the kernel they are currently running is (2.6.9 would be have been
->> 2004.9.0 on this naming scheme.)
->> 
->> Yes, we can handle the major/minor macros in the kernel to provide a
->> compatible number so that automated scripts will not break, that's not a
->> big deal.
->> 
->> Any thoughts?
->
-> What about:
-> - rc releases: a 2009.5.0-rc4 become suddenly 2010.0.0-rc5 ?
+On Tue 2008-10-14 01:38:13, raz ben yehuda wrote:
+> From: Raz Ben Yehuda <razb@bitband.com>
+> 
+> Signed-off-by: Raz Ben Yehuda <razb@bitband.com>
+> ---
 
-three options
+>>No changelog, useful...
+Do you mean diffstat ?  I added diffstat at the sos-api patch. . 
+Are you referring to Documentation/Changes ?  I am not sure I know what you mean.
 
-1. change it as you state based on it slipping
+> diff -urpN linux-2.6.27/Documentation/SOS.txt linux-2.6.27-dbg/Documentation/SOS.txt
+> --- linux-2.6.27/Documentation/SOS.txt	1970-01-01 02:00:00.000000000 +0200
+> +++ linux-2.6.27-dbg/Documentation/SOS.txt	2008-10-14 00:29:32.000000000 +0200
+> @@ -0,0 +1,14 @@
+> +				SOS
+> +
+> +SOS is a service oriented scheduler. SOS is a method of relating one or more
+> +distinct services to a processor.In other words, a core(s) is assigned to
+> +a chore, not a chore to a core.
+> +Technically speaking, by virtually removing a processor from the operating
+> +system, using Linux ACPI facility one can bind processors to services.
+> +SOS management and control is done by sosctl.
+> +To fully understand what is SOS, when should it be used it and for which
+> +puprose,please refer to http://sos-linux.cvs.sourceforge.net/sos-linux/sos/Documentation/.
+> +
 
-2. 2009.5.0-rc4 goes to 2009.5.0-rc5 in January and we just accept a minor 
-'oops' on the version number
+>>I don't think this should be acpi specific... and you should provide
+>>real doc, not pointer to web page.
+1. I posted to lkml as well as acpi. is this what you mean ?
+2. At first, I posted a big text file , but I got zero replies so i thought that maybe people refrain from reading so much.
+   But I will fix it (I read SubmittingPatches). 
 
-3. 2009.5.0-rc4 goes to 2009.5.0-rc5 in January becouse we base the number 
-on when the merge window opened, not when it's released.
+>>Plus select some better acronym.
+>>									Pavel
+How about ops ( offload-processor scheduler ) ? any other suggestions ? well.. I am bad at names.   
+ 
+raz
 
-personally I think 3 is the clearest to explain to people, but I don't 
-like 1 (it's not that bad, but it leaves a lot of mail in archives and bug 
-reports listing the 2009.5.0 version number when no such version was ever 
-released)
 
-> - a stable version in January of a kernel released in December
->  still has the old year? (I hope yes, but it could confuse users.)
 
-absolutly, the stable version is the Nth revision of the kernel that was 
-released in December, it doesn't matter when the stable release happened 
-(similar to the 2.6.16.X kernels that have been released)
-
-> - when (if) we need a big innovative (or incompatible) kernel
->  change, how to mark old and new kernels?
-
-they are marked in the release announcemnts, and code that cares can do 
-'is version > 2009.5' logic.
-
-this sort of test is done today by software so that they can enable better 
-functionality on newer kernels, the size of the difference shouldn't 
-matter.
-
-David Lang
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
