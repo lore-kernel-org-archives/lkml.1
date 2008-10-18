@@ -1,96 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbYJRUVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbYJRUY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751806AbYJRUVP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 16:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbYJRUU7
+	id S1752072AbYJRUY5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 16:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbYJRUYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 16:20:59 -0400
-Received: from home.keithp.com ([63.227.221.253]:42834 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750938AbYJRUU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 16:20:58 -0400
-Subject: Re: [git pull] drm patches for 2.6.27-rc1
-From: Keith Packard <keithp@keithp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: keithp@keithp.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Airlie <airlied@linux.ie>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sf.net
-In-Reply-To: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
-	 <200810181237.49784.nickpiggin@yahoo.com.au>
-	 <1224357062.4384.72.camel@koto.keithp.com>
-	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lvwmiopHP5J6cd7OceuZ"
-Date: Sat, 18 Oct 2008 13:20:48 -0700
-Message-Id: <1224361248.4384.81.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 18 Oct 2008 16:24:48 -0400
+Received: from dispoweb.ifw.uni-hannover.de ([130.75.23.4]:52926 "EHLO
+	ketschua.hedrich-winders.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750966AbYJRUYs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 16:24:48 -0400
+X-Greylist: delayed 424 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Oct 2008 16:24:47 EDT
+Message-ID: <48FA4464.4080100@hedrich-winders.com>
+Date: Sat, 18 Oct 2008 22:17:40 +0200
+From: =?UTF-8?B?SsO8cmdlbiBNZWxs?= <mell@hedrich-winders.com>
+Reply-To: mell@hedrich-winders.com
+Organization: Hedrich winding systems GmbH
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: linux-rt-users@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       rostedt@goodmis.org
+Subject: [-rt] 2.6.26.6-rt11: Another sleeping function called from invalid
+ context
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-lvwmiopHP5J6cd7OceuZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+when I boot the 2.6.26.6-rt11 kernel, I get another of these 'sleeping
+function called from invalid context' error messages:
 
-On Sat, 2008-10-18 at 12:31 -0700, Linus Torvalds wrote:
+BUG: sleeping function called from invalid context IRQ-15(75) at
+arch/x86/mm/highmem_32.c:8
+in_atomic():0 [00000000], irqs_disabled():1
+Pid: 75, comm: IRQ-15 Not tainted 2.6.26.6-rt11-HWS #2
+ [<c01155ce>] __might_sleep+0xd4/0xdb
+ [<c0113da9>] kmap+0x42/0x55
+ [<f8cb7969>] ata_sff_hsm_move+0x3ca/0x671 [libata]
+ [<f8cb8865>] ata_sff_interrupt+0x141/0x1c0 [libata]
+ [<c014a1e6>] handle_IRQ_event+0x45/0xb6
+ [<c014ac23>] do_irqd+0x126/0x223
+ [<c014aafd>] ? do_irqd+0x0/0x223
+ [<c012b8c5>] kthread+0x39/0x60
+ [<c012b88c>] ? kthread+0x0/0x60
+ [<c0104507>] kernel_thread_helper+0x7/0x10
 
-> The important thing is that mappings need to be per-CPU, so the above may=
-=20
-> work, but only if it's designed so that "io_reserve_pci_resource()" will=20
-> actually reserve space for 'nr_possible_cpu' page mappings, and then the=20
-> "io_[un]map_atomic()" functions do per-CPU mappings.
+Hardware is a Pentium-M Processor on an industrial PC mainboard with
+Intel chip set, 1GB RAM, HDD + DVD ROM drives.
+Software is OpenSUSE 10.3 with KDE 3.5.
 
-Yes, of course. The goal is to make it look exactly like
-kmap_atomic_pfn, but work on non-memory pages even on non-HIGHMEM
-configs for x86 (we have to use ioremap on those systems today, which is
-a fairly significant performance problem).
+The message comes up twice during start of the system and will be
+repeated indefintely if there is a CD or DVD in the drive.
 
-> And quite frankly, even so, we'd possibly still be _better_ off with just=
-=20
-> exposing the "kmap_atomic_pfn()" functionality even so. Because quite=20
-> frankly, your "io_reserve_pci_resource()" infrastructure is going to=20
-> inevitably be more complex and slower than the rather efficient=20
-> kmap_atomic_pfn() thing we have.
-
-I want it to work just like kmap_atomic_pfn; Venki wanted some way to
-"know" that no-one else was mapping the pages in non-WC mode. This
-seemed like a reasonable compromise; the 'mapping' object exists solely
-to hold the desired prot value to keep all PTEs consistent across the
-whole system.
-
-> One small detail: our we currently have "kmap_atomic_pfn()" and=20
-> "kmap_atomic_prot()", and we really should maek the fundamental core=20
-> operation be "kmap_atomic_pfn_prot()", and have everything be done in=20
-> terms of that. Looking at it, it also looks like kmap_atomic_prot() is=20
-> actually incorrect right now, and doesn't do a "prot" thing for=20
-> non-highmem pages, but just returns "page_address(page);"
-
-Fortunately, we use kmap_atomic_pfn only for our BAR, which is not a
-non-highmem page.
-
-Right now, we're counting on having our BAR covered by an MTRR register
-so that we get WC access here. I'd like to have the API expose this so
-that the driver will work on systems which don't have a spare MTRR for
-the graphics aperture.
-
---=20
-keith.packard@intel.com
-
---=-lvwmiopHP5J6cd7OceuZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBI+kUgQp8BWwlsTdMRAgaoAJwL301ASzk8j7Ds3+kL3x2VzXDiqQCgrdJU
-gxtBKu1opLxSHhQJjLDaITY=
-=AaRs
------END PGP SIGNATURE-----
-
---=-lvwmiopHP5J6cd7OceuZ--
+Bye,
+            Jürgen
 
