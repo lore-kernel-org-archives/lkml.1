@@ -1,71 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbYJRQxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbYJRRBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751899AbYJRQxz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 12:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYJRQxs
+	id S1751899AbYJRRBT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 13:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYJRRBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 12:53:48 -0400
-Received: from host86-158-139-183.range86-158.btcentralplus.com ([86.158.139.183]:42978
-	"EHLO oak.selfip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbYJRQxr (ORCPT
+	Sat, 18 Oct 2008 13:01:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54875 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750892AbYJRRBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 12:53:47 -0400
-Message-ID: <48FA1494.10205@oak.selfip.net>
-Date: Sat, 18 Oct 2008 17:53:40 +0100
-From: Dave Haywood <tla@oak.selfip.net>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sat, 18 Oct 2008 13:01:08 -0400
+Date: Sat, 18 Oct 2008 10:00:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+cc: Paul Mackerras <paulus@samba.org>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch] mm: fix anon_vma races
+In-Reply-To: <20081018054916.GB26472@wotan.suse.de>
+Message-ID: <alpine.LFD.2.00.0810180921140.3438@nehalem.linux-foundation.org>
+References: <20081016041033.GB10371@wotan.suse.de> <Pine.LNX.4.64.0810172300280.30871@blonde.site> <alpine.LFD.2.00.0810171549310.3438@nehalem.linux-foundation.org> <Pine.LNX.4.64.0810180045370.8995@blonde.site> <20081018015323.GA11149@wotan.suse.de>
+ <18681.20241.347889.843669@cargo.ozlabs.ibm.com> <20081018054916.GB26472@wotan.suse.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: Oops 2.6.27-05178-g2e532d6
-References: <48F9B2FE.1030306@oak.selfip.net> <20081018103948.GA2717@x200.localdomain>
-In-Reply-To: <20081018103948.GA2717@x200.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Sat, Oct 18, 2008 at 10:57:18AM +0100, Dave Haywood wrote:
->   
->> [  372.980378] BUG: unable to handle kernel NULL pointer dereference at 00000020
->> [  372.980400] IP: [<c0323d5c>] sock_poll+0xc/0x20
->> [  372.980425] *pde = 00000000
->> [  372.980435] Oops: 0000 [#1]
->> [  372.980574] last sysfs file: /sys/kernel/uevent_seqnum
->> [  372.980677]
->> [  372.980773] Pid: 5150, comm: squid Not tainted (2.6.27-05178-g2e532d6 #257) Deskpro
->> [  372.980934] EIP: 0060:[<c0323d5c>] EFLAGS: 00010246 CPU: 0
->> [  372.981036] EIP is at sock_poll+0xc/0x20
->> [  372.981133] EAX: cbf3c460 EBX: 00000000 ECX: 00000000 EDX: cddc8280
->> [  372.981235] ESI: cbf27f48 EDI: cd938ae0 EBP: cd938aec ESP: cbf27f20
->> [  372.981337]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
->> [  372.981440] Process squid (pid: 5150, ti=cbf26000 task=cbec0510 task.ti=cbf26000)
->> [  372.981601] Stack:
->> [  372.981692]  00000296 c0195e8a cbf27f48 00002000 08553940 cbfba180 cbfba19c cbfba224
->> [  372.982004]  00000000 cbf26000 cd938aec cd938d2c cbfba224 cbfba180 00000003 cbf26000
->> [  372.982430]  c01963c7 00002000 08553940 cd938aec cbfba1f8 00000246 ca43f2d4 ca43f2c0
->> [  372.982940] Call Trace:
->> [  372.983033]  [<c0195e8a>] ep_send_events+0xea/0x2b0
->> [  372.983167]  [<c01963c7>] ep_poll+0x57/0x1c0
->> [  372.983297]  [<c016ed9e>] fget+0x9e/0xd0
->> [  372.983443]  [<c01965d8>] sys_epoll_wait+0xa8/0xb0
->>     
->
-> Try this:
-> http://marc.info/?l=linux-kernel&m=122428548613067&w=2
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
-Thanks Alexy: This patch fixed it for me.  6 hours uptime with no problems.
-
-Tested-By: Dave Haywood <tla@oak.selfip.net>
-
-Dave.
 
 
+On Sat, 18 Oct 2008, Nick Piggin wrote:
+> 
+> I think it can be called transitive. Basically (assumememory starts off zeroed)
+
+Alpha is transitive. It has a notion of "processor issue order" and 
+"location access order", and the ordering those two creates is a 
+transitive "before" and "after" ordering.
+
+The issue with alpha is not that it wouldn't be transitive - the issue is 
+that *local* read dependencies do not cause a "processor issue order"!
+
+So the real issue with alpha is not about any big pair-wise ordering vs 
+transitive thing, the big issue is that alpha's totally _local_ and 
+per-core orderings are so totally screwed up, and are defined to be very 
+loose - because back when alpha was designed, loose memory ordering was 
+thought to be a good thing for performance.
+
+They were wrong, but that was mainly because the alpha designers lived in 
+a time when threading wasn't really even an issue. They were optimizing 
+purely for the case where memory ordering doesn't matter, and considered 
+locking etc to be one of those non-RISCy rare operations that can be 
+basically ignored.
+
+> CPU0
+> x := 1
+
+So this creates a "location access" event on 'x' on alpha, call it "event 
+A".
+
+> CPU1
+> if (x == 1) {
+>   fence
+>   y := 1
+> }
+
+This has two events: let's call the read of 'x' "B", and "C" is the write 
+to 'y'.
+
+And according to the alpha rules, we now have:
+
+ - A << B
+
+   Because we saw a '1' in B, we now have a "location access ordering" 
+   on the _same_ variable between A and B.
+
+ - B < C
+
+   Because we have the fence in between the read and the write, we now 
+   have a "processor issue order" between B and C (despite the fact that 
+   they are different variables).
+
+And now, the alpha definition of "before" means that we can declare that A 
+is before C.
+
+But on alpha, we really do need that fence, even if the address of 'y' was 
+somehow directly data-dependent on 'x'. THAT is what makes alpha special, 
+not any odd ordering rules.
+
+> CPU2
+> if (y == 1) {
+>   fence
+>   assert(x == 1)
+> }
+
+So again, we now have two events: the access of 'y' is "D", and the access 
+of x is "E". And again, according to the alpha rules, we have two 
+orderings:
+
+ - C << D
+
+   Because we saw a '1' in D, we have another "location access ordering" 
+   on the variably 'y' between C and D.
+
+ - D < E
+
+   Because of the fence, we have a "processor issue ordering" between D 
+   and E.
+
+And for the same reason as above, we now get that C is "before" E 
+according to the alpha ordering rules. And because the definition of 
+"before" is transitive, then A is before E.
+
+And that, in turn, means that that assert() can never trigger, because if 
+it triggered, then by the access ordering rules that would imply that E << 
+A, which would mean that E is "before" A, which in turn would violate the 
+whole chain we just got to.
+
+So while the alpha architecture manual doesn't have the exact sequence 
+mentioned above (it only has nine so-called "Litmus tests"), it's fairly 
+close to Litmus test 3, and the ordering on alpha is very clear: it's all 
+transitive and causal (ie "before" can never be "after").
+
+> Apparently pairwise ordering is more interesting than just a theoretical
+> thing, and not just restricted to Alpha's funny caches.
+
+Nobody does just pairwise ordering, afaik. It's an insane model. Everybody 
+does some form of transitive ordering.
+
+The real (and only really odd) issue with alpha is that for everybody 
+else, if you have
+
+	read x -> data dependency -> read y
+
+(ie you read a pointer and dereference it, or you read an index and 
+dereference an array through it), then on all other architectures that 
+will imply a local processor ordering, which in turn will be part of the 
+whole transitive order of operations. 
+
+On alpha, it doesn't. You can think of it as alpha doing value speculation 
+(ie allowing speculative reads even across data dependencies), so on 
+alpha, you could imagine a CPU doing address speculation, and turning the 
+two reads into a sequence of
+
+ (a) read off speculative pointer '*p'
+ (b) read x
+ (c) verify that that x == p
+
+and THAT is what "smp_read_barrier_depends()" will basically stop on 
+alpha. Nothing else. Other CPU's will always basically do
+
+ (a) read x
+ (b) read *x
+
+so they have an implied read barrier between those two events thanks to 
+simply the causal relationship.
+
+Some more notes:
+
+ - The reason that alpha has this odd thing is not actually that any alpha 
+   implementation does value speculation, but the way the caches are 
+   invalidated, the invalidates can be delayed and re-ordered almost 
+   arbitrarily on the local CPU, and in the absense of a memory barrier 
+   the second read (that does happen "after" the first read in some local 
+   internal CPU sense and wasn't really speculative in that way) can get 
+   stale data because one cacheline has been updated before another one 
+   has.
+
+   So while you can think of it a value speculation, the underlying cause 
+   is actually not some fancy speculation infrastructure, just an internal 
+   implementation issue.
+
+ - The _data_ dependency is important, because other architectures _will_ 
+   still speculatively move memory operations around across other "causal" 
+   relationships, notably across control dependencies. IOW, if you have
+
+	if (read(x))
+		read(y)
+
+   then there is NOT necessarily any real orderign between the reads, 
+   because the conditional ends up being speculated, and you may well see 
+   "y" being read before "x", and you really need a smp_rmb() on other 
+   architectures than alpha too. So in this sense, alpha is very 
+   "consistent" - for alpha, _no_ amount of local causality matters, and 
+   only accesses to the *same* variable are implicitly locally ordered.
+
+ - On x86, the new memory ordering semantics means that _all_ local causal 
+   relationships are honored, so x86, like alpha, is very consistent. It 
+   will consider both the data-dependency and the control dependency to be 
+   100% the same. It just does it differently than alpha: for alpha, 
+   neither matters for ordering, for x86, both matter.
+
+Of course, even on x86, the local causal relationships still do allow 
+loads to pass stores, so x86 isn't _totally_ ordered. x86 obviously still 
+does need the smp_mb().
+
+So alpha is "more consistent" in the respect of really having very clear 
+rules. The fact that those "clear rules" are totally insane and very 
+inconvenient for threading (and weren't the big performance advantage that 
+people used to think they would be) is a separate matter.
+
+		Linus
