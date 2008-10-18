@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbYJRQRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751778AbYJRQVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752158AbYJRQRt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 12:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbYJRQRk
+	id S1751778AbYJRQVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 12:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbYJRQVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 12:17:40 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:49749 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbYJRQRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 12:17:39 -0400
-Message-ID: <48FA0C27.8010301@scherping.de>
-Date: Sat, 18 Oct 2008 18:17:43 +0200
-From: Richard Scherping <richard@scherping.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Sat, 18 Oct 2008 12:21:09 -0400
+Received: from japan.chezphil.org ([77.240.5.4]:2900 "EHLO japan.chezphil.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbYJRQVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 12:21:08 -0400
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Date: Sat, 18 Oct 2008 17:21:05 +0100
+Subject: Script to build-in used modules, based on streamline_config.pl
+Message-ID: <1224346865059@dmwebmail.dmwebmail.chezphil.org>
+X-Mailer: Decimail Webmail 3alpha16
 MIME-Version: 1.0
-To: Tomas Winkler <tomasw@gmail.com>
-CC: Frederik Himpe <fhimpe@telenet.be>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: iwlagn: associating with AP causes kernel hiccup
-References: <gd5gs4$abi$1@ger.gmane.org> <1224104363.19219.30.camel@rc-desk>	 <gd9v3f$3ft$1@ger.gmane.org> <gd9vpo$5ql$1@ger.gmane.org>	 <48F8AEF1.5030603@scherping.de> <1ba2fa240810171302h7dcc92acr18c060425c4a93d@mail.gmail.com>
-In-Reply-To: <1ba2fa240810171302h7dcc92acr18c060425c4a93d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19of+w0x7+4aQ1ujr5NGE6R1cxYl12QpBXFu46
- 1of+tZ/TwNs+OKq380/9fKwQqECVQVxffDc4N1/OWbkIqINfY4
- TpshsKfpaamKq7hngC01TQjomy8byVt
+Content-Type: text/plain; format="flowed"
+From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas Winkler schrieb:
-> On Fri, Oct 17, 2008 at 5:27 PM, Richard Scherping <richard@scherping.de> wrote:
->>>>>> When I associate with an AP, Linux 2.6.27 seems to "hang" for a few
->>>>>> seconds. During that time, all sound stops playing and keyboard and
->>>>>> mouse input is impossible.
->>>> I'm using Mandriva 2009.0 x86_64 with wpa_supplicant and Mandriva's
->>>> wireless network configuration tool (drakroam).
->>>>
->>>> Actually I just found out that running # ifconfig wlan0 down
->>>> is enough to trigger the sound and mouse hanging for a few seconds.
->>> And shortly after I wrote that, while associating while getting an IP
->>> with dhclient when associating with a WPA encrypted AP, I got this
->>> backtrace in my logs:
->>> [...]
->> I have a similar problem here. No crash up to now, but the very same "hang" for a few seconds on "ifconfig wlan0 down". Interestingly this does only happen after a normal boot - once I did a suspend and resume (S3), there is no hang anymore.
->>
->> Hardware: Thinkpad T61p with Intel 4965 agn
->> Software: Debian Lenny x86_64 with vanilla 2.6.27 kernel
->>
-> Driver in 2.6.27 is not stable, please try to reproduce this in
-> current wireless-testing.git.
+Dear List,
 
-I do not have the time to compile and test wireless-testing ATM, sorry.
+Last month, Steven Rostedt posted a script to disable 
+not-currently-used modules from your .config:
 
-In fact I am annoyed by the fact that iwlagn is "known to be unstable" in a stable kernel release and that this even seems to be a totally normal thing...
+   http://article.gmane.org/gmane.linux.kernel/734536
 
-Once compat-wireless is working again on my system I will try that and check whether the hang still occurs. Current compat-wireless does not for me - compilation says
+It works by parsing the kernel Makefiles to build a map from module 
+names to config settings.
 
-make[1]: Entering directory `/usr/src/linux-2.6.27'
-/home/richard/Desktop/compat-wireless-2008-10-17/config.mk:44: "WARNING: You are running a kernel >= 2.6.23, you should enable in it CONFIG_NETDEVICES_MULTIQUEUE for 802.11[ne] support"
+I've made a slightly modified version of this that takes the .config 
+for an all-modular kernel (e.g. a distribution kernel) and changes the 
+settings for those modules that are currently loaded so that they will 
+be built in:
 
-and I did not find CONFIG_NETDEVICES_MULTIQUEUE using menuconfig. Loading the modules fails with tons of unknown symbols and disagreed versions (already at cfg80211 and mac80211 modules).
+   http://chezphil.org/tmp/buildin_used_mods.pl
 
-Perhaps I should go back to Debian stock 2.6.26 kernel - but there Ad-Hoc is broken on iwl4965, although it was working without problems earlier in 2.6.24.
+The aim of this is to provide a semi-automatic method to produce a 
+custom kernel that has everything needed for your hardware built in, so 
+you don't need an initrd.
 
-Richard
+One issue that I encountered is that not every config setting builds a 
+module and may not be changed.  For example, if I need module xyz to 
+support my IDE disk, then the script will change CONFIG_XYZ from m to 
+y.  However, it won't change CONFIG_IDE from m to y.  When I 
+subsequently make menuconfig, it detects that CONFIG_XYZ=y is 
+incompatible with CONFIG_IDE=m, but it fixes it in the wrong way; it 
+changes CONFIG_XYZ back to m, rather than changing CONFIG_IDE to y.  Is 
+there any way to change this?
+
+Someone with better Perl skills than me could probably merge Steven's 
+original script with my variation with a command-line option to 
+determine the behaviour.  It would be good to something like this merged.
+
+Cheers,  Phil.
+
+
+
