@@ -1,121 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbYJRAfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbYJRAhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756763AbYJRAfF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 20:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYJRAey
+	id S1757211AbYJRAhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 20:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYJRAhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 20:34:54 -0400
-Received: from smtpout.eastlink.ca ([24.222.0.30]:53775 "EHLO
-	smtpout.eastlink.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754175AbYJRAex (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 20:34:53 -0400
-Date: Fri, 17 Oct 2008 21:31:17 -0300
-From: Peter Cordes <peter@cordes.ca>
-Subject: Re: no way to swapoff a deleted swap file?
-In-reply-to: <Pine.LNX.4.64.0810171250410.22374@blonde.site>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Bodo Eggert <7eggert@gmx.de>, David Newall <davidn@davidnewall.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, linux-mm <linux-mm@kvack.org>
-Message-id: <20081018003117.GC26067@cordes.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEANfL+EgY3sZc/2dsb2JhbADBAoNs
-X-IronPort-AV: E=Sophos;i="4.33,435,1220238000";   d="scan'208";a="203210407"
-References: <bnlDw-5vQ-7@gated-at.bofh.it> <bnwpg-2EA-17@gated-at.bofh.it>
- <bnJFK-3bu-7@gated-at.bofh.it> <bnR0A-4kq-1@gated-at.bofh.it>
- <E1KqkZK-0001HO-WF@be1.7eggert.dyndns.org>
- <Pine.LNX.4.64.0810171250410.22374@blonde.site>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 17 Oct 2008 20:37:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52741 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754028AbYJRAhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 20:37:31 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: prasad@linux.vnet.ibm.com
+X-Fcc: ~/Mail/linus
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
+       mingo@elte.hu, jason.wessel@windriver.com, avi@qumranet.com,
+       richardj_moore@uk.ibm.com
+Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint
+	handler interfaces
+In-Reply-To: K.Prasad's message of  Thursday, 16 October 2008 09:15:30 +0530 <20081016034530.GA6175@in.ibm.com>
+References: <20081008192044.GA4510@in.ibm.com>
+	<20081008192300.GA4989@in.ibm.com>
+	<20081016024956.602C61544CB@magilla.localdomain>
+	<20081016034530.GA6175@in.ibm.com>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20081018003409.1E1461544CB@magilla.localdomain>
+Date: Fri, 17 Oct 2008 17:34:09 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 01:17:17PM +0100, Hugh Dickins wrote:
-> On Fri, 17 Oct 2008, Bodo Eggert wrote:
-> > 
-> > Somebody might want their swapfiles to have zero links,
-> > _and_ the possibility of doing swapoff.
-> 
-> You're right, they might, and it's not an unreasonable wish.
-> But we've not supported it in the past, and I still don't
-> think it's worth adding special kernel support for it now.
+> I agree with you that single-stepping and enablement of a post_handler
+> for instruction breakpoints in x86 provides a 'feature' over what the
+> underlying processor provides. There may be corner-case issues to it
+> (and I'd be glad to hear if somebody has discovered any).
 
- I'd be inclined to agree with not bloating the kernel to support
-this, even though it would have been convenient for me in one case.  I
-do have an idea for supporting this without bloat, see below.  In case
-anyone wants more details about how I painted myself into that corner,
-here's the backstory to my feature request.
+I'm pretty well positive I can come up with several.  But my point is that
+the whole subject is hairy and that I want to separate the concerns
+properly and deal with all that later, rather than clutter up the initial
+review and integration of hw_breakpoint with all that.
 
- I was cleaning out /var/tmp until I had it down to everything I
-wanted to keep.  Then I was going to rsync it to somewhere else,
-umount, mkfs (with a newer mkfs.xfs -l version=2,lazy-count=1 -n
-version=2, etc...), and copy my files back.  I think I forgot to
-/etc/init.d/swapspace stop before rm -r on my swapfile directory.
+> However, I'm afraid if the addition of such a feature in a layer above
+> the hw_breakpoint can be done entirely without modifying code that is
+> much closer to the hardware - say do_debug().
 
- I run swapspace(8), http://pqxx.org/development/swapspace
-http://packages.debian.org/sid/swapspace.  I have a ~700MB swap
-partition that will actually get used most of the time, and let
-swapspace(8) make swap files in /var/cache/swapspace.  (I symlink or
-bind mount /var/cache so it's actually on /var/tmp, since it seems to
-fit better there.)
+I didn't say that sorting out single-step wouldn't involve changes to
+do_debug.  It probably will.  But that is still quite separate from
+hw_breakpoint and I don't agree at all that such later work will have to
+(or want to) be rolled into the hw_breakpoint API itself.
 
- Usually dynamic swap file creation just delays the inevitable OOM and
-makes thrashing worse. (because one can't create swap files without
-writing them full of zeros, not even with xfs_io resvsp, except with
-old XFS without unwritten extent tracking.  But that's another feature
-request...) In the rare case where you're running a few bloated things
-and want to let them swap out while doing something unusual that takes
-almost all your RAM, it's fairly convenient.  Basically I like the
-idea, even if in practice it's clunky and would be better to just use
-some big swap files I could delete if I need the disk space.  It works
-well when your swap isn't filling up as fast as your disk can write.
+> Yet, given that there's sufficient interest to see hw_breakpoint layer
+> as one that provides pure wrappers around processor functionality i.e.
+> devoid of the overloading of single-stepping function, I will submit my
+> next iteration of patches with a single pointer called triggered() as a
+> callback function.
 
-> > If you can do it by keeping some fds open to let
-> > /proc/pid/fd point to the files, I think it's OK.
-> 
-> I've a very strong aversion to adding strange code to abuse the
-> /proc/<pid>/fd space of some random kernel thread - a "kswapd"
-> because its name contains the substring "swap"?
+Great.
 
- Yes, because it has swap in the name :P.  I was just guessing it had
-something to do with swap areas.
+> It's my understanding that Data Breakpoints, set by DABR fire the Data
+> Storage Interrupt in PPC only after the data access operation is done
+> (except for store operations on atomic writes). Exceptions resulting due
+> to a match with IABR (for instructions) is trigger-before.
 
- Here's another idea: swapoff(2) takes a text string.  It could be
-overloaded to parse the string as a numeric index into the list of
-swap areas (as listed in /proc/swaps).  It could do this as a fallback
-iff the string was numeric and didn't exist as a pathname relative to
-the CWD.  (You don't want "/nonexistant/file" to be treated the same as
-"0" of course, or you'd always be swapoff()ing the first swap file
-instead of returning ENOENT.)
+Ok, I wasn't really trying to be right about PPC at the moment.  The point
+is just to expose the true behavior of the hardware in a coherent way.
+When working on each arch port, one of course has to be careful to know the
+correct details.
 
-Before rebooting I tried 
-# swapoff "/var/tmp/EXP/cache/swap/1 (deleted)"
-Then I looked at the source to see that that sys_swapoff only tries
-to use the string as a path in the filesystem.  But that doesn't have
-to be the case, if there's enough information in data structures
-associated with a swap area to get whatever swapoff() needs to let go
-of the file.
+> Are you suggesting that the post_handler_supported() in i386/x86_64 be
+> modified to return, say UNSUPPORTED_DUE_TO_RF instead of just
+> UNSUPPORTED to indicate that post_handler() may be supported if
+> single-stepping is used to step-over the instructions rather than use
+> RF bit?
 
- This would just add some kernel code that wouldn't usually be in the
-CPU icache, and wouldn't allocate any extra objects like file
-descriptors or VFS entries to lie around to support this.
+I wasn't proposing the exact API details.  I think the API that makes sense
+to describe the true hardware functionality uses somewhat different terms,
+so "post_handler_supported" doesn't especially make sense.  What I think
+makes sense is to say a given hw_breakpoint type "triggers before" or
+"triggers after" (since there really is only one event to possibly have a
+handler, not two).  The further possibilities of what kind of "triggers
+before" it is are that the handler can request completing the instruction
+without a re-trigger, or it can't (and just has to disable the breakpoint).
+Probably a couple of Boolean-valued inlines covers it most clearly.
 
- It's a little ugly, though, to change a system call that normally
-accepts only paths to accept things that aren't paths.  It would be
-even worse to use swapoff("/sys/swaps/2") if /sys/swaps didn't exist
-in the VFS, and was parsed specially by sys_swapoff().  So don't do
-that. :)   swapoff("0") doesn't seem too bad, if only by comparison
-with something horrible.
 
--- 
-#define X(x,y) x##y
-Peter Cordes ;  e-mail: X(peter@cor , des.ca)
-
-"The gods confound the man who first found out how to distinguish the hours!
- Confound him, too, who in this place set up a sundial, to cut and hack
- my day so wretchedly into small pieces!" -- Plautus, 200 BC
+Thanks,
+Roland
