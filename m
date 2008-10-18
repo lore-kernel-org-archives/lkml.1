@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbYJRL5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbYJRMWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752080AbYJRL5W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 07:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYJRL5O
+	id S1751876AbYJRMWN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 08:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYJRMVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 07:57:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53187 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751461AbYJRL5O (ORCPT
+	Sat, 18 Oct 2008 08:21:51 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:59245 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbYJRMVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 07:57:14 -0400
-Date: Sat, 18 Oct 2008 07:57:12 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Wolfgang Kroworsch <wolfgang@kroworsch.de>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] vt: incomplete initialization of vc_tab_stop
-Message-ID: <20081018115712.GA16600@infradead.org>
-References: <20081018114929.GA25554@kroworsch.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081018114929.GA25554@kroworsch.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 18 Oct 2008 08:21:49 -0400
+Subject: Re: powerpc allmodconfig
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       dan.j.williams@intel.com, tiwai@suse.de, linux-ext4@vger.kernel.org,
+       netdev@vger.kernel.org, linux-ide@vger.kernel.org, bzolnier@gmail.com,
+       marek.vasut@gmail.com, dwmw2@infradead.org, mark.fasheh@oracle.com,
+       ralf@linux-mips.org, mchehab@infradead.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <20081016130237.4984967c@infradead.org>
+References: <20081015213337.a99a9595.akpm@linux-foundation.org>
+	 <20081015.220247.262683261.davem@davemloft.net>
+	 <1224169039.735.57.camel@johannes.berg>
+	 <20081016.124923.222595655.davem@davemloft.net>
+	 <20081016130237.4984967c@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qXvhJ3JmCNBpXIwnMVne"
+Date: Sat, 18 Oct 2008 14:20:02 +0200
+Message-Id: <1224332402.6324.0.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 01:49:31PM +0200, Wolfgang Kroworsch wrote:
->  	vc->vc_tab_stop[1]	=
->  	vc->vc_tab_stop[2]	=
->  	vc->vc_tab_stop[3]	=
-> -	vc->vc_tab_stop[4]	= 0x01010101;
-> +	vc->vc_tab_stop[4]	=
-> +	vc->vc_tab_stop[5]	=
-> +	vc->vc_tab_stop[6]	=
-> +	vc->vc_tab_stop[7]	= 0x01010101;
->  
-> +					vc->vc_tab_stop[4] =
-> +					vc->vc_tab_stop[5] =
-> +					vc->vc_tab_stop[6] =
-> +					vc->vc_tab_stop[7] = 0;
 
-Using memset might be a beter idea.
+--=-qXvhJ3JmCNBpXIwnMVne
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2008-10-16 at 13:02 -0700, Arjan van de Ven wrote:
+> On Thu, 16 Oct 2008 12:49:23 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> > #endif
+> > #define __WARN() warn_on_slowpath(__FILE__, __LINE__)
+> > #define __WARN_printf(arg...) warn_slowpath(__FILE__, __LINE__, arg)
+> > #else
+> > #define __WARN_printf(arg...) __WARN()
+>=20
+> the easiest way I suppose would be to do
+>=20
+> #define __WARN_printf(arg..) do { printk(arg); __WARN(); } while (0)
+>=20
+> any obvious problems with this ?
+
+No, not really. You won't get it on kerneloops, but I guess that's not
+an easily tractable problem.
+
+johannes
+
+--=-qXvhJ3JmCNBpXIwnMVne
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJI+dRuAAoJEKVg1VMiehFYmDYP/0kTJWdpsf24PrUnYtMIXVLv
+C46H78KmP/qVYLbDiE0uK4fCq6T5agsZga7fSK5kBA8NiNIL1wXc4X7KjibaDWkr
+lEmpAchTZZZgcgO4oW7AAuxoPtFJwJ0GVe8IOU93N+ItbPuCahA+XgbSC670VOIT
+G5655z9ApbE1Zk2ovPVezBgOhsQgCNEX+V57ALRLqNrW5/w3yFsaAcJSjWdNQQ6z
+YqKBNB96Ds8Y9aJNoFSoG9Y09FU3tuCvN0RyQTURxpwHKZ6f/PWBzdlGUZRYMUh0
+dHSrUvow0SzAFhWyZmhmAeRtCwC2F0T95wxun9LOht4o37hrKE3xN9ScIbSOFIYq
+m8KD5ZAd39nFuCEj41GBi4B0CRy0IhTqGeCIRqyVFYtKSFR4M+eJ9fskrPyWYJXI
+zofkGWlIqKBIGM9v8vMBWX5dalocIFBZFyYiPj/NYMsMRsRfJ33i0UVYk6VGijIs
+8b5gyl5ASmS/yjJAB5DwOQEW7UZs2RrTFSKI0A9BlQOp73Qplwdie7zas7QK/wHM
+vtosJ2/aTo3SdLumy+B9KphBwJBk09FxhNiU76aJnLtXsWnQ0/9kxQKlfW9dctTi
+bKCqB8k2XhGkZ13SEJvpKs9WGSfLXchv2kAOs/O7P+OWEMaz/4FpbZPhV+CGn5Ty
+Ff7sKOr58jw93iMShX+S
+=OjGy
+-----END PGP SIGNATURE-----
+
+--=-qXvhJ3JmCNBpXIwnMVne--
 
