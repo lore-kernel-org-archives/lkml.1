@@ -1,203 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbYJRRBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbYJRRBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751899AbYJRRBT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 13:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYJRRBJ
+	id S1752686AbYJRRBt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 13:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJRRBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 13:01:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54875 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750892AbYJRRBI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 13:01:08 -0400
-Date: Sat, 18 Oct 2008 10:00:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-cc: Paul Mackerras <paulus@samba.org>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [patch] mm: fix anon_vma races
-In-Reply-To: <20081018054916.GB26472@wotan.suse.de>
-Message-ID: <alpine.LFD.2.00.0810180921140.3438@nehalem.linux-foundation.org>
-References: <20081016041033.GB10371@wotan.suse.de> <Pine.LNX.4.64.0810172300280.30871@blonde.site> <alpine.LFD.2.00.0810171549310.3438@nehalem.linux-foundation.org> <Pine.LNX.4.64.0810180045370.8995@blonde.site> <20081018015323.GA11149@wotan.suse.de>
- <18681.20241.347889.843669@cargo.ozlabs.ibm.com> <20081018054916.GB26472@wotan.suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 18 Oct 2008 13:01:38 -0400
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:45596 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751157AbYJRRBh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 13:01:37 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsQEAIut+UhMQWq+/2dsb2JhbACBcr8Vg2w
+Date: Sat, 18 Oct 2008 13:01:19 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>
+Subject: Re: [RFC patch 15/15] LTTng timestamp x86
+Message-ID: <20081018170118.GA22243@Krystal>
+References: <20081016234657.837704867@polymtl.ca> <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org> <20081017012835.GA30195@Krystal> <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com> <20081017172515.GA9639@goodmis.org> <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com> <20081017184215.GB9874@Krystal> <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com> <20081017202313.GA13597@Krystal> <57C9024A16AD2D4C97DC78E552063EA353345B9B@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA353345B9B@orsmsx505.amr.corp.intel.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:44:10 up 135 days, 20:24,  5 users,  load average: 0.26, 0.43,
+	0.45
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 18 Oct 2008, Nick Piggin wrote:
+* Luck, Tony (tony.luck@intel.com) wrote:
+> Complexity of dealing with all the random issues that have
+> plagued TSC in different cpus over the years definitely
+> seems to be a problem.
 > 
-> I think it can be called transitive. Basically (assumememory starts off zeroed)
 
-Alpha is transitive. It has a notion of "processor issue order" and 
-"location access order", and the ordering those two creates is a 
-transitive "before" and "after" ordering.
+Yes :(
 
-The issue with alpha is not that it wouldn't be transitive - the issue is 
-that *local* read dependencies do not cause a "processor issue order"!
+> I have one more idea on how we might be able to use
+> TSC locally and still have confidence that we can
+> merge local cpu buffers into a consistent stream.
+> 
+> What if we read the HPET occasionally (once per
+> second?) and add a record to our per-cpu buffer
+> with the value of the HPET.  That would give us
+> a periodic cross-check of each cpus TSC against
+> real time so that a "smart" post-processor can
+> sanity check the log entries at regular intervals.
+> 
 
-So the real issue with alpha is not about any big pair-wise ordering vs 
-transitive thing, the big issue is that alpha's totally _local_ and 
-per-core orderings are so totally screwed up, and are defined to be very 
-loose - because back when alpha was designed, loose memory ordering was 
-thought to be a good thing for performance.
+Hrm, that would make the timestamps much more sensitive to tracing
+hiccups :
 
-They were wrong, but that was mainly because the alpha designers lived in 
-a time when threading wasn't really even an issue. They were optimizing 
-purely for the case where memory ordering doesn't matter, and considered 
-locking etc to be one of those non-RISCy rare operations that can be 
-basically ignored.
+- if interrupts are disabled for a long time on the system (kernel bug
+  or at early boot), we cannot assume those HPET events will be logged
+  at the expected interval.
+- if we are in buffer full condition (buffers are too small to handle
+  the load and we drop events on buffer full condition), we will not
+  only have missing events : given we depend on those HPET events to
+  have a consistent time-base, all the trace time-base must be
+  considered untrustable.
+- we would also have to get this HPET timer value at each subbuffer
+  boundary (at each page in Steven's implementation). This is required
+  so we can make sense of the time-base of buffers when we only gather
+  the last subbuffers written, given the previous ones have been
+  overwritten in flight-recorder mode. However, with a relatively large
+  load and small subbuffers (e.g. 4kB), we would have to get this HPET
+  value 2048 times/second/cpu. On a 512 nodes machine, it may become a
+  problem. See my analysis of poor HPET scalability below.
+  
+> It doesn't deal with the truly insane TSC behaivours
+> (like stopping completely in certain C states, or
+> varying frequency) ... but it would at least be able
+> to reliably detect these forms of insanity.
+> 
 
-> CPU0
-> x := 1
+I also like the one done by AMD when the cycle counter goes backward
+one a single CPU. :) Hrm, I thought those you say are truly insane
+behaviors are exactly the ones we are trying to deal with ?
 
-So this creates a "location access" event on 'x' on alpha, call it "event 
-A".
+And what do we say when we detect this ? "sorry, please upgrade your
+hardware to get a reliable trace" ? ;)
 
-> CPU1
-> if (x == 1) {
->   fence
->   y := 1
-> }
+> We need periodic entries added to the buffer anyway
+> to make sure we can detect rollover since we don't
+> want waste space in log records with a full width
+> TSC value.
+> 
 
-This has two events: let's call the read of 'x' "B", and "C" is the write 
-to 'y'.
+Nope, this is not required. I removed the heartbeat event from LTTng two
+weeks ago, implementing detection of the delta from the last timestamp
+written into the trace. If we detect that the new timestamp is too far
+from the previous one, we write the full 64 bits TSC in an extended
+event header. Therefore, we have no dependency on interrupt latency to
+get a sane time-base.
 
-And according to the alpha rules, we now have:
 
- - A << B
+> -Tony
+> 
 
-   Because we saw a '1' in B, we now have a "location access ordering" 
-   on the _same_ variable between A and B.
+Here are some numbers showing the scalability of synchronized TSC vs
+cache-line bouncing vs HPET read under tracing load. I use LTTng to take
+a trace only in circular per-cpu memory buffers while tbench is running.
+I look at the resulting tbench speed. This kind of load generates a lot
+of tracing data especially because tbench does a lot of small
+read/writes which generates a lot of system call events. Side-note:
+LTTng is currently fully dynamic and parses the format string like
+printk, and this is accountable for a large part of the performance
+degradation. LTTng however supports to override this probe with
+"specialized" probes which know exactly which types to record. I just
+did not create any yet. So let's focus on timestamping :
 
- - B < C
 
-   Because we have the fence in between the read and the write, we now 
-   have a "processor issue order" between B and C (despite the fact that 
-   they are different variables).
+model name	: Intel(R) Xeon(R) CPU           E5405  @ 2.00GHz
+stepping	: 6
+cpu MHz		: 2000.073
 
-And now, the alpha definition of "before" means that we can declare that A 
-is before C.
+tbench, x86_64 dual quad-core, 2.0GHz, 16GB ram      Speed          Slowdown
 
-But on alpha, we really do need that fence, even if the address of 'y' was 
-somehow directly data-dependent on 'x'. THAT is what makes alpha special, 
-not any odd ordering rules.
+(8 cores up)
+  No tracing :                                      1910.50 MB/sec
+  Flight recorder tracing (per-cpu memory buffers)
+    synchronized TSC, get_cycles with cpuid :        940.20 MB/sec (50%)
+    unsync TSC, get_cycles + cmpxchg :               716.96 MB/sec (62%)
+    unsync TSC, HPET read :                          586.53 MB/sec (69%)
 
-> CPU2
-> if (y == 1) {
->   fence
->   assert(x == 1)
-> }
+(2 cores up)
+  No tracing :                                       488.15 MB/sec
+  Flight recorder tracing (per-cpu memory buffers)
+    synchronized TSC, get_cycles with cpuid :        241.34 MB/sec (50%)
+    unsync TSC, get_cycles + cmpxchg :               202.30 MB/sec (58%)
+    unsync TSC, HPET read :                          187.04 MB/sec (61%)
 
-So again, we now have two events: the access of 'y' is "D", and the access 
-of x is "E". And again, according to the alpha rules, we have two 
-orderings:
+(1 core up)
+  No tracing :                                       270.67 MB/sec
+  Flight recorder tracing (per-cpu memory buffers)
+    synchronized TSC, get_cycles with cpuid :        126.82 MB/sec (53.1%)
+    unsync TSC, get_cycles + cmpxchg :               124.54 MB/sec (53.9%)
+    unsync TSC, HPET read :                           98.75 MB/sec (63.5%)
 
- - C << D
+So, the conclusion it brings about scalability of those time sources
+regarding tracing is :
+- local TSC read scales very well when the number of CPU increases
+  (constant 50% overhead)
+- Comparing the added overhead of both get_cyles+cmpxchg and HPET to
+  the local sync TSC :
 
-   Because we saw a '1' in D, we have another "location access ordering" 
-   on the variably 'y' between C and D.
+  cores    get_cycles+cmpxchg    HPET
+      1                  0.8%     10%
+      2                  8  %     11%
+      8                 12  %     19%
 
- - D < E
+So, is it me, or HPET scales even more poorly than a cache-line bouncing
+cmpxchg ? I find it a bit surprising.
 
-   Because of the fence, we have a "processor issue ordering" between D 
-   and E.
+Mathieu
 
-And for the same reason as above, we now get that C is "before" E 
-according to the alpha ordering rules. And because the definition of 
-"before" is transitive, then A is before E.
-
-And that, in turn, means that that assert() can never trigger, because if 
-it triggered, then by the access ordering rules that would imply that E << 
-A, which would mean that E is "before" A, which in turn would violate the 
-whole chain we just got to.
-
-So while the alpha architecture manual doesn't have the exact sequence 
-mentioned above (it only has nine so-called "Litmus tests"), it's fairly 
-close to Litmus test 3, and the ordering on alpha is very clear: it's all 
-transitive and causal (ie "before" can never be "after").
-
-> Apparently pairwise ordering is more interesting than just a theoretical
-> thing, and not just restricted to Alpha's funny caches.
-
-Nobody does just pairwise ordering, afaik. It's an insane model. Everybody 
-does some form of transitive ordering.
-
-The real (and only really odd) issue with alpha is that for everybody 
-else, if you have
-
-	read x -> data dependency -> read y
-
-(ie you read a pointer and dereference it, or you read an index and 
-dereference an array through it), then on all other architectures that 
-will imply a local processor ordering, which in turn will be part of the 
-whole transitive order of operations. 
-
-On alpha, it doesn't. You can think of it as alpha doing value speculation 
-(ie allowing speculative reads even across data dependencies), so on 
-alpha, you could imagine a CPU doing address speculation, and turning the 
-two reads into a sequence of
-
- (a) read off speculative pointer '*p'
- (b) read x
- (c) verify that that x == p
-
-and THAT is what "smp_read_barrier_depends()" will basically stop on 
-alpha. Nothing else. Other CPU's will always basically do
-
- (a) read x
- (b) read *x
-
-so they have an implied read barrier between those two events thanks to 
-simply the causal relationship.
-
-Some more notes:
-
- - The reason that alpha has this odd thing is not actually that any alpha 
-   implementation does value speculation, but the way the caches are 
-   invalidated, the invalidates can be delayed and re-ordered almost 
-   arbitrarily on the local CPU, and in the absense of a memory barrier 
-   the second read (that does happen "after" the first read in some local 
-   internal CPU sense and wasn't really speculative in that way) can get 
-   stale data because one cacheline has been updated before another one 
-   has.
-
-   So while you can think of it a value speculation, the underlying cause 
-   is actually not some fancy speculation infrastructure, just an internal 
-   implementation issue.
-
- - The _data_ dependency is important, because other architectures _will_ 
-   still speculatively move memory operations around across other "causal" 
-   relationships, notably across control dependencies. IOW, if you have
-
-	if (read(x))
-		read(y)
-
-   then there is NOT necessarily any real orderign between the reads, 
-   because the conditional ends up being speculated, and you may well see 
-   "y" being read before "x", and you really need a smp_rmb() on other 
-   architectures than alpha too. So in this sense, alpha is very 
-   "consistent" - for alpha, _no_ amount of local causality matters, and 
-   only accesses to the *same* variable are implicitly locally ordered.
-
- - On x86, the new memory ordering semantics means that _all_ local causal 
-   relationships are honored, so x86, like alpha, is very consistent. It 
-   will consider both the data-dependency and the control dependency to be 
-   100% the same. It just does it differently than alpha: for alpha, 
-   neither matters for ordering, for x86, both matter.
-
-Of course, even on x86, the local causal relationships still do allow 
-loads to pass stores, so x86 isn't _totally_ ordered. x86 obviously still 
-does need the smp_mb().
-
-So alpha is "more consistent" in the respect of really having very clear 
-rules. The fact that those "clear rules" are totally insane and very 
-inconvenient for threading (and weren't the big performance advantage that 
-people used to think they would be) is a separate matter.
-
-		Linus
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
