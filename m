@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbYJRIpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbYJRIqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbYJRIpf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 04:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYJRIp0
+	id S1752051AbYJRIqD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 04:46:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYJRIpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 04:45:26 -0400
-Received: from 1wt.eu ([62.212.114.60]:4813 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbYJRIpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 04:45:25 -0400
-Date: Sat, 18 Oct 2008 10:45:05 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Steven Noonan <steven@uplinklabs.net>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Sat, 18 Oct 2008 04:45:53 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:26166 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYJRIpw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 04:45:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=DRUKPAn8jTGl2Eft8HoCygxpqSexetKTxdrcrpn8rNJ6OLqN2q5DhZtdH2eHMZQFp+
+         7Vemsj0p3rs1AYaDKH9txxQEKd8tlir5FXZrCOkByQh10dZl18GoSo/G0lh0po1rj6q8
+         ieiCynDy+K9W18Dbo6SBTjZuS6c8pySo0LU4o=
+Message-ID: <84144f020810180145p68a89d17y7609644f7b9d21bf@mail.gmail.com>
+Date: Sat, 18 Oct 2008 11:45:50 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [Slightly off topic] A question about R/B trees.
+Cc: "Chris Snook" <csnook@redhat.com>,
+       "Maxim Levitsky" <maximlevitsky@gmail.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081018084504.GQ24654@1wt.eu>
-References: <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87myh2jq55.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081017214409.GB3585@kroah.com>
-User-Agent: Mutt/1.5.11
+References: <48F904FA.6090102@gmail.com> <48F90E96.3060800@redhat.com>
+	 <87myh2jq55.fsf@basil.nowhere.org>
+X-Google-Sender-Auth: 60272b46713ce876
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 02:44:09PM -0700, Greg KH wrote:
-> On Fri, Oct 17, 2008 at 08:47:23PM +0100, Alan Cox wrote:
-> > > And that's my point here, do we want to change the current numbering
-> > > scheme as people have expressed annoyances of the current one.
-> > 
-> > But any new scheme will be just as annoying to someone and it messes up
-> > existing documentation, understanding and risks breaking third party
-> > tools.
-> > 
-> > Is it really worth the hassle, plus we'll have to change again if we use
-> > date/times because once we are shipping Linux out to Alpha Centauri with
-> > colonists there will be serious problems trying to compute the effect of
-> > tau on release numbering ...
-> 
-> Sure, but by then, the 2.6.521 release will be out and we could fix it
-> up by finally going to 3.0 :)
-> 
-> Seriously, am I the only one that is getting annoyed by our version
-> numbers?  If so, I can live with it, but I got the feeling that I wasn't
-> alone here.
+Hi Andi,
 
-No you're not. I am too. Maybe we're both more annoyed than majority
-because we're mostly dealing with 4-numbers versions.
+On Sat, Oct 18, 2008 at 10:53 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> The problem with hash tables is that if they're big enough
+> or if the rest of the workload is memory intensive
+> each hit will be a cache miss. And you can do a lot of branch
+> mispredicts in the time of a single cache miss.
+>
+> In general trees can be much better for cache usage, although
+> it's generally better to use some tree that has nodes near
+> the cache line size. Binary trees like RB are too small for that.
 
-I remember having recently suggested someone to test 2.6.37, doing a
-confusion between 2.4.37 and 2.6.27. I have already tagged kernels
-with wrong versions, having to fix by hand afterwards. It's really
-cumbersome some times.
+Right, but even for binary trees, you can get some of the benefits by
+packing all the nodes in a slab cache of their own. That way many of
+the neighboring nodes will share the same cache line if you're
+allocating memory for the nodes in a top-down order. Of course, you
+lose the benefits if the tree is updated a lot because you're back to
+worst case allocation again.
 
-I remember it became really boring in 2.1.X days when X got past 99.
-
-IMHO, having a small number of small digits is the way to go. Using
-1 or 2 digits for the major and 1 for the minor is fine. After 3.9, you
-go to version 4.0. Anyway, there are so many changes between versions
-these days that any new versions could justify a major change (eg:
-check the size of the 2.6.27 patch).
-
-With versions from 1.1 to 9.9, you can go as high as 88 versions,
-which is about 22 years of development at current pace. After that,
-we can simply turn to 10.0 and not break anything.
-
-It's also easier for users. Check how many non-kernel techies around you
-know all 3 digits of the version they use. It's easier to remember 4.3
-than it is to remember 2.6.27.
-
-If we can stick to something like this, we can easily use the 3rd number
-for the stable release. We would then have MAJOR.MINOR.PATCHRELEASE and
-keep extraversion for -rc etc... The syntax does not change, thus limiting
-the breakage and the change in habits.
-
-Regards,
-Willy
-
+                       Pekka
