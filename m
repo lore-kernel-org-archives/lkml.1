@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYJRACb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbYJRAJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbYJRACb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 20:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbYJRACX
+	id S1757469AbYJRAJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 20:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbYJRAJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 20:02:23 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:34984 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754120AbYJRACX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 20:02:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=QrVDxF6IAIVbT9rzGOlJsP/fqFAM3lzFNcKq8ISvnBg31MN5gyej/NMVKuCP5CuWbc
-         87ODJF/aRPEPjIr9Gw7kozp8p1exMZFG2cUojNEAEJTfyTrV6kitGoNs3znTIwxkWA54
-         wVAg4mWwCuBfPVsjXBBAcCmjBrsDC8HXdP8sM=
-Message-ID: <dd18b0c30810171702j49c2cd73j91ff4b140f222e60@mail.gmail.com>
-Date: Fri, 17 Oct 2008 17:02:22 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: irq 17: nobody cared (try booting with the "irqpoll" option)
+	Fri, 17 Oct 2008 20:09:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53762 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756508AbYJRAJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 20:09:05 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/linus
+Cc: prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 6/9] Use virtual debug registers in process/thread
+ handling code
+In-Reply-To: Alan Stern's message of  Thursday, 16 October 2008 10:27:03 -0400 <Pine.LNX.4.44L0.0810161014270.2487-100000@iolanthe.rowland.org>
+References: <20081016014407.81BDA1544CB@magilla.localdomain>
+	<Pine.LNX.4.44L0.0810161014270.2487-100000@iolanthe.rowland.org>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20081018000829.519111544CB@magilla.localdomain>
+Date: Fri, 17 Oct 2008 17:08:29 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not sure if this is to blame, or something else
-I've applied a patch for 2.6.27 from:
-http://bugzilla.kernel.org/show_bug.cgi?id=10724
-and later atheros gave a response like this:
+> There's a problem with moving the switch_to_thread_hw_breakpoint() call 
+> before current is updated. [...]
 
-[  433.706892] irq 17: nobody cared (try booting with the "irqpoll" option)
-[  433.706909] Pid: 0, comm: swapper Not tainted 2.6.27-04845-g742a691 #41
-[  433.706912] Call Trace:
-[  433.706919]  [<c0153f94>] __report_bad_irq+0x2e/0x6f
-[  433.706922]  [<c015419a>] note_interrupt+0x1c5/0x217
-[  433.706926]  [<c01536fc>] ? handle_IRQ_event+0x2a/0x5a
-[  433.706929]  [<c015474e>] handle_fasteoi_irq+0x91/0xb6
-[  433.706933]  [<c0104ca1>] do_IRQ+0x6c/0x87
-[  433.706936]  [<c0103c2b>] common_interrupt+0x23/0x28
-[  433.706954]  [<f803769f>] ? acpi_idle_enter_bm+0x306/0x392 [processor]
-[  433.706959]  [<c02f5d02>] cpuidle_idle_call+0x62/0x92
-[  433.706962]  [<c010227d>] cpu_idle+0x74/0x8f
-[  433.706966]  [<c039fde2>] rest_init+0x4e/0x50
-[  433.706968] handlers:
-[  433.706969] [<f83de780>] (ath_isr+0x0/0x13a [ath9k])
-[  433.706985] Disabling IRQ #17
+I got this.  I'm just saying let's look for ways to do this better.
 
-I've seen this twice usually If I let NetworkManager
-connect, and not google or stream the radio.
+Hmm.  The 64-bit version of __switch_to does the current change much
+earlier, before __switch_to_xtra and math_state_restore.  I wonder if the
+32-bit version could change to match.  I can't see what in __switch_to_xtra
+would care either way, though I may be overlooking something.  Ingo?
+
+If this does not change, then __switch_to_xtra can pass prev,next to
+switch_hw_breakpoint.  You can always do some slightly different
+bookkeeping in there to know that prev->next is the switch happening,
+so if there is a hit when current still == prev you can filter it out.
 
 
--- 
-Justin P. Mattock
+Thanks,
+Roland
