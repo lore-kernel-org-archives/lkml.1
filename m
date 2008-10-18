@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbYJRTHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbYJRTIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752019AbYJRTHt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYJRTD3
+	id S1754467AbYJRTIb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYJRTDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:03:29 -0400
-Received: from ns2.suse.de ([195.135.220.15]:47330 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:03:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38211 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbYJRTD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:03:27 -0400
-Date: Sat, 18 Oct 2008 11:34:24 -0700
+	id S1752813AbYJRTDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:03:36 -0400
+Date: Sat, 18 Oct 2008 11:34:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 12/17] USB: EHCI: log a warning if ehci-hcd is not loaded
-	first
-Message-ID: <20081018183424.GM14035@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [patch 14/17] usb: musb_hdrc build fixes
+Message-ID: <20081018183429.GO14035@suse.de>
 References: <20081018182721.521723254@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-ehci-log-a-warning-if-ehci-hcd-is-not-loaded-first.patch"
+Content-Disposition: inline; filename="usb-musb_hdrc-build-fixes.patch"
 In-Reply-To: <20081018183334.GA14035@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,149 +41,183 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-commit 9beeee6584b9aa4f9192055512411484a2a624df upstream
+commit c767c1c6f1febbd1351cc152bba6e37889322d17 upstream
 
-This patch (as1139) adds a warning to the system log whenever ehci-hcd
-is loaded after ohci-hcd or uhci-hcd.  Nowadays most distributions are
-pretty good about not doing this; maybe the warning will help convince
-anyone still doing it wrong.
+Minor musb_hdrc updates:
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+  - so it'll build on DaVinci, given relevant platform updates;
+      * remove support for an un-shipped OTG prototype
+      * rely on gpiolib framework conversion for the I2C GPIOs
+      * the <asm/arch/hdrc_cnf.h> mechanism has been removed
+
+  - catch comments up to the recent removal of the per-SOC header
+    with the silicon configuration data;
+
+  - and remove two inappropriate "inline" declarations which
+    just bloat host side code.
+
+There are still some more <asm/arch/XYZ.h> ==> <mach/XYZ.h>
+changes needed in this driver, catching up to the relocation
+of most of the include/asm-arm/arch-* contents.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/hcd.c      |    4 ++++
- drivers/usb/core/hcd.h      |    6 ++++++
- drivers/usb/host/ehci-hcd.c |   15 +++++++++++++--
- drivers/usb/host/ohci-hcd.c |    3 +++
- drivers/usb/host/uhci-hcd.c |    3 +++
- 5 files changed, 29 insertions(+), 2 deletions(-)
+ drivers/usb/musb/Kconfig     |    4 ----
+ drivers/usb/musb/cppi_dma.h  |    4 ++--
+ drivers/usb/musb/davinci.c   |   20 ++++----------------
+ drivers/usb/musb/musb_core.c |    8 ++++----
+ drivers/usb/musb/musb_host.c |    6 +++---
+ 5 files changed, 13 insertions(+), 29 deletions(-)
 
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -81,6 +81,10 @@
+--- a/drivers/usb/musb/cppi_dma.h
++++ b/drivers/usb/musb/cppi_dma.h
+@@ -119,8 +119,8 @@ struct cppi {
+ 	void __iomem			*mregs;		/* Mentor regs */
+ 	void __iomem			*tibase;	/* TI/CPPI regs */
  
- /*-------------------------------------------------------------------------*/
+-	struct cppi_channel		tx[MUSB_C_NUM_EPT - 1];
+-	struct cppi_channel		rx[MUSB_C_NUM_EPR - 1];
++	struct cppi_channel		tx[4];
++	struct cppi_channel		rx[4];
  
-+/* Keep track of which host controller drivers are loaded */
-+unsigned long usb_hcds_loaded;
-+EXPORT_SYMBOL_GPL(usb_hcds_loaded);
-+
- /* host controllers we manage */
- LIST_HEAD (usb_bus_list);
- EXPORT_SYMBOL_GPL (usb_bus_list);
---- a/drivers/usb/core/hcd.h
-+++ b/drivers/usb/core/hcd.h
-@@ -482,4 +482,10 @@ static inline void usbmon_urb_complete(s
+ 	struct dma_pool			*pool;
+ 
+--- a/drivers/usb/musb/davinci.c
++++ b/drivers/usb/musb/davinci.c
+@@ -30,6 +30,7 @@
+ #include <linux/delay.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
++#include <linux/gpio.h>
+ 
+ #include <asm/arch/hardware.h>
+ #include <asm/arch/memory.h>
+@@ -39,7 +40,7 @@
+ #include "musb_core.h"
+ 
+ #ifdef CONFIG_MACH_DAVINCI_EVM
+-#include <asm/arch/i2c-client.h>
++#define GPIO_nVBUS_DRV		87
+ #endif
+ 
+ #include "davinci.h"
+@@ -138,7 +139,6 @@ static int vbus_state = -1;
+ /* VBUS SWITCHING IS BOARD-SPECIFIC */
+ 
+ #ifdef CONFIG_MACH_DAVINCI_EVM
+-#ifndef CONFIG_MACH_DAVINCI_EVM_OTG
+ 
+ /* I2C operations are always synchronous, and require a task context.
+  * With unloaded systems, using the shared workqueue seems to suffice
+@@ -146,12 +146,11 @@ static int vbus_state = -1;
   */
- extern struct rw_semaphore ehci_cf_port_reset_rwsem;
- 
-+/* Keep track of which host controller drivers are loaded */
-+#define USB_UHCI_LOADED		0
-+#define USB_OHCI_LOADED		1
-+#define USB_EHCI_LOADED		2
-+extern unsigned long usb_hcds_loaded;
-+
- #endif /* __KERNEL__ */
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -1049,6 +1049,12 @@ static int __init ehci_hcd_init(void)
+ static void evm_deferred_drvvbus(struct work_struct *ignored)
  {
- 	int retval = 0;
+-	davinci_i2c_expander_op(0x3a, USB_DRVVBUS, vbus_state);
++	gpio_set_value_cansleep(GPIO_nVBUS_DRV, vbus_state);
+ 	vbus_state = !vbus_state;
+ }
+ static DECLARE_WORK(evm_vbus_work, evm_deferred_drvvbus);
  
-+	set_bit(USB_EHCI_LOADED, &usb_hcds_loaded);
-+	if (test_bit(USB_UHCI_LOADED, &usb_hcds_loaded) ||
-+			test_bit(USB_OHCI_LOADED, &usb_hcds_loaded))
-+		printk(KERN_WARNING "Warning! ehci_hcd should always be loaded"
-+				" before uhci_hcd and ohci_hcd, not after\n");
-+
- 	pr_debug("%s: block sizes: qh %Zd qtd %Zd itd %Zd sitd %Zd\n",
- 		 hcd_name,
- 		 sizeof(struct ehci_qh), sizeof(struct ehci_qtd),
-@@ -1056,8 +1062,10 @@ static int __init ehci_hcd_init(void)
+-#endif	/* modified board */
+ #endif	/* EVM */
  
- #ifdef DEBUG
- 	ehci_debug_root = debugfs_create_dir("ehci", NULL);
--	if (!ehci_debug_root)
--		return -ENOENT;
-+	if (!ehci_debug_root) {
-+		retval = -ENOENT;
-+		goto err_debug;
-+	}
+ static void davinci_source_power(struct musb *musb, int is_on, int immediate)
+@@ -165,21 +164,10 @@ static void davinci_source_power(struct 
+ 
+ #ifdef CONFIG_MACH_DAVINCI_EVM
+ 	if (machine_is_davinci_evm()) {
+-#ifdef CONFIG_MACH_DAVINCI_EVM_OTG
+-		/* modified EVM board switching VBUS with GPIO(6) not I2C
+-		 * NOTE:  PINMUX0.RGB888 (bit23) must be clear
+-		 */
+-		if (is_on)
+-			gpio_set(GPIO(6));
+-		else
+-			gpio_clear(GPIO(6));
+-		immediate = 1;
+-#else
+ 		if (immediate)
+-			davinci_i2c_expander_op(0x3a, USB_DRVVBUS, !is_on);
++			gpio_set_value_cansleep(GPIO_nVBUS_DRV, vbus_state);
+ 		else
+ 			schedule_work(&evm_vbus_work);
+-#endif
+ 	}
  #endif
+ 	if (immediate)
+--- a/drivers/usb/musb/Kconfig
++++ b/drivers/usb/musb/Kconfig
+@@ -33,10 +33,6 @@ config USB_MUSB_SOC
+ 	default y if ARCH_DAVINCI
+ 	default y if ARCH_OMAP2430
+ 	default y if ARCH_OMAP34XX
+-	help
+-	  Use a static <asm/arch/hdrc_cnf.h> file to describe how the
+-	  controller is configured (endpoints, mechanisms, etc) on the
+-	  current iteration of a given system-on-chip.
  
- #ifdef PLATFORM_DRIVER
-@@ -1104,7 +1112,9 @@ clean0:
- #ifdef DEBUG
- 	debugfs_remove(ehci_debug_root);
- 	ehci_debug_root = NULL;
-+err_debug:
- #endif
-+	clear_bit(USB_EHCI_LOADED, &usb_hcds_loaded);
- 	return retval;
- }
- module_init(ehci_hcd_init);
-@@ -1126,6 +1136,7 @@ static void __exit ehci_hcd_cleanup(void
- #ifdef DEBUG
- 	debugfs_remove(ehci_debug_root);
- #endif
-+	clear_bit(USB_EHCI_LOADED, &usb_hcds_loaded);
- }
- module_exit(ehci_hcd_cleanup);
- 
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -1098,6 +1098,7 @@ static int __init ohci_hcd_mod_init(void
- 	printk (KERN_DEBUG "%s: " DRIVER_INFO "\n", hcd_name);
- 	pr_debug ("%s: block sizes: ed %Zd td %Zd\n", hcd_name,
- 		sizeof (struct ed), sizeof (struct td));
-+	set_bit(USB_OHCI_LOADED, &usb_hcds_loaded);
- 
- #ifdef DEBUG
- 	ohci_debug_root = debugfs_create_dir("ohci", NULL);
-@@ -1184,6 +1185,7 @@ static int __init ohci_hcd_mod_init(void
-  error_debug:
- #endif
- 
-+	clear_bit(USB_OHCI_LOADED, &usb_hcds_loaded);
- 	return retval;
- }
- module_init(ohci_hcd_mod_init);
-@@ -1214,6 +1216,7 @@ static void __exit ohci_hcd_mod_exit(voi
- #ifdef DEBUG
- 	debugfs_remove(ohci_debug_root);
- #endif
-+	clear_bit(USB_OHCI_LOADED, &usb_hcds_loaded);
- }
- module_exit(ohci_hcd_mod_exit);
- 
---- a/drivers/usb/host/uhci-hcd.c
-+++ b/drivers/usb/host/uhci-hcd.c
-@@ -953,6 +953,7 @@ static int __init uhci_hcd_init(void)
- 
- 	printk(KERN_INFO DRIVER_DESC " " DRIVER_VERSION "%s\n",
- 			ignore_oc ? ", overcurrent ignored" : "");
-+	set_bit(USB_UHCI_LOADED, &usb_hcds_loaded);
- 
- 	if (usb_disabled())
- 		return -ENODEV;
-@@ -988,6 +989,7 @@ debug_failed:
- 
- errbuf_failed:
- 
-+	clear_bit(USB_UHCI_LOADED, &usb_hcds_loaded);
- 	return retval;
+ comment "DaVinci 644x USB support"
+ 	depends on USB_MUSB_HDRC && ARCH_DAVINCI
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -82,9 +82,9 @@
+ /*
+  * This gets many kinds of configuration information:
+  *	- Kconfig for everything user-configurable
+- *	- <asm/arch/hdrc_cnf.h> for SOC or family details
+  *	- platform_device for addressing, irq, and platform_data
+  *	- platform_data is mostly for board-specific informarion
++ *	  (plus recentrly, SOC or family details)
+  *
+  * Most of the conditional compilation will (someday) vanish.
+  */
+@@ -974,9 +974,9 @@ static void musb_shutdown(struct platfor
+ /*
+  * The silicon either has hard-wired endpoint configurations, or else
+  * "dynamic fifo" sizing.  The driver has support for both, though at this
+- * writing only the dynamic sizing is very well tested.   We use normal
+- * idioms to so both modes are compile-tested, but dead code elimination
+- * leaves only the relevant one in the object file.
++ * writing only the dynamic sizing is very well tested.   Since we switched
++ * away from compile-time hardware parameters, we can no longer rely on
++ * dead code elimination to leave only the relevant one in the object file.
+  *
+  * We don't currently use dynamic fifo setup capability to do anything
+  * more than selecting one of a bunch of predefined configurations.
+--- a/drivers/usb/musb/musb_host.c
++++ b/drivers/usb/musb/musb_host.c
+@@ -108,7 +108,7 @@ static void musb_ep_program(struct musb 
+ /*
+  * Clear TX fifo. Needed to avoid BABBLE errors.
+  */
+-static inline void musb_h_tx_flush_fifo(struct musb_hw_ep *ep)
++static void musb_h_tx_flush_fifo(struct musb_hw_ep *ep)
+ {
+ 	void __iomem	*epio = ep->regs;
+ 	u16		csr;
+@@ -436,7 +436,7 @@ musb_advance_schedule(struct musb *musb,
+ 	}
  }
  
-@@ -997,6 +999,7 @@ static void __exit uhci_hcd_cleanup(void
- 	kmem_cache_destroy(uhci_up_cachep);
- 	debugfs_remove(uhci_debugfs_root);
- 	kfree(errbuf);
-+	clear_bit(USB_UHCI_LOADED, &usb_hcds_loaded);
- }
+-static inline u16 musb_h_flush_rxfifo(struct musb_hw_ep *hw_ep, u16 csr)
++static u16 musb_h_flush_rxfifo(struct musb_hw_ep *hw_ep, u16 csr)
+ {
+ 	/* we don't want fifo to fill itself again;
+ 	 * ignore dma (various models),
+@@ -1005,7 +1005,7 @@ static bool musb_h_ep0_continue(struct m
  
- module_init(uhci_hcd_init);
+ /*
+  * Handle default endpoint interrupt as host. Only called in IRQ time
+- * from the LinuxIsr() interrupt service routine.
++ * from musb_interrupt().
+  *
+  * called with controller irqlocked
+  */
 
 -- 
