@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751936AbYJRTcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751482AbYJRTrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751936AbYJRTcU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbYJRTcM
+	id S1751482AbYJRTrt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbYJRTrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:32:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49551 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750754AbYJRTcL (ORCPT
+	Sat, 18 Oct 2008 15:47:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:6743 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbYJRTrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:32:11 -0400
-Date: Sat, 18 Oct 2008 12:31:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Keith Packard <keithp@keithp.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sf.net
-Subject: Re: [git pull] drm patches for 2.6.27-rc1
-In-Reply-To: <1224357062.4384.72.camel@koto.keithp.com>
-Message-ID: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>  <200810181237.49784.nickpiggin@yahoo.com.au> <1224357062.4384.72.camel@koto.keithp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 18 Oct 2008 15:47:40 -0400
+Date: Sat, 18 Oct 2008 22:48:53 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Martin Michlmayr <tbm@cyrius.com>, Eric Sandeen <sandeen@sandeen.net>,
+       Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
+       debian-arm@lists.debian.org, xfs@oss.sgi.com
+Subject: Re: XFS filesystem corruption on the arm(el) architecture
+Message-ID: <20081018194851.GA2083@localhost.localdomain>
+References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <20081017094615.GT4504@soziologie.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ikeVEW9yuYc//A+q"
+Content-Disposition: inline
+In-Reply-To: <20081017094615.GT4504@soziologie.ch>
+User-Agent: Mutt/1.5.18 (2008-05-29)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--ikeVEW9yuYc//A+q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 18 Oct 2008, Keith Packard wrote:
->
-> The basic plan is to have four new functions (yes, I'm making up names 
-> here):
-> 
-> struct io_mapping *io_reserve_pci_resource(struct pci_dev *dev, 
->                                            int bar, 
->                                            int prot);
-> void io_mapping_free(struct io_mapping *mapping);
-> 
-> void *io_map_atomic(struct io_mapping *mapping, unsigned long pfn);
-> void io_unmap_atomic(struct io_mapping *mapping, unsigned long pfn);
+On Fri, Oct 17, 2008 at 11:46:15AM +0200, Gaudenz Steinlin wrote:
+> On Fri, Oct 17, 2008 at 09:01:09AM +0200, Martin Michlmayr wrote:
+> > * Eric Sandeen <sandeen@sandeen.net> [2008-10-16 17:13]:
+> > > So is this a regression?  did it used to work?  If so, when? :)
+> >=20
+> > The original report was with 2.6.18 but that was with the old ABI:
+> > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=3D423562
+> > I just installed a 2.6.22 kernel with EABI and I can also trigger
+> > the bug.  So it's not a (recent) regression.
+>=20
+> As far as I can remember (I only used old ABI arm) this is not a=20
+> regression. XFS never worked on arm for me.
 
-The important thing is that mappings need to be per-CPU, so the above may 
-work, but only if it's designed so that "io_reserve_pci_resource()" will 
-actually reserve space for 'nr_possible_cpu' page mappings, and then the 
-"io_[un]map_atomic()" functions do per-CPU mappings.
+You are wrong.=20
 
-Anything else is a disaster, because anything else implies TLB shootdown.
+Our team have experience with XFS on ARM OABI on NAS. It worked fine on
+2.6.12, but got broken on 2.6.17.
 
-And quite frankly, even so, we'd possibly still be _better_ off with just 
-exposing the "kmap_atomic_pfn()" functionality even so. Because quite 
-frankly, your "io_reserve_pci_resource()" infrastructure is going to 
-inevitably be more complex and slower than the rather efficient 
-kmap_atomic_pfn() thing we have.
+http://oss.sgi.com/bugzilla/show_bug.cgi?id=3D712
 
-[ The *non-atomic* kmap() functions are fairly high-overhead, in that they 
-  want to keep track of cached mappings and remember page addresses etc. 
-  So those are the ones we don't want to support for non-HIGHMEM setups. 
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.com/
 
-  But the atomic kmaps are pretty simple, and really only need some 
-  trivial FIXMAP support. We could easily extend it for x86-64, methinks, 
-  and do it for x86-32 even when we don't do HIGHMEM.
+--ikeVEW9yuYc//A+q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-  Ingo? ]
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-One small detail: our we currently have "kmap_atomic_pfn()" and 
-"kmap_atomic_prot()", and we really should maek the fundamental core 
-operation be "kmap_atomic_pfn_prot()", and have everything be done in 
-terms of that. Looking at it, it also looks like kmap_atomic_prot() is 
-actually incorrect right now, and doesn't do a "prot" thing for 
-non-highmem pages, but just returns "page_address(page);"
+iEYEARECAAYFAkj6PaMACgkQbWYnhzC5v6r+NQCeNIhqvLMHizWqy2JUmZ0DHRqE
+4OMAn0fGG3BBlfoOjv75tZwHdlLmmxeT
+=6Tsu
+-----END PGP SIGNATURE-----
 
-		Linus
+--ikeVEW9yuYc//A+q--
