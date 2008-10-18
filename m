@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbYJRUiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbYJRUlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752101AbYJRUiS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 16:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJRUiJ
+	id S1752520AbYJRUlv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 16:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJRUln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 16:38:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53554 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751127AbYJRUiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 16:38:08 -0400
-Date: Sat, 18 Oct 2008 22:37:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Keith Packard <keithp@keithp.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Airlie <airlied@linux.ie>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sf.net
-Subject: Re: [git pull] drm patches for 2.6.27-rc1
-Message-ID: <20081018203741.GA23396@elte.hu>
-References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie> <200810181237.49784.nickpiggin@yahoo.com.au> <1224357062.4384.72.camel@koto.keithp.com> <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+	Sat, 18 Oct 2008 16:41:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:6139 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbYJRUlm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 16:41:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gANa18KwN/kd5Q+xQmgNH5CK6mF0UhkkczL/5K8GcKVJLl2bgmBvhza/TYYs4cjWa5
+         ICuR0ghroTPvEgWbSekaTVyfcv9u16vO8LLHzU3Y1VoCbu48qSeeBD0ZnTi59J2cpuct
+         Q84pH8iquWBrNfRdWmqHn2IU3uw8Jpjdvb260=
+Message-ID: <6179c79b0810181341g584d0466s6a2abb68b786be38@mail.gmail.com>
+Date: Sat, 18 Oct 2008 22:41:41 +0200
+From: "Piotr Skamruk" <piotr.skamruk@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH v3] Add SPI over GPIO driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Magnus Damm" <magnus.damm@gmail.com>,
+       "David Brownell" <david-b@pacbell.net>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200810181132.24233.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <200807202146.12759.mb@bu3sch.de> <200810171318.32306.mb@bu3sch.de>
+	 <20081017213631.82c49b3a.akpm@linux-foundation.org>
+	 <200810181132.24233.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/10/18 Michael Buesch <mb@bu3sch.de>:
+> On Saturday 18 October 2008 06:36:31 Andrew Morton wrote:
+>> This patch has some "issues" a month or so ago.  Current status is that
+>
+> yeah, upstream maintainers don't like these patches.
+> Please drop this one and the "gpiommc" patch now.
+>
+As i remember - David stands that these patches (or even
+functionality) are not usable for him, so he don't want to see them in
+mainstream kernel sources. It's his choice, he is maintainer of this
+subsystem.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> [ The *non-atomic* kmap() functions are fairly high-overhead, in that they 
->   want to keep track of cached mappings and remember page addresses etc. 
->   So those are the ones we don't want to support for non-HIGHMEM setups. 
-> 
->   But the atomic kmaps are pretty simple, and really only need some 
->   trivial FIXMAP support. We could easily extend it for x86-64, methinks, 
->   and do it for x86-32 even when we don't do HIGHMEM.
-> 
->   Ingo? ]
-
-agreed, and there's certainly no resistance from the x86 architecture 
-side to extend our mapping APIs in such directions.
-
-But i think the direction of the new GEM code is subtly wrong here, 
-because it tries to manage memory even on 64-bit systems. IMO it should 
-just map the _whole_ graphics aperture (non-cached) and be done with it. 
-There's no faster method at managing pages than the CPU doing a TLB fill 
-from pagetables.
-
-The only real API need i see is on 32-bit: with a 1GB or 2GB graphics 
-aperture we just cannot map that permanently, so kmap_atomic() is a 
-necessity. We can certainly extend that to non-highmem as well.
-
-But this should be an ad-hoc transitionary thing for 32-bit, and on 
-64-bit we really should not be using any form of kmap.
-
-Especially with large vertex buffers or textures, mapping a lot of pages 
-via kmap is not going to be trivial overhead - even if INVLPG is faster 
-than a full TLB flush, it's still on the order of 100-200 cycles - and 
-with a lot of pages that mounts up quickly. And if i understood your 
-workload correctly you want to do tens of thousand of map/unmap/remap 
-events per frame generated - depending on the type of the 3D app/engine.
-
-Or am i missing something subtle? Why do you want the overhead of kmap 
-on 64-bit?
-
-	Ingo
+You have this on openwrt svn, I have it on my dev gittree - and as You
+can see on Magnus example - anybody interested can google for it.
+Maybe if there will be next few peoples - David will change his
+opinion on this subject...
