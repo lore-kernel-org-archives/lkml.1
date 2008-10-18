@@ -1,186 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbYJRPS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbYJRPWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103AbYJRPS0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 11:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYJRPSQ
+	id S1752198AbYJRPWF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 11:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYJRPVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 11:18:16 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:46192 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbYJRPSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 11:18:15 -0400
-Date: Sat, 18 Oct 2008 08:18:09 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: serue@us.ibm.com, sds@tycho.nsa.gov, jmorris@namei.org,
-       chrisw@sous-sol.org, dhowells@redhat.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, takedakn@nttdata.co.jp,
-       haradats@nttdata.co.jp
-Subject: Re: [TOMOYO #10 (linux-next) 7/8] File operation restriction part.
-Message-ID: <20081018151809.GA7227@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081015012916.GF6874@linux.vnet.ibm.com> <48F6BD8E.4050402@nttdata.co.jp> <20081016151003.GA6772@linux.vnet.ibm.com> <48F84DAB.4060002@nttdata.co.jp> <20081017145630.GC6706@linux.vnet.ibm.com> <200810182304.JDC12476.JFSHLVMOQFtOOF@I-love.SAKURA.ne.jp>
+	Sat, 18 Oct 2008 11:21:55 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2321 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751468AbYJRPVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 11:21:54 -0400
+Date: Sat, 18 Oct 2008 11:21:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 3/9] Modifying generic debug exception to use virtual
+ debug registers
+In-Reply-To: <20081017232430.9F48C1544CB@magilla.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0810181106100.1469-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810182304.JDC12476.JFSHLVMOQFtOOF@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 11:04:39PM +0900, Tetsuo Handa wrote:
-> Hello.
+On Fri, 17 Oct 2008, Roland McGrath wrote:
+
+> Current Intel manuals say, "Certain debug exceptions may clear bits 0-3.
+> The remaining cntents of the DR6 register are never cleared by the processor."
 > 
-> Paul E. McKenney wrote:
-> > On Fri, Oct 17, 2008 at 05:32:43PM +0900, Kentaro Takeda wrote:
-> > > However, to ensure the reader gets up-to-date value, we need to use 
-> > > smp_read_barrier_depends() (which is expanded to "mb()" for SMP on 
-> > > Alpha, "read_barrier_depends()" for SMP on H8300, "((void)0)" for SMP 
-> > > on M68K-nommu, "((void)0)" for M68K, "do { } while (0)" otherwise) 
-> > > whenever the reader fetches an element in a list.
-> > 
-> > Yep.  You will also need the ACCESS_ONCE() on the pointer fetch in order
-> > to suppress aggressive compiler optimizations.  The rcu_dereference()
-> > primitive packages them up nicely.
+> Your experiments told us that "certain debug exceptions" includes at least
+> the data breakpoint hits.  I assume that what it really means is all the
+> exceptions that set one of those four bits, i.e. ones due to DR[0-3] use.
+> Perhaps someone from Intel can clarify exactly what it means.
 > 
-> So, I should use rcu_dereference() rather than smp_read_barrier_depends().
-> I see.
-
-Yep!
-
-> > > > But fair enough.  How about the following?
-> > > > 
-> > > >         #define worm_dereference()        rcu_dereference()
-> > > >         #define worm_assign_pointer()        rcu_assign_pointer()
-> > > > 
-> > > So, I understood that the rcu_dereference() and rcu_assign_pointer() 
-> > > are not only for RCU. They are needed to ensure the reader gets 
-> > > up-to-date value. Then, their names should be var_dereference() and 
-> > > var_assign_pointer() or something, shouldn't they? The "rcu_" prefix 
-> > > and comments on rcu_dereference in include/linux/rcupdate.h sound for 
-> > > me that they are used for variables protected by RCU locking 
-> > > mechanism only...
-> > 
-> > Well, there are 200+ uses of rcu_dereference() for RCU, so it would
-> > 99.5%+ accurate to retain the "rcu_" prefix.  ;-)
-> > 
-> > Once we have several non-RCU uses, we can probably do a much better
-> > job of coming up with a good name for the underlying independent-of-RCU
-> > primitive.  So we should stick with rcu_dereference() as the name of the
-> > underlying primitive for now, and re-evaluate the naming in a year or
-> > after another five non-RCU uses of rcu_dereference() appear, whichever
-> > comes later.  (My current guess for names are "pointer_subscribe()"
-> > for rcu_dereference() and "pointer_publish()" for rcu_assign_pointer(),
-> > but who knows?)
-> > 
-> > Fair enough?
+> > So this means that do_debug shouldn't modify the four low bits in vdr6.  
+> [...]
 > 
-> Agreed.
+> Right.
 > 
-> > TOMOYO can tolerate reading the complete garbage that would appear if
-> > the pointer was assigned before the pointed-to fields are initialized?
-> > I must confess that I am having a hard time believing that.  Please
-> > explain how this works.
+> > I don't know how we should handle the BT (debug trap) and BS 
+> > (single-step exception) bits.  Maybe the kprobes code can take care of 
+> > them.
 > 
-> Maybe I'm misunderstanding what "mb()" can do.
+> BT is for task switch with TSS.T set.  I don't think that can ever happen
+> in Linux, since we don't use hardware task-switching.  If at all, maybe in
+> vm86 mode.  I don't think there's a way to do it just from user_ldt.
 > 
-> I inserted "mb()" between the initialization of the pointed-to field and
-> the assignment of the pointer like
+> I think BS (DR_STEP) should get set in vdr6 only when a SIGTRAP is
+> generated for the exception.  It should never get cleared by the system,
+> only by PTRACE_POKEUSR.  That is consistent with what we get now, AFAICT.
 > 
->   static inline void list1_add_tail_mb(struct list1_head *new,
->                                        struct list1_head *head)
->   {
->           struct list1_head *pos = head;
->   
->           new->next = head;
->           mb(); /* Avoid out-of-order execution. */
->           while (pos->next != head)
->                   pos = pos->next;
->           pos->next = new;
->   }
+> I don't think kprobes should "take care of" DR_STEP.  It should eat a
+> DR_STEP that it's responsible for, and leave any others alone.  i.e.,
+> CONFIG_KPROBE=n must not break the normal bookkeeping.
 > 
-> to ensure that 'new->next' comes to point to 'head' before 'pos->next' comes to
-> point to 'new', for arch/ia64/include/asm/system.h says:
+> IIRC there can be one do_debug trap that's for both a breakpoint register
+> hit and a single-step (TF), with DR_STEP plus DR_TRAPn both set at once.
+> To handle that too, I think this will work:
 > 
->   /*
->    * Macros to force memory ordering.  In these descriptions, "previous"
->    * and "subsequent" refer to program order; "visible" means that all
->    * architecturally visible effects of a memory access have occurred
->    * (at a minimum, this means the memory has been read or written).
->    *
->    *   wmb():     Guarantees that all preceding stores to memory-
->    *              like regions are visible before any subsequent
->    *              stores and that all following stores will be
->    *              visible only after all previous stores.
->    *   rmb():     Like wmb(), but for reads.
->    *   mb():      wmb()/rmb() combo, i.e., all previous memory
->    *              accesses are visible before all subsequent
->    *              accesses and vice versa.  This is also known as
->    *              a "fence."
->    *
->    * Note: "mb()" and its variants cannot be used as a fence to order
->    * accesses to memory mapped I/O registers.  For that, mf.a needs to
->    * be used.  However, we don't want to always use mf.a because (a)
->    * it's (presumably) much slower than mf and (b) mf.a is supported for
->    * sequential memory pages only.
->    */
-
-The problem is that while wmb() and mb() do in fact order writes, they 
-cannot order the other task's reads.  So if you do the following with
-all variables initially zero:
-
-	a = 1;
-	smp_wmb(); /* use this instead of wmb() unless doing device I/O. */
-	b = 1;
-
-That will indeed make the assignment to "a" happen before the
-assignment to "b".  But if the reader does the following:
-
-	tmp_b = b;
-	tmp_a = a;
-
-There is nothing preventing these two reads from being reordered.
-The reader might well see tmp_a==0&&tmp_b==1, which is what the
-smp_wmb() was trying to prevent.
-
-> But http://www.rdrop.com/users/paulmck/scalability/paper/ordering.2007.09.19a.pdf says:
+> do_debug does:
+>  
+> 	get_debugreg(condition, 6);
+> 	set_debugreg(0, 6);
 > 
->   On these systems, there are three orderings that must be accounted for:
->   1. Program order:
->      the order of the program's object code as seen by the CPU
->   2. Execution order:
->      The execution order can differ from program order due to both compiler and
->      CPU implementation optimizations.
->   3. Perceived order:
+> Make sure the hw_breakpoint notifier is before the kprobes notifier.
+> hw_breakpoint is responsible for the low 4 bits of vdr6 and leaves its
+> other bits alone.  It returns NOTIFY_STOP iff both this hit is not a ptrace
+> hit and hardware %db6 (args->err) has no other nonreserved bits set.
+
+Ah yes, it's coming back to me now.  The handler routines see the
+original hardware DR6 contents in args->err.  They want to turn off the
+bits corresponding to events they take care of, leaving the remaining
+bits intact.  When the notifier chain is finished, any bits still left
+in args->err have to be acted on by do_debug, by or'ing them into vdr6.
+
+The problem is that, owing to the way the code is structured, this 
+can't be done.  args->err is local to notify_die, so any changes made 
+to its value are not available in do_debug.
+
+> kprobes stays as it, returns NOTIFY_STOP iff it's swallowing the step.
+> do_debug stays mostly the same, replace:
 > 
-> And I noticed that the comment in arch/ia64/include/asm/system.h uses
-> "program order", not "execution order".
-> Therefore, I have to also care "execution order".
+> 	tsk->thread.debugreg6 = condition;
 > 
-> I assumed that the "program order" == "execution order" and I thought:
+> with:
 > 
->   The reader will read the appended element (i.e. 'new->next') only if
->   the reader can reach (i.e. 'pos->next' == 'new') the appended element.
->   The reader won't read the appended element (i.e. 'new->next') as long as
->   the reader can't reach (i.e. 'pos->next' == 'head') the appended element.
+> 	tsk->thread.vdr6 &= DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3;
+> 	tsk->thread.vdr6 |= condition & ~(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3);
 
-This assumes something called "dependency ordering".  Dependency
-ordering is intuitive, but unfortunately is not respected by DEC Alpha
-or by some aggressive value-speculation compiler optimizations.
+No, this can't be right.  Or if it is, it's just by coincidence.  What 
+we really want to do is:
 
-> However, since "execution order" != "program order", you are mentioning that
-> I have to call smp_read_barrier_depends() which can control "execution order".
-> Am I right?
+	tsk->thread.vdr6 |= args->err;
 
-Partly.
+after notify_die() returns.  Unfortunately this is impossible unless we 
+change things around.  For example, instead of passing condition as an 
+argument to notify_die(), we could pass (long) &condition and change 
+the notifier routines to use (* (unsigned *) (args->err)) instead of 
+args->err.
 
-See the section labelled "Alpha" on Page 4 of:
+> > kprobes stays as it, returns NOTIFY_STOP iff it's swallowing the step.
+>
+> Oops, I think this breaks if there was also a ptrace db[0-3] hit in the
+> same exception.  In that case, kprobes would need to not return NOTIFY_STOP
+> when it otherwise would, if thread.vdr6 has low bits set.
 
-http://www.rdrop.com/users/paulmck/scalability/paper/ordering.2007.09.19a.pdf
+What should happen is kprobes returns NOTIFY_STOP if there are no 
+unreserved bits still set in args->err -- or (* (unsigned *) 
+(args->err)) -- when it is ready to return.
 
-for an explanation, though http://lkml.org/lkml/2008/2/2/255
-does a much better job of explaining it.
+Alan Stern
 
-							Thanx, Paul
