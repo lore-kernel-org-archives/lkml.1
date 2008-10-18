@@ -1,985 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYJRTRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYJRTRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbYJRTRT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYJRTFc
+	id S1754898AbYJRTRu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYJRTFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:05:32 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:3206 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbYJRTFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:05:24 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -9.389
-Message-ID: <48FA3368.1040605@tremplin-utc.net>
-Date: Sat, 18 Oct 2008 21:05:12 +0200
-From: Eric Piel <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+	Sat, 18 Oct 2008 15:05:35 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38649 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752191AbYJRTFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:05:30 -0400
+Date: Sat, 18 Oct 2008 11:48:16 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 22/26] Check mapped ranges on sysfs resource files
+Message-ID: <20081018184816.GW301@suse.de>
+References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Pavel Machek <pavel@suse.cz>, Yan Burman <burman.yan@gmail.com>,
-       Pau Oliva Fora <pau@eslack.org>
-Subject: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="check-mapped-ranges-on-sysfs-resource-files.patch"
+In-Reply-To: <20081018184708.GA301@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+2.6.26-stable review patch.  If anyone has any objections, please let us 
+know.
 
-Here is a submission for 2.6.28 of a driver for the ST LIS3LV02Dx
-accelerometer, a device found in various laptops (HP in particular) and
-embedded devices. It's the fourth iteration of what used to be called
-MDPS. I've now made the driver very simple, hoping to make it
-unobjectionable for acceptance :-)
+------------------
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-In particular, I've removed the misc device to access free-fall
-interrupts because there was not yet a complete consensus if it was the
-best interface to do that and I couldn't always detect free-falls on my
-laptop. The idea is that later on additional features can be added.
-Judging from the feedback I got previously, just due to the post of the
-patches on the LKML, there is actually quite a lot of interest from lots
-of different people, and having it in the vanilla tree would probably
-encourage people even more to participate improving the driver!
+commit b5ff7df3df9efab511244d5a299fce706c71af48 upstream
 
-Technically it's situated in hwmon because the other accelerometer
-drivers are there as well, but hwmon guys are not really interested by
-those drivers. So I guess it's material for Andrew :-)
+Check mapped ranges on sysfs resource files
 
-The patch is actually against 2.6.27 but I've checked that it does apply
-fine against 2.6.28-git du jour. For the gory details of the changes
-since the previous version here you are:
-* Automatically turns off the device after some time not used (and removes all the infrastructure to turn on/off the device manually)
-* Add axis info for nc8510 (reported and tested by Luca Di Stephano)
-* Add axis info for nc84x0
-* Add axis info for hp2133 (patch by Pavel Macheck)
-* Moved the register definition to an include file
-* Various clean ups, to make it less specific to ACPI/HP
-* Rename from MDPS to lis3lv02d, as the driver aims at not being HP specific
-* Change the frequency to 20Hz (half of the sensor freq) instead of 33Hz
-* Added myselft as in the maintainer file
-* Free-fall interrupt has been removed for now, as it was sometimes not detecting anything. Once it works fine, it can be added again.
+This is loosely based on a patch by Jesse Barnes to check the user-space
+PCI mappings though the sysfs interfaces.  Quoting Jesse's original
+explanation:
 
-Answer to remarks from previous submission:
-* Andrew Morton asked to investigate using interrupt-based sensor reading (instead of timer-based): it turns out not useful because the sensor generate interrupts even if the data has not changed, so we end up waking up at 40Hz
-* Dmitry suggested to use polled_input: could not because it needs to know when the device is opened/closed in order to turn it on/off (otherwise, it would work fine)
-* Andrew suggested to have a cleaner locking for the misc opening: done (uses test_bit now)... and misc is currently not present!
-* Andrew suggested to use __WAIT_QUEUE_HEAD_INITIALIZER(): done but misc is gone anyway
-* Andrew suggested removing the version number: done
-* Andrew asked if it was tested with CONFIG_SYSFS=n. It now has been (and works!)
-* Andrew asked why strcpy(acpi_device_name(..),) works. I don't know but every other driver do the same :-S
-* Andrew and Pavel Macheck noticed some kernel-doc alike comments which were not: they now follow the correct syntax
-* Several people suggested to not put it in hwmon but in the future industrialio susbsystem: fine with that but as the industrialio subsystem is not available yet, it's still in hwmon with the other accelerometer drivers for now, and I'll happily move it whenever industrialio is integrated.
+  It's fairly common for applications to map PCI resources through sysfs.
+  However, with the current implementation, it's possible for an application
+  to map far more than the range corresponding to the resourceN file it
+  opened.  This patch plugs that hole by checking the range at mmap time,
+  similar to what is done on platforms like sparc64 in their lower level
+  PCI remapping routines.
 
-See you,
-Eric
+  It was initially put together to help debug the e1000e NVRAM corruption
+  problem, since we initially thought an X driver might be walking past the
+  end of one of its mappings and clobbering the NVRAM.  It now looks like
+  that's not the case, but doing the check is still important for obvious
+  reasons.
 
-=
-LIS3LV02Dx Accelerometer driver
+and this version of the patch differs in that it uses a helper function
+to clarify the code, and does all the checks in pages (instead of bytes)
+in order to avoid overflows when doing "<< PAGE_SHIFT" etc.
 
-This adds a driver to the accelerometer sensor found in several HP laptops
-(under the commercial names of "HP Mobile Data Protection System 3D" and
-"HP 3D driveguard"). It tries to have more or less the same interfaces
-as the hdaps and other accelerometer drivers: in sysfs and as a
-joystick. 
+[cebbert@redhat.com: backport, changing WARN() to printk()]
 
-This driver was first written by Yan Burman. Eric Piel has updated it
-and slimed it up (including the removal of an interface to access to the
-free-fall feature of the sensor because it is not reliable enough for
-now).  Several people have contributed to the database of the axes.
-
-Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
-Signed-off-by: Yan Burman <burman.yan@gmail.com>
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/hwmon/lis3lv02d |   49 +++
- MAINTAINERS                   |    5 
- drivers/hwmon/Kconfig         |   19 +
- drivers/hwmon/Makefile        |    1 
- drivers/hwmon/lis3lv02d.c     |  603 ++++++++++++++++++++++++++++++++++++++++++
- drivers/hwmon/lis3lv02d.h     |  149 ++++++++++
- 6 files changed, 826 insertions(+)
+ drivers/pci/pci-sysfs.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/Documentation/hwmon/lis3lv02d b/Documentation/hwmon/lis3lv02d
-new file mode 100644
-index 0000000..65dfb0c
---- /dev/null
-+++ b/Documentation/hwmon/lis3lv02d
-@@ -0,0 +1,49 @@
-+Kernel driver lis3lv02d
-+==================
-+
-+Supported chips:
-+
-+  * STMicroelectronics LIS3LV02DL and LIS3LV02DQ
-+
-+Author:
-+        Yan Burman <burman.yan@gmail.com>
-+	Eric Piel <eric.piel@tremplin-utc.net>
-+
-+
-+Description
-+-----------
-+
-+This driver provides support for the accelerometer found in various HP laptops
-+sporting the feature officially called "HP Mobile Data Protection System 3D" or
-+"HP 3D DriveGuard". It detect automatically laptops with this sensor. Known models
-+(for now the HP 2133, nc6420, nc2510, nc8510, nc84x0, nw9440 and nx9420) will
-+have their axis automatically oriented on standard way (eg: you can directly
-+play neverball).  The accelerometer data is readable via
-+/sys/devices/platform/lis3lv02d.
-+
-+Sysfs attributes under /sys/devices/platform/lis3lv02d/:
-+position - 3D position that the accelerometer reports. Format: "(x,y,z)"
-+calibrate - read: values (x, y, z) that are used as the base for input class device operation.
-+            write: forces the base to be recalibrated with the current position.
-+rate - reports the sampling rate of the accelerometer device in HZ
-+
-+This driver also provides an absolute input class device, allowing
-+the laptop to act as a pinball machine-esque joystick.
-+
-+Axes orientation
-+----------------
-+
-+For better compatibility between the various laptops. The values reported by
-+the accelerometer are converted into a "standard" organisation of the axes
-+(aka "can play neverball out of the box"):
-+ * When the laptop is horizontal the position reported is about 0 for X and Y
-+and a positive value for Z
-+ * If the left side is elevated, X increases (becomes positive)
-+ * If the front side (where the touchpad is) is elevated, Y decreases (becomes negative)
-+ * If the laptop is put upside-down, Z becomes negative
-+
-+If your laptop model is not recognized (cf "dmesg"), you can send an email to the
-+authors to add it to the database.  When reporting a new laptop, please include
-+the output of "dmidecode" plus the value of /sys/devices/platform/lis3lv02d/position
-+in these four cases.
-+
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8dae455..8aa5ac8 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2592,6 +2592,11 @@ L:	linux-security-module@vger.kernel.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/chrisw/lsm-2.6.git
- S:	Supported
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -16,6 +16,7 @@
  
-+LIS3LV02D ACCELEROMETER DRIVER
-+P:	Eric Piel
-+M:	eric.piel@tremplin-utc.net
-+S:	Maintained
-+
- LM83 HARDWARE MONITOR DRIVER
- P:	Jean Delvare
- M:	khali@linux-fr.org
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index d402e8d..0f12b3c 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -811,6 +811,25 @@ config SENSORS_HDAPS
- 	  Say Y here if you have an applicable laptop and want to experience
- 	  the awesome power of hdaps.
  
-+config SENSORS_LIS3LV02D
-+	tristate "STMicroeletronics LIS3LV02Dx three-axis digital accelerometer"
-+	depends on ACPI && INPUT
-+	default n
-+	help
-+	  This driver provides support for the LIS3LV02Dx accelerometer. In
-+	  particular, it can be found in a number of HP laptops, which have the
-+	  "Mobile Data Protection System 3D" or "3D DriveGuard" feature. On such
-+	  systems the driver should load automatically (via ACPI). The
-+	  accelerometer might also be found in other systems, connected via SPI
-+	  or I²C.  The accelerometer data is readable via
-+	  /sys/devices/platform/lis3lv02d.
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/pci.h>
+ #include <linux/stat.h>
+ #include <linux/topology.h>
+@@ -484,6 +485,21 @@ pci_mmap_legacy_mem(struct kobject *kobj
+ #endif /* HAVE_PCI_LEGACY */
+ 
+ #ifdef HAVE_PCI_MMAP
 +
-+	  This driver also provides an absolute input class device, allowing
-+	  the laptop to act as a pinball machine-esque joystick.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called lis3lv02d.
-+
- config SENSORS_APPLESMC
- 	tristate "Apple SMC (Motion sensor, light sensor, keyboard backlight)"
- 	depends on INPUT && X86
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 950134a..ba54d60 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_SENSORS_FSCPOS)	+= fscpos.o
- obj-$(CONFIG_SENSORS_GL518SM)	+= gl518sm.o
- obj-$(CONFIG_SENSORS_GL520SM)	+= gl520sm.o
- obj-$(CONFIG_SENSORS_HDAPS)	+= hdaps.o
-+obj-$(CONFIG_SENSORS_LIS3LV02D)	+= lis3lv02d.o
- obj-$(CONFIG_SENSORS_I5K_AMB)	+= i5k_amb.o
- obj-$(CONFIG_SENSORS_IBMAEM)	+= ibmaem.o
- obj-$(CONFIG_SENSORS_IBMPEX)	+= ibmpex.o
-diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
-new file mode 100644
-index 0000000..23e22a0
---- /dev/null
-+++ b/drivers/hwmon/lis3lv02d.c
-@@ -0,0 +1,603 @@
-+/*
-+ *  lis3lv02d.c - ST LIS3LV02DL accelerometer driver
-+ *
-+ *  Copyright (C) 2007-2008 Yan Burman
-+ *  Copyright (C) 2008 Eric Piel
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/dmi.h>
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
-+#include <linux/input.h>
-+#include <linux/kthread.h>
-+#include <linux/semaphore.h>
-+#include <linux/delay.h>
-+#include <linux/wait.h>
-+#include <linux/poll.h>
-+#include <linux/freezer.h>
-+#include <linux/version.h>
-+#include <linux/uaccess.h>
-+#include <linux/timer.h>
-+#include <acpi/acpi_drivers.h>
-+#include <asm/atomic.h>
-+#include "lis3lv02d.h"
-+
-+#define DRIVER_NAME     "lis3lv02d"
-+#define ACPI_MDPS_CLASS "accelerometer"
-+
-+/* joystick device poll interval in milliseconds */
-+#define MDPS_POLL_INTERVAL 50
-+/*
-+ * The sensor can also generate interrupts (DRDY) but it's pretty pointless
-+ * because their are generated even if the data do not change. So it's better
-+ * to keep the interrupt for the free-fall event. The values are updated at
-+ * 40Hz (at the lowest frequency), but as it can be pretty time consuming on
-+ * some low processor, we poll the sensor only at 20Hz... enough for the
-+ * joystick.
-+ */
-+
-+/*
-+ * Automatic timeout to turn off the device in jiffies.
-+ * Don't do it too early as it's quite costly to turn it on.
-+ */
-+#define MDPS_TIMEOUT msecs_to_jiffies(30 * 1000) /* 30 seconds */
-+/* Maximum value our axis may get for the input device (signed 12 bits) */
-+#define MDPS_MAX_VAL 2048
-+
-+struct axis_conversion {
-+	s8	x;
-+	s8	y;
-+	s8	z;
-+};
-+
-+struct acpi_lis3lv02d {
-+	struct acpi_device	*device;   /* The ACPI device */
-+	struct input_dev	*idev;     /* input device */
-+	struct task_struct	*kthread;  /* kthread for input */
-+	struct timer_list	poff_timer; /* for automatic power off */
-+	struct semaphore	poff_sem;  /* lock to handle on/off timer */
-+	struct platform_device	*pdev;     /* platform device */
-+	atomic_t		count;     /* interrupt count after last read */
-+	int			xcalib;    /* calibrated null value for x */
-+	int			ycalib;    /* calibrated null value for y */
-+	int			zcalib;    /* calibrated null value for z */
-+	unsigned char		is_on;     /* whether the device is on or off */
-+	unsigned char		usage;     /* usage counter */
-+	struct axis_conversion	ac;        /* hw -> logical axis */
-+};
-+
-+static struct acpi_lis3lv02d adev = {
-+	.poff_sem   = __SEMAPHORE_INITIALIZER(adev.poff_sem, 1),
-+	.usage       = 0,
-+};
-+
-+static int lis3lv02d_remove_fs(void);
-+static int lis3lv02d_add_fs(struct acpi_device *device);
-+
-+/* For automatic insertion of the module */
-+static struct acpi_device_id lis3lv02d_device_ids[] = {
-+	{"HPQ0004", 0}, /* HP Mobile Data Protection System PNP */
-+	{"", 0},
-+};
-+MODULE_DEVICE_TABLE(acpi, lis3lv02d_device_ids);
-+
-+/**
-+ * acpi_init() - ACPI _INI method: initialize the device.
-+ * @handle: the handle of the device
-+ *
-+ * Returns AE_OK on success.
-+ */
-+static inline acpi_status lis3lv02d_acpi_init(acpi_handle handle)
++static int pci_mmap_fits(struct pci_dev *pdev, int resno, struct vm_area_struct *vma)
 +{
-+	return acpi_evaluate_object(handle, METHOD_NAME__INI, NULL, NULL);
-+}
++	unsigned long nr, start, size;
 +
-+/**
-+ * lis3lv02d_acpi_read() - ACPI ALRD method: read a register
-+ * @handle: the handle of the device
-+ * @reg:    the register to read
-+ * @ret:    result of the operation
-+ *
-+ * Returns AE_OK on success.
-+ */
-+static acpi_status lis3lv02d_acpi_read(acpi_handle handle, int reg, u8 *ret)
-+{
-+	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
-+	struct acpi_object_list args = { 1, &arg0 };
-+	unsigned long lret;
-+	acpi_status status;
-+
-+	arg0.integer.value = reg;
-+
-+	status = acpi_evaluate_integer(handle, "ALRD", &args, &lret);
-+	*ret = lret;
-+	return status;
-+}
-+
-+/**
-+ * lis3lv02d_acpi_write() - ACPI ALWR method: write to a register
-+ * @handle: the handle of the device
-+ * @reg:    the register to write to
-+ * @val:    the value to write
-+ *
-+ * Returns AE_OK on success.
-+ */
-+static acpi_status lis3lv02d_acpi_write(acpi_handle handle, int reg, u8 val)
-+{
-+	unsigned long ret; /* Not used when writting */
-+	union acpi_object in_obj[2];
-+	struct acpi_object_list args = { 2, in_obj };
-+
-+	in_obj[0].type          = ACPI_TYPE_INTEGER;
-+	in_obj[0].integer.value = reg;
-+	in_obj[1].type          = ACPI_TYPE_INTEGER;
-+	in_obj[1].integer.value = val;
-+
-+	return acpi_evaluate_integer(handle, "ALWR", &args, &ret);
-+}
-+
-+static s16 lis3lv02d_read_16(acpi_handle handle, int reg)
-+{
-+	u8 lo, hi;
-+
-+	lis3lv02d_acpi_read(handle, reg, &lo);
-+	lis3lv02d_acpi_read(handle, reg + 1, &hi);
-+	/* In "12 bit right justified" mode, bit 6, bit 7, bit 8 = bit 5 */
-+	return (s16)((hi << 8) | lo);
-+}
-+
-+/**
-+ * lis3lv02d_get_axis() - For the given axis, give the value converted
-+ * @axis:      1,2,3 - can also be negative
-+ * @hw_values: raw values returned by the hardware
-+ *
-+ * Returns the converted value.
-+ */
-+static inline int lis3lv02d_get_axis(s8 axis, int hw_values[3])
-+{
-+	if (axis > 0)
-+		return hw_values[axis - 1];
-+	else
-+		return -hw_values[-axis - 1];
-+}
-+
-+/**
-+ * lis3lv02d_get_xyz() - Get X, Y and Z axis values from the accelerometer
-+ * @handle: the handle to the device
-+ * @x:      where to store the X axis value
-+ * @y:      where to store the Y axis value
-+ * @z:      where to store the Z axis value
-+ *
-+ * Note that 40Hz input device can eat up about 10% CPU at 800MHZ
-+ */
-+static void lis3lv02d_get_xyz(acpi_handle handle, int *x, int *y, int *z)
-+{
-+	int position[3];
-+
-+	position[0] = lis3lv02d_read_16(handle, OUTX_L);
-+	position[1] = lis3lv02d_read_16(handle, OUTY_L);
-+	position[2] = lis3lv02d_read_16(handle, OUTZ_L);
-+
-+	*x = lis3lv02d_get_axis(adev.ac.x, position);
-+	*y = lis3lv02d_get_axis(adev.ac.y, position);
-+	*z = lis3lv02d_get_axis(adev.ac.z, position);
-+}
-+
-+static inline void lis3lv02d_poweroff(acpi_handle handle)
-+{
-+	adev.is_on = 0;
-+	/* disable X,Y,Z axis and power down */
-+	lis3lv02d_acpi_write(handle, CTRL_REG1, 0x00);
-+}
-+
-+static void lis3lv02d_poweron(acpi_handle handle)
-+{
-+	u8 val;
-+
-+	adev.is_on = 1;
-+	lis3lv02d_acpi_init(handle);
-+	lis3lv02d_acpi_write(handle, FF_WU_CFG, 0);
-+	/*
-+	 * BDU: LSB and MSB values are not updated until both have been read.
-+	 *      So the value read will always be correct.
-+	 * IEN: Interrupt for free-fall and DD, not for data-ready.
-+	 */
-+	lis3lv02d_acpi_read(handle, CTRL_REG2, &val);
-+	val |= CTRL2_BDU | CTRL2_IEN;
-+	lis3lv02d_acpi_write(handle, CTRL_REG2, val);
-+}
-+
-+#ifdef CONFIG_PM
-+static int lis3lv02d_suspend(struct acpi_device *device, pm_message_t state)
-+{
-+	/* make sure the device is off when we suspend */
-+	lis3lv02d_poweroff(device->handle);
-+	return 0;
-+}
-+#endif
-+
-+static int lis3lv02d_resume(struct acpi_device *device)
-+{
-+	/* put back the device in the right state (ACPI might turn it on) */
-+	down(&adev.poff_sem);
-+	if (adev.usage > 0)
-+		lis3lv02d_poweron(device->handle);
-+	else
-+		lis3lv02d_poweroff(device->handle);
-+	up(&adev.poff_sem);
++	nr = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
++	start = vma->vm_pgoff;
++	size = pci_resource_len(pdev, resno) >> PAGE_SHIFT;
++	if (start < size && size - start >= nr)
++		return 1;
++	printk(KERN_WARNING "WARNING: process \"%s\" tried to map 0x%08lx-0x%08lx on %s BAR %d (size 0x%08lx)\n",
++		current->comm, start, start+nr, pci_name(pdev), resno, size);
 +	return 0;
 +}
 +
-+/*
-+ * To be called before starting to use the device. It makes sure that the
-+ * device will always be on until a call to lis3lv02d_decrease_use(). Not to be
-+ * used from interrupt context.
-+ */
-+static void lis3lv02d_increase_use(struct acpi_lis3lv02d *dev)
-+{
-+	down(&dev->poff_sem);
-+	dev->usage++;
-+	if (dev->usage == 1) {
-+		del_timer(&dev->poff_timer);
-+		if (!dev->is_on)
-+			lis3lv02d_poweron(dev->device->handle);
-+	}
-+	up(&dev->poff_sem);
-+}
-+
-+/*
-+ * To be called whenever a usage of the device is stopped.
-+ * It will make sure to turn off the device when there is not usage.
-+ */
-+static void lis3lv02d_decrease_use(struct acpi_lis3lv02d *dev)
-+{
-+	up(&dev->poff_sem);
-+	dev->usage--;
-+	if (dev->usage == 0)
-+		mod_timer(&dev->poff_timer, jiffies + MDPS_TIMEOUT);
-+	down(&dev->poff_sem);
-+}
-+
-+static void lis3lv02d_poweroff_timeout(unsigned long data)
-+{
-+	struct acpi_lis3lv02d *dev = (void *)data;
-+
-+	up(&dev->poff_sem);
-+	lis3lv02d_poweroff(dev->device->handle);
-+	down(&dev->poff_sem);
-+}
-+
-+/**
-+ * lis3lv02d_joystick_kthread() - Kthread polling function
-+ * @data: unused - here to conform to threadfn prototype
-+ */
-+static int lis3lv02d_joystick_kthread(void *data)
-+{
-+	int x, y, z;
-+
-+	while (!kthread_should_stop()) {
-+		lis3lv02d_get_xyz(adev.device->handle, &x, &y, &z);
-+		input_report_abs(adev.idev, ABS_X, x - adev.xcalib);
-+		input_report_abs(adev.idev, ABS_Y, y - adev.ycalib);
-+		input_report_abs(adev.idev, ABS_Z, z - adev.zcalib);
-+
-+		input_sync(adev.idev);
-+
-+		try_to_freeze();
-+		msleep_interruptible(MDPS_POLL_INTERVAL);
-+	}
-+
-+	return 0;
-+}
-+
-+static int lis3lv02d_joystick_open(struct input_dev *input)
-+{
-+	lis3lv02d_increase_use(&adev);
-+	adev.kthread = kthread_run(lis3lv02d_joystick_kthread, NULL, "klis3lv02d");
-+	if (IS_ERR(adev.kthread)) {
-+		lis3lv02d_decrease_use(&adev);
-+		return PTR_ERR(adev.kthread);
-+	}
-+
-+	return 0;
-+}
-+
-+static void lis3lv02d_joystick_close(struct input_dev *input)
-+{
-+	kthread_stop(adev.kthread);
-+	lis3lv02d_decrease_use(&adev);
-+}
-+
-+
-+static inline void lis3lv02d_calibrate_joystick(void)
-+{
-+	lis3lv02d_get_xyz(adev.device->handle, &adev.xcalib, &adev.ycalib, &adev.zcalib);
-+}
-+
-+static int lis3lv02d_joystick_enable(void)
-+{
-+	int err;
-+
-+	if (adev.idev)
+ /**
+  * pci_mmap_resource - map a PCI resource into user memory space
+  * @kobj: kobject for mapping
+@@ -510,6 +526,9 @@ pci_mmap_resource(struct kobject *kobj, 
+ 	if (i >= PCI_ROM_RESOURCE)
+ 		return -ENODEV;
+ 
++	if (!pci_mmap_fits(pdev, i, vma))
 +		return -EINVAL;
 +
-+	adev.idev = input_allocate_device();
-+	if (!adev.idev)
-+		return -ENOMEM;
-+
-+	lis3lv02d_calibrate_joystick();
-+
-+	adev.idev->name       = "ST LIS3LV02DL Accelerometer";
-+	adev.idev->phys       = DRIVER_NAME "/input0";
-+	adev.idev->id.bustype = BUS_HOST;
-+	adev.idev->id.vendor  = 0;
-+	adev.idev->dev.parent = &adev.pdev->dev;
-+	adev.idev->open       = lis3lv02d_joystick_open;
-+	adev.idev->close      = lis3lv02d_joystick_close;
-+
-+	set_bit(EV_ABS, adev.idev->evbit);
-+	input_set_abs_params(adev.idev, ABS_X, -MDPS_MAX_VAL, MDPS_MAX_VAL, 3, 3);
-+	input_set_abs_params(adev.idev, ABS_Y, -MDPS_MAX_VAL, MDPS_MAX_VAL, 3, 3);
-+	input_set_abs_params(adev.idev, ABS_Z, -MDPS_MAX_VAL, MDPS_MAX_VAL, 3, 3);
-+
-+	err = input_register_device(adev.idev);
-+	if (err) {
-+		input_free_device(adev.idev);
-+		adev.idev = NULL;
-+	}
-+
-+	return err;
-+}
-+
-+static void lis3lv02d_joystick_disable(void)
-+{
-+	if (!adev.idev)
-+		return;
-+
-+	input_unregister_device(adev.idev);
-+	adev.idev = NULL;
-+}
-+
-+
-+/*
-+ * Initialise the accelerometer and the various subsystems.
-+ * Should be rather independant of the bus system.
-+ */
-+static int lis3lv02d_init_device(struct acpi_lis3lv02d *dev)
-+{
-+	lis3lv02d_add_fs(dev->device);
-+	setup_timer(&dev->poff_timer, lis3lv02d_poweroff_timeout, (unsigned long)dev);
-+	init_timer_deferrable(&dev->poff_timer);
-+	lis3lv02d_increase_use(dev);
-+
-+	if (lis3lv02d_joystick_enable())
-+		printk(KERN_ERR DRIVER_NAME ": joystick initialization failed\n");
-+
-+	lis3lv02d_decrease_use(dev);
-+	return 0;
-+}
-+
-+static int lis3lv02d_dmi_matched(const struct dmi_system_id *dmi)
-+{
-+	adev.ac = *((struct axis_conversion *)dmi->driver_data);
-+	printk(KERN_INFO DRIVER_NAME ": hardware type %s found.\n", dmi->ident);
-+
-+	return 1;
-+}
-+
-+/* Represents, for each axis seen by userspace, the corresponding hw axis (+1).
-+ * If the value is negative, the opposite of the hw value is used. */
-+static struct axis_conversion lis3lv02d_axis_normal = {1, 2, 3};
-+static struct axis_conversion lis3lv02d_axis_y_inverted = {1, -2, 3};
-+static struct axis_conversion lis3lv02d_axis_x_inverted = {-1, 2, 3};
-+static struct axis_conversion lis3lv02d_axis_z_inverted = {1, 2, -3};
-+static struct axis_conversion lis3lv02d_axis_xy_rotated_left = {-2, 1, 3};
-+static struct axis_conversion lis3lv02d_axis_xy_swap_inverted = {-2, -1, 3};
-+
-+#define AXIS_DMI_MATCH(_ident, _name, _axis) {		\
-+	.ident = _ident,				\
-+	.callback = lis3lv02d_dmi_matched,		\
-+	.matches = {					\
-+		DMI_MATCH(DMI_PRODUCT_NAME, _name)	\
-+	},						\
-+	.driver_data = &lis3lv02d_axis_##_axis		\
-+}
-+static struct dmi_system_id lis3lv02d_dmi_ids[] = {
-+	/* product names are truncated to match all kinds of a same model */
-+	AXIS_DMI_MATCH("NC64x0", "HP Compaq nc64", x_inverted),
-+	AXIS_DMI_MATCH("NC84x0", "HP Compaq nc84", z_inverted),
-+	AXIS_DMI_MATCH("NX9420", "HP Compaq nx9420", x_inverted),
-+	AXIS_DMI_MATCH("NW9440", "HP Compaq nw9440", x_inverted),
-+	AXIS_DMI_MATCH("NC2510", "HP Compaq 2510", y_inverted),
-+	AXIS_DMI_MATCH("NC8510", "HP Compaq 8510", xy_swap_inverted),
-+	AXIS_DMI_MATCH("HP2133", "HP 2133", xy_rotated_left),
-+	{ NULL, }
-+/* Laptop models without axis info (yet):
-+ * "NC651xx" "HP Compaq 651"
-+ * "NC671xx" "HP Compaq 671"
-+ * "NC6910" "HP Compaq 6910"
-+ * HP Compaq 8710x Notebook PC / Mobile Workstation
-+ * "NC2400" "HP Compaq nc2400"
-+ * "NX74x0" "HP Compaq nx74"
-+ * "NX6325" "HP Compaq nx6325"
-+ * "NC4400" "HP Compaq nc4400"
-+ */
-+};
-+
-+static int lis3lv02d_add(struct acpi_device *device)
-+{
-+	u8 val;
-+
-+	if (!device)
-+		return -EINVAL;
-+
-+	adev.device = device;
-+	strcpy(acpi_device_name(device), DRIVER_NAME);
-+	strcpy(acpi_device_class(device), ACPI_MDPS_CLASS);
-+	acpi_driver_data(device) = &adev;
-+
-+	lis3lv02d_acpi_read(device->handle, WHO_AM_I, &val);
-+	if (val != LIS3LV02DL_ID) {
-+		printk(KERN_ERR DRIVER_NAME
-+				": Accelerometer chip not LIS3LV02D{L,Q}\n");
-+		return -ENODEV;
-+	}
-+
-+	/* If possible use a "standard" axes order */
-+	if (dmi_check_system(lis3lv02d_dmi_ids) == 0) {
-+		printk(KERN_INFO DRIVER_NAME ": laptop model unknown, "
-+				 "using default axes configuration\n");
-+		adev.ac = lis3lv02d_axis_normal;
-+	}
-+
-+	return lis3lv02d_init_device(&adev);
-+}
-+
-+static int lis3lv02d_remove(struct acpi_device *device, int type)
-+{
-+	if (!device)
-+		return -EINVAL;
-+
-+	lis3lv02d_joystick_disable();
-+	del_timer(&adev.poff_timer);
-+	lis3lv02d_poweroff(device->handle);
-+
-+	return lis3lv02d_remove_fs();
-+}
-+
-+
-+/* Sysfs stuff */
-+static ssize_t lis3lv02d_position_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	int x, y, z;
-+
-+	lis3lv02d_increase_use(&adev);
-+	lis3lv02d_get_xyz(adev.device->handle, &x, &y, &z);
-+	lis3lv02d_decrease_use(&adev);
-+	return sprintf(buf, "(%d,%d,%d)\n", x, y, z);
-+}
-+
-+static ssize_t lis3lv02d_calibrate_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "(%d,%d,%d)\n", adev.xcalib, adev.ycalib, adev.zcalib);
-+}
-+
-+static ssize_t lis3lv02d_calibrate_store(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	lis3lv02d_increase_use(&adev);
-+	lis3lv02d_calibrate_joystick();
-+	lis3lv02d_decrease_use(&adev);
-+	return count;
-+}
-+
-+/* conversion btw sampling rate and the register values */
-+static int lis3lv02dl_df_val[4] = {40, 160, 640, 2560};
-+static ssize_t lis3lv02d_rate_show(struct device *dev,
-+			struct device_attribute *attr, char *buf)
-+{
-+	u8 ctrl;
-+	int val;
-+
-+	lis3lv02d_increase_use(&adev);
-+	lis3lv02d_acpi_read(adev.device->handle, CTRL_REG1, &ctrl);
-+	lis3lv02d_decrease_use(&adev);
-+	val = (ctrl & (CTRL1_DF0 | CTRL1_DF1)) >> 4;
-+	return sprintf(buf, "%d\n", lis3lv02dl_df_val[val]);
-+}
-+
-+static DEVICE_ATTR(position, S_IRUGO, lis3lv02d_position_show, NULL);
-+static DEVICE_ATTR(calibrate, S_IRUGO|S_IWUSR, lis3lv02d_calibrate_show,
-+	lis3lv02d_calibrate_store);
-+static DEVICE_ATTR(rate, S_IRUGO, lis3lv02d_rate_show, NULL);
-+
-+static struct attribute *lis3lv02d_attributes[] = {
-+	&dev_attr_position.attr,
-+	&dev_attr_calibrate.attr,
-+	&dev_attr_rate.attr,
-+	NULL
-+};
-+
-+static struct attribute_group lis3lv02d_attribute_group = {
-+	.attrs = lis3lv02d_attributes
-+};
-+
-+static int lis3lv02d_add_fs(struct acpi_device *device)
-+{
-+	adev.pdev = platform_device_register_simple(DRIVER_NAME, -1, NULL, 0);
-+	if (IS_ERR(adev.pdev))
-+		return PTR_ERR(adev.pdev);
-+
-+	return sysfs_create_group(&adev.pdev->dev.kobj, &lis3lv02d_attribute_group);
-+}
-+
-+static int lis3lv02d_remove_fs(void)
-+{
-+	sysfs_remove_group(&adev.pdev->dev.kobj, &lis3lv02d_attribute_group);
-+	platform_device_unregister(adev.pdev);
-+	return 0;
-+}
-+
-+/* For the HP MDPS aka 3D Driveguard */
-+static struct acpi_driver lis3lv02d_driver = {
-+	.name  = DRIVER_NAME,
-+	.class = ACPI_MDPS_CLASS,
-+	.ids   = lis3lv02d_device_ids,
-+	.ops = {
-+		.add     = lis3lv02d_add,
-+		.remove  = lis3lv02d_remove,
-+#ifdef CONFIG_PM
-+		.suspend = lis3lv02d_suspend,
-+		.resume  = lis3lv02d_resume
-+#endif
-+	}
-+};
-+
-+static int __init lis3lv02d_init_module(void)
-+{
-+	int ret;
-+
-+	if (acpi_disabled)
-+		return -ENODEV;
-+
-+	ret = acpi_bus_register_driver(&lis3lv02d_driver);
-+	if (ret < 0)
-+		return ret;
-+
-+	printk(KERN_INFO DRIVER_NAME " driver loaded.\n");
-+
-+	return 0;
-+}
-+
-+static void __exit lis3lv02d_exit_module(void)
-+{
-+	acpi_bus_unregister_driver(&lis3lv02d_driver);
-+}
-+
-+MODULE_DESCRIPTION("ST LIS3LV02Dx three-axis digital accelerometer driver");
-+MODULE_AUTHOR("Yan Burman and Eric Piel");
-+MODULE_LICENSE("GPL");
-+
-+module_init(lis3lv02d_init_module);
-+module_exit(lis3lv02d_exit_module);
-diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
-new file mode 100644
-index 0000000..5e7d291
---- /dev/null
-+++ b/drivers/hwmon/lis3lv02d.h
-@@ -0,0 +1,149 @@
-+/*
-+ *  lis3lv02d.h - ST LIS3LV02DL accelerometer driver
-+ *
-+ *  Copyright (C) 2007-2008 Yan Burman
-+ *  Copyright (C) 2008 Eric Piel
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+/*
-+ * The actual chip is STMicroelectronics LIS3LV02DL or LIS3LV02DQ that seems to
-+ * be connected via SPI. There exists also several similar chips (such as LIS302DL or
-+ * LIS3L02DQ) but not in the HP laptops and they have slightly different registers.
-+ * They can also be connected via I²C.
-+ */
-+
-+#define LIS3LV02DL_ID	0x3A /* Also the LIS3LV02DQ */
-+#define LIS302DL_ID	0x3B /* Also the LIS202DL! */
-+
-+enum lis3lv02d_reg {
-+	WHO_AM_I	= 0x0F,
-+	OFFSET_X	= 0x16,
-+	OFFSET_Y	= 0x17,
-+	OFFSET_Z	= 0x18,
-+	GAIN_X		= 0x19,
-+	GAIN_Y		= 0x1A,
-+	GAIN_Z		= 0x1B,
-+	CTRL_REG1	= 0x20,
-+	CTRL_REG2	= 0x21,
-+	CTRL_REG3	= 0x22,
-+	HP_FILTER_RESET	= 0x23,
-+	STATUS_REG	= 0x27,
-+	OUTX_L		= 0x28,
-+	OUTX_H		= 0x29,
-+	OUTY_L		= 0x2A,
-+	OUTY_H		= 0x2B,
-+	OUTZ_L		= 0x2C,
-+	OUTZ_H		= 0x2D,
-+	FF_WU_CFG	= 0x30,
-+	FF_WU_SRC	= 0x31,
-+	FF_WU_ACK	= 0x32,
-+	FF_WU_THS_L	= 0x34,
-+	FF_WU_THS_H	= 0x35,
-+	FF_WU_DURATION	= 0x36,
-+	DD_CFG		= 0x38,
-+	DD_SRC		= 0x39,
-+	DD_ACK		= 0x3A,
-+	DD_THSI_L	= 0x3C,
-+	DD_THSI_H	= 0x3D,
-+	DD_THSE_L	= 0x3E,
-+	DD_THSE_H	= 0x3F,
-+};
-+
-+enum lis3lv02d_ctrl1 {
-+	CTRL1_Xen	= 0x01,
-+	CTRL1_Yen	= 0x02,
-+	CTRL1_Zen	= 0x04,
-+	CTRL1_ST	= 0x08,
-+	CTRL1_DF0	= 0x10,
-+	CTRL1_DF1	= 0x20,
-+	CTRL1_PD0	= 0x40,
-+	CTRL1_PD1	= 0x80,
-+};
-+enum lis3lv02d_ctrl2 {
-+	CTRL2_DAS	= 0x01,
-+	CTRL2_SIM	= 0x02,
-+	CTRL2_DRDY	= 0x04,
-+	CTRL2_IEN	= 0x08,
-+	CTRL2_BOOT	= 0x10,
-+	CTRL2_BLE	= 0x20,
-+	CTRL2_BDU	= 0x40, /* Block Data Update */
-+	CTRL2_FS	= 0x80, /* Full Scale selection */
-+};
-+
-+
-+enum lis3lv02d_ctrl3 {
-+	CTRL3_CFS0	= 0x01,
-+	CTRL3_CFS1	= 0x02,
-+	CTRL3_FDS	= 0x10,
-+	CTRL3_HPFF	= 0x20,
-+	CTRL3_HPDD	= 0x40,
-+	CTRL3_ECK	= 0x80,
-+};
-+
-+enum lis3lv02d_status_reg {
-+	STATUS_XDA	= 0x01,
-+	STATUS_YDA	= 0x02,
-+	STATUS_ZDA	= 0x04,
-+	STATUS_XYZDA	= 0x08,
-+	STATUS_XOR	= 0x10,
-+	STATUS_YOR	= 0x20,
-+	STATUS_ZOR	= 0x40,
-+	STATUS_XYZOR	= 0x80,
-+};
-+
-+enum lis3lv02d_ff_wu_cfg {
-+	FF_WU_CFG_XLIE	= 0x01,
-+	FF_WU_CFG_XHIE	= 0x02,
-+	FF_WU_CFG_YLIE	= 0x04,
-+	FF_WU_CFG_YHIE	= 0x08,
-+	FF_WU_CFG_ZLIE	= 0x10,
-+	FF_WU_CFG_ZHIE	= 0x20,
-+	FF_WU_CFG_LIR	= 0x40,
-+	FF_WU_CFG_AOI	= 0x80,
-+};
-+
-+enum lis3lv02d_ff_wu_src {
-+	FF_WU_SRC_XL	= 0x01,
-+	FF_WU_SRC_XH	= 0x02,
-+	FF_WU_SRC_YL	= 0x04,
-+	FF_WU_SRC_YH	= 0x08,
-+	FF_WU_SRC_ZL	= 0x10,
-+	FF_WU_SRC_ZH	= 0x20,
-+	FF_WU_SRC_IA	= 0x40,
-+};
-+
-+enum lis3lv02d_dd_cfg {
-+	DD_CFG_XLIE	= 0x01,
-+	DD_CFG_XHIE	= 0x02,
-+	DD_CFG_YLIE	= 0x04,
-+	DD_CFG_YHIE	= 0x08,
-+	DD_CFG_ZLIE	= 0x10,
-+	DD_CFG_ZHIE	= 0x20,
-+	DD_CFG_LIR	= 0x40,
-+	DD_CFG_IEND	= 0x80,
-+};
-+
-+enum lis3lv02d_dd_src {
-+	DD_SRC_XL	= 0x01,
-+	DD_SRC_XH	= 0x02,
-+	DD_SRC_YL	= 0x04,
-+	DD_SRC_YH	= 0x08,
-+	DD_SRC_ZL	= 0x10,
-+	DD_SRC_ZH	= 0x20,
-+	DD_SRC_IA	= 0x40,
-+};
-+
---
+ 	/* pci_mmap_page_range() expects the same kind of entry as coming
+ 	 * from /proc/bus/pci/ which is a "user visible" value. If this is
+ 	 * different from the resource itself, arch will do necessary fixup.
 
+-- 
