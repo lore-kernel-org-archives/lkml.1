@@ -1,138 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbYJRUdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbYJRUiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752019AbYJRUdP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 16:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbYJRUc7
+	id S1752101AbYJRUiS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 16:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJRUiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 16:32:59 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:61720 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbYJRUc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 16:32:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dy2JV+Um7RZySm0Trq54JEyxoAhLccRVUEtnw0wFxKehAd6uM07mAwt/WbqQl4xiHo
-         N4gWYbg5Wsk0eKhN/15Po+lBRjNnjoYNB2VXtpZnBb8Lm+HMR93eMbdL3y1CYjtRM/AQ
-         tVSYpJ97+/A7p5g7SLSYgCmlqYj5vPppYOx8M=
-Message-ID: <dd18b0c30810181332h709377bcjef180ba26abc8fb6@mail.gmail.com>
-Date: Sat, 18 Oct 2008 13:32:56 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: appletouch regression
-Cc: "Steven Noonan" <steven@uplinklabs.net>, "Jiri Kosina" <jkosina@suse.cz>,
-       "Sven Anders" <anders@anduras.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <1224359819-15152-1-git-send-email-jirislaby@gmail.com>
+	Sat, 18 Oct 2008 16:38:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53554 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751127AbYJRUiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 16:38:08 -0400
+Date: Sat, 18 Oct 2008 22:37:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Keith Packard <keithp@keithp.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Airlie <airlied@linux.ie>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net
+Subject: Re: [git pull] drm patches for 2.6.27-rc1
+Message-ID: <20081018203741.GA23396@elte.hu>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie> <200810181237.49784.nickpiggin@yahoo.com.au> <1224357062.4384.72.camel@koto.keithp.com> <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <f488382f0810181134h24ed5da8lc12e62816436bb5@mail.gmail.com>
-	 <1224359819-15152-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 12:56 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Steven Noonan wrote:
->> On Sat, Oct 18, 2008 at 10:29 AM, Justin Mattock
->> <justinmattock@gmail.com> wrote:
->>> On Sat, Oct 18, 2008 at 9:44 AM, Steven Noonan <steven@uplinklabs.net> wrote:
->>>> 2008/10/18 Sven Anders <anders@anduras.de>:
->>>>> Steven Noonan schrieb:
->>>>>> It seems that the appletouch driver is (sporadically) not detecting my
->>>>>> Apple Trackpad anymore on Linus' current tree (2.6.27-05577-g0cfd810).
->>>>>> When it is misbehaving, it doesn't have any /dev/input/event* entry
->>>>>> that corresponds to the input from appletouch, and dmesg -should- show
->>>>>> the following, as 2.6.27.1 does, but does not:
->>>>>>
->>>>>> appletouch: Geyser mode initialized.
->>>>>> input: appletouch as /class/input/input4
->>>>>> usbcore: registered new interface driver appletouch
->>>>>> appletouch: 17" model detected
->>>>>>
->>>>>> On the current tree, occasionally all I get is:
->>>>>>
->>>>>> usbcore: registered new interface driver appletouch
-> [...]
->> Any ideas, gentlemen?
->
-> Yeah, I see the problem. The device is grabbed by the hid bus and not
-> released even if apple driver says ENODEV (this is expected behaviour
-> and noted in the driver).
->
-> Could you try this patch? (Not ready for merge, it needs to be cleaned
-> up.)
->
-> ---
->  drivers/hid/hid-core.c |   34 ++++++++++++++++++++++++++++++++++
->  1 files changed, 34 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index 8a7d9db..94cf1db 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
-> @@ -1539,6 +1539,34 @@ static const struct hid_device_id hid_ignore_list[] = {
->        { }
->  };
->
-> +static const struct hid_device_id hid_mouse_ignore_list[] = {
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_ANSI) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_ISO) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER_ANSI) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER_ISO) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER_JIS) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER3_ANSI) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER3_ISO) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER3_JIS) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_ANSI) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_ISO) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_JIS) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_ANSI) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_ISO) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER4_HF_JIS) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
-> +       { HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
-> +       { }
-> +};
-> +
-> +#include <linux/usb.h>
-> +
->  static bool hid_ignore(struct hid_device *hdev)
->  {
->        switch (hdev->vendor) {
-> @@ -1555,6 +1583,12 @@ static bool hid_ignore(struct hid_device *hdev)
->                break;
->        }
->
-> +       if (hdev->bus == BUS_USB && to_usb_interface(hdev->dev.parent)->
-> +                       cur_altsetting->desc.bInterfaceProtocol ==
-> +                       USB_INTERFACE_PROTOCOL_MOUSE &&
-> +                       hid_match_id(hdev, hid_mouse_ignore_list))
-> +               return true;
-> +
->        return !!hid_match_id(hdev, hid_ignore_list);
->  }
->
-> --
-> 1.6.0.2
->
->
 
-Applied and can confirm
-my appletouchpad is alive and reacting,
-Thanks a lot man.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-regards;
+> [ The *non-atomic* kmap() functions are fairly high-overhead, in that they 
+>   want to keep track of cached mappings and remember page addresses etc. 
+>   So those are the ones we don't want to support for non-HIGHMEM setups. 
+> 
+>   But the atomic kmaps are pretty simple, and really only need some 
+>   trivial FIXMAP support. We could easily extend it for x86-64, methinks, 
+>   and do it for x86-32 even when we don't do HIGHMEM.
+> 
+>   Ingo? ]
 
--- 
-Justin P. Mattock
+agreed, and there's certainly no resistance from the x86 architecture 
+side to extend our mapping APIs in such directions.
+
+But i think the direction of the new GEM code is subtly wrong here, 
+because it tries to manage memory even on 64-bit systems. IMO it should 
+just map the _whole_ graphics aperture (non-cached) and be done with it. 
+There's no faster method at managing pages than the CPU doing a TLB fill 
+from pagetables.
+
+The only real API need i see is on 32-bit: with a 1GB or 2GB graphics 
+aperture we just cannot map that permanently, so kmap_atomic() is a 
+necessity. We can certainly extend that to non-highmem as well.
+
+But this should be an ad-hoc transitionary thing for 32-bit, and on 
+64-bit we really should not be using any form of kmap.
+
+Especially with large vertex buffers or textures, mapping a lot of pages 
+via kmap is not going to be trivial overhead - even if INVLPG is faster 
+than a full TLB flush, it's still on the order of 100-200 cycles - and 
+with a lot of pages that mounts up quickly. And if i understood your 
+workload correctly you want to do tens of thousand of map/unmap/remap 
+events per frame generated - depending on the type of the 3D app/engine.
+
+Or am i missing something subtle? Why do you want the overhead of kmap 
+on 64-bit?
+
+	Ingo
