@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbYJRTHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbYJRTG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbYJRTHG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYJRTDV
+	id S1753729AbYJRTG3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYJRTDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:03:21 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47310 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:03:11 -0400
+Received: from mx1.suse.de ([195.135.220.2]:38133 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751903AbYJRTDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:03:19 -0400
-Date: Sat, 18 Oct 2008 11:34:19 -0700
+	id S1751446AbYJRTDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:03:09 -0400
+Date: Sat, 18 Oct 2008 11:34:13 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,13 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 10/17] USB: OHCI: fix endless polling behavior
-Message-ID: <20081018183418.GK14035@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Vasanthakumar Thiagarajan <vasanth@atheros.com>,
+       Sujith <Sujith.Manoharan@atheros.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 08/17] ath9k: fix oops on trying to hold the wrong spinlock
+Message-ID: <20081018183413.GI14035@suse.de>
 References: <20081018182721.521723254@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-ohci-fix-endless-polling-behavior.patch"
+Content-Disposition: inline; filename="ath9k-fix-oops-on-trying-to-hold-the-wrong-spinlock.patch"
 In-Reply-To: <20081018183334.GA14035@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,161 +43,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Luis R. Rodriguez <lrodriguez@atheros.com>
 
-commit 71b7497c078a97e2afb774ad7c1f8ff5bdda8a60 upstream
+commit a477e4e6d48d3ac7c7a75bad40585cb391e5c237 upstream
 
-This patch (as1149) fixes an obscure problem in OHCI polling.  In the
-current code, if the RHSC interrupt status flag turns on at a time
-when RHSC interrupts are disabled, it will remain on forever:
+We were trying to hold the wrong spinlock due to a typo
+on IEEE80211_BAR_CTL_TID_S's definition. We use this to
+compute the tid number and then hold this this tid number's
+spinlock.
 
-	The interrupt handler is the only place where RHSC status
-	gets turned back off;
-
-	The interrupt handler won't turn RHSC status off because it
-	doesn't turn off status flags if the corresponding interrupt
-	isn't enabled;
-
-	RHSC interrupts will never get enabled because
-	ohci_root_hub_state_changes() doesn't reenable RHSC if RHSC
-	status is on!
-
-As a result we will continue polling indefinitely instead of reverting
-to interrupt-driven operation, and the root hub will not autosuspend.
-This particular sequence of events is not at all unusual; in fact
-plugging a USB device into an OHCI controller will usually cause it to
-occur.
-
-Of course, this is a bug.  The proper thing to do is to turn off RHSC
-status just before reading the actual port status values.  That way
-either a port status change will be detected (if it occurs before the
-status read) or it will turn RHSC back on.  Possibly both, but that
-won't hurt anything.
-
-We can still check for systems in which RHSC is totally broken, by
-re-reading RHSC after clearing it and before reading the port
-statuses.  (This re-read has to be done anyway, to post the earlier
-write.)  If RHSC is on but no port-change statuses are set, then we
-know that RHSC is broken and we can avoid re-enabling it.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Steven Noonan <steven@uplinklabs.net>
+Signed-off-by: Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Signed-off-by: Sujith <Sujith.Manoharan@atheros.com>
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ohci-hub.c |   51 +++++++++++++++++++++++++++-----------------
- 1 file changed, 32 insertions(+), 19 deletions(-)
+ drivers/net/wireless/ath9k/core.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/host/ohci-hub.c
-+++ b/drivers/usb/host/ohci-hub.c
-@@ -359,17 +359,15 @@ static void ohci_finish_controller_resum
+--- a/drivers/net/wireless/ath9k/core.h
++++ b/drivers/net/wireless/ath9k/core.h
+@@ -316,7 +316,7 @@ void ath_descdma_cleanup(struct ath_soft
+ #define ATH_RX_TIMEOUT           40      /* 40 milliseconds */
+ #define WME_NUM_TID              16
+ #define IEEE80211_BAR_CTL_TID_M  0xF000  /* tid mask */
+-#define IEEE80211_BAR_CTL_TID_S  2       /* tid shift */
++#define IEEE80211_BAR_CTL_TID_S  12      /* tid shift */
  
- /* Carry out polling-, autostop-, and autoresume-related state changes */
- static int ohci_root_hub_state_changes(struct ohci_hcd *ohci, int changed,
--		int any_connected)
-+		int any_connected, int rhsc_status)
- {
- 	int	poll_rh = 1;
--	int	rhsc_status, rhsc_enable;
-+	int	rhsc_enable;
- 
- 	/* Some broken controllers never turn off RHCS in the interrupt
- 	 * status register.  For their sake we won't re-enable RHSC
- 	 * interrupts if the interrupt bit is already active.
- 	 */
--	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
--			OHCI_INTR_RHSC;
- 	rhsc_enable = ohci_readl(ohci, &ohci->regs->intrenable) &
- 			OHCI_INTR_RHSC;
- 
-@@ -421,14 +419,23 @@ static int ohci_root_hub_state_changes(s
- 				ohci_rh_resume(ohci);
- 			else
- 				usb_hcd_resume_root_hub(ohci_to_hcd(ohci));
-+
-+		/* If remote wakeup is disabled, stop polling */
-+		} else if (!ohci->autostop &&
-+				!ohci_to_hcd(ohci)->self.root_hub->
-+					do_remote_wakeup) {
-+			poll_rh = 0;
-+
- 		} else {
--			if (!rhsc_enable && !rhsc_status && (ohci->autostop ||
--					ohci_to_hcd(ohci)->self.root_hub->
--						do_remote_wakeup)) {
-+			/* If no status changes are pending,
-+			 * enable RHSC interrupts
-+			 */
-+			if (!rhsc_enable && !rhsc_status) {
- 				rhsc_enable = OHCI_INTR_RHSC;
- 				ohci_writel(ohci, rhsc_enable,
- 						&ohci->regs->intrenable);
- 			}
-+			/* Keep polling until RHSC is enabled */
- 			if (rhsc_enable)
- 				poll_rh = 0;
- 		}
-@@ -448,22 +455,22 @@ static inline int ohci_rh_resume(struct 
-  * autostop isn't used when CONFIG_PM is turned off.
-  */
- static int ohci_root_hub_state_changes(struct ohci_hcd *ohci, int changed,
--		int any_connected)
-+		int any_connected, int rhsc_status)
- {
--	int	rhsc_status;
--
- 	/* If RHSC is enabled, don't poll */
- 	if (ohci_readl(ohci, &ohci->regs->intrenable) & OHCI_INTR_RHSC)
- 		return 0;
- 
--	/* If no status changes are pending, enable RHSC interrupts */
--	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
--			OHCI_INTR_RHSC;
--	if (!changed && !rhsc_status) {
--		ohci_writel(ohci, OHCI_INTR_RHSC, &ohci->regs->intrenable);
--		return 0;
--	}
--	return 1;
-+	/* If status changes are pending, continue polling.
-+	 * Conversely, if no status changes are pending but the RHSC
-+	 * status bit was set, then RHSC may be broken so continue polling.
-+	 */
-+	if (changed || rhsc_status)
-+		return 1;
-+
-+	/* It's safe to re-enable RHSC interrupts */
-+	ohci_writel(ohci, OHCI_INTR_RHSC, &ohci->regs->intrenable);
-+	return 0;
- }
- 
- #endif	/* CONFIG_PM */
-@@ -478,6 +485,7 @@ ohci_hub_status_data (struct usb_hcd *hc
- 	struct ohci_hcd	*ohci = hcd_to_ohci (hcd);
- 	int		i, changed = 0, length = 1;
- 	int		any_connected = 0;
-+	int		rhsc_status;
- 	unsigned long	flags;
- 
- 	spin_lock_irqsave (&ohci->lock, flags);
-@@ -503,6 +511,11 @@ ohci_hub_status_data (struct usb_hcd *hc
- 		length++;
- 	}
- 
-+	/* Clear the RHSC status flag before reading the port statuses */
-+	ohci_writel(ohci, OHCI_INTR_RHSC, &ohci->regs->intrstatus);
-+	rhsc_status = ohci_readl(ohci, &ohci->regs->intrstatus) &
-+			OHCI_INTR_RHSC;
-+
- 	/* look at each port */
- 	for (i = 0; i < ohci->num_ports; i++) {
- 		u32	status = roothub_portstatus (ohci, i);
-@@ -521,7 +534,7 @@ ohci_hub_status_data (struct usb_hcd *hc
- 	}
- 
- 	hcd->poll_rh = ohci_root_hub_state_changes(ohci, changed,
--			any_connected);
-+			any_connected, rhsc_status);
- 
- done:
- 	spin_unlock_irqrestore (&ohci->lock, flags);
+ enum ATH_RX_TYPE {
+ 	ATH_RX_NON_CONSUMED = 0,
 
 -- 
