@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751589AbYJRVTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbYJRVoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751589AbYJRVTT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 17:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYJRVTL
+	id S1751521AbYJRVoR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 17:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbYJRVoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 17:19:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54672 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbYJRVTK (ORCPT
+	Sat, 18 Oct 2008 17:44:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57853 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbYJRVoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 17:19:10 -0400
-Date: Sat, 18 Oct 2008 14:19:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       kaszak@gmail.com, lcostantino@gmail.com, linux-wireless@vger.kernel.org
-Subject: Re: w35und wifi driver for linux-staging
-Message-ID: <20081018141918.2c7377c6@infradead.org>
-In-Reply-To: <20081001123656.GA30942@elf.ucw.cz>
-References: <20081001123656.GA30942@elf.ucw.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 18 Oct 2008 17:44:08 -0400
+Date: Sat, 18 Oct 2008 17:44:06 -0400 (EDT)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: david@lang.hm
+cc: Thorsten Leemhuis <thl@ct.heise.de>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-Reply-To: <alpine.DEB.1.10.0810160032550.3905@asgard.lang.hm>
+Message-ID: <alpine.LNX.1.10.0810181743420.27947@fbirervta.pbzchgretzou.qr>
+References: <20081016002509.GA25868@kroah.com> <48F6E6EF.8020701@ct.heise.de> <alpine.DEB.1.10.0810160032550.3905@asgard.lang.hm>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Oct 2008 14:36:56 +0200
-Pavel Machek <pavel@suse.cz> wrote:
 
-> Hi!
-> 
-> This is driver for w35und usb wifi -- also in kohjinsha
-> subnotebook. It should work well enough to associate and ping, but it
-> obviously needs to be rewritten two more times...
-> 
-> OTOH worst horrors (like embedded wifi stack) should have been fixed
-> already...
+On Thursday 2008-10-16 03:34, david@lang.hm wrote:
+> On Thu, 16 Oct 2008, Thorsten Leemhuis wrote:
+>> On 16.10.2008 02:25, Greg KH wrote:
+>>
+>> Hence people that write a lot of articles about things that happen in linux
+>> land (like LWN.net or I do) would be forced to write sentences like "[...]the
+>> kernel that will become 2008.3 or 2009.0 will have feature foo that works
+>> like this[...]". That will get really confusing if you read those articles
+>> half a year later -- especially if that kernel became 2008.3 in the end,
+>> because foo in 2009.0 might already look quite different again...
+>
+> pick a name when the merge window opens
 
-> diff --git a/drivers/net/wireless/winbond/Kconfig
-> b/drivers/net/wireless/winbond/Kconfig new file mode 100644
-> index 0000000..94499d3
-> --- /dev/null
-> +++ b/drivers/net/wireless/winbond/Kconfig
-> @@ -0,0 +1,6 @@
-> +config W35UND
-> +	tristate "Winbond driver"
-> +	depends on MAC80211 && WLAN_80211 && EXPERIMENTAL
-> && !4KSTACKS
-
-why this !4KSTACKS? At minimum that should be in the "to fix" list ;)
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Hell no, we're not a distro.
