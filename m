@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbYJROxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbYJRPAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbYJROxi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 10:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYJROxb
+	id S1752092AbYJRPAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 11:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYJRPAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 10:53:31 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:25722 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbYJROxa convert rfc822-to-8bit (ORCPT
+	Sat, 18 Oct 2008 11:00:09 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2307 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751322AbYJRPAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 10:53:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=t7TvxpCBB+ppxAJiMhbenw8Nimpub6QZIF51TS3znFW2pwAM15W3P40IAT7LXn/jex
-         5N/lsDL2Mk5URL88X/+fug/QBxAiQno+TbUN67agffbGdTpRnRPbnuliIEr3XdBT+uch
-         dF/5TCfusJ7IWIfWkfnpPFvnWP+853wRX9yZ4=
-Date: Sat, 18 Oct 2008 16:53:37 +0200
-From: dcg <diegocg@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix leak in drivers/staging/at76_usb.c
-Message-ID: <20081018165337.284f6307@diego-desktop>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 18 Oct 2008 11:00:08 -0400
+Date: Sat, 18 Oct 2008 11:00:06 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Oliver Bock <bock@tfh-berlin.de>, <linux-kernel@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>, <xfs-masters@oss.sgi.com>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.27: "array subscript is above array bounds" warnings
+In-Reply-To: <20081017235046.f3c6c86e.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0810181050570.1298-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix leak in at76_usb as reported in:
-http://bugzilla.kernel.org/show_bug.cgi?id=11778
+On Fri, 17 Oct 2008, Andrew Morton wrote:
 
+> (cc's added)
+> 
+> On Tue, 14 Oct 2008 22:17:36 +0200 Oliver Bock <bock@tfh-berlin.de> wrote:
+> 
+> > Hi all,
+> > 
+> > FYI, I just came across the following warnings when compiling 2.6.27 
+> > (release) using gcc 4.3.2 (Debian 4.3.2-1) on Debian Lenny (i386):
 
-Reported-by: Daniel Marjamäki <danielm77@spray.se>
-Signed-off-by: Diego Calleja <diegocg@gmail.com>
+...
 
-Index: 2.6/drivers/staging/at76_usb/at76_usb.c
-===================================================================
---- 2.6.orig/drivers/staging/at76_usb/at76_usb.c	2008-10-18 16:19:38.000000000 +0200
-+++ 2.6/drivers/staging/at76_usb/at76_usb.c	2008-10-18 16:20:21.000000000 +0200
-@@ -2319,9 +2319,11 @@
- 	if (!iwe)
- 		return -ENOMEM;
- 
--	if (priv->scan_state != SCAN_COMPLETED)
-+	if (priv->scan_state != SCAN_COMPLETED) {
- 		/* scan not yet finished */
-+		kfree(iwe);
- 		return -EAGAIN;
-+	}
- 
- 	spin_lock_irqsave(&priv->bss_list_spinlock, flags);
- 
+> > drivers/usb/core/hcd.c: In function ___usb_hcd_poll_rh_status___:
+> > include/asm/string_32.h:75: warning: array subscript is above array bounds
+
+Does this refer to the call to memcpy() in usb_hcd_poll_rh_status()?
+
+Line 75 in string_32.h is part of the __constant_memcpy() function.  
+That function should not be involved here because the length argument 
+isn't a compile-time constant.
+
+This has to be either a compiler bug or else a bug in the
+implementation of memcpy.
+
+Alan Stern
+
