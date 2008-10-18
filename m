@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbYJRMw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbYJRM4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751886AbYJRMw2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 08:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYJRMwU
+	id S1751898AbYJRM4x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 08:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYJRM4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 08:52:20 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:10141 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbYJRMwT (ORCPT
+	Sat, 18 Oct 2008 08:56:45 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:55006 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbYJRM4o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 08:52:19 -0400
-Message-ID: <f488382f0810180552w2078244eiaed1fa100ad4c4c6@mail.gmail.com>
-Date: Sat, 18 Oct 2008 05:52:18 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "kernel list" <linux-kernel@vger.kernel.org>, anders@anduras.de
-Subject: appletouch regression
+	Sat, 18 Oct 2008 08:56:44 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Eric Miao <eric.miao@marvell.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] arm: balance parenthesis in header file
+Date: Sat, 18 Oct 2008 14:56:43 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200810181456.44273.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that the appletouch driver is (sporadically) not detecting my
-Apple Trackpad anymore on Linus' current tree (2.6.27-05577-g0cfd810).
-When it is misbehaving, it doesn't have any /dev/input/event* entry
-that corresponds to the input from appletouch, and dmesg -should- show
-the following, as 2.6.27.1 does, but does not:
+Hello,
 
-appletouch: Geyser mode initialized.
-input: appletouch as /class/input/input4
-usbcore: registered new interface driver appletouch
-appletouch: 17" model detected
+	Introduced by:
 
-On the current tree, occasionally all I get is:
+commit fff147208b48680cb7b627a144113a6585828a0e
+Author: Eric Miao <eric.miao@marvell.com>
+Date:   Fri Sep 5 22:15:23 2008 +0800
 
-usbcore: registered new interface driver appletouch
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-It's unfortunately a touchy issue, as it only -occasionally- happens.
-A bisection will be a pain in the butt, but I'm starting it right now
-anyway.
+--- a/arch/arm/mach-pxa/include/mach/spitz.h
++++ b/arch/arm/mach-pxa/include/mach/spitz.h
+@@ -142,7 +142,7 @@
 
-- Steven
+ #define SPITZ_SCP2_GPIO_BASE		(NR_BUILTIN_GPIO + 12)
+ #define SPITZ_GPIO_IR_ON		(SPITZ_SCP2_GPIO_BASE + 0)
+-#define SPITZ_GPIO_AKIN_PULLUP		(SPITZ_SCP2_GPIO_BASE + 1
++#define SPITZ_GPIO_AKIN_PULLUP		(SPITZ_SCP2_GPIO_BASE + 1)
+ #define SPITZ_GPIO_RESERVED_1		(SPITZ_SCP2_GPIO_BASE + 2)
+ #define SPITZ_GPIO_RESERVED_2		(SPITZ_SCP2_GPIO_BASE + 3)
+ #define SPITZ_GPIO_RESERVED_3		(SPITZ_SCP2_GPIO_BASE + 4)
+
