@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbYJRTP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYJRTQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbYJRTP7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 15:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYJRTFN
+	id S1756029AbYJRTQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 15:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbYJRTFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 15:05:13 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47674 "EHLO mx2.suse.de"
+	Sat, 18 Oct 2008 15:05:19 -0400
+Received: from mail.suse.de ([195.135.220.2]:38593 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752913AbYJRTFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 15:05:10 -0400
-Date: Sat, 18 Oct 2008 11:48:03 -0700
+	id S1751855AbYJRTFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 15:05:15 -0400
+Date: Sat, 18 Oct 2008 11:48:06 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,201 +22,112 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Bruce Schmid <duck@freescale.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>
-Subject: [patch 17/26] V4L/DVB (8617): uvcvideo: dont use stack-based
-	buffers for USB transfers.
-Message-ID: <20081018184803.GR301@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Shaohua Li <shaohua.li@intel.com>
+Subject: [patch 19/26] PCI: disable ASPM per ACPI FADT setting
+Message-ID: <20081018184806.GS301@suse.de>
 References: <20081018183853.004667035@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-dvb-uvcvideo-don-t-use-stack-based-buffers-for-usb-transfers.patch"
+Content-Disposition: inline; filename="pci-disable-aspm-per-acpi-fadt-setting.patch"
 In-Reply-To: <20081018184708.GA301@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
+From: Shaohua Li <shaohua.li@intel.com>
+commit 5fde244d39b88625ac578d83e6625138714de031 upstream
 
-commit 04793dd041bbb88a39b768b714c725de2c339b51 upstream
+The ACPI FADT table includes an ASPM control bit. If the bit is set, do
+not enable ASPM since it may indicate that the platform doesn't actually
+support the feature.
 
-Data buffers on the stack are not allowed for USB I/O. Use dynamically
-allocated buffers instead.
-
-Signed-off-by: Bruce Schmid <duck@freescale.com>
-Signed-off-by: Laurent Pinchart <laurent.pinchart@skynet.be>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Tested-by: Jack Howarth <howarth@bromo.msbb.uc.edu>
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/uvc/uvc_ctrl.c  |   33 +++++++++++++++++++++------------
- drivers/media/video/uvc/uvc_video.c |   33 ++++++++++++++++++++++-----------
- 2 files changed, 43 insertions(+), 23 deletions(-)
+ drivers/pci/pci-acpi.c   |    7 +++++++
+ drivers/pci/pcie/aspm.c  |    5 +++++
+ include/acpi/actbl.h     |    1 +
+ include/linux/pci-aspm.h |    5 +++++
+ 4 files changed, 18 insertions(+)
 
---- a/drivers/media/video/uvc/uvc_ctrl.c
-+++ b/drivers/media/video/uvc/uvc_ctrl.c
-@@ -585,13 +585,17 @@ int uvc_query_v4l2_ctrl(struct uvc_video
- 	struct uvc_control_mapping *mapping;
- 	struct uvc_menu_info *menu;
- 	unsigned int i;
--	__u8 data[8];
-+	__u8 *data;
- 	int ret;
- 
- 	ctrl = uvc_find_control(video, v4l2_ctrl->id, &mapping);
- 	if (ctrl == NULL)
- 		return -EINVAL;
- 
-+	data = kmalloc(8, GFP_KERNEL);
-+	if (data == NULL)
-+		return -ENOMEM;
+--- a/drivers/pci/pci-acpi.c
++++ b/drivers/pci/pci-acpi.c
+@@ -11,6 +11,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/module.h>
++#include <linux/pci-aspm.h>
+ #include <acpi/acpi.h>
+ #include <acpi/acnamesp.h>
+ #include <acpi/acresrc.h>
+@@ -394,6 +395,12 @@ static int __init acpi_pci_init(void)
+ 		printk(KERN_INFO"ACPI FADT declares the system doesn't support MSI, so disable it\n");
+ 		pci_no_msi();
+ 	}
 +
- 	memset(v4l2_ctrl, 0, sizeof *v4l2_ctrl);
- 	v4l2_ctrl->id = mapping->id;
- 	v4l2_ctrl->type = mapping->v4l2_type;
-@@ -604,8 +608,8 @@ int uvc_query_v4l2_ctrl(struct uvc_video
- 	if (ctrl->info->flags & UVC_CONTROL_GET_DEF) {
- 		if ((ret = uvc_query_ctrl(video->dev, GET_DEF, ctrl->entity->id,
- 				video->dev->intfnum, ctrl->info->selector,
--				&data, ctrl->info->size)) < 0)
--			return ret;
-+				data, ctrl->info->size)) < 0)
-+			goto out;
- 		v4l2_ctrl->default_value = uvc_get_le_value(data, mapping);
- 	}
++	if (acpi_gbl_FADT.boot_flags & BAF_PCIE_ASPM_CONTROL) {
++		printk(KERN_INFO"ACPI FADT declares the system doesn't support PCIe ASPM, so disable it\n");
++		pcie_no_aspm();
++	}
++
+ 	ret = register_acpi_bus_type(&acpi_pci_bus);
+ 	if (ret)
+ 		return 0;
+--- a/drivers/pci/pcie/aspm.c
++++ b/drivers/pci/pcie/aspm.c
+@@ -808,6 +808,11 @@ static int __init pcie_aspm_disable(char
  
-@@ -623,13 +627,15 @@ int uvc_query_v4l2_ctrl(struct uvc_video
- 			}
- 		}
+ __setup("pcie_noaspm", pcie_aspm_disable);
  
--		return 0;
-+		ret = 0;
-+		goto out;
++void pcie_no_aspm(void)
++{
++	aspm_disabled = 1;
++}
++
+ #ifdef CONFIG_ACPI
+ #include <acpi/acpi_bus.h>
+ #include <linux/pci-acpi.h>
+--- a/include/acpi/actbl.h
++++ b/include/acpi/actbl.h
+@@ -277,6 +277,7 @@ enum acpi_prefered_pm_profiles {
+ #define BAF_LEGACY_DEVICES              0x0001
+ #define BAF_8042_KEYBOARD_CONTROLLER    0x0002
+ #define BAF_MSI_NOT_SUPPORTED           0x0008
++#define BAF_PCIE_ASPM_CONTROL           0x0010
  
- 	case V4L2_CTRL_TYPE_BOOLEAN:
- 		v4l2_ctrl->minimum = 0;
- 		v4l2_ctrl->maximum = 1;
- 		v4l2_ctrl->step = 1;
--		return 0;
-+		ret = 0;
-+		goto out;
- 
- 	default:
- 		break;
-@@ -638,26 +644,29 @@ int uvc_query_v4l2_ctrl(struct uvc_video
- 	if (ctrl->info->flags & UVC_CONTROL_GET_MIN) {
- 		if ((ret = uvc_query_ctrl(video->dev, GET_MIN, ctrl->entity->id,
- 				video->dev->intfnum, ctrl->info->selector,
--				&data, ctrl->info->size)) < 0)
--			return ret;
-+				data, ctrl->info->size)) < 0)
-+			goto out;
- 		v4l2_ctrl->minimum = uvc_get_le_value(data, mapping);
- 	}
- 	if (ctrl->info->flags & UVC_CONTROL_GET_MAX) {
- 		if ((ret = uvc_query_ctrl(video->dev, GET_MAX, ctrl->entity->id,
- 				video->dev->intfnum, ctrl->info->selector,
--				&data, ctrl->info->size)) < 0)
--			return ret;
-+				data, ctrl->info->size)) < 0)
-+			goto out;
- 		v4l2_ctrl->maximum = uvc_get_le_value(data, mapping);
- 	}
- 	if (ctrl->info->flags & UVC_CONTROL_GET_RES) {
- 		if ((ret = uvc_query_ctrl(video->dev, GET_RES, ctrl->entity->id,
- 				video->dev->intfnum, ctrl->info->selector,
--				&data, ctrl->info->size)) < 0)
--			return ret;
-+				data, ctrl->info->size)) < 0)
-+			goto out;
- 		v4l2_ctrl->step = uvc_get_le_value(data, mapping);
- 	}
- 
--	return 0;
-+	ret = 0;
-+out:
-+	kfree(data);
-+	return ret;
- }
- 
- 
---- a/drivers/media/video/uvc/uvc_video.c
-+++ b/drivers/media/video/uvc/uvc_video.c
-@@ -90,17 +90,20 @@ static void uvc_fixup_buffer_size(struct
- static int uvc_get_video_ctrl(struct uvc_video_device *video,
- 	struct uvc_streaming_control *ctrl, int probe, __u8 query)
+ #define FADT2_REVISION_ID               3
+ #define FADT2_MINUS_REVISION_ID         2
+--- a/include/linux/pci-aspm.h
++++ b/include/linux/pci-aspm.h
+@@ -27,6 +27,7 @@ extern void pcie_aspm_init_link_state(st
+ extern void pcie_aspm_exit_link_state(struct pci_dev *pdev);
+ extern void pcie_aspm_pm_state_change(struct pci_dev *pdev);
+ extern void pci_disable_link_state(struct pci_dev *pdev, int state);
++extern void pcie_no_aspm(void);
+ #else
+ static inline void pcie_aspm_init_link_state(struct pci_dev *pdev)
  {
--	__u8 data[34];
--	__u8 size;
-+	__u8 *data;
-+	__u16 size;
- 	int ret;
- 
- 	size = video->dev->uvc_version >= 0x0110 ? 34 : 26;
-+	data = kmalloc(size, GFP_KERNEL);
-+	if (data == NULL)
-+		return -ENOMEM;
-+
- 	ret = __uvc_query_ctrl(video->dev, query, 0, video->streaming->intfnum,
--		probe ? VS_PROBE_CONTROL : VS_COMMIT_CONTROL, &data, size,
-+		probe ? VS_PROBE_CONTROL : VS_COMMIT_CONTROL, data, size,
- 		UVC_CTRL_STREAMING_TIMEOUT);
--
- 	if (ret < 0)
--		return ret;
-+		goto out;
- 
- 	ctrl->bmHint = le16_to_cpup((__le16 *)&data[0]);
- 	ctrl->bFormatIndex = data[2];
-@@ -136,17 +139,22 @@ static int uvc_get_video_ctrl(struct uvc
- 	 */
- 	uvc_fixup_buffer_size(video, ctrl);
- 
--	return 0;
-+out:
-+	kfree(data);
-+	return ret;
- }
- 
- int uvc_set_video_ctrl(struct uvc_video_device *video,
- 	struct uvc_streaming_control *ctrl, int probe)
+@@ -40,6 +41,10 @@ static inline void pcie_aspm_pm_state_ch
+ static inline void pci_disable_link_state(struct pci_dev *pdev, int state)
  {
--	__u8 data[34];
--	__u8 size;
-+	__u8 *data;
-+	__u16 size;
-+	int ret;
- 
- 	size = video->dev->uvc_version >= 0x0110 ? 34 : 26;
--	memset(data, 0, sizeof data);
-+	data = kzalloc(size, GFP_KERNEL);
-+	if (data == NULL)
-+		return -ENOMEM;
- 
- 	*(__le16 *)&data[0] = cpu_to_le16(ctrl->bmHint);
- 	data[2] = ctrl->bFormatIndex;
-@@ -174,10 +182,13 @@ int uvc_set_video_ctrl(struct uvc_video_
- 		data[33] = ctrl->bMaxVersion;
- 	}
- 
--	return __uvc_query_ctrl(video->dev, SET_CUR, 0,
-+	ret = __uvc_query_ctrl(video->dev, SET_CUR, 0,
- 		video->streaming->intfnum,
--		probe ? VS_PROBE_CONTROL : VS_COMMIT_CONTROL, &data, size,
-+		probe ? VS_PROBE_CONTROL : VS_COMMIT_CONTROL, data, size,
- 		UVC_CTRL_STREAMING_TIMEOUT);
-+
-+	kfree(data);
-+	return ret;
  }
++
++static inline void pcie_no_aspm(void)
++{
++}
+ #endif
  
- int uvc_probe_video(struct uvc_video_device *video,
+ #ifdef CONFIG_PCIEASPM_DEBUG /* this depends on CONFIG_PCIEASPM */
 
 -- 
