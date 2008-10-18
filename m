@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJRBVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYJRBX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYJRBVl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 21:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJRBVd
+	id S1755524AbYJRBX6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJRBXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 21:21:33 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:20000 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbYJRBVc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 21:21:32 -0400
-Message-ID: <48F93A19.9070007@ct.jp.nec.com>
-Date: Fri, 17 Oct 2008 18:21:29 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 17 Oct 2008 21:23:50 -0400
+Received: from mail.lang.hm ([64.81.33.126]:38568 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751168AbYJRBXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 21:23:50 -0400
+Date: Fri, 17 Oct 2008 18:23:59 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-Reply-To: <200810180049.19014.rjw@sisk.pl>
+Message-ID: <alpine.DEB.1.10.0810171821500.11079@asgard.lang.hm>
+References: <20081016002509.GA25868@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com> <200810180049.19014.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: [PATCH -rt] sched: remove unneeded #if directive
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Sat, 18 Oct 2008, Rafael J. Wysocki wrote:
 
-__cond_resched_spinlock() is in #ifdef CONFIG_PREEMPT_RT.
-So the following line always true.
-#if (defined(CONFIG_SMP) && defined(CONFIG_PREEMPT)) || defined(CONFIG_PREEMPT_RT)
+> On Friday, 17 of October 2008, Greg KH wrote:
+>> On Fri, Oct 17, 2008 at 08:47:23PM +0100, Alan Cox wrote:
+>>>> And that's my point here, do we want to change the current numbering
+>>>> scheme as people have expressed annoyances of the current one.
+>>>
+>>> But any new scheme will be just as annoying to someone and it messes up
+>>> existing documentation, understanding and risks breaking third party
+>>> tools.
+>>>
+>>> Is it really worth the hassle, plus we'll have to change again if we use
+>>> date/times because once we are shipping Linux out to Alpha Centauri with
+>>> colonists there will be serious problems trying to compute the effect of
+>>> tau on release numbering ...
+>>
+>> Sure, but by then, the 2.6.521 release will be out and we could fix it
+>> up by finally going to 3.0 :)
+>
+> Surely some scripts will start to break as soon as the third number gets
+> three digits.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- kernel/sched.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+we've had three digit numbers in the third position before (2.3 and 2.5 
+went well past three digits IIRC)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 0d68e79..2b34f00 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5841,7 +5841,6 @@ EXPORT_SYMBOL(__cond_resched_raw_spinlock);
- 
- int __cond_resched_spinlock(spinlock_t *lock)
- {
--#if (defined(CONFIG_SMP) && defined(CONFIG_PREEMPT)) || defined(CONFIG_PREEMPT_RT)
- 	if (lock->break_lock) {
- 		lock->break_lock = 0;
- 		spin_unlock_no_resched(lock);
-@@ -5849,7 +5848,7 @@ int __cond_resched_spinlock(spinlock_t *lock)
- 		spin_lock(lock);
- 		return 1;
- 	}
--#endif
-+
- 	return 0;
- }
- EXPORT_SYMBOL(__cond_resched_spinlock);
--- 
-1.5.6
+>> Seriously, am I the only one that is getting annoyed by our version
+>> numbers?  If so, I can live with it, but I got the feeling that I wasn't
+>> alone here.
+>
+> Actually, I thought we could continue to use a w.x.y.z numbering scheme, but
+> in such a way that:
+>
+> w = ($year - 2000) / 10 + 2 (so that we start from 2)
+> x = $year % 10
+> y = (number of major release in $year)
+> z = (number of stable version for major release w.x.y)
+>
+> Then, the first major release in 2009 would be 2.9.1 and its first -stable
+> "child" would become 2.9.1.1.  In turn, the first major release in 2010 could
+> be 3.0.1 and so on.
 
+if you want the part of the version number to increment based on the year, 
+just make it the year and don't complicate things.
+
+David Lang
