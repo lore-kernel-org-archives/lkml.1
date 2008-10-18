@@ -1,107 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbYJRBvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbYJRBxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbYJRBvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Oct 2008 21:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYJRBvJ
+	id S1755334AbYJRBxs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Oct 2008 21:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYJRBxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Oct 2008 21:51:09 -0400
-Received: from smtp.zeuux.org ([210.51.160.52]:56689 "EHLO z.billxu.com"
+	Fri, 17 Oct 2008 21:53:39 -0400
+Received: from ns.suse.de ([195.135.220.2]:57428 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753052AbYJRBvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Oct 2008 21:51:08 -0400
-Date: Sat, 18 Oct 2008 09:51:12 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: Dotan Barak <dotanba@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] kernel/workqueue.c mm/sparse.c: fix some linux coding
-	style typos
-Message-ID: <20081018015112.GA6861@ubuntu>
-References: <200810180516.40060.dotanba@gmail.com>
-MIME-Version: 1.0
+	id S1752717AbYJRBxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Oct 2008 21:53:38 -0400
+Date: Sat, 18 Oct 2008 03:53:23 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch] mm: fix anon_vma races
+Message-ID: <20081018015323.GA11149@wotan.suse.de>
+References: <20081016041033.GB10371@wotan.suse.de> <Pine.LNX.4.64.0810172300280.30871@blonde.site> <alpine.LFD.2.00.0810171549310.3438@nehalem.linux-foundation.org> <Pine.LNX.4.64.0810180045370.8995@blonde.site>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810180516.40060.dotanba@gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.64.0810180045370.8995@blonde.site>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 05:16:39AM +0200, Dotan Barak wrote:
->workqueues: fix some linux coding style typos:
->
->* spaces were replaced with tabs
->* "foo* bar" was replaced with "foo *bar"
->
->Signed-off-by: Dotan Barak <dotanba@gmail.com>
->
->---
->
->diff --git a/kernel/workqueue.c b/kernel/workqueue.c
->index 714afad..f9de8b5 100644
->--- a/kernel/workqueue.c
->+++ b/kernel/workqueue.c
->@@ -300,7 +300,7 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+On Sat, Oct 18, 2008 at 01:13:16AM +0100, Hugh Dickins wrote:
+> On Fri, 17 Oct 2008, Linus Torvalds wrote:
+> > would be more obvious in the place where we actually fetch that "anon_vma" 
+> > pointer again and actually derefernce it.
+> > 
+> > HOWEVER:
+> > 
+> >  - there are potentially multiple places that do that, and putting it in 
+> >    the anon_vma_prepare() thing not only matches things with the 
+> >    smp_wmb(), making that whole pairing much more obvious, but it also 
+> >    means that we're guaranteed that any anon_vma user will have done the 
+> >    smp_read_barrier_depends(), since they all have to do that prepare 
+> >    thing anyway.
+> 
+> No, it's not so that any anon_vma user would have done the
+> smp_read_barrier_depends() placed in anon_vma_prepare().
+> 
+> Anyone faulting in a page would have done it (swapoff? that
+> assumes it's been done, let's not worry about it right now).
+> 
+> But they're doing it to make the page's ptes accessible to
+> memory reclaim, and the CPU doing memory reclaim will not
+> (unless by coincidence) have done that anon_vma_prepare() -
+> it's just reading the links which the faulters are providing.
 
-The same problem is in mm/sparse.c .
+Yes, that's a very important flaw you point out with the fix. Good
+spotting.
 
-* spaces were replaced with tabs
-* "foo* bar" was replaced with "foo *bar"
+Actually another thing I was staying awake thinking about was the
+pairwise consistency problem. "Apparently" Linux is supposed to
+support arbitrary pairwise consistency.
 
-Signed-off-by: Dotan Barak <dotanba@gmail.com>
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- kernel/workqueue.c |    6 +++---
- mm/sparse.c        |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+This means.
+CPU0
+anon_vma.initialized = 1;
+smp_wmb()
+vma->anon_vma = anon_vma;
 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 714afad..f9de8b5 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -300,7 +300,7 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
- 			printk(KERN_ERR "BUG: workqueue leaked lock or atomic: "
- 					"%s/0x%08x/%d\n",
- 					current->comm, preempt_count(),
--				       	task_pid_nr(current));
-+					task_pid_nr(current));
- 			printk(KERN_ERR "    last function: ");
- 			print_symbol("%s\n", (unsigned long)f);
- 			debug_show_held_locks(current);
-@@ -551,7 +551,7 @@ static void wait_on_work(struct work_struct *work)
- }
- 
- static int __cancel_work_timer(struct work_struct *work,
--				struct timer_list* timer)
-+				struct timer_list *timer)
- {
- 	int ret;
- 
-@@ -908,7 +908,7 @@ void destroy_workqueue(struct workqueue_struct *wq)
- 
- 	for_each_cpu_mask_nr(cpu, *cpu_map)
- 		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
-- 	cpu_maps_update_done();
-+	cpu_maps_update_done();
- 
- 	free_percpu(wq->cpu_wq);
- 	kfree(wq);
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 39db301..47cb5c3 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -114,7 +114,7 @@ static inline int sparse_index_init(unsigned long section_nr, int nid)
-  * to also work for the flat array case because
-  * NR_SECTION_ROOTS==NR_MEM_SECTIONS.
-  */
--int __section_nr(struct mem_section* ms)
-+int __section_nr(struct mem_section *ms)
- {
- 	unsigned long root_nr;
- 	struct mem_section* root;
--- 
-1.5.2.5
+CPU1
+if (vma->anon_vma)
+  page->anon_vma = vma->anon_vma;
 
--- 
-Jianjun Kong | Happy Hacking
-HomePage: http://kongove.cn
-Gtalk: kongjianjun@gmail.com
+CPU2
+if (page->anon_vma) {
+  smp_read_barrier_depends();
+  assert(page->anon_vma.initialized);
+}
+
+The assertion may trigger because the store from CPU0 may not have
+propograted to CPU2 before the stores from CPU1.
+
+But after thinking about this a bit more, I think Linux would be
+broken all over the map under such ordering schemes. I think we'd
+have to mandate causal consistency. Are there any architectures we
+run on where this is not guaranteed? (I think recent clarifications
+to x86 ordering give us CC on that architecture).
+
+powerpc, ia64, alpha, sparc, arm, mips? (cced linux-arch)
+
+
