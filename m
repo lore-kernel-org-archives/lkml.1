@@ -1,46 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbYJSUzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752133AbYJSVFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbYJSUzI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 16:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYJSUy7
+	id S1752133AbYJSVFR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 17:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYJSVFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 16:54:59 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:42516 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbYJSUy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 16:54:59 -0400
-Date: Sun, 19 Oct 2008 21:24:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Sergio Luis" <eeeesti@gmail.com>
-Cc: "Alan Cox" <alan@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tty: usb-serial krefs - bad magic number for tty struct (188:0)
-Message-ID: <20081019212454.260b0f38@the-village.bc.nu>
-In-Reply-To: <ce0170d90810191039i6c78bac1ue1e4b688d47740ff@mail.gmail.com>
-References: <ce0170d90810180915m10caa101ucc9e9a8a17cbb6cb@mail.gmail.com>
-	<ce0170d90810191039i6c78bac1ue1e4b688d47740ff@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 19 Oct 2008 17:05:03 -0400
+Received: from home.keithp.com ([63.227.221.253]:34522 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751805AbYJSVFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 17:05:01 -0400
+Subject: Re: io resources and cached mappings (was: [git pull] drm patches
+	for 2.6.27-rc1)
+From: Keith Packard <keithp@keithp.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: keithp@keithp.com, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20081019175320.GA6442@elte.hu>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+	 <200810181237.49784.nickpiggin@yahoo.com.au>
+	 <1224357062.4384.72.camel@koto.keithp.com>
+	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
+	 <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com>
+	 <1224398496.5303.7.camel@koto.keithp.com>  <20081019175320.GA6442@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0VdByRzYbljFa1egThHw"
+Date: Sun, 19 Oct 2008 14:04:51 -0700
+Message-Id: <1224450291.5303.23.camel@koto.keithp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'd suggest to revert that commit and to review it more carefully.
-> What do you people think?
 
-I suggest you demonstrate a little patience. Its a weekend, its a bug
-that seems specific to a single device and we've got a ton of time to
-nail it.
+--=-0VdByRzYbljFa1egThHw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I'll take a look Tuesday and I don't expect it to take long to pin down -
-there will be an unbalanced kref_put somewhere.
+On Sun, 2008-10-19 at 19:53 +0200, Ingo Molnar wrote:
 
-Alan
+> Note how simple and consistent it all gets: IO resources already know=20
+> their physical location and their size limits. Being able to cache an=20
+> ioremap in a mapping [and being able to use atomic kmaps on 32-bit] is a=20
+> relatively simple and natural extension to the concept.
+
+I'm not sure I see any value in caching mappings here; we're mostly
+interested in copying lots of data onto the card and so we use a lot of
+different mappings; atomic mappings are easy to use, and efficient
+enough.
+
+Also, if we're using a resource, I'd like to just use byte offsets and
+not pfns; the resource presumably knows the base address.
+
+> i think we need to finalize the API names and their abstraction level,=20
+> and then could even merge those APIs into v2.6.28 on a fast path, to=20
+> enable you to use it. It does not interact with anything else so it=20
+> should be safe to do.
+
+Let's figure out the API we want, then figure out whether it makes sense
+to stick it into 2.6.28 or whether we just want to wait for .29. I don't
+mind rewriting the driver for the next release.
+
+I will probably use something like the io_reserve stuff for .28 though;
+it makes the code easier to read and gives us good performance on 64 bit
+kernels.
+
+--=20
+keith.packard@intel.com
+
+--=-0VdByRzYbljFa1egThHw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBI+6DzQp8BWwlsTdMRAqmxAJ9FziebA91LFkDDzflZTWuSeBd9owCg4DVm
+kdSrpHDmhSK7vkWxtuV/LAU=
+=XvUM
+-----END PGP SIGNATURE-----
+
+--=-0VdByRzYbljFa1egThHw--
+
