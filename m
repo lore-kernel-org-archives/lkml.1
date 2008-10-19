@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYJSAAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbYJSAih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbYJSAAA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 20:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYJRX7w
+	id S1752438AbYJSAih (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 20:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYJSAi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 19:59:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42325 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752024AbYJRX7v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 19:59:51 -0400
-Date: Sat, 18 Oct 2008 16:59:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Parag Warudkar" <parag.lkml@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       htejun@gmail.com, gregkh@suse.de
-Subject: Re: [PATCH] x86: sysfs - kill owner field from attribute
-Message-Id: <20081018165939.7b557c2b.akpm@linux-foundation.org>
-In-Reply-To: <f7848160809091611w50270265hc149baeaf267775e@mail.gmail.com>
-References: <f7848160809091611w50270265hc149baeaf267775e@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sat, 18 Oct 2008 20:38:27 -0400
+Received: from home.keithp.com ([63.227.221.253]:34719 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751981AbYJSAi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 20:38:26 -0400
+Subject: Re: [git pull] drm patches for 2.6.27-rc1
+From: Keith Packard <keithp@keithp.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: keithp@keithp.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <20081018223214.GA5093@elte.hu>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+	 <200810181237.49784.nickpiggin@yahoo.com.au>
+	 <1224357062.4384.72.camel@koto.keithp.com>
+	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
+	 <20081018223214.GA5093@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-UIGKcW/wCt/q3w5mOILv"
+Date: Sat, 18 Oct 2008 17:38:11 -0700
+Message-Id: <1224376691.4384.105.camel@koto.keithp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Sep 2008 19:11:02 -0400 "Parag Warudkar" <parag.lkml@gmail.com> wrote:
 
-> Tejun's commit 7b595756ec1f49e0049a9e01a1298d53a7faaa15 made sysfs
-> attribute->owner unnecessary.
-> But the field was left in the structure to ease the merge. It's been
-> over a year since that change and it is now time to start killing
-> attribute->owner along with its users - one arch at a time!
-> 
-> This patch is attempt #1 to get rid of attribute->owner only for
-> CONFIG_X86_64 or CONFIG_X86_32 .
-> We will deal with other arches later on as and when possible - avr32
-> will be the next since that is something I can test.
-> Compile (make allyesconfig / make allmodconfig / custom config) and boot tested.
-> 
-> I would prefer to have this in -mm or one of the other trees for some
-> time before hitting mainline just to make sure there are no issues.
-> 
+--=-UIGKcW/wCt/q3w5mOILv
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I'm about to send this in to Linus.
+On Sun, 2008-10-19 at 00:32 +0200, Ingo Molnar wrote:
 
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -21,12 +21,15 @@ struct kobject;
->  struct module;
-> 
->  /* FIXME
-> - * The *owner field is no longer used, but leave around
-> - * until the tree gets cleaned up fully.
-> + * The *owner field is no longer used.
-> + * x86 tree has been cleaned up. The owner
-> + * attribute is still left for other arches.
->   */
->  struct attribute {
->  	const char		*name;
-> +#if !defined(CONFIG_X86_64) && !defined(CONFIG_X86_32)
->  	struct module		*owner;
-> +#endif
->  	mode_t			mode;
->  };
+> the _real_ remapping in a graphics aperture happens on the GPU level=20
+> anyway, you manage an in-RAM GPU pagetable that just works like an=20
+> IOMMU, correct?
 
-But this part was dropped.  I did this a while ago because people kept
-on adding new code to linux-next which referenced module.owner and my
-tree kept on breaking.
+Yes, a one-level linear MMU which uses BIOS-reserved memory.
 
-A good time to finish this off would be immediately after 2.6.28-rc1 is
-released.  Please do another pass over the whole tree and send a single
-patch which fixes up those recently-introdced usages of module.owner
-and which also adds the above #ifndef.
+So, at least for a prototype, on 64-bit we can just use ioremap_wc and
+hold the mapping while the driver is open? Is there any huge benefit to
+using the kernel mapping?
 
-Thanks.
+> so on 32-bit we have the INVLPG TLB overhead and preemption restrictions=20
+> - but we knew that. We'd have to allow atomic_kmap() on non-highmem as=20
+> well but that's fair.
+
+Yes, the non-highmem case is currently in fairly bad shape.
+
+> Mind sending patches for this? :-)
+
+I've got Venki lined up to do this work for me; once we're happy enough
+with the API. In particular, the non-highmem 32-bit case seems a bit
+tricky.
+
+Also, does anyone have a better set of names for this stuff?
+io_reserve_pci_mapping seems fairly ugly to me.
+
+--=20
+keith.packard@intel.com
+
+--=-UIGKcW/wCt/q3w5mOILv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBI+oFyQp8BWwlsTdMRApa3AJ46WGzyhjDG2Df5RtJYx1/+UZmQhACgwxZB
+L907dvlCI7Djkaq/LQdLWMc=
+=hzzz
+-----END PGP SIGNATURE-----
+
+--=-UIGKcW/wCt/q3w5mOILv--
+
