@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751812AbYJSQW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbYJSQaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751812AbYJSQW6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 12:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYJSQWt
+	id S1751813AbYJSQaA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 12:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYJSQ3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 12:22:49 -0400
-Received: from xi.wantstofly.org ([83.160.184.112]:44894 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbYJSQWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 12:22:48 -0400
-Date: Sun, 19 Oct 2008 18:22:44 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Eric Sandeen <sandeen@sandeen.net>, Martin Michlmayr <tbm@cyrius.com>,
-       Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
-       debian-arm@lists.debian.org, xfs@oss.sgi.com,
-       Hiroki KUMAGAI <hiroki.kumagai@toshiba.co.jp>
-Subject: Re: XFS filesystem corruption on the arm(el) architecture
-Message-ID: <20081019162244.GF4129@xi.wantstofly.org>
-References: <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <48F89E0F.6030307@sandeen.net> <20081018085752.GS25834@deprecation.cyrius.com> <20081019014830.GI31761@disturbed> <48FAA445.9050800@sandeen.net> <20081019090702.GA1925@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081019090702.GA1925@infradead.org>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 19 Oct 2008 12:29:52 -0400
+Received: from mail.lang.hm ([64.81.33.126]:46313 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751359AbYJSQ3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 12:29:51 -0400
+Date: Sun, 19 Oct 2008 09:29:54 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-Reply-To: <200810191451.24342.rjw@sisk.pl>
+Message-ID: <alpine.DEB.1.10.0810190928360.20238@asgard.lang.hm>
+References: <20081016002509.GA25868@kroah.com> <alpine.DEB.1.10.0810171821500.11079@asgard.lang.hm> <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz> <200810191451.24342.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 19, 2008 at 05:07:02AM -0400, Christoph Hellwig wrote:
+On Sun, 19 Oct 2008, Rafael J. Wysocki wrote:
 
-> > This is probably the vmap cache aliasing problem that we paid a bit of
-> > attention to a few months ago, no?
-> 
-> Shouldn't the cachepolicy switch take care of that?
+> On Sunday, 19 of October 2008, Jiri Kosina wrote:
+>> On Fri, 17 Oct 2008, david@lang.hm wrote:
+>>
+>>>> Surely some scripts will start to break as soon as the third number gets
+>>>> three digits.
+>>> we've had three digit numbers in the third position before (2.3 and 2.5
+>>> went well past three digits IIRC)
+>>
+>> Did we? I only recall 2.5.7[something] and 2.3.5[something] (plus special
+>> 2.3.99 release).
+>>
+>>>> Actually, I thought we could continue to use a w.x.y.z numbering
+>>>> scheme, but in such a way that:
+>>>> w = ($year - 2000) / 10 + 2 (so that we start from 2)
+>>>> x = $year % 10
+>>>> y = (number of major release in $year)
+>>>> z = (number of stable version for major release w.x.y)
+>>>> Then, the first major release in 2009 would be 2.9.1 and its first
+>>>> -stable "child" would become 2.9.1.1.  In turn, the first major
+>>>> release in 2010 could be 3.0.1 and so on.
+>>> if you want the part of the version number to increment based on the year,
+>>> just make it the year and don't complicate things.
+>>
+>> In addition to that, having the kernel version dependent on year doesn't
+>> really seem to make much sense to me. Simply said, I don't see any
+>> relation of kernel source code contents to the current date in whatever
+>> calendar system.
+>>
+>> And 2.x+1.y-rcZ+1 immediately following 2.x.y-rcZ really hurts my eyes :)
+>
+> Hm, why would that happen?
 
-Setting cachepolicy=uncached should make aliasing issues disappear.
-If you're still seeing issues with cachepolicy=uncached, it's likely
-some other issue.
+with the date based numbers, that was one of the things that 'could' 
+happen as the year changed (2008.5.0-rc4 would be followed by 
+2009.1.0-rc5)
+
+David Lang
