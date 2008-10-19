@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752133AbYJSVFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbYJSVO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752133AbYJSVFR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 17:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYJSVFD
+	id S1752136AbYJSVO7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 17:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYJSVOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 17:05:03 -0400
-Received: from home.keithp.com ([63.227.221.253]:34522 "EHLO keithp.com"
+	Sun, 19 Oct 2008 17:14:52 -0400
+Received: from 8bytes.org ([88.198.83.132]:56761 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbYJSVFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 17:05:01 -0400
-Subject: Re: io resources and cached mappings (was: [git pull] drm patches
-	for 2.6.27-rc1)
-From: Keith Packard <keithp@keithp.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: keithp@keithp.com, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20081019175320.GA6442@elte.hu>
-References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
-	 <200810181237.49784.nickpiggin@yahoo.com.au>
-	 <1224357062.4384.72.camel@koto.keithp.com>
-	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
-	 <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com>
-	 <1224398496.5303.7.camel@koto.keithp.com>  <20081019175320.GA6442@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0VdByRzYbljFa1egThHw"
-Date: Sun, 19 Oct 2008 14:04:51 -0700
-Message-Id: <1224450291.5303.23.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751693AbYJSVOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 17:14:51 -0400
+Date: Sun, 19 Oct 2008 23:14:49 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       fenghua.yu@intel.com, tony.luck@intel.com, suresh.b.siddha@intel.com,
+       sfr@canb.auug.org.au, andreas.herrmann3@amd.com,
+       joseph.cihula@intel.com, akpm@linux-foundation.org,
+       jbarnes@virtuousgeek.org, tglx@linutronix.de,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [ANNOUNCE] iommu-2.6.git tree
+Message-ID: <20081019211449.GG21841@8bytes.org>
+References: <1224343843.6770.1378.camel@macbook.infradead.org> <20081019111203.GB29705@8bytes.org> <1224415198.6770.1464.camel@macbook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224415198.6770.1464.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Oct 19, 2008 at 12:19:58PM +0100, David Woodhouse wrote:
+> On Sun, 2008-10-19 at 13:12 +0200, Joerg Roedel wrote:
+> > On Sat, Oct 18, 2008 at 04:30:43PM +0100, David Woodhouse wrote:
+> > > As previously threatened, I've created an iommu-2.6.git tree:
+> > > 	git://git.infradead.org/iommu-2.6.git
+> > > 	http://git.infradead.org/iommu-2.6.git
+> > 
+> > Is there a specific reason why IOMMU stuff should go to Linus without
+> > testing them in the x86 tree before? The DMA layer and IOMMU drivers are
+> > an integral component of the architecture and patches for it are best
+> > placed in the architecture tree instead of a seperate one, imho.
+> 
+> This is the purpose that linux-next serves, not the x86 forest-of-doom.
+> 
+> And I thought Ingo said his old iommu tree wasn't in there anyway? He
+> said it was somewhere else, although I haven't actually managed to
+> _find_ it.
 
---=-0VdByRzYbljFa1egThHw
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Its quite easy to learn the workflow of the x86 maintainers with the
+-tip tree. Just ask them, they are very responsive and friendly. I
+personally like that workflow with lots of topic branches.  It gives a
+clear history of development.
 
-On Sun, 2008-10-19 at 19:53 +0200, Ingo Molnar wrote:
+> The Intel IOMMU appears on IA64 too, and doesn't want to be developed
+> and tested off in an x86-specific corner by itself.
 
-> Note how simple and consistent it all gets: IO resources already know=20
-> their physical location and their size limits. Being able to cache an=20
-> ioremap in a mapping [and being able to use atomic kmaps on 32-bit] is a=20
-> relatively simple and natural extension to the concept.
+This is a reason for a seperate Intel IOMMU tree which is pulled by
+Linus. But I don't think that this is a reason to take over control of
+all IOMMU development.
 
-I'm not sure I see any value in caching mappings here; we're mostly
-interested in copying lots of data onto the card and so we use a lot of
-different mappings; atomic mappings are easy to use, and efficient
-enough.
+> And I'm going to be looking at other generic things we can do to
+> improve IOMMU-related performance, which will touch on other
+> architectures too.
 
-Also, if we're using a resource, I'd like to just use byte offsets and
-not pfns; the resource presumably knows the base address.
+As IOMMU infrastructure is architecture-local in Linux (except the
+very high level interface -> DMA-API) there is not much room for
+optimization which will touch multiple architectures. If Intel IOMMU is
+available on x86 and ia64 its definitly different for that driver. This
+is another reason for a seperate Intel IOMMU tree.
 
-> i think we need to finalize the API names and their abstraction level,=20
-> and then could even merge those APIs into v2.6.28 on a fast path, to=20
-> enable you to use it. It does not interact with anything else so it=20
-> should be safe to do.
-
-Let's figure out the API we want, then figure out whether it makes sense
-to stick it into 2.6.28 or whether we just want to wait for .29. I don't
-mind rewriting the driver for the next release.
-
-I will probably use something like the io_reserve stuff for .28 though;
-it makes the code easier to read and gives us good performance on 64 bit
-kernels.
-
---=20
-keith.packard@intel.com
-
---=-0VdByRzYbljFa1egThHw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBI+6DzQp8BWwlsTdMRAqmxAJ9FziebA91LFkDDzflZTWuSeBd9owCg4DVm
-kdSrpHDmhSK7vkWxtuV/LAU=
-=XvUM
------END PGP SIGNATURE-----
-
---=-0VdByRzYbljFa1egThHw--
+Joerg
 
