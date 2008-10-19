@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbYJSTht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbYJSTkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752031AbYJSTht (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 15:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYJSThk
+	id S1752120AbYJSTkR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 15:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYJSTkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 15:37:40 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:60768 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbYJSThj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 15:37:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MUAwiG6yr7ZacIqOll2up8oW5X7GO5jyRRJ0Mf2fJAPZNHzZIdCzmagDHnIY+wNpra
-         Ve2jIAH3bubZN68QW9+qsxNg7ajnaxgjagK+68mKxnWq8eNNb06pmQ0UbloIXY6KXXJj
-         +2+Opp/kQu2zhjEOF9xlO+EyRD3/vroIOdtCg=
-Message-ID: <bc64b4640810191237w25027b68ra77bca03c64f8669@mail.gmail.com>
-Date: Sun, 19 Oct 2008 23:37:38 +0400
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [GIT PATCH] USB patches for 2.6-git
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20081019172901.GA22681@kroah.com>
+	Sun, 19 Oct 2008 15:40:05 -0400
+Received: from styx.suse.cz ([82.119.242.94]:51607 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751778AbYJSTkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 15:40:03 -0400
+Date: Sun, 19 Oct 2008 21:40:02 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Steven Noonan <steven@uplinklabs.net>,
+       Justin Mattock <justinmattock@gmail.com>,
+       Sven Anders <anders@anduras.de>, Marcel Holtmann <marcel@holtmann.org>,
+       linux-bluetooth@vger.kernel.org
+Subject: Re: several messages
+In-Reply-To: <1224425749-22652-2-git-send-email-jirislaby@gmail.com>
+Message-ID: <alpine.LNX.1.10.0810192135010.27479@jikos.suse.cz>
+References: <1224425749-22652-1-git-send-email-jirislaby@gmail.com> <1224425749-22652-2-git-send-email-jirislaby@gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081017220027.GA3659@kroah.com> <gdfauh$hsp$1@ger.gmane.org>
-	 <20081019172901.GA22681@kroah.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/19 Greg KH <greg@kroah.com>:
-> On Sun, Oct 19, 2008 at 12:58:57PM +0000, Dmitry Baryshkov wrote:
->> Greg KH wrote:
->>
->> > Here is the big batch of USB patches for your 2.6-git tree.
->> >
->> > These paches are:
->> >     - a few new USB drivers.
->> >     - new device ids
->> >     - lots of bugfixes
->> >     - additions to the USB api to make driver writer's lives easier. -
->> >     removals of usb macros that don't make sense to use anymore
->> >       (warn() and info() should be using dev_warn() and dev_info()).
->> >     - other minor things.
->> >
->> > All of these patches have been in the -next and -mm trees for quite a
->> > while.
->>
->> >
->> > Please pull from:
->> >     master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
->> >
->> > The full patches will be sent to the linux-usb mailing list, if anyone
->> > wants to see them.
->> >
->>
->> What about TMIO OHCI driver? Will it be merged during this merge window?
->
-> That patch was dropped as it was causing a build error :)
->
-> Now with the fix, I can add it back, I just need to merge it into the
-> original.  It's in my queue and should go in soon.
+On Sun, 19 Oct 2008, Jiri Slaby wrote:
 
-OK, thank you. I was just worried if the patch was lost or just postponed :)
+> +enum hid_type {
+> +	HID_TYPE_UNKNOWN = 0,
+> +	HID_TYPE_MOUSE,
+> +	HID_TYPE_KEYBOARD
+> +};
+> +
+
+Do we really need the HID_TYPE_KEYBOARD at all? It's not used anywhere in 
+the code. I'd propose to add it when it is actually needed. I.e. have the 
+enum contain something like HID_TYPE_MOUSE HID_TYPE_OTHER for now, and add 
+whatever will become necessary in the future, what do you think?
+
+
+On Sun, 19 Oct 2008, Jiri Slaby wrote:
+
+> +/**
+> + * hid_mouse_ignore_list - mouse devices which must not be held by the hid layer
+> + */
+
+I think a more descriptive comment would be appropriate here. It might not 
+be obvious on the first sight why this needs to be done separately from 
+the generic hid_blacklist. I.e. something like
+
+/** 
+ * There are composite devices for which we want to ignore only a certain
+ * interface. This is a list of devices for which only the mouse interface 
+ * will be ignored.
+ */
+
+maybe?
+
+Thanks,
 
 -- 
-With best wishes
-Dmitry
+Jiri Kosina
+SUSE Labs
