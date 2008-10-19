@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751507AbYJSLU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751496AbYJSL0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751507AbYJSLU0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 07:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYJSLUO
+	id S1751496AbYJSL0f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 07:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbYJSL0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 07:20:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55783 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbYJSLUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 07:20:12 -0400
-Subject: Re: [ANNOUNCE] iommu-2.6.git tree
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joro@8bytes.org>
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       fenghua.yu@intel.com, tony.luck@intel.com, suresh.b.siddha@intel.com,
-       sfr@canb.auug.org.au, andreas.herrmann3@amd.com,
-       joseph.cihula@intel.com, akpm@linux-foundation.org,
-       jbarnes@virtuousgeek.org, tglx@linutronix.de,
-       torvalds@linux-foundation.org, mingo@elte.hu
-In-Reply-To: <20081019111203.GB29705@8bytes.org>
-References: <1224343843.6770.1378.camel@macbook.infradead.org>
-	 <20081019111203.GB29705@8bytes.org>
-Content-Type: text/plain
-Date: Sun, 19 Oct 2008 12:19:58 +0100
-Message-Id: <1224415198.6770.1464.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 19 Oct 2008 07:26:25 -0400
+Received: from lucidpixels.com ([75.144.35.66]:55560 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbYJSL0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 07:26:24 -0400
+Date: Sun, 19 Oct 2008 07:26:23 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Kernel 2.6.26.5 -> 2.6.27.2 [USB REGRESSION] (USB -> D_STATE)
+Message-ID: <alpine.DEB.1.10.0810190720210.26990@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-19 at 13:12 +0200, Joerg Roedel wrote:
-> On Sat, Oct 18, 2008 at 04:30:43PM +0100, David Woodhouse wrote:
-> > As previously threatened, I've created an iommu-2.6.git tree:
-> > 	git://git.infradead.org/iommu-2.6.git
-> > 	http://git.infradead.org/iommu-2.6.git
-> 
-> Is there a specific reason why IOMMU stuff should go to Linus without
-> testing them in the x86 tree before? The DMA layer and IOMMU drivers are
-> an integral component of the architecture and patches for it are best
-> placed in the architecture tree instead of a seperate one, imho.
+With kernel 2.6.27.2, any processes attempting to use USB hang and go into 
+D-state, I have never had a problem like this before until 2.6.27.2 (I 
+have not tried 2.6.27.1 or 2.6.27)
 
-This is the purpose that linux-next serves, not the x86 forest-of-doom.
+# lsusb -v
+<hangs>
 
-And I thought Ingo said his old iommu tree wasn't in there anyway? He
-said it was somewhere else, although I haven't actually managed to
-_find_ it.
+open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFDIR|0755, st_size=140, ...}) = 0
+getdents(3, /* 7 entries */, 4096)      = 112
+getdents(3, /* 0 entries */, 4096)      = 0
+close(3)                                = 0
+open("/dev/bus/usb/001", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|O_CLOEXEC) = 3
+fstat64(3, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
+getdents(3, /* 4 entries */, 4096)      = 64
+open("/dev/bus/usb/001/004", O_RDWR)    = 4
+ioctl(4, USBDEVFS_CONNECTINFO
 
-The Intel IOMMU appears on IA64 too, and doesn't want to be developed
-and tested off in an x86-specific corner by itself. And I'm going to be
-looking at other generic things we can do to improve IOMMU-related
-performance, which will touch on other architectures too.
+nut (for UPS) does not start.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+nut       4078  0.0  0.0   1964   856 pts/8    D    07:09   0:00 /lib/nut/usbhid-ups -a belkin
+root      4170  0.0  0.0   2204  1072 pts/8    D+   07:11   0:00 lsusb -v
+
+Processes go directly to D-state with 2.6.27.2 for USB.
+
+Booting back to 2.6.26.5 now to see if everything works again.
+
+Back to 2.6.25.5, everything works fine:
+
+# lsusb 
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 001 Device 004: ID 2040:7501 Hauppauge 
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 002: ID 050d:1100 Belkin Components 
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 002 Device 002: ID 045e:0039 Microsoft Corp. IntelliMouse Optical
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+
+Relevant configuration files and dmesg output:
+
+http://home.comcast.net/~jpiszcz/2.6.25.5-usb-working.txt
+http://home.comcast.net/~jpiszcz/2.6.27.2-usb-broken.txt
+
+http://home.comcast.net/~jpiszcz/linux-2.6.25.5-config
+http://home.comcast.net/~jpiszcz/linux-2.6.27.2-config
 
