@@ -1,86 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751800AbYJSMrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751928AbYJSMsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751800AbYJSMrw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 08:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYJSMro
+	id S1751928AbYJSMsU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 08:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYJSMsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 08:47:44 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:39375 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYJSMrn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 08:47:43 -0400
-Date: Sun, 19 Oct 2008 13:47:48 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Ben Castricum <lk0810@bencastricum.nl>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: NULL pointer derefence since 2.6.27 in (e)poll
-In-Reply-To: <84144f020810190445r12154ae0p271037ae130b653b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0810191346001.26362@blonde.site>
-References: <6F31A6373E3D42EDAED26A994BA0830D@Seven>
- <84144f020810190445r12154ae0p271037ae130b653b@mail.gmail.com>
+	Sun, 19 Oct 2008 08:48:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44523 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751412AbYJSMsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 08:48:00 -0400
+Date: Sun, 19 Oct 2008 14:47:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Joerg Roedel <joro@8bytes.org>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, fenghua.yu@intel.com, tony.luck@intel.com,
+       suresh.b.siddha@intel.com, sfr@canb.auug.org.au,
+       andreas.herrmann3@amd.com, joseph.cihula@intel.com,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org, tglx@linutronix.de,
+       torvalds@linux-foundation.org
+Subject: Re: [ANNOUNCE] iommu-2.6.git tree
+Message-ID: <20081019124732.GA21115@elte.hu>
+References: <1224343843.6770.1378.camel@macbook.infradead.org> <20081019111203.GB29705@8bytes.org> <1224415198.6770.1464.camel@macbook.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224415198.6770.1464.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Oct 2008, Pekka Enberg wrote:
-> On Sun, Oct 19, 2008 at 2:02 PM, Ben Castricum <lk0810@bencastricum.nl> wrote:
-> > I am getting this bug reports almost daily since about 2.6.27. I saved the
-> > output of all of them, but they are all nearly identical, so I just included
-> > the first one. After the report networking seems unstable and the system
-> > requires a reboot.
-> >
-> > My .config can be found at http://www.bencastricum.nl/.config
-> >
-> > I hope this helps.
-> >
-> > Ben
-> >
-> >
-> > BUG: unable to handle kernel NULL pointer dereference at 00000020
-> > IP: [<b0254b74>] sock_poll+0xc/0x12
-> > *pde = 00000000
-> > Oops: 0000 [#1] SMP
-> > last sysfs file:
-> > /sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0/0-002e/cpu0_vid
-> > Modules linked in: ipt_MASQUERADE ipt_REJECT ipt_LOG xt_recent xt_tcpudp
-> > xt_state iptable_filter nf_conntrack_ftp iptable_nat ip_tables nf_nat
-> > x_tables nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 af_packet usb_storage
-> > usbhid 8139too mii tg3 libphy cdc_acm ehci_hcd uhci_hcd usbcore lm85
-> > hwmon_vid i2c_i801 softdog rtc ext2 [last unloaded: firmware_class]
-> >
-> > Pid: 1717, comm: squid Not tainted (2.6.27-05178-g2e532d6 #111) HP d530
-> > SFF(PL110ES)
-> > EIP: 0060:[<b0254b74>] EFLAGS: 00010246 CPU: 0
-> > EIP is at sock_poll+0xc/0x12
-> > EAX: ea872d80 EBX: 00000000 ECX: 00000000 EDX: eee50e00
-> > ESI: e9a9bf00 EDI: ef304b80 EBP: ea84af44 ESP: ea84af40
-> > DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > Process squid (pid: 1717, ti=ea84a000 task=ea96e330 task.ti=ea84a000)
-> > Stack:
-> > e9a9bf0c ea84afb0 b017ff04 ea84af9c 00000002 00000000 eabe1300 ef304b98
-> > 00000003 ef304bac ef304ba4 e9a9bf0c ef304ba0 ef304b94 00000046 ef304b84
-> > ea84af9c b03ce000 b014248d ea84af94 b0126765 ea84afb0 b0105909 ea84af9c
-> > Call Trace:
-> > [<b017ff04>] ? sys_epoll_wait+0x245/0x3a7
-> > [<b014248d>] ? handle_fasteoi_irq+0x0/0xad
-> > [<b0126765>] ? irq_exit+0x53/0x77
-> > [<b0105909>] ? do_IRQ+0xae/0xc4
-> > [<b0103905>] ? sysenter_do_call+0x12/0x25
-> > Code: 8b 58 54 b8 ea ff ff ff 85 db 74 0c ff 75 0c ff 75 08 89 f0 ff d3 5a
-> > 59 8d 65 f8 5b 5e 5d c3 55 89 e5 53 89 d1 8b 50 6c 8b 5a 0c <ff> 53 20 5b 5d
-> > c3 55 89 e5 53 89 d1 8b 50 6c 8b 5a 0c ff 53 4c
-> > EIP: [<b0254b74>] sock_poll+0xc/0x12 SS:ESP 0068:ea84af40
-> > ---[ end trace 6e50fb78d788d751 ]---
+
+* David Woodhouse <dwmw2@infradead.org> wrote:
+
+> On Sun, 2008-10-19 at 13:12 +0200, Joerg Roedel wrote:
+> > On Sat, Oct 18, 2008 at 04:30:43PM +0100, David Woodhouse wrote:
+> > > As previously threatened, I've created an iommu-2.6.git tree:
+> > > 	git://git.infradead.org/iommu-2.6.git
+> > > 	http://git.infradead.org/iommu-2.6.git
+> > 
+> > Is there a specific reason why IOMMU stuff should go to Linus 
+> > without testing them in the x86 tree before? The DMA layer and IOMMU 
+> > drivers are an integral component of the architecture and patches 
+> > for it are best placed in the architecture tree instead of a 
+> > seperate one, imho.
 > 
-> Looks like file->private is NULL in sock_poll() so I'm cc'ing netdev.
+> This is the purpose that linux-next serves, not the x86 
+> forest-of-doom.
+> 
+> And I thought Ingo said his old iommu tree wasn't in there anyway? 
+> [...]
 
-Isn't it the issue fixed by
+That's weird, where did you get the impression from that i "dropped" the 
+"old" IOMMU tree? It's alive and kicking, all the new IOMMU code that we 
+queued up and tested in the last cycle for v2.6.28 have just gone 
+upstream - about 80 commits.
 
-http://marc.info/?l=linux-kernel&m=122428548613067&w=2
+Please do not just jump into other people's workflow like that ... at 
+minimum ask them what they'd prefer to do.
 
-Hugh
+Firstly, it's not at all clear to me what your role in this whole matter 
+is, because you've not talked to us about it. Does your interest in this 
+whole topic come from the fact that you recently got hired by Intel and 
+got assigned to maintain Intel's IOMMU bits two months ago?
+
+The thing is, i havent seen a single IOMMU contribution from you in the 
+last cycles, so it's weird that you now suddenly attempt to zap other 
+people's trees from linux-next out of the blue ... without their 
+knowledge and consent.
+
+Your help is welcome, and as i said it before i'd encourage you to run 
+your tree - and if Linus wants to pull from you directly that's his and 
+Andrew's call.
+
+At the moment IOMMU topics are a rather healthy machinery that clearly 
+got new blood and new life in the past two kernel cycles. If you want to 
+help out with this stuff then please start by contributing and working 
+with people, not by trying to control it.
+
+	Ingo
