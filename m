@@ -1,98 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbYJSEMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbYJSEPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751546AbYJSEMK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 00:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYJSEL4
+	id S1751646AbYJSEPZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 00:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYJSEPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 00:11:56 -0400
-Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:43654 "EHLO
-	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750701AbYJSELz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 00:11:55 -0400
-To: Phil Dibowitz <phil@ipom.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
-Subject: Re: Avoid I/O errors when issuing SCSI ioctls to JMicron USB/ATA bridge
-References: <Pine.LNX.4.44L0.0810141111080.2662-300000@iolanthe.rowland.org>
-	<48F4F337.8080104@ipom.com>
-From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Organization: Free thinker, not speaking for University of Campinas
-Date: Sun, 19 Oct 2008 02:11:33 -0200
-Message-ID: <ormyh1rzpm.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+	Sun, 19 Oct 2008 00:15:13 -0400
+Received: from home.keithp.com ([63.227.221.253]:42474 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750704AbYJSEPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 00:15:12 -0400
+Subject: Re: [git pull] drm patches for 2.6.27-rc1
+From: Keith Packard <keithp@keithp.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: keithp@keithp.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <20081018223214.GA5093@elte.hu>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+	 <200810181237.49784.nickpiggin@yahoo.com.au>
+	 <1224357062.4384.72.camel@koto.keithp.com>
+	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
+	 <20081018223214.GA5093@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-fBsZZxT1bGAzCU/0sYh0"
+Date: Sat, 18 Oct 2008 21:14:57 -0700
+Message-Id: <1224389697.4384.118.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
 
-On Oct 14, 2008, Phil Dibowitz <phil@ipom.com> wrote:
-
-> The patch looks generally good, but you've included every possible revision
-> of the hardware. Can you please change your patch to include just the
-> revision in question (0x0100) rather than the whole range (0x0000 - 0x9999)?
-
-Here's the patch.  Let's hope that's enough to cover any other
-failing variants, past, present and future.
-
-
->> Here's the patch that implements the fix you suggested to avoid the
->> I/O errors that I was running into with my new USB enclosure with a
->> JMicron USB/ATA bridge, while issuing scsi-io USN or other such
->> queries used by Fedora's mkinitrd.
->> http://bugzilla.kernel.org/show_bug.cgi?id=9638#c85
-
-
-/proc/bus/usb/devices:
-T:  Bus=01 Lev=01 Prnt=01 Port=07 Cnt=04 Dev#=  5 Spd=480 MxCh= 0
-D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-P:  Vendor=152d ProdID=2329 Rev= 1.00
-S:  Manufacturer=JMicron
-S:  Product=USB to ATA/ATAPI Bridge
-S:  SerialNumber=DE5088854FFF
-C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=  2mA
-I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
-E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-
-(patch applied and retested on a modified 2.6.27.2-libre.24.rc1.fc10)
-
-
---=-=-=
-Content-Type: text/x-patch
-Content-Disposition: inline; filename=lxo-usb-jmicron-ignore-residue.patch
-
---- linux-2.6/drivers/usb/storage/unusual_devs.h~	2008-07-13 18:51:29.000000000 -0300
-+++ linux-2.6/drivers/usb/storage/unusual_devs.h	2008-10-07 23:38:38.000000000 -0300
-@@ -1694,6 +1694,15 @@
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_IGNORE_RESIDUE ),
- 
-+/* Reported by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-+ * JMicron responds to USN and several other SCSI ioctls with a
-+ * residue that causes subsequent I/O requests to fail.  */
-+UNUSUAL_DEV(  0x152d, 0x2329, 0x0100, 0x0100,
-+	        "JMicron",
-+	        "USB to ATA/ATAPI Bridge",
-+	        US_SC_DEVICE, US_PR_DEVICE, NULL,
-+	        US_FL_IGNORE_RESIDUE ),
-+
- /* Reported by Robert Schedel <r.schedel@yahoo.de>
-  * Note: this is a 'super top' device like the above 14cd/6600 device */
- UNUSUAL_DEV(  0x1652, 0x6600, 0x0201, 0x0201,
-
---=-=-=
-Content-Type: text/plain; charset=utf-8
+--=-fBsZZxT1bGAzCU/0sYh0
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
+On Sun, 2008-10-19 at 00:32 +0200, Ingo Molnar wrote:
 
+> Mind sending patches for this? :-)
+
+Here's what these functions would look like as wrappers on top of the
+existing APIs:
+
+/* x86_64 style */
+static inline struct io_reserve *
+iomap_reserve(unsigned long base, unsigned long size)
+{
+        return (struct io_reserve *) ioremap_wc(base, size);
+}
+
+static inline void *
+iomap_atomic(struct io_reserve *reserve, unsigned long offset)
+{
+        return ((char *) reserve) + offset;
+}
+
+static inline void
+iounmap_atomic(void *vaddr)
+{
+}
+
+static inline void
+iomap_unreserve(struct io_reserve *reserve)
+{
+        iounmap(reserve);
+}
+
+/* HIGHMEM style */
+#if 0
+static inline struct io_reserve *
+iomap_reserve(unsigned long base, unsigned long size)
+{
+        return (struct io_reserve *) base;
+}
+
+static inline void *
+iomap_atomic(struct io_reserve *reserve, unsigned long offset)
+{
+        offset +=3D (unsigned long) reserve;
+        return kmap_atomic(offset >> PAGE_SHIFT, KM_USER0);
+}
+
+static inline void
+iounmap_atomic(void *vaddr)
+{
+        kunmap_atomic(vaddr, KM_USER0);
+}
+
+static inline void
+iomap_unreserve(struct io_reserve *reserve)
+{
+}
+#endif
+
+/* 32-bit non-HIGHMEM style */
+#if 0
+static inline struct io_reserve *
+iomap_reserve(unsigned long base, unsigned long size)
+{
+        return NULL;
+}
+
+static inline void *
+iomap_atomic(struct io_reserve *reserve, unsigned long offset)
+{
+        return NULL;
+}
+
+static inline void
+iounmap_atomic(void *vaddr)
+{
+}
+
+static inline void
+iomap_unreserve(struct io_reserve *reserve)
+{
+}
+#endif
+
+>=20
+> 	Ingo
 --=20
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
-FSFLA Board Member       =C2=A1S=C3=A9 Libre! =3D> http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+keith.packard@intel.com
 
---=-=-=--
+--=-fBsZZxT1bGAzCU/0sYh0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBI+rRBQp8BWwlsTdMRAodCAJ9WujG3y8Vbslc1d8owMEkmdpcj4gCgqI2k
+OHfWJ0Ske1dMJEfo08TedqU=
+=VaO+
+-----END PGP SIGNATURE-----
+
+--=-fBsZZxT1bGAzCU/0sYh0--
+
