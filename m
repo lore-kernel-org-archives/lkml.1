@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbYJSPlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751792AbYJSPyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751739AbYJSPlU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 11:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYJSPlN
+	id S1751792AbYJSPyS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 11:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYJSPyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 11:41:13 -0400
-Received: from vena.lwn.net ([206.168.112.25]:52886 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbYJSPlN convert rfc822-to-8bit (ORCPT
+	Sun, 19 Oct 2008 11:54:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:20436 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbYJSPyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 11:41:13 -0400
-Date: Sun, 19 Oct 2008 09:41:11 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: =?ISO-8859-1?B?Um9nw6lyaW8=?= Brito <rbrito@ime.usp.br>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] trivial: fix documentation regarding default io
- scheduler
-Message-ID: <20081019094111.671ad48f@bike.lwn.net>
-In-Reply-To: <20081019072419.GA21534@ime.usp.br>
-References: <20081019072419.GA21534@ime.usp.br>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.3; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 19 Oct 2008 11:54:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
+        b=JkQBLjFQTsfUmTLMWzNKxvCNXQbTcKmlFwE90Q/JAEwTml8P4xggT08JetdxXJPPHq
+         sFDZkwpsMIyzufEBkjP5DJIzapsKEP4FRNCKTCULZnG10J/rAHwNK+IYiH6EFOVz+wRk
+         yV66it8S+10gstgG81prm4PiqpfpNO779QC2s=
+References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com> <20081019040557.GA6337@goodmis.org> <70318cbf0810182334o4394f990h377b0a14215e1541@mail.gmail.com> <1224403321.13550.1.camel@unix> <70318cbf0810190117r66ddd76wc1a94a2ea79e74c5@mail.gmail.com>
+Message-Id: <0FBA0BFE-2A0D-422F-A27F-ABADC56F1C04@gmail.com>
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Chris Li <lkml@chrisli.org>
+In-Reply-To: <70318cbf0810190117r66ddd76wc1a94a2ea79e74c5@mail.gmail.com>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (5F136)
+Mime-Version: 1.0 (iPhone Mail 5F136)
+Subject: Re: irq 19: nobody cared
+Date: Sun, 19 Oct 2008 08:53:56 -0700
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Oct 2008 05:24:21 -0200
-Rogério Brito <rbrito@ime.usp.br> wrote:
+Hmm
+I was getting the same on a mac,
+What triggered this from here was
+Udev and hal trying to load the iSight
+Firmware at the same time,(or at least I think that's what was  
+happening);
 
-> The current Kconfig.iosched documentation says that the default I/O
-> scheduler is the CFQ scheduler, but the default, if nothing is
-> changed, is the anticipatory scheduler.
+justin P. Mattock
 
->From Kconfig.iosched:
 
-choice
-	prompt "Default I/O scheduler"
-	default DEFAULT_CFQ
 
-So the default is, indeed, CFQ.
+On Oct 19, 2008, at 1:17 AM, "Chris Li" <lkml@chrisli.org> wrote:
 
-jon
+> On Sun, Oct 19, 2008 at 1:02 AM, Justin P. Mattock
+> <justinmattock@gmail.com> wrote:
+>> On Sat, 2008-10-18 at 23:34 -0700, Chris Li wrote:
+>>
+>> What does the whole dmesg look like might I ask?
+>>
+> Here it is.
+>
+> Chris
+> <dmesg-noapic.txt>
