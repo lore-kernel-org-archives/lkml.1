@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbYJSCy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751786AbYJSDGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbYJSCy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 22:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYJSCys
+	id S1751786AbYJSDGz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 23:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbYJSDGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 22:54:48 -0400
-Received: from mail.suse.de ([195.135.220.2]:59434 "EHLO mx1.suse.de"
+	Sat, 18 Oct 2008 23:06:47 -0400
+Received: from sandeen.net ([209.173.210.139]:20132 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752086AbYJSCyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 22:54:47 -0400
-Date: Sun, 19 Oct 2008 04:54:44 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [patch] mm: fix anon_vma races
-Message-ID: <20081019025444.GC16562@wotan.suse.de>
-References: <20081016041033.GB10371@wotan.suse.de> <Pine.LNX.4.64.0810172300280.30871@blonde.site> <alpine.LFD.2.00.0810171549310.3438@nehalem.linux-foundation.org> <Pine.LNX.4.64.0810180045370.8995@blonde.site> <20081018015323.GA11149@wotan.suse.de> <18681.20241.347889.843669@cargo.ozlabs.ibm.com> <20081018054916.GB26472@wotan.suse.de> <alpine.LFD.2.00.0810180921140.3438@nehalem.linux-foundation.org> <20081018184405.GA26184@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081018184405.GA26184@parisc-linux.org>
-User-Agent: Mutt/1.5.9i
+	id S1750954AbYJSDGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 23:06:47 -0400
+Message-ID: <48FAA445.9050800@sandeen.net>
+Date: Sat, 18 Oct 2008 22:06:45 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Martin Michlmayr <tbm@cyrius.com>, Eric Sandeen <sandeen@sandeen.net>,
+       Tobias Frost <tobi@coldtobi.de>, linux-kernel@vger.kernel.org,
+       debian-arm@lists.debian.org, xfs@oss.sgi.com
+Subject: Re: XFS filesystem corruption on the arm(el) architecture
+References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <48F89E0F.6030307@sandeen.net> <20081018085752.GS25834@deprecation.cyrius.com> <20081019014830.GI31761@disturbed>
+In-Reply-To: <20081019014830.GI31761@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 12:44:05PM -0600, Matthew Wilcox wrote:
-> On Sat, Oct 18, 2008 at 10:00:30AM -0700, Linus Torvalds wrote:
-> > > Apparently pairwise ordering is more interesting than just a theoretical
-> > > thing, and not just restricted to Alpha's funny caches.
-> > 
-> > Nobody does just pairwise ordering, afaik. It's an insane model. Everybody 
-> > does some form of transitive ordering.
+Dave Chinner wrote:
+> On Sat, Oct 18, 2008 at 10:57:56AM +0200, Martin Michlmayr wrote:
+>> * Eric Sandeen <sandeen@sandeen.net> [2008-10-17 09:15]:
+>>> If you unmount & remount, does the ls work then?
+>> I cannot even mount it:
+>>
+>> debian:~# mkfs.xfs -f /dev/sda5
+>> meta-data=/dev/sda5              isize=256    agcount=4, agsize=94380 blks
+>>          =                       sectsz=512   attr=2
+>> data     =                       bsize=4096   blocks=377519, imaxpct=25
+>>          =                       sunit=0      swidth=0 blks
+>> naming   =version 2              bsize=4096
+>> log      =internal log           bsize=4096   blocks=2560, version=2
+>>          =                       sectsz=512   sunit=0 blks, lazy-count=0
+>> realtime =none                   extsz=4096   blocks=0, rtextents=0
+>> debian:~# mount /dev/sda5 /mnt
+>> [42949596.920000] XFS mounting filesystem sda5
+>> debian:~# cp /usr/bin/* /mnt/
+>> debian:~# umount /mnt
+>> debian:~# mount -t xfs /dev/sda5 /mnt
+>> [42949612.290000] XFS mounting filesystem sda5
+>> [42949612.460000] Starting XFS recovery on filesystem: sda5 (logdev: internal)
+>> [42949612.480000] XFS: xlog_recover_process_data: bad flag
+>> [42949612.500000] XFS: log mount/recovery failed: error 5
+>> [42949612.500000] XFS: log mount failed
+>> mount: /dev/sda5: can't read superblock
+>> debian:~#
 > 
-> I assume you're talking about CPUs in particular here, and I don't know
-> of any counterexamples.
+> That's the log replay indicating that there's a bad transaction
+> header in the log. Very strange - it shoul dbe a clean log. What
+> does xfs_logprint -t /dev/sda5 tell you about the transactions
+> in the log?
 
-Yes, just CPUs.
+This is probably the vmap cache aliasing problem that we paid a bit of
+attention to a few months ago, no?
 
- 
-> If you're talking about PCI devices, the model is not transitive.
-> Here's the exact text from Appendix E of PCI 3.0:
-> 
->   A system may have multiple Producer-Consumer pairs operating
->   simultaneously, with different data - flag-status sets located all
->   around the system. But since only one Producer can write to a single
->   data-flag set, there are no ordering requirements between different
->   masters. Writes from one master on one bus may occur in one order on
->   one bus, with respect to another master's writes, and occur in another
->   order on another bus. In this case, the rules allow for some writes
->   to be rearranged; for example, an agent on Bus 1 may see Transaction
->   A from a master on Bus 1 complete first, followed by Transaction B
->   from another master on Bus 0. An agent on Bus 0 may see Transaction
->   B complete first followed by Transaction A. Even though the actual
->   transactions complete in a different order, this causes no problem
->   since the different masters must be addressing different data-flag sets.
-> 
-> I seem to remember earlier versions of the spec having more clear
-> language about A happening before B and B happening before C didn't
-> mean that A happened before C from the perspective of a third device,
-> but I can't find it right now.
-> 
-> Anyway, as the spec says, you're not supposed to use PCI like that,
-> so it doesn't matter.
-
-Interesting. Hopefully as you say it won't matter.
-
+-Eric
