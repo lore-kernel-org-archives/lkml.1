@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbYJSSBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbYJSSGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751985AbYJSSBT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 14:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYJSSBJ
+	id S1751985AbYJSSGr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 14:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYJSSGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 14:01:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34514 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbYJSSBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 14:01:09 -0400
-Date: Sun, 19 Oct 2008 11:00:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Keith Packard <keithp@keithp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: io resources and cached mappings (was: [git pull] drm patches
- for 2.6.27-rc1)
-Message-ID: <20081019110022.6780923f@infradead.org>
-In-Reply-To: <20081019175320.GA6442@elte.hu>
-References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
-	<200810181237.49784.nickpiggin@yahoo.com.au>
-	<1224357062.4384.72.camel@koto.keithp.com>
-	<alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-	<20081018203741.GA23396@elte.hu>
-	<1224366690.4384.89.camel@koto.keithp.com>
-	<20081018223214.GA5093@elte.hu>
-	<1224389697.4384.118.camel@koto.keithp.com>
-	<1224398496.5303.7.camel@koto.keithp.com>
-	<20081019175320.GA6442@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 19 Oct 2008 14:06:39 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49343 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751518AbYJSSGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 14:06:38 -0400
+Date: Sun, 19 Oct 2008 20:05:46 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] ata: ata_id_is_ssd() bugfix
+Message-ID: <20081019180545.GT19428@kernel.dk>
+References: <200810182222.13281.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810182222.13281.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Oct 2008 19:53:20 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Sat, Oct 18 2008, Bartlomiej Zolnierkiewicz wrote:
+> We need to explicitly check for major and minor version
+> of supported ATA spec as earlier revisions used word 217
+> for different purposes.
+
+What did they use to put in that word? Just curious if it does any harm,
+because as it stands, this patch will prevent ANY ssd from being
+correctly flagged as such. So I'm inclined to file this as too much spec
+fiddling, it'll do more harm than good.
 
 > 
-> struct resource {
->         resource_size_t start;
->         resource_size_t end;
->         const char *name;
->         unsigned long flags;
->         struct resource *parent, *sibling, *child;
-> +       void *mapping;
-> };
+> [ The issue was originally spotted by Alan Cox. ]
 > 
-> The APIs would be:
+> This patch fixes regression introduced by:
+> commit 8bff7c6b0f63c7ee9c5e3a076338d74125b8debb
+> ("libata: set queue SSD flag for SSD devices").
 > 
->   int   io_resource_init_mapping(struct resource *res);
->  void   io_resource_free_mapping(struct resource *res);
->  void * io_resource_map(struct resource *res, pfn_t pfn, unsigned
-> long offset); void   io_resource_unmap(struct resource *res, void
-> *kaddr);
+> Cc: Jeff Garzik <jgarzik@pobox.com>
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> somebody owe me one for going through all these spec drafts... ;)
 > 
-> Note how simple and consistent it all gets: IO resources already know 
-> their physical location and their size limits. Being able to cache an 
-> ioremap in a mapping [and being able to use atomic kmaps on 32-bit]
-> is a relatively simple and natural extension to the concept.
+>  include/linux/ata.h |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> Index: b/include/linux/ata.h
+> ===================================================================
+> --- a/include/linux/ata.h
+> +++ b/include/linux/ata.h
+> @@ -75,6 +75,7 @@ enum {
+>  	ATA_ID_EIDE_PIO_IORDY	= 68,
+>  	ATA_ID_QUEUE_DEPTH	= 75,
+>  	ATA_ID_MAJOR_VER	= 80,
+> +	ATA_ID_MINOR_VER	= 81,
+>  	ATA_ID_COMMAND_SET_1	= 82,
+>  	ATA_ID_COMMAND_SET_2	= 83,
+>  	ATA_ID_CFSSE		= 84,
+> @@ -743,7 +744,12 @@ static inline int ata_id_is_cfa(const u1
+>  
+>  static inline int ata_id_is_ssd(const u16 *id)
+>  {
+> -	return id[ATA_ID_ROT_SPEED] == 0x01;
+> +	/* ATA8-ACS version 4c or higher (=> 4c or 6 at the moment) */
+> +	if (ata_id_major_version(id) >= 8 &&
+> +	    (id[ATA_ID_MINOR_VER] == 0x39 || id[ATA_ID_MINOR_VER] == 0x28) &&
+> +	    id[ATA_ID_ROT_SPEED] == 0x01)
+> +		return 1;
+> +	return 0;
 
-and making a simple wrapper around this that turns "struct pci_dev,
-barnr" into a resource would make sense too, but yes.
-
-We need one more
-
-io_resource_force_cachability(struct resource, cachetype)
-
-or maybe only
-
-io_resource_force_writecombine(struct resource)
-
-
-
+Is the check even correct? It'll match version 8 AND the currently
+listed minor version, not newer.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jens Axboe
+
