@@ -1,138 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751890AbYJSRU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895AbYJSR1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751890AbYJSRU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 13:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYJSRUU
+	id S1751895AbYJSR1c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 13:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYJSR1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 13:20:20 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:59899 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbYJSRUS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 13:20:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=UHRZLqT4TfRNclrM2VUVTCmxBWC88h8RI9VgQt/0OyoVFG0nho9n+erQKtLWx7EXAG
-         tRk/Elqa5y+CER3NE6hP4ik9Xq+Ykonr9WP5Sk4wEC1dgRqCUMvBUa3tU9OFcknZtUTV
-         QSM/Ev4by0W870LBo5CprAX8u1uOpHGnkrRcE=
-Date: Sun, 19 Oct 2008 19:20:41 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [PATCH] kmemcheck: (finally) use 4k pages for identity mapping
-Message-ID: <20081019172041.GA3258@localhost.localdomain>
+	Sun, 19 Oct 2008 13:27:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33345 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751478AbYJSR1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 13:27:23 -0400
+Date: Sun, 19 Oct 2008 19:26:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Joerg Roedel <joro@8bytes.org>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, fenghua.yu@intel.com, tony.luck@intel.com,
+       suresh.b.siddha@intel.com, sfr@canb.auug.org.au,
+       andreas.herrmann3@amd.com, joseph.cihula@intel.com,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org, tglx@linutronix.de,
+       torvalds@linux-foundation.org
+Subject: Re: [ANNOUNCE] iommu-2.6.git tree
+Message-ID: <20081019172651.GA19265@elte.hu>
+References: <1224343843.6770.1378.camel@macbook.infradead.org> <20081019111203.GB29705@8bytes.org> <1224415198.6770.1464.camel@macbook.infradead.org> <20081019124732.GA21115@elte.hu> <1224422474.6770.1475.camel@macbook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1224422474.6770.1475.camel@macbook.infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 760932c8607b736504a134ed6feec25e90e089ac Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Sun, 19 Oct 2008 15:28:04 +0200
-Subject: [PATCH] kmemcheck: (finally) use 4k pages for identity mapping
 
-At last I found the right hooks for doing this properly. DEBUG_PAGEALLOC
-has the exact same requirement: Kernel pages must be mapped with 4k
-physical pages (since that's the size of pages returned by the page
-allocator).
+* David Woodhouse <dwmw2@infradead.org> wrote:
 
-Now we finally get rid of the need to do set_memory_4k() or try to work
-around TLB flushing from interrupt context. Yay!
+> On Sun, 2008-10-19 at 14:47 +0200, Ingo Molnar wrote:
+> > * David Woodhouse <dwmw2@infradead.org> wrote:
+> > 
+> > > On Sun, 2008-10-19 at 13:12 +0200, Joerg Roedel wrote:
+> > > > On Sat, Oct 18, 2008 at 04:30:43PM +0100, David Woodhouse wrote:
+> > > > > As previously threatened, I've created an iommu-2.6.git tree:
+> > > > > 	git://git.infradead.org/iommu-2.6.git
+> > > > > 	http://git.infradead.org/iommu-2.6.git
+> > > > 
+> > > > Is there a specific reason why IOMMU stuff should go to Linus 
+> > > > without testing them in the x86 tree before? The DMA layer and IOMMU 
+> > > > drivers are an integral component of the architecture and patches 
+> > > > for it are best placed in the architecture tree instead of a 
+> > > > seperate one, imho.
+> > > 
+> > > This is the purpose that linux-next serves, not the x86 
+> > > forest-of-doom.
+> > > 
+> > > And I thought Ingo said his old iommu tree wasn't in there anyway? 
+> > > [...]
+> > 
+> > That's weird, where did you get the impression from that i "dropped" the 
+> > "old" IOMMU tree? It's alive and kicking, all the new IOMMU code that we 
+> > queued up and tested in the last cycle for v2.6.28 have just gone 
+> > upstream - about 80 commits.
+> 
+> I cannot find the tree which allegedly already exists [...]
 
-Has been tested on both 32- and 64-bit on a P4 and a Dual Core.
+it's tip/auto-iommu-next. "Empty" right now because it just got merged 
+upstream last week.
 
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/kernel/cpu/common.c      |    7 -------
- arch/x86/mm/init_32.c             |    2 +-
- arch/x86/mm/init_64.c             |    2 +-
- arch/x86/mm/kmemcheck/kmemcheck.c |    4 ----
- mm/kmemcheck.c                    |    8 --------
- 5 files changed, 2 insertions(+), 21 deletions(-)
+> [...] -- and unless I'm mistaken, a number of patches seem to have 
+> fallen through the cracks in the last few weeks. Since I've been asked 
+> to start looking after the Intel IOMMU parts, it seemed sensible to 
+> make a git tree and round up those patches.
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 5613afb..ff26d87 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -575,13 +575,6 @@ void __init early_cpu_init(void)
- 	}
- 
- 	early_identify_cpu(&boot_cpu_data);
--
--#ifdef CONFIG_KMEMCHECK
--	/*
--	 * We need 4K granular PTEs for kmemcheck:
--	 */
--	setup_clear_cpu_cap(X86_FEATURE_PSE);
--#endif
- }
- 
- /*
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 39e6a93..6ef3ef8 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -825,7 +825,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	pgd_t *pgd_base = swapper_pg_dir;
- 	unsigned long start_pfn, end_pfn;
- 	unsigned long big_page_start;
--#ifdef CONFIG_DEBUG_PAGEALLOC
-+#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
- 	/*
- 	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
- 	 * This will simplify cpa(), which otherwise needs to support splitting
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index b8e461d..99d7791 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -682,7 +682,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	if (!after_bootmem)
- 		init_gbpages();
- 
--#ifdef CONFIG_DEBUG_PAGEALLOC
-+#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
- 	/*
- 	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
- 	 * This will simplify cpa(), which otherwise needs to support splitting
-diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
-index bd739a4..056b4f1 100644
---- a/arch/x86/mm/kmemcheck/kmemcheck.c
-+++ b/arch/x86/mm/kmemcheck/kmemcheck.c
-@@ -295,10 +295,6 @@ void kmemcheck_hide_pages(struct page *p, unsigned int n)
- {
- 	unsigned int i;
- 
--#ifdef CONFIG_X86_64
--	set_memory_4k((unsigned long) page_address(p), n);
--#endif
--
- 	for (i = 0; i < n; ++i) {
- 		unsigned long address;
- 		pte_t *pte;
-diff --git a/mm/kmemcheck.c b/mm/kmemcheck.c
-index ffe5a8c..eaa41b8 100644
---- a/mm/kmemcheck.c
-+++ b/mm/kmemcheck.c
-@@ -10,14 +10,6 @@ void kmemcheck_alloc_shadow(struct kmem_cache *s, gfp_t flags, int node,
- 	int pages;
- 	int i;
- 
--#ifdef CONFIG_X86_64
--	/* XXX: x86_64 doesn't honour PSE capabilities, so we need the call
--	 * to set_memory_4k(). However, that one wants to flush all CPUs,
--	 * which doesn't work when irqs are disabled. Temporary hack: */
--	if (irqs_disabled())
--		return;
--#endif
--
- 	pages = 1 << order;
- 
- 	/*
--- 
-1.5.5.1
+hm, no patches have been lost that i'm aware of - the last ~10 days of 
+inbox is not queued up yet because of the merge window - but those 
+(except for urgent fixes) are v2.6.29 items anyway.
 
+> I thought you and Thomas were working together, and I spoke to Thomas 
+> about it during the Kernel Summit. Unless I'm very much mistaken, he 
+> agreed that it makes sense to have a separate, real, git tree for 
+> cross-platform IOMMU-related work.
+> 
+> If you want to pull that tree into yours, that's fine by me -- as long 
+> as it gets into linux-next.
+
+okay, we can certainly do that. And if/when all future activities center 
+around your tree, and there's no interaction with x86 platform bits, it 
+will be natural for you to just not go over any middlemen.
+
+But i'd prefer to at least have some transitionary period - IOMMU 
+changes are not easy topics and they caused subtle breakages a couple of 
+times and it was quite handy that those breakages were generally seen by 
+all x86 developers (and immediately fixed afterwards). 99% of the 
+current iommu development activities are in the x86 space, so there's 
+quite some alignment there.
+
+	Ingo
