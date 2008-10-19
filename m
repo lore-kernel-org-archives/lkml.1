@@ -1,103 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751501AbYJSM26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751511AbYJSMrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751501AbYJSM26 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 08:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYJSM2u
+	id S1751511AbYJSMrU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 08:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYJSMrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 08:28:50 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:55635 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751219AbYJSM2t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 08:28:49 -0400
-X-Sasl-enc: m5tGO2qsfCKvZiro/seRf/TKfTpo8sxufyVgFiGkoSN1 1224419327
-Message-ID: <48FB27F1.9010007@imap.cc>
-Date: Sun, 19 Oct 2008 14:28:33 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 19 Oct 2008 08:47:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42142 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751255AbYJSMrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 08:47:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [RFC] Kernel version numbering scheme change
+Date: Sun, 19 Oct 2008 14:51:23 +0200
+User-Agent: KMail/1.9.9
+Cc: david@lang.hm, Greg KH <greg@kroah.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20081016002509.GA25868@kroah.com> <alpine.DEB.1.10.0810171821500.11079@asgard.lang.hm> <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Hansjoerg Lipp <hjlipp@web.de>
-Subject: Re: [PATCH 72/80] tty: fix up gigaset a bit
-References: <20081013092758.21645.2359.stgit@localhost.localdomain>	<20081013094438.21645.30934.stgit@localhost.localdomain>	<48F762CA.4080608@imap.cc> <20081017124004.64d3f2cf@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081017124004.64d3f2cf@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig61329DC5304200D04BCBEE89"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810191451.24342.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig61329DC5304200D04BCBEE89
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sunday, 19 of October 2008, Jiri Kosina wrote:
+> On Fri, 17 Oct 2008, david@lang.hm wrote:
+> 
+> > > Surely some scripts will start to break as soon as the third number gets
+> > > three digits.
+> > we've had three digit numbers in the third position before (2.3 and 2.5 
+> > went well past three digits IIRC)
+> 
+> Did we? I only recall 2.5.7[something] and 2.3.5[something] (plus special 
+> 2.3.99 release).
+> 
+> > > Actually, I thought we could continue to use a w.x.y.z numbering 
+> > > scheme, but in such a way that:
+> > > w = ($year - 2000) / 10 + 2 (so that we start from 2)
+> > > x = $year % 10
+> > > y = (number of major release in $year)
+> > > z = (number of stable version for major release w.x.y)
+> > > Then, the first major release in 2009 would be 2.9.1 and its first 
+> > > -stable "child" would become 2.9.1.1.  In turn, the first major 
+> > > release in 2010 could be 3.0.1 and so on.
+> > if you want the part of the version number to increment based on the year,
+> > just make it the year and don't complicate things.
+> 
+> In addition to that, having the kernel version dependent on year doesn't 
+> really seem to make much sense to me. Simply said, I don't see any 
+> relation of kernel source code contents to the current date in whatever 
+> calendar system.
+> 
+> And 2.x+1.y-rcZ+1 immediately following 2.x.y-rcZ really hurts my eyes :)
 
-Scripsit Alan Cox die 17.10.2008 13:40:
->>>  	/* prevent other callers from entering ldisc methods */
->>> +	/* FIXME: should use the tty state flags */
->>>  	tty->disc_data =3D NULL;
->>> =20
->>>  	if (!cs->hw.ser)
->>=20
->> Do you know of an example line discipline that has got this right?
->> My model for this code was drivers/net/ppp_async.c but now it seems
->> that this was not as exemplary as I had hoped.
->=20
-> If you want to know if the tty has been closed for further I/O then you=
+Hm, why would that happen?
 
-> can use test_bit(TTY_IO_ERROR, &tty->flags). This gets set at the right=
-
-> points on close/hangup/etc.
-
-Ok, but where do you see a need for such a test? AFAICS I have covered
-all the eventualities without resorting to an explicit tty->flags test,
-and looking around among my LD brethren it looks like they came to the
-same conclusion. (Not that I'd want to pull the "a million flies can't
-be wrong" card. ;-) Can you point me to a place or situation where an
-additional test_bit(TTY_IO_ERROR, &tty->flags) would catch a case that
-would otherwise be handled incorrectly?
-
->> Looking around, I see that many LDs don't even provide a poll method.
->> So I'm thinking of just dropping this one. Would that be ok?
->=20
-> PPP doesn't route characters via the tty interface while you seem to do=
-
-> so for the AT emulation so you do need it.
-
-Actually I don't. The AT command interface is accessed through a
-separate tty interface created by the main module of the Gigaset driver
-in drivers/isdn/gigaset/interface.c.
-
-(The reason for that is that ser_gigaset is just one of three hardware
-backends for accessing Gigaset devices, and the only one with an
-existing tty device. I have to create my own AT command interface
-device for the other two, anyway. Specialcasing ser_gigaset in order to
-route that back to the tty device of the serial port would just
-complicate things needlessly.)
-
-So I think removing the poll method is the right thing to do. If you
-have no objections, I'll submit a patch doing just that. (Hoping to
-still make it for the .28 merge window.)
-
-Thanks,
-Tilman
-
-
---------------enig61329DC5304200D04BCBEE89
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFI+yf8Q3+did9BuFsRAuVGAJ9sRNSxr+IMCH9/d644MkpE7jcW5ACgm0zf
-/wLANUAzwjSVMtO31xu77LY=
-=20rt
------END PGP SIGNATURE-----
-
---------------enig61329DC5304200D04BCBEE89--
+Rafael
