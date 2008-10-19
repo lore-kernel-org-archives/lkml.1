@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbYJSSNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbYJSSRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932AbYJSSNB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 14:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYJSSMw
+	id S1751958AbYJSSRl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 14:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYJSSRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 14:12:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:38005 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbYJSSMw (ORCPT
+	Sun, 19 Oct 2008 14:17:33 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:55792 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751518AbYJSSRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 14:12:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=c1l+T5Oq2d6tQXMjMQobcrf9qKW86+95UZRlQtWu1rsvvsDrg/salOWA/vKUBLYSLg
-         p/q4l6A2V4BlwZqr9goPzZ4UcKPMbVX1b4lHBteLph3CXnjWyFccxAhyW32ONyldIo/f
-         yo++B4Z7vjiFzZozBVIzjf1Geb+GOcDH27364=
-Message-ID: <8bd0f97a0810191112v29ca6be9kf4b0b8ecca718ef8@mail.gmail.com>
-Date: Sun, 19 Oct 2008 14:12:51 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bodo Eggert" <7eggert@gmx.de>
-Subject: Re: [PATCH] use tmpfs for rootfs v3
-Cc: jeffschroeder@computer.org, "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LSU.0.999.0810171313550.4828@be1.lrz>
+	Sun, 19 Oct 2008 14:17:32 -0400
+X-Sasl-enc: mofASdpmycyvWJtBBoqrt97hk04CfV3PeiynU/BtPIN2 1224440251
+Message-ID: <48FB79AE.3060006@imap.cc>
+Date: Sun, 19 Oct 2008 20:17:18 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LSU.0.999.0810161400160.5456@be1.lrz>
-	 <Pine.LNX.4.64.0810161507130.25933@anakin>
-	 <alpine.LSU.0.999.0810161936590.5051@be1.lrz>
-	 <c24352ca0810161403r1842185bg2f8b4f8c067af541@mail.gmail.com>
-	 <alpine.LSU.0.999.0810171313550.4828@be1.lrz>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.27-git8 compile error in drivers/mfd/wm8350-core.c
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6E2ECDDA1307E549ECF53627"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 07:16, Bodo Eggert wrote:
-> This patch allows chosing tmpfs instead of ramfs for the root filesystem.
-> Having tmpfs is usefull for running systems from RAM, because it does not
-> risk deadlocking the system and possibly allows swapping. Using tmpfs
-> increases the kernel by 10 bytes on x86_64.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6E2ECDDA1307E549ECF53627
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-great option, thanks
+When trying to build 2.6.27-git8 on x86 with CONFIG_MFD_WM8350_I2C=3Dm,
+make aborts with:
 
-> --- linux-2.6.27.2-numlock/fs/Kconfig   2008-10-10 13:18:34.000000000 +0200
-> +++ linux-2.6.27.3-tmpfs/fs/Kconfig     2008-10-11 15:42:21.000000000 +0200
-> @@ -953,6 +953,27 @@ config TMPFS_POSIX_ACL
->
->          If you don't know what Access Control Lists are, say N.
->
-> +config TMPFS_ROOT
-> +       bool "Use tmpfs instrad of ramfs for initramfs"
-> +       depends on TMPFS && SHMEM
-> +       default n
-> +       help
-> +         This replaces the ramfs used for unpacking the cpio images
-> +         with tmpfs.
-> +
-> +         If unsure, say N
+  CHECK   drivers/mfd/wm8350-core.c
+drivers/mfd/wm8350-core.c:1220:13: error: undefined identifier 'NO_IRQ'
+  CC [M]  drivers/mfd/wm8350-core.o
+drivers/mfd/wm8350-core.c: In function 'wm8350_device_init':
+drivers/mfd/wm8350-core.c:1220: error: 'NO_IRQ' undeclared (first use in =
+this function)
+drivers/mfd/wm8350-core.c:1220: error: (Each undeclared identifier is rep=
+orted only once
+drivers/mfd/wm8350-core.c:1220: error: for each function it appears in.)
+make[2]: *** [drivers/mfd/wm8350-core.o] Error 1
 
-this should be init/Kconfig and depend on BLK_DEV_INITRD i think.  and
-then update the comment to talk about the initial filesystem rather
-than cpio images.
+After deselecting CONFIG_MFD_WM8350_I2C, make completes fine.
 
-> +config RAMFS
-> +       bool "Ramfs file system support" if TMPFS_ROOT
+HTH
+T.
 
-if you have initramfs support disabled, then you should be able to
-disable RAMFS as well.  so perhaps the depend should read like:
-if BLK_DEV_INITRD && TMPFS_ROOT || !BLK_DEV_INITRD
--mike
+
+--------------enig6E2ECDDA1307E549ECF53627
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFI+3m4Q3+did9BuFsRAoRVAJ9cnnQgsjsB36FdSCOOz02Bzry6jQCgkhY/
+Ud0Xtmdwt0OlrWC5m0VuVZM=
+=HfID
+-----END PGP SIGNATURE-----
+
+--------------enig6E2ECDDA1307E549ECF53627--
