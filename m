@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbYJSBHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbYJSBP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752736AbYJSBHr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 21:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYJSBHi
+	id S1752511AbYJSBP3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 21:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJSBPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 21:07:38 -0400
-Received: from smtp.zeuux.org ([210.51.160.52]:63458 "EHLO z.billxu.com"
+	Sat, 18 Oct 2008 21:15:21 -0400
+Received: from home.keithp.com ([63.227.221.253]:35053 "EHLO keithp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752069AbYJSBHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 21:07:37 -0400
-Date: Sun, 19 Oct 2008 09:07:46 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: linux-mm@kvack.org
-Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] mm: fix-a-problem-of-annotation.patch
-Message-ID: <20081019010746.GA6882@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1751981AbYJSBPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 21:15:20 -0400
+Subject: Re: [git pull] drm patches for 2.6.27-rc1
+From: Keith Packard <keithp@keithp.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: keithp@keithp.com, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <20081018180651.11b1d4a8@infradead.org>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie>
+	 <200810181237.49784.nickpiggin@yahoo.com.au>
+	 <1224357062.4384.72.camel@koto.keithp.com>
+	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
+	 <20081018223214.GA5093@elte.hu> <1224376691.4384.105.camel@koto.keithp.com>
+	 <20081018180651.11b1d4a8@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9ZMAJlUStCNC0m4S6DTt"
+Date: Sat, 18 Oct 2008 18:15:10 -0700
+Message-Id: <1224378910.4384.114.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jianjun Kong <jianjun@zeuux.org>
 
-mm/mmap.c: fix a problem of annotation
-It should be "down_write(&current->mm->mmap_sem)".
+--=-9ZMAJlUStCNC0m4S6DTt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- mm/mmap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Sat, 2008-10-18 at 18:06 -0700, Arjan van de Ven wrote:
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index e7a5a68..f2e4444 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -906,7 +906,7 @@ void vm_stat_account(struct mm_struct *mm, unsigned long flags,
- #endif /* CONFIG_PROC_FS */
- 
- /*
-- * The caller must hold down_write(current->mm->mmap_sem).
-+ * The caller must hold down_write(&current->mm->mmap_sem).
-  */
- 
- unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
--- 
-1.5.2.5
+> how about pci_resource_force_caching(pci_dev, barnr, cachetype)?
 
--- 
-Jianjun Kong | Happy Hacking
-HomePage: http://kongove.cn
-Gtalk: kongjianjun@gmail.com
+and then 'pci_map_atomic'? Not sure this makes sense in the pci
+namespace.
+
+--=20
+keith.packard@intel.com
+
+--=-9ZMAJlUStCNC0m4S6DTt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBI+ooeQp8BWwlsTdMRAqljAJ92ceYLcc6XcvjqCELK2hSkOruNzQCg60hf
+DNy39S8Kab00n2b3fkm94JQ=
+=JQb2
+-----END PGP SIGNATURE-----
+
+--=-9ZMAJlUStCNC0m4S6DTt--
+
