@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbYJSXjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbYJSXk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752188AbYJSXjT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 19:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYJSXjJ
+	id S1752463AbYJSXk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 19:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYJSXkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 19:39:09 -0400
-Received: from ozlabs.org ([203.10.76.45]:48347 "EHLO ozlabs.org"
+	Sun, 19 Oct 2008 19:40:16 -0400
+Received: from mail.lang.hm ([64.81.33.126]:50206 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751816AbYJSXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 19:39:08 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lguest@ozlabs.org
-Subject: Re: [Lguest] lguest: unhandled trap
-Date: Mon, 20 Oct 2008 10:39:06 +1100
-User-Agent: KMail/1.9.10
-Cc: Tiago Maluta <maluta_tiago@yahoo.com.br>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-References: <559519.75404.qm@web50707.mail.re2.yahoo.com>
-In-Reply-To: <559519.75404.qm@web50707.mail.re2.yahoo.com>
+	id S1751816AbYJSXkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 19:40:15 -0400
+Date: Sun, 19 Oct 2008 16:40:34 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Jan Engelhardt <jengelh@medozas.de>
+cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-Reply-To: <alpine.LNX.1.10.0810191548360.24973@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.DEB.1.10.0810191639290.20238@asgard.lang.hm>
+References: <20081016002509.GA25868@kroah.com> <20081016124943.GE23630@cs181140183.pp.htv.fi> <20081016151748.GA31075@kroah.com> <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi>
+ <20081017214409.GB3585@kroah.com> <alpine.LNX.1.10.0810181826350.27947@fbirervta.pbzchgretzou.qr> <20081019183320.GA23176@kroah.com> <alpine.LNX.1.10.0810191548360.24973@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810201039.06581.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 19 October 2008 10:36:51 Tiago Maluta wrote:
-> Hi,
->
-> I'm using 2.6.27-05323-g26e9a39 and when I try to use lguest:
->
-> ~#Documentation/lguest/lguest 128 vmlinux
-> lguest: unhandled trap 14 at 0xc0594f6a (0xff900000)
+On Sun, 19 Oct 2008, Jan Engelhardt wrote:
 
-Yes, I found the same issue.  Does this fix it for you?
+> On Sunday 2008-10-19 14:33, Greg KH wrote:
+>>>
+>>> If there is a real discontent about the version
+>>> number it would have already been changed.
+>         ^{on Linus's side}
+>>> Given that nothing happened, it seems it is tolerated.
 
-Subject: lguest: don't try DMI
+he is the one who raised the subject, so there is discontent. Linus asked 
+the question of what to move to.
 
-dmi_scan_machine breaks under lguest; this is the simplest fix (though
-ugly).  Perhaps this hurts Xen too?
-
-Error:
-	lguest: unhandled trap 14 at 0xc04edeae (0xffa00000)
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r 47449cd8e3d8 drivers/firmware/dmi_scan.c
---- a/drivers/firmware/dmi_scan.c	Fri Oct 17 12:14:40 2008 +1100
-+++ b/drivers/firmware/dmi_scan.c	Fri Oct 17 20:54:30 2008 +1100
-@@ -369,6 +369,11 @@ void __init dmi_scan_machine(void)
- 	char __iomem *p, *q;
- 	int rc;
- 
-+#ifdef CONFIG_PARAVIRT
-+	if (strcmp(pv_info.name, "lguest") == 0)
-+		goto error;
-+#endif
-+
- 	if (efi_enabled) {
- 		if (efi.smbios == EFI_INVALID_TABLE_ADDR)
- 			goto error;
-
-
-
+David Lang
