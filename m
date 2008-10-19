@@ -1,75 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752329AbYJSVbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbYJSVrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752329AbYJSVbU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 17:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYJSVbM
+	id S1752270AbYJSVrc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 17:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYJSVrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 17:31:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49372 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbYJSVbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 17:31:11 -0400
-Date: Sun, 19 Oct 2008 21:31:07 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.36.8
-Message-ID: <20081019213107.GA20481@hera.kernel.org>
-Reply-To: w@1wt.eu
+	Sun, 19 Oct 2008 17:47:23 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:44859 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751270AbYJSVrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 17:47:22 -0400
+Date: Sun, 19 Oct 2008 23:49:57 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Ian Molton <spyro@f2s.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.miao@marvell.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: [GIT] mfd pull request
+Message-ID: <20081019214957.GB4558@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Oct 2008 21:31:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-I've just released Linux 2.4.36.8.
+Could you please pull the mfd updates ?
 
-It contains various fixes, 3 of which are for medium local security
-issues. While not critical, it is suggested that 2.4.36 setups with
-untrusted local users upgrade to 2.4.36.8.
+The following changes since commit 0cfd81031a26717fe14380d18275f8e217571615:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/usb-2.6
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.36.8.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.36.8
+are available in the git repository at:
 
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.36.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.36.y.git
+  git://git.o-hand.com/linux-mfd for-next
 
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.36.y.git
+Andrew Morton (2):
+      mfd: ucb1400 needs GPIO
+      mfd: further unbork the ucb1400 ac97_bus dependencies
 
+Ben Dooks (1):
+      mfd: update sm501 debugging/low information messages
 
-Willy
+David Brownell (2):
+      mfd: TWL4030 core driver
+      mfd: twl4030-core irq simplification
 
----
-Summary of changes from v2.4.36.7 to v2.4.36.8
-============================================
+Dmitry Baryshkov (4):
+      mfd: provide and use setup hook for tc6393xb
+      mfd: do tcb6393xb state restore on resume only if requested
+      mfd: add OHCI cell to tc6393xb
+      mfd: support tmiofb cell on tc6393xb
 
-Arjan van de Ven (1):
-      security: avoid calling a NULL function pointer in drivers/video/tvaudio.c
+Eric Miao (1):
+      mfd: add base support for Dialog DA9030/DA9034 PMICs
 
-Erik Inge Bolsø (1):
-      doc: mention chain-compiling for really old gccs
+Ian Molton (2):
+      mfd: reduce stack usage in mfd-core.c
+      mfd: update TMIO drivers to use the clock API
 
-Eugene Teo (2):
-      CVE-2008-3275 Linux kernel local filesystem DoS
-      Remove suid/sgid bits on truncate() (CVE-2008-4210)
+Mark Brown (1):
+      mfd: Don't use NO_IRQ in WM8350
 
-Gilles Espinasse (1):
-      tcp: Clear probes_out more aggressively in tcp_ack().
+Randy Dunlap (1):
+      mfd: ucb1400 sound driver uses/depends on AC97_BUS:
 
-Willy Tarreau (4):
-      x86 would not build without CONFIG_VT
-      pc_keyb: fix breakage on ia64/mips/mips64
-      doc: fix examples and add suggestions about depmod
-      Change VERSION to 2.4.36.8
+Samuel Ortiz (1):
+      mfd: Fix htc-egpio compile warning
 
-Yasuyuki KOZAKAI (1):
-      netfilter: ip6t_{hbh,dst}: Rejects not-strict mode on rule insertion
+ arch/arm/mach-pxa/include/mach/tosa.h |    2 -
+ arch/arm/mach-pxa/tosa.c              |   37 +-
+ drivers/input/touchscreen/Kconfig     |    2 +-
+ drivers/mfd/Kconfig                   |   16 +
+ drivers/mfd/Makefile                  |    2 +
+ drivers/mfd/da903x.c                  |  563 ++++++++++++++++
+ drivers/mfd/htc-egpio.c               |    2 +-
+ drivers/mfd/mfd-core.c                |   15 +-
+ drivers/mfd/sm501.c                   |    6 +-
+ drivers/mfd/t7l66xb.c                 |   40 +-
+ drivers/mfd/tc6387xb.c                |   47 +-
+ drivers/mfd/tc6393xb.c                |  296 +++++++--
+ drivers/mfd/twl4030-core.c            | 1193 +++++++++++++++++++++++++++++++++
+ drivers/mfd/wm8350-core.c             |    2 +-
+ include/linux/i2c/twl4030.h           |  339 ++++++++++
+ include/linux/mfd/da903x.h            |  201 ++++++
+ include/linux/mfd/t7l66xb.h           |    2 -
+ include/linux/mfd/tc6387xb.h          |    3 -
+ include/linux/mfd/tc6393xb.h          |   17 +-
+ 19 files changed, 2687 insertions(+), 98 deletions(-)
+ create mode 100644 drivers/mfd/da903x.c
+ create mode 100644 drivers/mfd/twl4030-core.c
+ create mode 100644 include/linux/i2c/twl4030.h
+ create mode 100644 include/linux/mfd/da903x.h
 
+Cheers,
+Samuel.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
