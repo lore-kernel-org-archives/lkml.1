@@ -1,76 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751516AbYJSFBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbYJSFH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751516AbYJSFBH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 01:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbYJSFAz
+	id S1751546AbYJSFH7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 01:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYJSFHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 01:00:55 -0400
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:52929 "EHLO
-	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750698AbYJSFAy (ORCPT
+	Sun, 19 Oct 2008 01:07:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:46962 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbYJSFHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 01:00:54 -0400
-X-Authority-Analysis: v=1.0 c=1 a=D6x46cGcf2AA:10 a=iCY7fnX7vt0A:10
- a=UCmEzY_7EAr7ZirZUpcA:9 a=NPoMHY1VRqJrFUbnt8r1iLBr6SoA:4 a=50e4U0PicR4A:10
-Subject: Re: [RFC PATCH 1/21] relay - Clean up relay_switch_subbuf() and
-	make waking up consumers optional.
-From: Tom Zanussi <zanussi@comcast.net>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Martin Bligh <mbligh@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, prasad@linux.vnet.ibm.com,
+	Sun, 19 Oct 2008 01:07:49 -0400
+Cc: Anirban Sinha <kernel@anirban.org>
+Message-Id: <DB686D75-ECEA-444D-AF47-FA9C80D96149@anirban.org>
+From: Anirban Sinha <kernel@anirban.org>
+To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, od@suse.com,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
-       David Wilder <dwilder@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-In-Reply-To: <48F9A441.3030400@cs.helsinki.fi>
-References: <1224137126.16328.220.camel@charm-linux>
-	 <48F9A441.3030400@cs.helsinki.fi>
-Content-Type: text/plain
-Date: Sun, 19 Oct 2008 00:00:48 -0500
-Message-Id: <1224392448.7234.16.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+       Anirban Sinha <kernel@anirban.org>
+In-Reply-To: <4C5B59FE-5B39-40E5-BB3C-7390C9625121@anirban.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: panic() logic
+Date: Sat, 18 Oct 2008 22:07:47 -0700
+References: <13c67e2c0810171448o6858827ei1ccc9e0ddf487f8@mail.gmail.com> <87iqrqjpzt.fsf@basil.nowhere.org> <4C5B59FE-5B39-40E5-BB3C-7390C9625121@anirban.org>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka,
+Hi All:
 
-On Sat, 2008-10-18 at 11:54 +0300, Pekka Enberg wrote:
-> Hi Tom,
-> 
-> Tom Zanussi wrote:
-> > +static inline void relay_update_filesize(struct rchan_buf *buf, size_t length)
-> > +{
-> > +	if (buf->dentry)
-> > +		buf->dentry->d_inode->i_size +=	length;
-> > +	else
-> > +		buf->early_bytes += length;
-> > +
-> > +	smp_mb();
-> > +}
-> 
-> A minor nit: you should probably add a comment for that memory barrier. 
-> That is, explain why it is needed. It makes a world of a difference to 
-> anyone trying to understand what's going on here.
+There is another alternative way to solve this issue. Why does not the  
+archs take the responsibility of shutting down the cores? The actual  
+power down mechanism is arch dependent anyway, so I guess it can be  
+made to be a part of emergency_shutdown(). The arch independent kernel  
+code will then simply do the necessary arch independent things to  
+handle panic and simply call emergency_reboot() to do the rest of the  
+arch specific stuff, including powering down the cores.
 
-You're right, but it actually goes away in one of the following patches.
+How does this sound?
 
-I'm wondering whether it even makes sense to post the individual patches
-or instead just the full squashed patch and/or the end-result files,
-which are really the things it would useful to review.
+Ani
 
-I've made some new changes following more testing and actually plan to
-post another round sometime soon - I'll probably skip posting the
-individual patches then unless it makes sense to.
+On 18-Oct-08, at 7:44 PM, Anirban Sinha wrote:
 
-Thanks for the comments.
-
-Tom
+> Hi Andi:
+>
+> Thanks for replying.
+> On 18-Oct-08, at 12:56 AM, Andi Kleen wrote:
+>
+>> "Ani Sinha" <kernel@anirban.org> writes:
+>>
+>>> I noticed an issue with the panic() firing on a back core in SMP
+>>> lately. We are mostly working on mips architectures but it might
+>>> effect other archs as well. Therefore, I am putting forward my
+>>> thoughts and comments to the whole linux community. In the  
+>>> following,
+>>> by front core I mean core#0 and by back core I mean other cores.
+>>
+>> Why exactly is the "front core" special?
+>
+> I am not exactly a firmware (CFE) guy but if I understand it  
+> correctly, all the interrupts are tied to the front core and  
+> cfe_exit() can only be called from the front core. I have written to  
+> the other guy who specializes in the CFE area and I will get back to  
+> you when I get an answer from him.
+>
+>
+>>
+>>
+>>> smp_send_stop basically marks all the other cores as 'down' and
+>>> updates the cpu bitmap. One implication of this is that you can  
+>>> not do
+>>> an IPI later on to other cores (smp_send_function() does a
+>>> 'for_earch_online_cpu'). This makes sense since you should not be
+>>> allowed to do anything on a down cpu.
+>
+>
+> This part of the logic is in Linux and is arch independent.
+>
+>
+>>> But what if a particular
+>>> architecture had logic to do specific things for the front core and
+>>> other things on the back cores as a part of 'graceful reboot'  
+>>> process?
+>>
+>> Is that logic in Linux or in the platform?
+>
+>
+> This logic is in arch specific code.
+>
+>>
+>>
+>> Normally it's best to not rely on any specific CPU for panic.
+>> What do you do when that CPU is so broken that it cannot
+>> process IPIs anymore?
+>
+>
+> Agreed. That is why in my pseudo code I have a block (a comment  
+> really) telling you do do absolutely bare minimal things that you  
+> must do in a panic situation on the current core (without relying on  
+> IPIs to succeed on other cores).. What this bare minimum will be is  
+> a matter of debate. Getting a message out to the console saying that  
+> something bad has occurred (with details of the crash) can perhaps  
+> be a part of that minumum hunk of code.
+>
+> Currently, the arch independent logic defeats the main purpose of  
+> the arch dependent emergency_restart() function which is to restart  
+> the system.  If a panic occurs on a back core, the kernel halts with  
+> the message "rebooting in 5 sec) and someone has to physically press  
+> the reset button. In a vast majority of the cases, we do have a  
+> perfectly sane and functional front core and we are just not able to  
+> gracefully reboot the system because we are limited by the way  
+> panic() handles things. If there are other archs that does a similar  
+> specific operation for the front core as a part of 'emergency  
+> restart', they are all defeated.
+>
+> All I am trying to say is that perhaps there is a window of  
+> possibility where we can better handle a kernel panic. I am not  
+> saying that we should rearrange code in order to just accommodate  
+> mips archs, but if it can be done without much pain and objection,  
+> then lets just do it.
+>
+> Thanks.
+>
+> Ani
+>
+>
+>
+>>
+>>
+>> -Andi
+>>
+>> -- 
+>> ak@linux.intel.com
+>
 
