@@ -1,91 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751928AbYJSMsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbYJSNKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751928AbYJSMsU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 08:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYJSMsB
+	id S1751551AbYJSNKf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 09:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYJSNK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 08:48:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44523 "EHLO mx2.mail.elte.hu"
+	Sun, 19 Oct 2008 09:10:26 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:53310 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751412AbYJSMsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 08:48:00 -0400
-Date: Sun, 19 Oct 2008 14:47:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Joerg Roedel <joro@8bytes.org>, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, fenghua.yu@intel.com, tony.luck@intel.com,
-       suresh.b.siddha@intel.com, sfr@canb.auug.org.au,
-       andreas.herrmann3@amd.com, joseph.cihula@intel.com,
-       akpm@linux-foundation.org, jbarnes@virtuousgeek.org, tglx@linutronix.de,
-       torvalds@linux-foundation.org
-Subject: Re: [ANNOUNCE] iommu-2.6.git tree
-Message-ID: <20081019124732.GA21115@elte.hu>
-References: <1224343843.6770.1378.camel@macbook.infradead.org> <20081019111203.GB29705@8bytes.org> <1224415198.6770.1464.camel@macbook.infradead.org>
-MIME-Version: 1.0
+	id S1751272AbYJSNKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 09:10:25 -0400
+To: paulmck@linux.vnet.ibm.com, serue@us.ibm.com
+Cc: sds@tycho.nsa.gov, jmorris@namei.org, chrisw@sous-sol.org,
+       dhowells@redhat.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       takedakn@nttdata.co.jp, haradats@nttdata.co.jp,
+       penguin-kernel@i-love.sakura.ne.jp
+Subject: Re: [TOMOYO #10 (linux-next) 7/8] File operation restriction part.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+References: <20081016151003.GA6772@linux.vnet.ibm.com>
+	<48F84DAB.4060002@nttdata.co.jp>
+	<20081017145630.GC6706@linux.vnet.ibm.com>
+	<200810182304.JDC12476.JFSHLVMOQFtOOF@I-love.SAKURA.ne.jp>
+	<20081018151809.GA7227@linux.vnet.ibm.com>
+In-Reply-To: <20081018151809.GA7227@linux.vnet.ibm.com>
+Message-Id: <200810192210.FAG26590.MLtOVOFJHQFOSF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sun, 19 Oct 2008 22:10:23 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224415198.6770.1464.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Sun, 2008-10-19 at 13:12 +0200, Joerg Roedel wrote:
-> > On Sat, Oct 18, 2008 at 04:30:43PM +0100, David Woodhouse wrote:
-> > > As previously threatened, I've created an iommu-2.6.git tree:
-> > > 	git://git.infradead.org/iommu-2.6.git
-> > > 	http://git.infradead.org/iommu-2.6.git
-> > 
-> > Is there a specific reason why IOMMU stuff should go to Linus 
-> > without testing them in the x86 tree before? The DMA layer and IOMMU 
-> > drivers are an integral component of the architecture and patches 
-> > for it are best placed in the architecture tree instead of a 
-> > seperate one, imho.
+Paul E. McKenney wrote:
+> > Maybe I'm misunderstanding what "mb()" can do.
 > 
-> This is the purpose that linux-next serves, not the x86 
-> forest-of-doom.
+> The problem is that while wmb() and mb() do in fact order writes, they 
+> cannot order the other task's reads.
 > 
-> And I thought Ingo said his old iommu tree wasn't in there anyway? 
-> [...]
+I expected that "mb()" can order the other task's reads.
 
-That's weird, where did you get the impression from that i "dropped" the 
-"old" IOMMU tree? It's alive and kicking, all the new IOMMU code that we 
-queued up and tested in the last cycle for v2.6.28 have just gone 
-upstream - about 80 commits.
+Now, I understood that there is no room for optimizing the reader process
+by omitting smp_read_barrier_depends() on read side.
 
-Please do not just jump into other people's workflow like that ... at 
-minimum ask them what they'd prefer to do.
+OK, let's return to http://lkml.org/lkml/2008/10/14/406 .
+Below is the updated version of list1 operations.
+As I now use rcu_assign_pointer() and rcu_dereference() which depend on
+include/linux/rcupdate.h , I separated the code from include/linux/list.h .
+Did I update correctly?
 
-Firstly, it's not at all clear to me what your role in this whole matter 
-is, because you've not talked to us about it. Does your interest in this 
-whole topic come from the fact that you recently got hired by Intel and 
-got assigned to maintain Intel's IOMMU bits two months ago?
+---
+Subject: Singly linked list implementation.
 
-The thing is, i havent seen a single IOMMU contribution from you in the 
-last cycles, so it's weird that you now suddenly attempt to zap other 
-people's trees from linux-next out of the blue ... without their 
-knowledge and consent.
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ include/linux/list1.h |   81 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
 
-Your help is welcome, and as i said it before i'd encourage you to run 
-your tree - and if Linus wants to pull from you directly that's his and 
-Andrew's call.
+--- /dev/null
++++ linux-next/include/linux/list1.h
+@@ -0,0 +1,81 @@
++#ifndef _LINUX_LIST1_H
++#define _LINUX_LIST1_H
++
++#include <linux/list.h>
++#include <linux/rcupdate.h>
++
++/*
++ * Singly linked list implementation.
++ *
++ * This list supports only two operations.
++ * (1) Append an entry to the tail of the list.
++ * (2) Read all entries starting from the head of the list.
++ *
++ * This list is designed for holding "write once, read many" entries.
++ * This list requires no locks for read operation.
++ * This list doesn't support "remove an entry from the list" operation.
++ */
++
++/* To reduce memory usage, this list doesn't use "->prev" pointer. */
++struct list1_head {
++	struct list1_head *next;
++};
++
++#define LIST1_HEAD_INIT(name) { &(name) }
++#define LIST1_HEAD(name) struct list1_head name = LIST1_HEAD_INIT(name)
++
++static inline void INIT_LIST1_HEAD(struct list1_head *list)
++{
++	list->next = list;
++}
++
++/* Reuse list_entry because it doesn't use "->prev" pointer. */
++#define list1_entry list_entry
++
++/* Reuse list_for_each_rcu because it doesn't use "->prev" pointer. */
++#define list1_for_each list_for_each_rcu
++/* Reuse list_for_each_entry_rcu because it doesn't use "->prev" pointer. */
++#define list1_for_each_entry list_for_each_entry_rcu
++
++/**
++ * list1_for_each_cookie - iterate over a list with cookie.
++ * @pos:        the &struct list1_head to use as a loop cursor.
++ * @cookie:     the &struct list1_head to use as a cookie.
++ * @head:       the head for your list.
++ *
++ * Same with list_for_each_rcu() except that this primitive uses @cookie
++ * so that we can continue iteration.
++ * @cookie must be NULL when iteration starts, and @cookie will become
++ * NULL when iteration finishes.
++ *
++ * Since list elements are never removed, we don't need to get a lock
++ * or a reference count.
++ */
++#define list1_for_each_cookie(pos, cookie, head)                      \
++	for (({ if (!cookie)                                          \
++				     cookie = head; }),               \
++	     pos = rcu_dereference((cookie)->next);                   \
++	     prefetch(pos->next), pos != (head) || ((cookie) = NULL); \
++	     (cookie) = pos, pos = rcu_dereference(pos->next))
++
++/**
++ * list1_add_tail - add a new entry to list1 list.
++ * @new: new entry to be added.
++ * @head: list head to add it before.
++ *
++ * Same with list_add_tail_rcu() without "->prev" pointer.
++ *
++ * Caller must hold a lock for protecting @head.
++ */
++static inline void list1_add_tail(struct list1_head *new,
++				  struct list1_head *head)
++{
++	struct list1_head *prev = head;
++
++	new->next = head;
++	while (prev->next != head)
++		prev = prev->next;
++	rcu_assign_pointer(prev->next, new);
++}
++
++#endif
+---
 
-At the moment IOMMU topics are a rather healthy machinery that clearly 
-got new blood and new life in the past two kernel cycles. If you want to 
-help out with this stuff then please start by contributing and working 
-with people, not by trying to control it.
+By the way, quoting from ordering.2007.09.19a.pdf :
 
-	Ingo
+| One could place an smp_rmb() primitive between the pointer fetch and
+| dereference. However, this imposes unneeded overhead on systems (such as
+| i386, IA64, PPC, and SPARC) that respect data dependencies on the read side.
+| A smp_read_barrier_depends() primitive has been added to the Linux 2.6 kernel
+| to eliminate overhead on these systems.
+
+In 2.4 kernels, to support Alpha architecture, people use smp_rmb() which
+imposes unneeded overhead on non Alpha architecture.
+In 2.6 kernels, to support Alpha architecture, people use
+smp_read_barrier_depends() which does not impose unneeded overhead on
+non Alpha architecture.
+That's nice.
+
+| Alpha is the only CPU where smp_read_barrier_depends() is an smp_mb() rather
+| than a no-op.
+
+I found
+
+  #define smp_read_barrier_depends()      read_barrier_depends()
+
+in arch/h8300/include/asm/system.h but couldn't find the definition of
+read_barrier_depends() within that file.
+I hope read_barrier_depends() is defined as a no-op by some other header files.
+
+Regards.
