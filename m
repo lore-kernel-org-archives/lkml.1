@@ -1,138 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbYJSFH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbYJSFNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751546AbYJSFH7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 01:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYJSFHv
+	id S1751546AbYJSFNN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 01:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbYJSFM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 01:07:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:46962 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbYJSFHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 01:07:49 -0400
-Cc: Anirban Sinha <kernel@anirban.org>
-Message-Id: <DB686D75-ECEA-444D-AF47-FA9C80D96149@anirban.org>
-From: Anirban Sinha <kernel@anirban.org>
-To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Anirban Sinha <kernel@anirban.org>
-In-Reply-To: <4C5B59FE-5B39-40E5-BB3C-7390C9625121@anirban.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: panic() logic
-Date: Sat, 18 Oct 2008 22:07:47 -0700
-References: <13c67e2c0810171448o6858827ei1ccc9e0ddf487f8@mail.gmail.com> <87iqrqjpzt.fsf@basil.nowhere.org> <4C5B59FE-5B39-40E5-BB3C-7390C9625121@anirban.org>
-X-Mailer: Apple Mail (2.929.2)
+	Sun, 19 Oct 2008 01:12:58 -0400
+Received: from sorrow.cyrius.com ([65.19.161.204]:3479 "EHLO sorrow.cyrius.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbYJSFM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 01:12:58 -0400
+Date: Sun, 19 Oct 2008 07:12:47 +0200
+From: Martin Michlmayr <tbm@cyrius.com>
+To: Eric Sandeen <sandeen@sandeen.net>, Tobias Frost <tobi@coldtobi.de>,
+       linux-kernel@vger.kernel.org, debian-arm@lists.debian.org,
+       xfs@oss.sgi.com
+Subject: Re: XFS filesystem corruption on the arm(el) architecture
+Message-ID: <20081019051247.GD9598@deprecation.cyrius.com>
+References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <48F89E0F.6030307@sandeen.net> <20081018085752.GS25834@deprecation.cyrius.com> <20081019014830.GI31761@disturbed>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081019014830.GI31761@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All:
+* Dave Chinner <david@fromorbit.com> [2008-10-19 12:48]:
+> That's the log replay indicating that there's a bad transaction
+> header in the log. Very strange - it shoul dbe a clean log. What
+> does xfs_logprint -t /dev/sda5 tell you about the transactions
+> in the log?
 
-There is another alternative way to solve this issue. Why does not the  
-archs take the responsibility of shutting down the cores? The actual  
-power down mechanism is arch dependent anyway, so I guess it can be  
-made to be a part of emergency_shutdown(). The arch independent kernel  
-code will then simply do the necessary arch independent things to  
-handle panic and simply call emergency_reboot() to do the rest of the  
-arch specific stuff, including powering down the cores.
+mdebian:~# mkfs.xfs -f /dev/sda5
+meta-data=/dev/sda5              isize=256    agcount=4, agsize=94380
+blks
+         =                       sectsz=512   attr=2
+data     =                       bsize=4096   blocks=377519,
+imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks,
+lazy-count=0
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+debian:~# mount -t xfs /dev/sda5 /mnt
+debian:~# cp /usr/bin/* /mnt/
+debian:~# umount /mnt
+debian:~# mount -t xfs /dev/sda5 /mnt
+mount: /dev/sda5: can't read superblock
+debian:~# xfs_logprint -t /dev/sda5
+xfs_logprint:
+    data device: 0x805
+    log device: 0x805 daddr: 1510112 length: 20480
 
-How does this sound?
+XFS: Log inconsistent (didn't find previous header)
+XFS: empty log check failed
+xfs_logprint: failed to find head and tail, error: 5
+debian:~#
 
-Ani
-
-On 18-Oct-08, at 7:44 PM, Anirban Sinha wrote:
-
-> Hi Andi:
->
-> Thanks for replying.
-> On 18-Oct-08, at 12:56 AM, Andi Kleen wrote:
->
->> "Ani Sinha" <kernel@anirban.org> writes:
->>
->>> I noticed an issue with the panic() firing on a back core in SMP
->>> lately. We are mostly working on mips architectures but it might
->>> effect other archs as well. Therefore, I am putting forward my
->>> thoughts and comments to the whole linux community. In the  
->>> following,
->>> by front core I mean core#0 and by back core I mean other cores.
->>
->> Why exactly is the "front core" special?
->
-> I am not exactly a firmware (CFE) guy but if I understand it  
-> correctly, all the interrupts are tied to the front core and  
-> cfe_exit() can only be called from the front core. I have written to  
-> the other guy who specializes in the CFE area and I will get back to  
-> you when I get an answer from him.
->
->
->>
->>
->>> smp_send_stop basically marks all the other cores as 'down' and
->>> updates the cpu bitmap. One implication of this is that you can  
->>> not do
->>> an IPI later on to other cores (smp_send_function() does a
->>> 'for_earch_online_cpu'). This makes sense since you should not be
->>> allowed to do anything on a down cpu.
->
->
-> This part of the logic is in Linux and is arch independent.
->
->
->>> But what if a particular
->>> architecture had logic to do specific things for the front core and
->>> other things on the back cores as a part of 'graceful reboot'  
->>> process?
->>
->> Is that logic in Linux or in the platform?
->
->
-> This logic is in arch specific code.
->
->>
->>
->> Normally it's best to not rely on any specific CPU for panic.
->> What do you do when that CPU is so broken that it cannot
->> process IPIs anymore?
->
->
-> Agreed. That is why in my pseudo code I have a block (a comment  
-> really) telling you do do absolutely bare minimal things that you  
-> must do in a panic situation on the current core (without relying on  
-> IPIs to succeed on other cores).. What this bare minimum will be is  
-> a matter of debate. Getting a message out to the console saying that  
-> something bad has occurred (with details of the crash) can perhaps  
-> be a part of that minumum hunk of code.
->
-> Currently, the arch independent logic defeats the main purpose of  
-> the arch dependent emergency_restart() function which is to restart  
-> the system.  If a panic occurs on a back core, the kernel halts with  
-> the message "rebooting in 5 sec) and someone has to physically press  
-> the reset button. In a vast majority of the cases, we do have a  
-> perfectly sane and functional front core and we are just not able to  
-> gracefully reboot the system because we are limited by the way  
-> panic() handles things. If there are other archs that does a similar  
-> specific operation for the front core as a part of 'emergency  
-> restart', they are all defeated.
->
-> All I am trying to say is that perhaps there is a window of  
-> possibility where we can better handle a kernel panic. I am not  
-> saying that we should rearrange code in order to just accommodate  
-> mips archs, but if it can be done without much pain and objection,  
-> then lets just do it.
->
-> Thanks.
->
-> Ani
->
->
->
->>
->>
->> -Andi
->>
->> -- 
->> ak@linux.intel.com
->
-
+-- 
+Martin Michlmayr
+http://www.cyrius.com/
