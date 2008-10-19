@@ -1,60 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695AbYJSBwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbYJSCoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752695AbYJSBwK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 21:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYJSBv5
+	id S1752552AbYJSCoS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 22:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYJSCoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 21:51:57 -0400
-Received: from mail.lang.hm ([64.81.33.126]:36786 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752024AbYJSBv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 21:51:57 -0400
-Date: Sat, 18 Oct 2008 18:52:29 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jan Engelhardt <jengelh@medozas.de>
-cc: Thorsten Leemhuis <thl@ct.heise.de>, Greg KH <greg@kroah.com>,
+	Sat, 18 Oct 2008 22:44:05 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:28130 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbYJSCoD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 22:44:03 -0400
+Cc: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <alpine.LNX.1.10.0810181743420.27947@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.DEB.1.10.0810181850340.11267@asgard.lang.hm>
-References: <20081016002509.GA25868@kroah.com> <48F6E6EF.8020701@ct.heise.de> <alpine.DEB.1.10.0810160032550.3905@asgard.lang.hm> <alpine.LNX.1.10.0810181743420.27947@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+       Anirban Sinha <kernel@anirban.org>
+Message-Id: <4C5B59FE-5B39-40E5-BB3C-7390C9625121@anirban.org>
+From: Anirban Sinha <kernel@anirban.org>
+To: Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <87iqrqjpzt.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: panic() logic
+Date: Sat, 18 Oct 2008 19:44:01 -0700
+References: <13c67e2c0810171448o6858827ei1ccc9e0ddf487f8@mail.gmail.com> <87iqrqjpzt.fsf@basil.nowhere.org>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Oct 2008, Jan Engelhardt wrote:
+Hi Andi:
 
-> On Thursday 2008-10-16 03:34, david@lang.hm wrote:
->> On Thu, 16 Oct 2008, Thorsten Leemhuis wrote:
->>> On 16.10.2008 02:25, Greg KH wrote:
->>>
->>> Hence people that write a lot of articles about things that happen in linux
->>> land (like LWN.net or I do) would be forced to write sentences like "[...]the
->>> kernel that will become 2008.3 or 2009.0 will have feature foo that works
->>> like this[...]". That will get really confusing if you read those articles
->>> half a year later -- especially if that kernel became 2008.3 in the end,
->>> because foo in 2009.0 might already look quite different again...
->>
->> pick a name when the merge window opens
+Thanks for replying.
+On 18-Oct-08, at 12:56 AM, Andi Kleen wrote:
+
+> "Ani Sinha" <kernel@anirban.org> writes:
 >
-> Hell no, we're not a distro.
+>> I noticed an issue with the panic() firing on a back core in SMP
+>> lately. We are mostly working on mips architectures but it might
+>> effect other archs as well. Therefore, I am putting forward my
+>> thoughts and comments to the whole linux community. In the following,
+>> by front core I mean core#0 and by back core I mean other cores.
+>
+> Why exactly is the "front core" special?
 
-huh?
+I am not exactly a firmware (CFE) guy but if I understand it  
+correctly, all the interrupts are tied to the front core and  
+cfe_exit() can only be called from the front core. I have written to  
+the other guy who specializes in the CFE area and I will get back to  
+you when I get an answer from him.
 
-we are picking the name for the next kernel far more in advance today (we 
-know that the next kernel will be named 2.6.28, and the one after thta 
-2.6.29)
 
-I'm just saying, pick the name/number for the kernel based on when the 
-merge window opened.
+>
+>
+>> smp_send_stop basically marks all the other cores as 'down' and
+>> updates the cpu bitmap. One implication of this is that you can not  
+>> do
+>> an IPI later on to other cores (smp_send_function() does a
+>> 'for_earch_online_cpu'). This makes sense since you should not be
+>> allowed to do anything on a down cpu.
 
-if it's the first merge window in 2009 the kernel would be 2009.1.0, if 
-it's the 5th merge window it would be 2009.5.0, even if the resulting 
-kernel ended up getting released in 2010
 
-David Lang
+This part of the logic is in Linux and is arch independent.
+
+
+>> But what if a particular
+>> architecture had logic to do specific things for the front core and
+>> other things on the back cores as a part of 'graceful reboot'  
+>> process?
+>
+> Is that logic in Linux or in the platform?
+
+
+This logic is in arch specific code.
+
+>
+>
+> Normally it's best to not rely on any specific CPU for panic.
+> What do you do when that CPU is so broken that it cannot
+> process IPIs anymore?
+
+
+Agreed. That is why in my pseudo code I have a block (a comment  
+really) telling you do do absolutely bare minimal things that you must  
+do in a panic situation on the current core (without relying on IPIs  
+to succeed on other cores).. What this bare minimum will be is a  
+matter of debate. Getting a message out to the console saying that  
+something bad has occurred (with details of the crash) can perhaps be  
+a part of that minumum hunk of code.
+
+Currently, the arch independent logic defeats the main purpose of the  
+arch dependent emergency_restart() function which is to restart the  
+system.  If a panic occurs on a back core, the kernel halts with the  
+message "rebooting in 5 sec) and someone has to physically press the  
+reset button. In a vast majority of the cases, we do have a perfectly  
+sane and functional front core and we are just not able to gracefully  
+reboot the system because we are limited by the way panic() handles  
+things. If there are other archs that does a similar specific  
+operation for the front core as a part of 'emergency restart', they  
+are all defeated.
+
+All I am trying to say is that perhaps there is a window of  
+possibility where we can better handle a kernel panic. I am not saying  
+that we should rearrange code in order to just accommodate mips archs,  
+but if it can be done without much pain and objection, then lets just  
+do it.
+
+Thanks.
+
+Ani
+
+
+
+>
+>
+> -Andi
+>
+> -- 
+> ak@linux.intel.com
+
