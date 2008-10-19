@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbYJSLMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751501AbYJSLRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbYJSLMS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 07:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYJSLMI
+	id S1751501AbYJSLRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 07:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYJSLRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 07:12:08 -0400
-Received: from 8bytes.org ([88.198.83.132]:34350 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbYJSLMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 07:12:07 -0400
-Date: Sun, 19 Oct 2008 13:12:03 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       fenghua.yu@intel.com, tony.luck@intel.com, suresh.b.siddha@intel.com,
-       sfr@canb.auug.org.au, andreas.herrmann3@amd.com,
-       joseph.cihula@intel.com, akpm@linux-foundation.org,
-       jbarnes@virtuousgeek.org, tglx@linutronix.de,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [ANNOUNCE] iommu-2.6.git tree
-Message-ID: <20081019111203.GB29705@8bytes.org>
-References: <1224343843.6770.1378.camel@macbook.infradead.org>
+	Sun, 19 Oct 2008 07:17:13 -0400
+Received: from mail.bencastricum.nl ([213.84.203.196]:46588 "EHLO
+	bencastricum.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbYJSLRM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 07:17:12 -0400
+X-Greylist: delayed 883 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Oct 2008 07:17:11 EDT
+Message-ID: <6F31A6373E3D42EDAED26A994BA0830D@Seven>
+From: "Ben Castricum" <lk0810@bencastricum.nl>
+To: <linux-kernel@vger.kernel.org>
+Subject: NULL pointer derefence since 2.6.27 in (e)poll
+Date: Sun, 19 Oct 2008 13:02:20 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224343843.6770.1378.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 04:30:43PM +0100, David Woodhouse wrote:
-> As previously threatened, I've created an iommu-2.6.git tree:
-> 	git://git.infradead.org/iommu-2.6.git
-> 	http://git.infradead.org/iommu-2.6.git
+I am getting this bug reports almost daily since about 2.6.27. I saved the 
+output of all of them, but they are all nearly identical, so I just included 
+the first one. After the report networking seems unstable and the system 
+requires a reboot.
 
-Is there a specific reason why IOMMU stuff should go to Linus without
-testing them in the x86 tree before? The DMA layer and IOMMU drivers are
-an integral component of the architecture and patches for it are best
-placed in the architecture tree instead of a seperate one, imho.
+My .config can be found at http://www.bencastricum.nl/.config
 
-Joerg
+I hope this helps.
+
+Ben
+
+
+BUG: unable to handle kernel NULL pointer dereference at 00000020
+IP: [<b0254b74>] sock_poll+0xc/0x12
+*pde = 00000000
+Oops: 0000 [#1] SMP
+last sysfs file: 
+/sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0/0-002e/cpu0_vid
+Modules linked in: ipt_MASQUERADE ipt_REJECT ipt_LOG xt_recent xt_tcpudp 
+xt_state iptable_filter nf_conntrack_ftp iptable_nat ip_tables nf_nat 
+x_tables nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 af_packet usb_storage 
+usbhid 8139too mii tg3 libphy cdc_acm ehci_hcd uhci_hcd usbcore lm85 
+hwmon_vid i2c_i801 softdog rtc ext2 [last unloaded: firmware_class]
+
+Pid: 1717, comm: squid Not tainted (2.6.27-05178-g2e532d6 #111) HP d530 
+SFF(PL110ES)
+EIP: 0060:[<b0254b74>] EFLAGS: 00010246 CPU: 0
+EIP is at sock_poll+0xc/0x12
+EAX: ea872d80 EBX: 00000000 ECX: 00000000 EDX: eee50e00
+ESI: e9a9bf00 EDI: ef304b80 EBP: ea84af44 ESP: ea84af40
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process squid (pid: 1717, ti=ea84a000 task=ea96e330 task.ti=ea84a000)
+Stack:
+ e9a9bf0c ea84afb0 b017ff04 ea84af9c 00000002 00000000 eabe1300 ef304b98
+ 00000003 ef304bac ef304ba4 e9a9bf0c ef304ba0 ef304b94 00000046 ef304b84
+ ea84af9c b03ce000 b014248d ea84af94 b0126765 ea84afb0 b0105909 ea84af9c
+Call Trace:
+ [<b017ff04>] ? sys_epoll_wait+0x245/0x3a7
+ [<b014248d>] ? handle_fasteoi_irq+0x0/0xad
+ [<b0126765>] ? irq_exit+0x53/0x77
+ [<b0105909>] ? do_IRQ+0xae/0xc4
+ [<b0103905>] ? sysenter_do_call+0x12/0x25
+Code: 8b 58 54 b8 ea ff ff ff 85 db 74 0c ff 75 0c ff 75 08 89 f0 ff d3 5a 
+59 8d 65 f8 5b 5e 5d c3 55 89 e5 53 89 d1 8b 50 6c 8b 5a 0c <ff> 53 20 5b 5d 
+c3 55 89 e5 53 89 d1 8b 50 6c 8b 5a 0c ff 53 4c
+EIP: [<b0254b74>] sock_poll+0xc/0x12 SS:ESP 0068:ea84af40
+---[ end trace 6e50fb78d788d751 ]--- 
 
