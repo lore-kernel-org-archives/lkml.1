@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751511AbYJSMrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751800AbYJSMrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751511AbYJSMrU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 08:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYJSMrM
+	id S1751800AbYJSMrw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 08:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYJSMro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 08:47:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42142 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbYJSMrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 08:47:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [RFC] Kernel version numbering scheme change
-Date: Sun, 19 Oct 2008 14:51:23 +0200
-User-Agent: KMail/1.9.9
-Cc: david@lang.hm, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20081016002509.GA25868@kroah.com> <alpine.DEB.1.10.0810171821500.11079@asgard.lang.hm> <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz>
+	Sun, 19 Oct 2008 08:47:44 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:39375 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYJSMrn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 08:47:43 -0400
+Date: Sun, 19 Oct 2008 13:47:48 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Ben Castricum <lk0810@bencastricum.nl>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: NULL pointer derefence since 2.6.27 in (e)poll
+In-Reply-To: <84144f020810190445r12154ae0p271037ae130b653b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0810191346001.26362@blonde.site>
+References: <6F31A6373E3D42EDAED26A994BA0830D@Seven>
+ <84144f020810190445r12154ae0p271037ae130b653b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810191451.24342.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 19 of October 2008, Jiri Kosina wrote:
-> On Fri, 17 Oct 2008, david@lang.hm wrote:
+On Sun, 19 Oct 2008, Pekka Enberg wrote:
+> On Sun, Oct 19, 2008 at 2:02 PM, Ben Castricum <lk0810@bencastricum.nl> wrote:
+> > I am getting this bug reports almost daily since about 2.6.27. I saved the
+> > output of all of them, but they are all nearly identical, so I just included
+> > the first one. After the report networking seems unstable and the system
+> > requires a reboot.
+> >
+> > My .config can be found at http://www.bencastricum.nl/.config
+> >
+> > I hope this helps.
+> >
+> > Ben
+> >
+> >
+> > BUG: unable to handle kernel NULL pointer dereference at 00000020
+> > IP: [<b0254b74>] sock_poll+0xc/0x12
+> > *pde = 00000000
+> > Oops: 0000 [#1] SMP
+> > last sysfs file:
+> > /sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0/0-002e/cpu0_vid
+> > Modules linked in: ipt_MASQUERADE ipt_REJECT ipt_LOG xt_recent xt_tcpudp
+> > xt_state iptable_filter nf_conntrack_ftp iptable_nat ip_tables nf_nat
+> > x_tables nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 af_packet usb_storage
+> > usbhid 8139too mii tg3 libphy cdc_acm ehci_hcd uhci_hcd usbcore lm85
+> > hwmon_vid i2c_i801 softdog rtc ext2 [last unloaded: firmware_class]
+> >
+> > Pid: 1717, comm: squid Not tainted (2.6.27-05178-g2e532d6 #111) HP d530
+> > SFF(PL110ES)
+> > EIP: 0060:[<b0254b74>] EFLAGS: 00010246 CPU: 0
+> > EIP is at sock_poll+0xc/0x12
+> > EAX: ea872d80 EBX: 00000000 ECX: 00000000 EDX: eee50e00
+> > ESI: e9a9bf00 EDI: ef304b80 EBP: ea84af44 ESP: ea84af40
+> > DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > Process squid (pid: 1717, ti=ea84a000 task=ea96e330 task.ti=ea84a000)
+> > Stack:
+> > e9a9bf0c ea84afb0 b017ff04 ea84af9c 00000002 00000000 eabe1300 ef304b98
+> > 00000003 ef304bac ef304ba4 e9a9bf0c ef304ba0 ef304b94 00000046 ef304b84
+> > ea84af9c b03ce000 b014248d ea84af94 b0126765 ea84afb0 b0105909 ea84af9c
+> > Call Trace:
+> > [<b017ff04>] ? sys_epoll_wait+0x245/0x3a7
+> > [<b014248d>] ? handle_fasteoi_irq+0x0/0xad
+> > [<b0126765>] ? irq_exit+0x53/0x77
+> > [<b0105909>] ? do_IRQ+0xae/0xc4
+> > [<b0103905>] ? sysenter_do_call+0x12/0x25
+> > Code: 8b 58 54 b8 ea ff ff ff 85 db 74 0c ff 75 0c ff 75 08 89 f0 ff d3 5a
+> > 59 8d 65 f8 5b 5e 5d c3 55 89 e5 53 89 d1 8b 50 6c 8b 5a 0c <ff> 53 20 5b 5d
+> > c3 55 89 e5 53 89 d1 8b 50 6c 8b 5a 0c ff 53 4c
+> > EIP: [<b0254b74>] sock_poll+0xc/0x12 SS:ESP 0068:ea84af40
+> > ---[ end trace 6e50fb78d788d751 ]---
 > 
-> > > Surely some scripts will start to break as soon as the third number gets
-> > > three digits.
-> > we've had three digit numbers in the third position before (2.3 and 2.5 
-> > went well past three digits IIRC)
-> 
-> Did we? I only recall 2.5.7[something] and 2.3.5[something] (plus special 
-> 2.3.99 release).
-> 
-> > > Actually, I thought we could continue to use a w.x.y.z numbering 
-> > > scheme, but in such a way that:
-> > > w = ($year - 2000) / 10 + 2 (so that we start from 2)
-> > > x = $year % 10
-> > > y = (number of major release in $year)
-> > > z = (number of stable version for major release w.x.y)
-> > > Then, the first major release in 2009 would be 2.9.1 and its first 
-> > > -stable "child" would become 2.9.1.1.  In turn, the first major 
-> > > release in 2010 could be 3.0.1 and so on.
-> > if you want the part of the version number to increment based on the year,
-> > just make it the year and don't complicate things.
-> 
-> In addition to that, having the kernel version dependent on year doesn't 
-> really seem to make much sense to me. Simply said, I don't see any 
-> relation of kernel source code contents to the current date in whatever 
-> calendar system.
-> 
-> And 2.x+1.y-rcZ+1 immediately following 2.x.y-rcZ really hurts my eyes :)
+> Looks like file->private is NULL in sock_poll() so I'm cc'ing netdev.
 
-Hm, why would that happen?
+Isn't it the issue fixed by
 
-Rafael
+http://marc.info/?l=linux-kernel&m=122428548613067&w=2
+
+Hugh
