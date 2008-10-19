@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbYJSBsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbYJSBus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbYJSBsx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 21:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYJSBsp
+	id S1752606AbYJSBus (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Oct 2008 21:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYJSBuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 21:48:45 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:33366 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752055AbYJSBso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 21:48:44 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmEDACYv+kh5LF1jiGdsb2JhbACTbQEBARUirGODbA
-X-IronPort-AV: E=Sophos;i="4.33,441,1220193000"; 
-   d="scan'208";a="233925834"
-Date: Sun, 19 Oct 2008 12:48:30 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: Eric Sandeen <sandeen@sandeen.net>, Tobias Frost <tobi@coldtobi.de>,
-       linux-kernel@vger.kernel.org, debian-arm@lists.debian.org,
-       xfs@oss.sgi.com
-Subject: Re: XFS filesystem corruption on the arm(el) architecture
-Message-ID: <20081019014830.GI31761@disturbed>
-Mail-Followup-To: Martin Michlmayr <tbm@cyrius.com>,
-	Eric Sandeen <sandeen@sandeen.net>, Tobias Frost <tobi@coldtobi.de>,
-	linux-kernel@vger.kernel.org, debian-arm@lists.debian.org,
-	xfs@oss.sgi.com
-References: <1222893502.5020.40.camel@moria> <20081002004556.GB30001@disturbed> <48E4213E.9090508@sandeen.net> <20081016212500.GA27228@deprecation.cyrius.com> <48F7BC9F.4080909@sandeen.net> <20081017070109.GA30726@deprecation.cyrius.com> <48F89E0F.6030307@sandeen.net> <20081018085752.GS25834@deprecation.cyrius.com>
+	Sat, 18 Oct 2008 21:50:40 -0400
+Received: from mail.lang.hm ([64.81.33.126]:56521 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752055AbYJSBuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Oct 2008 21:50:40 -0400
+Date: Sat, 18 Oct 2008 18:50:27 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Jiri Kosina <jkosina@suse.cz>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+In-Reply-To: <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz>
+Message-ID: <alpine.DEB.1.10.0810181848430.11267@asgard.lang.hm>
+References: <20081016002509.GA25868@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com> <200810180049.19014.rjw@sisk.pl> <alpine.DEB.1.10.0810171821500.11079@asgard.lang.hm>
+ <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081018085752.GS25834@deprecation.cyrius.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 18, 2008 at 10:57:56AM +0200, Martin Michlmayr wrote:
-> * Eric Sandeen <sandeen@sandeen.net> [2008-10-17 09:15]:
-> > If you unmount & remount, does the ls work then?
-> 
-> I cannot even mount it:
-> 
-> debian:~# mkfs.xfs -f /dev/sda5
-> meta-data=/dev/sda5              isize=256    agcount=4, agsize=94380 blks
->          =                       sectsz=512   attr=2
-> data     =                       bsize=4096   blocks=377519, imaxpct=25
->          =                       sunit=0      swidth=0 blks
-> naming   =version 2              bsize=4096
-> log      =internal log           bsize=4096   blocks=2560, version=2
->          =                       sectsz=512   sunit=0 blks, lazy-count=0
-> realtime =none                   extsz=4096   blocks=0, rtextents=0
-> debian:~# mount /dev/sda5 /mnt
-> [42949596.920000] XFS mounting filesystem sda5
-> debian:~# cp /usr/bin/* /mnt/
-> debian:~# umount /mnt
-> debian:~# mount -t xfs /dev/sda5 /mnt
-> [42949612.290000] XFS mounting filesystem sda5
-> [42949612.460000] Starting XFS recovery on filesystem: sda5 (logdev: internal)
-> [42949612.480000] XFS: xlog_recover_process_data: bad flag
-> [42949612.500000] XFS: log mount/recovery failed: error 5
-> [42949612.500000] XFS: log mount failed
-> mount: /dev/sda5: can't read superblock
-> debian:~#
+On Sun, 19 Oct 2008, Jiri Kosina wrote:
 
-That's the log replay indicating that there's a bad transaction
-header in the log. Very strange - it shoul dbe a clean log. What
-does xfs_logprint -t /dev/sda5 tell you about the transactions
-in the log?
+> On Fri, 17 Oct 2008, david@lang.hm wrote:
+>
+>>> Surely some scripts will start to break as soon as the third number gets
+>>> three digits.
+>> we've had three digit numbers in the third position before (2.3 and 2.5
+>> went well past three digits IIRC)
+>
+> Did we? I only recall 2.5.7[something] and 2.3.5[something] (plus special
+> 2.3.99 release).
 
-Cheers,
+I know some versions have (I remember deploying 2.1.116 on a box across 
+the country with no way to get at it afterwords)
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+>>> Actually, I thought we could continue to use a w.x.y.z numbering
+>>> scheme, but in such a way that:
+>>> w = ($year - 2000) / 10 + 2 (so that we start from 2)
+>>> x = $year % 10
+>>> y = (number of major release in $year)
+>>> z = (number of stable version for major release w.x.y)
+>>> Then, the first major release in 2009 would be 2.9.1 and its first
+>>> -stable "child" would become 2.9.1.1.  In turn, the first major
+>>> release in 2010 could be 3.0.1 and so on.
+>> if you want the part of the version number to increment based on the year,
+>> just make it the year and don't complicate things.
+>
+> In addition to that, having the kernel version dependent on year doesn't
+> really seem to make much sense to me. Simply said, I don't see any
+> relation of kernel source code contents to the current date in whatever
+> calendar system.
+
+it does give an indication of how out of date the kernel you are using is.
+
+> And 2.x+1.y-rcZ+1 immediately following 2.x.y-rcZ really hurts my eyes :)
+
+that I agree with.
+
+David Lang
