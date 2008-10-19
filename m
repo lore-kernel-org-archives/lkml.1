@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbYJSQaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751841AbYJSQdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751813AbYJSQaA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 12:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYJSQ3w
+	id S1751841AbYJSQdP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 12:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYJSQdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 12:29:52 -0400
-Received: from mail.lang.hm ([64.81.33.126]:46313 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbYJSQ3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 12:29:51 -0400
-Date: Sun, 19 Oct 2008 09:29:54 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-In-Reply-To: <200810191451.24342.rjw@sisk.pl>
-Message-ID: <alpine.DEB.1.10.0810190928360.20238@asgard.lang.hm>
-References: <20081016002509.GA25868@kroah.com> <alpine.DEB.1.10.0810171821500.11079@asgard.lang.hm> <alpine.LRH.1.10.0810190108160.2000@twin.jikos.cz> <200810191451.24342.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 19 Oct 2008 12:33:00 -0400
+Received: from hs-out-0708.google.com ([64.233.178.244]:31664 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbYJSQc7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 12:32:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DaA6AV3FYg3eKeZRagUUvXjT4rIUmHUvS9LrqGqN02bWLJBbw/kZM0INat2NQkEKvQ
+         +LnrnNKj3R9qljIDIoL41Q8Gn//J8q3/QGKSJ3cOvEbzhwnzaFl/J8Pwh6PcxFnhXKpg
+         Z+fXItGLQFMvhL761tBscOpuvCLtc3rwg/AiM=
+Message-ID: <83f9afec0810190932v7ca18936m1c1fdba9323159a4@mail.gmail.com>
+Date: Sun, 19 Oct 2008 19:32:55 +0300
+From: "Yauhen Kharuzhy" <jekhor@gmail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: [PATCH] MMC: Fix race condition in resume/card detect code
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081019160422.GA16377@jeknote.loshitsa1.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1224173376-25829-1-git-send-email-jekhor@gmail.com>
+	 <20081018191147.00327019@mjolnir.drzeus.cx>
+	 <20081019160422.GA16377@jeknote.loshitsa1.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Oct 2008, Rafael J. Wysocki wrote:
-
-> On Sunday, 19 of October 2008, Jiri Kosina wrote:
->> On Fri, 17 Oct 2008, david@lang.hm wrote:
+2008/10/19 Yauhen Kharuzhy <jekhor@gmail.com>:
+> On Sat, Oct 18, 2008 at 07:11:47PM +0200, Pierre Ossman wrote:
+>> On Thu, 16 Oct 2008 19:09:36 +0300
+>> Yauhen Kharuzhy <jekhor@gmail.com> wrote:
 >>
->>>> Surely some scripts will start to break as soon as the third number gets
->>>> three digits.
->>> we've had three digit numbers in the third position before (2.3 and 2.5
->>> went well past three digits IIRC)
+>> > When device wakes up by card change interrupt and MMC_UNSAFE_RESUME is
+>> > enabled then race condition between mmc_rescan() and
+>> > mmc_resume()/mmc_sd_resume() appeared.
+>> >
+>> > Resume functions can sleep into mmc_remove_card() and at this time
+>> > mmc_rescan() can be called by delayed work handler. Double-free of
+>> > kobject or double-remove of host->card can be result of this.
+>> >
+>> > This patch adds an mutex which deny simultaneous executing of
+>> > mmc_sd_resume()/mmc_resume() and mmc_rescan() functions. Probably, it is
+>> > not right way.
+>> >
+>> > Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
+>> > ---
 >>
->> Did we? I only recall 2.5.7[something] and 2.3.5[something] (plus special
->> 2.3.99 release).
->>
->>>> Actually, I thought we could continue to use a w.x.y.z numbering
->>>> scheme, but in such a way that:
->>>> w = ($year - 2000) / 10 + 2 (so that we start from 2)
->>>> x = $year % 10
->>>> y = (number of major release in $year)
->>>> z = (number of stable version for major release w.x.y)
->>>> Then, the first major release in 2009 would be 2.9.1 and its first
->>>> -stable "child" would become 2.9.1.1.  In turn, the first major
->>>> release in 2010 could be 3.0.1 and so on.
->>> if you want the part of the version number to increment based on the year,
->>> just make it the year and don't complicate things.
->>
->> In addition to that, having the kernel version dependent on year doesn't
->> really seem to make much sense to me. Simply said, I don't see any
->> relation of kernel source code contents to the current date in whatever
->> calendar system.
->>
->> And 2.x+1.y-rcZ+1 immediately following 2.x.y-rcZ really hurts my eyes :)
+>> Can't we just ask the PM layer if this device is currently resuming,
+>> and if so ignore card notifications from the driver?
 >
-> Hm, why would that happen?
+> What about another idea: mmc_sd_resume() checks if host->detect is
+> scheduled and if true then it don't try to reinitialize card.
+> host->detect can be scheduled at this moment only in one case: if device has been waked up by
+> card change interrupt.
+Hmm... But it will cause a race condition if SD card change interrupt
+will be raised during resume process.
 
-with the date based numbers, that was one of the things that 'could' 
-happen as the year changed (2008.5.0-rc4 would be followed by 
-2009.1.0-rc5)
+-- 
+Best regards,
+    Yauhen Kharuzhy     jekhor_(at)_gmail.com
 
-David Lang
+A: No
+Q: Should I quote below my post?
