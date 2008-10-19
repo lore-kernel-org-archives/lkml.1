@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbYJSWJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbYJSWMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269AbYJSWJj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 18:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYJSWJb
+	id S1752446AbYJSWMm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 18:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYJSWMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 18:09:31 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:44921 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbYJSWJa (ORCPT
+	Sun, 19 Oct 2008 18:12:33 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39977 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751805AbYJSWMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 18:09:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=P7sy3HL19kI08T3hbBoOHcN2L8SmQjzea1WobXAr692EvA/Dw+3kUzoZekxP5RaUsD
-         2h9UM+RzgU3xkdHdVR3pSjXQuCOo9k5zIsCJm/fKC4qp0r5A959HdFH85EG6Yy4dN3Jj
-         POiNZK3+QgV0yhiEsDihMeG50mA05D+qzwgr0=
-Message-ID: <48FBB012.40605@gmail.com>
-Date: Mon, 20 Oct 2008 00:09:22 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 19 Oct 2008 18:12:32 -0400
+Date: Mon, 20 Oct 2008 00:06:55 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: jbenc@suse.cz, kernel list <linux-kernel@vger.kernel.org>, i.zhu@intel.com,
+       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net
+Subject: Re: iwl3945: if I leave my machine running overnight, wifi will
+	not work in the morning
+Message-ID: <20081019220655.GA1827@elf.ucw.cz>
+References: <20081019214035.GA30485@elf.ucw.cz>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steven Noonan <steven@uplinklabs.net>,
-       Justin Mattock <justinmattock@gmail.com>,
-       Sven Anders <anders@anduras.de>, Marcel Holtmann <marcel@holtmann.org>,
-       linux-bluetooth@vger.kernel.org
-Subject: Re: several messages
-References: <1224425749-22652-1-git-send-email-jirislaby@gmail.com> <1224425749-22652-2-git-send-email-jirislaby@gmail.com> <alpine.LNX.1.10.0810192135010.27479@jikos.suse.cz>
-In-Reply-To: <alpine.LNX.1.10.0810192135010.27479@jikos.suse.cz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081019214035.GA30485@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina napsal(a):
-> On Sun, 19 Oct 2008, Jiri Slaby wrote:
+On Sun 2008-10-19 23:40:35, Pavel Machek wrote:
+> Hi!
 > 
->> +enum hid_type {
->> +	HID_TYPE_UNKNOWN = 0,
->> +	HID_TYPE_MOUSE,
->> +	HID_TYPE_KEYBOARD
->> +};
->> +
-> 
-> Do we really need the HID_TYPE_KEYBOARD at all? It's not used anywhere in 
-> the code. I'd propose to add it when it is actually needed. I.e. have the 
-> enum contain something like HID_TYPE_MOUSE HID_TYPE_OTHER for now, and add 
-> whatever will become necessary in the future, what do you think?
+> Kernel 2.6.27-rc8; happened few times already.
 
-I would use unknown rather than other, since on bluetooth mouse is unknown
-not other, if you don't mind?
+...
+> After reboot, network will work (I believe ;-).
 
-Or did you mean tristate unknown, mouse and other?
+Hmm, it did not this time.
 
-Thanks for review.
+iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver
+for Linux, 1.2.26kds
+iwl3945: Copyright(c) 2003-2008 Intel Corporation
+iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+iwl3945 0000:03:00.0: setting latency timer to 64
+iwl3945: Detected Intel Wireless WiFi Link 3945ABG
+iwl3945: Tunable channels: 11 802.11bg, 13 802.11a channels
+phy0: Selected rate control algorithm 'iwl-3945-rs'
+iwl3945 0000:03:00.0: PCI INT A disabled
+Linux video capture interface: v2.00
+Uniform Multi-Platform E-IDE driver
+...
+Oct 20 00:06:25 amd kernel: wlan0: RX ReassocResp from 00:11:2f:0e:95:a0 (capab=0x401 status=0 aid=1)
+Oct 20 00:06:25 amd kernel: wlan0: associated
+Oct 20 00:06:26 amd kernel: wlan0: disassociated
+Oct 20 00:06:27 amd kernel: wlan0: associate with AP 00:11:2f:0e:95:a0
+Oct 20 00:06:27 amd kernel: wlan0: RX ReassocResp from 00:11:2f:0e:95:a0 (capab=0x401 status=0 aid=1)
+Oct 20 00:06:27 amd kernel: wlan0: associated
+Oct 20 00:06:27 amd kernel: wlan0: disassociated
+Oct 20 00:06:28 amd kernel: wlan0: associate with AP 00:11:2f:0e:95:a0
+Oct 20 00:06:28 amd kernel: wlan0: RX ReassocResp from 00:11:2f:0e:95:a0 (capab=0x401 status=0 aid=1)
+Oct 20 00:06:28 amd kernel: wlan0: associated
+Oct 20 00:06:29 amd kernel: wlan0: disassociated
+
+On to reboot the access point...
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
