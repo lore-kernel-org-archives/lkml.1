@@ -1,99 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbYJSWwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752186AbYJSXH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752385AbYJSWwU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 18:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYJSWwI
+	id S1752186AbYJSXH6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 19:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYJSXHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 18:52:08 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:15696 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbYJSWwG (ORCPT
+	Sun, 19 Oct 2008 19:07:49 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:13282 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbYJSXHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 18:52:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=QbBtqCXBvJAIieOOxhIw4S1MyNeTUZAB7dsb6Bvhr4/GVbYVwFbnlZVtvMbCYbhOo5
-         862pqf21bkbzyMNv12EER6dEBQU6J1ZqPI0m+hK9Mese2HCbi1ofAie4ldBPI9TUmQWc
-         oMaKPbQJ1bsdht+uW7RpOImoouFyyd1g6Zofo=
-Message-ID: <cb0375e10810191552l7541e034l6f1e095c0c268baa@mail.gmail.com>
-Date: Sun, 19 Oct 2008 18:52:03 -0400
-From: "Andrew Lutomirski" <luto@myrealbox.com>
-To: "Tomas Winkler" <tomasw@gmail.com>
-Subject: Re: iwlagn: associating with AP causes kernel hiccup
-Cc: richard@scherping.de, "Frederik Himpe" <fhimpe@telenet.be>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1ba2fa240810191512i4c6ce748kd13d1671cc2a2ff6@mail.gmail.com>
+	Sun, 19 Oct 2008 19:07:48 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -7.489
+Message-ID: <48FBBDB7.50305@tremplin-utc.net>
+Date: Mon, 20 Oct 2008 01:07:35 +0200
+From: Eric Piel <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       Yan Burman <burman.yan@gmail.com>, Pau Oliva Fora <pau@eslack.org>
+Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
+References: <48FA3368.1040605@tremplin-utc.net> <48FB6193.8090803@gmail.com>
+In-Reply-To: <48FB6193.8090803@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <gd5gs4$abi$1@ger.gmane.org> <1224104363.19219.30.camel@rc-desk>
-	 <gd9v3f$3ft$1@ger.gmane.org> <gd9vpo$5ql$1@ger.gmane.org>
-	 <48F8AEF1.5030603@scherping.de>
-	 <1ba2fa240810171302h7dcc92acr18c060425c4a93d@mail.gmail.com>
-	 <48FA0C27.8010301@scherping.de> <48FB4FBE.2060909@myrealbox.com>
-	 <1ba2fa240810191512i4c6ce748kd13d1671cc2a2ff6@mail.gmail.com>
-X-Google-Sender-Auth: 425c2a42022e0fea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 19, 2008 at 6:12 PM, Tomas Winkler <tomasw@gmail.com> wrote:
-> On Sun, Oct 19, 2008 at 5:18 PM, Andy Lutomirski <luto@myrealbox.com> wrote:
->> Richard Scherping wrote:
->>>
->>> Tomas Winkler schrieb:
->
->>
->> Amen.
-> Stable doesn't mean all components are stable, citation  from Linus blog:
-> "It doesn't have to be perfect (and obviously no release ever is), but
-> it needs to be in reasonable shape"
->
-> The fact is that some critical patches were rejected as not
-> regressions in rc cycle and probably need to be pushed to the stable
-> version now or distribution will merge them.
-> We gave more priority for testing 32 bit version so it is more stable
-> then 64 bit which got much less in house testing and we've missed many
-> issues there. The driver doesn't get full exposure till it's get to
-> the public in stable version therefore  no bugs are opened in the rc
-> cycle so also are not fixed in the stable version. and unfortunately
-> there is no much system testing at all for what get's into merging
-> window.
-> Second the whole mac80211 stack didn't address fully MQ rewrite so
-> it's a bit shaky as well and this will be fact also in 2.6.28.
+Jonathan Cameron schreef:
+> Hi Eric,
+> 
+> Nice looking driver. 
+>> * Several people suggested to not put it in hwmon but in the future industrialio susbsystem: fine with that but as the industrialio subsystem is not available yet, it's still in hwmon with the other accelerometer drivers for now, and I'll happily move it whenever industrialio is integrated.
+>>   
+> Hmm.. might be a little while yet and there's still the debate on whether
+> support for input subsystem is a good idea (different requirements etc).
+> I'd be inclined to have a driver for this accelerometer in there, but the
+> form it may be somewhat  different (for example, that datardy signal
+> is vital in the sort of apps iio is designed for!)
+> 
+> Also, looking at the code, I'm not sure how similar things are to the
+> equivalent i2c or spi interfaces.  Guess that'll only become entirely
+> clear on implementation.
+I'm hopeful it will be rather similar, but time will be judge ;-) I
+believe the main difference in the driver requirement might not so much
+come from the interface, but from the original reason someone put an
+accelerometer in the system. It's in the laptops in order to detect
+free-fall (for harddisk protection). It's in a phone in order to rotate
+the screen when the phone is rotated. It's in the arm of a robot in
+order to provide feedback on the motors. There are guys who just want to
+use it to play neverball on their laptop. A generic accelerometer
+subsystem will have to provide interfaces to comply to all the needs of
+the usages, and should abstract the fact that several interfaces are
+present from the driver.
 
-OK.
+> 
+> I'll try and get an updated version of industrialio patches as is out later
+> this week.
+Great!
 
->
-> This driver has been available and more-or-less working for ages.
->> What kernel am I supposed to run if I just want a stable system? Haven't
->> found one yet, other than distro kernels...
->>
->> In any case, I've seen these complete system hiccups with iwl4965 and iwlagn
->> since at least 2.6.25 and through quite a few wireless-testing versions.  I
->> bet that this, along with things like it, is the culprit:
->
-> Haven't seen you've filled bug for it.
+>> +Sysfs attributes under /sys/devices/platform/lis3lv02d/:
+>> +position - 3D position that the accelerometer reports. Format: "(x,y,z)"
+>>   
+> Hmm. Position? I've probably missed the debate on why it is called
+> this.... 
+Hehe, probably there has been no debate. I'm using the de-facto standard
+defined by the hdaps driver. You can consider this as another incentive
+to propose an official accelerometer subsystem ;-)
 
-Fair enough.  #1790.
 
->
-> Locking need to be really revised but till now I didn't see show
-> stoppers issues so it didn't get priority
->
->> Would I be out of line for wishing the iwlwifi developers
-> Patches are always welcome
+>> +/*
+>> + * The sensor can also generate interrupts (DRDY) but it's pretty pointless
+>> + * because their are generated even if the data do not change.
+> Unless there is some serious filtering the noise level on such a chip
+> will mean
+> it almost always changes anyway.  However, for this type of app I can
+> see your
+> point!
+Actually, when you leave the laptop without touching it in a calm
+environment, the movement is very little and the detected changes are
+around 1Hz. Anyway, the absolute reason that you cannot use the DRDY
+interrupt is that if you use it, the free-fall and direction detection
+are not usable anymore (interrupt cannot be shared).
 
-I can write a patch to add a mutex and change it to:
-
-take mutex
-grab_nic
-spinlock
-
-but I bet that would break all kinds of things. :)
-
---Andy
+See you,
+Eric
