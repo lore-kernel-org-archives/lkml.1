@@ -1,110 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbYJSVrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbYJSWJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752270AbYJSVrc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 17:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYJSVrX
+	id S1752269AbYJSWJj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 18:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYJSWJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 17:47:23 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:44859 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbYJSVrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 17:47:22 -0400
-Date: Sun, 19 Oct 2008 23:49:57 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Ian Molton <spyro@f2s.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.miao@marvell.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: [GIT] mfd pull request
-Message-ID: <20081019214957.GB4558@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
+	Sun, 19 Oct 2008 18:09:31 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:44921 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874AbYJSWJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 18:09:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=P7sy3HL19kI08T3hbBoOHcN2L8SmQjzea1WobXAr692EvA/Dw+3kUzoZekxP5RaUsD
+         2h9UM+RzgU3xkdHdVR3pSjXQuCOo9k5zIsCJm/fKC4qp0r5A959HdFH85EG6Yy4dN3Jj
+         POiNZK3+QgV0yhiEsDihMeG50mA05D+qzwgr0=
+Message-ID: <48FBB012.40605@gmail.com>
+Date: Mon, 20 Oct 2008 00:09:22 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jiri Kosina <jkosina@suse.cz>
+CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Steven Noonan <steven@uplinklabs.net>,
+       Justin Mattock <justinmattock@gmail.com>,
+       Sven Anders <anders@anduras.de>, Marcel Holtmann <marcel@holtmann.org>,
+       linux-bluetooth@vger.kernel.org
+Subject: Re: several messages
+References: <1224425749-22652-1-git-send-email-jirislaby@gmail.com> <1224425749-22652-2-git-send-email-jirislaby@gmail.com> <alpine.LNX.1.10.0810192135010.27479@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0810192135010.27479@jikos.suse.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Jiri Kosina napsal(a):
+> On Sun, 19 Oct 2008, Jiri Slaby wrote:
+> 
+>> +enum hid_type {
+>> +	HID_TYPE_UNKNOWN = 0,
+>> +	HID_TYPE_MOUSE,
+>> +	HID_TYPE_KEYBOARD
+>> +};
+>> +
+> 
+> Do we really need the HID_TYPE_KEYBOARD at all? It's not used anywhere in 
+> the code. I'd propose to add it when it is actually needed. I.e. have the 
+> enum contain something like HID_TYPE_MOUSE HID_TYPE_OTHER for now, and add 
+> whatever will become necessary in the future, what do you think?
 
-Could you please pull the mfd updates ?
+I would use unknown rather than other, since on bluetooth mouse is unknown
+not other, if you don't mind?
 
-The following changes since commit 0cfd81031a26717fe14380d18275f8e217571615:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../gregkh/usb-2.6
+Or did you mean tristate unknown, mouse and other?
 
-are available in the git repository at:
-
-  git://git.o-hand.com/linux-mfd for-next
-
-Andrew Morton (2):
-      mfd: ucb1400 needs GPIO
-      mfd: further unbork the ucb1400 ac97_bus dependencies
-
-Ben Dooks (1):
-      mfd: update sm501 debugging/low information messages
-
-David Brownell (2):
-      mfd: TWL4030 core driver
-      mfd: twl4030-core irq simplification
-
-Dmitry Baryshkov (4):
-      mfd: provide and use setup hook for tc6393xb
-      mfd: do tcb6393xb state restore on resume only if requested
-      mfd: add OHCI cell to tc6393xb
-      mfd: support tmiofb cell on tc6393xb
-
-Eric Miao (1):
-      mfd: add base support for Dialog DA9030/DA9034 PMICs
-
-Ian Molton (2):
-      mfd: reduce stack usage in mfd-core.c
-      mfd: update TMIO drivers to use the clock API
-
-Mark Brown (1):
-      mfd: Don't use NO_IRQ in WM8350
-
-Randy Dunlap (1):
-      mfd: ucb1400 sound driver uses/depends on AC97_BUS:
-
-Samuel Ortiz (1):
-      mfd: Fix htc-egpio compile warning
-
- arch/arm/mach-pxa/include/mach/tosa.h |    2 -
- arch/arm/mach-pxa/tosa.c              |   37 +-
- drivers/input/touchscreen/Kconfig     |    2 +-
- drivers/mfd/Kconfig                   |   16 +
- drivers/mfd/Makefile                  |    2 +
- drivers/mfd/da903x.c                  |  563 ++++++++++++++++
- drivers/mfd/htc-egpio.c               |    2 +-
- drivers/mfd/mfd-core.c                |   15 +-
- drivers/mfd/sm501.c                   |    6 +-
- drivers/mfd/t7l66xb.c                 |   40 +-
- drivers/mfd/tc6387xb.c                |   47 +-
- drivers/mfd/tc6393xb.c                |  296 +++++++--
- drivers/mfd/twl4030-core.c            | 1193 +++++++++++++++++++++++++++++++++
- drivers/mfd/wm8350-core.c             |    2 +-
- include/linux/i2c/twl4030.h           |  339 ++++++++++
- include/linux/mfd/da903x.h            |  201 ++++++
- include/linux/mfd/t7l66xb.h           |    2 -
- include/linux/mfd/tc6387xb.h          |    3 -
- include/linux/mfd/tc6393xb.h          |   17 +-
- 19 files changed, 2687 insertions(+), 98 deletions(-)
- create mode 100644 drivers/mfd/da903x.c
- create mode 100644 drivers/mfd/twl4030-core.c
- create mode 100644 include/linux/i2c/twl4030.h
- create mode 100644 include/linux/mfd/da903x.h
-
-Cheers,
-Samuel.
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Thanks for review.
