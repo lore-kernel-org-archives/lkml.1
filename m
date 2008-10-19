@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbYJSWr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbYJSWtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752134AbYJSWr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 18:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYJSWrs
+	id S1752278AbYJSWtw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 18:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbYJSWtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 18:47:48 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:27475 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751816AbYJSWrr (ORCPT
+	Sun, 19 Oct 2008 18:49:43 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:35661 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbYJSWtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 18:47:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=xNCnTfc3zEj0/VxV+ykddbS7yUOhPN3bat2kCAyKLon4d+ac7XxbPoiQeceLrBehchgSKdkN9htuZmClL4/rGdh8MfjMkgrC46EaRPTH0gOOf/Hv33U2SrxAhcH0oiHO5WFiVAO9+ng67aDADXrUxjBNqoioWpEzC/eVLb4U2/o=  ;
-X-YMail-OSG: 69G3YTIVM1mqchxxkNiqjJwN1SxWxx5vYoVfoFv9Ng_Ipl1F5ZHz290RGAdCYTrvuzXmTFI8Dm2liJMijrydaHL7QsZTOr43fk8mYOIy08H9j_t6EOzFFaNzVnBa9MHDPq1fTjzHMhhCtVJbjV39xRN_
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: linux-mtd@lists.infradead.org, Lennert Buytenhek <buytenh@wantstofly.org>
-Subject: Re: [PATCH 1/3] mtd m25p80: add support for Macronix MX25L12805D
-Date: Sun, 19 Oct 2008 15:47:45 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <200810191516.30804.david-b@pacbell.net>
-In-Reply-To: <200810191516.30804.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810191547.45449.david-b@pacbell.net>
+	Sun, 19 Oct 2008 18:49:41 -0400
+Date: Sun, 19 Oct 2008 16:49:28 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH, RFC] ext4: Replace hackish ext4_mb_poll_new_transaction
+	with commit callback
+In-reply-to: <20081017122552.GC21503@mit.edu>
+To: Theodore Tso <tytso@mit.edu>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <20081019224904.GF3184@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1224201763-9637-1-git-send-email-tytso@mit.edu>
+ <20081017060424.GA26192@skywalker> <20081017100214.GB11557@mit.edu>
+ <20081017122552.GC21503@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the "1/3" -- there's only this one patch.
-The other two would have been resends of patches that
-never got acked, but do seem to be in the MTD git tree.
+On Oct 17, 2008  08:25 -0400, Theodore Ts'o wrote:
+> What I added was a dead-simple per-journal commit callback, with no
+> additional memory allocations (and requirement to do error handling if
+> the memory allocation fails), no need to take a spinlock before
+> manually adding the call back to each transaction handle, no need to
+> search the linked list to see if we have an entry on the linked list
+> already, etc.
+> 
+> If in the future we need a true per-transaction handle commit
+> callback, we can add this; but I think it still makes more sense to
+> keep the per-journal commit callback.  After all, as it stands the
+> current patch results in a net reduction of 46 lines of code.  Adding
+> all of this machinery would erase take far more than the savings by
+> removing ext4_mb_poll_new_transaction().
 
-However I noticed that this patch will have a problem
-applying against that MTD git ... the m25p80 driver
-got taught how to use two of the "extended" JEDEC ID
-bytes provided by some vendors, so the initializers here
-are all missing an extra "u16" value following the JEDEC
-code.  Swap in a 0 for the Macronix part and all should
-be OK ...
+The problem with the mechanism you've implemented is that it isn't
+possible to add any other kind of callback to the journal.  There
+is only a single callback function, and the entries in the "t_private_list"
+are all assumed to be "ext4_free_data" structures so even if other
+users wanted to add callbacks they would only be handled by the
+release_blocks_on_commit() function.
 
-- Dave
+Is there any reason not to make this more generic and have the callback
+function pointer embedded in the "ext4_free_data" struct in some way
+that other callbacks could be registered?  This would still avoid the
+need to allocate for each of these operations, but would make the
+callback mechanism more generic and useful.
 
-On Sunday 19 October 2008, David Brownell wrote:
-> From: Lennert Buytenhek <buytenh@wantstofly.org>
-> 
-> Support one more flavor of SPI flash:  Macronix MX25L12805D
-> (128 Mbit, 16 MByte).
-> 
-> Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> --- a/drivers/mtd/devices/m25p80.c
-> +++ b/drivers/mtd/devices/m25p80.c
-> @@ -467,6 +467,9 @@ static struct flash_info __devinitdata m25p_data [] = {
->  	{ "at26df161a", 0x1f4601, 64 * 1024, 32, SECT_4K, },
->  	{ "at26df321",  0x1f4701, 64 * 1024, 64, SECT_4K, },
->  
-> +	/* Macronix */
-> +	{ "mx25l12805d", 0xc22018, 64 * 1024, 256, SECT_4K, },
-> +
->  	/* Spansion -- single (large) sector size only, at least
->  	 * for the chips listed here (without boot sectors).
->  	 */
-> 
-> 
-> 
-
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
