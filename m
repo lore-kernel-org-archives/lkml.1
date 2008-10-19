@@ -1,90 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbYJSRx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbYJSRyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752165AbYJSRx2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 13:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYJSRxS
+	id S1752107AbYJSRyS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 13:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYJSRyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 13:53:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42879 "EHLO ogre.sisk.pl"
+	Sun, 19 Oct 2008 13:54:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38291 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbYJSRxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 13:53:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: david@lang.hm
-Subject: Re: [RFC] Kernel version numbering scheme change
-Date: Sun, 19 Oct 2008 19:57:38 +0200
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20081016002509.GA25868@kroah.com> <200810191945.16271.rjw@sisk.pl> <alpine.DEB.1.10.0810191045500.20238@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0810191045500.20238@asgard.lang.hm>
+	id S1751518AbYJSRyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 13:54:07 -0400
+Date: Sun, 19 Oct 2008 19:53:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Keith Packard <keithp@keithp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: io resources and cached mappings (was: [git pull] drm patches for
+	2.6.27-rc1)
+Message-ID: <20081019175320.GA6442@elte.hu>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie> <200810181237.49784.nickpiggin@yahoo.com.au> <1224357062.4384.72.camel@koto.keithp.com> <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org> <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com> <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com> <1224398496.5303.7.camel@koto.keithp.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810191957.38992.rjw@sisk.pl>
+In-Reply-To: <1224398496.5303.7.camel@koto.keithp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 19 of October 2008, david@lang.hm wrote:
-> On Sun, 19 Oct 2008, Rafael J. Wysocki wrote:
-> 
-> > On Sunday, 19 of October 2008, david@lang.hm wrote:
-> >> On Sun, 19 Oct 2008, Rafael J. Wysocki wrote:
-> >>
-> >>> On Sunday, 19 of October 2008, Jiri Kosina wrote:
-> >>>> On Fri, 17 Oct 2008, david@lang.hm wrote:
-> >>>>
-> >>>>>> Surely some scripts will start to break as soon as the third number gets
-> >>>>>> three digits.
-> >>>>> we've had three digit numbers in the third position before (2.3 and 2.5
-> >>>>> went well past three digits IIRC)
-> >>>>
-> >>>> Did we? I only recall 2.5.7[something] and 2.3.5[something] (plus special
-> >>>> 2.3.99 release).
-> >>>>
-> >>>>>> Actually, I thought we could continue to use a w.x.y.z numbering
-> >>>>>> scheme, but in such a way that:
-> >>>>>> w = ($year - 2000) / 10 + 2 (so that we start from 2)
-> >>>>>> x = $year % 10
-> >>>>>> y = (number of major release in $year)
-> >>>>>> z = (number of stable version for major release w.x.y)
-> >>>>>> Then, the first major release in 2009 would be 2.9.1 and its first
-> >>>>>> -stable "child" would become 2.9.1.1.  In turn, the first major
-> >>>>>> release in 2010 could be 3.0.1 and so on.
-> >>>>> if you want the part of the version number to increment based on the year,
-> >>>>> just make it the year and don't complicate things.
-> >>>>
-> >>>> In addition to that, having the kernel version dependent on year doesn't
-> >>>> really seem to make much sense to me. Simply said, I don't see any
-> >>>> relation of kernel source code contents to the current date in whatever
-> >>>> calendar system.
-> >>>>
-> >>>> And 2.x+1.y-rcZ+1 immediately following 2.x.y-rcZ really hurts my eyes :)
-> >>>
-> >>> Hm, why would that happen?
-> >>
-> >> with the date based numbers, that was one of the things that 'could'
-> >> happen as the year changed (2008.5.0-rc4 would be followed by
-> >> 2009.1.0-rc5)
-> >
-> > Well, in that case I think it would be reasonable to cuntinue the 2008
-> > numbering so that 2009.1.0-rc5 in your example would still be 2008.5.0-rc5.
-> >
-> > That said, I kind of agree that the numbering need not be time-related.  One
-> > alternative might be to release 2.9.0 instead of 2.6.29 and then continue in
-> > in such a way that each of the three numbers is always a one-digit decimal.
-> > Then, we'd have 2.9.0, 2.9.1 ... 2.9.9, 3.0.0, 3.0.1 etc.
-> 
-> so how would you do the -stable releases?
 
-In the same way as they are done now, ie. 2.9.0.1, 2.9.0.2 etc.  I don't think
-there's any problem with having 2.9.1.33 for example. ;-)
+* Keith Packard <keithp@keithp.com> wrote:
 
-Thanks,
-Rafael
+> On Sat, 2008-10-18 at 21:14 -0700, Keith Packard wrote:
+> > On Sun, 2008-10-19 at 00:32 +0200, Ingo Molnar wrote:
+> > 
+> > > Mind sending patches for this? :-)
+> 
+> Here's a patch for the i915 driver that includes the new API. Tested 
+> on x86_32+HIGHMEM and x86_64. I stuck a new 'io_reserve.h' header in 
+> the i915 directory for this patch, but it should go elsewhere.
+> 
+> The new APIs are:
+> 
+> io_reserve_create_wc
+> io_reserve_free
+> io_reserve_map_atomic_wc
+> io_reserve_unmap_atomic
+> io_reserve_map_wc
+> io_reserve_unmap
+
+very nice!
+
+I think we need a somewhat different abstraction though.
+
+Firstly, regarding drivers/gpu/drm/i915/io_reserve.h, that needs to move 
+to generic code.
+
+Secondly, wouldnt the right abstraction be to attach this functionality 
+to 'struct resource' ? [or at least create a second struct that embedds 
+struct resource]
+
+this abstraction is definitely not a PCI thing and not a 
+detached-from-everything thing, it's an IO resource thing. We could make 
+it a property of struct resource:
+
+struct resource {
+        resource_size_t start;
+        resource_size_t end;
+        const char *name;
+        unsigned long flags;
+        struct resource *parent, *sibling, *child;
++       void *mapping;
+};
+
+The APIs would be:
+
+  int   io_resource_init_mapping(struct resource *res);
+ void   io_resource_free_mapping(struct resource *res);
+ void * io_resource_map(struct resource *res, pfn_t pfn, unsigned long offset);
+ void   io_resource_unmap(struct resource *res, void *kaddr);
+
+Note how simple and consistent it all gets: IO resources already know 
+their physical location and their size limits. Being able to cache an 
+ioremap in a mapping [and being able to use atomic kmaps on 32-bit] is a 
+relatively simple and natural extension to the concept.
+
+i think that would be quite acceptable - and the APIs could just 
+transparently work on it. This would also allow the PCI code to 
+automatically unmap any cached mappings from resources, when the driver 
+deinitializes.
+
+Linus, Jesse, what do you think?
+
+i think we need to finalize the API names and their abstraction level, 
+and then could even merge those APIs into v2.6.28 on a fast path, to 
+enable you to use it. It does not interact with anything else so it 
+should be safe to do.
+
+(i'd not suggest to merge the i915 bits just yet - but that's obviously 
+not my call.)
+
+	Ingo
