@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751792AbYJSPyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbYJSPzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751792AbYJSPyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 11:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYJSPyJ
+	id S1751891AbYJSPzt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 11:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYJSPzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 11:54:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:20436 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbYJSPyF (ORCPT
+	Sun, 19 Oct 2008 11:55:41 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:36110 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751440AbYJSPzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 11:54:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=JkQBLjFQTsfUmTLMWzNKxvCNXQbTcKmlFwE90Q/JAEwTml8P4xggT08JetdxXJPPHq
-         sFDZkwpsMIyzufEBkjP5DJIzapsKEP4FRNCKTCULZnG10J/rAHwNK+IYiH6EFOVz+wRk
-         yV66it8S+10gstgG81prm4PiqpfpNO779QC2s=
-References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com> <20081019040557.GA6337@goodmis.org> <70318cbf0810182334o4394f990h377b0a14215e1541@mail.gmail.com> <1224403321.13550.1.camel@unix> <70318cbf0810190117r66ddd76wc1a94a2ea79e74c5@mail.gmail.com>
-Message-Id: <0FBA0BFE-2A0D-422F-A27F-ABADC56F1C04@gmail.com>
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: Chris Li <lkml@chrisli.org>
-In-Reply-To: <70318cbf0810190117r66ddd76wc1a94a2ea79e74c5@mail.gmail.com>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+	Sun, 19 Oct 2008 11:55:41 -0400
+Subject: Re: Regression in 2.6.27: "irq 18: nobody cared" on Toshiba
+	Satellite A100
+From: Sven-Thorsten Dietrich <sdietrich@novell.com>
+To: "M. Vefa Bicakci" <bicave@superonline.com>,
+       Olaf Dabrunz <odabrunz@suse.de>, Stefan Assmann <sassmann@suse.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48FB3ED5.60904@superonline.com>
+References: <48FB3ED5.60904@superonline.com>
+Content-Type: text/plain
+Organization: Novell
+Date: Sun, 19 Oct 2008 08:55:22 -0700
+Message-Id: <1224431722.26279.4.camel@sven.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5F136)
-Mime-Version: 1.0 (iPhone Mail 5F136)
-Subject: Re: irq 19: nobody cared
-Date: Sun, 19 Oct 2008 08:53:56 -0700
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmm
-I was getting the same on a mac,
-What triggered this from here was
-Udev and hal trying to load the iSight
-Firmware at the same time,(or at least I think that's what was  
-happening);
+On Sun, 2008-10-19 at 10:06 -0400, M. Vefa Bicakci wrote:
+> Hello,
+> 
+> As you might guess from the subject line, since I started to use 2.6.27-rcX
+> series, I began to get "irq 18: nobody cared" messages in dmesg. Currently I am
+> using 2.6.27.2 with Sidux on this laptop, which is a Toshiba Satellite A100.
+> I have reproduced this problem with vanilla and sidux's kernels.
+> 
 
-justin P. Mattock
+Can you provide the contents of /proc/interrupts? 
+
+If you can reproduce the keyboard issue, it would be helpful to have the
+above a few seconds before and after the device failure.
+
+> 
+> Note 2: Another interesting thing which might be relevant is the following
+> message which appears in dmesg some time after I boot:
+> 
+> --- 8< ---
+> hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
+> --- >8 ---
+> 
+
+Is this card using IRQ 18?
+
+Thanks,
+
+Sven
 
 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-On Oct 19, 2008, at 1:17 AM, "Chris Li" <lkml@chrisli.org> wrote:
-
-> On Sun, Oct 19, 2008 at 1:02 AM, Justin P. Mattock
-> <justinmattock@gmail.com> wrote:
->> On Sat, 2008-10-18 at 23:34 -0700, Chris Li wrote:
->>
->> What does the whole dmesg look like might I ask?
->>
-> Here it is.
->
-> Chris
-> <dmesg-noapic.txt>
