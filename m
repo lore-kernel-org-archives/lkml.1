@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbYJSOBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbYJSODU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822AbYJSOBZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 10:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYJSOBG
+	id S1751796AbYJSODU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 10:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYJSODI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 10:01:06 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:38219 "EHLO relay.sw.ru"
+	Sun, 19 Oct 2008 10:03:08 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:35875 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751533AbYJSOBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 10:01:02 -0400
+	id S1751134AbYJSODF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 10:03:05 -0400
 From: Dmitri Monakhov <dmonakhov@openvz.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Dmitri Monakhov <dmonakhov@openvz.org>
-Subject: [PATCH] Add block device speciffic splice write method
-Date: Sun, 19 Oct 2008 18:00:58 +0400
-Message-Id: <1224424858-3927-1-git-send-email-dmonakhov@openvz.org>
+Subject: [PATCH 1/2] fs: truncate blocks outside i_size after generic_file_direct_write error
+Date: Sun, 19 Oct 2008 18:03:00 +0400
+Message-Id: <1224424981-5144-1-git-send-email-dmonakhov@openvz.org>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -22,103 +22,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Block device write procedure is different from regular file:
- - Actual write performed without i_mutex.
- - It has no metadata, so generic_osync_inode(O_SYNCMETEDATA) can not livelock.
- - We do not have to worry about S_ISUID/S_ISGID bits.
+We need to remove block that was allocated in generic_file_direct_write()
+if we fail. We have to do it *regardless* to blocksize. At least ext2,
+ext3 and reiserfs interpret (i_size < biggest block) condition as error.
+Fsck will complain about wrong i_size. Then fsck will fix the error
+by changing i_size according to the biggest block. This is bad because
+this blocks contain gurbage from previous write attempt. And result in
+data corruption.
+
+In order to call vmtruncate() we have to hold host->i_mutex. This is true
+for generic_file_aio_write(). In fact occasionally it is also true for all
+generic_file_aio_write_nolock() callers except blockdev. But this situation
+may change someday. This patch fix only generic_write_aio_write() case.
+BTW: update generic_file_direct_write's comment with currently outdated.
 
 Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
 ---
- fs/block_dev.c     |    2 +-
- fs/splice.c        |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    2 ++
- 3 files changed, 51 insertions(+), 1 deletions(-)
+ mm/filemap.c |   26 ++++++++++++++++++++------
+ 1 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 7ce823c..9aa63b5 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -1251,7 +1251,7 @@ const struct file_operations def_blk_fops = {
- 	.compat_ioctl	= compat_blkdev_ioctl,
- #endif
- 	.splice_read	= generic_file_splice_read,
--	.splice_write	= generic_file_splice_write,
-+	.splice_write	= blkdev_splice_write,
- };
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 3d5a2e7..1e911e5 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2186,8 +2186,10 @@ generic_file_direct_write(struct kiocb *iocb, const struct iovec *iov,
+ 	/*
+ 	 * Sync the fs metadata but not the minor inode changes and
+ 	 * of course not the data as we did direct DMA for the IO.
+-	 * i_mutex is held, which protects generic_osync_inode() from
+-	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
++	 * i_mutex is held in case of DIO_LOCKING, which protects
++	 * generic_osync_inode() from livelocking. If it is not held, then
++	 * the filesystem must prevent this livelock by its own meaner.
++	 * AIO O_DIRECT ops attempt to sync metadata here.
+ 	 */
+ out:
+ 	if ((written >= 0 || written == -EIOCBQUEUED) &&
+@@ -2529,7 +2531,8 @@ EXPORT_SYMBOL(generic_file_buffered_write);
  
- int ioctl_by_bdev(struct block_device *bdev, unsigned cmd, unsigned long arg)
-diff --git a/fs/splice.c b/fs/splice.c
-index a1e701c..f0ba76c 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -884,6 +884,54 @@ ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe, struct file *out,
+ static ssize_t
+ __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
+-				unsigned long nr_segs, loff_t *ppos)
++				unsigned long nr_segs, loff_t *ppos,
++				int lock_type)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct address_space * mapping = file->f_mapping;
+@@ -2574,7 +2577,18 @@ __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
  
- EXPORT_SYMBOL(generic_splice_sendpage);
+ 		written = generic_file_direct_write(iocb, iov, &nr_segs, pos,
+ 							ppos, count, ocount);
+-		if (written < 0 || written == count)
++		if (written < 0) {
++			if (lock_type == DIO_LOCKING) {
++				/*
++				 * direct write may have instantiated a few
++				 * blocks outside i_size. Trim these off again.
++				 */
++				if (pos + count > inode->i_size)
++					vmtruncate(inode, inode->i_size);
++			}
++			goto out;
++		}
++		if (written == count)
+ 			goto out;
+ 		/*
+ 		 * direct-io write to a hole: fall through to buffered I/O
+@@ -2638,7 +2652,7 @@ ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
+ 	BUG_ON(iocb->ki_pos != pos);
  
-+/**
-+ * blkdev_splice_write - splice data from a pipe to a block device
-+ * @pipe:	pipe info
-+ * @out:	file to write to
-+ * @ppos:	position in @out
-+ * @len:	number of bytes to splice
-+ * @flags:	splice modifier flags
-+ *
-+ * Description:
-+ *    Will either move or copy pages (determined by @flags options) from
-+ *    the given pipe inode to the given block device.
-+ *    Note: blockdev's i_mutex is not held on entry and it is never taken.
-+ */
-+ssize_t
-+blkdev_splice_write(struct pipe_inode_info *pipe, struct file *out,
-+				loff_t *ppos, size_t len, unsigned int flags)
-+{
-+	struct address_space *mapping = out->f_mapping;
-+	struct inode *inode = mapping->host;
-+	struct splice_desc sd = {
-+		.total_len = len,
-+		.flags = flags,
-+		.pos = *ppos,
-+		.u.file = out,
-+	};
-+	ssize_t ret;
-+	unsigned long nr_pages;
-+	mutex_lock(&pipe->inode->i_mutex);
-+	ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
-+	mutex_unlock(&pipe->inode->i_mutex);
-+	if (ret <= 0)
-+		return ret;
-+
-+	*ppos += ret;
-+	nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+
-+	if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+		int err;
-+		err = sync_page_range_nolock(inode, mapping, *ppos, ret);
-+		if (err)
-+			ret = err;
-+	}
-+	balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
-+	return ret;
-+}
-+
-+EXPORT_SYMBOL(blkdev_splice_write);
-+
- /*
-  * Attempt to initiate a splice from pipe to file.
-  */
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 194b607..8543b21 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1960,6 +1960,8 @@ extern ssize_t generic_file_splice_write_nolock(struct pipe_inode_info *,
- 		struct file *, loff_t *, size_t, unsigned int);
- extern ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe,
- 		struct file *out, loff_t *, size_t len, unsigned int flags);
-+extern ssize_t blkdev_splice_write(struct pipe_inode_info *pipe,
-+		struct file *out, loff_t *, size_t len, unsigned int flags);
- extern long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
- 		size_t len, unsigned int flags);
+ 	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
+-			&iocb->ki_pos);
++					&iocb->ki_pos, DIO_OWN_LOCKING);
  
+ 	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+ 		ssize_t err;
+@@ -2663,7 +2677,7 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+ 
+ 	mutex_lock(&inode->i_mutex);
+ 	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
+-			&iocb->ki_pos);
++					&iocb->ki_pos, DIO_LOCKING);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ 	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
 -- 
 1.5.4.3
 
