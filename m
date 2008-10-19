@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbYJSDfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751500AbYJSEGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbYJSDfy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Oct 2008 23:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYJSDfq
+	id S1751500AbYJSEGP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 00:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750701AbYJSEGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Oct 2008 23:35:46 -0400
-Received: from 1wt.eu ([62.212.114.60]:4851 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750954AbYJSDfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Oct 2008 23:35:45 -0400
-Date: Sun, 19 Oct 2008 05:35:21 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081019033521.GA3700@1wt.eu>
-References: <20081016164602.GA22554@cs181140183.pp.htv.fi> <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com> <20081018084504.GQ24654@1wt.eu> <alpine.LRH.1.10.0810190114420.2000@twin.jikos.cz>
-Mime-Version: 1.0
+	Sun, 19 Oct 2008 00:06:00 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40587 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbYJSEGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 00:06:00 -0400
+Date: Sun, 19 Oct 2008 00:05:57 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Chris Li <lkml@chrisli.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: irq 19: nobody cared
+Message-ID: <20081019040557.GA6337@goodmis.org>
+References: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LRH.1.10.0810190114420.2000@twin.jikos.cz>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <70318cbf0809191340t4e9d4caft6656713576cd2084@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 19, 2008 at 01:17:19AM +0200, Jiri Kosina wrote:
-> On Sat, 18 Oct 2008, Willy Tarreau wrote:
+On Fri, Sep 19, 2008 at 01:40:33PM -0700, Chris Li wrote:
+> Hi,
 > 
-> > confusion between 2.4.37 and 2.6.27. I have already tagged kernels with 
-> > wrong versions, having to fix by hand afterwards. It's really cumbersome 
-> > some times.
+> I run into this irq nobody care problem on a dell vostro 200 machine.
+> I test the latest git tree. The problem is there as well.
+> I also update the BIOS to the latest version. Doesn't help either.
 > 
-> But this is only because you are maintaining a source code that is several 
-> years old, right?
+> It seem the IRQ in question is shared between UHCI and SATA controller.
+> So I am not sure it is a SATA problem or a USB problem.
+> 
+> usb 4-2: new full speed USB device using uhci_hcd and address 2
+> irq 19: nobody cared (try booting with the "irqpoll" option)
+> Pid: 427, comm: nash-hotplug Not tainted 2.6.27-rc6 #1
+>  [<c045e3e0>] __report_bad_irq+0x2e/0x6f
+>  [<c045e5ea>] note_interrupt+0x1c9/0x21b
+>  [<c045db80>] ? handle_IRQ_event+0x2a/0x5a
+>  [<c045eba8>] handle_fasteoi_irq+0x99/0xc0
+>  [<c045eb0f>] ? handle_fasteoi_irq+0x0/0xc0
+>  [<c04059d3>] do_IRQ+0x9a/0xc4
+>  [<c0404467>] common_interrupt+0x23/0x28
+>  [<c0403989>] ? sysenter_past_esp+0x3a/0x62
+>  [<c0630000>] ? serial8250_probe+0x169/0x1c0
+>  =======================
+> 
+> I attached the kernel config file, dmesg and /proc/interrupts.
+> 
+> Any suggestions? I am willing to try fancy patches.
+> 
 
-It has nothing to do with age, but with the number of digits. Having 4 series
-of digits is not easy, especially when some of them are two-digits large.
-2.6.26.25-rc1 and 2.6.25.26-rc1 are obviously confusing and not old (not
-even released).
+Hi Chris,
 
-> Would maintaining a series numbered 2002.x.y make your 
-> situation a lot better? Do you think you'd never make typo '2002 instead 
-> of 2006' any more?
+Do you still have this problem, without any "irqpoll" workarourd? If so,
+can you boot with the "noapic" kernel command line parameter, and see if
+that stops the warning?
 
-Yes I probably would, and I already said I would not like such a numbering
-which is even worse IMHO. I'm for small number of digits, X.Y[.Z] with both
-X and Y < 10, and Z the stable release. In 22 years, X will go to 10 which
-is still not a problem.
+Thanks,
 
-> Or how would you distingiush the kernel tree you are maintaing from the 
-> one Linus is maintaining?
+-- Steve
 
-Another reason why I don't like dates. It makes forked versions more
-confusing. Assuming that in 10 years we get 40 versions further, we
-might be at version 6.8 and maybe I would have switched to maintain
-"old" version 4.2. There is no confusion here.
 
-BTW, speaking about dates, I noticed that others have experimented
-with dates and finally changed their mind. Even microsoft. Remember
-windows 3.1/3.11 ? In parallel, you had NT 3.5. After that you got
-windows 95 (year of predicted release), then 98 (idem). In parallel,
-NT went to 4.0. Then they merged all of them into windows 2000,
-dropping the versions. Then they started inventing stupid names
-like ME, Xp, Vista, ... and now they're talking about windows 7,
-which should take its version from the kernel, because the kernel
-has kept being versionned "normally" (no marketting involved in
-this area). So they might have noticed that using years makes the
-whole thing more complex for everyone in the long term. They get
-laughed at when releases are delayed, people don't really know if
-their seemingly old "2003" is really old or the last one, etc...
-
-Probably that using dates in packaged products such as distros
-based on whatever is available at the given date and meant to
-evolve quickly and not being supported for long is good however.
-It's just a snapshot at a given date and nothing more.
-
-Willy
 
