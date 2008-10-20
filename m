@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYJTWek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYJTWgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYJTWek (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 18:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbYJTWeb
+	id S1755528AbYJTWgT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 18:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYJTWgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 18:34:31 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:37211 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbYJTWea (ORCPT
+	Mon, 20 Oct 2008 18:36:06 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:32678 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751583AbYJTWgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 18:34:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UZV+n8I8uXk4ilqGIWWInCApF38r8+lgLii04yVdR2VlrsEk7TgXGomBQwo8A8a68N
-         Ave4s7ax9OPU/Sy8re0KLm77vv9HO9g/0WWF+X62426wKSCjx44EVHgd133aFDzmlpfd
-         Qa2zLasgTeFRBBc6lfEjTaoQQTraXF41Mu/Xs=
-Date: Mon, 20 Oct 2008 18:34:35 -0400
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Christopher Harrer <charrer@alacritech.com>,
-       Michael Miles <mmiles@alacritech.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linus@kroah.com
-Subject: Re: linux-next: build failure
-Message-ID: <20081020223435.GA11079@localhost>
-References: <20081020230420.aa85f83b.sfr@canb.auug.org.au> <20081020154857.GC24666@kroah.com> <3aaafc130810200933s7299378eg6924089a58b9778a@mail.gmail.com> <20081020165142.GA7166@kroah.com> <20081020204750.GA22377@kroah.com>
+	Mon, 20 Oct 2008 18:36:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAM8S9kh5LE2t/2dsb2JhbAC7CAGHHXABeg
+X-IronPort-AV: E=Sophos;i="4.33,454,1220193000"; 
+   d="scan'208";a="214573915"
+Date: Tue, 21 Oct 2008 09:35:49 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: sleeping function called from invalid context at
+	kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
+Message-ID: <20081020223549.GA21152@disturbed>
+Mail-Followup-To: Alexander Beregalov <a.beregalov@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <a4423d670810170543vd6b4c39p44bf125610d8540@mail.gmail.com> <20081017164116.GA17375@infradead.org> <a4423d670810170954h7ca130aaw8895380a4c6b125@mail.gmail.com> <20081017165738.GA20818@infradead.org> <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com> <20081017203710.GA27187@infradead.org> <20081017135510.7127c4e7@infradead.org> <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com> <20081020163327.GA15651@infradead.org> <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081020204750.GA22377@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 01:47:50PM -0700, Greg KH wrote:
-> On Mon, Oct 20, 2008 at 09:51:42AM -0700, Greg KH wrote:
-> > On Mon, Oct 20, 2008 at 12:33:29PM -0400, J.R. Mauro wrote:
-> > > On Mon, Oct 20, 2008 at 11:48 AM, Greg KH <greg@kroah.com> wrote:
-> > > > On Mon, Oct 20, 2008 at 11:04:20PM +1100, Stephen Rothwell wrote:
-> > > >> Hi Greg,
-> > > >>
-> > > >> Today's linux-next build (powerpc allyesconfig) failed like this:
-> > > >>
-> > > >> In file included from drivers/staging/sxg/sxg.c:77:
-> > > >> drivers/staging/sxg/sxghif.h:859: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'Compilation'
-> > > >> drivers/staging/sxg/sxg.c: In function 'sxg_transmit_packet':
-> > > >> drivers/staging/sxg/sxg.c:1949: error: 'SXG_SGL_BUF_SIZE' undeclared (first use in this function)
-> > > >> drivers/staging/sxg/sxg.c:1958: error: implicit declaration of function 'SXG_SGL_BUFFER'
-> > > >> drivers/staging/sxg/sxg.c:1958: warning: assignment makes pointer from integer without a cast
-> > > >> drivers/staging/sxg/sxg.c: In function 'sxg_mcast_set_mask':
-> > > >> drivers/staging/sxg/sxg.c:2846: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
-> > > >>
-> > > >> I applied the following patch.
-> > > >
-> > > > Ah, doh, sorry, I should have caught that.  I'll go apply this to the
-> > > > tree, thanks.
-> > > 
-> > > Greg,
-> > > 
-> > > The slicoss driver also from Alacritech looks like it needs a depends
-> > > on X86 as well. Should the sxg and slicoss drivers from Alacritech be
-> > > doing things like this (sxg/sxghif.h:851, slicoss/slicoss.c:960):
-> > 
-> > Yes, it needs it too.
-> 
-> Hm, it already has this dependancy.  In drivers/staging/slicoss/Kconfig
-> we have:
-> 	config SLICOSS
-> 		tristate "Alacritech Gigabit IS-NIC support"
-> 		depends on PCI && X86 && NETDEV_1000
-> 
-> So we should be fine here.
+On Mon, Oct 20, 2008 at 09:13:05PM +0400, Alexander Beregalov wrote:
+> 2008/10/20 Christoph Hellwig <hch@infradead.org>:
+> > On Mon, Oct 20, 2008 at 06:58:09PM +0400, Alexander Beregalov wrote:
+> >> Hi Christoph
+> >>
+> >> I have the same result with next-1020 and today's xfs-2.6.git/master
+> >> (
+> >> commit bfd2bd10da76378dc4afd87d7d204a1d3d70b347
+> >> Author: David Chinner <david@fromorbit.com>
+> >> Date:   Fri Oct 17 15:36:23 2008 +1000
+> >>     Inode: Allow external list initialisation
+> >> )
+> Ha, that kernel (xfs/master) has made my system dead locked.
+> SysRQ-d:
+> Show all locks held in the system
+> 1 lock held by pdflush
+> (&type->s_umount_key#18{----}, at writeback_inodes
+> 1 lock held by login
+> (&(&ip->i_iolock)->mr_lock){----} at xfs_ilock
+> and so on ( many locks at xfs_ilock)
 
-Sorry about that, had to pull from Linus's tree
+Curious. Can you post the full stack traces?
 
-> 
-> thanks,
-> 
-> greg k-h
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
