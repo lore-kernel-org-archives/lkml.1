@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbYJTRSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbYJTRS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153AbYJTRSh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbYJTREq
+	id S1756013AbYJTRS7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYJTREt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:04:46 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59499 "EHLO relay.sgi.com"
+	Mon, 20 Oct 2008 13:04:49 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55349 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753861AbYJTRDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753839AbYJTRDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Oct 2008 13:03:25 -0400
-Message-Id: <20081020170320.575735000@polaris-admin.engr.sgi.com>
+Message-Id: <20081020170323.602974000@polaris-admin.engr.sgi.com>
 References: <20081020170319.539427000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Oct 2008 10:03:26 -0700
+Date: Mon, 20 Oct 2008 10:03:48 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <andi@firstfloor.org>,
@@ -24,373 +24,282 @@ Cc: Andi Kleen <andi@firstfloor.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>, IA64 <linux-ia64@vger.kernel.org>,
        PowerPC <linuxppc-dev@ozlabs.org>, S390 <linux-s390@vger.kernel.org>,
        SPARC <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 07/35] cpumask: change cpumask_scnprintf, cpumask_parse_user, cpulist_parse, and cpulist_scnprintf to take pointers.
-Content-Disposition: inline; filename=cpumask:convert-few-difficult-cpumask_t-users.patch
+Subject: [PATCH 29/35] cpumask: Use accessors code.
+Content-Disposition: inline; filename=cpumask:use-cpumap-accessors.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We want to move cpumasks off the stack: no local decls, no passing by
-copy.
-
-Most cpumask functions started with cpus_: these have been replaced by
-cpumask_ ones which take struct cpumask pointers as expected, and macro
-stubs used for the transition.
-
-These four functions don't have good replacement names; fortunately
-they're rarely used, so we just change them over.
+Use the accessors rather than frobbing bits directly.  Most of this is
+in arch code I haven't even compiled, but is straightforward.
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/ia64/kernel/topology.c           |    2 +-
- arch/mips/kernel/smp-cmp.c            |    4 ++--
- arch/powerpc/platforms/pseries/xics.c |    2 +-
- arch/x86/kernel/cpu/intel_cacheinfo.c |    4 ++--
- arch/x86/kernel/setup_percpu.c        |    2 +-
- drivers/base/cpu.c                    |    2 +-
- drivers/base/node.c                   |    4 ++--
- drivers/base/topology.c               |    4 ++--
- drivers/pci/pci-sysfs.c               |    4 ++--
- drivers/pci/probe.c                   |    4 ++--
- include/linux/cpumask.h               |   21 +++++++--------------
- kernel/cpuset.c                       |    8 ++++----
- kernel/irq/proc.c                     |    4 ++--
- kernel/profile.c                      |    4 ++--
- kernel/sched.c                        |    4 ++--
- kernel/sched_stats.h                  |    2 +-
- kernel/taskstats.c                    |    2 +-
- kernel/trace/trace.c                  |    4 ++--
- mm/slub.c                             |    2 +-
- 19 files changed, 38 insertions(+), 45 deletions(-)
+ arch/arm/mach-realview/platsmp.c        |    2 +-
+ arch/cris/arch-v32/kernel/smp.c         |    4 ++--
+ arch/ia64/kernel/acpi.c                 |    2 +-
+ arch/ia64/kernel/smpboot.c              |   17 +++++++----------
+ arch/m32r/kernel/smpboot.c              |    2 +-
+ arch/mips/kernel/smp-cmp.c              |    6 ++++--
+ arch/mips/kernel/smp.c                  |    2 +-
+ arch/powerpc/kernel/setup-common.c      |    4 ++--
+ arch/powerpc/platforms/powermac/setup.c |    2 +-
+ arch/s390/kernel/smp.c                  |    5 ++---
+ arch/sh/kernel/cpu/sh4a/smp-shx3.c      |    5 ++---
+ arch/sh/kernel/smp.c                    |    6 +++---
+ arch/sparc64/kernel/mdesc.c             |    2 +-
+ arch/sparc64/kernel/prom.c              |    4 ++--
+ arch/um/kernel/smp.c                    |    2 +-
+ arch/x86/kernel/apic.c                  |    4 ++--
+ 16 files changed, 33 insertions(+), 36 deletions(-)
 
---- test-compile.orig/arch/ia64/kernel/topology.c
-+++ test-compile/arch/ia64/kernel/topology.c
-@@ -217,7 +217,7 @@ static ssize_t show_shared_cpu_map(struc
- 	cpumask_t shared_cpu_map;
+--- linux-2.6.28.orig/arch/arm/mach-realview/platsmp.c
++++ linux-2.6.28/arch/arm/mach-realview/platsmp.c
+@@ -193,7 +193,7 @@ void __init smp_init_cpus(void)
+ 	unsigned int i, ncores = get_core_count();
  
- 	cpus_and(shared_cpu_map, this_leaf->shared_cpu_map, cpu_online_map);
--	len = cpumask_scnprintf(buf, NR_CPUS+1, shared_cpu_map);
-+	len = cpumask_scnprintf(buf, NR_CPUS+1, &shared_cpu_map);
- 	len += sprintf(buf+len, "\n");
- 	return len;
+ 	for (i = 0; i < ncores; i++)
+-		cpu_set(i, cpu_possible_map);
++		set_cpu_possible(i, true);
  }
---- test-compile.orig/arch/mips/kernel/smp-cmp.c
-+++ test-compile/arch/mips/kernel/smp-cmp.c
-@@ -51,10 +51,10 @@ static int __init allowcpus(char *str)
- 	int len;
+ 
+ void __init smp_prepare_cpus(unsigned int max_cpus)
+--- linux-2.6.28.orig/arch/cris/arch-v32/kernel/smp.c
++++ linux-2.6.28/arch/cris/arch-v32/kernel/smp.c
+@@ -102,9 +102,9 @@ void __devinit smp_prepare_boot_cpu(void
+ 	SUPP_BANK_SEL(2);
+ 	SUPP_REG_WR(RW_MM_TLB_PGD, pgd);
+ 
+-	cpu_set(0, cpu_online_map);
++	set_cpu_online(0, true);
+ 	cpu_set(0, phys_cpu_present_map);
+-	cpu_set(0, cpu_possible_map);
++	set_cpu_possible(0, true);
+ }
+ 
+ void __init smp_cpus_done(unsigned int max_cpus)
+--- linux-2.6.28.orig/arch/ia64/kernel/acpi.c
++++ linux-2.6.28/arch/ia64/kernel/acpi.c
+@@ -845,7 +845,7 @@ __init void prefill_possible_map(void)
+ 		possible, max((possible - available_cpus), 0));
+ 
+ 	for (i = 0; i < possible; i++)
+-		cpu_set(i, cpu_possible_map);
++		set_cpu_possible(i, true);
+ }
+ 
+ int acpi_map_lsapic(acpi_handle handle, int *pcpu)
+--- linux-2.6.28.orig/arch/ia64/kernel/smpboot.c
++++ linux-2.6.28/arch/ia64/kernel/smpboot.c
+@@ -587,14 +587,14 @@ smp_build_cpu_map (void)
+ 
+ 	ia64_cpu_to_sapicid[0] = boot_cpu_id;
+ 	cpus_clear(cpu_present_map);
+-	cpu_set(0, cpu_present_map);
+-	cpu_set(0, cpu_possible_map);
++	set_cpu_present(0, true);
++	set_cpu_possible(0, true);
+ 	for (cpu = 1, i = 0; i < smp_boot_data.cpu_count; i++) {
+ 		sapicid = smp_boot_data.cpu_phys_id[i];
+ 		if (sapicid == boot_cpu_id)
+ 			continue;
+-		cpu_set(cpu, cpu_present_map);
+-		cpu_set(cpu, cpu_possible_map);
++		set_cpu_present(cpu, true);
++		set_cpu_possible(cpu, true);
+ 		ia64_cpu_to_sapicid[cpu] = sapicid;
+ 		cpu++;
+ 	}
+@@ -632,12 +632,9 @@ smp_prepare_cpus (unsigned int max_cpus)
+ 	 */
+ 	if (!max_cpus) {
+ 		printk(KERN_INFO "SMP mode deactivated.\n");
+-		cpus_clear(cpu_online_map);
+-		cpus_clear(cpu_present_map);
+-		cpus_clear(cpu_possible_map);
+-		cpu_set(0, cpu_online_map);
+-		cpu_set(0, cpu_present_map);
+-		cpu_set(0, cpu_possible_map);
++		init_cpu_online(cpumask_of(0));
++		init_cpu_present(cpumask_of(0));
++		init_cpu_possible(cpumask_of(0));
+ 		return;
+ 	}
+ }
+--- linux-2.6.28.orig/arch/m32r/kernel/smpboot.c
++++ linux-2.6.28/arch/m32r/kernel/smpboot.c
+@@ -183,7 +183,7 @@ void __init smp_prepare_cpus(unsigned in
+ 	for (phys_id = 0 ; phys_id < nr_cpu ; phys_id++)
+ 		physid_set(phys_id, phys_cpu_present_map);
+ #ifndef CONFIG_HOTPLUG_CPU
+-	cpu_present_map = cpu_possible_map;
++	init_cpu_present(&cpu_possible_map);
+ #endif
+ 
+ 	show_mp_info(nr_cpu);
+--- linux-2.6.28.orig/arch/mips/kernel/smp-cmp.c
++++ linux-2.6.28/arch/mips/kernel/smp-cmp.c
+@@ -52,8 +52,10 @@ static int __init allowcpus(char *str)
  
  	cpus_clear(cpu_allow_map);
--	if (cpulist_parse(str, cpu_allow_map) == 0) {
-+	if (cpulist_parse(str, &cpu_allow_map) == 0) {
- 		cpu_set(0, cpu_allow_map);
- 		cpus_and(cpu_possible_map, cpu_possible_map, cpu_allow_map);
--		len = cpulist_scnprintf(buf, sizeof(buf)-1, cpu_possible_map);
-+		len = cpulist_scnprintf(buf, sizeof(buf)-1, &cpu_possible_map);
+ 	if (cpulist_parse(str, &cpu_allow_map) == 0) {
+-		cpu_set(0, cpu_allow_map);
+-		cpus_and(cpu_possible_map, cpu_possible_map, cpu_allow_map);
++		unsigned int i;
++		for (i = 1; i < nr_cpu_ids; i++)
++			if (!cpumask_test_cpu(i, cpu_allow_map))
++				set_cpu_possible(i, false);
+ 		len = cpulist_scnprintf(buf, sizeof(buf)-1, &cpu_possible_map);
  		buf[len] = '\0';
  		pr_debug("Allowable CPUs: %s\n", buf);
- 		return 1;
---- test-compile.orig/arch/powerpc/platforms/pseries/xics.c
-+++ test-compile/arch/powerpc/platforms/pseries/xics.c
-@@ -358,7 +358,7 @@ static void xics_set_affinity(unsigned i
- 	irq_server = get_irq_server(virq, 1);
- 	if (irq_server == -1) {
- 		char cpulist[128];
--		cpumask_scnprintf(cpulist, sizeof(cpulist), cpumask);
-+		cpumask_scnprintf(cpulist, sizeof(cpulist), &cpumask);
- 		printk(KERN_WARNING
- 			"%s: No online cpus in the mask %s for irq %d\n",
- 			__func__, cpulist, virq);
---- test-compile.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ test-compile/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -626,8 +626,8 @@ static ssize_t show_shared_cpu_map_func(
- 		cpumask_t *mask = &this_leaf->shared_cpu_map;
+--- linux-2.6.28.orig/arch/mips/kernel/smp.c
++++ linux-2.6.28/arch/mips/kernel/smp.c
+@@ -186,7 +186,7 @@ void __init smp_prepare_cpus(unsigned in
+ 	mp_ops->prepare_cpus(max_cpus);
+ 	set_cpu_sibling_map(0);
+ #ifndef CONFIG_HOTPLUG_CPU
+-	cpu_present_map = cpu_possible_map;
++	init_cpu_present(&cpu_possible_map);
+ #endif
+ }
  
- 		n = type?
--			cpulist_scnprintf(buf, len-2, *mask):
--			cpumask_scnprintf(buf, len-2, *mask);
-+			cpulist_scnprintf(buf, len-2, mask) :
-+			cpumask_scnprintf(buf, len-2, mask);
- 		buf[n++] = '\n';
- 		buf[n] = '\0';
+--- linux-2.6.28.orig/arch/powerpc/kernel/setup-common.c
++++ linux-2.6.28/arch/powerpc/kernel/setup-common.c
+@@ -413,7 +413,7 @@ void __init smp_setup_cpu_maps(void)
+ 			    j, cpu, intserv[j]);
+ 			cpu_set(cpu, cpu_present_map);
+ 			set_hard_smp_processor_id(cpu, intserv[j]);
+-			cpu_set(cpu, cpu_possible_map);
++			set_cpu_possible(cpu, true);
+ 			cpu++;
+ 		}
  	}
---- test-compile.orig/arch/x86/kernel/setup_percpu.c
-+++ test-compile/arch/x86/kernel/setup_percpu.c
-@@ -282,7 +282,7 @@ static void __cpuinit numa_set_cpumask(i
- 	else
- 		cpu_clear(cpu, *mask);
+@@ -459,7 +459,7 @@ void __init smp_setup_cpu_maps(void)
+ 			       maxcpus);
  
--	cpulist_scnprintf(buf, sizeof(buf), *mask);
-+	cpulist_scnprintf(buf, sizeof(buf), mask);
- 	printk(KERN_DEBUG "%s cpu %d node %d: mask now %s\n",
- 		enable? "numa_add_cpu":"numa_remove_cpu", cpu, node, buf);
-  }
---- test-compile.orig/drivers/base/cpu.c
-+++ test-compile/drivers/base/cpu.c
-@@ -109,7 +109,7 @@ static SYSDEV_ATTR(crash_notes, 0400, sh
-  */
- static ssize_t print_cpus_map(char *buf, cpumask_t *map)
- {
--	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, *map);
-+	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, map);
- 
- 	buf[n++] = '\n';
- 	buf[n] = '\0';
---- test-compile.orig/drivers/base/node.c
-+++ test-compile/drivers/base/node.c
-@@ -29,8 +29,8 @@ static ssize_t node_read_cpumap(struct s
- 	BUILD_BUG_ON((NR_CPUS/32 * 9) > (PAGE_SIZE-1));
- 
- 	len = type?
--		cpulist_scnprintf(buf, PAGE_SIZE-2, *mask):
--		cpumask_scnprintf(buf, PAGE_SIZE-2, *mask);
-+		cpulist_scnprintf(buf, PAGE_SIZE-2, mask) :
-+		cpumask_scnprintf(buf, PAGE_SIZE-2, mask);
-  	buf[len++] = '\n';
-  	buf[len] = '\0';
- 	return len;
---- test-compile.orig/drivers/base/topology.c
-+++ test-compile/drivers/base/topology.c
-@@ -49,8 +49,8 @@ static ssize_t show_cpumap(int type, cpu
- 
- 	if (len > 1) {
- 		n = type?
--			cpulist_scnprintf(buf, len-2, *mask):
--			cpumask_scnprintf(buf, len-2, *mask);
-+			cpulist_scnprintf(buf, len-2, mask) :
-+			cpumask_scnprintf(buf, len-2, mask);
- 		buf[n++] = '\n';
- 		buf[n] = '\0';
+ 		for (cpu = 0; cpu < maxcpus; cpu++)
+-			cpu_set(cpu, cpu_possible_map);
++			set_cpu_possible(cpu, true);
+ 	out:
+ 		of_node_put(dn);
  	}
---- test-compile.orig/drivers/pci/pci-sysfs.c
-+++ test-compile/drivers/pci/pci-sysfs.c
-@@ -74,7 +74,7 @@ static ssize_t local_cpus_show(struct de
- 	int len;
+--- linux-2.6.28.orig/arch/powerpc/platforms/powermac/setup.c
++++ linux-2.6.28/arch/powerpc/platforms/powermac/setup.c
+@@ -366,7 +366,7 @@ static void __init pmac_setup_arch(void)
+ 		int cpu;
  
- 	mask = pcibus_to_cpumask(to_pci_dev(dev)->bus);
--	len = cpumask_scnprintf(buf, PAGE_SIZE-2, mask);
-+	len = cpumask_scnprintf(buf, PAGE_SIZE-2, &mask);
- 	buf[len++] = '\n';
- 	buf[len] = '\0';
- 	return len;
-@@ -88,7 +88,7 @@ static ssize_t local_cpulist_show(struct
- 	int len;
+ 		for (cpu = 1; cpu < 4 && cpu < nr_cpu_ids; ++cpu)
+-			cpu_set(cpu, cpu_possible_map);
++			set_cpu_possible(cpu, true);
+ 		smp_ops = &psurge_smp_ops;
+ 	}
+ #endif
+--- linux-2.6.28.orig/arch/s390/kernel/smp.c
++++ linux-2.6.28/arch/s390/kernel/smp.c
+@@ -732,9 +732,8 @@ static int __init setup_possible_cpus(ch
+ 	int pcpus, cpu;
  
- 	mask = pcibus_to_cpumask(to_pci_dev(dev)->bus);
--	len = cpulist_scnprintf(buf, PAGE_SIZE-2, mask);
-+	len = cpulist_scnprintf(buf, PAGE_SIZE-2, &mask);
- 	buf[len++] = '\n';
- 	buf[len] = '\0';
- 	return len;
---- test-compile.orig/drivers/pci/probe.c
-+++ test-compile/drivers/pci/probe.c
-@@ -123,8 +123,8 @@ static ssize_t pci_bus_show_cpuaffinity(
+ 	pcpus = simple_strtoul(s, NULL, 0);
+-	cpu_possible_map = cpumask_of_cpu(0);
+-	for (cpu = 1; cpu < pcpus && cpu < nr_cpu_ids; cpu++)
+-		cpu_set(cpu, cpu_possible_map);
++	for (cpu = 0; cpu < pcpus && cpu < nr_cpu_ids; cpu++)
++		set_cpu_possible(cpu, true);
+ 	return 0;
+ }
+ early_param("possible_cpus", setup_possible_cpus);
+--- linux-2.6.28.orig/arch/sh/kernel/cpu/sh4a/smp-shx3.c
++++ linux-2.6.28/arch/sh/kernel/cpu/sh4a/smp-shx3.c
+@@ -19,8 +19,7 @@ void __init plat_smp_setup(void)
+ 	unsigned int cpu = 0;
+ 	int i, num;
  
- 	cpumask = pcibus_to_cpumask(to_pci_bus(dev));
- 	ret = type?
--		cpulist_scnprintf(buf, PAGE_SIZE-2, cpumask):
--		cpumask_scnprintf(buf, PAGE_SIZE-2, cpumask);
-+		cpulist_scnprintf(buf, PAGE_SIZE-2, &cpumask) :
-+		cpumask_scnprintf(buf, PAGE_SIZE-2, &cpumask);
- 	buf[ret++] = '\n';
- 	buf[ret] = '\0';
- 	return ret;
---- test-compile.orig/include/linux/cpumask.h
-+++ test-compile/include/linux/cpumask.h
-@@ -175,13 +175,6 @@ extern cpumask_t _unused_cpumask_arg_;
- 			cpumask_shift_right(&(dst), &(src), (n))
- #define cpus_shift_left(dst, src, n) \
- 			cpumask_shift_left(&(dst), &(src), (n))
--#define cpumask_scnprintf(buf, len, src) \
--			__cpumask_scnprintf((buf), (len), &(src))
--#define cpumask_parse_user(ubuf, ulen, dst) \
--			__cpumask_parse_user((ubuf), (ulen), &(dst))
--#define cpulist_scnprintf(buf, len, src) \
--			__cpulist_scnprintf((buf), (len), &(src))
--#define cpulist_parse(buf, dst) __cpulist_parse((buf), &(dst))
- #define cpu_remap(oldbit, old, new) \
- 		cpumask_cpuremap((oldbit), &(old), &(new))
- #define cpus_remap(dst, src, old, new) \
-@@ -304,25 +297,25 @@ static inline void cpumask_shift_left(st
- 	bitmap_shift_left(dstp->bits, srcp->bits, n, NR_CPUS);
+-	cpus_clear(cpu_possible_map);
+-	cpu_set(cpu, cpu_possible_map);
++	init_cpu_possible(cpumask_of(cpu));
+ 
+ 	__cpu_number_map[0] = 0;
+ 	__cpu_logical_map[0] = 0;
+@@ -30,7 +29,7 @@ void __init plat_smp_setup(void)
+ 	 * for the total number of cores.
+ 	 */
+ 	for (i = 1, num = 0; i < NR_CPUS; i++) {
+-		cpu_set(i, cpu_possible_map);
++		set_cpu_possible(i, true);
+ 		__cpu_number_map[i] = ++num;
+ 		__cpu_logical_map[num] = i;
+ 	}
+--- linux-2.6.28.orig/arch/sh/kernel/smp.c
++++ linux-2.6.28/arch/sh/kernel/smp.c
+@@ -52,7 +52,7 @@ void __init smp_prepare_cpus(unsigned in
+ 	plat_prepare_cpus(max_cpus);
+ 
+ #ifndef CONFIG_HOTPLUG_CPU
+-	cpu_present_map = cpu_possible_map;
++	init_cpu_present(&cpu_possible_map);
+ #endif
  }
  
--static inline int __cpumask_scnprintf(char *buf, int len,
--				      const struct cpumask *srcp)
-+static inline int cpumask_scnprintf(char *buf, int len,
-+				    const struct cpumask *srcp)
- {
- 	return bitmap_scnprintf(buf, len, srcp->bits, NR_CPUS);
+@@ -63,8 +63,8 @@ void __devinit smp_prepare_boot_cpu(void
+ 	__cpu_number_map[0] = cpu;
+ 	__cpu_logical_map[0] = cpu;
+ 
+-	cpu_set(cpu, cpu_online_map);
+-	cpu_set(cpu, cpu_possible_map);
++	set_cpu_online(cpu, true);
++	set_cpu_possible(cpu, true);
  }
  
--static inline int __cpumask_parse_user(const char __user *buf, int len,
--				       struct cpumask *dstp)
-+static inline int cpumask_parse_user(const char __user *buf, int len,
-+				     struct cpumask *dstp)
- {
- 	return bitmap_parse_user(buf, len, dstp->bits, NR_CPUS);
- }
+ asmlinkage void __cpuinit start_secondary(void)
+--- linux-2.6.28.orig/arch/sparc64/kernel/mdesc.c
++++ linux-2.6.28/arch/sparc64/kernel/mdesc.c
+@@ -566,7 +566,7 @@ static void __init report_platform_prope
+ 			max_cpu = NR_CPUS;
+ 		}
+ 		for (i = 0; i < max_cpu; i++)
+-			cpu_set(i, cpu_possible_map);
++			set_cpu_possible(i, true);
+ 	}
+ #endif
  
--static inline int __cpulist_scnprintf(char *buf, int len,
--				      const struct cpumask *srcp)
-+static inline int cpulist_scnprintf(char *buf, int len,
-+				    const struct cpumask *srcp)
- {
- 	return bitmap_scnlistprintf(buf, len, srcp->bits, NR_CPUS);
- }
- 
--static inline int __cpulist_parse(const char *buf, struct cpumask *dstp)
-+static inline int cpulist_parse(const char *buf, struct cpumask *dstp)
- {
- 	return bitmap_parselist(buf, dstp->bits, NR_CPUS);
- }
---- test-compile.orig/kernel/cpuset.c
-+++ test-compile/kernel/cpuset.c
-@@ -891,7 +891,7 @@ static int update_cpumask(struct cpuset 
- 	if (!*buf) {
- 		cpus_clear(trialcs.cpus_allowed);
- 	} else {
--		retval = cpulist_parse(buf, trialcs.cpus_allowed);
-+		retval = cpulist_parse(buf, &trialcs.cpus_allowed);
- 		if (retval < 0)
- 			return retval;
- 
-@@ -1478,7 +1478,7 @@ static int cpuset_sprintf_cpulist(char *
- 	mask = cs->cpus_allowed;
- 	mutex_unlock(&callback_mutex);
- 
--	return cpulist_scnprintf(page, PAGE_SIZE, mask);
-+	return cpulist_scnprintf(page, PAGE_SIZE, &mask);
- }
- 
- static int cpuset_sprintf_memlist(char *page, struct cpuset *cs)
-@@ -2438,11 +2438,11 @@ void cpuset_task_status_allowed(struct s
- {
- 	seq_printf(m, "Cpus_allowed:\t");
- 	m->count += cpumask_scnprintf(m->buf + m->count, m->size - m->count,
--					task->cpus_allowed);
-+					&task->cpus_allowed);
- 	seq_printf(m, "\n");
- 	seq_printf(m, "Cpus_allowed_list:\t");
- 	m->count += cpulist_scnprintf(m->buf + m->count, m->size - m->count,
--					task->cpus_allowed);
-+					&task->cpus_allowed);
- 	seq_printf(m, "\n");
- 	seq_printf(m, "Mems_allowed:\t");
- 	m->count += nodemask_scnprintf(m->buf + m->count, m->size - m->count,
---- test-compile.orig/kernel/irq/proc.c
-+++ test-compile/kernel/irq/proc.c
-@@ -47,7 +47,7 @@ static ssize_t irq_affinity_proc_write(s
- 	    irq_balancing_disabled(irq))
- 		return -EIO;
- 
--	err = cpumask_parse_user(buffer, count, new_value);
-+	err = cpumask_parse_user(buffer, count, &new_value);
- 	if (err)
- 		return err;
- 
-@@ -95,7 +95,7 @@ static ssize_t default_affinity_write(st
- 	cpumask_t new_value;
- 	int err;
- 
--	err = cpumask_parse_user(buffer, count, new_value);
-+	err = cpumask_parse_user(buffer, count, &new_value);
- 	if (err)
- 		return err;
- 
---- test-compile.orig/kernel/profile.c
-+++ test-compile/kernel/profile.c
-@@ -442,7 +442,7 @@ void profile_tick(int type)
- static int prof_cpu_mask_read_proc(char *page, char **start, off_t off,
- 			int count, int *eof, void *data)
- {
--	int len = cpumask_scnprintf(page, count, *(cpumask_t *)data);
-+	int len = cpumask_scnprintf(page, count, (cpumask_t *)data);
- 	if (count - len < 2)
- 		return -EINVAL;
- 	len += sprintf(page + len, "\n");
-@@ -456,7 +456,7 @@ static int prof_cpu_mask_write_proc(stru
- 	unsigned long full_count = count, err;
- 	cpumask_t new_value;
- 
--	err = cpumask_parse_user(buffer, count, new_value);
-+	err = cpumask_parse_user(buffer, count, &new_value);
- 	if (err)
- 		return err;
- 
---- test-compile.orig/kernel/sched.c
-+++ test-compile/kernel/sched.c
-@@ -6641,7 +6641,7 @@ static int sched_domain_debug_one(struct
- 	struct sched_group *group = sd->groups;
- 	char str[256];
- 
--	cpulist_scnprintf(str, sizeof(str), sd->span);
-+	cpulist_scnprintf(str, sizeof(str), &sd->span);
- 	cpus_clear(*groupmask);
- 
- 	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
-@@ -6695,7 +6695,7 @@ static int sched_domain_debug_one(struct
- 
- 		cpus_or(*groupmask, *groupmask, group->cpumask);
- 
--		cpulist_scnprintf(str, sizeof(str), group->cpumask);
-+		cpulist_scnprintf(str, sizeof(str), &group->cpumask);
- 		printk(KERN_CONT " %s", str);
- 
- 		group = group->next;
---- test-compile.orig/kernel/sched_stats.h
-+++ test-compile/kernel/sched_stats.h
-@@ -42,7 +42,7 @@ static int show_schedstat(struct seq_fil
- 		for_each_domain(cpu, sd) {
- 			enum cpu_idle_type itype;
- 
--			cpumask_scnprintf(mask_str, mask_len, sd->span);
-+			cpumask_scnprintf(mask_str, mask_len, &sd->span);
- 			seq_printf(seq, "domain%d %s", dcount++, mask_str);
- 			for (itype = CPU_IDLE; itype < CPU_MAX_IDLE_TYPES;
- 					itype++) {
---- test-compile.orig/kernel/taskstats.c
-+++ test-compile/kernel/taskstats.c
-@@ -352,7 +352,7 @@ static int parse(struct nlattr *na, cpum
- 	if (!data)
- 		return -ENOMEM;
- 	nla_strlcpy(data, na, len);
--	ret = cpulist_parse(data, *mask);
-+	ret = cpulist_parse(data, mask);
- 	kfree(data);
- 	return ret;
- }
---- test-compile.orig/kernel/trace/trace.c
-+++ test-compile/kernel/trace/trace.c
-@@ -2117,7 +2117,7 @@ tracing_cpumask_read(struct file *filp, 
- 
- 	mutex_lock(&tracing_cpumask_update_lock);
- 
--	len = cpumask_scnprintf(mask_str, count, tracing_cpumask);
-+	len = cpumask_scnprintf(mask_str, count, &tracing_cpumask);
- 	if (count - len < 2) {
- 		count = -EINVAL;
- 		goto out_err;
-@@ -2138,7 +2138,7 @@ tracing_cpumask_write(struct file *filp,
- 	int err, cpu;
- 
- 	mutex_lock(&tracing_cpumask_update_lock);
--	err = cpumask_parse_user(ubuf, count, tracing_cpumask_new);
-+	err = cpumask_parse_user(ubuf, count, &tracing_cpumask_new);
- 	if (err)
- 		goto err_unlock;
- 
---- test-compile.orig/mm/slub.c
-+++ test-compile/mm/slub.c
-@@ -3637,7 +3637,7 @@ static int list_locations(struct kmem_ca
- 				len < PAGE_SIZE - 60) {
- 			len += sprintf(buf + len, " cpus=");
- 			len += cpulist_scnprintf(buf + len, PAGE_SIZE - len - 50,
--					l->cpus);
-+					&l->cpus);
+--- linux-2.6.28.orig/arch/sparc64/kernel/prom.c
++++ linux-2.6.28/arch/sparc64/kernel/prom.c
+@@ -1601,8 +1601,8 @@ static void __init of_fill_in_cpu_data(v
  		}
  
- 		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
+ #ifdef CONFIG_SMP
+-		cpu_set(cpuid, cpu_present_map);
+-		cpu_set(cpuid, cpu_possible_map);
++		set_cpu_present(cpuid, true);
++		set_cpu_possible(cpuid, true);
+ #endif
+ 	}
+ 
+--- linux-2.6.28.orig/arch/um/kernel/smp.c
++++ linux-2.6.28/arch/um/kernel/smp.c
+@@ -118,7 +118,7 @@ void smp_prepare_cpus(unsigned int maxcp
+ 	int i;
+ 
+ 	for (i = 0; i < ncpus; ++i)
+-		cpu_set(i, cpu_possible_map);
++		set_cpu_possible(i, true);
+ 
+ 	cpu_clear(me, cpu_online_map);
+ 	cpu_set(me, cpu_online_map);
+--- linux-2.6.28.orig/arch/x86/kernel/apic.c
++++ linux-2.6.28/arch/x86/kernel/apic.c
+@@ -1903,8 +1903,8 @@ void __cpuinit generic_processor_info(in
+ 	}
+ #endif
+ 
+-	cpu_set(cpu, cpu_possible_map);
+-	cpu_set(cpu, cpu_present_map);
++	set_cpu_possible(cpu, true);
++	set_cpu_present(cpu, true);
+ }
+ 
+ #ifdef CONFIG_X86_64
 
 -- 
