@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYJTS2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbYJTSar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbYJTS2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 14:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYJTS2l
+	id S1754587AbYJTSar (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 14:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbYJTSag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 14:28:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60206 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbYJTS2k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 14:28:40 -0400
-Date: Mon, 20 Oct 2008 11:28:51 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at arch/x86/mm/ioremap.c:226
-Message-ID: <20081020112851.3ea44576@infradead.org>
-In-Reply-To: <1224526053.4948.2.camel@dhcppc2>
-References: <1224526053.4948.2.camel@dhcppc2>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 20 Oct 2008 14:30:36 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:35784 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752008AbYJTSag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 14:30:36 -0400
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] Add block device speciffic splice write method
+References: <1224424858-3927-1-git-send-email-dmonakhov@openvz.org>
+	<20081020174931.GH19428@kernel.dk>
+From: Dmitri Monakhov <dmonakhov@openvz.org>
+Date: Mon, 20 Oct 2008 22:29:47 +0400
+In-Reply-To: <20081020174931.GH19428@kernel.dk> (Jens Axboe's message of "Mon\, 20 Oct 2008 19\:49\:32 +0200")
+Message-ID: <m363nnf7c4.fsf@dmon-lap.sw.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[   16.914566] ck804xrom ck804xrom_init_one(): Unable to register resource 0x00000000ff000000-0x00000000ffffffff - kernel bug?
-[   16.914575] resource map sanity check conflict: 0xff000000
-0xffffffff 0xff780000 0xffffffff reserved
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-[   16.914636]  [<c042c02c>] ioremap_nocache+0xd/0xf
-[   16.914640]  [<f87e4246>] ? init_ck804xrom+0x246/0x4c7 [ck804xrom]
-[   16.914643]  [<f87e4246>] init_ck804xrom+0x246/0x4c7 [ck804xrom]
+> On Sun, Oct 19 2008, Dmitri Monakhov wrote:
+>> Block device write procedure is different from regular file:
+>>  - Actual write performed without i_mutex.
+>>  - It has no metadata, so generic_osync_inode(O_SYNCMETEDATA) can not livelock.
+>>  - We do not have to worry about S_ISUID/S_ISGID bits.
+>
+> I already did an O_DIRECT part of block device splicing [1], I'll fold
+> this into the splice branch and double check with some testing.
+>
+> [1] http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=fbb724a0484aba938024d41ca1dd86337d2550c9;hp=08c7910b275a4c580ad646ae8654439c8dfae4c5
+Ok i've missed this branch :(, your approach is really cool.
+But current patch seems not completely ready, 
+O_DIRECT case:
+  - sync case missed, some one may want use it with O_DIRECT|O_SYNC
+  - i'm not sure why it is necessary to always hold bd_inode->i_mutex
+    inside __splice_on_pice(.., pipe_to_disk)
+!O_DIRECT case:
+  - still use generic_file_splice_write
 
-the init_ck804xrom driver seems to be requesting a bunch of memory with ioremap that crosses several resources...
-which is very bad.
+So I'll re-base to your patch and:
+ - add appropriate fixes  necessary fixes for direct case.
+ - redone my patch on top of yours for buffered writes.
 
-Can you sent the /proc/iomem file ?
+What do you think?
