@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYJTDiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYJTDtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbYJTDiQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 23:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYJTDiA
+	id S1752532AbYJTDtK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 23:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYJTDs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 23:38:00 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47865 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbYJTDiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 23:38:00 -0400
-Subject: Re: [PATCH] Fix broken debug output reserve_region_with_split()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, rdreier@cisco.com,
-       Geert.Uytterhoeven@sonycom.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com,
-       akpm@linux-foundation.org
-In-Reply-To: <1224279947.7654.106.camel@pasglop>
-References: <adatzbbap8a.fsf@cisco.com> <1224214314.7654.65.camel@pasglop>
-	 <alpine.LFD.2.00.0810162036510.3438@nehalem.linux-foundation.org>
-	 <20081016.210404.151891223.davem@davemloft.net>
-	 <alpine.LFD.2.00.0810162109570.3438@nehalem.linux-foundation.org>
-	 <1224220339.7654.84.camel@pasglop>
-	 <alpine.LFD.2.00.0810170852010.3438@nehalem.linux-foundation.org>
-	 <1224277413.7654.95.camel@pasglop>
-	 <alpine.LFD.2.00.0810171410020.3438@nehalem.linux-foundation.org>
-	 <1224279947.7654.106.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 14:37:30 +1100
-Message-Id: <1224473850.7654.128.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Oct 2008 23:48:56 -0400
+Received: from kroah.org ([198.145.64.141]:39961 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751321AbYJTDsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 23:48:55 -0400
+Date: Sun, 19 Oct 2008 20:46:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for
+	usb/gadget/
+Message-ID: <20081020034639.GB26650@kroah.com>
+References: <Pine.LNX.4.44L0.0810171114500.2178-100000@iolanthe.rowland.org> <4F580DA88E8146FC8BDA0789613AB813@zhaoleiwin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4F580DA88E8146FC8BDA0789613AB813@zhaoleiwin>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-18 at 08:45 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2008-10-17 at 14:11 -0700, Linus Torvalds wrote:
+On Mon, Oct 20, 2008 at 09:15:16AM +0800, Zhaolei wrote:
+> From: "Alan Stern" <stern@rowland.harvard.edu>
+> To: "Zhaolei" <zhaolei@cn.fujitsu.com>
+> Cc: <linux-kernel@vger.kernel.org>; <dbrownell@users.sourceforge.net>; <linux-usb@vger.kernel.org>
+> Sent: Friday, October 17, 2008 11:18 PM
+> Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for usb/gadget/
 > 
-> > So the default is all the wrong way around. Make the defaults the sane 
-> > ones: 04x for IO, and 08x for MMIO, and then see if anybody wants anything 
-> > else. I seriously doubt they do. The whole ".. but but sparc" argument 
-> > seems to be entirely based on the total mis-conception of truncation that 
-> > has no relevance.
 > 
-> Well, I definitely want 08x for IO on powerpc and I suspect anything
-> non-x86 or alpha does as well... So I'm fine but I'd like to keep
-> the default for IO at 08x unless you really have a strong opinion
-> against it.
+> > On Fri, 17 Oct 2008, Zhaolei wrote:
+> > 
+> >> Hi,
+> >> 
+> >> debugfs_create_file() returns NULL if an error occurs, returns -ENODEV
+> >> when debugfs is not enabled in the kernel.
+> >> 
+> >> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> >> ---
+> >>  drivers/usb/gadget/s3c2410_udc.c |    2 +-
+> >>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >> 
+> >> diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
+> >> index 29d13eb..4ba50ef 100644
+> >> --- a/drivers/usb/gadget/s3c2410_udc.c
+> >> +++ b/drivers/usb/gadget/s3c2410_udc.c
+> >> @@ -1894,7 +1894,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
+> >>  udc->regs_info = debugfs_create_file("registers", S_IRUGO,
+> >>  s3c2410_udc_debugfs_root,
+> >>  udc, &s3c2410_udc_debugfs_fops);
+> >> - if (IS_ERR(udc->regs_info)) {
+> >> + if (IS_ERR(udc->regs_info) || !udc->regs_info) {
+> >>  dev_warn(dev, "debugfs file creation failed %ld\n",
+> >>  PTR_ERR(udc->regs_info));
+> >>  udc->regs_info = NULL;
+> > 
+> > In fact the original code and your patch are both wrong.  The test 
+> > should simply be:
+> > 
+> > if (!udc->regs_info) {
+> > dev_warn(dev, "debugfs file creation failed\n");
+> > 
+> Hello, Alan Stern
+> 
+> If we only check if (!udc->regs_info), that is no problem except that we
+> can't see dev_warn when debugfs isn't enabled in the kernel.
+> It this warning message is not necessary, I agree with you.
 
-Actually, screw it. 04x is fine, as you said, it's not going to truncate
-anyway. The reason I wanted 08x on powerpc is that we have legitimate
-negative-looking values in there due to the way we do PIO on 32-bit and
-we have most PCI IO looking like it's >64K on 64-but but that's no big
-deal, ie, we don't actually need the padding for IO space.
+Why would you want to see that message if debugfs wasn't selected?  You
+shouldn't need to see it, that is why the debugfs code doesn't return
+NULL if it is compiled out.  I did it that way to make all callers much
+simpler :)
 
-So I'm happy with just a padding of 8 for memory which is even good
-looking for most 64-bit archs in fact, and 4 for IO. I left the ability
-for archs to pick a different value if they want to tho.
+thanks,
 
-I'll send the patch separately after a test or two with a better mail
-subject.
-
-Cheers,
-Ben.
-
-
+greg k-h
