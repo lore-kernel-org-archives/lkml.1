@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbYJTRZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYJTR1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbYJTRZw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbYJTRYS
+	id S1754802AbYJTR1r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJTR1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:24:18 -0400
-Received: from ns0.motion-twin.com ([213.186.50.39]:58238 "EHLO
-	mail.motion-twin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758552AbYJTRYR (ORCPT
+	Mon, 20 Oct 2008 13:27:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:5411 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752065AbYJTR1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 13:24:17 -0400
-Message-ID: <48FCBEBE.700@motion-twin.com>
-Date: Mon, 20 Oct 2008 19:24:14 +0200
-From: Nicolas Cannasse <ncannasse@motion-twin.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 20 Oct 2008 13:27:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=rtd7waOEbaaP2X1U1ikPB7alC4oLIEEKvaKNLlJG2ufYtJnAyYP/7JGXuUzvSfjI9R
+         Cz31TA0qveoz1OMvFU4s1IFfZWM1hXpx+4gEeEzebzk3abEPZgD0U0q5Zqh+27dkkaDU
+         tLCVkGQ1w1XUbhoSWVQ0hHdJLdEe0v00tTNQc=
+From: Eric Lacombe <goretux@gmail.com>
+To: avi@redhat.com
+Subject: [x86] - technical questions about HV implementation on Intel VT
+Date: Mon, 20 Oct 2008 19:27:33 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: davids@webmaster.com
-CC: swivel@shells.gnugeneration.com, linux-kernel@vger.kernel.org
-Subject: Re: poll() blocked / packets not received ?
-References: <MDEHLPKNGKAHNMBLJOLKAEJCAIAD.davids@webmaster.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAEJCAIAD.davids@webmaster.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810201927.33580.goretux@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz a écrit :
->> At least I will have nice sleep tonight.
-> 
-> Note that this solved your symptom, not your problem. You actually have two
-> problems:
-> 
-> 1) You rely on TCP to detect a lost connection even by a side that will
-> never transmit any data. TCP simply does not do this. If you are not trying
-> to send data, you are not assured that a lost connection will be detected.
-> (You either need a timeout, or you need to send or dribble some data,
-> depending on the protocl.)
-> 
-> 2) You hold a lock on a shared resource while you wait for a reply over a
-> network. If this is a low-level "block and wait indefinitely" lock, this
-> will cause many threads to line up behind a slow/stuck thread. The right fix
-> depends on your circumstances, but you need to use a synchronization
-> primitive that is suitable. (You need to be able to use multiple connections
-> or defer operations without holding a thread.)
+Hello,
 
-I agree with both points, but I can't modify the MySQL protocol to 
-implement that.
+I worked on a particular hypervisor, that just put in a VM the currently 
+running kernel. But I faced some problems and I would like to know some good 
+practices in order to debug the module I develop.
 
-For (1) I can't add the timeout since I have no way to differentiate 
-between a lost connection and a request that takes time to execute. I'll 
-maybe check if the protocol allow pings while waiting for the request 
-result, but I'm not sure it does.
+When the module put the current kernel in "vmx non-root mode", some conditions 
+irremediably trigger a VM-Exit (with the processor I use, loading cr3 always 
+trigger a vmexit). And here comes my problem. How can I reliably get 
+information (by way of printk) when my hypervisor screw something up, and 
+crash the machine with lots of debug info that scroll quickly on the screen, 
+just before freezing the machine.
 
-For (2) the shared resources is on the database side, not on the server 
-side. It's the transaction that have some rows locked. I have no 
-solution for that.
+In fact, It seems that in some situations the machine "loop on page faults".
+Let me depict the scenario:
+After a vmxlaunch, the host hand over the cpu to the guest then a vmexit 
+occurs. Thus, the guest hand over to the host. the host checks some things 
+and issue a vmxresume, and.. a vmexit occurs again, etc. etc.
 
-Best,
-Nicolas
+So, when the host take control for the first time after the first vmexit, I 
+would like the host to print informations and to "die correctly", so as I 
+could read these information on the screen (ie, without being polluted with 
+lots of debug messages that scroll on the screen).
+
+Note: I already have some vmexits due to invalid guest state during vmxlaunch, 
+but it seems (because my trivial printings for those situations do not show 
+again) I fully repaired those problems. Now there is a lot of debug info 
+quickly scrolling on the screen before the system crashes :/
+
+Thanks in advance for your answers.
+
+	Eric
