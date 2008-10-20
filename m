@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYJTViT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbYJTVig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755693AbYJTViT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbYJTVg7
+	id S1756440AbYJTVig (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYJTVhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:36:59 -0400
-Received: from kroah.org ([198.145.64.141]:37489 "EHLO coco.kroah.org"
+	Mon, 20 Oct 2008 17:37:25 -0400
+Received: from kroah.org ([198.145.64.141]:37521 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756023AbYJTVg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:36:59 -0400
-Subject: patch staging-sxg-depends-on-x86.patch added to gregkh-2.6 tree
-To: sfr@canb.auug.org.au, akpm@linux-foundation.org, charrer@alacritech.com,
-       gregkh@suse.de, greg@kroah.com, linux-kernel@vger.kernel.org,
-       mmiles@alacritech.com
-From: <gregkh@suse.de>
-Date: Mon, 20 Oct 2008 14:17:22 -0700
-In-Reply-To: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
-Message-ID: <1224537442195@kroah.org>
+	id S1755784AbYJTVhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:37:23 -0400
+Date: Mon, 20 Oct 2008 14:18:22 -0700
+From: Greg KH <greg@kroah.com>
+To: Huang Weiyi <weiyi.huang@gmail.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: staging: me4000: remove duplicated #include's
+Message-ID: <20081020211822.GA30320@kroah.com>
+References: <20081018113833.61B4.WEIYI.HUANG@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081018113833.61B4.WEIYI.HUANG@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 18, 2008 at 11:52:15AM +0800, Huang Weiyi wrote:
+> Removed duplicated #include's in drivers/staging/me4000/me4000.c
+>    asm/uaccess.h
+>    linux/fs.h
+> 
+> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+> 
+> diff --git a/drivers/staging/me4000/me4000.c b/drivers/staging/me4000/me4000.c
+> index 862dd7f..90de6f0 100644
+> --- a/drivers/staging/me4000/me4000.c
+> +++ b/drivers/staging/me4000/me4000.c
+> @@ -30,7 +30,6 @@
+>  #include <asm/uaccess.h>
+>  #include <linux/errno.h>
+>  #include <linux/delay.h>
+> -#include <linux/fs.h>
+>  #include <linux/mm.h>
+>  #include <linux/unistd.h>
+>  #include <linux/list.h>
+> @@ -39,7 +38,6 @@
+>  #include <linux/poll.h>
+>  #include <linux/vmalloc.h>
+>  #include <asm/pgtable.h>
+> -#include <asm/uaccess.h>
+>  #include <linux/types.h>
+> 
+>  #include <linux/slab.h>
 
-This is a note to let you know that I've just added the patch titled
+Hm, this doesn't apply anymore as some cleanups went in that should have
+just made this not needed.
 
-    Subject: Staging: sxg depends on X86
-Subject: linux-next: build failure
+But if you have a script I can run somewhere to verify it, I'd
+appreciate it.
 
-to my gregkh-2.6 tree.  Its filename is
+thanks,
 
-    staging-sxg-depends-on-x86.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From sfr@canb.auug.org.au  Mon Oct 20 13:45:45 2008
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 20 Oct 2008 22:59:18 +1100
-Subject: Staging: sxg depends on X86
-Subject: linux-next: build failure
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, Christopher Harrer <charrer@alacritech.com>, Michael Miles <mmiles@alacritech.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linus
-Message-ID: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-
-sxghif.h has code that explicitly will not build fo other architecures.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/sxg/Kconfig |    1 +
- drivers/staging/sxg/README  |    1 +
- 2 files changed, 2 insertions(+)
-
---- a/drivers/staging/sxg/Kconfig
-+++ b/drivers/staging/sxg/Kconfig
-@@ -1,6 +1,7 @@
- config SXG
- 	tristate "Alacritech SLIC Technology Non-Accelerated 10Gbe support"
- 	depends on PCI && NETDEV_10000
-+	depends on X86
- 	default n
- 	help
- 	  This driver supports the Alacritech SLIC Technology Non-Accelerated
---- a/drivers/staging/sxg/README
-+++ b/drivers/staging/sxg/README
-@@ -7,6 +7,7 @@ TODO:
- 	- remove wrappers
- 	- checkpatch.pl cleanups
- 	- new functionality that the card needs
-+	- remove reliance on x86
- 
- Please send patches to:
-         Greg Kroah-Hartman <gregkh@suse.de>
-
-
-Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
-
-bad/battery-class-driver.patch
-staging/staging-sxg-depends-on-x86.patch
+greg k-h
