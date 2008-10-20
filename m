@@ -1,121 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbYJTVpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751929AbYJTVr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755761AbYJTVpN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYJTVpA
+	id S1751929AbYJTVr4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYJTVrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:45:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47201 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753420AbYJTVo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:44:59 -0400
-Subject: Re: [PATCH] intel-agp: Avoid oops for G33 on 1MB stolen case
-From: Dave Airlie <airlied@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Brandon Philips <bphilips@suse.de>, zhenyu.z.wang@intel.com,
-       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20081020142130.5c46bd7e.akpm@linux-foundation.org>
-References: <20081014225817.GA29267@plankton.lan>
-	 <20081020142130.5c46bd7e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 07:44:46 +1000
-Message-Id: <1224539086.3656.6.camel@optimus>
-Mime-Version: 1.0
+	Mon, 20 Oct 2008 17:47:48 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:65432 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYJTVrr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:47:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IG8VH6AT33qHctzA9F4A0fybumdVQlarI/+UhHA9M71Xa5kGQDd9VvZdlD9RTZmunN
+         2q89dXeY4noHXe0BCh+NCrgOPmlTVD25RIVaHcJvyTyqGCJpi1+ny2mOa8WWNc4gqCtY
+         z1Iu4IWCLugDYG38PEdtI3nyRupGu2nHSGB2g=
+Message-ID: <c62985530810201447w10423125wb5800c004de6a73c@mail.gmail.com>
+Date: Mon, 20 Oct 2008 23:47:45 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+Cc: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <alpine.DEB.1.10.0810201351130.5336@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080906050602.409299112@goodmis.org>
+	 <20081016181452.GA29739@yoda.jdub.homelinux.org>
+	 <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com>
+	 <20081016183529.GB29739@yoda.jdub.homelinux.org>
+	 <alpine.DEB.1.10.0810161444050.11042@gandalf.stny.rr.com>
+	 <20081016150106.6ddf7e46@zod.rchland.ibm.com>
+	 <alpine.DEB.1.10.0810201222570.3760@gandalf.stny.rr.com>
+	 <20081020170808.GB7249@yoda.jdub.homelinux.org>
+	 <c62985530810201042v4b3eed0ah62de285c64b2c0ba@mail.gmail.com>
+	 <alpine.DEB.1.10.0810201351130.5336@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 14:21 -0700, Andrew Morton wrote:
-> On Tue, 14 Oct 2008 15:58:17 -0700
-> Brandon Philips <bphilips@suse.de> wrote:
-> 
-> > This is similar to f443675affe3f16dd428e46f0f7fd3f4d703eeab which was
-> > reverted because it broke older X.org driver. This patch only fixes
-> > the 1MB stolen case since it causes an oops.
-> > 
-> > Xorg will not work without the accompanying patch[1] but avoiding an
-> > oops and making it possible to work with patched xorg driver is
-> > reasonable.
-> > 
-> > [1] http://ifup.org/~philips/review/xf86-video-intel-G33-1mb.patch
-> > 
-> > Explanation of the oops:
-> > 
-> > > static void intel_i830_init_gtt_entries(void)
-> > ...
-> > >         } else if (IS_G33) {
-> > >         /* G33's GTT size defined in gmch_ctrl */
-> > >                 switch (gmch_ctrl & G33_PGETBL_SIZE_MASK) {
-> > >                 case G33_PGETBL_SIZE_1M:
-> > >                         size = 1024;
-> > >                         break;
-> > ...
-> > >                 size += 4;
-> > 
-> > size = 1028
-> > 
-> > Then since we have the BIOS setting 1MB for the device in the GMCH
-> > control we get to here:
-> > 
-> > >         } else {
-> > >                 switch (gmch_ctrl & I855_GMCH_GMS_MASK) {
-> > >                 case I855_GMCH_GMS_STOLEN_1M:
-> > >                         gtt_entries = MB(1) - KB(size);
-> > >                         break;
-> > 
-> > MB(1) = 1 * 1024 * 1024
-> > KB(1028) = 1028 * 1024
-> > 
-> > MB(1) - KB(1028) = -4096
-> > 
-> > >         gtt_entries /= KB(4);
-> > >         intel_private.gtt_entries = gtt_entries;
-> > 
-> > We end up with -1 in gtt_entries.
-> > 
-> > This leads to intel_i915_configure reading/writing to areas outside of
-> > mapped memory and the oops.
-> > 
-> > Bugzilla: https://bugzilla.novell.com/show_bug.cgi?id=391261
-> > 
-> > Signed-off-by: Brandon Philips <bphilips@suse.de>
-> > 
-> > ---
-> >  drivers/char/agp/intel-agp.c |    8 ++++++++
-> >  1 file changed, 8 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/char/agp/intel-agp.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/char/agp/intel-agp.c
-> > +++ linux-2.6/drivers/char/agp/intel-agp.c
-> > @@ -559,6 +559,14 @@ static void intel_i830_init_gtt_entries(
-> >  	} else {
-> >  		switch (gmch_ctrl & I855_GMCH_GMS_MASK) {
-> >  		case I855_GMCH_GMS_STOLEN_1M:
-> > +			if (IS_G33) {
-> > +				size = 0;
-> > +				printk(KERN_WARNING PFX
-> > +				       "Warning: G33 chipset with 1MB"
-> > +					" allocated. Older X.org Intel drivers"
-> > +					" will not work.\n");
-> > +				WARN_ON(1);
-> > +			}
-> >  			gtt_entries = MB(1) - KB(size);
-> >  			break;
-> >  		case I855_GMCH_GMS_STOLEN_4M:
-> 
-> Is the bug which this patch addresses present in the 2.6.27 kernel?
-> 
+2008/10/20 Steven Rostedt <rostedt@goodmis.org>:
+> I believe MIPS has the same issues as PPC. Doesn't it use a trampoline
+> too?
 
-I've been a bit wary about this patch, but on re-review I suppose it
-should be fine. We'll just get WARN_ONs in places we don't really want
-them, and I'm sure Arjan will come complaining about them from
-kerneloops.
+No it doesn't seem to. If I'm not wrong, MIPS uses only the elf
+relocation table to relocate
+its addresses.
 
-However as I said at KS there is no nice answer to this, we are
-hopelessly screwed.
+> I want to make the generic code handle trampolines a bit better.
 
-Dave.
-
-
+Do you think there could be a generic approach to handles these trampolines?
