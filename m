@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbYJTAa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbYJTAej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752198AbYJTAa0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 20:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYJTAaP
+	id S1752203AbYJTAej (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 20:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYJTAeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 20:30:15 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:58157 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYJTAaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 20:30:14 -0400
-Date: Sun, 19 Oct 2008 20:28:05 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org, hbabu@us.ibm.com
-Subject: Re: [PATCH] add additional symbols to /sys/kernel/vmcoreinfo data
-	for ppc(64)
-Message-ID: <20081020002805.GA23009@localhost.localdomain>
-References: <20081009151408.GA25268@hmsendeavour.rdu.redhat.com> <20081017210854.GB10013@redhat.com>
+	Sun, 19 Oct 2008 20:34:31 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:52724 "EHLO smtp.anarazel.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750704AbYJTAeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 20:34:31 -0400
+From: Andres Freund <andres@anarazel.de>
+To: Keith Packard <keithp@keithp.com>
+Subject: Re: [git pull] agp patches for 2.6.28-rc1.
+Date: Mon, 20 Oct 2008 02:34:28 +0200
+User-Agent: KMail/1.10.1 (Linux/2.6.27-andres-04904-gc813b4e; KDE/4.1.2; x86_64; ; )
+Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.82.0810160758320.16504@skynet.skynet.ie> <200810200144.44383.andres@anarazel.de> <1224461977.5303.34.camel@koto.keithp.com>
+In-Reply-To: <1224461977.5303.34.camel@koto.keithp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081017210854.GB10013@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Message-Id: <200810200234.28751.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Hey Vivek, as promised, a corrected patch
-	
-	The makdumpdile dump filtering program, in some modes of operation needs
-the node_data and/or contig_page_data symbols to function properly.  These
-symbols are missing from the powerpc kernel.  This patch adds those symbols in
-properly.  Tested successfully by myself and the reporter.
+Hi,
 
-Regards
-Neil
+On Monday 20 October 2008 02:19:37 you wrote:
+> The GM45/G45 support in both kernel and user space was horribly broken,
+> causing the kernel to either overwrite stolen entries with freshly
+> allocated pages, and potentially corrupt the system, or leave some GTT
+> entries uninitialized and cause the hardware to lock up.
+I had some crashes with 3d, but none in 2d as far as I know.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> You appear to have a happy situation where this bug isn't obviously
+> breaking things. We couldn't find any machines where even simple 2D
+> graphics was stable for very long.
+Interesting. I had the system running for some days without problems related 
+to graphics.
 
+> We applied a patch to both kernel and 2D driver (as both end up
+> computing the size of the GTT stolen area for historical reasons) to fix
+> this mistake. Updating your 2D driver to 2.4.98 should get you the other
+> half of the fix.
+Ok, will try, and also report this to ubuntu and maybe other distributions...
 
- machine_kexec.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+> Yeah, I'm getting information about how 'hybrid' graphics hardware
+> works.
+If you need some information/testing/whatever...
 
-
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index aab7688..5d51e75 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -44,6 +44,14 @@ void machine_kexec_cleanup(struct kimage *image)
- 		ppc_md.machine_kexec_cleanup(image);
- }
- 
-+void arch_crash_save_vmcoreinfo(void)
-+{
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
-+	VMCOREINFO_SYMBOL(node_data);
-+	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
-+#endif
-+}
-+
- /*
-  * Do not allocate memory (or fail in any way) in machine_kexec().
-  * We are past the point of no return, committed to rebooting now.
+Andres
