@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbYJTQwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbYJTQwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbYJTQwT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 12:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYJTQwE
+	id S1753489AbYJTQwb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 12:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYJTQwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 12:52:04 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35997 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752387AbYJTQwC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 12:52:02 -0400
-Subject: Re: [PATCH 02/10] Make checkpoint/restart functionality modular
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Andrey Mirkin <major@openvz.org>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>
-In-Reply-To: <1224285098-573-3-git-send-email-major@openvz.org>
-References: <1224285098-573-1-git-send-email-major@openvz.org>
-	 <1224285098-573-2-git-send-email-major@openvz.org>
-	 <1224285098-573-3-git-send-email-major@openvz.org>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 09:51:59 -0700
-Message-Id: <1224521519.1848.105.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Oct 2008 12:52:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35923 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752751AbYJTQwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 12:52:09 -0400
+Date: Mon, 20 Oct 2008 12:51:01 -0400
+From: Neil Horman <nhorman@redhat.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Neil Horman <nhorman@tuxdriver.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       akpm@linux-foundation.org, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, hbabu@us.ibm.com, mingo@redhat.com,
+       ebiederm@xmission.com, hpa@zytor.com, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, vgoyal@redhat.com
+Subject: Re: [PATCH] x86, dumpstack: some more unification
+Message-ID: <20081020165101.GC13856@hmsendeavour.rdu.redhat.com>
+References: <20081017210013.GD23591@hmsreliant.think-freely.org> <20081020121339.GE10594@elte.hu> <20081020134211.GA15574@hmsreliant.think-freely.org> <20081020150731.GA25999@mailshack.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081020150731.GA25999@mailshack.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-18 at 03:11 +0400, Andrey Mirkin wrote:
-> +struct cpt_operations
-> +{
-> +       struct module * owner;
-> +       int (*checkpoint)(pid_t pid, int fd, unsigned long flags);
-> +       int (*restart)(int ctid, int fd, unsigned long flags);
-> +};
+On Mon, Oct 20, 2008 at 05:07:31PM +0200, Alexander van Heukelum wrote:
+> Hi Ingo, Neil,
+> 
+> Doing more unification of dumpstack is/was on my
+> TODO list, but it got sidetracked with some other
+> hobby projects.
+> 
+> I did unify oops_begin, oops_end, die and die_nmi,
+> and it seems to work. It needs more careful testing,
+> I think, but if someone (Neil?) wants to take a
+> look and validate the result...
+> 
+> Greetings,
+>     Alexander
+> 
+Please send me the patch, If/when I get a few moments, I'd be happy to give it a
+spin here.  
 
-I think this is pretty useless obfuscation.  We're not going to have
-pluggable checkpoint/restart implementations, are we?  So, why bother
-putting it in a module?
+Thanks!
+Neil
 
-I can understand that it's easier to develop your code when it's in a
-module and you don't have to reboot the machine to load a new kernel
-each time.  But, that's an individual developer thing, and doesn't
-belong in an upstream submission.
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
-I know people have given you a hard time for this in the past.  Why is
-it still here?
-
--- Dave
-
+-- 
+/***************************************************
+ *Neil Horman
+ *Senior Software Engineer
+ *Red Hat, Inc.
+ *nhorman@redhat.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
