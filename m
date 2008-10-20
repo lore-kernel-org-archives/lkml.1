@@ -1,64 +1,540 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbYJTMVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYJTMZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbYJTMVX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 08:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbYJTMVP
+	id S1753451AbYJTMZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 08:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYJTMZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 08:21:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60364 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751617AbYJTMVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 08:21:14 -0400
-Date: Mon, 20 Oct 2008 14:20:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Anholt <eric@anholt.net>
-Cc: Keith Packard <keithp@keithp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: io resources and cached mappings (was: [git pull] drm patches
-	for 2.6.27-rc1)
-Message-ID: <20081020122046.GA25152@elte.hu>
-References: <1224357062.4384.72.camel@koto.keithp.com> <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org> <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com> <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com> <1224398496.5303.7.camel@koto.keithp.com> <20081019175320.GA6442@elte.hu> <1224443274.5526.39.camel@vonnegut.anholt.net> <20081020115533.GB10594@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 20 Oct 2008 08:25:19 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:57903 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbYJTMZR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 08:25:17 -0400
+Date: Mon, 20 Oct 2008 14:25:14 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Andrey Mirkin <major@openvz.org>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 06/10] Introduce functions to dump mm
+Message-ID: <20081020122514.GR15171@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-2-git-send-email-major@openvz.org> <1224285098-573-3-git-send-email-major@openvz.org> <1224285098-573-4-git-send-email-major@openvz.org> <1224285098-573-5-git-send-email-major@openvz.org> <1224285098-573-6-git-send-email-major@openvz.org> <1224285098-573-7-git-send-email-major@openvz.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-20209-1224505371-0001-2"
 Content-Disposition: inline
-In-Reply-To: <20081020115533.GB10594@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <1224285098-573-7-git-send-email-major@openvz.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+--=_bohort-20209-1224505371-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> that gets ugly very fast. I think we should not use atomic kmaps but 
-> NR_CPUS _fixmaps_ with a per CPU array of mutexes (this is basically 
-> atomic kmaps but without the preemption restrictions). We could 
-> take/drop the mutex and statistically you'll stay on the same CPU and 
-> wont ever contend on that lock in practice.
+On Sat, Oct 18, 2008 at 03:11:34AM +0400, Andrey Mirkin wrote:
+> Functions to dump mm struct, VMAs and mm context are added.
 
-peterz pointed it out that we need to be careful with the TLBs in that 
-case.
+Again, a few little comments.
 
-I think it's solvable: a small non-default special-case in switch_to() 
-would invlpg any pending such page. (and no two such mappings could be 
-held at the same time)
+[...]
 
-So as long as we dont leave the CPU we wont ever do TLB flushes, and the 
-flush will be local even if we do.
+> diff --git a/checkpoint/cpt_mm.c b/checkpoint/cpt_mm.c
+> new file mode 100644
+> index 0000000..8a22c48
+> --- /dev/null
+> +++ b/checkpoint/cpt_mm.c
+> @@ -0,0 +1,434 @@
+> +/*
+> + *  Copyright (C) 2008 Parallels, Inc.
+> + *
+> + *  Authors:	Andrey Mirkin <major@openvz.org>
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> + *  modify it under the terms of the GNU General Public License as
+> + *  published by the Free Software Foundation, version 2 of the
+> + *  License.
+> + *
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/slab.h>
+> +#include <linux/file.h>
+> +#include <linux/mm.h>
+> +#include <linux/errno.h>
+> +#include <linux/major.h>
+> +#include <linux/mman.h>
+> +#include <linux/mnt_namespace.h>
+> +#include <linux/mount.h>
+> +#include <linux/namei.h>
+> +#include <linux/pagemap.h>
+> +#include <linux/hugetlb.h>
+> +#include <asm/ldt.h>
+> +
+> +#include "checkpoint.h"
+> +#include "cpt_image.h"
+> +
+> +struct page_area
+> +{
+> +	int type;
+> +	unsigned long start;
+> +	unsigned long end;
+> +	pgoff_t pgoff;
+> +	loff_t mm;
+> +	__u64 list[16];
+> +};
+> +
+> +struct page_desc
+> +{
+> +	int	type;
+> +	pgoff_t	index;
+> +	loff_t	mm;
+> +	int	shared;
+> +};
+> +
+> +enum {
+> +	PD_ABSENT,
+> +	PD_COPY,
+> +	PD_FUNKEY,
+> +};
+> +
+> +/* 0: page can be obtained from backstore, or still not mapped anonymous=
+  page,
+> +      or something else, which does not requre copy.
+> +   1: page requires copy
+> +   2: page requres copy but its content is zero. Quite useless.
+> +   3: wp page is shared after fork(). It is to be COWed when modified.
+> +   4: page is something unsupported... We copy it right now.
+> + */
+> +
+> +static void page_get_desc(struct vm_area_struct *vma, unsigned long addr,
+> +			  struct page_desc *pdesc, cpt_context_t * ctx)
+> +{
+> +	struct mm_struct *mm =3D vma->vm_mm;
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +	pmd_t *pmd;
+> +	pte_t *ptep, pte;
+> +	spinlock_t *ptl;
+> +	struct page *pg =3D NULL;
+> +	pgoff_t linear_index =3D (addr - vma->vm_start)/PAGE_SIZE + vma->vm_pgo=
+ff;
+> +
+> +	pdesc->index =3D linear_index;
+> +	pdesc->shared =3D 0;
+> +	pdesc->mm =3D CPT_NULL;
+> +
+> +	if (vma->vm_flags & VM_IO) {
+> +		pdesc->type =3D PD_ABSENT;
+> +		return;
+> +	}
+> +
+> +	pgd =3D pgd_offset(mm, addr);
+> +	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+> +		goto out_absent;
+> +	pud =3D pud_offset(pgd, addr);
+> +	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+> +		goto out_absent;
+> +	pmd =3D pmd_offset(pud, addr);
+> +	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+> +		goto out_absent;
+> +#ifdef CONFIG_X86
+> +	if (pmd_huge(*pmd)) {
+> +		eprintk("page_huge\n");
+> +		goto out_unsupported;
+> +	}
+> +#endif
+> +	ptep =3D pte_offset_map_lock(mm, pmd, addr, &ptl);
+> +	pte =3D *ptep;
+> +	pte_unmap(ptep);
+> +
+> +	if (pte_none(pte))
+> +		goto out_absent_unlock;
+> +
+> +	if ((pg =3D vm_normal_page(vma, addr, pte)) =3D=3D NULL) {
+> +		pdesc->type =3D PD_COPY;
+> +		goto out_unlock;
+> +	}
+> +
+> +	get_page(pg);
+> +	spin_unlock(ptl);
+> +
+> +	if (pg->mapping && !PageAnon(pg)) {
+> +		if (vma->vm_file =3D=3D NULL) {
+> +			eprintk("pg->mapping!=3DNULL for fileless vma: %08lx\n", addr);
+> +			goto out_unsupported;
+> +		}
+> +		if (vma->vm_file->f_mapping !=3D pg->mapping) {
+> +			eprintk("pg->mapping!=3Df_mapping: %08lx %p %p\n",
+> +				    addr, vma->vm_file->f_mapping, pg->mapping);
+> +			goto out_unsupported;
+> +		}
+> +		pdesc->index =3D (pg->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT));
+> +		/* Page is in backstore. For us it is like
+> +		 * it is not present.
+> +		 */
+> +		goto out_absent;
+> +	}
+> +
+> +	if (PageReserved(pg)) {
+> +		/* Special case: ZERO_PAGE is used, when an
+> +		 * anonymous page is accessed but not written. */
+> +		if (pg =3D=3D ZERO_PAGE(addr)) {
+> +			if (pte_write(pte)) {
+> +				eprintk("not funny already, writable ZERO_PAGE\n");
+> +				goto out_unsupported;
+> +			}
+> +			/* Just copy it for now */
+> +			pdesc->type =3D PD_COPY;
+> +			goto out_put;
+> +		}
+> +		eprintk("reserved page %lu at %08lx\n", pg->index, addr);
+> +		goto out_unsupported;
+> +	}
+> +
+> +	if (!pg->mapping) {
+> +		eprintk("page without mapping at %08lx\n", addr);
+> +		goto out_unsupported;
+> +	}
+> +
+> +	pdesc->type =3D PD_COPY;
+> +
+> +out_put:
+> +	if (pg)
+> +		put_page(pg);
+> +	return;
+> +
+> +out_unlock:
+> +	spin_unlock(ptl);
+> +	goto out_put;
+> +
+> +out_absent_unlock:
+> +	spin_unlock(ptl);
+> +
+> +out_absent:
+> +	pdesc->type =3D PD_ABSENT;
+> +	goto out_put;
+> +
+> +out_unsupported:
+> +	pdesc->type =3D PD_FUNKEY;
+> +	goto out_put;
+> +}
+> +
+> +static int count_vma_pages(struct vm_area_struct *vma, struct cpt_contex=
+t *ctx)
+> +{
+> +	unsigned long addr;
+> +	int page_num =3D 0;
+> +
+> +	for (addr =3D vma->vm_start; addr < vma->vm_end; addr +=3D PAGE_SIZE) {
+> +		struct page_desc pd;
+> +
+> +		page_get_desc(vma, addr, &pd, ctx);
+> +
+> +		if (pd.type !=3D PD_COPY) {
+> +			return -EINVAL;
+> +		} else {
+> +			page_num +=3D 1;
+> +		}
+> +	=09
+> +	}
+> +	return page_num;
+> +}
+> +
+> +/* ATTN: We give "current" to get_user_pages(). This is wrong, but get_u=
+ser_pages()
+> + * does not really need this thing. It just stores some page fault stats=
+ there.
+> + *
+> + * BUG: some archs (f.e. sparc64, but not Intel*) require flush cache pa=
+ges
+> + * before accessing vma.
+> + */
+> +static int dump_pages(struct vm_area_struct *vma, unsigned long start,
+> +		unsigned long end, struct cpt_context *ctx)
+> +{
+> +#define MAX_PAGE_BATCH 16
+> +	struct page *pg[MAX_PAGE_BATCH];
+> +	int npages =3D (end - start)/PAGE_SIZE;
+> +	int count =3D 0;
+> +
+> +	while (count < npages) {
+> +		int copy =3D npages - count;
+> +		int n;
+> +
+> +		if (copy > MAX_PAGE_BATCH)
+> +			copy =3D MAX_PAGE_BATCH;
+> +		n =3D get_user_pages(current, vma->vm_mm, start, copy,
+> +				   0, 1, pg, NULL);
+> +		if (n =3D=3D copy) {
+> +			int i;
+> +			for (i=3D0; i<n; i++) {
+> +				char *maddr =3D kmap(pg[i]);
+> +				ctx->write(maddr, PAGE_SIZE, ctx);
+> +				kunmap(pg[i]);
 
-	Ingo
+There is no error handling in this inner loop. Should be fixed imho.
+
+> +			}
+> +		} else {
+> +			eprintk("get_user_pages fault");
+> +			for ( ; n > 0; n--)
+> +				page_cache_release(pg[n-1]);
+> +			return -EFAULT;
+> +		}
+> +		start +=3D n*PAGE_SIZE;
+> +		count +=3D n;
+> +		for ( ; n > 0; n--)
+> +			page_cache_release(pg[n-1]);
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int dump_page_block(struct vm_area_struct *vma,
+> +			   struct cpt_page_block *pgb,
+> +			   struct cpt_context *ctx)
+> +{
+> +	int err;
+> +	pgb->cpt_len =3D sizeof(*pgb) + pgb->cpt_end - pgb->cpt_start;
+> +	pgb->cpt_type =3D CPT_OBJ_PAGES;
+> +	pgb->cpt_hdrlen =3D sizeof(*pgb);
+> +	pgb->cpt_content =3D CPT_CONTENT_DATA;
+> +
+> +	err =3D ctx->write(pgb, sizeof(*pgb), ctx);
+> +	if (!err)
+> +		err =3D dump_pages(vma, pgb->cpt_start, pgb->cpt_end, ctx);
+> +
+> +	return err;
+> +}
+> +
+> +static int cpt_dump_dentry(struct path *p, cpt_context_t *ctx)
+> +{
+> +	int len;
+> +	char *path;
+> +	char *buf;
+> +	struct cpt_object_hdr o;
+> +
+> +	buf =3D (char *)__get_free_page(GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	path =3D d_path(p, buf, PAGE_SIZE);
+> +
+> +	if (IS_ERR(path)) {
+> +		free_page((unsigned long)buf);
+> +		return PTR_ERR(path);
+> +	}
+> +
+> +	len =3D buf + PAGE_SIZE - 1 - path;
+> +	o.cpt_len =3D sizeof(o) + len + 1;
+> +	o.cpt_type =3D CPT_OBJ_NAME;
+> +	o.cpt_hdrlen =3D sizeof(o);
+> +	o.cpt_content =3D CPT_CONTENT_NAME;
+> +	path[len] =3D 0;
+> +
+> +	ctx->write(&o, sizeof(o), ctx);
+> +	ctx->write(path, len + 1, ctx);
+
+Error handling?
+
+> +	free_page((unsigned long)buf);
+> +
+> +	return 0;
+> +}
+> +
+> +static int dump_one_vma(struct mm_struct *mm,
+> +			struct vm_area_struct *vma, struct cpt_context *ctx)
+> +{
+> +	struct cpt_vma_image *v;
+> +	unsigned long addr;
+> +	int page_num;
+> +	int err;
+> +
+> +	v =3D kzalloc(sizeof(*v), GFP_KERNEL);
+> +	if (!v)
+> +		return -ENOMEM;
+> +
+> +	v->cpt_len =3D sizeof(*v);
+> +	v->cpt_type =3D CPT_OBJ_VMA;
+> +	v->cpt_hdrlen =3D sizeof(*v);
+> +	v->cpt_content =3D CPT_CONTENT_ARRAY;
+> +
+> +	v->cpt_start =3D vma->vm_start;
+> +	v->cpt_end =3D vma->vm_end;
+> +	v->cpt_flags =3D vma->vm_flags;
+> +	if (vma->vm_flags & VM_HUGETLB) {
+> +		eprintk("huge TLB VMAs are still not supported\n");
+> +		kfree(v);
+> +		return -EINVAL;
+> +	}
+> +	v->cpt_pgprot =3D vma->vm_page_prot.pgprot;
+> +	v->cpt_pgoff =3D vma->vm_pgoff;
+> +	v->cpt_file =3D CPT_NULL;
+> +	v->cpt_vma_type =3D CPT_VMA_TYPE_0;
+> +
+> +	page_num =3D count_vma_pages(vma, ctx);
+> +	if (page_num < 0) {
+> +		kfree(v);
+> +		return -EINVAL;
+> +	}
+
+AFAICS, since count_vma_pages only supports pages with PD_COPY, and since
+get_page_desc() tags text segment pages (file-mapped and not anonymous since
+not written to) as PD_ABSENT, no executable is checkpointable. So, where is=
+ the
+trick? Am I completely missing something about page mapping?
+
+> +	v->cpt_page_num =3D page_num;
+> +
+> +	if (vma->vm_file) {
+> +		v->cpt_file =3D 0;
+> +		v->cpt_vma_type =3D CPT_VMA_FILE;
+> +	}
+> +
+> +	ctx->write(v, sizeof(*v), ctx);
+
+Error handling?
+
+> +	kfree(v);
+> +
+> +	if (vma->vm_file) {
+> +		err =3D cpt_dump_dentry(&vma->vm_file->f_path, ctx);
+> +		if (err < 0)
+> +			return err;
+> +	}
+> +
+> +	for (addr =3D vma->vm_start; addr < vma->vm_end; addr +=3D PAGE_SIZE) {
+> +		struct page_desc pd;
+> +		struct cpt_page_block pgb;
+> +
+> +		page_get_desc(vma, addr, &pd, ctx);
+> +
+> +		if (pd.type =3D=3D PD_FUNKEY || pd.type =3D=3D PD_ABSENT) {
+> +			eprintk("dump_one_vma: funkey page\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		pgb.cpt_start =3D addr;
+> +		pgb.cpt_end =3D addr + PAGE_SIZE;
+> +		dump_page_block(vma, &pgb, ctx);
+
+Error handling?
+
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int cpt_dump_mm_context(struct mm_struct *mm, struct cpt_context =
+*ctx)
+> +{
+> +#ifdef CONFIG_X86
+> +	if (mm->context.size) {
+> +		struct cpt_obj_bits b;
+> +		int size;
+> +
+> +		mutex_lock(&mm->context.lock);
+> +
+> +		b.cpt_type =3D CPT_OBJ_BITS;
+> +		b.cpt_len =3D sizeof(b);
+> +		b.cpt_content =3D CPT_CONTENT_MM_CONTEXT;
+> +		b.cpt_size =3D mm->context.size * LDT_ENTRY_SIZE;
+> +
+> +		ctx->write(&b, sizeof(b), ctx);
+> +
+> +		size =3D mm->context.size * LDT_ENTRY_SIZE;
+> +
+> +		ctx->write(mm->context.ldt, size, ctx);
+
+Error handling?
+
+> +
+> +		mutex_unlock(&mm->context.lock);
+> +	}
+> +#endif
+> +	return 0;
+> +}
+> +
+> +int cpt_dump_mm(struct task_struct *tsk, struct cpt_context *ctx)
+> +{
+> +	struct mm_struct *mm =3D tsk->mm;
+> +	struct cpt_mm_image *v;
+> +	struct vm_area_struct *vma;
+> +	int err;
+> +
+> +	v =3D kzalloc(sizeof(*v), GFP_KERNEL);
+> +	if (!v)
+> +		return -ENOMEM;
+> +
+> +	v->cpt_len =3D sizeof(*v);
+> +	v->cpt_type =3D CPT_OBJ_MM;
+> +	v->cpt_hdrlen =3D sizeof(*v);
+> +	v->cpt_content =3D CPT_CONTENT_ARRAY;
+> +
+> +	down_read(&mm->mmap_sem);
+> +	v->cpt_start_code =3D mm->start_code;
+> +	v->cpt_end_code =3D mm->end_code;
+> +	v->cpt_start_data =3D mm->start_data;
+> +	v->cpt_end_data =3D mm->end_data;
+> +	v->cpt_start_brk =3D mm->start_brk;
+> +	v->cpt_brk =3D mm->brk;
+> +	v->cpt_start_stack =3D mm->start_stack;
+> +	v->cpt_start_arg =3D mm->arg_start;
+> +	v->cpt_end_arg =3D mm->arg_end;
+> +	v->cpt_start_env =3D mm->env_start;
+> +	v->cpt_end_env =3D mm->env_end;
+> +	v->cpt_def_flags =3D mm->def_flags;
+> +	v->cpt_flags =3D mm->flags;
+> +	v->cpt_map_count =3D mm->map_count;
+> +
+> +	err =3D ctx->write(v, sizeof(*v), ctx);
+> +	kfree(v);
+> +=09
+> +	if (err) {
+> +		eprintk("error during writing mm\n");
+> +		goto err_up;
+> +	}
+> +=09
+> +	for (vma =3D mm->mmap; vma; vma =3D vma->vm_next) {
+> +		if ((err =3D dump_one_vma(mm, vma, ctx)) !=3D 0)
+> +			goto err_up;
+> +	}
+> +
+> +	err =3D cpt_dump_mm_context(mm, ctx);
+> +
+> +err_up:
+> +	up_read(&mm->mmap_sem);
+> +
+> +	return err;
+> +}
+> +
+
+[...]
+
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-20209-1224505371-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFI/HiqVKcRuvQ9Q1QRAtf1AKDStIl9KjEcB2vpy+zbEs84xdViygCgx+h9
++rZgMWds/3WvkQvqH7TRK84=
+=sY0q
+-----END PGP SIGNATURE-----
+
+--=_bohort-20209-1224505371-0001-2--
