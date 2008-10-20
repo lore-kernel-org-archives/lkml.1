@@ -1,165 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYJTSNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbYJTSNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYJTSNE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 14:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYJTSMv
+	id S1754432AbYJTSNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 14:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbYJTSNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 14:12:51 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:49055 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754266AbYJTSMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 14:12:50 -0400
-Date: Mon, 20 Oct 2008 20:11:56 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dmitri Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Add block device speciffic splice write method
-Message-ID: <20081020181156.GI19428@kernel.dk>
-References: <1224424858-3927-1-git-send-email-dmonakhov@openvz.org> <20081020174931.GH19428@kernel.dk>
+	Mon, 20 Oct 2008 14:13:21 -0400
+Received: from mail-in-07.arcor-online.net ([151.189.21.47]:41476 "EHLO
+	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753316AbYJTSNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 14:13:20 -0400
+Date: Mon, 20 Oct 2008 20:13:09 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+cc: Bodo Eggert <7eggert@gmx.de>, jeffschroeder@computer.org,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use tmpfs for rootfs v3
+In-Reply-To: <8bd0f97a0810191112v29ca6be9kf4b0b8ecca718ef8@mail.gmail.com>
+Message-ID: <alpine.LSU.0.999.0810202006050.5225@be1.lrz>
+References: <alpine.LSU.0.999.0810161400160.5456@be1.lrz> 
+ <Pine.LNX.4.64.0810161507130.25933@anakin>  <alpine.LSU.0.999.0810161936590.5051@be1.lrz>
+  <c24352ca0810161403r1842185bg2f8b4f8c067af541@mail.gmail.com> 
+ <alpine.LSU.0.999.0810171313550.4828@be1.lrz>
+ <8bd0f97a0810191112v29ca6be9kf4b0b8ecca718ef8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081020174931.GH19428@kernel.dk>
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20 2008, Jens Axboe wrote:
-> On Sun, Oct 19 2008, Dmitri Monakhov wrote:
-> > Block device write procedure is different from regular file:
-> >  - Actual write performed without i_mutex.
-> >  - It has no metadata, so generic_osync_inode(O_SYNCMETEDATA) can not livelock.
-> >  - We do not have to worry about S_ISUID/S_ISGID bits.
+On Sun, 19 Oct 2008, Mike Frysinger wrote:
+> On Fri, Oct 17, 2008 at 07:16, Bodo Eggert wrote:
+
+> > This patch allows chosing tmpfs instead of ramfs for the root filesystem.
+> > Having tmpfs is usefull for running systems from RAM, because it does not
+> > risk deadlocking the system and possibly allows swapping. Using tmpfs
+> > increases the kernel by 10 bytes on x86_64.
 > 
-> I already did an O_DIRECT part of block device splicing [1], I'll fold
-> this into the splice branch and double check with some testing.
+> great option, thanks
 > 
-> [1] http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=fbb724a0484aba938024d41ca1dd86337d2550c9;hp=08c7910b275a4c580ad646ae8654439c8dfae4c5
+> > --- linux-2.6.27.2-numlock/fs/Kconfig   2008-10-10 13:18:34.000000000 +0200
+> > +++ linux-2.6.27.3-tmpfs/fs/Kconfig     2008-10-11 15:42:21.000000000 +0200
+> > @@ -953,6 +953,27 @@ config TMPFS_POSIX_ACL
+> >
+> >          If you don't know what Access Control Lists are, say N.
+> >
+> > +config TMPFS_ROOT
+> > +       bool "Use tmpfs instrad of ramfs for initramfs"
+> > +       depends on TMPFS && SHMEM
+> > +       default n
+> > +       help
+> > +         This replaces the ramfs used for unpacking the cpio images
+> > +         with tmpfs.
+> > +
+> > +         If unsure, say N
+> 
+> this should be init/Kconfig and depend on BLK_DEV_INITRD i think.  and
+> then update the comment to talk about the initial filesystem rather
+> than cpio images.
 
-The below is what I merged. Note that I changed the naming and made the
-function look a lot more like the other splice helpers, so it's more
-apparent how it differs. Let me know if I can add you Signed-off-by to
-this one (preferably after you test it as well :-)
+Maybe, but then you'd have to go to filesystems->pseudo-fs to enable tmpfs,
+then to i-don't-remember to set it as the rootfs, and then back to
+fs->pseudo-fs to unselect ramfs.
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 4d154dc..083198a 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -1288,7 +1288,7 @@ new_bio:
-  * Splice to file opened with O_DIRECT. Bypass caching completely and
-  * just go direct-to-bio
-  */
--static ssize_t __block_splice_write(struct pipe_inode_info *pipe,
-+static ssize_t __block_splice_direct_write(struct pipe_inode_info *pipe,
- 				    struct file *out, loff_t *ppos, size_t len,
- 				    unsigned int flags)
- {
-@@ -1318,6 +1318,9 @@ static ssize_t __block_splice_write(struct pipe_inode_info *pipe,
- 	if (bsd.bio)
- 		submit_bio(WRITE, bsd.bio);
- 
-+	if (ret > 0)
-+		*ppos += ret;
-+
- 	return ret;
- }
- 
-@@ -1327,12 +1330,11 @@ static ssize_t block_splice_write(struct pipe_inode_info *pipe,
- {
- 	ssize_t ret;
- 
--	if (out->f_flags & O_DIRECT) {
--		ret = __block_splice_write(pipe, out, ppos, len, flags);
--		if (ret > 0)
--			*ppos += ret;
--	} else
--		ret = generic_file_splice_write(pipe, out, ppos, len, flags);
-+	if (out->f_flags & O_DIRECT)
-+		ret = __block_splice_direct_write(pipe, out, ppos, len, flags);
-+	else
-+		ret = generic_file_splice_write_file_nolock(pipe, out, ppos,
-+								len, flags);
- 
- 	return ret;
- }
-diff --git a/fs/splice.c b/fs/splice.c
-index 4108264..eb1e1ac 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -788,6 +788,59 @@ ssize_t splice_from_pipe(struct pipe_inode_info *pipe, struct file *out,
- }
- 
- /**
-+ * generic_file_splice_write_file_nolock - splice data from a pipe to a file
-+ * @pipe:	pipe info
-+ * @out:	file to write to
-+ * @ppos:	position in @out
-+ * @len:	number of bytes to splice
-+ * @flags:	splice modifier flags
-+ *
-+ * Description:
-+ *    Will either move or copy pages (determined by @flags options) from
-+ *    the given pipe inode to the given block device.
-+ *    Note: this is like @generic_file_splice_write, except that we
-+ *    don't bother locking the output file. Useful for splicing directly
-+ *    to a block device.
-+ */
-+ssize_t generic_file_splice_write_file_nolock(struct pipe_inode_info *pipe,
-+					      struct file *out, loff_t *ppos,
-+					      size_t len, unsigned int flags)
-+{
-+	struct address_space *mapping = out->f_mapping;
-+	struct inode *inode = mapping->host;
-+	struct splice_desc sd = {
-+		.total_len = len,
-+		.flags = flags,
-+		.pos = *ppos,
-+		.u.file = out,
-+	};
-+	ssize_t ret;
-+
-+	mutex_lock(&pipe->inode->i_mutex);
-+	ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
-+	mutex_unlock(&pipe->inode->i_mutex);
-+
-+	if (ret > 0) {
-+		unsigned long nr_pages;
-+
-+		*ppos += ret;
-+		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+
-+		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+			int er;
-+
-+			er = sync_page_range_nolock(inode, mapping, *ppos, ret);
-+			if (er)
-+				ret = er;
-+		}
-+		balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(generic_file_splice_write_file_nolock);
-+
-+/**
-  * generic_file_splice_write_nolock - generic_file_splice_write without mutexes
-  * @pipe:	pipe info
-  * @out:	file to write to
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index a6a625b..5c9b880 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1957,6 +1957,8 @@ extern ssize_t generic_file_splice_write(struct pipe_inode_info *,
- 		struct file *, loff_t *, size_t, unsigned int);
- extern ssize_t generic_file_splice_write_nolock(struct pipe_inode_info *,
- 		struct file *, loff_t *, size_t, unsigned int);
-+extern ssize_t generic_file_splice_write_file_nolock(struct pipe_inode_info *,
-+		struct file *, loff_t *, size_t, unsigned int);
- extern ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe,
- 		struct file *out, loff_t *, size_t len, unsigned int flags);
- extern long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
+Thinking of it as a tmpfs option makes it much easier to use.
 
+> > +config RAMFS
+> > +       bool "Ramfs file system support" if TMPFS_ROOT
+> 
+> if you have initramfs support disabled, then you should be able to
+> disable RAMFS as well.  so perhaps the depend should read like:
+> if BLK_DEV_INITRD && TMPFS_ROOT || !BLK_DEV_INITRD
+
+No, since a kernel not having initcpio support will mount rootfs anyway,
+create some directories and special files and use them to open the console
+and to mount the real root into.
 -- 
-Jens Axboe
-
+The enemy diversion you have been ignoring will be the main attack.
