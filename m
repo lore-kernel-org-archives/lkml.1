@@ -1,97 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbYJTXnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYJTXqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbYJTXnL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 19:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYJTXmy
+	id S1754264AbYJTXqK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 19:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYJTXp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 19:42:54 -0400
-Received: from kroah.org ([198.145.64.141]:39238 "EHLO coco.kroah.org"
+	Mon, 20 Oct 2008 19:45:57 -0400
+Received: from isilmar.linta.de ([213.133.102.198]:60297 "EHLO linta.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751209AbYJTXmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 19:42:54 -0400
-Subject: patch staging-remove-remaining-uses-of-__function__.patch added to gregkh-2.6 tree
-To: harvey.harrison@gmail.com, gregkh@suse.de, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Mon, 20 Oct 2008 16:39:02 -0700
-In-Reply-To: <1224542725.31861.224.camel@brick>
-Message-ID: <1224545942149@kroah.org>
+	id S1751767AbYJTXp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 19:45:56 -0400
+Date: Tue, 21 Oct 2008 01:45:53 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Pavel Machek <pavel@suse.cz>,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+Subject: Re: [PATCH 1/3] Add file patterns to MAINTAINERS
+Message-ID: <20081020234553.GA13115@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Pavel Machek <pavel@suse.cz>,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+References: <1224541704-30357-1-git-send-email-joe@perches.com> <1224541704-30357-2-git-send-email-joe@perches.com> <20081020225058.GA7184@isilmar.linta.de> <1224543747.12101.66.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224543747.12101.66.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 20, 2008 at 04:02:26PM -0700, Joe Perches wrote:
+> On Tue, 2008-10-21 at 00:50 +0200, Dominik Brodowski wrote:
+> > Hi,
+> > 
+> > >  PCMCIA SUBSYSTEM
+> > >  P:	Linux PCMCIA Team
+> > >  L:	linux-pcmcia@lists.infradead.org
+> > >  W:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
+> > >  T:	git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+> > >  S:	Maintained
+> > > +F:	Documentation/pcmcia/
+> > > +F:	drivers/*/pcmcia/
+> > > +F:	drivers/pcmcia/
+> > > +F:	include/pcmcia/
+> > > +F:	sound/pcmcia/
+> > 
+> > sound/pcmcia/ and lots of drivers/*/pcmcia is actually really
+> > driver-related and not PCMCIA related so I'm not really happy if this will
+> > be described by the PCMCIA F:-realm...
+> 
+> I generated that pattern from patchsets like:
+> http://lists.infradead.org/pipermail/linux-pcmcia/2008-August/005787.html
 
-This is a note to let you know that I've just added the patch titled
+Yes, that's PCMCIA infrastructure work.
 
-    Subject: Staging: remove remaining uses of __FUNCTION__
+> If you could send a more correct pattern,
+> it's easy to change.
 
-to my gregkh-2.6 tree.  Its filename is
+Well, there are mostly four areas, which, in my opinion, should be solved
+like this:
 
-    staging-remove-remaining-uses-of-__function__.patch
+sound/pcmcia/		should be under		SOUND
+drivers/net/pcmcia/	should be under		NETWORK DEVICE DRIVERS
+drivers/scsi/pcmcia/	should be under		SCSI SUBSYSTEM
+and
+drivers/char/pcmcia/cm4000_cs.c			OMNIKEY CARDMAN 4000 DRIVER
+drivers/char/pcmcia/cm4040_cs.c			OMNIKEY CARDMAN 4040 DRIVER
+and finally
+drivers/char/pcmcia/ipwireess/*			IPWIRELESS DRIVER
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+Thanks!
 
-
->From harvey.harrison@gmail.com  Mon Oct 20 15:48:28 2008
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Mon, 20 Oct 2008 15:45:25 -0700
-Subject: Staging: remove remaining uses of __FUNCTION__
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-ID: <1224542725.31861.224.camel@brick>
-
-
-__FUNCTION__ is gcc-specific, use __func__
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/usbip/usbip_common.c  |    2 +-
- drivers/staging/wlan-ng/wlan_compat.h |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
---- a/drivers/staging/usbip/usbip_common.c
-+++ b/drivers/staging/usbip/usbip_common.c
-@@ -221,7 +221,7 @@ static void usbip_dump_request_type(__u8
- static void usbip_dump_usb_ctrlrequest(struct usb_ctrlrequest *cmd)
- {
- 	if (!cmd) {
--		printk("      %s : null pointer\n", __FUNCTION__);
-+		printk("      %s : null pointer\n", __func__);
- 		return;
- 	}
- 
---- a/drivers/staging/wlan-ng/wlan_compat.h
-+++ b/drivers/staging/wlan-ng/wlan_compat.h
-@@ -245,11 +245,11 @@ typedef int64_t		INT64;
- #  define preempt_count() (0UL)
- #endif
- 
--#define WLAN_LOG_ERROR(x,args...) printk(KERN_ERR "%s: " x , __FUNCTION__ , ##args);
-+#define WLAN_LOG_ERROR(x,args...) printk(KERN_ERR "%s: " x , __func__ , ##args);
- 
--#define WLAN_LOG_WARNING(x,args...) printk(KERN_WARNING "%s: " x , __FUNCTION__ , ##args);
-+#define WLAN_LOG_WARNING(x,args...) printk(KERN_WARNING "%s: " x , __func__ , ##args);
- 
--#define WLAN_LOG_NOTICE(x,args...) printk(KERN_NOTICE "%s: " x , __FUNCTION__ , ##args);
-+#define WLAN_LOG_NOTICE(x,args...) printk(KERN_NOTICE "%s: " x , __func__ , ##args);
- 
- #define WLAN_LOG_INFO(args... ) printk(KERN_INFO args)
- 
-@@ -265,7 +265,7 @@ typedef int64_t		INT64;
- 	#define DBFENTER { if ( WLAN_DBVAR >= 5 ){ WLAN_LOG_DEBUG(3,"---->\n"); } }
- 	#define DBFEXIT  { if ( WLAN_DBVAR >= 5 ){ WLAN_LOG_DEBUG(3,"<----\n"); } }
- 
--	#define WLAN_LOG_DEBUG(l,x,args...) if ( WLAN_DBVAR >= (l)) printk(KERN_DEBUG "%s(%lu): " x ,  __FUNCTION__, (preempt_count() & PREEMPT_MASK), ##args );
-+	#define WLAN_LOG_DEBUG(l,x,args...) if ( WLAN_DBVAR >= (l)) printk(KERN_DEBUG "%s(%lu): " x ,  __func__, (preempt_count() & PREEMPT_MASK), ##args );
- #else
- 	#define WLAN_ASSERT(c)
- 	#define WLAN_HEX_DUMP( l, s, p, n)
-
-
-Patches currently in gregkh-2.6 which might be from harvey.harrison@gmail.com are
-
-staging/staging-sxg-replace-__function__-with-__func__.patch
-staging/staging-remove-remaining-uses-of-__function__.patch
+	Dominik
