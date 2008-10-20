@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbYJTGIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897AbYJTGNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751848AbYJTGIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 02:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYJTGIE
+	id S1751897AbYJTGNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 02:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYJTGNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 02:08:04 -0400
-Received: from relay2.globalproof.net ([194.146.153.25]:44727 "EHLO
-	relay2.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750976AbYJTGID (ORCPT
+	Mon, 20 Oct 2008 02:13:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55582 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbYJTGNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 02:08:03 -0400
-From: Denys Fedoryshchenko <denys@visp.net.lb>
-Organization: Virtual ISP
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Date: Mon, 20 Oct 2008 09:05:01 +0300
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Oct 2008 02:13:04 -0400
+Date: Mon, 20 Oct 2008 08:20:15 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH] Remove rogue default ms for THRUSTMASTER/ZEROPLUS in drivers/hid/Kconfig
+Message-ID: <20081020062015.GD12825@one.firstfloor.org>
+References: <1224398310-10676-1-git-send-email-andi@firstfloor.org> <alpine.LNX.1.10.0810192035380.27479@jikos.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810200905.01322.denys@visp.net.lb>
+In-Reply-To: <alpine.LNX.1.10.0810192035380.27479@jikos.suse.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let me post my stupid idea :-) Dont hit me :-)
+On Sun, Oct 19, 2008 at 08:36:23PM +0200, Jiri Kosina wrote:
+> On Sun, 19 Oct 2008, Andi Kleen wrote:
+> 
+> > No reason at all to make these obscure drivers default m
+> 
+> Agreed and applied, thanks.
 
-releasenum.branch.subreleasename(chars)+subreleasenumber(numbers).deepersubreleasename.....
+Can you please merge them still for 2.6.28? It would be sad if lots 
+of .configs got these.
 
-1.vanilla.pre3
-1.vanilla.rc1
-1.vanilla.0 (stable release)
-1.vanilla.fix1 (first stable patch)
-2.mm.rc5
-2.netdev.git2342424323423423
-
-current versions, let's start from 2.6.27 looks like
-2627.vanilla.0
-
-next will be 2628
-
-
-It is easy to parse, easy to find out what is a "base" release number, for 
-patches and other trees
-
-for mm's, for example, based on unstable kernels
-mm.2.rc5.mm2
-easy to understand, that it is mm branch, based on stable release 2, release 
-candidate 5, mm patchset N2
-
-Since Linus told there is no need in 2.6, probably there is no reason to keep 
-even this numbers.
+-Andi
+-- 
+ak@linux.intel.com
