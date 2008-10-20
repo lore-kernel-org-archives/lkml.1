@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYJTDtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752804AbYJTDtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbYJTDtK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 23:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYJTDs4
+	id S1752804AbYJTDtx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 23:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbYJTDtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 23:48:56 -0400
-Received: from kroah.org ([198.145.64.141]:39961 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751321AbYJTDsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 23:48:55 -0400
-Date: Sun, 19 Oct 2008 20:46:39 -0700
-From: Greg KH <greg@kroah.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for
-	usb/gadget/
-Message-ID: <20081020034639.GB26650@kroah.com>
-References: <Pine.LNX.4.44L0.0810171114500.2178-100000@iolanthe.rowland.org> <4F580DA88E8146FC8BDA0789613AB813@zhaoleiwin>
+	Sun, 19 Oct 2008 23:49:45 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:51349 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751516AbYJTDto convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 23:49:44 -0400
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+References: <20081016002509.GA25868@kroah.com>
+	<20081016124943.GE23630@cs181140183.pp.htv.fi>
+	<20081016151748.GA31075@kroah.com>
+	<20081016153053.GJ5834@nostromo.devel.redhat.com>
+	<20081016154726.GA6331@kroah.com>
+	<20081016171626.GB22554@cs181140183.pp.htv.fi>
+	<20081017040239.GB28188@kroah.com>
+	<20081017103138.1ca68d17@lxorguk.ukuu.org.uk>
+	<48F8C000.8030003@kernel.org> <20081017174226.GF2221@kroah.com>
+	<48F98DE2.8030205@kernel.org>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Organization: Free thinker, not speaking for University of Campinas
+Date: Mon, 20 Oct 2008 01:48:35 -0200
+In-Reply-To: <48F98DE2.8030205@kernel.org> (H. Peter Anvin's message of "Sat\, 18 Oct 2008 00\:18\:58 -0700")
+Message-ID: <ortzb89bak.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4F580DA88E8146FC8BDA0789613AB813@zhaoleiwin>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 09:15:16AM +0800, Zhaolei wrote:
-> From: "Alan Stern" <stern@rowland.harvard.edu>
-> To: "Zhaolei" <zhaolei@cn.fujitsu.com>
-> Cc: <linux-kernel@vger.kernel.org>; <dbrownell@users.sourceforge.net>; <linux-usb@vger.kernel.org>
-> Sent: Friday, October 17, 2008 11:18 PM
-> Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for usb/gadget/
-> 
-> 
-> > On Fri, 17 Oct 2008, Zhaolei wrote:
-> > 
-> >> Hi,
-> >> 
-> >> debugfs_create_file() returns NULL if an error occurs, returns -ENODEV
-> >> when debugfs is not enabled in the kernel.
-> >> 
-> >> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> >> ---
-> >>  drivers/usb/gadget/s3c2410_udc.c |    2 +-
-> >>  1 files changed, 1 insertions(+), 1 deletions(-)
-> >> 
-> >> diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
-> >> index 29d13eb..4ba50ef 100644
-> >> --- a/drivers/usb/gadget/s3c2410_udc.c
-> >> +++ b/drivers/usb/gadget/s3c2410_udc.c
-> >> @@ -1894,7 +1894,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
-> >>  udc->regs_info = debugfs_create_file("registers", S_IRUGO,
-> >>  s3c2410_udc_debugfs_root,
-> >>  udc, &s3c2410_udc_debugfs_fops);
-> >> - if (IS_ERR(udc->regs_info)) {
-> >> + if (IS_ERR(udc->regs_info) || !udc->regs_info) {
-> >>  dev_warn(dev, "debugfs file creation failed %ld\n",
-> >>  PTR_ERR(udc->regs_info));
-> >>  udc->regs_info = NULL;
-> > 
-> > In fact the original code and your patch are both wrong.  The test 
-> > should simply be:
-> > 
-> > if (!udc->regs_info) {
-> > dev_warn(dev, "debugfs file creation failed\n");
-> > 
-> Hello, Alan Stern
-> 
-> If we only check if (!udc->regs_info), that is no problem except that we
-> can't see dev_warn when debugfs isn't enabled in the kernel.
-> It this warning message is not necessary, I agree with you.
+On Oct 18, 2008, "H. Peter Anvin" <hpa@kernel.org> wrote:
 
-Why would you want to see that message if debugfs wasn't selected?  You
-shouldn't need to see it, that is why the debugfs code doesn't return
-NULL if it is compiled out.  I did it that way to make all callers much
-simpler :)
+> Greg KH wrote:
+>> What is the "problem" of predicting future releases?  What relies on the
+>> actual number being "correct" some random time in the future?
 
-thanks,
+> We already have the 2.6.28-rc series; and we are already talking about
+> 2.6.29 features.
 
-greg k-h
+Just do like car manufacturers.  When it's 2008, you can already shop
+around their 2009 models.  Linux could do the same.  We could right
+now decide that 2.6.29 is going to be 2009.1 (or 9.1, or 2.9.1,
+whatever), and then, even if it's still 2008 when it goes out, so
+what?
+
+(The 2.6.28 cycle has already started, so it's probably easier to just
+leave it alone)
+
+> We *really* don't want 2008.3-rc4 to be followed by 2009.1-rc5.
+> That is the kind of stuff that make script makers want to strangle
+> developers alive with their own intestines.
+
++1
+
+Not that I care one way or the other.  It's just that I don't see how
+your response bears any relationship with the point Greg made.  It's
+just a distraction.  We're talking about how to label releases, not
+about guessing the release date of a kernel months ahead.  One you
+label it, it stays that way.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+FSFLA Board Member       ¡Sé Libre! => http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
