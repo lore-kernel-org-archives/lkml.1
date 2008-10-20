@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYJTVhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYJTViT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbYJTVhy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbYJTVgb
+	id S1755693AbYJTViT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbYJTVg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:36:31 -0400
-Received: from kroah.org ([198.145.64.141]:37454 "EHLO coco.kroah.org"
+	Mon, 20 Oct 2008 17:36:59 -0400
+Received: from kroah.org ([198.145.64.141]:37489 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753711AbYJTVg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:36:29 -0400
-Date: Mon, 20 Oct 2008 14:06:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Felipe Balbi <felipe.balbi@nokia.com>
-Cc: Willy Tarreau <w@1wt.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Message-ID: <20081020210648.GA30389@kroah.com>
-References: <20081017034717.GA28188@kroah.com> <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com> <20081018084504.GQ24654@1wt.eu> <20081020203033.GB20788@kroah.com> <20081020205400.GB26744@gandalf.research.nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081020205400.GB26744@gandalf.research.nokia.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1756023AbYJTVg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:36:59 -0400
+Subject: patch staging-sxg-depends-on-x86.patch added to gregkh-2.6 tree
+To: sfr@canb.auug.org.au, akpm@linux-foundation.org, charrer@alacritech.com,
+       gregkh@suse.de, greg@kroah.com, linux-kernel@vger.kernel.org,
+       mmiles@alacritech.com
+From: <gregkh@suse.de>
+Date: Mon, 20 Oct 2008 14:17:22 -0700
+In-Reply-To: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
+Message-ID: <1224537442195@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 11:54:00PM +0300, Felipe Balbi wrote:
-> On Mon, Oct 20, 2008 at 01:30:33PM -0700, Greg KH wrote:
-> > > IMHO, having a small number of small digits is the way to go. Using
-> > > 1 or 2 digits for the major and 1 for the minor is fine. After 3.9, you
-> > > go to version 4.0. Anyway, there are so many changes between versions
-> > > these days that any new versions could justify a major change (eg:
-> > > check the size of the 2.6.27 patch).
-> > > 
-> > > With versions from 1.1 to 9.9, you can go as high as 88 versions,
-> > > which is about 22 years of development at current pace. After that,
-> > > we can simply turn to 10.0 and not break anything.
-> > > 
-> > > It's also easier for users. Check how many non-kernel techies around you
-> > > know all 3 digits of the version they use. It's easier to remember 4.3
-> > > than it is to remember 2.6.27.
-> > 
-> > I agree that would be nicer, and easier for everyone.
-> 
-> It's true it would be easier for tracking down and remembering the
-> version number, but on the other hand, the good thing about this
-> version number system is that we now 2.6.xx is a rather stable and
-> complete kernel tree and when we move to 2.7, we know it'll be the start
-> for the 2.8 kernel series.
 
-Um, did you not get the memo 3 years ago saying we are changing our
-development model and there will not be a 2.7 development series?
+This is a note to let you know that I've just added the patch titled
 
-Damm, I thought I had printed it out and placed it on everyone's chairs.
-Those pesky cleaners must have picked it up and recycled it, sorry about
-that...
+    Subject: Staging: sxg depends on X86
+Subject: linux-next: build failure
 
-> Just like the migration from 2.4 to 2.5.
+to my gregkh-2.6 tree.  Its filename is
 
-Please don't bring up the dark ages again, many of us went through
-things back then that have taken a lot of counseling to be able to get
-over.
+    staging-sxg-depends-on-x86.patch
 
-thanks,
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-greg k-h
+
+>From sfr@canb.auug.org.au  Mon Oct 20 13:45:45 2008
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 20 Oct 2008 22:59:18 +1100
+Subject: Staging: sxg depends on X86
+Subject: linux-next: build failure
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, Christopher Harrer <charrer@alacritech.com>, Michael Miles <mmiles@alacritech.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linus
+Message-ID: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+
+sxghif.h has code that explicitly will not build fo other architecures.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/sxg/Kconfig |    1 +
+ drivers/staging/sxg/README  |    1 +
+ 2 files changed, 2 insertions(+)
+
+--- a/drivers/staging/sxg/Kconfig
++++ b/drivers/staging/sxg/Kconfig
+@@ -1,6 +1,7 @@
+ config SXG
+ 	tristate "Alacritech SLIC Technology Non-Accelerated 10Gbe support"
+ 	depends on PCI && NETDEV_10000
++	depends on X86
+ 	default n
+ 	help
+ 	  This driver supports the Alacritech SLIC Technology Non-Accelerated
+--- a/drivers/staging/sxg/README
++++ b/drivers/staging/sxg/README
+@@ -7,6 +7,7 @@ TODO:
+ 	- remove wrappers
+ 	- checkpatch.pl cleanups
+ 	- new functionality that the card needs
++	- remove reliance on x86
+ 
+ Please send patches to:
+         Greg Kroah-Hartman <gregkh@suse.de>
+
+
+Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
+
+bad/battery-class-driver.patch
+staging/staging-sxg-depends-on-x86.patch
