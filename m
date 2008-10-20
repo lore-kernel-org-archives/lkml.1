@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYJTUvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYJTUyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbYJTUvh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 16:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbYJTUuz
+	id S1755503AbYJTUyQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 16:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYJTUyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 16:50:55 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:60554 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755194AbYJTUuy (ORCPT
+	Mon, 20 Oct 2008 16:54:00 -0400
+Received: from mail91.analogic.com ([12.187.86.31]:54949 "EHLO
+	mail01.analogic.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752227AbYJTUx7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 16:50:54 -0400
-X-Greylist: delayed 1152 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Oct 2008 16:50:54 EDT
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=BVwcnFf/Pqo3L4yjlLT90/LN4+JzY2fpyEj+Wn9mSq+gOEcgO6nz0hBwz+R7UsM56
-	Y5/E/HJFKZq7NqfUAjd0Q==
-Message-ID: <6599ad830810201331t639dbd55h5f17c382ca3a7fbd@mail.gmail.com>
-Date: Mon, 20 Oct 2008 13:31:37 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] cgroup: tiny cleanups
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>
-In-Reply-To: <48FC1784.70108@cn.fujitsu.com>
+	Mon, 20 Oct 2008 16:53:59 -0400
+X-Greylist: delayed 1533 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Oct 2008 16:53:59 EDT
+X-AuditID: 0a770115-a8994bb000000e9b-02-48fce9de3811
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48FC1784.70108@cn.fujitsu.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+x-originalarrivaltime: 20 Oct 2008 20:28:12.0671 (UTC) FILETIME=[5FC0B8F0:01C932F2]
+Content-class: urn:content-classes:message
+Subject: Re: discarded `.exit.text' debugging?
+Date: Mon, 20 Oct 2008 16:28:12 -0400
+Message-ID: <Pine.LNX.4.61.0810201616190.9702@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.64.0810202207140.23258@anakin>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: discarded `.exit.text' debugging?
+Thread-Index: Acky8l/H5KFAovgZR72QDlHz1FIOrA==
+References: <Pine.LNX.4.64.0810202207140.23258@anakin>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Cc: "Linux Kernel Development" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 19, 2008 at 10:30 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> - remove 'private' field from struct subsys
-> - remove cgroup_init_smp()
-> - remove unused 'i' in cgroup_tasks_start()
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+On Mon, 20 Oct 2008, Geert Uytterhoeven wrote:
 
-Acked-by: Paul Menage <menage@google.com>
+> Last night I got these in my build logs:
+>
+> | `.exit.text' referenced in section `.init.text' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+> | `.exit.text' referenced in section `.data' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+>
+> i.e. not much context. Is there an easy way to find out who's the
+> offender?
+>
+> Thx!
+>
+> Gr{oetje,eeting}s,
+>
+> 						Geert
+>
 
-Thanks. The cgroup_subsys.private field was originally for some
-experiments for automatically emulating CKRM/BeanCounters over early
-versions of cgroups, but I don't think anything is using it currently.
+Look in .built-in.o.cmd for the files included in that object
+file. It's a start. Something like
 
-Paul
+../drivers/scsi/aic7xxx/aicasm/aicasm_symbol.c
 
-> ---
->  include/linux/cgroup.h |    4 ----
->  kernel/cgroup.c        |    1 -
->  2 files changed, 5 deletions(-)
->
-> --- linux-mm/include/linux/cgroup.h.orig        2008-10-20 13:25:39.000000000 +0800
-> +++ linux-mm/include/linux/cgroup.h     2008-10-20 13:26:08.000000000 +0800
-> @@ -25,7 +25,6 @@ struct cgroup;
->
->  extern int cgroup_init_early(void);
->  extern int cgroup_init(void);
-> -extern void cgroup_init_smp(void);
->  extern void cgroup_lock(void);
->  extern bool cgroup_lock_live_group(struct cgroup *cgrp);
->  extern void cgroup_unlock(void);
-> @@ -348,8 +347,6 @@ struct cgroup_subsys {
->        struct cgroupfs_root *root;
->
->        struct list_head sibling;
-> -
-> -       void *private;
->  };
->
->  #define SUBSYS(_x) extern struct cgroup_subsys _x ## _subsys;
-> @@ -410,7 +407,6 @@ void cgroup_mm_owner_callbacks(struct ta
->
->  static inline int cgroup_init_early(void) { return 0; }
->  static inline int cgroup_init(void) { return 0; }
-> -static inline void cgroup_init_smp(void) {}
->  static inline void cgroup_fork(struct task_struct *p) {}
->  static inline void cgroup_fork_callbacks(struct task_struct *p) {}
->  static inline void cgroup_post_fork(struct task_struct *p) {}
-> --- linux-mm/kernel/cgroup.c.orig       2008-10-20 13:25:56.000000000 +0800
-> +++ linux-mm/kernel/cgroup.c    2008-10-20 13:26:08.000000000 +0800
-> @@ -2104,7 +2104,6 @@ static void *cgroup_tasks_start(struct s
->        down_read(&cgrp->pids_mutex);
->        if (pid) {
->                int end = cgrp->pids_length;
-> -               int i;
->                while (index < end) {
->                        int mid = (index + end) / 2;
->                        if (cgrp->tasks_pids[mid] == pid) {
->
+With an exit(EX_SOFTWARE) or similar that was not supposed to
+be included in the kernel build because it is for user-mode
+build code.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.25.17 on an i686 machine (4787.24 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged. Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
