@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYJTRHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbYJTRHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYJTRHw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYJTRDo
+	id S1755097AbYJTRHQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYJTRDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:03:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33528 "EHLO
+	Mon, 20 Oct 2008 13:03:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33552 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753530AbYJTRDX (ORCPT
+	with ESMTP id S1753594AbYJTRDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Oct 2008 13:03:23 -0400
-Message-Id: <20081020170319.730428000@polaris-admin.engr.sgi.com>
+Message-Id: <20081020170320.288298000@polaris-admin.engr.sgi.com>
 References: <20081020170319.539427000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Oct 2008 10:03:20 -0700
+Date: Mon, 20 Oct 2008 10:03:24 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <andi@firstfloor.org>,
@@ -25,136 +25,60 @@ Cc: Andi Kleen <andi@firstfloor.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>, IA64 <linux-ia64@vger.kernel.org>,
        PowerPC <linuxppc-dev@ozlabs.org>, S390 <linux-s390@vger.kernel.org>,
        SPARC <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 01/35] x86: clean up speedctep-centrino and reduce cpumask_t usage
-Content-Disposition: inline; filename=x86:speedstep-centrino-cleanup.patch
+Subject: [PATCH 05/35] sched: Reduce stack size requirements in kernel/sched.c
+Content-Disposition: inline; filename=sched:reduce-stack-usage.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1) The #ifdef CONFIG_HOTPLUG_CPU seems unnecessary these days.
-2) The loop can simply skip over offline cpus, rather than creating a tmp mask.
-3) set_mask is set to either a single cpu or all online cpus in a policy.
-   Since it's just used for set_cpus_allowed(), any offline cpus in a policy
-   don't matter, so we can just use cpumask_of_cpu() or the policy->cpus.
+  * use node_to_cpumask_ptr in place of node_to_cpumask to reduce stack
+    requirements in sched.c
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Applies to linux-2.6.tip/master.
+
 Signed-off-by: Mike Travis <travis@sgi.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   51 ++++++++++-------------
- 1 file changed, 24 insertions(+), 27 deletions(-)
+ kernel/sched.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
---- linux-2.6.28.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-+++ linux-2.6.28/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-@@ -552,9 +552,7 @@ static int centrino_verify (struct cpufr
-  * Sets a new CPUFreq policy.
-  */
- struct allmasks {
--	cpumask_t		online_policy_cpus;
- 	cpumask_t		saved_mask;
--	cpumask_t		set_mask;
- 	cpumask_t		covered_cpus;
- };
+--- linux-2.6.28.orig/kernel/sched.c
++++ linux-2.6.28/kernel/sched.c
+@@ -6117,8 +6117,9 @@ static void move_task_off_dead_cpu(int d
  
-@@ -568,9 +566,7 @@ static int centrino_target (struct cpufr
- 	int			retval = 0;
- 	unsigned int		j, k, first_cpu, tmp;
- 	CPUMASK_ALLOC(allmasks);
--	CPUMASK_PTR(online_policy_cpus, allmasks);
- 	CPUMASK_PTR(saved_mask, allmasks);
--	CPUMASK_PTR(set_mask, allmasks);
- 	CPUMASK_PTR(covered_cpus, allmasks);
- 
- 	if (unlikely(allmasks == NULL))
-@@ -590,30 +586,28 @@ static int centrino_target (struct cpufr
- 		goto out;
- 	}
- 
--#ifdef CONFIG_HOTPLUG_CPU
--	/* cpufreq holds the hotplug lock, so we are safe from here on */
--	cpus_and(*online_policy_cpus, cpu_online_map, policy->cpus);
--#else
--	*online_policy_cpus = policy->cpus;
--#endif
--
- 	*saved_mask = current->cpus_allowed;
- 	first_cpu = 1;
- 	cpus_clear(*covered_cpus);
--	for_each_cpu_mask_nr(j, *online_policy_cpus) {
-+	for_each_cpu_mask_nr(j, policy->cpus) {
-+		const cpumask_t *mask;
+ 	do {
+ 		/* On same node? */
+-		mask = node_to_cpumask(cpu_to_node(dead_cpu));
+-		cpus_and(mask, mask, p->cpus_allowed);
++		node_to_cpumask_ptr(pnodemask, cpu_to_node(dead_cpu));
 +
-+		/* cpufreq holds the hotplug lock, so we are safe here */
-+		if (!cpu_online(j))
-+			continue;
-+
- 		/*
- 		 * Support for SMP systems.
- 		 * Make sure we are running on CPU that wants to change freq
- 		 */
--		cpus_clear(*set_mask);
- 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
--			cpus_or(*set_mask, *set_mask, *online_policy_cpus);
-+			mask = &policy->cpus;
- 		else
--			cpu_set(j, *set_mask);
-+			mask = &cpumask_of_cpu(j);
++		cpus_and(mask, *pnodemask, p->cpus_allowed);
+ 		dest_cpu = any_online_cpu(mask);
  
--		set_cpus_allowed_ptr(current, set_mask);
-+		set_cpus_allowed_ptr(current, mask);
- 		preempt_disable();
--		if (unlikely(!cpu_isset(smp_processor_id(), *set_mask))) {
-+		if (unlikely(!cpu_isset(smp_processor_id(), *mask))) {
- 			dprintk("couldn't limit to CPUs in this domain\n");
- 			retval = -EAGAIN;
- 			if (first_cpu) {
-@@ -641,7 +635,9 @@ static int centrino_target (struct cpufr
- 			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
- 				target_freq, freqs.old, freqs.new, msr);
+ 		/* On any allowed CPU? */
+@@ -7126,9 +7127,9 @@ static int cpu_to_allnodes_group(int cpu
+ 				 struct sched_group **sg, cpumask_t *nodemask)
+ {
+ 	int group;
++	node_to_cpumask_ptr(pnodemask, cpu_to_node(cpu));
  
--			for_each_cpu_mask_nr(k, *online_policy_cpus) {
-+			for_each_cpu_mask_nr(k, policy->cpus) {
-+				if (!cpu_online(k))
-+					continue;
- 				freqs.cpu = k;
- 				cpufreq_notify_transition(&freqs,
- 					CPUFREQ_PRECHANGE);
-@@ -664,7 +660,9 @@ static int centrino_target (struct cpufr
- 		preempt_enable();
- 	}
+-	*nodemask = node_to_cpumask(cpu_to_node(cpu));
+-	cpus_and(*nodemask, *nodemask, *cpu_map);
++	cpus_and(*nodemask, *pnodemask, *cpu_map);
+ 	group = first_cpu(*nodemask);
  
--	for_each_cpu_mask_nr(k, *online_policy_cpus) {
-+	for_each_cpu_mask_nr(k, policy->cpus) {
-+		if (!cpu_online(k))
-+			continue;
- 		freqs.cpu = k;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 	}
-@@ -677,18 +675,17 @@ static int centrino_target (struct cpufr
- 		 * Best effort undo..
- 		 */
+ 	if (sg)
+@@ -7178,9 +7179,9 @@ static void free_sched_groups(const cpum
  
--		if (!cpus_empty(*covered_cpus))
--			for_each_cpu_mask_nr(j, *covered_cpus) {
--				set_cpus_allowed_ptr(current,
--						     &cpumask_of_cpu(j));
--				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
--			}
-+		for_each_cpu_mask_nr(j, *covered_cpus) {
-+			set_cpus_allowed_ptr(current, &cpumask_of_cpu(j));
-+			wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
-+		}
+ 		for (i = 0; i < nr_node_ids; i++) {
+ 			struct sched_group *oldsg, *sg = sched_group_nodes[i];
++			node_to_cpumask_ptr(pnodemask, i);
  
- 		tmp = freqs.new;
- 		freqs.new = freqs.old;
- 		freqs.old = tmp;
--		for_each_cpu_mask_nr(j, *online_policy_cpus) {
--			freqs.cpu = j;
-+		for_each_cpu_mask_nr(j, policy->cpus) {
-+			if (!cpu_online(j))
-+				continue;
- 			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 		}
+-			*nodemask = node_to_cpumask(i);
+-			cpus_and(*nodemask, *nodemask, *cpu_map);
++			cpus_and(*nodemask, *pnodemask, *cpu_map);
+ 			if (cpus_empty(*nodemask))
+ 				continue;
+ 
 
 -- 
