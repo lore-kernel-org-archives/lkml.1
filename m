@@ -1,62 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695AbYJTLXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbYJTL2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752695AbYJTLXZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 07:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYJTLXP
+	id S1752862AbYJTL2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 07:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbYJTL2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 07:23:15 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50615 "EHLO gate.crashing.org"
+	Mon, 20 Oct 2008 07:28:12 -0400
+Received: from sh.osrg.net ([192.16.179.4]:32957 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbYJTLXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 07:23:15 -0400
-Subject: Re: [PATCH] x86, ioremap: use %pR in printk
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1224501352.7654.141.camel@pasglop>
-References: <20081020040823.871BDDDDEC@ozlabs.org>
-	 <20081020071203.GB12131@elte.hu> <1224491682.7654.135.camel@pasglop>
-	 <20081020090502.GB31710@elte.hu>  <20081020110018.GA24579@elte.hu>
-	 <1224501352.7654.141.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 22:22:48 +1100
-Message-Id: <1224501768.7654.144.camel@pasglop>
+	id S1751603AbYJTL2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 07:28:11 -0400
+Date: Mon, 20 Oct 2008 20:27:24 +0900
+To: mike.miller@hp.com
+Cc: akpm@linux-foundation.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       adobriyan@gmail.com
+Subject: Re: [PATCH 2/2] cciss: fix regression firmware version not
+ displayed in procfs (again and again)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081016231730.GA26824@roadking.ldev.net>
+References: <20081016231730.GA26824@roadking.ldev.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081020202744Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 22:15 +1100, Benjamin Herrenschmidt wrote:
-> > so how about something like the two patches below (ontop of Linus's 
-> > patch): the first patch introduces a "small" resource pointer printout 
-> > format: %pr - the little brother of %pR.
-> > 
-> > The output format is [0x00001234] - minimum width is 8.
-> > 
-> > The second patch takes advantage of it in ioremap.c.
+On Thu, 16 Oct 2008 18:17:30 -0500
+Mike Miller <mike.miller@hp.com> wrote:
+
+> Patch 2 of 2
 > 
-> Well, I did the exact same patch except I used the same function
-> and just added a flag for "R" vs. "r". However, I didn't post it
-> because I wasn't too happy with passing by pointer and I wasn't
-> sure whether we wanted to keep the letter after p uppercase or not... In
-> any case, I kept it as a thing to discuss after the first one goes in.
+> The regression was introduced by commit
+> 6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
+> This patch fixes a regression where the controller firmware version is not
+> displayed in procfs. The previous patch would be called anytime something
+> changed. This will get called only once for each controller.
 > 
-> At this stage, I'm tempted to go for a %pP for printing a pointer to
-> a phys_addr_t (and that's the same as resource_size_t, just more generic
-> nowadays, since those were consolidated).
+> This one addresses the un-needed initialization and the freeing of inq_buf.
 > 
-> Still not too happy with the pointer thing but that's the best we can
-> do I suppose without losing gcc type checking.
+> Please consider this for inclusion.
+> 
+> Signed-off-by: Mike Miller <mike.miller@hp.com>
+> 
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> index 0f367b1..c3f0c17 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -3404,7 +3404,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+>  	int i;
+>  	int j = 0;
+>  	int rc;
+> -	int dac;
+> +	int dac, return_code;
+> +	InquiryData_struct *inq_buff;
 
-Oh, and I didn't like having the brackets around something that isn't
-a range too but that's a minor details.
+Needs to be:
 
-Ben.
+> +	InquiryData_struct *inq_buff = NULL;
+
+The driver uses 'goto clean4' before calling kzalloc for inq_buff
+(e.g. in the case of cmd_pool_bits allocation failure). It means that
+you could kfree with an uninitialized address?
 
 
+>  	i = alloc_cciss_hba();
+>  	if (i < 0)
+> @@ -3510,6 +3511,25 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+>  	/* Turn the interrupts on so we can service requests */
+>  	hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_ON);
+>  
+> +	/* Get the firmware version */
+> +	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
+> +	if (inq_buff == NULL) {
+> +		printk(KERN_ERR "cciss: out of memory\n");
+> +		return -ENOMEM;
+
+Needs to use 'goto clean4' instead of just return -ENOMEM here? The
+driver needs to clean up the allocated resource.
+
+
+> +	}
+> +
+> +	return_code = sendcmd_withirq(CISS_INQUIRY, i, inq_buff,
+> +		sizeof(InquiryData_struct), 0, 0 , 0, TYPE_CMD);
+> +	if (return_code == IO_OK) {
+> +		hba[i]->firm_ver[0] = inq_buff->data_byte[32];
+> +		hba[i]->firm_ver[1] = inq_buff->data_byte[33];
+> +		hba[i]->firm_ver[2] = inq_buff->data_byte[34];
+> +		hba[i]->firm_ver[3] = inq_buff->data_byte[35];
+> +	} else {	 /* send command failed */
+> +		printk(KERN_WARNING "cciss: unable to determine firmware"
+> +			" version of controller\n");
+> +	}
+> +
+>  	cciss_procinit(i);
+>  
+>  	hba[i]->cciss_max_sectors = 2048;
+> @@ -3520,6 +3540,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+>  	return 1;
+>  
+>  clean4:
+> +	kfree(inq_buff);
+>  #ifdef CONFIG_CISS_SCSI_TAPE
+>  	kfree(hba[i]->scsi_rejects.complete);
+>  #endif
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
