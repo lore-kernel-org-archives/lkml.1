@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbYJTR2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbYJTRdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbYJTR2g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJTR21
+	id S1755238AbYJTRdA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYJTRct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:28:27 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39997 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbYJTR21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 13:28:27 -0400
-Date: Mon, 20 Oct 2008 13:28:24 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-In-Reply-To: <20081020170808.GB7249@yoda.jdub.homelinux.org>
-Message-ID: <alpine.DEB.1.10.0810201327410.4852@gandalf.stny.rr.com>
-References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu> <20081016181452.GA29739@yoda.jdub.homelinux.org> <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com> <20081016183529.GB29739@yoda.jdub.homelinux.org>
- <alpine.DEB.1.10.0810161444050.11042@gandalf.stny.rr.com> <20081016150106.6ddf7e46@zod.rchland.ibm.com> <alpine.DEB.1.10.0810201222570.3760@gandalf.stny.rr.com> <20081020170808.GB7249@yoda.jdub.homelinux.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 20 Oct 2008 13:32:49 -0400
+Received: from kroah.org ([198.145.64.141]:45254 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752557AbYJTRcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 13:32:48 -0400
+Date: Mon, 20 Oct 2008 09:51:42 -0700
+From: Greg KH <greg@kroah.com>
+To: "J.R. Mauro" <jrm8005@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Christopher Harrer <charrer@alacritech.com>,
+       Michael Miles <mmiles@alacritech.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linus@kroah.com
+Subject: Re: linux-next: build failure
+Message-ID: <20081020165142.GA7166@kroah.com>
+References: <20081020230420.aa85f83b.sfr@canb.auug.org.au> <20081020154857.GC24666@kroah.com> <3aaafc130810200933s7299378eg6924089a58b9778a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3aaafc130810200933s7299378eg6924089a58b9778a@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 20 Oct 2008, Josh Boyer wrote:
-
-> On Mon, Oct 20, 2008 at 12:30:33PM -0400, Steven Rostedt wrote:
-> >> Anyway, if you want a tester let me know.  It seems 2.6.27.1 should be
-> >> fine since FTRACE was disabled, but for .28-rc1 it would be cool if it
-> >> worked :).
+On Mon, Oct 20, 2008 at 12:33:29PM -0400, J.R. Mauro wrote:
+> On Mon, Oct 20, 2008 at 11:48 AM, Greg KH <greg@kroah.com> wrote:
+> > On Mon, Oct 20, 2008 at 11:04:20PM +1100, Stephen Rothwell wrote:
+> >> Hi Greg,
+> >>
+> >> Today's linux-next build (powerpc allyesconfig) failed like this:
+> >>
+> >> In file included from drivers/staging/sxg/sxg.c:77:
+> >> drivers/staging/sxg/sxghif.h:859: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'Compilation'
+> >> drivers/staging/sxg/sxg.c: In function 'sxg_transmit_packet':
+> >> drivers/staging/sxg/sxg.c:1949: error: 'SXG_SGL_BUF_SIZE' undeclared (first use in this function)
+> >> drivers/staging/sxg/sxg.c:1958: error: implicit declaration of function 'SXG_SGL_BUFFER'
+> >> drivers/staging/sxg/sxg.c:1958: warning: assignment makes pointer from integer without a cast
+> >> drivers/staging/sxg/sxg.c: In function 'sxg_mcast_set_mask':
+> >> drivers/staging/sxg/sxg.c:2846: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+> >>
+> >> I applied the following patch.
 > >
-> >Hi Josh,
-> >
-> >I've been looking deeper at the code for PPC. I realized that my PPC64 box 
-> >that I've been testing on did not use modules. While looking at the module 
-> >code it dawned on me the dynamic ftrace needs a bit of work. This is 
-> >because the way modules are handled in PPC (and other architectures as 
-> >well).  The jmps used by mcount is a 24 bit jump. Since the modules are 
-> >loaded farther than 24bits away, a trampoline is needed.
+> > Ah, doh, sorry, I should have caught that.  I'll go apply this to the
+> > tree, thanks.
 > 
-> Ah, indeed.
+> Greg,
 > 
-> >A bit of rework is needed in the ftrace infrastructure to handle the 
-> >trampoline. Too much work to go into 28. I'll start working on code that 
-> >can hopefully be ready and tested for 29. It's not that major of a change, 
-> >but since the merge window for 28 has already been opened, we would like 
-> >to get a bit more testing in before we hand it over to Linus.
-> 
-> That seems like a good plan.  Should we mark dynamic ftrace as X86 only
-> in Kconfig for .28 to prevent people from inadvertently setting it?
+> The slicoss driver also from Alacritech looks like it needs a depends
+> on X86 as well. Should the sxg and slicoss drivers from Alacritech be
+> doing things like this (sxg/sxghif.h:851, slicoss/slicoss.c:960):
 
-Well, we probably should disable it for PPC at least. I don't know if 
-sparc has the same issue.
+Yes, it needs it too.
 
-David?
+thanks,
 
--- Steve
-
+greg k-h
