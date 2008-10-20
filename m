@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYJTWNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbYJTWTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbYJTWNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 18:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYJTWNJ
+	id S1754495AbYJTWTY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 18:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYJTWTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 18:13:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43035 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752899AbYJTWNI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 18:13:08 -0400
-Date: Mon, 20 Oct 2008 15:12:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: rakib.mullick@gmail.com, xiyou.wangcong@gmail.com, adobriyan@gmail.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] init: Properly placing noinline keyword.
-Message-Id: <20081020151245.64101fbb.akpm@linux-foundation.org>
-In-Reply-To: <20081017173123.GC19832@hack.voiplan.pt>
-References: <b9df5fa10810170605t50e366e9nf62f8a18df37fc3c@mail.gmail.com>
-	<20081017141354.GA9242@x200.localdomain>
-	<b9df5fa10810170717p36dcb4a9y4e74089069dea03c@mail.gmail.com>
-	<20081017142610.GA19832@hack.voiplan.pt>
-	<b9df5fa10810170810x4d3e385n3a2284dd8b2600df@mail.gmail.com>
-	<20081017173123.GC19832@hack.voiplan.pt>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Oct 2008 18:19:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49183 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753811AbYJTWTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 18:19:10 -0400
+Date: Tue, 21 Oct 2008 00:17:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: john stultz <johnstul@us.ibm.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC patch 15/15] LTTng timestamp x86
+Message-ID: <20081020221744.GA30133@elte.hu>
+References: <20081016234657.837704867@polymtl.ca> <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org> <20081017012835.GA30195@Krystal> <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com> <20081017172515.GA9639@goodmis.org> <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com> <20081017184215.GB9874@Krystal> <alpine.LFD.2.00.0810201256350.3518@nehalem.linux-foundation.org> <1f1b08da0810201438g6a109af5i75b34841462b655d@mail.gmail.com> <alpine.LFD.2.00.0810201451190.3287@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810201451190.3287@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008 18:31:23 +0100
-Am__rico Wang <xiyou.wangcong@gmail.com> wrote:
 
-> On Fri, Oct 17, 2008 at 09:10:07PM +0600, Rakib Mullick wrote:
-> >On 10/17/08, Am__rico Wang <xiyou.wangcong@gmail.com> wrote:
-> >> On Fri, Oct 17, 2008 at 08:17:33PM +0600, Rakib Mullick wrote:
-> >>  >On 10/17/08, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> >>  >> On Fri, Oct 17, 2008 at 07:05:32PM +0600, Rakib Mullick wrote:
-> >>  >>  > Here, noinline keyword should be placed between storage class and type.
-> >>  >>
-> >>  >>
-> >>  >> Why?
-> >>  >Because, scripts/checkpatch.pl warned with following warning:
-> >>  >     ERROR: inline keyword should sit between storage class and type
-> >>
-> >>
-> >> Well, 'noinline' is different from 'inline'.
-> >>
-> >>  'noinline' is defined as:
-> >>
-> >>  #define  noinline                       __attribute__((noinline))
-> >>
-> >>  in include/linux/compiler-gcc.h. But 'inline' is a _keyword_ defined
-> >>  by C standard. If checkpatch.pl complains about 'noinline', you should
-> >>  fix checkpatch.pl. :)
-> >Thanks, for explanation. But isn't it nice to place it between storage
-> >class and type ?
-> 
-> I don't think so, I don't know why checkpatch.pl prefers that style.
-> I think probably only because that is more readable?
-> 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I think it's good for consistency reasons.  Yes, we _could_ have a
-random sprinkling of different keyword orderings, but what benefit is
-there in that?  In the great majority of places the kernel uses `static
-inline void' and `static noinline void' ordering, and that's a good
-thing, no?
+> That's why I'd suggest making _purely_ local time, and then aiming for 
+> something NTP-like. But maybe there are better solutions out there.
 
-So I merged the patch and I'd support retaining the checkpatch warning.
+this 'fast local time' was the rough idea we tried to implement via the 
+cpu_clock(cpu) interface.
 
-My one concern is that the patch is too small.  Probably there are
-other codesites which get the keywords in a non-standard order, and I'd
-rather fix them up in a single big pass rather than in a long series of
-little patches.
+cpu_clock() results are loosely coupled to xtime in every scheduler tick 
+via the scd->tick_gtod logic.
 
+( That way in a sense it tracks NTP time as well, if NTP is fed back 
+  into GTOD, such as when ntpd is running. Granted, this is not the same 
+  quality at all as if it did native NTP-alike corrections, but it at 
+  least has a long-term stability. )
+
+And it only ever does cross-CPU work if we specifically ask for a remote 
+clock:
+
+        if (cpu != raw_smp_processor_id()) {
+                struct sched_clock_data *my_scd = this_scd();
+
+                lock_double_clock(scd, my_scd);
+
+it still does this "serialization looking" even in the local case:
+
+                __raw_spin_lock(&scd->lock);
+                clock = __update_sched_clock(scd, now);
+        }
+
+        __raw_spin_unlock(&scd->lock);
+
+... but that lock is strictly per CPU, so it only matters if there _is_ 
+cross-CPU "interest" in that clock. Otherwise these locks are in essence 
+just per CPU and cause no cacheline bouncing, etc.
+
+... but we could try to eliminate even that potential for any locking. 
+On 64-bit it's a real possibility i think. (we need the lock for 32-bit 
+mainly, the timestamps are all 64 bits)
+
+... it also has all the tsc-stops-in-idle smarts, knows about cpufreq, 
+etc. Those things are needed even on UP, to not get really bad 
+transients in time.
+
+That still leaves us with sched_clock() complexity, which has spread out 
+a bit more than it should have. So it's not all as simple as you'd like 
+it to be i think, but we are trying hard ...
+
+Ideas to simplify/robustify it are welcome.
+
+	Ingo
