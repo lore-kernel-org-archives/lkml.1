@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbYJTGd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbYJTGjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbYJTGd4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 02:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYJTGdp
+	id S1752331AbYJTGjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 02:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYJTGjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 02:33:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32883
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751211AbYJTGdo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 02:33:44 -0400
-Date: Sun, 19 Oct 2008 23:33:21 -0700 (PDT)
-Message-Id: <20081019.233321.69192797.davem@davemloft.net>
-To: andrea@persephoneslair.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix race in arch/sparc64/kernel/trampoline.S
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081018000635.GA16445@charon.persephoneslair.org>
-References: <20081018000635.GA16445@charon.persephoneslair.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 20 Oct 2008 02:39:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60332 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751369AbYJTGjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 02:39:08 -0400
+Message-ID: <48FC273B.3030300@cn.fujitsu.com>
+Date: Mon, 20 Oct 2008 14:37:47 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Breaks the redundant loop in kernel/marker.c
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrea Shepard <andrea@persephoneslair.org>
-Date: Fri, 17 Oct 2008 17:06:35 -0700
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+---
+ kernel/marker.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-> Make arch/sparc64/kernel/trampoline.S in 2.6.27.1 lock prom_entry_lock
-> when calling the PROM.  This prevents a race condition that I observed
-> causing a hang on startup on a 12-CPU E4500.
-> 
-> I am not subscribed to this list, so please CC me on replies.
-> 
-> Signed-off-by: Andrea Shepard <andrea@persephoneslair.org>
+diff --git a/kernel/marker.c b/kernel/marker.c
+index 7d1faec..2c3172d 100644
+--- a/kernel/marker.c
++++ b/kernel/marker.c
+@@ -836,8 +836,6 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
+ 			if (!e->ptype) {
+ 				if (num == 0 && e->single.func == probe)
+ 					return e->single.probe_private;
+-				else
+-					break;
+ 			} else {
+ 				struct marker_probe_closure *closure;
+ 				int match = 0;
+@@ -849,6 +847,7 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
+ 						return closure[i].probe_private;
+ 				}
+ 			}
++			break;
+ 		}
+ 	}
+ 	return ERR_PTR(-ENOENT);
+-- 
+1.5.5.3
 
-Applied, thanks a lot Andrea.
+
