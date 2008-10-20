@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYJTWgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYJTWmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbYJTWgT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 18:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYJTWgG
+	id S1754976AbYJTWmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 18:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbYJTWl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 18:36:06 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:32678 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751583AbYJTWgE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 18:36:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAM8S9kh5LE2t/2dsb2JhbAC7CAGHHXABeg
-X-IronPort-AV: E=Sophos;i="4.33,454,1220193000"; 
-   d="scan'208";a="214573915"
-Date: Tue, 21 Oct 2008 09:35:49 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: sleeping function called from invalid context at
-	kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
-Message-ID: <20081020223549.GA21152@disturbed>
-Mail-Followup-To: Alexander Beregalov <a.beregalov@gmail.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <a4423d670810170543vd6b4c39p44bf125610d8540@mail.gmail.com> <20081017164116.GA17375@infradead.org> <a4423d670810170954h7ca130aaw8895380a4c6b125@mail.gmail.com> <20081017165738.GA20818@infradead.org> <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com> <20081017203710.GA27187@infradead.org> <20081017135510.7127c4e7@infradead.org> <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com> <20081020163327.GA15651@infradead.org> <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com>
+	Mon, 20 Oct 2008 18:41:57 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:59993 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752331AbYJTWl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 18:41:57 -0400
+Date: Tue, 21 Oct 2008 00:44:35 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] WM8350 updates
+Message-ID: <20081020224435.GE4197@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20081020190022.GA9504@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com>
+In-Reply-To: <20081020190022.GA9504@rakim.wolfsonmicro.main>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 09:13:05PM +0400, Alexander Beregalov wrote:
-> 2008/10/20 Christoph Hellwig <hch@infradead.org>:
-> > On Mon, Oct 20, 2008 at 06:58:09PM +0400, Alexander Beregalov wrote:
-> >> Hi Christoph
-> >>
-> >> I have the same result with next-1020 and today's xfs-2.6.git/master
-> >> (
-> >> commit bfd2bd10da76378dc4afd87d7d204a1d3d70b347
-> >> Author: David Chinner <david@fromorbit.com>
-> >> Date:   Fri Oct 17 15:36:23 2008 +1000
-> >>     Inode: Allow external list initialisation
-> >> )
-> Ha, that kernel (xfs/master) has made my system dead locked.
-> SysRQ-d:
-> Show all locks held in the system
-> 1 lock held by pdflush
-> (&type->s_umount_key#18{----}, at writeback_inodes
-> 1 lock held by login
-> (&(&ip->i_iolock)->mr_lock){----} at xfs_ilock
-> and so on ( many locks at xfs_ilock)
+Hi Mark,
 
-Curious. Can you post the full stack traces?
+On Mon, Oct 20, 2008 at 08:00:22PM +0100, Mark Brown wrote:
+> A couple of minor WM8350 updates here.  The first, from Stephen
+> Rothwell needs to be merged with Linus fairly urgently.  The second
+> is less urgent since nothing merged should be affected, though it should
+> still be safe to merge.
+
+Both of them merged to my mfd-next tree. I'll send a pull request to Linus
+tomorrow.
+
+Thanks for the patches.
 
 Cheers,
+Samuel.
 
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+Intel Open Source Technology Centre
+http://oss.intel.com/
