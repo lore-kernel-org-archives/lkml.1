@@ -1,60 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbYJTD63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYJTEIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752733AbYJTD63 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 23:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYJTD6U
+	id S1752500AbYJTEIc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 00:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYJTEIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 23:58:20 -0400
-Received: from shells.gnugeneration.com ([66.240.222.126]:53693 "HELO
-	shells.gnugeneration.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751453AbYJTD6U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 23:58:20 -0400
-From: swivel@shells.gnugeneration.com
-Date: Sun, 19 Oct 2008 22:58:19 -0500
-To: David Miller <davem@davemloft.net>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Honoring SO_RCVLOWAT in proto_ops.poll methods
-Message-ID: <20081020035819.GG2811@fc6222126.aspadmin.net>
-References: <20081005.153059.111120997.davem@davemloft.net> <20081013.003441.109866647.davem@davemloft.net> <20081013083214.GN2811@fc6222126.aspadmin.net> <20081013.025816.197282812.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081013.025816.197282812.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 20 Oct 2008 00:08:22 -0400
+Received: from ozlabs.org ([203.10.76.45]:42926 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbYJTEIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 00:08:21 -0400
+To: Linus Torvalds <torvalds@osdl.org>
+CC: <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       linux-pci@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       <yhlu.kernel@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 20 Oct 2008 15:07:34 +1100
+Subject: [PATCH 1/2] Implement %pR to print struct resource content
+Message-Id: <20081020040820.C1882DDDEA@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 02:58:16AM -0700, David Miller wrote:
-> From: swivel@shells.gnugeneration.com
-> Date: Mon, 13 Oct 2008 03:32:14 -0500
-> 
-> > I'm using the pseudo-blocking recv() behavior achieved with SO_RCVTIMEO.
-> > Thus my app expects recv() to block until SO_RCVLOWAT is met or SO_RCVTIMEO
-> > expired.
-> 
-> But if you poll() properly, you'll never call recv() unless the amount
-> of bytes you want are there.
-> 
-> And since I fixed poll()'s handling of SO_RCVLOWAT it should mostly
-> work.
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-The app already has a kludge in place to work around the current kernel
-with broken poll() and recv() with regards to SO_RCVLOWAT.
+Add a %pR option to the kernel vsnprintf that prints the range of
+addresses inside a struct resource passed by pointer.
 
-It's less than ideal but 'mostly works', so I'm already at that point...
-Doesn't really make sense to me to rewrite the kludge to depend on a
-very modern kernel without even having it be able to use recv()
-properly.
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I just hope we can have recv() block with MSG_PEEK when SO_RCVLOWAT is
->1 in the near future.  My goal was next time I get around to doing a
-dist-upgrade the new kernel would have both poll and recv fixed and I
-could disable the kludge.
+Padding now defaults to 4 digits for IO and 8 for MEM
 
->From what I can see the recv() MSG_PEEK fix is trivial anyways, why not
-fix it?
+ lib/vsprintf.c |   51 ++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 44 insertions(+), 7 deletions(-)
 
-Thanks,
-Vito Caputo
+--- linux-work.orig/lib/vsprintf.c	2008-10-17 13:30:18.000000000 +1100
++++ linux-work/lib/vsprintf.c	2008-10-20 14:39:15.000000000 +1100
+@@ -24,6 +24,7 @@
+ #include <linux/kernel.h>
+ #include <linux/kallsyms.h>
+ #include <linux/uaccess.h>
++#include <linux/ioport.h>
+ 
+ #include <asm/page.h>		/* for PAGE_SIZE */
+ #include <asm/div64.h>
+@@ -550,18 +551,51 @@ static char *symbol_string(char *buf, ch
+ #endif
+ }
+ 
++static char *resource_string(char *buf, char *end, struct resource *res, int field_width, int precision, int flags)
++{
++#ifndef IO_RSRC_PRINTK_SIZE
++#define IO_RSRC_PRINTK_SIZE	4
++#endif
++
++#ifndef MEM_RSRC_PRINTK_SIZE
++#define MEM_RSRC_PRINTK_SIZE	8
++#endif
++
++	/* room for the actual numbers, the two "0x", -, [, ] and the final zero */
++	char sym[4*sizeof(resource_size_t) + 8];
++	char *p = sym, *pend = sym + sizeof(sym);
++	int size = -1;
++
++	if (res->flags & IORESOURCE_IO)
++		size = IO_RSRC_PRINTK_SIZE;
++	else if (res->flags & IORESOURCE_MEM)
++		size = MEM_RSRC_PRINTK_SIZE;
++
++	*p++ = '[';
++	p = number(p, pend, res->start, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
++	*p++ = '-';
++	p = number(p, pend, res->end, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
++	*p++ = ']';
++	*p = 0;
++
++	return string(buf, end, sym, field_width, precision, flags);
++}
++
+ /*
+  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
+  * by an extra set of alphanumeric characters that are extended format
+  * specifiers.
+  *
+- * Right now we just handle 'F' (for symbolic Function descriptor pointers)
+- * and 'S' (for Symbolic direct pointers), but this can easily be
+- * extended in the future (network address types etc).
+- *
+- * The difference between 'S' and 'F' is that on ia64 and ppc64 function
+- * pointers are really function descriptors, which contain a pointer the
+- * real address. 
++ * Right now we handle:
++ *
++ * - 'F' For symbolic function descriptor pointers
++ * - 'S' For symbolic direct pointers
++ * - 'R' For a struct resource pointer, it prints the range of
++ *       addresses (not the name nor the flags)
++ *
++ * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
++ * function pointers are really function descriptors, which contain a
++ * pointer to the real address.
+  */
+ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+ {
+@@ -571,6 +605,8 @@ static char *pointer(const char *fmt, ch
+ 		/* Fallthrough */
+ 	case 'S':
+ 		return symbol_string(buf, end, ptr, field_width, precision, flags);
++	case 'R':
++		return resource_string(buf, end, ptr, field_width, precision, flags);
+ 	}
+ 	flags |= SMALL;
+ 	if (field_width == -1) {
+@@ -590,6 +626,7 @@ static char *pointer(const char *fmt, ch
+  * This function follows C99 vsnprintf, but has some extensions:
+  * %pS output the name of a text symbol
+  * %pF output the name of a function pointer
++ * %pR output the address range in a struct resource
+  *
+  * The return value is the number of characters which would
+  * be generated for the given input, excluding the trailing
