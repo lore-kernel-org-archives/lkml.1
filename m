@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbYJTOCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbYJTOOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbYJTOCf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 10:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYJTOC0
+	id S1752971AbYJTOOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 10:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYJTOOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 10:02:26 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58946 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751806AbYJTOC0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 10:02:26 -0400
-Date: Mon, 20 Oct 2008 10:02:25 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: Oliver Neukum <oliver@neukum.org>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: Kernel 2.6.26.5 -> 2.6.27.2 [USB REGRESSION] (USB -> D_STATE)
-In-Reply-To: <alpine.DEB.1.10.0810191247540.19058@p34.internal.lan>
-Message-ID: <Pine.LNX.4.44L0.0810200959020.2477-100000@iolanthe.rowland.org>
+	Mon, 20 Oct 2008 10:14:10 -0400
+Received: from bender.cm4all.net ([87.106.27.49]:60636 "EHLO bender.cm4all.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752131AbYJTOOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 10:14:09 -0400
+Date: Mon, 20 Oct 2008 16:12:58 +0200
+From: Max Kellermann <mk@cm4all.com>
+To: Glauber Costa <glommer@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than 120 seconds"
+Message-ID: <20081020141258.GA8228@rabbit.intern.cm-ag>
+References: <20081017123207.GA14979@rabbit.intern.cm-ag> <20081017143301.GA18522@poweredge.glommer> <20081020065149.GA11213@rabbit.intern.cm-ag> <5d6222a80810200615k60d6f523p9bcd71d8cb070a39@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5d6222a80810200615k60d6f523p9bcd71d8cb070a39@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Oct 2008, Justin Piszcz wrote:
-
-> > You should turn on the usbfs_snoop module parameter for usbcore and see
-> > what shows up in the system log.
+On 2008/10/20 15:15, Glauber Costa <glommer@gmail.com> wrote:
+> There's a patch in flight from cyrill that probably fixes your
+> problem: http://lkml.org/lkml/2008/9/15/93
 > 
-> > Alan Stern
-> 
-> Tried this, kernel would not boot up any further when I had that enabled
-> alongside the 'extra' debugging options in the kernel:
-> 
-> http://home.comcast.net/~jpiszcz/20081019/2.6.27.2-usb-extra-debug.txt
+> The checks are obviously there for a reason, and we can't just wipe
+> them out unconditionally ;-) So can you check please that you are
+> also covered by the case provided?
 
-I'm not interested in your config file; I need to see the dmesg log.
+Looks good: booted the machine 30 minutes ago, no problems so far.
 
-> > Please get sysrq-t of a hang.
-> >
-> > 	Regards
-> > 		Oliver
-> >
-> 
-> Before I tried the above, I was able to get a sysrq-t of the hang:
-> 
-> http://home.comcast.net/~jpiszcz/20081019/trace_before_trigger.txt
-> http://home.comcast.net/~jpiszcz/20081019/trace_after_trigger.txt
-
-Your trace is incomplete.  You might need to increase the size of the 
-kernel log buffer (CONFIG_LOG_BUF_SHIFT) or the size of the buffer used 
-by dmesg (the -s option).
-
-Alan Stern
-
+Max
