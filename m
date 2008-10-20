@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbYJTLKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYJTLQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbYJTLKW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 07:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYJTLKI
+	id S1752822AbYJTLQU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 07:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYJTLQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 07:10:08 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:54662 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbYJTLKH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 07:10:07 -0400
-Date: Mon, 20 Oct 2008 13:10:02 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrey Mirkin <major@openvz.org>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-Message-ID: <20081020111002.GQ15171@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <1224286383.1848.65.camel@nimitz>
+	Mon, 20 Oct 2008 07:16:10 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43213 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751587AbYJTLQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 07:16:09 -0400
+Subject: Re: [PATCH] x86, ioremap: use %pR in printk
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linux-pci@vger.kernel.org,
+       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <20081020110018.GA24579@elte.hu>
+References: <20081020040823.871BDDDDEC@ozlabs.org>
+	 <20081020071203.GB12131@elte.hu> <1224491682.7654.135.camel@pasglop>
+	 <20081020090502.GB31710@elte.hu>  <20081020110018.GA24579@elte.hu>
+Content-Type: text/plain
+Date: Mon, 20 Oct 2008 22:15:52 +1100
+Message-Id: <1224501352.7654.141.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-18430-1224500858-0001-2"
-Content-Disposition: inline
-In-Reply-To: <1224286383.1848.65.camel@nimitz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_bohort-18430-1224500858-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> so how about something like the two patches below (ontop of Linus's 
+> patch): the first patch introduces a "small" resource pointer printout 
+> format: %pr - the little brother of %pR.
+> 
+> The output format is [0x00001234] - minimum width is 8.
+> 
+> The second patch takes advantage of it in ioremap.c.
 
-On Fri, Oct 17, 2008 at 04:33:03PM -0700, Dave Hansen wrote:
-> On Wed, 2008-09-03 at 14:57 +0400, Andrey Mirkin wrote:
-> > This patchset introduces kernel based checkpointing/restart as it is
-> > implemented in OpenVZ project. This patchset has limited functionality =
-and
-> > are able to checkpoint/restart only single process. Recently Oren Laaden
-> > sent another kernel based implementation of checkpoint/restart. The main
-> > differences between this patchset and Oren's patchset are:
->=20
-> Hi Andrey,
->=20
-> I'm curious what you want to happen with this patch set.  Is there
-> something specific in Oren's set that deficient which you need
-> implemented?  Are there some technical reasons you prefer this code?
+Well, I did the exact same patch except I used the same function
+and just added a flag for "R" vs. "r". However, I didn't post it
+because I wasn't too happy with passing by pointer and I wasn't
+sure whether we wanted to keep the letter after p uppercase or not... In
+any case, I kept it as a thing to discuss after the first one goes in.
 
-To be fair, and since (IIRC) the initial intent was to start with OpenVZ's
-approach, shouldn't Oren answer the same questions with respect to Andrey's
-patchset?
+At this stage, I'm tempted to go for a %pP for printing a pointer to
+a phys_addr_t (and that's the same as resource_size_t, just more generic
+nowadays, since those were consolidated).
 
-I'm afraid that we are forgetting to take the best from both approaches...
+Still not too happy with the pointer thing but that's the best we can
+do I suppose without losing gcc type checking.
 
-Louis
+Cheers,
+Ben.
 
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-18430-1224500858-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFI/GcKVKcRuvQ9Q1QRArmIAJ4r+JfcUcP486ebG579fAj+6aHnbwCfecUs
-rHDCFgBvKg+2ZaLVbbX47uM=
-=qII/
------END PGP SIGNATURE-----
-
---=_bohort-18430-1224500858-0001-2--
