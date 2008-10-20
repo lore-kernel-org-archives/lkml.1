@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbYJTIfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbYJTIhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752499AbYJTIfr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 04:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYJTIfj
+	id S1752562AbYJTIhR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 04:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYJTIhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 04:35:39 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48402 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751017AbYJTIfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 04:35:38 -0400
-Subject: Re: [PATCH] x86, ioremap: use %pR in printk
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <20081020071203.GB12131@elte.hu>
-References: <20081020040823.871BDDDDEC@ozlabs.org>
-	 <20081020071203.GB12131@elte.hu>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 19:34:42 +1100
-Message-Id: <1224491682.7654.135.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 20 Oct 2008 04:37:05 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:42627 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751190AbYJTIhD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 04:37:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=JmfsVPNL3q1WcaRo4HP+r7vpFSB4NnWzknEfaz7C9KN9OuTGf3VGQdfUm5b4GERTqQnHLmMG2+XBzBbweYV8EfVDqcXOvvBNDi1G0yToXjLg7L+XvGgkEg6BzX2HY5grUJnKxyvnN3F2gRMRcROtqC4Qq0kIjxSECFsaTu5ggmQ=  ;
+X-YMail-OSG: dXZAHmkVM1k1D5jjtqeQ23JxfdgBsPQolII49bl37.sjSYPDF5eZBvFN.gklQUZmx1IMtTPA678BMaYfcCjsui296FZDcnUGCqkzzYCGItskK6QrluR8xmlGWv1oDIyz9QP1tVb0DlkEShrNgPQv7XoD
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [spi-devel-general] [patch 2.6.27-git] spi_gpio driver
+Date: Mon, 20 Oct 2008 01:37:00 -0700
+User-Agent: KMail/1.9.10
+Cc: Magnus Damm <magnus.damm@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       spi-devel-general@lists.sourceforge.net,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200807202146.12759.mb@bu3sch.de> <200810192124.36402.david-b@pacbell.net> <20081020091127.GA4413@trinity.fluff.org>
+In-Reply-To: <20081020091127.GA4413@trinity.fluff.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810200137.00875.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 09:12 +0200, Ingo Molnar wrote:
-> * Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > This converts things in drivers/pci to use %pR to printout the
-> > content of a struct resource instead of hand-casted %llx or
-> > other variants.
+On Monday 20 October 2008, Ben Dooks wrote:
+> On Sun, Oct 19, 2008 at 09:24:36PM -0700, David Brownell wrote:
+> > From: David Brownell <dbrownell@users.sourceforge.net>
 > > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Generalize the old at91rm9200 "bootstrap" bitbanging SPI master driver
+> > as "spi_gpio", so it works with arbitrary GPIOs and can be configured
+> > through platform_data.  Such SPI masters support:
+> > 
+> >  - any number of bus instances (bus_num is the platform_device.id)
+> >  - any number of chipselects (one GPIO per spi_device)
+> >  - all four SPI_MODE values, and SPI_CS_HIGH
+> >  - i/o word sizes from 1 to 32 bits;
+> >  - devices configured as with any other spi_master controller
 > 
-> cool!
-> 
->  Acked-by: Ingo Molnar <mingo@elte.hu>
-> 
-> there's also two places in arch/x86/mm/ioremap.c that could use this 
-> straight away - see the (untested) patch below.
+> Probably worth looking at removing the s3c24xx gpio specific driver and
+> replacing it with this.
 
-No, you don't pass it a phys_addr_t or a resource_size_t, you pass it a
-struct resource *
+Good point.  Let me know if you see any issues doing that,
+beyond the need to change some boards' setup code and
+defconfigs first.
 
-Now, I would have liked to have a way to print a resource_size_t (or
-phys_addr_t) but that's harder because we need pointers for the magic
-typechecking to work (among others).
-
-Maybe we could create a special format for a pointer-to-resource_size_t
-and pass &foo on callers but that's fishy...
-
-Cheers,
-Ben.
+- Dave
 
 
