@@ -1,101 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbYJTVjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYJTVji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610AbYJTVjX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbYJTViW
+	id S1756698AbYJTVji (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756315AbYJTVi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:38:22 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:31352 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756056AbYJTViU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:38:20 -0400
-Message-ID: <48FCFA2E.6040608@caviumnetworks.com>
-Date: Mon, 20 Oct 2008 14:37:50 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Tomaso.Paoletti@caviumnetworks.com
-Subject: Re: [PATCH] serial: Initialize spinlocks in 8250 and don't clobber
- them.
-References: <48F51114.2010105@caviumnetworks.com> <20081020141750.d0610586.akpm@linux-foundation.org>
-In-Reply-To: <20081020141750.d0610586.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Oct 2008 21:37:50.0753 (UTC) FILETIME=[1A157110:01C932FC]
+	Mon, 20 Oct 2008 17:38:26 -0400
+Received: from kroah.org ([198.145.64.141]:37583 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756307AbYJTViZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:38:25 -0400
+Subject: patch staging-sxg-depends-on-x86.patch added to gregkh-2.6 tree
+To: sfr@canb.auug.org.au, akpm@linux-foundation.org, charrer@alacritech.com,
+       gregkh@suse.de, greg@kroah.com, linux-kernel@vger.kernel.org,
+       mmiles@alacritech.com
+From: <gregkh@suse.de>
+Date: Mon, 20 Oct 2008 14:32:38 -0700
+In-Reply-To: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
+Message-ID: <12245383582488@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-[...]
-> OK..  But serial8250_isa_init_ports() has so many callsites that I'd
-> worry that we end up running this initialisation multiple times.  Say,
-> if the right combination of boot options is provided?  This is probably
-> a benign thing, but it's not desirable.
-> 
-> A simple "fix" would be
-> 
-> static void __init irq_lists_init(void)
-> {
-> 	static unsigned long done;
-> 
-> 	if (!test_and_set_bit(0, &done)) {
-> 		int i;
-> 
-> 		for (i = 0; i < ARRAY_SIZE(irq_lists); i++)
-> 			spin_lock_init(&irq_lists[i].lock);
-> 	}
-> }
-> 
-> A better fix would be to initialise all those spinlocks at compile
-> time.  But given the need to pass the address of each lock into each
-> lock's initialiser, that could be tricky.
-> 
 
-Alan Cox already fixed this part different way.
+This is a note to let you know that I've just added the patch titled
 
->>  	for (i = 0; i < nr_uarts; i++) {
->>  		struct uart_8250_port *up = &serial8250_ports[i];
->>  
->> @@ -2699,12 +2702,24 @@ static struct uart_driver serial8250_reg = {
->>   */
->>  int __init early_serial_setup(struct uart_port *port)
->>  {
->> +	struct uart_port *p;
->> +
->>  	if (port->line >= ARRAY_SIZE(serial8250_ports))
->>  		return -ENODEV;
->>  
->>  	serial8250_isa_init_ports();
->> -	serial8250_ports[port->line].port	= *port;
->> -	serial8250_ports[port->line].port.ops	= &serial8250_pops;
->> +	p = &serial8250_ports[port->line].port;
->> +	p->iobase       = port->iobase;
->> +	p->membase      = port->membase;
->> +	p->irq          = port->irq;
->> +	p->uartclk      = port->uartclk;
->> +	p->fifosize     = port->fifosize;
->> +	p->regshift     = port->regshift;
->> +	p->iotype       = port->iotype;
->> +	p->flags        = port->flags;
->> +	p->mapbase      = port->mapbase;
->> +	p->private_data = port->private_data;
->> +	p->ops		= &serial8250_pops;
->>  	return 0;
->>  }
-> 
-> Having to spell out each member like this is pretty nasty from a
-> maintainability point of view.  If new fields are added to uart_port,
-> we surely will forget to update this code.
-> 
-> But yes, copying a spinlock by value is quite wrong.  Perhaps we could
-> retain the struct assigment and then run spin_lock_init() to get the
-> spinlock into a sane state?
+    Subject: Staging: sxg depends on X86
+Subject: linux-next: build failure
 
-It is ugly, I will think about this part more.
+to my gregkh-2.6 tree.  Its filename is
 
-Thanks,
-David Daney
+    staging-sxg-depends-on-x86.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From sfr@canb.auug.org.au  Mon Oct 20 13:45:45 2008
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 20 Oct 2008 22:59:18 +1100
+Subject: Staging: sxg depends on X86
+Subject: linux-next: build failure
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, Christopher Harrer <charrer@alacritech.com>, Michael Miles <mmiles@alacritech.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linus
+Message-ID: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+
+sxghif.h has code that explicitly will not build fo other architecures.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/sxg/Kconfig |    1 +
+ drivers/staging/sxg/README  |    1 +
+ 2 files changed, 2 insertions(+)
+
+--- a/drivers/staging/sxg/Kconfig
++++ b/drivers/staging/sxg/Kconfig
+@@ -1,6 +1,7 @@
+ config SXG
+ 	tristate "Alacritech SLIC Technology Non-Accelerated 10Gbe support"
+ 	depends on PCI && NETDEV_10000
++	depends on X86
+ 	default n
+ 	help
+ 	  This driver supports the Alacritech SLIC Technology Non-Accelerated
+--- a/drivers/staging/sxg/README
++++ b/drivers/staging/sxg/README
+@@ -7,6 +7,7 @@ TODO:
+ 	- remove wrappers
+ 	- checkpatch.pl cleanups
+ 	- new functionality that the card needs
++	- remove reliance on x86
+ 
+ Please send patches to:
+         Greg Kroah-Hartman <gregkh@suse.de>
+
+
+Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
+
+bad/battery-class-driver.patch
+staging/staging-sxg-depends-on-x86.patch
