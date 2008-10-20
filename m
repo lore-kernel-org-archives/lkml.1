@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbYJTRdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYJTRhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbYJTRdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYJTRcu
+	id S1756051AbYJTRhE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbYJTRgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:32:50 -0400
-Received: from kroah.org ([198.145.64.141]:45260 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752886AbYJTRct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 13:32:49 -0400
-Date: Mon, 20 Oct 2008 10:27:50 -0700
-From: Greg KH <greg@kroah.com>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
-       lcostantino@gmail.com, linux-wireless@vger.kernel.org
-Subject: Re: w35und wifi driver for linux-staging
-Message-ID: <20081020172750.GA9587@kroah.com>
-References: <20081001123656.GA30942@elf.ucw.cz> <20081018141918.2c7377c6@infradead.org> <1224521874.29822.11.camel@dhcp-100-3-195.bos.redhat.com>
+	Mon, 20 Oct 2008 13:36:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60928 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752837AbYJTRgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 13:36:51 -0400
+Date: Mon, 20 Oct 2008 13:35:45 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for October 20
+Message-ID: <20081020173545.GB3161@redhat.com>
+References: <20081020235904.2f9a8db4.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224521874.29822.11.camel@dhcp-100-3-195.bos.redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081020235904.2f9a8db4.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 12:57:54PM -0400, Dan Williams wrote:
-> On Sat, 2008-10-18 at 14:19 -0700, Arjan van de Ven wrote:
-> > On Wed, 1 Oct 2008 14:36:56 +0200
-> > Pavel Machek <pavel@suse.cz> wrote:
-> > 
-> > > Hi!
-> > > 
-> > > This is driver for w35und usb wifi -- also in kohjinsha
-> > > subnotebook. It should work well enough to associate and ping, but it
-> > > obviously needs to be rewritten two more times...
-> > > 
-> > > OTOH worst horrors (like embedded wifi stack) should have been fixed
-> > > already...
-> > 
-> > > diff --git a/drivers/net/wireless/winbond/Kconfig
-> > > b/drivers/net/wireless/winbond/Kconfig new file mode 100644
-> > > index 0000000..94499d3
-> > > --- /dev/null
-> > > +++ b/drivers/net/wireless/winbond/Kconfig
-> > > @@ -0,0 +1,6 @@
-> > > +config W35UND
-> > > +	tristate "Winbond driver"
-> > > +	depends on MAC80211 && WLAN_80211 && EXPERIMENTAL
-> > > && !4KSTACKS
-> > 
-> > why this !4KSTACKS? At minimum that should be in the "to fix" list ;)
+On Mon, Oct 20, 2008 at 11:59:04PM +1100, Stephen Rothwell wrote:
+> Hi all,
 > 
-> Yeah seriously, the driver isn't going anywhere unless it works with 4k
-> stacks...
+> Today's tree will not build for powerpc allyesconfig (libc aborts the
+> link due to a free() problem), sparc(32) defconfig and probably some
+> other configurations.
+> 
 
-Well, it's going into the staging tree, where it can now be fixed up :)
+hmmm...yeah, on x86_64 i've hit:
 
-And yes, I'll go add that to the TODO list for this driver, thanks.
+  CC [M]  net/9p/protocol.o
+  LD [M]  net/9p/9pnet.o
+  LD [M]  net/9p/9pnet_virtio.o
+  Building modules, stage 2.
+  MODPOST 1616 modules
+ERROR: "p9_debug_level" [net/9p/9pnet.ko] undefined!
 
-greg k-h
+
+seems to be resolved by this simple patch:
+
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+
+
+diff --git a/net/9p/protocol.c b/net/9p/protocol.c
+index 29be524..ebf819e 100644
+--- a/net/9p/protocol.c
++++ b/net/9p/protocol.c
+@@ -542,8 +542,10 @@ int p9pdu_finalize(struct p9_fcall *pdu)
+ 	err = p9pdu_writef(pdu, 0, "d", size);
+ 	pdu->size = size;
+ 
++#ifdef CONFIG_NET_9P_DEBUG
+ 	if ((p9_debug_level & P9_DEBUG_PKT) == P9_DEBUG_PKT)
+ 		p9pdu_dump(0, pdu);
++#endif
+ 
+ 	P9_DPRINTK(P9_DEBUG_9P, ">>> size=%d type: %d tag: %d\n", pdu->size,
+ 							pdu->id, pdu->tag);
