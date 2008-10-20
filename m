@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbYJTJsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbYJTJut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752168AbYJTJsz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 05:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbYJTJsr
+	id S1752238AbYJTJut (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 05:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYJTJul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 05:48:47 -0400
-Received: from bu3sch.de ([62.75.166.246]:51299 "EHLO vs166246.vserver.de"
+	Mon, 20 Oct 2008 05:50:41 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:53659 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbYJTJsq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 05:48:46 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH v3] Add SPI over GPIO driver
-Date: Mon, 20 Oct 2008 11:48:06 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Magnus Damm" <magnus.damm@gmail.com>,
-       "Piotr Skamruk" <piotr.skamruk@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <200807202146.12759.mb@bu3sch.de> <aec7e5c30810191944u4c125943h895099b3f1eaa813@mail.gmail.com> <200810192116.52286.david-b@pacbell.net>
-In-Reply-To: <200810192116.52286.david-b@pacbell.net>
+	id S1750985AbYJTJul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 05:50:41 -0400
+From: Andres Freund <andres@anarazel.de>
+To: Keith Packard <keithp@keithp.com>
+Subject: Re: [git pull] agp patches for 2.6.28-rc1.
+Date: Mon, 20 Oct 2008 11:50:37 +0200
+User-Agent: KMail/1.10.1 (Linux/2.6.27-andres-05577-g0cfd810; KDE/4.1.2; x86_64; ; )
+Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.82.0810160758320.16504@skynet.skynet.ie> <200810200358.52147.andres@anarazel.de> <1224469147.5303.47.camel@koto.keithp.com>
+In-Reply-To: <1224469147.5303.47.camel@koto.keithp.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810201148.06335.mb@bu3sch.de>
+Message-Id: <200810201150.37605.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 October 2008 06:16:51 David Brownell wrote:
-> On Sunday 19 October 2008, Magnus Damm wrote:
-> > >
-> > > I fully support the idea of SPI over GPIO.  It's just that
-> > > particular patch which is problematic.
-> > 
-> > Ok, let's fix those issues then!
-> 
-> The issues I identified earlier still haven't been resolved...
+Hi Keith,
 
-What the hell are you talking about?
-I rewrote it several times.
+On Monday 20 October 2008 04:19:07 Keith Packard wrote:
+> If you care to try the above fix against your current driver sources,
+> that would be helpful for us.
+Ok, tested with 2.4.1 and  current linus git 
+(0cfd81031a26717fe14380d18275f8e217571615) and it works without problems so 
+far.
 
--- 
-Greetings Michael.
+I have a good reason to say no to bisection requests now ;-) switching drivers 
+every bisection run is annoying (unfortunately I could just cherry-pick the fix 
+and rebase, but who knows that...)
+
+Andres
+
