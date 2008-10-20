@@ -1,42 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYJTQrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbYJTQu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbYJTQrP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 12:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYJTQrA
+	id S1753061AbYJTQu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 12:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbYJTQur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 12:47:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36697 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752122AbYJTQq7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 12:46:59 -0400
-Date: Mon, 20 Oct 2008 09:46:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] 8250: Oxford Semiconductor Devices
-In-Reply-To: <20081017192830.9308.94462.stgit@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0810200944490.3518@nehalem.linux-foundation.org>
-References: <20081017192309.9308.74370.stgit@localhost.localdomain> <20081017192830.9308.94462.stgit@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 20 Oct 2008 12:50:47 -0400
+Received: from cnc.isely.net ([64.81.146.143]:38133 "EHLO cnc.isely.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751670AbYJTQur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 12:50:47 -0400
+Date: Mon, 20 Oct 2008 11:50:44 -0500 (CDT)
+From: Mike Isely <isely@isely.net>
+Reply-To: Mike Isely <isely@pobox.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Mike Isely at pobox <isely@pobox.com>
+Subject: Re: Bug fix for pvrusb2 driver [was: Re: Kernel 2.6.26.5 -> 2.6.27.2
+ [USB REGRESSION] (USB -> D_STATE)]
+In-Reply-To: <alpine.DEB.1.10.0810201231020.6072@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0810201142270.12643@cnc.isely.net>
+References: <Pine.LNX.4.44L0.0810201203530.2719-100000@iolanthe.rowland.org>
+ <Pine.LNX.4.64.0810201119250.12643@cnc.isely.net>
+ <alpine.DEB.1.10.0810201231020.6072@p34.internal.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 20 Oct 2008, Justin Piszcz wrote:
+
+> 
+> 
+> On Mon, 20 Oct 2008, Mike Isely wrote:
+> 
+> > 
+> > There's already a patch coming up through v4l-dvb that should remove the
+> > need for the reset completely for the pvrusb2 driver.  The reset had
+> > been there as "chicken soup" previously - it didn't hurt but its
+> > utility wasn't really that great at the time.  Now that it is hurting,
+> > I just removed it.
+> > 
+> >  -Mike
+> > 
+> 
+> Should I wait for the patch coming up through v4l-dvb or test Alan's patch?
+> 2.6.27.2 has quite a few issues:
+> 
+> 1. xfs is broken w/barrier (there is a patch for this)
+> 2. usb hangs (patch below)
+> 3. abit-guru (comsetic issue only, doesn't find mobo) (there is a patch for
+> this now as well)
+> 
+> So I am sticking with 2.6.26.5 right now, let me know if you need me
+> to test Alan's patch to see if it fixes the issue.
+
+I'm sorry I didn't post my patch immediately in my previous response.  
+It is however posted as a link in a followup, and for the record here it 
+is again:
+
+http://linuxtv.org/hg/~mcisely/pvrusb2/rev/0bb411d8d2e4
+
+I have tested it, and it works as expected.  I've done all I can 
+according to the process there to ready it for kernel inclusion and I've 
+asked in my pull request there to get this patch into the next 2.6.27.x 
+stable release.
+
+The driver really didn't "need" the reset anyway, and so from where I'm 
+sitting the simplest thing is just to remove it which is what my patch 
+does.  (I had put in that reset a long time ago when working on 
+improving hardware stability.  I had never positively established that 
+this actually helped during initialization, but it didn't hurt either so 
+I left it in place.  Now that it is causing pain, it's best just to get 
+it out of there.)  I don't see much point in testing Alan's patch.
+
+  -Mike
 
 
-This series was apparently never even compile-tested.
+-- 
 
-  drivers/serial/8250_pci.c:2525:37: warning: "/*" within comment
-  drivers/serial/8250_pci.c: In function ‘pci_oxsemi_tornado_init’:
-  drivers/serial/8250_pci.c:1869: error: ‘PCI_VENDOR_OXSEMI’ undeclared (first use in this function)
-  drivers/serial/8250_pci.c:1869: error: (Each undeclared identifier is reported only once
-  drivers/serial/8250_pci.c:1869: error: for each function it appears in.)
-  ...
-
-Dropped as crap.
-
-		Linus
+Mike Isely
+isely @ pobox (dot) com
+PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
