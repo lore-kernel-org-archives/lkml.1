@@ -1,484 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbYJTNQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYJTNRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbYJTNQc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 09:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYJTNQD
+	id S1753234AbYJTNRh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 09:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYJTNR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 09:16:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55268 "EHLO mx2.mail.elte.hu"
+	Mon, 20 Oct 2008 09:17:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50474 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbYJTNP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 09:15:59 -0400
-Date: Mon, 20 Oct 2008 15:15:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86, ioremap: use %pR in printk
-Message-ID: <20081020131532.GC10245@elte.hu>
-References: <20081020040823.871BDDDDEC@ozlabs.org> <20081020071203.GB12131@elte.hu> <1224491682.7654.135.camel@pasglop> <20081020090502.GB31710@elte.hu> <20081020110018.GA24579@elte.hu> <1224501352.7654.141.camel@pasglop> <1224501768.7654.144.camel@pasglop> <20081020113602.GA2697@elte.hu> <1224507486.27899.31.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224507486.27899.31.camel@johannes.berg>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	id S1750992AbYJTNR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 09:17:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+To: torvalds@osdl.org
+cc: dhowells@redhat.com, jmorris@namei.org, viro@ZenIV.linux.org.uk,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT Pull Request] Copy on write credentials for Linux [ver #2]
+Date: Mon, 20 Oct 2008 14:17:13 +0100
+Message-ID: <17285.1224508633@redhat.com>
+From: David Howells <dhowells@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Johannes Berg <johannes@sipsolutions.net> wrote:
+The following changes since commit 0cfd81031a26717fe14380d18275f8e217571615:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/usb-2.6
 
-> On Mon, 2008-10-20 at 13:36 +0200, Ingo Molnar wrote:
-> 
-> > +	/* room for the actual number, the "0x" and the final zero */
-> > +	char sym[2*sizeof(phys_addr_t) + 2];
-> 
-> Buffer overflow.
+are available in the git repository at:
 
-good spotting, that should be +3. And it's still untested ;-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/cred-2.6.git master
 
-	Ingo
+David Howells (78):
+      CRED: Wrap task credential accesses in the IA64 arch
+      CRED: Wrap task credential accesses in the MIPS arch
+      CRED: Wrap task credential accesses in the PA-RISC arch
+      CRED: Wrap task credential accesses in the PowerPC arch
+      CRED: Wrap task credential accesses in the S390 arch
+      CRED: Wrap task credential accesses in the x86 arch
+      CRED: Wrap task credential accesses in the block loopback driver
+      CRED: Wrap task credential accesses in the tty driver
+      CRED: Wrap task credential accesses in the ISDN drivers
+      CRED: Wrap task credential accesses in the network device drivers
+      CRED: Wrap task credential accesses in the USB driver
+      CRED: Wrap task credential accesses in 9P2000 filesystem
+      CRED: Wrap task credential accesses in the AFFS filesystem
+      CRED: Wrap task credential accesses in the autofs filesystem
+      CRED: Wrap task credential accesses in the autofs4 filesystem
+      CRED: Wrap task credential accesses in the BFS filesystem
+      CRED: Wrap task credential accesses in the CIFS filesystem
+      CRED: Wrap task credential accesses in the Coda filesystem
+      CRED: Wrap task credential accesses in the devpts filesystem
+      CRED: Wrap task credential accesses in the eCryptFS filesystem
+      CRED: Wrap task credential accesses in the Ext2 filesystem
+      CRED: Wrap task credential accesses in the Ext3 filesystem
+      CRED: Wrap task credential accesses in the Ext4 filesystem
+      CRED: Wrap task credential accesses in the FAT filesystem
+      CRED: Wrap task credential accesses in the FUSE filesystem
+      CRED: Wrap task credential accesses in the GFS2 filesystem
+      CRED: Wrap task credential accesses in the HFS filesystem
+      CRED: Wrap task credential accesses in the HFSplus filesystem
+      CRED: Wrap task credential accesses in the HPFS filesystem
+      CRED: Wrap task credential accesses in the hugetlbfs filesystem
+      CRED: Wrap task credential accesses in the JFFS2 filesystem
+      CRED: Wrap task credential accesses in the JFS filesystem
+      CRED: Wrap task credential accesses in the Minix filesystem
+      CRED: Wrap task credential accesses in the NCPFS filesystem
+      CRED: Wrap task credential accesses in the NFS daemon
+      CRED: Wrap task credential accesses in the OCFS2 filesystem
+      CRED: Wrap task credential accesses in the OMFS filesystem
+      CRED: Wrap task credential accesses in the RAMFS filesystem
+      CRED: Wrap task credential accesses in the ReiserFS filesystem
+      CRED: Wrap task credential accesses in the SMBFS filesystem
+      CRED: Wrap task credential accesses in the SYSV filesystem
+      CRED: Wrap task credential accesses in the UBIFS filesystem
+      CRED: Wrap task credential accesses in the UDF filesystem
+      CRED: Wrap task credential accesses in the UFS filesystem
+      CRED: Wrap task credential accesses in the XFS filesystem
+      CRED: Wrap task credential accesses in the filesystem subsystem
+      CRED: Wrap task credential accesses in the SYSV IPC subsystem
+      CRED: Wrap task credential accesses in the AX25 protocol
+      CRED: Wrap task credential accesses in the IPv6 protocol
+      CRED: Wrap task credential accesses in the netrom protocol
+      CRED: Wrap task credential accesses in the ROSE protocol
+      CRED: Wrap task credential accesses in the SunRPC protocol
+      CRED: Wrap task credential accesses in the UNIX socket protocol
+      CRED: Wrap task credential accesses in the networking subsystem
+      CRED: Wrap task credential accesses in the key management code
+      CRED: Wrap task credential accesses in the capabilities code
+      CRED: Wrap task credential accesses in the core kernel
+      KEYS: Disperse linux/key_ui.h
+      KEYS: Alter use of key instantiation link-to-keyring argument
+      CRED: Neuter sys_capset()
+      CRED: Constify the kernel_cap_t arguments to the capset LSM hooks
+      CRED: Separate task security context from task_struct
+      CRED: Detach the credentials from task_struct
+      CRED: Wrap current->cred and a few other accessors
+      CRED: Use RCU to access another task's creds and to release a task's own creds
+      CRED: Wrap access to SELinux's task SID
+      CRED: Separate per-task-group keyrings from signal_struct
+      CRED: Rename is_single_threaded() to is_wq_single_threaded()
+      CRED: Make inode_has_perm() and file_has_perm() take a cred pointer
+      CRED: Pass credentials through dentry_open()
+      CRED: Inaugurate COW credentials
+      CRED: Make execve() take advantage of copy-on-write credentials
+      CRED: Prettify commoncap.c
+      CRED: Use creds in file structs
+      CRED: Documentation
+      CRED: Differentiate objective and effective subjective credentials on a task
+      CRED: Add a kernel_service object class to SELinux
+      CRED: Allow kernel services to override LSM settings for task actions
 
--------------------->
-commit e8613ba0d3912d526c9de2317f40ca2a236c026d
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Mon Oct 20 09:08:57 2008 +0200
-
-    x86, ioremap: use %pP in printk
-    
-    use the new %pP physical address printk type conversion specifier.
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index ae71e11..aaa81d9 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -207,8 +207,8 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		return NULL;
- 
- 	if (!phys_addr_valid(phys_addr)) {
--		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
--		       (unsigned long long)phys_addr);
-+		printk(KERN_WARNING "ioremap: invalid physical address %pP\n",
-+		       &phys_addr);
- 		WARN_ON_ONCE(1);
- 		return NULL;
- 	}
-@@ -267,9 +267,9 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		    (prot_val == _PAGE_CACHE_WC &&
- 		     new_prot_val == _PAGE_CACHE_WB)) {
- 			pr_debug(
--		"ioremap error for 0x%llx-0x%llx, requested 0x%lx, got 0x%lx\n",
--				(unsigned long long)phys_addr,
--				(unsigned long long)(phys_addr + size),
-+		"ioremap error for %pP [%lx], requested 0x%lx, got 0x%lx\n",
-+				&phys_addr,
-+				size,
- 				prot_val, new_prot_val);
- 			free_memtype(phys_addr, phys_addr + size);
- 			return NULL;
-
-commit 97cc157df4144c20ff2939f2acd4eaf96907ed55
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Mon Oct 20 12:39:17 2008 +0200
-
-    vsprintf: implement %pP to print phys_addr_t
-    
-    Add %pP to print addresses in phys_addr_t variables. Passed by reference.
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index a013bbc..d0a3e2c 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -581,6 +581,19 @@ static char *resource_string(char *buf, char *end, struct resource *res, int fie
- 	return string(buf, end, sym, field_width, precision, flags);
- }
- 
-+static char *phys_addr_string(char *buf, char *end, phys_addr_t *val, int field_width, int precision, int flags)
-+{
-+	/* room for the actual number, the "0x" and the final zero */
-+	char sym[2*sizeof(phys_addr_t) + 3];
-+	char *p = sym, *pend = sym + sizeof(sym);
-+	int size = 8;
-+
-+	p = number(p, pend, *val, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
-+	*p = 0;
-+
-+	return string(buf, end, sym, field_width, precision, flags);
-+}
-+
- /*
-  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
-  * by an extra set of alphanumeric characters that are extended format
-@@ -592,6 +605,8 @@ static char *resource_string(char *buf, char *end, struct resource *res, int fie
-  * - 'S' For symbolic direct pointers
-  * - 'R' For a struct resource pointer, it prints the range of
-  *       addresses (not the name nor the flags)
-+ * - 'P' For a phys_addr_t pointer, it prints the physical
-+ *       addresses (with a minimum width of 8 characters)
-  *
-  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
-  * function pointers are really function descriptors, which contain a
-@@ -607,6 +622,8 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
- 		return symbol_string(buf, end, ptr, field_width, precision, flags);
- 	case 'R':
- 		return resource_string(buf, end, ptr, field_width, precision, flags);
-+	case 'P':
-+		return phys_addr_string(buf, end, ptr, field_width, precision, flags);
- 	}
- 	flags |= SMALL;
- 	if (field_width == -1) {
-@@ -627,6 +644,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
-  * %pS output the name of a text symbol
-  * %pF output the name of a function pointer
-  * %pR output the address range in a struct resource
-+ * %pP output the address in a pointer to a phys_addr_t type
-  *
-  * The return value is the number of characters which would
-  * be generated for the given input, excluding the trailing
-
-commit 0d391458be88baf3c079e60c3ea331ebe12902c0
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Mon Oct 20 15:07:37 2008 +1100
-
-    pci: use new %pR to print resource ranges
-    
-    This converts things in drivers/pci to use %pR to printout the
-    content of a struct resource instead of hand-casted %llx or
-    other variants.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index c9884bb..dbe9f39 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1358,11 +1358,10 @@ int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
- 	return 0;
- 
- err_out:
--	dev_warn(&pdev->dev, "BAR %d: can't reserve %s region [%#llx-%#llx]\n",
-+	dev_warn(&pdev->dev, "BAR %d: can't reserve %s region %pR\n",
- 		 bar,
- 		 pci_resource_flags(pdev, bar) & IORESOURCE_IO ? "I/O" : "mem",
--		 (unsigned long long)pci_resource_start(pdev, bar),
--		 (unsigned long long)pci_resource_end(pdev, bar));
-+		 &pdev->resource[bar]);
- 	return -EBUSY;
- }
- 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index dd9161a..d3db8b2 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -304,9 +304,8 @@ static int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 		} else {
- 			res->start = l64;
- 			res->end = l64 + sz64;
--			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
--				pci_name(dev), pos, (unsigned long long)res->start,
--				(unsigned long long)res->end);
-+			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: %pR\n",
-+				pci_name(dev), pos, res);
- 		}
- 	} else {
- 		sz = pci_size(l, sz, mask);
-@@ -316,9 +315,10 @@ static int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 
- 		res->start = l;
- 		res->end = l + sz;
--		printk(KERN_DEBUG "PCI: %s reg %x %s: [%llx, %llx]\n", pci_name(dev),
--			pos, (res->flags & IORESOURCE_IO) ? "io port":"32bit mmio",
--			(unsigned long long)res->start, (unsigned long long)res->end);
-+		printk(KERN_DEBUG "PCI: %s reg %x %s: %pR\n",
-+		       pci_name(dev), pos,
-+		       (res->flags & IORESOURCE_IO) ? "io port":"32bit mmio",
-+		       res);
- 	}
- 
-  out:
-@@ -389,9 +389,8 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 			res->start = base;
- 		if (!res->end)
- 			res->end = limit + 0xfff;
--		printk(KERN_DEBUG "PCI: bridge %s io port: [%llx, %llx]\n",
--			pci_name(dev), (unsigned long long) res->start,
--			(unsigned long long) res->end);
-+		printk(KERN_DEBUG "PCI: bridge %s io port: %pR\n",
-+		       pci_name(dev), res);
- 	}
- 
- 	res = child->resource[1];
-@@ -403,9 +402,8 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_DEBUG "PCI: bridge %s 32bit mmio: [%llx, %llx]\n",
--			pci_name(dev), (unsigned long long) res->start,
--			(unsigned long long) res->end);
-+		printk(KERN_DEBUG "PCI: bridge %s 32bit mmio: %pR\n",
-+		       pci_name(dev), res);
- 	}
- 
- 	res = child->resource[2];
-@@ -441,9 +439,9 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_DEBUG "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
--			pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64) ? "64" : "32",
--			(unsigned long long) res->start, (unsigned long long) res->end);
-+		printk(KERN_DEBUG "PCI: bridge %s %sbit mmio pref: %pR\n",
-+		       pci_name(dev),
-+		       (res->flags & PCI_PREF_RANGE_TYPE_64) ? "64":"32", res);
- 	}
- }
- 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index d5e2106..471a429 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -356,10 +356,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
--				       "%#016llx-%#016llx\n", i,
--				       (unsigned long long)align,
--				       (unsigned long long)r->start,
--				       (unsigned long long)r->end);
-+					 "%pR\n", i, (unsigned long long)align, r);
- 				r->flags = 0;
- 				continue;
- 			}
-@@ -539,11 +536,9 @@ static void pci_bus_dump_res(struct pci_bus *bus)
-                 if (!res)
-                         continue;
- 
--		printk(KERN_INFO "bus: %02x index %x %s: [%llx, %llx]\n",
--			bus->number, i,
--			(res->flags & IORESOURCE_IO) ? "io port" : "mmio",
--			(unsigned long long) res->start,
--			(unsigned long long) res->end);
-+		printk(KERN_INFO "bus: %02x index %x %s: %pR\n",
-+		       bus->number, i,
-+		       (res->flags & IORESOURCE_IO) ? "io port" : "mmio", res);
-         }
- }
- 
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 1a5fc83..d4b5c69 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -49,10 +49,8 @@ void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno)
- 
- 	pcibios_resource_to_bus(dev, &region, res);
- 
--	dev_dbg(&dev->dev, "BAR %d: got res [%#llx-%#llx] bus [%#llx-%#llx] "
--		"flags %#lx\n", resno,
--		 (unsigned long long)res->start,
--		 (unsigned long long)res->end,
-+	dev_dbg(&dev->dev, "BAR %d: got res %pR bus [%#llx-%#llx] "
-+		"flags %#lx\n", resno, res,
- 		 (unsigned long long)region.start,
- 		 (unsigned long long)region.end,
- 		 (unsigned long)res->flags);
-@@ -114,13 +112,11 @@ int pci_claim_resource(struct pci_dev *dev, int resource)
- 		err = insert_resource(root, res);
- 
- 	if (err) {
--		dev_err(&dev->dev, "BAR %d: %s of %s [%#llx-%#llx]\n",
-+		dev_err(&dev->dev, "BAR %d: %s of %s %pR\n",
- 			resource,
- 			root ? "address space collision on" :
- 				"no parent found for",
--			dtype,
--			(unsigned long long)res->start,
--			(unsigned long long)res->end);
-+			dtype, res);
- 	}
- 
- 	return err;
-@@ -139,9 +135,8 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	align = resource_alignment(res);
- 	if (!align) {
- 		dev_err(&dev->dev, "BAR %d: can't allocate resource (bogus "
--			"alignment) [%#llx-%#llx] flags %#lx\n",
--			resno, (unsigned long long)res->start,
--			(unsigned long long)res->end, res->flags);
-+			"alignment) %pR flags %#lx\n",
-+			resno, res, res->flags);
- 		return -EINVAL;
- 	}
- 
-@@ -162,11 +157,8 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	}
- 
- 	if (ret) {
--		dev_err(&dev->dev, "BAR %d: can't allocate %s resource "
--			"[%#llx-%#llx]\n", resno,
--			res->flags & IORESOURCE_IO ? "I/O" : "mem",
--			(unsigned long long)res->start,
--			(unsigned long long)res->end);
-+		dev_err(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
-+			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
- 	} else {
- 		res->flags &= ~IORESOURCE_STARTALIGN;
- 		if (resno < PCI_BRIDGE_RESOURCES)
-@@ -202,11 +194,8 @@ int pci_assign_resource_fixed(struct pci_dev *dev, int resno)
- 	}
- 
- 	if (ret) {
--		dev_err(&dev->dev, "BAR %d: can't allocate %s resource "
--			"[%#llx-%#llx\n]", resno,
--			res->flags & IORESOURCE_IO ? "I/O" : "mem",
--			(unsigned long long)res->start,
--			(unsigned long long)res->end);
-+		dev_err(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
-+			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
- 	} else if (resno < PCI_BRIDGE_RESOURCES) {
- 		pci_update_resource(dev, res, resno);
- 	}
-@@ -237,9 +226,8 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 		r_align = resource_alignment(r);
- 		if (!r_align) {
- 			dev_warn(&dev->dev, "BAR %d: bogus alignment "
--				"[%#llx-%#llx] flags %#lx\n",
--				i, (unsigned long long)r->start,
--				(unsigned long long)r->end, r->flags);
-+				"%pR flags %#lx\n",
-+				i, r, r->flags);
- 			continue;
- 		}
- 		for (list = head; ; list = list->next) {
-@@ -287,9 +275,7 @@ int pci_enable_resources(struct pci_dev *dev, int mask)
- 
- 		if (!r->parent) {
- 			dev_err(&dev->dev, "device not available because of "
--				"BAR %d [%#llx-%#llx] collisions\n", i,
--				(unsigned long long) r->start,
--				(unsigned long long) r->end);
-+				"BAR %d %pR collisions\n", i, r);
- 			return -EINVAL;
- 		}
- 
-
-commit c21f132b1eca94808fe72b31aa159c7f0ad61d25
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Mon Oct 20 15:07:34 2008 +1100
-
-    vsprintf: implement %pR to print struct resource content
-    
-    Add a %pR option to the kernel vsnprintf that prints the range of
-    addresses inside a struct resource passed by pointer.
-    
-    Padding now defaults to 4 digits for IO and 8 for MEM
-    
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index cceecb6..a013bbc 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -24,6 +24,7 @@
- #include <linux/kernel.h>
- #include <linux/kallsyms.h>
- #include <linux/uaccess.h>
-+#include <linux/ioport.h>
- 
- #include <asm/page.h>		/* for PAGE_SIZE */
- #include <asm/div64.h>
-@@ -550,18 +551,51 @@ static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int
- #endif
- }
- 
-+static char *resource_string(char *buf, char *end, struct resource *res, int field_width, int precision, int flags)
-+{
-+#ifndef IO_RSRC_PRINTK_SIZE
-+#define IO_RSRC_PRINTK_SIZE	4
-+#endif
-+
-+#ifndef MEM_RSRC_PRINTK_SIZE
-+#define MEM_RSRC_PRINTK_SIZE	8
-+#endif
-+
-+	/* room for the actual numbers, the two "0x", -, [, ] and the final zero */
-+	char sym[4*sizeof(resource_size_t) + 8];
-+	char *p = sym, *pend = sym + sizeof(sym);
-+	int size = -1;
-+
-+	if (res->flags & IORESOURCE_IO)
-+		size = IO_RSRC_PRINTK_SIZE;
-+	else if (res->flags & IORESOURCE_MEM)
-+		size = MEM_RSRC_PRINTK_SIZE;
-+
-+	*p++ = '[';
-+	p = number(p, pend, res->start, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
-+	*p++ = '-';
-+	p = number(p, pend, res->end, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
-+	*p++ = ']';
-+	*p = 0;
-+
-+	return string(buf, end, sym, field_width, precision, flags);
-+}
-+
- /*
-  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
-  * by an extra set of alphanumeric characters that are extended format
-  * specifiers.
-  *
-- * Right now we just handle 'F' (for symbolic Function descriptor pointers)
-- * and 'S' (for Symbolic direct pointers), but this can easily be
-- * extended in the future (network address types etc).
-+ * Right now we handle:
-+ *
-+ * - 'F' For symbolic function descriptor pointers
-+ * - 'S' For symbolic direct pointers
-+ * - 'R' For a struct resource pointer, it prints the range of
-+ *       addresses (not the name nor the flags)
-  *
-- * The difference between 'S' and 'F' is that on ia64 and ppc64 function
-- * pointers are really function descriptors, which contain a pointer the
-- * real address. 
-+ * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
-+ * function pointers are really function descriptors, which contain a
-+ * pointer to the real address.
-  */
- static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
- {
-@@ -571,6 +605,8 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
- 		/* Fallthrough */
- 	case 'S':
- 		return symbol_string(buf, end, ptr, field_width, precision, flags);
-+	case 'R':
-+		return resource_string(buf, end, ptr, field_width, precision, flags);
- 	}
- 	flags |= SMALL;
- 	if (field_width == -1) {
-@@ -590,6 +626,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
-  * This function follows C99 vsnprintf, but has some extensions:
-  * %pS output the name of a text symbol
-  * %pF output the name of a function pointer
-+ * %pR output the address range in a struct resource
-  *
-  * The return value is the number of characters which would
-  * be generated for the given input, excluding the trailing
+ Documentation/credentials.txt                |  582 +++++++++++++
+ arch/alpha/kernel/asm-offsets.c              |   11 +-
+ arch/alpha/kernel/entry.S                    |   10 +-
+ arch/ia64/ia32/sys_ia32.c                    |    7 +-
+ arch/ia64/kernel/mca_drv.c                   |    2 +-
+ arch/ia64/kernel/perfmon.c                   |   43 +-
+ arch/ia64/kernel/signal.c                    |    4 +-
+ arch/mips/kernel/kspd.c                      |    4 +-
+ arch/mips/kernel/mips-mt-fpaff.c             |    5 +-
+ arch/mips/kernel/vpe.c                       |    4 +-
+ arch/parisc/kernel/signal.c                  |    2 +-
+ arch/powerpc/mm/fault.c                      |    2 +-
+ arch/powerpc/platforms/cell/spufs/inode.c    |    8 +-
+ arch/s390/hypfs/inode.c                      |    4 +-
+ arch/s390/kernel/compat_linux.c              |   28 +-
+ arch/um/drivers/mconsole_kern.c              |    3 +-
+ arch/x86/ia32/ia32_aout.c                    |    2 +-
+ arch/x86/mm/fault.c                          |    2 +-
+ drivers/block/loop.c                         |    6 +-
+ drivers/char/tty_audit.c                     |    6 +-
+ drivers/connector/cn_proc.c                  |   16 +-
+ drivers/isdn/capi/capifs.c                   |    4 +-
+ drivers/isdn/hysdn/hysdn_procconf.c          |    6 +-
+ drivers/net/tun.c                            |    8 +-
+ drivers/usb/core/devio.c                     |   10 +-
+ drivers/usb/core/inode.c                     |    4 +-
+ fs/9p/fid.c                                  |    2 +-
+ fs/9p/vfs_inode.c                            |    4 +-
+ fs/9p/vfs_super.c                            |    4 +-
+ fs/affs/inode.c                              |    4 +-
+ fs/affs/super.c                              |    4 +-
+ fs/anon_inodes.c                             |    4 +-
+ fs/attr.c                                    |    4 +-
+ fs/autofs/inode.c                            |    4 +-
+ fs/autofs4/dev-ioctl.c                       |    3 +-
+ fs/autofs4/inode.c                           |    4 +-
+ fs/autofs4/waitq.c                           |    4 +-
+ fs/bfs/dir.c                                 |    4 +-
+ fs/binfmt_aout.c                             |    2 +-
+ fs/binfmt_elf.c                              |   20 +-
+ fs/binfmt_elf_fdpic.c                        |   19 +-
+ fs/binfmt_flat.c                             |    2 +-
+ fs/binfmt_som.c                              |    2 +-
+ fs/cifs/cifs_fs_sb.h                         |    2 +-
+ fs/cifs/cifsproto.h                          |    2 +-
+ fs/cifs/connect.c                            |    4 +-
+ fs/cifs/dir.c                                |   12 +-
+ fs/cifs/inode.c                              |    8 +-
+ fs/cifs/ioctl.c                              |    2 +-
+ fs/cifs/misc.c                               |    4 +-
+ fs/coda/cache.c                              |    6 +-
+ fs/coda/file.c                               |    2 +-
+ fs/coda/upcall.c                             |    2 +-
+ fs/compat.c                                  |   42 +-
+ fs/devpts/inode.c                            |    4 +-
+ fs/dquot.c                                   |    4 +-
+ fs/ecryptfs/ecryptfs_kernel.h                |    3 +-
+ fs/ecryptfs/kthread.c                        |    9 +-
+ fs/ecryptfs/main.c                           |    3 +-
+ fs/ecryptfs/messaging.c                      |   18 +-
+ fs/ecryptfs/miscdev.c                        |   20 +-
+ fs/exec.c                                    |  183 +++--
+ fs/exportfs/expfs.c                          |    4 +-
+ fs/ext2/balloc.c                             |    2 +-
+ fs/ext2/ialloc.c                             |    4 +-
+ fs/ext3/balloc.c                             |    2 +-
+ fs/ext3/ialloc.c                             |    4 +-
+ fs/ext4/balloc.c                             |    5 +-
+ fs/ext4/ialloc.c                             |    4 +-
+ fs/fat/file.c                                |    2 +-
+ fs/fat/inode.c                               |    4 +-
+ fs/fcntl.c                                   |   18 +-
+ fs/file_table.c                              |   10 +-
+ fs/fuse/dev.c                                |    4 +-
+ fs/fuse/dir.c                                |   25 +-
+ fs/gfs2/inode.c                              |   10 +-
+ fs/hfs/inode.c                               |    4 +-
+ fs/hfs/super.c                               |    4 +-
+ fs/hfsplus/inode.c                           |    4 +-
+ fs/hfsplus/options.c                         |    4 +-
+ fs/hpfs/namei.c                              |   24 +-
+ fs/hpfs/super.c                              |    4 +-
+ fs/hppfs/hppfs.c                             |    6 +-
+ fs/hugetlbfs/inode.c                         |   21 +-
+ fs/inotify_user.c                            |    2 +-
+ fs/internal.h                                |    6 +
+ fs/ioprio.c                                  |   18 +-
+ fs/jffs2/fs.c                                |    4 +-
+ fs/jfs/jfs_inode.c                           |    4 +-
+ fs/locks.c                                   |    2 +-
+ fs/minix/bitmap.c                            |    4 +-
+ fs/namei.c                                   |   10 +-
+ fs/namespace.c                               |    2 +-
+ fs/ncpfs/ioctl.c                             |   91 +-
+ fs/nfsctl.c                                  |    3 +-
+ fs/nfsd/auth.c                               |   95 ++-
+ fs/nfsd/nfs4recover.c                        |   71 +-
+ fs/nfsd/nfsfh.c                              |   11 +-
+ fs/nfsd/vfs.c                                |    9 +-
+ fs/ocfs2/dlm/dlmfs.c                         |    8 +-
+ fs/ocfs2/namei.c                             |    4 +-
+ fs/omfs/inode.c                              |    8 +-
+ fs/open.c                                    |   59 +-
+ fs/pipe.c                                    |    4 +-
+ fs/posix_acl.c                               |    4 +-
+ fs/proc/array.c                              |   32 +-
+ fs/proc/base.c                               |   32 +-
+ fs/quota.c                                   |    4 +-
+ fs/ramfs/inode.c                             |    4 +-
+ fs/reiserfs/namei.c                          |    4 +-
+ fs/smbfs/dir.c                               |    3 +-
+ fs/smbfs/inode.c                             |    2 +-
+ fs/smbfs/proc.c                              |    2 +-
+ fs/sysv/ialloc.c                             |    4 +-
+ fs/ubifs/budget.c                            |    2 +-
+ fs/ubifs/dir.c                               |    4 +-
+ fs/udf/ialloc.c                              |    4 +-
+ fs/udf/namei.c                               |    2 +-
+ fs/ufs/ialloc.c                              |    4 +-
+ fs/xfs/linux-2.6/xfs_cred.h                  |    6 +-
+ fs/xfs/linux-2.6/xfs_globals.h               |    2 +-
+ fs/xfs/linux-2.6/xfs_ioctl.c                 |    5 +-
+ fs/xfs/xfs_acl.c                             |    6 +-
+ fs/xfs/xfs_inode.h                           |    2 +-
+ fs/xfs/xfs_vnodeops.h                        |   10 +-
+ include/keys/keyring-type.h                  |   31 +
+ include/linux/binfmts.h                      |   16 +-
+ include/linux/capability.h                   |    2 -
+ include/linux/cred.h                         |  340 +++++++-
+ include/linux/fs.h                           |    8 +-
+ include/linux/init_task.h                    |   13 +-
+ include/linux/key-ui.h                       |   66 --
+ include/linux/key.h                          |   32 +-
+ include/linux/keyctl.h                       |    4 +-
+ include/linux/sched.h                        |   64 +--
+ include/linux/securebits.h                   |    2 +-
+ include/linux/security.h                     |  326 ++++----
+ include/net/scm.h                            |    4 +-
+ init/main.c                                  |    1 +
+ ipc/mqueue.c                                 |   19 +-
+ ipc/shm.c                                    |    9 +-
+ ipc/util.c                                   |   18 +-
+ kernel/Makefile                              |    2 +-
+ kernel/acct.c                                |    7 +-
+ kernel/auditsc.c                             |   57 +-
+ kernel/capability.c                          |  268 +------
+ kernel/cgroup.c                              |   17 +-
+ kernel/cred-internals.h                      |   21 +
+ kernel/cred.c                                |  577 +++++++++++++
+ kernel/exit.c                                |   23 +-
+ kernel/fork.c                                |   45 +-
+ kernel/futex.c                               |   20 +-
+ kernel/futex_compat.c                        |    7 +-
+ kernel/kmod.c                                |   30 +-
+ kernel/ptrace.c                              |   29 +-
+ kernel/sched.c                               |   26 +-
+ kernel/signal.c                              |   60 +-
+ kernel/sys.c                                 |  579 +++++++------
+ kernel/sysctl.c                              |    2 +-
+ kernel/timer.c                               |    8 +-
+ kernel/trace/trace.c                         |    2 +-
+ kernel/tsacct.c                              |    6 +-
+ kernel/uid16.c                               |   31 +-
+ kernel/user.c                                |   37 +-
+ kernel/user_namespace.c                      |   14 +-
+ kernel/workqueue.c                           |    8 +-
+ lib/Makefile                                 |    2 +-
+ lib/is_single_threaded.c                     |   45 +
+ mm/mempolicy.c                               |    9 +-
+ mm/migrate.c                                 |    9 +-
+ mm/oom_kill.c                                |    6 +-
+ mm/shmem.c                                   |    8 +-
+ net/9p/client.c                              |    2 +-
+ net/ax25/af_ax25.c                           |    2 +-
+ net/ax25/ax25_route.c                        |    2 +-
+ net/core/dev.c                               |    8 +-
+ net/core/scm.c                               |   10 +-
+ net/ipv4/netfilter/ipt_LOG.c                 |    4 +-
+ net/ipv6/ip6_flowlabel.c                     |    2 +-
+ net/ipv6/netfilter/ip6t_LOG.c                |    4 +-
+ net/netfilter/nfnetlink_log.c                |    5 +-
+ net/netfilter/xt_owner.c                     |   16 +-
+ net/netrom/af_netrom.c                       |    4 +-
+ net/rose/af_rose.c                           |    4 +-
+ net/rxrpc/ar-key.c                           |    6 +-
+ net/sched/cls_flow.c                         |    4 +-
+ net/socket.c                                 |    4 +-
+ net/sunrpc/auth.c                            |   14 +-
+ net/unix/af_unix.c                           |   11 +-
+ security/capability.c                        |   56 +-
+ security/commoncap.c                         |  699 ++++++++++------
+ security/keys/internal.h                     |   47 +-
+ security/keys/key.c                          |   25 +-
+ security/keys/keyctl.c                       |  210 +++--
+ security/keys/keyring.c                      |   15 +-
+ security/keys/permission.c                   |   29 +-
+ security/keys/proc.c                         |    8 +-
+ security/keys/process_keys.c                 |  469 +++++------
+ security/keys/request_key.c                  |  133 ++--
+ security/keys/request_key_auth.c             |   46 +-
+ security/root_plug.c                         |   13 +-
+ security/security.c                          |   96 +--
+ security/selinux/exports.c                   |    8 +-
+ security/selinux/hooks.c                     | 1162 ++++++++++++++------------
+ security/selinux/include/av_perm_to_string.h |    2 +
+ security/selinux/include/av_permissions.h    |    2 +
+ security/selinux/include/class_to_string.h   |    5 +
+ security/selinux/include/flask.h             |    1 +
+ security/selinux/include/objsec.h            |   11 -
+ security/selinux/selinuxfs.c                 |   13 +-
+ security/selinux/xfrm.c                      |    6 +-
+ security/smack/smack_access.c                |    4 +-
+ security/smack/smack_lsm.c                   |  173 +++--
+ security/smack/smackfs.c                     |    6 +-
+ 214 files changed, 5070 insertions(+), 3106 deletions(-)
+ create mode 100644 Documentation/credentials.txt
+ create mode 100644 include/keys/keyring-type.h
+ delete mode 100644 include/linux/key-ui.h
+ create mode 100644 kernel/cred-internals.h
+ create mode 100644 kernel/cred.c
+ create mode 100644 lib/is_single_threaded.c
