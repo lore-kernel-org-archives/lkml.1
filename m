@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbYJTTjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbYJTTlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbYJTTjo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 15:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYJTTjg
+	id S1755135AbYJTTlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 15:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbYJTTlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 15:39:36 -0400
-Received: from waste.org ([66.93.16.53]:58950 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751415AbYJTTjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 15:39:36 -0400
-Subject: Re: [PATCH] Export tiny shmem_file_setup for DRM-GEM
-From: Matt Mackall <mpm@selenic.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Dave Airlie <airlied@redhat.com>, Keith Packard <keithp@keithp.com>,
-       Eric Anholt <eric@anholt.net>, Nick Piggin <npiggin@suse.de>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0810201939310.14915@blonde.site>
-References: <Pine.LNX.4.64.0810191242220.22825@blonde.site>
-	 <1224525754.4323.21.camel@calx>
-	 <Pine.LNX.4.64.0810201939310.14915@blonde.site>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 14:38:25 -0500
-Message-Id: <1224531505.4323.33.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 20 Oct 2008 15:41:11 -0400
+Received: from mail8.dotsterhost.com ([66.11.233.1]:33142 "HELO
+	mail8.dotsterhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753057AbYJTTlK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 15:41:10 -0400
+Message-ID: <20081020193428.8k6ottvjfc1woscw@webmail8.dotsterhost.com>
+Date: Mon, 20 Oct 2008 19:34:28 +0000
+From: crispin@crispincowan.com
+To: Shaya Potter <spotter@cs.columbia.edu>
+Cc: Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Toshiharu Harada <haradats@nttdata.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [TOMOYO #11 (linux-next) 01/11] Introduce new LSM hooks where
+	vfsmount is available.
+References: <20081020073423.024299308@nttdata.co.jp>
+	<20081020073643.986810046@nttdata.co.jp> <48FC7938.1070906@cs.columbia.edu>
+In-Reply-To: <48FC7938.1070906@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 19:47 +0100, Hugh Dickins wrote:
-> On Mon, 20 Oct 2008, Matt Mackall wrote:
-> > On Sun, 2008-10-19 at 12:52 +0100, Hugh Dickins wrote:
-> > > We're trying to keep the !CONFIG_SHMEM tiny-shmem.c (using ramfs without
-> > > swap) in synch with CONFIG_SHMEM shmem.c (and mpm is preparing patches
-> > > to combine them).  I was glad to see EXPORT_SYMBOL_GPL(shmem_file_setup)
-> > > go into shmem.c, but why not support DRM-GEM when !CONFIG_SHMEM too?
-> > > But caution says still depend on MMU, since !CONFIG_MMU is.. different.
-> > > 
-> > > Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> > 
-> > Acked-by: Matt Mackall <mpm@selenic.com>
-> 
-> Thanks.
-> 
-> > 
-> > Hugh, what path do you usually take for upstreaming shmem bits and what
-> > path should I take with my unify patch?
-> 
-> I send them to Andrew (Cc linux-kernel and/or linux-mm, erratic which,
-> at best depending on what the area of interest is - there's not much
-> of interest to linux-mm in the case of this unification) to get their
-> airing in -mm until the next merge window.
-> 
-> You could do that, or were you expecting me to pick up what you had?
-> We can do it that way too if you prefer: as things stood, I think
-> you were intending to add a patch to remove that redundant function,
-> and another to remove CONFIG_TMPFS - but I can do them if you prefer.
+Quoting Shaya Potter <spotter@cs.columbia.edu>:
+> I know I'm late to the game in this, but as I recently asked about this
+> and didn't get an answer, I'll re-ask my approach.
+>
+> Why can't you do this
+>
+> in lookup()
+>
+> - resolve rules (not for single process, but for all processes) for
+> said path and tag dentry (seem to already have a hook)
+>
+> in permission()
 
-Yeah, I've got a few patches here. I'll send them to Andrew, cc:ed to
-you and linux-kernel then.
+Because it doesn't work  
+http://kerneltrap.org/mailarchive/linux-fsdevel/2007/6/8/319446
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Quick summary: The difference between the pathname model and the label  
+model is dynamism. The accessi really is determined by the pathname to  
+the file that you used to access the file. If you try to compute  
+access based on attributes tagged onto the file, then you have to  
+re-compute those attributes every time someone renames a file.
+
+Crispin
+
 
