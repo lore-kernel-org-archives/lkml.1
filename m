@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751538AbYJTDUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbYJTDVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751538AbYJTDUu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 23:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYJTDU2
+	id S1752109AbYJTDVH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 23:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYJTDUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 23:20:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:33057 "EHLO ozlabs.org"
+	Sun, 19 Oct 2008 23:20:44 -0400
+Received: from ozlabs.org ([203.10.76.45]:33060 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbYJTDU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 23:20:28 -0400
+	id S1751843AbYJTDUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 23:20:43 -0400
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sun, 19 Oct 2008 22:20:17 -0500
-Subject: [PATCH 3/5] core_param() for genuinely core kernel parameters
+Date: Sun, 19 Oct 2008 22:20:36 -0500
+Subject: [PATCH 5/5] Make panic= and panic_on_oops into core_params
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810201420.17428.rusty@rustcorp.com.au>
+Message-Id: <200810201420.36136.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There are a lot of one-liner uses of __setup() in the kernel: they're
-cumbersome and not queryable (definitely not settable) via /sys.  Yet
-it's ugly to simplify them to module_param(), because by default that
-inserts a prefix of the module name (usually filename).
-
-So, introduce a "core_param".  The parameter gets no prefix, but
-appears in /sys/module/kernel/parameters/ (if non-zero perms arg).  I
-thought about using the name "core", but that's more common than
-"kernel".  And if you create a module called "kernel", you will die
-a horrible death.
+This allows them to be examined and set after boot, plus means they
+actually give errors if they are misused (eg. panic=yes).
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- include/linux/moduleparam.h |   19 +++++++++++++++++++
- kernel/params.c             |   14 +++++++-------
- 2 files changed, 26 insertions(+), 7 deletions(-)
+ kernel/panic.c |   17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
 
-diff -r 45c9db682016 include/linux/moduleparam.h
---- a/include/linux/moduleparam.h	Thu Aug 28 11:45:26 2008 +1000
-+++ b/include/linux/moduleparam.h	Thu Aug 28 11:46:26 2008 +1000
-@@ -104,6 +104,25 @@ struct kparam_array
- #define module_param(name, type, perm)				\
- 	module_param_named(name, name, type, perm)
+diff -r 660a97679013 kernel/panic.c
+--- a/kernel/panic.c	Thu Aug 28 11:46:29 2008 +1000
++++ b/kernel/panic.c	Thu Aug 28 11:51:50 2008 +1000
+@@ -33,13 +33,6 @@ ATOMIC_NOTIFIER_HEAD(panic_notifier_list
+ ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
  
-+#ifndef MODULE
-+/**
-+ * core_param - define a historical core kernel parameter.
-+ * @name: the name of the cmdline and sysfs parameter (often the same as var)
-+ * @var: the variable
-+ * @type: the type (for param_set_##type and param_get_##type)
-+ * @perm: visibility in sysfs
-+ *
-+ * core_param is just like module_param(), but cannot be modular and
-+ * doesn't add a prefix (such as "printk.").  This is for compatibility
-+ * with __setup(), and it makes sense as truly core parameters aren't
-+ * tied to the particular file they're in.
-+ */
-+#define core_param(name, var, type, perm)				\
-+	param_check_##type(name, &(var));				\
-+	__module_param_call("", name, param_set_##type, param_get_##type, \
-+			    &var, perm)
-+#endif /* !MODULE */
-+
- /* Actually copy string: maxlen param is usually sizeof(string). */
- #define module_param_string(name, string, len, perm)			\
- 	static const struct kparam_string __param_string_##name		\
-diff -r 45c9db682016 kernel/params.c
---- a/kernel/params.c	Thu Aug 28 11:45:26 2008 +1000
-+++ b/kernel/params.c	Thu Aug 28 11:46:26 2008 +1000
-@@ -637,14 +637,14 @@ static void __init param_sysfs_builtin(v
+ EXPORT_SYMBOL(panic_notifier_list);
+-
+-static int __init panic_setup(char *str)
+-{
+-	panic_timeout = simple_strtoul(str, NULL, 0);
+-	return 1;
+-}
+-__setup("panic=", panic_setup);
  
- 		dot = strchr(kp->name, '.');
- 		if (!dot) {
--			DEBUGP("couldn't find period in first %d characters "
--			       "of %s\n", MODULE_NAME_LEN, kp->name);
--			continue;
-+			/* This happens for core_param() */
-+			strcpy(modname, "kernel");
-+			name_len = 0;
-+		} else {
-+			name_len = dot - kp->name + 1;
-+			strlcpy(modname, kp->name, name_len);
- 		}
--		name_len = dot - kp->name;
--		strncpy(modname, kp->name, name_len);
--		modname[name_len] = '\0';
--		kernel_add_sysfs_param(modname, kp, name_len+1);
-+		kernel_add_sysfs_param(modname, kp, name_len);
- 	}
+ static long no_blink(long time)
+ {
+@@ -187,13 +180,6 @@ void add_taint(unsigned flag)
  }
+ EXPORT_SYMBOL(add_taint);
  
+-static int __init pause_on_oops_setup(char *str)
+-{
+-	pause_on_oops = simple_strtoul(str, NULL, 0);
+-	return 1;
+-}
+-__setup("pause_on_oops=", pause_on_oops_setup);
+-
+ static void spin_msec(int msecs)
+ {
+ 	int i;
+@@ -353,3 +339,6 @@ void __stack_chk_fail(void)
+ }
+ EXPORT_SYMBOL(__stack_chk_fail);
+ #endif
++
++core_param(panic, panic_timeout, int, 0644);
++core_param(pause_on_oops, pause_on_oops, int, 0644);
 
