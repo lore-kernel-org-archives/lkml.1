@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYJTUvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYJTUvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbYJTUvV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 16:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbYJTUuv
+	id S1755825AbYJTUvh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 16:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbYJTUuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 16:50:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35973 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752605AbYJTUuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 16:50:50 -0400
-Date: Mon, 20 Oct 2008 16:49:54 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
-	<alejandro.riveira@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, ericvh@gmail.com,
-       v9fs-developer@lists.sourceforge.net, lucho@ionkov.net
-Subject: Re: [net/9p/9pnet.c] Compile error
-Message-ID: <20081020204954.GC3161@redhat.com>
-References: <1224530845.22829.4.camel@varda>
+	Mon, 20 Oct 2008 16:50:55 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:60554 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755194AbYJTUuy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 16:50:54 -0400
+X-Greylist: delayed 1152 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Oct 2008 16:50:54 EDT
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=BVwcnFf/Pqo3L4yjlLT90/LN4+JzY2fpyEj+Wn9mSq+gOEcgO6nz0hBwz+R7UsM56
+	Y5/E/HJFKZq7NqfUAjd0Q==
+Message-ID: <6599ad830810201331t639dbd55h5f17c382ca3a7fbd@mail.gmail.com>
+Date: Mon, 20 Oct 2008 13:31:37 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] cgroup: tiny cleanups
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.linux-foundation.org>
+In-Reply-To: <48FC1784.70108@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1224530845.22829.4.camel@varda>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <48FC1784.70108@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 09:27:25PM +0200, Alejandro Riveira Fernández wrote:
-> Current Git
->  v2.6.27-6030-g6da0b38
-> 
->  I get a build error
-> 
-> Kernel: arch/x86/boot/bzImage is ready  (#17)
->   Building modules, stage 2.
->   MODPOST 571 modules
-> ERROR: "p9_debug_level" [net/9p/9pnet.ko] undefined!
-> make[3]: *** [__modpost] Error 1
-> make[2]: *** [modules] Error 2
-> make[1]: *** [sub-make] Error 2
-> make: *** [all] Error 2
-> 
+On Sun, Oct 19, 2008 at 10:30 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> - remove 'private' field from struct subsys
+> - remove cgroup_init_smp()
+> - remove unused 'i' in cgroup_tasks_start()
+>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-hi,
+Acked-by: Paul Menage <menage@google.com>
 
-Yes, i hit that too...the patch below resolved it for me.
+Thanks. The cgroup_subsys.private field was originally for some
+experiments for automatically emulating CKRM/BeanCounters over early
+versions of cgroups, but I don't think anything is using it currently.
 
-thanks,
+Paul
 
--Jason
-
-
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-
-diff --git a/net/9p/protocol.c b/net/9p/protocol.c
-index 29be524..ebf819e 100644
---- a/net/9p/protocol.c
-+++ b/net/9p/protocol.c
-@@ -542,8 +542,10 @@ int p9pdu_finalize(struct p9_fcall *pdu)
- 	err = p9pdu_writef(pdu, 0, "d", size);
- 	pdu->size = size;
- 
-+#ifdef CONFIG_NET_9P_DEBUG
- 	if ((p9_debug_level & P9_DEBUG_PKT) == P9_DEBUG_PKT)
- 		p9pdu_dump(0, pdu);
-+#endif
- 
- 	P9_DPRINTK(P9_DEBUG_9P, ">>> size=%d type: %d tag: %d\n", pdu->size,
- 							pdu->id, pdu->tag);
+> ---
+>  include/linux/cgroup.h |    4 ----
+>  kernel/cgroup.c        |    1 -
+>  2 files changed, 5 deletions(-)
+>
+> --- linux-mm/include/linux/cgroup.h.orig        2008-10-20 13:25:39.000000000 +0800
+> +++ linux-mm/include/linux/cgroup.h     2008-10-20 13:26:08.000000000 +0800
+> @@ -25,7 +25,6 @@ struct cgroup;
+>
+>  extern int cgroup_init_early(void);
+>  extern int cgroup_init(void);
+> -extern void cgroup_init_smp(void);
+>  extern void cgroup_lock(void);
+>  extern bool cgroup_lock_live_group(struct cgroup *cgrp);
+>  extern void cgroup_unlock(void);
+> @@ -348,8 +347,6 @@ struct cgroup_subsys {
+>        struct cgroupfs_root *root;
+>
+>        struct list_head sibling;
+> -
+> -       void *private;
+>  };
+>
+>  #define SUBSYS(_x) extern struct cgroup_subsys _x ## _subsys;
+> @@ -410,7 +407,6 @@ void cgroup_mm_owner_callbacks(struct ta
+>
+>  static inline int cgroup_init_early(void) { return 0; }
+>  static inline int cgroup_init(void) { return 0; }
+> -static inline void cgroup_init_smp(void) {}
+>  static inline void cgroup_fork(struct task_struct *p) {}
+>  static inline void cgroup_fork_callbacks(struct task_struct *p) {}
+>  static inline void cgroup_post_fork(struct task_struct *p) {}
+> --- linux-mm/kernel/cgroup.c.orig       2008-10-20 13:25:56.000000000 +0800
+> +++ linux-mm/kernel/cgroup.c    2008-10-20 13:26:08.000000000 +0800
+> @@ -2104,7 +2104,6 @@ static void *cgroup_tasks_start(struct s
+>        down_read(&cgrp->pids_mutex);
+>        if (pid) {
+>                int end = cgrp->pids_length;
+> -               int i;
+>                while (index < end) {
+>                        int mid = (index + end) / 2;
+>                        if (cgrp->tasks_pids[mid] == pid) {
+>
