@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752377AbYJTPB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbYJTPEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752377AbYJTPB7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 11:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJTPBr
+	id S1752451AbYJTPEl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 11:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYJTPEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 11:01:47 -0400
-Received: from smtp104.prem.mail.sp1.yahoo.com ([98.136.44.59]:39785 "HELO
-	smtp104.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750895AbYJTPBr (ORCPT
+	Mon, 20 Oct 2008 11:04:34 -0400
+Received: from mp1-smtp-5.eutelia.it ([62.94.10.165]:58826 "EHLO
+	smtp.eutelia.it" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750776AbYJTPEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 11:01:47 -0400
-X-YMail-OSG: dSiaaj8VM1keYAxZ2eK2syNAnUbAlOtENyeyhgzwOzDiHCKjTsmZBJX2K_46wbj6PxYWckYIw0wehDQe8DvTNCOr39B_F7LCcgqE9roHTOuI.HGMzTj5Va9TomEtaS9.54HqbFLB2YPQNtTGjGvmtNDZk6syz2lEDjKiaeo-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <48FC9D51.6080806@schaufler-ca.com>
-Date: Mon, 20 Oct 2008 08:01:37 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 20 Oct 2008 11:04:34 -0400
+From: ROASCIO Paolo <roa@libero.it>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: hex code shown at boot
+Date: Mon, 20 Oct 2008 17:06:14 +0200
+User-Agent: KMail/1.9.9
+References: <200810191630.43517.roa@libero.it> <alpine.LRH.1.10.0810192111240.2000@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.1.10.0810192111240.2000@twin.jikos.cz>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Tilman Baumann <tilman.baumann@collax.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: SMACK netfilter smacklabel socket match
-References: <48DBC9A1.20900@collax.com> <48DC5A45.8020801@schaufler-ca.com> <E33DFA86-F040-413F-8156-EDCB879F4CEE@collax.com> <48DDBE2E.3010006@schaufler-ca.com> <48E1007F.4000400@collax.com> <48E19D01.9050809@schaufler-ca.com> <48E35F36.4030203@collax.com> <48E3957A.7040201@schaufler-ca.com> <48E3AB97.8020305@collax.com> <48E3BFDE.7010300@schaufler-ca.com> <48EA0B30.6080907@collax.com> <48EACC91.8040008@schaufler-ca.com> <48F8C3EC.1030607@collax.com> <48F8D122.3010105@schaufler-ca.com> <48FC744F.6030507@collax.com>
-In-Reply-To: <48FC744F.6030507@collax.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810201706.14339.roa@libero.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Baumann wrote:
->> If you're up to trying out something that you know is going to get
->> rewhacked before it goes in anywhere let me know.
+Il Sunday 19 October 2008 21:11:58 hai scritto:
 >
-> Sure. I will be happy to use that.
-> Just tell me where to find it and how to use it and what I should look 
-> out for.
->
-OK. I'll throw a patch together. It may take a day or two due
-to the heap on my plate.
+> Do you get the dump also when you do not user framebuffer console? (i.e.
+> boot with vga=normal).
 
+Hallo, thanks for your replay.
 
+Tried with vga=normal as you suggested and both the dmesg output and the 
+kern.log are clear. Then should it be a vesafb issue or maybe related to my 
+graphic card (nvidia 6800GT)?
+
+I will investigate...
+
+Thanks for your hint
+
+ROASCIO Paolo
