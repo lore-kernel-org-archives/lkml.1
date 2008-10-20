@@ -1,114 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbYJTRVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYJTRWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbYJTRVg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbYJTRFF
+	id S1755060AbYJTRWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbYJTRFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:05:05 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:55318 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753625AbYJTRDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 13:03:24 -0400
-Message-Id: <20081020170322.785672000@polaris-admin.engr.sgi.com>
-References: <20081020170319.539427000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 20 Oct 2008 10:03:42 -0700
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, davej@codemonkey.org.uk,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       peterz@infradead.org, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, IA64 <linux-ia64@vger.kernel.org>,
-       PowerPC <linuxppc-dev@ozlabs.org>, S390 <linux-s390@vger.kernel.org>,
-       SPARC <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 23/35] cpumask: deprecate any_online_cpu() in favour of cpumask_any/cpumask_any_and
-Content-Disposition: inline; filename=cpumask:deprecate-any_online_cpu.patch
+	Mon, 20 Oct 2008 13:05:06 -0400
+Received: from lucidpixels.com ([75.144.35.66]:50393 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753893AbYJTRDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 13:03:48 -0400
+Date: Mon, 20 Oct 2008 13:03:47 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Mike Isely <isely@pobox.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: Bug fix for pvrusb2 driver [was: Re: Kernel 2.6.26.5 -> 2.6.27.2
+ [USB REGRESSION] (USB -> D_STATE)]
+In-Reply-To: <Pine.LNX.4.64.0810201142270.12643@cnc.isely.net>
+Message-ID: <alpine.DEB.1.10.0810201251490.6072@p34.internal.lan>
+References: <Pine.LNX.4.44L0.0810201203530.2719-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0810201119250.12643@cnc.isely.net> <alpine.DEB.1.10.0810201231020.6072@p34.internal.lan> <Pine.LNX.4.64.0810201142270.12643@cnc.isely.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-any_online_cpu() is a good name, but it takes a cpumask_t, not a
-pointer.
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- include/linux/cpumask.h |   11 ++++++-----
- lib/cpumask.c           |   12 ------------
- 2 files changed, 6 insertions(+), 17 deletions(-)
 
---- test-compile.orig/include/linux/cpumask.h
-+++ test-compile/include/linux/cpumask.h
-@@ -109,7 +109,8 @@
-  * int cpu_possible(cpu)		Is some cpu possible?
-  * int cpu_present(cpu)			Is some cpu present (can schedule)?
-  *
-- * int any_online_cpu(mask)		First online cpu in mask
-+ * int cpumask_any(mask)		Any cpu in mask
-+ * int cpumask_any_and(mask1,mask2)	Any cpu in both masks
-  *
-  * for_each_possible_cpu(cpu)		for-loop cpu over cpu_possible_map
-  * for_each_online_cpu(cpu)		for-loop cpu over cpu_online_map
-@@ -202,6 +203,7 @@ extern cpumask_t _unused_cpumask_arg_;
- 		for_each_cpu_and(cpu, &(mask), &(and))
- #define first_cpu(src)		cpumask_first(&(src))
- #define next_cpu(n, src)	cpumask_next((n), &(src))
-+#define any_online_cpu(mask)	cpumask_any_and(&(mask), &cpu_online_map)
- /* End deprecated region. */
- 
- static inline void cpumask_set_cpu(int cpu, volatile struct cpumask *dstp)
-@@ -387,6 +389,9 @@ static inline void cpumask_copy(struct c
- 	bitmap_copy(cpumask_bits(dstp), cpumask_bits(srcp), nr_cpumask_bits);
- }
- 
-+#define cpumask_any(srcp) cpumask_first(srcp)
-+#define cpumask_any_and(mask1, mask2) cpumask_first_and((mask1), (mask2))
-+
- /*
-  * Special-case data structure for "single bit set only" constant CPU masks.
-  *
-@@ -453,7 +458,6 @@ extern cpumask_t cpu_mask_all;
- #define cpumask_first(src)		({ (void)(src); 0; })
- #define cpumask_next(n, src)		({ (void)(src); 1; })
- #define cpumask_next_and(n, srcp, andp)	({ (void)(srcp), (void)(andp); 1; })
--#define any_online_cpu(mask)		0
- 
- #define for_each_cpu(cpu, mask)			\
- 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-@@ -465,9 +469,6 @@ extern cpumask_t cpu_mask_all;
- int cpumask_first(const cpumask_t *srcp);
- int cpumask_next(int n, const cpumask_t *srcp);
- int cpumask_next_and(int n, const cpumask_t *srcp, const cpumask_t *andp);
--int __any_online_cpu(const cpumask_t *mask);
--
--#define any_online_cpu(mask) __any_online_cpu(&(mask))
- 
- #define for_each_cpu(cpu, mask)				\
- 	for ((cpu) = -1;				\
---- test-compile.orig/lib/cpumask.c
-+++ test-compile/lib/cpumask.c
-@@ -24,18 +24,6 @@ int cpumask_next_and(int n, const cpumas
- }
- EXPORT_SYMBOL(cpumask_next_and);
- 
--int __any_online_cpu(const cpumask_t *mask)
--{
--	int cpu;
--
--	for_each_cpu(cpu, mask) {
--		if (cpu_online(cpu))
--			break;
--	}
--	return cpu;
--}
--EXPORT_SYMBOL(__any_online_cpu);
--
- /* These are not inline because of header tangles. */
- #ifdef CONFIG_CPUMASK_OFFSTACK
- bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
+On Mon, 20 Oct 2008, Mike Isely wrote:
 
--- 
+> On Mon, 20 Oct 2008, Justin Piszcz wrote:
+>
+>>
+>>
+>> On Mon, 20 Oct 2008, Mike Isely wrote:
+>>
+>>>
+>>> There's already a patch coming up through v4l-dvb that should remove the
+>>> need for the reset completely for the pvrusb2 driver.  The reset had
+>>> been there as "chicken soup" previously - it didn't hurt but its
+>>> utility wasn't really that great at the time.  Now that it is hurting,
+>>> I just removed it.
+>>>
+>>>  -Mike
+>>>
+>>
+>> Should I wait for the patch coming up through v4l-dvb or test Alan's patch?
+>> 2.6.27.2 has quite a few issues:
+>>
+>> 1. xfs is broken w/barrier (there is a patch for this)
+>> 2. usb hangs (patch below)
+>> 3. abit-guru (comsetic issue only, doesn't find mobo) (there is a patch for
+>> this now as well)
+>>
+>> So I am sticking with 2.6.26.5 right now, let me know if you need me
+>> to test Alan's patch to see if it fixes the issue.
+>
+> I'm sorry I didn't post my patch immediately in my previous response.
+> It is however posted as a link in a followup, and for the record here it
+> is again:
+>
+> http://linuxtv.org/hg/~mcisely/pvrusb2/rev/0bb411d8d2e4
+>
+> I have tested it, and it works as expected.  I've done all I can
+> according to the process there to ready it for kernel inclusion and I've
+> asked in my pull request there to get this patch into the next 2.6.27.x
+> stable release.
+>
+> The driver really didn't "need" the reset anyway, and so from where I'm
+> sitting the simplest thing is just to remove it which is what my patch
+> does.  (I had put in that reset a long time ago when working on
+> improving hardware stability.  I had never positively established that
+> this actually helped during initialization, but it didn't hurt either so
+> I left it in place.  Now that it is causing pain, it's best just to get
+> it out of there.)  I don't see much point in testing Alan's patch.
+
+Ok, so the following patche are what I have applied to 2.6.27.2:
+
+1. http://linuxtv.org/hg/~mcisely/pvrusb2/rev/0bb411d8d2e4
+
+--
+
+1. aw9d-max-dmi-detection.diff
+2. pvrusb2-hdw.patch
+3. xfs-fix-remount-rw-with-unrecognized-options.patch
+
+Rebooting 2.6.27.2 with applied patches (all 3) and will check to make 
+sure everything is back to normal.
+
+Done, after reboot with the [3] applied patches above, it has fixed all 
+the problems I was having.
+
+Justin.
