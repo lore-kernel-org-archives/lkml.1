@@ -1,107 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbYJTKGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbYJTKKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752511AbYJTKGz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 06:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbYJTKGs
+	id S1752571AbYJTKKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 06:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYJTKKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 06:06:48 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53835 "EHLO gir.skynet.ie"
+	Mon, 20 Oct 2008 06:10:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60606 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbYJTKGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 06:06:47 -0400
-Date: Mon, 20 Oct 2008 11:06:44 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: adobriyan@gmail.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] Report the size of pages backing VMAs in /proc V3
-Message-ID: <20081020100643.GA22647@csn.ul.ie>
-References: <787b0d920810200218o5f26ee7bj9f8c0e71606dd5cb@mail.gmail.com>
+	id S1750981AbYJTKKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 06:10:40 -0400
+Date: Mon, 20 Oct 2008 12:10:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Keith Packard <keithp@keithp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: io resources and cached mappings (was: [git pull] drm patches
+	for 2.6.27-rc1)
+Message-ID: <20081020101011.GA30037@elte.hu>
+References: <alpine.DEB.0.82.0810172227490.14817@skynet.skynet.ie> <200810181237.49784.nickpiggin@yahoo.com.au> <1224357062.4384.72.camel@koto.keithp.com> <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org> <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com> <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com> <1224398496.5303.7.camel@koto.keithp.com> <20081019175320.GA6442@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <787b0d920810200218o5f26ee7bj9f8c0e71606dd5cb@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081019175320.GA6442@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/10/08 05:18), Albert Cahalan didst pronounce:
-> Adding " (hpagesize=4096kB)" onto the end of a filename is as vile
-> as adding " (deleted)" onto the end. If anything is going to change
-> in this area, it should be the elimination of " (deleted)". These
-> tags are perfectly legitimate in filenames.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> very nice!
 > 
-
-I dropped that change altogether in the last series because of concerns like
-this. It did have the potential to grow to something weird looking.
-
-> Looping on stat() while chopping off suspected tags is dreadful.
-> Besides just being gross, it's slow.
+> I think we need a somewhat different abstraction though.
 > 
-
-You're probably right. It's a bit weird that it's what you have to do to
-figure out if the file in /proc/PID/maps is really there or not.
-
-> gdb will tolerate up to 7 flags, procps will tolerate up to 31 flags,
-> and both will tolerate anything without a '/' before the filename.
+> Firstly, regarding drivers/gpu/drm/i915/io_reserve.h, that needs to 
+> move to generic code.
 > 
-
-Understood.
-
-> Obviously, every author of a /proc-based tool has been forced to
-> take a random guess at the ABI. The /proc/*/smaps is so gross and
-> that I put off writing a parser for years.
+> Secondly, wouldnt the right abstraction be to attach this 
+> functionality to 'struct resource' ? [or at least create a second 
+> struct that embedds struct resource]
 > 
-
-I intend to take a stab at it for the purposes of teaching pmap to print
-the pagesizes if the smaps change gets picked up.
-
-> What you can probably get away with:
+> this abstraction is definitely not a PCI thing and not a 
+> detached-from-everything thing, it's an IO resource thing. We could 
+> make it a property of struct resource:
 > 
-> After the "rwxp" stuff you can add 3 more flags. (gdb limit)
-> You could use 'L' for locked pages, 'R' for swap reservation,
-> and 'D' for deleted files. It's probably much better to save
-> space though, since gdb will crash if you add too many flags.
-> Three characters can be 18 bits if you base-64 encode them,
-> being careful to avoid the '/' character. (adding 0x30 works)
+> struct resource {
+>         resource_size_t start;
+>         resource_size_t end;
+>         const char *name;
+>         unsigned long flags;
+>         struct resource *parent, *sibling, *child;
+> +       void *mapping;
+> };
 > 
-
-Ok, noted in case I ever decide to tackle the (deleted) removal. It's
-not something I feel strongly about though.
-
-> Right before the filename, you can add anything except a '/'.
-> You could add a few columns of numbers or a second flags field.
+> The APIs would be:
 > 
-
-My fear was about parsers that hard-coded what number field stored the
-filename. If a column was added for pagesize for example, then parsers
-would think the pagesize was the filename.
-
-> Not that it matters on such a slow-ass file format, but you
-> can make parsing faster if you encode the page size in one byte.
-> Simply add 0x30 to the page shift, then print that byte. Note that
-> this would let you cram the page size into the flags field.
+>   int   io_resource_init_mapping(struct resource *res);
+>  void   io_resource_free_mapping(struct resource *res);
+>  void * io_resource_map(struct resource *res, pfn_t pfn, unsigned long offset);
+>  void   io_resource_unmap(struct resource *res, void *kaddr);
 > 
-
-Now, that is an interested idea, albeit it's not one that is easily
-human-readable and would need a second parser like pmap but that's ok. If
-parsing smaps turns into a total pain in the ass or the performance overhead
-of calculating PSS when reading the pagesize becomes a problem, then I'll
-try this option. Thanks a lot for that idea.
-
-> BTW, I'm thinking that the /proc/*/*maps files fail when the
-> lines exceed 4096 bytes. The pathname may legitimately be that
-> long, plus it can be backslash escaped, plus there is all the
-> junk on the beginning.
+> Note how simple and consistent it all gets: IO resources already know 
+> their physical location and their size limits. Being able to cache an 
+> ioremap in a mapping [and being able to use atomic kmaps on 32-bit] is 
+> a relatively simple and natural extension to the concept.
 > 
+> i think that would be quite acceptable - and the APIs could just 
+> transparently work on it. This would also allow the PCI code to 
+> automatically unmap any cached mappings from resources, when the 
+> driver deinitializes.
+> 
+> Linus, Jesse, what do you think?
 
-Yes. While it's unlikely to be exceeded, a file could be 4096 bytes long
-and the other fields will then cause a problem. It was because of things
-like this, I was ok with dropping the idea of adding (attribute[=value])
-from the end of the filename.
+the downsize would be that we'd attach a runtime property to the 
+IORESOURCE_MEM resource tree - which is a fairly static thing right now, 
+after the point where we finalize the resource tree. (modulo 
+device/bridge hotplug variances)
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Another downside is that we might not want to map the whole thing. I.e. 
+the structure of the IO memory space we want to map by drivers might be 
+different from how it looks like in the resource tree.
+
+the concept of introducing resource->mapping does not feel _that_ wrong 
+though and has a couple of upsides: it could act as a natural mapping 
+type serializer for example and drivers wouldnt have to explicitly 
+manage ioremap results - they could just use the resource descriptor 
+directly and "read" and "write" to/from it. readl/writel could be 
+extended to operate on the resource descriptor transparently, getting 
+rid of a source of resource mismatches and overmapping, etc. etc. We 
+could even safety check IO space accesses this way.
+
+and we'd get rid of the complication that your APIs introduced, the need 
+to introduce a separate io_mapping type, etc.
+
+Dunno, i might be missing some obvious downside why this wasnt done like 
+that until now.
+
+	Ingo
